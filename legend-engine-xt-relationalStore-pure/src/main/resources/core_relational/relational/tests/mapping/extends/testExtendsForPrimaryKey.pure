@@ -1,0 +1,257 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+import meta::relational::tests::mapping::extend::primaryKey::*;
+import meta::relational::tests::mapping::extend::store::*;
+import meta::relational::tests::mapping::extend::model::*;
+
+Mapping meta::relational::tests::mapping::extend::primaryKey::AMappingWithGroupBy
+(
+   A[a] : Relational
+   {
+      ~groupBy([testDatabase]ABC.aName)
+      id : [testDatabase]ABC.id,
+      aName : [testDatabase]ABC.aName
+   }
+)
+
+Mapping meta::relational::tests::mapping::extend::primaryKey::AMappingWithDistinct
+(
+   A[a] : Relational
+   {
+      ~distinct
+      id : [testDatabase]ABC.id,
+      aName : [testDatabase]ABC.aName
+   }
+)
+
+Mapping meta::relational::tests::mapping::extend::primaryKey::AMappingWithUserDefinedPrimaryKey
+(
+   A[a] : Relational
+   {
+      ~primaryKey([testDatabase]ABC.aName)
+      id : [testDatabase]ABC.id,
+      aName : [testDatabase]ABC.aName
+   }
+)
+
+Mapping meta::relational::tests::mapping::extend::primaryKey::AMappingWithNothing
+(
+   A[a] : Relational
+   {
+      id : [testDatabase]ABC.id,
+      aName : [testDatabase]ABC.aName
+   }
+)
+
+Mapping meta::relational::tests::mapping::extend::primaryKey::BMappingWithGroupByAMappingWithGroupBy
+(
+   include AMappingWithGroupBy
+
+   B[b] extends [a] : Relational
+   {
+      ~groupBy([testDatabase]ABC.bName)
+      bName : [testDatabase]ABC.bName
+   }
+)
+
+Mapping meta::relational::tests::mapping::extend::primaryKey::BMappingWithDistinctAMappingWithGroupBy
+(
+   include AMappingWithGroupBy
+
+   B[b] extends [a] : Relational
+   {
+      ~distinct
+      bName : [testDatabase]ABC.bName
+   }
+)
+
+Mapping meta::relational::tests::mapping::extend::primaryKey::BMappingWithUserDefinedPrimaryKeyAMappingWithGroupBy
+(
+   include AMappingWithGroupBy
+
+   B[b] extends [a] : Relational
+   {
+      ~primaryKey([testDatabase]ABC.bName)
+      bName : [testDatabase]ABC.bName
+   }
+)
+
+Mapping meta::relational::tests::mapping::extend::primaryKey::BMappingWithNothingAMappingWithGroupBy
+(
+   include AMappingWithGroupBy
+
+   B[b] extends [a] : Relational
+   {
+      bName : [testDatabase]ABC.bName
+   }
+)
+
+Mapping meta::relational::tests::mapping::extend::primaryKey::BMappingWithGroupByAMappingWithDistinct
+(
+   include AMappingWithDistinct
+
+   B[b] extends [a] : Relational
+   {
+      ~groupBy([testDatabase]ABC.bName)
+      bName : [testDatabase]ABC.bName
+   }
+)
+
+Mapping meta::relational::tests::mapping::extend::primaryKey::BMappingWithDistinctAMappingWithDistinct
+(
+   include AMappingWithDistinct
+
+   B[b] extends [a] : Relational
+   {
+      ~distinct
+      bName : [testDatabase]ABC.bName
+   }
+)
+
+Mapping meta::relational::tests::mapping::extend::primaryKey::BMappingWithUserDefinedPrimaryKeyAMappingWithDistinct
+(
+   include AMappingWithDistinct
+
+   B[b] extends [a] : Relational
+   {
+      ~primaryKey([testDatabase]ABC.bName)
+      bName : [testDatabase]ABC.bName
+   }
+)
+
+Mapping meta::relational::tests::mapping::extend::primaryKey::BMappingWithNothingAMappingWithDistinct
+(
+   include AMappingWithDistinct
+
+   B[b] extends [a] : Relational
+   {
+      bName : [testDatabase]ABC.bName
+   }
+)
+
+Mapping meta::relational::tests::mapping::extend::primaryKey::BMappingWithGroupByAMappingWithUserDefinedPrimaryKey
+(
+   include AMappingWithUserDefinedPrimaryKey
+
+   B[b] extends [a] : Relational
+   {
+      ~groupBy([testDatabase]ABC.bName)
+      bName : [testDatabase]ABC.bName
+   }
+)
+
+Mapping meta::relational::tests::mapping::extend::primaryKey::BMappingWithDistinctAMappingWithUserDefinedPrimaryKey
+(
+   include AMappingWithUserDefinedPrimaryKey
+
+   B[b] extends [a] : Relational
+   {
+      ~distinct
+      bName : [testDatabase]ABC.bName
+   }
+)
+
+Mapping meta::relational::tests::mapping::extend::primaryKey::BMappingWithUserDefinedPrimaryKeyAMappingWithUserDefinedPrimaryKey
+(
+   include AMappingWithUserDefinedPrimaryKey
+
+   B[b] extends [a] : Relational
+   {
+      ~primaryKey([testDatabase]ABC.bName)
+      bName : [testDatabase]ABC.bName
+   }
+)
+
+Mapping meta::relational::tests::mapping::extend::primaryKey::BMappingWithNothingAMappingWithUserDefinedPrimaryKey
+(
+   include AMappingWithUserDefinedPrimaryKey
+
+   B[b] extends [a] : Relational
+   {
+      bName : [testDatabase]ABC.bName
+   }
+)
+
+Mapping meta::relational::tests::mapping::extend::primaryKey::BMappingWithGroupByAMappingWithNothing
+(
+   include AMappingWithNothing
+
+   B[b] extends [a] : Relational
+   {
+      ~groupBy([testDatabase]ABC.bName)
+      bName : [testDatabase]ABC.bName
+   }
+)
+
+Mapping meta::relational::tests::mapping::extend::primaryKey::BMappingWithDistinctAMappingWithNothing
+(
+   include AMappingWithNothing
+
+   B[b] extends [a] : Relational
+   {
+      ~distinct
+      bName : [testDatabase]ABC.bName
+   }
+)
+
+Mapping meta::relational::tests::mapping::extend::primaryKey::BMappingWithUserDefinedPrimaryKeyAMappingWithNothing
+(
+   include AMappingWithNothing
+
+   B[b] extends [a] : Relational
+   {
+      ~primaryKey([testDatabase]ABC.bName)
+      bName : [testDatabase]ABC.bName
+   }
+)
+
+Mapping meta::relational::tests::mapping::extend::primaryKey::BMappingWithNothingAMappingWithNothing
+(
+   include AMappingWithNothing
+
+   B[b] extends [a] : Relational
+   {
+      bName : [testDatabase]ABC.bName
+   }
+)
+
+###Pure
+import meta::relational::metamodel::*;
+import meta::relational::mapping::*;
+import meta::relational::tests::mapping::extend::primaryKey::*;
+
+function <<test.Test>> meta::relational::tests::mapping::extend::primaryKey::testPrimaryKeyForB():Any[*]
+{
+   assertEquals('bName', BMappingWithGroupByAMappingWithGroupBy.classMappingById('b')->cast(@RootRelationalInstanceSetImplementation)->toOne().resolvePrimaryKey()->cast(@TableAliasColumn).column.name);
+   assertEquals('aName', BMappingWithDistinctAMappingWithGroupBy.classMappingById('b')->cast(@RootRelationalInstanceSetImplementation)->toOne().resolvePrimaryKey()->cast(@TableAliasColumn).column.name);
+   assertEquals('aName', BMappingWithUserDefinedPrimaryKeyAMappingWithGroupBy.classMappingById('b')->cast(@RootRelationalInstanceSetImplementation)->toOne().resolvePrimaryKey()->cast(@TableAliasColumn).column.name);
+   assertEquals('aName', BMappingWithNothingAMappingWithGroupBy.classMappingById('b')->cast(@RootRelationalInstanceSetImplementation)->toOne().resolvePrimaryKey()->cast(@TableAliasColumn).column.name);
+
+   assertEquals('bName', BMappingWithGroupByAMappingWithDistinct.classMappingById('b')->cast(@RootRelationalInstanceSetImplementation)->toOne().resolvePrimaryKey()->cast(@TableAliasColumn).column.name);
+   assertEquals('bName', BMappingWithDistinctAMappingWithDistinct.classMappingById('b')->cast(@RootRelationalInstanceSetImplementation)->toOne().resolvePrimaryKey()->cast(@TableAliasColumn).column.name);
+   assertSameElements(['id', 'aName'], BMappingWithUserDefinedPrimaryKeyAMappingWithDistinct.classMappingById('b')->cast(@RootRelationalInstanceSetImplementation)->toOne().resolvePrimaryKey()->cast(@TableAliasColumn).column.name);
+   assertSameElements(['id', 'aName'], BMappingWithNothingAMappingWithDistinct.classMappingById('b')->cast(@RootRelationalInstanceSetImplementation)->toOne().resolvePrimaryKey()->cast(@TableAliasColumn).column.name);
+
+   assertEquals('bName', BMappingWithGroupByAMappingWithUserDefinedPrimaryKey.classMappingById('b')->cast(@RootRelationalInstanceSetImplementation)->toOne().resolvePrimaryKey()->cast(@TableAliasColumn).column.name);
+   assertEquals('bName', BMappingWithDistinctAMappingWithUserDefinedPrimaryKey.classMappingById('b')->cast(@RootRelationalInstanceSetImplementation)->toOne().resolvePrimaryKey()->cast(@TableAliasColumn).column.name);
+   assertEquals('bName', BMappingWithUserDefinedPrimaryKeyAMappingWithUserDefinedPrimaryKey.classMappingById('b')->cast(@RootRelationalInstanceSetImplementation)->toOne().resolvePrimaryKey()->cast(@TableAliasColumn).column.name);
+   assertEquals('aName', BMappingWithNothingAMappingWithUserDefinedPrimaryKey.classMappingById('b')->cast(@RootRelationalInstanceSetImplementation)->toOne().resolvePrimaryKey()->cast(@TableAliasColumn).column.name);
+
+   assertEquals('bName', BMappingWithGroupByAMappingWithNothing.classMappingById('b')->cast(@RootRelationalInstanceSetImplementation)->toOne().resolvePrimaryKey()->cast(@TableAliasColumn).column.name);
+   assertEquals('bName', BMappingWithDistinctAMappingWithNothing.classMappingById('b')->cast(@RootRelationalInstanceSetImplementation)->toOne().resolvePrimaryKey()->cast(@TableAliasColumn).column.name);
+   assertEquals('bName', BMappingWithUserDefinedPrimaryKeyAMappingWithNothing.classMappingById('b')->cast(@RootRelationalInstanceSetImplementation)->toOne().resolvePrimaryKey()->cast(@TableAliasColumn).column.name);
+   assertEquals('id', BMappingWithNothingAMappingWithNothing.classMappingById('b')->cast(@RootRelationalInstanceSetImplementation)->toOne().resolvePrimaryKey()->cast(@TableAliasColumn).column.name);
+}

@@ -1,0 +1,76 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::functions::asserts::*;
+import meta::relational::mapping::*;
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::*;
+import meta::pure::profiles::*;
+
+function <<test.Test>> meta::relational::tests::query::association::toMany::testAssociationToMany():Boolean[1]
+{
+   let result = execute(|Firm.all()->filter(f|$f.employees->exists(e|$e.lastName == 'Roberts')), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 1);
+   assertEquals('Firm A', $result.values->toOne().legalName);
+   assertSameSQL( 'select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join (select distinct "persontable_1".FIRMID from personTable as "persontable_1" where "persontable_1".LASTNAME = \'Roberts\') as "persontable_0" on ("root".ID = "persontable_0".FIRMID) where "persontable_0".FIRMID is not null', $result);
+}
+
+function <<test.Test>> meta::relational::tests::query::association::toMany::testAssociationToManyNotExists():Boolean[1]
+{
+   let result = execute(|Firm.all()->filter(f|!$f.employees->exists(e|$e.lastName == 'Roberts')), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 4);
+   assertEquals(['Firm X', 'Firm B', 'Firm C','No Employees'], $result.values.legalName);
+   assertSameSQL('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join (select distinct "persontable_1".FIRMID from personTable as "persontable_1" where "persontable_1".LASTNAME = \'Roberts\') as "persontable_0" on ("root".ID = "persontable_0".FIRMID) where not "persontable_0".FIRMID is not null', $result);
+}
+
+function <<test.Test>> meta::relational::tests::query::association::toMany::testAssociationToManyWithBoolean():Boolean[1]
+{
+   let result = execute(|Firm.all()->filter(f|$f.employees->exists(e|$e.lastName == 'Roberts' || $e.lastName == 'Smith')), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 3);
+   assertSameElements(['Firm A', 'Firm C', 'Firm X'], $result.values.legalName);
+   assertSameSQL('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join (select distinct "persontable_1".FIRMID from personTable as "persontable_1" where ("persontable_1".LASTNAME = \'Roberts\' or "persontable_1".LASTNAME = \'Smith\')) as "persontable_0" on ("root".ID = "persontable_0".FIRMID) where "persontable_0".FIRMID is not null', $result);
+}
+
+function <<test.Test>> meta::relational::tests::query::association::toMany::testTwoAssociationsToManyDeep():Boolean[1]
+{
+   let result = execute(|Firm.all()->filter(f|$f.employees->exists(e|$e.locations->exists(l|$l.place == 'San Fransisco'))), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 1);
+   assertEquals('Firm A', $result.values->toOne().legalName);
+   assertSameSQL('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join (select distinct "persontable_1".FIRMID from personTable as "persontable_1" left outer join (select distinct "locationtable_1".PERSONID from locationTable as "locationtable_1" where "locationtable_1".PLACE = \'San Fransisco\') as "locationtable_0" on ("persontable_1".ID = "locationtable_0".PERSONID) where "locationtable_0".PERSONID is not null) as "persontable_0" on ("root".ID = "persontable_0".FIRMID) where "persontable_0".FIRMID is not null', $result);
+}
+
+function <<test.Test>> meta::relational::tests::query::association::toMany::testAssociationToManyWithConstantPredicate():Boolean[1]
+{
+   let result = execute(|Firm.all()->filter(f|$f.employees->exists(e|1 == 1)), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 4);
+   assertSameElements(['Firm A', 'Firm X', 'Firm C', 'Firm B'], $result.values.legalName);
+   assertSameSQL('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join (select distinct "persontable_1".FIRMID from personTable as "persontable_1" where 1 = 1) as "persontable_0" on ("root".ID = "persontable_0".FIRMID) where "persontable_0".FIRMID is not null', $result);
+}
+
+function <<test.Test>> meta::relational::tests::query::association::toMany::testTwoAssociationsToManyDeepWithOr():Boolean[1]
+{
+   let result = execute(|Firm.all()->filter(f|$f.employees->exists(e|$e.locations->exists(l|$l.place == 'Hoboken' || $l.place == 'Hong Kong'))), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 2);
+   assertSameElements(['Firm X', 'Firm B'], $result.values.legalName);
+   assertSameSQL('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join (select distinct "persontable_1".FIRMID from personTable as "persontable_1" left outer join (select distinct "locationtable_1".PERSONID from locationTable as "locationtable_1" where ("locationtable_1".PLACE = \'Hoboken\' or "locationtable_1".PLACE = \'Hong Kong\')) as "locationtable_0" on ("persontable_1".ID = "locationtable_0".PERSONID) where "locationtable_0".PERSONID is not null) as "persontable_0" on ("root".ID = "persontable_0".FIRMID) where "persontable_0".FIRMID is not null', $result);
+}
+
+function <<test.Test>> meta::relational::tests::query::association::toMany::testAssociationToManyWithTwoSeparateExists():Boolean[1]
+{
+   //This test here deliberately uses the same letter in both the exists filter Lambda's
+   let result = execute(|Firm.all()->filter(f|$f.employees->exists(c|$c.firstName == 'John') && $f.employees.address->exists(c | $c.name == 'New York')), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values->removeDuplicates(), 1);
+   assertSameElements(['Firm X'], $result.values->removeDuplicates().legalName);
+   assertSameSQL('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join (select distinct "persontable_1".FIRMID from personTable as "persontable_1" where "persontable_1".FIRSTNAME = \'John\') as "persontable_0" on ("root".ID = "persontable_0".FIRMID) left outer join personTable as "persontable_2" on ("root".ID = "persontable_2".FIRMID) left outer join (select distinct "addresstable_1".ID from addressTable as "addresstable_1" where "addresstable_1".NAME = \'New York\') as "addresstable_0" on ("addresstable_0".ID = "persontable_2".ADDRESSID) where ("persontable_0".FIRMID is not null and "addresstable_0".ID is not null)', $result);
+}

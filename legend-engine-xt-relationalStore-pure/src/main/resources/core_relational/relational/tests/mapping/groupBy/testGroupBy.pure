@@ -1,0 +1,310 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::runtime::*;
+import meta::relational::runtime::authentication::*;
+import meta::pure::profiles::*;
+import meta::pure::runtime::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::mapping::*;
+import meta::csv::*;
+
+import meta::relational::tests::mapping::groupBy::model::store::*;
+import meta::relational::tests::mapping::groupBy::model::domain::*;
+import meta::relational::tests::mapping::groupBy::model::mapping::*;
+
+
+function <<test.Test>> meta::relational::tests::mapping::groupBy::testGroupByMapping():Boolean[1]
+{
+   let result = execute(|Position.all(), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameElements([7900002, 7900003], $result.values.acctNum);
+   assertSameElements(['YU2EF5', 'EA4GNY'], $result.values.gsn);
+   assertSameElements([8, 300], $result.values.quantity);
+   assertEquals('select "root".ACC_NUM as "acctNum", "root".GSN as "gsn", sum("root".QTY) as "quantity" from TRADE as "root" group by "root".ACC_NUM,"root".PRODUCT_ID,"root".GSN', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::groupBy::testGroupByMappingWithFilter():Boolean[1]
+{
+   let result = execute(|Position.all()->filter(i|$i.gsn  == 'YU2EF5'), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameElements([7900002], $result.values.acctNum);
+   assertSameElements(['YU2EF5'], $result.values.gsn);
+   assertSameElements([8], $result.values.quantity);
+   assertEquals('select "root".ACC_NUM as "acctNum", "root".GSN as "gsn", sum("root".QTY) as "quantity" from TRADE as "root" where "root".GSN = \'YU2EF5\' group by "root".ACC_NUM,"root".PRODUCT_ID,"root".GSN', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::groupBy::testGroupByMappingWithFilterOnAggregate():Boolean[1]
+{
+   let result = execute(|Position.all()->filter(i|$i.quantity > 0), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameElements([7900002, 7900003], $result.values.acctNum);
+   assertSameElements(['YU2EF5', 'EA4GNY'], $result.values.gsn);
+   assertSameElements([8, 300], $result.values.quantity);
+   assertEquals('select "root".ACC_NUM as "acctNum", "root".GSN as "gsn", "root"."quantity" as "quantity", "root".ACC_NUM, "root".PRODUCT_ID, "root".GSN from (select "trade_1".ACC_NUM as ACC_NUM, "trade_1".GSN as GSN, sum("trade_1".QTY) as "quantity", "trade_1".PRODUCT_ID as PRODUCT_ID from TRADE as "trade_1" group by "trade_1".ACC_NUM,"trade_1".PRODUCT_ID,"trade_1".GSN) as "root" where "root"."quantity" > 0', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::groupBy::testGroupByMappingWithFilterOnAggregateWithJoin():Boolean[1]
+{
+   let result = execute(|Position.all()->filter(i|and($i.quantity > 8, $i.product.description->in(['Gold']))), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameElements([7900003], $result.values.acctNum);
+   assertSameElements(['EA4GNY'], $result.values.gsn);
+   assertSameElements([300], $result.values.quantity);
+   assertEquals('select "root".ACC_NUM as "acctNum", "root".GSN as "gsn", "root"."quantity" as "quantity", "root".ACC_NUM, "root".PRODUCT_ID, "root".GSN from (select "trade_1".ACC_NUM as ACC_NUM, "trade_1".GSN as GSN, sum("trade_1".QTY) as "quantity", "trade_1".PRODUCT_ID as PRODUCT_ID from TRADE as "trade_1" group by "trade_1".ACC_NUM,"trade_1".PRODUCT_ID,"trade_1".GSN) as "root" left outer join PRODUCT as "product_0" on ("root".PRODUCT_ID = "product_0".ID) where ("root"."quantity" > 8 and "product_0".DESCRIPTION = \'Gold\')', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::groupBy::testGroupByMappingWithFilterOnAggregateWithProject():Boolean[1]
+{
+   let result = execute(|Position.all()->filter(i|or(and($i.quantity > 100, $i.quantity<1000),$i.gsn->in(['EA4GNY'])))->project([#/Position/gsn#,#/Position/quantity#]), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals(1, $result.values->first().rows->size());
+   assertEquals('EA4GNY',$result.values->first().rows->first()->toOne().getString('gsn'));
+   assertEquals(300,$result.values->first().rows->first()->toOne().getInteger('quantity'));
+   assertEquals('select "root".GSN as "gsn", "root"."quantity" as "quantity" from (select "trade_1".ACC_NUM as ACC_NUM, "trade_1".GSN as GSN, sum("trade_1".QTY) as "quantity", "trade_1".PRODUCT_ID as PRODUCT_ID from TRADE as "trade_1" group by "trade_1".ACC_NUM,"trade_1".PRODUCT_ID,"trade_1".GSN) as "root" where (("root"."quantity" > 100 and "root"."quantity" < 1000) or "root".GSN = \'EA4GNY\')', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::groupBy::testGroupByMappingProject():Boolean[1]
+{
+   let result = execute(|Position.all()->project([#/Position/gsn#,#/Position/quantity#])->sort('gsn'), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameElements(['gsn,quantity\nEA4GNY,300\nYU2EF5,8\n'], $result.values->at(0)->toCSV());
+   assertEquals('select "root".GSN as "gsn", sum("root".QTY) as "quantity" from TRADE as "root" group by "root".ACC_NUM,"root".PRODUCT_ID,"root".GSN order by "gsn"', $result->sqlRemoveFormatting());
+}
+
+
+function <<test.Test>> meta::relational::tests::mapping::groupBy::testGroupByMappingProjectWithJoin():Boolean[1]
+{
+   let result = execute(|Position.all()->project([#/Position/gsn#, #/Position/product/description#])->sort('gsn'), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameElements(['gsn,description\nEA4GNY,Gold\nYU2EF5,Firm D\n'], $result.values->at(0)->toCSV());
+   assertEquals('select "root".GSN as "gsn", "product_0".DESCRIPTION as "description" from TRADE as "root" left outer join PRODUCT as "product_0" on ("root".PRODUCT_ID = "product_0".ID) group by "root".ACC_NUM,"root".PRODUCT_ID,"root".GSN order by "gsn"', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::groupBy::testGroupByMappingProjectWithJoinAndTableFilter():Boolean[1]
+{
+   let result = execute(|Position.all()->project([#/Position/gsn#, #/Position/product/description#]), testMappingWithFilter, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameElements(['gsn,description\nYU2EF5,Firm D\n'], $result.values->at(0)->toCSV());
+   assertEquals('select "root".GSN as "gsn", "product_0".DESCRIPTION as "description" from TRADE as "root" left outer join PRODUCT as "product_0" on ("root".PRODUCT_ID = "product_0".ID and "product_0".ID = 1) where "root".PRODUCT_ID = 1 group by "root".ACC_NUM,"root".PRODUCT_ID,"root".GSN', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::groupBy::testGroupByMappingProjectWithGroupByInJoin():Boolean[1]
+{
+   let result = execute(|Product.all()->project([#/Product/positions/gsn#, #/Product/description#]), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameElements(['gsn,description\nYU2EF5,Firm D\nEA4GNY,Gold\n'], $result.values->at(0)->toCSV());
+
+   //TODO, remove some columns from the group by
+   assertEquals('select "trade_0".GSN as "gsn", "root".DESCRIPTION as "description" from PRODUCT as "root" left outer join (select "root".ACC_NUM, "root".GSN, sum("root".QTY) as "quantity", "root".PRODUCT_ID from TRADE as "root" group by "root".ACC_NUM,"root".PRODUCT_ID,"root".GSN) as "trade_0" on ("trade_0".PRODUCT_ID = "root".ID)', $result->sqlRemoveFormatting());
+}
+
+function <<test.ToFix>> meta::relational::tests::mapping::groupBy::testGroupByMappingProjectAggregateWithGroupByInJoin():Boolean[1]
+{
+   let result = execute(|Product.all()->project([#/Product/positions/quantity#, #/Product/description#]), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameElements(['quantity,description\nYU2EF5,Firm D\nEA4GNY,Gold\n'], $result.values->at(0)->toCSV());
+
+
+   assertEquals('select TRADE_d_0_d_m1.GSN as "gsn", root.DESCRIPTION as "description" from PRODUCT as root left outer join (select root.ACC_NUM, root.GSN, sum(root.QTY) as "quantity", root.PRODUCT_ID from TRADE as root group by root.ACC_NUM,root.PRODUCT_ID,root.GSN) as TRADE_d_0_d_m1 on (TRADE_d_0_d_m1.PRODUCT_ID = root.ID)', $result->sqlRemoveFormatting());
+}
+
+// function <<test.Test>> {test.excludePlatform = 'Java compiled'} meta::relational::tests::mapping::groupBy::testGroupByMappingProjectWithSelfJoinDisplayNonGroupByColumn():Boolean[1]
+// {
+//    let result = execute(|Position.all()->project([#/Position/gsn#, #/Position/trades/id#]), testMappingWithFilter, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+//    assertSameElements(['gsn,description\nYU2EF5,Firm D\nEA4GNY,Gold\n'], $result.values->toCSV());
+//    assertEquals('select root.GSN as "gsn", PRODUCT_d_1_d_m2.DESCRIPTION as "description" from TRADE as root left outer join PRODUCT as PRODUCT_d_1_d_m2 on (root.PRODUCT_ID = PRODUCT_d_1_d_m2.ID) group by ACC_NUM,PRODUCT_ID', $result->sqlRemoveFormatting());
+// }
+
+
+function <<test.Test>> meta::relational::tests::mapping::groupBy::testGroupByMappingProjectWithMultipleGroupBys():Boolean[1]
+{
+   let result = execute(|Position.all()->project([#/Position/gsn#, #/Position/product/description#]), testMappingWithTwoGroupBysAndFilters, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameElements(['gsn,description\nYU2EF5,Firm D\n'], $result.values->at(0)->toCSV());
+   assertEquals('select "root".GSN as "gsn", "product_exploded_0".DESCRIPTION as "description" from TRADE as "root" left outer join (select "root".DESCRIPTION, "root".PRODUCT_ID from PRODUCT_EXPLODED as "root" where "root".ACTIVE = 1 group by "root".PRODUCT_ID,"root".DESCRIPTION) as "product_exploded_0" on ("root".PRODUCT_ID = "product_exploded_0".PRODUCT_ID and "product_exploded_0".PRODUCT_ID = 1) where "root".PRODUCT_ID = 1 group by "root".ACC_NUM,"root".PRODUCT_ID,"root".GSN', $result->sqlRemoveFormatting());
+}
+
+function <<test.BeforePackage>> meta::relational::tests::mapping::groupBy::setUp():Boolean[1]
+{
+    createTablesAndFillDb();
+}
+
+
+
+function meta::relational::tests::mapping::groupBy::model::store::testDataTypeMappingRuntime():Runtime[1]
+{
+   meta::relational::tests::testRuntime(myDB);
+}
+
+
+function meta::relational::tests::mapping::groupBy::model::store::createTablesAndFillDb():Boolean[1]
+{
+   let connection = testDataTypeMappingRuntime().connectionByElement(myDB)->cast(@TestDatabaseConnection);
+
+   meta::relational::functions::toDDL::dropAndCreateTableInDb(myDB, 'TRADE', $connection);
+
+   executeInDb('insert into TRADE (TRADE_ID, ACC_NUM, GSN, PRODUCT_ID, QTY) values (1, 7900002, \'YU2EF5\', 1, 3);', $connection);
+   executeInDb('insert into TRADE (TRADE_ID, ACC_NUM, GSN, PRODUCT_ID, QTY) values (2, 7900002, \'YU2EF5\', 1, 5);', $connection);
+   executeInDb('insert into TRADE (TRADE_ID, ACC_NUM, GSN, PRODUCT_ID, QTY) values (3, 7900003, \'EA4GNY\', 2, 100);', $connection);
+   executeInDb('insert into TRADE (TRADE_ID, ACC_NUM, GSN, PRODUCT_ID, QTY) values (4, 7900003, \'EA4GNY\', 2, 200);', $connection);
+
+   meta::relational::functions::toDDL::dropAndCreateTableInDb(myDB, 'PRODUCT', $connection);
+
+   executeInDb('insert into PRODUCT (ID, DESCRIPTION) values (1, \'Firm D\');', $connection);
+   executeInDb('insert into PRODUCT (ID, DESCRIPTION) values (2, \'Gold\');', $connection);
+
+
+   meta::relational::functions::toDDL::dropAndCreateTableInDb(myDB, 'PRODUCT_EXPLODED', $connection);
+
+   executeInDb('insert into PRODUCT_EXPLODED (TRADEABLE_ID, PRODUCT_ID, DESCRIPTION, ACTIVE) values (11, 1, \'Firm D\', 1);', $connection);
+   executeInDb('insert into PRODUCT_EXPLODED (TRADEABLE_ID, PRODUCT_ID, DESCRIPTION, ACTIVE) values (22, 2, \'Gold\', 0);', $connection);
+   executeInDb('insert into PRODUCT_EXPLODED (TRADEABLE_ID, PRODUCT_ID, DESCRIPTION, ACTIVE) values (33, 2, \'Gold\', 0);', $connection);
+
+   true;
+}
+
+
+
+Class meta::relational::tests::mapping::groupBy::model::domain::Position
+{
+   acctNum:Integer[1];
+   gsn:String[1];
+   quantity:Integer[1];
+   trades:Trade[*];
+}
+
+Class meta::relational::tests::mapping::groupBy::model::domain::Trade
+{
+   id:Integer[1];
+}
+
+Class meta::relational::tests::mapping::groupBy::model::domain::Product
+{
+   description:String[1];
+}
+
+Association meta::relational::tests::mapping::groupBy::model::domain::PositionProduct
+{
+   product:Product[0..1];
+   positions:Position[*];
+}
+
+
+###Relational
+
+Database meta::relational::tests::mapping::groupBy::model::store::myDB
+(
+    Table TRADE
+    (
+        TRADE_ID INT PRIMARY KEY,
+        ACC_NUM INT,
+        GSN VARCHAR(20),
+        PRODUCT_ID INT,
+        QTY INT
+    )
+
+    Table PRODUCT
+    (
+       ID INT PRIMARY KEY,
+       DESCRIPTION VARCHAR(20)
+    )
+
+    Table PRODUCT_EXPLODED
+    (
+       TRADEABLE_ID INT PRIMARY KEY,
+       PRODUCT_ID INT,
+       DESCRIPTION VARCHAR(20),
+       TRADEABLE VARCHAR(20),
+       ACTIVE INT
+    )
+
+    Join product(TRADE.PRODUCT_ID = PRODUCT.ID)
+    Join tradePosition(TRADE.PRODUCT_ID = {target}.PRODUCT_ID and TRADE.ACC_NUM = {target}.ACC_NUM)
+
+    Join tradeProductExploded(TRADE.PRODUCT_ID = PRODUCT_EXPLODED.PRODUCT_ID)
+
+    Filter productFilter(TRADE.PRODUCT_ID = 1)
+    Filter activeProducts(PRODUCT_EXPLODED.ACTIVE = 1)
+
+)
+
+###Mapping
+import meta::relational::tests::mapping::groupBy::model::domain::*;
+import meta::relational::tests::mapping::groupBy::model::store::*;
+
+Mapping meta::relational::tests::mapping::groupBy::model::mapping::testMapping
+(
+    Position: Relational
+    {
+       ~groupBy([myDB]TRADE.ACC_NUM, [myDB]TRADE.PRODUCT_ID, [myDB]TRADE.GSN)
+       scope([myDB]TRADE)
+       (
+          acctNum: ACC_NUM,
+          gsn : GSN,
+          quantity : sum(QTY)
+       ),
+       product: [myDB]@product
+    }
+
+
+    Product: Relational
+    {
+       description: [myDB]PRODUCT.DESCRIPTION,
+       positions: [myDB]@product
+    }
+)
+
+
+Mapping meta::relational::tests::mapping::groupBy::model::mapping::testMappingWithFilter
+(
+    Position: Relational
+    {
+       ~filter [myDB]productFilter
+       ~groupBy([myDB]TRADE.ACC_NUM, [myDB]TRADE.PRODUCT_ID, [myDB]TRADE.GSN)
+       scope([myDB]TRADE)
+       (
+          acctNum: ACC_NUM,
+          gsn : GSN,
+          quantity : sum(QTY)
+       ),
+       product: [myDB]@product,
+       trades: [myDB]@tradePosition
+
+    }
+
+    Product: Relational
+    {
+       description: [myDB]PRODUCT.DESCRIPTION
+    }
+
+    Trade: Relational
+    {
+       id: [myDB]TRADE.TRADE_ID
+    }
+)
+
+Mapping meta::relational::tests::mapping::groupBy::model::mapping::testMappingWithTwoGroupBysAndFilters
+(
+    Position: Relational
+    {
+       ~filter [myDB]productFilter
+       ~groupBy([myDB]TRADE.ACC_NUM, [myDB]TRADE.PRODUCT_ID, [myDB]TRADE.GSN)
+       scope([myDB]TRADE)
+       (
+          acctNum: ACC_NUM,
+          gsn : GSN,
+          quantity : sum(QTY)
+       ),
+       product: [myDB]@tradeProductExploded
+
+    }
+
+    Product: Relational
+    {
+       ~filter [myDB]activeProducts
+       ~groupBy([myDB]PRODUCT_EXPLODED.PRODUCT_ID, [myDB]PRODUCT_EXPLODED.DESCRIPTION)
+       description: [myDB]PRODUCT_EXPLODED.DESCRIPTION
+    }
+
+)

@@ -1,0 +1,42 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::mapping::*;
+import meta::pure::mapping::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::runtime::*;
+import meta::pure::router::extension::*;
+import meta::pure::runtime::*;
+import meta::relational::metamodel::*;
+import meta::pure::functions::collection::*;
+
+function meta::relational::mapping::dbSpecificProcessor(query:SQLQuery[1], runtime:Runtime[1], store:Database[0..1], exeCtx:ExecutionContext[1], extensions:RouterExtension[*]): PostProcessorResult[1]
+{
+   let postProcessorOutput = if($runtime.connections->filter(c|$c->instanceOf(DatabaseConnection))->isNotEmpty(),
+                                | let type = $runtime.connections->filter(c|$c->instanceOf(DatabaseConnection))->cast(@DatabaseConnection).type;
+                                  assert(type->size()==1, 'found not enough or too many DB types');
+                                  if ($type->toOne()->in(meta::relational::postProcessor::reAliasColumnName::dbAliasLimit()->keys()),
+                                     | trimColumnNamePostProcessors()->fold({pp,q|$pp->eval($q,$runtime).values->toOne()}, $query->cast(@SelectSQLQuery));,
+                                     | $query);,
+                                | $query);
+
+   ^PostProcessorResult(query = $postProcessorOutput,resultPostProcessor = { result:Result<Any|*>[1] | $result});
+}
+
+function meta::relational::mapping::trimColumnNamePostProcessors():meta::pure::metamodel::function::Function<{SelectSQLQuery[1],Runtime[1]->Result<SelectSQLQuery|1>[1]}>[1]
+{
+   [
+      meta::relational::postProcessor::reAliasColumnName::trimColumnName_SelectSQLQuery_1__Runtime_1__Result_1_
+   ]
+}

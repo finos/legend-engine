@@ -1,0 +1,208 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::mapping::*;
+import meta::relational::tests::mapping::propertyfunc::model::domain::*;
+import meta::relational::tests::mapping::propertyfunc::model::store::*;
+import meta::relational::tests::mapping::propertyfunc::model::mapping::*;
+import meta::relational::runtime::*;
+import meta::relational::runtime::authentication::*;
+import meta::pure::profiles::*;
+import meta::pure::runtime::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::tests::mapping::propertyfunc::model::store::*;
+
+
+function <<test.Test>> meta::relational::tests::mapping::propertyfunc::simple::testSimplePropertyFuncProject():Boolean[1]
+{
+   let result = execute(|Person.all()->project([#/Person/firstName#, #/Person/lastName#, #/Person/fullName#]), meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let tds = $result.values->at(0);
+   assertEquals(6, $tds.rows->size());
+   assertEquals(['Peter', 'Smith', 'Smith, Peter'], $tds.rows->at(0).values);
+   assertEquals(['John', 'Johnson', 'Johnson, John'], $tds.rows->at(1).values);
+   assertEquals(['Anthony', 'Allen', 'Allen, Anthony'], $tds.rows->at(2).values);
+   assertEquals(['Fabrice', 'Roberts', 'Roberts, Fabrice'], $tds.rows->at(3).values);
+   assertEquals(['Oliver', 'Hill', 'Hill, Oliver'], $tds.rows->at(4).values);
+   assertEquals(['David', 'Hugues', 'Hugues, David'], $tds.rows->at(5).values);
+   assertEquals('select substring("root".FULLNAME, 0, position(\',\', "root".FULLNAME)-1) as "firstName", substring("root".FULLNAME, (position(\',\', "root".FULLNAME) + 2)) as "lastName", concat(substring("root".FULLNAME, (position(\',\', "root".FULLNAME) + 2)), \', \', substring("root".FULLNAME, 0, position(\',\', "root".FULLNAME)-1)) as "fullName" from personTable as "root"', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::propertyfunc::simple::testSimplePropertyFuncQuery():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p|$p.firstName == 'John'), meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let res = $result.values->at(0);
+   assertEquals('John',$res.firstName);
+   assertEquals('Johnson',$res.lastName);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::propertyfunc::simple::testSimplePropertyFuncGetAll():Boolean[1]
+{
+   let result = execute(|Person.all(), meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let res = $result.values;
+   assertEquals(6, $res->size());
+   assertEquals(['Peter', 'Smith'], [$res->at(0).firstName, $res->at(0).lastName]);
+   assertEquals(['John', 'Johnson'], [$res->at(1).firstName, $res->at(1).lastName]);
+   assertEquals(['Anthony', 'Allen'], [$res->at(2).firstName, $res->at(2).lastName]);
+   assertEquals(['Fabrice', 'Roberts'], [$res->at(3).firstName, $res->at(3).lastName]);
+   assertEquals(['Oliver', 'Hill'], [$res->at(4).firstName, $res->at(4).lastName]);
+   assertEquals(['David', 'Hugues'], [$res->at(5).firstName, $res->at(5).lastName]);
+   assertEquals('select "root".ID as "pk_0", substring("root".FULLNAME, 0, position(\',\', "root".FULLNAME)-1) as "firstName", "root".FULLNAME as "displayName", substring("root".FULLNAME, (position(\',\', "root".FULLNAME) + 2)) as "lastName" from personTable as "root"', $result->sqlRemoveFormatting());
+}
+
+
+function <<test.Test>> meta::relational::tests::mapping::propertyfunc::withjoin::testSimplePropertyFuncProjectWithJoin():Boolean[1]
+{
+   let result = execute(|Person.all()->project([#/Person/firstName#, #/Person/lastName#, #/Person/fullName#]), meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMappingWithJoin, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let tds = $result.values->at(0);
+   assertEquals(6, $tds.rows->size());
+   assertEquals(['Peter', 'Smith_p1', 'Smith_p1, Peter'], $tds.rows->at(0).values);
+   assertEquals(['John', 'Johnson_p2', 'Johnson_p2, John'], $tds.rows->at(1).values);
+   assertEquals(['Anthony', 'Allen_p3', 'Allen_p3, Anthony'], $tds.rows->at(2).values);
+   assertEquals(['Fabrice', 'Roberts_p4', 'Roberts_p4, Fabrice'], $tds.rows->at(3).values);
+   assertEquals(['Oliver', 'Hill_p5', 'Hill_p5, Oliver'], $tds.rows->at(4).values);
+   assertEquals(['David', 'Hugues_p6', 'Hugues_p6, David'], $tds.rows->at(5).values);
+   assertEquals('select substring("root".FULLNAME, 0, position(\',\', concat("root".FULLNAME, "persontableextension_0".FULLNAME_PART2))-1) as "firstName", substring(concat("root".FULLNAME, "persontableextension_0".FULLNAME_PART2), (position(\',\', concat("root".FULLNAME, "persontableextension_0".FULLNAME_PART2)) + 2)) as "lastName", concat(substring(concat("root".FULLNAME, "persontableextension_0".FULLNAME_PART2), (position(\',\', concat("root".FULLNAME, "persontableextension_0".FULLNAME_PART2)) + 2)), \', \', substring("root".FULLNAME, 0, position(\',\', concat("root".FULLNAME, "persontableextension_0".FULLNAME_PART2))-1)) as "fullName" from personTable as "root" left outer join personTableExtension as "persontableextension_0" on ("root".ID = "persontableextension_0".ID)', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::propertyfunc::withjoin::testSimplePropertyFuncQueryWithJoin():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p|$p.lastName == 'Roberts_p4'), meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMappingWithJoin, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let res = $result.values;
+   assertEquals(['Fabrice', 'Roberts_p4', 'Roberts_p4, Fabrice'], [$res->at(0).firstName, $res->at(0).lastName, $res->at(0).fullName]);
+   assertEquals('select "root".ID as "pk_0", substring("root".FULLNAME, 0, position(\',\', concat("root".FULLNAME, "persontableextension_0".FULLNAME_PART2))-1) as "firstName", "root".FULLNAME as "displayName", substring(concat("root".FULLNAME, "persontableextension_0".FULLNAME_PART2), (position(\',\', concat("root".FULLNAME, "persontableextension_0".FULLNAME_PART2)) + 2)) as "lastName" from personTable as "root" left outer join personTableExtension as "persontableextension_0" on ("root".ID = "persontableextension_0".ID) where substring(concat("root".FULLNAME, "persontableextension_0".FULLNAME_PART2), (position(\',\', concat("root".FULLNAME, "persontableextension_0".FULLNAME_PART2)) + 2)) = \'Roberts_p4\'', $result->sqlRemoveFormatting());
+} 
+
+function <<test.Test>> meta::relational::tests::mapping::propertyfunc::withjoin::testSimplePropertyFuncGetAllWithJoin():Boolean[1]
+{
+   let result = execute(|Person.all(), meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMappingWithJoin, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let res = $result.values;
+   assertEquals(['Peter', 'Smith_p1', 'Smith_p1, Peter'], [$res->at(0).firstName, $res->at(0).lastName, $res->at(0).fullName]);
+   assertEquals(['John', 'Johnson_p2', 'Johnson_p2, John'], [$res->at(1).firstName, $res->at(1).lastName, $res->at(1).fullName]);
+   assertEquals(['Anthony', 'Allen_p3', 'Allen_p3, Anthony'], [$res->at(2).firstName, $res->at(2).lastName, $res->at(2).fullName]);
+   assertEquals(['Fabrice', 'Roberts_p4', 'Roberts_p4, Fabrice'], [$res->at(3).firstName, $res->at(3).lastName, $res->at(3).fullName]);
+   assertEquals(['Oliver', 'Hill_p5', 'Hill_p5, Oliver'], [$res->at(4).firstName, $res->at(4).lastName, $res->at(4).fullName]);
+   assertEquals(['David', 'Hugues_p6', 'Hugues_p6, David'], [$res->at(5).firstName, $res->at(5).lastName, $res->at(5).fullName]);
+}
+
+
+function <<test.BeforePackage>> meta::relational::tests::mapping::propertyfunc::setUp():Boolean[1]
+{
+    createTablesAndFillDb();
+    true;
+}
+
+
+function meta::relational::tests::mapping::propertyfunc::model::store::testDataTypeMappingRuntime():Runtime[1]
+{
+   meta::relational::tests::testRuntime(myDB);
+}
+
+
+
+
+function meta::relational::tests::mapping::propertyfunc::model::store::createTablesAndFillDb():Boolean[1]
+{
+   let connection = testDataTypeMappingRuntime().connectionByElement(myDB)->cast(@TestDatabaseConnection);
+
+   executeInDb('Drop table if exists personTable;', $connection);
+   executeInDb('Create Table personTable(id INT, FULLNAME VARCHAR(200));', $connection);
+   executeInDb('insert into personTable (id, FULLNAME) values (1, \'Peter, Smith\');', $connection);
+   executeInDb('insert into personTable (id, FULLNAME) values (2, \'John, Johnson\');', $connection);
+   executeInDb('insert into personTable (id, FULLNAME) values (3, \'Anthony, Allen\');', $connection);
+   executeInDb('insert into personTable (id, FULLNAME) values (4, \'Fabrice, Roberts\');', $connection);
+   executeInDb('insert into personTable (id, FULLNAME) values (5, \'Oliver, Hill\');', $connection);
+   executeInDb('insert into personTable (id, FULLNAME) values (6, \'David, Hugues\');', $connection);
+
+   executeInDb('Drop table if exists personTableExtension;', $connection);
+   executeInDb('Create Table personTableExtension(id INT, FULLNAME_PART2 VARCHAR(200));', $connection);
+   executeInDb('insert into personTableExtension (id, FULLNAME_PART2) values (1, \'_p1\');', $connection);
+   executeInDb('insert into personTableExtension (id, FULLNAME_PART2) values (2, \'_p2\');', $connection);
+   executeInDb('insert into personTableExtension (id, FULLNAME_PART2) values (3, \'_p3\');', $connection);
+   executeInDb('insert into personTableExtension (id, FULLNAME_PART2) values (4, \'_p4\');', $connection);
+   executeInDb('insert into personTableExtension (id, FULLNAME_PART2) values (5, \'_p5\');', $connection);
+   executeInDb('insert into personTableExtension (id, FULLNAME_PART2) values (6, \'_p6\');', $connection);
+   true;
+}
+
+
+
+Class meta::relational::tests::mapping::propertyfunc::model::domain::Person
+{
+    fullName(){$this.lastName+', '+$this.firstName}:String[1];
+    firstName : String[1];
+    lastName: String[1];
+    displayName : String[1];
+}
+
+
+###Relational
+
+Database meta::relational::tests::mapping::propertyfunc::model::store::myDB
+(
+    Table personTable (ID INT PRIMARY KEY, FULLNAME VARCHAR(200))
+    Table personTableExtension (ID INT PRIMARY KEY, FULLNAME_PART2 VARCHAR(200))
+    Join personExtension (personTable.ID = personTableExtension.ID)
+)
+
+###Mapping
+import meta::relational::tests::mapping::propertyfunc::model::domain::*;
+import meta::relational::tests::mapping::propertyfunc::model::store::*;
+
+Mapping meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMapping
+(
+   Person : Relational
+            {
+               scope([myDB]default.personTable)
+               (
+                  firstName : substring(FULLNAME, 0, sub(position(',', FULLNAME), 1)),
+                  displayName : FULLNAME 
+               )
+               ,
+               lastName : substring([myDB]default.personTable.FULLNAME, add(position(',', [myDB]default.personTable.FULLNAME),2))
+            }
+)
+
+
+###Mapping
+import meta::relational::tests::mapping::propertyfunc::model::domain::*;
+import meta::relational::tests::mapping::propertyfunc::model::store::*;
+
+Mapping meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMappingWithJoin
+(
+   Person : Relational
+            {
+               scope([myDB]default.personTable)
+               (
+                  firstName : substring(FULLNAME, 0, sub(position(',', concat(FULLNAME, @personExtension|personTableExtension.FULLNAME_PART2)),1)),
+                  displayName : FULLNAME 
+               )
+               ,
+               lastName : substring(
+                                 concat(
+                                             [myDB]default.personTable.FULLNAME,
+                                             [myDB]@personExtension|personTableExtension.FULLNAME_PART2
+                                 ),
+                                 add(
+                                       position(
+                                          ',',
+                                          concat(
+                                             [myDB]default.personTable.FULLNAME,
+                                             [myDB]@personExtension|personTableExtension.FULLNAME_PART2
+                                          )
+                                       ),
+                                       2
+                                 )
+                          )
+            }
+)

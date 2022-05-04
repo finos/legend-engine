@@ -1,0 +1,304 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::tests::model::simple::*;
+import meta::pure::executionPlan::profiles::*;
+import meta::relational::mapping::*;
+import meta::relational::tests::*;
+
+function <<test.Test>> meta::relational::tests::query::filter::in::testIn():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p|$p.firstName->in(['John', 'Peter'])), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 3);
+   assertSameElements(['Johnson', 'Hill', 'Smith'], $result.values->map(p|$p.lastName));
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME in (\'John\', \'Peter\')', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::query::filter::in::testContains():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p|['John', 'Peter']->contains($p.firstName)), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 3);
+   assertSameElements(['Johnson', 'Hill', 'Smith'], $result.values->map(p|$p.lastName));
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME in (\'John\', \'Peter\')', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::query::filter::in::testDeepIn():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p|$p.firm.address.name->toOne()->in(['New York', 'Tokyo'])), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 8);
+   assertSameElements(['Allen', 'Hill', 'Smith', 'Johnson', 'New York', 'Firm B', 'Hill', 'York'], $result.values->map(p|$p.lastName));
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "firmtable_0".ADDRESSID) where "addresstable_0".NAME in (\'New York\', \'Tokyo\')', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::query::filter::in::testDeepContains():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p|['New York', 'Tokyo']->contains($p.firm.address.name->toOne())), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 8);
+   assertSameElements(['Allen', 'Hill', 'Smith', 'Johnson', 'New York', 'Firm B', 'Hill', 'York'], $result.values->map(p|$p.lastName));
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "firmtable_0".ADDRESSID) where "addresstable_0".NAME in (\'New York\', \'Tokyo\')', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::query::filter::in::testInWithOneValue():Boolean[1]
+{
+   let names = ['John']->cast(@Any);
+   let result = execute(|Person.all()->filter(p|$p.firstName->in($names)), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 2);
+   assertSameElements(['Johnson', 'Hill'], $result.values->map(p|$p.lastName));
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME = \'John\'', $result->sqlRemoveFormatting());
+}
+
+// Alloy exclusion reason: 7. Primitive type casting
+function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::query::filter::in::testContainsWithOneValue():Boolean[1]
+{
+   let names = ['John']->cast(@Any);
+   let result = execute(|Person.all()->filter(p|$names->contains($p.firstName)), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 2);
+   assertSameElements(['Johnson', 'Hill'], $result.values->map(p|$p.lastName));
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME = \'John\'', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::query::filter::in::testInWithVariables():Boolean[1]
+{
+   let john = 'John';
+   let result = execute(|Person.all()->filter(p|$p.firstName->in([$john, 'Peter'])), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 3);
+   assertSameElements(['Johnson', 'Hill', 'Smith'], $result.values->map(p|$p.lastName));
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME in (\'John\', \'Peter\')', $result->sqlRemoveFormatting());
+}
+
+function <<access.private>> meta::relational::tests::query::filter::in::getNames():String[*]
+{
+   ['John', 'Peter']
+}
+
+function <<test.Test>> meta::relational::tests::query::filter::in::testInWithFunction():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p|$p.firstName->in(meta::relational::tests::query::filter::in::getNames())), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 3);
+   assertSameElements(['Johnson', 'Hill', 'Smith'], $result.values->map(p|$p.lastName));
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME in (\'John\', \'Peter\')', $result->sqlRemoveFormatting());
+}
+
+
+function <<test.Test>> meta::relational::tests::query::filter::in::testInWithJoinStrings():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p|in($p.firstName + '_' + $p.lastName, ['John_Johnson', 'Peter_Smith'])), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 2);
+   assertSameElements(['Johnson', 'Smith'], $result.values->map(p|$p.lastName));
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where concat("root".FIRSTNAME, \'_\', "root".LASTNAME) in (\'John_Johnson\', \'Peter_Smith\')', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::query::filter::in::testContainsWithVariables():Boolean[1]
+{
+   let john = 'John';
+   let result = execute(|Person.all()->filter(p|[$john, 'Peter']->contains($p.firstName)), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 3);
+   assertSameElements(['Johnson', 'Hill', 'Smith'], $result.values->map(p|$p.lastName));
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME in (\'John\', \'Peter\')', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::query::filter::in::testInWithListVariable():Boolean[1]
+{
+   let names = ['John', 'Peter'];
+   let result = execute(|Person.all()->filter(p|$p.firstName->in($names)), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 3);
+   assertSameElements(['Johnson', 'Hill', 'Smith'], $result.values->map(p|$p.lastName));
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME in (\'John\', \'Peter\')', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::query::filter::in::testContainsWithListVariable():Boolean[1]
+{
+   let names = ['John', 'Peter'];
+   let result = execute(|Person.all()->filter(p|$names->contains($p.firstName)), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 3);
+   assertSameElements(['Johnson', 'Hill', 'Smith'], $result.values->map(p|$p.lastName));
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME in (\'John\', \'Peter\')', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::query::filter::in::testNotIn():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p|!$p.firstName->in(['John', 'Peter'])), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 9);
+   assertSameElements(['Allen', 'Hill', 'Harris', 'New York', 'Firm B', 'Roberts', 'Smith', 'York', 'no Firm'], $result.values->map(p|$p.lastName));
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where ("root".FIRSTNAME not in (\'John\', \'Peter\') OR "root".FIRSTNAME is null)', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::query::filter::in::testNotContains():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p|!['John', 'Peter']->contains($p.firstName)), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 9);
+   assertSameElements(['Allen', 'Hill', 'Harris', 'New York', 'Firm B', 'Roberts', 'Smith', 'York', 'no Firm'], $result.values->map(p|$p.lastName));
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where ("root".FIRSTNAME not in (\'John\', \'Peter\') OR "root".FIRSTNAME is null)', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::query::filter::in::testContainsOnToManyProperty():Boolean[1]
+{
+   let result = execute(|Firm.all()->filter(f|$f.employees.firstName->contains('John')), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 1);
+   assertEquals('Firm X', $result.values->toOne().legalName);
+   assertEquals('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" where exists(select 1 from personTable as "persontable_0" where "persontable_0".FIRSTNAME = \'John\' and "root".ID = "persontable_0".FIRMID)', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::query::filter::in::testContainsOnToOneProperty():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p|'Peter'->in($p.firstName)), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 1);
+   assertEquals('Peter', $result.values->toOne().firstName);
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME = \'Peter\'', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::query::filter::in::testInWithMultiplicityZeroToOne():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p|$p.age->in([10, 20])), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 0);
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where "root".AGE in (10, 20)', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::query::filter::in::testInWithNegativeNumbers():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p|$p.age->in([10, 20, -5])), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 0);
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where "root".AGE in (10, 20, -5)', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::query::filter::in::testConsistencyWithNulls():Boolean[1]
+{
+   let allResult = execute(|Address.all(), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   println($allResult->size());
+
+   let inResult = execute(|Address.all()->filter(a | $a.street->in(['Infinite Loop', 'West Street'])), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   let inResult2 = execute(|Address.all(), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->filter(a | $a.street->in(['Infinite Loop', 'West Street']));
+
+   assertEquals($inResult->size(), $inResult2->size());
+
+   let notInResult = execute(|Address.all()->filter(a | !$a.street->in(['Infinite Loop', 'West Street'])), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   let notInResult2 = execute(|Address.all(), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->filter(a | !$a.street->in(['Infinite Loop', 'West Street']));
+
+   assertEquals($notInResult->size(), $notInResult2->size());
+
+   assertEquals($inResult->size() + $notInResult->size(), $allResult->size());
+   assertEquals($inResult2->size() + $notInResult2->size(), $allResult->size());
+}
+
+// Alloy exclusion reason: 4. Use getter relational protocol
+function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::query::filter::in::testConsistencyWithNullsInJoin():Boolean[1]
+{
+   let allResult = execute(|Person.all(), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   println($allResult->size());
+
+   let eqResult = execute(|Person.all()->filter(a | $a.manager.lastName->in(['Johnson'])), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   let eqResult2 = execute(|Person.all(), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->filter(a | $a.manager->isNotEmpty() && $a.manager.lastName->in(['Johnson']));
+
+   assertEquals($eqResult->size(), $eqResult2->size());
+
+   let notEqResult = execute(|Person.all()->filter(a | !$a.manager.lastName->in(['Johnson'])), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   let notEqResult2 = execute(|Person.all(), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->filter(a | ($a.manager->isEmpty() || !$a.manager.lastName->in(['Johnson'])));
+
+   assertEquals($notEqResult->size(), $notEqResult2->size());
+
+   assertEquals($allResult->size(), $eqResult->size() + $notEqResult->size());
+   assertEquals($allResult->size(), $eqResult2->size() + $notEqResult2->size());
+}
+
+function <<test.Test>> meta::relational::tests::query::filter::in::testContainsEscapePercentage():Boolean[1]
+{
+   let tds = execute(
+      |Address.all()
+         ->filter(a|$a.comments->contains('%'))
+         ->project([a|$a.name, a|$a.street, a|$a.comments],
+                   ['name',    'street',    'comments'   ]),
+      simpleRelationalMappingInc,
+      testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   assertSize($tds.rows, 1);
+
+   assertEquals('Hoboken|TDSNull|A comment with a % in the middle',
+      $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));   
+}
+
+function <<test.Test>> meta::relational::tests::query::filter::in::testContainsEscapeUnderscore():Boolean[1]
+{     
+   let tds = execute(
+      |Address.all()
+         ->filter(a|$a.comments->contains('_'))
+         ->project([a|$a.name, a|$a.street, a|$a.comments], 
+                   ['name',    'street',    'comments'   ]),
+      simpleRelationalMappingInc, 
+      testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   
+   assertSize($tds.rows, 1);   
+
+   assertEquals('New York|TDSNull|A comment with a _ in the middle',
+      $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
+}
+
+function <<test.Test>> meta::relational::tests::query::filter::in::testInWithinQualifiedPropertyCollectionAsLiteralList():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(a | $a.firm.isFirmXGroup->toOne()), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where "firmtable_0".LEGALNAME in (\'Firm X\', \'Firm X & Co.\', \'Firm X and Group\')', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start = 'v1_13_0'} meta::relational::tests::query::filter::in::tempTable::testInExecutionWithTempTableForStrings():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p|$p.firstName->in(['John', 'Peter', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '33', '34', '35', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45', '46', '47', '48', '49', '50']))
+                                     ->project([x | $x.lastName], ['lastName']),
+                        simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values->cast(@TabularDataSet).rows, 3);
+   assertSameElements(['Smith', 'Johnson', 'Hill'], $result.values->cast(@TabularDataSet).rows.getString('lastName')->sort());
+   assertEquals('select "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME in (select "temptableforin_4_0".ColumnForStoringInCollection as ColumnForStoringInCollection from tempTableForIn_4 as "temptableforin_4_0")', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start = 'v1_13_0'} meta::relational::tests::query::filter::in::tempTable::testInExecutionWithTempTableForNumbers():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p|$p.age->in([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51]))
+                                     ->project([x | $x.name], ['fullName']),
+                        simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values->cast(@TabularDataSet).rows, 12);
+   assertSameElements(['Anthony Allen', 'David Harris', 'Don New York', 'Elena Firm B', 'Fabrice Roberts', 'John Johnson', 'John Hill', 'New York', 'No address Smith', 'No firm no Firm', 'Oliver Hill', 'Peter Smith'], $result.values->cast(@TabularDataSet).rows.getString('fullName')->sort());
+   assertEquals('select concat("root".FIRSTNAME, \' \', "root".LASTNAME) as "fullName" from personTable as "root" where "root".AGE in (select "temptableforin_8_0".ColumnForStoringInCollection as ColumnForStoringInCollection from tempTableForIn_8 as "temptableforin_8_0")', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start = 'v1_13_0'} meta::relational::tests::query::filter::in::tempTable::testInExecutionWithTempTableForDates():Boolean[1]
+{
+   let result = execute(|Trade.all()->filter(t|$t.date->in([%2014-12-01, %2014-12-02, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10]))
+                                     ->project([x | $x.id], ['TradeId']),
+                        simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values->cast(@TabularDataSet).rows, 5);
+   assertSameElements([1, 2, 3, 4, 5], $result.values->cast(@TabularDataSet).rows.getNumber('TradeId')->sort());
+   assertEquals('select "root".ID as "TradeId" from tradeTable as "root" where "root".tradeDate in (select "temptableforin_4_0".ColumnForStoringInCollection as ColumnForStoringInCollection from tempTableForIn_4 as "temptableforin_4_0")', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start = 'v1_13_0'} meta::relational::tests::query::filter::in::tempTable::testInExecutionWithTempTableForDateTimes():Boolean[1]
+{
+   let result = execute(|Trade.all()->filter(t|$t.settlementDateTime->in([%2014-12-02T21:00:00, %2014-12-03T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00]))
+                                     ->project([x | $x.id], ['TradeId']),
+                        simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values->cast(@TabularDataSet).rows, 5);
+   assertSameElements([1, 2, 3, 4, 5], $result.values->cast(@TabularDataSet).rows.getNumber('TradeId')->sort());
+   assertEquals('select "root".ID as "TradeId" from tradeTable as "root" where "root".settlementDateTime in (select "temptableforin_4_0".ColumnForStoringInCollection as ColumnForStoringInCollection from tempTableForIn_4 as "temptableforin_4_0")', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start = 'v1_13_0'} meta::relational::tests::query::filter::in::tempTable::testInExecutionWithTempTableForDateTimesWithTz():Boolean[1]
+{
+   let result = execute(|Trade.all()->filter(t|$t.settlementDateTime->in([%2014-12-03T4:00:00, %2014-12-04T04:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00]))
+                                     ->project([x | $x.id], ['TradeId']),
+                        simpleRelationalMapping, testRuntime('US/Arizona'), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values->cast(@TabularDataSet).rows, 5);
+   assertSameElements([1, 2, 3, 4, 5], $result.values->cast(@TabularDataSet).rows.getNumber('TradeId')->sort());
+   assertEquals('select "root".ID as "TradeId" from tradeTable as "root" where "root".settlementDateTime in (select "temptableforin_4_0".ColumnForStoringInCollection as ColumnForStoringInCollection from tempTableForIn_4 as "temptableforin_4_0")', $result->sqlRemoveFormatting());
+}

@@ -1,0 +1,38 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::mapping::*;
+import meta::relational::mapping::*;
+
+function meta::relational::functions::asserts::assertSameSQL(sqlString:String[1],result:Result<Any|*>[1]):Boolean[1]
+{
+  assertEquals($sqlString, $result->sqlRemoveFormatting());
+}
+
+function meta::relational::functions::asserts::assertSameSQL(sqlString:String[1],result:String[1]):Boolean[1]
+{
+  assertEquals($sqlString, $result);
+}
+
+
+function meta::relational::functions::asserts::sqlContains(subString:String[1],result:Result<Any|*>[1]):Boolean[1]
+{
+  let sql = $result->sqlRemoveFormatting() ;
+   assert($sql->contains($subString), | $sql + ' does not contain ' + $subString);
+}
+
+function meta::relational::functions::asserts::sqlContains(subString:String[1],result:String[1]):Boolean[1]
+{
+  assert($result->contains($subString), | $result + ' does not contain ' + $subString);
+}

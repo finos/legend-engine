@@ -1,0 +1,271 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::relational::tests::mapping::union::partialForeignKeyUsage::model::*;
+
+Class meta::relational::tests::mapping::union::partialForeignKeyUsage::model::A
+{
+   pk  : Integer[1];
+   fk1 : Integer[1];
+   fk2 : Integer[1];
+}
+
+Class meta::relational::tests::mapping::union::partialForeignKeyUsage::model::B
+{
+   pk  : Integer[1];
+   fk1 : Integer[1];
+   fk2 : Integer[1];
+}
+
+Class meta::relational::tests::mapping::union::partialForeignKeyUsage::model::C
+{
+   pk  : Integer[1];
+   fk1 : Integer[1];
+   fk2 : Integer[1];
+}
+
+Class meta::relational::tests::mapping::union::partialForeignKeyUsage::model::D
+{
+   pk  : Integer[1];
+   fk1 : Integer[1];
+   fk2 : Integer[1];
+}
+
+Association meta::relational::tests::mapping::union::partialForeignKeyUsage::model::AB
+{
+   a : A[*];
+   b : B[*];
+}
+
+Association meta::relational::tests::mapping::union::partialForeignKeyUsage::model::BC
+{
+   b : B[*];
+   c : C[*];
+}
+
+Association meta::relational::tests::mapping::union::partialForeignKeyUsage::model::CD
+{
+   c : C[*];
+   d : D[*];
+}
+
+###Relational
+Database meta::relational::tests::mapping::union::partialForeignKeyUsage::store::relationalStore
+(
+   Table A1(pk INTEGER PRIMARY KEY, fk1 INTEGER, fk2 INTEGER)
+   Table B1(pk INTEGER PRIMARY KEY, fk1 INTEGER, fk2 INTEGER)
+   Table C1(pk INTEGER PRIMARY KEY, fk1 INTEGER, fk2 INTEGER)
+   Table D1(pk INTEGER PRIMARY KEY, fk1 INTEGER, fk2 INTEGER)
+   
+   Table A2(pk INTEGER PRIMARY KEY, fk1 INTEGER, fk2 INTEGER)
+   Table B2(pk INTEGER PRIMARY KEY, fk1 INTEGER, fk2 INTEGER)
+   Table C2(pk INTEGER PRIMARY KEY, fk1 INTEGER, fk2 INTEGER)
+   Table D2(pk INTEGER PRIMARY KEY, fk1 INTEGER, fk2 INTEGER)
+   
+   Join A1_B1(A1.fk1 = B1.fk1)
+   Join A2_B2(A2.fk1 = B2.fk1 or A2.fk2 = B2.fk2)
+   Join B1_C1(B1.fk1 = C1.fk1 or B1.fk2 = C1.fk2)
+   Join B2_C2(B2.fk1 = C2.fk1 or B2.fk2 = C2.fk2)
+   Join C1_D1(C1.fk1 = D1.fk1)
+   Join C2_D2(C2.fk1 = D2.fk1 or C2.fk2 = D2.fk2)
+)
+
+###Mapping
+import meta::relational::tests::mapping::union::partialForeignKeyUsage::model::*;
+import meta::relational::tests::mapping::union::partialForeignKeyUsage::store::*;
+
+Mapping meta::relational::tests::mapping::union::partialForeignKeyUsage::mapping::relationalMapping
+(  
+   *A : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(a1, a2)
+   }
+   
+   *B : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(b1, b2)
+   }
+   
+   *C : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(c1, c2)
+   }
+   
+   *D : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(d1, d2)
+   }
+ 
+   A[a1] : Relational
+   {
+      pk  : [relationalStore]A1.pk,
+      fk1 : [relationalStore]A1.fk1,
+      fk2 : [relationalStore]A1.fk2
+   }
+   
+   A[a2] : Relational
+   {
+      pk  : [relationalStore]A2.pk,
+      fk1 : [relationalStore]A2.fk1,
+      fk2 : [relationalStore]A2.fk2
+   }
+      
+   B[b1] : Relational
+   {
+      pk  : [relationalStore]B1.pk,
+      fk1 : [relationalStore]B1.fk1,
+      fk2 : [relationalStore]B1.fk2
+   }      
+   
+   B[b2] : Relational
+   {
+      pk  : [relationalStore]B2.pk,
+      fk1 : [relationalStore]B2.fk1,
+      fk2 : [relationalStore]B2.fk2
+   }
+   
+   C[c1] : Relational
+   {
+      pk  : [relationalStore]C1.pk,
+      fk1 : [relationalStore]C1.fk1,
+      fk2 : [relationalStore]C1.fk2
+   }   
+      
+   C[c2] : Relational
+   {
+      pk  : [relationalStore]C2.pk,
+      fk1 : [relationalStore]C2.fk1,
+      fk2 : [relationalStore]C2.fk2
+   }
+   
+   D[d1] : Relational
+   {
+      pk  : [relationalStore]D1.pk,
+      fk1 : [relationalStore]D1.fk1,
+      fk2 : [relationalStore]D1.fk2
+   }   
+      
+   D[d2] : Relational
+   {
+      pk  : [relationalStore]D2.pk,
+      fk1 : [relationalStore]D2.fk1,
+      fk2 : [relationalStore]D2.fk2
+   }
+   
+   AB : Relational
+   {
+      AssociationMapping
+      (
+         a[b1, a1] : [relationalStore]@A1_B1,
+         b[a1, b1] : [relationalStore]@A1_B1,
+         
+         a[b2, a2] : [relationalStore]@A2_B2,
+         b[a2, b2] : [relationalStore]@A2_B2   
+      )
+   }
+   
+   BC : Relational
+   {
+      AssociationMapping
+      (
+         b[c1, b1] : [relationalStore]@B1_C1,
+         c[b1, c1] : [relationalStore]@B1_C1,
+         
+         b[c2, b2] : [relationalStore]@B2_C2,
+         c[b2, c2] : [relationalStore]@B2_C2
+      )
+   }
+   
+   CD : Relational
+   {
+      AssociationMapping
+      (
+         c[d1, c1] : [relationalStore]@C1_D1,
+         d[c1, d1] : [relationalStore]@C1_D1,
+         
+         c[d2, c2] : [relationalStore]@C2_D2,
+         d[c2, d2] : [relationalStore]@C2_D2
+      )
+   }
+)
+
+###Pure
+import meta::relational::metamodel::execute::*;
+import meta::relational::tests::mapping::union::partialForeignKeyUsage::store::*;
+import meta::relational::runtime::*;
+import meta::pure::runtime::*;
+
+function <<test.BeforePackage>> meta::relational::tests::mapping::union::partialForeignKeyUsage::initDatabase():Runtime[1]
+{
+   let connection = meta::relational::tests::testRuntime(relationalStore).connections->toOne()->cast(@TestDatabaseConnection);
+  
+   executeInDb('drop table if exists A1;', $connection);
+   executeInDb('create table A1 (pk INTEGER PRIMARY KEY, fk1 INTEGER, fk2 INTEGER)', $connection);
+   executeInDb('insert into A1 values(101, 1, 11);', $connection);
+   
+   executeInDb('drop table if exists A2;', $connection);
+   executeInDb('create table A2 (pk INTEGER PRIMARY KEY, fk1 INTEGER, fk2 INTEGER)', $connection);
+   executeInDb('insert into A2 values(202, 2, 22);', $connection);
+   
+   executeInDb('drop table if exists B1;', $connection);
+   executeInDb('create table B1 (pk INTEGER PRIMARY KEY, fk1 INTEGER, fk2 INTEGER)', $connection);
+   executeInDb('insert into B1 values(101, 1, 11);', $connection);
+   
+   executeInDb('drop table if exists B2;', $connection);
+   executeInDb('create table B2 (pk INTEGER PRIMARY KEY, fk1 INTEGER, fk2 INTEGER)', $connection);
+   executeInDb('insert into B2 values(202, 2, 22);', $connection);
+   
+   executeInDb('drop table if exists C1;', $connection);
+   executeInDb('create table C1 (pk INTEGER PRIMARY KEY, fk1 INTEGER, fk2 INTEGER)', $connection);
+   executeInDb('insert into C1 values(101, 1, 11);', $connection);
+   
+   executeInDb('drop table if exists C2;', $connection);
+   executeInDb('create table C2 (pk INTEGER PRIMARY KEY, fk1 INTEGER, fk2 INTEGER)', $connection);
+   executeInDb('insert into C2 values(202, 2, 22);', $connection);
+   
+   executeInDb('drop table if exists D1;', $connection);
+   executeInDb('create table D1 (pk INTEGER PRIMARY KEY, fk1 INTEGER, fk2 INTEGER)', $connection);
+   executeInDb('insert into D1 values(101, 1, 11);', $connection);
+   
+   executeInDb('drop table if exists D2;', $connection);
+   executeInDb('create table D2 (pk INTEGER PRIMARY KEY, fk1 INTEGER, fk2 INTEGER)', $connection);
+   executeInDb('insert into D2 values(202, 2, 22);', $connection);
+   
+   ^Runtime(connections=$connection);
+}
+
+###Pure
+import meta::relational::functions::asserts::*;
+import meta::relational::tests::mapping::union::partialForeignKeyUsage::model::*;
+import meta::relational::tests::mapping::union::partialForeignKeyUsage::mapping::*;
+import meta::relational::tests::*;
+
+function <<test.Test, test.ToFix>> meta::relational::tests::mapping::union::partialForeignKeyUsage::testUnionWithPartialForeignKeyUsage1():Any[*]
+{
+   let result = execute(|A.all()->project([a|$a.pk, a|$a.b.pk, a|$a.b.c.pk],['a_pk', 'b_pk', 'c_pk']), relationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('', $result);
+   assertEquals([], $result.values.rows.get('a_pk'));
+   assertEquals([], $result.values.rows.get('b_pk'));
+   assertEquals([], $result.values.rows.get('c_pk'));
+}
+
+function <<test.Test, test.ToFix>> meta::relational::tests::mapping::union::partialForeignKeyUsage::testUnionWithPartialForeignKeyUsage2():Any[*]
+{
+   let result = execute(|B.all()->project([b|$b.pk, b|$b.c.pk, b|$b.c.d.pk],['b_pk', 'c_pk', 'd_pk']), relationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('', $result);
+   assertEquals([], $result.values.rows.get('b_pk'));
+   assertEquals([], $result.values.rows.get('c_pk'));
+   assertEquals([], $result.values.rows.get('d_pk'));
+}

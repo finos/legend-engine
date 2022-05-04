@@ -1,0 +1,57 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::mapping::*;
+
+Class meta::relational::mapping::TableTDS extends TabularDataSetImplementation
+{
+  table:meta::relational::metamodel::relation::NamedRelation[1];
+}
+
+function meta::pure::tds::tableToTDS(table:meta::relational::metamodel::relation::Table[1]):meta::relational::mapping::TableTDS[1]
+{
+   ^meta::relational::mapping::TableTDS(
+      store = $table.schema.database,
+      table = $table,
+      columns = $table.columns->cast(@meta::relational::metamodel::Column)->map(column|let columnIndex = $table.columns->indexOf($column);
+                                                                                            $column->tableColumnToTdsColumn($columnIndex);)
+            );
+}
+
+function meta::pure::tds::viewToTDS(view:meta::relational::metamodel::relation::View[1]):meta::relational::mapping::TableTDS[1]
+{
+   ^meta::relational::mapping::TableTDS(
+      store = $view.schema.database,
+      table = $view,
+      columns = $view.columns->cast(@meta::relational::metamodel::Column)->map(column|let columnIndex = $view.columns->indexOf($column);
+                                                                                           $column->tableColumnToTdsColumn($columnIndex);)
+            );
+}
+
+function <<access.private>> meta::pure::tds::tableColumnToTdsColumn(column:meta::relational::metamodel::Column[1], index:Integer[1]):TDSColumn[1]
+{
+
+   ^TDSColumn(
+      name=$column.name,
+      offset=$index,
+      type = $column.type->toOne()->meta::relational::metamodel::datatype::dataTypeToCompatiblePureType()->cast(@meta::pure::metamodel::type::DataType)
+   );
+}
+
+function
+   {doc.doc = 'Project the specified calculated columns from the provided TDS.  This is similar to extend, but rather than adding the columns it replaces all of the existing ones '}
+   meta::pure::tds::project(tds:meta::relational::mapping::TableTDS[1], columnFunctions:ColumnSpecification<TDSRow>[*]):TabularDataSet[1]
+{
+   $tds->project($columnFunctions);
+}

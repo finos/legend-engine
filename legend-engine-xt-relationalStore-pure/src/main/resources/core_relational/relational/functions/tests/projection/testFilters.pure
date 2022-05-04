@@ -1,0 +1,91 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::tests::model::simple::*;
+import meta::relational::mapping::*;
+import meta::relational::tests::*;
+
+function <<test.Test>> meta::relational::tests::projection::filter::greaterThan::testGreaterThan():Boolean[1]
+{
+   let result = execute(|Trade.all()->filter(t|$t.quantity > 45)->project([#/Trade/quantity#]), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 1);
+   assertSameElements(320.0, $result.values.rows.values);
+   assertEquals('select "root".quantity as "quantity" from tradeTable as "root" where "root".quantity > 45', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::projection::filter::greaterThanEqual::testGreaterThanEqual():Boolean[1]
+{
+   let result = execute(|Trade.all()->filter(t|$t.quantity >= 45)->project([#/Trade/quantity#]), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 2);
+   assertSameElements([45.0, 320.0], $result.values.rows.values);
+   assertEquals('select "root".quantity as "quantity" from tradeTable as "root" where "root".quantity >= 45', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::projection::filter::greaterThan::testGreaterThanWithOptionalProperty():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p|$p.age > 30)->project([#/Person/firstName#, #/Person/age#]), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 3);
+   assertSameElements([32, 34, 35, 'David', 'Fabrice', 'Oliver'], $result.values.rows.values);
+   assertEquals('select "root".FIRSTNAME as "firstName", "root".AGE as "age" from personTable as "root" where ("root".AGE is not null and "root".AGE > 30)', $result->sqlRemoveFormatting());
+}
+
+
+function <<test.Test>> meta::relational::tests::projection::filter::isEmpty::testGreaterThanWithOptionalPropertyIsEmpty():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p|$p.age->isEmpty())->project([#/Person/firstName#, #/Person/age#]), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 0);
+   assertEquals('select "root".FIRSTNAME as "firstName", "root".AGE as "age" from personTable as "root" where "root".AGE is null', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::projection::filter::lessThan::testLessThan():Boolean[1]
+{
+   let result = execute(|Trade.all()->filter(t|$t.quantity < 45)->project([#/Trade/quantity#]), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 9);
+   assertEquals([25.0, 11.0, 23.0, 32.0, 27.0, 44.0, 22.0, 38.0, 5.0], $result.values.rows.values);
+   assertEquals('select "root".quantity as "quantity" from tradeTable as "root" where "root".quantity < 45', $result->sqlRemoveFormatting());
+}
+
+
+function <<test.Test>> meta::relational::tests::projection::filter::lessThan::testLessThanFilterAsVariable():Boolean[1]
+{
+   let filter = (t:Trade[1]|$t.quantity < 45);
+   let result = execute(|Trade.all()->filter($filter)->project([#/Trade/quantity#]), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 9);
+   assertEquals([25.0, 11.0, 23.0, 32.0, 27.0, 44.0, 22.0, 38.0, 5.0], $result.values.rows.values);
+   assertEquals('select "root".quantity as "quantity" from tradeTable as "root" where "root".quantity < 45', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::projection::filter::lessThanEqual::testLessThanEqual():Boolean[1]
+{
+   let result = execute(|Trade.all()->filter(t|$t.quantity <= 45)->project([#/Trade/quantity#]), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 10);
+   assertEquals([25.0, 11.0, 23.0, 32.0, 27.0, 44.0, 22.0, 45.0, 38.0, 5.0], $result.values.rows.values);
+   assertEquals('select "root".quantity as "quantity" from tradeTable as "root" where "root".quantity <= 45', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::projection::filter::isolation::testIsolationOfVariableNamesAccrossDifferentPaths():Boolean[1]
+{
+    let result = execute(|Firm.all()->project(e| if(false,|$e.employeeWithFirmAddressName().name,|$e.legalName),'name'), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let tds = $result.values->at(0);
+    assertEquals(['Firm X', 'Firm A', 'Firm B', 'Firm C'],$tds.rows->map(r|$r.values->makeString(',')));
+    assertEquals('select case when \'false\' then concat("firmtable_1".FIRSTNAME, \' \', "firmtable_1".LASTNAME) else "root".LEGALNAME end as "name" from firmTable as "root" left outer join (select "firmtable_2".ID as ID, "persontable_0".FIRSTNAME as FIRSTNAME, "persontable_0".LASTNAME as LASTNAME from firmTable as "firmtable_2" left outer join personTable as "persontable_0" on ("firmtable_2".ID = "persontable_0".FIRMID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "firmtable_2".ADDRESSID) where concat("persontable_0".FIRSTNAME, \' \', "persontable_0".LASTNAME) = "addresstable_0".NAME) as "firmtable_1" on ("root".ID = "firmtable_1".ID)', $result->sqlRemoveFormatting());  
+}
+
+function <<test.Test>> meta::relational::tests::projection::filter::isolation::testIsolatioWhereNoConstaintsAndInnerJoin():Boolean[1]
+{
+    let result = execute(|Firm.all()->project([f|$f.legalName, f|$f.address.name],['legalName','addressName']), meta::relational::tests::mapping::join::model::mapping::chainedJoinsInner, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let tds = $result.values->at(0);
+    assertEquals(['Firm X, UK', 'Firm X, Europe', 'Firm X, Europe', 'Firm X, Europe', 'Firm A, Europe', 'Firm B, Europe', 'Firm C, Europe'],$tds.rows->map(r|$r.values->makeString(', ')));
+    assertEquals('select "root".LEGALNAME as "legalName", case when ("firmpersonbridgetable_0".ADDRESSID = 1 or "addresstable_0".ID = 1) then \'UK\' else \'Europe\' end as "addressName" from firmTable as "root" left outer join (select "firmpersonbridgetable_1".FIRM_ID as FIRM_ID, "persontable_0".ADDRESSID as ADDRESSID from firmPersonBridgeTable as "firmpersonbridgetable_1" inner join personTable as "persontable_0" on ("persontable_0".ID = "firmpersonbridgetable_1".PERSON_ID)) as "firmpersonbridgetable_0" on ("root".ID = "firmpersonbridgetable_0".FIRM_ID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "root".ADDRESSID)', $result->sqlRemoveFormatting());  
+}

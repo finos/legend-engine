@@ -1,0 +1,682 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::dsb::domain::config::*;
+import meta::pure::router::extension::*;
+import meta::relational::metamodel::operation::*;
+import meta::relational::functions::pureToSqlQuery::*;
+import meta::pure::router::clustering::*;
+import meta::relational::functions::sqlQueryToString::*;
+import meta::relational::runtime::*;
+import meta::pure::runtime::*;
+import meta::pure::lineage::analytics::*;
+import meta::pure::functions::io::http::*;
+import meta::pure::milestoning::*;
+import meta::relational::metamodel::*;
+import meta::pure::router::routing::*;
+import meta::relational::metamodel::join::*;
+import meta::relational::mapping::*;
+import meta::pure::lineage::scanProperties::propertyTree::*;
+import meta::pure::lineage::scanProperties::*;
+import meta::relational::metamodel::relation::*;
+import meta::pure::mapping::*;
+import meta::pure::lineage::scanRelations::*;
+import meta::json::*;
+
+
+Class meta::pure::lineage::scanRelations::RelationTree
+{
+   relation : NamedRelation[0..1];
+   root : Boolean[0..1];
+   join : Join[0..1];
+   children : RelationTree[*];
+   nestedViewTree : RelationTree[0..1];
+   columns: Column[*];
+
+   isTable(){
+      $this.relation->isNotEmpty() && $this.relation->toOne()->instanceOf(Table);
+   }:Boolean[1];
+
+   table(){
+      $this.relation->toOne()->cast(@Table);
+   }:Table[1];
+
+   isView(){
+      $this.relation->isNotEmpty() && $this.relation->toOne()->instanceOf(View);
+   }:Boolean[1];
+
+   view(){
+      $this.relation->toOne()->cast(@View);
+   }:View[1];
+}
+
+
+function meta::pure::lineage::scanRelations::scanRelations(f:FunctionDefinition<Any>[1], m:Mapping[1], extensions:meta::pure::router::extension::RouterExtension[*]):RelationTree[1]
+{
+   scanRelations($f, $m, $extensions, noDebug());
+}
+
+function meta::pure::lineage::scanRelations::scanRelations(f:FunctionDefinition<Any>[1], m:Mapping[1], extensions:meta::pure::router::extension::RouterExtension[*], debug: meta::pure::tools::DebugContext[1]):RelationTree[1]
+{
+   print(if($debug.debug,|$debug.space+'Function: ' + $f->meta::pure::router::printer::asString() + ' \n',|''));
+   scanRelations($f.expressionSequence->evaluateAndDeactivate()->last()->toOne(), $f->openVariableValues(), $m, $extensions, $debug);
+}
+
+function meta::pure::lineage::scanRelations::scanRelations(v:ValueSpecification[1], o:Map<String, List<Any>>[1], m:Mapping[1], extensions:meta::pure::router::extension::RouterExtension[*], debug: meta::pure::tools::DebugContext[1]):RelationTree[1]
+{
+   let funcBody = $v->inlineQualifiedProperties(newMap([]->cast(@Pair<VariableExpression, ValueSpecification>), VariableExpression->classPropertyByName('name')->cast(@Property<VariableExpression,String|1>)), $o, $extensions);
+   print(if($debug.debug,|$debug.space+'Function Expression with inlined qualifiers: ' + $funcBody->meta::pure::router::printer::asString() + ' \n',|''));
+   let propertyTree = $funcBody->scanProperties(^List<PropertyPathNode>(), [], [], $debug).result->buildPropertyTree();
+   print(if($debug.debug,|$debug.space+'Property Tree: ' + $propertyTree->meta::pure::lineage::scanProperties::propertyTree::printTree('') + ' \n',|''));
+   let result = scanRelations($propertyTree->inlineQualifiedPropertyNodes(), $m, [], [], $debug)->toOne()->reOrderAndMergeRelationTree();
+   print(if($debug.debug,|$debug.space+'Table Tree: ' + $result->relationTreeAsString('') + ' \n',|''));
+   $result;
+}
+
+function meta::pure::lineage::scanRelations::scanRelations(p: PropertyPathTree[1], m:Mapping[1]):RelationTree[1]
+{
+   scanRelations($p->inlineQualifiedPropertyNodes(), $m, noDebug());
+}
+
+function <<access.private>> meta::pure::lineage::scanRelations::scanRelations(p: PropertyPathTree[1], m:Mapping[1], debug: meta::pure::tools::DebugContext[1]):RelationTree[1]
+{
+   let result = scanRelations($p, $m, [], [], $debug)->toOne()->reOrderAndMergeRelationTree();
+   print(if($debug.debug,|$debug.space+'Table Tree: ' + $result->relationTreeAsString('') + ' \n',|''));
+   $result;
+}
+
+function meta::pure::lineage::scanRelations::relationTreeAsString(t:RelationTree[1]):String[1]
+{
+   $t->relationTreeAsString('');
+}
+
+function meta::pure::lineage::scanRelations::relationTreeAsString(t:RelationTree[1], space:String[1]):String[1]
+{
+   $t->relationTreeAsString(true, $space);
+}
+
+function meta::pure::lineage::scanRelations::relationTreeAsString(t:RelationTree[1], withJoin:Boolean[1]):String[1]
+{
+   $t->relationTreeAsString($withJoin, '');
+}
+
+function meta::pure::lineage::scanRelations::relationTreeAsString(t:RelationTree[1], withJoin:Boolean[1], space:String[1]):String[1]
+{
+   plus(
+      [
+         $space,
+         if($t.relation->isEmpty() && $t.root->isNotEmpty(),
+            | 'root\n',
+            | if($t.relation->isNotEmpty() && $t.root->isEmpty(),
+                 | if($t.join->isNotEmpty() && $withJoin,
+                      | '------> ' + if($t.isTable(), | '(t) ' + $t.table.name, | '(v) ' + $t.view.name) + '(' + $t.join.name->toOne() + ')' + $t.columns->map(c | $c.name)->sort()->removeDuplicates()->joinStrings(' [', ', ', ']\n'),
+                      | '------> ' + if($t.isTable(), | '(t) ' + $t.table.name, | '(v) ' + $t.view.name) + $t.columns->map(c | $c.name)->sort()->removeDuplicates()->joinStrings(' [', ', ', ']\n')
+                   ),
+                 | fail('Print error'); '';
+              )
+         )->toOne(),
+         $t.children->concatenate($t.nestedViewTree)->map(c | $c->relationTreeAsString($withJoin, $space + '  '))->joinStrings('')
+      ]
+   )
+}
+
+function <<access.private>> meta::pure::lineage::scanRelations::scanRelations(p: PropertyPathTree[1], m:Mapping[1], source: RootRelationalInstanceSetImplementation[0..1], epm:EmbeddedRelationalInstanceSetImplementation[0..1], debug: meta::pure::tools::DebugContext[1]):RelationTree[*]
+{
+   $p.value->match([
+      pn : PropertyPathNode[1] |
+         $pn.property->match([
+            prop : Property<Nil,Any|*>[1] |
+               print(if($debug.debug,|$debug.space+'Process property: '+$prop.name->toOne()+', Source set: ' + if($epm->isNotEmpty(), |$epm, | $source).id->joinStrings('[', ', ', ']') + ' \n',|''));
+
+               let mainRelation = $source->toOne().mainRelation->toOne();
+               let propMappings = if($prop->hasGeneratedMilestoningDatePropertyStereotype(),
+                                     | [],
+                                     | if($epm->isNotEmpty(),
+                                          | if($epm.class->toOne()->_subTypeOf($pn.class),
+                                               | $epm->toOne()->propertyMappingsByPropertyName($prop.name->toOne()),
+                                               | []),
+                                          | if($source.class->toOne()->_subTypeOf($pn.class),
+                                               | $source->toOne().propertyMappingsByPropertyName($prop.name->toOne()),
+                                               | [])));
+
+               print(if($debug.debug,|$debug.space+'Found property mappings: '+ $propMappings->map(pm|$pm.sourceSetImplementationId + '->' + $pm.targetSetImplementationId)->joinStrings('[', ', ', ']') + ' \n',|''));
+
+               $propMappings->map(pm |
+                                  $pm->match([
+                                     rpm : RelationalPropertyMapping[1] |
+                                        let tt = $rpm.relationalOperationElement->getRelationTree($mainRelation);
+                                        if($p.children->isEmpty(),
+                                           | $tt,
+                                           | let singleTT = $tt->toOne();
+                                             let targetSet = $m.classMappingById($rpm.targetSetImplementationId)->cast(@RootRelationalInstanceSetImplementation);
+                                             let targetRelation = $targetSet.mainTableAlias.relationalElement->cast(@NamedRelation)->toOne();
+
+                                             let filterTree = $targetSet->toOne().resolveFilter().joinTreeNode->map(x|$x->getRelationTree($targetRelation, $targetSet->toOne().resolveFilter().filter.operation));
+                                             let filterColumns = $targetSet->toOne().resolveFilter().joinTreeNode->map(x|$x.join.operation->getRelationColumns($targetRelation))->concatenate($targetSet->toOne().resolveFilter().filter.operation->map(x|$x->getRelationColumns($targetRelation)));
+                                             let groupByTree = $targetSet->toOne().resolveGroupBy().columns->map(x | $x->getRelationTree($targetRelation));
+                                             let groupByColumns = $targetSet->toOne().resolveGroupBy().columns->map(x | $x->getRelationColumns($targetRelation));
+                                             let childrenTrees = $p.children->map(child | $child->scanRelations($m, $targetSet, [], ^$debug(space=$debug.space+'    ')));
+                                             let childrenColumns = $p.children->map(child | $child->scanRelationColumns($m, $targetRelation, $targetSet, []));
+                                             addAtBottomTreesAndColumns($singleTT, $filterTree->concatenate($groupByTree)->concatenate($childrenTrees), $filterColumns->concatenate($groupByColumns)->concatenate($childrenColumns));
+                                        );,
+                                     epm : EmbeddedRelationalInstanceSetImplementation[1] | $p.children->map(child | $child->scanRelations($m, $source, $epm, ^$debug(space=$debug.space+'    '))),
+                                     a: Any[*] | []
+                                  ]);
+               );,
+
+               qual : QualifiedProperty<Any>[1] | []
+         ]),
+
+      cl : Class<Any>[1] |
+         let finalSources = if($cl->isWithinPackage(meta::pure::tds) || $cl->isWithinPackage(meta::pure::mapping),
+                               | [],
+                               | if($source->isNotEmpty(),
+                                    | $source,
+                                    | $m.rootClassMappingByClass($cl)->toOne()->resolveOperation($m)->removeDuplicates({a,b|$a.id == $b.id})->filter(s | $s->instanceOf(RootRelationalInstanceSetImplementation))->cast(@RootRelationalInstanceSetImplementation);
+                                 );
+                            );
+         print(if($debug.debug,|$debug.space+'Process Class: '+$cl.name->toOne()+', Sets: '+$finalSources.id->joinStrings('[',',',']')+'\n',|''));
+         let results = $finalSources->map({source |
+            let relationalSet = $source->toOne();
+            let mainRelation = $relationalSet.mainRelation->cast(@NamedRelation)->toOne();
+            let filterTree = $source.resolveFilter().joinTreeNode->map(x|$x->getRelationTree($mainRelation, $source.resolveFilter().filter.operation));
+            let filterColumns = $source.resolveFilter().joinTreeNode->map(x|$x.join.operation->getRelationColumns($mainRelation))->concatenate($source.resolveFilter().filter.operation->map(x|$x->getRelationColumns($mainRelation)));
+            let groupByTree = $source.resolveGroupBy().columns->map(x | $x->getRelationTree($mainRelation));
+            let groupByColumns = $source.resolveGroupBy().columns->map(x | $x->getRelationColumns($mainRelation));
+            let childrenTrees = $p.children->map(child | $child->scanRelations($m, $source, [], ^$debug(space=$debug.space+'    ')));
+            let childrenColumns = $p.children->map(child | $child->scanRelationColumns($m, $mainRelation, $source, []));
+            ^RelationTree
+            (
+               relation = $mainRelation,
+               children = $filterTree->concatenate($groupByTree)->concatenate($childrenTrees),
+               columns = $filterColumns->concatenate($groupByColumns)->concatenate($childrenColumns)->removeDuplicates(),
+               nestedViewTree = if($mainRelation->instanceOf(View), | $mainRelation->cast(@View)->scanRelations(), |[])
+            );
+         });,
+
+      an : Any[1] |
+         if($an == 'root',
+            | print(if($debug.debug,|$debug.space+'Process \'root\'\n',|''));
+              ^RelationTree
+               (
+                  root = true,
+                  children = $p.children->map(child | $child->scanRelations($m, $source, [], ^$debug(space=$debug.space+'    ')))
+               );,
+            | fail('Unknow node in the given property path tree'); [];
+         );
+   ]);
+}
+
+function <<access.private>> meta::pure::lineage::scanRelations::scanRelations(v: View[1]):RelationTree[1]
+{
+   let mainRelation = $v.mainRelation->cast(@NamedRelation);
+   let filterTree = $v.filter.joinTreeNode->map(x|$x->getRelationTree($mainRelation, $v.filter.filter.operation));
+   let filterColumns = $v.filter.joinTreeNode->map(x|$x.join.operation->getRelationColumns($mainRelation))->concatenate($v.filter.filter.operation->map(x|$x->getRelationColumns($mainRelation)));
+   let groupByTree = $v.groupBy.columns->map(x | $x->getRelationTree($mainRelation));
+   let groupByColumns = $v.groupBy.columns->map(x | $x->getRelationColumns($mainRelation));
+   let childrenTrees = $v.columnMappings->map(cm | $cm.relationalOperationElement->getRelationTree($mainRelation));
+   let childrenColumns = $v.columnMappings->map(cm | $cm.relationalOperationElement->getRelationColumns($mainRelation));
+
+   ^RelationTree
+   (
+      root = true,
+      children = ^RelationTree
+                 (
+                    relation = $mainRelation,
+                    children = $filterTree->concatenate($groupByTree)->concatenate($childrenTrees),
+                    columns = $filterColumns->concatenate($groupByColumns)->concatenate($childrenColumns)->removeDuplicates(),
+                    nestedViewTree = if($mainRelation->instanceOf(View), | $mainRelation->cast(@View)->scanRelations(), |[])
+                 )
+   );
+}
+
+function <<access.private>> meta::pure::lineage::scanRelations::scanRelationColumns(p: PropertyPathTree[1], m:Mapping[1], mainRelation: Relation[1], source: RootRelationalInstanceSetImplementation[0..1], epm:EmbeddedRelationalInstanceSetImplementation[0..1]):Column[*]
+{
+   let pn = $p.value->cast(@PropertyPathNode);
+   $pn.property->toOne()->match([
+      prop : Property<Nil,Any|*>[1] | 
+         let propMappings = if($prop->hasGeneratedMilestoningDatePropertyStereotype(),
+                               | [],
+                               | if($epm->isNotEmpty(),
+                                    | if($epm.class->toOne()->_subTypeOf($pn.class),
+                                         | $epm->toOne()->propertyMappingsByPropertyName($prop.name->toOne()),
+                                         | []),
+                                    | if($source.class->toOne()->_subTypeOf($pn.class),
+                                         | $source->toOne().propertyMappingsByPropertyName($prop.name->toOne()),
+                                         | [])));
+         $propMappings->map({pm |
+            $pm->match([
+               rpm : RelationalPropertyMapping[1] | $rpm.relationalOperationElement->getRelationColumns($mainRelation),
+               epm : EmbeddedRelationalInstanceSetImplementation[1] | $p.children->map(child | $child->scanRelationColumns($m, $mainRelation, $source, $epm)),
+               a: Any[*] | []
+            ]);
+         });,
+
+      qual : QualifiedProperty<Any>[1] | [];
+   ]);
+}
+
+function <<access.private>> meta::pure::lineage::scanRelations::addAtBottomTreesAndColumns(parent: RelationTree[1], children:RelationTree[*], columns:Column[*]):RelationTree[1]
+{
+   if($parent.children->isEmpty(), | ^$parent(children=$children, columns=$parent.columns->concatenate($columns)->removeDuplicates()); , | ^$parent(children = addAtBottomTreesAndColumns($parent.children->toOne(), $children, $columns)))
+}
+
+function <<access.private>> meta::pure::lineage::scanRelations::getRelationTree(r: RelationalOperationElement[1], mainRelation: Relation[1]):RelationTree[*]
+{
+   $r->match([
+      t : TableAliasColumn[1] | [],
+      j : RelationalOperationElementWithJoin[1] | $j.joinTreeNode->toOne()->getRelationTree($mainRelation, $j.relationalOperationElement),
+      d : DynaFunction[1] | $d.parameters->map(p|$p->getRelationTree($mainRelation)),
+      l : Literal[1]| []
+   ]);
+}
+
+function <<access.private>> meta::pure::lineage::scanRelations::getRelationTree(r: RelationalTreeNode[1], mainRelation: Relation[1], otherOperation: RelationalOperationElement[*]):RelationTree[*]
+{
+   $r->match([
+      j : JoinTreeNode[1] | let otherRelation =  $j.join.otherTable($mainRelation->cast(@NamedRelation))->toOne().relationalElement->cast(@NamedRelation);
+                            ^RelationTree
+                            (
+                               relation = $otherRelation,
+                               join = $j.join,
+                               children = $j.children->map(x | $x->getRelationTree($otherRelation, $otherOperation)),
+                               columns = $j.join.operation->getRelationColumns($otherRelation)->concatenate($j.children->map(x | $x.join.operation->getRelationColumns($otherRelation)))->concatenate($otherOperation->map(o | $o->getRelationColumns($otherRelation)))->removeDuplicates(),
+                               nestedViewTree = if($otherRelation->instanceOf(View), | $otherRelation->cast(@View)->scanRelations(), |[])
+                            );,
+      r : RootJoinTreeNode[1] | fail('Unknow node in the tree'); [];
+   ]);
+}
+
+function <<access.private>> meta::pure::lineage::scanRelations::getRelationColumns(r: RelationalOperationElement[1], mainRelation: Relation[1]):Column[*]
+{
+   $r->match([
+      t : TableAliasColumn[1] | if($t.alias.relationalElement == $mainRelation, | $t.column, | []),
+      j : RelationalOperationElementWithJoin[1] | if($j.relationalOperationElement->isNotEmpty(), | $j.relationalOperationElement->toOne()->getRelationColumns($mainRelation), | [])->concatenate($j.joinTreeNode->toOne().join.operation->getRelationColumns($mainRelation)),
+      d : DynaFunction[1] | $d.parameters->map(p|$p->getRelationColumns($mainRelation)),
+      l : Literal[1]| []
+   ]);
+}
+
+function <<access.private>> meta::pure::lineage::scanRelations::reOrderAndMergeRelationTree(tt: RelationTree[1]):RelationTree[1]
+{
+   let oldChildren = $tt.children;
+   let newChildren = $oldChildren->fold({oldChild, newSet |
+      if($oldChild.relation->isEmpty() || $oldChild.join->isEmpty() || !($newSet->exists(nc | $nc.relation->isNotEmpty() && $nc.relation->toOne() == $oldChild.relation->toOne() && $nc.join->isNotEmpty() && $nc.join->toOne() == $oldChild.join->toOne())),
+         | $newSet->concatenate($oldChild),
+         | let node = $newSet->filter(nc | $nc.relation->isNotEmpty() && $nc.relation->toOne() == $oldChild.relation->toOne() && $nc.join->isNotEmpty() && $nc.join->toOne() == $oldChild.join->toOne())->toOne();
+           let others = $newSet->filter(nc | !($nc.relation->isNotEmpty() && $nc.relation->toOne() == $oldChild.relation->toOne() && $nc.join->isNotEmpty() && $nc.join->toOne() == $oldChild.join->toOne()));
+           $others->concatenate(^$node(children = $node.children->concatenate($oldChild.children), columns=$node.columns->concatenate($oldChild.columns)->removeDuplicates()));
+      )
+   }, []->cast(@RelationTree));
+
+   ^$tt
+   (
+      children = $newChildren->sortBy(x:RelationTree[1] | if($x.join->isEmpty(), | $x.relation->cast(@NamedRelation).name->toOne() + '->' + $x.columns.name->joinStrings('[',',',']'), | $x.join.name->toOne() + '->' + $x.relation->cast(@NamedRelation).name->toOne() + '->' + $x.columns.name->joinStrings('[',',',']')))->map(x | $x->reOrderAndMergeRelationTree()),
+      nestedViewTree = $tt.nestedViewTree->map(x | $x->reOrderAndMergeRelationTree())
+   );
+}
+
+function meta::pure::lineage::scanRelations::scanRelations(f:FunctionDefinition<Any>[1], m:Mapping[1], r:Runtime[1], extensions:RouterExtension[*]):RelationTree[1]
+{
+   $f->scanRelations($m, $r, [], noDebug(), $extensions);
+}
+
+function meta::pure::lineage::scanRelations::scanRelations(f:FunctionDefinition<Any>[1], m:Mapping[1], r:Runtime[1], vars:Pair<String, List<Any>>[*], extensions:RouterExtension[*]):RelationTree[1]
+{
+   $f->scanRelations($m, $r, $vars, noDebug(), $extensions);
+}
+
+function meta::pure::lineage::scanRelations::scanRelations(f:FunctionDefinition<Any>[1], m:Mapping[1], r:Runtime[1], vars:Pair<String, List<Any>>[*], debug: meta::pure::tools::DebugContext[1], extensions:RouterExtension[*]):RelationTree[1]
+{
+   let sqlQuery   = meta::pure::lineage::scanRelations::generateSQLQuery($f, $m, $r, $vars, $extensions);
+   if($debug.debug, | print('Generated SQL Query - ' + sqlQueryToStringPretty($sqlQuery, DatabaseType.H2, 'GMT', [], $extensions) + '\n\n'), |[]);
+
+   let childTrees = generateRelationTreeFromRelationalOperationElement($sqlQuery, $debug, $extensions);
+
+   let rootTree   = ^RelationTree
+                     (
+                        root = true,
+                        children = $childTrees->sortBy(x:RelationTree[1] | if($x.join->isEmpty(), | $x.relation->cast(@NamedRelation).name->toOne() + '->' + $x.columns.name->joinStrings('[',',',']'), | $x.relation->cast(@NamedRelation).name->toOne() + '->' + $x.columns.name->joinStrings('[',',',']') + '->' + $x.join.name->toOne()))
+                     );
+
+   if($debug.debug, | print('Generated Root Tree - \n\n' + $rootTree->relationTreeAsString($debug.space) + '\n\n'), |[]);
+
+   $rootTree;
+}
+
+function <<access.private>> meta::pure::lineage::scanRelations::generateSQLQuery(f:FunctionDefinition<Any>[1], m:Mapping[1], r:Runtime[1], vars:Pair<String, List<Any>>[*], extensions:RouterExtension[*]):SQLQuery[1]
+{
+   let routed         = $f->routeFunction($m, $r, $extensions, noDebug());
+   let routedFunction = $routed.functions->evaluateAndDeactivate()->toOne();
+
+   let inScopeVars    = $f.expressionSequence->evaluateAndDeactivate()->fold({vs, a | if ($vs->isLetFunction(),
+                                                                                           |  let varName = $vs->meta::pure::router::extractLetVariableName();
+                                                                                              let varExprs = $vs->findVariableExpressionsInValueSpecification();
+
+                                                                                              let inScopeVars = $a->keyValues();
+                                                                                              let unavailableVars = $varExprs.name->forAll(var | $var->in($inScopeVars.first));
+                                                                                              assert($unavailableVars, 'Unable to resolve var(s): '+ $varExprs.name->filter(var | !$var->in($inScopeVars.first))->joinStrings());
+
+                                                                                              let re    = $vs->reactivate($a);
+                                                                                              $a->put($varName->toOne(), ^List<Any>(values=$re));,
+
+                                                                                           |  $a;
+                                                                                        );
+                                                                              }, $f->openVariableValues()->putAll($vars));
+
+   let clusters       = $routedFunction.expressionSequence->evaluateAndDeactivate()->cast(@ClusteredValueSpecification)->filter(cvs | $cvs.store->instanceOf(Database));
+   assert($clusters->size() == 1, | 'Scan Relations currently supports 1 cluster, Found - ' + $clusters->size()->toString());
+
+   let fe             = $clusters->toOne().val->match([r:ExtendedRoutedValueSpecification[1]|$r.value,
+                                                       t:TDSRoutedValueSpecification[1] | $t.value,
+                                                       a:Any[1]|$a])->cast(@FunctionExpression);
+
+   let sqlQuery       = $fe->toSQLQuery($m, $inScopeVars, ^RelationalExecutionContext(), noDebug(), $extensions);
+}
+
+function meta::pure::lineage::scanRelations::generateRelationTreeFromRelationalOperationElement(relOp:RelationalOperationElement[1], debug: meta::pure::tools::DebugContext[1], extensions:RouterExtension[*]):RelationTree[*]
+{   
+   if($debug.debug, | print($debug.space + 'Generate Relation Tree From Relational Operation Element\n'), | []);
+      
+   $relOp->match([
+      vs:ViewSelectSQLQuery[1]          | if($debug.debug, | print($debug.space + 'Process ViewSelectSQLQuery - ' + $vs.name + '\n'), |[]);
+                 
+                                          let viewSelectTree = $vs.selectSQLQuery->generateRelationTreeFromRelationalOperationElement($debug->indent(), $extensions)->toOne();
+                                          let nestedViewTree = ^RelationTree(root = true, children = $viewSelectTree);
+                                          ^RelationTree(relation = $vs.view, nestedViewTree= $nestedViewTree);,
+                 
+      t:Table[1]                        | if($debug.debug, | print($debug.space + 'Process Table - ' + $t.name + '\n'), |[]);
+                                          ^RelationTree(relation = $t);,
+                 
+      v:View[1]                         | if($debug.debug, | print($debug.space + 'Process View - ' + $v.name + '\n'), |[]);
+                                          ^RelationTree(relation = $v);,
+
+      ta:TableAlias[1]                  | if($debug.debug, | print($debug.space + 'Process TableAlias - ' + $ta.name + '\n'), |[]);
+                                          $ta.relationalElement->generateRelationTreeFromRelationalOperationElement($debug->indent(), $extensions);,
+
+      sel:SelectSQLQuery[1]             | if($debug.debug, | print($debug.space + 'Process SelectSQLQuery - ' + sqlQueryToString($sel, DatabaseType.H2, $extensions) + '\n'), |[]);
+
+                                          let projectColumns = $sel.columns->map(col | $col->extractTableAliasColumns());
+                                          let filterColumns  = $sel.filteringOperation->map(col | $col->extractTableAliasColumns());
+                                          let orderByColumns = $sel.orderBy->map(o | $o.column->extractTableAliasColumns());
+                                          let groupByColumns = $sel.groupBy->map(o | $o->extractTableAliasColumns());
+                                          let havingColumns  = $sel.havingOperation->map(o | $o->extractTableAliasColumns());
+                           
+                                          let allColumns     = $projectColumns->concatenate($filterColumns)->concatenate($orderByColumns)->concatenate($groupByColumns)->concatenate($havingColumns)->removeDuplicates();
+                                          if($debug.debug, | print($debug.space + 'Processed Columns - ' + $allColumns->map(tac | $tac.alias.name + '.' + $tac.column.name)->joinStrings('[',', ', ']') + '\n');, |[]);
+
+                                          let result         = if($sel.data->isEmpty(),
+                                                                  | [],
+                                                                  | $sel.data->toOne()->generateRelationTreeFromRelationalTreeNode([], [], [], $allColumns, $debug->indent(), $extensions));
+
+                                          if($debug.debug, | print($debug.space + 'Generated Relation Trees - \n\n' + $result->map(tree | relationTreeAsString($tree, $debug->indent().space))->joinStrings($debug.space + '[\n','\n', '\n' +$debug.space+ ']')  + '\n\n'), |[]);
+                                          $result;,
+
+      u:UnionAll[1]                     | if($debug.debug, | print($debug.space + 'Process UnionAll\n'), |[]);
+
+                                          $u.queries->map(q | if($debug.debug, | print($debug.space + 'Process SelectSQLQuery - ' + sqlQueryToString($q, DatabaseType.H2, $extensions) + '\n'), |[]);
+
+                                                              let trees = $q->generateRelationTreeFromRelationalOperationElement($debug->indent(), $extensions);
+
+                                                              if($debug.debug, | print($debug.space + 'Generated Relation Trees - \n\n' + $trees->map(tree | relationTreeAsString($tree, $debug->indent().space))->joinStrings($debug.space + '[\n','\n', '\n'+$debug.space+']')  + '\n\n'), |[]);
+                                                              $trees;
+                                                      );,
+
+      r:RelationalOperationElement[1]   | if($debug.debug, |print($debug.space + ' RelationalOperationElement ' + $r->buildUniqueName(false, $extensions) + '\n'), |[]); [];
+   ]);
+}
+
+function <<access.private>> meta::pure::lineage::scanRelations::generateRelationTreeFromRelationalTreeNode(r: RelationalTreeNode[1], parentOperation:TableAlias[0..1], parentRelations:NamedRelation[*], parentTree:RelationTree[0..1], columns:TableAliasColumn[*], debug: meta::pure::tools::DebugContext[1], extensions:RouterExtension[*]):RelationTree[*]
+{
+   if($debug.debug, | print($debug.space + 'Generate RelationTree from Relational Tree Node\n'), | []);
+
+   $r->match([
+      j : JoinTreeNode[1] | if($debug.debug, | print($debug.space + 'Process JoinTreeNode - \n'), | []);
+             
+                            let columnsFromChildren  = $j.children->map(child | $child.join.operation->extractTableAliasColumns());
+                            let allColumns           = $columns->concatenate($columnsFromChildren)->removeDuplicates();
+             
+                            if($debug.debug, | print($debug.space + 'Processed Columns - ' + $allColumns->map(tac | $tac.alias.name + '.' + $tac.column.name)->joinStrings('[',', ', ']') + '\n');, |[]);
+
+                            let baseTrees            = $j.alias->generateRelationTreeFromRelationalOperationElement($debug->indent(), $extensions);
+                            let baseTreesColumns     = $allColumns->filter(col | $col.alias.name == $j.alias.name);
+                            let baseTreesWithColumns = $baseTrees->map(tree | $tree->addColumnsToRelationTree($baseTreesColumns));
+             
+                            if($debug.debug, | print($debug.space + 'Generated Base Trees - \n\n' + $baseTreesWithColumns->map(tree | relationTreeAsString($tree, $debug->indent().space))->joinStrings($debug.space + '[\n','\n', '\n' +$debug.space+ ']')  + '\n\n'), |[]);
+
+                            let treesWithJoin        = $baseTreesWithColumns->map(tree | let processedJoin = processJoinFromTreeNode($j, $parentOperation->toOne(), $parentRelations, $tree.relation->toOne(), $tree, $parentTree->toOne(), $debug, $extensions);
+                                                                                         if($processedJoin->isEmpty(), | [], | ^$tree(join = $processedJoin->toOne())););
+
+                            let childTreeCols        = $allColumns->filter(c | $c.alias.name != $j.alias.name);
+                            let result               = $treesWithJoin->map(tree | let childTrees = $j.children->map(child | $child->generateRelationTreeFromRelationalTreeNode($j.alias, $tree->flattenRelationTree().relation, $tree, $childTreeCols, $debug->indent(), $extensions););
+                                                                                  $tree->addChildTrees($childTrees););
+
+                            if($debug.debug, | print($debug.space + 'Generated Trees - \n\n' + $result->map(tree | relationTreeAsString($tree, $debug->indent().space))->joinStrings($debug.space + '[\n','\n', '\n' +$debug.space+ ']')  + '\n\n'), |[]);
+                            $result;,
+      
+      r : RootJoinTreeNode[1] | if($debug.debug, | print($debug.space + 'Process RootJoinTreeNode\n'), | []);
+                                
+                                let colFromChildren      = $r.children->map(child | $child.join.operation->extractTableAliasColumns());
+                                let allColumns           = $columns->concatenate($colFromChildren)->removeDuplicates();
+
+                                if($debug.debug, | print($debug.space + 'Processed Columns - ' + $allColumns->map(tac | $tac.alias.name + '.' + $tac.column.name)->joinStrings('[',', ', ']') + '\n');, |[]);
+
+                                let baseTrees            = $r.alias->generateRelationTreeFromRelationalOperationElement($debug->indent(), $extensions);
+                                let baseTreesColumns     = $allColumns->filter(col | $col.alias.name == $r.alias.name);
+                                let baseTreesWithColumns = $baseTrees->map(tree | $tree->addColumnsToRelationTree($baseTreesColumns));
+
+                                if($debug.debug, | print($debug.space + 'Generated Base Trees - \n\n' + $baseTreesWithColumns->map(tree | relationTreeAsString($tree, $debug->indent().space))->joinStrings($debug.space + '[\n','\n', '\n' +$debug.space+ ']')  + '\n\n'), |[]);
+                                
+                                let childTreeCols = $allColumns->filter(c | $c.alias.name != $r.alias.name);
+                                let result        = $baseTreesWithColumns->map(tree | let childTrees = $r.children->map(child | $child->generateRelationTreeFromRelationalTreeNode($r.alias, $tree->flattenRelationTree().relation, $tree, $childTreeCols, $debug->indent(), $extensions););
+                                                                                      $tree->addChildTrees($childTrees););
+
+                                if($debug.debug, | print($debug.space + 'Generated Trees - \n\n' + $result->map(tree | relationTreeAsString($tree, $debug->indent().space))->joinStrings($debug.space + '[\n','\n', '\n' +$debug.space+ ']')  + '\n\n'), |[]);
+                                $result;
+   ]);
+}
+
+function <<access.private>> meta::pure::lineage::scanRelations::getRelationName(r: Relation[1]):String[1]
+{
+   $r->match([ t:Table[1] | '[' + $t.schema.database->elementToPath() + ']' + $t.schema.name + '_' + $t.name,
+               v:View[1]  | '[' + $v.schema.database->elementToPath() + ']' + $v.schema.name + '_' + $v.name]);
+}
+
+function meta::pure::lineage::scanRelations::flattenRelationTree(tree:RelationTree[1]):RelationTree[*]
+{
+   $tree->concatenate($tree.nestedViewTree->map(t | $t->flattenRelationTree()))->concatenate($tree.children->map(child | $child->flattenRelationTree()));      
+}
+
+function <<access.private>> meta::pure::lineage::scanRelations::addChildTrees(parent: RelationTree[1], children:RelationTree[*]):RelationTree[1]
+{
+   let updatedParent = $children->fold({child, updatedParent | addChildTree($updatedParent, $child)}, $parent);
+   ^$updatedParent(children = $updatedParent.children->sortBy(x:RelationTree[1] | if($x.join->isEmpty(), | $x.relation->cast(@NamedRelation).name->toOne() + '->' + $x.columns.name->joinStrings('[',',',']'), | $x.relation->cast(@NamedRelation).name->toOne() + '->' + $x.columns.name->joinStrings('[',',',']') + '->' + $x.join.name->toOne())));
+}
+
+function <<access.private>> meta::pure::lineage::scanRelations::addChildTree(parent: RelationTree[1], child:RelationTree[1]):RelationTree[1]
+{
+   let parentRelation = $parent.relation->toOne();
+   let parentRelationFromJoin = $child.join.otherTable($child.relation->toOne()).relation->toOne();
+   
+   if(getRelationName($parentRelation) == getRelationName($parentRelationFromJoin), 
+      | ^$parent(children += $child);, 
+      | ^$parent(children = $parent.children->map(pc | addChildTree($pc, $child))));
+}
+
+function meta::pure::lineage::scanRelations::addColumnsToRelationTree(tree:RelationTree[1], columns:TableAliasColumn[*]):RelationTree[1]
+{
+   $columns->fold({col, updatedTree | $updatedTree->addColumnToRelationTree($col)}, $tree);
+}
+
+function meta::pure::lineage::scanRelations::addColumnToRelationTree(tree:RelationTree[1], column:TableAliasColumn[1]):RelationTree[1]
+{
+   let columnOwner = $column.column.owner;
+   let treeRelation = $tree.relation;
+   
+   if(($columnOwner->isNotEmpty() && $treeRelation->isNotEmpty() && ($treeRelation->toOne()->getRelationName() == $columnOwner->toOne()->getRelationName()) && $treeRelation.columns->cast(@Column)->exists(tc | $tc.name == $column.column.name)),
+      |^$tree(columns = $tree.columns->concatenate($column.column)->removeDuplicates()),
+      |$tree;
+   );
+}
+
+function <<access.private>> meta::pure::lineage::scanRelations::processJoinFromTreeNode(j:JoinTreeNode[1], sourceOperation:TableAlias[1], sourceRelations:NamedRelation[*], targetRelation:NamedRelation[1], targetTree:RelationTree[1], sourceTree:RelationTree[1], debug:meta::pure::tools::DebugContext[1], extensions:RouterExtension[*]):Join[0..1]
+{
+   let relationIndentifiers     = $sourceRelations->concatenate($targetRelation)->map(rel | $rel->getRelationName());
+   
+   let targetOperation          = $j.alias;
+   let targetAliasName          = $targetOperation.name;
+   let sourceAliasName          = $sourceOperation.name;
+   
+   let tableAliasColumns        = $j.join.operation->extractTableAliasColumns()->removeDuplicates();
+   
+   let oldToNewTableColumnAlias = $tableAliasColumns->map(tac | let orgColumn     = $tac.column;
+                                                          
+                                                                assert($tac.alias.name->in([$targetAliasName, $sourceAliasName]), | 'Columns in join should refer either source alias or target alias');
+                                                          
+                                                                let alias         = if($tac.alias.name == $sourceAliasName, | $sourceOperation, |$targetOperation);
+                                                                let tree          = if($tac.alias.name == $sourceAliasName, | $sourceTree, |$targetTree);
+                                                                let sourceColumn  = $tac->extractSourceColumn($alias, $relationIndentifiers, $tree);
+                                                                
+                                                                if($sourceColumn->isEmpty(),
+                                                                   |pair($tac, ^SQLNull()),
+                                                                   |let namedRelation       = $sourceColumn.owner->cast(@NamedRelation)->toOne();
+                                                                    let newTableAliasColumn = ^TableAliasColumn(alias=^TableAlias(name = $namedRelation.name, relationalElement=$namedRelation), column = $sourceColumn->toOne(), columnName = $sourceColumn.name->toOne());
+                                                                    pair($tac, $newTableAliasColumn);
+                                                                ););
+   
+   let nonNullPairs             = $oldToNewTableColumnAlias->filter(p | $p.second->instanceOf(TableAliasColumn))->cast(@Pair<TableAliasColumn, TableAliasColumn>);
+   let newAliases               = $nonNullPairs.second.alias->removeDuplicatesBy(ta | $ta.relation->getRelationName());
+   
+   let updatedNonNullPairs      = if($newAliases->size() == 1,
+                                      |$nonNullPairs->map(p | let isTargetOperation = ($p.first.alias.name == $targetAliasName);
+                                                              if($isTargetOperation,
+                                                                |let column      = $p.second;
+                                                                 let columnAlias = $column.alias;
+                                                                 let columnUpdatedForSelfJoin = ^$column(alias = ^$columnAlias(name = 't_' + $columnAlias.name));
+                                                                 pair($p.first, $columnUpdatedForSelfJoin);,
+                                                                |$p);
+                                                          ),
+                                      |$nonNullPairs);
+   let updatedAliases           = $updatedNonNullPairs.second.alias->removeDuplicatesBy(ta | $ta.name + '@' + $ta.relation->getRelationName());
+
+   if($updatedAliases->size() == 0,
+      |if($debug.debug, | print($debug.space + 'Expect this case to arise when join does not reference any columns. Example join operation - true, false, 1 = 1\n');, |[]);
+       let sourceRelation = $sourceOperation->extractSourceRelation($relationIndentifiers);
+       let orgJoin        = $j.join;
+       let targetAlias    = ^TableAlias(name = $targetRelation.name, relationalElement=$targetRelation);
+       let sourceAlias    = ^TableAlias(name = $sourceRelation.name, relationalElement=$sourceRelation);
+       ^$orgJoin(aliases = [pair($sourceAlias, $targetAlias), pair($targetAlias, $sourceAlias)]);,
+      |
+   if($updatedAliases->size() == 1,
+      |if($debug.debug, | print($debug.space + 'Neglecting this child since only 1 relation found. Expect the join between this relation and a union relation. Part of union relation considered in this iteraton has null assigned to join column\n');, |[]);
+       [];,
+      |
+      assert($updatedAliases->size() == 2, | 'Expected 2 relations in join. Found : ' + $updatedAliases->size()->toString());
+
+      let milestoningAliasColumns  = $updatedNonNullPairs->removeDuplicatesBy(p | $p.second.alias.name)
+                                                         ->map(p |if($p.second.alias.relation->instanceOf(Table),
+                                                                     |let config   = ^meta::relational::testDataGeneration::TestDataGenerationConfig(generateWithDefaultPKs = false,
+                                                                                                                                                     hashStrings = false,
+                                                                                                                                                     temporalMilestoningDates = ^meta::relational::testDataGeneration::TemporalMilestoningDates(businessDate = %9999-12-31,
+                                                                                                                                                                                                                                                processingDate = %9999-12-31,
+                                                                                                                                                                                                                                                snapshotDate = %9999-12-31));
+                                                                      let newAlias = $p.second.alias;
+                                                                      meta::relational::testDataGeneration::getMilestoningFilter($newAlias.relation->cast(@Table), ^$newAlias(name = $p.first.alias.name), $config, $extensions)->extractTableAliasColumns();,
+                                                                     |[]));
+
+      let nullPairs                = $oldToNewTableColumnAlias->filter(p | $p.second->instanceOf(SQLNull));
+      let transformFunc            = {r:RelationalOperationElement[1] | $r->match([tac:TableAliasColumn[1]         | if($tac->in($nullPairs.first), | ^Literal(value=^SQLNull()), | $tac),
+                                                                                   d:DynaFunction[1]               | if($d.parameters->size() == 2 && $d.parameters->exists(p | $p->instanceOf(TableAliasColumn)) && $d.parameters->exists(p | $p->instanceOf(Literal)),
+                                                                                                                         |let columnParam  = $d.parameters->filter(p | $p->instanceOf(TableAliasColumn))->cast(@TableAliasColumn)->toOne();
+                                                                                                                          let literalParam = $d.parameters->filter(p | $p->instanceOf(Literal))->cast(@Literal)->toOne();
+                                                                                                                          if($columnParam->in($milestoningAliasColumns) && $literalParam.value->instanceOf(Date),
+                                                                                                                             |^$d(name = 'equal', parameters = [^Literal(value = ^SQLNull()), ^Literal(value = ^SQLNull())]);,
+                                                                                                                             |$d);,
+                                                                                                                         |$d),
+                                                                                   r:RelationalOperationElement[1] | $r
+                                                                                 ])};
+
+      let removeGeneratedNullEquality = {r:RelationalOperationElement[1] | if($r->instanceOf(DynaFunction) && $r->cast(@DynaFunction).name->in(['or','and']),
+                                                                               |let d              = $r->cast(@DynaFunction);
+                                                                                let filteredParams = $d.parameters->filter(p | !($p->instanceOf(DynaFunction) && $p->cast(@DynaFunction)->isNull($extensions)));
+                                                                                assert($filteredParams->size() >= 1, | 'Expected atleast 1 parameter after filtering nulls');
+                                                                                if($filteredParams->size() == 1, 
+                                                                                   | $filteredParams->toOne(),
+                                                                                   | ^$d(parameters = $filteredParams));,
+                                                                               |$r)};
+
+      let orgJoin                     = $j.join;
+      let updatedOperation            = $orgJoin.operation->meta::relational::postProcessor::transform($transformFunc)
+                                                          ->meta::relational::postProcessor::transform($removeGeneratedNullEquality);
+
+      ^$orgJoin(name      = $updatedOperation->buildUniqueName(false, $extensions),
+                aliases   = [pair($updatedAliases->at(0), $updatedAliases->at(1)), pair($updatedAliases->at(1), $updatedAliases->at(0))],
+                operation = $updatedOperation->reprocessTableAliasColumns($updatedNonNullPairs)->cast(@Operation));
+   ));
+}
+
+function <<access.private>> meta::pure::lineage::scanRelations::isNull(d:DynaFunction[1], extensions:RouterExtension[*]):Boolean[1]
+{
+   let nullEqualsNullCheck = ^DynaFunction(name = 'equal', parameters = [^Literal(value=^SQLNull()), ^Literal(value=^SQLNull())]);
+   if($d.name->in(['equal' ,'or', 'and', 'group']),
+      |if($d.name == 'equal',
+          |$d->buildUniqueName(false, $extensions) == $nullEqualsNullCheck->buildUniqueName(false, $extensions);,
+          |$d.parameters->forAll(p | $p->instanceOf(DynaFunction) && isNull($p->cast(@DynaFunction), $extensions)););,
+      |false);
+}
+
+function <<access.private>> meta::pure::lineage::scanRelations::extractSourceColumn(tableAliasColumn:TableAliasColumn[1], sourceOperation:RelationalOperationElement[1], relationIdentifiers:String[*], sourceTree:RelationTree[1]):Column[0..1]
+{
+   $sourceOperation->match([
+                              v:ViewSelectSQLQuery[1]| if(getRelationName($v.view)->in($relationIdentifiers), |$tableAliasColumn.column, |[]),
+                              t:Table[1]             | if(getRelationName($t)->in($relationIdentifiers), |$tableAliasColumn.column, |[]),
+                              v:View[1]              | if(getRelationName($v)->in($relationIdentifiers), |$tableAliasColumn.column, |[]),
+                              ta:TableAlias[1]       | if($tableAliasColumn.alias.name == $ta.name,| $tableAliasColumn->extractSourceColumn($ta.relation, $relationIdentifiers, $sourceTree), | []);,
+                              s:SelectSQLQuery[1]    | $s->extractSourceColumnFromSelectSQLQuery($tableAliasColumn, $relationIdentifiers, $sourceTree);,
+                              u:Union[1]             | let colNames = $u.queries->map(query | $query->extractSourceColumnFromSelectSQLQuery($tableAliasColumn, $relationIdentifiers, $sourceTree))->removeDuplicates()->filter(c | $c.name->in($sourceTree.columns.name));
+                                                       assert($colNames->size() <=1 ,|'Expected max 1 column. Found : ' + $colNames->size()->toString());
+                                                       if($colNames->isEmpty(), | [], | $colNames->toOne());
+                           ]);
+}
+
+function <<access.private>> meta::pure::lineage::scanRelations::extractSourceColumnFromSelectSQLQuery(select : SelectSQLQuery[1], tableAliasColumn:TableAliasColumn[1], relationIdentifiers:String[*], sourceTree:RelationTree[1]):Column[0..1]
+{
+   let reqTableAliasColumn = $select.columns->filter(col | let colName = $col->match([a:Alias[1] | $a.name, 
+                                                                                      tac:TableAliasColumn[1] | $tac.column.name]);
+                                                           $colName == $tableAliasColumn.column.name;)->extractTableAliasColumns()->removeDuplicates();
+
+   assert($reqTableAliasColumn->size() <= 1 ,|'Expected max 1 column. Found : ' + $reqTableAliasColumn->size()->toString());
+   
+   if($reqTableAliasColumn->isEmpty() || $select.data->isEmpty(), 
+      |[], 
+      |let rootTree        = $select.data->toOne();
+       let childTrees      = $rootTree.children->map(child | $child->extractLine());
+       let sourceOperation = $rootTree->concatenate($childTrees)->filter(tree | $tree.alias.name == $reqTableAliasColumn.alias.name).alias->toOne();
+       $reqTableAliasColumn->toOne()->extractSourceColumn($sourceOperation, $relationIdentifiers, $sourceTree);
+   );
+}
+
+function <<access.private>> meta::pure::lineage::scanRelations::extractSourceRelation(sourceOperation:RelationalOperationElement[1], relationIdentifiers:String[*]):NamedRelation[1]
+{
+   $sourceOperation->match([
+                              v:ViewSelectSQLQuery[1]| $v.view,
+                              t:Table[1]             | $t,
+                              v:View[1]              | $v,
+                              ta:TableAlias[1]       | $ta.relation->extractSourceRelation($relationIdentifiers);,
+                              s:SelectSQLQuery[1]    | let sourceRelations = $s.data->concatenate($s.data.children)->map(t | $t.alias.relation->toOne()->extractSourceRelation($relationIdentifiers));
+                                                       $sourceRelations->filter(r | getRelationName($r)->in($relationIdentifiers))->at(0);,
+                              u:Union[1]             | let sourceRelations = $u.queries->map(query | $query->extractSourceRelation($relationIdentifiers));
+                                                       $sourceRelations->filter(r | getRelationName($r)->in($relationIdentifiers))->at(0);
+                           ]);
+}

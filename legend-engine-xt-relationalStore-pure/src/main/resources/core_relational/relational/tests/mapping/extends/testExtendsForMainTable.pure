@@ -1,0 +1,101 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+import meta::relational::tests::mapping::extend::store::*;
+import meta::relational::tests::mapping::extend::model::*;
+
+Mapping meta::relational::tests::mapping::extend::mainTable::AMapping
+(
+   A[a] : Relational
+   {
+      id : [testDatabase]ABC.id,
+      aName : [testDatabase]ABC.aName
+   }
+)
+
+Mapping meta::relational::tests::mapping::extend::mainTable::B1Mapping
+(
+   include meta::relational::tests::mapping::extend::mainTable::AMapping
+
+   B[b1] extends [a] : Relational
+   {
+
+   }
+)
+
+Mapping meta::relational::tests::mapping::extend::mainTable::B2Mapping
+(
+   include meta::relational::tests::mapping::extend::mainTable::AMapping
+
+   B[b2] extends [a] : Relational
+   {
+      aName : concat('bName_', [testDatabase]ABC.aName),
+      bName : [testDatabase]ABC.bName
+   }
+)
+
+Mapping meta::relational::tests::mapping::extend::mainTable::C1Mapping
+(
+   include meta::relational::tests::mapping::extend::mainTable::B1Mapping
+
+   C[c1] extends [b1] : Relational
+   {
+
+   }
+)
+
+Mapping meta::relational::tests::mapping::extend::mainTable::C2Mapping
+(
+   include meta::relational::tests::mapping::extend::mainTable::B2Mapping
+
+   C[c2] extends [b2] : Relational
+   {
+      aName : concat('cName_', [testDatabase]ABC.aName),
+      bName : concat('cName_', [testDatabase]ABC.bName),
+      cName : [testDatabase]ABC.cName
+   }
+)
+
+###Pure
+import meta::relational::mapping::*;
+import meta::relational::tests::mapping::extend::mainTable::*;
+
+function <<test.Test>> meta::relational::tests::mapping::extend::mainTable::testMainTableForB1():Any[*]
+{
+   let mainTable = B1Mapping.classMappingById('b1')->cast(@RootRelationalInstanceSetImplementation).mainTable;
+   let superMappingMainTable = AMapping.classMappingById('a')->cast(@RootRelationalInstanceSetImplementation).mainTable;
+   assertEquals($superMappingMainTable, $mainTable);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::extend::mainTable::testMainTableForB2():Any[*]
+{
+   let mainTable = B2Mapping.classMappingById('b2')->cast(@RootRelationalInstanceSetImplementation).mainTable;
+   let superMappingMainTable = AMapping.classMappingById('a')->cast(@RootRelationalInstanceSetImplementation).mainTable;
+   assertEquals($superMappingMainTable, $mainTable);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::extend::mainTable::testMainTableForC1():Any[*]
+{
+   let mainTable = C1Mapping.classMappingById('c1')->cast(@RootRelationalInstanceSetImplementation).mainTable;
+   let superMappingMainTable = B1Mapping.classMappingById('b1')->cast(@RootRelationalInstanceSetImplementation).mainTable;
+   assertEquals($superMappingMainTable, $mainTable);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::extend::mainTable::testMainTableForC2():Any[*]
+{
+   let mainTable = C2Mapping.classMappingById('c2')->cast(@RootRelationalInstanceSetImplementation).mainTable;
+   let superMappingMainTable = B2Mapping.classMappingById('b2')->cast(@RootRelationalInstanceSetImplementation).mainTable;
+   assertEquals($superMappingMainTable, $mainTable);
+}

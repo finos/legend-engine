@@ -1,0 +1,47 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::functions::asserts::*;
+import meta::relational::mapping::*;
+import meta::relational::tests::milestoning::*;
+import meta::relational::tests::*;
+
+function <<test.BeforePackage>> meta::relational::tests::milestoning::processingDate::setUp():Any[0..1]
+{
+   initDatabase();
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::processingDate::testProcessingTemporalAllQuery():Boolean[1]
+{
+   let processingDate = %2015-10-16;
+   let result = execute(|Trader.all($processingDate), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select "root".kerberos as "pk_0", "root".kerberos as "kerberos", \'2015-10-16\' as "k_processingDate" from TraderTable as "root" where "root".in_z <= \'2015-10-16\' and "root".out_z > \'2015-10-16\'',$result);
+   let traders = $result.values;
+   assertEquals(2, $traders->size());
+   assertEquals([$processingDate,$processingDate], $traders->map(p|$p.processingDate));
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::processingDate::testProcessingTemporalPropertyQuery():Boolean[1]
+{
+   let processingDate = %2015-10-16;
+   let result = execute(|Trader.all($processingDate)->filter(t|$t.certifications($processingDate).name->contains(['SRCE'])), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select "root".kerberos as "pk_0", "root".kerberos as "kerberos", \'2015-10-16\' as "k_processingDate" from TraderTable as "root" where exists(select 1 from CertificationTable as "certificationtable_0" where "certificationtable_0".name = \'SRCE\' and "root".kerberos = "certificationtable_0".kerberos and "certificationtable_0".in_z <= \'2015-10-16\' and "certificationtable_0".out_z > \'2015-10-16\') and "root".in_z <= \'2015-10-16\' and "root".out_z > \'2015-10-16\'', $result);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::processingDate::testProcessingTemporalPropertyPropagationInQuery():Boolean[1]
+{
+   let processingDate = %2015-10-16;
+   let result = execute(|Trader.all($processingDate)->filter(t|$t.certifications.name->contains(['SRCE'])), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select "root".kerberos as "pk_0", "root".kerberos as "kerberos", \'2015-10-16\' as "k_processingDate" from TraderTable as "root" where exists(select 1 from CertificationTable as "certificationtable_0" where "certificationtable_0".name = \'SRCE\' and "root".kerberos = "certificationtable_0".kerberos and "certificationtable_0".in_z <= \'2015-10-16\' and "certificationtable_0".out_z > \'2015-10-16\') and "root".in_z <= \'2015-10-16\' and "root".out_z > \'2015-10-16\'', $result);
+}

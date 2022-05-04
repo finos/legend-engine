@@ -1,0 +1,417 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::tests::mapping::inheritance::*;
+import meta::relational::tests::mapping::inheritance::cross::*;
+import meta::relational::tests::mapping::inheritance::relational::*;
+import meta::relational::tests::model::inheritance::*;
+import meta::relational::tests::*;
+import meta::pure::profiles::*;
+import meta::pure::mapping::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::runtime::*;
+
+function <<test.BeforePackage>> meta::relational::tests::mapping::inheritance::setUp():Boolean[1]
+{
+    meta::relational::tests::mapping::inheritance::createTablesAndFillDb();
+}
+
+function <<test.Test>> meta::relational::tests::mapping::inheritance::relational::testProjectTwoLambdas():Boolean[1]
+{
+   let result1 = execute(|Person.all()->project([p|$p.name, p|$p.roadVehicles->map(r|$r.wheelCount)], ['name', 'wheelCount']), inheritanceMappingDB, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   assertEquals(5, $result1.rows->size());
+   assertSameElements(['Atul Anand 3', 'Atul Anand 4', 'David Scott 2', 'David Scott 4', 'David Scott 4'], $result1.rows->map(r|$r.getString('name')+' '+$r.getInteger('wheelCount')->toString()));
+}
+
+function <<test.Test>> meta::relational::tests::mapping::inheritance::relational::testGroupBy():Boolean[1]
+{
+   let result1 = execute(|Person.all()->project([p|$p.name, p|$p.roadVehicles->map(r|$r.wheelCount)], ['name', 'wheelCount'])->groupBy('name', agg('wheelCountSum', r|$r.getInteger('wheelCount'), s|$s->sum())), inheritanceMappingDB, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   assertEquals(2, $result1.rows->size());
+   assertSameElements(['Atul Anand 7', 'David Scott 10'], $result1.rows->map(r|$r.getString('name')+' '+$r.getInteger('wheelCountSum')->toString()));
+}
+
+function <<test.Test>> meta::relational::tests::mapping::inheritance::relational::testQuery():Boolean[1]
+{
+   let result1 = execute(|Person.all()->filter(p|$p.roadVehicles->exists(r|$r.id == 1)), inheritanceMappingDB, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   assertEquals(1, $result1->size());
+   assertEquals('David Scott', $result1.name);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::inheritance::relational::testFilterProject():Boolean[1]
+{
+   let result1 = execute(|Person.all()->filter(p|$p.roadVehicles->exists(r|$r.id == 1))->project([p|$p.name], ['name']), inheritanceMappingDB, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   assertEquals(1, $result1->size());
+   assertEquals('David Scott', $result1.rows.values);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::inheritance::relational::testFilterProjectBooleanInFilter():Boolean[1]
+{
+   let result1 = execute(|Person.all()->filter(p|$p.roadVehicles->exists(r|$r.id == 1 || $r.description->startsWith('Nissan')))->project([p|$p.name], ['name']), inheritanceMappingDB, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   assertEquals(2, $result1.rows.values->size());
+   assertEquals(['Atul Anand','David Scott'], $result1.rows.values->sort());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::inheritance::relational::testGetAll():Boolean[1]
+{
+   let result1 = execute(|RoadVehicle.all(), inheritanceMappingDB, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   assertEquals(5, $result1->size());
+   assertSameElements([4,4,4,3,2], $result1.wheelCount);
+   assertSameElements([Car,Car,Car,Bicycle, Bicycle], $result1->map(r|$r->genericType().rawType));   
+   if ($result1->at(0).elementOverride->isNotEmpty(),
+       |assertSameElements([1,1,2,2,3], $result1->map(r|$r->getHiddenPayload()->cast(@meta::relational::mapping::KeyInformation).pk)),
+       |true
+   );
+}
+
+function <<test.Test>> meta::relational::tests::mapping::inheritance::relational::testGetAllFilter():Boolean[1]
+{
+   let result1 = execute(|RoadVehicle.all()->filter(r|$r.wheelCount > 2), inheritanceMappingDB, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   assertEquals(4, $result1->size());
+   assertSameElements([4,4,4,3], $result1.wheelCount);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::inheritance::relational::testGetAllFilterWithAssociation():Boolean[1]
+{
+   let result1 = execute(|RoadVehicle.all()->filter(r|$r.person.name == 'David Scott'), inheritanceMappingDB, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   assertEquals(3, $result1->size());
+
+   let result2 = execute(|RoadVehicle.all()->filter(r|$r.person.name == 'Atul Anand'), inheritanceMappingDB, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   assertEquals(2, $result2->size());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::inheritance::relational::testSubTypeFilter():Boolean[1]
+{
+   let result1 = execute(|Person.all()->filter(p|$p.roadVehicles->subType(@Car)->exists(c|$c.engineType == EngineType.V)), inheritanceMappingDB, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   assertEquals(1, $result1->size());
+   assertEquals('David Scott', $result1->at(0).name);
+
+   let result2 = execute(|Person.all()->filter(p|$p.roadVehicles->subType(@Bicycle)->exists(c|$c.wheelCount == 3)), inheritanceMappingDB, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   assertEquals(1, $result2->size());
+   assertEquals('Atul Anand', $result2->at(0).name);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::inheritance::relational::testSubTypeProjectWithAssociation():Boolean[1]
+{
+   let result1 = execute(|Person.all()->project([p|$p.name, p|$p.roadVehicles->subType(@Car).engineType], ['name', 'engine']), inheritanceMappingDB, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   assertEquals(3, $result1.rows->size());
+   assertSameElements(['David Scott V','David Scott U','Atul Anand H'], $result1.rows->map(r|$r.get('name')->toString()+' '+$r.get('engine')->toString()));
+}
+
+function <<test.Test>> meta::relational::tests::mapping::inheritance::relational::testSubTypeProjectDirect():Boolean[1]
+{
+   let result1 = execute(|RoadVehicle.all()->project([r|$r.wheelCount, r|$r->subType(@Car).engineType], ['wheels', 'engine']), inheritanceMappingDB, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   assertEquals(5, $result1.rows->size());
+   assertSameElements(['2 TDSNull', '3 TDSNull', '4 H', '4 U', '4 V'], $result1.rows->map(r|$r.get('wheels')->toString()+' '+$r.get('engine')->toString()));
+}
+
+function <<test.Test>> meta::relational::tests::mapping::inheritance::relational::testSubTypeProjectShared():Boolean[1]
+{
+   let result1 = execute(|Person.all()->project([p|$p.name, p|$p.vehicles->map(v|$v->subType(@RoadVehicle).wheelCount)], ['name', 'wheelCount']), inheritanceMappingDB, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   assertEquals(5, $result1.rows->size());
+   assertSameElements(['Atul Anand 3', 'Atul Anand 4', 'David Scott 2', 'David Scott 4', 'David Scott 4'], $result1.rows->map(r|$r.get('name')->toString()+' '+$r.get('wheelCount')->toString()));
+}
+
+
+function <<test.Test>> meta::relational::tests::mapping::inheritance::relational::testSubTypeProjectSharedNonDirectlyRouted():Boolean[1]
+{
+   let result1 = execute(|Person.all().roadVehicles->project([p|$p.id, p|$p->subType(@Car).engineType], ['id', 'engine']), inheritanceMappingDB, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   assertEquals(5, $result1.rows->size());
+   assertSameElements(['1 TDSNull', '1 V', '2 TDSNull', '2 U', '3 H'], $result1.rows->map(r|$r.get('id')->toString()+' '+$r.get('engine')->toString()));
+}
+
+function <<test.Test>> meta::relational::tests::mapping::inheritance::relational::testSubTypeGroupBy():Boolean[1]
+{
+   let result1 = execute(|Person.all()->groupBy([p|$p.name],
+                                                [agg(p|$p.vehicles->subType(@RoadVehicle).wheelCount, y | $y->sum())],
+                                                ['name', 'wheel count']), inheritanceMappingDB, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   assertEquals(2, $result1.rows->size());
+   assertSameElements(['Atul Anand 7', 'David Scott 10'], $result1.rows->map(r|$r.get('name')->toString()+' '+$r.get('wheel count')->toString()));
+}
+
+function <<test.Test>> meta::relational::tests::mapping::inheritance::relational::testSubTypeGroupByThroughMap():Boolean[1]
+{
+   let result1 = execute(|Person.all().roadVehicles->groupBy([p|$p.id],
+                                                             [agg(p|$p->subType(@Car).engineType, y | $y->count())],
+                                                             ['id', 'engine count']), inheritanceMappingDB, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   assertEquals(3, $result1.rows->size());
+   assertSameElements(['1 1', '2 1', '3 1'], $result1.rows->map(r|$r.get('id')->toString()+' '+$r.get('engine count')->toString()));
+}
+
+function <<test.Test>> meta::relational::tests::mapping::inheritance::relational::testFilteringOnColumnsNotInProject():Boolean[1]
+{
+   let result = execute(|RoadVehicle.all()->filter(r|$r.wheelCount == 4 && $r.person.name == 'David Scott')->project(col(r|$r.description,'vehicleDescription')), inheritanceMappingDB, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   assertEquals(2, $result.rows->size());
+   assertSameElements(['Peugeot', 'Renault'], $result.rows->map(r|$r.get('vehicleDescription')->toString()));
+}
+
+function <<test.Test>> meta::relational::tests::mapping::inheritance::relational::testFilteringOnColumnsNotInProjectSingleChildStructure():Boolean[1]
+{
+   let result = execute(|Gasoline.all()->filter(f|$f.octaneLevel == 87 && $f.combustionCharacteristics.idealCompression == 100)->project(col(f|$f.description,'fuelDescription')), inheritanceMappingDB, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   assertEquals(1, $result.rows->size());
+   assertSameElements(['Regular Unleaded'], $result.rows->map(r|$r.get('fuelDescription')->toString()));
+}
+
+function <<test.Test, test.ToFix>> meta::relational::tests::mapping::inheritance::relational::testProjectQualifiedPropertyFromUnmappedSuperClass():Boolean[1]
+{
+   let result = execute(|Bicycle.all()->project(col(f|$f.derivedOwnerDescription,'owner description')), inheritanceMain, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   assertEquals(2, $result.rows->size());
+   assertSameElements(['David Scott', 'Atul Anand'], $result.rows->map(r|$r.getString('owner description')));
+}
+
+function <<test.Test>> meta::relational::tests::mapping::inheritance::relational::testEmbeddMappingInSubTypes():Boolean[1]
+{
+   let result = execute(|Person.all()->project([f|$f.name, f|$f.vehicles->subType(@Car).mechanic.name, f|$f.vehicles->subType(@Bicycle).mechanic.name],['Person','Car Mechanic','Bicycle Mechanic']), inheritanceWithEmbedded, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameElements(['Atul Anand,Mohammed,TDSNull', 'David Scott,Mohammed,TDSNull', 'David Scott,TDSNull,David'], $result.values->at(0).rows->map(r|$r.values->makeString(',')));
+}
+
+function meta::relational::tests::mapping::inheritance::createTablesAndFillDb():Boolean[1]
+{
+   let connection = testRuntime().connectionByElement(db)->cast(@TestDatabaseConnection);
+
+   executeInDb('Drop table if exists Person;', $connection);
+   executeInDb('Create Table Person (id INT, name VARCHAR(200));', $connection);
+   executeInDb('insert into Person (id, name) values (1, \'David Scott\');', $connection);
+   executeInDb('insert into Person (id, name) values (2, \'Atul Anand\');', $connection);
+
+   executeInDb('Drop table if exists Vehicle;', $connection);
+   executeInDb('Create Table Vehicle (id INT, PersonID  VARCHAR(200), carMechanicName  VARCHAR(200), bicycleMechanicName  VARCHAR(200), vehicleType VARCHAR(1));', $connection);
+   executeInDb('insert into Vehicle (id, PersonID, carMechanicName, vehicleType) values (1, 1, \'Mohammed\',\'C\');', $connection);
+   executeInDb('insert into Vehicle (id, PersonID, bicycleMechanicName, vehicleType) values (2, 1, \'David\',\'B\');', $connection);
+   executeInDb('insert into Vehicle (id, PersonID, carMechanicName, vehicleType) values (3, 2, \'Mohammed\',\'C\');', $connection);
+   
+   executeInDb('Drop table if exists Car;', $connection);
+   executeInDb('Create Table Car (id INT, c_PersonID VARCHAR(200), db_car_wheelCount INTEGER, c_description VARCHAR(200), engineType INT);', $connection);
+   executeInDb('insert into Car (id, c_PersonID, db_car_wheelCount, c_description, engineType) values (1, 1, 4, \'Peugeot\', 1);', $connection);
+   executeInDb('insert into Car (id, c_PersonID, db_car_wheelCount, c_description, engineType) values (2, 1, 4, \'Renault\', 2);', $connection);
+   executeInDb('insert into Car (id, c_PersonID, db_car_wheelCount, c_description, engineType) values (3, 2, 4, \'Nissan\', 3);', $connection);
+   
+   executeInDb('Drop table if exists Bicycle;', $connection);
+   executeInDb('Create Table Bicycle(id INT, b_PersonID VARCHAR(200), db_bic_wheelCount INTEGER, b_description VARCHAR(200));', $connection);
+   executeInDb('insert into Bicycle (id, b_PersonID, db_bic_wheelCount, b_description) values (1, 1, 2, \'MBK\');', $connection);
+   executeInDb('insert into Bicycle (id, b_PersonID, db_bic_wheelCount, b_description) values (2, 2, 3, \'BMX\');', $connection);
+
+   executeInDb('Drop table if exists Unleaded;', $connection);
+   executeInDb('Create Table Unleaded(id INT, combustionId INT, octaneLevel INTEGER, description VARCHAR(200));', $connection);
+   executeInDb('insert into Unleaded (id, combustionId, octaneLevel, description) values (1, 1, 87, \'Regular Unleaded\');', $connection);
+   executeInDb('insert into Unleaded (id, combustionId, octaneLevel, description) values (2, 2, 90, \'Premium Unleaded\');', $connection);
+
+   executeInDb('Drop table if exists CombustionCharacteristics;', $connection);
+   executeInDb('Create Table CombustionCharacteristics(id INT, idealCompression INT);', $connection);
+   executeInDb('insert into CombustionCharacteristics (id, idealCompression) values (1, 100);', $connection);
+   executeInDb('insert into CombustionCharacteristics (id, idealCompression) values (2, 120);', $connection);
+
+   true;
+}
+
+
+###Relational
+
+Database meta::relational::tests::mapping::inheritance::myDB
+(
+    Table Person
+    (
+        ID INT PRIMARY KEY,
+        name VARCHAR(200)
+    )
+
+    Table Car
+    (
+        ID INT PRIMARY KEY,
+        db_car_wheelCount INT,
+        engineType INT, 
+        c_Description VARCHAR(200),
+        c_PersonID INT
+    )
+
+    Table Airline
+    (
+        ID INT PRIMARY KEY,
+        name VARCHAR(200)
+    )
+   
+    Table Bicycle
+    (
+        ID INT PRIMARY KEY,
+        db_bic_wheelCount INT,
+        b_Description VARCHAR(200),
+        b_PersonID INT
+    )
+    
+    Table Unleaded
+    (
+        ID INT PRIMARY KEY,
+        combustionId INT,
+        octaneLevel INT,
+        description VARCHAR(200)
+    )
+   
+    Table CombustionCharacteristics
+    (
+        ID INT PRIMARY KEY,
+        idealCompression INT
+    )
+   
+    Table Owner
+    (
+        VEHICLE_ID INT PRIMARY KEY,
+        name VARCHAR(200)
+    )
+    
+    Join CarOwner(Car.ID = Owner.VEHICLE_ID)
+    Join BicycleOwner(Bicycle.ID = Owner.VEHICLE_ID)
+    Join PersonCar(Person.ID = Car.c_PersonID)
+    Join PersonBicycle(Person.ID = Bicycle.b_PersonID)
+    Join AirlineCar(Airline.ID = Car.c_PersonID)
+    Join AirlineBicycle(Airline.ID = Bicycle.b_PersonID)
+    Join UnleadedCombustionCharacteristics(Unleaded.combustionId = CombustionCharacteristics.ID)
+)
+
+###Relational
+Database meta::relational::tests::mapping::inheritance::oneTableForInheritanceHierarchyDB
+(
+    Table Person
+    (
+        ID INT PRIMARY KEY,
+        name VARCHAR(200)
+    )
+   
+    Table Vehicle
+    (
+        ID INT PRIMARY KEY,
+        PersonID INT PRIMARY KEY,
+        carMechanicName VARCHAR(200),
+        bicycleMechanicName VARCHAR(200)
+    )
+   
+    Join PersonVehicle(Person.ID = Vehicle.PersonID)
+)
+
+###Mapping
+import meta::relational::tests::mapping::inheritance::*;
+import meta::relational::tests::model::inheritance::*;
+
+Mapping meta::relational::tests::mapping::inheritance::inheritanceWithEmbedded
+(
+    Person : Relational
+            {
+               scope([oneTableForInheritanceHierarchyDB])
+               (
+                  name :  Person.name,
+                  vehicles[map1] : @PersonVehicle,
+                  vehicles[map2] : @PersonVehicle
+               )
+            }
+   
+    Vehicle : Operation
+             {
+                meta::pure::router::operations::inheritance_OperationSetImplementation_1__SetImplementation_MANY_()
+             }
+   
+    Car[map1]: Relational
+            {
+                  mechanic(name : [oneTableForInheritanceHierarchyDB]Vehicle.carMechanicName)
+            }
+
+    Bicycle[map2] : Relational
+            {
+                  mechanic(name : [oneTableForInheritanceHierarchyDB]Vehicle.bicycleMechanicName)
+            }
+)
+
+###Mapping
+import meta::relational::tests::mapping::inheritance::*;
+import meta::relational::tests::model::inheritance::*;
+
+Mapping meta::relational::tests::mapping::inheritance::inheritanceMain
+(
+   Person : Relational
+            {
+               name : [myDB] Person.name,
+               vehicles[map1] : [myDB]@PersonCar,
+               vehicles[map2] : [myDB]@PersonBicycle,
+               roadVehicles[map1] : [myDB]@PersonCar,
+               roadVehicles[map2] : [myDB]@PersonBicycle,
+               cars[map1] : [myDB]@PersonCar,
+               bicycles[map2] : [myDB]@PersonBicycle
+            }
+            
+   Car[map1]: Relational
+            {
+               id : [myDB] Car.ID,
+               engineType : EnumerationMapping engineTypeMapping : [myDB] Car.engineType,
+               wheelCount :  [myDB] Car.db_car_wheelCount,
+               description : [myDB] Car.c_Description,
+               person : [myDB]@PersonCar,
+               owner : [myDB]@CarOwner
+            }
+
+   Bicycle[map2] : Relational
+            {
+               id : [myDB] Bicycle.ID,
+               wheelCount :  [myDB] Bicycle.db_bic_wheelCount,
+               description : [myDB] Bicycle.b_Description,
+               person : [myDB]@PersonBicycle,
+               owner(name : 'Unknown')
+            }
+   
+   Unleaded : Relational
+            {
+               octaneLevel  :  [myDB] Unleaded.octaneLevel,
+               description : [myDB] Unleaded.description,
+               combustionCharacteristics  : [myDB]@UnleadedCombustionCharacteristics
+            }
+
+   CombustionCharacteristics  : Relational
+            {
+               idealCompression  : [myDB] CombustionCharacteristics.idealCompression
+            }
+   
+   VehicleOwner : Relational
+   {
+      name : [myDB] Owner.name
+   }
+
+   EngineType: EnumerationMapping engineTypeMapping
+   {
+      V: [1],
+      U: [2],
+      H: [3],
+      W: [4],
+      X: [5]
+   }
+)
+
+###Mapping
+import meta::relational::tests::mapping::inheritance::*;
+import meta::relational::tests::model::inheritance::*;
+
+Mapping meta::relational::tests::mapping::inheritance::relational::inheritanceMappingDB
+(
+   include meta::relational::tests::mapping::inheritance::inheritanceMain
+
+   Gasoline : Operation
+                 {
+                    meta::pure::router::operations::inheritance_OperationSetImplementation_1__SetImplementation_MANY_()
+                 }
+   
+   Vehicle : Operation
+                 {
+                    meta::pure::router::operations::inheritance_OperationSetImplementation_1__SetImplementation_MANY_()
+                 }
+
+   RoadVehicle : Operation
+                 {
+                    meta::pure::router::operations::inheritance_OperationSetImplementation_1__SetImplementation_MANY_()
+                 }
+)

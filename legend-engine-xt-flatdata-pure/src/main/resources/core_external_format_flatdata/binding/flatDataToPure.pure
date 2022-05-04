@@ -1,0 +1,198 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::shared::*;
+import meta::external::shared::generation::*;
+import meta::external::shared::format::binding::*;
+import meta::external::shared::format::binding::toString::*;
+import meta::external::shared::format::metamodel::*;
+import meta::external::shared::format::utils::*;
+import meta::external::format::flatdata::metamodel::*;
+import meta::external::format::flatdata::binding::toPure::*;
+import meta::json::*;
+import meta::pure::functions::collection::*;
+import meta::pure::functions::meta::*;
+import meta::pure::functions::tests::collection::*;
+import meta::pure::generation::metamodel::*;
+import meta::pure::graphFetch::*;
+import meta::pure::metamodel::serialization::grammar::*;
+import meta::pure::model::unit::*;
+import meta::xml::metamodel::*;
+
+/// ========================================================================================================================================================
+// Entry points 
+// ========================================================================================================================================================
+
+function meta::external::format::flatdata::binding::toPure::flatDataToPure(schemaSet:SchemaSet[1], config:FlatDataToModelConfiguration[1]): Binding[1]
+{
+   flatDataToPure($schemaSet, $config, noDebug());
+}
+
+function meta::external::format::flatdata::binding::toPure::flatDataToPureWithDebug(schemaSet:SchemaSet[1], config:FlatDataToModelConfiguration[1]): Binding[1]
+{
+   flatDataToPure($schemaSet, $config, debug());
+}
+
+function meta::external::format::flatdata::binding::toPure::flatDataToPure(schemaSet:SchemaSet[1], config:FlatDataToModelConfiguration[1], debug:DebugContext[1]): Binding[1]
+{
+   let context           = createGenerationContext($schemaSet, $config);
+   let generatedElements = generate($context, $debug);
+   let result            = createBinding($generatedElements, $context);
+   
+   $debug->log(|'\nGenerated the following:\n\n'+$result->bindingToString()+'\n\n'+$result->modelToString());
+   $result;
+}
+
+// ========================================================================================================================================================
+// Configuration
+// ========================================================================================================================================================
+
+Class meta::external::format::flatdata::binding::toPure::FlatDataToModelConfiguration extends meta::external::shared::format::binding::toPure::SchemaToModelConfiguration
+{
+  {doc.doc='Make names in generated model into conventional names'}
+  purifyNames: Boolean[1];
+  {doc.doc='The name of the class to represent the whole schema if one is to be generated'}
+  schemaClassName: String[0..1];
+}
+
+function meta::external::format::flatdata::binding::toPure::defaultConfig(): FlatDataToModelConfiguration[1]
+{
+  ^FlatDataToModelConfiguration(targetPackage='target::package', targetBinding='target::package::GeneratedBinding', purifyNames=true);
+}
+
+function <<Generation.Configuration>>  meta::external::format::flatdata::binding::toPure::describeConfiguration(): GenerationParameter[*]
+{  
+  meta::pure::generation::describeConfiguration(FlatDataToModelConfiguration, meta::external::format::flatdata::binding::toPure::defaultConfig__FlatDataToModelConfiguration_1_, []);
+}
+
+// ========================================================================================================================================================
+// GenerationContext
+// ========================================================================================================================================================
+
+Class <<access.private>> meta::external::format::flatdata::binding::toPure::GenerationContext
+{
+   config    : FlatDataToModelConfiguration[1];
+   schemaSet : SchemaSet[1];
+
+   flatData() 
+   {
+      if($this.config.sourceSchemaId->isEmpty(),
+         | $this.schemaSet.schemas->at(0),
+         | $this.schemaSet.schemas->filter(s| $s.id == $this.config.sourceSchemaId)->toOne()
+      ).detail->cast(@FlatData)
+         
+   }: FlatData[1];
+
+   package()
+   {
+      if($this.config.targetPackage->endsWith('::'), 
+         |$this.config.targetPackage, 
+         |$this.config.targetPackage+'::')
+   }: String[1];
+}
+
+function <<access.private>> meta::external::format::flatdata::binding::toPure::createGenerationContext(schemaSet:SchemaSet[1], config:FlatDataToModelConfiguration[1]): GenerationContext[1]
+{
+   let context = ^GenerationContext(
+      config    = $config, 
+      schemaSet = $schemaSet
+   );
+}
+
+// ========================================================================================================================================================
+// generation
+// ========================================================================================================================================================
+
+function <<access.private>> meta::external::format::flatdata::binding::toPure::generate(context:GenerationContext[1], debug:DebugContext[1]): PackageableElement[*]
+{
+   let withRecords = $context.flatData.sections->filter(s| $s.recordType->isNotEmpty());
+   assert($withRecords->size() > 0, |'No record types found in schema');
+   let fromRecords = $withRecords->map({section| 
+      let sectionClass = $section->generateSection($context, $debug);
+      pair($section, $sectionClass);
+   });
+   
+   let schemaElements = if($context.config.schemaClassName->isNotEmpty(),
+                           | $fromRecords->generateSchemaClassAndAssociations($context, $debug),
+                           | []
+                        );
+   $schemaElements->concatenate($fromRecords.second);
+}
+
+function <<access.private>> meta::external::format::flatdata::binding::toPure::generateSection(section:FlatDataSection[1], context:GenerationContext[1], debug:DebugContext[1]): Class<Any>[1]
+{
+   $debug->log(|'generate for section '+$section.name);
+   let className      = $context.package + if($context.config.purifyNames, |$section.name->purifyClassName(), |$section.name)+'Record';
+   let cls            = newClass($className);   
+   let clsGenericType = $cls.classifierGenericType->toOne().typeArguments->at(0);      
+   let properties = $section.recordType.fields->map(f|
+      let pName = if($context.config.purifyNames, |$f.label->purifyPropertyName(), |$f.label);
+      let pType = $f.type->match([
+         x:FlatDataString[1]   | String,
+         x:FlatDataBoolean[1]  | Boolean,
+         x:FlatDataInteger[1]  | Integer,
+         x:FlatDataDecimal[1]  | Float,
+         x:FlatDataDate[1]     | StrictDate,
+         x:FlatDataDateTime[1] | DateTime
+      ]);
+      let pMult = if($f.type.optional,
+                     | ZeroOne,
+                     | PureOne
+                  );
+      newProperty($pName, $clsGenericType, ^GenericType(rawType=$pType), $pMult);
+   );
+   $cls->mutateAdd('properties', $properties);
+}
+
+function <<access.private>> meta::external::format::flatdata::binding::toPure::generateSchemaClassAndAssociations(fromRecords:Pair<FlatDataSection,Class<Any>>[*], context:GenerationContext[1], debug:DebugContext[1]): PackageableElement[*]
+{
+   $debug->log(|'generate schema class');
+   
+   let schemaClassName = $context.config.schemaClassName->toOne();
+   let cls             = newClass($context.package + $schemaClassName);   
+   
+   let associations = $fromRecords->map({pair|
+      let section      = $pair.first;
+      let sectionClass = $pair.second;
+      
+      let p1           = newProperty($schemaClassName->toLowerFirstCharacter()->toOne(), ^GenericType(rawType=$sectionClass), ^GenericType(rawType=$cls), PureOne);
+      
+      let pName        = if($context.config.purifyNames, |$section.name->purifyPropertyName(), |$section.name);
+      let pMult        = $section.sectionProperties
+                            ->filter(sp| $sp.name == 'scope.forNumberOfLines').value->cast(@Integer)
+                            ->map(n|  ^Multiplicity(lowerBound=^MultiplicityValue(value=$n), upperBound=^MultiplicityValue(value=$n)))
+                            ->first()->orElse(ZeroMany);
+      let p2           = newProperty($pName, ^GenericType(rawType=$cls), ^GenericType(rawType=$sectionClass), $pMult);
+      
+      newAssociation($context.package + $schemaClassName+'_'+$sectionClass.name->toOne(), $p1, $p2);
+   });
+
+   $cls->concatenate($associations);
+}
+
+function <<access.private>> meta::external::format::flatdata::binding::toPure::createBinding(model:PackageableElement[*], context:GenerationContext[1]): Binding[1]
+{
+   let sepPos  = $context.config.targetBinding->lastIndexOf('::');
+   let pkgName = $context.config.targetBinding->substring(0, $sepPos);
+   
+   ^Binding(
+      package     = pathToPackage($pkgName, true),
+      name        = $context.config.targetBinding->substring($sepPos+2),
+      schemaSet   = $context.schemaSet, 
+      contentType = 'application/x.flatdata',
+      modelUnit   = newModelUnit()->include($model)
+   );
+}
+
+

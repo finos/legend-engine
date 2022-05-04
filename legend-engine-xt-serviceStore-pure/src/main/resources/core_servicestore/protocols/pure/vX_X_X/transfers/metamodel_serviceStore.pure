@@ -1,0 +1,169 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::router::extension::*;
+import meta::external::store::service::metamodel::*;
+
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::transformServiceStore(s:ServiceStore[1], extensions:meta::pure::router::extension::RouterExtension[*]):meta::protocols::pure::vX_X_X::metamodel::store::service::ServiceStore[1]
+{
+   ^meta::protocols::pure::vX_X_X::metamodel::store::service::ServiceStore(
+      _type       = 'serviceStore',
+      description = $s.description,
+      name        = $s.name->toOne(),
+      package     = if($s.package->isEmpty(), |[], |$s.package->toOne()->elementToPath()),
+      elements    = $s.elements->map(e | $e->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::transformServiceStoreElement($extensions))
+   )
+}
+
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::transformServiceStoreElement(s:ServiceStoreElement[1], extensions:RouterExtension[*]):meta::protocols::pure::vX_X_X::metamodel::store::service::ServiceStoreElement[1]
+{
+   $s->match([
+      sg: ServiceGroup[1] | ^meta::protocols::pure::vX_X_X::metamodel::store::service::ServiceGroup(
+                                 _type    = 'serviceGroup',
+                                 id       = $sg.id,
+                                 path     = $sg.path,
+                                 elements = $sg.elements->map(e | $e->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::transformServiceStoreElement($extensions))
+                             ),
+      s: Service[1]       | ^meta::protocols::pure::vX_X_X::metamodel::store::service::Service(
+                                 _type      = 'service',
+                                 id         = $s.id,
+                                 path       = $s.path,
+                                 requestBody= $s.requestBody->map(b | $b->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::transformTypeReference()),
+                                 method     = $s.method->toString(),
+                                 parameters = $s.parameters->map(p | $p->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::transformServiceStoreParameter()),
+                                 response   = $s.response->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::transformTypeReference()->cast(@meta::protocols::pure::vX_X_X::metamodel::store::service::ComplexTypeReference),
+                                 security   = $s.security->map(p | $p->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::transformSecurityScheme($extensions))
+                             )
+   ])
+}
+
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::transformServiceStoreParameter(s:ServiceParameter[1]):meta::protocols::pure::vX_X_X::metamodel::store::service::ServiceParameter[1]
+{
+   let type = $s.type->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::transformTypeReference();
+   
+   ^meta::protocols::pure::vX_X_X::metamodel::store::service::ServiceParameter(
+      name                = $s.name,
+      type                = $type,
+      allowReserved       = $s.allowReserved,
+      required            = $s.required,
+      location            = $s.location->toString(),
+      _enum               = if($s.enum->isEmpty(), | [], | $s.enum->toOne()->elementToPath()),
+      serializationFormat = ^meta::protocols::pure::vX_X_X::metamodel::store::service::SerializationFormat(style = $s.serializationFormat.style, explode = $s.serializationFormat.explode)
+   );
+}
+
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::transformTypeReference(t:TypeReference[1]):meta::protocols::pure::vX_X_X::metamodel::store::service::TypeReference[1]
+{
+   $t->match([
+      st: StringTypeReference[1]  | ^meta::protocols::pure::vX_X_X::metamodel::store::service::StringTypeReference(_type = 'string', list = $st.list),
+      bt: BooleanTypeReference[1] | ^meta::protocols::pure::vX_X_X::metamodel::store::service::BooleanTypeReference(_type = 'boolean', list = $bt.list),
+      it: IntegerTypeReference[1] | ^meta::protocols::pure::vX_X_X::metamodel::store::service::IntegerTypeReference(_type = 'integer', list = $it.list),
+      ft: FloatTypeReference[1]   | ^meta::protocols::pure::vX_X_X::metamodel::store::service::FloatTypeReference(_type = 'float', list = $ft.list),
+      ct: ComplexTypeReference[1] | ^meta::protocols::pure::vX_X_X::metamodel::store::service::ComplexTypeReference(_type = 'complex', list = $ct.list, type = $ct.type->elementToPath(), binding = $ct.binding->elementToPath())
+   ]);
+}
+
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::transformSecurityScheme(a:SecurityScheme[1], extensions:RouterExtension[*]):meta::protocols::pure::vX_X_X::metamodel::store::service::SecurityScheme[1]
+{
+   $a->match($extensions.serializerExtension('vX_X_X')->cast(@meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X).moduleSerializerExtension('serviceStore')->cast(@meta::protocols::pure::vX_X_X::extension::store::service::ServiceStoreModuleSerializerExtension).transfers_securityScheme_transformSecurityScheme->concatenate([
+      a:SecurityScheme[1]      | fail('Unsupported Authentication Strategy'); ^meta::protocols::pure::vX_X_X::metamodel::store::service::SecurityScheme(_type = 'unknown');
+   ])->toOneMany())
+}
+
+// Mapping
+###Pure
+import meta::pure::mapping::*;
+
+import meta::external::store::service::metamodel::mapping::*;
+import meta::external::store::service::metamodel::*;
+
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::mapping::transformRootServiceInstanceSetImplementation(s:RootServiceInstanceSetImplementation[1], mapping:Mapping[1], extensions:meta::pure::router::extension::RouterExtension[*]):meta::protocols::pure::vX_X_X::metamodel::store::service::mapping::RootServiceClassMapping[1]
+{
+   ^meta::protocols::pure::vX_X_X::metamodel::store::service::mapping::RootServiceClassMapping(
+      id                     = $s.id,
+      _type                  = 'serviceStore',
+      class                  = $s.class->elementToPath(),
+      root                   = $s.root,
+      mappingClass           = $s.mappingClass->map(mc|$mc->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMappingClass($mapping, $extensions)),
+      localMappingProperties = $s.localProperties->map(p | $p->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::mapping::transformLocalMappingProperties()),
+      servicesMapping        = $s.servicesMapping->map(sm | $sm->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::mapping::transformServiceMapping($extensions))
+   )
+}
+
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::mapping::transformLocalMappingProperties(p:Property<Nil,Any|*>[1]):meta::protocols::pure::vX_X_X::metamodel::store::service::mapping::LocalMappingProperty[1]
+{
+   ^meta::protocols::pure::vX_X_X::metamodel::store::service::mapping::LocalMappingProperty(
+      name         = $p.name->toOne(),
+      type         = $p->functionReturnType().rawType->toOne()->elementToPath(),
+      multiplicity = $p.multiplicity->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()
+   )
+}
+
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::mapping::transformServiceMapping(sm:ServiceMapping[1], extensions:meta::pure::router::extension::RouterExtension[*]):meta::protocols::pure::vX_X_X::metamodel::store::service::mapping::ServiceMapping[1]
+{
+   ^meta::protocols::pure::vX_X_X::metamodel::store::service::mapping::ServiceMapping(
+      service          = $sm.service->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::mapping::transformServiceToServicePtr(),
+      pathOffset       = $sm.pathOffset->map(p | $p->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny([], newMap([])->cast(@Map<String,List<Any>>), $p->functionReturnMultiplicity(), $extensions))->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Path),
+      requestBuildInfo = $sm.requestBuildInfo->map(r | $r->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::mapping::transformServiceRequestBuildInfo($extensions))
+   )
+}
+
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::mapping::transformServiceToServiceGroupPtr(s:ServiceGroup[1]):meta::protocols::pure::vX_X_X::metamodel::store::service::ServiceGroupPtr[1]
+{
+   ^meta::protocols::pure::vX_X_X::metamodel::store::service::ServiceGroupPtr(
+      serviceGroup = $s.id,
+      serviceStore = $s.owner->elementToPath(),
+      parent       = if($s.parent->isEmpty(), | [], |$s.parent->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::mapping::transformServiceToServiceGroupPtr())
+   )
+}
+
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::mapping::transformServiceToServicePtr(s:Service[1]):meta::protocols::pure::vX_X_X::metamodel::store::service::ServicePtr[1]
+{
+   ^meta::protocols::pure::vX_X_X::metamodel::store::service::ServicePtr(
+      service      = $s.id,
+      serviceStore = $s.owner->elementToPath(),
+      parent       = if($s.parent->isEmpty(), | [], |$s.parent->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::mapping::transformServiceToServiceGroupPtr())
+   )
+}
+
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::mapping::transformServiceRequestBuildInfo(s:ServiceRequestBuildInfo[1], extensions:meta::pure::router::extension::RouterExtension[*]):meta::protocols::pure::vX_X_X::metamodel::store::service::mapping::ServiceRequestBuildInfo[1]
+{
+   ^meta::protocols::pure::vX_X_X::metamodel::store::service::mapping::ServiceRequestBuildInfo(
+      requestParametersBuildInfo = $s.requestParametersBuildInfo->map(param | $param->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::mapping::transformServiceRequestParametersBuildInfo($extensions)),
+      requestBodyBuildInfo       = $s.requestBodyBuildInfo->map(body | $body->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::mapping::transformServiceRequestBodyBuildInfo($extensions))
+   )
+}
+
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::mapping::transformServiceRequestParametersBuildInfo(s:ServiceRequestParametersBuildInfo[1], extensions:meta::pure::router::extension::RouterExtension[*]):meta::protocols::pure::vX_X_X::metamodel::store::service::mapping::ServiceRequestParametersBuildInfo[1]
+{
+   ^meta::protocols::pure::vX_X_X::metamodel::store::service::mapping::ServiceRequestParametersBuildInfo(
+      parameterBuildInfoList = $s.parameterBuildInfoList->map(param | $param->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::mapping::transformServiceRequestParameterBuildInfo($extensions))
+   )
+}
+
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::mapping::transformServiceRequestParameterBuildInfo(s:ServiceRequestParameterBuildInfo[1], extensions:meta::pure::router::extension::RouterExtension[*]):meta::protocols::pure::vX_X_X::metamodel::store::service::mapping::ServiceRequestParameterBuildInfo[1]
+{
+   ^meta::protocols::pure::vX_X_X::metamodel::store::service::mapping::ServiceRequestParameterBuildInfo(
+      serviceParameter = $s.serviceParameter.name,
+      transform        = $s.transform->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transformLambda($extensions)
+   )
+}
+
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::mapping::transformServiceRequestBodyBuildInfo(s:ServiceRequestBodyBuildInfo[1], extensions:meta::pure::router::extension::RouterExtension[*]):meta::protocols::pure::vX_X_X::metamodel::store::service::mapping::ServiceRequestBodyBuildInfo[1]
+{
+   ^meta::protocols::pure::vX_X_X::metamodel::store::service::mapping::ServiceRequestBodyBuildInfo(
+      transform = $s.transform->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transformLambda($extensions)
+   )
+}

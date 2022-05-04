@@ -1,0 +1,90 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::executionPlan::*;
+import meta::relational::runtime::*;
+import meta::relational::mapping::*;
+
+Class meta::pure::executionPlan::RelationResultType extends ResultType
+{
+   relationName : String[1];
+   relationType : RelationType[1];
+   schemaName : String[1];
+   database : String[1];
+   columns : meta::relational::metamodel::Column[*];
+}
+
+Enum meta::pure::executionPlan::RelationType
+{
+   TABLE,
+   VIEW
+}
+
+Class meta::relational::mapping::SQLResultColumn
+{
+   label : String[1];
+   dataType : meta::relational::metamodel::datatype::DataType[0..1];
+}
+
+Class meta::relational::mapping::TempTableColumnMetaData
+{
+   column                   : SQLResultColumn[1];
+   identifierForGetter      : String[0..1];
+   parametersForGetter      : Map<String, Any>[0..1];
+}
+
+Class meta::relational::mapping::SQLExecutionNode extends ExecutionNode
+{
+   sqlQuery : String[1];
+   onConnectionCloseCommitQuery : String[0..1];
+   onConnectionCloseRollbackQuery : String[0..1];
+   resultColumns : SQLResultColumn[*];
+   connection: DatabaseConnection[1];
+}
+
+Class meta::relational::mapping::RelationalInstantiationExecutionNode extends ExecutionNode
+{
+}
+
+Class meta::relational::mapping::RelationalTdsInstantiationExecutionNode extends RelationalInstantiationExecutionNode
+[tdsResultType:$this.resultType->instanceOf(TDSResultType)]
+{
+}
+
+Class meta::relational::mapping::RelationalClassInstantiationExecutionNode extends RelationalInstantiationExecutionNode
+[classResultType:$this.resultType->instanceOf(ClassResultType)]
+{
+}
+
+Class meta::relational::mapping::RelationalRelationDataInstantiationExecutionNode extends RelationalInstantiationExecutionNode
+[relationResultType:$this.resultType->instanceOf(RelationResultType)]
+{
+}
+
+Class meta::relational::mapping::RelationalDataTypeInstantiationExecutionNode extends RelationalInstantiationExecutionNode
+[dataTypeResultType:$this.resultType->instanceOf(DataTypeResultType)]
+{
+}
+
+Class meta::relational::mapping::CreateAndPopulateTempTableExecutionNode extends ExecutionNode
+{
+   inputVarNames            : String[*];
+   tempTableName            : String[1];
+   tempTableColumnMetaData  : TempTableColumnMetaData[*];
+   connection               : DatabaseConnection[1];
+}
+
+Class meta::pure::executionPlan::RelationalBlockExecutionNode extends meta::pure::executionPlan::SequenceExecutionNode
+{
+}

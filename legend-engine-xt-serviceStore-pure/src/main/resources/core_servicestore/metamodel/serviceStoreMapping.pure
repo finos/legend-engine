@@ -1,0 +1,68 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::mapping::*;
+import meta::pure::metamodel::path::*;
+import meta::external::shared::format::metamodel::*;
+import meta::external::store::service::metamodel::*;
+import meta::external::store::service::metamodel::mapping::*;
+
+Class meta::external::store::service::metamodel::mapping::RootServiceInstanceSetImplementation extends InstanceSetImplementation
+{
+   localProperties : Property<Nil,Any|*>[*];
+   servicesMapping : ServiceMapping[*];
+   
+   serviceStore() {
+      $this.servicesMapping.service.owner->at(0);
+   }: ServiceStore[1];
+}
+
+Class meta::external::store::service::metamodel::mapping::ServiceMapping
+{
+   owner              : RootServiceInstanceSetImplementation[1];
+   
+   service            : Service[1];
+   pathOffset         : Path<Nil,Any|*>[0..1];
+   requestBuildInfo   : ServiceRequestBuildInfo[0..1];
+}
+
+Class meta::external::store::service::metamodel::mapping::ServiceRequestBuildInfo
+{
+   requestParametersBuildInfo : ServiceRequestParametersBuildInfo[0..1];
+   requestBodyBuildInfo       : ServiceRequestBodyBuildInfo[0..1];
+}
+
+Class meta::external::store::service::metamodel::mapping::ServiceRequestParametersBuildInfo
+{
+   parameterBuildInfoList : ServiceRequestParameterBuildInfo[*];
+}
+
+Class meta::external::store::service::metamodel::mapping::ServiceRequestParameterBuildInfo
+{
+   serviceParameter  : ServiceParameter[1];
+   transform         : LambdaFunction<Any>[1];
+}
+
+Class meta::external::store::service::metamodel::mapping::ServiceRequestBodyBuildInfo
+{
+   transform         : LambdaFunction<Any>[1];
+}
+
+Class meta::external::store::service::metamodel::mapping::ServiceStorePropertyMapping extends meta::pure::mapping::PropertyMapping
+{
+}
+
+Class meta::external::store::service::metamodel::mapping::EmbeddedServiceStoreSetImplementation extends EmbeddedSetImplementation
+{
+}

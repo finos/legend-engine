@@ -1,0 +1,587 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::tests::mapping::embedded::*;
+import meta::relational::functions::asserts::*;
+import meta::relational::runtime::*;
+import meta::relational::runtime::authentication::*;
+import meta::pure::profiles::*;
+import meta::pure::runtime::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::mapping::*;
+import meta::csv::*;
+import meta::relational::tests::model::simple::*;
+
+import meta::relational::tests::mapping::embedded::model::*;
+import meta::relational::tests::mapping::embedded::model::domain::*;
+import meta::relational::tests::mapping::embedded::model::store::*;
+import meta::relational::tests::mapping::embedded::model::mapping::*;
+
+ 
+function <<test.Test>> meta::relational::tests::mapping::embedded::testDenormMappingOneToManyProjectUsingPaths():Boolean[1]
+{
+   let result = execute(|Person.all()->project([#/Person/firstName#, #/Person/address/name!address#, #/Person/firm/legalName#, #/Person/firm/address/name!firmAddress#]), testMappingEmbedded, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertEquals('firstName,address,legalName,firmAddress\n' + 'Peter,1 the street,Firm X,200 west\n' + 'John,5 Park Ave,Firm X,200 west\n' + 'Fabrice,7 Palo Alto,Firm A,3 somewhere\n', $result.values->toOne()->toCSV());
+   assertEquals('select "root".PERSON_FIRSTNAME as "firstName", "root".PERSON_ADDRESS_NAME as "address", "root".FIRM_LEGALNAME as "legalName", "root".FIRM_ADDRESS_NAME as "firmAddress" from PERSON_FIRM_DENORM as "root"', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::embedded::testDenormMappingOneToManyProject():Boolean[1]
+{
+   let result = execute(|Person.all()->project([
+                                                p|$p.firstName,
+                                                p|$p.address.name,
+                                                p|$p.firm.legalName,
+                                                p|$p.firm.address.name
+                                                ]
+                                                ,
+                                                ['firstName', 'address', 'legalName', 'firmAddress']
+                                                )
+                                                , testMappingEmbedded, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+   assertEquals('firstName,address,legalName,firmAddress\n' + 'Peter,1 the street,Firm X,200 west\n' + 'John,5 Park Ave,Firm X,200 west\n' + 'Fabrice,7 Palo Alto,Firm A,3 somewhere\n', $result.values->toOne()->toCSV());
+   assertEquals('select "root".PERSON_FIRSTNAME as "firstName", "root".PERSON_ADDRESS_NAME as "address", "root".FIRM_LEGALNAME as "legalName", "root".FIRM_ADDRESS_NAME as "firmAddress" from PERSON_FIRM_DENORM as "root"', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::embedded::testDenormMappingOneToManyProjectLambdaSyntaxWithMap():Boolean[1]
+{
+   let result = execute(|Firm.all()->project([
+                                                f:Firm[1] | $f.employees.address.name]
+                                                , ['address']
+                                                )->sort('address'), testMappingEmbeddedWithFirmDistinct, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertEquals('address\n' + '1 the street\n' + '5 Park Ave\n' + '7 Palo Alto\n', $result.values->toOne()->toCSV());
+   assertEquals('select "person_firm_denorm_2".PERSON_ADDRESS_NAME as "address" from (select distinct "person_firm_denorm_1".FIRM_LEGALNAME as FIRM_LEGALNAME, "person_firm_denorm_1".FIRM_ID as FIRM_ID from PERSON_FIRM_DENORM as "person_firm_denorm_1") as "root" left outer join PERSON_FIRM_DENORM as "person_firm_denorm_2" on ("root".FIRM_ID = "person_firm_denorm_2".FIRM_ID) order by "address"', $result->sqlRemoveFormatting());
+}
+
+
+function <<test.Test>> meta::relational::tests::mapping::embedded::testDenormMappingOneToManyProjectWithFilter():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p | $p.firm.legalName == 'Firm A')
+                                     ->project([#/Person/firstName#, #/Person/address/name!address#, #/Person/firm/legalName#, #/Person/firm/address/name!firmAddress#])
+                                     , testMappingEmbedded, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertEquals('firstName,address,legalName,firmAddress\n' + 'Fabrice,7 Palo Alto,Firm A,3 somewhere\n', $result.values->toOne()->toCSV());
+   assertEquals('select "root".PERSON_FIRSTNAME as "firstName", "root".PERSON_ADDRESS_NAME as "address", "root".FIRM_LEGALNAME as "legalName", "root".FIRM_ADDRESS_NAME as "firmAddress" from PERSON_FIRM_DENORM as "root" where "root".FIRM_LEGALNAME = \'Firm A\'', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::embedded::testDenormMappingOneToManyProjectWithComplexFilter():Boolean[1]
+{
+   //filter with two embedded properties in the filter
+   let result = execute(|Person.all()->filter(p | $p.firm.legalName == 'Firm A' && $p.address.name->endsWith('Palo Alto'))
+                                     ->project([#/Person/firstName#, #/Person/address/name!address#, #/Person/firm/legalName#, #/Person/firm/address/name!firmAddress#])
+                                     , testMappingEmbedded, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertEquals('firstName,address,legalName,firmAddress\n' + 'Fabrice,7 Palo Alto,Firm A,3 somewhere\n', $result.values->toOne()->toCSV());
+   assertEquals('select "root".PERSON_FIRSTNAME as "firstName", "root".PERSON_ADDRESS_NAME as "address", "root".FIRM_LEGALNAME as "legalName", "root".FIRM_ADDRESS_NAME as "firmAddress" from PERSON_FIRM_DENORM as "root" where ("root".FIRM_LEGALNAME = \'Firm A\' and ("root".PERSON_ADDRESS_NAME is not null and "root".PERSON_ADDRESS_NAME like \'%Palo Alto\'))', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::embedded::testDenormMappingOneToManyProjectWithEnum():Boolean[1]
+{
+   let result = execute(|Person.all()->project([#/Person/firstName#, #/Person/address/type!address#]), testMappingEmbedded, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+      
+   assertEquals('firstName,address\n' + 'Peter,CITY\n' + 'John,CITY\n' + 'Fabrice,REGION\n', $result.values->toOne()->toCSV());
+   assertEquals('select "root".PERSON_FIRSTNAME as "firstName", "root".PERSON_ADDRESS_TYPE as "address" from PERSON_FIRM_DENORM as "root"', $result->sqlRemoveFormatting());
+}
+
+
+function <<test.Test>> meta::relational::tests::mapping::embedded::testDenormMappingOneToManyProjectWithFilterOnEnumLeft():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p | $p.address.type == GeographicEntityType.CITY)
+                                     ->project([#/Person/firstName#, #/Person/address/type!address#]), testMappingEmbedded, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+      
+   assertEquals('firstName,address\n' + 'Peter,CITY\n' + 'John,CITY\n', $result.values->toOne()->toCSV());
+   assertEquals('select "root".PERSON_FIRSTNAME as "firstName", "root".PERSON_ADDRESS_TYPE as "address" from PERSON_FIRM_DENORM as "root" where "root".PERSON_ADDRESS_TYPE = 1', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::embedded::testDenormMappingOneToManyProjectWithFilterOnEnumRight():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p | GeographicEntityType.CITY == $p.address.type)
+                                     ->project([#/Person/firstName#, #/Person/address/type!address#]), testMappingEmbedded, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+      
+   assertEquals('firstName,address\n' + 'Peter,CITY\n' + 'John,CITY\n', $result.values->toOne()->toCSV());
+   assertEquals('select "root".PERSON_FIRSTNAME as "firstName", "root".PERSON_ADDRESS_TYPE as "address" from PERSON_FIRM_DENORM as "root" where "root".PERSON_ADDRESS_TYPE = 1', $result->sqlRemoveFormatting());
+}
+
+
+function <<test.Test>> meta::relational::tests::mapping::embedded::testGroupByEmbeddedProperty():Boolean[1]
+{
+   let result = execute(|Person.all()->groupBy([
+                                   #/Person/firm/legalName#
+                                  ],
+                                  [
+                                     agg(
+                                           x|if($x.address.name->startsWith('1'),|1.0,|0.0),
+                                           y|$y->sum()
+                                         )
+                                  ]
+                                  ,
+                                  ['Firm Name', 'Count'] 
+                                  )->sort('Firm Name'), testMappingEmbedded, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertEquals('Firm Name,Count\n' + 'Firm A,0.0\n' + 'Firm X,1.0\n', $result.values->toOne()->toCSV());
+   assertEquals('select "root".FIRM_LEGALNAME as "Firm Name", sum(case when ("root".PERSON_ADDRESS_NAME is not null and "root".PERSON_ADDRESS_NAME like \'1%\') then 1.0 else 0.0 end) as "Count" from PERSON_FIRM_DENORM as "root" group by "Firm Name" order by "Firm Name"', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::embedded::testProjectToEmbedded():Boolean[1]
+{
+   let result = execute(|Firm.all()->project([#/Firm/legalName#, #/Firm/employees/address/name!address#])->sort(['legalName', 'address']), testMappingEmbeddedWithFirmDistinct, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertEquals('legalName,address\n' + 'Firm A,7 Palo Alto\n' + 'Firm X,1 the street\n' + 'Firm X,5 Park Ave\n', $result.values->toOne()->toCSV());
+   
+   //TODO - can optimize further to remove some self joins
+   assertEquals('select "root".FIRM_LEGALNAME as "legalName", "person_firm_denorm_2".PERSON_ADDRESS_NAME as "address" from (select distinct "person_firm_denorm_1".FIRM_LEGALNAME as FIRM_LEGALNAME, "person_firm_denorm_1".FIRM_ID as FIRM_ID from PERSON_FIRM_DENORM as "person_firm_denorm_1") as "root" left outer join PERSON_FIRM_DENORM as "person_firm_denorm_2" on ("root".FIRM_ID = "person_firm_denorm_2".FIRM_ID) order by "legalName","address"', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::embedded::testDenormMappingOneToManyProjectEmbeddedQualifier():Boolean[1]
+{
+   let result = execute(|Person.all()->project([#/Person/firstName#, #/Person/firm/nameAndAddress#])
+                                     , testMappingEmbedded, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertEquals('firstName,nameAndAddress\n' + 'Peter,"Firm X,200 west"\n' + 'John,"Firm X,200 west"\n' + 'Fabrice,"Firm A,3 somewhere"\n', $result.values->toOne()->toCSV());
+   assertEquals('select "root".PERSON_FIRSTNAME as "firstName", concat("root".FIRM_LEGALNAME, \',\', "root".FIRM_ADDRESS_NAME) as "nameAndAddress" from PERSON_FIRM_DENORM as "root"', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::embedded::testDenormMappingWithQualifierWithIfAndEquals():Boolean[1]
+{
+   let result = execute(|Person.all()->project([p | $p.firstName, 
+                                                p | $p.firm.isFirmX], ['name', 'FirmX'])
+                                     , testMappingEmbedded, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertEquals('name,FirmX\n' + 'Peter,Yes\n' + 'John,Yes\n' + 'Fabrice,No\n', $result.values->toOne()->toCSV());
+   assertEquals('select "root".PERSON_FIRSTNAME as "name", case when "root".FIRM_LEGALNAME = \'Firm X\' then \'Yes\' else \'No\' end as "FirmX" from PERSON_FIRM_DENORM as "root"', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::embedded::testFilterWithEmbeddedQualifier():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p | $p.firm.nameAndAddress->startsWith('Firm X'))
+                                     ->project([#/Person/firstName#, #/Person/firm/nameAndAddress#])
+                                     , testMappingEmbedded, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertEquals('firstName,nameAndAddress\n' + 'Peter,"Firm X,200 west"\n' + 'John,"Firm X,200 west"\n', $result.values->toOne()->toCSV());
+   assertEquals('select "root".PERSON_FIRSTNAME as "firstName", concat("root".FIRM_LEGALNAME, \',\', "root".FIRM_ADDRESS_NAME) as "nameAndAddress" from PERSON_FIRM_DENORM as "root" where (concat("root".FIRM_LEGALNAME, \',\', "root".FIRM_ADDRESS_NAME) is not null and concat("root".FIRM_LEGALNAME, \',\', "root".FIRM_ADDRESS_NAME) like \'Firm X%\')', $result->sqlRemoveFormatting());
+}
+
+
+function <<test.Test>> meta::relational::tests::mapping::embedded::testExists():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p | $p.firm->exists(a | $a.address.name == '200 west'))
+                                       ->project([p | $p.firstName, 
+                                                p | $p.firm.address.name], ['name', 'address'])
+                                     , testMappingEmbedded, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let tds =  $result.values->toOne();
+   assertSameElements(['name','address'],$tds.columns.name);
+   assertSameElements(['John,200 west','Peter,200 west'], $tds.rows->map(r| $r.values->makeString(','))->sort());
+   assertSameSQL('select "root".PERSON_FIRSTNAME as "name", "root".FIRM_ADDRESS_NAME as "address" from PERSON_FIRM_DENORM as "root" where "root".FIRM_ADDRESS_NAME = \'200 west\'', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::embedded::testIsEmpty():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p | $p.firm.legalName->isEmpty())
+                                       ->project([p | $p.firstName, 
+                                                p | $p.firm.legalName], ['name', 'firm'])
+                                     , testMappingEmbedded, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertEquals('name,firm\n\n', $result.values->toOne()->toCSV());
+   assertEquals('select "root".PERSON_FIRSTNAME as "name", "root".FIRM_LEGALNAME as "firm" from PERSON_FIRM_DENORM as "root" where "root".FIRM_LEGALNAME is null', $result->sqlRemoveFormatting());
+}
+
+function <<test.ToFix>> meta::relational::tests::mapping::embedded::testIsEmptyType():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p | $p.firm.address->isEmpty())
+                                       ->project([p | $p.firstName, 
+                                                p | $p.firm.legalName], ['name', 'firm'])
+                                     , testMappingEmbedded, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertEquals('name,firm\n', $result.values->toOne()->toCSV());
+   assertEquals('select root.PERSON_FIRSTNAME as "name", root.FIRM_LEGALNAME as "firm" from PERSON_FIRM_DENORM as root where root.FIRM_ID is null', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::embedded::testMapEmbeddedQualifierWithIfTwoEmbeddedProperties():Boolean[1]
+{
+   //This tests a complex if statement that uses several embedded properties with $this., this is important to test the recursion
+   let result = execute(|Person.all()->filter(p | $p.firm.nameAndAddress->startsWith('Firm X'))
+                                     ->project([p | $p.firm->map(f | $f.nameAndMaskedAddress)
+                                                ], ['nameAndMaskedAddress'])
+                                     , testMappingEmbedded, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertEquals('nameAndMaskedAddress\n' + '"Firm X , Top Secret"\n' + '"Firm X , Top Secret"\n', $result.values->toOne()->toCSV());
+   assertEquals('select case when "root".FIRM_LEGALNAME = \'Firm X\' then concat("root".FIRM_LEGALNAME, \' , Top Secret\') else concat("root".FIRM_LEGALNAME, \',\', "root".FIRM_ADDRESS_NAME) end as "nameAndMaskedAddress" from PERSON_FIRM_DENORM as "root" where (concat("root".FIRM_LEGALNAME, \',\', "root".FIRM_ADDRESS_NAME) is not null and concat("root".FIRM_LEGALNAME, \',\', "root".FIRM_ADDRESS_NAME) like \'Firm X%\')', $result->sqlRemoveFormatting());
+}
+
+// Alloy exclusion reason: 3. Using getter on an instance
+function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::mapping::embedded::testGetter():Boolean[1]
+{
+   let result = execute(|Person.all(), testMappingEmbedded, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameElements(['Firm A', 'Firm X', 'Firm X'], $result.values->map(p|$p.firm.legalName));
+}
+
+// Alloy exclusion reason: 3. Using getter on an instance
+function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::mapping::embedded::testGetterTwoJoinTraversal():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p | $p.firstName == 'Fabrice'), testMappingEmbedded, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertSize($result.values, 1);
+   
+   let person = $result.values->at(0);
+   let firm = $person.firm;
+   assertEquals('Firm A', $firm.legalName);
+
+   let employees = $firm.employees;
+   assertSize($result.values, 1);
+   
+   let employee = $employees->at(0);
+
+   assertEquals($employee.firm.legalName, $firm.legalName);
+   assertEquals('Firm A', $employee.firm.legalName);
+}
+
+
+function <<test.Test, test.ToFix>> meta::relational::tests::mapping::embedded::testRoutingQualifiedPropertySameVariableNames():Boolean[1]
+{
+   let differentNamesWorks = execute({|meta::relational::tests::model::simple::Person.all()
+                          ->project([p| if(true
+                                          ,| $p.firm->toOne().employeeAddressesWithFirmAddressName($p.lastName,GeographicEntityType.CITY)->first()
+                                          ,| $p.firm->toOne().employeeAddressesWithFirmAddressName($p.lastName,GeographicEntityType.REGION)->first())
+
+                                    ]
+                                    ,['out'])},
+                        meta::relational::tests::mapping::embedded::model::mapping::advancedEmbeddedWithChainedJoins, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions(),noDebug());
+   assertNotEmpty($differentNamesWorks.values);
+
+   let noNestingWorks = execute({|meta::relational::tests::model::simple::Person.all()
+                          ->project([x| if(true
+                                          ,| []
+                                          ,| $x.firm->toOne().employeeAddressesWithFirmAddressName($x.lastName,GeographicEntityType.REGION)->first())
+
+                                    ]
+                                    ,['out'])},
+                        meta::relational::tests::mapping::embedded::model::mapping::advancedEmbeddedWithChainedJoins, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions(),noDebug());
+   assertNotEmpty($noNestingWorks.values);
+
+   let sameNamesForProjectAndQualifierNested = execute({|meta::relational::tests::model::simple::Person.all()
+                          ->project([x| if(true
+                                          ,| $x.firm->toOne().employeeAddressesWithFirmAddressName($x.lastName,GeographicEntityType.CITY)->first()
+                                          ,| $x.firm->toOne().employeeAddressesWithFirmAddressName($x.lastName,GeographicEntityType.REGION)->first())
+
+                                    ]
+                                    ,['out'])},
+                        meta::relational::tests::mapping::embedded::model::mapping::advancedEmbeddedWithChainedJoins, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions(), noDebug());
+   assertNotEmpty($sameNamesForProjectAndQualifierNested.values);
+
+   true;
+}
+
+function  meta::relational::tests::mapping::embedded::functionWithSameParamsNames(p:Firm[1]):Address[*]
+{ 
+   nestedFunctionWithSameParamsNames($p.employees->map(e | ^$e(lastName='changed'+$e.lastName))) ;
+}
+
+function  meta::relational::tests::mapping::embedded::nestedFunctionWithSameParamsNames(x:Person[*]):Address[*]
+{ 
+   $x.address->filter(p| $p.type!= GeographicEntityType.CITY) ;
+}
+
+
+function <<test.ToFix>> meta::relational::tests::mapping::embedded::testRoutingQualifiedPropertySameVariableNamesAsFunctionParam():Boolean[1]
+{
+   
+ execute({|meta::relational::tests::model::simple::Person.all()
+                          ->project([pe| $pe.firm->toOne()->functionWithSameParamsNames().type ]
+                                    ,['out'])},
+                        meta::relational::tests::mapping::embedded::model::mapping::advancedEmbeddedWithChainedJoins, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+  
+  true;
+}
+
+function <<test.Test, test.ToFix>> meta::relational::tests::mapping::embedded::testOptionalPropertyEmbedded():Boolean[1]
+{
+   let result = execute(|Person.all()->project([p | if($p.address->isNotEmpty(),|$p.address.name,|'')], ['street'])
+                                     , testMappingEmbedded, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertEquals('???', $result.values->toOne()->toCSV());
+   assertEquals('???', $result->sqlRemoveFormatting());
+} 
+
+
+function <<test.BeforePackage>> meta::relational::tests::mapping::embedded::setUp():Boolean[1]
+{
+    createTablesAndFillDb();
+    createTimeStamKeysTableAndFill();
+    
+}
+
+function meta::relational::tests::mapping::embedded::model::store::testDataTypeMappingRuntime():Runtime[1]
+{
+   meta::relational::tests::testRuntime(myDB);
+}
+
+function meta::relational::tests::mapping::embedded::model::store::createTablesAndFillDb():Boolean[1]
+{
+   let connection = testDataTypeMappingRuntime().connectionByElement(myDB)->cast(@TestDatabaseConnection);
+   
+   meta::relational::functions::toDDL::dropAndCreateTableInDb(myDB, 'PERSON_FIRM_DENORM', $connection);
+   
+   let s = 'insert into PERSON_FIRM_DENORM (PERSON_ID, PERSON_FIRSTNAME, PERSON_LASTNAME, FIRM_ID, FIRM_LEGALNAME, PERSON_ADDRESS_NAME, PERSON_ADDRESS_TYPE, FIRM_ADDRESS_NAME, FIRM_ADDRESS_TYPE) values ';
+   
+
+   executeInDb($s + '(1, \'Peter\', \'Smith\', 1, \'Firm X\', \'1 the street\' , 1, \'200 west\',1);', $connection);
+   executeInDb($s + '(2, \'John\', \'Johnson\',   1, \'Firm X\', \'5 Park Ave\', 1, \'200 west\',1);', $connection);
+   executeInDb($s + '(5, \'Fabrice\', \'Roberts\', 2, \'Firm A\', \'7 Palo Alto\', 2, \'3 somewhere\',1);', $connection);
+
+   meta::relational::functions::toDDL::dropAndCreateTableInDb(myDB, 'ORGANIZATIONS', $connection);
+   
+   let s1 = 'insert into ORGANIZATIONS (ORG_ID, NAME,FIRM_ID) values ';
+   
+   executeInDb($s1 + '(1, \'Team 1\',1);', $connection);
+   executeInDb($s1 + '(2, \'Team 2\',1);', $connection);
+   executeInDb($s1 + '(3, \'Team 3\',2);', $connection);
+
+    meta::relational::functions::toDDL::dropAndCreateTableInDb(myDB, 'LOCATIONS', $connection);
+   
+   let s2 = 'insert into LOCATIONS (ID, PLACE) values ';
+   
+   executeInDb($s2 + '(1, \'Loc 1\');', $connection);
+   executeInDb($s2 + '(2, \'Loc 2\');', $connection);
+
+   meta::relational::functions::toDDL::dropAndCreateTableInDb(myDB, 'ADDRESS_LOCATION', $connection);
+   
+   let s3 = 'insert into ADDRESS_LOCATION (ADDRESS_ID, LOCATION_ID) values ';
+   
+   executeInDb($s3 + '(\'200 west\', 1);', $connection);
+   executeInDb($s3 + '(\'3 somewhere\', 2);', $connection);
+   
+   true;
+}
+
+function meta::relational::tests::mapping::embedded::model::store::createTimeStamKeysTableAndFill():Boolean[1]
+{
+   let connection = testDataTypeMappingRuntime().connectionByElement(myDB)->cast(@TestDatabaseConnection);
+   
+   
+   meta::relational::functions::toDDL::dropAndCreateTableInDb(myDB, 'DATA_WITH_TIMESTAMPS_KEYS', $connection);
+   
+   let s = 'insert into DATA_WITH_TIMESTAMPS_KEYS (ID1, ID2, ID3, PROP_STRING, PROP_INT) values ';
+   
+   executeInDb($s + '(1, \'2016-01-25 10:00:00.000000000\', 11,	\'foo\', 1);', $connection);
+   executeInDb($s + '(2, CURRENT_TIMESTAMP(), 21,  \'bar\', 2);', $connection);
+   executeInDb($s + '(3, CURRENT_TIMESTAMP(), 31, \'\', 3);', $connection);
+   executeInDb($s + '(4, \'2016-01-25 15:00:00.000000000\', 41,  \'\', 1);', $connection);
+   //will translate string to date with GMT (who thas that PURE or driver?)
+   
+ 
+   let dataInTable= executeInDb('select * from DATA_WITH_TIMESTAMPS_KEYS ;', $connection);     
+
+
+   true;
+
+}
+
+###Relational
+
+Database meta::relational::tests::mapping::embedded::model::store::myDB
+(
+    Table PERSON_FIRM_DENORM
+    (
+       PERSON_ID INT PRIMARY KEY, 
+       PERSON_FIRSTNAME VARCHAR(200), 
+       PERSON_LASTNAME VARCHAR(200),
+       PERSON_ADDRESS_NAME VARCHAR(200),
+       PERSON_ADDRESS_TYPE INT,
+       PERSON_AGE INT,
+       FIRM_ID INT PRIMARY KEY, 
+       FIRM_LEGALNAME VARCHAR(200),
+       FIRM_ADDRESS_NAME VARCHAR(200),
+       FIRM_ADDRESS_TYPE INT
+    )
+    
+    Table FIRM_OTHER
+    (
+       ID INT PRIMARY KEY,
+       BETTER_LEGALNAME VARCHAR(200)
+    )
+    
+    Table DATA_WITH_TIMESTAMPS_KEYS
+    (      
+       ID1        INT PRIMARY KEY,
+       ID2        timestamp PRIMARY KEY,       
+       ID3        INT ,
+	   PROP_STRING VARCHAR(200),
+	   PROP_INT    INT
+    )  
+
+    Join firmEmployees(PERSON_FIRM_DENORM.FIRM_ID = {target}.FIRM_ID)
+    Join personFirmOther(PERSON_FIRM_DENORM.FIRM_ID = FIRM_OTHER.ID)
+    
+    Table FIRM_MIDDLETABLE
+    (
+       FIRM_ID INT PRIMARY KEY, 
+       ADDRESS_ID INT
+    )
+   
+    Table ADDRESSES
+    (
+       ADDRESS_ID INT PRIMARY KEY,
+       TYPE VARCHAR(200), 
+       NAME VARCHAR(200)
+    )
+   
+    Table ORGANIZATIONS
+    (
+       ORG_ID INT PRIMARY KEY, 
+       FIRM_ID INT, 
+       NAME VARCHAR(200)
+    )
+   
+    Table LOCATIONS(ID INT PRIMARY KEY, PLACE VARCHAR(200))
+    Table ADDRESS_LOCATION(ADDRESS_ID VARCHAR(200), LOCATION_ID INT )
+ 
+    Join personFirmMiddle(PERSON_FIRM_DENORM.FIRM_ID = FIRM_MIDDLETABLE.FIRM_ID)
+    Join middleAddress(FIRM_MIDDLETABLE.ADDRESS_ID = ADDRESSES.ADDRESS_ID)
+    Join Firm_Organizations(PERSON_FIRM_DENORM.FIRM_ID = ORGANIZATIONS.FIRM_ID) 
+    Join Firm_Address_location(PERSON_FIRM_DENORM.FIRM_ADDRESS_NAME  = ADDRESS_LOCATION.ADDRESS_ID) 
+    Join Address_location(ADDRESS_LOCATION.LOCATION_ID = LOCATIONS.ID)
+ 
+)
+
+###Mapping
+import meta::relational::tests::mapping::embedded::model::domain::*;
+import meta::relational::tests::mapping::embedded::model::store::*;
+
+import meta::relational::tests::model::simple::*;
+
+
+Mapping meta::relational::tests::mapping::embedded::model::mapping::testMappingEmbedded
+(
+
+    GeographicEntityType: EnumerationMapping GE
+    {
+        CITY:  1,
+        REGION: 2
+    }
+
+    Person: Relational
+    {
+       scope([myDB]PERSON_FIRM_DENORM)
+       (
+          firstName: PERSON_FIRSTNAME,
+          lastName: PERSON_LASTNAME,
+          firm
+          (
+             legalName: FIRM_LEGALNAME,
+             
+             address
+             (
+                name: FIRM_ADDRESS_NAME,
+                type : EnumerationMapping GE : FIRM_ADDRESS_TYPE
+             ),
+             
+             employees: [myDB]@firmEmployees
+          ),
+          address
+          (
+             name: PERSON_ADDRESS_NAME,
+             type : EnumerationMapping GE : PERSON_ADDRESS_TYPE
+          )
+       )
+       
+    }
+            
+)
+
+Mapping meta::relational::tests::mapping::embedded::model::mapping::testMappingEmbeddedWithFirmDistinct
+(
+
+    GeographicEntityType: EnumerationMapping GE
+    {
+        CITY:  1,
+        REGION: 2
+    }
+
+    Person: Relational
+    {
+       scope([myDB]PERSON_FIRM_DENORM)
+       (
+          firstName: PERSON_FIRSTNAME,
+          lastName: PERSON_LASTNAME,
+          firm
+          (
+             legalName: FIRM_LEGALNAME,
+             
+             address
+             (
+                name: FIRM_ADDRESS_NAME,
+                type : EnumerationMapping GE : FIRM_ADDRESS_TYPE
+             ),
+             
+             employees: [myDB]@firmEmployees
+          ),
+          address
+          (
+             name: PERSON_ADDRESS_NAME,
+             type : EnumerationMapping GE : PERSON_ADDRESS_TYPE
+          )
+       )
+       
+    }
+        
+    Firm: Relational
+    {
+       ~distinct
+       scope([myDB]PERSON_FIRM_DENORM)
+       (
+          legalName: FIRM_LEGALNAME
+       ),
+       employees: [myDB]@firmEmployees
+    }
+    
+)
+
+
+
+Mapping meta::relational::tests::mapping::embedded::model::mapping::advancedEmbeddedWithChainedJoins
+(  
+
+       GeographicEntityType: EnumerationMapping GE
+    {
+        CITY:  1,
+        REGION: 2
+    }
+   
+   Person : Relational
+   {
+    scope([myDB]PERSON_FIRM_DENORM)
+    (
+        firstName: PERSON_FIRSTNAME,
+        lastName:  PERSON_LASTNAME,
+        age:  PERSON_AGE,
+        firm
+        (
+            legalName : FIRM_LEGALNAME,
+            address: @personFirmMiddle > @middleAddress                     
+        )
+     )
+   }
+   
+  Address: Relational
+  {
+    scope([myDB]ADDRESSES)
+    (
+     name : NAME,
+     type : EnumerationMapping GE : TYPE
+     )
+  }
+
+
+)

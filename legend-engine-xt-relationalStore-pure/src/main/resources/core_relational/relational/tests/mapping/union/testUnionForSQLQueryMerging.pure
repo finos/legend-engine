@@ -1,0 +1,349 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::relational::functions::asserts::*;
+import meta::relational::tests::mapping::union::sqlQueryMerging::model::*;
+import meta::relational::tests::mapping::union::sqlQueryMerging::mapping::*;
+import meta::relational::tests::*;
+
+function <<test.Test>> meta::relational::tests::mapping::union::sqlQueryMerging::testSQLQueryMergingForFilters():Boolean[1]
+{
+   let result = execute(|A.all()->filter(a|$a.b.pk == 11)
+                                ->filter(a|$a.b.c.pk == 111)
+                                ->project([a|$a.pk],
+                                          ['a_pk']
+                                  ), 
+                        unionMapping, testRuntime()
+   , meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select "unionBase"."aTable1pk_aTable2pk" as "a_pk" from (select "root".fk as fk_0, null as fk_1, "root".pk as "pk_0_0", null as "pk_0_1", "root".pk as "aTable1pk_aTable2pk" from aTable1 as "root" UNION ALL select null as fk_0, "root".fk as fk_1, null as "pk_0_0", "root".pk as "pk_0_1", "root".pk as "aTable1pk_aTable2pk" from aTable2 as "root") as "unionBase" left outer join (select "root".fk as fk_0, null as fk_1, "root".pk as "bTable1pk_bTable2pk" from bTable1 as "root" UNION ALL select null as fk_0, "root".fk as fk_1, "root".pk as "bTable1pk_bTable2pk" from bTable2 as "root") as "unionalias_1" on ("unionBase".fk_0 = "unionalias_1".fk_0 or "unionBase".fk_1 = "unionalias_1".fk_1) left outer join (select "root".fk as fk_0, null as fk_1, "root".pk as "cTable1pk_cTable2pk" from cTable1 as "root" UNION ALL select null as fk_0, "root".fk as fk_1, "root".pk as "cTable1pk_cTable2pk" from cTable2 as "root") as "unionalias_2" on ("unionalias_1".fk_0 = "unionalias_2".fk_0 or "unionalias_1".fk_1 = "unionalias_2".fk_1) where "unionalias_1"."bTable1pk_bTable2pk" = 11 and "unionalias_2"."cTable1pk_cTable2pk" = 111', $result);
+   assertEquals([1, 1], $result.values.rows.get('a_pk'));
+}
+
+function <<test.Test>> meta::relational::tests::mapping::union::sqlQueryMerging::testSQLQueryMergingForFiltersDeep():Boolean[1]
+{
+   let result = execute(|A.all()->filter(a|$a.b.pk == 11)
+                                ->filter(a|$a.b.c.pk == 111)
+                                ->filter(a|$a.b.c.d.pk == 1111)
+                                ->project([a|$a.pk],
+                                          ['a_pk']
+                                  ), 
+                        unionMapping, testRuntime()
+   , meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select "unionBase"."aTable1pk_aTable2pk" as "a_pk" from (select "root".fk as fk_0, null as fk_1, "root".pk as "pk_0_0", null as "pk_0_1", "root".pk as "aTable1pk_aTable2pk" from aTable1 as "root" UNION ALL select null as fk_0, "root".fk as fk_1, null as "pk_0_0", "root".pk as "pk_0_1", "root".pk as "aTable1pk_aTable2pk" from aTable2 as "root") as "unionBase" left outer join (select "root".fk as fk_0, null as fk_1, "root".pk as "bTable1pk_bTable2pk" from bTable1 as "root" UNION ALL select null as fk_0, "root".fk as fk_1, "root".pk as "bTable1pk_bTable2pk" from bTable2 as "root") as "unionalias_1" on ("unionBase".fk_0 = "unionalias_1".fk_0 or "unionBase".fk_1 = "unionalias_1".fk_1) left outer join (select "root".fk as fk_0, null as fk_1, "root".pk as "cTable1pk_cTable2pk" from cTable1 as "root" UNION ALL select null as fk_0, "root".fk as fk_1, "root".pk as "cTable1pk_cTable2pk" from cTable2 as "root") as "unionalias_2" on ("unionalias_1".fk_0 = "unionalias_2".fk_0 or "unionalias_1".fk_1 = "unionalias_2".fk_1) left outer join (select "root".fk as fk_0, null as fk_1, "root".pk as "dTable1pk_dTable2pk" from dTable1 as "root" UNION ALL select null as fk_0, "root".fk as fk_1, "root".pk as "dTable1pk_dTable2pk" from dTable2 as "root") as "unionalias_3" on ("unionalias_2".fk_0 = "unionalias_3".fk_0 or "unionalias_2".fk_1 = "unionalias_3".fk_1) where "unionalias_2"."cTable1pk_cTable2pk" = 111 and "unionalias_1"."bTable1pk_bTable2pk" = 11 and "unionalias_3"."dTable1pk_dTable2pk" = 1111', $result);
+   assertEquals([1, 1], $result.values.rows.get('a_pk'));
+}
+
+function <<test.Test>> meta::relational::tests::mapping::union::sqlQueryMerging::testSQLQueryMergingForProjections():Boolean[1]
+{
+   let result = execute(|A.all()->project([a|$a.pk, 
+                                           a|$a.b.pk, 
+                                           a|$a.b.c.pk],
+                                          ['a_pk', 
+                                           'b_pk', 
+                                           'c_pk']
+                                  ), 
+                        unionMapping, testRuntime()
+   , meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select "unionBase"."aTable1pk_aTable2pk" as "a_pk", "unionalias_1"."bTable1pk_bTable2pk" as "b_pk", "unionalias_2"."cTable1pk_cTable2pk" as "c_pk" from (select "root".pk as "pk_0_0", null as "pk_0_1", "root".pk as "aTable1pk_aTable2pk", "root".fk as fk_0, null as fk_1 from aTable1 as "root" UNION ALL select null as "pk_0_0", "root".pk as "pk_0_1", "root".pk as "aTable1pk_aTable2pk", null as fk_0, "root".fk as fk_1 from aTable2 as "root") as "unionBase" left outer join (select "root".fk as fk_0, null as fk_1, "root".pk as "bTable1pk_bTable2pk" from bTable1 as "root" UNION ALL select null as fk_0, "root".fk as fk_1, "root".pk as "bTable1pk_bTable2pk" from bTable2 as "root") as "unionalias_1" on ("unionBase".fk_0 = "unionalias_1".fk_0 or "unionBase".fk_1 = "unionalias_1".fk_1) left outer join (select "root".fk as fk_0, null as fk_1, "root".pk as "cTable1pk_cTable2pk" from cTable1 as "root" UNION ALL select null as fk_0, "root".fk as fk_1, "root".pk as "cTable1pk_cTable2pk" from cTable2 as "root") as "unionalias_2" on ("unionalias_1".fk_0 = "unionalias_2".fk_0 or "unionalias_1".fk_1 = "unionalias_2".fk_1)', $result);
+   assertEquals([1, 2, 1, 2], $result.values.rows.get('a_pk'));
+   assertEquals([11, 22, 11, 22], $result.values.rows.get('b_pk'));
+   assertEquals([111, 222, 111, 222], $result.values.rows.get('c_pk'));
+}
+
+function <<test.Test>> meta::relational::tests::mapping::union::sqlQueryMerging::testSQLQueryMergingForProjectionsDeep():Boolean[1]
+{
+   let result = execute(|A.all()->project([a|$a.pk, 
+                                           a|$a.b.pk, 
+                                           a|$a.b.c.pk, 
+                                           a|$a.b.c.d.pk],
+                                          ['a_pk', 
+                                           'b_pk', 
+                                           'c_pk', 
+                                           'd_pk']
+                                  ), 
+                        unionMapping, testRuntime()
+   , meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select "unionBase"."aTable1pk_aTable2pk" as "a_pk", "unionalias_1"."bTable1pk_bTable2pk" as "b_pk", "unionalias_2"."cTable1pk_cTable2pk" as "c_pk", "unionalias_3"."dTable1pk_dTable2pk" as "d_pk" from (select "root".pk as "pk_0_0", null as "pk_0_1", "root".pk as "aTable1pk_aTable2pk", "root".fk as fk_0, null as fk_1 from aTable1 as "root" UNION ALL select null as "pk_0_0", "root".pk as "pk_0_1", "root".pk as "aTable1pk_aTable2pk", null as fk_0, "root".fk as fk_1 from aTable2 as "root") as "unionBase" left outer join (select "root".fk as fk_0, null as fk_1, "root".pk as "bTable1pk_bTable2pk" from bTable1 as "root" UNION ALL select null as fk_0, "root".fk as fk_1, "root".pk as "bTable1pk_bTable2pk" from bTable2 as "root") as "unionalias_1" on ("unionBase".fk_0 = "unionalias_1".fk_0 or "unionBase".fk_1 = "unionalias_1".fk_1) left outer join (select "root".fk as fk_0, null as fk_1, "root".pk as "cTable1pk_cTable2pk" from cTable1 as "root" UNION ALL select null as fk_0, "root".fk as fk_1, "root".pk as "cTable1pk_cTable2pk" from cTable2 as "root") as "unionalias_2" on ("unionalias_1".fk_0 = "unionalias_2".fk_0 or "unionalias_1".fk_1 = "unionalias_2".fk_1) left outer join (select "root".fk as fk_0, null as fk_1, "root".pk as "dTable1pk_dTable2pk" from dTable1 as "root" UNION ALL select null as fk_0, "root".fk as fk_1, "root".pk as "dTable1pk_dTable2pk" from dTable2 as "root") as "unionalias_3" on ("unionalias_2".fk_0 = "unionalias_3".fk_0 or "unionalias_2".fk_1 = "unionalias_3".fk_1)', $result);
+   assertEquals([1, 2, 1, 2], $result.values.rows.get('a_pk'));
+   assertEquals([11, 22, 11, 22], $result.values.rows.get('b_pk'));
+   assertEquals([111, 222, 111, 222], $result.values.rows.get('c_pk'));
+   assertEquals([1111, 2222, 1111, 2222], $result.values.rows.get('d_pk'));
+}
+
+function <<test.Test>> meta::relational::tests::mapping::union::sqlQueryMerging::testSQLQueryMergingForFiltersAndProjections():Boolean[1]
+{
+   let result = execute(|A.all()->filter(a|$a.pk == 1)
+                                ->filter(a|$a.b.pk == 11)
+                                ->filter(a|$a.b.c.pk == 111)
+                                ->project([a|$a.pk, 
+                                           a|$a.b.pk, 
+                                           a|$a.b.c.pk],
+                                          ['a_pk', 
+                                           'b_pk', 
+                                           'c_pk']
+                                  ), 
+                        unionMapping, testRuntime()
+   , meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select "unionBase"."aTable1pk_aTable2pk" as "a_pk", "unionalias_1"."bTable1pk_bTable2pk" as "b_pk", "unionalias_2"."cTable1pk_cTable2pk" as "c_pk" from (select "root".pk as "aTable1pk_aTable2pk", "root".fk as fk_0, null as fk_1, "root".pk as "pk_0_0", null as "pk_0_1" from aTable1 as "root" UNION ALL select "root".pk as "aTable1pk_aTable2pk", null as fk_0, "root".fk as fk_1, null as "pk_0_0", "root".pk as "pk_0_1" from aTable2 as "root") as "unionBase" left outer join (select "root".fk as fk_0, null as fk_1, "root".pk as "bTable1pk_bTable2pk" from bTable1 as "root" UNION ALL select null as fk_0, "root".fk as fk_1, "root".pk as "bTable1pk_bTable2pk" from bTable2 as "root") as "unionalias_1" on ("unionBase".fk_0 = "unionalias_1".fk_0 or "unionBase".fk_1 = "unionalias_1".fk_1) left outer join (select "root".fk as fk_0, null as fk_1, "root".pk as "cTable1pk_cTable2pk" from cTable1 as "root" UNION ALL select null as fk_0, "root".fk as fk_1, "root".pk as "cTable1pk_cTable2pk" from cTable2 as "root") as "unionalias_2" on ("unionalias_1".fk_0 = "unionalias_2".fk_0 or "unionalias_1".fk_1 = "unionalias_2".fk_1) where "unionalias_1"."bTable1pk_bTable2pk" = 11 and "unionBase"."aTable1pk_aTable2pk" = 1 and "unionalias_2"."cTable1pk_cTable2pk" = 111', $result);
+   assertEquals([1, 1], $result.values.rows.get('a_pk'));
+   assertEquals([11, 11], $result.values.rows.get('b_pk'));
+   assertEquals([111, 111], $result.values.rows.get('c_pk'));
+}
+
+function <<test.Test>> meta::relational::tests::mapping::union::sqlQueryMerging::testSQLQueryMergingForFiltersAndProjectionsDeep():Boolean[1]
+{
+   let result = execute(|A.all()->filter(a|$a.pk == 1)
+                                ->filter(a|$a.b.pk == 11)
+                                ->filter(a|$a.b.c.pk == 111)
+                                ->filter(a|$a.b.c.d.pk == 1111)
+                                ->project([a|$a.pk, 
+                                           a|$a.b.pk, 
+                                           a|$a.b.c.pk, 
+                                           a|$a.b.c.d.pk],
+                                          ['a_pk', 
+                                           'b_pk', 
+                                           'c_pk', 
+                                           'd_pk']
+                                  ), 
+                        unionMapping, testRuntime()
+   , meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select "unionBase"."aTable1pk_aTable2pk" as "a_pk", "unionalias_1"."bTable1pk_bTable2pk" as "b_pk", "unionalias_2"."cTable1pk_cTable2pk" as "c_pk", "unionalias_3"."dTable1pk_dTable2pk" as "d_pk" from (select "root".pk as "aTable1pk_aTable2pk", "root".fk as fk_0, null as fk_1, "root".pk as "pk_0_0", null as "pk_0_1" from aTable1 as "root" UNION ALL select "root".pk as "aTable1pk_aTable2pk", null as fk_0, "root".fk as fk_1, null as "pk_0_0", "root".pk as "pk_0_1" from aTable2 as "root") as "unionBase" left outer join (select "root".fk as fk_0, null as fk_1, "root".pk as "bTable1pk_bTable2pk" from bTable1 as "root" UNION ALL select null as fk_0, "root".fk as fk_1, "root".pk as "bTable1pk_bTable2pk" from bTable2 as "root") as "unionalias_1" on ("unionBase".fk_0 = "unionalias_1".fk_0 or "unionBase".fk_1 = "unionalias_1".fk_1) left outer join (select "root".fk as fk_0, null as fk_1, "root".pk as "cTable1pk_cTable2pk" from cTable1 as "root" UNION ALL select null as fk_0, "root".fk as fk_1, "root".pk as "cTable1pk_cTable2pk" from cTable2 as "root") as "unionalias_2" on ("unionalias_1".fk_0 = "unionalias_2".fk_0 or "unionalias_1".fk_1 = "unionalias_2".fk_1) left outer join (select "root".fk as fk_0, null as fk_1, "root".pk as "dTable1pk_dTable2pk" from dTable1 as "root" UNION ALL select null as fk_0, "root".fk as fk_1, "root".pk as "dTable1pk_dTable2pk" from dTable2 as "root") as "unionalias_3" on ("unionalias_2".fk_0 = "unionalias_3".fk_0 or "unionalias_2".fk_1 = "unionalias_3".fk_1) where "unionalias_2"."cTable1pk_cTable2pk" = 111 and "unionalias_1"."bTable1pk_bTable2pk" = 11 and "unionBase"."aTable1pk_aTable2pk" = 1 and "unionalias_3"."dTable1pk_dTable2pk" = 1111', $result);
+   assertEquals([1, 1], $result.values.rows.get('a_pk'));
+   assertEquals([11, 11], $result.values.rows.get('b_pk'));
+   assertEquals([111, 111], $result.values.rows.get('c_pk'));
+   assertEquals([1111, 1111], $result.values.rows.get('d_pk'));
+}
+
+function <<test.Test>> meta::relational::tests::mapping::union::sqlQueryMerging::testSQLQueryMergingForInnerJoins():Boolean[1]
+{
+   let result = execute(|A.all()->project([a|$a.pk,
+                                           a|$a.p1,
+                                           a|$a.p2],
+                                          ['a_pk',
+                                           'a_p1',
+                                           'a_p2']
+                                  ),
+                        unionMapping, testRuntime()
+   , meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select "unionBase"."aTable1pk_aTable2pk" as "a_pk", "unionBase"."A1B1cTable1c1_A2B2cTable2c1" as "a_p1", "unionBase"."A1B1cTable1c2_A2B2cTable2c2" as "a_p2" from (select "root".pk as "pk_0_0", null as "pk_0_1", "root".pk as "aTable1pk_aTable2pk", "btable1_0".c1 as "A1B1cTable1c1_A2B2cTable2c1", "btable1_2".c2 as "A1B1cTable1c2_A2B2cTable2c2" from aTable1 as "root" left outer join (select "btable1_1".fk as fk, "ctable1_0".c1 as c1 from bTable1 as "btable1_1" inner join cTable1 as "ctable1_0" on ("btable1_1".fk = "ctable1_0".fk and "ctable1_0".fk = 8)) as "btable1_0" on ("root".fk = "btable1_0".fk) left outer join (select "btable1_1".fk as fk, "ctable1_0".c2 as c2 from bTable1 as "btable1_1" inner join cTable1 as "ctable1_0" on ("btable1_1".fk = "ctable1_0".fk and "ctable1_0".fk = 9)) as "btable1_2" on ("root".fk = "btable1_2".fk) UNION ALL select null as "pk_0_0", "root".pk as "pk_0_1", "root".pk as "aTable1pk_aTable2pk", "btable2_0".c1 as "A1B1cTable1c1_A2B2cTable2c1", "btable2_2".c2 as "A1B1cTable1c2_A2B2cTable2c2" from aTable2 as "root" left outer join (select "btable2_1".fk as fk, "ctable2_0".c1 as c1 from bTable2 as "btable2_1" inner join cTable2 as "ctable2_0" on ("btable2_1".fk = "ctable2_0".fk and "ctable2_0".fk = 8)) as "btable2_0" on ("root".fk = "btable2_0".fk) left outer join (select "btable2_1".fk as fk, "ctable2_0".c2 as c2 from bTable2 as "btable2_1" inner join cTable2 as "ctable2_0" on ("btable2_1".fk = "ctable2_0".fk and "ctable2_0".fk = 9)) as "btable2_2" on ("root".fk = "btable2_2".fk)) as "unionBase"', $result);
+   assertEquals([1, 2, 1, 2], $result.values.rows.get('a_pk'));
+   assertEquals(['8', ^TDSNull(), '8', ^TDSNull()], $result.values.rows.get('a_p1'));
+   assertEquals([^TDSNull(), '9', ^TDSNull(), '9'], $result.values.rows.get('a_p2'));
+}
+
+function <<test.Test>> meta::relational::tests::mapping::union::sqlQueryMerging::testSQLQueryMergingForInnerJoins2():Boolean[1]
+{
+   let result = execute(|A.all()->project([a|$a.pk,
+                                           a|$a.p1,
+                                           a|$a.p3],
+                                          ['a_pk',
+                                           'a_p1',
+                                           'a_p3']
+                                  ),
+                        unionMapping, testRuntime()
+   , meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select "unionBase"."aTable1pk_aTable2pk" as "a_pk", "unionBase"."A1B1cTable1c1_A2B2cTable2c1" as "a_p1", "unionBase"."A1B1dTable1pk_A2B2dTable2pk" as "a_p3" from (select "root".pk as "pk_0_0", null as "pk_0_1", "root".pk as "aTable1pk_aTable2pk", "btable1_0".c1 as "A1B1cTable1c1_A2B2cTable2c1", "btable1_2".pk as "A1B1dTable1pk_A2B2dTable2pk" from aTable1 as "root" left outer join (select "btable1_1".fk as fk, "ctable1_0".c1 as c1 from bTable1 as "btable1_1" inner join cTable1 as "ctable1_0" on ("btable1_1".fk = "ctable1_0".fk and "ctable1_0".fk = 8)) as "btable1_0" on ("root".fk = "btable1_0".fk) left outer join (select "btable1_1".fk as fk, "dtable1_0".pk as pk from bTable1 as "btable1_1" inner join cTable1 as "ctable1_0" on ("btable1_1".fk = "ctable1_0".fk and "ctable1_0".fk = 9) inner join dTable1 as "dtable1_0" on ("ctable1_0".fk = "dtable1_0".fk)) as "btable1_2" on ("root".fk = "btable1_2".fk) UNION ALL select null as "pk_0_0", "root".pk as "pk_0_1", "root".pk as "aTable1pk_aTable2pk", "btable2_0".c1 as "A1B1cTable1c1_A2B2cTable2c1", "btable2_2".pk as "A1B1dTable1pk_A2B2dTable2pk" from aTable2 as "root" left outer join (select "btable2_1".fk as fk, "ctable2_0".c1 as c1 from bTable2 as "btable2_1" inner join cTable2 as "ctable2_0" on ("btable2_1".fk = "ctable2_0".fk and "ctable2_0".fk = 8)) as "btable2_0" on ("root".fk = "btable2_0".fk) left outer join (select "btable2_1".fk as fk, "dtable2_0".pk as pk from bTable2 as "btable2_1" inner join cTable2 as "ctable2_0" on ("btable2_1".fk = "ctable2_0".fk and "ctable2_0".fk = 9) inner join dTable2 as "dtable2_0" on ("ctable2_0".fk = "dtable2_0".fk)) as "btable2_2" on ("root".fk = "btable2_2".fk)) as "unionBase"', $result);
+   assertEquals([1, 2, 1, 2], $result.values.rows.get('a_pk'));
+   assertEquals(['8', ^TDSNull(), '8', ^TDSNull()], $result.values.rows.get('a_p1'));
+   assertEquals([^TDSNull(), 2222, ^TDSNull(), 2222], $result.values.rows.get('a_p3'));
+}
+
+###Pure
+import meta::relational::tests::mapping::union::sqlQueryMerging::model::*;
+
+Class meta::relational::tests::mapping::union::sqlQueryMerging::model::A
+{
+   pk : Integer[1];
+   p1 : String[1];
+   p2 : String[1];
+   p3 : String[1];
+   b : B[1];
+}
+
+Class meta::relational::tests::mapping::union::sqlQueryMerging::model::B
+{
+   pk : Integer[1];
+   c : C[1];
+}
+
+Class meta::relational::tests::mapping::union::sqlQueryMerging::model::C
+{
+   pk : Integer[1];
+   d : D[1];
+}
+
+Class meta::relational::tests::mapping::union::sqlQueryMerging::model::D
+{
+   pk : Integer[1];
+}
+
+###Relational
+
+Database meta::relational::tests::mapping::union::sqlQueryMerging::store::database
+(
+   Table aTable1(pk INTEGER PRIMARY KEY, fk Integer)
+   Table bTable1(pk INTEGER PRIMARY KEY, fk Integer)
+   Table cTable1(pk INTEGER PRIMARY KEY, c1 VARCHAR(10), c2 VARCHAR(10), fk Integer)
+   Table dTable1(pk INTEGER PRIMARY KEY, fk Integer)
+
+   Join A1B1(aTable1.fk = bTable1.fk)
+   Join B1C1(bTable1.fk = cTable1.fk)
+   Join B1C1_1(bTable1.fk = cTable1.fk and cTable1.fk = 8)
+   Join B1C1_2(bTable1.fk = cTable1.fk and cTable1.fk = 9)
+   Join C1D1(cTable1.fk = dTable1.fk)
+
+   Table aTable2(pk INTEGER PRIMARY KEY, fk Integer)
+   Table bTable2(pk INTEGER PRIMARY KEY, fk Integer)
+   Table cTable2(pk INTEGER PRIMARY KEY, c1 VARCHAR(10), c2 VARCHAR(10), fk Integer)
+   Table dTable2(pk INTEGER PRIMARY KEY, fk Integer)
+
+   Join A2B2(aTable2.fk = bTable2.fk)
+   Join B2C2(bTable2.fk = cTable2.fk)
+   Join B2C2_1(bTable2.fk = cTable2.fk and cTable2.fk = 8)
+   Join B2C2_2(bTable2.fk = cTable2.fk and cTable2.fk = 9)
+   Join C2D2(cTable2.fk = dTable2.fk)
+)
+
+###Mapping
+import meta::relational::tests::mapping::union::sqlQueryMerging::model::*;
+import meta::relational::tests::mapping::union::sqlQueryMerging::store::*;
+
+Mapping meta::relational::tests::mapping::union::sqlQueryMerging::mapping::unionMapping
+(
+   *A : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(a1, a2)
+   }
+
+   *B : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(b1, b2)
+   }
+
+   *C : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(c1, c2)
+   }
+
+   *D : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(d1, d2)
+   }
+
+   A[a1] : Relational
+   {
+      pk : [database]aTable1.pk,
+      b[b1] : [database]@A1B1,
+      p1 : [database]@A1B1>(INNER)@B1C1_1 | cTable1.c1,
+      p2 : [database]@A1B1>(INNER)@B1C1_2 | cTable1.c2,
+      p3 : [database]@A1B1>(INNER)@B1C1_2>(INNER)@C1D1 | dTable1.pk
+   }
+
+   B[b1] : Relational
+   {
+      pk : [database]bTable1.pk,
+      c[c1] : [database]@B1C1
+   }
+
+   C[c1] : Relational
+   {
+      pk : [database]cTable1.pk,
+      d[d1] : [database]@C1D1
+   }
+
+   D[d1] : Relational
+   {
+      pk : [database]dTable1.pk
+   }
+
+   A[a2] : Relational
+   {
+      pk : [database]aTable2.pk,
+      b[b2] : [database]@A2B2,
+      p1 : [database]@A2B2>(INNER)@B2C2_1 | cTable2.c1,
+      p2 : [database]@A2B2>(INNER)@B2C2_2 | cTable2.c2,
+      p3 : [database]@A2B2>(INNER)@B2C2_2>(INNER)@C2D2 | dTable2.pk
+   }
+
+   B[b2] : Relational
+   {
+      pk : [database]bTable2.pk,
+      c[c2] : [database]@B2C2
+   }
+
+   C[c2] : Relational
+   {
+      pk : [database]cTable2.pk,
+      d[d2] : [database]@C2D2
+   }
+
+   D[d2] : Relational
+   {
+      pk : [database]dTable2.pk
+   }
+)
+
+###Pure
+import meta::pure::runtime::*;
+import meta::relational::runtime::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::tests::mapping::union::sqlQueryMerging::store::*;
+
+function <<test.BeforePackage>> meta::relational::tests::mapping::union::sqlQueryMerging::setup():Runtime[1]
+{
+   let connection = meta::relational::tests::testRuntime(database).connectionByElement(database)->cast(@DatabaseConnection);
+
+   executeInDb('drop table if exists aTable1;', $connection);
+   executeInDb('create table aTable1 (pk INTEGER, fk INTEGER)', $connection);
+   executeInDb('insert into aTable1 values(1, 8);', $connection);
+   executeInDb('insert into aTable1 values(2, 9);', $connection);
+
+   executeInDb('drop table if exists bTable1;', $connection);
+   executeInDb('create table bTable1 (pk INTEGER, fk INTEGER)', $connection);
+   executeInDb('insert into bTable1 values(11, 8);', $connection);
+   executeInDb('insert into bTable1 values(22, 9);', $connection);
+
+   executeInDb('drop table if exists cTable1;', $connection);
+   executeInDb('create table cTable1 (pk INTEGER, c1 VARCHAR(10), c2 VARCHAR(10), fk INTEGER)', $connection);
+   executeInDb('insert into cTable1 values(111, \'8\', \'8\', 8);', $connection);
+   executeInDb('insert into cTable1 values(222, \'9\', \'9\', 9);', $connection);
+
+   executeInDb('drop table if exists dTable1;', $connection);
+   executeInDb('create table dTable1 (pk INTEGER, fk INTEGER)', $connection);
+   executeInDb('insert into dTable1 values(1111, 8);', $connection);
+   executeInDb('insert into dTable1 values(2222, 9);', $connection);
+
+   executeInDb('drop table if exists aTable2;', $connection);
+   executeInDb('create table aTable2 (pk INTEGER, fk INTEGER)', $connection);
+   executeInDb('insert into aTable2 values(1, 8);', $connection);
+   executeInDb('insert into aTable2 values(2, 9);', $connection);
+
+   executeInDb('drop table if exists bTable2;', $connection);
+   executeInDb('create table bTable2 (pk INTEGER, fk INTEGER)', $connection);
+   executeInDb('insert into bTable2 values(11, 8);', $connection);
+   executeInDb('insert into bTable2 values(22, 9);', $connection);
+
+   executeInDb('drop table if exists cTable2;', $connection);
+   executeInDb('create table cTable2 (pk INTEGER, c1 VARCHAR(10), c2 VARCHAR(10), fk INTEGER)', $connection);
+   executeInDb('insert into cTable2 values(111, \'8\', \'8\', 8);', $connection);
+   executeInDb('insert into cTable2 values(222, \'9\', \'9\', 9);', $connection);
+   
+   executeInDb('drop table if exists dTable2;', $connection);
+   executeInDb('create table dTable2 (pk INTEGER, fk INTEGER)', $connection);
+   executeInDb('insert into dTable2 values(1111, 8);', $connection);
+   executeInDb('insert into dTable2 values(2222, 9);', $connection);
+   
+   ^Runtime(connections = $connection);
+}

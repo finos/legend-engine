@@ -1,0 +1,135 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::mapping::*;
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::*;
+import meta::relational::functions::*;
+import meta::relational::functions::pureToSqlQuery::*;
+
+function <<test.BeforePackage>> meta::relational::tests::projection::functionvariables::setUp():Boolean[1]
+{
+    createTablesAndFillDb();
+}
+
+function <<test.Test>> meta::relational::tests::projection::functionvariables::testProjectReferenceInRhsFilterWithDistinctVarNamesViaQualifiedProperty():Boolean[1]
+{
+   let result = execute(|Firm.all()->project([f|$f.legalName,f|$f.employeesByCityOrManager($f.address.name->toOne(),'').name->joinStrings(), f|$f.address.name],['legalName','employeeWithFirmAddress','address']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let tds = $result.values->at(0);
+   assertEquals(['Firm X~John Johnson,John Hill,Anthony Allen~New York', 'Firm A~TDSNull~Cupertino', 'Firm B~TDSNull~Tokyo', 'Firm C~TDSNull~Mountain View'],$tds.rows->map(r|$r.values->makeString('~')));
+   assertEquals('select "root".LEGALNAME as "legalName", "firmtable_1".aggCol as "employeeWithFirmAddress", "addresstable_2".NAME as "address" from firmTable as "root" left outer join (select "firmtable_2".ID as ID, group_concat(concat("persontable_0".FIRSTNAME, \' \', "persontable_0".LASTNAME) ) as aggCol from firmTable as "firmtable_2" left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "firmtable_2".ADDRESSID) left outer join personTable as "persontable_0" on ("firmtable_2".ID = "persontable_0".FIRMID) left outer join addressTable as "addresstable_1" on ("addresstable_1".ID = "persontable_0".ADDRESSID) left outer join personTable as "persontable_1" on ("persontable_0".MANAGERID = "persontable_1".ID) where ("addresstable_1".NAME = "addresstable_0".NAME or concat("persontable_1".FIRSTNAME, \' \', "persontable_1".LASTNAME) = \'\') group by "firmtable_2".ID) as "firmtable_1" on ("root".ID = "firmtable_1".ID) left outer join addressTable as "addresstable_2" on ("addresstable_2".ID = "root".ADDRESSID)', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::projection::functionvariables::testProjectReferenceInRhsFilterWithConflictingVarNamesViaQualifiedProperty():Boolean[1]
+{
+   let result = execute(|Firm.all()->project([f|$f.legalName,f|$f.employeesByCityOrManager($f.address.name->toOne(),'').name->joinStrings(), f|$f.address.name],['legalName','employeeWithFirmAddress','address']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let tds = $result.values->at(0);
+   assertEquals(['Firm X~John Johnson,John Hill,Anthony Allen~New York', 'Firm A~TDSNull~Cupertino', 'Firm B~TDSNull~Tokyo', 'Firm C~TDSNull~Mountain View'],$tds.rows->map(r|$r.values->makeString('~')));
+   assertEquals('select "root".LEGALNAME as "legalName", "firmtable_1".aggCol as "employeeWithFirmAddress", "addresstable_2".NAME as "address" from firmTable as "root" left outer join (select "firmtable_2".ID as ID, group_concat(concat("persontable_0".FIRSTNAME, \' \', "persontable_0".LASTNAME) ) as aggCol from firmTable as "firmtable_2" left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "firmtable_2".ADDRESSID) left outer join personTable as "persontable_0" on ("firmtable_2".ID = "persontable_0".FIRMID) left outer join addressTable as "addresstable_1" on ("addresstable_1".ID = "persontable_0".ADDRESSID) left outer join personTable as "persontable_1" on ("persontable_0".MANAGERID = "persontable_1".ID) where ("addresstable_1".NAME = "addresstable_0".NAME or concat("persontable_1".FIRSTNAME, \' \', "persontable_1".LASTNAME) = \'\') group by "firmtable_2".ID) as "firmtable_1" on ("root".ID = "firmtable_1".ID) left outer join addressTable as "addresstable_2" on ("addresstable_2".ID = "root".ADDRESSID)', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::projection::functionvariables::testProjectOnQualifiedPropertyReturningAConstant():Boolean[1]
+{
+   let result = execute(|Person.all()->project([p|$p.name, p|$p.constant()],['name','constant']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let tds = $result.values->at(0);
+   assertEquals( ['Peter Smith~constant', 'John Johnson~constant', 'John Hill~constant', 'Anthony Allen~constant', 'Fabrice Roberts~constant', 'Oliver Hill~constant', 'David Harris~constant'],$tds.rows->map(r|$r.values->makeString('~')));
+   assertEquals('select concat("root".FIRSTNAME, \' \', "root".LASTNAME) as "name", \'constant\' as "constant" from personTable as "root"',$result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::projection::functionvariables::testProjectReferenceInRhsFilterWithPotentiallyConflictingVarNamesViaQualifiedProperty():Boolean[1]
+{
+   let result = execute(|Firm.all()->project([e|$e.legalName,e|$e.employeesByCityOrManager($e.address->toOne().name,'').name->joinStrings(), f|$f.address.name],['legalName','employeeWithFirmAddress','address']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let tds = $result.values->at(0);
+   assertEquals(['Firm X~John Johnson,John Hill,Anthony Allen~New York', 'Firm A~TDSNull~Cupertino', 'Firm B~TDSNull~Tokyo', 'Firm C~TDSNull~Mountain View'],$tds.rows->map(r|$r.values->makeString('~')));
+   assertEquals('select "root".LEGALNAME as "legalName", "firmtable_1".aggCol as "employeeWithFirmAddress", "addresstable_2".NAME as "address" from firmTable as "root" left outer join (select "firmtable_2".ID as ID, group_concat(concat("persontable_0".FIRSTNAME, \' \', "persontable_0".LASTNAME) ) as aggCol from firmTable as "firmtable_2" left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "firmtable_2".ADDRESSID) left outer join personTable as "persontable_0" on ("firmtable_2".ID = "persontable_0".FIRMID) left outer join addressTable as "addresstable_1" on ("addresstable_1".ID = "persontable_0".ADDRESSID) left outer join personTable as "persontable_1" on ("persontable_0".MANAGERID = "persontable_1".ID) where ("addresstable_1".NAME = "addresstable_0".NAME or concat("persontable_1".FIRSTNAME, \' \', "persontable_1".LASTNAME) = \'\') group by "firmtable_2".ID) as "firmtable_1" on ("root".ID = "firmtable_1".ID) left outer join addressTable as "addresstable_2" on ("addresstable_2".ID = "root".ADDRESSID)', $result->sqlRemoveFormatting());
+}
+
+
+function <<test.Test>> meta::relational::tests::projection::functionvariables::testProjectReferenceInRhsFilterWithDistinctVarNamesViaNonPropertyFunctionExpression():Boolean[1]
+{
+   let result = execute(|Firm.all()->project([f|$f.legalName,f|$f.employees->filter(e|$e.address.name == $f.address.name || $e.manager.name =='').firstName, f|$f.address.name],['legalName','employeeWithFirmAddress','address']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let tds = $result.values->at(0);
+   assertEquals(['Firm X~John~New York', 'Firm X~John~New York', 'Firm X~Anthony~New York', 'Firm A~TDSNull~Cupertino', 'Firm B~TDSNull~Tokyo', 'Firm C~TDSNull~Mountain View'],$tds.rows->map(r|$r.values->makeString('~')));
+   assertEquals('select "root".LEGALNAME as "legalName", "firmtable_1".FIRSTNAME as "employeeWithFirmAddress", "addresstable_2".NAME as "address" from firmTable as "root" left outer join (select "firmtable_2".ID as ID, "persontable_0".FIRSTNAME as FIRSTNAME from firmTable as "firmtable_2" left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "firmtable_2".ADDRESSID) left outer join personTable as "persontable_0" on ("firmtable_2".ID = "persontable_0".FIRMID) left outer join addressTable as "addresstable_1" on ("addresstable_1".ID = "persontable_0".ADDRESSID) left outer join personTable as "persontable_1" on ("persontable_0".MANAGERID = "persontable_1".ID) where ("addresstable_1".NAME = "addresstable_0".NAME or concat("persontable_1".FIRSTNAME, \' \', "persontable_1".LASTNAME) = \'\')) as "firmtable_1" on ("root".ID = "firmtable_1".ID) left outer join addressTable as "addresstable_2" on ("addresstable_2".ID = "root".ADDRESSID)', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::projection::functionvariables::testVariableReferenceInFilterWithSameNameAsThatInParentProject():Boolean[1]
+{
+   let result = execute(|Person.all()->project([e|$e.name, e|$e.firm->filter(e|$e.legalName=='Firm X').legalName],['personName','FirmX']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+   let tds = $result.values->at(0);
+   let results = $tds.rows->map(r|$r.values->makeString('~'));
+   let expected= ['Peter Smith~Firm X', 'John Johnson~Firm X', 'John Hill~Firm X', 'Anthony Allen~Firm X', 'Fabrice Roberts~TDSNull', 'Oliver Hill~TDSNull', 'David Harris~TDSNull'];
+   assert($expected->forAll(e|$results->contains($e)),| 'expected: '+$expected->joinStrings('[',',',']')+' actual:'+$results->joinStrings('[',',',']'));
+}
+
+function <<test.Test>> meta::relational::tests::projection::functionvariables::testVariableReferenceInMapWithSameNameAsThatInParentProject():Boolean[1]
+{
+   let result = execute(|Person.all()->project([e|$e.name, e|$e.firm->map(e|$e.legalName)],['personName','firmName']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+   let tds = $result.values->at(0);
+   let results = $tds.rows->map(r|$r.values->makeString('~'));
+   let expected= ['Peter Smith~Firm X','John Johnson~Firm X','John Hill~Firm X','Anthony Allen~Firm X','Fabrice Roberts~Firm A','Oliver Hill~Firm B','David Harris~Firm C'];
+   assert($expected->forAll(e|$results->contains($e)),| 'expected: '+$expected->joinStrings('[',',',']')+' actual:'+$results->joinStrings('[',',',']'));
+   assertEquals('select concat("root".FIRSTNAME, \' \', "root".LASTNAME) as "personName", "firmtable_0".LEGALNAME as "firmName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID)', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::projection::functionvariables::testVariableReferenceInMapWithNestedFilter():Boolean[1]
+{
+   let result = execute(|Person.all()->project([p|$p.name, p|$p.firm->map(f|$f.address->filter(a|$a.name==$p.address.name)).name],['personName','addressName']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+   let tds = $result.values->at(0);
+   let results = $tds.rows->map(r|$r.values->makeString('~'));
+   let expected= ['Peter Smith~TDSNull','John Johnson~New York','John Hill~New York','Anthony Allen~New York','Fabrice Roberts~TDSNull','Oliver Hill~TDSNull','David Harris~TDSNull'];
+   assert($expected->forAll(e|$results->contains($e)),| 'expected: '+$expected->joinStrings('[',',',']')+' actual:'+$results->joinStrings('[',',',']'));
+   assertEquals('select concat("root".FIRSTNAME, \' \', "root".LASTNAME) as "personName", "persontable_1".NAME as "addressName" from personTable as "root" left outer join (select "persontable_2".ID as ID, "addresstable_0".NAME as NAME from personTable as "persontable_2" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "persontable_2".FIRMID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "firmtable_0".ADDRESSID) left outer join addressTable as "addresstable_1" on ("addresstable_1".ID = "persontable_2".ADDRESSID) where ("addresstable_0".NAME = "addresstable_1".NAME OR ("addresstable_0".NAME is null AND "addresstable_1".NAME is null))) as "persontable_1" on ("root".ID = "persontable_1".ID)', $result->sqlRemoveFormatting());
+}
+
+//problem identifying the current tree node since the filters merged rhs is not symmetric with the left side. Current Node is at level 2 on the left, and level 1 on the right therefore not found
+function <<test.Test,test.ToFix>> meta::relational::tests::projection::functionvariables::testProjectReferenceInFilterWithMultiLevelLhs():Boolean[1]
+{
+   let result = execute(|Person.all()->project([x|$x.name, x|$x.firm->map(f|$f.employeesByCityOrManager($x.address.name->toOne(),'')).name],['personName','personWithFirmName']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let tds = $result.values->at(0);
+   let results = $tds.rows->map(r|$r.values->makeString('~'));
+   let expected= ['Peter Smith~Firm X', 'John Johnson~Firm X', 'John Hill~Firm X', 'Anthony Allen~Firm X', 'Fabrice Roberts~TDSNull', 'Oliver Hill~TDSNull', 'David Harris~TDSNull'];
+   assert($expected->forAll(e|$results->contains($e)),| 'expected: '+$expected->joinStrings('[',',',']')+' actual:'+$results->joinStrings('[',',',']'));
+}
+
+function <<test.Test,test.ToFix>> meta::relational::tests::projection::functionvariables::testProjectReferenceInRhsFilterWithDistinctVarNamesViaNonPropertyFunctionExpressionUsingAggregation():Boolean[1]
+{
+   let result = execute(|Firm.all()->project([f|$f.legalName,f|$f.employees->filter(e|$e.address.name == $f.address.name || $e.manager.name =='swallowedinquery').name->joinStrings(), f|$f.address.name],['legalName','employeeWithFirmAddress','address']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let tds = $result.values->at(0);
+   assertEquals('',$result->sqlRemoveFormatting());
+}
+
+function <<test.Test, test.ToFix>> meta::relational::tests::projection::functionvariables::testVariableReferenceInMapWithNestedFunction():Boolean[1]
+{
+   let result = execute(|Person.all()->project([p|$p.name, p|$p.firm->map(f| $f.address->filter(a|let pred={a:Address[1], p:Person[1]| $a.name==$p.address.name}; $pred->eval($a,$p);)).name],['personName','addressName']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select concat("root".FIRSTNAME, \' \', "root".LASTNAME) as "personName", "gen_root_d_m2".NAME as "addressName" from personTable as "root" left outer join (select "gen_root".ID as ID, "addressTable_d#6".NAME as NAME from personTable as "gen_root" left outer join firmTable as "firmTable_d#4" on ("firmTable_d#4".ID = "gen_root".FIRMID) left outer join addressTable as "addressTable_d#6" on ("addressTable_d#6".ID = "firmTable_d#4".ADDRESSID) left outer join addressTable as "addressTable_d#8_d#6_m1_d#5_m1" on ("addressTable_d#8_d#6_m1_d#5_m1".ID = "gen_root".ADDRESSID) where "addressTable_d#6".NAME = "addressTable_d#8_d#6_m1_d#5_m1".NAME) as "gen_root_d_m2" on ("root".ID = "gen_root_d_m2".ID)',$result->sqlRemoveFormatting());
+}
+
+function <<test.Test, test.ToFix>> meta::relational::tests::projection::functionvariables::testVariableReferenceInExists():Boolean[1]
+{
+   let result = execute(|Firm.all()->project([f|$f.employees->filter(e|$e.address->exists(a|$a.name->map(n|$n+'~'+$a.name)=='test')).firstName],['personFirstName']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select concat("root".FIRSTNAME, \' \', "root".LASTNAME) as "personName", "gen_root_d_m2".NAME as "addressName" from personTable as "root" left outer join (select "gen_root".ID as ID, "addressTable_d#6".NAME as NAME from personTable as "gen_root" left outer join firmTable as "firmTable_d#4" on ("firmTable_d#4".ID = "gen_root".FIRMID) left outer join addressTable as "addressTable_d#6" on ("addressTable_d#6".ID = "firmTable_d#4".ADDRESSID) left outer join addressTable as "addressTable_d#8_d#6_m1_d#5_m1" on ("addressTable_d#8_d#6_m1_d#5_m1".ID = "gen_root".ADDRESSID) where "addressTable_d#6".NAME = "addressTable_d#8_d#6_m1_d#5_m1".NAME) as "gen_root_d_m2" on ("root".ID = "gen_root_d_m2".ID)',$result->sqlRemoveFormatting());
+}
+
+//this should fail as we are unable to identify the positionBeforeLastApplyJoinTreeNode in the result of the qp function expression vs the input query
+function <<test.Test, test.ToFix>> meta::relational::tests::projection::functionvariables::testVariableReferenceQualifiedPropertyFollowedByExists():Boolean[1]
+{
+   let result = execute(|Firm.all()->project([f|$f->filter(f|$f.employeesByCityOrManager($f.address.name->toOne(),'')->exists(l|$l.firstName == 'David')).legalName],['firmLegalName']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let tds = $result.values->at(0);
+   assertEquals(['Firm X~John Johnson,John Hill,Anthony Allen~New York', 'Firm A~TDSNull~Cupertino', 'Firm B~TDSNull~Tokyo', 'Firm C~TDSNull~Mountain View'],$tds.rows->map(r|$r.values->makeString('~')));
+   assertEquals('select "root".LEGALNAME as "legalName", "agg_query_d_m2".col0 as "employeeWithFirmAddress", "addressTable_d#3_d_m3".NAME as "address" from firmTable as "root" left outer join (select group_concat(concat("personTable_d#6".FIRSTNAME, \' \', "personTable_d#6".LASTNAME) ) as col0, "_sub_d#2".ID as ID from firmTable as "_sub_d#2" left outer join firmTable as "gen_root" on ("_sub_d#2".ID = "gen_root".ID) left outer join addressTable as "addressTable_d#9_d#7_m1_d#5_m1" on ("addressTable_d#9_d#7_m1_d#5_m1".ID = "gen_root".ADDRESSID) left outer join personTable as "personTable_d#6" on ("gen_root".ID = "personTable_d#6".FIRMID) left outer join addressTable as "addressTable_d#9_d#5_m1_md" on ("addressTable_d#9_d#5_m1_md".ID = "personTable_d#6".ADDRESSID) left outer join personTable as "personTable_d#9_d#6_m1_md_d#5_m1_md" on ("personTable_d#6".MANAGERID = "personTable_d#9_d#6_m1_md_d#5_m1_md".ID) where ("addressTable_d#9_d#5_m1_md".NAME = "addressTable_d#9_d#7_m1_d#5_m1".NAME or concat("personTable_d#9_d#6_m1_md_d#5_m1_md".FIRSTNAME, \' \', "personTable_d#9_d#6_m1_md_d#5_m1_md".LASTNAME) = \'\') group by "_sub_d#2".ID) as "agg_query_d_m2" on ("root".ID = "agg_query_d_m2".ID) left outer join addressTable as "addressTable_d#3_d_m3" on ("addressTable_d#3_d_m3".ID = "root".ADDRESSID)',$result->sqlRemoveFormatting());
+}

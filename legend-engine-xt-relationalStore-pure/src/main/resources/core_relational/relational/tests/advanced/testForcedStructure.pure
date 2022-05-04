@@ -1,0 +1,71 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::mapping::*;
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::*;
+import meta::relational::functions::*;
+import meta::relational::functions::pureToSqlQuery::*;
+import meta::pure::mapping::*;
+
+function <<test.BeforePackage>> meta::relational::tests::advanced::forced::structure::setUp():Boolean[1]
+{
+   meta::relational::tests::createTablesAndFillDb();
+}
+
+function <<test.Test>> meta::relational::tests::advanced::forced::structure::testQualifierQueryWithOr():Boolean[1]
+{
+   let result = execute(|Firm.all()->filter(f|$f.employeesByCityOrManagerAndLastName('Smith', 'Hoboken', 'Bla').firstName == 'Peter' ||
+                                              $f.employeesByCityOrManagerAndLastName('Johnson', 'New York', 'Bla').firstName == 'John'),
+                                             simpleRelationalMapping,
+                                             testRuntime(), meta::pure::router::extension::defaultRelationalExtensions(),
+                                             ^RelationalDebugContext(debug=false, space='', forcedIsolation = IsolationStrategy.BuildCorrelatedSubQuery)
+                 );
+   assertSize($result.values->at(0), 1);
+   assertEquals('Firm X', $result.values->at(0).legalName);
+   assertEquals('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join (select "persontable_1".FIRMID as FIRMID, "persontable_1".FIRSTNAME as FIRSTNAME from personTable as "persontable_1" left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "persontable_1".ADDRESSID) left outer join personTable as "persontable_2" on ("persontable_1".MANAGERID = "persontable_2".ID) where ("persontable_1".LASTNAME = \'Smith\' and ("addresstable_0".NAME = \'Hoboken\' or concat("persontable_2".FIRSTNAME, \' \', "persontable_2".LASTNAME) = \'Bla\'))) as "persontable_0" on ("root".ID = "persontable_0".FIRMID) left outer join (select "persontable_4".FIRMID as FIRMID, "persontable_4".FIRSTNAME as FIRSTNAME from personTable as "persontable_4" left outer join addressTable as "addresstable_1" on ("addresstable_1".ID = "persontable_4".ADDRESSID) left outer join personTable as "persontable_5" on ("persontable_4".MANAGERID = "persontable_5".ID) where ("persontable_4".LASTNAME = \'Johnson\' and ("addresstable_1".NAME = \'New York\' or concat("persontable_5".FIRSTNAME, \' \', "persontable_5".LASTNAME) = \'Bla\'))) as "persontable_3" on ("root".ID = "persontable_3".FIRMID) where ("persontable_0".FIRSTNAME = \'Peter\' or "persontable_3".FIRSTNAME = \'John\')', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::advanced::forced::structure::testQualifierQuery():Boolean[1]
+{
+   let result = execute(|Firm.all()->filter(f|$f.employeesByCityOrManagerAndLastName('Smith', 'Hoboken', 'Bla').firstName == 'Peter'),
+                                             simpleRelationalMapping,
+                                             testRuntime(), meta::pure::router::extension::defaultRelationalExtensions(),
+                                             ^RelationalDebugContext(debug=false, space='', forcedIsolation = IsolationStrategy.BuildCorrelatedSubQuery));
+   assertSize($result.values->at(0), 1);
+   assertEquals('Firm X', $result.values->at(0).legalName);
+   assertEquals('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join (select "persontable_1".FIRMID as FIRMID, "persontable_1".FIRSTNAME as FIRSTNAME from personTable as "persontable_1" left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "persontable_1".ADDRESSID) left outer join personTable as "persontable_2" on ("persontable_1".MANAGERID = "persontable_2".ID) where ("persontable_1".LASTNAME = \'Smith\' and ("addresstable_0".NAME = \'Hoboken\' or concat("persontable_2".FIRSTNAME, \' \', "persontable_2".LASTNAME) = \'Bla\'))) as "persontable_0" on ("root".ID = "persontable_0".FIRMID) where "persontable_0".FIRSTNAME = \'Peter\'', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::advanced::forced::structure::testQualifierWithOperation():Boolean[1]
+{
+   let result = execute(|Firm.all()->map(f|$f.employeesByCityOrManagerAndLastName('Smith', 'Hoboken', 'Bla').firstName+'Test'),
+                                             simpleRelationalMapping,
+                                             testRuntime(), meta::pure::router::extension::defaultRelationalExtensions(),
+                                             ^RelationalDebugContext(debug=false, space='', forcedIsolation = IsolationStrategy.BuildCorrelatedSubQuery));
+   assertSize($result.values->at(0), 1);
+   assertEquals('PeterTest', $result.values->at(0));
+   assertEquals('select concat("persontable_0".FIRSTNAME, \'Test\') from firmTable as "root" left outer join (select "persontable_0".FIRMID as FIRMID, "persontable_0".FIRSTNAME as FIRSTNAME from personTable as "persontable_0" left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "persontable_0".ADDRESSID) left outer join personTable as "persontable_1" on ("persontable_0".MANAGERID = "persontable_1".ID) where ("persontable_0".LASTNAME = \'Smith\' and ("addresstable_0".NAME = \'Hoboken\' or concat("persontable_1".FIRSTNAME, \' \', "persontable_1".LASTNAME) = \'Bla\'))) as "persontable_0" on ("root".ID = "persontable_0".FIRMID)', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::advanced::forced::structure::testTwoQualifiersWithOperation():Boolean[1]
+{
+   let result = execute(|Firm.all()->map(f|$f.employeesByCityOrManagerAndLastName('Smith', 'Hoboken', 'Bla').firstName+$f.employeesByCityOrManagerAndLastName('Hill', 'New York', 'Johnson').firstName),
+                                             simpleRelationalMapping,
+                                             testRuntime(), meta::pure::router::extension::defaultRelationalExtensions(),
+                                             ^RelationalDebugContext(debug=false, space='', forcedIsolation = IsolationStrategy.BuildCorrelatedSubQuery));
+   assertSize($result.values->at(0), 1);
+   assertEquals('PeterJohn', $result.values->at(0));
+   assertEquals('select concat("persontable_0".FIRSTNAME, "persontable_2".FIRSTNAME) from firmTable as "root" left outer join (select "persontable_0".FIRMID as FIRMID, "persontable_0".FIRSTNAME as FIRSTNAME from personTable as "persontable_0" left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "persontable_0".ADDRESSID) left outer join personTable as "persontable_1" on ("persontable_0".MANAGERID = "persontable_1".ID) where ("persontable_0".LASTNAME = \'Smith\' and ("addresstable_0".NAME = \'Hoboken\' or concat("persontable_1".FIRSTNAME, \' \', "persontable_1".LASTNAME) = \'Bla\'))) as "persontable_0" on ("root".ID = "persontable_0".FIRMID) left outer join (select "persontable_3".FIRMID as FIRMID, "persontable_3".FIRSTNAME as FIRSTNAME from personTable as "persontable_3" left outer join addressTable as "addresstable_1" on ("addresstable_1".ID = "persontable_3".ADDRESSID) left outer join personTable as "persontable_4" on ("persontable_3".MANAGERID = "persontable_4".ID) where ("persontable_3".LASTNAME = \'Hill\' and ("addresstable_1".NAME = \'New York\' or concat("persontable_4".FIRSTNAME, \' \', "persontable_4".LASTNAME) = \'Johnson\'))) as "persontable_2" on ("root".ID = "persontable_2".FIRMID)', $result->sqlRemoveFormatting());
+}

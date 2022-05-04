@@ -1,0 +1,151 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::metamodel::*;
+import meta::relational::dbTestRunner::*;
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::adjust::testAdjust(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='adjust', parameters=[^Literal(value=%2014-11-30), ^Literal(value=1), ^Literal(value=DurationUnit.DAYS)]);
+  let expected = ^Literal(value=%2014-12-01);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::adjust::testAdjustWithMicroseconds(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='adjust', parameters=[^Literal(value=%2014-12-04T15:22:23), ^Literal(value=123456), ^Literal(value=DurationUnit.MICROSECONDS)]);
+  let expected = ^Literal(value=%2014-12-04T15:22:23.123456000);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+//get datetime subpart
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::second::testSecond(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='second', parameters=[^Literal(value=%2014-12-04T15:22:23)]);
+  let expected = ^Literal(value=23);          
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::minute::testminute(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='minute', parameters=[^Literal(value=%2014-12-04T15:22:23)]);
+  let expected = ^Literal(value=22);          
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::hour::testHour(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='hour', parameters=[^Literal(value=%2014-12-04T15:22:23)]);
+  let expected = ^Literal(value=15);         
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::dayOfWeekNumber::testDayOfWeekNumber(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='dayOfWeekNumber', parameters=[^Literal(value=%2014-12-04T15:22:23)]);
+  let expected = ^Literal(value=5);          //Thursday  - day number is db specific ?
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::dayOfMonth::testDayOfMonth(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='dayOfMonth', parameters=[^Literal(value=%2014-12-04T15:22:23)]);
+  let expected = ^Literal(value=4);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::weekOfYear::testWeekOfYear(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='weekOfYear', parameters=[^Literal(value=%2014-12-04T15:22:23)]);
+  let expected = ^Literal(value=49);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::month::testMonthAsNumber(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='month', parameters=[^Literal(value=%2014-12-04T15:22:23)]);
+  let expected = ^Literal(value=12);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::monthNumber::testMonthNumber(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='monthNumber', parameters=[^Literal(value=%2014-12-04T15:22:23)]);
+  let expected = ^Literal(value=12);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::quarter::testQuarterAsNumber(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='quarter', parameters=[^Literal(value=%2014-12-04T15:22:23)]);
+  let expected = ^Literal(value=4);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::quarterNumber::testQuarterNumber(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='quarterNumber', parameters=[^Literal(value=%2014-12-04T15:22:23)]);
+  let expected = ^Literal(value=4);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::year::testYear(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='year', parameters=[^Literal(value=%2014-12-04T15:22:23)]);
+  let expected = ^Literal(value=2014);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+//firstDay
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::firstDayOfWeek::testFirstDayOfWeek(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='firstDayOfWeek', parameters=[^Literal(value=%2014-12-04T15:22:23)]);
+  let expected = ^Literal(value=%2014-12-01);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::previousDayOfWeek::testPreviousDayOfWeekWithDate(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='previousDayOfWeek', parameters=[^Literal(value=%2014-12-04), ^Literal(value=DayOfWeek.Monday)]);
+  let expected = ^Literal(value=%2014-12-01);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::mostRecentDayOfWeek::testMostRecentDayOfWeekWithDate(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='mostRecentDayOfWeek', parameters=[^Literal(value=%2014-12-04), ^Literal(value=DayOfWeek.Monday)]);
+  let expected = ^Literal(value=%2014-12-01);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::firstDayOfMonth::testFirstDayOfMonth(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='firstDayOfMonth', parameters=[^Literal(value=%2014-12-04T15:22:23)]);
+  let expected = ^Literal(value=%2014-12-01);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::firstDayOfQuarter::testFirstDayOfQuarter(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='firstDayOfQuarter', parameters=[^Literal(value=%2014-12-04T15:22:23)]);
+  let expected = ^Literal(value=%2014-10-01);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::firstDayOfYear::testFirstDayOfYear(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='firstDayOfYear', parameters=[^Literal(value=%2014-12-04T15:22:23)]);
+  let expected = ^Literal(value=%2014-01-01);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}

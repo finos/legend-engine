@@ -1,0 +1,101 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::alloy::connections::*;
+import meta::pure::runtime::*;
+import meta::pure::mapping::*;
+import meta::relational::metamodel::*;
+import meta::relational::mapping::*;
+import meta::pure::alloy::connections::alloy::*;
+import meta::pure::alloy::connections::alloy::specification::*;
+import meta::pure::alloy::connections::alloy::authentication::*;
+
+Class <<typemodifiers.abstract>> meta::pure::alloy::connections::PostProcessor {}
+
+
+Class meta::pure::alloy::connections::Mapper extends meta::relational::runtime::PostProcessorParameter {
+   from: String[1];
+   to: String[1];
+}
+
+Class meta::pure::alloy::connections::MapperPostProcessor extends PostProcessor
+{
+   mappers: Mapper[*];
+}
+
+
+Class <<typemodifiers.abstract>> meta::pure::alloy::connections::SchemaNameMapper extends Mapper {}
+Class <<typemodifiers.abstract>> meta::pure::alloy::connections::TableNameMapper extends Mapper {
+   schema: meta::pure::alloy::connections::SchemaNameMapper[1];
+}
+
+
+function meta::pure::alloy::connections::tableMapperPostProcessor(mapper:MapperPostProcessor[1]):meta::relational::runtime::PostProcessorWithParameter[1]
+{
+   ^meta::relational::runtime::PostProcessorWithParameter(parameters = $mapper.mappers,
+                                                          postProcessor = meta::pure::alloy::connections::postProcessor::tableMapperPostProcessor__PostProcessor_1_);
+
+}
+
+function meta::pure::alloy::connections::postProcessor::tableMapperPostProcessor():meta::relational::runtime::PostProcessor[1]
+{
+   ^meta::relational::runtime::PostProcessor(sqlQueryPostProcessorForExecution ={|''} , sqlQueryPostProcessorForPlan = meta::pure::alloy::connections::tableMapperPostProcessor_SQLQuery_1__Mapping_$0_1$__Runtime_1__Database_$0_1$__ExecutionContext_1__PostProcessorParameter_MANY__PostProcessorResult_1_ )
+}
+
+function meta::pure::alloy::connections::tableMapperPostProcessor(sql:SQLQuery[1],m:Mapping[0..1], runtime:Runtime[1],store:Database[0..1],exeCtx:ExecutionContext[1],params:	meta::relational::runtime::PostProcessorParameter[*]):PostProcessorResult[1]
+{
+   let pairs = $params->map(p |
+      $p->match([
+         t:meta::pure::alloy::connections::TableNameMapper[1] |
+            let schema = $store.schema($t.schema.from);
+            let table = $schema.table($t.from);
+
+            assert($schema->isNotEmpty() && $table->isNotEmpty(), | 'Table not found "' + $t.schema.from + '.' + $t.from + '"');
+
+            let schemaOne = $schema->toOne();
+            let tableOne = $table->toOne();
+
+            pair($tableOne, ^$tableOne(schema = ^$schemaOne(name = $t.schema.to), name = $t.to));,
+         s:meta::pure::alloy::connections::SchemaNameMapper[1] |
+            let schema = $store.schema($s.from);
+
+            assert($schema->isNotEmpty(), | 'Schema not found "' + $s.from + '"');
+
+            let schemaOne = $schema->toOne();
+
+            $schema.tables->map(table |
+               pair($table, ^$table(schema = ^$schemaOne(name = $s.to)))
+            );
+      ])
+   );
+
+   let result = meta::relational::postProcessor::replaceTables($sql->cast(@meta::relational::metamodel::relation::SelectSQLQuery), $pairs);
+
+   ^meta::relational::mapping::PostProcessorResult(query = $result.values);
+}
+
+Class meta::relational::postProcessor::SchemaNameMapper extends meta::relational::runtime::PostProcessorParameter {
+   in:String[1];
+   out:String[1];
+
+   toString() {'{in: '+$this.in+', out:'+$this.out+'}'}:String[1];
+}
+
+Class meta::relational::postProcessor::TableNameMapper extends meta::relational::runtime::PostProcessorParameter {
+   schemaNameMapper : meta::relational::postProcessor::SchemaNameMapper[1];
+   in : String[1];
+   out : String[1];
+
+   toString() {'{in: '+$this.in+', out:'+$this.out+'}'}:String[1];
+}

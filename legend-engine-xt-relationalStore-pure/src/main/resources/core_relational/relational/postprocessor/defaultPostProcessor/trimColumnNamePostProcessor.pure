@@ -1,0 +1,167 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::runtime::*;
+import meta::relational::runtime::*;
+import meta::relational::metamodel::join::*;
+import meta::relational::functions::pureToSqlQuery::*;
+import meta::pure::mapping::*;
+import meta::relational::metamodel::operation::*;
+import meta::relational::postProcessor::reAliasColumnName::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::metamodel::*;
+import meta::pure::functions::collection::*;
+
+function meta::relational::postProcessor::reAliasColumnName::trimColumnName(query:SelectSQLQuery[1],connection:DatabaseConnection[1]):Result<SelectSQLQuery|1>[1]
+{
+   trimColumnName($query, ^Runtime(connections = $connection));
+}
+
+function meta::relational::postProcessor::reAliasColumnName::trimColumnName(query:SelectSQLQuery[1],runtime:Runtime[1]):Result<SelectSQLQuery|1>[1]
+{
+  let tableNames = $query->search($runtime);
+   let result =if($tableNames->size()>0,
+                  |let myMap =  $tableNames->groupBy(p|$p.first);
+                   let keyValuePairs = $myMap->keyValues()->map(keyValue| let list = $keyValue.second.values->removeDuplicates(); 
+                                                               let rangeOf = range($list->size()); 
+                                                               $rangeOf->map(r| let originalName = $list->at($r).second;
+                                                                             let shortenedNamePrefix = $list->at($r).first;
+                                                                             let indexedShortenedName = '"'+$shortenedNamePrefix + '_' +$r->toString()+ '"';
+                                                                             pair($originalName, $indexedShortenedName););
+                                                               );
+                   let newNameMap   = newMap($keyValuePairs);
+                   $query-> replace($newNameMap)->cast(@SelectSQLQuery);,
+                  |$query);
+   ^Result<SelectSQLQuery|1>(values= $result);
+}
+
+function meta::relational::postProcessor::reAliasColumnName::lengthConfig(runtime: Runtime[1]):Integer[1]
+{
+  let type =  $runtime.connections->filter(c|$c->instanceOf(DatabaseConnection))->cast(@DatabaseConnection).type;
+  let config = dbAliasLimit();
+
+  let length = $config->get($type->cast(@DatabaseType)->toOne());
+  if($length->isEmpty(),
+     | fail('Db not configured for column rename');0;,
+     | $length
+  )->toOne();
+}
+
+function meta::relational::postProcessor::reAliasColumnName::dbAliasLimit():Map<DatabaseType, Integer>[1]
+{
+  newMap([
+    pair(DatabaseType.DB2, 128),
+    pair(DatabaseType.H2, 1000),
+    pair(DatabaseType.SybaseIQ, 255),
+    pair(DatabaseType.Snowflake, 255)
+  ]);
+}
+function  meta::relational::postProcessor::reAliasColumnName::search(q:RelationalOperationElement[*],runtime:Runtime[1] ): Pair<String,String>[*]
+{
+   $q->map(r| $r->match([
+                    v:ViewSelectSQLQuery[1]|$v.selectSQLQuery->search($runtime);,
+                    s:SelectSQLQuery[1]|  let dataProcessed = if($s.data->isNotEmpty(), | $s.data->toOne()->search($runtime), | []);
+                                          let cols = $s.columns;
+                                          $dataProcessed->concatenate($cols->search($runtime))
+                                          ->concatenate($s.filteringOperation->search($runtime));,
+                     ta:TableAlias[1]| let name = $ta.name; let relElement = $ta.relationalElement;
+                                       $relElement->match([t:Table[1]|[],
+                                                           u: Union[1]|$u->search($runtime),
+                                                           s: SelectSQLQuery[1]|$s->search($runtime);
+                                                               ]);,
+                     tac:TableAliasColumn[1]| $tac.column->search($runtime);,
+                     union: Union[1]|$union.queries->search($runtime),
+                     u:UnaryOperation[1]|$u.nested->search($runtime);,
+                     d: DynaFunction[1]| $d.parameters->search($runtime);,
+                     b: BinaryOperation[1] |$b.left->search($runtime)->concatenate($b.right->search($runtime));,
+                     a: Alias[1] | let maxLength = lengthConfig($runtime);
+                                   if( $a.name->length()>=$maxLength,|pair($a.name->replace('"','')->substring(0,$maxLength-10), $a.name),|[])->concatenate($a.relationalElement->search($runtime));,
+                     js: JoinStrings[1]| $js.strings->search($runtime)->concatenate($js.prefix->search($runtime))->concatenate($js.suffix->search($runtime))->concatenate($js.separator->search($runtime));,
+                     c: Column[1]| let maxLength = lengthConfig($runtime);
+                                   if( $c.name->length()>=$maxLength,|pair($c.name->replace('"','')->substring(0,$maxLength-10), $c.name),|[]);,
+                     any:Any[1]| [];
+                   ]);
+            );
+}
+
+function  meta::relational::postProcessor::reAliasColumnName::search(q:RelationalTreeNode[*],runtime:Runtime[1]): Pair<String,String>[*]
+{
+    $q->map(a|
+              let alias =  $a.alias;
+              let relElement = $alias.relationalElement; 
+              let results = $relElement ->search($runtime)->concatenate($a.childrenData->cast(@JoinTreeNode)->search($runtime))
+              ->concatenate($a->match([
+                                      j: JoinTreeNode[1]|  $j.join.target->search($runtime)->concatenate($j.join.aliases.first->search($runtime))->concatenate($j.join.aliases.second->search($runtime));,
+                                      r: RootJoinTreeNode[1]| [];
+                                     ])
+                           );
+           );
+}
+
+
+
+function meta::relational::postProcessor::reAliasColumnName::replace(r:RelationalOperationElement[1], m:Map<String,String>[1]):RelationalOperationElement[1]
+{
+   $r->match([
+               v:VarSetPlaceHolder[1] | $v;,  
+               s:SelectSQLQuery[1] | let newS = ^$s( data=if($s.data->isNotEmpty(), | $s.data->toOne()->replace($m), | [])->cast(@RootJoinTreeNode),
+                                                       columns = $s.columns->map(c| $c->replace($m)),
+                                                       extraFilteringOperation = $s.extraFilteringOperation->map(ef|$ef->replace($m)),
+                                                       savedFilteringOperation = $s.savedFilteringOperation->map(sf|pair($sf.first->replace($m), $sf.second->replace($m))),
+                                                       groupBy=$s.groupBy->map(gb|$gb->replace($m)),
+                                                       havingOperation=$s.havingOperation->map(ho|$ho->replace($m)),
+                                                       orderBy = $s.orderBy->map(ob|$ob->replace($m)),  
+                                                       filteringOperation= $s.filteringOperation->map(fo | $fo->replace($m)));
+                                       if(!$newS.leftSideOfFilter->isEmpty(),| ^$newS(leftSideOfFilter=$s.leftSideOfFilter->toOne()->meta::relational::functions::pureToSqlQuery::findOneNode($s.data->toOne(), $newS.data->toOne())),|$newS);,
+      
+                v:ViewSelectSQLQuery[1] | ^$v(selectSQLQuery=$v.selectSQLQuery->replace($m)->cast(@SelectSQLQuery));,
+                u:Union[1] |  ^$u(queries = $u.queries->map(q|$q->replace($m);)->cast(@SelectSQLQuery));,
+                ta: TableAlias[1]| ^$ta(relationalElement = $ta.relationalElement->replace($m));,
+                t:Table[1] |  $t;,
+                tac: TableAliasColumn[1]| let new = $m->get($tac.alias.name); let alias = $tac.alias; ^$tac(alias = ^$alias(name=if($new->isNotEmpty(),|$new->toOne(),|$alias.name)),column=$tac.column->replace($m)->cast(@Column));,
+                a:Alias[1] | ^$a(name = if($m->get($a.name)->isNotEmpty(),|$m->get($a.name)->toOne(),|$a.name),relationalElement=$a.relationalElement->replace($m));,
+                u:UnaryOperation[1] | ^$u(nested=replace($u.nested, $m));,
+                b:BinaryOperation[1] | ^$b(left=replace($b.left, $m), right=replace($b.right, $m));,
+                roj: RelationalOperationElementWithJoin[1]| ^$roj(relationalOperationElement=$roj.relationalOperationElement->map(r|$r->replace($m)),joinTreeNode=$roj.joinTreeNode->map(j|$j->replace($m))->cast(@JoinTreeNode));, 
+                va:VariableArityOperation[1] | ^$va(args=$va.args->map(e | $e->replace($m)));,
+                d:DynaFunction[1] |  ^$d(parameters=$d.parameters->map(p | $p->replace($m)));,
+                wc:WindowColumn[1] |^$wc(window = $wc.window->replace($m)->cast(@meta::relational::metamodel::Window),func=$wc.func->replace($m)->cast(@DynaFunction));,
+                w:meta::relational::metamodel::Window[1]|^$w(partition=$w.partition->map(p|$p->replace($m)), sortBy=$w.sortBy->map(p|$p->replace($m)));,
+                j:JoinStrings[1] |  ^$j(strings=$j.strings->map(v | $v->replace($m)), 
+                                         prefix=if($j.prefix->isEmpty(), | [], | $j.prefix->toOne()->replace($m)),
+                                         separator=if($j.separator->isEmpty(), | [], | $j.separator->toOne()->replace($m)),
+                                         suffix=if($j.suffix->isEmpty(), | [], | $j.suffix->toOne()->replace($m)));,
+                c:Column[1] |let newName = $m->get($c.name); if($newName->isNotEmpty(),|^$c(name = $newName->toOne()),|$c);,
+                rel: RelationalOperationElement[1] |  $rel;
+              ]);
+}
+
+
+function meta::relational::postProcessor::reAliasColumnName::replace(o:OrderBy[1],m:Map<String,String>[1]):OrderBy[1]
+{
+     ^$o(column= $o.column->map(c| $c->replace($m)))
+}
+
+function meta::relational::postProcessor::reAliasColumnName::replace(r:RelationalTreeNode[1], m:Map<String,String>[1]):RelationalTreeNode[1]
+{
+     $r->match([
+                 j:JoinTreeNode[1] |  let join = $j.join;
+                                      let replaceedJoin = ^$join(aliases=$join.aliases->map(a|pair(replace($a.first,$m)->cast(@TableAlias), replace($a.second,$m)->cast(@TableAlias))),
+                                                                      operation = $join.operation->replace($m)->cast(@Operation),
+                                                                      target=if(!$join.target->isEmpty(),|replace($join.target->toOne(),$m)->cast(@TableAlias),|[]));
+                                      ^$j(join=$replaceedJoin, alias=$j.alias->replace($m)->cast(@TableAlias), childrenData=$j.childrenData->map(c | $c->cast(@JoinTreeNode)->replace($m)));,                                      
+                 r:RootJoinTreeNode[1] | ^$r(alias=$r.alias->replace($m)->cast(@TableAlias), childrenData=$r.childrenData->map(c | $c->cast(@JoinTreeNode)->replace($m)));                                      
+              ]);
+}
+

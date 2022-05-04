@@ -1,0 +1,141 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::tests::mapping::innerjoin::isolation::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::runtime::*;
+import meta::pure::runtime::*;
+Class meta::relational::tests::mapping::innerjoin::isolation::Car
+{
+   type: String[1];
+   id: Integer[1];
+   org: AutomobileUnion[0..1];
+   
+}
+
+Class meta::relational::tests::mapping::innerjoin::isolation::Motorcycle
+{
+   type: String[1];
+   id: Integer[1];
+   org: AutomobileUnion[0..1];
+   
+}
+
+Class meta::relational::tests::mapping::innerjoin::isolation::AutomobileUnion
+{
+   name: String[1];
+   isPrivate: String[0..1];
+   ancestors: AutomobileUnion[0..*];
+   children: AutomobileUnion[0..*];
+   publicAncestor()
+   {
+      $this.ancestors->filter(a|$a.isPrivate =='Y')->toOne() 
+   }:AutomobileUnion[1];
+
+   publicAncestor2()
+   {
+   $this.ancestors->filter(a|$a.isPrivate =='Y').name=='haha' || ($this.ancestors->filter(a|$a.isPrivate=='Y').name=='ahah')
+   }: Boolean[1];
+}
+
+function meta::relational::tests::mapping::innerjoin::isolation::autoMobileRuntime():Runtime[1]
+{
+   meta::relational::tests::testRuntime(AutomobileDb);
+}
+
+function meta::relational::tests::mapping::innerjoin::isolation::initAutomobileDb(): Boolean[1]
+{
+   let connection = autoMobileRuntime().connectionByElement(AutomobileDb)->cast(@TestDatabaseConnection);
+   executeInDb('Drop table if exists AutomobileTable;', $connection);
+   executeInDb('Create Table AutomobileTable (vehicleId INT, type VARCHAR(20),orgId INT, orgName VARCHAR(40),orgtype VARCHAR(40));', $connection);
+   executeInDb('insert into AutomobileTable (vehicleId, type, orgId,orgName,orgType) values (1, \'Mercedes1\',17,\'GSorgtoReturn\' ,\'private\');', $connection);
+   executeInDb('insert into AutomobileTable (vehicleId, type, orgId,orgName,orgType) values (2, \'Mercedes2\',18,\'GSorgtoReturn2\' ,\'private\');', $connection);
+   executeInDb('insert into AutomobileTable (vehicleId, type, orgId,orgName,orgType) values (3, \'Mercedes3\',19,\'GSorg3\' ,\'public3\');', $connection);
+   executeInDb('insert into AutomobileTable (vehicleId, type, orgId,orgName,orgType) values (4, \'Mercedes4\',20,\'GSorg4\' ,\'public4\');', $connection);
+   
+   executeInDb('Drop table if exists AutoAncestor;', $connection);
+   executeInDb('Create Table AutoAncestor (childId INT ,parentId INT);',$connection);
+   executeInDb('insert into AutoAncestor (childId,parentId) values (17,20);',$connection);
+   executeInDb('insert into AutoAncestor (childId,parentId) values (18,19);',$connection);
+   executeInDb('insert into AutoAncestor (childId,parentId) values (19,17);',$connection);
+
+   true;
+
+}
+
+###Mapping
+import meta::relational::tests::mapping::innerjoin::isolation::*;
+Mapping meta::relational::tests::mapping::innerjoin::isolation::AutoMapping
+(
+   Car :Relational
+   {
+       scope([AutomobileDb])
+       (
+          type: AutomobileTable.type,
+          id: AutomobileTable.vehicleId,
+          org(
+             name: AutomobileTable.orgName,
+             isPrivate: case(equal(AutomobileTable.orgtype, 'public'), 'N','Y'),
+             ancestors: @ Auto_Auto > @Auto_Ancestor > (INNER)@AncestorAuto
+          )
+       )
+   }
+   
+   Motorcycle :Relational
+   {
+     scope([AutomobileDb])
+       (
+          type: AutomobileTable.type,
+          id: AutomobileTable.vehicleId,
+          org(
+             name: AutomobileTable.orgName,
+             isPrivate: case(equal(AutomobileTable.orgtype, 'public'), 'N','Y'),
+             ancestors: @ Auto_Auto > @Auto_Ancestor > (INNER)@AncestorAuto
+          )
+       )
+   }
+   
+   AutomobileUnion:Relational
+   {
+      scope([AutomobileDb])
+      (
+         name: AutomobileTable.orgName,
+         isPrivate: case(equal(AutomobileTable.orgtype, 'public'), 'N','Y'),
+         ancestors:  @Auto_Ancestor > (INNER)@AncestorAuto
+      )
+   }
+  
+)
+###Relational
+Database meta::relational::tests::mapping::innerjoin::isolation::AutomobileDb
+(
+   Table AutomobileTable
+   (
+      vehicleId INT PRIMARY KEY,
+      type VARCHAR(20),
+      orgId INT,
+      orgName VARCHAR(40),
+      orgtype VARCHAR(40)
+   )
+   
+   Table AutoAncestor
+   (
+      childId INT ,
+      parentId INT PRIMARY KEY
+   )
+   
+   Join Auto_Auto(AutomobileTable.vehicleId = {target}.vehicleId and AutomobileTable.orgId<100)
+   Join Auto_Ancestor(AutomobileTable.orgId = AutoAncestor.childId)
+   Join AncestorAuto( AutoAncestor.parentId = AutomobileTable.orgId)
+)
