@@ -187,7 +187,6 @@
             <artifactId>legend-pure-runtime-java-extension-external-json</artifactId>
             <scope>test</scope>
         </dependency>
-
 <!--
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
