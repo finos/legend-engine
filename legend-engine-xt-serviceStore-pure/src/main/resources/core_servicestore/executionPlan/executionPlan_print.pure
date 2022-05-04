@@ -1,0 +1,91 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::executionPlan::toString::*;
+import meta::pure::router::extension::*;
+import meta::pure::router::printer::*;
+
+import meta::external::store::service::router::extension::*;
+
+import meta::external::store::service::executionPlan::nodes::*;
+import meta::external::store::service::executionPlan::toString::*;
+
+import meta::external::store::service::metamodel::*;
+import meta::external::store::service::metamodel::mapping::*;
+import meta::external::store::service::metamodel::runtime::*;
+
+function meta::external::store::service::executionPlan::toString::serviceStoreExecutionNodeToString(s:RestServiceExecutionNode[1], space:String[1], extensions:meta::pure::router::extension::RouterExtension[*]):String[1]
+{
+   'RestServiceExecutionNode\n'+
+   $space+'('+header($s, $space, $extensions)+'\n'+
+   $space+'  url = '+$s.url +'\n'+
+   $space+'  method = '+$s.method->toString() +'\n'+
+   $space+'  mimeType = '+$s.mimeType +'\n'+
+   $space+'  params = '+$s.params->map(p | $p->serviceParamToString())->joinStrings('[', ', ' ,']') +'\n'+
+   if($s.requestBodyDescription->isNotEmpty(), |$space+'  requestBodyDescription = ' + $s.requestBodyDescription->toOne().resultKey + '(' + $s.requestBodyDescription->toOne().mimeType +')\n', |'') +
+   $space+'  securitySchemes = '+$s.securitySchemes->map(sec | $sec->securitySchemeToString($extensions))->joinStrings('[', ', ' ,']') +'\n'+
+   $s.implementation->printImplementation('implementation', $space+'  ', $extensions) +'\n'+
+   $space+')\n'
+}
+
+function meta::external::store::service::executionPlan::toString::serviceParametersResolutionExecutionNodeToString(s:ServiceParametersResolutionExecutionNode[1], space:String[1], extensions:meta::pure::router::extension::RouterExtension[*]):String[1]
+{
+   'ServiceParametersResolutionExecutionNode\n'+
+   $space+'('+header($s, $space, $extensions)+'\n'+
+   $space+'  requestParametersBuildInfo = '+$s.requestParametersBuildInfo->serviceRequestParametersBuildInfoToString() +'\n'+
+   $s.implementation->printImplementation('implementation', $space+'  ', $extensions) +'\n'+
+   $space+')\n'
+}
+
+function meta::external::store::service::executionPlan::toString::serviceStoreConnectionToString(conn:ServiceStoreConnection[1]):String[1]
+{
+   let store   = 'store="'+$conn.element->cast(@ServiceStore)->elementToPath()+'"';
+   let baseUrl = 'baseUrl="'+$conn.baseUrl+'"';
+   
+   [$store, $baseUrl]->joinStrings(', ');
+}
+
+function meta::external::store::service::executionPlan::toString::securitySchemeToString(sec:SecurityScheme[1], extensions:meta::pure::router::extension::RouterExtension[*]):String[1]
+{
+   $sec->match($extensions->map(e|$e.moduleExtension('serviceStore')->cast(@ServiceStoreExtension).executionPlan_print_securitySchemeToString)->concatenate([
+      sec:SecurityScheme[1] | fail('Security Scheme to String translator not found for ' + $sec->toString()); '';
+   ])->toOneMany())
+}
+
+
+function meta::external::store::service::executionPlan::toString::serviceRequestParametersBuildInfoToString(s:ServiceRequestParametersBuildInfo[1]):String[1]
+{
+   $s.parameterBuildInfoList->map(param | $param->serviceRequestParameterBuildInfoToString())->joinStrings('[', ', ' ,']');
+}
+
+function meta::external::store::service::executionPlan::toString::serviceRequestParameterBuildInfoToString(s:ServiceRequestParameterBuildInfo[1]):String[1]
+{
+   $s.serviceParameter->serviceParamToString() + ' = ' + $s.transform.expressionSequence->evaluateAndDeactivate()->toOne()->asString()
+}
+
+function meta::external::store::service::executionPlan::toString::serviceParamToString(s:ServiceParameter[1]):String[1]
+{
+   $s.name + '[' + $s.location->toString() + ']: ' + '(' + $s.type->serviceStoreParamTypeToString() + ')'
+}
+
+function meta::external::store::service::executionPlan::toString::serviceStoreParamTypeToString(t:TypeReference[1]):String[1]
+{
+   $t->match([
+      st: StringTypeReference[1]  | 'String',
+      bt: BooleanTypeReference[1] | 'Boolean',
+      it: IntegerTypeReference[1] | 'Integer',
+      ft: FloatTypeReference[1]   | 'Float',
+      ct: ComplexTypeReference[1] | 'Complex(binding = ' + $ct.binding->elementToPath() + ', type = ' + $ct.type->elementToPath() + ')'
+   ])
+}

@@ -60,4 +60,4 @@ jobs:
       - name: Build + Run Integration Tests
         run: |
           mvn clean install -DskipTests=true
-          mvn -P run-bigquery-integration -pl legend-engine-executionPlan-execution-store-relational-connection-tests -Dtest="ExternalIntegration*BigQuery" test
+          mvn -P run-bigquery-integration -pl legend-engine-xt-relationalStore-executionPlan-connection-tests -Dtest="ExternalIntegration*BigQuery" test

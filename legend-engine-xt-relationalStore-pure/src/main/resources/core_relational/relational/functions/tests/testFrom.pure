@@ -1,0 +1,129 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::mapping::*;
+import meta::relational::mapping::*;
+import meta::relational::tests::model::simple::*;
+
+function <<test.BeforePackage>> meta::relational::tests::fromMapping::setUp():Boolean[1]{
+  meta::relational::tests::query::setUp()
+}
+
+function <<test.Test>> meta::relational::tests::fromMapping::testMappingFromQueriesViaMappingWithAssociationsOnly():Boolean[1]
+{
+  let result =  execute({|Person.all()->filter(p|$p.firstName == 'Peter')->project(p|$p.firm.legalName,'Name')->from(meta::relational::tests::fromMapping::MappingWithAssociation, meta::relational::tests::testRuntime())
+                          ->concatenate(Firm.all()->filter(f|$f.legalName == 'Firm X')->project(p|$p.employees.firstName,'Name')->from(meta::relational::tests::fromMapping::MappingWithAssociation2, meta::relational::tests::testRuntime()))
+                           
+                         }, ^Mapping(name = ''), ^meta::pure::runtime::Runtime(), meta::pure::router::extension::defaultRelationalExtensions());
+  
+  assertSameElements(['Anthony', 'Don', 'Firm X', 'John', 'John', 'New', 'Peter'], $result.values.rows.values);
+  assertEquals('select "unionalias_0"."Name" as "Name" from (select "firmtable_0".LEGALNAME as "Name" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where "root".FIRSTNAME = \'Peter\' UNION ALL select "persontable_1".FIRSTNAME as "Name" from firmTable as "root" left outer join personTable as "persontable_1" on ("root".ID = "persontable_1".FIRMID) where "root".LEGALNAME = \'Firm X\') as "unionalias_0"', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::fromMapping::testClassMappingsAreCorrectlyIsolated():Boolean[1]
+{
+ 
+  let runtime = meta::relational::tests::testRuntime();
+  let mapping1 = meta::relational::tests::fromMapping::MappingWithClasses;
+  let mapping2 = meta::relational::tests::fromMapping::MappingWithClasses2;
+     
+  let result =  execute({|Person.all()->filter(p|$p.firstName == 'Peter')->project(p|$p.firstName,'FirstName')->from($mapping1, $runtime)
+                          ->concatenate(Person.all()->project(p|$p.firstName,'FirstName')->from($mapping2, $runtime))
+                           
+                         }, ^Mapping(name = ''), ^meta::pure::runtime::Runtime(), meta::pure::router::extension::defaultRelationalExtensions());
+  
+   
+  assertSameElements(['Don', 'Peter'], $result.values.rows.values);
+  assertEquals('select "unionalias_0"."FirstName" as "FirstName" from (select "root".FIRSTNAME as "FirstName" from personTable as "root" where "root".FIRSTNAME = \'Peter\' UNION ALL select "root".FIRSTNAME as "FirstName" from personTable as "root" where "root".FIRSTNAME = \'Don\') as "unionalias_0"', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::fromMapping::testClassMappingsWithUnions():Boolean[1]
+{
+ 
+  let runtime = meta::relational::tests::testRuntime();
+     
+  let result =  execute({|Person.all()->project(p|$p.firstName,'FirstName')->from(meta::relational::tests::simpleRelationalMappingWithChainedUnions, $runtime)}, ^Mapping(name = ''), ^meta::pure::runtime::Runtime(), meta::pure::router::extension::defaultRelationalExtensions());
+  
+  assertSameElements(['Anthony', 'Anthony', 'David', 'David', 'Don', 'Don', 'Elena', 'Elena', 'Fabrice', 'Fabrice', 'John', 'John', 'John', 'John', 'New', 'New', 'No address', 'No address', 'No firm', 'No firm', 'Oliver', 'Oliver', 'Peter', 'Peter'], $result.values.rows.values);
+  assertEquals('select "unionBase"."personTableFIRSTNAME_personTableFIRSTNAME" as "FirstName" from (select "root".ID as "pk_0_0", null as "pk_0_1", "root".FIRSTNAME as "personTableFIRSTNAME_personTableFIRSTNAME" from personTable as "root" UNION ALL select null as "pk_0_0", "root".ID as "pk_0_1", "root".FIRSTNAME as "personTableFIRSTNAME_personTableFIRSTNAME" from personTable as "root") as "unionBase"', $result->sqlRemoveFormatting());
+}
+
+
+###Relational
+Database meta::relational::tests::fromMapping::mdb
+(
+    include meta::relational::tests::dbInc
+   
+    Filter donFilter(personTable.FIRSTNAME = 'Don')
+)
+
+###Mapping
+import meta::relational::tests::*;
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::fromMapping::*;
+
+
+Mapping meta::relational::tests::fromMapping::MappingWithClasses
+(
+   Person : Relational
+            {
+               firstName : [mdb]personTable.FIRSTNAME,
+               lastName : [mdb]personTable.LASTNAME
+            }
+
+   Firm : Relational
+          {
+             legalName : [mdb]firmTable.LEGALNAME
+          }   
+)
+
+Mapping meta::relational::tests::fromMapping::MappingWithClasses2
+(
+   Person : Relational
+            {
+               ~filter [mdb] donFilter
+               firstName : [mdb]personTable.FIRSTNAME,
+               lastName : [mdb]personTable.LASTNAME
+            } 
+)
+
+Mapping meta::relational::tests::fromMapping::MappingWithAssociation
+(   
+   include meta::relational::tests::fromMapping::MappingWithClasses 
+   Employment : Relational
+   {
+      AssociationMapping
+      (
+         firm : [mdb]@Firm_Person,
+         employees : [mdb]@Firm_Person
+      )
+   }
+)
+
+Mapping meta::relational::tests::fromMapping::MappingWithAssociation2
+(   
+   include meta::relational::tests::fromMapping::MappingWithClasses 
+   Employment : Relational
+   {
+      AssociationMapping
+      (
+         firm : [mdb]@Firm_Person,
+         employees : [mdb]@Firm_Person
+      )
+   }
+)
+   
+
+
+

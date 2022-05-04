@@ -1,0 +1,119 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::tests::model::simple::*;
+import meta::pure::executionPlan::profiles::*;
+import meta::pure::graphFetch::execution::*;
+
+function <<test.BeforePackage>> meta::relational::graphFetch::tests::embedded::setup(): Boolean[1]
+{
+   meta::relational::tests::mapping::embedded::setUp();
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::embedded::testSimpleEmbeddedMapping(): Boolean[1]
+{
+   let tree = #{
+      Person {
+         firstName,
+         firm {
+            legalName
+         }
+      }
+   }#;
+   let query = {|Person.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::mapping::embedded::model::mapping::testMappingEmbedded;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"firstName":"Peter","firm":{"legalName":"Firm X"}},{"firstName":"John","firm":{"legalName":"Firm X"}},{"firstName":"Fabrice","firm":{"legalName":"Firm A"}}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::embedded::testMultiLevelEmbeddedMapping(): Boolean[1]
+{
+   let tree = #{
+      Person {
+         firstName,
+         firm {
+            legalName,
+            address {
+               name
+            }
+         }
+      }
+   }#;
+   let query = {|Person.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::mapping::embedded::model::mapping::testMappingEmbedded;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"firstName":"Peter","firm":{"legalName":"Firm X","address":{"name":"200 west"}}},{"firstName":"John","firm":{"legalName":"Firm X","address":{"name":"200 west"}}},{"firstName":"Fabrice","firm":{"legalName":"Firm A","address":{"name":"3 somewhere"}}}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::embedded::testEmbeddedToRootMapping(): Boolean[1]
+{
+   let tree = #{
+      Person {
+         firstName,
+         firm {
+            legalName,
+            employees {
+               firstName
+            }
+         }
+      }
+   }#;
+   let query = {|Person.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::mapping::embedded::model::mapping::testMappingEmbedded;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"firstName":"Peter","firm":{"legalName":"Firm X","employees":[{"firstName":"Peter"},{"firstName":"John"}]}},{"firstName":"John","firm":{"legalName":"Firm X","employees":[{"firstName":"Peter"},{"firstName":"John"}]}},{"firstName":"Fabrice","firm":{"legalName":"Firm A","employees":[{"firstName":"Fabrice"}]}}]',
+      $result
+   );
+}
+
+function <<test.Test, test.ToFix, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::embedded::testEmbeddedMappingQualifiedPropertyAccess(): Boolean[1]
+{
+   let tree = #{
+      Person {
+         firstName,
+         firm {
+            legalName,
+            'employeeByLastNameFirstName': employeeByLastNameFirstName('Smith')
+         }
+      }
+   }#;
+   let query = {|Person.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::mapping::embedded::model::mapping::testMappingEmbedded;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"firstName":"Peter","firm":{"legalName":"Firm X","employeeByLastNameFirstName":"Peter"}},' +
+      '{"firstName":"John","firm":{"legalName":"Firm X","employeeByLastNameFirstName":"Peter"}},' +
+      '{"firstName":"Fabrice","firm":{"legalName":"Firm A","employeeByLastNameFirstName":null}}]',
+      $result
+   );
+}

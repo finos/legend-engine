@@ -1,0 +1,96 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+import meta::relational::tests::*;
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::mapping::classMappingByClass::*;
+
+Mapping meta::relational::tests::mapping::classMappingByClass::TestMapping1
+(
+   include AccountMapping1
+   include AccountMapping2
+)
+
+Mapping meta::relational::tests::mapping::classMappingByClass::TestMapping2
+(
+   include AccountMapping2
+   include AccountMapping1
+)
+
+Mapping meta::relational::tests::mapping::classMappingByClass::TestMapping3
+(
+   include TradeMapping1
+   include AccountMapping1
+)
+
+Mapping meta::relational::tests::mapping::classMappingByClass::TradeMapping1
+(
+   include AccountMapping1
+   
+   Trade[t1] : Relational
+   {
+      id : [db]tradeTable.ID
+   }
+   
+   Trade_Accounts : Relational
+   {
+      AssociationMapping
+      (
+         account[t1, a1] : [db]@Trade_Account,
+         trades[a1, t1] : [db]@Trade_Account
+      )
+   } 
+)
+
+Mapping meta::relational::tests::mapping::classMappingByClass::AccountMapping1
+(
+   Account[a1] : Relational
+   {
+      name : concat('1_', [db]accountTable.name)
+   }
+)
+
+Mapping meta::relational::tests::mapping::classMappingByClass::AccountMapping2
+(
+   Account[a2] : Relational
+   {
+      name : concat('2_', [db]accountTable.name)
+   }
+)
+
+###Pure
+import meta::pure::mapping::*;
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::mapping::classMappingByClass::*;
+
+function <<test.Test, test.ToFix>> meta::relational::tests::mapping::classMappingByClass::testRootMappingForDifferentIncludeOrder():Boolean[1]
+{
+   let id1 = TestMapping1.rootClassMappingByClass(Account).id;
+   let id2 = TestMapping2.rootClassMappingByClass(Account).id;
+   assertEquals($id1, $id2, 'Either the logic to determine root mapping should be independent of ordering of includes or the logic should be communicated to the user');
+}
+
+function <<test.Test, test.ToFix>> meta::relational::tests::mapping::classMappingByClass::testCountClassMappingsForRedundantInclude():Boolean[1]
+{
+   let count = TestMapping3.classMappingByClass(Account)->size();
+   assertEquals(1, $count, 'There is only 1 class mapping defined for Account class in the mapping heirarchy of TestMapping3 - count should be 1');
+}
+
+function <<test.Test, test.ToFix>> meta::relational::tests::mapping::classMappingByClass::testRootClassMappingForRedundantInclude():Boolean[1]
+{
+   let root1 = TestMapping3.classMappings()->filter(cm|$cm.class == Account && $cm.root == true)->cast(@InstanceSetImplementation);
+   let root2 = TestMapping3.rootClassMappingByClass(Account)->cast(@InstanceSetImplementation);
+   assertEquals($root1.allPropertyMappings().property.name, $root2->toOne().allPropertyMappings().property.name, 'root2 has only "name" as property mappings - should have both "name" and "trades"');
+}

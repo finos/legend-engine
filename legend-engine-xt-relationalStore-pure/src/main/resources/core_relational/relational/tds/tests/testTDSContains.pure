@@ -1,0 +1,68 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::functions::sqlstring::*;
+import meta::relational::mapping::*;
+import meta::relational::runtime::*;
+import meta::relational::tests::*;
+import meta::pure::metamodel::tds::*;
+import meta::pure::profiles::*;
+import meta::relational::tests::model::simple::*;
+
+
+function <<test.Test>> meta::relational::tests::tds::tdsContains::testTDSContainsType1():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p | $p->tdsContains([p|$p.firm.legalName], Firm.all()->project(f|$f.legalName, 'Name')->limit(1))), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where exists(select 1 from (select top 1 "root".LEGALNAME as "Name" from firmTable as "root") as "firmtable_1" where ("firmtable_0".LEGALNAME = "firmtable_1"."Name" OR ("firmtable_0".LEGALNAME is null AND "firmtable_1"."Name" is null)))', $result->sqlRemoveFormatting());
+   assertSize($result.values, 4);
+   assertSameElements(['Peter','John','John','Anthony'], $result.values.firstName);
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsContains::testTDSContainsType1Negation():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p | !$p->tdsContains([p|$p.firm.legalName], Firm.all()->project(f|$f.legalName, 'Name')->limit(1))), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where not exists(select 1 from (select top 1 "root".LEGALNAME as "Name" from firmTable as "root") as "firmtable_1" where ("firmtable_0".LEGALNAME = "firmtable_1"."Name" OR ("firmtable_0".LEGALNAME is null AND "firmtable_1"."Name" is null)))', $result->sqlRemoveFormatting());
+   assertSize($result.values, 3);
+   assertSameElements(['Fabrice','Oliver','David'], $result.values.firstName);
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsContains::testTDSContainsType1NegationFurtherOps():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p | $p->tdsContains([p|$p.firm.legalName], Firm.all()->project(f|$f.legalName, 'Name')->limit(1)))->filter(s|$s.address.name == 'New York')->groupBy([a|$a.firm.legalName], [agg(a|$a.firstName, y|$y->count())], ['FN', 'Count']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "firmtable_0".LEGALNAME as "FN", count("root".FIRSTNAME) as "Count" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "root".ADDRESSID) where exists(select 1 from (select top 1 "root".LEGALNAME as "Name" from firmTable as "root") as "firmtable_1" where ("firmtable_0".LEGALNAME = "firmtable_1"."Name" OR ("firmtable_0".LEGALNAME is null AND "firmtable_1"."Name" is null))) and "addresstable_0".NAME = \'New York\' group by "FN"', $result->sqlRemoveFormatting());
+   assertSameElements(['Firm X', 3], $result.values.rows.values);
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsContains::testTDSContainsType2():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p | $p->tdsContains([p|$p.firm.legalName], ['L_NAME'], Firm.all()->project(f|$f.legalName + '_Append', 'Name')->limit(1), {a,b|($a.getString('L_NAME')->toOne()->length() == $b.getString('Name')->length()-7) && $a.getString('L_NAME')->toOne()->contains('X')})), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where exists(select 1 from (select top 1 concat("root".LEGALNAME, \'_Append\') as "Name" from firmTable as "root") as "firmtable_1" where (char_length("firmtable_0".LEGALNAME) = (char_length("firmtable_1"."Name") - 7) and "firmtable_0".LEGALNAME like \'%X%\'))', $result->sqlRemoveFormatting());
+   assertSize($result.values, 4);
+   assertSameElements(['Peter','John','John','Anthony'], $result.values.firstName);
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsContains::testTDSContainsType2Negation():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p | !$p->tdsContains([p|$p.firm.legalName], ['L_NAME'], Firm.all()->project(f|$f.legalName + '_Append', 'Name')->limit(1), {a,b|($a.getString('L_NAME')->toOne()->length() == $b.getString('Name')->length()-7) && $a.getString('L_NAME')->toOne()->contains('X')})), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where not exists(select 1 from (select top 1 concat("root".LEGALNAME, \'_Append\') as "Name" from firmTable as "root") as "firmtable_1" where (char_length("firmtable_0".LEGALNAME) = (char_length("firmtable_1"."Name") - 7) and "firmtable_0".LEGALNAME like \'%X%\'))', $result->sqlRemoveFormatting());
+   assertSize($result.values, 3);
+   assertSameElements(['Fabrice','Oliver','David'], $result.values.firstName);
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsContains::testTDSContainsType2NegationFurtherOps():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p | $p->tdsContains([p|$p.firm.legalName], ['L_NAME'], Firm.all()->project(f|$f.legalName + '_Append', 'Name')->limit(1), {a,b|$a.getString('L_NAME')->toOne()->length() == $b.getString('Name')->length()-7}))->filter(s|$s.address.name == 'New York')->groupBy([a|$a.firm.legalName], [agg(a|$a.firstName, y|$y->count())], ['FN', 'Count']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "firmtable_0".LEGALNAME as "FN", count("root".FIRSTNAME) as "Count" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "root".ADDRESSID) where exists(select 1 from (select top 1 concat("root".LEGALNAME, \'_Append\') as "Name" from firmTable as "root") as "firmtable_1" where char_length("firmtable_0".LEGALNAME) = (char_length("firmtable_1"."Name") - 7)) and "addresstable_0".NAME = \'New York\' group by "FN"', $result->sqlRemoveFormatting());
+   assertSameElements([1, 3, 'Firm C', 'Firm X'], $result.values.rows.values);
+}

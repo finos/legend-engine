@@ -1,0 +1,145 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::json::*;
+import meta::pure::router::extension::*;
+import meta::pure::router::execution::*;
+import meta::pure::router::execution::*;
+import meta::pure::router::clustering::*;
+import meta::pure::mapping::modelToModel::*;
+import meta::relational::validation::functions::*;
+import meta::relational::metamodel::*;
+import meta::relational::mapping::*;
+import meta::pure::constraints::functions::*;
+import meta::relational::validation::*;
+import meta::pure::metamodel::constraint::*;
+import meta::relational::runtime::*;
+import meta::pure::runtime::*;
+import meta::pure::mapping::*;
+
+function meta::relational::validation::validate<T>(func: FunctionDefinition<{->T[*]}>[1], m:Mapping[1], runtime:Runtime[1], extensions: RouterExtension[*]):Result<TabularDataSet|1>[1]
+{
+   validate($func, [], [], $m, $runtime, ^RelationalExecutionContext(), [], [], $extensions)
+}
+
+function meta::relational::validation::validate<T>(func: FunctionDefinition<{->T[*]}>[1], m:Mapping[1], runtime:Runtime[1], constraintIds: String[*], extensions: RouterExtension[*]):Result<TabularDataSet|1>[1]
+{
+   validate($func, [], [], $m, $runtime, ^RelationalExecutionContext(), $constraintIds, [], $extensions)
+}
+
+function meta::relational::validation::validate<T>(func: FunctionDefinition<{->T[*]}>[1], m:Mapping[1], runtime:Runtime[1], constraintInformation : ConstraintContextInformation<Any>[*], extensions: RouterExtension[*]):Result<TabularDataSet|1>[1]
+{
+   validate($func, [], [], $m, $runtime, ^RelationalExecutionContext(), [], $constraintInformation, $extensions)
+}
+
+function meta::relational::validation::validate<T>(func: FunctionDefinition<{->T[*]}>[1], m:Mapping[1], runtime:Runtime[1], constraintIds: String[*], constraintInformation : ConstraintContextInformation<Any>[*], extensions: RouterExtension[*]):Result<TabularDataSet|1>[1]
+{
+   validate($func, [], [], $m, $runtime, ^RelationalExecutionContext(), $constraintIds, $constraintInformation, $extensions)
+}
+
+function meta::relational::validation::validate<T>(func: FunctionDefinition<{->T[*]}>[1], m:Mapping[1], runtime:Runtime[1], exeCtx : RelationalExecutionContext[1], extensions: RouterExtension[*]):Result<TabularDataSet|1>[1]
+{
+   validate($func, [], [], $m, $runtime, $exeCtx, [], [], $extensions)
+}
+
+function meta::relational::validation::validate<T>(func: FunctionDefinition<{->T[*]}>[1], m:Mapping[1], runtime:Runtime[1], exeCtx : RelationalExecutionContext[1], constraintIds: String[*], extensions: RouterExtension[*]):Result<TabularDataSet|1>[1]
+{
+   validate($func, [], [], $m, $runtime, $exeCtx, $constraintIds, [], $extensions)
+}
+
+function meta::relational::validation::validate<T>(func: FunctionDefinition<{->T[*]}>[1], m:Mapping[1], runtime:Runtime[1], exeCtx : RelationalExecutionContext[1], constraintInformation : ConstraintContextInformation<Any>[*], extensions: RouterExtension[*]):Result<TabularDataSet|1>[1]
+{
+   validate($func, [], [], $m, $runtime, $exeCtx, [], $constraintInformation, $extensions)
+}
+
+function meta::relational::validation::validate<T>(func: FunctionDefinition<{->T[*]}>[1], m:Mapping[1], runtime:Runtime[1], exeCtx : RelationalExecutionContext[1], constraintIds: String[*], constraintInformation : ConstraintContextInformation<Any>[*], extensions: RouterExtension[*]):Result<TabularDataSet|1>[1]
+{
+   validate($func, [], [], $m, $runtime, $exeCtx, $constraintIds, $constraintInformation, $extensions)
+}
+
+function meta::relational::validation::validate<T>(
+   func : FunctionDefinition<{->T[*]}>[1], // Starting set of to validate records
+   projections : BasicColumnSpecification<T>[*], // Set of extra projections
+   postTDSOperation : FunctionDefinition<{TabularDataSet[1]->TabularDataSet[1]}>[0..1], // Enrich the validation result TDS
+   m : Mapping[1], // Mapping
+   runtime : Runtime[1], // Runtime
+   exeCtx : RelationalExecutionContext[1], // Relational Execution Context - Batch Query Contexts
+   constraintIds: String[*], // Subset of constraints to run (If empty - runs all constraints)
+   constraintInformation : ConstraintContextInformation<Any>[*], // Constraint Informations - Containing enforcemnt level of constraint and messages associated with it
+   extensions: RouterExtension[*]
+):Result<TabularDataSet|1>[1]
+{
+   let class = $func->functionType().returnType.rawType->toOne()->cast(@Class<Any>);
+   let validationQuery = generateValidationQuery($func, $projections, $postTDSOperation, $m, $runtime, $exeCtx, $constraintIds, $constraintInformation);
+   execute($validationQuery, $m, $runtime, if($m.rootClassMappingByClass($class)->toOne()->instanceOf(RootRelationalInstanceSetImplementation), | ^$exeCtx(addDriverTablePkForProject=true), | $exeCtx), $extensions, noDebug());
+}
+
+function {doc.doc = 'Generates the query which can be executed to perform a validation, columns exclude primary keys - add primary keys in extra projections if directly using this'}
+meta::relational::validation::generateValidationQuery<T>(
+   func : FunctionDefinition<{->T[*]}>[1],
+   projections : BasicColumnSpecification<T>[*],
+   postTDSOperation : FunctionDefinition<{TabularDataSet[1]->TabularDataSet[1]}>[0..1],
+   m : Mapping[1],
+   runtime : Runtime[1],
+   exeCtx : RelationalExecutionContext[1],
+   constraintIds: String[*],
+   constraintInformation : ConstraintContextInformation<Any>[*]
+):FunctionDefinition<{->TabularDataSet[1]}>[1]
+{
+   let class = $func->functionType().returnType.rawType->toOne()->cast(@Class<Any>);
+   let constraints = if($constraintIds->isEmpty(),
+                        | $class->allConstraintsInHierarchy(),
+                        | let allConstraints = $class->allConstraintsInHierarchy();
+                          $constraintIds->map(id |
+                             let constraint = $class->constraintInHierarchyByName($id);
+                             assert($constraint->isNotEmpty(), | 'Cannot find constraint \''+ $id + '\' in hierarchy of class \'' + $class.name->toOne() + '\'');
+                             $constraint;
+                          );
+                     );
+   
+   assertNotEmpty($constraints, 'Class does not have any constraints in the hierarchy to validate');
+
+   let classMapping = $m.rootClassMappingByClass($class);
+   assert($classMapping->size() == 1, | 'No class mapping found for the class \'' + $class.name->toOne() + '\' in the mapping \'' + $m.name->toOne() + '\'');
+   
+   let lambda = {|^TabularDataSet()};
+
+   let tdsExpression =  $constraints->tail()->fold({constraint, expr |
+      ^SimpleFunctionExpression
+      (
+         func = concatenate_TabularDataSet_1__TabularDataSet_1__TabularDataSet_1_,
+         multiplicity = PureOne,
+         genericType  = ^GenericType(rawType = TabularDataSet),
+         importGroup  = system::imports::coreImport,
+         parametersValues =
+         [
+            $expr,
+            generateConstraintNegatedProjectQuery($func, $projections, $constraint, $constraintInformation)
+         ]
+      )
+   }, generateConstraintNegatedProjectQuery($func, $projections, $constraints->at(0), $constraintInformation));
+
+   let toExecute = if($postTDSOperation->isEmpty(),
+                      | ^$lambda
+                        (
+                           expressionSequence = $tdsExpression
+                        ),
+                      | ^$lambda
+                        (
+                           expressionSequence = $postTDSOperation->toOne()->tranformPostTDSOperation($postTDSOperation->toOne()->openVariableValues()->put($postTDSOperation->toOne()->functionType().parameters->evaluateAndDeactivate()->cast(@VariableExpression)->at(0).name, list($tdsExpression)))
+                        )
+                   );
+
+   $toExecute->cast(@FunctionDefinition<{->TabularDataSet[1]}>);
+}

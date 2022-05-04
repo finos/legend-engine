@@ -1,0 +1,120 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::shared::format::binding::*;
+import meta::pure::functions::io::http::*;
+import meta::pure::model::unit::*;
+import meta::external::store::service::metamodel::*;
+import meta::external::store::service::tests::domain::*;
+import meta::external::store::service::tests::store::*;
+
+function meta::external::store::service::tests::store::prodServiceStoreSchemaBinding():Binding[1]
+{
+   ^Binding(
+      name        = 'ProdServiceStoreSchemaBinding',
+      package     = meta::external::store::service::tests::store,
+      schemaSet   = [],
+      contentType = 'application/json',
+      modelUnit   = newModelUnit()->include(meta::external::store::service::tests::domain::S_Product)->exclude(meta::external::store::service::tests::domain::S_Trade_S_Product)
+   );
+}
+
+function meta::external::store::service::tests::store::tradeServiceStoreSchemaBinding():Binding[1]
+{
+   ^Binding(
+      name        = 'TradeServiceStoreSchemaBinding',
+      package     = meta::external::store::service::tests::store,
+      schemaSet   = [],
+      contentType = 'application/json',
+      modelUnit   = newModelUnit()->include([meta::external::store::service::tests::domain::S_Trade, meta::external::store::service::tests::domain::S_RequestBody])->exclude(meta::external::store::service::tests::domain::S_Trade_S_Product)
+   );
+}
+
+function meta::external::store::service::tests::store::TradeProductServiceStore():ServiceStore[1]
+{
+   let store = ^ServiceStore(
+      package  = meta::external::store::service::tests::store,
+      name     = 'TradeProductServiceStore'
+   );
+   
+   let tradeServiceGroup = ^ServiceGroup(
+      owner = $store,
+      id    = 'TradeServices',
+      path  = '/trades'
+   );
+   
+   let tradeService = ^Service(
+      owner  = $store,
+      parent = $tradeServiceGroup,
+      id     = 'AllTradeService',
+      path   = '/allTradesService',
+      method = HTTPMethod.GET,
+      parameters = ^ServiceParameter(name = 'serializationFormat', type = ^StringTypeReference(list = false), location = Location.QUERY),
+      requestBody = ^ComplexTypeReference(binding = tradeServiceStoreSchemaBinding(), list = false, type = S_RequestBody),
+      response = ^ComplexTypeReference(binding = tradeServiceStoreSchemaBinding(), list = true, type = S_Trade)
+   );
+   
+   $tradeServiceGroup->mutateAdd('elements', $tradeService);
+   
+   let prodServiceGroup = ^ServiceGroup(
+      owner = $store,
+      id    = 'ProductServices',
+      path  = '/products'
+   );
+   
+   let prodByIdService = ^Service(
+      owner  = $store,
+      parent = $prodServiceGroup,
+      id     = 'ProductByIdService',
+      path   = '/getProductById/{id}',
+      method = HTTPMethod.GET,
+      parameters = [^ServiceParameter(name = 'id', type = ^StringTypeReference(list = false), location = Location.PATH), 
+                    ^ServiceParameter(name = 'serializationFormat', type = ^StringTypeReference(list = false), location = Location.QUERY)],
+      response = ^ComplexTypeReference(binding = prodServiceStoreSchemaBinding(), list = true, type = S_Product)
+   );
+   
+   let prodByNameService = ^Service(
+      owner  = $store,
+      parent = $prodServiceGroup,
+      id     = 'ProductByNameService',
+      path   = '/getProductByName',
+      method = HTTPMethod.GET,
+      parameters = ^ServiceParameter(name = 'name', type = ^StringTypeReference(list = false), location = Location.QUERY),
+      response = ^ComplexTypeReference(binding = prodServiceStoreSchemaBinding(), list = true, type = S_Product)
+   );
+   
+   $prodServiceGroup->mutateAdd('elements', [$prodByIdService, $prodByNameService]);
+   
+   $store->mutateAdd('elements', [$tradeServiceGroup, $prodServiceGroup]);
+}
+
+###Pure
+import meta::pure::runtime::*;
+import meta::pure::mapping::modelToModel::*;
+
+import meta::external::store::service::metamodel::runtime::*;
+import meta::external::store::service::tests::runtime::*;
+
+function meta::external::store::service::tests::runtime::serviceStoreRuntime():Runtime[1]
+{
+   let serviceStore = meta::external::store::service::tests::store::TradeProductServiceStore();
+   
+   ^Runtime(connections = ^ServiceStoreConnection(element = $serviceStore,
+                                                  baseUrl = 'http://127.0.0.1:9090/api/user/serviceStore/test'));
+}
+
+function meta::external::store::service::tests::runtime::modelChainConnectionRuntime():Runtime[1]
+{
+   ^Runtime(connections = serviceStoreRuntime().connections->concatenate(^ModelChainConnection(element = ^ModelStore(), mappings = meta::external::store::service::tests::mapping::serviceStoreMapping())));
+}

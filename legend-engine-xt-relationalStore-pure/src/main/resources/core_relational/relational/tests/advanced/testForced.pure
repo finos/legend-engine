@@ -1,0 +1,63 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::functions::asserts::*;
+import meta::relational::tests::mapping::filter::model::domain::*;
+import meta::relational::tests::mapping::filter::model::store::*;
+import meta::relational::tests::mapping::filter::model::mapping::*;
+import meta::relational::runtime::*;
+import meta::relational::runtime::authentication::*;
+import meta::pure::profiles::*;
+import meta::pure::runtime::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::mapping::*;
+import meta::relational::functions::toDDL::*;
+import meta::relational::functions::*;
+import meta::relational::functions::pureToSqlQuery::*;
+import meta::pure::mapping::*;
+
+function <<test.BeforePackage>> meta::relational::tests::advanced::forced::filter::setUp():Boolean[1]
+{
+    meta::relational::tests::mapping::filter::model::store::createTablesAndFillDb();
+}
+
+function <<test.Test>> meta::relational::tests::advanced::forced::filter::testFilterMappingWithProjectionOverlappForcedCorrelated():Boolean[1]
+{
+   let result = meta::relational::tests::advanced::forced::filter::testFilterMappingWithProjectionOverlapp(IsolationStrategy.BuildCorrelatedSubQuery);
+   assertSameSQL('select "root".name as "name", "orgtable_1".name as "p_name", "orgtable_3".name as "p_p_name" from orgTable as "root" left outer join (select "orgtable_2".id as id, "orgtable_2".name as name, "orgtable_2".parentId as parentId from orgTable as "orgtable_2" where "orgtable_2".filterVal <= 4) as "orgtable_1" on ("root".parentId = "orgtable_1".id) left outer join (select "orgtable_4".id as id, "orgtable_4".name as name from orgTable as "orgtable_4" where "orgtable_4".filterVal <= 4) as "orgtable_3" on ("orgtable_1".parentId = "orgtable_3".id) where "root".filterVal <= 4', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::advanced::forced::filter::testFilterMappingWithProjectionOverlappForcedOnClause():Boolean[1]
+{
+   let result = meta::relational::tests::advanced::forced::filter::testFilterMappingWithProjectionOverlapp(IsolationStrategy.MoveFilterInOnClause);
+   assertSameSQL('select "root".name as "name", "orgtable_1".name as "p_name", "orgtable_2".name as "p_p_name" from orgTable as "root" left outer join orgTable as "orgtable_1" on ("root".parentId = "orgtable_1".id and "orgtable_1".filterVal <= 4) left outer join orgTable as "orgtable_2" on ("orgtable_1".parentId = "orgtable_2".id and "orgtable_2".filterVal <= 4) where "root".filterVal <= 4', $result->sqlRemoveFormatting());
+}
+
+function meta::relational::tests::advanced::forced::filter::testFilterMappingWithProjectionOverlapp(isolation:IsolationStrategy[1]):Result<Any|*>[1]
+{
+   let result = execute(|Org.all()->project([#/Org/name#,
+                                             #/Org/parent/name!p_name#,
+                                             #/Org/parent/parent/name!p_p_name#]
+                                           ), meta::relational::tests::mapping::filter::model::mapping::orgTestMapping
+                                            , testDataTypeMappingRuntime()
+                                            ,  meta::pure::router::extension::defaultRelationalExtensions(), ^RelationalDebugContext(debug=false, space='', forcedIsolation = $isolation));
+   assertEquals(6, $result.values.rows->size());
+   assertEquals(['ROOT',^TDSNull(),^TDSNull()], $result.values.rows->at(0).values);
+   assertEquals(['Firm X','ROOT',^TDSNull()], $result.values.rows->at(1).values);
+   assertEquals(['Firm A','ROOT',^TDSNull()], $result.values.rows->at(2).values);
+   assertEquals(['Securities','Firm X','ROOT'], $result.values.rows->at(3).values);
+   assertEquals(['Banking','Firm X','ROOT'], $result.values.rows->at(4).values);
+   assertEquals(['Federation','Firm X','ROOT'], $result.values.rows->at(5).values);
+   $result;
+}

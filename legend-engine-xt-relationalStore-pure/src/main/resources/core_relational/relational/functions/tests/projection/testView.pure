@@ -1,0 +1,144 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::tests::projection::view::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::runtime::*;
+import meta::relational::mapping::*;
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::*;
+
+function <<test.Test>> meta::relational::tests::projection::view::testViewAllOneSimpleProperty():Boolean[1]
+{
+   let result = execute(|OrderPnl.all()->project(#/OrderPnl/pnl#), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 3);
+   assertSameElements(['100.0,200.0,150.0'], $result.values.rows->map(r|$r.values)->makeString(','));
+   assertEquals('select "root".pnl as "pnl" from (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accounttable_0".ID as accountId, "salespersontable_0".NAME as supportContact, "salespersontable_0".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "ordertable_0" on ("root".ORDER_ID = "ordertable_0".ID) left outer join accountTable as "accounttable_0" on ("ordertable_0".accountID = "accounttable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("ordertable_0".accountID = "salespersontable_0".ACCOUNT_ID) where "root".pnl > 0) as "root"', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::projection::view::testJoinToView():Boolean[1]
+{
+   let result = execute(|Account.all()->project([a|$a.name, a|$a.orders.id, a|$a.orders.pnl],['accountName','tradeId','pnl']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 4);
+   assertSameElements(['Account 1,1,100.0~Account 1,3,TDSNull~Account 2,2,200.0~Account 2,4,150.0'], $result.values.rows->map(r|$r.values->makeString(','))->makeString('~'));
+   assertEquals('select "root".name as "accountName", "ordertable_0".ID as "tradeId", "orderpnlview_0".pnl as "pnl" from accountTable as "root" left outer join orderTable as "ordertable_0" on ("ordertable_0".accountID = "root".ID) left outer join (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accounttable_1".ID as accountId, "salespersontable_0".NAME as supportContact, "salespersontable_0".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "ordertable_1" on ("root".ORDER_ID = "ordertable_1".ID) left outer join accountTable as "accounttable_1" on ("ordertable_1".accountID = "accounttable_1".ID) left outer join salesPersonTable as "salespersontable_0" on ("ordertable_1".accountID = "salespersontable_0".ACCOUNT_ID) where "root".pnl > 0) as "orderpnlview_0" on ("orderpnlview_0".ORDER_ID = "ordertable_0".ID)', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::projection::view::testJoinThroughView():Boolean[1]
+{
+   let result = execute(|Account.all()->project([a|$a.name, a|$a.orders.id, a|$a.orders.pnlContact.name()],['accountName','tradeId','pnl']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 4);
+   assertSameElements(['Account 1,1,Peter Smith~Account 1,3, ~Account 2,2,John Johnson~Account 2,4,John Johnson'], $result.values.rows->map(r|$r.values->makeString(','))->makeString('~'));
+   assertEquals('select "root".name as "accountName", "ordertable_0".ID as "tradeId", concat("persontable_0".FIRSTNAME, \' \', "persontable_0".LASTNAME) as "pnl" from accountTable as "root" left outer join orderTable as "ordertable_0" on ("ordertable_0".accountID = "root".ID) left outer join (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accounttable_1".ID as accountId, "salespersontable_0".NAME as supportContact, "salespersontable_0".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "ordertable_1" on ("root".ORDER_ID = "ordertable_1".ID) left outer join accountTable as "accounttable_1" on ("ordertable_1".accountID = "accounttable_1".ID) left outer join salesPersonTable as "salespersontable_0" on ("ordertable_1".accountID = "salespersontable_0".ACCOUNT_ID) where "root".pnl > 0) as "orderpnlview_0" on ("orderpnlview_0".ORDER_ID = "ordertable_0".ID) left outer join personTable as "persontable_0" on ("orderpnlview_0".supportContactId = "persontable_0".ID)', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::projection::view::testViewWithGroupBy():Boolean[1]
+{
+   let result = execute(|AccountPnl.all()->project([p|$p.account.name, p|$p.pnl],['accountName','pnl']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameElements(['Account 1,100.0, Account 2,350.0'], $result.values.rows->map(r|$r.values->makeString(','))->makeString(', '));
+   assertEquals('select "accounttable_0".name as "accountName", "root".orderPnl as "pnl" from (select "root".accountID as accountId, sum("orderpnltable_0".pnl) as orderPnl from orderTable as "root" left outer join orderPnlTable as "orderpnltable_0" on ("orderpnltable_0".ORDER_ID = "root".ID) group by "root".accountID) as "root" left outer join accountTable as "accounttable_0" on ("root".accountId = "accounttable_0".ID)', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::projection::view::testAssnToViewWithGroupBy():Boolean[1]
+{
+   let result = execute(|Account.all()->project([a|$a.name, a|$a.accountPnl.pnl],['accountName','pnl']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameElements(['Account 1,100.0, Account 2,350.0'], $result.values.rows->map(r|$r.values->makeString(','))->makeString(', '));
+   assertEquals('select "root".name as "accountName", "accountorderpnlview_0".orderPnl as "pnl" from accountTable as "root" left outer join (select "root".accountID as accountId, sum("orderpnltable_0".pnl) as orderPnl from orderTable as "root" left outer join orderPnlTable as "orderpnltable_0" on ("orderpnltable_0".ORDER_ID = "root".ID) group by "root".accountID) as "accountorderpnlview_0" on ("accountorderpnlview_0".accountId = "root".ID)', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::projection::view::testUnionOnViewsMapping():Boolean[1]
+{
+   let result = execute(|OrderPnl.all()->project([o|$o.order.id, o|$o.pnl],['orderId','pnl']), unionOnViewsMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions(), noDebug());
+   assertSameElements(['1,100.0, 2,200.0, 4,150.0, 3,0.0'], $result.values.rows->map(r|$r.values->makeString(','))->makeString(', '));
+   assertEquals('select "ordertable_1".ID as "orderId", "unionBase"."orderPnlViewpnl_orderNegativePnlViewpnl" as "pnl" from (select "root".ORDER_ID as "pk_0_0", null as "pk_0_1", "root".ORDER_ID as ORDER_ID_0, null as ORDER_ID_1, "root".pnl as "orderPnlViewpnl_orderNegativePnlViewpnl" from (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accounttable_0".ID as accountId, "salespersontable_0".NAME as supportContact, "salespersontable_0".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "ordertable_0" on ("root".ORDER_ID = "ordertable_0".ID) left outer join accountTable as "accounttable_0" on ("ordertable_0".accountID = "accounttable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("ordertable_0".accountID = "salespersontable_0".ACCOUNT_ID) where "root".pnl > 0) as "root" UNION ALL select null as "pk_0_0", "root".ORDER_ID as "pk_0_1", null as ORDER_ID_0, "root".ORDER_ID as ORDER_ID_1, "root".pnl as "orderPnlViewpnl_orderNegativePnlViewpnl" from (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accounttable_0".ID as accountId, "salespersontable_0".NAME as supportContact, "salespersontable_0".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "ordertable_0" on ("root".ORDER_ID = "ordertable_0".ID) left outer join accountTable as "accounttable_0" on ("ordertable_0".accountID = "accounttable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("ordertable_0".accountID = "salespersontable_0".ACCOUNT_ID) where "root".pnl <= 0) as "root") as "unionBase" left outer join orderTable as "ordertable_1" on ("unionBase".ORDER_ID_0 = "ordertable_1".ID or "unionBase".ORDER_ID_1 = "ordertable_1".ID)', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::projection::view::testViewOnView():Boolean[1]
+{
+   let result = execute(|OrderPnl.all()->project([o|$o.order.id, o|$o.pnl],['orderId','pnl']), unionOnViewOnViewMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions(), noDebug());
+   assertSameElements(['1,100.0, 2,200.0, 4,150.0, 3,0.0'], $result.values.rows->map(r|$r.values->makeString(','))->makeString(', '));
+   assertEquals('select "ordertable_1".ID as "orderId", "unionBase"."orderPnlViewOnViewpnl_orderNegativePnlViewOnViewpnl" as "pnl" from (select "root".ORDER_ID as "pk_0_0", null as "pk_0_1", "root".ORDER_ID as ORDER_ID_0, null as ORDER_ID_1, "root".pnl as "orderPnlViewOnViewpnl_orderNegativePnlViewOnViewpnl" from (select "root".ORDER_ID as ORDER_ID, "root".pnl as pnl from (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accounttable_0".ID as accountId, "salespersontable_0".NAME as supportContact, "salespersontable_0".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "ordertable_0" on ("root".ORDER_ID = "ordertable_0".ID) left outer join accountTable as "accounttable_0" on ("ordertable_0".accountID = "accounttable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("ordertable_0".accountID = "salespersontable_0".ACCOUNT_ID) where "root".pnl > 0) as "root") as "root" UNION ALL select null as "pk_0_0", "root".ORDER_ID as "pk_0_1", null as ORDER_ID_0, "root".ORDER_ID as ORDER_ID_1, "root".pnl as "orderPnlViewOnViewpnl_orderNegativePnlViewOnViewpnl" from (select "root".ORDER_ID as ORDER_ID, "root".pnl as pnl from (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accounttable_0".ID as accountId, "salespersontable_0".NAME as supportContact, "salespersontable_0".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "ordertable_0" on ("root".ORDER_ID = "ordertable_0".ID) left outer join accountTable as "accounttable_0" on ("ordertable_0".accountID = "accounttable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("ordertable_0".accountID = "salespersontable_0".ACCOUNT_ID) where "root".pnl <= 0) as "root") as "root") as "unionBase" left outer join orderTable as "ordertable_1" on ("unionBase".ORDER_ID_0 = "ordertable_1".ID or "unionBase".ORDER_ID_1 = "ordertable_1".ID)', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::projection::view::testProjectionOfPropertyJoinedToViewWithGroupByAndFilter():Boolean[1]
+{
+   let result = execute(|Interaction.all()->filter(i|$i.longestInteractionBetweenSourceAndTarget > 1)->project([i|$i.id, i|$i.longestInteractionBetweenSourceAndTarget],['id','longestInteractionBetweenSourceAndTarget']), meta::relational::tests::simpleRelationalMapping,meta::relational::tests::testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".ID as "id", "interactionviewmaxtime_0".maxTime as "longestInteractionBetweenSourceAndTarget" from interactionTable as "root" left outer join (select "root".sourceId as sourceId, "root".targetId as targetId, max("root".time) as maxTime from interactionTable as "root" where "root".time > 0 group by "root".sourceId,"root".targetId) as "interactionviewmaxtime_0" on ("root".sourceId = "interactionviewmaxtime_0".sourceId and "root".targetId = "interactionviewmaxtime_0".targetId) where "interactionviewmaxtime_0".maxTime > 1', $result->sqlRemoveFormatting());
+}
+
+###Mapping
+import meta::relational::tests::projection::view::*;
+import meta::relational::tests::*;
+import meta::relational::tests::model::simple::*;
+
+Mapping meta::relational::tests::projection::view::unionOnViewsInclude
+(
+    Order : Relational
+             {
+                id : [db]orderTable.ID,
+                quantity : [db]orderTable.quantity,
+                date : [db]orderTable.orderDate,
+                settlementDateTime : [db]orderTable.settlementDateTime,
+                pnlContact : [db] @Order_SalesPerson > (INNER) [db] @SalesPerson_PersonView
+             }    
+)
+
+Mapping meta::relational::tests::projection::view::unionOnViewsMapping
+(
+   include unionOnViewsInclude           
+      
+   OrderPnl[nonNeg] : Relational
+             {
+                pnl : [db]orderPnlView.pnl,
+                supportContactName : [db]orderPnlView.supportContact,
+                order: [db]@OrderPnlView_Order
+             } 
+   
+   OrderPnl[neg] : Relational
+             {
+                pnl : [db]orderNegativePnlView.pnl,
+                supportContactName : [db]orderNegativePnlView.supportContact,
+                order: [db]@OrderNetativePnlView_Order
+             } 
+
+   *OrderPnl : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(nonNeg, neg);
+   }
+   
+)
+
+
+Mapping meta::relational::tests::projection::view::unionOnViewOnViewMapping
+(
+   include unionOnViewsInclude   
+             
+   OrderPnl[nonNeg] : Relational
+             {
+                pnl : [db]orderPnlViewOnView.pnl,
+                order: [db]@OrderPnlViewOnView_Order
+             } 
+   
+                
+   OrderPnl[neg] : Relational
+             {
+                pnl : [db]orderNegativePnlViewOnView.pnl,
+                order: [db]@OrderNegativePnlViewOnView_Order
+             } 
+
+   *OrderPnl : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(nonNeg, neg);
+   }
+)

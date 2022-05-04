@@ -1,0 +1,461 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::executionPlan::*;
+import meta::relational::tests::mapping::tree::model::domain::*;
+import meta::relational::tests::mapping::tree::model::store::*;
+import meta::relational::tests::mapping::tree::model::mapping::*;
+import meta::relational::runtime::*;
+import meta::relational::runtime::authentication::*;
+import meta::pure::profiles::*;
+import meta::pure::runtime::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::mapping::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::metamodel::*;
+
+
+function <<test.Test>> meta::relational::tests::mapping::tree::testQuerySimple():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p|$p.orgByName('TEAM').name == 'OrgName6'), meta::relational::tests::mapping::tree::model::mapping::orgTestMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals(1, $result.values->size());
+   assertEquals(['David', 'Ma'],[$result.values->at(0).firstName, $result.values->at(0).lastName]);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::tree::testQueryWithResultWithAnd():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p|$p.orgByName('TEAM').name == 'OrgName6' && $p.orgByName('BUSINESS UNIT').name == 'OrgName5'), meta::relational::tests::mapping::tree::model::mapping::orgTestMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals(1, $result.values->size());
+   assertEquals(['David', 'Ma'],[$result.values->at(0).firstName, $result.values->at(0).lastName]);
+   assertEquals('select "root".id as "pk_0", "root".firstName as "firstName", "root".lastName as "lastName" from personTable as "root" left outer join (select "orgtreeoptimizationtable_1".node as node, "orgtable_0".name as name from orgTreeOptimizationTable as "orgtreeoptimizationtable_1" inner join orgTable as "orgtable_0" on ("orgtreeoptimizationtable_1".ancestor = "orgtable_0".id) where "orgtable_0".type = \'TEAM\') as "orgtreeoptimizationtable_0" on ("root".id = "orgtreeoptimizationtable_0".node) left outer join (select "orgtreeoptimizationtable_3".node as node, "orgtable_1".name as name from orgTreeOptimizationTable as "orgtreeoptimizationtable_3" inner join orgTable as "orgtable_1" on ("orgtreeoptimizationtable_3".ancestor = "orgtable_1".id) where "orgtable_1".type = \'BUSINESS UNIT\') as "orgtreeoptimizationtable_2" on ("root".id = "orgtreeoptimizationtable_2".node) where ("orgtreeoptimizationtable_0".name = \'OrgName6\' and "orgtreeoptimizationtable_2".name = \'OrgName5\')', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::tree::testQueryNoResultWithAnd():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p|$p.orgByName('TEAM').name == 'OrgName6' && $p.orgByName('BUSINESS UNIT').name == 'OrgName2'), meta::relational::tests::mapping::tree::model::mapping::orgTestMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals(0, $result.values->size());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::tree::testQueryWithOr():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p|$p.orgByName('TEAM').name == 'OrgName6' || $p.orgByName('BUSINESS UNIT').name == 'OrgName2'), meta::relational::tests::mapping::tree::model::mapping::orgTestMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals(2, $result.values->size());
+   assertEquals(['Alex', 'Radu'],[$result.values->at(0).firstName, $result.values->at(0).lastName]);
+   assertEquals(['David', 'Ma'],[$result.values->at(1).firstName, $result.values->at(1).lastName]);
+   assertEquals('select "root".id as "pk_0", "root".firstName as "firstName", "root".lastName as "lastName" from personTable as "root" left outer join (select "orgtreeoptimizationtable_1".node as node, "orgtable_0".name as name from orgTreeOptimizationTable as "orgtreeoptimizationtable_1" inner join orgTable as "orgtable_0" on ("orgtreeoptimizationtable_1".ancestor = "orgtable_0".id) where "orgtable_0".type = \'TEAM\') as "orgtreeoptimizationtable_0" on ("root".id = "orgtreeoptimizationtable_0".node) left outer join (select "orgtreeoptimizationtable_3".node as node, "orgtable_1".name as name from orgTreeOptimizationTable as "orgtreeoptimizationtable_3" inner join orgTable as "orgtable_1" on ("orgtreeoptimizationtable_3".ancestor = "orgtable_1".id) where "orgtable_1".type = \'BUSINESS UNIT\') as "orgtreeoptimizationtable_2" on ("root".id = "orgtreeoptimizationtable_2".node) where ("orgtreeoptimizationtable_0".name = \'OrgName6\' or "orgtreeoptimizationtable_2".name = \'OrgName2\')', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::tree::testFilterOnNestedQualifier():Boolean[1]
+{
+   let result = execute(|Trade.all()->filter(t|$t.trader.team.name == 'OrgName6')
+                            ->project([#/Trade/ref#, #/Trade/trader/firstName#])
+                         ,
+   meta::relational::tests::mapping::tree::model::mapping::orgTestMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+   let tds = $result.values->at(0);
+   assertEquals(1, $result.values->size());
+   assertEquals(['ref', 'firstName'], $tds.columns.name);
+   assertEquals(1, $tds.rows->size());
+   assertEquals(['2','David'],$tds.rows->at(0).values);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::tree::testProjectMerge():Boolean[1]
+{
+   let result = execute(|Person.all()->project([#/Person/orgByName('BUSINESS UNIT')/name!buName#, #/Person/orgByName('TEAM')/name#, #/Person/orgByName('TEAM')/type#]), meta::relational::tests::mapping::tree::model::mapping::orgTestMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let tds = $result.values->at(0);
+   assertEquals(['buName', 'name', 'type'], $tds.columns.name);
+   assertEquals(3, $tds.rows->size());
+   assertEquals(['OrgName2','OrgName3', 'TEAM'],$tds.rows->at(0).values);
+   assertEquals(['OrgName5', 'OrgName6', 'TEAM'],$tds.rows->at(1).values);
+   assertEquals([^TDSNull(), ^TDSNull(), ^TDSNull()],$tds.rows->at(2).values);
+   assertEquals('select "orgtreeoptimizationtable_0".name as "buName", "orgtreeoptimizationtable_2".name as "name", "orgtreeoptimizationtable_2".type as "type" from personTable as "root" left outer join (select "orgtreeoptimizationtable_1".node as node, "orgtable_0".name as name from orgTreeOptimizationTable as "orgtreeoptimizationtable_1" inner join orgTable as "orgtable_0" on ("orgtreeoptimizationtable_1".ancestor = "orgtable_0".id) where "orgtable_0".type = \'BUSINESS UNIT\') as "orgtreeoptimizationtable_0" on ("root".id = "orgtreeoptimizationtable_0".node) left outer join (select "orgtreeoptimizationtable_3".node as node, "orgtable_1".name as name, "orgtable_1".type as type from orgTreeOptimizationTable as "orgtreeoptimizationtable_3" inner join orgTable as "orgtable_1" on ("orgtreeoptimizationtable_3".ancestor = "orgtable_1".id) where "orgtable_1".type = \'TEAM\') as "orgtreeoptimizationtable_2" on ("root".id = "orgtreeoptimizationtable_2".node)', $result->sqlRemoveFormatting());
+}
+
+
+function <<test.Test>> meta::relational::tests::mapping::tree::testProjection():Boolean[1]
+{
+   let result = execute(|Person.all()->project(
+                                                [   
+                                                   #/Person/firstName#,
+                                                   #/Person/lastName#,
+                                                   #/Person/orgByName('TEAM')/name!team#,
+                                                   #/Person/orgByName('DESK')/name!desk#,
+                                                   #/Person/orgByName('BUSINESS UNIT')/name!bu#,
+                                                   #/Person/orgByName('Organization')/name!org#
+                                                ]
+                                              )
+                        , meta::relational::tests::mapping::tree::model::mapping::orgTestMapping
+                        , testDataTypeMappingRuntime()
+                       , meta::pure::router::extension::defaultRelationalExtensions());
+   let tds = $result.values->at(0);
+   assertEquals(['firstName', 'lastName', 'team', 'desk', 'bu', 'org'], $tds.columns.name);
+   assertEquals(3, $tds.rows->size());
+   assertEquals(['Alex', 'Radu', 'OrgName3', 'OrgName4', 'OrgName2', 'Firm X'],$tds.rows->at(0).values);
+   assertEquals(['David', 'Ma', 'OrgName6', ^TDSNull(), 'OrgName5', 'Firm X'],$tds.rows->at(1).values);
+   assertEquals(['Julie', 'Andrews', ^TDSNull(), ^TDSNull(), ^TDSNull(), ^TDSNull()],$tds.rows->at(2).values);
+   assertEquals('select "root".firstName as "firstName", "root".lastName as "lastName", "orgtreeoptimizationtable_0".name as "team", "orgtreeoptimizationtable_2".name as "desk", "orgtreeoptimizationtable_4".name as "bu", "orgtreeoptimizationtable_6".name as "org" from personTable as "root" left outer join (select "orgtreeoptimizationtable_1".node as node, "orgtable_0".name as name from orgTreeOptimizationTable as "orgtreeoptimizationtable_1" inner join orgTable as "orgtable_0" on ("orgtreeoptimizationtable_1".ancestor = "orgtable_0".id) where "orgtable_0".type = \'TEAM\') as "orgtreeoptimizationtable_0" on ("root".id = "orgtreeoptimizationtable_0".node) left outer join (select "orgtreeoptimizationtable_3".node as node, "orgtable_1".name as name from orgTreeOptimizationTable as "orgtreeoptimizationtable_3" inner join orgTable as "orgtable_1" on ("orgtreeoptimizationtable_3".ancestor = "orgtable_1".id) where "orgtable_1".type = \'DESK\') as "orgtreeoptimizationtable_2" on ("root".id = "orgtreeoptimizationtable_2".node) left outer join (select "orgtreeoptimizationtable_5".node as node, "orgtable_2".name as name from orgTreeOptimizationTable as "orgtreeoptimizationtable_5" inner join orgTable as "orgtable_2" on ("orgtreeoptimizationtable_5".ancestor = "orgtable_2".id) where "orgtable_2".type = \'BUSINESS UNIT\') as "orgtreeoptimizationtable_4" on ("root".id = "orgtreeoptimizationtable_4".node) left outer join (select "orgtreeoptimizationtable_7".node as node, "orgtable_3".name as name from orgTreeOptimizationTable as "orgtreeoptimizationtable_7" inner join orgTable as "orgtable_3" on ("orgtreeoptimizationtable_7".ancestor = "orgtable_3".id) where "orgtable_3".type = \'Organization\') as "orgtreeoptimizationtable_6" on ("root".id = "orgtreeoptimizationtable_6".node)', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::tree::testProjectionDeeper():Boolean[1]
+{
+   let result = execute(|Person.all()->project(
+                                                [
+                                                   col(p | $p.firstName, 'firstName'),
+                                                   col(p | $p.lastName, 'lastName'),
+                                                   col(p | $p.orgByName('BUSINESS UNIT').parent.name, 'businessUnitName'),
+                                                   col(p | $p.orgByName('TEAM').parent.name, 'teamParentName'),
+                                                   col(p | $p.orgByName('TEAM').parent.name2, 'teamParentName2')
+                                                ]
+                                              )
+                        , meta::relational::tests::mapping::tree::model::mapping::orgTestMapping
+                        , testDataTypeMappingRuntime()
+                       , meta::pure::router::extension::defaultRelationalExtensions());
+   let tds = $result.values->at(0);
+   assertEquals(['firstName', 'lastName', 'businessUnitName', 'teamParentName', 'teamParentName2'], $tds.columns.name);
+   assertEquals(3, $tds.rows->size());
+   assertEquals(['Alex', 'Radu', 'OrgName1', 'OrgName2', 'OrgName2 2'],$tds.rows->at(0).values);
+   assertEquals(['David', 'Ma', 'OrgName1', 'OrgName5', 'OrgName5 2'],$tds.rows->at(1).values);
+   assertEquals('select "root".firstName as "firstName", "root".lastName as "lastName", "orgtable_1".name as "businessUnitName", "orgtable_2".name as "teamParentName", "orgtable_2".name2 as "teamParentName2" from personTable as "root" left outer join (select "orgtable_0".parentId as parentId, "orgtreeoptimizationtable_1".node as node from orgTreeOptimizationTable as "orgtreeoptimizationtable_1" inner join orgTable as "orgtable_0" on ("orgtreeoptimizationtable_1".ancestor = "orgtable_0".id) where "orgtable_0".type = \'BUSINESS UNIT\') as "orgtreeoptimizationtable_0" on ("root".id = "orgtreeoptimizationtable_0".node) left outer join orgTable as "orgtable_1" on ("orgtreeoptimizationtable_0".parentId = "orgtable_1".id) left outer join (select "orgtable_0".parentId as parentId, "orgtreeoptimizationtable_1".node as node from orgTreeOptimizationTable as "orgtreeoptimizationtable_1" inner join orgTable as "orgtable_0" on ("orgtreeoptimizationtable_1".ancestor = "orgtable_0".id) where "orgtable_0".type = \'TEAM\') as "orgtreeoptimizationtable_2" on ("root".id = "orgtreeoptimizationtable_2".node) left outer join orgTable as "orgtable_2" on ("orgtreeoptimizationtable_2".parentId = "orgtable_2".id)', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::tree::testProjectionDeeperInlined():Boolean[1]
+{
+   let result = execute(|Person.all()->project(
+                                                [  col(p | $p.firstName, 'firstName'),
+                                                   col(p | $p.lastName, 'lastName'),
+                                                   col(p | $p.orgs->filter(o|$o.type == 'BUSINESS UNIT')->toOne().parent.name, 'businessUnitName'),
+                                                   col(p | $p.orgs->filter(o|$o.type == 'TEAM')->toOne().parent.name, 'teamParentName'),
+                                                   col(p | $p.orgs->filter(o|$o.type == 'TEAM')->toOne().parent.name2, 'teamParentName2')
+                                                ]
+                                              )
+                        , meta::relational::tests::mapping::tree::model::mapping::orgTestMapping
+                        , testDataTypeMappingRuntime()
+                       , meta::pure::router::extension::defaultRelationalExtensions());
+   let tds = $result.values->at(0);
+   assertEquals(['firstName', 'lastName', 'businessUnitName', 'teamParentName', 'teamParentName2'], $tds.columns.name);
+   assertEquals(3, $tds.rows->size());
+   assertEquals(['Alex', 'Radu', 'OrgName1', 'OrgName2', 'OrgName2 2'],$tds.rows->at(0).values);
+   assertEquals(['David', 'Ma', 'OrgName1', 'OrgName5', 'OrgName5 2'],$tds.rows->at(1).values);
+   assertEquals('select "root".firstName as "firstName", "root".lastName as "lastName", "orgtable_1".name as "businessUnitName", "orgtable_2".name as "teamParentName", "orgtable_2".name2 as "teamParentName2" from personTable as "root" left outer join (select "orgtable_0".parentId as parentId, "orgtreeoptimizationtable_1".node as node from orgTreeOptimizationTable as "orgtreeoptimizationtable_1" inner join orgTable as "orgtable_0" on ("orgtreeoptimizationtable_1".ancestor = "orgtable_0".id) where "orgtable_0".type = \'BUSINESS UNIT\') as "orgtreeoptimizationtable_0" on ("root".id = "orgtreeoptimizationtable_0".node) left outer join orgTable as "orgtable_1" on ("orgtreeoptimizationtable_0".parentId = "orgtable_1".id) left outer join (select "orgtable_0".parentId as parentId, "orgtreeoptimizationtable_1".node as node from orgTreeOptimizationTable as "orgtreeoptimizationtable_1" inner join orgTable as "orgtable_0" on ("orgtreeoptimizationtable_1".ancestor = "orgtable_0".id) where "orgtable_0".type = \'TEAM\') as "orgtreeoptimizationtable_2" on ("root".id = "orgtreeoptimizationtable_2".node) left outer join orgTable as "orgtable_2" on ("orgtreeoptimizationtable_2".parentId = "orgtable_2".id)', $result->sqlRemoveFormatting());
+}
+
+
+function <<test.ToFix>> meta::relational::tests::mapping::tree::testProjectionDeeperFailing():Boolean[1]
+{
+   // Need to fix the mixup with the type column!
+   let result = execute(|Person.all()->project(
+                                                [   
+                                                   #/Person/firstName#,
+                                                   #/Person/lastName#,
+                                                   #/Person/orgByName('TEAM')/parent/name!teamParentName#,
+                                                   #/Person/orgByName('TEAM')/parent/type!teamParentType#
+                                                ]
+                                              )
+                        , meta::relational::tests::mapping::tree::model::mapping::orgTestMapping
+                        , testDataTypeMappingRuntime()
+                       , meta::pure::router::extension::defaultRelationalExtensions());
+   let tds = $result.values->at(0);
+   assertEquals(['firstName', 'lastName', 'teamParentName', 'teamParentType'], $tds.columns.name);
+   assertEquals(3, $tds.rows->size());
+   assertEquals(['Alex', 'Radu', 'OrgName2', 'BUSINESS UNIT'],$tds.rows->at(0).values);
+   assertEquals(['David', 'Ma', 'OrgName5', 'BUSINESS UNIT'],$tds.rows->at(1).values);
+   assertEquals(['Julie', 'Andrews', ^TDSNull(), ^TDSNull()],$tds.rows->at(2).values);
+   //assertEquals('select root.firstName as _firstName, root.lastName as _lastName, orgTreeOptimizationTable_d_2_d_d_d_d_m3.name as team, orgTreeOptimizationTable_d_3_d_d_d_d_m4.name as desk, orgTreeOptimizationTable_d_4_d_d_d_d_m5.name as bu, orgTreeOptimizationTable_d_5_d_d_d_d_m6.name as org from personTable as root left outer join (select orgTreeOptimizationTable_d_2_d_d_d_d_m3.node as node, orgTable_d_2_d_d_d_l_d_m3_r.name as name from orgTreeOptimizationTable as orgTreeOptimizationTable_d_2_d_d_d_d_m3 inner join orgTable as orgTable_d_2_d_d_d_l_d_m3_r on (orgTreeOptimizationTable_d_2_d_d_d_d_m3.ancestor = orgTable_d_2_d_d_d_l_d_m3_r.id and orgTable_d_2_d_d_d_l_d_m3_r.type = \'TEAM\')) as orgTreeOptimizationTable_d_2_d_d_d_d_m3 on (root.id = orgTreeOptimizationTable_d_2_d_d_d_d_m3.node) left outer join (select orgTreeOptimizationTable_d_3_d_d_d.node as node, orgTable_d_3_d_d_d_l.name as name from orgTreeOptimizationTable as orgTreeOptimizationTable_d_3_d_d_d inner join orgTable as orgTable_d_3_d_d_d_l on (orgTreeOptimizationTable_d_3_d_d_d.ancestor = orgTable_d_3_d_d_d_l.id and orgTable_d_3_d_d_d_l.type = \'DESK\')) as orgTreeOptimizationTable_d_3_d_d_d_d_m4 on (root.id = orgTreeOptimizationTable_d_3_d_d_d_d_m4.node) left outer join (select orgTreeOptimizationTable_d_4_d_d_d.node as node, orgTable_d_4_d_d_d_l.name as name from orgTreeOptimizationTable as orgTreeOptimizationTable_d_4_d_d_d inner join orgTable as orgTable_d_4_d_d_d_l on (orgTreeOptimizationTable_d_4_d_d_d.ancestor = orgTable_d_4_d_d_d_l.id and orgTable_d_4_d_d_d_l.type = \'BUSINESS UNIT\')) as orgTreeOptimizationTable_d_4_d_d_d_d_m5 on (root.id = orgTreeOptimizationTable_d_4_d_d_d_d_m5.node) left outer join (select orgTreeOptimizationTable_d_5_d_d_d.node as node, orgTable_d_5_d_d_d_l.name as name from orgTreeOptimizationTable as orgTreeOptimizationTable_d_5_d_d_d inner join orgTable as orgTable_d_5_d_d_d_l on (orgTreeOptimizationTable_d_5_d_d_d.ancestor = orgTable_d_5_d_d_d_l.id and orgTable_d_5_d_d_d_l.type = \'Organization\')) as orgTreeOptimizationTable_d_5_d_d_d_d_m6 on (root.id = orgTreeOptimizationTable_d_5_d_d_d_d_m6.node)', $result->sqlRemoveFormatting());
+}
+
+
+function <<test.Test>> meta::relational::tests::mapping::tree::testProjectWithFilter():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p | $p.firstName == 'Julie')
+                           ->project([#/Person/firstName#, #/Person/orgByName('BUSINESS UNIT')/name!buName#]), meta::relational::tests::mapping::tree::model::mapping::orgTestMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let tds = $result.values->at(0);
+   assertEquals(1, $tds.rows->size());
+   
+   assertEquals(['firstName', 'buName'], $tds.columns.name);
+   assertEquals(['Julie',^TDSNull()],$tds.rows->at(0).values);
+   assertEquals('select "root".firstName as "firstName", "orgtreeoptimizationtable_0".name as "buName" from personTable as "root" left outer join (select "orgtreeoptimizationtable_1".node as node, "orgtable_0".name as name from orgTreeOptimizationTable as "orgtreeoptimizationtable_1" inner join orgTable as "orgtable_0" on ("orgtreeoptimizationtable_1".ancestor = "orgtable_0".id) where "orgtable_0".type = \'BUSINESS UNIT\') as "orgtreeoptimizationtable_0" on ("root".id = "orgtreeoptimizationtable_0".node) where "root".firstName = \'Julie\'', $result->sqlRemoveFormatting());
+}
+
+
+function <<test.Test>> meta::relational::tests::mapping::tree::testJoinIsolationDeeper_LeftOuterLeftOuterThenInner():Boolean[1]
+{
+   let result = execute(|Account.all()->project([ a| $a.number,
+                                                  a| $a.trades.trader.team.name],
+                                                 ['number', 'team']), meta::relational::tests::mapping::tree::model::mapping::orgTestMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let tds = $result.values->at(0);
+   assertEquals(4, $tds.rows->size());
+   
+   assertEquals(['number', 'team'], $tds.columns.name);
+   
+   
+   assertEquals([11, 'OrgName3'],$tds.rows->at(0).values);
+   assertEquals([11, 'OrgName6'],$tds.rows->at(1).values);
+   assertEquals([11, ^TDSNull()],$tds.rows->at(2).values);
+   assertEquals([22, ^TDSNull()],$tds.rows->at(3).values);
+   assertEquals('select "root".id as "number", "orgtreeoptimizationtable_0".name as "team" from accountTable as "root" left outer join tradeTable as "tradetable_0" on ("root".id = "tradetable_0".accountId) left outer join personTable as "persontable_0" on ("tradetable_0".traderId = "persontable_0".id) left outer join (select "orgtreeoptimizationtable_1".node as node, "orgtable_0".name as name from orgTreeOptimizationTable as "orgtreeoptimizationtable_1" inner join orgTable as "orgtable_0" on ("orgtreeoptimizationtable_1".ancestor = "orgtable_0".id) where "orgtable_0".type = \'TEAM\') as "orgtreeoptimizationtable_0" on ("persontable_0".id = "orgtreeoptimizationtable_0".node)', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::tree::testJoinIsolationDeeperTwoIsolations_LeftOuterLeftOuterThenInner():Boolean[1]
+{
+   let result = execute(|Account.all()->project([ a| $a.number,
+                                                  a| $a.trades.trader.firstName,
+                                                  a| $a.trades.trader.team.name,
+                                                  a| $a.trades.trader.orgByName('BUSINESS UNIT').name],
+                                                 ['number', 'firstName', 'team', 'bu']), meta::relational::tests::mapping::tree::model::mapping::orgTestMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let tds = $result.values->at(0);
+   assertEquals(4, $tds.rows->size());
+   
+   assertEquals(['number', 'firstName', 'team', 'bu'], $tds.columns.name);
+   assertEquals([11, 'Alex', 'OrgName3', 'OrgName2'],$tds.rows->at(0).values);
+   assertEquals([11, 'David', 'OrgName6', 'OrgName5'],$tds.rows->at(1).values);
+   assertEquals([11, 'Julie',^TDSNull(), ^TDSNull()],$tds.rows->at(2).values);
+   assertEquals([22, ^TDSNull(),^TDSNull(), ^TDSNull()],$tds.rows->at(3).values);
+   assertEquals('select "root".id as "number", "persontable_0".firstName as "firstName", "orgtreeoptimizationtable_0".name as "team", "orgtreeoptimizationtable_2".name as "bu" from accountTable as "root" left outer join tradeTable as "tradetable_0" on ("root".id = "tradetable_0".accountId) left outer join personTable as "persontable_0" on ("tradetable_0".traderId = "persontable_0".id) left outer join (select "orgtreeoptimizationtable_1".node as node, "orgtable_0".name as name from orgTreeOptimizationTable as "orgtreeoptimizationtable_1" inner join orgTable as "orgtable_0" on ("orgtreeoptimizationtable_1".ancestor = "orgtable_0".id) where "orgtable_0".type = \'TEAM\') as "orgtreeoptimizationtable_0" on ("persontable_0".id = "orgtreeoptimizationtable_0".node) left outer join (select "orgtreeoptimizationtable_3".node as node, "orgtable_1".name as name from orgTreeOptimizationTable as "orgtreeoptimizationtable_3" inner join orgTable as "orgtable_1" on ("orgtreeoptimizationtable_3".ancestor = "orgtable_1".id) where "orgtable_1".type = \'BUSINESS UNIT\') as "orgtreeoptimizationtable_2" on ("persontable_0".id = "orgtreeoptimizationtable_2".node)', $result->sqlRemoveFormatting());
+}
+
+// Alloy exclusion reason: 17. Post processors not yet supported
+function <<test.Test, test.ExcludeAlloy>>  meta::relational::tests::mapping::tree::testReplaceTablesPostProcessorJoinIsolation():Boolean[1]
+{
+   let oldTable = myDB.schema('default')->toOne().table('orgTable')->toOne();
+   let newTable = myDB.schema('default')->toOne().table('otherOrgTable')->toOne();
+   
+   let runtime = ^Runtime
+   (
+      connections = ^TestDatabaseConnection(
+                        element = myDB,
+                        type=DatabaseType.H2,
+                        sqlQueryPostProcessors = [{query:SelectSQLQuery[1] | meta::relational::postProcessor::replaceTables($query, pair($oldTable, $newTable)) }]
+                    )
+   );
+
+   let result = execute(|Account.all()->project([ a | $a.number,
+                                                  a| $a.trades.trader.firstName,
+                                                  a| $a.trades.trader.team.name,
+                                                  a| $a.trades.trader.orgByName('BUSINESS UNIT').name],
+                                                 ['number', 'firstName', 'team', 'bu']), meta::relational::tests::mapping::tree::model::mapping::orgTestMapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions());
+
+
+   assertEquals('select "root".id as "number", "persontable_0".firstName as "firstName", "orgtreeoptimizationtable_0".name as "team", "orgtreeoptimizationtable_2".name as "bu" from accountTable as "root" left outer join tradeTable as "tradetable_0" on ("root".id = "tradetable_0".accountId) left outer join personTable as "persontable_0" on ("tradetable_0".traderId = "persontable_0".id) left outer join (select "orgtreeoptimizationtable_1".node as node, "orgtable_0".name as name from orgTreeOptimizationTable as "orgtreeoptimizationtable_1" inner join otherOrgTable as "orgtable_0" on ("orgtreeoptimizationtable_1".ancestor = "orgtable_0".id) where "orgtable_0".type = \'TEAM\') as "orgtreeoptimizationtable_0" on ("persontable_0".id = "orgtreeoptimizationtable_0".node) left outer join (select "orgtreeoptimizationtable_3".node as node, "orgtable_1".name as name from orgTreeOptimizationTable as "orgtreeoptimizationtable_3" inner join otherOrgTable as "orgtable_1" on ("orgtreeoptimizationtable_3".ancestor = "orgtable_1".id) where "orgtable_1".type = \'BUSINESS UNIT\') as "orgtreeoptimizationtable_2" on ("persontable_0".id = "orgtreeoptimizationtable_2".node)', $result->sqlRemoveFormatting());
+}
+
+
+function <<test.BeforePackage>> meta::relational::tests::mapping::tree::setUp():Boolean[1]
+{
+    createTablesAndFillDb();
+}
+
+Class meta::relational::tests::mapping::tree::model::domain::Account
+{
+   number:String[1];
+}
+
+
+Class meta::relational::tests::mapping::tree::model::domain::Trade
+{
+   ref: String[1];
+   trader: Person[1];
+   
+}
+
+Association meta::relational::tests::mapping::tree::model::domain::Account_Trade
+{
+   trades:Trade[1];
+   account:Account[1];
+}
+
+Class meta::relational::tests::mapping::tree::model::domain::Person
+{
+    firstName : String[1];
+    lastName : String[1];
+    orgs : Org[*];
+    orgByName(type: String[1]){$this.orgs->filter(o|$o.type == $type)->toOne()}:Org[1];
+    team(){ $this.orgByName('TEAM')}:Org[0..1];
+}
+
+Class meta::relational::tests::mapping::tree::model::domain::Org
+{
+    name : String[1];
+    name2 : String[1];
+    type : String[1];
+    parent : Org[1];
+}
+
+
+
+function meta::relational::tests::mapping::tree::model::store::testDataTypeMappingRuntime():Runtime[1]
+{
+   ^Runtime
+   (
+      connections = ^TestDatabaseConnection(
+                        element = myDB,
+                        type=DatabaseType.H2
+                    )   
+   );
+}
+
+
+function meta::relational::tests::mapping::tree::model::store::createTablesAndFillDb():Boolean[1]
+{
+   let connection = testDataTypeMappingRuntime().connectionByElement(myDB)->cast(@TestDatabaseConnection);
+
+   meta::relational::functions::toDDL::dropAndCreateTableInDb(myDB, 'orgTable', $connection);
+   meta::relational::functions::toDDL::dropAndCreateTableInDb(myDB, 'otherOrgTable', $connection);
+   executeInDb('insert into orgTable (id, parentId, name, name2, type) values (1, null, \'Firm X\', \'Firm X 2\', \'Organization\');', $connection);
+   executeInDb('insert into orgTable (id, parentId, name, name2, type) values (2, 1, \'OrgName1\', \'OrgName1 2\', \'DIVISION\');', $connection);
+   executeInDb('insert into orgTable (id, parentId, name, name2, type) values (3, 2, \'OrgName2\', \'OrgName2 2\', \'BUSINESS UNIT\');', $connection);
+   executeInDb('insert into orgTable (id, parentId, name, name2, type) values (4, 3, \'OrgName3\', \'OrgName3 2\', \'TEAM\');', $connection);
+   executeInDb('insert into orgTable (id, parentId, name, name2, type) values (5, 4, \'OrgName4\', \'OrgName4 2\', \'DESK\');', $connection);
+   executeInDb('insert into orgTable (id, parentId, name, name2, type) values (6, 2, \'OrgName5\', \'OrgName5 2\', \'BUSINESS UNIT\');', $connection);
+   executeInDb('insert into orgTable (id, parentId, name, name2, type) values (7, 6, \'OrgName6\', \'OrgName6 2\', \'TEAM\');', $connection);
+
+   meta::relational::functions::toDDL::dropAndCreateTableInDb(myDB, 'orgTreeOptimizationTable', $connection);
+   executeInDb('insert into orgTreeOptimizationTable (node, ancestor) values (1, 1);', $connection);
+   executeInDb('insert into orgTreeOptimizationTable (node, ancestor) values (1, 2);', $connection);
+   executeInDb('insert into orgTreeOptimizationTable (node, ancestor) values (1, 3);', $connection);
+   executeInDb('insert into orgTreeOptimizationTable (node, ancestor) values (1, 4);', $connection);
+   executeInDb('insert into orgTreeOptimizationTable (node, ancestor) values (1, 5);', $connection);
+   executeInDb('insert into orgTreeOptimizationTable (node, ancestor) values (2, 1);', $connection);
+   executeInDb('insert into orgTreeOptimizationTable (node, ancestor) values (2, 2);', $connection);
+   executeInDb('insert into orgTreeOptimizationTable (node, ancestor) values (2, 6);', $connection);
+   executeInDb('insert into orgTreeOptimizationTable (node, ancestor) values (2, 7);', $connection);
+
+   meta::relational::functions::toDDL::dropAndCreateTableInDb(myDB, 'personTable', $connection);
+   executeInDb('Drop table if exists personTable;', $connection);
+   executeInDb('Create Table personTable(id INT, firstName VARCHAR(200), lastName VARCHAR(200));', $connection);
+   executeInDb('insert into personTable (id, firstName, lastName) values (1, \'Alex\', \'Radu\');', $connection);
+   executeInDb('insert into personTable (id, firstName, lastName) values (2, \'David\', \'Ma\');', $connection);
+   executeInDb('insert into personTable (id, firstName, lastName) values (3, \'Julie\', \'Andrews\');', $connection);
+   
+   meta::relational::functions::toDDL::dropAndCreateTableInDb(myDB, 'tradeTable', $connection);
+   executeInDb('insert into tradeTable (id, traderId, accountId) values (1, 1, 11);', $connection);
+   executeInDb('insert into tradeTable (id, traderId, accountId) values (2, 2, 11);', $connection);
+   executeInDb('insert into tradeTable (id, traderId, accountId) values (3, 3, 11);', $connection);
+   
+   meta::relational::functions::toDDL::dropAndCreateTableInDb(myDB, 'accountTable', $connection);
+   executeInDb('insert into accountTable (id) values (11)', $connection);
+   executeInDb('insert into accountTable (id) values (22)', $connection);
+   
+   true;
+}
+
+
+###Relational
+
+Database meta::relational::tests::mapping::tree::model::store::myDB
+(
+    Table orgTable
+    (
+        id INT PRIMARY KEY,
+        parentId INT,
+        name VARCHAR(200),
+        name2 VARCHAR(200),
+        type VARCHAR(200)
+    )
+    
+    Table otherOrgTable
+    (
+        id INT PRIMARY KEY,
+        parentId INT,
+        name VARCHAR(200),
+        name2 VARCHAR(200),
+        type VARCHAR(200)
+    )
+
+    Table orgTreeOptimizationTable
+    (
+        node INT PRIMARY KEY,
+        ancestor INT PRIMARY KEY
+    )
+    
+    Table personTable
+    (
+       id INT PRIMARY KEY,
+       firstName VARCHAR(200),
+       lastName VARCHAR(200)
+    )
+    
+    Table tradeTable
+    (
+       id VARCHAR(20) PRIMARY KEY,
+       traderId INT,
+       accountId INT
+    )
+    
+    Table accountTable
+    (
+       id INT PRIMARY KEY
+    )
+    
+    Join tradeToTrader
+    (
+       tradeTable.traderId = personTable.id
+    )
+    
+    Join accountToTrade
+    (
+       accountTable.id = tradeTable.accountId
+    )
+
+    Join personTableToOrgTreeOptimizationTable
+    (
+       personTable.id = orgTreeOptimizationTable.node
+    )
+    
+    Join orgTreeOptimizationTableToOrgTable
+    (
+       orgTreeOptimizationTable.ancestor= orgTable.id
+    )
+
+    Join parent
+    (
+       orgTable.parentId = {target}.id
+    )
+)
+
+###Mapping
+import meta::relational::tests::mapping::tree::model::domain::*;
+import meta::relational::tests::mapping::tree::model::store::*;
+
+Mapping meta::relational::tests::mapping::tree::model::mapping::orgTestMapping
+(
+    Person: Relational
+    {
+        firstName: [myDB] personTable.firstName,
+        lastName: [myDB] personTable.lastName,
+        orgs : [myDB] @personTableToOrgTreeOptimizationTable > (INNER) [myDB] @orgTreeOptimizationTableToOrgTable
+    }
+
+    Org: Relational
+    {
+        name: [myDB] orgTable.name,
+        name2: [myDB] orgTable.name2,
+        type : [myDB] orgTable.type,
+        parent : [myDB] @parent
+    }
+    
+    Trade: Relational
+    {
+       ref  : [myDB] tradeTable.id,
+       trader : [myDB] @tradeToTrader,
+       
+       account : [myDB] @accountToTrade
+    }
+    
+    Account: Relational
+    {
+       number : [myDB] accountTable.id,
+       
+       trades: [myDB] @accountToTrade
+    }
+)

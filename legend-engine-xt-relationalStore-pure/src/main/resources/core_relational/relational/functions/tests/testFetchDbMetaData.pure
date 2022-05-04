@@ -1,0 +1,185 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database meta::relational::tests::functions::fetchDbMetaData::testFetchDbMetaDataDb
+(
+    Table fetchDbMetaDataPersonTable1 (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT, ADDRESSID INT, FIRMID INT, MANAGERID INT)
+    Table fetchDbMetaDataPersonTable2 (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT, ADDRESSID INT, FIRMID INT, MANAGERID INT)
+    
+    Schema fetchDbMetaDatatestSchema1
+    (
+       Table fetchDbMetaDatatestTable1(ID INT PRIMARY KEY, NAME VARCHAR(200) NOT NULL)
+       Table fetchDbMetaDatatestTable2(ID INT PRIMARY KEY, PRODID INT, TYPE VARCHAR(200), NAME VARCHAR(200))
+    )
+    Schema fetchDbMetaDatatestSchema2
+    (
+       Table fetchDbMetaDatatestTable3(ID INT PRIMARY KEY, PRODID INT, TYPE VARCHAR(200), NAME VARCHAR(200))
+    )
+)
+
+###Relational
+Database meta::relational::tests::functions::fetchDbMetaData::actualDB
+(
+    Schema testSchema1
+    (
+       Table personTable(ID INT PRIMARY KEY, NAME VARCHAR(200) NOT NULL, GENDER VARCHAR(200))
+       Table productTable(ID INT PRIMARY KEY, PRODID INT, TYPE VARCHAR(200), NAME VARCHAR(200))
+    )
+    Schema testSchema2
+    (
+       Table firmTable(ID INT PRIMARY KEY, PRODID INT, TYPE VARCHAR(200), NAME VARCHAR(200))
+    )
+    Schema testSchema4
+    (
+       Table equipmentTable(ID INT PRIMARY KEY, EQUIPMENTID INT, TYPE VARCHAR(200), NAME VARCHAR(200))
+    )
+)
+
+###Relational
+Database meta::relational::tests::functions::fetchDbMetaData::expectedDB
+(
+    Schema testSchema1
+    (
+       Table personTable(ID INT PRIMARY KEY, NAME VARCHAR(200) NOT NULL)
+       Table productTable(ID INT PRIMARY KEY, PRODID INT, TYPE VARCHAR(200), NAME VARCHAR(200))
+       Table accountTable(ID INT PRIMARY KEY, accountName VARCHAR(200), createDate DATE)
+       Table resourceTable(ID INT PRIMARY KEY, resourceName VARCHAR(200), createDate DATE)
+    )
+    
+    Schema testSchema2
+    (
+       Table firmTable(ID INT PRIMARY KEY, PRODID INT, TYPE VARCHAR(200), NAME VARCHAR(200))
+       Table firmTable2(ID INT PRIMARY KEY, PRODID INT, TYPE VARCHAR(200), NAME VARCHAR(200))
+    )
+    
+    Schema testSchema3
+    (
+       Table tradeEventTable(EVENT_ID INT PRIMARY KEY, trade_id INT, eventType VARCHAR(10), eventDate DATE, person_id INT)
+    )
+)
+
+###Pure
+import meta::relational::functions::database::*;
+import meta::relational::tests::functions::fetchDbMetaData::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::functions::toDDL::*;
+import meta::relational::runtime::*;
+import meta::pure::runtime::*;
+
+function <<test.BeforePackage>> meta::relational::tests::functions::fetchDbMetaData::setUp():Boolean[1]
+{
+    createAndFillTestDb();
+}
+
+function meta::relational::tests::functions::fetchDbMetaData::testFetchDbMetaDataRuntime():Runtime[1]
+{
+   meta::relational::tests::testRuntime(testFetchDbMetaDataDb);
+}
+
+function  meta::relational::tests::functions::fetchDbMetaData::createAndFillTestDb():Boolean[1]
+{
+   let connection = testFetchDbMetaDataRuntime().connectionByElement(testFetchDbMetaDataDb)->cast(@TestDatabaseConnection);
+   
+   dropAndCreateTableInDb(testFetchDbMetaDataDb, 'fetchDbMetaDataPersonTable1', $connection);
+   dropAndCreateTableInDb(testFetchDbMetaDataDb, 'fetchDbMetaDataPersonTable2', $connection);
+   
+   dropAndCreateSchemaInDb('fetchDbMetaDatatestSchema1', $connection);
+   dropAndCreateSchemaInDb('fetchDbMetaDatatestSchema2', $connection);
+   
+   dropAndCreateTableInDb(testFetchDbMetaDataDb, 'fetchDbMetaDatatestSchema1', 'fetchDbMetaDatatestTable1', $connection);
+   dropAndCreateTableInDb(testFetchDbMetaDataDb, 'fetchDbMetaDatatestSchema1', 'fetchDbMetaDatatestTable2', $connection);
+   dropAndCreateTableInDb(testFetchDbMetaDataDb, 'fetchDbMetaDatatestSchema2', 'fetchDbMetaDatatestTable3', $connection);
+   
+   executeInDb('Drop table if exists fetchDbMetaDatatestTable4;', $connection);
+   executeInDb('Create table fetchDbMetaDatatestTable4(ID INT NOT NULL,FIRSTNAME VARCHAR(200),OTHERSQLTYPE CLOB)', $connection);
+   
+   true;
+}
+
+function <<test.Test>> meta::relational::tests::functions::fetchDbMetaData::testFetchDbTablesMetaData():Boolean[1]
+{
+   createAndFillTestDb();
+   let connection = testFetchDbMetaDataRuntime().connectionByElement(testFetchDbMetaDataDb)->cast(@TestDatabaseConnection);
+   
+   let allTablesInDb = fetchDbTablesMetaData($connection, [], 'FETCHDBMETADATAPERSONTABLE1').rows->fold({a,b| concatenate($a.values->at(2), $b)}, []);   //TABLE_NAME
+   assertContains($allTablesInDb, 'FETCHDBMETADATAPERSONTABLE1');
+
+   let allTablesInTestSchema1 = fetchDbTablesMetaData($connection, 'FETCHDBMETADATATESTSCHEMA1', []).rows->fold({a,b| concatenate($a.values->at(2), $b)}, []); //TABLE_NAME
+   assertContains($allTablesInTestSchema1, 'FETCHDBMETADATATESTTABLE1');
+   assertContains($allTablesInTestSchema1, 'FETCHDBMETADATATESTTABLE2');
+   
+   assertNotEmpty(fetchDbTablesMetaData($connection, [], []).rows);
+   assertEmpty(fetchDbTablesMetaData($connection, 'Random_Schema_Name', []).rows);
+   assertEmpty(fetchDbTablesMetaData($connection, [], 'Random_Table_Name').rows);
+}
+
+function <<test.Test>> meta::relational::tests::functions::fetchDbMetaData::testFetchDbColumnsMetaData():Boolean[1]
+{
+   createAndFillTestDb();
+   let connection = testFetchDbMetaDataRuntime().connectionByElement(testFetchDbMetaDataDb)->cast(@TestDatabaseConnection);
+
+   let fetchDbColumnsMetaData = fetchDbColumnsMetaData($connection, [], 'FETCHDBMETADATAPERSONTABLE1', []);
+   assertContains($fetchDbColumnsMetaData.columnNames, 'SQL_TYPE_NAME');
+   assertContains($fetchDbColumnsMetaData.rows.value('SQL_TYPE_NAME'), 'INTEGER');
+   assertContains($fetchDbColumnsMetaData.rows.value('SQL_TYPE_NAME'), 'VARCHAR');
+
+   let allColumnsInPersonTable = $fetchDbColumnsMetaData.rows->fold({a,b| concatenate($a.values->at(3), $b)}, []);   //COLUMN_NAME
+   assertContains($allColumnsInPersonTable, 'ID');
+   assertContains($allColumnsInPersonTable, 'FIRSTNAME');
+   assertContains($allColumnsInPersonTable, 'LASTNAME');
+   assertContains($allColumnsInPersonTable, 'AGE');
+   assertContains($allColumnsInPersonTable, 'FIRMID');
+   assertContains($allColumnsInPersonTable, 'MANAGERID');
+   
+   let allColumnsInTestSchema1TestTable1 = fetchDbColumnsMetaData($connection, 'FETCHDBMETADATATESTSCHEMA1', 'FETCHDBMETADATATESTTABLE1', []).rows->fold({a,b| concatenate($a.values->at(3), $b)}, []);   //COLUMN_NAME
+   assertContains($allColumnsInTestSchema1TestTable1, 'ID');
+   assertContains($allColumnsInTestSchema1TestTable1, 'NAME');
+
+   assertNotEmpty(fetchDbColumnsMetaData($connection, [], [], []).rows);
+   assertNotEmpty(fetchDbColumnsMetaData($connection, [], [], 'LASTNAME').rows);
+   assertEmpty(fetchDbColumnsMetaData($connection, [], [], 'Random_Column_Name').rows);
+}
+
+function <<test.Test>> meta::relational::tests::functions::fetchDbMetaData::testFetchDbSchemasMetaData():Boolean[1]
+{
+   createAndFillTestDb();
+   let connection = testFetchDbMetaDataRuntime().connectionByElement(testFetchDbMetaDataDb)->cast(@TestDatabaseConnection);
+   
+   let allSchemas = fetchDbSchemasMetaData($connection, []).rows->fold({a,b| concatenate($a.values->at(0), $b)}, []);   //TABLE_SCHEM
+   assertContains($allSchemas, 'FETCHDBMETADATATESTSCHEMA1');
+   assertContains($allSchemas, 'FETCHDBMETADATATESTSCHEMA2');
+   
+   let testSchema1 = fetchDbSchemasMetaData($connection, 'FETCHDBMETADATATESTSCHEMA1').rows->fold({a,b| concatenate($a.values->at(0), $b)}, []);   //TABLE_SCHEM
+   assertContains($testSchema1, 'FETCHDBMETADATATESTSCHEMA1');
+   
+   assertNotEmpty(fetchDbSchemasMetaData($connection, []).rows);
+   assertEmpty(fetchDbSchemasMetaData($connection, 'Random_Schema_Name').rows);
+}
+
+function <<test.Test>> meta::relational::tests::functions::fetchDbMetaData::testFetchDbPrimaryKeysMetaData():Boolean[1]
+{
+   createAndFillTestDb();
+   let connection = testFetchDbMetaDataRuntime().connectionByElement(testFetchDbMetaDataDb)->cast(@TestDatabaseConnection);
+   
+   let primaryKeyInPersonTable = fetchDbPrimaryKeysMetaData($connection, [], 'FETCHDBMETADATAPERSONTABLE1').rows.values->at(3)->toOne()->toString();   //COLUMN_NAME
+   assertEq($primaryKeyInPersonTable, 'ID');
+   
+   let primaryKeyInTestTable3 = fetchDbPrimaryKeysMetaData($connection, [], 'FETCHDBMETADATATESTTABLE1').rows.values->at(3)->toOne()->toString();   //COLUMN_NAME
+   assertEq($primaryKeyInTestTable3, 'ID');
+   
+   assertNotEmpty(fetchDbPrimaryKeysMetaData($connection, [], 'FETCHDBMETADATAPERSONTABLE1').rows);
+   assertNotEmpty(fetchDbPrimaryKeysMetaData($connection, 'FETCHDBMETADATATESTSCHEMA1', 'FETCHDBMETADATATESTTABLE1').rows);
+   assertEmpty(fetchDbPrimaryKeysMetaData($connection, [], 'Random_Table_Name').rows);
+}

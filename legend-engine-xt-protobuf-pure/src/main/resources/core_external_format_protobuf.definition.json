@@ -1,0 +1,5 @@
+{
+    "name" : "core_external_format_protobuf",
+    "pattern" : "(meta::external::format::protobuf|meta::protocols::pure)(::.*)?",
+    "dependencies" : ["platform", "core", "core_external_shared"]
+}

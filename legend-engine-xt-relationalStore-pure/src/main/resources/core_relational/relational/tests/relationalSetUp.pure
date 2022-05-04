@@ -1,0 +1,1236 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database meta::relational::tests::dbInc
+(
+    Table personTable (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT, ADDRESSID INT, FIRMID INT, MANAGERID INT)
+    Table PersonTableExtension (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT, ADDRESSID INT, FIRMID INT, MANAGERID INT, birthDate DATE)
+    Table differentPersonTable (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT, ADDRESSID INT, FIRMID INT, MANAGERID INT)
+
+    Table firmTable(ID INT PRIMARY KEY, LEGALNAME VARCHAR(200), ADDRESSID INT, CEOID INT)
+    Table firmExtensionTable(firmId INT PRIMARY KEY, legalName VARCHAR(200), establishedDate DATE)
+    Table otherFirmTable(ID INT PRIMARY KEY, LEGALNAME VARCHAR(200), ADDRESSID INT)
+
+    Table addressTable(ID INT PRIMARY KEY, TYPE INT, NAME VARCHAR(200), STREET VARCHAR(100), COMMENTS VARCHAR(100))
+    Table locationTable(ID INT PRIMARY KEY, PERSONID INT, PLACE VARCHAR(200),date DATE)
+    Table placeOfInterestTable(ID INT PRIMARY KEY,locationID INT PRIMARY KEY, NAME VARCHAR(200))
+
+    View PersonFirmView
+    (
+        PERSON_ID: personTable.ID PRIMARY KEY,
+        lastName:  personTable.LASTNAME,
+        firm_name :  @Firm_Person | firmTable.LEGALNAME
+    )
+
+    View FirstNameAddress
+    (
+       ~distinct
+       firstName: personTable.FIRSTNAME  PRIMARY KEY,
+       address :  @Address_Person | addressTable.NAME PRIMARY KEY
+    )
+   
+    View personViewWithGroupBy
+    (
+       ~groupBy(personTable.ID)
+       id: personTable.ID PRIMARY KEY,
+       maxage: max(personTable.AGE)
+    )
+
+    View PersonViewWithDistinct
+    (
+      ~distinct
+      id: @PersonWithPersonView| personTable.ID PRIMARY KEY,
+      firstName: @PersonWithPersonView| personTable.FIRSTNAME,
+      lastName: @PersonWithPersonView|personTable.LASTNAME,
+      firmId: @PersonWithPersonView|personTable.FIRMID
+    )
+
+    Schema productSchema
+    (
+       Table productTable(ID INT PRIMARY KEY, NAME VARCHAR(200))
+    )
+
+    Filter FirmXFilter(firmTable.LEGALNAME = 'Firm X')
+    Filter FirmBFilter(firmTable.LEGALNAME = 'Firm B')
+
+    Join personViewWithFirmTable(firmTable.ID = PersonViewWithDistinct.firmId)
+    Join PersonWithPersonView(personTable.ID = personViewWithGroupBy.id and personTable.AGE = personViewWithGroupBy.maxage)
+    Join Address_Firm(addressTable.ID = firmTable.ADDRESSID)
+    Join Address_Person(addressTable.ID = personTable.ADDRESSID)
+    Join Firm_Ceo(firmTable.CEOID = personTable.ID)
+    Join Firm_Person(firmTable.ID = personTable.FIRMID)
+    Join Firm_Person1(firmTable.ID = personTable.FIRMID and firmTable.LEGALNAME = 'Firm X')
+    Join Firm_Person2(firmTable.ID = personTable.FIRMID and personTable.FIRSTNAME = 'Peter')
+    Join FirmExtension_PersonExtension(firmExtensionTable.firmId = PersonTableExtension.FIRMID)
+    Join Person_Location(personTable.ID = locationTable.PERSONID)
+    Join Person_Manager(personTable.MANAGERID = {target}.ID)
+    Join location_PlaceOfInterest(locationTable.ID  = placeOfInterestTable.locationID)
+    Join Person_OtherFirm(personTable.FIRMID = otherFirmTable.ID)
+
+)
+
+###Relational
+Database meta::relational::tests::dbIncWithStoreFilter
+(
+   Table personTable (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT, ADDRESSID INT, FIRMID INT, MANAGERID INT)
+
+   View PersonView
+   (
+      ~filter PersonFilter
+      ID: personTable.ID PRIMARY KEY,
+      FIRSTNAME: personTable.FIRSTNAME,
+      LASTNAME: personTable.LASTNAME,
+      AGE: personTable.AGE
+   )
+   Filter PersonFilter(personTable.AGE > 110)
+   Filter personMappingFilter(PersonView.AGE<200)
+)
+
+###Relational
+Database meta::relational::tests::db
+(
+    include meta::relational::tests::dbInc
+
+    Table interactionTable(ID INT PRIMARY KEY, sourceId INT, targetId INT, time INT, active VARCHAR(1))
+    Table tradeTable(ID INT PRIMARY KEY, prodId INT, accountID INT, quantity FLOAT, tradeDate DATE, settlementDateTime TIMESTAMP)
+    Table accountTable(ID INT PRIMARY KEY, name VARCHAR(200), createDate DATE)
+    Table tradeEventTable(EVENT_ID INT PRIMARY KEY, trade_id INT, eventType VARCHAR(10), eventDate DATE, person_id INT)
+    Table orderTable(ID INT PRIMARY KEY, prodId INT, accountID INT, quantity INT, orderDate DATE, settlementDateTime TIMESTAMP)
+    Table orderPnlTable( ORDER_ID INT PRIMARY KEY, pnl FLOAT,from_z DATE,thru_z DATE )
+    Table salesPersonTable(PERSON_ID INT PRIMARY KEY, ACCOUNT_ID INT PRIMARY KEY, NAME VARCHAR(200), from_z DATE, thru_z DATE)
+    Table otherNamesTable(PERSON_ID INT, OTHER_NAME VARCHAR(200))
+
+    Table tableWithQuotedColumns(ID INT PRIMARY KEY, "FIRST NAME" VARCHAR(200) PRIMARY KEY, "LAST NAME" VARCHAR(200) PRIMARY KEY, "1columnStartsWithNumber" VARCHAR(200))
+
+    View interactionViewMaxTime
+    (
+       ~filter PositiveInteractionTimeFilter
+       ~groupBy (interactionTable.sourceId, interactionTable.targetId)
+       sourceId : interactionTable.sourceId,
+       targetId : interactionTable.targetId,
+       maxTime : max(interactionTable.time)
+    )
+
+    View tradeEventViewMaxTradeEventDate
+    (
+       ~groupBy (tradeEventTable.trade_id)
+       trade_id : tradeEventTable.trade_id,
+       maxTradeEventDate : max(tradeEventTable.eventDate)
+    )
+
+    View orderPnlView
+    (
+       ~filter NonNegativePnlFilter
+       ~distinct
+        ORDER_ID: orderPnlTable.ORDER_ID PRIMARY KEY,
+        pnl: orderPnlTable.pnl,
+        accountId : @OrderPnlTable_Order > @Order_Account | accountTable.ID,
+        supportContact : @OrderPnlTable_Order > @Order_SalesPerson | salesPersonTable.NAME,
+        supportContactId : @OrderPnlTable_Order > @Order_SalesPerson | salesPersonTable.PERSON_ID
+    )
+
+    View orderPnlViewOnView
+    (
+        ORDER_ID: orderPnlView.ORDER_ID PRIMARY KEY,
+        pnl: orderPnlView.pnl
+    )
+
+    View orderNegativePnlView
+    (
+       ~filter LessThanEqualZeroPnlFilter
+       ~distinct
+        ORDER_ID: orderPnlTable.ORDER_ID PRIMARY KEY,
+        pnl: orderPnlTable.pnl,
+        accountId : @OrderPnlTable_Order > @Order_Account | accountTable.ID,
+        supportContact : @OrderPnlTable_Order > @Order_SalesPerson | salesPersonTable.NAME,
+        supportContactId : @OrderPnlTable_Order > @Order_SalesPerson | salesPersonTable.PERSON_ID
+    )
+
+    View orderNegativePnlViewOnView
+    (
+        ORDER_ID: orderNegativePnlView.ORDER_ID PRIMARY KEY,
+        pnl: orderNegativePnlView.pnl
+    )
+
+    View accountOrderPnlView
+    (
+       ~groupBy (orderTable.accountID)
+        accountId : orderTable.accountID PRIMARY KEY,
+        orderPnl : sum(@OrderPnlTable_Order | orderPnlTable.pnl)
+    )
+
+    Schema productSchema
+    (
+       Table synonymTable(ID INT PRIMARY KEY, PRODID INT, TYPE VARCHAR(200), NAME VARCHAR(200))
+    )
+
+    Filter PositiveInteractionTimeFilter(interactionTable.time > 0)
+    Filter ProductSynonymFilter(productSchema.synonymTable.ID != 1)
+    Filter NonNegativePnlFilter(orderPnlTable.pnl > 0)
+    Filter LessThanEqualZeroPnlFilter(orderPnlTable.pnl <= 0)
+
+    Join Product_Synonym(productSchema.synonymTable.PRODID = productSchema.productTable.ID)
+    Join Trade_Product(tradeTable.prodId = productSchema.productTable.ID)
+    Join Trade_Account(tradeTable.accountID = accountTable.ID)
+    Join Interaction_Source(interactionTable.sourceId = personTable.ID)
+    Join Interaction_Target(interactionTable.targetId = personTable.ID)
+    Join InteractionTable_InteractionViewMaxTime(interactionTable.sourceId = interactionViewMaxTime.sourceId and interactionTable.targetId = interactionViewMaxTime.targetId)
+    Join Trade_TradeEvent(tradeTable.ID = tradeEventTable.trade_id)
+    Join Trade_TradeEventViewMaxTradeEventDate(tradeTable.ID = tradeEventViewMaxTradeEventDate.trade_id)
+    Join TradeEvent_Person(tradeEventTable.person_id = personTable.ID)
+    Join Interaction_Interaction(interactionTable.sourceId = {target}.sourceId and interactionTable.targetId = {target}.targetId)
+    Join Order_SalesPerson(orderTable.accountID = salesPersonTable.ACCOUNT_ID)
+    Join Order_Account(orderTable.accountID = accountTable.ID)
+    Join OrderPnlView_Order(orderPnlView.ORDER_ID = orderTable.ID)
+    Join OrderPnlViewOnView_Order(orderPnlViewOnView.ORDER_ID = orderTable.ID)
+    Join OrderNetativePnlView_Order(orderNegativePnlView.ORDER_ID = orderTable.ID)
+    Join OrderNegativePnlViewOnView_Order(orderNegativePnlViewOnView.ORDER_ID = orderTable.ID)
+    Join OrderPnlView_Person(orderPnlView.supportContactId = personTable.ID)
+    Join SalesPerson_PersonView(salesPersonTable.PERSON_ID = PersonFirmView.PERSON_ID)
+    Join OrderPnlTable_Order(orderPnlTable.ORDER_ID = orderTable.ID)
+    Join AccountPnlView_Account(accountOrderPnlView.accountId = accountTable.ID)
+    Join Person_OtherNames(personTable.ID = otherNamesTable.PERSON_ID)
+)
+
+###Relational
+Database meta::relational::tests::dbForPresto
+(
+   Schema catalog$schema
+   (
+      Table personTable (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT)
+   )
+)
+
+###Relational
+Database meta::relational::tests::dbForMemSQL
+(
+   Table personTable (ID INT PRIMARY KEY, firstName VARCHAR(200), lastName VARCHAR(200), age INT, key INT)
+   Join Person_Person(personTable.key = {target}.key)
+)
+
+###Relational
+Database meta::relational::tests::dbForBQ
+(
+   Table personTable (ID INT PRIMARY KEY, firstName VARCHAR(200), lastName VARCHAR(200), age INT, key INT)
+   Join Person_Person(personTable.key = {target}.key)
+)
+
+###Relational
+Database meta::relational::tests::caseSensitiveTableNames
+(
+   Schema schemaA
+   (
+     Table personset
+    (
+        ID INT PRIMARY KEY,
+        lastName VARCHAR(200),
+        FirmID INT,
+        firstName VARCHAR(200)
+    )
+
+    Table firmSet
+      (
+         ID INT PRIMARY KEY,
+         name VARCHAR(200)
+
+      )
+
+   )
+
+   Schema schemaB
+   (
+       Table PERSONSET
+       (
+           ID INT PRIMARY KEY,
+           age INT
+       )
+    )
+   Join person_person( schemaA.personset.ID = schemaB.PERSONSET.ID)
+   Join firm_person( schemaA.firmSet.ID = schemaA.personset.FirmID)
+
+)
+
+###Mapping
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::*;
+Mapping meta::relational::tests::caseSentitiveMapping
+(
+   Firm: Relational
+   {
+      scope([caseSensitiveTableNames]schemaA.firmSet)
+      (
+          legalName: name,
+          employees: @firm_person
+      )
+   }
+
+   Person: Relational
+   {
+      scope([caseSensitiveTableNames]schemaA.personset)
+      (
+        firstName: firstName,
+        lastName: lastName,
+        age: @person_person|schemaB.PERSONSET.age
+      )
+   }
+)
+
+Mapping meta::relational::tests::MappingWithInnerJoinAndEmbeddedMapping
+(
+   include meta::relational::tests::MappingWithInnerJoinAndEmbeddedMappingSub[dbInc->db]
+
+    Order : Relational
+             {
+                id : [db]orderTable.ID,
+                quantity : [db]orderTable.quantity,
+                date : [db]orderTable.orderDate,
+                settlementDateTime : [db]orderTable.settlementDateTime,
+                pnlContact : [db] @Order_SalesPerson > (INNER) [db] @SalesPerson_PersonView
+             }
+)
+
+Mapping meta::relational::tests::MappingWithInnerJoinAndEmbeddedMappingSub
+(
+    Person : Relational
+            {
+               scope([dbInc] PersonFirmView)
+               (
+                    lastName : lastName,
+                    firm ( legalName:firm_name )
+               )
+            }
+)
+
+###Mapping
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::*;
+
+Mapping meta::relational::tests::simpleRelationalMappingWithChainedUnions
+(
+   *Firm[firm1] : Operation
+      {
+         meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)
+      }
+
+   *Person : Operation
+      {
+         meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(pSet1, pSet2)
+      }
+
+   *Address : Operation
+      {
+         meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(aSet1, aSet2)
+      }
+
+
+    GeographicEntityType: EnumerationMapping GE
+    {
+        CITY:  1
+    }
+
+    Person[pSet1] : Relational
+            {
+                scope([dbInc])
+                (
+                    firstName : personTable.FIRSTNAME,
+                    age : personTable.AGE
+                ),
+                scope([dbInc]default.personTable)
+                (
+                    lastName : LASTNAME
+                ),
+                firm : [dbInc]@Firm_Person,
+                address[aSet1] : [dbInc]@Address_Person,
+                locations : [dbInc]@Person_Location,
+                manager : [dbInc]@Person_Manager
+            }
+   Person[pSet2] : Relational
+            {
+                scope([dbInc])
+                (
+                    firstName : personTable.FIRSTNAME,
+                    age : personTable.AGE
+                ),
+                scope([dbInc]default.personTable)
+                (
+                    lastName : LASTNAME
+                ),
+                firm : [dbInc]@Firm_Person,
+                address[aSet2] : [dbInc]@Address_Person,
+                locations : [dbInc]@Person_Location,
+                manager : [dbInc]@Person_Manager
+            }
+
+   Firm[set1] : Relational
+          {
+             legalName : [dbInc]firmTable.LEGALNAME,
+             employees[pSet1] : [dbInc]@Firm_Person,
+             address[aSet1] : [dbInc]@Address_Firm
+          }
+
+    Firm[set2] : Relational
+          {
+             legalName : [dbInc]firmTable.LEGALNAME,
+             employees[pSet2] : [dbInc]@Firm_Person,
+             address[aSet2] : [dbInc]@Address_Firm
+          }
+
+   Address[aSet1] : Relational
+             {
+                name : [dbInc]addressTable.NAME,
+                street : [dbInc]addressTable.STREET,
+                type : EnumerationMapping GE : [dbInc]addressTable.TYPE,
+                comments : [dbInc]addressTable.COMMENTS
+             }
+   Address[aSet2] : Relational
+             {
+                name : [dbInc]addressTable.NAME,
+                street : [dbInc]addressTable.STREET,
+                type : EnumerationMapping GE : [dbInc]addressTable.TYPE,
+                comments : [dbInc]addressTable.COMMENTS
+             }
+
+
+
+)
+
+
+Mapping meta::relational::tests::simpleRelationalMappingIncWithStoreFilter
+(
+   Person : Relational
+            {
+               ~filter [dbIncWithStoreFilter]personMappingFilter
+                scope([dbIncWithStoreFilter])
+                (
+                    firstName : PersonView.FIRSTNAME,
+                    age : PersonView.AGE
+                ),
+                scope([dbIncWithStoreFilter]default.PersonView)
+                (
+                    lastName : LASTNAME
+                )
+            }
+)
+
+Mapping meta::relational::tests::simpleRelationalMappingPersonForPresto
+(
+   Person : Relational
+   {
+      scope([dbForPresto])
+      (
+         firstName : catalog$schema.personTable.FIRSTNAME,
+         lastName: catalog$schema.personTable.LASTNAME,
+         age : catalog$schema.personTable.AGE
+      )
+   }
+)
+
+Mapping meta::relational::tests::simpleRelationalMappingPersonForMemSQL
+(
+   Person : Relational
+   {
+      scope([dbForMemSQL])
+      (
+         firstName : personTable.firstName,
+         lastName: personTable.lastName,
+         age : @Person_Person|personTable.key
+      )
+   }
+)
+
+Mapping meta::relational::tests::simpleRelationalMappingPersonForBQ
+(
+   Person : Relational
+   {
+      scope([dbForBQ])
+      (
+         firstName : personTable.firstName,
+         lastName: personTable.lastName,
+         age : @Person_Person|personTable.key
+      )
+   }
+)
+
+
+
+Mapping meta::relational::tests::simpleRelationalMappingInc
+(
+   GeographicEntityType: EnumerationMapping GE
+    {
+        CITY:  1
+    }
+
+    Person : Relational
+            {
+                //~primaryKey([dbInc]default.personTable.ID, [dbInc]default.personTable.FIRSTNAME)
+                scope([dbInc])
+                (
+                    firstName : personTable.FIRSTNAME,
+                    age : personTable.AGE
+                ),
+                scope([dbInc]default.personTable)
+                (
+                    lastName : LASTNAME
+                ),
+                firm : [dbInc]@Firm_Person,
+                address : [dbInc]@Address_Person,
+                locations : [dbInc]@Person_Location,
+                manager : [dbInc]@Person_Manager
+            }
+
+       PersonWithConstraints : Relational
+            {
+                scope([dbInc])
+                (
+                    firstName : personTable.FIRSTNAME,
+                    age : personTable.AGE
+                ),
+                scope([dbInc]default.personTable)
+                (
+                    lastName : LASTNAME
+                ),
+                firm : [dbInc]@Firm_Person,
+                address : [dbInc]@Address_Person,
+                locations : [dbInc]@Person_Location,
+                manager : [dbInc]@Person_Manager
+            }
+
+   Firm : Relational
+          {
+             legalName : [dbInc]firmTable.LEGALNAME,
+             employees : [dbInc]@Firm_Person,
+             address : [dbInc]@Address_Firm
+          }
+
+   FirmExtension: Relational
+   {
+     scope([dbInc])
+     (
+        legalName: firmExtensionTable.legalName,
+        establishedDate: firmExtensionTable.establishedDate,
+        employeesExt
+        (
+           birthdate : @FirmExtension_PersonExtension | PersonTableExtension.birthDate
+        )
+     )
+   }
+
+   Address : Relational
+             {
+                name : [dbInc]addressTable.NAME,
+                street : [dbInc]addressTable.STREET,
+                type : EnumerationMapping GE : [dbInc]addressTable.TYPE,
+                comments : [dbInc]addressTable.COMMENTS
+             }
+
+   Location : Relational
+              {
+                 place : [dbInc]locationTable.PLACE,
+                 censusdate: [dbInc]locationTable.date
+              }
+
+   PlaceOfInterest: Relational
+              {
+                 name : [dbInc]placeOfInterestTable.NAME
+              }
+
+   PlacesOfInterest : Relational
+   {
+      AssociationMapping
+      (
+         location: [dbInc]@location_PlaceOfInterest,
+         placeOfInterest: [dbInc]@location_PlaceOfInterest
+      )
+   }
+)
+
+Mapping meta::relational::tests::simpleRelationalMappingWithEnumConstant
+(
+   Synonym : Relational
+             {
+               name : [db]productSchema.synonymTable.NAME,
+               type : EnumerationMapping SynonymEnum: 'CUSIP'
+             }
+
+   ProductSynonymType: EnumerationMapping SynonymEnum
+   {
+        CUSIP:  'CUSIP',
+        ISIN: 'ISIN'
+   }
+)
+
+Mapping meta::relational::tests::simpleRelationalMapping
+(
+   include simpleRelationalMappingInc[dbInc->db]
+
+   Product : Relational
+             {
+                name : [db]productSchema.productTable.NAME,
+                synonyms : [db]@Product_Synonym
+             }
+
+   ProductSynonymType: EnumerationMapping SynonymEnum
+   {
+        CUSIP:  'CUSIP',
+        ISIN: 'ISIN'
+   }
+
+   Synonym : Relational
+             {
+                scope([db]productSchema)
+                (
+                    name : synonymTable.NAME
+                ),
+                typeAsString : [db]productSchema.synonymTable.TYPE,
+                type : EnumerationMapping SynonymEnum: [db]productSchema.synonymTable.TYPE,
+                product : [db]@Product_Synonym
+             }
+
+   Trade : Relational
+             {
+                id : [db]tradeTable.ID,
+                quantity : [db]tradeTable.quantity,
+                account : [db]@Trade_Account,
+                product : [db]@Trade_Product,
+                date : [db]tradeTable.tradeDate,
+                settlementDateTime : [db]tradeTable.settlementDateTime,
+                latestEventDate : [db]@Trade_TradeEventViewMaxTradeEventDate | tradeEventViewMaxTradeEventDate.maxTradeEventDate,
+                events : [db]@Trade_TradeEvent
+             }
+
+   Order : Relational
+             {
+                id : [db]orderTable.ID,
+                quantity : [db]orderTable.quantity,
+                date : [db]orderTable.orderDate,
+                settlementDateTime : [db]orderTable.settlementDateTime,
+                pnl : [db]@OrderPnlView_Order | orderPnlView.pnl,
+                pnlContact : [db]@OrderPnlView_Order > [db]@OrderPnlView_Person,
+                zeroPnl:case(equal([db]@OrderPnlView_Order|orderPnlView.pnl,0),'true','false')
+             }
+
+   OrderPnl : Relational
+             {
+                pnl : [db]orderPnlView.pnl,
+                supportContactName : [db]orderPnlView.supportContact,
+                order: [db]@OrderPnlView_Order
+             }
+
+   AccountPnl : Relational
+             {
+                pnl : [db]accountOrderPnlView.orderPnl,
+                account : [db]@AccountPnlView_Account
+             }
+
+   TradeEvent : Relational
+             {
+               eventType : [db]tradeEventTable.eventType,
+               date: [db]tradeEventTable.eventDate,
+               initiator: [db]@TradeEvent_Person,
+               traderAddress : [db]@TradeEvent_Person > [dbInc]@Address_Person| concat(addressTable.NAME, addressTable.STREET)
+             }
+
+   Account : Relational
+             {
+                name : [db]accountTable.name,
+                createDate : [db]accountTable.createDate,
+                trades: [db]@Trade_Account,
+                orders: [db]@Order_Account,
+                accountPnl : [db]@AccountPnlView_Account
+             }
+
+   Interaction : Relational
+                 {
+                    id : [db]interactionTable.ID,
+                    time : [db]interactionTable.time,
+                    source : [db]@Interaction_Source,
+                    target : [db]@Interaction_Target,
+                    active : case(equal([db]interactionTable.active,'Y'), 'true', 'false'),
+                    longestInteractionBetweenSourceAndTarget : [db]@InteractionTable_InteractionViewMaxTime | interactionViewMaxTime.maxTime
+                 }
+)
+
+
+Mapping meta::relational::tests::simpleRelationalMappingWithConstraints
+(
+   Trade : Relational
+             {
+                id : [db]tradeTable.ID,
+                account : [db]@Trade_Account
+             }
+
+   AccountWithConstraints : Relational
+             {
+                name : [db]accountTable.name,
+                trades: [db]@Trade_Account
+             }
+)
+
+Mapping meta::relational::tests::simpleRelationalMappingWithBooleanExpression
+(
+    Person : Relational
+            {
+                scope([dbInc])
+                (
+                    firstName : personTable.FIRSTNAME,
+                    age : personTable.AGE
+                ),
+                scope([dbInc]default.personTable)
+                (
+                    lastName : LASTNAME
+                ),
+                firm : [dbInc]@Firm_Person,
+                address : [dbInc]@Address_Person,
+                manager : [dbInc]@Person_Manager,
+               scope([dbInc])
+               (
+                  activeEmployment: or( and(
+                                        lessThanEqual(personTable.AGE, 65),
+                                        isNotNull(@Firm_Person | firmTable.LEGALNAME)
+                                        ),
+                                        isNotNull(@Person_Manager | personTable.LASTNAME)
+                                    )
+               )
+            }
+
+   Firm : Relational
+          {
+             legalName : [dbInc]firmTable.LEGALNAME,
+             employees : [dbInc]@Firm_Person,
+             address : [dbInc]@Address_Firm
+          }
+
+   Address : Relational
+             {
+                name : [dbInc]addressTable.NAME,
+                street : [dbInc]addressTable.STREET,
+                type : EnumerationMapping GE : [dbInc]addressTable.TYPE,
+                scope([dbInc])
+                (
+                  comments : case(and(
+                                    isNotNull(addressTable.NAME),
+                                    or(
+                                       and(
+                                             equal(addressTable.NAME, 'New York'),
+                                             equal(addressTable.STREET, 'West Street')
+                                          ),
+                                       and(
+                                             equal(addressTable.NAME, 'Cupertino'),
+                                             equal(addressTable.STREET, 'Infinite Loop')
+                                          )
+                                       )
+                                   ), 'Tech Hub', 'Non-tech hub'
+                               )
+               )
+             }
+
+   GeographicEntityType: EnumerationMapping GE
+                      {
+                          CITY:  1
+                      }
+)
+
+Mapping meta::relational::tests::simpleRelationalMappingWithFilter
+(
+   Person : Relational
+            {
+                scope([dbInc])
+                (
+                    firstName : personTable.FIRSTNAME,
+                    age : personTable.AGE
+                ),
+                scope([dbInc]default.personTable)
+                (
+                    lastName : LASTNAME
+                ),
+                firm : [dbInc]@Firm_Person
+            }
+
+   Firm : Relational
+          {
+             ~filter [dbInc] FirmXFilter
+             legalName : [dbInc]firmTable.LEGALNAME,
+             address : [dbInc]@Address_Firm
+          }
+
+   Address : Relational
+             {
+                name : [dbInc]addressTable.NAME
+             }
+)
+
+Mapping meta::relational::tests::simpleRelationalMappingWithClassFilterAndEmbeddedProperty
+(
+   Person : Relational
+            {
+                scope([dbInc]default.personTable)
+                (
+                    firstName : FIRSTNAME,
+                    age : AGE,
+                    lastName : LASTNAME
+                ),
+                firm : [dbInc]@Firm_Person
+            }
+
+   Firm : Relational
+          {
+             ~filter [dbInc] FirmXFilter
+             legalName : [dbInc]firmTable.LEGALNAME,
+             address : [dbInc]@Address_Firm,
+             ceo (
+                         address(name :  [dbInc]@Firm_Ceo > @Address_Person | addressTable.NAME )
+                       )
+          }
+
+   Address : Relational
+             {
+                name : [dbInc]addressTable.NAME
+             }
+)
+
+Mapping meta::relational::tests::simpleRelationalMappingWithNestedAdd
+(
+   include simpleRelationalMappingInc[dbInc->db]
+
+   Order : Relational
+             {
+                id : [db]orderTable.ID,
+                quantity : [db]orderTable.quantity,
+                pnl : [db] add(orderTable.quantity, add(orderTable.quantity, 3))
+             }
+
+)
+
+Mapping meta::relational::tests::simpleRelationalMappingWithNestedPlus
+(
+   include simpleRelationalMappingInc[dbInc->db]
+
+   Order : Relational
+             {
+                id : [db]orderTable.ID,
+                quantity : [db]orderTable.quantity,
+                pnl : [db] plus(orderTable.quantity, plus(orderTable.quantity, 3))
+             }
+
+)
+
+Mapping meta::relational::tests::simpleRelationalMappingWithPlus
+(
+   include simpleRelationalMappingInc[dbInc->db]
+
+   Order : Relational
+             {
+                id : [db]orderTable.ID,
+                pnl : [db] plus(orderTable.quantity, orderTable.quantity)
+             }
+)
+
+Mapping meta::relational::tests::simpleRelationalMappingWithConcat
+(
+   include simpleRelationalMappingInc[dbInc->db]
+
+   Order : Relational
+             {
+                id : [db] concat('id', orderTable.ID)
+             }
+)
+
+Mapping meta::relational::tests::TestMappingOfSubtypeClass
+(
+   include meta::relational::tests::simpleRelationalMapping
+
+   PersonExtension : Relational
+   {
+      scope([dbInc])
+      (
+         firstName : personTable.FIRSTNAME,
+         age : personTable.AGE
+      ),
+      scope([dbInc]default.personTable)
+      (
+         lastName : LASTNAME
+      ),
+      firm : [dbInc]@Firm_Person,
+      address : [dbInc]@Address_Person,
+      locations : [dbInc]@Person_Location,
+      manager : [dbInc]@Person_Manager
+   }
+
+)
+
+Mapping meta::relational::tests::TestMappingWithViewJoins
+(
+   Person : Relational
+   {
+     ~mainTable [db] firmTable
+     firstName : [db]@personViewWithFirmTable|PersonViewWithDistinct.firstName,
+     lastName : [db]@personViewWithFirmTable|PersonViewWithDistinct.lastName,
+     activeEmployment: [db] case( equal(@personViewWithFirmTable| firmTable.LEGALNAME, sqlNull()),'false','true')
+   }
+)
+
+Mapping meta::relational::tests::TestViewWithDistinctAndJoins
+(
+   Person : Relational
+   {
+      firstName : [db] FirstNameAddress.firstName,
+      address  (name : [db] FirstNameAddress.address)
+   }
+)
+
+###Mapping
+import meta::relational::tests::*;
+import meta::relational::tests::model::simple::*;
+
+Mapping meta::relational::tests::PersonOtherNamesMapping
+(
+   Person : Relational
+   {
+      scope([db])
+      (
+         firstName : personTable.FIRSTNAME,
+         otherNames : @Person_OtherNames|otherNamesTable.OTHER_NAME
+      )
+   }
+)
+
+###Pure
+import meta::relational::metamodel::*;
+import meta::json::*;
+import meta::json::tests::*;
+import meta::relational::tests::*;
+import meta::pure::profiles::*;
+import meta::relational::metamodel::execute::*;
+import meta::pure::runtime::*;
+import meta::relational::runtime::*;
+
+
+function meta::relational::tests::testRuntime():Runtime[1]
+{
+   testRuntime(db);
+}
+
+function meta::relational::tests::testRuntimeForBQ():Runtime[1]
+{
+   testRuntime(dbForBQ);
+}
+
+function meta::relational::tests::testRuntime(timeZone:String[1]):Runtime[1]
+{
+   testRuntime(testDatabaseConnection(db, $timeZone))
+}
+
+function meta::relational::tests::testRuntime(db:Database[1]):Runtime[1]
+{
+   testRuntime(testDatabaseConnection($db, []))
+}
+
+function <<access.private>> meta::relational::tests::testRuntime(testConnection:TestDatabaseConnection[1]):Runtime[1]
+{
+   ^Runtime(connections = $testConnection)
+}
+
+function <<access.private>> meta::relational::tests::testDatabaseConnection(db:Database[1], timeZone:String[0..1]):TestDatabaseConnection[1]
+{
+    ^TestDatabaseConnection(
+        element = $db,
+        type = DatabaseType.H2,
+        timeZone = if($timeZone->isEmpty(), |'GMT', |$timeZone)
+    );
+}
+
+
+function meta::relational::tests::createPersonTableAndFillDb(connection : DatabaseConnection[1]) : Boolean[1]
+{
+
+   executeInDb('Drop table if exists PersonTable;', $connection);
+   executeInDb('Create Table PersonTable(id INT, firstName VARCHAR(200), lastName VARCHAR(200), age INT, addressId INT, firmId INT, managerId INT);', $connection);
+   executeInDb('insert into PersonTable (id, firstName, lastName, age, addressId, firmId, managerId) values (1, \'Peter\', \'Smith\',23, 1,1,2);', $connection);
+   executeInDb('insert into PersonTable (id, firstName, lastName, age, addressId, firmId, managerId) values (2, \'John\', \'Johnson\',22, 2,1,4);', $connection);
+   executeInDb('insert into PersonTable (id, firstName, lastName, age, addressId, firmId, managerId) values (3, \'John\', \'Hill\',12, 3,1,2);', $connection);
+   executeInDb('insert into PersonTable (id, firstName, lastName, age, addressId, firmId, managerId) values (4, \'Anthony\', \'Allen\',22, 4,1,null);', $connection);
+   executeInDb('insert into PersonTable (id, firstName, lastName, age, addressId, firmId, managerId) values (5, \'Fabrice\', \'Roberts\',34, 5,2,null);', $connection);
+   executeInDb('insert into PersonTable (id, firstName, lastName, age, addressId, firmId, managerId) values (6, \'Oliver\', \'Hill\',32, 6,3,null);', $connection);
+   executeInDb('insert into PersonTable (id, firstName, lastName, age, addressId, firmId, managerId) values (7, \'David\', \'Harris\',35, 7,4,null);', $connection);
+   true;
+}
+
+function meta::relational::tests::createFirmTableAndFillDb(connection : DatabaseConnection[1]) : Boolean[1]
+{
+   executeInDb('Drop table if exists FirmTable;', $connection);
+   executeInDb('Create Table FirmTable(id INT, legalName VARCHAR(200), addressId INT, ceoId INT);', $connection);
+   executeInDb('insert into FirmTable (id, legalName, addressId, ceoId) values (1, \'Firm X\', 8, 1);', $connection);
+   executeInDb('insert into FirmTable (id, legalName, addressId, ceoId) values (2, \'Firm A\', 9, 5);', $connection);
+   executeInDb('insert into FirmTable (id, legalName, addressId, ceoId) values (3, \'Firm B\', 10, 3);', $connection);
+   executeInDb('insert into FirmTable (id, legalName, addressId, ceoId) values (4, \'Firm C\', 11, 7);', $connection);
+   true;
+}
+
+function meta::relational::tests::createTradeTableAndFillDb(connection : DatabaseConnection[1]) : Boolean[1]
+{
+   executeInDb('Drop table if exists tradeTable;', $connection);
+   executeInDb('Create Table tradeTable(id INT, prodid INT, accountId INT, quantity FLOAT, tradeDate DATE, settlementDateTime TIMESTAMP(9));', $connection);
+   executeInDb('insert into tradeTable (id, prodid, accountId, quantity, tradeDate, settlementDateTime) values (1, 1, 1, 25, \'2014-12-01\', \'2014-12-02 21:00:00\');', $connection);
+   executeInDb('insert into tradeTable (id, prodid, accountId, quantity, tradeDate, settlementDateTime) values (2, 1, 2, 320, \'2014-12-01\',\'2014-12-02 21:00:00\');', $connection);
+   executeInDb('insert into tradeTable (id, prodid, accountId, quantity, tradeDate, settlementDateTime) values (3, 2, 1, 11, \'2014-12-01\', \'2014-12-02 21:00:00\');', $connection);
+   executeInDb('insert into tradeTable (id, prodid, accountId, quantity, tradeDate, settlementDateTime) values (4, 2, 2, 23, \'2014-12-02\', \'2014-12-03 21:00:00\');', $connection);
+   executeInDb('insert into tradeTable (id, prodid, accountId, quantity, tradeDate, settlementDateTime) values (5, 2, 1, 32, \'2014-12-02\', \'2014-12-03 21:00:00\');', $connection);
+   executeInDb('insert into tradeTable (id, prodid, accountId, quantity, tradeDate, settlementDateTime) values (6, 3, 1, 27, \'2014-12-03\', \'2014-12-04 21:00:00\');', $connection);
+   executeInDb('insert into tradeTable (id, prodid, accountId, quantity, tradeDate, settlementDateTime) values (7, 3, 1, 44, \'2014-12-03\', \'2014-12-04 15:22:23.123456789\');', $connection);
+   executeInDb('insert into tradeTable (id, prodid, accountId, quantity, tradeDate, settlementDateTime) values (8, 3, 2, 22, \'2014-12-04\', \'2014-12-05 21:00:00\');', $connection);
+   executeInDb('insert into tradeTable (id, prodid, accountId, quantity, tradeDate, settlementDateTime) values (9, 3, 2, 45, \'2014-12-04\', \'2014-12-05 21:00:00\');', $connection);
+   executeInDb('insert into tradeTable (id, prodid, accountId, quantity, tradeDate) values (10, 3, 2, 38, \'2014-12-04\');', $connection);
+
+   //Wrong Trade data without a product or account
+   executeInDb('insert into tradeTable (id, prodid, accountId, quantity, tradeDate) values (11, -3, -4, 5, \'2014-12-05\');', $connection);
+   true;
+}
+
+function meta::relational::tests::createProductSchemaTablesAndFillDb(connection : DatabaseConnection[1]) : Boolean[1]
+{
+   executeInDb('Drop schema if exists productSchema cascade;', $connection);
+   executeInDb('Create schema productSchema;', $connection);
+
+   executeInDb('Drop table if exists productSchema.ProductTable;', $connection);
+   executeInDb('Create Table productSchema.ProductTable(id INT, name VARCHAR(200));', $connection);
+   executeInDb('insert into productSchema.ProductTable (id, name) values (1, \'Firm X\');', $connection);
+   executeInDb('insert into productSchema.ProductTable (id, name) values (2, \'Firm A\');', $connection);
+   executeInDb('insert into productSchema.ProductTable (id, name) values (3, \'Firm C\');', $connection);
+   executeInDb('insert into productSchema.ProductTable (id, name) values (4, \'Firm D\');', $connection);
+
+   executeInDb('Drop table if exists productSchema.SynonymTable;', $connection);
+   executeInDb('Create Table productSchema.SynonymTable(id INT, prodid INT, type VARCHAR(200), name VARCHAR(200));', $connection);
+   executeInDb('insert into productSchema.SynonymTable (id, prodid, type, name) values (1, 1, \'CUSIP\', \'CUSIP1\');', $connection);
+   executeInDb('insert into productSchema.SynonymTable (id, prodid, type, name) values (2, 1, \'ISIN\', \'ISIN1\');', $connection);
+   executeInDb('insert into productSchema.SynonymTable (id, prodid, type, name) values (3, 2, \'CUSIP\', \'CUSIP2\');', $connection);
+   executeInDb('insert into productSchema.SynonymTable (id, prodid, type, name) values (4, 2, \'ISIN\', \'ISIN2\');', $connection);
+   executeInDb('insert into productSchema.SynonymTable (id, prodid, type, name) values (5, 3, \'CUSIP\', \'CUSIP3\');', $connection);
+   executeInDb('insert into productSchema.SynonymTable (id, prodid, type, name) values (6, 3, \'ISIN\', \'ISIN3\');', $connection);
+   true;
+}
+
+function meta::relational::tests::createTablesAndFillDb():Boolean[1]
+{
+   let connection = testRuntime().connectionByElement(db)->cast(@TestDatabaseConnection);
+
+   executeInDb('Drop table if exists PersonNameParameter;', $connection);
+   executeInDb('Create Table PersonNameParameter(id INT, lastNameFirst VARCHAR(200), title VARCHAR(200));', $connection);
+   executeInDb('insert into PersonNameParameter (id, lastNameFirst, title) values (1, true, \'eee\');', $connection);
+
+   meta::relational::tests::createPersonTableAndFillDb($connection);
+
+   executeInDb('Drop table if exists tableWithQuotedColumns;', $connection);
+   executeInDb('Create Table tableWithQuotedColumns(ID INT, "FIRST NAME" VARCHAR(200), "LAST NAME" VARCHAR(200), "1columnStartsWithNumber" VARCHAR(200));', $connection);
+   executeInDb('insert into tableWithQuotedColumns (ID, "FIRST NAME", "LAST NAME", "1columnStartsWithNumber") values (1, \'Peter\', \'Smith\', \'value1\');', $connection);
+   executeInDb('insert into tableWithQuotedColumns (ID, "FIRST NAME", "LAST NAME", "1columnStartsWithNumber") values (2, \'John\', \'Johnson\', \'value2\');', $connection);
+   executeInDb('insert into tableWithQuotedColumns (ID, "FIRST NAME", "LAST NAME", "1columnStartsWithNumber") values (3, \'John\', \'Hill\', \'value3\');', $connection);
+   executeInDb('insert into tableWithQuotedColumns (ID, "FIRST NAME", "LAST NAME", "1columnStartsWithNumber") values (4, \'Anthony\', \'Allen\', \'value4\');', $connection);
+   
+   executeInDb('Drop table if exists PersonTableExtension;', $connection);
+   executeInDb('Create Table PersonTableExtension(id INT, firstName VARCHAR(200), lastName VARCHAR(200), age INT, addressId INT, firmId INT, managerId INT, birthDate DATE);', $connection);
+   executeInDb('insert into PersonTableExtension (id, firstName, lastName, age, addressId, firmId, managerId, birthDate) values (1, \'Peter\', \'Smith\',23, 1,1,2,\'2013-12-01\');', $connection);
+   executeInDb('insert into PersonTableExtension (id, firstName, lastName, age, addressId, firmId, managerId, birthDate) values (2, \'John\', \'Johnson\',22, 2,1,4,\'2013-12-02\');', $connection);
+   executeInDb('insert into PersonTableExtension (id, firstName, lastName, age, addressId, firmId, managerId, birthDate) values (3, \'John\', \'Hill\',12, 3,1,2,\'2013-12-03\');', $connection);
+   executeInDb('insert into PersonTableExtension (id, firstName, lastName, age, addressId, firmId, managerId, birthDate) values (4, \'Anthony\', \'Allen\',22, 4,1,null,\'2013-12-04\');', $connection);
+   executeInDb('insert into PersonTableExtension (id, firstName, lastName, age, addressId, firmId, managerId, birthDate) values (5, \'Fabrice\', \'Roberts\',34, 5,2,null,\'2013-12-01\');', $connection);
+   executeInDb('insert into PersonTableExtension (id, firstName, lastName, age, addressId, firmId, managerId, birthDate) values (6, \'Oliver\', \'Hill\',32, 6,2,null,\'2013-12-02\');', $connection);
+   executeInDb('insert into PersonTableExtension (id, firstName, lastName, age, addressId, firmId, managerId, birthDate) values (7, \'David\', \'Harris\',35, 7,3,null,\'2013-12-01\');', $connection);
+
+   meta::relational::functions::toDDL::dropAndCreateTableInDb(db, 'differentPersonTable', $connection);
+
+   executeInDb('Drop table if exists InteractionTable;', $connection);
+   executeInDb('Create Table InteractionTable(id VARCHAR(200), sourceId INT, targetId INT, time INT, active VARCHAR(1));', $connection);
+   executeInDb('insert into InteractionTable (id, sourceId, targetId, time, active) values (1, 1, 2, 4, \'Y\');', $connection);
+   executeInDb('insert into InteractionTable (id, sourceId, targetId, time, active) values (2, 1, 2, 6, \'N\');', $connection);
+   executeInDb('insert into InteractionTable (id, sourceId, targetId, time, active) values (2, 1, 3, 12, \'N\');', $connection);
+   executeInDb('insert into InteractionTable (id, sourceId, targetId, time, active) values (2, 1, 4, 14, \'Y\');', $connection);
+   executeInDb('insert into InteractionTable (id, sourceId, targetId, time, active) values (3, 4, 5, 3, \'N\');', $connection);
+   executeInDb('insert into InteractionTable (id, sourceId, targetId, time, active) values (3, 4, 6, 23, \'Y\');', $connection);
+   executeInDb('insert into InteractionTable (id, sourceId, targetId, time, active) values (4, 3, 6, 11, \'N\');', $connection);
+   executeInDb('insert into InteractionTable (id, sourceId, targetId, time, active) values (5, 3, 7, 33, \'Y\');', $connection);
+   executeInDb('insert into InteractionTable (id, sourceId, targetId, time, active) values (6, 4, 1, 44, \'Y\');', $connection);
+   executeInDb('insert into InteractionTable (id, sourceId, targetId, time, active) values (6, 4, 3, 55, \'N\');', $connection);
+   executeInDb('insert into InteractionTable (id, sourceId, targetId, time, active) values (6, 5, 4, 22, \'Y\');', $connection);
+   executeInDb('insert into InteractionTable (id, sourceId, targetId, time, active) values (6, 5, 6, 33, \'Y\');', $connection);
+   executeInDb('insert into InteractionTable (id, sourceId, targetId, time, active) values (7, 4, 1, 14, \'N\');', $connection);
+   executeInDb('insert into InteractionTable (id, sourceId, targetId, time, active) values (7, 4, 2, 11, \'Y\');', $connection);
+
+   meta::relational::tests::createFirmTableAndFillDb($connection);
+
+   executeInDb('Drop table if exists firmExtensionTable;', $connection);
+   executeInDb('create Table firmExtensionTable (firmId INT, legalName VARCHAR(200), establishedDate DATE)', $connection);
+   executeInDb('insert into firmExtensionTable(firmId, legalName, establishedDate) values(1,\'FirmA\',\'2013-12-01\')', $connection);
+   executeInDb('insert into firmExtensionTable(firmId, legalName, establishedDate) values(2,\'FirmB\',\'2013-12-01\')', $connection);
+   executeInDb('insert into firmExtensionTable(firmId, legalName, establishedDate) values(3,\'FirmC\',\'2013-12-02\')', $connection);
+   
+   meta::relational::functions::toDDL::dropAndCreateTableInDb(db, 'otherFirmTable', $connection);
+
+   meta::relational::functions::toDDL::dropAndCreateTableInDb(db, 'addressTable', $connection);
+   executeInDb('insert into addressTable (id, type, name, street, comments) values (1,1,\'Hoboken\', null, \'A comment with a % in the middle\');', $connection);
+   executeInDb('insert into addressTable (id, type, name, street, comments) values (2,1,\'New York\', null, \'A comment with a _ in the middle\');', $connection);
+   executeInDb('insert into addressTable (id, type, name, street) values (3,1,\'New York\', null);', $connection);
+   executeInDb('insert into addressTable (id, type, name, street) values (4,1,\'New York\', null);', $connection);
+   executeInDb('insert into addressTable (id, type, name, street) values (5,1,\'San Fransisco\', null);', $connection);
+   executeInDb('insert into addressTable (id, type, name, street) values (6,1,\'Hong Kong\', null);', $connection);
+   executeInDb('insert into addressTable (id, type, name, street) values (7,1,\'New York\', null);', $connection);
+   executeInDb('insert into addressTable (id, type, name, street) values (8,1,\'New York\', \'West Street\');', $connection);
+   executeInDb('insert into addressTable (id, type, name, street) values (9,1,\'Cupertino\', \'Infinite Loop\');', $connection);
+   executeInDb('insert into addressTable (id, type, name, street) values (10,1,\'Tokyo\', null);', $connection);
+   executeInDb('insert into addressTable (id, type, name, street) values (11,1,\'Mountain View\', null);', $connection);
+
+   executeInDb('Drop table if exists LocationTable;', $connection);
+   executeInDb('Create Table LocationTable(id INT, personId INT, place VARCHAR(200),date DATE);', $connection);
+   executeInDb('insert into LocationTable (id, personId, place, date) values (1, 1,\'New York\',\'2014-12-01\');', $connection);
+   executeInDb('insert into LocationTable (id, personId, place, date) values (2, 1,\'Hoboken\',\'2014-12-01\');', $connection);
+   executeInDb('insert into LocationTable (id, personId, place, date) values (3, 2,\'New York\',\'2014-12-01\');', $connection);
+   executeInDb('insert into LocationTable (id, personId, place, date) values (4, 2,\'Hampton\',\'2014-12-01\');', $connection);
+   executeInDb('insert into LocationTable (id, personId, place, date) values (5, 3,\'New York\',\'2014-12-01\');', $connection);
+   executeInDb('insert into LocationTable (id, personId, place, date) values (6, 3,\'Jersey City\',\'2014-12-01\');', $connection);
+   executeInDb('insert into LocationTable (id, personId, place, date) values (7, 4,\'New York\',\'2014-12-01\');', $connection);
+   executeInDb('insert into LocationTable (id, personId, place, date) values (8, 4,\'Jersey City\',\'2014-12-01\');', $connection);
+   executeInDb('insert into LocationTable (id, personId, place, date) values (9, 5,\'San Fransisco\',\'2014-12-01\');', $connection);
+   executeInDb('insert into LocationTable (id, personId, place, date) values (10, 5,\'Paris\',\'2014-12-01\');', $connection);
+   executeInDb('insert into LocationTable (id, personId, place, date) values (11, 6,\'Hong Kong\',\'2014-12-01\');', $connection);
+   executeInDb('insert into LocationTable (id, personId, place, date) values (12, 6,\'London\',\'2014-12-01\');', $connection);
+   executeInDb('insert into LocationTable (id, personId, place, date) values (13, 7,\'New York\',\'2014-12-01\');', $connection);
+
+
+   executeInDb('Drop table if exists placeOfInterestTable;', $connection);
+   executeInDb('Create Table placeOfInterestTable(id INT, locationId INT, name VARCHAR(200));', $connection);
+   executeInDb('insert into  placeOfInterestTable (id, locationId, name) values (1, 1,\'Statue of Liberty\');', $connection);
+   executeInDb('insert into  placeOfInterestTable (id, locationId, name) values (2, 1,\'Columbus Park\');', $connection);
+   executeInDb('insert into  placeOfInterestTable (id, locationId, name) values (3, 2,\'Broadway\');', $connection);
+   executeInDb('insert into  placeOfInterestTable (id, locationId, name) values (4, 2,\'Hoboken City Hall\');', $connection);
+   executeInDb('insert into  placeOfInterestTable (id, locationId, name) values (5, 3,\'Empire State Building\');', $connection);
+
+   meta::relational::tests::createProductSchemaTablesAndFillDb($connection);
+
+   executeInDb('Drop table if exists accountTable;', $connection);
+   executeInDb('Create Table accountTable(ID INT, name VARCHAR(200), createDate DATE);', $connection);
+   executeInDb('insert into accountTable (ID, name, createDate) values (1, \'Account 1\', \'2013-12-01\');', $connection);
+   executeInDb('insert into accountTable (ID, name, createDate) values (2, \'Account 2\', \'2013-12-02\');', $connection);
+
+   executeInDb('Drop table if exists orderTable;', $connection);
+   executeInDb('Create Table orderTable(id INT, prodid INT, accountId INT, quantity FLOAT, orderDate DATE, settlementDateTime TIMESTAMP);', $connection);
+   executeInDb('insert into orderTable (id, prodid, accountId, quantity, orderDate, settlementDateTime) values (1, 1, 1, 25, \'2014-12-01\', \'2014-12-02 21:00:00\');', $connection);
+   executeInDb('insert into orderTable (id, prodid, accountId, quantity, orderDate, settlementDateTime) values (2, 1, 2, 320, \'2014-12-01\', \'2014-12-02 21:00:00\');', $connection);
+   executeInDb('insert into orderTable (id, prodid, accountId, quantity, orderDate, settlementDateTime) values (3, 2, 1, 11, \'2014-12-01\', \'2014-12-02 21:00:00\');', $connection);
+   executeInDb('insert into orderTable (id, prodid, accountId, quantity, orderDate, settlementDateTime) values (4, 1, 2, 300, \'2014-12-02\', \'2014-12-03 21:00:00\');', $connection);
+
+   meta::relational::tests::createTradeTableAndFillDb($connection);
+
+   executeInDb('Drop table if exists orderPnlTable;', $connection);
+   executeInDb('Create Table orderPnlTable(ORDER_ID INT, pnl FLOAT);', $connection);
+   executeInDb('insert into orderPnlTable (ORDER_ID, pnl) values (1, 100);', $connection);
+   executeInDb('insert into orderPnlTable (ORDER_ID, pnl) values (2, 200);', $connection);
+   executeInDb('insert into orderPnlTable (ORDER_ID, pnl) values (3, 0);', $connection);
+   executeInDb('insert into orderPnlTable (ORDER_ID, pnl) values (4, 150);', $connection);
+
+   executeInDb('Drop table if exists salesPersonTable;', $connection);
+   executeInDb('Create Table salesPersonTable(PERSON_ID INT, ACCOUNT_ID INT, NAME VARCHAR(200));', $connection);
+   executeInDb('insert into salesPersonTable (person_id, account_id, name) values (1, 1, \'Peter Smith\');', $connection);
+   executeInDb('insert into salesPersonTable (person_id, account_id, name) values (2, 2, \'John Johnson\');', $connection);
+   
+   executeInDb('Drop table if exists tradeEventTable;', $connection);
+   executeInDb('Create Table tradeEventTable(event_id INT, trade_id INT, eventType VARCHAR(10), eventDate DATE, person_id INT);', $connection);
+   executeInDb('insert into tradeEventTable (event_id, trade_id, eventType, eventDate, person_id) values (1, 1, \'New\', \'2014-12-01\', 1);', $connection);
+   executeInDb('insert into tradeEventTable (event_id, trade_id, eventType, eventDate, person_id) values (2, 1, \'Correct\', \'2014-12-02\', 2);', $connection);
+   executeInDb('insert into tradeEventTable (event_id, trade_id, eventType, eventDate, person_id) values (3, 1, \'Settle\', \'2014-12-03\', 3);', $connection);
+   executeInDb('insert into tradeEventTable (event_id, trade_id, eventType, eventDate, person_id) values (4, 6, \'New\', \'2014-12-03\', 4);', $connection);
+   executeInDb('insert into tradeEventTable (event_id, trade_id, eventType, eventDate, person_id) values (5, 6, \'Cancel\', \'2014-12-04\', 5);', $connection);
+
+   //Data for case sensitive tables
+   executeInDb('Drop schema if exists schemaA cascade;', $connection);
+   executeInDb('create schema schemaA;', $connection);
+   executeInDb('Drop table if exists schemaA.firmSet;', $connection);
+   executeInDb('Create Table schemaA.firmSet(id INT, name VARCHAR(200));', $connection);
+   executeInDb('insert into schemaA.firmSet (id, name) values (1, \'Firm X\');', $connection);
+   executeInDb('insert into schemaA.firmSet (id, name) values (2, \'Firm A\');', $connection);
+   
+   executeInDb('Drop table if exists schemaA.personset;', $connection);
+   executeInDb('Create Table schemaA.personset(id INT, lastName VARCHAR(200), FirmID INT, firstName VARCHAR(200));', $connection);
+   executeInDb('insert into schemaA.personset(id, lastname, FirmID, firstName) values (3, \'Williams\', 1, \'Mohammed\');', $connection);
+   
+   
+   executeInDb('Drop schema if exists schemaB cascade;', $connection);
+   executeInDb('create schema schemaB;', $connection);
+   executeInDb('Drop table if exists schemaB.PERSONSET;', $connection);
+   executeInDb('Create Table schemaB.PERSONSET (ID INT,  age INT);', $connection);
+   executeInDb('insert into schemaB.PERSONSET (ID, age) values (1, 17);', $connection);
+   executeInDb('insert into schemaB.PERSONSET (ID, age) values (2,  20);', $connection);
+   executeInDb('insert into schemaB.PERSONSET (ID, age) values (3,  23);', $connection);
+
+   executeInDb('Drop table if exists otherNamesTable;', $connection);
+   executeInDb('Create Table otherNamesTable (PERSON_ID INT, OTHER_NAME VARCHAR(200));', $connection);
+   executeInDb('insert into otherNamesTable (PERSON_ID, OTHER_NAME) values (1, \'abc\');', $connection);
+   executeInDb('insert into otherNamesTable (PERSON_ID, OTHER_NAME) values (1, \'def\');', $connection);
+   executeInDb('insert into otherNamesTable (PERSON_ID, OTHER_NAME) values (1, \'ghi\');', $connection);
+   executeInDb('insert into otherNamesTable (PERSON_ID, OTHER_NAME) values (2, \'jkl\');', $connection);
+   executeInDb('insert into otherNamesTable (PERSON_ID, OTHER_NAME) values (2, \'mno\');', $connection);
+    
+   true;
+}
+
+function <<test.Test>> meta::relational::tests::json::testResultToJsonStream():Boolean[1]
+{
+   let result = ^meta::pure::mapping::Result<TabularDataSet|1>(
+                   values = [
+                         ^TabularDataSet(
+                               columns=[
+                                           ^TDSColumn(name='id', type=String),
+                                           ^TDSColumn(name='name'),
+                                           ^TDSColumn(name='value'),
+                                           ^TDSColumn(name='date'),
+                                           ^TDSColumn(name='Location', type=GeographicEntityType)
+                               ],
+
+                               rows=
+                                     [
+                                     ^TDSRow(values=[1, 'Hello', 2.2, %2015-04-15, GeographicEntityType.CITY]),
+                                     ^TDSRow(values=[2, 'Geoff', 3.2, %2015-02-15, GeographicEntityType.CITY])
+                                     ]
+                           )
+                  ],
+                  activities = [
+                     ^meta::relational::mapping::RelationalActivity(
+                        sql = 'select * from abc',
+                        executionTimeInNanoSecond = 1,
+                        sqlGenerationTimeInNanoSecond = 1,
+                        connectionAcquisitionTimeInNanoSecond = 1,
+                        executionPlanInformation = '',
+                        dataSource = ^meta::relational::runtime::DataSource(
+                           host = 'somehost', port = 8080, name = 'testdb', type = meta::relational::runtime::DatabaseType.H2
+                        )
+                     ),
+                     ^meta::relational::mapping::RelationalActivity(
+                        sql = 'select * from abc',
+                        executionTimeInNanoSecond = 1,
+                        sqlGenerationTimeInNanoSecond = 1,
+                        connectionAcquisitionTimeInNanoSecond = 1,
+                        executionPlanInformation = '',
+                        dataSource = ^meta::relational::runtime::DataSource(
+                           host = 'somehost', port = 8080, name = 'testdb', type = meta::relational::runtime::DatabaseType.H2
+                        )
+                     )
+                  ]
+                  );
+
+   println($result->toJSONStringStream([],true)->makeString());
+   
+  assert( 
+          or( $result->toJSONStringStream([],true)->makeString() == '{"values": [{"columns":[{"name":"id","type":"String","metaType":"PrimitiveType"},{"name":"name","type":"","metaType":""},{"name":"value","type":"","metaType":""},{"name":"date","type":"","metaType":""},{"name":"Location","type":"meta::json::tests::GeographicEntityType","metaType":"Enumeration"}],"rows":[{"values":[1,"Hello",2.2,"2015-04-15","CITY"]},{"values":[2,"Geoff",3.2,"2015-02-15","CITY"]}], "__TYPE": "meta::pure::tds::TabularDataSet"}], "activities": [{"__TYPE":"meta::relational::mapping::RelationalActivity","sql":"select * from abc","executionTimeInNanoSecond":1,"sqlGenerationTimeInNanoSecond":1,"connectionAcquisitionTimeInNanoSecond":1,"executionPlanInformation":"","dataSource":{"__TYPE":"meta::relational::runtime::DataSource","host":"somehost","port":8080,"name":"testdb","type":"H2"}}, {"__TYPE":"meta::relational::mapping::RelationalActivity","sql":"select * from abc","executionTimeInNanoSecond":1,"sqlGenerationTimeInNanoSecond":1,"connectionAcquisitionTimeInNanoSecond":1,"executionPlanInformation":"","dataSource":{"__TYPE":"meta::relational::runtime::DataSource","host":"somehost","port":8080,"name":"testdb","type":"H2"}}], "__TYPE": "meta::pure::mapping::Result"}',
+              $result->toJSONStringStream([],true)->makeString() == '{"values": [{"columns":[{"name":"id","type":"String","metaType":"PrimitiveType"},{"name":"name","type":"","metaType":""},{"name":"value","type":"","metaType":""},{"name":"date","type":"","metaType":""},{"name":"Location","type":"meta::json::tests::GeographicEntityType","metaType":"Enumeration"}],"rows":[{"values":[1,"Hello",2.2,"2015-04-15","CITY"]},{"values":[2,"Geoff",3.2,"2015-02-15","CITY"]}], "__TYPE": "meta::pure::tds::TabularDataSet"}], "activities": [{"__TYPE":"meta::relational::mapping::RelationalActivity","sql":"select * from abc","executionTimeInNanoSecond":1,"sqlGenerationTimeInNanoSecond":1,"connectionAcquisitionTimeInNanoSecond":1,"executionPlanInformation":"","dataSource":{"__TYPE":"meta::relational::runtime::DataSource","host":"somehost","port":8080,"name":"testdb","type":"H2","serverPrincipal":null}}, {"__TYPE":"meta::relational::mapping::RelationalActivity","sql":"select * from abc","executionTimeInNanoSecond":1,"sqlGenerationTimeInNanoSecond":1,"connectionAcquisitionTimeInNanoSecond":1,"executionPlanInformation":"","dataSource":{"__TYPE":"meta::relational::runtime::DataSource","host":"somehost","port":8080,"name":"testdb","type":"H2","serverPrincipal":null}}], "__TYPE": "meta::pure::mapping::Result"}'));
+ }
+

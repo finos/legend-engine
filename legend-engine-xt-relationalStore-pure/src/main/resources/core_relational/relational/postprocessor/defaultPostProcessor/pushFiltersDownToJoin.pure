@@ -1,0 +1,115 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::mapping::*;
+import meta::relational::functions::pureToSqlQuery::*;
+import meta::relational::metamodel::operation::*;
+import meta::relational::postProcessor::*;
+import meta::relational::postProcessor::filterPushDown::*;
+import meta::relational::metamodel::*;
+import meta::relational::metamodel::join::*;
+import meta::pure::router::extension::*;
+import meta::relational::metamodel::relation::*;
+
+function meta::relational::postProcessor::filterPushDown::pushFiltersDownToJoins(selectSQLQuery:SelectSQLQuery[1], extensions:RouterExtension[*]):Result<SelectSQLQuery|1>[1]
+{
+   let transformFunction = {r: RelationalOperationElement[1] |
+                              $r->match([
+                                 s: SelectSQLQuery[1] | if($s.data->isNotEmpty(),
+                                                           | let newS = ^$s(data = $s.data->toOne()->pushFiltersDownToJoins(list($s.filteringOperation->getFilteringPairs()), $extensions)->cast(@RootJoinTreeNode));
+                                                           if($s.leftSideOfFilter->isNotEmpty(),
+                                                              |^$newS(leftSideOfFilter=$s.leftSideOfFilter->toOne()->meta::relational::functions::pureToSqlQuery::findOneNode($s.data->toOne(), $newS.data->toOne())),
+                                                              | $newS);,
+                                                           | $s),
+                                 rel: RelationalOperationElement[1] | $rel;
+                              ]);
+                           };
+   
+   ^Result<SelectSQLQuery|1>(
+      values = $selectSQLQuery->transformNonCached($transformFunction)->cast(@SelectSQLQuery)
+   );
+}
+
+function <<access.private>> meta::relational::postProcessor::filterPushDown::pushFiltersDownToJoins(r: RelationalTreeNode[1], filteringPairs: List<Pair<TableAliasColumn, RelationalOperationElement>>[1], extensions:RouterExtension[*]):RelationalTreeNode[1]
+{
+   $r->match([
+      j:JoinTreeNode[1] | let join = $j.join;
+                          let res = $join.operation->tryAddingFiltersToJoinOperation($filteringPairs, $j.alias, $extensions);
+                          ^$j( join=^$join(operation=$res.first->cast(@Operation)),
+                               childrenData=$j.children->map(c | $c->pushFiltersDownToJoins(list($filteringPairs.values->concatenate($res.second.values)), $extensions)));,
+      r:RelationalTreeNode[1] | ^$r(childrenData=$r.children->map(c | $c->pushFiltersDownToJoins($filteringPairs, $extensions)));
+  ]);
+}
+
+function <<access.private>> meta::relational::postProcessor::filterPushDown::addFilterToJoinoperation(filteringPairs : Pair<TableAliasColumn, RelationalOperationElement>[*], left: TableAliasColumn[1], right: TableAliasColumn[1], operation: RelationalOperationElement[1], joinTableAlias: TableAlias[1], extensions:RouterExtension[*]):Pair<RelationalOperationElement, List<Pair<TableAliasColumn, RelationalOperationElement>>>[1]
+{
+   let candidatePairs = $filteringPairs->filter(p | $p.first == $left && !($left.alias.name == $joinTableAlias.name && $left.alias.relationalElement->buildUniqueName(true, $extensions) == $joinTableAlias.relationalElement->buildUniqueName(true, $extensions)));
+   let tranformFunc = {rel: RelationalOperationElement[1] | if($rel == $left, | $right, | $rel)};
+   $candidatePairs->fold({element, aggregate | let transformedElement = $element.second->transformNonCached($tranformFunc);
+                                               pair( newAndOrDynaFunctionRelaxedBrackets('and', [$aggregate.first, $transformedElement]),
+                                                     list($aggregate.second.values->add(pair($right, $transformedElement))));}, pair($operation, list([]->cast(@Pair<TableAliasColumn, RelationalOperationElement>))));
+}
+
+function <<access.private>> meta::relational::postProcessor::filterPushDown::tryAddingFiltersToJoinOperation(operation:RelationalOperationElement[1], filteringPairs: List<Pair<TableAliasColumn, RelationalOperationElement>>[1], joinTableAlias: TableAlias[1], extensions:RouterExtension[*]):Pair<RelationalOperationElement, List<Pair<TableAliasColumn, RelationalOperationElement>>>[1]
+{
+   if(($operation->instanceOf(DynaFunction) && $operation->cast(@DynaFunction).name == 'equal'),
+      | let left  = $operation->cast(@DynaFunction).parameters->at(0);
+        let right = $operation->cast(@DynaFunction).parameters->at(1);
+        if($left->instanceOf(TableAliasColumn) && $right->instanceOf(TableAliasColumn),
+           | let first  = addFilterToJoinoperation($filteringPairs.values, $left->cast(@TableAliasColumn), $right->cast(@TableAliasColumn), $operation, $joinTableAlias, $extensions);
+             let second = addFilterToJoinoperation($filteringPairs.values, $right->cast(@TableAliasColumn), $left->cast(@TableAliasColumn), $first.first, $joinTableAlias, $extensions);
+             pair($second.first, list($first.second.values->concatenate($second.second.values)));,
+           | pair($operation, list([])));,
+
+      | if(($operation->instanceOf(DynaFunction) && $operation->cast(@DynaFunction).name == 'and'),
+           | let dynaOp = $operation->cast(@DynaFunction);
+             let res = $dynaOp.parameters->map(param | $param->tryAddingFiltersToJoinOperation($filteringPairs, $joinTableAlias, $extensions));
+             pair(^$dynaOp(parameters=$res.first), list($res.second.values));,
+           | pair($operation, list([]))
+          )
+      )
+}
+
+function <<access.private>> meta::relational::postProcessor::filterPushDown::getPairForBinaryOp(param1: RelationalOperationElement[1], param2: RelationalOperationElement[1], op: RelationalOperationElement[1]):Pair<TableAliasColumn, RelationalOperationElement>[*]
+{
+   let allOpsInParam2 = meta::relational::functions::pureToSqlQuery::gatherAllOperations($param2, true);
+   let param2Filter = $allOpsInParam2->filter(elem | !($elem->instanceOf(Literal) || $elem->instanceOf(LiteralList)))->isEmpty();
+   if($param1->instanceOf(TableAliasColumn) && $param2Filter,
+      | pair($param1->cast(@TableAliasColumn), $op),
+      | []);
+}
+
+function <<access.private>> meta::relational::postProcessor::filterPushDown::getPairForUnaryOp(param1: RelationalOperationElement[1], op: RelationalOperationElement[1]):Pair<TableAliasColumn, RelationalOperationElement>[*]
+{
+   if($param1->instanceOf(TableAliasColumn),
+      | pair($param1->cast(@TableAliasColumn),$op),
+      | [])
+}
+
+function <<access.private>> meta::relational::postProcessor::filterPushDown::getFilteringPairs(operation: RelationalOperationElement[*]):Pair<TableAliasColumn, RelationalOperationElement>[*]
+{
+   $operation->map(op |
+       $op->match([
+          dynaOp: DynaFunction[1] | let inScopeBinaryDynaOps = ['lessThan', 'lessThanEqual', 'greaterThan', 'greaterThanEqual', 'equal', 'notEqual', 'startsWith', 'endsWith', 'contains', 'in'];
+                                    let inScopeUnaryDynaOps = ['isEmpty', 'isNotEmpty', 'isNull', 'isNotNull'];
+                                    if($dynaOp.name->in(['and', 'group']),
+                                       | $dynaOp.parameters->getFilteringPairs(),
+                                       | if($dynaOp.name->in($inScopeBinaryDynaOps),
+                                            | getPairForBinaryOp($dynaOp.parameters->at(0), $dynaOp.parameters->at(1), $dynaOp)->concatenate(getPairForBinaryOp($dynaOp.parameters->at(1), $dynaOp.parameters->at(0), $dynaOp)),
+                                            | if($dynaOp.name->in($inScopeUnaryDynaOps),
+                                                 | getPairForUnaryOp($dynaOp.parameters->at(0), $dynaOp),
+                                                 | [])));,
+          column: TableAliasColumn[1]  | pair($column, $column),
+          rel: RelationalOperationElement[1] | [] ]) );
+}

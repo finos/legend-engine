@@ -1,0 +1,512 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::shared::format::binding::*;
+
+import meta::legend::service::metamodel::*;
+
+import meta::pure::persistence::metamodel::*;
+import meta::pure::persistence::metamodel::notifier::*;
+import meta::pure::persistence::metamodel::persister::*;
+import meta::pure::persistence::metamodel::persister::audit::*;
+import meta::pure::persistence::metamodel::persister::deduplication::*;
+import meta::pure::persistence::metamodel::persister::ingestmode::*;
+import meta::pure::persistence::metamodel::persister::ingestmode::delta::merge::*;
+import meta::pure::persistence::metamodel::persister::sink::*;
+import meta::pure::persistence::metamodel::persister::targetshape::*;
+import meta::pure::persistence::metamodel::persister::transactionmilestoning::*;
+import meta::pure::persistence::metamodel::persister::validitymilestoning::*;
+import meta::pure::persistence::metamodel::persister::validitymilestoning::derivation::*;
+import meta::pure::persistence::metamodel::reader::*;
+import meta::pure::persistence::metamodel::target::*;
+import meta::pure::persistence::metamodel::trigger::*;
+
+import meta::pure::runtime::*;
+
+/**********
+ * persistence
+ **********/
+
+Class
+{doc.doc = 'A persistence specification. This consists of a trigger that initiates persistence, a service that provides data to persist, a persister that writes that data to a store, and a notifier that updates on significant events.'}
+meta::pure::persistence::metamodel::Persistence extends PackageableElement
+{
+   {doc.doc = 'A functional description of this persistence specification.'}
+   documentation: String[1];
+
+   {doc.doc = 'The trigger that initiates persistence.'}
+   trigger: Trigger[1];
+
+   {doc.doc = 'The service that sources and optionally transforms data to persist.'}
+   service: Service[1];
+
+   {doc.doc = 'The persister that writes data to a datastore.'}
+   persister: meta::pure::persistence::metamodel::persister::Persister[1];
+
+   {doc.doc = 'The notifier that sends updates on significant persistence events.'}
+   notifier: Notifier[1];
+}
+
+/**********
+ * context
+ **********/
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = 'The execution context for a persistence specification.'}
+meta::pure::persistence::metamodel::PersistenceContext extends PackageableElement
+{
+   persistence: Persistence[1];
+}
+
+/**********
+ * trigger
+ **********/
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = 'An event that may initiate a persistence pipe.'}
+meta::pure::persistence::metamodel::trigger::Trigger
+{
+}
+
+Class
+meta::pure::persistence::metamodel::trigger::ManualTrigger extends Trigger
+{
+}
+
+Class
+{doc.doc = 'A trigger that executes on a schedule specified as a cron expression.'}
+meta::pure::persistence::metamodel::trigger::CronTrigger extends Trigger
+{
+   minutes: String[1];
+   hours: String[1];
+   dayOfMonth: String[1];
+   month: String[1];
+   dayOfWeek: String[1];
+   year: String[1];
+}
+
+/**********
+ * persister
+ **********/
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = 'The strategy for persisting input data.'}
+meta::pure::persistence::metamodel::persister::Persister
+{
+   sink: Sink[1];
+}
+
+Class
+{doc.doc = 'A persister that writes data in a continuous stream.'}
+meta::pure::persistence::metamodel::persister::StreamingPersister extends meta::pure::persistence::metamodel::persister::Persister
+{
+}
+
+Class
+{doc.doc = 'A persister that writes data in batches.'}
+meta::pure::persistence::metamodel::persister::BatchPersister extends meta::pure::persistence::metamodel::persister::Persister
+{
+   {doc.doc = 'The shape of the datasets to be persisted.'}
+   targetShape: TargetShape[1];
+
+   {doc.doc = 'The ingest mode to apply to this target dataset.'}
+   ingestMode: IngestMode[1];
+}
+
+/**********
+ * notifier
+ **********/
+
+Class
+{doc.doc = 'The strategy for sending updates on significant persistent events.'}
+meta::pure::persistence::metamodel::notifier::Notifier
+{
+   notifyees: Notifyee[*];
+}
+
+Class
+<<typemodifiers.abstract>>
+meta::pure::persistence::metamodel::notifier::Notifyee
+{
+}
+ 
+Class
+meta::pure::persistence::metamodel::notifier::EmailNotifyee extends Notifyee
+{
+   emailAddress: String[1];
+}
+ 
+Class
+meta::pure::persistence::metamodel::notifier::PagerDutyNotifyee extends Notifyee
+{
+   url: String[1];
+}
+
+/**********
+ * sink
+ **********/
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = 'Runtime properties for the sink to which datsets will be persisted.'}
+meta::pure::persistence::metamodel::persister::sink::Sink
+{
+}
+
+Class
+{doc.doc = 'Runtime properties for relational sinks.'}
+meta::pure::persistence::metamodel::persister::sink::RelationalSink extends Sink
+{
+   connection: Connection[0..1];
+}
+
+Class
+{doc.doc = 'Runtime properties for object storage sinks.'}
+meta::pure::persistence::metamodel::persister::sink::ObjectStorageSink extends Sink
+{
+   connection: Connection[1];
+   binding: Binding[1];
+}
+
+/**********
+ * target shape
+ **********/
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = 'The shape of the datasets to be persisted.'}
+meta::pure::persistence::metamodel::persister::targetshape::TargetShape
+{
+}
+
+Class
+{doc.doc = 'Specification for a single flat dataset. This requires a model class for graph fetch input services; it does not for TDS services.'}
+meta::pure::persistence::metamodel::persister::targetshape::FlatTarget extends TargetShape
+{
+   {doc.doc = 'A class that models the persistence target. The model class must have primitive properties with single multiplicity.'}
+   modelClass: Class<Any>[0..1];
+
+   {doc.doc = 'The name of the target.'}
+   targetName: String[1];
+
+   {doc.doc = 'An optional set of properties in the model class OR columns in the TDS that designate partitioning keys for the dataset.'}
+   partitionFields: String[*];
+
+   {doc.doc = 'The deduplication strategy to apply to this target dataset when an item appears multiple times in the same batch.'}
+   deduplicationStrategy: DeduplicationStrategy[1];
+}
+
+Class
+{doc.doc = 'Specification for multiple flat datasets targeting the same datastore. This is only valid for graph fetch services.'}
+meta::pure::persistence::metamodel::persister::targetshape::MultiFlatTarget extends TargetShape
+{
+   {doc.doc = 'A class that models the persistence target. The model class must be nested one level deep; each property of the class must point to a flat class with primitive properties that have single multiplicity.'}
+   modelClass: Class<Any>[1];
+
+   {doc.doc = 'The transaction granularity for the target group.'}
+   transactionScope: meta::pure::persistence::metamodel::persister::targetshape::TransactionScope[1];
+
+   {doc.doc = 'The parts of this multi target shape. Each component maps a property of the model class to a flat target.'}
+   parts: MultiFlatTargetPart[1..*];
+}
+
+Class
+{doc.doc = 'Specification for one part (dataset) of a MultiFlatTarget. The model property must refer to a property in the model class that targets a class corresponding to this part.'}
+meta::pure::persistence::metamodel::persister::targetshape::MultiFlatTargetPart
+{
+   {doc.doc = 'The property in the parent MultiFlatTarget\'s model class that points to the model class for the FlatTarget.'}
+   modelProperty: Property<Nil, Any|1>[1];
+
+   {doc.doc = 'The name of the target.'}
+   targetName: String[1];
+
+   {doc.doc = 'An optional set of properties in the model class that designate partitioning keys for the dataset.'}
+   partitionFields: String[*];
+
+   {doc.doc = 'The deduplication strategy to apply to this target dataset when an item appears multiple times in the same batch.'}
+   deduplicationStrategy: DeduplicationStrategy[1];
+}
+
+Enum
+{doc.doc = 'The transaction granularity for persistence operations.'}
+meta::pure::persistence::metamodel::persister::targetshape::TransactionScope
+{
+   {doc.doc = 'Each target in the multi-target group executes in its own transaction; each succeeds or fails independently.'}
+   SINGLE_TARGET,
+
+   {doc.doc = 'All targets in the multi-target group execute in a single transaction; all succeed or fail together.'}
+   ALL_TARGETS
+}
+
+/**********
+ * deduplication strategy
+ **********/
+
+Class
+<<typemodifiers.abstract>>
+meta::pure::persistence::metamodel::persister::deduplication::DeduplicationStrategy
+{
+}
+
+Class meta::pure::persistence::metamodel::persister::deduplication::NoDeduplicationStrategy extends DeduplicationStrategy
+{
+}
+
+Class meta::pure::persistence::metamodel::persister::deduplication::AnyVersionDeduplicationStrategy extends DeduplicationStrategy
+{
+}
+
+Class meta::pure::persistence::metamodel::persister::deduplication::MaxVersionDeduplicationStrategy extends DeduplicationStrategy
+{
+   {doc.doc = 'The property in the model class or column in the TDS that indicates the version of the object / row. The object / row with the highest value in a batch will be written to the target datastore.'}
+   versionField: String[1];
+}
+
+Class meta::pure::persistence::metamodel::persister::deduplication::DuplicateCountDeduplicationStrategy extends DeduplicationStrategy
+{
+   {doc.doc = 'The name of the output field where duplicate counts will be recorded in the underlying system.'}
+   duplicateCountName: String[1];
+}
+
+/**********
+ * ingest mode
+ **********/
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = 'The ingestion strategy to apply.'}
+meta::pure::persistence::metamodel::persister::ingestmode::IngestMode
+{
+}
+
+/**********
+ * ingest mode - snapshot
+ **********/
+
+Class
+{doc.doc = 'Values in the incoming data represent the full dataset and will replace the existing dataset destructively.'}
+meta::pure::persistence::metamodel::persister::ingestmode::snapshot::NontemporalSnapshot extends IngestMode
+{
+   auditing: Auditing[1];
+}
+
+Class
+{doc.doc = 'Values in the incoming data represent the full dataset and will replace the existing dataset non-destructively. New incoming values represent a logical create; updated incoming values represent a logical update; missing incoming values represent a logical delete in the transaction (processing) dimension. The data have only a transaction (processing) dimension and no validity (business) dimension.'}
+meta::pure::persistence::metamodel::persister::ingestmode::snapshot::UnitemporalSnapshot extends IngestMode
+{
+   transactionMilestoning: TransactionMilestoning[1];
+}
+
+Class
+{doc.doc = 'Values in the incoming data represent the full dataset and will replace the existing dataset non-destructively. New incoming values represent a logical create; updated incoming values represent a logical update; missing incoming values represent a logical delete in the transaction (processing) dimension. The data have a transaction (processing) dimension and a validity (business) dimension.'}
+meta::pure::persistence::metamodel::persister::ingestmode::snapshot::BitemporalSnapshot extends IngestMode
+{
+   transactionMilestoning: TransactionMilestoning[1];
+   validityMilestoning: ValidityMilestoning[1];
+}
+
+/**********
+ * ingest mode - delta
+ **********/
+
+Class
+{doc.doc = 'Values in the incoming data represent a delta to be applied on top of the existing dataset destructively. New incoming values are appended. Updated incoming values overwrite existing ones. Missing incoming values result in a no-op.'}
+meta::pure::persistence::metamodel::persister::ingestmode::delta::NontemporalDelta extends IngestMode
+{
+   mergeStrategy: MergeStrategy[1];
+   auditing: Auditing[1];
+}
+
+Class
+{doc.doc = 'Values in the incoming data represent a delta to be applied on top of the existing dataset non-destructively. New incoming values represent a logical create; updated incoming values represent a logical update; missing incoming values represent a no-op in the transaction (processing) dimension. Additional merge semantics, including logical deletes, can be supported via a merge scheme. The data have only a transaction (processing) dimension and no validity (business) dimension.' }
+meta::pure::persistence::metamodel::persister::ingestmode::delta::UnitemporalDelta extends IngestMode
+{
+   mergeStrategy: MergeStrategy[1];
+   transactionMilestoning: TransactionMilestoning[1];
+}
+
+Class
+{doc.doc = 'Values in the incoming data represent a delta to be applied on top of the existing dataset non-destructively. New incoming values represent a logical create; updated incoming values represent a logical update; missing incoming values represent a no-op in the transaction (processing) dimension. Additional merge semantics, including logical deletes, can be supported via a merge scheme. The data have a transaction (processing) dimension and a validity (business) dimension.' }
+meta::pure::persistence::metamodel::persister::ingestmode::delta::BitemporalDelta extends IngestMode
+{
+   mergeStrategy: MergeStrategy[1];
+   transactionMilestoning: TransactionMilestoning[1];
+   validityMilestoning: ValidityMilestoning[1];
+}
+
+// merge strategy
+
+Class
+<<typemodifiers.abstract>>
+meta::pure::persistence::metamodel::persister::ingestmode::delta::merge::MergeStrategy
+{
+}
+
+Class
+meta::pure::persistence::metamodel::persister::ingestmode::delta::merge::NoDeletesMergeStrategy extends MergeStrategy
+{
+}
+
+Class
+meta::pure::persistence::metamodel::persister::ingestmode::delta::merge::DeleteIndicatorMergeStrategy extends MergeStrategy
+{
+   {doc.doc = 'The property in the model class or column in the TDS that indicates whether an object or row should be deleted.'}
+   deleteField: String[1];
+
+   {doc.doc = 'The values for the deleteField which signify \'true\'.'}
+   deleteValues: String[1..*];
+}
+
+/**********
+ * ingest mode - append only
+ **********/
+
+Class
+{doc.doc = 'Values in the incoming data are appended to the existing dataset. No updates or deletes occur. Duplicates may optionally be filtered out.'}
+meta::pure::persistence::metamodel::persister::ingestmode::appendonly::AppendOnly extends IngestMode
+{
+   auditing: Auditing[1];
+   filterDuplicates: Boolean[1];
+}
+
+/**********
+ * auditing
+ **********/
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = 'Strategy for representing audit information in the underlying system.'}
+meta::pure::persistence::metamodel::persister::audit::Auditing
+{
+}
+
+Class
+{doc.doc = 'Audit information is not captured in the underlying system.'}
+meta::pure::persistence::metamodel::persister::audit::NoAuditing extends Auditing
+{
+}
+
+Class
+{doc.doc = 'Audit information is represented via a transaction datetime in the underlying system.'}
+meta::pure::persistence::metamodel::persister::audit::DateTimeAuditing extends Auditing
+{
+   {doc.doc = 'The name of the output field representing the audit datetime in the underlying system.'}
+   dateTimeName: String[1];
+}
+
+/**********
+ * transaction milestoning
+ **********/
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = 'Strategy for representing the transaction (processing) temporal dimension in the underlying system.'}
+meta::pure::persistence::metamodel::persister::transactionmilestoning::TransactionMilestoning
+{
+}
+
+Class
+{doc.doc = 'The representation of the transaction (processing) temporal dimension is via integral "in" and "out" batch ids.'}
+meta::pure::persistence::metamodel::persister::transactionmilestoning::BatchIdTransactionMilestoning extends TransactionMilestoning
+{
+   {doc.doc = 'The name of the output field representing the "in" batch id in the underlying system.'}
+   batchIdInName: String[1];
+
+   {doc.doc = 'The name of the output field representing the "out" batch id in the underlying system.'}
+   batchIdOutName: String[1];
+}
+
+Class
+{doc.doc = 'The representation of the transaction (processing) temporal dimension is via "in" and "out" datetimes.'}
+meta::pure::persistence::metamodel::persister::transactionmilestoning::DateTimeTransactionMilestoning extends TransactionMilestoning
+{
+   {doc.doc = 'The name of the output field representing the "in" datetime in the underlying system.'}
+   dateTimeInName: String[1];
+
+   {doc.doc = 'The name of the output field representing the "out" datetime in the underlying system.'}
+   dateTimeOutName: String[1];
+}
+
+Class
+{doc.doc = 'The representation of the transaction (processing) temporal dimension is via integral "in" and "out" batch ids and "in" and "out" datetimes.'}
+meta::pure::persistence::metamodel::persister::transactionmilestoning::BatchIdAndDateTimeTransactionMilestoning extends TransactionMilestoning
+{
+   {doc.doc = 'The name of the output field representing the "in" batch id in the underlying system.'}
+   batchIdInName: String[1];
+
+   {doc.doc = 'The name of the output field representing the "out" batch id in the underlying system.'}
+   batchIdOutName: String[1];
+
+   {doc.doc = 'The name of the output field representing the "in" datetime in the underlying system.'}
+   dateTimeInName: String[1];
+
+   {doc.doc = 'The name of the output field representing the "out" datetime in the underlying system.'}
+   dateTimeOutName: String[1];
+}
+
+/**********
+ * validity milestoning
+ **********/
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = 'Strategy for representing the validity (business) temporal dimension in the underlying system.'}
+meta::pure::persistence::metamodel::persister::validitymilestoning::ValidityMilestoning
+{
+}
+
+Class
+{doc.doc = 'The representation of the validity (business) temporal dimension is via "from" and "thru" datetimes.'}
+meta::pure::persistence::metamodel::persister::validitymilestoning::DateTimeValidityMilestoning extends ValidityMilestoning
+{
+   {doc.doc = 'The name of the output field representing the "from" datetime in the underlying system.'}
+   dateTimeFromName: String[1];
+
+   {doc.doc = 'The name of the output field representing the "thru" datetime in the underlying system.'}
+   dateTimeThruName: String[1];
+
+   {doc.doc = 'The approach to derive validity (business) temporal data from source data.'}
+   derivation: ValidityDerivation[0..1];
+}
+
+// validity derivation from source data
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = 'Strategy for representing the validity (business) temporal dimension in the underlying system.'}
+meta::pure::persistence::metamodel::persister::validitymilestoning::derivation::ValidityDerivation
+{
+}
+
+Class
+{doc.doc = 'Source data provide validity from datetime.'}
+meta::pure::persistence::metamodel::persister::validitymilestoning::derivation::SourceSpecifiesValidFromDate extends ValidityDerivation
+{
+   {doc.doc = 'The property in the model class or column in the TDS that provides the "from" datetime for validity (business) temporal dimension.'}
+   sourceDateTimeFromField: String[1];
+}
+
+Class
+{doc.doc = 'Source data provide validity from and thru datetimes.'}
+meta::pure::persistence::metamodel::persister::validitymilestoning::derivation::SourceSpecifiesValidFromAndThruDate extends ValidityDerivation
+{
+   {doc.doc = 'The property in the model class or column in the TDS that provides the "from" datetime for the validity (business) temporal dimension.'}
+   sourceDateTimeFromField: String[1];
+
+   {doc.doc = 'The property in the model class or column in the TDS that provides the "thru" datetime for the validity (business) temporal dimension.'}
+   sourceDateTimeThruField: String[1];
+}

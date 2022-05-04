@@ -1,0 +1,103 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+
+###Pure
+
+import meta::pure::generation::metamodel::*;
+import meta::json::*;
+import meta::protocols::pure::vX_X_X::invocation::generation::prtobuf::*;
+import meta::external::format::protobuf::generation::*;
+import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::*;
+import meta::alloy::metadataServer::*;
+import meta::pure::functions::io::http::*;
+
+
+function <<access.private>>  meta::protocols::pure::vX_X_X::invocation::generation::protobuf::legendGenerateProtobuf(input:ProtobufConfig[1], host:String[1], port:Integer[1]):ProtobufOutput[*]
+{
+   meta::protocols::pure::vX_X_X::invocation::generation::protobuf::legendGenerateProtobuf($input, $host, $port, 'v1');
+}
+
+function meta::protocols::pure::vX_X_X::invocation::generation::protobuf::legendGenerateProtobuf(input:ProtobufConfig[1], host:String[1], port:Integer[1], version:String[1]):ProtobufOutput[*]
+{
+   let resp = executeHTTPRaw(^URL(host = $host , port=$port, path = '/api/pure/'+$version+'/schemaGeneration/protobuf'),
+                                 HTTPMethod.POST,
+                                 'application/json',
+                                 '{ "clientVersion":"vX_X_X",'+
+                                 '  "config":'+$input->meta::protocols::pure::vX_X_X::invocation::generation::protobuf::transformProtobufConfig()->alloyToJSON()+','+
+                                 '  "model":'+if ($input.package->isEmpty(),
+                                                  |$input.class->toOne()->pathToElement()->toOne()->cast(@Type)->buildPureModelFromType(meta::pure::router::extension::defaultExtensions())->alloyToJSON(),
+                                                  |$input.package->toOne()->pathToElement()->toOne()->cast(@Package)->buildPureModelFromPackage(meta::pure::router::extension::defaultExtensions())->alloyToJSON()
+                                              )+
+                                 '}'
+                                );
+   assertEq(200, $resp.statusCode, | $resp.entity);
+   $resp.entity->parseJSON()->fromJSON(ProtobufOutput, ^ExtendedJSONDeserializationConfig(nullReplacementInArray = ^TDSNull(), typeKeyName='__TYPE', failOnUnknownProperties=true))->cast(@ProtobufOutput);
+}
+
+###Pure
+Class meta::protocols::pure::vX_X_X::metamodel::invocation::generation::protobuf::ProtobufConfig extends meta::protocols::pure::vX_X_X::metamodel::invocation::generation::GenerationConfiguration
+{
+   options : meta::protocols::pure::vX_X_X::metamodel::invocation::generation::protobuf::Options[0..1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::invocation::generation::protobuf::Options
+{
+  javaPackage:String[0..1];
+  javaOuterClassname:String[0..1];
+  javaMultipleFiles:Boolean[0..1];
+  optimizeFor:meta::protocols::pure::vX_X_X::metamodel::invocation::generation::protobuf::OptimizeMode[0..1];
+  customOptions:meta::protocols::pure::vX_X_X::metamodel::invocation::generation::protobuf::ProtobufOption[*];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::invocation::generation::protobuf::ProtobufOption
+{
+  name:String[1];
+  value:Any[1];
+}
+
+Enum meta::protocols::pure::vX_X_X::metamodel::invocation::generation::protobuf::OptimizeMode
+{
+  SPEED,
+  CODE_SIZE,
+  LITE_RUNTIME
+}
+
+
+###Pure
+
+import meta::external::format::protobuf::generation::*;
+
+function meta::protocols::pure::vX_X_X::invocation::generation::protobuf::transformProtobufConfig(input:ProtobufConfig[1])
+   :meta::protocols::pure::vX_X_X::metamodel::invocation::generation::protobuf::ProtobufConfig[1]
+{
+   ^meta::protocols::pure::vX_X_X::metamodel::invocation::generation::protobuf::ProtobufConfig(
+        package = $input.package,
+        class = $input.class,
+        options = ^meta::protocols::pure::vX_X_X::metamodel::invocation::generation::protobuf::Options
+                  (
+                      javaPackage = $input.javaPackage,
+                      javaOuterClassname = $input.javaOuterClassname,
+                      javaMultipleFiles = $input.javaMultipleFiles,
+                      optimizeFor = if($input.optimizeFor->isEmpty(),|[],|extractEnumValue(meta::protocols::pure::vX_X_X::metamodel::invocation::generation::protobuf::OptimizeMode, $input.optimizeFor->toOne()->id())),
+                      customOptions = $input.customOptions->map(c |
+                                          ^meta::protocols::pure::vX_X_X::metamodel::invocation::generation::protobuf::ProtobufOption
+                                          (
+                                              name = $c.name,
+                                              value = $c.value
+                                          )
+                                       )
+                  )
+   )
+}

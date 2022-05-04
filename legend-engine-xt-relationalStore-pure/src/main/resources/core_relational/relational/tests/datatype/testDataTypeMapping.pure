@@ -1,0 +1,242 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::tests::mapping::dataType::model::domain::*;
+import meta::relational::tests::mapping::dataType::model::store::*;
+import meta::relational::tests::mapping::dataType::model::mapping::*;
+
+import meta::pure::profiles::*;
+
+import meta::relational::metamodel::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::metamodel::join::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::functions::toDDL::*;
+import meta::relational::mapping::*;
+
+import meta::relational::tests::*;
+
+import meta::pure::runtime::*;
+import meta::relational::runtime::*;
+import meta::relational::runtime::authentication::*;
+
+import meta::json::*;
+
+
+function <<test.BeforePackage>> meta::relational::tests::mapping::dataType::setUp():Boolean[1]
+{
+    let connection = testDataTypeMappingRuntime().connectionByElement(myDB)->cast(@TestDatabaseConnection);
+
+    dropAndCreateTableInDb(myDB, 'dataTable', $connection);
+
+    executeInDb('insert into dataTable (pk, ti, si, int, bi, vc, c, date, ts, f, d, bit, dec, n) values (0, 1, 2, 3, 1000, \'Something\', \'c\', \'2003-07-19\', \'2003-07-19 00:00:00\', 1.1, 2.2, 1, 1.234000, 1.23456)', $connection);
+    executeInDb('insert into dataTable (pk, ti, si, int, bi, vc, c, date, ts, f, d, bit, dec, n) values (1, null, null, null, null, null, null, null, null, null, null, null, null, null)', $connection);
+    executeInDb('insert into dataTable (pk, ti, si, int, bi, vc, c, date, ts, f, d, bit, dec, n) values (2, 2, null, null, null, null, null, null, null, null, null, 0, null, null)', $connection);
+    true;
+}
+
+
+function <<test.Test>> meta::relational::tests::mapping::dataType::testSimpleTypeMapping():Boolean[1]
+{
+    let result = execute(|DataDBTypes.all(), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    assertSize($result.values, 3);
+    let populatedRow = $result.values->filter(e | $e.tinyInt == 1)->toOne();
+    assertEquals(1, $populatedRow.tinyInt);
+    assertEquals(2, $populatedRow.smallInt);
+    assertEquals(3, $populatedRow.integer);
+    assertEquals(1000, $populatedRow.bigInt);
+    assertEquals('Something', $populatedRow.varchar);
+    assertEquals('c', $populatedRow.char);
+    assertEquals(%2003-07-19, $populatedRow.date);
+    assertEquals(%2003-07-19T00:00:00.000000000+0000, $populatedRow.timestamp);
+    assertEquals(1.1, $populatedRow.float);
+    assertEquals(2.2, $populatedRow.double);
+    assertEquals(true, $populatedRow.bit);
+    assertEquals(1.234, $populatedRow.decimalAsFloat);
+    assertEquals(1.23456, $populatedRow.numericAsFloat);
+    assertEquals(1.234d, $populatedRow.decimal);
+    assertEquals(1.23456d, $populatedRow.numeric);
+    assertEquals(1.1d, $populatedRow.floatAsDecimal);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::dataType::testSimpleTypeMappingProject():Boolean[1]
+{
+    let result = execute(|DataDBTypes.all()->filter(e | $e.tinyInt == 1)
+                                           ->project([ col( p | $p.tinyInt, 'tinyInt'),
+                                                       col( p | $p.smallInt, 'smallInt'),
+                                                       col( p | $p.integer, 'integer'),
+                                                       col( p | $p.bigInt, 'bigInt'),
+                                                       col( p | $p.varchar, 'varchar'),
+                                                       col( p | $p.char, 'char'),
+                                                       col( p | $p.date, 'date'),
+                                                       col( p | $p.timestamp, 'timestamp'),
+                                                       col( p | $p.float, 'float'),
+                                                       col( p | $p.double, 'double'),
+                                                       col( p | $p.bit, 'bit'),
+                                                       col( p | $p.decimalAsFloat, 'decimalAsFloat'),
+                                                       col( p | $p.numericAsFloat, 'numericAsFloat'),
+                                                       col( p | $p.decimal, 'decimal'),
+                                                       col( p | $p.numeric, 'numeric'),
+                                                       col( p | $p.floatAsDecimal, 'floatAsDecimal')
+                                                      ]
+                                                ), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    assertSize($result.values, 1);
+    let populatedRow = $result.values.rows;
+    assertEquals(1, $populatedRow.getInteger('tinyInt'));
+    assertEquals(2, $populatedRow.getInteger('smallInt'));
+    assertEquals(3, $populatedRow.getInteger('integer'));
+    assertEquals(1000, $populatedRow.getInteger('bigInt'));
+    assertEquals('Something', $populatedRow.getString('varchar'));
+    assertEquals('c', $populatedRow.getString('char'));
+    assertEquals(%2003-07-19, $populatedRow.getStrictDate('date'));
+    assertEquals(%2003-07-19T00:00:00.000000000+0000, $populatedRow.getDateTime('timestamp'));
+    assertEquals(1.1, $populatedRow.getFloat('float'));
+    assertEquals(2.2, $populatedRow.getFloat('double'));
+    assertEquals(true, $populatedRow.getBoolean('bit'));
+    assertEquals(1.234, $populatedRow.getFloat('decimalAsFloat'));
+    assertEquals(1.23456, $populatedRow.getFloat('numericAsFloat'));
+    assertEquals(1.234d, $populatedRow.getDecimal('decimal'));
+    assertEquals(1.23456d, $populatedRow.getDecimal('numeric'));
+    assertEquals(1.1d, $populatedRow.getDecimal('floatAsDecimal'));
+}
+
+
+function <<test.Test>> meta::relational::tests::mapping::dataType::testSimpleTypeMappingNulls():Boolean[1]
+{
+    let result = execute(|DataDBTypes.all(), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    assertSize($result.values, 3);
+
+    let nullRow = $result.values->filter(e | $e.tinyInt != 1 && $e.tinyInt != 2)->toOne();
+    assertEquals([], $nullRow.tinyInt);
+    assertEquals([], $nullRow.smallInt);
+    assertEquals([], $nullRow.integer);
+    assertEquals([], $nullRow.bigInt);
+    assertEquals([], $nullRow.varchar);
+    assertEquals([], $nullRow.char);
+    assertEquals([], $nullRow.date);
+    assertEquals([], $nullRow.timestamp);
+    assertEquals([], $nullRow.float);
+    assertEquals([], $nullRow.double);
+    assertEquals([], $nullRow.bit);
+    assertEquals([], $nullRow.decimalAsFloat);
+    assertEquals([], $nullRow.numericAsFloat);
+    assertEquals([], $nullRow.decimal);
+    assertEquals([], $nullRow.numeric);
+    assertEquals([], $nullRow.floatAsDecimal);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::dataType::testSimpleTypeMappingBooleanFalse():Boolean[1]
+{
+    let result = execute(|DataDBTypes.all(), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    assertSize($result.values, 3);
+    let populatedRow = $result.values->filter(e | $e.tinyInt == 2)->toOne();
+    assertEquals(false, $populatedRow.bit);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::dataType::testSimpleTypeMappingProjectNulls():Boolean[1]
+{
+   let result = execute(|DataDBTypes.all()->project([d|$d.tinyInt, d|$d.smallInt], ['ti', 'si'])
+                              , testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+   let tds = $result.values->at(0);
+   assertEquals([^TDSNull(),^TDSNull()], $tds.rows->at(1).values);
+
+   assertEquals('{"columns":[{"name":"ti","type":"Integer","metaType":"PrimitiveType"},{"name":"si","type":"Integer","metaType":"PrimitiveType"}],"rows":[{"values":[1,2]},{"values":[null,null]},{"values":[2,null]}]}',$tds->toJSON());
+
+}
+
+
+Class meta::relational::tests::mapping::dataType::model::domain::DataDBTypes
+{
+    tinyInt: Integer[0..1];
+    smallInt: Integer[0..1];
+    integer: Integer[0..1];
+    bigInt: Integer[0..1];
+    varchar: String[0..1];
+    char: String[0..1];
+    date : Date[0..1];
+    timestamp : Date[0..1];
+    float: Float[0..1];
+    double: Float[0..1];
+    decimalAsFloat: Float[0..1];
+    real: Float[0..1];
+    numericAsFloat: Float[0..1];
+    bit:Boolean[0..1];
+    decimal: Decimal[0..1];
+    numeric: Decimal[0..1];
+    floatAsDecimal: Decimal[0..1];
+
+}
+
+function meta::relational::tests::mapping::dataType::model::store::testDataTypeMappingRuntime():Runtime[1]
+{
+   meta::relational::tests::testRuntime(myDB);
+}
+
+###Relational
+
+Database meta::relational::tests::mapping::dataType::model::store::myDB
+(
+    Table dataTable
+    (
+        pk INTEGER PRIMARY KEY,
+        ti TINYINT,
+        si SMALLINT,
+        int INTEGER,
+        bi BIGINT,
+        vc VARCHAR(200),
+        c CHAR(2),
+        date DATE,
+        ts TIMESTAMP,
+        f FLOAT,
+        d DOUBLE,
+        bit BIT,
+        dec DECIMAL(18,6),
+        //r REAL,
+        n NUMERIC(18,6)
+    )
+)
+
+
+###Mapping
+import meta::relational::tests::mapping::dataType::model::domain::*;
+import meta::relational::tests::mapping::dataType::model::store::*;
+
+Mapping meta::relational::tests::mapping::dataType::model::mapping::testMapping
+(
+    DataDBTypes: Relational
+    {
+       scope([myDB] dataTable)
+       (
+          tinyInt: ti,
+          smallInt: si,
+          integer: int,
+          bigInt: bi,
+          varchar: vc,
+          char: c,
+          date : date,
+          timestamp : ts,
+          float: f,
+          double: d,
+          bit: bit,
+          decimalAsFloat: dec,
+          //real: r,
+          numericAsFloat: n,
+          decimal: dec,
+          numeric: n,
+          floatAsDecimal: f
+       )
+
+    }
+)

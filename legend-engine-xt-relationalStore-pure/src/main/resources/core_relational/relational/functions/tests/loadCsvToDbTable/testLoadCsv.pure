@@ -1,0 +1,61 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::metamodel::execute::*;
+import meta::relational::tests::loadCsv::*;
+import meta::relational::runtime::*;
+import meta::relational::tests::model::simple::*;
+
+function <<test.Test>> meta::relational::tests::loadCsv::testLoadCsv():Boolean[1]
+{
+   let connection = meta::relational::tests::testRuntime(db).connections->toOne()->cast(@TestDatabaseConnection);
+   meta::relational::functions::toDDL::dropAndCreateTableInDb(db, 'personCsvTable', $connection);
+   loadCsvToDbTable('/core_relational/relational/functions/tests/loadCsvToDbTable/employees.csv', db.schema('default')->toOne().table('personCsvTable')->toOne(),
+                     $connection);
+                     
+   let res = execute(|Person.all(), csvMapping, meta::relational::tests::testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                     
+   assertEquals('Joe', $res.values->at(0).firstName);
+   assertEquals('Bloggs', $res.values->at(0).lastName);
+   assertEquals(21, $res.values->at(0).age);
+   
+   assertEquals('Jill', $res.values->at(1).firstName);
+   assertEquals('Smith', $res.values->at(1).lastName);
+   assertEquals(31, $res.values->at(1).age);
+}
+
+###Mapping
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::loadCsv::*;
+
+Mapping meta::relational::tests::loadCsv::csvMapping
+(
+    Person : Relational
+            {
+                scope([db])
+                (
+                    firstName : personCsvTable.FIRSTNAME,
+                    lastName : personCsvTable.LASTNAME,
+                    age : personCsvTable.AGE   
+                )
+            }
+)
+
+###Relational
+
+Database meta::relational::tests::loadCsv::db
+(
+   Table personCsvTable(FIRSTNAME VARCHAR(30) PRIMARY KEY, LASTNAME VARCHAR(40), AGE INTEGER)
+   
+)

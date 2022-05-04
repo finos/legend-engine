@@ -1,0 +1,114 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::relational::functions::asserts::*;
+import meta::relational::tests::milestoning::businessdate::*;
+import meta::relational::tests::milestoning::*;
+import meta::relational::tests::*;
+
+function <<test.Test>> meta::relational::tests::milestoning::rangeQuery::testBusinessTemporalRangeQueryOnRoot():Boolean[1]
+{
+   let result = execute(|Product.allVersionsInRange(%2015-1-1, %2015-9-1)->filter(x|$x.type == 'STOCK')->project([x|$x.type, x|$x.milestoning.from, x|$x.milestoning.thru], ['type', 'from', 'thru'])->distinct(), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select distinct "root".type as "type", "root".from_z as "from", "root".thru_z as "thru" from ProductTable as "root" where "root".type = \'STOCK\' and "root".from_z <= \'2015-09-01\' and "root".thru_z > \'2015-01-01\'', $result);
+   assertSameElements(['STOCK', 'STOCK'], $result.values.rows.getString('type'));
+   assertSameElements([%2015-8-15T00:00:00.000000000+0000, %2015-8-26T00:00:00.000000000+0000], $result.values.rows.getDate('from'));
+   assertSameElements([%2015-8-26T00:00:00.000000000+0000, %2015-10-16T00:00:00.000000000+0000], $result.values.rows.getDate('thru'));
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::rangeQuery::testBusinessTemporalRangeQueryOnRootAndProperty():Boolean[1]
+{
+   let result = execute(|Product.allVersionsInRange(%2015-1-1, %2015-9-1)->filter(x|$x.classificationAllVersionsInRange(%2015-1-1, %2015-9-1).type == 'STOCK')->project([x|$x.classificationAllVersionsInRange(%2015-1-1, %2015-9-1).type, x|$x.milestoning.from, x|$x.milestoning.thru], ['type', 'from', 'thru'])->distinct(), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select distinct "productclassificationtable_0".type as "type", "root".from_z as "from", "root".thru_z as "thru" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= \'2015-09-01\' and "productclassificationtable_0".thru_z > \'2015-01-01\') where "productclassificationtable_0".type = \'STOCK\' and "root".from_z <= \'2015-09-01\' and "root".thru_z > \'2015-01-01\'', $result);
+   assertSameElements(['STOCK', 'STOCK'], $result.values.rows.getString('type'));
+   assertSameElements([%2015-8-15T00:00:00.000000000+0000, %2015-8-26T00:00:00.000000000+0000], $result.values.rows.getDate('from'));
+   assertSameElements([%2015-8-26T00:00:00.000000000+0000, %2015-10-16T00:00:00.000000000+0000], $result.values.rows.getDate('thru'));
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::rangeQuery::testBusinessTemporalRangeQueryOnRootAndPropertyDeep():Boolean[1]
+{
+   let result = execute(|Product.allVersionsInRange(%2015-1-1, %2015-9-1)->filter(x|$x.classificationAllVersionsInRange(%2015-1-1, %2015-9-1).exchangeAllVersionsInRange(%2015-1-1, %2015-9-1).name == 'LNSE')->project([x|$x.classificationAllVersionsInRange(%2015-1-1, %2015-9-1).exchangeAllVersionsInRange(%2015-1-1, %2015-9-1).name, x|$x.milestoning.from, x|$x.milestoning.thru], ['name', 'from', 'thru'])->distinct(), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select distinct "productexchangetable_1".name as "name", "root".from_z as "from", "root".thru_z as "thru" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= \'2015-09-01\' and "productclassificationtable_0".thru_z > \'2015-01-01\') left outer join ProductExchangeTable as "productexchangetable_0" on ("productclassificationtable_0".exchange = "productexchangetable_0".name and "productexchangetable_0".from_z <= \'2015-09-01\' and "productexchangetable_0".thru_z > \'2015-01-01\') left outer join (select "productexchangetable_2".name as name from ProductExchangeTable as "productexchangetable_2" where "productexchangetable_2".from_z <= \'2015-09-01\' and "productexchangetable_2".thru_z > \'2015-01-01\') as "productexchangetable_1" on ("productclassificationtable_0".exchange = "productexchangetable_1".name) where "productexchangetable_0".name = \'LNSE\' and "root".from_z <= \'2015-09-01\' and "root".thru_z > \'2015-01-01\'', $result);
+   assertSameElements(['LNSE', 'LNSE'], $result.values.rows.getString('name'));
+   assertSameElements([%2015-8-15T00:00:00.000000000+0000, %2015-8-26T00:00:00.000000000+0000], $result.values.rows.getDate('from'));
+   assertSameElements([%2015-8-26T00:00:00.000000000+0000, %2015-10-16T00:00:00.000000000+0000], $result.values.rows.getDate('thru'));
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::rangeQuery::testBusinessTemporalRangeQueryOnProperty():Boolean[1]
+{
+   let result = execute(|Product.allVersions()->filter(x|$x.classificationAllVersionsInRange(%2015-1-1, %2015-9-1).type == 'STOCK')->project([x|$x.classificationAllVersionsInRange(%2015-1-1, %2015-9-1).type, x|$x.milestoning.from, x|$x.milestoning.thru], ['type', 'from', 'thru'])->distinct(), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select distinct "productclassificationtable_0".type as "type", "root".from_z as "from", "root".thru_z as "thru" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= \'2015-09-01\' and "productclassificationtable_0".thru_z > \'2015-01-01\') where "productclassificationtable_0".type = \'STOCK\'', $result);
+   assertSameElements(['STOCK', 'STOCK', 'STOCK'], $result.values.rows.getString('type'));
+   assertSameElements([%2015-08-15T00:00:00.000000000+0000, %2015-08-26T00:00:00.000000000+0000, %2015-10-16T00:00:00.000000000+0000], $result.values.rows.getDate('from'));
+   assertSameElements([%2015-08-26T00:00:00.000000000+0000, %2015-10-16T00:00:00.000000000+0000, %9999-12-31T00:00:00.000000000+0000], $result.values.rows.getDate('thru'));
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::rangeQuery::testBusinessTemporalRangeQueryOnPropertyDeep():Boolean[1]
+{
+   let result = execute(|Product.allVersions()->filter(x|$x.classificationAllVersionsInRange(%2015-1-1, %2015-9-1).exchangeAllVersionsInRange(%2015-1-1, %2015-9-1).name == 'LNSE')->project([x|$x.classificationAllVersionsInRange(%2015-1-1, %2015-9-1).exchangeAllVersionsInRange(%2015-1-1, %2015-9-1).name, x|$x.milestoning.from, x|$x.milestoning.thru], ['name', 'from', 'thru'])->distinct(), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select distinct "productexchangetable_1".name as "name", "root".from_z as "from", "root".thru_z as "thru" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= \'2015-09-01\' and "productclassificationtable_0".thru_z > \'2015-01-01\') left outer join ProductExchangeTable as "productexchangetable_0" on ("productclassificationtable_0".exchange = "productexchangetable_0".name and "productexchangetable_0".from_z <= \'2015-09-01\' and "productexchangetable_0".thru_z > \'2015-01-01\') left outer join (select "productexchangetable_2".name as name from ProductExchangeTable as "productexchangetable_2" where "productexchangetable_2".from_z <= \'2015-09-01\' and "productexchangetable_2".thru_z > \'2015-01-01\') as "productexchangetable_1" on ("productclassificationtable_0".exchange = "productexchangetable_1".name) where "productexchangetable_0".name = \'LNSE\'', $result);
+   assertSameElements(['LNSE', 'LNSE', 'LNSE'], $result.values.rows.getString('name'));
+   assertSameElements([%2015-08-15T00:00:00.000000000+0000, %2015-08-26T00:00:00.000000000+0000, %2015-10-16T00:00:00.000000000+0000], $result.values.rows.getDate('from'));
+   assertSameElements([%2015-08-26T00:00:00.000000000+0000, %2015-10-16T00:00:00.000000000+0000, %9999-12-31T00:00:00.000000000+0000], $result.values.rows.getDate('thru'));
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::rangeQuery::testProcessingTemporalRangeQueryOnRoot():Boolean[1]
+{
+   let result = execute(|Certification.allVersionsInRange(%1979-1-1, %1982-1-1)->filter(x|$x.name == 'APCE' || $x.name == 'SRCE')->project([x|$x.name, x|$x.milestoning.in, x|$x.milestoning.out], ['name', 'in', 'out'])->distinct(), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select distinct "root".name as "name", "root".in_z as "in", "root".out_z as "out" from CertificationTable as "root" where ("root".name = \'APCE\' or "root".name = \'SRCE\') and "root".in_z <= \'1982-01-01\' and "root".out_z > \'1979-01-01\'', $result);
+   assertSameElements(['APCE', 'SRCE'], $result.values.rows.getString('name'));
+   assertSameElements([%1980-01-01T00:00:00.000000000+0000, %1981-01-01T00:00:00.000000000+0000], $result.values.rows.getDate('in'));
+   assertSameElements([%9999-12-31T00:00:00.000000000+0000, %9999-12-31T00:00:00.000000000+0000], $result.values.rows.getDate('out'));
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::rangeQuery::testProcessingTemporalRangeQueryOnProperty():Boolean[1]
+{
+   let result = execute(|Certification.allVersions()->filter(x|$x.traderAllVersionsInRange(%2012-1-1, %2014-1-1).kerberos == 'ggekko')->project([x|$x.traderAllVersionsInRange(%2012-1-1, %2014-1-1).kerberos, x|$x.milestoning.in, x|$x.milestoning.out], ['kerberos', 'in', 'out'])->distinct(), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select distinct "tradertable_0".kerberos as "kerberos", "root".in_z as "in", "root".out_z as "out" from CertificationTable as "root" left outer join TraderTable as "tradertable_0" on ("tradertable_0".kerberos = "root".kerberos and "tradertable_0".in_z <= \'2014-01-01\' and "tradertable_0".out_z > \'2012-01-01\') where "tradertable_0".kerberos = \'ggekko\'', $result);
+   assertSameElements(['ggekko', 'ggekko'], $result.values.rows.getString('kerberos'));
+   assertSameElements([%1980-01-01T00:00:00.000000000+0000, %1981-01-01T00:00:00.000000000+0000], $result.values.rows.getDate('in'));
+   assertSameElements([%9999-12-31T00:00:00.000000000+0000, %9999-12-31T00:00:00.000000000+0000], $result.values.rows.getDate('out'));
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::rangeQuery::testProcessingTemporalRangeQueryOnRootAndProperty():Boolean[1]
+{
+   let result = execute(|Certification.allVersionsInRange(%1979-1-1, %1982-1-1)->filter(x|$x.traderAllVersionsInRange(%2012-1-1, %2014-1-1).kerberos == 'ggekko')->project([x|$x.traderAllVersionsInRange(%2012-1-1, %2014-1-1).kerberos, x|$x.milestoning.in, x|$x.milestoning.out], ['kerberos', 'in', 'out'])->distinct(), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select distinct "tradertable_0".kerberos as "kerberos", "root".in_z as "in", "root".out_z as "out" from CertificationTable as "root" left outer join TraderTable as "tradertable_0" on ("tradertable_0".kerberos = "root".kerberos and "tradertable_0".in_z <= \'2014-01-01\' and "tradertable_0".out_z > \'2012-01-01\') where "tradertable_0".kerberos = \'ggekko\' and "root".in_z <= \'1982-01-01\' and "root".out_z > \'1979-01-01\'', $result);
+   assertSameElements(['ggekko', 'ggekko'], $result.values.rows.getString('kerberos'));
+   assertSameElements([%1980-01-01T00:00:00.000000000+0000, %1981-01-01T00:00:00.000000000+0000], $result.values.rows.getDate('in'));
+   assertSameElements([%9999-12-31T00:00:00.000000000+0000, %9999-12-31T00:00:00.000000000+0000], $result.values.rows.getDate('out'));
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::rangeQuery::testBusinessTemporalRangeQueryOnRootWithSubsequentCallToMilestonedQualifiedPropertyWithFunction():Boolean[1]
+{
+   let result = execute(|Certification.allVersionsInRange(%1979-1-1, %1982-1-1)->project(x|$x.trader(constantDate()).kerberos, ['kerberos'])->distinct(), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select distinct "tradertable_0".kerberos as "kerberos" from CertificationTable as "root" left outer join TraderTable as "tradertable_0" on ("tradertable_0".kerberos = "root".kerberos and "tradertable_0".in_z <= \'2015-01-01\' and "tradertable_0".out_z > \'2015-01-01\') where "root".in_z <= \'1982-01-01\' and "root".out_z > \'1979-01-01\'', $result);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::rangeQuery::testBusinessTemporalRangeQueryOnRootWithSubsequentCallToMilestonedQualifiedPropertyWithThisBusinessDate():Boolean[1]
+{
+   let result = execute(|Product.allVersionsInRange(%1979-1-1, %1982-1-1)->project(x|$x.classificationTypeStr(), ['classificationType'])->distinct(), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select distinct "productclassificationtable_0".type as "classificationType" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= "root".from_z and "productclassificationtable_0".thru_z > "root".from_z) where "root".from_z <= \'1982-01-01\' and "root".thru_z > \'1979-01-01\'', $result);
+}
+
+function <<test.Test, test.ToFix>> meta::relational::tests::milestoning::rangeQuery::testBusinessTemporalRangeQueryOnRootWithSubsequentCallToMilestonedQualifiedPropertyWithFunctionCallWithThisBusinessDateParameter():Boolean[1]
+{
+   let result = execute(|Product.allVersionsInRange(%1979-1-1, %1982-1-1)->project(x|$x.classificationExchangeName3(), ['classificationType'])->distinct(), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('', $result);
+}
+
+function <<test.BeforePackage>> meta::relational::tests::milestoning::rangeQuery::setUp():Any[0..1]
+{
+   initDatabase();
+}

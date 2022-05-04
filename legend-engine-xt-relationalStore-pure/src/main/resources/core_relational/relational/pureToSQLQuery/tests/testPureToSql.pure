@@ -1,0 +1,326 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::router::printer::*;
+import meta::pure::router::clustering::*;
+import meta::relational::runtime::*;
+import meta::relational::metamodel::operation::*;
+import meta::relational::metamodel::join::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::metamodel::*;
+import meta::relational::functions::pureToSqlQuery::*;
+import meta::relational::tests::functions::pureToSqlQuery::*;
+import meta::relational::tests::model::simple::*;
+
+function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::testFindFunctionSequenceMultiplicity():Boolean[1]
+{
+   let firmLambda = {f:Firm[1]|$f.employees; 
+                           $f.employees->toOne();
+                           $f.address.name;
+                           $f.employees.address->toOne();
+                           $f.legalName;
+                           $f.address->toOne().name;
+                }->deactivate()->cast(@InstanceValue).values->at(0)->cast(@LambdaFunction<{Firm[1]->String[1]}>);
+
+   let assertMultiplicity = {l:LambdaFunction<Any>[1], i:Integer[1] | let e=$l.expressionSequence->at($i);
+                                                                      let res = findFunctionSequenceMultiplicity($e);
+                                                                      $res->map(r| pair($r.first.func->match([a:AbstractProperty<Any>[1]|$a.name, f:meta::pure::metamodel::function::Function<Any>[1]|$f.functionName])->toOne(), $r.second));
+   };
+
+   assertEquals(pair('employees',ZeroMany), $assertMultiplicity->eval($firmLambda, 0));
+   assertEquals([pair('toOne',PureOne),pair('employees',ZeroMany)], $assertMultiplicity->eval($firmLambda, 1));
+   assertEquals([pair('map',ZeroOne),pair('address',ZeroOne)], $assertMultiplicity->eval($firmLambda, 2));
+   assertEquals([pair('toOne',PureOne),pair('map',ZeroMany), pair('employees',ZeroMany)], $assertMultiplicity->eval($firmLambda, 3));
+   assertEquals([pair('legalName',PureOne)], $assertMultiplicity->eval($firmLambda, 4));
+   assertEquals([pair('name',PureOne),pair('toOne',PureOne),pair('address',ZeroOne)], $assertMultiplicity->eval($firmLambda, 5));
+   let tradeLambda = {t:Trade[1]|$t.initiatorInlinedByProductName.address}->deactivate()->cast(@InstanceValue).values->at(0)->cast(@LambdaFunction<{Trade[1]->Address[*]}>);
+   assertEquals([pair('map',ZeroMany),pair('toOneMany',OneMany),pair('map',ZeroMany),pair('filter',ZeroMany),pair('events',ZeroMany)], $assertMultiplicity->eval($tradeLambda, 0));
+}
+
+function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::tesIsToOneDataTypeFunctionExpressionSequence():Boolean[1]
+{
+   let firmLambda = {f:Firm[1]|$f.address.name->isEmpty();
+                               $f.address->toOne().name->isEmpty();
+                               $f.legalName->isEmpty();
+                               ['address','name']->isEmpty();
+                               []->isEmpty();
+                    }->deactivate()->cast(@InstanceValue).values->at(0)->cast(@LambdaFunction<{Firm[1]->Boolean[1]}>);
+
+   let firmLambda2 = {f:Firm[*]|$f.legalName->isEmpty();}->deactivate()->cast(@InstanceValue).values->at(0)->cast(@LambdaFunction<{Firm[*]->Boolean[1]}>);
+
+   assertFalse(expressionSequenceReturnsAtLeastToOneDataType($firmLambda.expressionSequence->at(0)->cast(@FunctionExpression).parametersValues->at(0)));
+   assert(expressionSequenceReturnsAtLeastToOneDataType($firmLambda.expressionSequence->at(1)->cast(@FunctionExpression).parametersValues->at(0)));
+   assert(expressionSequenceReturnsAtLeastToOneDataType($firmLambda.expressionSequence->at(2)->cast(@FunctionExpression).parametersValues->at(0)));
+   assert(expressionSequenceReturnsAtLeastToOneDataType($firmLambda.expressionSequence->at(3)->cast(@FunctionExpression).parametersValues->at(0)));
+   assertFalse(expressionSequenceReturnsAtLeastToOneDataType($firmLambda.expressionSequence->at(4)->cast(@FunctionExpression).parametersValues->at(0)));
+   assertFalse(expressionSequenceReturnsAtLeastToOneDataType($firmLambda2.expressionSequence->at(0)->cast(@FunctionExpression).parametersValues->at(0)));
+
+}
+
+function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::tesIsToOneDataTypeFunctionExpressionSequenceWithQualifiers():Boolean[1]
+{
+   let tradeLambda = {t:Trade[*]|$t.tradeDateEvent().eventType->isNotEmpty();
+                                 $t.events->filter(e|$e.date==$t.date->toOne())->toOne().eventType->isNotEmpty();
+
+                     }->deactivate()->cast(@InstanceValue).values->at(0)->cast(@LambdaFunction<{Trade[*]->Boolean[1]}>);
+
+
+   let qualifiedPropertyResult = expressionSequenceReturnsAtLeastToOneDataType($tradeLambda.expressionSequence->at(0)->cast(@FunctionExpression).parametersValues->at(0));
+   let equivalentInlinedQualifiedPropertyResult = expressionSequenceReturnsAtLeastToOneDataType($tradeLambda.expressionSequence->at(1)->cast(@FunctionExpression).parametersValues->at(0));
+
+   assert($equivalentInlinedQualifiedPropertyResult == $qualifiedPropertyResult);
+   assertFalse($equivalentInlinedQualifiedPropertyResult);
+
+
+   let tradeLambda1 = {t:Trade[1..*]|$t.tradeDateEvent().eventType->isNotEmpty();
+                                     $t.events->filter(e|$e.date==$t.date->toOne())->toOne().eventType->isNotEmpty();
+                    }->deactivate()->cast(@InstanceValue).values->at(0)->cast(@LambdaFunction<{Trade[1..*]->Boolean[1]}>);
+
+
+   assertFalse(expressionSequenceReturnsAtLeastToOneDataType($tradeLambda1.expressionSequence->at(0)->cast(@FunctionExpression).parametersValues->at(0)));
+   assertFalse(expressionSequenceReturnsAtLeastToOneDataType($tradeLambda1.expressionSequence->at(1)->cast(@FunctionExpression).parametersValues->at(0)));
+
+
+   let tradeLambda2 = {t:Trade[1]|$t.tradeDateEvent().eventType->isNotEmpty();
+                                  $t.events->filter(e|$e.date==$t.date->toOne())->toOne().eventType->isNotEmpty();
+                    }->deactivate()->cast(@InstanceValue).values->at(0)->cast(@LambdaFunction<{Trade[1]->Boolean[1]}>);
+
+   assertFalse(expressionSequenceReturnsAtLeastToOneDataType($tradeLambda2.expressionSequence->at(0)->cast(@FunctionExpression).parametersValues->at(0)));
+   assertFalse(expressionSequenceReturnsAtLeastToOneDataType($tradeLambda2.expressionSequence->at(1)->cast(@FunctionExpression).parametersValues->at(0)));
+
+
+
+   let tradeLambda3 = {t:Trade[1]|$t.customerQuantity()->isNotEmpty();
+                    }->deactivate()->cast(@InstanceValue).values->at(0)->cast(@LambdaFunction<{Trade[1]->Boolean[1]}>);
+
+
+   assert(expressionSequenceReturnsAtLeastToOneDataType($tradeLambda3.expressionSequence->at(0)->cast(@FunctionExpression).parametersValues->at(0)));
+
+
+
+}
+
+
+function <<test.Test,test.ToFix>> meta::relational::tests::functions::pureToSqlQuery::tesIsToOneDataTypeFunctionExpressionSequenceWithIfExpressions():Boolean[1]
+{
+   let tradeLambda = {t:Trade[1]|$t.productDescription()->isNotEmpty();
+                                 if($t.product->isEmpty(), | 'Unknown', | $t.product.name)->isNotEmpty();
+                                 if($t.product->toOne()->isEmpty(), | 'Unknown', | $t.product.name)->isNotEmpty();
+                                 if(true, | 'One', | $t.product->toOne().name)->isNotEmpty();
+                                 if(true, | $t.product.name, | 'one')->isNotEmpty();
+                                 if(true, |  'one', |$t.product.name)->isNotEmpty();
+                       }->deactivate()->cast(@InstanceValue).values->at(0)->cast(@LambdaFunction<{Trade[1]->Boolean[1]}>);
+
+
+   assertFalse(expressionSequenceReturnsAtLeastToOneDataType($tradeLambda.expressionSequence->at(0)->cast(@FunctionExpression).parametersValues->at(0)));
+   assertFalse(expressionSequenceReturnsAtLeastToOneDataType($tradeLambda.expressionSequence->at(1)->cast(@FunctionExpression).parametersValues->at(0)));
+   assertFalse(expressionSequenceReturnsAtLeastToOneDataType($tradeLambda.expressionSequence->at(2)->cast(@FunctionExpression).parametersValues->at(0)));
+   assert(expressionSequenceReturnsAtLeastToOneDataType($tradeLambda.expressionSequence->at(3)->cast(@FunctionExpression).parametersValues->at(0)));
+   assertFalse(expressionSequenceReturnsAtLeastToOneDataType($tradeLambda.expressionSequence->at(4)->cast(@FunctionExpression).parametersValues->at(0)));
+   assertFalse(expressionSequenceReturnsAtLeastToOneDataType($tradeLambda.expressionSequence->at(5)->cast(@FunctionExpression).parametersValues->at(0)));
+}
+
+function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::tesIsToOneDataTypeFunctionExpressionSequenceWithCastExpressions():Boolean[1]
+{
+
+     let tradeLambda = {t:Trade[1]|$t.events->filter(e|true).eventType->cast(@String)->isNotEmpty();
+                                   $t.events->toOne().eventType->cast(@String)->isNotEmpty();
+                    }->deactivate()->cast(@InstanceValue).values->at(0)->cast(@LambdaFunction<{Trade[1]->Boolean[1]}>);
+   
+     assertFalse(expressionSequenceReturnsAtLeastToOneDataType($tradeLambda.expressionSequence->at(0)->cast(@FunctionExpression).parametersValues->at(0)));
+   
+}
+
+
+function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::testMergeOldAliasToNewAlias():Boolean[1]
+{
+   let aliasList = [^OldAliasToNewAlias(first='1', second=buildTableAlias('1a')),^OldAliasToNewAlias(first='2', second=buildTableAlias('2')),^OldAliasToNewAlias(first='3', second=buildTableAlias('3a'))];
+   let res = mergeOldAliasToNewAlias(false, ^OldAliasToNewAlias(first='1', second=buildTableAlias('1a')), $aliasList); 
+   assertEquals(['1','3'], $res.first);  
+}
+
+function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::testReAliasMergedJoinOperations():Boolean[1]
+{
+   let rootTemp = ^RootJoinTreeNode(alias=buildTableAlias('root'));
+   let child1Temp = buildJoinTreeNode($rootTemp,'child1','root_to_child1', false);
+   let child2 = buildJoinTreeNode($child1Temp,'child2','child1_to_child2', false);
+   let child3 = buildJoinTreeNode($child2,'child3','child2_to_child3', true);
+   
+   let child1 = ^$child1Temp(childrenData=^$child2(childrenData=$child3));
+   
+   let metaData = buildAndTransformJoinMetaData($child1,[],{j:Join[1], jtn:JoinTreeNode[*]|$j});
+
+   assertEquals(['child2', 'orphan_child3', 'child1'], $metaData.joinAliases);
+   assertEquals(['child1', 'child2', 'child3'], $metaData.jtnAliases);
+   assertEquals(['orphan_child3'],$metaData.missingJoinAliases);
+   
+   let oldToNewAlias = ^OldAliasToNewAlias(first='orphan_child3', second=buildTableAlias('orphan_child3_updated'));
+   let rootWithRealiasedJoin = reAliasMergedJoinOperations(^MergeResultContainer(node=^$rootTemp(childrenData=$child1), oldToNewAliases=$oldToNewAlias)).node;
+   let rootWithRealiasedJoinMetaData = buildAndTransformJoinMetaData($rootWithRealiasedJoin.childrenData->at(0)->cast(@JoinTreeNode),[],{j:Join[1], jtn:JoinTreeNode[*]|$j});
+
+   assertEquals(['child2', 'orphan_child3_updated', 'child1'], $rootWithRealiasedJoinMetaData.joinAliases);
+   assertEquals(['child1', 'child2', 'child3'], $rootWithRealiasedJoinMetaData.jtnAliases);
+   assertEquals(['orphan_child3_updated'],$rootWithRealiasedJoinMetaData.missingJoinAliases);  
+}
+
+function meta::relational::tests::functions::pureToSqlQuery::testOrderImmediateChildNodeByJoinAliasDependencies():Boolean[1]
+{
+   let rootTemp = ^RootJoinTreeNode(alias=buildTableAlias('root'));
+   let rc1 = buildJoinTreeNode($rootTemp,'rc1','root_to_child1', false);
+   let rc1c1WithOrphanJoinAlias = buildJoinTreeNode($rc1,'rc2','root_to_child1_to_child1', true);
+   let rc2 = buildJoinTreeNode($rootTemp,'orphan_rc2','root_to_child2', false);
+   
+   let root = ^$rootTemp(childrenData=[^$rc1(childrenData=$rc1c1WithOrphanJoinAlias), $rc2]);
+   let sql = ^SelectSQLQuery(data=$root);
+   
+   assertEquals('rc1',$sql->at(0).data.children->at(0)->toOne().alias.name);
+   assertEquals('orphan_rc2',$sql->at(0).data.children->at(1)->toOne().alias.name);
+   let sqlWithReorderedChildren = $sql->orderImmediateChildNodeByJoinAliasDependencies();
+   assertEquals('orphan_rc2',$sqlWithReorderedChildren->at(0).data.children->at(0)->toOne().alias.name);
+   assertEquals('rc1',$sqlWithReorderedChildren->at(0).data.children->at(1)->toOne().alias.name);
+   
+   let rc1c1 = buildJoinTreeNode($rc1,'rc2','root_to_child1_to_child1', false);
+   let root2 = ^$rootTemp(childrenData=[^$rc1(childrenData=$rc1c1), $rc2]);
+   let sql2 = ^SelectSQLQuery(data=$root2);
+   let sqlNoReorderingRequired = $sql2->orderImmediateChildNodeByJoinAliasDependencies();
+   assertEquals('rc1',$sqlNoReorderingRequired->at(0).data.children->at(0)->toOne().alias.name);
+   assertEquals('orphan_rc2',$sqlNoReorderingRequired->at(0).data.children->at(1)->toOne().alias.name);
+}
+
+function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::testFindAliasMappingBySchemaName():Boolean[1]
+{
+   let tableAliasToTable1 = ^TableAlias(name='t1', relationalElement=^Table(name = '', schema=^Schema(name='s1', database=^Database())));
+   let tableAliasToTable2 = ^TableAlias(name='t1', relationalElement=^Table(name = '', schema=^Schema(name='s2', database=^Database())));
+   let oldAliasToNewAliasMap1 = [^OldAliasToNewAlias(first='t1', second=$tableAliasToTable1), ^OldAliasToNewAlias(first='t2', second=$tableAliasToTable2)];
+   let found1 = findAliasMappingBySchemaName($tableAliasToTable1.relation(), $oldAliasToNewAliasMap1);
+   assertEquals('s1', $found1->toOne().second.relation()->cast(@Table).schema.name);
+   
+   let tableAliasToView1 = ^TableAlias(name='v1', relationalElement=^View(name = '', schema=^Schema(name='s1', database=^Database()), mainTableAlias=$tableAliasToTable1, userDefinedPrimaryKey=false));
+   let tableAliasToView2 = ^TableAlias(name='v2', relationalElement=^View(name = '', schema=^Schema(name='s2', database=^Database()), mainTableAlias=$tableAliasToTable2, userDefinedPrimaryKey=false));
+   let oldAliasToNewAliasMap2 = [^OldAliasToNewAlias(first='v1', second=$tableAliasToView1), ^OldAliasToNewAlias(first='v2', second=$tableAliasToView2)];
+   let found2 = findAliasMappingBySchemaName($tableAliasToView2.relation(), $oldAliasToNewAliasMap2);
+   assertEquals('s2', $found2->toOne().second.relation()->cast(@View).schema.name);
+   
+   let tableAliastoSQLquery = ^TableAlias(name='q1', relationalElement=^SelectSQLQuery());
+   let oldAliasToNewAliasMap3 = [^OldAliasToNewAlias(first='t1', second=$tableAliasToTable1)];
+   let found3 = findAliasMappingBySchemaName($tableAliastoSQLquery.relation(), $oldAliasToNewAliasMap3);
+   assertEquals(1,$found3->size());
+}
+
+function <<access.private>> meta::relational::tests::functions::pureToSqlQuery::buildJoinTreeNode(source: RelationalTreeNode[1], aliasName:String[1], joinName:String[1], useOrphanJoinAliasName:Boolean[1]):JoinTreeNode[1]{
+   let targetAlias = buildTableAlias($aliasName);
+   let targetJoinOpAlias= if($useOrphanJoinAliasName,| buildTableAlias('orphan_'+$aliasName),|$targetAlias);
+   
+   let srcOpTac = ^TableAliasColumn(alias=$source.alias, column=^Column(name='sourceCol', type=^meta::relational::metamodel::datatype::DataType()));
+   let targetOpTac = ^TableAliasColumn(alias=$targetJoinOpAlias, column=^Column(name='sourceCol', type=^meta::relational::metamodel::datatype::DataType()));
+   let operation = ^DynaFunction(name = 'equal', parameters=[$srcOpTac, $targetOpTac]);
+   let join = ^Join(name=$joinName, target=$targetAlias, aliases=[pair($source.alias, $targetAlias), pair($targetAlias, $source.alias)], operation=$operation);
+   ^JoinTreeNode(database=^Database(), joinName=$joinName, alias=$targetAlias, join=$join);
+}
+
+function <<access.private>> meta::relational::tests::functions::pureToSqlQuery::buildTableAlias(aliasName:String[1]):TableAlias[1]{
+   ^TableAlias(name=$aliasName, relationalElement=^Table(name = '', schema=^Schema(name='', database=^Database())));
+}
+
+function <<test.Test>>
+
+meta::relational::tests::functions::pureToSqlQuery::simpleFunctionExpressionTranslationNow() : Boolean[1]
+{
+   let x = {|now()}->evaluateAndDeactivate();
+   let fe = $x.expressionSequence->cast(@FunctionExpression)->toOne();
+
+   let runtime = meta::relational::tests::testRuntime();
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+
+   let sql = meta::relational::functions::pureToSqlQuery::toSQLQuery($fe, $mapping, ^Map<String,List<Any>>() , [], noDebug(), meta::pure::router::extension::defaultRelationalExtensions());
+//    let sql_string = $sql->meta::relational::functions::sqlQueryToString::sqlQueryToString(meta::relational::runtime::DatabaseType.H2, true);
+   let sql_string = $sql->meta::relational::functions::sqlQueryToString::sqlQueryToString(meta::relational::runtime::DatabaseType.H2, meta::pure::router::extension::defaultRelationalExtensions());
+
+
+   assertEquals('select current_timestamp()', $sql_string);
+}
+
+function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::simpleFunctionExpressionTranslationAdjust() : Boolean[1]
+{
+   let x = {|adjust(now(), 1, DurationUnit.MONTHS)}->evaluateAndDeactivate();
+   let fe = $x.expressionSequence->cast(@FunctionExpression)->toOne();
+
+   let runtime = meta::relational::tests::testRuntime();
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+
+   let sql = meta::relational::functions::pureToSqlQuery::toSQLQuery($fe, $mapping, ^Map<String,List<Any>>() , [], noDebug(), meta::pure::router::extension::defaultRelationalExtensions());
+   let sql_string = $sql->meta::relational::functions::sqlQueryToString::sqlQueryToString(meta::relational::runtime::DatabaseType.H2, meta::pure::router::extension::defaultRelationalExtensions());
+
+   assertEquals('select dateadd(MONTH, 1, current_timestamp())', $sql_string);
+}
+
+function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::addDriverTablePkForProject() : Boolean[1]
+{
+   let runtime = meta::relational::tests::testRuntime();
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let debugContext = noDebug();
+   let extensions = meta::pure::router::extension::defaultRelationalExtensions();
+   let context = ^RelationalExecutionContext(enableConstraints=false, addDriverTablePkForProject=true);
+
+   let x = {|Firm.all()->project(c | $c.legalName, 'legalName')}->evaluateAndDeactivate();
+
+   let routed = $x->routeFunction($mapping, $runtime, $context, $extensions, $debugContext);
+   let routedFunction = $routed.functions->evaluateAndDeactivate();
+   let clusters = $routedFunction.expressionSequence->evaluateAndDeactivate()->cast(@ClusteredValueSpecification);
+   let fe = $clusters.val->toOne()->cast(@FunctionExpression);
+
+   let tdsSelectSqlQuery = $fe->toSQLQuery($mapping, ^Map<String,List<Any>>(), $context, $debugContext, $extensions)->cast(@TdsSelectSqlQuery);
+
+   assertEquals(2, $tdsSelectSqlQuery.paths->size());
+   assertEquals($tdsSelectSqlQuery.columns->size(), $tdsSelectSqlQuery.paths->size());
+   let pathNames = $tdsSelectSqlQuery.paths.first->map(p| '"'+$p+'"');
+   let columnNames = $tdsSelectSqlQuery.columns->cast(@Alias).name;
+   assert($columnNames->contains('"ID"'));
+   assert($columnNames->fold({c, r | $r && $pathNames->contains($c)}, true));
+}
+
+function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::testImportDataFlow() : Boolean[1]
+{
+   let runtime = meta::relational::tests::testRuntime();
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let debugContext = noDebug();
+   let extensions = meta::pure::router::extension::defaultRelationalExtensions();
+   
+   let schema = meta::relational::tests::dbInc.schema('default');
+   let personTable = $schema.table('personTable')->toOne();
+   let personAddressIdCol = $personTable.column('ADDRESSID')->toOne();
+   let firmTable = $schema.table('firmTable')->toOne();
+   let firmAddressIdCol = $firmTable.column('ADDRESSID')->toOne();
+   let addressTable = $schema.table('addressTable')->toOne();
+   let addressStreetCol = $addressTable.column('STREET')->toOne();
+   
+   let context = ^RelationalExecutionContext(
+      importDataFlow=true,
+      importDataFlowAddFks=true,
+      importDataFlowFksByTable=[pair($personTable, $personAddressIdCol), pair($firmTable, $firmAddressIdCol), pair($addressTable, $addressStreetCol)]->newMultiValueMap()
+   );
+
+   let x = {|Person.all()->project([p| $p.address.name, p| $p.firm.address.name], ['personAddress', 'firmAddress'])}->evaluateAndDeactivate();
+
+   let routed = $x->routeFunction($mapping, $runtime, $context, $extensions, $debugContext);
+   let routedFunction = $routed.functions->evaluateAndDeactivate();
+   let clusters = $routedFunction.expressionSequence->evaluateAndDeactivate()->cast(@ClusteredValueSpecification);
+   let fe = $clusters.val->toOne()->cast(@FunctionExpression);
+
+   let sql = $fe->toSQLQuery($mapping, ^Map<String,List<Any>>(), $context, $debugContext, $extensions)->cast(@TdsSelectSqlQuery);
+   let sqlStr = $sql->meta::relational::functions::sqlQueryToString::sqlQueryToString(meta::relational::runtime::DatabaseType.H2, meta::pure::router::extension::defaultRelationalExtensions());
+
+   assertEquals('select "addressTable_d#4_d_m1".NAME as "personAddress", "addressTable_d#4_f_d_d_m2_r".NAME as "firmAddress", "root".ID as "ID", "root".ADDRESSID as fk_ADDRESSID, "addressTable_d#4_f_d_d_m2_r".STREET as fk_j0_0_STREET, "addressTable_d#4_d_m1".STREET as fk_j0_1_STREET, "firmTable_d#6_d_m2".ADDRESSID as fk_j1_ADDRESSID from personTable as "root" left outer join addressTable as "addressTable_d#4_d_m1" on ("addressTable_d#4_d_m1".ID = "root".ADDRESSID) left outer join firmTable as "firmTable_d#6_d_m2" on ("firmTable_d#6_d_m2".ID = "root".FIRMID) left outer join addressTable as "addressTable_d#4_f_d_d_m2_r" on ("addressTable_d#4_f_d_d_m2_r".ID = "firmTable_d#6_d_m2".ADDRESSID)', $sqlStr);
+}
+
