@@ -192,6 +192,171 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
     }
 
     @Test
+    public void testValidateNewCallsInMappings()
+    {
+        String models = "Class test::A\n"+
+                "{\n" +
+                "   b: test::B[0..*];\n" +
+                "}\n" +
+                "Class test::B\n"+
+                "{\n" +
+                "   primeId: String[0..*];\n" +
+                "}\n" +
+                "Class test::C\n"+
+                "{\n" +
+                "   id: String[0..*];\n" +
+                "}\n" ;
+
+        test(models+
+                "###Mapping\n" +
+                "Mapping test::map\n" +
+                "(\n" +
+                "   \n" +
+                "   test::A : Pure\n" +
+                "             {\n" +
+                "                ~src test::C\n" +
+                "                b : ^test::B(primeId=$src.id)\n" +
+                "             }\n" +
+                "   \n" +
+                "   test::B : Pure\n" +
+                "             {\n" +
+                "                ~src test::B\n" +
+                "                primeId : $src.primeId\n" +
+                "             }\n" +
+                "   \n" +
+                ")" ,"COMPILATION error at [14:1-29:1]: Mapping'test::map'failed with error 'Invalid function new_Class_1__String_1__KeyExpression_MANY__T_1_ called 1 times"
+                );
+
+        test(models+
+                "function test::F1(id: String[*]): test::B[1]\n" +
+                "{\n" +
+                "   ^test::B(primeId=$id);\n" +
+                "}\n" +
+                "###Mapping\n" +
+                "Mapping test::map\n" +
+                "(\n" +
+                "   \n" +
+                "   test::A : Pure\n" +
+                "             {\n" +
+                "                ~src test::C\n" +
+                "                b : $src.id->test::F1()\n" +
+                "             }\n" +
+                "   \n" +
+                "   test::B : Pure\n" +
+                "             {\n" +
+                "                ~src test::B\n" +
+                "                primeId : $src.primeId\n" +
+                "             }\n" +
+                "   \n" +
+                ")" ,"COMPILATION error at [18:1-33:1]: Mapping'test::map'failed with error 'Invalid function new_Class_1__String_1__KeyExpression_MANY__T_1_ called 1 times"
+        );
+
+        test(models+
+                "function test::F1(id: String[*]): test::B[1]\n" +
+                "{\n" +
+                "   let id2 = $id;\n" +
+                "   let x = ^test::B(primeId=$id);\n" +
+                "   ^test::B(primeId=$id2);\n" +
+                "}\n" +
+                "###Mapping\n" +
+                "Mapping test::map\n" +
+                "(\n" +
+                "   \n" +
+                "   test::A : Pure\n" +
+                "             {\n" +
+                "                ~src test::C\n" +
+                "                b : $src.id->test::F1()\n" +
+                "             }\n" +
+                "   \n" +
+                "   test::B : Pure\n" +
+                "             {\n" +
+                "                ~src test::B\n" +
+                "                primeId : $src.primeId\n" +
+                "             }\n" +
+                "   \n" +
+                ")" ,"COMPILATION error at [20:1-35:1]: Mapping'test::map'failed with error 'Invalid function new_Class_1__String_1__KeyExpression_MANY__T_1_ called 2 times"
+        );
+
+        test(models+
+                "function test::F1(id: String[*]): test::B[1]\n" +
+                "{\n" +
+                "   test::F2($id);\n" +
+                "}\n" +
+                "function test::F2(id: String[*]): test::B[1]\n" +
+                "{\n" +
+                "   ^test::B(primeId=$id);\n" +
+                "}\n" +
+                "###Mapping\n" +
+                "Mapping test::map\n" +
+                "(\n" +
+                "   \n" +
+                "   test::A : Pure\n" +
+                "             {\n" +
+                "                ~src test::C\n" +
+                "                b : $src.id->test::F1()\n" +
+                "             }\n" +
+                "   \n" +
+                "   test::B : Pure\n" +
+                "             {\n" +
+                "                ~src test::B\n" +
+                "                primeId : $src.primeId\n" +
+                "             }\n" +
+                "   \n" +
+                ")" ,"COMPILATION error at [22:1-37:1]: Mapping'test::map'failed with error 'Invalid function new_Class_1__String_1__KeyExpression_MANY__T_1_ called 1 times"
+        );
+
+        test(models+
+                "function test::F1(id: String[*]): test::B[1]\n" +
+                "{\n" +
+                "   let id2 = test::F1($id);\n" +
+                "   ^test::B(primeId=$id2);\n" +
+                "}\n" +
+                "###Mapping\n" +
+                "Mapping test::map\n" +
+                "(\n" +
+                "   \n" +
+                "   test::A : Pure\n" +
+                "             {\n" +
+                "                ~src test::C\n" +
+                "                b : $src.id->test::F1()\n" +
+                "             }\n" +
+                "   \n" +
+                "   test::B : Pure\n" +
+                "             {\n" +
+                "                ~src test::B\n" +
+                "                primeId : $src.primeId\n" +
+                "             }\n" +
+                "   \n" +
+                ")" ,"COMPILATION error at [19:1-34:1]: Mapping'test::map'failed with error 'Invalid function new_Class_1__String_1__KeyExpression_MANY__T_1_ called 1 times"
+        );
+
+        test(models +
+                "Class test::D\n"+
+                "[\n" +
+                "   testConstraint:$this.newId->test::constraintFunction()\n" +
+                "]\n" +
+                "{\n" +
+                "   newId: String[0..*];\n" +
+                "}\n" +
+                "function test::constraintFunction(newId: String[0..*]): Boolean[1]\n" +
+                "{\n" +
+                "   ^test::B(primeId=$newId);\n" +
+                "   assertEquals(true, true);\n" +
+                "}\n" +
+                "###Mapping\n" +
+                "Mapping test::map\n" +
+                "(\n" +
+                "   test::D : Pure\n" +
+                "             {\n" +
+                "                ~src test::D\n" +
+                "                newId : $src.newId\n" +
+                "             }\n" +
+                ")"
+        );
+
+    }
+
+    @Test
     public void testClassMappingsRootsCount()
     {
         String models = "Class test::A  {\n" +

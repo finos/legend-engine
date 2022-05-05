@@ -29,18 +29,14 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.EnumValueMappingSourceValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EmbeddedSetImplementation;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.InstanceSetImplementation;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMapping;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementationAccessor;
+import org.finos.legend.pure.generated.Root_meta_pure_mapping_modelToModel_PurePropertyMapping_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_LambdaFunction_Impl;
+import org.finos.legend.pure.generated.core_pure_corefunctions_metaExtension;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.*;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.FunctionExpression;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class MappingValidator
@@ -61,6 +57,7 @@ public class MappingValidator
         this.validateEnumerationMappings(pureModel, mappings);
         this.validateMappingElementIds(pureModel, mappings, pureMappings);
         this.validateClassMappingRoots(pureModel, mappings, pureMappings);
+        this.validatePropertyMappings(pureModel, mappings, pureMappings);
     }
 
     private void visitMappingInclude(Mapping mapping, PureModel pureModel, Map<String, Mapping> mappings, Set<Mapping> visited, Set<Mapping> discovered)
@@ -223,7 +220,7 @@ public class MappingValidator
             {
                 Map<String, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping> mappingByClassMappingId = Maps.mutable.empty();
                 collectAndValidateClassMappingIds(mapping, mappingByClassMappingId, new HashSet<>());
-                validatePropertyMappings(pureModel, mapping, mappingByClassMappingId);
+                validatePropertyMappingIds(pureModel, mapping, mappingByClassMappingId);
             }
             catch (EngineException e)
             {
@@ -240,7 +237,50 @@ public class MappingValidator
         });
     }
 
-    private void validatePropertyMappings(PureModel pureModel, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping mapping, Map<String, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping> mappingByClassMappingId)
+    private void validatePropertyMappings(PureModel pureModel, Map<String, Mapping> mappings, Map<String, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping> pureMappings)
+    {
+        pureMappings.forEach((mappingPath, mapping) ->
+        {
+            try
+            {
+                mapping._classMappings().forEach(cm ->
+                        {
+                            if(cm instanceof InstanceSetImplementation)
+                            {
+                                ((InstanceSetImplementation)cm)._propertyMappings().forEach(pm ->
+                                        {
+                                            if(pm instanceof Root_meta_pure_mapping_modelToModel_PurePropertyMapping_Impl && ((Root_meta_pure_mapping_modelToModel_PurePropertyMapping_Impl) pm)._transform!=null && ((Root_meta_pure_mapping_modelToModel_PurePropertyMapping_Impl) pm)._transform instanceof Root_meta_pure_metamodel_function_LambdaFunction_Impl)
+                                            {
+
+                                                    Root_meta_pure_mapping_modelToModel_PurePropertyMapping_Impl ppm = (Root_meta_pure_mapping_modelToModel_PurePropertyMapping_Impl) pm;
+                                                    if(ppm._transform!= null && ppm._transform instanceof Root_meta_pure_metamodel_function_LambdaFunction_Impl){
+                                                        (((Root_meta_pure_metamodel_function_LambdaFunction_Impl)ppm._transform)._expressionSequence).forEach(ex ->
+                                                        {
+                                                            RichIterable<? extends FunctionExpression> fe = core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_findExpressionsForFunctionInValueSpecification_ValueSpecification_1__Function_MANY__FunctionExpression_MANY_
+                                                                    ((ValueSpecification)ex,
+                                                                            Lists.mutable.of(pureModel.getFunction("meta::pure::functions::lang::new_Class_1__String_1__KeyExpression_MANY__T_1_",true)),
+                                                                            pureModel.getExecutionSupport());
+                                                            if(fe.size() > 0)
+                                                            {
+                                                                throw new EngineException("Invalid function new_Class_1__String_1__KeyExpression_MANY__T_1_ called " + fe.size() + " times");
+                                                            }
+                                                        });
+                                                    }
+                                            }
+                                        });
+                            }
+
+                        });
+            }
+            catch (EngineException e)
+            {
+                throw new EngineException("Mapping'" + mappingPath + "'failed with error '" + e.getMessage(), mappings.get(mappingPath).sourceInformation, EngineErrorType.COMPILATION);
+            }
+        });
+
+    }
+
+    private void validatePropertyMappingIds(PureModel pureModel, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping mapping, Map<String, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping> mappingByClassMappingId)
     {
         Set<String> ids = mappingByClassMappingId.keySet();
         pureModel.addWarnings(mapping._classMappings().flatCollect(cm ->
