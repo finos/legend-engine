@@ -21,8 +21,14 @@ function <<test.Test>> meta::relational::tests::dbSpecificTests::H2::runSQLQuery
 {
   let connection = meta::relational::dbTestRunner::getTestConnection(DatabaseType.H2, meta::pure::router::extension::defaultRelationalExtensions());
       
-  let allTests = collectTests(meta::relational::tests::dbSpecificTests::sqlQueryTests);
-  let ignoredTests= [] ;
-  
+  let allTests = collectTests(meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::today);
+
+  let unsupportedDynaFunctions = [];
+  let failingSupportedDynaFunctions =['today'];
+
+  let ignoredTests= $unsupportedDynaFunctions->concatenate($failingSupportedDynaFunctions)->map(dynaFuncName |
+              let dynaFuncPackageName = 'meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::' + $dynaFuncName;
+              $dynaFuncPackageName->pathToElement()->cast(@Package)->collectTests(););
+
   runTestsWith($allTests, $ignoredTests, DatabaseType.H2, $connection,  []);
 }
