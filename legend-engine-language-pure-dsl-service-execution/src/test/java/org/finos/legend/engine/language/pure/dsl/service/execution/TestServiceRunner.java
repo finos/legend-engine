@@ -431,14 +431,14 @@ public class TestServiceRunner
     {
         SimpleRelationalServiceWithUserRunner simpleRelationalServiceWithUserRunner = new SimpleRelationalServiceWithUserRunner();
         Set<KerberosPrincipal> principals = new HashSet<>();
-        principals.add(new KerberosPrincipal("testPrincipal@test.com"));
+        principals.add(new KerberosPrincipal("peter@test.com"));
 
         ServiceRunnerInput serviceRunnerInput = ServiceRunnerInput
                 .newInstance()
                 .withIdentity(IdentityFactoryProvider.getInstance().makeIdentity(new Subject(false, principals, Sets.fixedSize.empty(), Sets.fixedSize.empty())))
                 .withSerializationFormat(SerializationFormat.PURE);
         String result = simpleRelationalServiceWithUserRunner.run(serviceRunnerInput);
-        Assert.assertEquals("[{\"firstName\":\"Peter\",\"lastName\":\"Smith\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\"},{\"firstName\":\"Bob\",\"lastName\":\"Stevens\"}]", result);
+        Assert.assertEquals("{\"firstName\":\"Peter\",\"lastName\":\"Smith\"}", result);
     }
 
     private static class SimpleOptionalParameterServiceRunner extends AbstractServicePlanExecutor
