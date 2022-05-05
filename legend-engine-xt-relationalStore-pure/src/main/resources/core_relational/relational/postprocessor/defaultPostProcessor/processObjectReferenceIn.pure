@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import meta::relational::mapping::*;
+import meta::relational::translation::*;
 import meta::pure::executionPlan::*;
 import meta::relational::metamodel::relation::*;
 import meta::relational::functions::pureToSqlQuery::*;
@@ -36,6 +37,7 @@ function meta::relational::postProcessor::processObjectReferenceInOperation(quer
    
    let varPrefixForStoringPKValues  = 'tempVarForStoringPKValues_';
 
+   let translationContext = ^TranslationContext(dbType = $connection.type);
    let transform  =  {r: RelationalOperationElement[1], uniqueId: Integer[1] |
                         $r->match([
                            d  : DynaFunction[1] | if($d.name == 'objectReferenceIn',
@@ -43,7 +45,7 @@ function meta::relational::postProcessor::processObjectReferenceInOperation(quer
                                                      let tempTableName        = $tempTableNamePrefix + $uniqueId->toString();
                                                      let tempTableColumnName  = $columnName;
 
-                                                     let selectSQLQuery       = generateTempTableSelectSQLQuery('default', $tempTableName, $tempTableColumnName, pureTypeToDataType(String)->toOne());
+                                                     let selectSQLQuery       = generateTempTableSelectSQLQuery('default', $tempTableName, $tempTableColumnName, pureTypeToDataType(String, $translationContext)->toOne());
 
                                                      ^DynaFunction(name       = 'in', 
                                                                    parameters = [$d.parameters->at(0), $selectSQLQuery]);,
@@ -87,7 +89,7 @@ function meta::relational::postProcessor::processObjectReferenceInOperation(quer
                                                                           tempTableName           = $tempTableName,
                                                                           tempTableColumnMetaData = ^TempTableColumnMetaData(
                                                                                                         column = ^SQLResultColumn(label = $tempTableColumnName,
-                                                                                                                                  dataType = pureTypeToDataType(String)->toOne())
+                                                                                                                                  dataType = pureTypeToDataType(String, $translationContext)->toOne())
                                                                                                      ),
                                                                           connection              = $connection,
                                                                           resultType              = ^VoidResultType(type=Void)
