@@ -100,25 +100,6 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>download-files</id>
-                                <phase>compile</phase>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                                <configuration>
-                                    <tasks>
-                                        <get src="https://databricks-bi-artifacts.s3.us-east-2.amazonaws.com/simbaspark-drivers/jdbc/2.6.22/SimbaSparkJDBC42-2.6.22.1040.zip" dest="${project.build.directory}/spark-simba-driver.zip" verbose="false" usetimestamp="true" />
-                                        <unzip src="${project.build.directory}/spark-simba-driver.zip" dest="${project.build.directory}/spark-simba-driver-jars" />
-                                    </tasks>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <dependencies>
                             <dependency>
@@ -130,14 +111,6 @@
                         <configuration combine.self="override">
                             <useSystemClassLoader>false</useSystemClassLoader>
                             <argLine>${argLine} -Xmx2g -Xms1g -XX:MaxPermSize=1024m -XX:SoftRefLRUPolicyMSPerMB=1</argLine>
-                            <additionalClasspathElements>
-                                <additionalClasspathElement>${project.build.directory}/spark-simba-driver-jars/SparkJDBC42.jar</additionalClasspathElement>
-                            </additionalClasspathElements>
-                            <!--
-                            <environmentVariables>
-                                <DATABRICKS_API_TOKEN></DATABRICKS_API_TOKEN>
-                            </environmentVariables>
-                            -->
                         </configuration>
                     </plugin>
                 </plugins>

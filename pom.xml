@@ -131,6 +131,7 @@
         <hikaricp.version>4.0.3</hikaricp.version>
         <h2.version>1.4.200</h2.version>
         <snowflake.version>3.13.5</snowflake.version>
+        <databricks.version>2.6.25</databricks.version>
         <redshiftJDBC.version>2.0.0.3</redshiftJDBC.version>
         <!-- Legend -->
         <legend.pure.version>1.52.1</legend.pure.version>
@@ -1648,6 +1649,11 @@
                 <groupId>net.snowflake</groupId>
                 <artifactId>snowflake-jdbc</artifactId>
                 <version>${snowflake.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.databricks</groupId>
+                <artifactId>databricks-jdbc</artifactId>
+                <version>${databricks.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.microsoft.sqlserver</groupId>
