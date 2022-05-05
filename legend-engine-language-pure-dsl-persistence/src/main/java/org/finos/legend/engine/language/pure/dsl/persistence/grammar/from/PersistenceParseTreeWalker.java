@@ -110,6 +110,10 @@ public class PersistenceParseTreeWalker
         PersistenceParserGrammar.TriggerContext triggerContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.trigger(), "trigger", persistence.sourceInformation);
         persistence.trigger = visitTrigger(triggerContext);
 
+        // service input (optional)
+        PersistenceParserGrammar.ServiceInputContext serviceInputContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.serviceInput(), "serviceInput", persistence.sourceInformation);
+        persistence.serviceInput = serviceInputContext == null ? null : visitConnectionFromPersistence(serviceInputContext, persistence.sourceInformation);
+
         // service
         PersistenceParserGrammar.ServiceContext serviceContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.service(), "service", persistence.sourceInformation);
         persistence.service = PureGrammarParserUtility.fromQualifiedName(serviceContext.qualifiedName().packagePath() == null ? Collections.emptyList() : serviceContext.qualifiedName().packagePath().identifier(), serviceContext.qualifiedName().identifier());
@@ -284,7 +288,7 @@ public class PersistenceParseTreeWalker
 
         // connection (optional)
         PersistenceParserGrammar.SinkConnectionContext sinkConnectionContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.sinkConnection(), "connection", sink.sourceInformation);
-        sink.connection = sinkConnectionContext == null ? null : visitConnection(sinkConnectionContext, sink.sourceInformation);
+        sink.connection = sinkConnectionContext == null ? null : visitConnectionFromSink(sinkConnectionContext, sink.sourceInformation);
 
         return sink;
     }
@@ -296,7 +300,7 @@ public class PersistenceParseTreeWalker
 
         // connection
         PersistenceParserGrammar.SinkConnectionContext sinkConnectionContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.sinkConnection(), "connection", sink.sourceInformation);
-        sink.connection = visitConnection(sinkConnectionContext, sink.sourceInformation);
+        sink.connection = visitConnectionFromSink(sinkConnectionContext, sink.sourceInformation);
 
         // binding
         PersistenceParserGrammar.BindingPointerContext bindingPointerContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.bindingPointer(), "binding", sink.sourceInformation);
@@ -309,44 +313,55 @@ public class PersistenceParseTreeWalker
      * connection
      **********/
 
-    private Connection visitConnection(PersistenceParserGrammar.SinkConnectionContext ctx, SourceInformation sourceInformation)
+    private Connection visitConnectionFromPersistence(PersistenceParserGrammar.ServiceInputContext ctx, SourceInformation sourceInformation)
     {
         if (ctx.connectionPointer() != null)
         {
-            return visitConnectionPointer(ctx);
+            return visitConnectionPointer(ctx.connectionPointer());
         }
         else if (ctx.embeddedConnection() != null)
         {
-            return visitEmbeddedConnection(ctx);
+            return visitEmbeddedConnection(ctx.embeddedConnection());
+        }
+        throw new EngineException("Unrecognized service input", sourceInformation, EngineErrorType.PARSER);
+    }
+
+    private Connection visitConnectionFromSink(PersistenceParserGrammar.SinkConnectionContext ctx, SourceInformation sourceInformation)
+    {
+        if (ctx.connectionPointer() != null)
+        {
+            return visitConnectionPointer(ctx.connectionPointer());
+        }
+        else if (ctx.embeddedConnection() != null)
+        {
+            return visitEmbeddedConnection(ctx.embeddedConnection());
         }
         throw new EngineException("Unrecognized connection", sourceInformation, EngineErrorType.PARSER);
     }
 
-    private ConnectionPointer visitConnectionPointer(PersistenceParserGrammar.SinkConnectionContext ctx)
+    private ConnectionPointer visitConnectionPointer(PersistenceParserGrammar.ConnectionPointerContext ctx)
     {
-        PersistenceParserGrammar.ConnectionPointerContext connectionPointerContext = ctx.connectionPointer();
         ConnectionPointer connectionPointer = new ConnectionPointer();
-        connectionPointer.connection = PureGrammarParserUtility.fromQualifiedName(connectionPointerContext.qualifiedName().packagePath() == null ? Collections.emptyList() : connectionPointerContext.qualifiedName().packagePath().identifier(), connectionPointerContext.qualifiedName().identifier());
-        connectionPointer.sourceInformation = walkerSourceInformation.getSourceInformation(connectionPointerContext.qualifiedName());
+        connectionPointer.connection = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
+        connectionPointer.sourceInformation = walkerSourceInformation.getSourceInformation(ctx.qualifiedName());
         return connectionPointer;
     }
 
-    private Connection visitEmbeddedConnection(PersistenceParserGrammar.SinkConnectionContext ctx)
+    private Connection visitEmbeddedConnection(PersistenceParserGrammar.EmbeddedConnectionContext ctx)
     {
-        PersistenceParserGrammar.EmbeddedConnectionContext embeddedConnectionContext = ctx.embeddedConnection();
         StringBuilder embeddedConnectionText = new StringBuilder();
-        for (PersistenceParserGrammar.EmbeddedConnectionContentContext fragment : embeddedConnectionContext.embeddedConnectionContent())
+        for (PersistenceParserGrammar.EmbeddedConnectionContentContext fragment : ctx.embeddedConnectionContent())
         {
             embeddedConnectionText.append(fragment.getText());
         }
         String embeddedConnectionParsingText = embeddedConnectionText.length() > 0 ? embeddedConnectionText.substring(0, embeddedConnectionText.length() - 2) : embeddedConnectionText.toString();
         // prepare island grammar walker source information
-        int startLine = embeddedConnectionContext.ISLAND_OPEN().getSymbol().getLine();
+        int startLine = ctx.ISLAND_OPEN().getSymbol().getLine();
         int lineOffset = walkerSourceInformation.getLineOffset() + startLine - 1;
         // only add current walker source information column offset if this is the first line
-        int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + embeddedConnectionContext.ISLAND_OPEN().getSymbol().getCharPositionInLine() + embeddedConnectionContext.ISLAND_OPEN().getSymbol().getText().length();
+        int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + ctx.ISLAND_OPEN().getSymbol().getCharPositionInLine() + ctx.ISLAND_OPEN().getSymbol().getText().length();
         ParseTreeWalkerSourceInformation embeddedConnectionWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
-        SourceInformation embeddedConnectionSourceInformation = walkerSourceInformation.getSourceInformation(embeddedConnectionContext);
+        SourceInformation embeddedConnectionSourceInformation = walkerSourceInformation.getSourceInformation(ctx);
         return this.connectionParser.parseEmbeddedRuntimeConnections(embeddedConnectionParsingText, embeddedConnectionWalkerSourceInformation, embeddedConnectionSourceInformation);
     }
 

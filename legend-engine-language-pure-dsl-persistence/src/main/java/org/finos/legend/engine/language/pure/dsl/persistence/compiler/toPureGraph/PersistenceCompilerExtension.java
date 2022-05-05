@@ -41,6 +41,7 @@ public class PersistenceCompilerExtension implements CompilerExtension
                 (persistence, context) ->
                 {
                     Root_meta_pure_persistence_metamodel_Persistence purePersistence = (Root_meta_pure_persistence_metamodel_Persistence) context.pureModel.getOrCreatePackage(persistence._package)._children().detect(c -> persistence.name.equals(c._name()));
+                    purePersistence._serviceInput(HelperPersistenceBuilder.buildServiceInput(persistence, context));
                     purePersistence._service(HelperPersistenceBuilder.buildService(persistence, context));
                     purePersistence._persister(HelperPersistenceBuilder.buildPersister(persistence.persister, context));
                     purePersistence._notifier(HelperPersistenceBuilder.buildNotifier(persistence.notifier, context));

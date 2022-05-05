@@ -16,6 +16,7 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persis
 
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.Notifier;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.Persister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
@@ -24,6 +25,7 @@ public class Persistence extends PackageableElement
 {
     public String documentation;
     public Trigger trigger;
+    public Connection serviceInput;
     public String service;
     public Persister persister;
     public Notifier notifier;

@@ -1118,6 +1118,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "{\n" +
                 "  doc: 'A persistence specification for Zoos.';\n" +
                 "  trigger: Manual;\n" +
+                "  serviceInput: test::TestConnection;\n" +
                 "  service: org::dxl::ZooService;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +
@@ -1206,6 +1207,12 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
         Root_meta_pure_persistence_metamodel_trigger_Trigger trigger = persistence._trigger();
         assertNotNull(trigger);
         assertTrue(trigger instanceof Root_meta_pure_persistence_metamodel_trigger_ManualTrigger);
+
+        // service input
+        Connection serviceInput = persistence._serviceInput();
+        assertNotNull(serviceInput);
+        assertTrue(serviceInput instanceof Root_meta_pure_mapping_modelToModel_JsonModelConnection);
+        //TODO: ledav -- use a connection applicable for a real use case
 
         // notifier
         Root_meta_pure_persistence_metamodel_notifier_Notifier notifier = persistence._notifier();

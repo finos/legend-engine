@@ -28,6 +28,14 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
                 "{\n" +
                 "  doc: 'test doc';\n" +
                 "  trigger: Manual;\n" +
+                "  serviceInput:\n" +
+                "  #{\n" +
+                "    JsonModelConnection\n" +
+                "    {\n" +
+                "      class: org::dxl::Animal;\n" +
+                "      url: 'my_url2';\n" +
+                "    }\n" +
+                "  }#\n" +
                 "  service: test::service::Service;\n" +
                 "  persister: Batch\n" +
                 "  {\n" +

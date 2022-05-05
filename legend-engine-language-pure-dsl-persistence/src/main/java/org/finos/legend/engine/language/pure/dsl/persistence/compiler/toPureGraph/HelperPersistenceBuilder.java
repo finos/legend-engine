@@ -98,6 +98,11 @@ public class HelperPersistenceBuilder
         return trigger.accept(TRIGGER_BUILDER);
     }
 
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection buildServiceInput(Persistence persistence, CompileContext context)
+    {
+        return buildConnection(persistence.serviceInput, false, persistence.sourceInformation, context);
+    }
+
     public static Root_meta_legend_service_metamodel_Service buildService(Persistence persistence, CompileContext context)
     {
         String service = persistence.service;

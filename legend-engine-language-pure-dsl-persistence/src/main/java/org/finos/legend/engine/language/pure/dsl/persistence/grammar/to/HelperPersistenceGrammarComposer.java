@@ -80,6 +80,7 @@ public class HelperPersistenceGrammarComposer
                 "{\n" +
                 renderDocumentation(persistence.documentation, indentLevel) +
                 renderTrigger(persistence.trigger, indentLevel) +
+                (persistence.serviceInput == null ? "" : renderConnection(persistence.serviceInput, "serviceInput", indentLevel, context)) +
                 renderService(persistence.service, indentLevel) +
                 renderPersister(persistence.persister, indentLevel, context) +
                 renderNotifier(persistence.notifier, indentLevel) +
@@ -124,6 +125,20 @@ public class HelperPersistenceGrammarComposer
                 getTabString(indentLevel) + "[\n" +
                 Iterate.makeString(ListIterate.collect(notifyees, n -> n.acceptVisitor(visitor)), ",\n") + "\n" +
                 getTabString(indentLevel) + "]\n";
+    }
+
+    private static String renderConnection(Connection connection, String key, int indentLevel, PureGrammarComposerContext context)
+    {
+        DEPRECATED_PureGrammarComposerCore composerCore = DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build();
+        if (connection instanceof ConnectionPointer)
+        {
+            return getTabString(indentLevel) + key + ": " + PureGrammarComposerUtility.convertPath(connection.accept(composerCore)) + ";\n";
+        }
+        return getTabString(indentLevel) + key + ":\n" +
+                getTabString(indentLevel) + "#{\n" +
+                getTabString(indentLevel + 1) + HelperConnectionGrammarComposer.getConnectionValueName(connection, composerCore.toContext()) + "\n" +
+                connection.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(composerCore).withIndentation(getTabSize(indentLevel + 1), true).build()) + "\n" +
+                getTabString(indentLevel) + "}#\n";
     }
 
     // helper visitors for class hierarchies
@@ -241,7 +256,7 @@ public class HelperPersistenceGrammarComposer
         {
             return getTabString(indentLevel) + "sink: Relational\n" +
                     getTabString(indentLevel) + "{\n" +
-                    (val.connection == null ? "" : renderConnection(val.connection, indentLevel + 1, context)) +
+                    (val.connection == null ? "" : renderConnection(val.connection, "connection", indentLevel + 1, context)) +
                     getTabString(indentLevel) + "}\n";
         }
 
@@ -251,27 +266,13 @@ public class HelperPersistenceGrammarComposer
             return getTabString(indentLevel) + "sink: ObjectStorage\n" +
                     getTabString(indentLevel) + "{\n" +
                     renderBinding(val.binding, indentLevel + 1) +
-                    renderConnection(val.connection, indentLevel + 1, context) +
+                    renderConnection(val.connection, "connection", indentLevel + 1, context) +
                     getTabString(indentLevel) + "}\n";
         }
 
         private static String renderBinding(String binding, int indentLevel)
         {
             return getTabString(indentLevel) + "binding: " + binding + ";\n";
-        }
-
-        private static String renderConnection(Connection connection, int indentLevel, PureGrammarComposerContext context)
-        {
-            DEPRECATED_PureGrammarComposerCore composerCore = DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build();
-            if (connection instanceof ConnectionPointer)
-            {
-                return getTabString(indentLevel) + "connection: " + PureGrammarComposerUtility.convertPath(connection.accept(composerCore)) + ";\n";
-            }
-            return getTabString(indentLevel) + "connection:\n" +
-                    getTabString(indentLevel) + "#{\n" +
-                    getTabString(indentLevel + 1) + HelperConnectionGrammarComposer.getConnectionValueName(connection, composerCore.toContext()) + "\n" +
-                    connection.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(composerCore).withIndentation(getTabSize(indentLevel + 1), true).build()) + "\n" +
-                    getTabString(indentLevel) + "}#\n";
         }
     }
 

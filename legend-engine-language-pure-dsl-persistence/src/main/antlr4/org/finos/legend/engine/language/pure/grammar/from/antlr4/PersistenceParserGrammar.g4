@@ -12,7 +12,7 @@ options
 identifier:                                 VALID_STRING | STRING
                                             | ALL | LET | ALL_VERSIONS | ALL_VERSIONS_IN_RANGE      // from M3Parser
                                             | TRUE | FALSE | IMPORT | NONE | DATE_TIME
-                                            | PERSISTENCE | PERSISTENCE_DOC | PERSISTENCE_TRIGGER | PERSISTENCE_SERVICE | PERSISTENCE_PERSISTER | PERSISTENCE_NOTIFIER
+                                            | PERSISTENCE | PERSISTENCE_DOC | PERSISTENCE_TRIGGER | PERSISTENCE_SERVICE_INPUT | PERSISTENCE_SERVICE | PERSISTENCE_PERSISTER | PERSISTENCE_NOTIFIER
                                             | TRIGGER_MANUAL | TRIGGER_CRON
                                             | PERSISTER_STREAMING | PERSISTER_BATCH | PERSISTER_SINK | PERSISTER_TARGET_SHAPE | PERSISTER_INGEST_MODE
                                             | NOTIFIER | NOTIFIER_NOTIFYEES | NOTIFYEE_EMAIL | NOTIFYEE_EMAIL_ADDRESS | NOTIFYEE_PAGER_DUTY| NOTIFYEE_PAGER_DUTY_URL
@@ -44,6 +44,7 @@ persistence:                                PERSISTENCE qualifiedName
                                                     (
                                                         documentation
                                                         | trigger
+                                                        | serviceInput
                                                         | service
                                                         | persister
                                                         | notifier
@@ -58,6 +59,12 @@ trigger:                                    PERSISTENCE_TRIGGER COLON
                                                     | TRIGGER_CRON
                                                 )
                                             SEMI_COLON
+;
+serviceInput:                               PERSISTENCE_SERVICE_INPUT COLON
+                                                (
+                                                    connectionPointer
+                                                    | embeddedConnection
+                                                )
 ;
 service:                                    PERSISTENCE_SERVICE COLON qualifiedName SEMI_COLON
 ;

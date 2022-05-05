@@ -19,6 +19,7 @@ PERSISTENCE:                                'Persistence';
 PERSISTENCE_DOC:                            'doc';
 
 PERSISTENCE_TRIGGER:                        'trigger';
+PERSISTENCE_SERVICE_INPUT:                  'serviceInput';
 PERSISTENCE_SERVICE:                        'service';
 PERSISTENCE_PERSISTER:                      'persister';
 PERSISTENCE_NOTIFIER:                       'notifier';
