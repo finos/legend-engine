@@ -731,7 +731,7 @@ public class HelperRelationalGrammarComposer
         {
             AwsOAuthAuthenticationStrategy auth = (AwsOAuthAuthenticationStrategy)_auth;
             int baseIndentation = 1;
-            return "AwsOAuth" +
+            return "awsOAuth" +
                     "\n" +
                     context.getIndentationString() + getTabString(baseIndentation) + "{\n" +
                     context.getIndentationString() + getTabString(baseIndentation + 1) + "secretArn: " + convertString(auth.secretArn, true) + ";\n" +
@@ -743,7 +743,7 @@ public class HelperRelationalGrammarComposer
         {
             AwsPKAuthenticationStrategy auth = (AwsPKAuthenticationStrategy)_auth;
             int baseIndentation = 1;
-            return "AwsPK" +
+            return "awsPK" +
                     "\n" +
                     context.getIndentationString() + getTabString(baseIndentation) + "{\n" +
                     context.getIndentationString() + getTabString(baseIndentation + 1) + "secretArn: " + convertString(auth.secretArn, true) + ";\n" +

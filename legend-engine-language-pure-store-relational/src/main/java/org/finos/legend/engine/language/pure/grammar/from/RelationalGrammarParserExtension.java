@@ -191,9 +191,9 @@ public class RelationalGrammarParserExtension implements IRelationalGrammarParse
                 case "SnowflakePublic":
                     return parseAuthenticationStrategy(code, p -> walker.visitSnowflakePublicAuthenticationStrategy(code, p.snowflakePublicAuth()));
                 // added new
-                case "AwsOAuth":
+                case "awsOAuth":
                     return parseAuthenticationStrategy(code, p -> walker.visitAwsOAuthAuthenticationStrategy(code, p.awsOAuth()));
-                case "AwsPK":
+                case "awsPK":
                     return parseAuthenticationStrategy(code, p -> walker.visitAwsPKAuthenticationStrategy(code, p.awsPK()));
 
                 case "GCPApplicationDefaultCredentials":

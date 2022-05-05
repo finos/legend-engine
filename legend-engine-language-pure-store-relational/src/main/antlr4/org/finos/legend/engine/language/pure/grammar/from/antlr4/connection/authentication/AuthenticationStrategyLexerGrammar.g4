@@ -25,11 +25,11 @@ SNOWFLAKE_AUTH_PASSPHRASE_VAULT_REFERENCE:  'passPhraseVaultReference';
 SNOWFLAKE_AUTH_PUBLIC_USERNAME:             'publicUserName';
 
 // added new
-AWS_OAUTH:                                  'AwsOAuth';
+AWS_OAUTH:                                  'awsOAuth';
 AWS_AUTH_SECRET_ARN:                        'secretArn';
 AWS_OAUTH_DISCOVERY_URL:                    'discoveryUrl';
 
-AWS_PK:                                     'AwsPK';
+AWS_PK:                                     'awsPK';
 AWS_PK_USER:                                'user';
 
 
