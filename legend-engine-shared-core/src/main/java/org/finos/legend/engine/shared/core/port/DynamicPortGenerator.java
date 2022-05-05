@@ -18,6 +18,7 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class DynamicPortGenerator
@@ -26,7 +27,7 @@ public class DynamicPortGenerator
     public static final int MAX_TEST_PORT = 65535;
 
     private static final int NUMBER_OF_TRIES = 10;
-    private static final AtomicInteger testPort = new AtomicInteger(MIN_TEST_PORT);
+    private static final AtomicInteger testPort = new AtomicInteger(MIN_TEST_PORT + new Random().nextInt(MAX_TEST_PORT - MIN_TEST_PORT));
 
     public static int generatePort() {
         for (int i = 0; i < NUMBER_OF_TRIES; i++) {
