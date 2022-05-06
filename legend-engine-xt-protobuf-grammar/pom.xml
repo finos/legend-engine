@@ -22,8 +22,8 @@
         <version>3.1.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>legend-engine-language-protobuf3-grammar</artifactId>
-    <name>Legend Engine - Language Protobuf3 - Grammar</name>
+    <artifactId>legend-engine-xt-protobuf-grammar</artifactId>
+    <name>Legend Engine - XT - Protobuf - Grammar</name>
 
     <build>
         <plugins>
@@ -112,7 +112,7 @@
         <!-- Pure -->
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-code-java-compiled-core</artifactId>
+            <artifactId>legend-pure-code-compiled-core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
@@ -131,7 +131,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-protocol-protobuf3</artifactId>
+            <artifactId>legend-engine-xt-protobuf-protocol</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

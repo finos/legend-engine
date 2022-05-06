@@ -36,6 +36,8 @@
         <module>legend-engine-xt-graphQL-query</module>
         <module>legend-engine-xt-graphQL-pure</module>
 
+        <module>legend-engine-xt-protobuf-grammar</module>
+        <module>legend-engine-xt-protobuf-protocol</module>
         <module>legend-engine-xt-protobuf</module>
         <module>legend-engine-xt-protobuf-pure</module>
 
@@ -76,8 +78,7 @@
         <module>legend-engine-xt-relationalStore-grammar</module>
         <module>legend-engine-xt-relationalStore-protocol</module>
 
-        <module>legend-engine-xt-protobuf-grammar</module>
-        <module>legend-engine-protocol-protobuf3</module>
+
 
         <module>legend-engine-pure-ide-light</module>
         <module>legend-engine-pure-ide-light-metadata-pure</module>
@@ -697,7 +698,7 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-protocol-protobuf3</artifactId>
+                <artifactId>legend-engine-xt-protobuf-protocol</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

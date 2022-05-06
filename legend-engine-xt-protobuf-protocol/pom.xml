@@ -22,8 +22,8 @@
         <version>3.1.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>legend-engine-protocol-protobuf3</artifactId>
-    <name>Legend Engine - Protocol - Protobuf3</name>
+    <artifactId>legend-engine-xt-protobuf-protocol</artifactId>
+    <name>Legend Engine - XT - Protobuf - Protocol</name>
 
     <build>
         <plugins>
