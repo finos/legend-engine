@@ -1,0 +1,325 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::json::*;
+
+import meta::pure::metamodel::tds::*;
+
+import meta::pure::profiles::*;
+import meta::pure::mapping::*;
+
+import meta::relational::metamodel::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::metamodel::join::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::mapping::*;
+
+import meta::relational::functions::toDDL::*;
+
+import meta::relational::tests::mapping::enumeration::model::store::*;
+import meta::relational::tests::mapping::enumeration::model::domain::*;
+import meta::relational::tests::mapping::enumeration::model::mapping::*;
+
+import meta::relational::tests::query::enumeration::*;
+import meta::relational::tests::mapping::enumeration::*;
+import meta::relational::tests::projection::enumeration::*;
+
+import meta::pure::runtime::*;
+import meta::relational::runtime::*;
+import meta::relational::runtime::authentication::*;
+
+function meta::relational::tests::mapping::enumeration::createTablesAndFillDb():Boolean[1]
+{
+   let connection = enumTestRuntime().connectionByElement(myDB)->cast(@TestDatabaseConnection);
+
+    dropAndCreateTableInDb(myDB, 'employeeTable', $connection);
+
+    executeInDb('insert into employeeTable (id, name, firmId, doh, type, active,skills) values (1, \'Alice\',  0, \'1983-03-15\', \'FTC\', 1,null)', $connection);
+    executeInDb('insert into employeeTable (id, name, firmId, doh, type, active,skills) values (2, \'Bob\',    0, \'2003-07-19\', \'FTE\', 0,\',1,2,\')', $connection);
+    executeInDb('insert into employeeTable (id, name, firmId, doh, type, active,skills) values (3, \'Curtis\', 0, \'2012-08-25\', \'FTO\', null, \',3,2,\')', $connection);
+
+    dropAndCreateTableInDb(tradeDB, 'eqTradeTable', $connection);
+    executeInDb('insert into eqTradeTable (id, product, type, qty) values (1, \'Firm D\',  \'BUY\',  10)', $connection);
+    executeInDb('insert into eqTradeTable (id, product, type, qty) values (2, \'MSFT\', \'BUY\',  20)', $connection);
+    executeInDb('insert into eqTradeTable (id, product, type, qty) values (3, \'MSFT\', \'SELL\',  5)', $connection);
+    executeInDb('insert into eqTradeTable (id, product, type, qty) values (4, \'AAPL\', \'BUY\',  12)', $connection);
+
+   
+    dropAndCreateTableInDb(productDB, 'Product_Synonym', $connection);
+    dropAndCreateTableInDb(productDB, 'Product', $connection);
+
+    executeInDb('insert into Product (id, prod_desc) values (1, \'My Product\')', $connection);
+    executeInDb('insert into Product (id, prod_desc) values (2, \'My Product 2\')', $connection);
+    executeInDb('insert into Product_Synonym (id, product_id, type, value) values (11, 1, \'CUS\',  \'9UF81235F\')', $connection);
+    executeInDb('insert into Product_Synonym (id, product_id, type, value) values (12, 2, \'CUS\',  \'9UPZX235F\')', $connection);
+    executeInDb('insert into Product_Synonym (id, product_id, type, value) values (13, 1, \'GSN\',  \'987123\')', $connection);
+
+    
+   true;
+}
+
+function <<test.BeforePackage>> meta::relational::tests::mapping::enumeration::setUp():Boolean[1]
+{
+    meta::relational::tests::mapping::enumeration::createTablesAndFillDb();
+}
+
+function <<test.BeforePackage>> meta::relational::tests::projection::enumeration::setUp():Boolean[1]
+{
+    meta::relational::tests::mapping::enumeration::createTablesAndFillDb();
+}
+
+function <<test.BeforePackage>> meta::relational::tests::query::enumeration::setUp():Boolean[1]
+{
+    meta::relational::tests::mapping::enumeration::createTablesAndFillDb();
+}
+
+function meta::relational::tests::mapping::enumeration::enumTestRuntime():Runtime[1]
+{
+   meta::relational::tests::testRuntime(myDB);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::enumeration::testEnumTheSame():Boolean[1]
+{
+   let map1 = employeeTestMapping.enumerationMappings->first()->toOne().toDomainValue('FTC');
+   let map2 = employeeTestMapping2.enumerationMappings->first()->toOne().toDomainValue('FTC');
+
+   assertEquals($map1, $map2);
+   assertEquals(EmployeeType.CONTRACT, $map1);
+
+}
+
+
+function <<test.Test>> meta::relational::tests::mapping::enumeration::testMapping():Boolean[1]
+{
+ 
+    let result = execute(|Employee.all(), employeeTestMapping, enumTestRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    assertSize($result.values, 3);
+    assertSameElements(['Alice', 'Bob', 'Curtis'], $result.values->map(e | $e.name));
+
+    let alice = $result.values->filter(e | $e.name == 'Alice')->toOne();
+    assertEquals(%1983-03-15 , $alice.dateOfHire);
+    assertEquals(EmployeeType.CONTRACT, $alice.type);
+    assertEquals(YesNo.YES, $alice.active);
+
+    let bob = $result.values->filter(e | $e.name == 'Bob')->toOne();
+    assertEquals(%2003-07-19 , $bob.dateOfHire);
+    assertEquals(EmployeeType.FULL_TIME, $bob.type);
+    assertEquals(YesNo.NO, $bob.active);
+
+    let curtis = $result.values->filter(e | $e.name == 'Curtis')->toOne();
+    assertEquals(%2012-08-25, $curtis.dateOfHire);
+    assertEquals(EmployeeType.CONTRACT, $curtis.type);
+    assertEquals([], $curtis.active);
+    
+    //Test null mappings
+    let newResult = execute(|Employee.all(), employeeTestMappingWithFunction, enumTestRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let newBob = $newResult.values->filter(e | $e.name == 'Bob')->toOne();
+    assertEquals([], $newBob.type);
+}
+
+function <<test.Test>> meta::relational::tests::query::enumeration::testQueryWithEnum():Boolean[1]
+{
+    
+    let fteResult = execute(|Employee.all()->filter(e | $e.type == EmployeeType.FULL_TIME), employeeTestMapping, enumTestRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    assertSize($fteResult.values, 1);
+    assertSameElements(['Bob'], $fteResult.values->map(e | $e.name));
+
+    let fteResult2 = execute(|Employee.all()->filter(e | EmployeeType.FULL_TIME == $e.type), employeeTestMapping, enumTestRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    assertSize($fteResult2.values, 1);
+    assertSameElements(['Bob'], $fteResult2.values->map(e | $e.name));
+
+    let ftcResult = execute(|Employee.all()->filter(e | $e.type == EmployeeType.CONTRACT), employeeTestMapping, enumTestRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    assertSize($ftcResult.values, 2);
+    assertSameElements(['Alice', 'Curtis'], $ftcResult.values->map(e | $e.name));
+
+    let ftcResult2 = execute(|Employee.all()->filter(e | EmployeeType.CONTRACT == $e.type), employeeTestMapping, enumTestRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    assertSize($ftcResult2.values, 2);
+    assertSameElements(['Alice', 'Curtis'], $ftcResult2.values->map(e | $e.name));
+}
+
+function <<test.Test>> meta::relational::tests::mapping::enumeration::testEnumMappings():Boolean[1]
+{
+    let map1 = tradeMapping.enumerationMappingByName('TradeSource1')->toOne();
+    let map2 = tradeMapping.enumerationMappingByName('TradeSource2')->toOne();
+
+    assertEquals(TradeType.BUY, $map1.toDomainValue('BUY'));
+    assertEquals(TradeType.BUY, $map1.toDomainValue('B'));
+    assertEquals(TradeType.SELL, $map1.toDomainValue('SELL'));
+    assertEquals(TradeType.SELL, $map1.toDomainValue('S'));
+
+    assertEquals(TradeType.BUY, $map2.toDomainValue('CREDIT'));
+    assertEquals(TradeType.SELL, $map2.toDomainValue('DEBIT'));
+}
+
+function <<test.Test>> meta::relational::tests::mapping::enumeration::testEnumMappingsWithInclude():Boolean[1]
+{
+    let map1 = tradeMapping3.enumerationMappingByName('TradeSource11')->toOne();
+    let map2 = tradeMapping3.enumerationMappingByName('TradeSource22')->toOne();
+
+    assertEquals(TradeType.BUY, $map1.toDomainValue('BUY'));
+    assertEquals(TradeType.BUY, $map1.toDomainValue('B'));
+    assertEquals(TradeType.SELL, $map1.toDomainValue('SELL'));
+    assertEquals(TradeType.SELL, $map1.toDomainValue('S'));
+
+    assertEquals(TradeType.BUY, $map2.toDomainValue('CREDIT'));
+    assertEquals(TradeType.SELL, $map2.toDomainValue('DEBIT'));
+}
+
+function <<test.Test>> meta::relational::tests::projection::enumeration::testProjectionWithEnum():Boolean[1]
+{
+  
+    let result = execute(|Employee.all()->project([#/Employee/name#, #/Employee/dateOfHire#, #/Employee/type#]), employeeTestMapping, enumTestRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+    let tds = $result.values->at(0);
+    assertSize($tds.rows, 3);
+    assertEquals('CONTRACT,FULL_TIME,CONTRACT', $tds->columnValues('type')->makeString(','));
+}
+
+function <<test.Test>> meta::relational::tests::projection::enumeration::testProjectionWithEnumUsingLambda():Boolean[1]
+{
+   
+    let result = execute(|Employee.all()->project([#/Employee/name#, #/Employee/dateOfHire#, e|$e.type], ['name', 'doh', 'type']), employeeTestMapping, enumTestRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+    let tds = $result.values->at(0);
+    assertSize($tds.rows, 3);
+    assertEquals('CONTRACT,FULL_TIME,CONTRACT', $tds->columnValues('type')->makeString(','));
+}
+
+function <<test.Test>> meta::relational::tests::projection::enumeration::testProjectionWithEnumAndFunctionsUsingLambda():Boolean[1]
+{
+  
+    let result = execute(|Employee.all()->project([f|$f.name+'_test', e|$e.type], ['name', 'type']), employeeTestMapping, enumTestRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+    let tds = $result.values->at(0);
+    assertSize($tds.rows, 3);
+    assertSameElements(['CONTRACT Alice_test', 'CONTRACT Curtis_test', 'FULL_TIME Bob_test'], $tds.rows->map(t|$t.get('type')->id()+' '+$t.getString('name')));
+}
+
+function <<test.Test>> meta::relational::tests::query::enumeration::testInQueryWithEnum():Boolean[1]
+{
+  
+    let result = execute(|Employee.all()->filter(e|$e.type->toOne()->in([EmployeeType.CONTRACT])), employeeTestMapping, enumTestRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    assertEquals(EmployeeType.CONTRACT, $result.values->at(0).type);
+    
+    let result2 = execute(|Employee.all()->filter(e|$e.type->toOne()->in([EmployeeType.CONTRACT, EmployeeType.FULL_TIME])), employeeTestMapping, enumTestRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    assertSameElements([EmployeeType.CONTRACT,EmployeeType.FULL_TIME], $result2.values.type->removeDuplicates());
+}
+
+function <<test.Test>> meta::relational::tests::query::enumeration::testAggregationFunctionWithEnum():Boolean[1]
+{
+   
+    let result = execute(|Employee.all()->groupBy(
+                                     [e|$e.type],
+                                     agg(
+                                           e|$e.type,
+                                           y|$y->count()
+                                         ),
+                                     ['Type', 'cnt']
+                                  ), employeeTestMapping, enumTestRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+    let sorted = $result.values->at(0)->sort(['Type']);
+                                  
+    //TODO - should merge the two contract lines into a single count
+    assertEquals([EmployeeType.CONTRACT, 1, EmployeeType.CONTRACT, 1, EmployeeType.FULL_TIME, 1], $sorted.rows.values);
+    
+}
+
+
+function <<test.Test>> meta::relational::tests::projection::enumeration::testProjectionWithInheritedEnum():Boolean[1]
+{
+    
+    let result = execute(|EquityTrade.all()->project([#/EquityTrade/product#, #/EquityTrade/type#, #/EquityTrade/quantity#]), tradeMapping, enumTestRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+    let tds = $result.values->at(0);
+    assertSize($tds.rows, 4);
+    assertEquals('Firm D,MSFT,MSFT,AAPL', $tds->columnValues('product')->makeString(','));
+    assertEquals('BUY,BUY,SELL,BUY', $tds->columnValues('type')->makeString(','));
+}
+
+function <<test.Test>> meta::relational::tests::projection::enumeration::testProjectionWithEnumThroughAssociation():Boolean[1]
+{
+  
+    let result = execute(|Product.all()->project([#/Product/synonyms/type#, p|$p.synonyms.type, p|$p.synonyms->map(s|$s.type == ProductSynonymType.CUSIP)], ['a','b','c']), productMapping, enumTestRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+    let tds = $result.values->at(0);
+    assertSize($tds.rows, 3);
+    assertEquals([ProductSynonymType.CUSIP, ProductSynonymType.CUSIP, true], $tds.rows->at(0).values);
+    assertEquals([ProductSynonymType.GS_NUMBER, ProductSynonymType.GS_NUMBER, false], $tds.rows->at(1).values);
+    assertEquals([ProductSynonymType.CUSIP, ProductSynonymType.CUSIP, true], $tds.rows->at(2).values);
+}
+
+
+function <<test.Test>> meta::relational::tests::projection::enumeration::testProjectionWithEnumQualifierParameter():Boolean[1]
+{
+   
+    let result = execute(|Product.all()->project([#/Product/description#, 
+                                                  #/Product/synonymsByType(ProductSynonymType.CUSIP)/value!cusip#, 
+                                                  #/Product/gsn/value!gsn#]), 
+                                                  productMapping, enumTestRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+    let tds = $result.values->at(0);
+    assertSize($tds.rows, 2);
+    assertEquals('987123,TDSNull', $tds->columnValues('gsn')->makeString(','));
+    assertEquals('9UF81235F,9UPZX235F', $tds->columnValues('cusip')->makeString(','));
+}
+
+
+function <<test.Test>> meta::relational::tests::projection::enumeration::testFilterWithEnumQualifierParameter():Boolean[1]
+{
+  
+    let result = execute(|Product.all()->filter(p | $p.synonymsByType(ProductSynonymType.CUSIP)->toOne().value == '9UF81235F')->project(
+                                                  [#/Product/description#]), 
+                                                  productMapping, enumTestRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+    let tds = $result.values->at(0);
+    assertSize($tds.rows, 1);
+    assertEquals('My Product', $tds->columnValues('description')->makeString(','));
+}
+
+function <<test.Test>> meta::relational::tests::projection::enumeration::testProjectWithIfWhereOneSideIsEnumLiteral():Boolean[1]
+{
+   
+    let result = execute(|Product.all()->project([p|$p.description, p|if($p.description == 'My Product 2',|ProductSynonymType.GS_NUMBER,|$p.synonyms.type)], ['description','type']), productMapping, enumTestRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+    let tds = $result.values->at(0);
+    assertSize($tds.rows, 3);
+    assertEquals(['My Product', ProductSynonymType.CUSIP], $tds.rows->at(0).values);
+    assertEquals(['My Product', ProductSynonymType.GS_NUMBER], $tds.rows->at(1).values);
+    assertEquals(['My Product 2', ProductSynonymType.GS_NUMBER], $tds.rows->at(2).values);
+}
+
+function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::projection::enumeration::testProjectWithIfWhereOneSideIsEnumLiteral2():Boolean[1]
+{
+   let value = ProductSynonymType.GS_NUMBER;
+   
+    let result = execute(|Product.all()->project([p|$p.description, p|if($p.description == 'My Product 2',|$value,|$p.synonyms.type)], ['description','type']), productMapping, enumTestRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+    let tds = $result.values->at(0);
+    assertSize($tds.rows, 3);
+    assertEquals(['My Product', ProductSynonymType.CUSIP], $tds.rows->at(0).values);
+    assertEquals(['My Product', ProductSynonymType.GS_NUMBER], $tds.rows->at(1).values);
+    assertEquals(['My Product 2', ProductSynonymType.GS_NUMBER], $tds.rows->at(2).values);
+}
+
+function <<test.Test>> meta::relational::tests::projection::enumeration::testProjectWithIfWhereBothSidesUseTheSameEnumMapping():Boolean[1]
+{
+ 
+    let result = execute(|Product.all()->project([p|$p.description, p|if($p.description == 'My Product 2',|$p.synonyms.type,|$p.synonyms.type)], ['description','type']), productMapping, enumTestRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+    let tds = $result.values->at(0);
+    assertSize($tds.rows, 3);
+    assertEquals(['My Product', ProductSynonymType.CUSIP], $tds.rows->at(0).values);
+    assertEquals(['My Product', ProductSynonymType.GS_NUMBER], $tds.rows->at(1).values);
+    assertEquals(['My Product 2', ProductSynonymType.CUSIP], $tds.rows->at(2).values);
+}

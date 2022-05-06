@@ -1,0 +1,307 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::tests::mapping::join::*;
+import meta::relational::functions::asserts::*;
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::mapping::join::model::domain::*;
+import meta::relational::tests::mapping::join::model::mapping::*;
+import meta::relational::tests::mapping::join::model::store::*;
+import meta::relational::mapping::*;
+import meta::pure::profiles::*;
+import meta::relational::functions::sqlstring::*;
+
+function <<test.Test>> meta::relational::tests::mapping::join::testJoinInPropertyMapping():Boolean[1]
+{
+   let result = execute(|Person.all(), advancedRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 7);
+   assertSameElements(['Allen', 'Hill', 'Smith', 'Johnson', 'Harris', 'Roberts', 'Hill'], $result.values.lastName);
+   assertSameElements(['extra 1', 'extra 2', 'extra 3', 'extra 4', 'extra 5', 'extra 6', 'extra 7'], $result.values.extraInformation);
+   assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "personextensiontable_0".EXTRAINFO as "extraInformation" from personTable as "root" left outer join personExtensionTable as "personextensiontable_0" on ("root".ID = "personextensiontable_0".PERSON_ID)', $result);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::join::testJoinInPropertyMappingQuery():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p|$p.extraInformation == 'extra 1'), advancedRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 1);
+   assertSameElements('Smith', $result.values.lastName);
+   assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "personextensiontable_0".EXTRAINFO as "extraInformation" from personTable as "root" left outer join personExtensionTable as "personextensiontable_0" on ("root".ID = "personextensiontable_0".PERSON_ID) where "personextensiontable_0".EXTRAINFO = \'extra 1\'', $result);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::join::testJoinInPropertyMappingAndJoinInQuery():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p|$p.firm.legalName == 'Firm X'), advancedRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 4);
+   assertSameElements(['Allen', 'Smith', 'Johnson', 'Hill'], $result.values.lastName);
+   assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "personextensiontable_0".EXTRAINFO as "extraInformation" from personTable as "root" left outer join personExtensionTable as "personextensiontable_0" on ("root".ID = "personextensiontable_0".PERSON_ID) left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID and "firmtable_0".FLAG is null and "root".FLAG is not null) where "firmtable_0".LEGALNAME = \'Firm X\'', $result);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::join::testFilterOnSimpleTypePropertyDeepWithJoinInMapping():Boolean[1]
+{
+   let result = execute(|Firm.all().employees.extraInformation->filter(p|$p->in(['extra 1', 'extra 2'])), advancedRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 2);
+   assertSameElements(['extra 1', 'extra 2'], $result.values);
+   assertSameSQL('select "personextensiontable_0".EXTRAINFO from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID and "root".FLAG is null and "persontable_0".FLAG is not null) left outer join personExtensionTable as "personextensiontable_0" on ("persontable_0".ID = "personextensiontable_0".PERSON_ID) where "personextensiontable_0".EXTRAINFO in (\'extra 1\', \'extra 2\')', $result);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::join::testFilterOnSimpleTypePropertyDeepWithJoinInMappingNotUsed():Boolean[1]
+{
+   let result = execute(|Firm.all().employees.lastName->filter(p|$p->in(['Johnson', 'Hill'])), advancedRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 3);
+   assertSameElements(['Johnson', 'Hill', 'Hill'], $result.values);
+   assertSameSQL('select "persontable_0".LASTNAME from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID and "root".FLAG is null and "persontable_0".FLAG is not null) where "persontable_0".LASTNAME in (\'Johnson\', \'Hill\')', $result);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::join::testFilterDeepWithJoinInMappingInMiddle():Boolean[1]
+{
+   let result = execute(|Firm.all().employees->filter(e|$e.extraInformation->toOne()->in(['extra 1', 'extra 7'])).firm.legalName, advancedRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 2);
+   assertSameElements(['Firm X', 'Firm C'], $result.values);
+   assertSameSQL('select "firmtable_1".LEGALNAME from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID and "root".FLAG is null and "persontable_0".FLAG is not null) left outer join personExtensionTable as "personextensiontable_0" on ("persontable_0".ID = "personextensiontable_0".PERSON_ID) left outer join firmTable as "firmtable_1" on ("firmtable_1".ID = "persontable_0".FIRMID and "firmtable_1".FLAG is null and "persontable_0".FLAG is not null) where "personextensiontable_0".EXTRAINFO in (\'extra 1\', \'extra 7\')', $result);
+}
+
+
+function <<test.Test>> meta::relational::tests::mapping::join::testJoinInPropertyMappingAndJoinInQueryWithGrouping():Boolean[1]
+{
+   let result1 = execute(|Person.all()->filter(p|$p.firm.legalName == 'Firm X'), advancedRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result1.values, 4);
+   assertSameElements(['Allen', 'Smith', 'Johnson', 'Hill'], $result1.values.lastName);
+   assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "personextensiontable_0".EXTRAINFO as "extraInformation" from personTable as "root" left outer join personExtensionTable as "personextensiontable_0" on ("root".ID = "personextensiontable_0".PERSON_ID) left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID and "firmtable_0".FLAG is null and "root".FLAG is not null) where "firmtable_0".LEGALNAME = \'Firm X\'', $result1);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::join::testProjectOfTypeMadeOfMultipleJoinsOnlyIncludesJoinsRequiredForProjectedColumns():Boolean[1]
+{
+   let result1 = execute(|Person.all()->project([p | $p.firstName], ['firstName']), advancedRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameElements(['Anthony', 'David', 'Fabrice', 'John', 'John', 'Oliver', 'Peter'], $result1.values->at(0).rows->map( r | $r.values));
+   assertSameSQL('select "root".FIRSTNAME as "firstName" from personTable as "root"', $result1);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::join::testProjectOfTypeMadeOfMultipleJoinsWithFilterOnlyIncludesJoinsRequiredForProjectedColumns():Boolean[1]
+{
+   let result1 = execute(|Person.all()->filter(p | $p.firstName == 'John')->project([p | $p.firstName], ['firstName']), advancedRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameElements(['John', 'John'], $result1.values->at(0).rows->map( r | $r.values));
+   assertSameSQL('select "root".FIRSTNAME as "firstName" from personTable as "root" where "root".FIRSTNAME = \'John\'', $result1);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::join::testTwoJoinsInPropertyMappingAndJoinInQueryWithGrouping():Boolean[1]
+{
+   let result2 = execute(|Person.all()->filter(p|$p.firm.legalName == 'Firm X'), advancedRelationalMapping2, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result2.values, 4);
+   assertSameElements(['Allen', 'Smith', 'Johnson', 'Hill'], $result2.values.lastName);
+   assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "personextensiontable_0".EXTRAINFO as "extraInformation" from personTable as "root" left outer join MiddleTable as "middletable_0" on ("root".ID = "middletable_0".ID) left outer join personExtensionTable as "personextensiontable_0" on ("middletable_0".LINKID = "personextensiontable_0".ID and "middletable_0".LINKID <> 999999999 and "personextensiontable_0".ID != -99999999) left outer join firmTable as "firmtable_0" on (("firmtable_0".ID = "root".FIRMID) and ("firmtable_0".FLAG is null) and ("root".FLAG is not null)) where "firmtable_0".LEGALNAME = \'Firm X\'', $result2);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::join::testTwoJoinsInPropertyMultipleParenthesisMappingAndJoinInQueryWithGrouping():Boolean[1]
+{
+   let result3 = execute(|Person.all()->filter(p|$p.firm.legalName == 'Firm X'), advancedRelationalMapping3, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result3.values, 4);
+   assertSameElements(['Allen', 'Smith', 'Johnson', 'Hill'], $result3.values.lastName);
+   assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "personextensiontable_0".AGE as "age", "personextensiontable_0".EXTRAINFO as "extraInformation" from personTable as "root" left outer join MiddleTable as "middletable_0" on ("root".ID = "middletable_0".ID) left outer join personExtensionTable as "personextensiontable_0" on ("middletable_0".LINKID = "personextensiontable_0".ID and "middletable_0".LINKID <> 999999999 and "personextensiontable_0".ID != -99999999) left outer join firmTable as "firmtable_0" on ((("firmtable_0".ID = "root".FIRMID) and ("firmtable_0".FLAG is null)) and ("root".FLAG is not null)) where "firmtable_0".LEGALNAME = \'Firm X\'', $result3);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::join::testMultipleJoinsInPropertyMapping():Boolean[1]
+{
+   let result = execute(|TypeBuiltOutOfMultipleJoins.all(), advancedRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 3);
+   assertSameElements(['Row1', 'Row2', 'Row3'], $result.values.tableProperty);
+   assertSameElements(['Row1A', 'Row2A', 'Row3A'], $result.values.propertyTableA);
+   assertSameElements(['Row1B', 'Row2B', 'Row3B'], $result.values.propertyTableB);
+   assertSameSQL('select "root".ID as "pk_0", "root".TypeProperty as "tableProperty", "typetablea_0".TypePropertyA as "propertyTableA", "typetableb_0".TypePropertyB as "propertyTableB" from TypeTable as "root" left outer join TypeTableA as "typetablea_0" on ("root".ID = "typetablea_0".ID) left outer join TypeTableB as "typetableb_0" on ("root".ID = "typetableb_0".ID and "typetableb_0".IN_Z <= current_timestamp() and current_timestamp() < "typetableb_0".OUT_Z)', $result);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::join::testMultipleJoinsInPropertyMappingWithDatesInClass():Boolean[1]
+{
+   let result = execute(|TypeBuiltOutOfMultipleJoinsWithDates.all(), advancedRelationalMapping3, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 6);
+   assertSameElements(['Row1', 'Row2', 'Row3', 'Row1', 'Row2', 'Row3'], $result.values.tableProperty);
+   assertSameElements(['Row1A', 'Row2A', 'Row3A', 'Row1A', 'Row2A', 'Row3A'], $result.values.propertyTableA);
+   assertSameElements(['Row1B old', 'Row2B old', 'Row3B old', 'Row1B', 'Row2B', 'Row3B'], $result.values.propertyTableB);
+   assertSameElements([%1900-01-01T00:00:00.000000000, %1900-01-01T00:00:00.000000000, %1900-01-01T00:00:00.000000000, %2014-09-24T00:00:00.000000000, %2014-09-24T00:00:00.000000000, %2014-09-24T00:00:00.000000000], $result.values.inDate);
+   assertSameElements([%2014-09-24T00:00:00.000000000, %2014-09-24T00:00:00.000000000, %2014-09-24T00:00:00.000000000, %9999-12-31T23:59:59.999000000, %9999-12-31T23:59:59.999000000, %9999-12-31T23:59:59.999000000], $result.values.outDate);
+  assertSameSQL('select "root".ID as "pk_0", "root".TypeProperty as "tableProperty", "typetablea_0".TypePropertyA as "propertyTableA", "typetableb_0".TypePropertyB as "propertyTableB", "typetableb_0".IN_Z as "inDate", "typetableb_0".OUT_Z as "outDate" from TypeTable as "root" left outer join TypeTableA as "typetablea_0" on ("root".ID = "typetablea_0".ID) left outer join TypeTableB as "typetableb_0" on ("root".ID = "typetableb_0".ID)', $result);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::join::testMultipleJoinsInPropertyMappingWithDateInJoin():Boolean[1]
+{
+   let result = execute(|TypeBuiltOutOfMultipleJoins.all(), advancedRelationalMapping2, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 3);
+   assertSameElements(['Row1', 'Row2', 'Row3'], $result.values.tableProperty);
+   assertSameElements(['Row1A', 'Row2A', 'Row3A'], $result.values.propertyTableA);
+   assertSameElements(['Row1B old', 'Row2B old', 'Row3B old'], $result.values.propertyTableB);
+   assertSameSQL('select "root".ID as "pk_0", "root".TypeProperty as "tableProperty", "typetablea_0".TypePropertyA as "propertyTableA", "typetableb_0".TypePropertyB as "propertyTableB" from TypeTable as "root" left outer join TypeTableA as "typetablea_0" on ("root".ID = "typetablea_0".ID) left outer join TypeTableB as "typetableb_0" on ("root".ID = "typetableb_0".ID and "typetableb_0".IN_Z <= \'2013-07-15 13:52:22.370\' and \'2013-07-15 13:52:22.370\' < "typetableb_0".OUT_Z)', $result);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::join::testConstraintTargetingMultipleJoinsInPropertyMapping():Boolean[1]
+{
+   let result = execute(|Firm.all()->filter(f|$f.employees->exists(e|$e.extraInformation == 'extra 3')), advancedRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values->size(), 1);
+   assertEquals('Firm X', $result.values.legalName);
+   assertSameSQL('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join (select distinct "persontable_1".FIRMID, "persontable_1".FLAG from personTable as "persontable_1" left outer join personExtensionTable as "personextensiontable_0" on ("persontable_1".ID = "personextensiontable_0".PERSON_ID) where "personextensiontable_0".EXTRAINFO = \'extra 3\') as "persontable_0" on ("root".ID = "persontable_0".FIRMID and "root".FLAG is null and "persontable_0".FLAG is not null) where "persontable_0".FLAG is not null and "persontable_0".FIRMID is not null', $result);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::join::testConstraintTargetingMultipleJoinsInPropertyMappingNoJoinProperty():Boolean[1]
+{
+   let result = execute(|Firm.all()->filter(f|$f.employees->exists(e|$e.firstName == 'Oliver')), advancedRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values->size(), 1);
+   assertEquals('Firm B', $result.values.legalName);
+   assertSameSQL('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join (select distinct "persontable_1".FIRMID, "persontable_1".FLAG from personTable as "persontable_1" where "persontable_1".FIRSTNAME = \'Oliver\') as "persontable_0" on ("root".ID = "persontable_0".FIRMID and "root".FLAG is null and "persontable_0".FLAG is not null) where "persontable_0".FLAG is not null and "persontable_0".FIRMID is not null', $result);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::join::testJoinInPropertyMappingDeep():Boolean[1]
+{
+   let result = execute(|Person.all(), advancedRelationalMapping2, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 7);
+   assertSameElements(['Allen', 'Hill', 'Smith', 'Johnson', 'Harris', 'Roberts', 'Hill'], $result.values.lastName);
+   assertSameElements(['extra 1', 'extra 2', 'extra 3', 'extra 4', 'extra 5', 'extra 6', 'extra 7'], $result.values.extraInformation);
+   assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "personextensiontable_0".EXTRAINFO as "extraInformation" from personTable as "root" left outer join MiddleTable as "middletable_0" on ("root".ID = "middletable_0".ID) left outer join personExtensionTable as "personextensiontable_0" on ("middletable_0".LINKID = "personextensiontable_0".ID and "middletable_0".LINKID <> 999999999 and "personextensiontable_0".ID != -99999999)', $result);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::join::testJoinInPropertyMappingUsingIncludes():Boolean[1]
+{
+   let result = execute(|Person.all(), advancedRelationalMappingIncludePersonAndFirm, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 7);
+   assertSameElements(['Allen', 'Hill', 'Smith', 'Johnson', 'Harris', 'Roberts', 'Hill'], $result.values.lastName);
+   assertSameElements(['extra 1', 'extra 2', 'extra 3', 'extra 4', 'extra 5', 'extra 6', 'extra 7'], $result.values.extraInformation);
+   assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "personextensiontable_0".EXTRAINFO as "extraInformation" from personTable as "root" left outer join personExtensionTable as "personextensiontable_0" on ("root".ID = "personextensiontable_0".PERSON_ID)', $result);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::join::testJoinInPropertyMappingUsingNestedIncludes():Boolean[1]
+{
+   let result = execute(|Person.all(), advancedRelationalMappingIncludeFirmIncludePerson, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 7);
+   assertSameElements(['Allen', 'Hill', 'Smith', 'Johnson', 'Harris', 'Roberts', 'Hill'], $result.values.lastName);
+   assertSameElements(['extra 1', 'extra 2', 'extra 3', 'extra 4', 'extra 5', 'extra 6', 'extra 7'], $result.values.extraInformation);
+   assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "personextensiontable_0".EXTRAINFO as "extraInformation" from personTable as "root" left outer join personExtensionTable as "personextensiontable_0" on ("root".ID = "personextensiontable_0".PERSON_ID)', $result);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::join::testChainedOuterJoinsMerge():Boolean[1]
+{
+   let result = execute(|Firm.all()->project([f | $f.employees.firstName, f | $f.legalName, f | $f.employees.lastName], ['firstname', 'firm', 'lastname']), chainedJoins, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 7);
+   assertEquals(['Peter', 'Firm X', 'Smith',
+                  'John', 'Firm X', 'Johnson',
+                  'John', 'Firm X', 'Hill',
+                  'Anthony', 'Firm X', 'Allen',
+                  'Fabrice', 'Firm A', 'Roberts',
+                  'Oliver', 'Firm B', 'Hill',
+                  ^TDSNull(), 'Firm C', ^TDSNull()], $result.values.rows.values);
+  assertSameSQL('select "persontable_0".FIRSTNAME as "firstname", "root".LEGALNAME as "firm", "persontable_0".LASTNAME as "lastname" from firmTable as "root" left outer join firmPersonBridgeTable as "firmpersonbridgetable_0" on ("root".ID = "firmpersonbridgetable_0".FIRM_ID) left outer join personTable as "persontable_0" on ("persontable_0".ID = "firmpersonbridgetable_0".PERSON_ID)', $result);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::join::testChainedInnerJoinsMerge():Boolean[1]
+{
+   let result = execute(|Firm.all()->project([f | $f.employees.firstName, f | $f.legalName, f | $f.employees.lastName], ['firstname', 'firm', 'lastname']), chainedJoinsInner, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 7);
+   assertEquals(['Peter', 'Firm X', 'Smith',
+                  'John', 'Firm X', 'Johnson',
+                  'John', 'Firm X', 'Hill',
+                  'Anthony', 'Firm X', 'Allen',
+                  'Fabrice', 'Firm A', 'Roberts',
+                  'Oliver', 'Firm B', 'Hill',
+                  ^TDSNull(), 'Firm C', ^TDSNull()], $result.values.rows.values);
+   assertSameSQL('select "firmpersonbridgetable_0".FIRSTNAME as "firstname", "root".LEGALNAME as "firm", "firmpersonbridgetable_0".LASTNAME as "lastname" from firmTable as "root" left outer join (select "firmpersonbridgetable_1".FIRM_ID as FIRM_ID, "persontable_0".FIRSTNAME as FIRSTNAME, "persontable_0".LASTNAME as LASTNAME from firmPersonBridgeTable as "firmpersonbridgetable_1" inner join personTable as "persontable_0" on ("persontable_0".ID = "firmpersonbridgetable_1".PERSON_ID)) as "firmpersonbridgetable_0" on ("root".ID = "firmpersonbridgetable_0".FIRM_ID)', $result);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::join::testChainedInnerJoinsWithFilterMerge():Boolean[1]
+{
+   let result = execute(|Firm.all()->filter(f | $f.legalName == 'Firm C')->project([f | $f.employees.firstName, f | $f.legalName, f | $f.employees.lastName], ['firstname', 'firm', 'lastname']), chainedJoinsInner, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 1);
+   assertEquals([^TDSNull(), 'Firm C', ^TDSNull()], $result.values.rows.values);
+   assertSameSQL('select "firmpersonbridgetable_0".FIRSTNAME as "firstname", "root".LEGALNAME as "firm", "firmpersonbridgetable_0".LASTNAME as "lastname" from firmTable as "root" left outer join (select "firmpersonbridgetable_1".FIRM_ID as FIRM_ID, "persontable_0".FIRSTNAME as FIRSTNAME, "persontable_0".LASTNAME as LASTNAME from firmPersonBridgeTable as "firmpersonbridgetable_1" inner join personTable as "persontable_0" on ("persontable_0".ID = "firmpersonbridgetable_1".PERSON_ID)) as "firmpersonbridgetable_0" on ("root".ID = "firmpersonbridgetable_0".FIRM_ID) where "root".LEGALNAME = \'Firm C\'', $result);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::join::testConvertToStringSybase():Boolean[1]
+{
+   let s = toSQLString(|Trade.all()->project([#/Trade/account/name!name#]), MappingForAccountAndTrade, meta::relational::runtime::DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select "accountTable_d_0_d_m1".name as "name" from tradeTable as "root" left outer join accountTable as "accountTable_d_0_d_m1" on (convert(VARCHAR(128), "root".accountID) = "accountTable_d_0_d_m1".ID)', $s);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::join::testConvertToStringH2():Boolean[1]
+{
+   let result = execute(|Trade.all()->project([#/Trade/account/name!name#]), MappingForAccountAndTrade, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 1);
+   assertEquals(['Account 1'], $result.values.rows.values);
+   assertSameSQL('select "accounttable_0".name as "name" from tradeTable as "root" left outer join accountTable as "accounttable_0" on (convert("root".accountID, VARCHAR(128)) = "accounttable_0".ID)', $result);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::join::testChainedOuterJoinsWithFilterInproject():Boolean[1]
+{
+   let result = execute(|Firm.all()->filter(f | $f.legalName == 'Firm C')
+             ->project(
+               [ f|$f.legalName, f|$f.employees->filter(e|$e.age < 10 ).extraInformation]
+             , ['firm', 'extrainfo'])
+             , advancedRelationalMapping3, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+   assertSize($result.values.rows, 1);
+   assertEquals([ 'Firm C',^TDSNull()], $result.values.rows.values);
+   assertSameSQL('select "root".LEGALNAME as "firm", "persontable_0".EXTRAINFO as "extrainfo" from firmTable as "root" left outer join (select "persontable_1".FIRMID as FIRMID, "persontable_1".FLAG as FLAG, "personextensiontable_1".EXTRAINFO as EXTRAINFO from personTable as "persontable_1" left outer join MiddleTable as "middletable_0" on ("persontable_1".ID = "middletable_0".ID) left outer join personExtensionTable as "personextensiontable_0" on ("middletable_0".LINKID = "personextensiontable_0".ID and "middletable_0".LINKID <> 999999999 and "personextensiontable_0".ID != -99999999) left outer join MiddleTable as "middletable_1" on ("persontable_1".ID = "middletable_1".ID) left outer join personExtensionTable as "personextensiontable_1" on ("middletable_1".LINKID = "personextensiontable_1".ID and "middletable_1".LINKID <> 999999999 and "personextensiontable_1".ID != -99999999) where ("personextensiontable_0".AGE is not null and "personextensiontable_0".AGE < 10)) as "persontable_0" on ((("root".ID = "persontable_0".FIRMID) and ("root".FLAG is null)) and ("persontable_0".FLAG is not null)) where "root".LEGALNAME = \'Firm C\'', $result);
+}
+
+
+function <<test.Test>> meta::relational::tests::mapping::join::testChainedOuterJoinsWithQualifierInproject():Boolean[1]
+{
+   let result = execute(|Firm.all()->filter(f | $f.legalName == 'Firm C')
+             ->project([ f|$f.legalName, f|$f.employeesByAge(10).lastName,f|$f.employeesByAge(10).age], ['firm', 'lastname','age'])
+             , advancedRelationalMapping3, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+   assertSize($result.values.rows, 1);
+   assertEquals(['Firm C',^TDSNull(), ^TDSNull()], $result.values.rows.values);
+  assertSameSQL('select "root".LEGALNAME as "firm", "persontable_0".LASTNAME as "lastname", "persontable_2".AGE as "age" from firmTable as "root" left outer join (select "persontable_1".FIRMID as FIRMID, "persontable_1".FLAG as FLAG, "persontable_1".LASTNAME as LASTNAME from personTable as "persontable_1" left outer join MiddleTable as "middletable_0" on ("persontable_1".ID = "middletable_0".ID) left outer join personExtensionTable as "personextensiontable_0" on ("middletable_0".LINKID = "personextensiontable_0".ID and "middletable_0".LINKID <> 999999999 and "personextensiontable_0".ID != -99999999) where "personextensiontable_0".AGE < 10) as "persontable_0" on ((("root".ID = "persontable_0".FIRMID) and ("root".FLAG is null)) and ("persontable_0".FLAG is not null)) left outer join (select "persontable_1".FIRMID as FIRMID, "persontable_1".FLAG as FLAG, "personextensiontable_1".AGE as AGE from personTable as "persontable_1" left outer join MiddleTable as "middletable_0" on ("persontable_1".ID = "middletable_0".ID) left outer join personExtensionTable as "personextensiontable_0" on ("middletable_0".LINKID = "personextensiontable_0".ID and "middletable_0".LINKID <> 999999999 and "personextensiontable_0".ID != -99999999) left outer join MiddleTable as "middletable_1" on ("persontable_1".ID = "middletable_1".ID) left outer join personExtensionTable as "personextensiontable_1" on ("middletable_1".LINKID = "personextensiontable_1".ID and "middletable_1".LINKID <> 999999999 and "personextensiontable_1".ID != -99999999) where "personextensiontable_0".AGE < 10) as "persontable_2" on ((("root".ID = "persontable_2".FIRMID) and ("root".FLAG is null)) and ("persontable_2".FLAG is not null)) where "root".LEGALNAME = \'Firm C\'', $result);
+}
+
+
+
+function meta::relational::tests::mapping::join::testFunction(f:Firm[1]):String[0..1]
+{
+   $f.employees->filter(e| $e.lastName == $f.legalName)->toOne().extraInformation  ;
+}
+
+ 
+function <<test.Test>> meta::relational::tests::mapping::join::testChainedInnerJoinsWithQualifierInGroupBy():Boolean[1]
+{
+   let result = execute(|Firm.all()
+      ->filter(f|$f.legalName == 'Firm X' )
+      ->groupBy([],agg(x| $x->testFunction() ,y|$y->count()), ['count']), chainedJoinsInner, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+ 
+   assertSize($result.values, 1);
+   assertEquals([0], $result.values.rows.values);   
+   assertSameSQL('select count("firmpersonbridgetable_0".EXTRAINFO) as "count" from firmTable as "root" left outer join (select "firmpersonbridgetable_0".FIRM_ID as FIRM_ID, "persontable_0".LASTNAME as LASTNAME, "persontable_0".ID as ID, "personextensiontable_0".EXTRAINFO as EXTRAINFO from firmPersonBridgeTable as "firmpersonbridgetable_0" inner join personTable as "persontable_0" on ("persontable_0".ID = "firmpersonbridgetable_0".PERSON_ID) left outer join MiddleTable as "middletable_0" on ("persontable_0".ID = "middletable_0".ID) left outer join personExtensionTable as "personextensiontable_0" on ("middletable_0".LINKID = "personextensiontable_0".ID and "middletable_0".LINKID <> 999999999 and "personextensiontable_0".ID != -99999999)) as "firmpersonbridgetable_0" on ("firmpersonbridgetable_0".LASTNAME = "root".LEGALNAME and "firmpersonbridgetable_0".LASTNAME = \'Firm X\' and "root".ID = "firmpersonbridgetable_0".FIRM_ID) where "root".LEGALNAME = \'Firm X\'', $result);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::join::testSameTableNameDifferentSchema1():Boolean[1]
+{
+   let result = execute(|Person.all(), JoinSchemaBWithDefaultPersonMainTable, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals($result.values.firstName, ['Peter','John','John','Anthony','Fabrice','Oliver','David']);
+   assertEquals($result.values.extraInformation, ['Peter B', 'John B', 'John B', 'Anthony B', 'Oliver B']);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::join::testSameTableNameDifferentSchema2():Boolean[1]
+{
+   let result = execute(|Person.all(), JoinSchemaBWithSchemaBPersonMainTable, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals($result.values.firstName,['Peter','John','John','Anthonye','Oliver']);
+   assertEquals($result.values.extraInformation,['Smith','Johnson','Hill','Allen','Roberts']);
+}
+
+function <<test.ToFix>> meta::relational::tests::mapping::join::testRelationalOperationElementWithJoinInnerJoins():Boolean[1]
+{
+   let result = execute(|Person.all().extraInformation, chainedInnerJoinsForPrimitive, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals(['Firm X', 'Firm X', 'Firm X', 'Firm X', 'Firm A', 'Firm B'], $result.values);
+   assertSameSQL('select trim("firmpersonbridgetable_1".LEGALNAME) from personTable as "root" left outer join (select "firmpersonbridgetable_0".PERSON_ID as PERSON_ID, "firmtable_0".LEGALNAME as LEGALNAME from firmPersonBridgeTable as "firmpersonbridgetable_0" inner join firmTable as "firmtable_0" on ("firmtable_0".ID = "firmpersonbridgetable_0".FIRM_ID)) as "firmpersonbridgetable_0" on ("root".ID = "firmpersonbridgetable_0".PERSON_ID) left outer join (select "firmpersonbridgetable_1".PERSON_ID as PERSON_ID, "firmtable_1".LEGALNAME as LEGALNAME from firmPersonBridgeTable as "firmpersonbridgetable_1" inner join firmTable as "firmtable_1" on ("firmtable_1".ID = "firmpersonbridgetable_1".FIRM_ID)) as "firmpersonbridgetable_1" on ("root".ID = "firmpersonbridgetable_1".PERSON_ID)', $result->sqlRemoveFormatting(0));
+}
+
+function <<test.Test, test.ToFix>> meta::relational::tests::mapping::join::testIsNotEmptyCheckWithoutRowExplosion():Boolean[1]
+{
+   let result = execute(|Firm.all()->filter(x | $x.employees->isNotEmpty()), advancedRelationalMapping4, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions(), debug());
+   assertEquals(['Firm X'], $result.values.legalName);
+}

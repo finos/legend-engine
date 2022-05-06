@@ -1,0 +1,63 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::relational::functions::asserts::*;
+import meta::relational::tests::milestoning::*;
+import meta::relational::tests::*;
+
+function <<test.Test>> meta::relational::tests::milestoning::projection::testMilestoningColumnProjectionForRoot():Boolean[1]
+{
+   let result = execute(|Product.allVersions()->project([p|$p.id, p|$p.milestoning.from, p|$p.milestoning.thru],['id', 'from', 'thru']), milestoningMapWithEmbeddedSimple, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select "root".id as "id", "root".from_z as "from", "root".thru_z as "thru" from ProductTable as "root"', $result);
+   let data = $result.values.rows;
+   assertSameElements([1, 2, 2, 3], $data.getInteger('id'));
+   assertSameElements([%2015-08-15T00:00:00.000000000+0000, %2015-08-26T00:00:00.000000000+0000, %2015-08-26T00:00:00.000000000+0000, %2015-10-16T00:00:00.000000000+0000], $data.getDate('from'));
+   assertSameElements([%2015-08-26T00:00:00.000000000+0000, %2015-10-16T00:00:00.000000000+0000, %9999-12-31T00:00:00.000000000+0000, %9999-12-31T00:00:00.000000000+0000], $data.getDate('thru')); 
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::projection::testMilestoningColumnProjectionForEmbedded():Boolean[1]
+{
+   let result = execute(|Product.allVersions()->project([c|$c.classificationAllVersions.type, c|$c.classificationAllVersions.milestoning.from, c|$c.classificationAllVersions.milestoning.thru],['type', 'from', 'thru']), milestoningMapWithEmbeddedSimple, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select "root".type as "type", "root".from_z as "from", "root".thru_z as "thru" from ProductTable as "root"', $result);
+   let data = $result.values.rows;
+   assertSameElements(['OPTION', 'STOCK', 'STOCK', 'STOCK'], $data.getString('type'));
+   assertSameElements([%2015-08-15T00:00:00.000000000+0000, %2015-08-26T00:00:00.000000000+0000, %2015-08-26T00:00:00.000000000+0000, %2015-10-16T00:00:00.000000000+0000], $data.getDate('from'));
+   assertSameElements([%2015-08-26T00:00:00.000000000+0000, %2015-10-16T00:00:00.000000000+0000, %9999-12-31T00:00:00.000000000+0000, %9999-12-31T00:00:00.000000000+0000], $data.getDate('thru')); 
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::projection::testMilestoningColumnProjectionForInlineEmbedded():Boolean[1]
+{
+   let result = execute(|Product.allVersions()->project([e|$e.exchangeAllVersions.name, e|$e.exchangeAllVersions.milestoning.from, e|$e.exchangeAllVersions.milestoning.thru],['name', 'from', 'thru']), milestoningMapWithEmbeddedSimple, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select "root".exchange as "name", "root".from_z as "from", "root".thru_z as "thru" from ProductTable as "root"', $result);
+   let data = $result.values.rows;
+   assertSameElements(['ISE', 'ISE', 'LNSE', 'LNSE'], $data.getString('name'));
+   assertSameElements([%2015-08-15T00:00:00.000000000+0000, %2015-08-26T00:00:00.000000000+0000, %2015-08-26T00:00:00.000000000+0000, %2015-10-16T00:00:00.000000000+0000], $data.getDate('from'));
+   assertSameElements([%2015-08-26T00:00:00.000000000+0000, %2015-10-16T00:00:00.000000000+0000, %9999-12-31T00:00:00.000000000+0000, %9999-12-31T00:00:00.000000000+0000], $data.getDate('thru')); 
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::projection::testMilestoningColumnProjectionWithNonMilestonedTable():Boolean[1]
+{
+   let result = execute(|Product.allVersions()->project([p|$p.id, p|$p.milestoning.from, p|$p.milestoning.thru],['id', 'from', 'thru']), noMilestoningMap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select "root".id as "id", null as "from", null as "thru" from ProductTableNoMilestoning as "root"', $result);
+   let data = $result.values.rows;
+   assertSameElements([1, 2], $data.getInteger('id'));
+   assertSameElements([^TDSNull(), ^TDSNull()], $data.get('from'));
+   assertSameElements([^TDSNull(), ^TDSNull()], $data.get('thru')); 
+}
+
+function <<test.BeforePackage>> meta::relational::tests::milestoning::projection::setUp():Any[0..1]
+{
+   initDatabase();
+}

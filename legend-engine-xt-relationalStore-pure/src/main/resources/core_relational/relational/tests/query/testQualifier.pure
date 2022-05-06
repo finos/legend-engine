@@ -1,0 +1,92 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::functions::asserts::*;
+import meta::relational::mapping::*;
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::*;
+import meta::pure::profiles::*;
+
+function <<test.Test>> meta::relational::tests::query::qualifier::testNoParameters():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p|$p.name == 'John Johnson'), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 1);
+   assertEquals('Johnson', $result.values.lastName);
+   assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where concat("root".FIRSTNAME, \' \', "root".LASTNAME) = \'John Johnson\'', $result);
+}
+
+function <<test.Test>> meta::relational::tests::query::qualifier::testNoParametersThroughAssociation():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p|$p.manager.name == 'John Johnson'), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 2);
+   assertSameElements(['Smith', 'Hill'], $result.values.lastName);
+   assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join personTable as "persontable_1" on ("root".MANAGERID = "persontable_1".ID) where concat("persontable_1".FIRSTNAME, \' \', "persontable_1".LASTNAME) = \'John Johnson\'', $result);
+}
+
+function <<test.Test>> meta::relational::tests::query::qualifier::testWithParameter():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p|$p.nameWithTitle('Mr') == 'Mr John Johnson'), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 1);
+   assertEquals('Johnson', $result.values.lastName);
+   assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where concat(\'Mr\', \' \', "root".FIRSTNAME, \' \', "root".LASTNAME) = \'Mr John Johnson\'', $result);
+}
+
+function <<test.Test>> meta::relational::tests::query::qualifier::testWithParameterUsedWithinExists():Boolean[1]
+{
+   let result = execute(|Firm.all()->filter(f|$f.employees->exists(e|$e.nameWithTitle('M.') == 'M. John Johnson')), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 1);
+   assertEquals('Firm X', $result.values.legalName);
+   assertSameSQL('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join (select distinct "persontable_1".FIRMID from personTable as "persontable_1" where concat(\'M.\', \' \', "persontable_1".FIRSTNAME, \' \', "persontable_1".LASTNAME) = \'M. John Johnson\') as "persontable_0" on ("root".ID = "persontable_0".FIRMID) where "persontable_0".FIRMID is not null', $result);
+}
+
+function <<test.Test>> meta::relational::tests::query::qualifier::testWithParameterToClassNestedSelect():Boolean[1]
+{
+   let result = execute(|Product.all()->filter(p|$p.synonymByType(ProductSynonymType.ISIN).name == 'ISIN2'), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 1);
+   assertEquals('Firm A', $result.values.name);
+   assertSize(0, execute(|Product.all()->filter(p|$p.synonymByType(ProductSynonymType.CUSIP).name == 'ISIN2'), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions())->size());
+   assertSameSQL('select "root".ID as "pk_0", "root".NAME as "name" from productSchema.productTable as "root" left outer join productSchema.synonymTable as "synonymtable_0" on ("synonymtable_0".PRODID = "root".ID and "synonymtable_0".TYPE = \'ISIN\') where "synonymtable_0".NAME = \'ISIN2\'', $result);
+}
+
+function <<test.Test>> meta::relational::tests::query::qualifier::testExistsWithQualifierOnleftSide():Boolean[1]
+{
+   let result = execute(|Trade.all()->filter(t|$t.eventsByDate(%2014-12-02)->exists(e|$e.eventType == 'New')), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 0);
+   assertSameSQL('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".tradeDate as "date", "root".settlementDateTime as "settlementDateTime", "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id) left outer join (select distinct "tradeeventtable_2".trade_id from tradeEventTable as "tradeeventtable_2" where "tradeeventtable_2".eventDate = \'2014-12-02\' and "tradeeventtable_2".eventType = \'New\') as "tradeeventtable_1" on ("root".ID = "tradeeventtable_1".trade_id) where "tradeeventtable_1".trade_id is not null', $result);
+
+   let result2 = execute(|Trade.all()->filter(t|$t.eventsByDate(%2014-12-01)->exists(e|$e.eventType == 'New')), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result2.values, 1);
+   assertEquals(1, $result2.values.id);
+
+   let result3 = execute(|Trade.all()->filter(t|$t.eventsByDate(%2014-12-03)->exists(e|$e.eventType == 'New')), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result3.values, 1);
+   assertEquals(6, $result3.values.id);
+}
+
+function <<test.Test>> meta::relational::tests::query::qualifier::testAssociationSpecifiedQualifiedProperty():Boolean[1]
+{
+   let result = execute(|Product.all()->filter(p|$p.synonymByType(ProductSynonymType.ISIN).name == 'ISIN2'), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 1);
+   assertSameSQL( 'select "root".ID as "pk_0", "root".NAME as "name" from productSchema.productTable as "root" left outer join productSchema.synonymTable as "synonymtable_0" on ("synonymtable_0".PRODID = "root".ID and "synonymtable_0".TYPE = \'ISIN\') where "synonymtable_0".NAME = \'ISIN2\'', $result);
+}
+
+
+function <<test.Test>> meta::relational::tests::query::qualifier::testNonTrivialQualifierWithDataTypeReturnTypeAsFunctionInput():Boolean[1]
+{
+   let result = execute(|Firm.all()->filter(f| $f.employeeByLastNameFirstName('Johnson') == 'John')
+                                    , simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    
+   assertEquals(1, $result.values->size());
+   assertSameSQL('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID and "persontable_0".LASTNAME = \'Johnson\') where "persontable_0".FIRSTNAME = \'John\'', $result);
+}

@@ -1,0 +1,43 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::model::simple::projection::*;
+
+Class meta::relational::tests::model::simple::projection::EntityWithAddressProjection projects
+EntityWithAddress
+{
+    > address [$this.address.name]
+}
+
+Class meta::relational::tests::model::simple::projection::FirmProjection projects
+meta::relational::tests::model::simple::Firm
+{
+   +[legalName]
+}
+
+Class meta::relational::tests::model::simple::projection::PersonProjection projects
+meta::relational::tests::model::simple::Person
+{
+   +[firstName, lastName, age]
+}
+
+Class meta::relational::tests::model::simple::projection::AddressProjection projects
+Address
+{
+   *
+}
+
+Association meta::relational::tests::model::simple::projection::EmploymentProjection projects Employment<FirmProjection, PersonProjection>
+

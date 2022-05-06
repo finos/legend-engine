@@ -1,0 +1,406 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::json::*;
+
+import meta::pure::metamodel::tds::*;
+
+import meta::pure::profiles::*;
+import meta::pure::mapping::*;
+
+import meta::relational::metamodel::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::metamodel::join::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::mapping::*;
+
+import meta::relational::functions::toDDL::*;
+
+import meta::relational::tests::mapping::enumeration::model::domain::*;
+
+Class meta::relational::tests::mapping::enumeration::model::domain::Employee
+{
+    id: Integer[1];
+    name: String[1];
+    dateOfHire: Date[1];
+    type: EmployeeType[0..1];
+    active: YesNo[0..1];
+    skills:Skills[*];
+}
+
+Class meta::relational::tests::mapping::enumeration::model::domain::ConciseEmployee
+{
+    name: String[1];
+    type: EmployeeType[0..1];
+}
+
+Class meta::relational::tests::mapping::enumeration::model::domain::EmployeeSkills
+{
+    id: Integer[1];
+    skills:String[*];
+}
+
+Enum meta::relational::tests::mapping::enumeration::model::domain::EmployeeType
+{
+    CONTRACT,
+    FULL_TIME
+}
+
+Enum meta::relational::tests::mapping::enumeration::model::domain::Skills
+{
+    Java,SQL,JavaScript,Web
+}
+
+Class meta::relational::tests::mapping::enumeration::model::domain::Trade
+{
+    type: TradeType[1];
+}
+
+Enum meta::relational::tests::mapping::enumeration::model::domain::ExecutionInstruction
+{
+    OK_CROSS,
+    INST1
+}
+
+Class meta::relational::tests::mapping::enumeration::model::domain::EquityTrade extends Trade
+{
+    product: String[1];
+    quantity: Integer[1];
+    executionInstructions:ExecutionInstruction[1];
+}
+
+Class meta::relational::tests::mapping::enumeration::model::domain::Product
+{
+   description: String[1];
+   synonyms: ProductSynonym[*];
+   synonymsByType(type:ProductSynonymType[1])
+   {
+      $this.synonyms->filter(s | $s.type == $type);
+   }:ProductSynonym[*];
+   gsn()
+   {
+      $this.synonyms->filter(s | $s.type == ProductSynonymType.GS_NUMBER);
+   }:ProductSynonym[*];
+}
+
+Class meta::relational::tests::mapping::enumeration::model::domain::ProductSynonym
+{
+   type:ProductSynonymType[1];
+   value:String[1];
+}
+
+Enum meta::relational::tests::mapping::enumeration::model::domain::ProductSynonymType
+{
+   CUSIP,
+   GS_NUMBER
+}
+
+Class meta::relational::tests::mapping::enumeration::model::domain::DerivativeTrade extends Trade
+{
+    description: String[1];
+}
+
+Enum meta::relational::tests::mapping::enumeration::model::domain::TradeType
+{
+    BUY,
+    SELL
+}
+
+Enum meta::relational::tests::mapping::enumeration::model::domain::YesNo
+{
+    YES,
+    NO
+}
+
+###Relational
+
+Database meta::relational::tests::mapping::enumeration::model::store::myDB
+(
+    Table employeeTable
+    (
+        id INT PRIMARY KEY,
+        name VARCHAR(200),
+        firmId INT,
+        doh DATE,
+        type VARCHAR(20),
+        skills VARCHAR(20),
+        active INT
+    )
+    
+    Table firmTable
+    (
+        id INT PRIMARY KEY,
+        name VARCHAR(200)
+    )
+
+    Join Employee_Firm
+    (
+        employeeTable.firmId = firmTable.id
+    )
+)
+
+###Relational
+
+Database meta::relational::tests::mapping::enumeration::model::store::tradeDB
+(
+    Table eqTradeTable
+    (
+        id INT PRIMARY KEY,
+        product VARCHAR(200),
+        type VARCHAR(10),
+        qty INTEGER,
+        executionInstructions VARCHAR(200)
+    )
+
+    Table contractTradeTable
+    (
+        id INT PRIMARY KEY,
+        product VARCHAR(200),
+        type VARCHAR(10)
+    )
+)
+
+
+
+###Relational
+Database meta::relational::tests::mapping::enumeration::model::store::productDB
+(
+   Table Product
+   (
+      id INT PRIMARY KEY,
+      prod_desc VARCHAR(200)
+   )
+   
+   Table Product_Synonym
+   (
+      id INT PRIMARY KEY,
+      product_id INT,
+      type VARCHAR(10),
+      value VARCHAR(10)
+   )
+   
+   Join Product_ProductSynonym(Product.id = Product_Synonym.product_id)
+)
+
+###Mapping
+import meta::relational::tests::mapping::enumeration::model::store::*;
+import meta::relational::tests::mapping::enumeration::model::domain::*;
+
+Mapping meta::relational::tests::mapping::enumeration::model::mapping::employeeTestMapping
+(
+
+    EmployeeType: EnumerationMapping Foo
+    {
+        CONTRACT:  ['FTC', 'FTO'],
+        FULL_TIME: 'FTE'
+    }
+    
+    YesNo: EnumerationMapping Active
+    {
+        YES:  1,
+        NO: 0
+    }
+
+    Employee: Relational
+    {
+        scope([myDB]default.employeeTable)
+        (
+            id: id,
+            name: name,
+            dateOfHire: doh,
+            type : EnumerationMapping Foo : type,
+            active : EnumerationMapping Active : active
+        )
+    }
+)
+
+Mapping meta::relational::tests::mapping::enumeration::model::mapping::employeeTestMapping2
+(
+
+    EmployeeType: EnumerationMapping Bar
+    {
+        CONTRACT:  ['FTC', 'FTO'],
+        FULL_TIME: 'FTE'
+    }
+
+    Employee: Relational
+    {
+        scope([myDB]default.employeeTable)
+        (
+            id: id,
+            name: name,
+            dateOfHire: doh,
+            type : EnumerationMapping Bar : type
+        )
+    }
+)
+
+Mapping meta::relational::tests::mapping::enumeration::model::mapping::employeeTestMappingWithFunction
+(
+
+    EmployeeType: EnumerationMapping Bar
+    {
+        CONTRACT:  ['FTC', 'FTO'],
+        FULL_TIME: 'FTE'
+    }
+
+    Employee: Relational
+    {
+        scope([myDB]default.employeeTable)
+        (
+            id: id,
+            name: name,
+            dateOfHire: doh,
+            type : EnumerationMapping Bar : case(equal(type, 'FTE'), sqlNull(), type)
+        )
+    }
+)
+
+Mapping meta::relational::tests::mapping::enumeration::model::mapping::employeeTestMappingWithMultipleClassMappings
+(
+    EmployeeType: EnumerationMapping Foo
+    {
+        CONTRACT:  ['FTC', 'FTO'],
+        FULL_TIME: 'FTE'
+    }
+
+    Employee: Relational
+    {
+        scope([myDB]default.employeeTable)
+        (
+            id: id,
+            name: name,
+            dateOfHire: doh,
+            type : EnumerationMapping Foo : type
+        )
+    }
+
+    ConciseEmployee: Relational
+    {
+        scope([myDB]default.employeeTable)
+        (
+            name: name,
+            type : EnumerationMapping Foo : type
+        )
+    }
+)
+
+###Mapping
+import meta::relational::tests::mapping::enumeration::model::store::*;
+import meta::relational::tests::mapping::enumeration::model::domain::*;
+
+Mapping meta::relational::tests::mapping::enumeration::model::mapping::tradeMapping
+(
+    TradeType: EnumerationMapping TradeSource1
+    {
+       BUY:  ['BUY', 'B'],
+       SELL: ['SELL', 'S']
+    }
+
+    TradeType: EnumerationMapping TradeSource2
+    {
+       BUY:  ['CREDIT'],
+       SELL: ['DEBIT']
+    }
+    
+    
+    EquityTrade: Relational
+    {
+        scope( [tradeDB] default.eqTradeTable)
+        (
+            product: product,
+            quantity: qty,
+            type : EnumerationMapping TradeSource1 : type
+        )
+    }
+)
+
+###Mapping
+import meta::relational::tests::mapping::enumeration::model::store::*;
+import meta::relational::tests::mapping::enumeration::model::domain::*;
+import meta::relational::tests::mapping::enumeration::model::mapping::*;
+
+Mapping meta::relational::tests::mapping::enumeration::model::mapping::tradeMapping1
+(
+    TradeType: EnumerationMapping TradeSource11
+    {
+       BUY:  ['BUY', 'B'],
+       SELL: ['SELL', 'S']
+    }
+)
+
+Mapping meta::relational::tests::mapping::enumeration::model::mapping::tradeMapping2
+(
+    include tradeMapping1
+
+    TradeType: EnumerationMapping TradeSource22
+    {
+       BUY:  ['CREDIT'],
+       SELL: ['DEBIT']
+    }
+)
+
+Mapping meta::relational::tests::mapping::enumeration::model::mapping::tradeMapping3
+(
+    include tradeMapping2
+
+    EquityTrade: Relational
+    {
+        scope( [tradeDB] default.eqTradeTable)
+        (
+            product: product,
+            quantity: qty,
+            type : EnumerationMapping TradeSource11 : type
+        )
+    }
+)
+
+###Mapping
+import meta::relational::tests::mapping::enumeration::model::store::*;
+import meta::relational::tests::mapping::enumeration::model::domain::*;
+
+Mapping meta::relational::tests::mapping::enumeration::model::mapping::productMapping
+(
+
+   ProductSynonymType: EnumerationMapping synonym2
+   {
+      CUSIP: ['C'],
+      GS_NUMBER: ['G']
+   }
+   
+   ProductSynonymType: EnumerationMapping synonym
+   {
+      CUSIP: ['CUS'],
+      GS_NUMBER: ['GSN']
+   }
+      
+   ProductSynonym: Relational
+   {
+      scope( [productDB] default.Product_Synonym)
+      (
+           value: value,
+           type: EnumerationMapping synonym : type
+      )
+   }
+   
+   Product: Relational
+   {
+      scope( [productDB] default.Product)
+      (
+         description: prod_desc
+      ),
+      synonyms: [productDB]@Product_ProductSynonym
+   }
+)
+

@@ -1,0 +1,32 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::router::extension::*;
+import meta::relational::functions::sqlQueryToString::*;
+import meta::relational::mapping::*;
+import meta::relational::metamodel::*;
+import meta::pure::runtime::*;
+import meta::pure::mapping::*;
+
+Class meta::pure::router::extension::RelationalExtension extends ModuleExtension
+{
+   pureToSQL_buildUniqueName : Function<{Boolean[1], Boolean[1], RouterExtension[*] -> Function<{Nil[1]->String[1]}>[*]}>[0..1];
+   
+   relational_execution_postProcessors : Function<{PostProcessorResult[1], Runtime[1], RoutedValueSpecification[0..1], Mapping[0..1], Database[0..1], ExecutionContext[1] -> PostProcessorResult[1]}>[*];
+   relational_plan_postProcessors : Function<{PostProcessorResult[1], Runtime[1], RoutedValueSpecification[0..1], Mapping[0..1], Database[0..1], ExecutionContext[1] -> PostProcessorResult[1]}>[*];
+   relational_plan_updateConnection : Function<{Nil[1]->Connection[1]}>[*];
+
+   sqlQueryToString_processOperation : Function<{Nil[1], Format[1], GenerationState[1], Config[1], RouterExtension[*] -> Function<{Nil[1]->String[1]}>[*]}>[0..1];
+   sqlQueryToString_isBooleanOperation : Function<{Nil[1] -> Boolean[1]}>[*];
+}

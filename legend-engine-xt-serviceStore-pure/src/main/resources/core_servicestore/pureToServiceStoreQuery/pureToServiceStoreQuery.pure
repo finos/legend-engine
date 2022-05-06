@@ -1,0 +1,142 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::mapping::*;
+import meta::pure::router::printer::*;
+
+import meta::external::store::service::functions::pureToServiceStoreQuery::*;
+import meta::external::store::service::executionPlan::generation::*;
+
+Class meta::external::store::service::functions::pureToServiceStoreQuery::ServiceStoreQuery
+{
+   processingParam        :  String[0..1];
+   processingValue        :  Value[0..1];
+   processedParamValueMap :  Map<String, Value>[1];
+}
+
+Class <<typemodifiers.abstract>> meta::external::store::service::functions::pureToServiceStoreQuery::Value
+{
+}
+
+Class meta::external::store::service::functions::pureToServiceStoreQuery::VariableValue extends meta::external::store::service::functions::pureToServiceStoreQuery::Value
+{
+   var : VariableExpression[1];
+}
+
+Class meta::external::store::service::functions::pureToServiceStoreQuery::LiteralValue extends meta::external::store::service::functions::pureToServiceStoreQuery::Value
+{
+   value : Any[*];
+}
+
+Class meta::external::store::service::functions::pureToServiceStoreQuery::PureFunctionToServiceStoreFunctionPair extends Pair<meta::pure::metamodel::function::Function<Any>, meta::pure::metamodel::function::Function<{FunctionExpression[1], ServiceStoreQuery[1], Map<String, List<Any>>[1], DebugContext[1]->ServiceStoreQuery[1]}>>
+{
+}
+
+function meta::external::store::service::functions::pureToServiceStoreQuery::toServiceStoreQuery(functionExpression:FunctionExpression[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1]):ServiceStoreQuery[1]
+{
+   let res = processValueSpecification($functionExpression, ^ServiceStoreQuery(processedParamValueMap = []->newMap()), $inScopeVars, $debug);
+   assert($res.processingParam->isEmpty() && $res.processingValue->isEmpty(), | 'Unexpected result after processing query');
+   $res;
+}
+
+function meta::external::store::service::functions::pureToServiceStoreQuery::processValueSpecification(vs:ValueSpecification[1], parentQuery:ServiceStoreQuery[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1]):ServiceStoreQuery[1]
+{
+   $vs->evaluateAndDeactivate()->match(
+             [
+                 r:ExtendedRoutedValueSpecification[1] | $r.value->processValueSpecification($parentQuery, $inScopeVars, $debug),
+                 r:FunctionRoutedValueSpecification[1] | $r.value->processValueSpecification($parentQuery, $inScopeVars, $debug),
+                 f:FunctionExpression[1]               | $f->processFunctionExpression($parentQuery, $inScopeVars, $debug),
+                 i:InstanceValue[1]                    | $i->processInstanceValue($parentQuery, $inScopeVars, $debug),
+                 v:VariableExpression[1]               | $v->processVariableExpression($parentQuery, $inScopeVars, $debug)
+             ])
+}
+
+function meta::external::store::service::functions::pureToServiceStoreQuery::mergeServiceStoreQueries(queries:ServiceStoreQuery[*], debug:DebugContext[1]):ServiceStoreQuery[1]
+{
+   let query = $queries->at(0);
+   ^$query(processedParamValueMap = $queries.processedParamValueMap->map(m | $m->keyValues())->newMap());
+}
+
+function meta::external::store::service::functions::pureToServiceStoreQuery::processInstanceValue(i:InstanceValue[1], parentQuery:ServiceStoreQuery[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1]):ServiceStoreQuery[1]
+{
+   $i.values->match([s:String[*]              | ^$parentQuery(processingValue = ^meta::external::store::service::functions::pureToServiceStoreQuery::LiteralValue(value = $s)),
+                     n:Number[*]              | ^$parentQuery(processingValue = ^meta::external::store::service::functions::pureToServiceStoreQuery::LiteralValue(value = $n)),
+                     d:Date[*]                | ^$parentQuery(processingValue = ^meta::external::store::service::functions::pureToServiceStoreQuery::LiteralValue(value = $d)),
+                     b:Boolean[*]             | ^$parentQuery(processingValue = ^meta::external::store::service::functions::pureToServiceStoreQuery::LiteralValue(value = $b)),
+                     v:ValueSpecification[*]  | $v->map(valueSpec| processValueSpecification($valueSpec, $parentQuery, $inScopeVars, $debug))->mergeServiceStoreQueries($debug),
+                     l:LambdaFunction<Any>[1] | $l.expressionSequence->map(exp | $exp->processValueSpecification($parentQuery, $inScopeVars, $debug))->mergeServiceStoreQueries($debug),
+                     a:Any[1]                 | $parentQuery
+   ]);
+}
+
+function meta::external::store::service::functions::pureToServiceStoreQuery::processVariableExpression(v:VariableExpression[1], parentQuery:ServiceStoreQuery[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1]):ServiceStoreQuery[1]
+{
+   print(if(!$debug.debug, |'', | $debug.space+'>Process Variable Expression, name:' + $v.name + '\n'));
+   ^$parentQuery(processingValue = ^VariableValue(var = $v));
+}
+
+function meta::external::store::service::functions::pureToServiceStoreQuery::processFunctionExpression(f:FunctionExpression[1], parentQuery:ServiceStoreQuery[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1]):ServiceStoreQuery[1]
+{
+   let res  = $f.func->match ([p:Property<Nil,Any|*>[1] | ^$parentQuery(processingParam = $f->findAndReplacePropertyPathsInValueSpecification([]).second.values->toOne()),
+                               q:QualifiedProperty<Any>[1] | ^$parentQuery(processingParam = $f->findAndReplacePropertyPathsInValueSpecification([]).second.values->toOne()),
+                               a:Any[1]| processFunction($f, $parentQuery, $inScopeVars, $debug)
+   ]);
+}
+
+function meta::external::store::service::functions::pureToServiceStoreQuery::processFunction(f:FunctionExpression[1], parentQuery:ServiceStoreQuery[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1]):ServiceStoreQuery[1]
+{
+   let func = findSupportedFunction($f, getSupportedFunctions());
+   if(!$func->isEmpty(), 
+      | $func->toOne()->eval($f, $parentQuery, $inScopeVars, $debug);,
+      | fail('Not Supported'); $parentQuery;
+   );
+}
+
+function meta::external::store::service::functions::pureToServiceStoreQuery::processEqual(fe:FunctionExpression[1], parentQuery:ServiceStoreQuery[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1]):ServiceStoreQuery[1]
+{
+   let params = $fe.parametersValues->map(param |$param->processValueSpecification($parentQuery, $inScopeVars, $debug));
+   let processingParam = $params.processingParam->toOne();
+   let processingValue = $params.processingValue->toOne();
+   ^$parentQuery(processedParamValueMap = $parentQuery.processedParamValueMap->keyValues()->concatenate(pair($processingParam, $processingValue))->newMap());
+}
+
+function meta::external::store::service::functions::pureToServiceStoreQuery::processNoOp(fe:FunctionExpression[1], parentQuery:ServiceStoreQuery[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1]):ServiceStoreQuery[1]
+{
+   $fe.parametersValues->map(param |$param->processValueSpecification($parentQuery, $inScopeVars, $debug))->mergeServiceStoreQueries($debug);
+}
+
+function meta::external::store::service::functions::pureToServiceStoreQuery::findSupportedFunction(fe:FunctionExpression[1], supportedFunctions:Map<meta::pure::metamodel::function::Function<Any>,meta::pure::metamodel::function::Function<{FunctionExpression[1], ServiceStoreQuery[1], Map<String, List<Any>>[1], DebugContext[1]->ServiceStoreQuery[1]}>>[1]):meta::pure::metamodel::function::Function<{FunctionExpression[1], ServiceStoreQuery[1], Map<String, List<Any>>[1], DebugContext[1]->ServiceStoreQuery[1]}>[0..1]
+{
+   $supportedFunctions->get($fe.func)
+}
+
+function meta::external::store::service::functions::pureToServiceStoreQuery::getSupportedFunctions():Map<meta::pure::metamodel::function::Function<Any>,meta::pure::metamodel::function::Function<{FunctionExpression[1], ServiceStoreQuery[1], Map<String, List<Any>>[1], DebugContext[1]->ServiceStoreQuery[1]}>>[1]
+{
+   newMap([
+      ^PureFunctionToServiceStoreFunctionPair(first=meta::pure::functions::boolean::and_Boolean_1__Boolean_1__Boolean_1_,second=meta::external::store::service::functions::pureToServiceStoreQuery::processNoOp_FunctionExpression_1__ServiceStoreQuery_1__Map_1__DebugContext_1__ServiceStoreQuery_1_),
+      ^PureFunctionToServiceStoreFunctionPair(first=meta::pure::functions::boolean::equal_Any_MANY__Any_MANY__Boolean_1_, second=meta::external::store::service::functions::pureToServiceStoreQuery::processEqual_FunctionExpression_1__ServiceStoreQuery_1__Map_1__DebugContext_1__ServiceStoreQuery_1_),
+      ^PureFunctionToServiceStoreFunctionPair(first=meta::pure::functions::boolean::eq_Any_1__Any_1__Boolean_1_, second=meta::external::store::service::functions::pureToServiceStoreQuery::processEqual_FunctionExpression_1__ServiceStoreQuery_1__Map_1__DebugContext_1__ServiceStoreQuery_1_),
+      ^PureFunctionToServiceStoreFunctionPair(first=meta::pure::functions::lang::eval_Function_1__T_n__V_m_,second=meta::external::store::service::functions::pureToServiceStoreQuery::processNoOp_FunctionExpression_1__ServiceStoreQuery_1__Map_1__DebugContext_1__ServiceStoreQuery_1_),
+      ^PureFunctionToServiceStoreFunctionPair(first=meta::pure::functions::lang::eval_Function_1__V_m_,second=meta::external::store::service::functions::pureToServiceStoreQuery::processNoOp_FunctionExpression_1__ServiceStoreQuery_1__Map_1__DebugContext_1__ServiceStoreQuery_1_),
+      ^PureFunctionToServiceStoreFunctionPair(first=meta::pure::functions::collection::filter_T_MANY__Function_1__T_MANY_, second=meta::external::store::service::functions::pureToServiceStoreQuery::processNoOp_FunctionExpression_1__ServiceStoreQuery_1__Map_1__DebugContext_1__ServiceStoreQuery_1_),
+      ^PureFunctionToServiceStoreFunctionPair(first=meta::pure::functions::collection::getAll_Class_1__T_MANY_, second=meta::external::store::service::functions::pureToServiceStoreQuery::processNoOp_FunctionExpression_1__ServiceStoreQuery_1__Map_1__DebugContext_1__ServiceStoreQuery_1_),
+      ^PureFunctionToServiceStoreFunctionPair(first=meta::pure::graphFetch::execution::graphFetch_T_MANY__RootGraphFetchTree_1__T_MANY_, second=meta::external::store::service::functions::pureToServiceStoreQuery::processNoOp_FunctionExpression_1__ServiceStoreQuery_1__Map_1__DebugContext_1__ServiceStoreQuery_1_),
+      ^PureFunctionToServiceStoreFunctionPair(first=meta::pure::graphFetch::execution::graphFetch_T_MANY__RootGraphFetchTree_1__Integer_1__T_MANY_, second=meta::external::store::service::functions::pureToServiceStoreQuery::processNoOp_FunctionExpression_1__ServiceStoreQuery_1__Map_1__DebugContext_1__ServiceStoreQuery_1_),
+      ^PureFunctionToServiceStoreFunctionPair(first=meta::pure::graphFetch::execution::graphFetchChecked_T_MANY__RootGraphFetchTree_1__Checked_MANY_, second=meta::external::store::service::functions::pureToServiceStoreQuery::processNoOp_FunctionExpression_1__ServiceStoreQuery_1__Map_1__DebugContext_1__ServiceStoreQuery_1_),
+      ^PureFunctionToServiceStoreFunctionPair(first=meta::pure::functions::collection::map_T_MANY__Function_1__V_MANY_, second=meta::external::store::service::functions::pureToServiceStoreQuery::processNoOp_FunctionExpression_1__ServiceStoreQuery_1__Map_1__DebugContext_1__ServiceStoreQuery_1_),
+      ^PureFunctionToServiceStoreFunctionPair(first=meta::pure::functions::collection::map_T_m__Function_1__V_m_, second=meta::external::store::service::functions::pureToServiceStoreQuery::processNoOp_FunctionExpression_1__ServiceStoreQuery_1__Map_1__DebugContext_1__ServiceStoreQuery_1_),
+      ^PureFunctionToServiceStoreFunctionPair(first=meta::pure::functions::collection::map_T_$0_1$__Function_1__V_$0_1$_, second=meta::external::store::service::functions::pureToServiceStoreQuery::processNoOp_FunctionExpression_1__ServiceStoreQuery_1__Map_1__DebugContext_1__ServiceStoreQuery_1_),
+      ^PureFunctionToServiceStoreFunctionPair(first=meta::pure::functions::multiplicity::toOne_T_MANY__T_1_, second=meta::external::store::service::functions::pureToServiceStoreQuery::processNoOp_FunctionExpression_1__ServiceStoreQuery_1__Map_1__DebugContext_1__ServiceStoreQuery_1_)
+   ])
+}

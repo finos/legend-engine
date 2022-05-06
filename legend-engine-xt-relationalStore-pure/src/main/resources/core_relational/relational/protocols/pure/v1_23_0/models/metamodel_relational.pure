@@ -1,0 +1,357 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::protocols::pure::v1_23_0::metamodel::store::relational::element::*;
+import meta::protocols::pure::v1_23_0::metamodel::store::relational::connection::*;
+import meta::protocols::pure::v1_23_0::metamodel::domain::*;
+import meta::protocols::pure::v1_23_0::metamodel::store::relational::mapping::*;
+
+Class meta::protocols::pure::v1_23_0::metamodel::RelationalExecutionContext extends meta::protocols::pure::v1_23_0::metamodel::ExecutionContext
+{
+   addDriverTablePkForProject : Boolean[0..1];
+   insertDriverTablePkInTempTable : String[0..1];
+   useTempTableAsDriver : String[0..1];
+   preserveJoinOrder:Boolean[0..1];
+   importDataFlow : Boolean[0..1];
+   importDataFlowAddFks:Boolean[0..1];
+   importDataFlowFkCols : meta::protocols::pure::v1_23_0::metamodel::TableForeignColumns[*];
+   importDataFlowImplementationCount : Integer[0..1];
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::TableForeignColumns
+{
+   table: TablePtr[1];
+   columns: String[*];
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::objectReference::AlloyRelationalStoreObjectReference extends meta::protocols::pure::v1_23_0::metamodel::objectReference::AlloyObjectReference
+[
+   typeCondition : $this.type == meta::protocols::pure::v1_23_0::metamodel::objectReference::AlloyObjectReferenceType.Relational
+]
+{
+   databaseConnection    : meta::protocols::pure::v1_23_0::metamodel::store::relational::connection::DatabaseConnection[1];
+   pkMap                 : Map<String, Any>[1];
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::Database extends meta::protocols::pure::v1_23_0::metamodel::store::Store
+{
+   schemas : meta::protocols::pure::v1_23_0::metamodel::store::relational::Schema[*];
+   joins : meta::protocols::pure::v1_23_0::metamodel::store::relational::Join[*];
+   filters : meta::protocols::pure::v1_23_0::metamodel::store::relational::Filter[*];
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::Schema
+{
+   name : String[1];
+   tables : meta::protocols::pure::v1_23_0::metamodel::store::relational::Table[*];
+   views : meta::protocols::pure::v1_23_0::metamodel::store::relational::View[*];
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::Relation
+{
+   columns : meta::protocols::pure::v1_23_0::metamodel::store::relational::Column[*];
+   primaryKey : String[*];
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::Milestoning
+{
+    _type : String[1];
+   infinityDate : meta::protocols::pure::v1_23_0::metamodel::valueSpecification::raw::CDate[0..1];
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::Table extends meta::protocols::pure::v1_23_0::metamodel::store::relational::Relation
+{
+   name : String[1];
+   milestoning : meta::protocols::pure::v1_23_0::metamodel::store::relational::Milestoning[*];
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::ProcessingMilestoning extends meta::protocols::pure::v1_23_0::metamodel::store::relational::Milestoning
+{
+   in : String[1];
+   out : String[1];
+   outIsInclusive : Boolean[1];
+
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::BusinessSnapshotMilestoning extends meta::protocols::pure::v1_23_0::metamodel::store::relational::Milestoning
+{
+   snapshotDate:String[1];
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::BusinessMilestoning extends meta::protocols::pure::v1_23_0::metamodel::store::relational::Milestoning
+{
+   from : String[1];
+   thru : String[1];
+   thruIsInclusive : Boolean[1];
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::View extends meta::protocols::pure::v1_23_0::metamodel::store::relational::Relation, meta::protocols::pure::v1_23_0::metamodel::store::relational::mapping::RelationalEntityMapping
+{
+   name : String[1];
+   columnMappings : meta::protocols::pure::v1_23_0::metamodel::store::relational::mapping::ColumnMapping[*];
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::mapping::RelationalEntityMapping
+{
+   mainTable : meta::protocols::pure::v1_23_0::metamodel::store::relational::element::TablePtr[1];
+   distinct : Boolean[1];
+   groupBy : meta::protocols::pure::v1_23_0::metamodel::store::relational::element::RelationalElement[*];
+   filter : meta::protocols::pure::v1_23_0::metamodel::store::relational::mapping::FilterWithJoins[0..1];
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::mapping::RelationalClassMapping extends meta::protocols::pure::v1_23_0::metamodel::mapping::ClassMapping
+{
+   primaryKey : meta::protocols::pure::v1_23_0::metamodel::store::relational::element::RelationalElement[*];
+   propertyMappings : meta::protocols::pure::v1_23_0::metamodel::mapping::PropertyMapping[*];
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::mapping::RelationalAssociationMapping extends meta::protocols::pure::v1_23_0::metamodel::mapping::AssociationMapping
+{
+    propertyMappings : meta::protocols::pure::v1_23_0::metamodel::mapping::PropertyMapping[*];
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::mapping::RootRelationalClassMapping extends meta::protocols::pure::v1_23_0::metamodel::store::relational::mapping::RelationalClassMapping, meta::protocols::pure::v1_23_0::metamodel::store::relational::mapping::RelationalEntityMapping
+{
+   primaryKey : meta::protocols::pure::v1_23_0::metamodel::store::relational::element::RelationalElement[*];
+   propertyMappings : meta::protocols::pure::v1_23_0::metamodel::mapping::PropertyMapping[*];
+}
+
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::mapping::RelationalPropertyMapping extends  meta::protocols::pure::v1_23_0::metamodel::mapping::PropertyMapping
+{
+   enumMappingId : String[0..1];
+   relationalOperation : meta::protocols::pure::v1_23_0::metamodel::store::relational::element::RelationalElement[1];
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::mapping::EmbeddedRelationalPropertyMapping extends  meta::protocols::pure::v1_23_0::metamodel::mapping::PropertyMapping
+{
+   id : String[1];
+   classMapping : meta::protocols::pure::v1_23_0::metamodel::store::relational::mapping::RelationalClassMapping[1];
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::mapping::OtherwiseEmbeddedRelationalPropertyMapping extends meta::protocols::pure::v1_23_0::metamodel::store::relational::mapping::EmbeddedRelationalPropertyMapping
+{
+   otherwisePropertyMapping: RelationalPropertyMapping[1];
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::mapping::ColumnMapping
+{
+   name : String[1];
+   operation : meta::protocols::pure::v1_23_0::metamodel::store::relational::element::RelationalElement[1];
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::mapping::FilterWithJoins
+{
+   filter : FilterPtr[1];
+   joins : JoinPtr[*];
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::mapping::FilterPtr
+{
+   db : String[1];
+   name : String[1];
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::mapping::JoinPtr
+{
+   db : String[1];
+   name : String[1];
+   joinType : String[0..1];
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::Column
+{
+   name : String[1];
+   type : meta::protocols::pure::v1_23_0::metamodel::store::relational::DataType[1];
+   nullable : Boolean[1];
+}
+
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::DataType
+{
+   _type: String[1];
+
+}
+
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::BigInt extends meta::protocols::pure::v1_23_0::metamodel::store::relational::DataType
+{
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::SmallInt extends meta::protocols::pure::v1_23_0::metamodel::store::relational::DataType
+{
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::TinyInt extends meta::protocols::pure::v1_23_0::metamodel::store::relational::DataType
+{
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::Integer extends meta::protocols::pure::v1_23_0::metamodel::store::relational::DataType
+{
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::Float extends meta::protocols::pure::v1_23_0::metamodel::store::relational::DataType
+{
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::Real extends meta::protocols::pure::v1_23_0::metamodel::store::relational::DataType
+{
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::Double extends meta::protocols::pure::v1_23_0::metamodel::store::relational::DataType
+{
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::Varchar extends meta::protocols::pure::v1_23_0::metamodel::store::relational::DataType
+{
+    size: Integer[1];
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::Char extends meta::protocols::pure::v1_23_0::metamodel::store::relational::DataType
+{
+    size: Integer[1];
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::Varbinary extends meta::protocols::pure::v1_23_0::metamodel::store::relational::DataType
+{
+    size: Integer[1];
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::Decimal extends meta::protocols::pure::v1_23_0::metamodel::store::relational::DataType
+{
+    precision : Integer[1];
+    scale     : Integer[1];
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::Numeric extends meta::protocols::pure::v1_23_0::metamodel::store::relational::DataType
+{
+    precision : Integer[1];
+    scale     : Integer[1];
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::Timestamp extends meta::protocols::pure::v1_23_0::metamodel::store::relational::DataType
+{
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::Date extends meta::protocols::pure::v1_23_0::metamodel::store::relational::DataType
+{
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::Bit extends meta::protocols::pure::v1_23_0::metamodel::store::relational::DataType
+{
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::Binary extends meta::protocols::pure::v1_23_0::metamodel::store::relational::DataType
+{
+   size:Integer[1];
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::Other extends meta::protocols::pure::v1_23_0::metamodel::store::relational::DataType
+{
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::Array extends meta::protocols::pure::v1_23_0::metamodel::store::relational::DataType
+{
+}
+
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::Join
+{
+   name : String[1];
+   target : String[0..1];
+   operation : meta::protocols::pure::v1_23_0::metamodel::store::relational::element::RelationalElement[1];
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::Filter
+{
+   _type : String[1];
+   name : String[1];
+   operation : meta::protocols::pure::v1_23_0::metamodel::store::relational::element::RelationalElement[1];
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::element::RelationalElement
+{
+   _type : String[1];
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::element::ColumnPtr extends meta::protocols::pure::v1_23_0::metamodel::store::relational::element::RelationalElement
+{
+   tableAlias : String[1];
+   table: meta::protocols::pure::v1_23_0::metamodel::store::relational::element::TablePtr[1];
+   column : String[1];
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::element::ElementWithJoins extends meta::protocols::pure::v1_23_0::metamodel::store::relational::element::RelationalElement
+{
+   joins : meta::protocols::pure::v1_23_0::metamodel::store::relational::mapping::JoinPtr[*];
+   relationalElement : meta::protocols::pure::v1_23_0::metamodel::store::relational::element::RelationalElement[0..1];
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::element::DynamicFunction extends meta::protocols::pure::v1_23_0::metamodel::store::relational::element::RelationalElement
+{
+   funcName : String[1];
+   parameters : meta::protocols::pure::v1_23_0::metamodel::store::relational::element::RelationalElement[*];
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::element::Literal extends meta::protocols::pure::v1_23_0::metamodel::store::relational::element::RelationalElement
+{
+   value : Any[1];
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::element::LiteralList extends meta::protocols::pure::v1_23_0::metamodel::store::relational::element::RelationalElement
+{
+   values : meta::protocols::pure::v1_23_0::metamodel::store::relational::element::Literal[*];
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::element::TablePtr extends meta::protocols::pure::v1_23_0::metamodel::store::relational::element::RelationalElement
+{
+   database : String[1];
+   schema : String[1];
+   table : String[1];
+   mainTableDb: String[1];
+
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::postProcessor::Mapper
+{
+   _type: String[1];
+   from: String[1];
+   to: String[1];
+}
+
+Class <<typemodifiers.abstract>> meta::protocols::pure::v1_23_0::metamodel::store::relational::postProcessor::MapperPostProcessor extends meta::protocols::pure::v1_23_0::metamodel::store::relational::postProcessor::PostProcessor
+{
+   mappers: meta::protocols::pure::v1_23_0::metamodel::store::relational::postProcessor::Mapper[*];
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::postProcessor::TableNameMapper extends meta::protocols::pure::v1_23_0::metamodel::store::relational::postProcessor::Mapper {
+   schema: meta::protocols::pure::v1_23_0::metamodel::store::relational::postProcessor::SchemaNameMapper[1];
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::postProcessor::SchemaNameMapper extends meta::protocols::pure::v1_23_0::metamodel::store::relational::postProcessor::Mapper {}
+
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::TableNameMapper extends meta::protocols::pure::v1_23_0::metamodel::store::relational::PostProcessorParameter
+{
+   in:String[1];
+   out:String[1];
+   schemaMapperIn: String[1];
+   schemaMapperOut: String[1];
+}
+
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::SchemaNameMapper extends meta::protocols::pure::v1_23_0::metamodel::store::relational::PostProcessorParameter
+{
+   in:String[1];
+   out:String[1];
+}

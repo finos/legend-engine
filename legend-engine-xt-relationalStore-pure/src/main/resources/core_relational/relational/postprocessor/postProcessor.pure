@@ -1,0 +1,345 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::functions::pureToSqlQuery::*;
+import meta::pure::store::*;
+import meta::pure::router::extension::*;
+import meta::relational::transform::fromPure::*;
+import meta::relational::functions::sqlQueryToString::*;
+import meta::pure::executionPlan::*;
+import meta::pure::runtime::*;
+import meta::pure::mapping::*;
+import meta::relational::mapping::*;
+import meta::relational::runtime::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::metamodel::*;
+import meta::relational::metamodel::operation::*;
+import meta::relational::metamodel::join::*;
+import meta::relational::postProcessor::*;
+import meta::relational::postProcessor::filterPushDown::*;
+
+Class meta::relational::mapping::PostProcessorResult
+{
+   query : SQLQuery[1];
+   resultPostProcessor : meta::pure::metamodel::function::Function<{Result<Any|*>[1]->Result<Any|*>[1]}>[*];
+   executionNodes: meta::pure::executionPlan::ExecutionNode[*];  //nodes are inserted before the relational execution
+   postExecutionNodes: meta::pure::executionPlan::ExecutionNode[*];  //Nodes are inserted run after the relational execution
+   templateFunctions : String[*];
+}
+
+//Execution Plan
+function meta::relational::mapping::postProcessSQLQuery(query: SQLQuery[1], store:Database[1], ext:RoutedValueSpecification[0..1], m:Mapping[0..1], runtime:Runtime[1], exeCtx:ExecutionContext[1], extensions:RouterExtension[*]):PostProcessorResult[1]
+{
+   let postProcessorResult = $query->defaultPlanPostProcessors($runtime,$ext,$m,$store,$exeCtx, $extensions)
+                                   ->userPlanPostProcessors($runtime,$ext,$m,$store,$exeCtx);
+   
+   $extensions->map(e|$e.moduleExtension('relational')->cast(@RelationalExtension).relational_plan_postProcessors)->fold({pp, result | $pp->eval($result, $runtime, $ext, $m, $store, $exeCtx)}, $postProcessorResult);
+}
+
+//Execution
+function meta::relational::mapping::postProcessQuery(exeCtx:ExecutionContext[1], query:SQLQuery[1], runtime: Runtime[1], store:Database[0..1], extensions:meta::pure::router::extension::RouterExtension[*]):PostProcessorResult[1]
+{
+   let defaultPostProcessors = sqlQueryDefaultPostProcessors();
+   let postProcesedQuery = if($defaultPostProcessors->isEmpty(), | $query, | $defaultPostProcessors->fold({pp,q|$pp->eval($q, $extensions).values->toOne()}, $query->cast(@SelectSQLQuery)));
+   let c = if($store->isNotEmpty(),|$runtime->connectionByElement($store->toOne()),|$runtime.connections->at(0));
+   let postProcessors1 = if($c->instanceOf(DatabaseConnection), | $c->cast(@DatabaseConnection).sqlQueryPostProcessors, | []);
+   let newQuery1 = if($postProcessors1->isEmpty(), | $postProcesedQuery, | $postProcessors1->fold({pp,q|$pp->eval($q).values->toOne()}, $postProcesedQuery->cast(@SelectSQLQuery)));
+   let postProcessors = if($c->instanceOf(DatabaseConnection), | $c->cast(@DatabaseConnection).sqlQueryPostProcessorsConnectionAware, | []);
+   let newQuery = if($postProcessors->isEmpty(), | $newQuery1, | $postProcessors->fold({pp,q|$pp->eval($q, $c->cast(@DatabaseConnection)).values->toOne()}, $newQuery1->cast(@SelectSQLQuery)));
+   let newQueryAfterTrimColumnNameProcessing = if($runtime.connections->filter(c|$c->instanceOf(DatabaseConnection))->isNotEmpty(),
+                                   | let type = $runtime.connections->filter(c|$c->instanceOf(DatabaseConnection))->cast(@DatabaseConnection).type;
+                                     if ($type == DatabaseType.DB2 || $type == DatabaseType.Snowflake || $type == DatabaseType.SybaseIQ,
+                                          | trimColumnNamePostProcessors()->eval($newQuery->cast(@SelectSQLQuery),$runtime).values->cast(@SelectSQLQuery);,
+                                          | $newQuery);,
+                                   | $newQuery);
+
+   $extensions->map(e|$e.moduleExtension('relational')->cast(@RelationalExtension).relational_execution_postProcessors)->fold({pp, result | $pp->eval($result, $runtime, [], [], $store, $exeCtx)}, ^PostProcessorResult(query = $newQueryAfterTrimColumnNameProcessing));
+}
+
+//Helper Functions
+function meta::relational::postProcessor::postprocess(s: SelectSQLQuery[1], f:meta::pure::metamodel::function::Function<{RelationalOperationElement[1]->RelationalOperationElement[1]}>[1]):Result<SelectSQLQuery|1>[1]
+{
+   ^Result<SelectSQLQuery|1>(values=$s->transformNonCached($f)->cast(@SelectSQLQuery));
+}
+
+function meta::relational::postProcessor::transform(r:RelationalTreeNode[1], f:meta::pure::metamodel::function::Function<Any>[1], transformed: Map<RelationalOperationElement, RelationalOperationElement>[1]):Pair<RelationalTreeNode, Map<RelationalOperationElement, RelationalOperationElement>>[1]
+{
+     $r->match([
+                 j:JoinTreeNode[1] |  let join = $j.join;
+                                      let joinAliases = $join.aliases;
+                                      let transformedOperation = $join.operation->transform($f, $transformed);
+                                      let transformedAliasesWithUpdatedMap = $joinAliases->fold({a, agg |
+                                         let leftTransform  = $a.first->transform($f, $agg.second);
+                                         let rightTransform = $a.second->transform($f, $leftTransform.second);
+                                         pair(list($agg.first.values->add(pair($leftTransform.first->cast(@TableAlias), $rightTransform.first->cast(@TableAlias)))), $rightTransform.second);
+                                      }, pair(^List<Pair<TableAlias, TableAlias>>(), $transformedOperation.second));
+                                      let transformedJoin = if(!$join.target->isEmpty(),
+                                                               | let transformedTarget = transform($join.target->toOne(), $f, $transformedAliasesWithUpdatedMap.second);
+                                                                 pair(^$join(operation=$transformedOperation.first->cast(@Operation), aliases=$transformedAliasesWithUpdatedMap.first.values, target=$transformedTarget.first->cast(@TableAlias)), $transformedTarget.second);,
+                                                               | pair(^$join(operation=$transformedOperation.first->cast(@Operation), aliases=$transformedAliasesWithUpdatedMap.first.values), $transformedAliasesWithUpdatedMap.second)
+                                                            );
+                                      let transformedAlias=$j.alias->transform($f, $transformedJoin.second);
+                                      let transformedChildren=$j.childrenData->fold({c , agg |
+                                         let childTransform = $c->cast(@JoinTreeNode)->transform($f,                                      $agg.second);
+                                         pair(list($agg.first.values->add($childTransform.first)), $childTransform.second);
+                                      }, pair(^List<RelationalTreeNode>(), $transformedAlias.second));
+                                      pair(^$j(join=$transformedJoin.first, alias=$transformedAlias.first->cast(@TableAlias), childrenData=$transformedChildren.first.values), $transformedChildren.second);,
+                 r:RelationalTreeNode[1] |let transformedAlias=$r.alias->transform($f, $transformed);
+                                         let transformedChildren=$r.childrenData->fold({c , agg |
+                                            let childTransform = $c->cast(@JoinTreeNode)->transform($f, $agg.second);
+                                            pair(list($agg.first.values->add($childTransform.first)), $childTransform.second);
+                                         }, pair(^List<RelationalTreeNode>(), $transformedAlias.second));
+                                         pair(^$r(alias=$transformedAlias.first->cast(@TableAlias), childrenData=$transformedChildren.first.values), $transformedChildren.second);
+     ]);
+}
+
+function meta::relational::postProcessor::transform(r:RelationalOperationElement[1], f:meta::pure::metamodel::function::Function<Any>[1], transformed: Map<RelationalOperationElement, RelationalOperationElement>[1]):Pair<RelationalOperationElement, Map<RelationalOperationElement, RelationalOperationElement>>[1]
+{
+   let keyValue = $transformed->get($r);
+   if($keyValue->isNotEmpty(),
+      |  pair($keyValue->toOne(), $transformed);,
+      |  let tR = if($f->functionType()->cast(@FunctionType).parameters->size() == 1,
+                     |$f->cast(@meta::pure::metamodel::function::Function<{RelationalOperationElement[1]->RelationalOperationElement[1]}>)->eval($r),
+                     |$f->cast(@meta::pure::metamodel::function::Function<{RelationalOperationElement[1], Integer[1]->RelationalOperationElement[1]}>)->eval($r, $transformed->keyValues()->size()));
+         let toReturn = $tR->match([
+                      v:VarSetPlaceHolder[1] | pair($v, $transformed),
+
+                      s:SelectSQLQuery[1] | let transformedData = $s.data->toOne()->transform($f, $transformed);
+                                            let transformedColumns = $s.columns->fold({c, agg |
+                                               let colTransform = $c->transform($f, $agg.second);
+                                               pair(list($agg.first.values->add($colTransform.first)), $colTransform.second);
+                                            }, pair(^List<RelationalOperationElement>(), $transformedData.second));
+                                            let transformedFilterOp = $s.filteringOperation->fold({fo, agg |
+                                               let foTransform = $fo->transform($f, $agg.second);
+                                               pair(list($agg.first.values->add($foTransform.first)), $foTransform.second);
+                                            }, pair(^List<RelationalOperationElement>(), $transformedColumns.second));
+                                            let newS = ^$s( data=$transformedData.first->cast(@RootJoinTreeNode),
+                                                            columns=$transformedColumns.first.values,
+                                                            filteringOperation=$transformedFilterOp.first.values
+                                                          );
+                                            let newSWithLeftSideModified = if(!$newS.leftSideOfFilter->isEmpty(),| ^$newS(leftSideOfFilter=$s.leftSideOfFilter->toOne()->meta::relational::functions::pureToSqlQuery::findOneNode($s.data->toOne(), $newS.data->toOne())),|$newS);
+                                            pair($newSWithLeftSideModified, $transformedFilterOp.second);,
+
+                      v:ViewSelectSQLQuery[1] | let transformedSql = $v.selectSQLQuery->transform($f, $transformed);
+                                                pair(^$v(selectSQLQuery=$transformedSql.first->cast(@SelectSQLQuery)), $transformedSql.second);,
+
+                      u:Union[1] | let transformedSqls = $u.queries->fold({q, agg |
+                                      let sqlTransform = $q->transform($f, $agg.second);
+                                      pair(list($agg.first.values->add($sqlTransform.first->cast(@SelectSQLQuery))), $sqlTransform.second);
+                                   }, pair(^List<SelectSQLQuery>(), $transformed));
+                                   pair(^$u(queries=$transformedSqls.first.values), $transformedSqls.second);,
+
+                      a:Alias[1] | let transformedElement = $a.relationalElement->transform($f, $transformed);
+                                   pair(^$a(relationalElement=$transformedElement.first), $transformedElement.second);,
+
+                      t:Table[1] | pair($t, $transformed),
+
+                      u:UnaryOperation[1] | let transformedNested = transform($u.nested, $f, $transformed);
+                                            pair(^$u(nested=$transformedNested.first), $transformedNested.second);,
+
+                      b:BinaryOperation[1] | let transformedLeft  = transform($b.left, $f, $transformed);
+                                             let transformedRight = transform($b.right, $f, $transformed);
+                                             pair(^$b(left=$transformedLeft.first, right=$transformedRight.first), $transformedRight.second);,
+
+                      t:TableAliasColumn[1] | pair($t, $transformed),
+
+                      va:VariableArityOperation[1] | let transformedArgs = $va.args->fold({a, agg |
+                                                        let argTransform = $a->transform($f, $agg.second);
+                                                        pair(list($agg.first.values->add($argTransform.first)), $argTransform.second);
+                                                     }, pair(^List<RelationalOperationElement>(), $transformed));
+                                                     pair(^$va(args=$transformedArgs.first.values), $transformedArgs.second);,
+
+                      d:DynaFunction[1] | let transformedParams = $d.parameters->fold({p, agg |
+                                             let paramTransform = $p->transform($f, $agg.second);
+                                             pair(list($agg.first.values->add($paramTransform.first)), $paramTransform.second);
+                                          }, pair(^List<RelationalOperationElement>(), $transformed));
+                                          pair(^$d(parameters=$transformedParams.first.values), $transformedParams.second);,
+
+                      j:JoinStrings[1] | let transformedStrings = $j.strings->fold({s, agg |
+                                            let stringTransform = $s->transform($f, $agg.second);
+                                            pair(list($agg.first.values->add($stringTransform.first)), $stringTransform.second);
+                                         }, pair(^List<RelationalOperationElement>(), $transformed));
+                                         let transformedWithStrings = pair(^$j(strings=$transformedStrings.first.values), $transformedStrings.second);
+                                         let transformedWithPrefix  = if($j.prefix->isEmpty(),
+                                                                         | $transformedWithStrings,
+                                                                         | let transformedWithStringsFirst = $transformedWithStrings.first;
+                                                                           let transformedPrefix = $j.prefix->toOne()->transform($f, $transformedWithStrings.second);
+                                                                           pair(^$transformedWithStringsFirst(prefix=$transformedPrefix.first), $transformedPrefix.second);
+                                                                       );
+                                         let transformedWithSeparator = if($j.separator->isEmpty(),
+                                                                           | $transformedWithPrefix,
+                                                                           | let transformedWithPrefixFirst = $transformedWithPrefix.first;
+                                                                             let transformedSep = $j.separator->toOne()->transform($f, $transformedWithPrefix.second);
+                                                                             pair(^$transformedWithPrefixFirst(separator=$transformedSep.first), $transformedSep.second);
+                                                                        );
+
+                                         let transformedWithSuffix = if($j.suffix->isEmpty(),
+                                                                        | $transformedWithSeparator,
+                                                                        | let transformedWithSeparatorFirst = $transformedWithSeparator.first;
+                                                                          let transformedSuffix = $j.suffix->toOne()->transform($f, $transformedWithSeparator.second);
+                                                                          pair(^$transformedWithSeparatorFirst(suffix=$transformedSuffix.first), $transformedSuffix.second);
+                                                                     );,
+
+                      l:Literal[1] | pair($l, $transformed),
+
+                      ll:LiteralList[1] | pair($ll, $transformed),
+
+                      s : SemiStructuredPropertyAccess[1] | let transformedOperand = transform($s.operand, $f, $transformed);
+                                                            let transformedProperty = transform($s.property, $f, $transformedOperand.second);
+                                                            if($s.index->isEmpty(),
+                                                               | pair(^$s(operand = $transformedOperand.first, property = $transformedProperty.first), $transformedProperty.second),
+                                                               | let transformedIndex = transform($s.index->toOne(), $f, $transformedProperty.second);
+                                                                 pair(^$s(operand = $transformedOperand.first, property = $transformedProperty.first, index = $transformedIndex.first), $transformedIndex.second);
+                                                            );,
+
+                      s : SemiStructuredArrayElementAccess[1] | let transformedOperand = transform($s.operand, $f, $transformed);
+                                                                let transformedIndex = transform($s.index, $f, $transformedOperand.second);
+                                                                pair(^$s(operand = $transformedOperand.first, index = $transformedIndex.first), $transformedIndex.second);,
+
+                      rel:RelationalOperationElement[1] | pair($rel, $transformed)
+                    ]);
+         pair($toReturn.first, $toReturn.second->put($r, $toReturn.first));
+   );
+}
+
+function meta::relational::postProcessor::transform(r:RelationalOperationElement[1], f:meta::pure::metamodel::function::Function<{RelationalOperationElement[1]->RelationalOperationElement[1]}>[1]):RelationalOperationElement[1]
+{
+   transform($r, $f, ^Map<RelationalOperationElement, RelationalOperationElement>()).first;
+}
+
+function meta::relational::postProcessor::transformNonCached(r:RelationalTreeNode[1], parentAlias:TableAlias[0..1], f:meta::pure::metamodel::function::Function<Any>[1]):RelationalTreeNode[1]
+{
+     $r->match([
+                 j:JoinTreeNode[1] |  
+                    let join = $j.join;
+                    let transformedAlias = $j.alias->transformNonCached($f)->cast(@TableAlias);
+                    let joinTarget = if($j.join.target->isNotEmpty(),
+                                        |if($j.join.target == $j.alias,
+                                            |$transformedAlias,
+                                            |$parentAlias),
+                                        |[]);
+                    ^$j
+                    (
+                       join = ^$join(operation=$join.operation->transformNonCached($f)->cast(@Operation), aliases = [pair($parentAlias->toOne(), $transformedAlias), pair($transformedAlias, $parentAlias->toOne())], target = $joinTarget),
+                       alias = $transformedAlias,
+                       childrenData = $j.childrenData->cast(@JoinTreeNode)->map(x | $x->transformNonCached($transformedAlias, $f))
+                    );,
+                 r:RelationalTreeNode[1] |
+                    let transformedAlias = $r.alias->transformNonCached($f)->cast(@TableAlias);
+                    ^$r
+                    (
+                       alias = $transformedAlias,
+                       childrenData = $r.childrenData->cast(@RelationalTreeNode)->map(x | $x->transformNonCached($transformedAlias, $f))
+                    );
+     ]);
+}
+
+function meta::relational::postProcessor::transformNonCached(r:RelationalOperationElement[1], f:meta::pure::metamodel::function::Function<Any>[1]):RelationalOperationElement[1]
+{
+   let tR = $f->cast(@meta::pure::metamodel::function::Function<{RelationalOperationElement[1]->RelationalOperationElement[1]}>)->eval($r);
+   let toReturn = $tR->match([
+                      s:SelectSQLQuery[1] | 
+                                            let newS = ^$s( data= if($s.data->isEmpty(), | [], |$s.data->toOne()->transformNonCached([], $f)->cast(@RootJoinTreeNode)),
+                                                            columns=$s.columns->map(c|$c->transformNonCached($f)),
+                                                            filteringOperation=$s.filteringOperation->map(c|$c->transformNonCached($f))
+                                                          );
+                                            let newSWithLeftSideModified = if(!$newS.leftSideOfFilter->isEmpty(),| ^$newS(leftSideOfFilter=$s.leftSideOfFilter->toOne()->meta::relational::functions::pureToSqlQuery::findOneNode($s.data->toOne(), $newS.data->toOne())),|$newS);
+                                            $newSWithLeftSideModified;,
+ 
+                      v:ViewSelectSQLQuery[1] | ^$v(selectSQLQuery=$v.selectSQLQuery->transformNonCached($f)->cast(@SelectSQLQuery)),
+ 
+                      u:Union[1] | ^$u(queries=$u.queries->map(q|$q->transformNonCached($f)->cast(@SelectSQLQuery))),
+ 
+                      a:Alias[1] | ^$a(relationalElement=$a.relationalElement->transformNonCached($f)),
+ 
+                      u:UnaryOperation[1] | ^$u(nested=transformNonCached($u.nested, $f)),
+ 
+                      b:BinaryOperation[1] | ^$b(left= transformNonCached($b.left, $f), right=transformNonCached($b.right, $f)),
+ 
+                      va:VariableArityOperation[1] | ^$va(args=$va.args->map(a|$a->transformNonCached($f))),
+ 
+                      d:DynaFunction[1] | ^$d(parameters=$d.parameters->map(p|$p->transformNonCached($f))),
+ 
+                      j:JoinStrings[1] | 
+                        ^$j(
+                           strings = $j.strings->map(s|$s->transformNonCached($f)),
+                           prefix = $j.prefix->map(s|$s->transformNonCached($f)),
+                           separator = $j.separator->map(s|$s->transformNonCached($f)),
+                           suffix = $j.suffix->map(s|$s->transformNonCached($f))
+                        ),
+ 
+                      s: SemiStructuredPropertyAccess[1] | ^$s(operand = $s.operand->transformNonCached($f), property = $s.property->transformNonCached($f), index = $s.index->map(i | $i->transformNonCached($f))),
+                      s: SemiStructuredArrayElementAccess[1] | ^$s(operand = $s.operand->transformNonCached($f), index = $s.index->transformNonCached($f)),
+                     
+                      rel:RelationalOperationElement[1] | $rel
+                    ]);
+}
+
+function meta::relational::postProcessor::replaceTables(selectSQLQuery:SelectSQLQuery[1], oldToNewPairs:Pair<Table,Table>[*]):Result<SelectSQLQuery|1>[1]
+{
+   ^Result<SelectSQLQuery|1>(values=$selectSQLQuery->fixTables($oldToNewPairs)->cast(@SelectSQLQuery));
+}
+
+function meta::relational::postProcessor::fixTables(relationalOperationElement:RelationalOperationElement[1], oldToNewPairs:Pair<Table,Table>[*]):RelationalOperationElement[1]
+{
+   $relationalOperationElement->match([
+                    u:Union[1] | ^$u(queries = $u.queries->map(q|$q->fixTables($oldToNewPairs))->cast(@SelectSQLQuery)),
+                    s:SelectSQLQuery[1] | let newS = ^$s(
+                                                         data=$s.data->map(x | $x->replaceTablesInJoin($oldToNewPairs)->cast(@RootJoinTreeNode)),
+                                                         columns = $s.columns->map(c|$c->match([a:Alias[1] | $a.relationalElement->match([
+                                                                                                                   s:SelectSQLQuery[1]|^$a(relationalElement = $s->fixTables($oldToNewPairs)),
+                                                                                                                   r:RelationalOperationElement[1]|$a
+                                                                                                                 ]),
+                                                                                                a:RelationalOperationElement[1] | $a])
+                                                                              ),
+                                                         filteringOperation= $s.filteringOperation->map(f | $f->fixTables($oldToNewPairs))
+                                                      );
+                                          if(!$newS.leftSideOfFilter->isEmpty(),| ^$newS(leftSideOfFilter=$s.leftSideOfFilter->toOne()->meta::relational::functions::pureToSqlQuery::findOneNode($s.data->toOne(), $newS.data->toOne())),|$newS);,
+                    v:ViewSelectSQLQuery[1] | ^$v(selectSQLQuery=$v.selectSQLQuery->fixTables($oldToNewPairs)->cast(@SelectSQLQuery)),
+                    a:Alias[1] | ^$a(relationalElement=$a.relationalElement->fixTables($oldToNewPairs)),
+                    t:Table[1] | let found = $oldToNewPairs->filter(o|$o.first.name == $t.name && $o.first.schema == $t.schema);
+                                 if ($found->isEmpty(), | $t, | $found->last()->toOne().second);,
+                    u:UnaryOperation[1] | ^$u(nested=fixTables($u.nested, $oldToNewPairs)),
+                    b:BinaryOperation[1] | ^$b(left=fixTables($b.left, $oldToNewPairs), right=fixTables($b.right, $oldToNewPairs)),
+                    ta : TableAliasColumn[1] | $ta,
+                    va : VariableArityOperation[1] | ^$va(args=$va.args->map(e | $e->fixTables($oldToNewPairs))),
+                    d : DynaFunction[1] | ^$d(parameters=$d.parameters->map(p | $p->fixTables($oldToNewPairs))),
+                    j : JoinStrings[1] | ^$j(strings=$j.strings->map(v | $v->fixTables($oldToNewPairs)),
+                                             prefix=if($j.prefix->isEmpty(), | [], | $j.prefix->toOne()->fixTables($oldToNewPairs)),
+                                             separator=if($j.separator->isEmpty(), | [], | $j.separator->toOne()->fixTables($oldToNewPairs)),
+                                             suffix=if($j.suffix->isEmpty(), | [], | $j.suffix->toOne()->fixTables($oldToNewPairs))),
+                    l : Literal[1] | $l,
+                    ll : LiteralList[1] | $ll,
+                    s: SemiStructuredPropertyAccess[1] | ^$s(operand = $s.operand->fixTables($oldToNewPairs), property = $s.property->fixTables($oldToNewPairs), index = $s.index->map(i | $i->fixTables($oldToNewPairs))),
+                    s: SemiStructuredArrayElementAccess[1] | ^$s(operand = $s.operand->fixTables($oldToNewPairs), index = $s.index->fixTables($oldToNewPairs)),
+                    rel: RelationalOperationElement[1] | $rel
+                  ]);
+}
+
+function meta::relational::postProcessor::replaceTablesInJoin(r:RelationalTreeNode[1], oldToNewPairs:Pair<Table,Table>[*]):RelationalTreeNode[1]
+{
+   ^$r
+   (
+      alias=$r.alias->fixTables($oldToNewPairs)->cast(@TableAlias),
+      childrenData=$r.childrenData->map(c | $c->cast(@JoinTreeNode)->replaceTablesInJoin($oldToNewPairs))
+   )
+}
+
+function meta::relational::runtime::addPostProcessors(r:Runtime[1], store:Store[0..1], pps : meta::pure::metamodel::function::Function<{SelectSQLQuery[1]->meta::pure::mapping::Result<SelectSQLQuery|1>[1]}>[*]):Runtime[1]
+{
+  let connection = if($store->isNotEmpty(),| let conn = $r->connectionByElement($store->toOne()),|$r.connections->at(0)); 
+  $connection->match([d:DatabaseConnection[1]| let updatedConnections = $r.connections->remove($d)->add(^$d(sqlQueryPostProcessors+=$pps)); 
+                                               ^$r(connections=$updatedConnections);,
+                                     a:Any[1]| fail('Connection must be of type DatabaseConnection'); $r;]);   
+}

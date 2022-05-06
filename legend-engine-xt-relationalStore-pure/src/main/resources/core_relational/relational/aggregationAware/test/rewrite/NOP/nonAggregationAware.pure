@@ -1,0 +1,111 @@
+import meta::relational::functions::asserts::*;
+import meta::pure::router::printer::*;
+import meta::pure::router::extension::*;
+import meta::pure::runtime::*;
+import meta::relational::tests::aggregationAware::mapping::*;
+import meta::relational::tests::aggregationAware::domain::*;
+import meta::relational::tests::aggregationAware::*;
+
+function <<test.Test>> meta::relational::tests::aggregationAware::testRewriteAsNOP::nonAggregationAware::testRewriteGetAllQuery():Boolean[1]
+{
+   let query = {|Wholesales.all()};
+   let mapping = relationalMapping;
+   let runtime = runtime();
+   
+   let result = execute($query, $mapping, $runtime, defaultRelationalExtensions());
+   
+   assertEmpty($result.activities->filter(s|$s->instanceOf(meta::pure::mapping::aggregationAware::AggregationAwareActivity)));
+   assertSameSQL('select "root".id as "pk_0", "root".sales_date as "pk_1", "root".is_cancelled_flag as "pk_2", "root".product_id as "pk_3", "root".revenue as "pk_4", "root".emp_id as "pk_5", case when "root".is_cancelled_flag = \'Y\' then \'true\' else \'false\' end as "isCancelled", "root".discount as "discount" from base_view.SalesTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::aggregationAware::testRewriteAsNOP::nonAggregationAware::testRewriteFilter():Boolean[1]
+{
+   let query = {|Wholesales.all()->filter(x|$x.isCancelled == 'N').product.productId};
+   let mapping = relationalMapping;
+   let runtime = runtime();
+   
+   let result = execute($query, $mapping, $runtime, defaultRelationalExtensions());
+
+   assertEmpty($result.activities->filter(s|$s->instanceOf(meta::pure::mapping::aggregationAware::AggregationAwareActivity)));
+   assertSameSQL('select "product_0".prod_id from base_view.SalesTable as "root" left outer join base_view.Product as "product_0" on ("root".product_id = "product_0".prod_id) where case when "root".is_cancelled_flag = \'Y\' then \'true\' else \'false\' end = \'N\'', $result);
+}  
+
+function <<test.Test>> meta::relational::tests::aggregationAware::testRewriteAsNOP::nonAggregationAware::testRewriteProjectFunction():Boolean[1]
+{
+   let query = {|Wholesales.all()->project(x|$x.product.productId, ['Product ID'])};
+   let mapping = relationalMapping;
+   let runtime = runtime();
+   
+   let result = execute($query, $mapping, $runtime, defaultRelationalExtensions());
+
+   assertEmpty($result.activities->filter(s|$s->instanceOf(meta::pure::mapping::aggregationAware::AggregationAwareActivity)));
+   assertSameSQL('select "product_0".prod_id as "Product ID" from base_view.SalesTable as "root" left outer join base_view.Product as "product_0" on ("root".product_id = "product_0".prod_id)', $result);
+}
+
+function <<test.Test>> meta::relational::tests::aggregationAware::testRewriteAsNOP::nonAggregationAware::testRewriteProjectCol():Boolean[1]
+{
+   let query = {|Wholesales.all()->project(col(x|$x.product.productId, 'Product ID'))};
+   let mapping = relationalMapping;
+   let runtime = runtime();
+   
+   let result = execute($query, $mapping, $runtime, defaultRelationalExtensions());
+   
+   assertEmpty($result.activities->filter(s|$s->instanceOf(meta::pure::mapping::aggregationAware::AggregationAwareActivity)));
+   assertSameSQL('select "product_0".prod_id as "Product ID" from base_view.SalesTable as "root" left outer join base_view.Product as "product_0" on ("root".product_id = "product_0".prod_id)', $result);
+}
+
+function <<test.Test>> meta::relational::tests::aggregationAware::testRewriteAsNOP::nonAggregationAware::testRewriteProjectFunctionMulti():Boolean[1]
+{
+   let query = {|Wholesales.all()->project([x|$x.product.productId, x|$x.isCancelled], ['Product ID', 'Is Cancelled'])};
+   let mapping = relationalMapping;
+   let runtime = runtime();
+   
+   let result = execute($query, $mapping, $runtime, defaultRelationalExtensions());
+   
+   assertEmpty($result.activities->filter(s|$s->instanceOf(meta::pure::mapping::aggregationAware::AggregationAwareActivity)));
+   assertSameSQL('select "product_0".prod_id as "Product ID", case when "root".is_cancelled_flag = \'Y\' then \'true\' else \'false\' end as "Is Cancelled" from base_view.SalesTable as "root" left outer join base_view.Product as "product_0" on ("root".product_id = "product_0".prod_id)', $result);
+}
+
+function <<test.Test>> meta::relational::tests::aggregationAware::testRewriteAsNOP::nonAggregationAware::testRewriteProjectColMulti():Boolean[1]
+{
+   let query = {|Wholesales.all()->project([col(x|$x.product.productId, 'Product ID'), col(x|$x.isCancelled, 'Is Cancelled')])};
+   let mapping = relationalMapping;
+   let runtime = runtime();
+   
+   let result = execute($query, $mapping, $runtime, defaultRelationalExtensions());
+   
+   assertEmpty($result.activities->filter(s|$s->instanceOf(meta::pure::mapping::aggregationAware::AggregationAwareActivity)));
+   assertSameSQL('select "product_0".prod_id as "Product ID", case when "root".is_cancelled_flag = \'Y\' then \'true\' else \'false\' end as "Is Cancelled" from base_view.SalesTable as "root" left outer join base_view.Product as "product_0" on ("root".product_id = "product_0".prod_id)', $result);
+}
+
+function <<test.Test>> meta::relational::tests::aggregationAware::testRewriteAsNOP::nonAggregationAware::testRewriteTDSOperation():Boolean[1]
+{
+   let query = {|
+      Wholesales.all()
+      ->project([col(x|$x.product.productId, 'Product ID'), col(x|$x.isCancelled, 'Is Cancelled')])
+      ->extend(col(x:TDSRow[1]|$x.getInteger('Product ID') + 2, 'Product ID Added 2'))
+   };
+   let mapping = relationalMapping;
+   let runtime = runtime();
+   
+   let result = execute($query, $mapping, $runtime, defaultRelationalExtensions());
+   
+   assertEmpty($result.activities->filter(s|$s->instanceOf(meta::pure::mapping::aggregationAware::AggregationAwareActivity)));
+   assertSameSQL('select "product_0".prod_id as "Product ID", case when "root".is_cancelled_flag = \'Y\' then \'true\' else \'false\' end as "Is Cancelled", ("product_0".prod_id + 2) as "Product ID Added 2" from base_view.SalesTable as "root" left outer join base_view.Product as "product_0" on ("root".product_id = "product_0".prod_id)', $result);
+}
+
+function <<test.Test>> meta::relational::tests::aggregationAware::testRewriteAsNOP::nonAggregationAware::testRewriteTDSGroupBy():Boolean[1]
+{
+   let query = {|
+      Wholesales.all()
+      ->project([col(x|$x.product.productId, 'Product ID'), col(x|$x.isCancelled, 'Is Cancelled')])
+      ->groupBy(['Is Cancelled'], agg('Max Product ID', x|$x.getInteger('Product ID'), y|$y->max()->toOne()))
+   };
+   let mapping = relationalMapping;
+   let runtime = runtime();
+   
+   let result = execute($query, $mapping, $runtime, defaultRelationalExtensions());
+   
+   assertEmpty($result.activities->filter(s|$s->instanceOf(meta::pure::mapping::aggregationAware::AggregationAwareActivity)));
+   assertSameSQL('select case when "root".is_cancelled_flag = \'Y\' then \'true\' else \'false\' end as "Is Cancelled", max("product_0".prod_id) as "Max Product ID" from base_view.SalesTable as "root" left outer join base_view.Product as "product_0" on ("root".product_id = "product_0".prod_id) group by "Is Cancelled"', $result);
+}

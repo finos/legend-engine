@@ -1,0 +1,141 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::tests::model::simple::*;
+import meta::relational::mapping::*;
+import meta::relational::tests::*;
+import meta::relational::functions::sqlstring::*;
+
+function <<test.Test>> meta::relational::tests::projection::filter::dates::today::testToday():Boolean[1]
+{               
+   let query = {|Trade.all()->filter(d | $d.date == today())->project(x | $x.date, 'date')};
+
+   let h2Sql = toSQLString($query, simpleRelationalMapping, meta::relational::runtime::DatabaseType.H2, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".tradeDate as "date" from tradeTable as "root" where "root".tradeDate = current_date()', $h2Sql);
+   
+   let prestoSql = toSQLString($query, simpleRelationalMapping, meta::relational::runtime::DatabaseType.Presto, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".tradeDate as "date" from tradeTable as "root" where "root".tradeDate = current_date', $prestoSql);
+}
+
+function <<test.Test>> meta::relational::tests::projection::filter::dates::now::testNow():Boolean[1]
+{               
+   let query = {|Trade.all()->filter(d | $d.date == now())->project(x | $x.date, 'date')};
+
+   let h2Sql = toSQLString($query, simpleRelationalMapping, meta::relational::runtime::DatabaseType.H2, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".tradeDate as "date" from tradeTable as "root" where "root".tradeDate = current_timestamp()', $h2Sql);
+   
+   let prestoSql = toSQLString($query, simpleRelationalMapping, meta::relational::runtime::DatabaseType.Presto, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".tradeDate as "date" from tradeTable as "root" where "root".tradeDate = current_timestamp', $prestoSql);
+}
+
+function <<test.Test>> meta::relational::tests::projection::filter::dates::adjust::testAdjust():Boolean[1]
+{              
+   let result = execute(|Trade.all()->filter(d | $d.date == %2014-11-30->adjust(1, DurationUnit.DAYS))->project(x | $x.date, 'date'), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".tradeDate as "date" from tradeTable as "root" where "root".tradeDate = dateadd(DAY, 1, \'2014-11-30\')', $result->sqlRemoveFormatting());
+   assertSize($result.values.rows, 3);
+   assertSameElements([%2014-12-01,%2014-12-01,%2014-12-01], $result.values.rows.values);
+}
+
+function <<test.Test>> meta::relational::tests::projection::filter::dates::adjust::testAdjustWithMicroseconds():Boolean[1]
+{              
+   let result = execute(|Trade.all()->filter(d | ($d.settlementDateTime > %2014-12-04T15:22:23->adjust(123456, DurationUnit.MICROSECONDS)) && ($d.settlementDateTime < %2014-12-04T15:22:23->adjust(123457, DurationUnit.MICROSECONDS)))->project(x | $x.settlementDateTime, 'settlementDateTime'), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".settlementDateTime as "settlementDateTime" from tradeTable as "root" where (("root".settlementDateTime is not null and "root".settlementDateTime > dateadd(MICROSECOND, 123456, \'2014-12-04 15:22:23\')) and ("root".settlementDateTime is not null and "root".settlementDateTime < dateadd(MICROSECOND, 123457, \'2014-12-04 15:22:23\')))', $result->sqlRemoveFormatting());
+   assertSize($result.values.rows, 1);
+   assertSameElements([%2014-12-04T15:22:23.123456789], $result.values.rows.values);
+}
+
+function <<test.Test>> meta::relational::tests::projection::filter::dates::firstDay::testFirstDayOfWeek():Boolean[1]
+{              
+   let result = execute(|Trade.all()->filter(d | $d.date->firstDayOfWeek() == %2017-09-18)->project(x | $x.date, 'date'), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".tradeDate as "date" from tradeTable as "root" where dateadd(DAY, -(mod(dayofweek("root".tradeDate)+5, 7)), "root".tradeDate) = \'2017-09-18\'', $result->sqlRemoveFormatting());
+}
+
+
+function <<test.Test>> meta::relational::tests::projection::filter::dates::firstDay::testFirstDayOfThisMonth():Boolean[1]
+{              
+   let result = execute(|Trade.all()->filter(d | $d.date == firstDayOfThisMonth())->project(x | $x.date, 'date'), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".tradeDate as "date" from tradeTable as "root" where "root".tradeDate = dateadd(DAY, -(dayofmonth(current_date()) - 1), current_date())', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::projection::filter::dates::firstDay::testFirstDayOfMonth():Boolean[1]
+{              
+   let result = execute(|Trade.all()->filter(d | $d.date->firstDayOfMonth() == %2017-02-01)->project(x | $x.date, 'date'), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".tradeDate as "date" from tradeTable as "root" where dateadd(DAY, -(dayofmonth("root".tradeDate) - 1), "root".tradeDate) = \'2017-02-01\'', $result->sqlRemoveFormatting());
+}
+
+
+function <<test.Test>> meta::relational::tests::projection::filter::dates::firstDay::testFirstDayOfThisQuarter():Boolean[1]
+{              
+   let result = execute(|Trade.all()->filter(d | $d.date == firstDayOfThisQuarter())->project(x | $x.date, 'date'), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".tradeDate as "date" from tradeTable as "root" where "root".tradeDate = dateadd(MONTH, 3 * quarter(current_date) - 3, dateadd(DAY, -(dayofyear(current_date()) - 1), current_date()))', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::projection::filter::dates::firstDay::testFirstDayOfQuarter():Boolean[1]
+{              
+   let result = execute(|Trade.all()->filter(d | $d.date->firstDayOfQuarter() == %2017-04-01)->project(x | $x.date, 'date'), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".tradeDate as "date" from tradeTable as "root" where dateadd(MONTH, 3 * quarter("root".tradeDate) - 3, dateadd(DAY, -(dayofyear("root".tradeDate) - 1), "root".tradeDate)) = \'2017-04-01\'', $result->sqlRemoveFormatting());
+}
+
+
+function <<test.Test>> meta::relational::tests::projection::filter::dates::firstDay::testFirstDayOfThisYear():Boolean[1]
+{              
+   let result = execute(|Trade.all()->filter(d | $d.date == firstDayOfThisYear())->project(x | $x.date, 'date'), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".tradeDate as "date" from tradeTable as "root" where "root".tradeDate = dateadd(DAY, -(dayofyear(current_date()) - 1), current_date())', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::projection::filter::dates::firstDay::testFirstDayOfYear():Boolean[1]
+{              
+   let result = execute(|Trade.all()->filter(d | $d.date->firstDayOfYear() == %2017-01-01)->project(x | $x.date, 'date'), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".tradeDate as "date" from tradeTable as "root" where dateadd(DAY, -(dayofyear("root".tradeDate) - 1), "root".tradeDate) = \'2017-01-01\'', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::projection::filter::dates::recent::testMostRecentDayOfWeek():Boolean[1]
+{              
+   let query = {|Trade.all()->filter(d | $d.date == mostRecentDayOfWeek(DayOfWeek.Monday))->project(x | $x.date, 'date')};
+   
+   let h2Sql = toSQLString($query, simpleRelationalMapping, meta::relational::runtime::DatabaseType.H2, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".tradeDate as "date" from tradeTable as "root" where "root".tradeDate = dateadd(DAY, case when 2 - DAY_OF_WEEK(current_date()) > 0 then 2 - DAY_OF_WEEK(current_date()) - 7 else 2 - DAY_OF_WEEK(current_date()) end, current_date())', $h2Sql);
+   let prestoSql = toSQLString($query, simpleRelationalMapping, meta::relational::runtime::DatabaseType.Presto, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".tradeDate as "date" from tradeTable as "root" where "root".tradeDate = date_add(\'day\', case when 1 - day_of_week(current_date) > 0 then 1 - day_of_week(current_date) - 7 else 1 - day_of_week(current_date) end, current_date)', $prestoSql);
+}
+
+function <<test.Test>> meta::relational::tests::projection::filter::dates::recent::testPreviousDayOfWeek():Boolean[1]
+{              
+   let result = execute(|Trade.all()->filter(d | $d.date == previousDayOfWeek(DayOfWeek.Monday))->project(x | $x.date, 'date'), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".tradeDate as "date" from tradeTable as "root" where "root".tradeDate = dateadd(DAY, case when 2 - DAY_OF_WEEK(current_date()) >= 0 then 2 - DAY_OF_WEEK(current_date()) - 7 else 2 - DAY_OF_WEEK(current_date()) end, current_date())', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::projection::filter::dates::recent::testMostRecentDayOfWeekWithDate():Boolean[1]
+{              
+   let result = execute(|Trade.all()->filter(d | $d.date == mostRecentDayOfWeek(%2014-12-04, DayOfWeek.Monday))->project(x | $x.date, 'date'), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 3);
+   assertSameElements([%2014-12-01,%2014-12-01,%2014-12-01], $result.values.rows.values);
+   assertEquals('select "root".tradeDate as "date" from tradeTable as "root" where "root".tradeDate = dateadd(DAY, case when 2 - DAY_OF_WEEK(\'2014-12-04\') > 0 then 2 - DAY_OF_WEEK(\'2014-12-04\') - 7 else 2 - DAY_OF_WEEK(\'2014-12-04\') end, \'2014-12-04\')', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::projection::filter::dates::recent::testPreviousDayOfWeekWithDate():Boolean[1]
+{              
+   let result = execute(|Trade.all()->filter(d | $d.date == previousDayOfWeek(%2014-12-08, DayOfWeek.Monday))->project(x | $x.date, 'date'), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 3);
+   assertSameElements([%2014-12-01,%2014-12-01,%2014-12-01], $result.values.rows.values);
+   assertEquals('select "root".tradeDate as "date" from tradeTable as "root" where "root".tradeDate = dateadd(DAY, case when 2 - DAY_OF_WEEK(\'2014-12-08\') >= 0 then 2 - DAY_OF_WEEK(\'2014-12-08\') - 7 else 2 - DAY_OF_WEEK(\'2014-12-08\') end, \'2014-12-08\')', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::projection::filter::dates::testDateWithSeconds():Boolean[1]
+{              
+   let result = execute(|Trade.all()->filter(d | $d.settlementDateTime > %2014-12-04T15:22:24)->project(x | $x.settlementDateTime, 'date'), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values.rows, 3);
+   assertSameElements([%2014-12-04T21:00:00.000000000+0000, %2014-12-05T21:00:00.000000000+0000, %2014-12-05T21:00:00.000000000+0000], $result.values.rows.values);
+   assertEquals('select "root".settlementDateTime as "date" from tradeTable as "root" where ("root".settlementDateTime is not null and "root".settlementDateTime > \'2014-12-04 15:22:24\')', $result->sqlRemoveFormatting());
+}

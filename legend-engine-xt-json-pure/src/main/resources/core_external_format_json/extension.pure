@@ -1,0 +1,41 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::format::json::executionPlan::*;
+
+import meta::external::language::java::factory::*;
+import meta::external::shared::format::*;
+
+function meta::external::format::json::jsonFormatExtension(): meta::external::shared::format::ExternalFormatExtension[1]
+{
+   ^ExternalFormatExtension(
+      contentType               = 'application/json',
+      externalFormat            = 'JSON',
+      generateSerializeNode     = generateSerializeNode_Boolean_1__Binding_1__ExecutionNode_MANY__ExternalFormatSerializeExecutionNode_1_,
+      generateDeserializeNode   = generateDeserializeNode_Connection_1__ExecutionNode_1__RootGraphFetchTree_$0_1$__ExecutionNode_1_,
+      generatePathReference     = generatePathReference_Path_1__PathReference_1_,
+      printPlanNodeToString     = printPlanNodeToString_String_1__RouterExtension_MANY__Function_MANY_,
+      
+      planJavaPrepare           = planJavaPrepare_String_1__GenerationContext_1__RouterExtension_MANY__DebugContext_1__Function_MANY_,
+      planJavaGenerate          = planJavaGenerate_String_1__GenerationContext_1__RouterExtension_MANY__DebugContext_1__Function_MANY_,
+      plan_javaRuntime_enginePlatformDependencies_conventions = meta::external::format::json::executionPlan::engine::extendJavaEngineDependencies_Conventions_1__Conventions_1_,
+      
+      serializerExtension       = meta::external::format::json::serializerExtensionName_String_1__String_1_      
+   );
+}
+
+function <<access.private>> meta::external::format::json::serializerExtensionName(version:String[1]): String[1]
+{
+   'meta::protocols::pure::' + $version + '::external::format::json::serializerExtension_String_1__SerializerExtension_1_'
+}

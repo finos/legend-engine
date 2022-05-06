@@ -1,0 +1,376 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+import meta::relational::tests::mapping::extend::store::*;
+import meta::relational::tests::mapping::extend::model::*;
+
+Mapping meta::relational::tests::mapping::extend::union::propertyMapping::testMapping
+(
+   *A : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(aSet1, aSet2)
+   }
+   
+   *B : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(bSet1, bSet2)
+   }
+   
+   *C : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(cSet1, cSet2)
+   }
+   
+   A[aSet1] : Relational
+   {
+      id : [testDatabase]ABC.id,
+      aName : concat('aSet1_', [testDatabase]ABC.aName)
+   }
+
+   B[bSet1] extends [aSet1]: Relational
+   {
+      aName : concat('bSet1_', [testDatabase]ABC.aName),
+      bName : concat('bSet1_', [testDatabase]ABC.bName)
+   }
+   
+   C[cSet1] extends [bSet1] : Relational
+   {
+      aName : concat('cSet1_', [testDatabase]ABC.aName),
+      bName : concat('cSet1_', [testDatabase]ABC.bName),
+      cName : concat('cSet1_', [testDatabase]ABC.cName)
+   }
+   
+   *D[dSet1] : Relational
+   {
+      id : [testDatabase]DEF.id,
+      dName : concat('dSet1_', [testDatabase]DEF.dName)
+   }
+
+   *E[eSet1] extends [dSet1]: Relational
+   {
+      dName : concat('eSet1_', [testDatabase]DEF.dName),
+      eName : concat('eSet1_', [testDatabase]DEF.eName)
+   }
+   
+   *F[fSet1] extends [eSet1] : Relational
+   {
+      dName : concat('fSet1_', [testDatabase]DEF.dName),
+      eName : concat('fSet1_', [testDatabase]DEF.eName),
+      fName : concat('fSet1_', [testDatabase]DEF.fName)
+   }
+   
+   *G[gSet1] : Relational
+   {
+      id : [testDatabase]GHI.id,
+      gName :  concat('gSet1_', [testDatabase]GHI.gName)
+   }
+
+   *H[hSet1] extends [gSet1]: Relational
+   {
+      gName : concat('hSet1_', [testDatabase]GHI.gName),
+      hName : concat('hSet1_', [testDatabase]GHI.hName)
+   }
+   
+   *I[iSet1] extends [hSet1] : Relational
+   {
+      gName : concat('iSet1_', [testDatabase]GHI.gName),
+      hName : concat('iSet1_', [testDatabase]GHI.hName),
+      iName : concat('iSet1_', [testDatabase]GHI.iName)
+   }
+   
+   *J[jSet1] : Relational
+   {
+      id : [testDatabase]JKL.id,
+      jName : concat('jSet1_', [testDatabase]JKL.jName)
+   }
+
+   *K[kSet1] extends [jSet1]: Relational
+   {
+      jName : concat('kSet1_', [testDatabase]JKL.jName),
+      kName : concat('kSet1_', [testDatabase]JKL.kName)
+   }
+   
+   *L[lSet1] extends [kSet1] : Relational
+   {
+      jName : concat('lSet1_', [testDatabase]JKL.jName),
+      kName : concat('lSet1_', [testDatabase]JKL.kName),
+      lName : concat('lSet1_', [testDatabase]JKL.lName)
+   }
+
+   AE : Relational
+   {
+      AssociationMapping
+      (
+         a[eSet1, aSet1] : [testDatabase]@AE,
+         e[aSet1, eSet1] : [testDatabase]@AE
+      )
+   }
+   
+   BH : Relational
+   {
+      AssociationMapping
+      (
+         b[hSet1, bSet1] : [testDatabase]@BH,
+         h[bSet1, hSet1] : [testDatabase]@BH
+      )
+   }
+   
+   CK : Relational
+   {
+      AssociationMapping
+      (
+         c[kSet1, cSet1] : [testDatabase]@CK,
+         k[cSet1, kSet1] : [testDatabase]@CK
+      )
+   }
+   
+   A[aSet2] : Relational
+   {
+      id : [testDatabase]ABC2.id,
+      aName : concat('aSet2_', [testDatabase]ABC2.aName)
+   }
+
+   B[bSet2] extends [aSet2]: Relational
+   {
+      aName : concat('bSet2_', [testDatabase]ABC2.aName),
+      bName : concat('bSet2_', [testDatabase]ABC2.bName)
+   }
+   
+   C[cSet2] extends [bSet2] : Relational
+   {
+      aName : concat('cSet2_', [testDatabase]ABC2.aName),
+      bName : concat('cSet2_', [testDatabase]ABC2.bName),
+      cName : concat('cSet2_', [testDatabase]ABC2.cName)
+   }
+   
+   D[dSet2] : Relational
+   {
+      id : [testDatabase]DEF2.id,
+      dName : concat('dSet2_', [testDatabase]DEF2.dName)
+   }
+
+   E[eSet2] extends [dSet2]: Relational
+   {
+      dName : concat('eSet2_', [testDatabase]DEF2.dName),
+      eName : concat('eSet2_', [testDatabase]DEF2.eName)
+   }
+   
+   F[fSet2] extends [eSet2] : Relational
+   {
+      dName : concat('fSet2_', [testDatabase]DEF2.dName),
+      eName : concat('fSet2_', [testDatabase]DEF2.eName),
+      fName : concat('fSet2_', [testDatabase]DEF2.fName)
+   }
+   
+   G[gSet2] : Relational
+   {
+      id : [testDatabase]GHI2.id,
+      gName :  concat('gSet2_', [testDatabase]GHI2.gName)
+   }
+
+   H[hSet2] extends [gSet2]: Relational
+   {
+      gName : concat('hSet2_', [testDatabase]GHI2.gName),
+      hName : concat('hSet2_', [testDatabase]GHI2.hName)
+   }
+   
+   I[iSet2] extends [hSet2] : Relational
+   {
+      gName : concat('iSet2_', [testDatabase]GHI2.gName),
+      hName : concat('iSet2_', [testDatabase]GHI2.hName),
+      iName : concat('iSet2_', [testDatabase]GHI2.iName)
+   }
+   
+   J[jSet2] : Relational
+   {
+      id : [testDatabase]JKL2.id,
+      jName : concat('jSet2_', [testDatabase]JKL2.jName)
+   }
+
+   K[kSet2] extends [jSet2]: Relational
+   {
+      jName : concat('kSet2_', [testDatabase]JKL2.jName),
+      kName : concat('kSet2_', [testDatabase]JKL2.kName)
+   }
+   
+   L[lSet2] extends [kSet2] : Relational
+   {
+      jName : concat('lSet2_', [testDatabase]JKL2.jName),
+      kName : concat('lSet2_', [testDatabase]JKL2.kName),
+      lName : concat('lSet2_', [testDatabase]JKL2.lName)
+   }
+
+   A2E2 : Relational
+   {
+      AssociationMapping
+      (
+         a2[eSet2, aSet2] : [testDatabase]@A2E2,
+         e2[aSet2, eSet2] : [testDatabase]@A2E2
+      )
+   }
+   
+   B2H2 : Relational
+   {
+      AssociationMapping
+      (
+         b2[hSet2, bSet2] : [testDatabase]@B2H2,
+         h2[bSet2, hSet2] : [testDatabase]@B2H2
+      )
+   }
+   
+   C2K2 : Relational
+   {
+      AssociationMapping
+      (
+         c2[kSet2, cSet2] : [testDatabase]@C2K2,
+         k2[cSet2, kSet2] : [testDatabase]@C2K2
+      )
+   }
+)
+
+###Pure
+import meta::relational::tests::mapping::extend::model::*;
+import meta::relational::tests::mapping::extend::union::propertyMapping::*;
+import meta::relational::mapping::*;
+import meta::relational::tests::mapping::extend::*;
+
+function <<test.Test>> meta::relational::tests::mapping::extend::union::propertyMapping::testPropertyMappingsForA():Any[*]
+{
+   let result1 = execute(|A.all()->filter(a|$a.aName->endsWith('aName1')), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedSQL1 = 'select "unionBase".u_type as u_type, "unionBase"."pk_0_0" as "pk_0_0", "unionBase"."pk_0_1" as "pk_0_1", "unionBase"."id" as "id", "unionBase"."aName" as "aName" from (select \'0\' as u_type, "root".id as "pk_0_0", null as "pk_0_1", "root".id as "id", concat(\'aSet1_\', "root".aName) as "aName", concat(\'aSet1_\', "root".aName) as "concat_aSet1__ABCaName_concat_aSet2__ABC2aName" from ABC as "root" UNION ALL select \'1\' as u_type, null as "pk_0_0", "root".id as "pk_0_1", "root".id as "id", concat(\'aSet2_\', "root".aName) as "aName", concat(\'aSet2_\', "root".aName) as "concat_aSet1__ABCaName_concat_aSet2__ABC2aName" from ABC2 as "root") as "unionBase" where "unionBase"."concat_aSet1__ABCaName_concat_aSet2__ABC2aName" like \'%aName1\'';
+   assertEquals($expectedSQL1, $result1->sqlRemoveFormatting());
+   assertSameElements([1, 1, 3, 3], $result1.values.id);
+   
+   let result2 = execute(|A.all()->filter(a|$a.e.dName->endsWith('dName1')), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedSQL2 = 'select "unionBase".u_type as u_type, "unionBase"."pk_0_0" as "pk_0_0", "unionBase"."pk_0_1" as "pk_0_1", "unionBase"."id" as "id", "unionBase"."aName" as "aName" from (select \'0\' as u_type, "root".id as "pk_0_0", null as "pk_0_1", "root".id as "id", concat(\'aSet1_\', "root".aName) as "aName", "root".id as id from ABC as "root" UNION ALL select \'1\' as u_type, null as "pk_0_0", "root".id as "pk_0_1", "root".id as "id", concat(\'aSet2_\', "root".aName) as "aName", null as id from ABC2 as "root") as "unionBase" left outer join DEF as "def_0" on ("unionBase".id = "def_0".id) where concat(\'eSet1_\', "def_0".dName) like \'%dName1\'';
+   assertEquals($expectedSQL2, $result2->sqlRemoveFormatting());
+   assertSameElements([1, 3], $result2.values.id);
+   
+   let result3 = execute(|A.all()->filter(a|$a.e.eName->endsWith('eName1')), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedSQL3 = 'select "unionBase".u_type as u_type, "unionBase"."pk_0_0" as "pk_0_0", "unionBase"."pk_0_1" as "pk_0_1", "unionBase"."id" as "id", "unionBase"."aName" as "aName" from (select \'0\' as u_type, "root".id as "pk_0_0", null as "pk_0_1", "root".id as "id", concat(\'aSet1_\', "root".aName) as "aName", "root".id as id from ABC as "root" UNION ALL select \'1\' as u_type, null as "pk_0_0", "root".id as "pk_0_1", "root".id as "id", concat(\'aSet2_\', "root".aName) as "aName", null as id from ABC2 as "root") as "unionBase" left outer join DEF as "def_0" on ("unionBase".id = "def_0".id) where concat(\'eSet1_\', "def_0".eName) like \'%eName1\'';
+   assertEquals($expectedSQL3, $result3->sqlRemoveFormatting());
+   assertSameElements([1, 3], $result3.values.id);
+   
+   let result4 = execute(|A.all()->filter(a|$a.e->subType(@F).fName->endsWith('fName1')), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedSQL4 = 'select "unionBase".u_type as u_type, "unionBase"."pk_0_0" as "pk_0_0", "unionBase"."pk_0_1" as "pk_0_1", "unionBase"."id" as "id", "unionBase"."aName" as "aName" from (select \'0\' as u_type, "root".id as "pk_0_0", null as "pk_0_1", "root".id as "id", concat(\'aSet1_\', "root".aName) as "aName", "root".id as id from ABC as "root" UNION ALL select \'1\' as u_type, null as "pk_0_0", "root".id as "pk_0_1", "root".id as "id", concat(\'aSet2_\', "root".aName) as "aName", null as id from ABC2 as "root") as "unionBase" left outer join DEF as "def_0" on ("unionBase".id = "def_0".id) where concat(\'fSet1_\', "def_0".fName) like \'%fName1\'';
+   assertEquals($expectedSQL4, $result4->sqlRemoveFormatting());
+   assertSameElements([1, 3], $result4.values.id);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::extend::union::propertyMapping::testPropertyMappingsForB():Any[*]
+{
+   let result1 = execute(|B.all()->filter(b|$b.aName->endsWith('aName1')), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedSQL1 =  'select "unionBase".u_type as u_type, "unionBase"."pk_0_0" as "pk_0_0", "unionBase"."pk_0_1" as "pk_0_1", "unionBase"."aName" as "aName", "unionBase"."bName" as "bName", "unionBase"."id" as "id" from (select \'0\' as u_type, "root".id as "pk_0_0", null as "pk_0_1", concat(\'bSet1_\', "root".aName) as "aName", concat(\'bSet1_\', "root".bName) as "bName", "root".id as "id", concat(\'bSet1_\', "root".aName) as "concat_bSet1__ABCaName_concat_bSet2__ABC2aName" from ABC as "root" UNION ALL select \'1\' as u_type, null as "pk_0_0", "root".id as "pk_0_1", concat(\'bSet2_\', "root".aName) as "aName", concat(\'bSet2_\', "root".bName) as "bName", "root".id as "id", concat(\'bSet2_\', "root".aName) as "concat_bSet1__ABCaName_concat_bSet2__ABC2aName" from ABC2 as "root") as "unionBase" where "unionBase"."concat_bSet1__ABCaName_concat_bSet2__ABC2aName" like \'%aName1\'';
+   assertEquals($expectedSQL1, $result1->sqlRemoveFormatting());
+   assertSameElements([1, 1, 3, 3], $result1.values.id);
+   
+   let result2 = execute(|B.all()->filter(b|$b.e.dName->endsWith('dName1')), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedSQL2 = 'select "unionBase".u_type as u_type, "unionBase"."pk_0_0" as "pk_0_0", "unionBase"."pk_0_1" as "pk_0_1", "unionBase"."aName" as "aName", "unionBase"."bName" as "bName", "unionBase"."id" as "id" from (select \'0\' as u_type, "root".id as "pk_0_0", null as "pk_0_1", concat(\'bSet1_\', "root".aName) as "aName", concat(\'bSet1_\', "root".bName) as "bName", "root".id as "id", "root".id as id from ABC as "root" UNION ALL select \'1\' as u_type, null as "pk_0_0", "root".id as "pk_0_1", concat(\'bSet2_\', "root".aName) as "aName", concat(\'bSet2_\', "root".bName) as "bName", "root".id as "id", null as id from ABC2 as "root") as "unionBase" left outer join DEF as "def_0" on ("unionBase".id = "def_0".id) where concat(\'eSet1_\', "def_0".dName) like \'%dName1\'';
+   assertEquals($expectedSQL2, $result2->sqlRemoveFormatting());
+   assertSameElements([1, 3], $result2.values.id);
+   
+   let result3 = execute(|B.all()->filter(b|$b.e.eName->endsWith('eName1')), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedSQL3 = 'select "unionBase".u_type as u_type, "unionBase"."pk_0_0" as "pk_0_0", "unionBase"."pk_0_1" as "pk_0_1", "unionBase"."aName" as "aName", "unionBase"."bName" as "bName", "unionBase"."id" as "id" from (select \'0\' as u_type, "root".id as "pk_0_0", null as "pk_0_1", concat(\'bSet1_\', "root".aName) as "aName", concat(\'bSet1_\', "root".bName) as "bName", "root".id as "id", "root".id as id from ABC as "root" UNION ALL select \'1\' as u_type, null as "pk_0_0", "root".id as "pk_0_1", concat(\'bSet2_\', "root".aName) as "aName", concat(\'bSet2_\', "root".bName) as "bName", "root".id as "id", null as id from ABC2 as "root") as "unionBase" left outer join DEF as "def_0" on ("unionBase".id = "def_0".id) where concat(\'eSet1_\', "def_0".eName) like \'%eName1\'';
+   assertEquals($expectedSQL3, $result3->sqlRemoveFormatting());
+   assertSameElements([1, 3], $result3.values.id);
+   
+   let result4 = execute(|B.all()->filter(b|$b.e->subType(@F).fName->endsWith('fName1')), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedSQL4 = 'select "unionBase".u_type as u_type, "unionBase"."pk_0_0" as "pk_0_0", "unionBase"."pk_0_1" as "pk_0_1", "unionBase"."aName" as "aName", "unionBase"."bName" as "bName", "unionBase"."id" as "id" from (select \'0\' as u_type, "root".id as "pk_0_0", null as "pk_0_1", concat(\'bSet1_\', "root".aName) as "aName", concat(\'bSet1_\', "root".bName) as "bName", "root".id as "id", "root".id as id from ABC as "root" UNION ALL select \'1\' as u_type, null as "pk_0_0", "root".id as "pk_0_1", concat(\'bSet2_\', "root".aName) as "aName", concat(\'bSet2_\', "root".bName) as "bName", "root".id as "id", null as id from ABC2 as "root") as "unionBase" left outer join DEF as "def_0" on ("unionBase".id = "def_0".id) where concat(\'fSet1_\', "def_0".fName) like \'%fName1\'';
+   assertEquals($expectedSQL4, $result4->sqlRemoveFormatting());
+   assertSameElements([1, 3], $result4.values.id);
+   
+   let result5 = execute(|B.all()->filter(b|$b.bName->endsWith('bName1')), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedSQL5 = 'select "unionBase".u_type as u_type, "unionBase"."pk_0_0" as "pk_0_0", "unionBase"."pk_0_1" as "pk_0_1", "unionBase"."aName" as "aName", "unionBase"."bName" as "bName", "unionBase"."id" as "id" from (select \'0\' as u_type, "root".id as "pk_0_0", null as "pk_0_1", concat(\'bSet1_\', "root".aName) as "aName", concat(\'bSet1_\', "root".bName) as "bName", "root".id as "id", concat(\'bSet1_\', "root".bName) as "concat_bSet1__ABCbName_concat_bSet2__ABC2bName" from ABC as "root" UNION ALL select \'1\' as u_type, null as "pk_0_0", "root".id as "pk_0_1", concat(\'bSet2_\', "root".aName) as "aName", concat(\'bSet2_\', "root".bName) as "bName", "root".id as "id", concat(\'bSet2_\', "root".bName) as "concat_bSet1__ABCbName_concat_bSet2__ABC2bName" from ABC2 as "root") as "unionBase" where "unionBase"."concat_bSet1__ABCbName_concat_bSet2__ABC2bName" like \'%bName1\'';
+   assertEquals($expectedSQL5, $result5->sqlRemoveFormatting());
+   assertSameElements([1, 1, 3, 3], $result5.values.id);
+   
+   let result6 = execute(|B.all()->filter(b|$b.h.gName->endsWith('gName1')), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedSQL6 = 'select "unionBase".u_type as u_type, "unionBase"."pk_0_0" as "pk_0_0", "unionBase"."pk_0_1" as "pk_0_1", "unionBase"."aName" as "aName", "unionBase"."bName" as "bName", "unionBase"."id" as "id" from (select \'0\' as u_type, "root".id as "pk_0_0", null as "pk_0_1", concat(\'bSet1_\', "root".aName) as "aName", concat(\'bSet1_\', "root".bName) as "bName", "root".id as "id", "root".id as id from ABC as "root" UNION ALL select \'1\' as u_type, null as "pk_0_0", "root".id as "pk_0_1", concat(\'bSet2_\', "root".aName) as "aName", concat(\'bSet2_\', "root".bName) as "bName", "root".id as "id", null as id from ABC2 as "root") as "unionBase" left outer join GHI as "ghi_0" on ("unionBase".id = "ghi_0".id) where concat(\'hSet1_\', "ghi_0".gName) like \'%gName1\'';
+   assertEquals($expectedSQL6, $result6->sqlRemoveFormatting());
+   assertSameElements([1, 3], $result6.values.id);
+   
+   let result7 = execute(|B.all()->filter(b|$b.h.hName->endsWith('hName1')), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedSQL7 = 'select "unionBase".u_type as u_type, "unionBase"."pk_0_0" as "pk_0_0", "unionBase"."pk_0_1" as "pk_0_1", "unionBase"."aName" as "aName", "unionBase"."bName" as "bName", "unionBase"."id" as "id" from (select \'0\' as u_type, "root".id as "pk_0_0", null as "pk_0_1", concat(\'bSet1_\', "root".aName) as "aName", concat(\'bSet1_\', "root".bName) as "bName", "root".id as "id", "root".id as id from ABC as "root" UNION ALL select \'1\' as u_type, null as "pk_0_0", "root".id as "pk_0_1", concat(\'bSet2_\', "root".aName) as "aName", concat(\'bSet2_\', "root".bName) as "bName", "root".id as "id", null as id from ABC2 as "root") as "unionBase" left outer join GHI as "ghi_0" on ("unionBase".id = "ghi_0".id) where concat(\'hSet1_\', "ghi_0".hName) like \'%hName1\'';
+   assertEquals($expectedSQL7, $result7->sqlRemoveFormatting());
+   assertSameElements([1, 3], $result7.values.id);
+   
+   let result8 = execute(|B.all()->filter(b|$b.h->subType(@I).iName->endsWith('iName1')), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedSQL8 = 'select "unionBase".u_type as u_type, "unionBase"."pk_0_0" as "pk_0_0", "unionBase"."pk_0_1" as "pk_0_1", "unionBase"."aName" as "aName", "unionBase"."bName" as "bName", "unionBase"."id" as "id" from (select \'0\' as u_type, "root".id as "pk_0_0", null as "pk_0_1", concat(\'bSet1_\', "root".aName) as "aName", concat(\'bSet1_\', "root".bName) as "bName", "root".id as "id", "root".id as id from ABC as "root" UNION ALL select \'1\' as u_type, null as "pk_0_0", "root".id as "pk_0_1", concat(\'bSet2_\', "root".aName) as "aName", concat(\'bSet2_\', "root".bName) as "bName", "root".id as "id", null as id from ABC2 as "root") as "unionBase" left outer join GHI as "ghi_0" on ("unionBase".id = "ghi_0".id) where concat(\'iSet1_\', "ghi_0".iName) like \'%iName1\'';
+   assertEquals($expectedSQL8, $result8->sqlRemoveFormatting());
+   assertSameElements([1, 3], $result8.values.id);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::extend::union::propertyMapping::testPropertyMappingsForC():Any[*]
+{
+   let result1 = execute(|C.all()->filter(c|$c.aName->endsWith('aName1')), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedSQL1 = 'select "unionBase".u_type as u_type, "unionBase"."pk_0_0" as "pk_0_0", "unionBase"."pk_0_1" as "pk_0_1", "unionBase"."aName" as "aName", "unionBase"."bName" as "bName", "unionBase"."cName" as "cName", "unionBase"."id" as "id" from (select \'0\' as u_type, "root".id as "pk_0_0", null as "pk_0_1", concat(\'cSet1_\', "root".aName) as "aName", concat(\'cSet1_\', "root".bName) as "bName", concat(\'cSet1_\', "root".cName) as "cName", "root".id as "id", concat(\'cSet1_\', "root".aName) as "concat_cSet1__ABCaName_concat_cSet2__ABC2aName" from ABC as "root" UNION ALL select \'1\' as u_type, null as "pk_0_0", "root".id as "pk_0_1", concat(\'cSet2_\', "root".aName) as "aName", concat(\'cSet2_\', "root".bName) as "bName", concat(\'cSet2_\', "root".cName) as "cName", "root".id as "id", concat(\'cSet2_\', "root".aName) as "concat_cSet1__ABCaName_concat_cSet2__ABC2aName" from ABC2 as "root") as "unionBase" where "unionBase"."concat_cSet1__ABCaName_concat_cSet2__ABC2aName" like \'%aName1\'';
+   assertEquals($expectedSQL1, $result1->sqlRemoveFormatting());
+   assertSameElements([1, 1, 3, 3], $result1.values.id);
+   
+   let result2 = execute(|C.all()->filter(c|$c.e.dName->endsWith('dName1')), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedSQL2 = 'select "unionBase".u_type as u_type, "unionBase"."pk_0_0" as "pk_0_0", "unionBase"."pk_0_1" as "pk_0_1", "unionBase"."aName" as "aName", "unionBase"."bName" as "bName", "unionBase"."cName" as "cName", "unionBase"."id" as "id" from (select \'0\' as u_type, "root".id as "pk_0_0", null as "pk_0_1", concat(\'cSet1_\', "root".aName) as "aName", concat(\'cSet1_\', "root".bName) as "bName", concat(\'cSet1_\', "root".cName) as "cName", "root".id as "id", "root".id as id from ABC as "root" UNION ALL select \'1\' as u_type, null as "pk_0_0", "root".id as "pk_0_1", concat(\'cSet2_\', "root".aName) as "aName", concat(\'cSet2_\', "root".bName) as "bName", concat(\'cSet2_\', "root".cName) as "cName", "root".id as "id", null as id from ABC2 as "root") as "unionBase" left outer join DEF as "def_0" on ("unionBase".id = "def_0".id) where concat(\'eSet1_\', "def_0".dName) like \'%dName1\'';
+   assertEquals($expectedSQL2, $result2->sqlRemoveFormatting());
+   assertSameElements([1, 3], $result2.values.id);
+   
+   let result3 = execute(|C.all()->filter(c|$c.e.eName->endsWith('eName1')), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedSQL3 = 'select "unionBase".u_type as u_type, "unionBase"."pk_0_0" as "pk_0_0", "unionBase"."pk_0_1" as "pk_0_1", "unionBase"."aName" as "aName", "unionBase"."bName" as "bName", "unionBase"."cName" as "cName", "unionBase"."id" as "id" from (select \'0\' as u_type, "root".id as "pk_0_0", null as "pk_0_1", concat(\'cSet1_\', "root".aName) as "aName", concat(\'cSet1_\', "root".bName) as "bName", concat(\'cSet1_\', "root".cName) as "cName", "root".id as "id", "root".id as id from ABC as "root" UNION ALL select \'1\' as u_type, null as "pk_0_0", "root".id as "pk_0_1", concat(\'cSet2_\', "root".aName) as "aName", concat(\'cSet2_\', "root".bName) as "bName", concat(\'cSet2_\', "root".cName) as "cName", "root".id as "id", null as id from ABC2 as "root") as "unionBase" left outer join DEF as "def_0" on ("unionBase".id = "def_0".id) where concat(\'eSet1_\', "def_0".eName) like \'%eName1\'';
+   assertEquals($expectedSQL3, $result3->sqlRemoveFormatting());
+   assertSameElements([1, 3], $result3.values.id);
+   
+   let result4 = execute(|C.all()->filter(c|$c.e->subType(@F).fName->endsWith('fName1')), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedSQL4 = 'select "unionBase".u_type as u_type, "unionBase"."pk_0_0" as "pk_0_0", "unionBase"."pk_0_1" as "pk_0_1", "unionBase"."aName" as "aName", "unionBase"."bName" as "bName", "unionBase"."cName" as "cName", "unionBase"."id" as "id" from (select \'0\' as u_type, "root".id as "pk_0_0", null as "pk_0_1", concat(\'cSet1_\', "root".aName) as "aName", concat(\'cSet1_\', "root".bName) as "bName", concat(\'cSet1_\', "root".cName) as "cName", "root".id as "id", "root".id as id from ABC as "root" UNION ALL select \'1\' as u_type, null as "pk_0_0", "root".id as "pk_0_1", concat(\'cSet2_\', "root".aName) as "aName", concat(\'cSet2_\', "root".bName) as "bName", concat(\'cSet2_\', "root".cName) as "cName", "root".id as "id", null as id from ABC2 as "root") as "unionBase" left outer join DEF as "def_0" on ("unionBase".id = "def_0".id) where concat(\'fSet1_\', "def_0".fName) like \'%fName1\'';
+   assertEquals($expectedSQL4, $result4->sqlRemoveFormatting());
+   assertSameElements([1, 3], $result4.values.id);
+   
+   let result5 = execute(|C.all()->filter(c|$c.bName->endsWith('bName1')), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedSQL5 = 'select "unionBase".u_type as u_type, "unionBase"."pk_0_0" as "pk_0_0", "unionBase"."pk_0_1" as "pk_0_1", "unionBase"."aName" as "aName", "unionBase"."bName" as "bName", "unionBase"."cName" as "cName", "unionBase"."id" as "id" from (select \'0\' as u_type, "root".id as "pk_0_0", null as "pk_0_1", concat(\'cSet1_\', "root".aName) as "aName", concat(\'cSet1_\', "root".bName) as "bName", concat(\'cSet1_\', "root".cName) as "cName", "root".id as "id", concat(\'cSet1_\', "root".bName) as "concat_cSet1__ABCbName_concat_cSet2__ABC2bName" from ABC as "root" UNION ALL select \'1\' as u_type, null as "pk_0_0", "root".id as "pk_0_1", concat(\'cSet2_\', "root".aName) as "aName", concat(\'cSet2_\', "root".bName) as "bName", concat(\'cSet2_\', "root".cName) as "cName", "root".id as "id", concat(\'cSet2_\', "root".bName) as "concat_cSet1__ABCbName_concat_cSet2__ABC2bName" from ABC2 as "root") as "unionBase" where "unionBase"."concat_cSet1__ABCbName_concat_cSet2__ABC2bName" like \'%bName1\'';
+   assertEquals($expectedSQL5, $result5->sqlRemoveFormatting());
+   assertSameElements([1, 1,3, 3], $result5.values.id);
+   
+   let result6 = execute(|C.all()->filter(c|$c.h.gName->endsWith('gName1')), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedSQL6 = 'select "unionBase".u_type as u_type, "unionBase"."pk_0_0" as "pk_0_0", "unionBase"."pk_0_1" as "pk_0_1", "unionBase"."aName" as "aName", "unionBase"."bName" as "bName", "unionBase"."cName" as "cName", "unionBase"."id" as "id" from (select \'0\' as u_type, "root".id as "pk_0_0", null as "pk_0_1", concat(\'cSet1_\', "root".aName) as "aName", concat(\'cSet1_\', "root".bName) as "bName", concat(\'cSet1_\', "root".cName) as "cName", "root".id as "id", "root".id as id from ABC as "root" UNION ALL select \'1\' as u_type, null as "pk_0_0", "root".id as "pk_0_1", concat(\'cSet2_\', "root".aName) as "aName", concat(\'cSet2_\', "root".bName) as "bName", concat(\'cSet2_\', "root".cName) as "cName", "root".id as "id", null as id from ABC2 as "root") as "unionBase" left outer join GHI as "ghi_0" on ("unionBase".id = "ghi_0".id) where concat(\'hSet1_\', "ghi_0".gName) like \'%gName1\'';
+   assertEquals($expectedSQL6, $result6->sqlRemoveFormatting());
+   assertSameElements([1, 3], $result6.values.id);
+   
+   let result7 = execute(|C.all()->filter(c|$c.h.hName->endsWith('hName1')), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedSQL7 = 'select "unionBase".u_type as u_type, "unionBase"."pk_0_0" as "pk_0_0", "unionBase"."pk_0_1" as "pk_0_1", "unionBase"."aName" as "aName", "unionBase"."bName" as "bName", "unionBase"."cName" as "cName", "unionBase"."id" as "id" from (select \'0\' as u_type, "root".id as "pk_0_0", null as "pk_0_1", concat(\'cSet1_\', "root".aName) as "aName", concat(\'cSet1_\', "root".bName) as "bName", concat(\'cSet1_\', "root".cName) as "cName", "root".id as "id", "root".id as id from ABC as "root" UNION ALL select \'1\' as u_type, null as "pk_0_0", "root".id as "pk_0_1", concat(\'cSet2_\', "root".aName) as "aName", concat(\'cSet2_\', "root".bName) as "bName", concat(\'cSet2_\', "root".cName) as "cName", "root".id as "id", null as id from ABC2 as "root") as "unionBase" left outer join GHI as "ghi_0" on ("unionBase".id = "ghi_0".id) where concat(\'hSet1_\', "ghi_0".hName) like \'%hName1\'';
+   assertEquals($expectedSQL7, $result7->sqlRemoveFormatting());
+   assertSameElements([1, 3], $result7.values.id);
+   
+   let result8 = execute(|C.all()->filter(c|$c.h->subType(@I).iName->endsWith('iName1')), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedSQL8 = 'select "unionBase".u_type as u_type, "unionBase"."pk_0_0" as "pk_0_0", "unionBase"."pk_0_1" as "pk_0_1", "unionBase"."aName" as "aName", "unionBase"."bName" as "bName", "unionBase"."cName" as "cName", "unionBase"."id" as "id" from (select \'0\' as u_type, "root".id as "pk_0_0", null as "pk_0_1", concat(\'cSet1_\', "root".aName) as "aName", concat(\'cSet1_\', "root".bName) as "bName", concat(\'cSet1_\', "root".cName) as "cName", "root".id as "id", "root".id as id from ABC as "root" UNION ALL select \'1\' as u_type, null as "pk_0_0", "root".id as "pk_0_1", concat(\'cSet2_\', "root".aName) as "aName", concat(\'cSet2_\', "root".bName) as "bName", concat(\'cSet2_\', "root".cName) as "cName", "root".id as "id", null as id from ABC2 as "root") as "unionBase" left outer join GHI as "ghi_0" on ("unionBase".id = "ghi_0".id) where concat(\'iSet1_\', "ghi_0".iName) like \'%iName1\'';
+   assertEquals($expectedSQL8, $result8->sqlRemoveFormatting());
+   assertSameElements([1, 3], $result8.values.id);
+   
+   let result9 = execute(|C.all()->filter(c|$c.cName->endsWith('cName1')), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedSQL9 = 'select "unionBase".u_type as u_type, "unionBase"."pk_0_0" as "pk_0_0", "unionBase"."pk_0_1" as "pk_0_1", "unionBase"."aName" as "aName", "unionBase"."bName" as "bName", "unionBase"."cName" as "cName", "unionBase"."id" as "id" from (select \'0\' as u_type, "root".id as "pk_0_0", null as "pk_0_1", concat(\'cSet1_\', "root".aName) as "aName", concat(\'cSet1_\', "root".bName) as "bName", concat(\'cSet1_\', "root".cName) as "cName", "root".id as "id", concat(\'cSet1_\', "root".cName) as "concat_cSet1__ABCcName_concat_cSet2__ABC2cName" from ABC as "root" UNION ALL select \'1\' as u_type, null as "pk_0_0", "root".id as "pk_0_1", concat(\'cSet2_\', "root".aName) as "aName", concat(\'cSet2_\', "root".bName) as "bName", concat(\'cSet2_\', "root".cName) as "cName", "root".id as "id", concat(\'cSet2_\', "root".cName) as "concat_cSet1__ABCcName_concat_cSet2__ABC2cName" from ABC2 as "root") as "unionBase" where "unionBase"."concat_cSet1__ABCcName_concat_cSet2__ABC2cName" like \'%cName1\'';
+   assertEquals($expectedSQL9, $result9->sqlRemoveFormatting());
+   assertSameElements([1, 1, 3, 3], $result9.values.id);
+   
+   let result10 = execute(|C.all()->filter(c|$c.k.jName->endsWith('jName1')), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedSQL10 = 'select "unionBase".u_type as u_type, "unionBase"."pk_0_0" as "pk_0_0", "unionBase"."pk_0_1" as "pk_0_1", "unionBase"."aName" as "aName", "unionBase"."bName" as "bName", "unionBase"."cName" as "cName", "unionBase"."id" as "id" from (select \'0\' as u_type, "root".id as "pk_0_0", null as "pk_0_1", concat(\'cSet1_\', "root".aName) as "aName", concat(\'cSet1_\', "root".bName) as "bName", concat(\'cSet1_\', "root".cName) as "cName", "root".id as "id", "root".id as id from ABC as "root" UNION ALL select \'1\' as u_type, null as "pk_0_0", "root".id as "pk_0_1", concat(\'cSet2_\', "root".aName) as "aName", concat(\'cSet2_\', "root".bName) as "bName", concat(\'cSet2_\', "root".cName) as "cName", "root".id as "id", null as id from ABC2 as "root") as "unionBase" left outer join JKL as "jkl_0" on ("unionBase".id = "jkl_0".id) where concat(\'kSet1_\', "jkl_0".jName) like \'%jName1\'';
+   assertEquals($expectedSQL10, $result10->sqlRemoveFormatting());
+   assertSameElements([1, 3], $result10.values.id);
+   
+   let result11 = execute(|C.all()->filter(c|$c.k.kName->endsWith('kName1')), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedSQL11 = 'select "unionBase".u_type as u_type, "unionBase"."pk_0_0" as "pk_0_0", "unionBase"."pk_0_1" as "pk_0_1", "unionBase"."aName" as "aName", "unionBase"."bName" as "bName", "unionBase"."cName" as "cName", "unionBase"."id" as "id" from (select \'0\' as u_type, "root".id as "pk_0_0", null as "pk_0_1", concat(\'cSet1_\', "root".aName) as "aName", concat(\'cSet1_\', "root".bName) as "bName", concat(\'cSet1_\', "root".cName) as "cName", "root".id as "id", "root".id as id from ABC as "root" UNION ALL select \'1\' as u_type, null as "pk_0_0", "root".id as "pk_0_1", concat(\'cSet2_\', "root".aName) as "aName", concat(\'cSet2_\', "root".bName) as "bName", concat(\'cSet2_\', "root".cName) as "cName", "root".id as "id", null as id from ABC2 as "root") as "unionBase" left outer join JKL as "jkl_0" on ("unionBase".id = "jkl_0".id) where concat(\'kSet1_\', "jkl_0".kName) like \'%kName1\'';
+   assertEquals($expectedSQL11, $result11->sqlRemoveFormatting());
+   assertSameElements([1, 3], $result11.values.id);
+   
+   let result12 = execute(|C.all()->filter(c|$c.k->subType(@L).lName->endsWith('lName1')), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedSQL12 = 'select "unionBase".u_type as u_type, "unionBase"."pk_0_0" as "pk_0_0", "unionBase"."pk_0_1" as "pk_0_1", "unionBase"."aName" as "aName", "unionBase"."bName" as "bName", "unionBase"."cName" as "cName", "unionBase"."id" as "id" from (select \'0\' as u_type, "root".id as "pk_0_0", null as "pk_0_1", concat(\'cSet1_\', "root".aName) as "aName", concat(\'cSet1_\', "root".bName) as "bName", concat(\'cSet1_\', "root".cName) as "cName", "root".id as "id", "root".id as id from ABC as "root" UNION ALL select \'1\' as u_type, null as "pk_0_0", "root".id as "pk_0_1", concat(\'cSet2_\', "root".aName) as "aName", concat(\'cSet2_\', "root".bName) as "bName", concat(\'cSet2_\', "root".cName) as "cName", "root".id as "id", null as id from ABC2 as "root") as "unionBase" left outer join JKL as "jkl_0" on ("unionBase".id = "jkl_0".id) where concat(\'lSet1_\', "jkl_0".lName) like \'%lName1\'';
+   assertEquals($expectedSQL12, $result12->sqlRemoveFormatting());
+   assertSameElements([1, 3], $result12.values.id);
+}

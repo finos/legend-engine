@@ -1,0 +1,1742 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::tests::milestoning::*;
+import meta::relational::runtime::*;
+import meta::relational::metamodel::execute::*;
+import meta::pure::runtime::*;
+
+
+function meta::relational::tests::milestoning::initSimpleRelationalDbWithMilestoningColumns():Any[0..1]
+{
+   let connection = meta::relational::tests::testRuntime(db).connections->toOne()->cast(@TestDatabaseConnection);
+
+   executeInDb('Drop schema if exists productSchema cascade;', $connection);
+   executeInDb('Create schema productSchema;', $connection);
+
+   executeInDb('Drop table if exists productSchema.ProductTable;', $connection);
+   executeInDb('Create Table productSchema.ProductTable(id INT, name VARCHAR(200), from_z TIMESTAMP, thru_z TIMESTAMP);', $connection);
+   executeInDb('insert into productSchema.ProductTable (id, name, from_z, thru_z) values (1, \'Firm X\', \'2015-8-26 00:00:00\', \'2015-10-26 00:00:00\');', $connection);
+   executeInDb('insert into productSchema.ProductTable (id, name, from_z, thru_z) values (1, \'Firm A\', \'2015-10-26 00:00:00\', \'9999-12-31 00:00:00\');', $connection);
+   executeInDb('insert into productSchema.ProductTable (id, name, from_z, thru_z) values (2, \'Firm C\', \'2015-8-26 00:00:00\', \'2015-10-26 00:00:00\');', $connection);
+   executeInDb('insert into productSchema.ProductTable (id, name, from_z, thru_z) values (2, \'Firm D\', \'2015-10-26 00:00:00\', \'9999-12-31 00:00:00\');', $connection);
+
+   executeInDb('Drop table if exists productSchema.SynonymTable;', $connection);
+   executeInDb('Create Table productSchema.SynonymTable(id INT, prodid INT, type VARCHAR(200), name VARCHAR(200), from_z TIMESTAMP, thru_z TIMESTAMP);', $connection);
+   executeInDb('insert into productSchema.SynonymTable (id, prodid, type, name, from_z, thru_z) values (1, 1, \'CUSIP\', \'CUSIP1\', \'2015-8-26 00:00:00\', \'2015-10-26 00:00:00\');', $connection);
+   executeInDb('insert into productSchema.SynonymTable (id, prodid, type, name, from_z, thru_z) values (2, 1, \'ISIN\', \'ISIN1\', \'2015-10-26 00:00:00\', \'9999-12-31 00:00:00\');', $connection);
+   executeInDb('insert into productSchema.SynonymTable (id, prodid, type, name, from_z, thru_z) values (3, 2, \'ISIN\', \'CUSIP2\', \'2015-8-26 00:00:00\', \'2015-10-26 00:00:00\');', $connection);
+   executeInDb('insert into productSchema.SynonymTable (id, prodid, type, name, from_z, thru_z) values (4, 2, \'CUSIP\', \'ISIN2\', \'2015-10-26 00:00:00\', \'9999-12-31 00:00:00\');', $connection);
+} 
+
+function meta::relational::tests::milestoning::initDatabase():Runtime[1]
+{
+   let connection = meta::relational::tests::testRuntime(db).connections->toOne()->cast(@TestDatabaseConnection);
+  
+   executeInDb('drop table if exists OrderTable;',$connection);
+   executeInDb('create table OrderTable (orderDate TIMESTAMP, id Integer, prodFk Integer)',$connection);
+   executeInDb('insert into OrderTable values(\'2015-8-26 00:00:00\', 1,1);',$connection);
+   executeInDb('insert into OrderTable values(\'2015-8-26 00:00:00\', 2,2);',$connection);
+   
+   executeInDb('drop table if exists ProductTable;',$connection);
+   executeInDb('create table ProductTable (id Integer, name VARCHAR(200),type VARCHAR(200),exchange VARCHAR(200), referenceSystemName VARCHAR(200), EXTERNALREFERENCESYSTEMNAME VARCHAR(200), classificationSystemId Integer, from_z TIMESTAMP, thru_z TIMESTAMP);',$connection);
+   executeInDb('insert into ProductTable values(1,\'ProductName\',\'STOCK\',\'ISE\', \'SYS1\',\'SYS1\', 1, \'2015-8-15 00:00:00\', \'2015-8-26 00:00:00\');',$connection);
+   executeInDb('insert into ProductTable values(2,\'ProductName1\',\'STOCK\',\'LNSE\', \'SYS1\',\'SYS1\', 1, \'2015-8-26 00:00:00\', \'2015-10-16 00:00:00\');',$connection);
+   executeInDb('insert into ProductTable values(2,\'ProductName2\',\'STOCK\',\'LNSE\', \'SYS1\', \'SYS1\',1, \'2015-10-16 00:00:00\', \'9999-12-31 00:00:00\');',$connection);
+   executeInDb('insert into ProductTable values(3,\'ProductName3\',\'OPTION\',\'ISE\', \'SYS1\', \'SYS1\',1, \'2015-8-26 00:00:00\', \'9999-12-31 00:00:00\');',$connection);
+   
+   executeInDb('drop table if exists ProductTable2;',$connection);
+   executeInDb('create table ProductTable2 (identifier Integer, key Integer , from_z TIMESTAMP, thru_z TIMESTAMP);',$connection);
+   executeInDb('insert into ProductTable2 values(1, 1, \'2015-8-15 00:00:00\', \'2015-8-26 00:00:00\');',$connection);
+   executeInDb('insert into ProductTable2 values(2, 1, \'2015-8-26 00:00:00\', \'2015-10-16 00:00:00\');',$connection);
+   
+   executeInDb('drop table if exists ProductTable3;',$connection);
+   executeInDb('create table ProductTable3 (id Integer, name VARCHAR(200), from_z TIMESTAMP, thru_z TIMESTAMP);',$connection);
+   executeInDb('insert into ProductTable3 values(1,\'ProductName\', \'2015-8-15 00:00:00\', \'2015-8-26 00:00:00\');',$connection);
+   executeInDb('insert into ProductTable3 values(2,\'ProductName1\', \'2015-8-26 00:00:00\', \'2015-10-16 00:00:00\');',$connection);
+   
+   executeInDb('drop table if exists ProductTableWithBusinessSnapshotMilestoning;', $connection);
+   executeInDb('create table ProductTableWithBusinessSnapshotMilestoning (id Integer, name VARCHAR(200), type VARCHAR(200), snapshotDate DATE);', $connection);
+   executeInDb('insert into ProductTableWithBusinessSnapshotMilestoning values(1, \'ProductName\', \'STOCK\', \'2015-8-15\');', $connection);
+   executeInDb('insert into ProductTableWithBusinessSnapshotMilestoning values(2, \'ProductName1\', \'STOCK\', \'2015-8-26\');', $connection);
+   executeInDb('insert into ProductTableWithBusinessSnapshotMilestoning values(2, \'ProductName2\', \'STOCK\', \'2015-10-16\');', $connection);
+   executeInDb('insert into ProductTableWithBusinessSnapshotMilestoning values(3, \'ProductName3\', \'OPTION\', \'2015-8-26\');', $connection);
+
+   executeInDb('drop table if exists BiTemporalProductTable;',$connection);
+   executeInDb('create table BiTemporalProductTable (id Integer, type VARCHAR(200), in_z TIMESTAMP, out_z TIMESTAMP, from_z TIMESTAMP, thru_z TIMESTAMP);',$connection);
+   executeInDb('insert into BiTemporalProductTable values(1, \'STOCK\', \'2017-6-9 00:00:00\', \'9999-12-31 00:00:00\', \'2017-6-9 00:00:00\', \'2017-6-26 00:00:00\');',$connection);
+   
+   executeInDb('drop table if exists BiTemporalProductTableWithBusinessMilestoning;', $connection);
+   executeInDb('create table BiTemporalProductTableWithBusinessMilestoning (id Integer, name VARCHAR(200), type VARCHAR(200), from_z TIMESTAMP, thru_z TIMESTAMP);', $connection);
+   executeInDb('insert into BiTemporalProductTableWithBusinessMilestoning values(1, \'ProductName1\', \'STOCK\', \'2015-7-26 00:00:00\', \'2015-10-16 00:00:00\');', $connection);
+   executeInDb('insert into BiTemporalProductTableWithBusinessMilestoning values(1, \'ProductName2\', \'STOCK\', \'2015-10-16 00:00:00\', \'9999-12-31 00:00:00\');', $connection);
+   executeInDb('insert into BiTemporalProductTableWithBusinessMilestoning values(2, \'ProductName3\', \'OPTION\', \'2015-10-16 00:00:00\', \'9999-12-31 00:00:00\');', $connection);
+   
+   executeInDb('drop table if exists BiTemporalProductTableWithBusinessSnapshotMilestoning;', $connection);
+   executeInDb('create table BiTemporalProductTableWithBusinessSnapshotMilestoning (id Integer, name VARCHAR(200), type VARCHAR(200), snapshotDate DATE);', $connection);
+   executeInDb('insert into BiTemporalProductTableWithBusinessSnapshotMilestoning values(1 ,\'ProductName1\', \'STOCK\', \'2015-8-26\');', $connection);
+   executeInDb('insert into BiTemporalProductTableWithBusinessSnapshotMilestoning values(1 ,\'ProductName2\', \'STOCK\', \'2015-10-16\');', $connection);
+   executeInDb('insert into BiTemporalProductTableWithBusinessSnapshotMilestoning values(2 ,\'ProductName3\', \'OPTION\', \'2015-10-16\');', $connection);
+   
+   executeInDb('drop table if exists BiTemporalProductTableWithProcessingMilestoning;', $connection);
+   executeInDb('create table BiTemporalProductTableWithProcessingMilestoning (id Integer, name VARCHAR(200), type VARCHAR(200), in_z TIMESTAMP, out_z TIMESTAMP);', $connection);
+   executeInDb('insert into BiTemporalProductTableWithProcessingMilestoning values(1, \'ProductName1\', \'STOCK\', \'2015-7-26 00:00:00\', \'2015-10-16 00:00:00\');', $connection);
+   executeInDb('insert into BiTemporalProductTableWithProcessingMilestoning values(1, \'ProductName2\', \'STOCK\', \'2015-10-16 00:00:00\', \'9999-12-31 00:00:00\');', $connection);
+   executeInDb('insert into BiTemporalProductTableWithProcessingMilestoning values(2, \'ProductName3\', \'OPTION\', \'2015-10-16 00:00:00\', \'9999-12-31 00:00:00\');', $connection);
+   
+   executeInDb('drop table if exists BiTemporalProductTableWithNoMilestoning;', $connection);
+   executeInDb('create table BiTemporalProductTableWithNoMilestoning (id Integer, name VARCHAR(200), type VARCHAR(200));', $connection);
+   executeInDb('insert into BiTemporalProductTableWithNoMilestoning values(1, \'ProductName1\', \'STOCK\');', $connection);
+   executeInDb('insert into BiTemporalProductTableWithNoMilestoning values(1, \'ProductName2\', \'STOCK\');', $connection);
+   executeInDb('insert into BiTemporalProductTableWithNoMilestoning values(2, \'ProductName3\', \'OPTION\');', $connection);
+
+   executeInDb('drop table if exists BiTemporalProductTableWithLatest;',$connection);
+   executeInDb('create table BiTemporalProductTableWithLatest (id Integer, type VARCHAR(200), in_z TIMESTAMP, out_z TIMESTAMP, from_z TIMESTAMP, thru_z TIMESTAMP);',$connection);
+   executeInDb('insert into BiTemporalProductTableWithLatest values(1, \'STOCK\', \'2017-6-9 00:00:00\', \'9999-12-31 00:00:00\', \'2017-6-9 00:00:00\', \'2017-6-26 00:00:00\');',$connection);
+   
+   executeInDb('Drop table if exists BiTemporalLocationTable;', $connection);
+   executeInDb('Create Table BiTemporalLocationTable(id INT, kerberos VARCHAR(20), place VARCHAR(200), in_z TIMESTAMP, out_z TIMESTAMP, from_z TIMESTAMP, thru_z TIMESTAMP);', $connection);
+   executeInDb('insert into BiTemporalLocationTable values (1, \'ggekko\', \'miami\', \'2015-6-9 00:00:00\', \'9999-12-31 00:00:00\', \'2017-6-9 00:00:00\', \'9999-12-29 19:00:00.0000\');', $connection);
+   
+   executeInDb('drop table if exists ProductTableNoMilestoning;',$connection);
+   executeInDb('create table ProductTableNoMilestoning (id Integer, name VARCHAR(200),type VARCHAR(200),exchange VARCHAR(200), referenceSystemName VARCHAR(200),  classificationSystemId Integer);',$connection);
+   executeInDb('insert into ProductTableNoMilestoning values(1,\'ProductName\',\'STOCK\',\'ISE\', \'SYS1\', 1);',$connection);
+   executeInDb('insert into ProductTableNoMilestoning values(2,\'ProductName3\',\'CDS\',\'ISE\', \'SYS1\', 1);',$connection);
+   
+   executeInDb('drop table if exists StockProductTable;',$connection);
+   executeInDb('create table StockProductTable (id Integer, from_z TIMESTAMP, thru_z TIMESTAMP);',$connection);
+   executeInDb('insert into StockProductTable values(1,\'2015-8-15 00:00:00\',\'2015-8-26 00:00:00\');',$connection);
+   executeInDb('insert into StockProductTable values(2,\'2015-8-26 00:00:00\',\'2015-10-16 00:00:00\');',$connection);
+   executeInDb('insert into StockProductTable values(2,\'2015-10-16 00:00:00\',\'9999-12-31 00:00:00\');',$connection);
+
+   executeInDb('drop table if exists ProductDescriptionTable;',$connection);
+   executeInDb('create table ProductDescriptionTable (id Integer,description VARCHAR(200));',$connection);
+   executeInDb('insert into ProductDescriptionTable values(1,\'ProductName\');',$connection);
+   executeInDb('insert into ProductDescriptionTable values(2,\'ProductName2\');',$connection);
+   executeInDb('insert into ProductDescriptionTable values(3,\'ProductName3\');',$connection);
+
+   executeInDb('drop table if exists ProductSynonymTable;',$connection);
+   executeInDb('create table ProductSynonymTable (prodId Integer, name VARCHAR(200), synonym VARCHAR(200), type VARCHAR(10), createdBy VARCHAR(200), from_z TIMESTAMP, thru_z TIMESTAMP);',$connection);
+   executeInDb('insert into ProductSynonymTable values(1, \'ProductName1\',\'GS-Mod-S1\',\'STOCK\',\'Scottd\',\'2015-8-26 00:00:00\',\'2015-9-26 00:00:00\');',$connection);
+   executeInDb('insert into ProductSynonymTable values(1, \'ProductName1\',\'GS-Mod-S2\',\'STOCK\',\'Scottd\',\'2015-9-26 00:00:00\',\'2015-8-16 00:00:00\');',$connection);
+   executeInDb('insert into ProductSynonymTable values(2, \'ProductName2\',\'GS-Mod-S0\',\'CUSIP\',\'smith\',\'2015-1-1 00:00:00\',\'2015-10-15 00:00:00\');',$connection);
+   executeInDb('insert into ProductSynonymTable values(2, \'ProductName2\',\'GS-Mod-S1\',\'CUSIP\',\'smith\',\'2015-8-15 00:00:00\',\'9999-12-31 00:00:00\');',$connection);
+   executeInDb('insert into ProductSynonymTable values(2, \'ProductName2\',\'GS-Mod-S2\',\'CUSIP\',\'smith\',\'2015-8-15 00:00:00\',\'2015-10-17 00:00:00\');',$connection);
+   executeInDb('insert into ProductSynonymTable values(2, \'ProductName2\',\'GS-Mod-S3\',\'CUSIP\',\'smith\',\'2015-10-17 00:00:00\',\'9999-12-31 00:00:00\');',$connection);
+   
+   executeInDb('drop table if exists ProductClassificationTable;',$connection);
+   executeInDb('create table ProductClassificationTable (type VARCHAR(200),type_description VARCHAR(400),system VARCHAR(200), exchange VARCHAR(200), from_z TIMESTAMP, thru_z TIMESTAMP);',$connection);
+   executeInDb('insert into ProductClassificationTable values(\'STOCK\',\'STOCK DESC-V1\',\'SYS1\', \'LNSE\', \'2015-8-15 00:00:00\', \'2015-8-17 00:00:00\');',$connection);
+   executeInDb('insert into ProductClassificationTable values(\'STOCK\',\'STOCK DESC-V2\',\'SYS1\', \'LNSE\', \'2015-8-17 00:00:00\',\'2015-9-15 00:00:00\');',$connection);
+   executeInDb('insert into ProductClassificationTable values(\'STOCK\',\'STOCK DESC-V3\',\'SYS1\', \'LNSE\', \'2015-9-15 00:00:00\',\'2015-10-17 00:00:00\');',$connection);
+   executeInDb('insert into ProductClassificationTable values(\'STOCK\',\'STOCK DESC-V4\',\'SYS1\', \'LNSE\', \'2015-10-17 00:00:00\',\'9999-12-31 00:00:00\');',$connection);
+   executeInDb('insert into ProductClassificationTable values(\'OPTION\',\'OPTION DESC-V1\',\'SYS1\', \'ISE\', \'2015-1-15 00:00:00\',\'2015-1-16 00:00:00\');',$connection);
+   
+   executeInDb('drop table if exists ProductClassificationTableWithBusinessSnapshotMilestoning;', $connection);
+   executeInDb('create table ProductClassificationTableWithBusinessSnapshotMilestoning (type VARCHAR(200), type_description VARCHAR(400), snapshotDate DATE);', $connection);
+   executeInDb('insert into ProductClassificationTableWithBusinessSnapshotMilestoning values(\'STOCK\', \ \'STOCK DESC-V1\', \'2015-8-15\');', $connection);
+   executeInDb('insert into ProductClassificationTableWithBusinessSnapshotMilestoning values(\'STOCK\', \'STOCK DESC-V2\', \'2015-8-26\');', $connection);
+   executeInDb('insert into ProductClassificationTableWithBusinessSnapshotMilestoning values(\'STOCK\', \'STOCK DESC-V3\', \'2015-9-15\');', $connection);
+   executeInDb('insert into ProductClassificationTableWithBusinessSnapshotMilestoning values(\'STOCK\', \'STOCK DESC-V4\', \'2015-10-17\');', $connection);
+   executeInDb('insert into ProductClassificationTableWithBusinessSnapshotMilestoning values(\'OPTION\', \'OPTION DESC-V1\', \'2015-1-15\');', $connection);
+
+   executeInDb('drop table if exists ProductClassificationTableNoMilestoning;',$connection);
+   executeInDb('create table ProductClassificationTableNoMilestoning (type VARCHAR(200),type_description VARCHAR(400),system VARCHAR(200), exchange VARCHAR(200));',$connection);
+   executeInDb('insert into ProductClassificationTableNoMilestoning values(\'STOCK\',\'STOCK DESC-V1\',\'SYS1\', \'LNSE\');',$connection);
+   executeInDb('insert into ProductClassificationTableNoMilestoning values(\'STOCK\',\'STOCK DESC-V2\',\'SYS1\', \'LNSE\');',$connection);
+   executeInDb('insert into ProductClassificationTableNoMilestoning values(\'STOCK\',\'STOCK DESC-V3\',\'SYS1\', \'LNSE\');',$connection);
+   executeInDb('insert into ProductClassificationTableNoMilestoning values(\'STOCK\',\'STOCK DESC-V4\',\'SYS1\', \'LNSE\');',$connection);
+   executeInDb('insert into ProductClassificationTableNoMilestoning values(\'OPTION\',\'OPTION DESC-V1\',\'SYS1\', \'ISE\');',$connection);
+   
+   executeInDb('drop table if exists BiTemporalProductClassificationTable;',$connection);
+   executeInDb('create table BiTemporalProductClassificationTable (type VARCHAR(200),type_description VARCHAR(400),system VARCHAR(200), exchange VARCHAR(200), in_z TIMESTAMP, out_z TIMESTAMP, from_z TIMESTAMP, thru_z TIMESTAMP);',$connection);
+   executeInDb('insert into BiTemporalProductClassificationTable values(\'STOCK\',\'STOCK DESC-V1\',\'SYS1\', \'LNSE\', \'2017-6-11 00:00:00\', \'9999-12-31 00:00:00\', \'2017-6-10 00:00:00\', \'9999-12-31 00:00:00\');',$connection);
+
+   executeInDb('drop table if exists BiTemporalProductClassificationTableWithBusinessMilestoning;', $connection);
+   executeInDb('create table BiTemporalProductClassificationTableWithBusinessMilestoning (type VARCHAR(200), type_description VARCHAR(400), from_z TIMESTAMP, thru_z TIMESTAMP);', $connection);
+   executeInDb('insert into BiTemporalProductClassificationTableWithBusinessMilestoning values(\'STOCK\', \'STOCK DESC-V2\', \'2015-7-26\', \'2015-10-16\');', $connection);
+   executeInDb('insert into BiTemporalProductClassificationTableWithBusinessMilestoning values(\'STOCK\', \'STOCK DESC-V3\', \'2015-10-16\', \'9999-12-31\');', $connection);
+   executeInDb('insert into BiTemporalProductClassificationTableWithBusinessMilestoning values(\'OPTION\', \'OPTION DESC-V1\', \'2015-10-16\', \'9999-12-31\');', $connection);
+   
+   executeInDb('drop table if exists BiTemporalProductClassificationTableWithBusinessSnapshotMilestoning;', $connection);
+   executeInDb('create table BiTemporalProductClassificationTableWithBusinessSnapshotMilestoning (type VARCHAR(200), type_description VARCHAR(400), snapshotDate DATE);', $connection);
+   executeInDb('insert into BiTemporalProductClassificationTableWithBusinessSnapshotMilestoning values(\'STOCK\', \'STOCK DESC-V2\', \'2015-8-26\');', $connection);
+   executeInDb('insert into BiTemporalProductClassificationTableWithBusinessSnapshotMilestoning values(\'STOCK\', \'STOCK DESC-V3\', \'2015-10-16\');', $connection);
+   executeInDb('insert into BiTemporalProductClassificationTableWithBusinessSnapshotMilestoning values(\'OPTION\', \'OPTION DESC-V1\', \'2015-10-16\');', $connection);
+   
+   executeInDb('drop table if exists BiTemporalProductClassificationTableWithProcessingMilestoning;', $connection);
+   executeInDb('create table BiTemporalProductClassificationTableWithProcessingMilestoning (type VARCHAR(200), type_description VARCHAR(400), in_z TIMESTAMP, out_z TIMESTAMP);', $connection);
+   executeInDb('insert into BiTemporalProductClassificationTableWithProcessingMilestoning values(\'STOCK\', \'STOCK DESC-V2\', \'2015-7-26\', \'2015-10-16\');', $connection);
+   executeInDb('insert into BiTemporalProductClassificationTableWithProcessingMilestoning values(\'STOCK\', \'STOCK DESC-V3\', \'2015-10-16\', \'9999-12-31\');', $connection);
+   executeInDb('insert into BiTemporalProductClassificationTableWithProcessingMilestoning values(\'OPTION\', \'OPTION DESC-V1\', \'2015-10-16\', \'9999-12-31\');', $connection);
+   
+   executeInDb('drop table if exists BiTemporalProductClassificationTableWithNoMilestoning;', $connection);
+   executeInDb('create table BiTemporalProductClassificationTableWithNoMilestoning (type VARCHAR(200), type_description VARCHAR(400));', $connection);
+   executeInDb('insert into BiTemporalProductClassificationTableWithNoMilestoning values(\'STOCK\', \'STOCK DESC-V2\');', $connection);
+   executeInDb('insert into BiTemporalProductClassificationTableWithNoMilestoning values(\'STOCK\', \'STOCK DESC-V3\');', $connection);
+   executeInDb('insert into BiTemporalProductClassificationTableWithNoMilestoning values(\'OPTION\', \'OPTION DESC-V1\');', $connection);
+   
+   executeInDb('drop table if exists BiTemporalProductClassificationTableWithLatest;',$connection);
+   executeInDb('create table BiTemporalProductClassificationTableWithLatest (type VARCHAR(200),type_description VARCHAR(400),system VARCHAR(200), exchange VARCHAR(200), in_z TIMESTAMP, out_z TIMESTAMP, from_z TIMESTAMP, thru_z TIMESTAMP);',$connection);
+   executeInDb('insert into BiTemporalProductClassificationTableWithLatest values(\'STOCK\',\'STOCK DESC-V1\',\'SYS1\', \'LNSE\', \'2017-6-11 00:00:00\', \'9999-12-31\', \'2017-6-10 00:00:00\', \'9999-12-31\');',$connection);
+   
+   executeInDb('drop table if exists ProductClassificationSystemTable;',$connection);
+   executeInDb('create table ProductClassificationSystemTable (id Integer, name VARCHAR(200), from_z TIMESTAMP, thru_z TIMESTAMP);',$connection);
+   executeInDb('insert into ProductClassificationSystemTable values(1,\'SYS1\',\'2015-10-15 00:00:00\',\'9999-12-31 00:00:00\');',$connection);
+
+   executeInDb('drop table if exists SystemTable;',$connection);
+   executeInDb('create table SystemTable (name VARCHAR(200));',$connection);
+   executeInDb('insert into SystemTable values(\'SYS1\');',$connection);
+
+   executeInDb('drop table if exists SystemDescriptionTable;',$connection);
+   executeInDb('create table SystemDescriptionTable (systemName VARCHAR(200),description VARCHAR(200), from_z TIMESTAMP, thru_z TIMESTAMP);',$connection);
+   executeInDb('insert into SystemDescriptionTable values(\'SYS1\',\'SYS1 description 1-v1\',\'2014-1-15 00:00:00\',\'2015-1-15 00:00:00\');',$connection);
+   executeInDb('insert into SystemDescriptionTable values(\'SYS1\',\'SYS1 description 1-v2\',\'2015-1-15 00:00:00\',\'2015-8-15 00:00:00\');',$connection);
+   
+   executeInDb('drop table if exists ProductExchangeTable;',$connection);
+   executeInDb('create table ProductExchangeTable (name VARCHAR(200), city VARCHAR(200), from_z TIMESTAMP, thru_z TIMESTAMP);',$connection);
+   executeInDb('insert into ProductExchangeTable values(\'ISE\',\'Dublin\',\'2015-1-15 00:00:00\',\'2015-8-15 00:00:00\');',$connection);
+   executeInDb('insert into ProductExchangeTable values(\'LNSE\',\'London\',\'2015-8-15 00:00:00\',\'9999-12-31 00:00:00\');',$connection);
+   executeInDb('insert into ProductExchangeTable values(\'LNSE\',\'London\',\'2014-1-15 00:00:00\',\'2014-1-16 00:00:00\');',$connection);
+   
+   executeInDb('drop table if exists ProductExchangeTableNoMilestoning;',$connection);
+   executeInDb('create table ProductExchangeTableNoMilestoning (name VARCHAR(200));',$connection);
+   executeInDb('insert into ProductExchangeTableNoMilestoning values(\'ISE\');',$connection);
+   executeInDb('insert into ProductExchangeTableNoMilestoning values(\'LNSE\');',$connection);
+   executeInDb('insert into ProductExchangeTableNoMilestoning values(\'LNSE\');',$connection);   
+
+   executeInDb('drop table if exists OrderDescriptionTable;',$connection);
+   executeInDb('create table OrderDescriptionTable (id VARCHAR(200),description VARCHAR(200));',$connection);
+   executeInDb('insert into OrderDescriptionTable values(1,\'order description 1\');',$connection);
+   executeInDb('insert into OrderDescriptionTable values(2,\'order description 2\');',$connection);
+
+   executeInDb('drop table if exists OrderDetailsTable;',$connection);
+   executeInDb('create table OrderDetailsTable (id VARCHAR(200), settlementDate TIMESTAMP);',$connection);
+   executeInDb('insert into OrderDetailsTable values(1,\'2015-8-26 00:00:00\');',$connection);
+   executeInDb('insert into OrderDetailsTable values(2,\'2015-8-26 00:00:00\');',$connection);
+   
+   executeInDb('drop table if exists OrderDescriptionMilestonedTable;',$connection);
+   executeInDb('create table OrderDescriptionMilestonedTable (id VARCHAR(200),description VARCHAR(200), from_z TIMESTAMP, thru_z TIMESTAMP);',$connection);
+   executeInDb('insert into OrderDescriptionMilestonedTable values(1,\'order description 1\', \'2015-1-15 00:00:00\',\'2015-8-15 00:00:00\');',$connection);
+   executeInDb('insert into OrderDescriptionMilestonedTable values(2,\'order description 2\', \'2015-1-15 00:00:00\',\'2015-8-15 00:00:00\');',$connection);
+
+   executeInDb('drop table if exists NewActivityInfoTable;',$connection);
+   executeInDb('create table NewActivityInfoTable (productId Integer, CREATED_BY VARCHAR(200), from_z TIMESTAMP, thru_z TIMESTAMP);',$connection);
+   executeInDb('insert into NewActivityInfoTable values (1,\'Scottd\',\'2015-1-15 00:00:00\',\'2015-8-15 00:00:00\');',$connection);
+   executeInDb('insert into NewActivityInfoTable values (2,\'smith\',\'2015-1-15 00:00:00\',\'2015-8-15 00:00:00\');',$connection);
+
+   executeInDb('drop table if exists CancelActivitiesTable;',$connection);
+   executeInDb('create table CancelActivitiesTable (productId Integer, from_z TIMESTAMP, thru_z TIMESTAMP);',$connection);
+   executeInDb('insert into CancelActivitiesTable values (2, \'2015-10-15 00:00:00\',\'9999-12-31 00:00:00\');',$connection);
+
+   executeInDb('drop table if exists OrderToSystemADescriptions;',$connection);
+   executeInDb('create table OrderToSystemADescriptions (orderId Integer, systemADescriptionId Integer, from_z TIMESTAMP, thru_z TIMESTAMP);',$connection);
+   executeInDb('insert into OrderToSystemADescriptions values(1, 1, \'2015-1-15 00:00:00\',\'2015-8-15 00:00:00\');',$connection);
+   executeInDb('insert into OrderToSystemADescriptions values(2, 2, \'2015-1-15 00:00:00\',\'2015-8-15 00:00:00\');',$connection);
+
+   executeInDb('drop table if exists SystemAOrderDescriptionTable;',$connection);
+   executeInDb('create table SystemAOrderDescriptionTable (descriptionId VARCHAR(200),description VARCHAR(200));',$connection);
+   executeInDb('insert into SystemAOrderDescriptionTable values(1,\'system A order description 1\');',$connection);
+   executeInDb('insert into SystemAOrderDescriptionTable values(2,\'system A order description 2\');',$connection);
+
+   executeInDb('Drop table if exists tradeTable;', $connection);
+   executeInDb('Create Table tradeTable(ID INT, accountID INT);', $connection);
+   executeInDb('insert into tradeTable (ID, accountID) values (1, 1);', $connection);
+   executeInDb('insert into tradeTable (ID, accountID) values (2, 2);', $connection);
+   
+   executeInDb('Drop table if exists tradePnlTable;', $connection);
+   executeInDb('Create Table tradePnlTable(TRADE_ID INT, pnl FLOAT,from_z TIMESTAMP, thru_z TIMESTAMP);', $connection);
+   executeInDb('insert into tradePnlTable (TRADE_ID, pnl, from_z, thru_z) values (1, 100,\'2016-1-1 00:00:00\',\'2016-6-1 00:00:00\');', $connection);
+   executeInDb('insert into tradePnlTable (TRADE_ID, pnl, from_z, thru_z) values (1, 101,\'2016-6-1 00:00:00\',\'9999-12-31 00:00:00\');', $connection);
+   executeInDb('insert into tradePnlTable (TRADE_ID, pnl, from_z, thru_z) values (2, 200,\'2016-1-1 00:00:00\',\'9999-12-31 00:00:00\');', $connection);
+   
+   executeInDb('Drop table if exists salesPersonTable;', $connection);
+   executeInDb('Create Table salesPersonTable(ACCOUNT_ID INT, NAME VARCHAR(200),from_z TIMESTAMP, thru_z TIMESTAMP);', $connection);
+   executeInDb('insert into salesPersonTable (account_id, name, from_z, thru_z) values (1, \'Joe Martinez\',\'2013-1-1 00:00:00\',\'9999-12-31 00:00:00\');', $connection);
+   executeInDb('insert into salesPersonTable (account_id, name, from_z, thru_z) values (2, \'John Martinez\',\'2015-1-1 00:00:00\',\'9999-12-31 00:00:00\');', $connection);
+ 
+   executeInDb('Drop table if exists TraderTable;', $connection);
+   executeInDb('Create Table TraderTable(kerberos VARCHAR(20),in_z TIMESTAMP, out_z TIMESTAMP);', $connection);
+   executeInDb('insert into TraderTable (kerberos, in_z, out_z) values (\'ggekko\',\'2013-1-1 00:00:00\',\'9999-12-31 00:00:00\');', $connection);
+   executeInDb('insert into TraderTable (kerberos, in_z, out_z) values (\'bfox\',\'2015-1-1 00:00:00\',\'9999-12-31 00:00:00\');', $connection);
+
+   executeInDb('Drop table if exists CertificationTable;', $connection);
+   executeInDb('Create Table CertificationTable(kerberos VARCHAR(20), name VARCHAR(200),in_z TIMESTAMP, out_z TIMESTAMP);', $connection);
+   executeInDb('insert into CertificationTable (kerberos, name, in_z, out_z) values (\'ggekko\', \'SRCE\',\'1980-1-1 00:00:00\',\'9999-12-31 00:00:00\');', $connection);
+   executeInDb('insert into CertificationTable (kerberos, name, in_z, out_z) values (\'ggekko\', \'APCE\',\'1981-1-1 00:00:00\',\'9999-12-31 00:00:00\');', $connection);
+   executeInDb('insert into CertificationTable (kerberos, name, in_z, out_z) values (\'bfox\', \'SRCE\',\'1987-1-1 00:00:00\',\'9999-12-31 00:00:00\');', $connection);
+   
+   executeInDb('drop table if exists MyOrderTable;', $connection);
+   executeInDb('create table MyOrderTable (id Integer, prodFk Integer)', $connection);
+   executeInDb('insert into MyOrderTable values(1, 1);', $connection);
+   executeInDb('insert into MyOrderTable values(2, 2);', $connection);
+   
+   executeInDb('drop table if exists BiTemporalProductTable_In_From_Inclusive;', $connection);
+   executeInDb('create table BiTemporalProductTable_In_From_Inclusive (id Integer, name VARCHAR(200), in_z TIMESTAMP, out_z TIMESTAMP, from_z TIMESTAMP, thru_z TIMESTAMP);' ,$connection);
+   executeInDb('insert into BiTemporalProductTable_In_From_Inclusive values(1, \'abc1\', \'2018-05-02 00:00:00\', \'9999-12-31 00:00:00\', \'2018-05-01 00:00:00\', \'9999-12-31 00:00:00\');', $connection);
+   executeInDb('insert into BiTemporalProductTable_In_From_Inclusive values(2, \'def1\', \'2018-05-02 00:00:00\', \'2018-05-04 00:00:00\', \'2018-05-01 00:00:00\', \'2018-05-03 00:00:00\');', $connection);
+   executeInDb('insert into BiTemporalProductTable_In_From_Inclusive values(2, \'def2\', \'2018-05-04 00:00:00\', \'2018-05-07 00:00:00\', \'2018-05-03 00:00:00\', \'2018-05-06 00:00:00\');', $connection);
+   executeInDb('insert into BiTemporalProductTable_In_From_Inclusive values(2, \'def3\', \'2018-05-07 00:00:00\', \'9999-12-31 00:00:00\', \'2018-05-06 00:00:00\', \'9999-12-31 00:00:00\');', $connection);
+   executeInDb('insert into BiTemporalProductTable_In_From_Inclusive values(3, \'ghi1\', \'2018-05-09 00:00:00\', \'9999-12-31 00:00:00\', \'2018-05-08 00:00:00\', \'9999-12-31 00:00:00\');', $connection);
+   
+   executeInDb('drop table if exists BiTemporalProductTable_In_Thru_Inclusive;', $connection);
+   executeInDb('create table BiTemporalProductTable_In_Thru_Inclusive (id Integer, name VARCHAR(200), in_z TIMESTAMP, out_z TIMESTAMP, from_z TIMESTAMP, thru_z TIMESTAMP);', $connection);
+   executeInDb('insert into BiTemporalProductTable_In_Thru_Inclusive values(1, \'abc1\', \'2018-05-02 00:00:00\', \'9999-12-31 00:00:00\', \'2018-05-01 00:00:00\', \'9999-12-31 00:00:00\');', $connection);
+   executeInDb('insert into BiTemporalProductTable_In_Thru_Inclusive values(2, \'def1\', \'2018-05-02 00:00:00\', \'2018-05-04 00:00:00\', \'2018-05-01 00:00:00\', \'2018-05-03 00:00:00\');', $connection);
+   executeInDb('insert into BiTemporalProductTable_In_Thru_Inclusive values(2, \'def2\', \'2018-05-04 00:00:00\', \'2018-05-07 00:00:00\', \'2018-05-03 00:00:00\', \'2018-05-06 00:00:00\');', $connection);
+   executeInDb('insert into BiTemporalProductTable_In_Thru_Inclusive values(2, \'def3\', \'2018-05-07 00:00:00\', \'9999-12-31 00:00:00\', \'2018-05-06 00:00:00\', \'9999-12-31 00:00:00\');', $connection);
+   executeInDb('insert into BiTemporalProductTable_In_Thru_Inclusive values(3, \'ghi1\', \'2018-05-09 00:00:00\', \'9999-12-31 00:00:00\', \'2018-05-08 00:00:00\', \'9999-12-31 00:00:00\');', $connection);
+   
+   executeInDb('drop table if exists BiTemporalProductTable_Out_From_Inclusive;', $connection);
+   executeInDb('create table BiTemporalProductTable_Out_From_Inclusive (id Integer, name VARCHAR(200), in_z TIMESTAMP, out_z TIMESTAMP, from_z TIMESTAMP, thru_z TIMESTAMP);' ,$connection);
+   executeInDb('insert into BiTemporalProductTable_Out_From_Inclusive values(1, \'abc1\', \'2018-05-02 00:00:00\', \'9999-12-31 00:00:00\', \'2018-05-01 00:00:00\', \'9999-12-31 00:00:00\');', $connection);
+   executeInDb('insert into BiTemporalProductTable_Out_From_Inclusive values(2, \'def1\', \'2018-05-02 00:00:00\', \'2018-05-04 00:00:00\', \'2018-05-01 00:00:00\', \'2018-05-03 00:00:00\');', $connection);
+   executeInDb('insert into BiTemporalProductTable_Out_From_Inclusive values(2, \'def2\', \'2018-05-04 00:00:00\', \'2018-05-07 00:00:00\', \'2018-05-03 00:00:00\', \'2018-05-06 00:00:00\');', $connection);
+   executeInDb('insert into BiTemporalProductTable_Out_From_Inclusive values(2, \'def3\', \'2018-05-07 00:00:00\', \'9999-12-31 00:00:00\', \'2018-05-06 00:00:00\', \'9999-12-31 00:00:00\');', $connection);
+   executeInDb('insert into BiTemporalProductTable_Out_From_Inclusive values(3, \'ghi1\', \'2018-05-09 00:00:00\', \'9999-12-31 00:00:00\', \'2018-05-08 00:00:00\', \'9999-12-31 00:00:00\');', $connection);
+   
+   executeInDb('drop table if exists BiTemporalProductTable_Out_Thru_Inclusive;', $connection);
+   executeInDb('create table BiTemporalProductTable_Out_Thru_Inclusive (id Integer, name VARCHAR(200), in_z TIMESTAMP, out_z TIMESTAMP, from_z TIMESTAMP, thru_z TIMESTAMP);', $connection);
+   executeInDb('insert into BiTemporalProductTable_Out_Thru_Inclusive values(1, \'abc1\', \'2018-05-02 00:00:00\', \'9999-12-31 00:00:00\', \'2018-05-01 00:00:00\', \'9999-12-31 00:00:00\');', $connection);
+   executeInDb('insert into BiTemporalProductTable_Out_Thru_Inclusive values(2, \'def1\', \'2018-05-02 00:00:00\', \'2018-05-04 00:00:00\', \'2018-05-01 00:00:00\', \'2018-05-03 00:00:00\');', $connection);
+   executeInDb('insert into BiTemporalProductTable_Out_Thru_Inclusive values(2, \'def2\', \'2018-05-04 00:00:00\', \'2018-05-07 00:00:00\', \'2018-05-03 00:00:00\', \'2018-05-06 00:00:00\');', $connection);
+   executeInDb('insert into BiTemporalProductTable_Out_Thru_Inclusive values(2, \'def3\', \'2018-05-07 00:00:00\', \'9999-12-31 00:00:00\', \'2018-05-06 00:00:00\', \'9999-12-31 00:00:00\');', $connection);
+   executeInDb('insert into BiTemporalProductTable_Out_Thru_Inclusive values(3, \'ghi1\', \'2018-05-09 00:00:00\', \'9999-12-31 00:00:00\', \'2018-05-08 00:00:00\', \'9999-12-31 00:00:00\');', $connection);
+
+   executeInDb('drop table if exists orderPNL;', $connection);
+   executeInDb('Create Table orderPNL(ID INT NOT NULL,pnl INT NULL,pName VARCHAR(200) NULL,linktoProduct INT NULL, PRIMARY KEY(ID));', $connection);
+   executeInDb('drop table if exists intermediate;', $connection);
+   executeInDb('Create Table intermediate(joinId INT NOT NULL,attribute INT NULL, PRIMARY KEY(joinId))', $connection);
+   executeInDb('drop table if exists intermediateTwo;', $connection);
+   executeInDb('Create Table intermediateTwo(joinId INT NOT NULL,linkToProduct INT NULL,type VARCHAR(200) NULL, PRIMARY KEY(joinId));', $connection);
+   
+   ^Runtime(connections=$connection);
+   
+}
+
+
+###Mapping
+import meta::relational::tests::milestoning::*;
+
+Mapping meta::relational::tests::milestoning::milestoningmapWithViewUsingViewColumns
+(
+   TradePnl : Relational{             
+      pnl : [db]tradePnlViewUsingView.pnl,
+      supportContactName : [db]tradePnlViewUsingView.supportContactViaView
+   } 
+)
+
+Mapping meta::relational::tests::milestoning::ViewChainMapping
+(
+   OrderPnl: Relational
+   {
+      scope([ViewChainDb]orderPNL)
+      (
+         pnl:pnl,
+         productName: pName,
+         product: @OrderPnl_inter>(INNER)@Inter_Inter
+      )
+   }
+   
+   OrderPnlWithConstraint: Relational
+   {
+      scope([ViewChainDb]orderPNL)
+      (
+         pnl:pnl,
+         productName: pName,
+         product: @OrderPnl_inter>(INNER)@Inter_Inter
+      )
+   }
+   
+   Product: Relational
+   {
+      scope([ViewChainDb]default.interTwoView)
+      (
+         id: @InterTwo_Product|ProductTableView.link,
+         name: @InterTwo_Product|ProductTableView.name,
+         type: n
+      )
+   }
+   
+)
+
+###Mapping
+import meta::relational::tests::milestoning::*;
+
+Mapping meta::relational::tests::milestoning::milestoningmapWithNestedView
+(
+   TradePnl : Relational{             
+      pnl : [db]tradePnlSuperView.pnl,
+      supportContactName : [db]tradePnlSuperView.supportContactViaView
+   } 
+)
+
+Mapping meta::relational::tests::milestoning::milestoningmap2
+(
+   meta::relational::tests::milestoning::Product : Relational{
+      id : [db]ProductTable.id, 
+      isBrexitClassificationTypeExchange : [db]@Product_Classification > [db]@Classification_Exchange| case(equal([db]ProductExchangeTable.city,'London'), 'true', 'false')
+   }    
+)
+
+Mapping meta::relational::tests::milestoning::milestoningmap
+(
+   meta::relational::tests::milestoning::Order : Relational{
+      id : [db]OrderTable.id,
+      orderDate : [db]OrderTable.orderDate,
+      product : [db]@Order_Product,
+      biTemporalProduct : [db]@Order_BiTemporalProduct,
+      description : [db]@Order_OrderDescription,
+      orderDetails : [db]@Order_OrderDetails,
+      systemADescription : [db]@Order_OrderToSystemADescriptions > [db]@OrderToSystemADescriptions_SystemAOrderDescriptionTable,
+      ascProduct : [db]@Order_Product,
+      stockProduct : [db]@Order_StockProduct > [db]@Product_StockProduct,
+      cusipProduct : [db]@Order_CusipSynonym > [db]@Product_Synonym
+   } 
+   
+   meta::relational::tests::milestoning::OrderWithConstraint : Relational{
+      orderDate : [db]OrderTable.orderDate,
+      product : [db]@Order_Product
+   }
+
+   meta::relational::tests::milestoning::OrderWithProductWithConstraints : Relational{
+      orderDate : [db]OrderTable.orderDate,
+      product : [db]@Order_Product
+   }
+   
+   meta::relational::tests::milestoning::OrderDescription : Relational{
+      description : [db]OrderDescriptionTable.description      
+   }  
+   
+   meta::relational::tests::milestoning::OrderDetails : Relational{
+      settlementDate : [db]OrderDetailsTable.settlementDate      
+   }  
+   
+   meta::relational::tests::milestoning::SystemAOrderDescription : Relational{
+      description : [db]SystemAOrderDescriptionTable.description      
+   }  
+   
+   meta::relational::tests::milestoning::Product : Relational{
+      id : [db]ProductTable.id, 
+      name : [db]ProductTable.name,
+      type : [db]ProductTable.type,
+      classification : [db]@Product_Classification,
+      referenceSystem : [db]@Product_System,
+      exchange : [db]@Product_Exchange,
+      synonyms : [db]@Product_Synonym,
+      orders : [db]@Order_Product,
+      stockProductName : [db]@Product_StockProduct > [db]@StockProduct_Description | ProductDescriptionTable.description,
+      classificationType : EnumerationMapping classificationType : [db]@Product_Classification | ProductClassificationTable.type,
+      biTemporalClassification : [db]@Product_BiTemporalClassification
+   }  
+   
+   meta::relational::tests::milestoning::ProductWithConstraint1 : Relational{
+      name : [db]ProductTable.name,
+      referenceSystem : [db]@Product_System
+   }  
+
+   meta::relational::tests::milestoning::ProductWithConstraint1b : Relational{
+      name : [db]ProductTable.name,
+      referenceSystems : [db]@Product_System
+   } 
+   
+   meta::relational::tests::milestoning::ProductWithConstraint2 : Relational{
+      name : [db]ProductTable.name,
+      referenceSystem : [db]@Product_System
+   } 
+      
+   meta::relational::tests::milestoning::ProductWithConstraint3 : Relational{
+      name : [db]ProductTable.name,
+      referenceSystem : [db]@Product_System
+   }    
+   
+   meta::relational::tests::milestoning::BiTemporalProduct : Relational{
+      id : [db]BiTemporalProductTable.id,
+      biTemporalClassification : [db]@BiTemporalProduct_BiTemporalClassification,
+      classification : [db]@BiTemporalProduct_Classification
+   }  
+      
+   meta::relational::tests::milestoning::StockProduct : Relational{
+      ~filter [db] IsStockType
+      id : [db]ProductTable.id, 
+      name : [db]ProductTable.name,
+      type : [db]ProductTable.type,
+      classification : [db]@Product_Classification,
+      exchange : [db]@Product_Exchange,
+      synonyms : [db]@Product_Synonym,
+      orders : [db]@Order_Product
+   }  
+   
+   meta::relational::tests::milestoning::ProductSynonym : Relational{
+      synonym : [db]ProductSynonymTable.synonym,
+      type : [db]ProductSynonymTable.type
+   }  
+   
+    meta::relational::tests::milestoning::ProductClassification : Relational{
+      type : [db]ProductClassificationTable.type,
+      description : [db]ProductClassificationTable.type_description,
+      system : [db]@Classification_System,
+      exchange : [db]@Classification_Exchange,
+      exchangeName : [db]@Classification_Exchange | ProductExchangeTable.name,
+      product : [db]@Product_Classification
+   }  
+   
+   meta::relational::tests::milestoning::BiTemporalProductClassification : Relational{
+      type : [db]BiTemporalProductClassificationTable.type
+   } 
+      
+   ProductClassificationType: EnumerationMapping classificationType
+   {
+      STOCK: ['STOCK']
+   }
+   
+   meta::relational::tests::milestoning::Exchange : Relational{
+      name : [db]ProductExchangeTable.name
+   }  
+   
+   meta::relational::tests::milestoning::System : Relational{
+      name : [db]SystemTable.name,
+      systemDescription : [db]@System_SystemDescrption
+   }
+   
+   meta::relational::tests::milestoning::SystemDescription : Relational{
+         description : [db]SystemDescriptionTable.description
+   }
+      
+   TradePnl : Relational{             
+      pnl : [db]tradePnlView.pnl,
+      supportContactName : [db]tradePnlView.supportContact//,
+      //trade: [db]@TradePnlView_Trade
+   }      
+      
+   meta::relational::tests::milestoning::Trader : Relational {
+      kerberos : [db]TraderTable.kerberos,
+      certifications : [db]@Trader_Certifications,
+      location : [db]@Trader_BiTemporalLocation
+   }
+
+   Location : Relational
+   {
+      place : [db]BiTemporalLocationTable.PLACE
+   }
+      
+   
+   meta::relational::tests::milestoning::Trader_AccreditedCertification : Relational
+   {
+      AssociationMapping
+      (
+         trader : [db]@Trader_Certifications,
+         accreditedCertifications : [db]@Trader_Certifications
+      )
+   }
+   
+   meta::relational::tests::milestoning::Certification : Relational {
+      name : [db]CertificationTable.name
+   }
+)
+
+Mapping meta::relational::tests::milestoning::milestoningmapwithconstraints
+(
+   include meta::relational::tests::milestoning::milestoningmap
+   
+   meta::relational::tests::milestoning::ProductWithConstraint1c : Relational{
+      name : [db]ProductTable.name,
+      referenceSystem : [db]@Product_System
+   }  
+)
+
+###Mapping
+import meta::relational::tests::milestoning::*;
+
+Mapping meta::relational::tests::milestoning::milestoningmapMultipleJoinOperations
+(
+   meta::relational::tests::milestoning::Order : Relational{
+      id : [db]OrderTable.id,
+      orderDate : [db]OrderTable.orderDate,
+      product : [db]@Order_Product
+   } 
+    
+   meta::relational::tests::milestoning::Product : Relational{
+      id : [db]ProductTable.id, 
+      name : [db]ProductTable.name,
+      type : [db]ProductTable.type,
+      classification : [db]@Product_Classification
+   }  
+   
+   meta::relational::tests::milestoning::ProductClassification : Relational{
+      type : [db]ProductClassificationTable.type,
+      description : [db]ProductClassificationTable.type_description,
+      system : [db]@Classification_System,
+      exchange : [db]@Classification_Exchange_multipleOperations,
+      exchangeName : [db]@Classification_Exchange_multipleOperations | ProductExchangeTable.name,
+      product : [db]@Product_Classification
+   }    
+)
+
+Mapping meta::relational::tests::milestoning::noMilestoningMap
+(
+   
+   meta::relational::tests::milestoning::ProductWithConstraint2 : Relational{
+      name : [db]ProductTableNoMilestoning.name,
+      classification : [db]@ProductTableNoMilestoning_ProductClassificationTableNoMilestoning
+   }  
+   
+   meta::relational::tests::milestoning::Order : Relational{
+      id : [db]OrderTable.id,
+      product : [db]@Order_ProductNoMilestoning,
+      biTemporalProduct : [db]@Order_ProductNoMilestoning
+   }
+   
+   meta::relational::tests::milestoning::Product : Relational{
+         id : [db]ProductTableNoMilestoning.id,
+         type : [db]ProductTableNoMilestoning.type
+   } 
+   
+   meta::relational::tests::milestoning::BiTemporalProduct : Relational{
+      id : [db]ProductTableNoMilestoning.id,
+      name : [db]ProductTableNoMilestoning.name,
+      type : [db]ProductTableNoMilestoning.type,
+      biTemporalClassification : [db]@ProductTableNoMilestoning_ProductClassificationTableNoMilestoning
+   }     
+   
+   meta::relational::tests::milestoning::ProductClassification : Relational{
+      type : [db]ProductClassificationTableNoMilestoning.type,
+      exchange : [db]@ProductClassificationTableNoMilestoning_ExchangeNoMilestoning
+   } 
+   
+   meta::relational::tests::milestoning::Exchange : Relational{
+      name : [db]ProductExchangeTableNoMilestoning.name
+   }  
+      
+   meta::relational::tests::milestoning::BiTemporalProductClassification : Relational{
+      type : [db]ProductClassificationTableNoMilestoning.type
+   } 
+)
+
+Mapping meta::relational::tests::milestoning::singleTemporalMappingForBiTemporalTypes
+(
+   meta::relational::tests::milestoning::BiTemporalProduct : Relational{
+      id : [db]ProductTable.id, 
+      name : [db]ProductTable.name,
+      biTemporalClassification : [db]@Product_Classification
+   }  
+   
+    meta::relational::tests::milestoning::BiTemporalProductClassification : Relational{
+      type : [db]ProductClassificationTable.type
+   }     
+   
+)
+
+Mapping meta::relational::tests::milestoning::propagationMapping
+(
+
+   meta::relational::tests::milestoning::Order : Relational{
+      id : [db]OrderTable.id,
+      product : [db]@Order_Product
+   }
+   
+   meta::relational::tests::milestoning::Product : Relational{
+         id : [db]ProductTable.id, 
+         newActivity : [db]@Product_NewActivityInfo,
+         cancelActivity : [db]@Product_CancelActivities > [db]@CancelActivities_NewActivityInfo,
+         cancelProductActivity : [db]@Product_CancelActivities > (INNER) [db]@CancelActivities_NewActivityInfo,
+         cancelProductActivityCreatedBy : [db]@Product_CancelActivities > (INNER) [db]@CancelActivities_NewActivityInfo | NewActivityInfoTable.created_by,
+         referenceSystem : [db]@Product_System
+   }  
+   
+   meta::relational::tests::milestoning::Exchange : Relational{
+      name : [db]ProductExchangeTable.name
+   }
+
+    meta::relational::tests::milestoning::ProductClassification : Relational{
+      type : [db]ProductClassificationTable.type,
+      exchange : [db]@Classification_Exchange
+   }
+   
+   meta::relational::tests::milestoning::NewActivityInfo : Relational{
+         createdBy : [db]NewActivityInfoTable.created_by
+   }
+   
+   meta::relational::tests::milestoning::NewProductActivityInfo : Relational{
+      ~filter [db] NewActivityWithValidProduct
+      createdBy : [db]NewActivityInfoTable.created_by
+   }
+   
+   meta::relational::tests::milestoning::System : Relational{
+         name : [db]SystemTable.name,
+         systemDescription : [db]@System_SystemDescrption
+   }
+   
+   meta::relational::tests::milestoning::SystemDescription : Relational{
+         description : [db]SystemDescriptionTable.description
+   }
+)
+
+Mapping meta::relational::tests::milestoning::milestoningMapWithEmbedded
+(
+   
+   meta::relational::tests::milestoning::StockProduct[StockProduct] : Relational{
+     
+        id : [db]ProductTable.id, 
+        name : [db]ProductTable.name,
+     
+        classification(
+           type : [db]ProductTable.type,
+           system : [db]@StockProduct_ClassificationSystem > [db]@ClassificationSystem_System 
+        )       
+   }  
+   
+   meta::relational::tests::milestoning::ProductClassification[ProductClassification] : Relational{
+      type : [db]ProductClassificationTable.type,
+      description : [db]ProductClassificationTable.type_description
+   } 
+   
+   meta::relational::tests::milestoning::System : Relational{
+      name : [db]SystemTable.name
+   }
+   
+)
+
+Mapping meta::relational::tests::milestoning::milestoningMapWithEmbeddedSimple
+(
+   
+   meta::relational::tests::milestoning::StockProduct[StockProduct] : Relational{
+     
+        id : [db]ProductTable.id, 
+        name : [db]ProductTable.name,
+     
+        classification(
+           type : [db]ProductTable.type,
+           system : [db]@StockProduct_ClassificationSystem > [db]@ClassificationSystem_System 
+        )       
+   }  
+   
+   meta::relational::tests::milestoning::Product : Relational{
+     
+        id : [db]ProductTable.id, 
+        name : [db]ProductTable.name,
+     
+        classification(
+           type : [db]ProductTable.type,
+           system : [db]@StockProduct_ClassificationSystem > [db]@ClassificationSystem_System 
+        ),
+       
+        exchange() Inline[exchange]
+   }  
+   
+   meta::relational::tests::milestoning::Exchange[exchange] : Relational{
+      name : [db]ProductTable.exchange
+   }
+   
+   meta::relational::tests::milestoning::System : Relational{
+      name : [db]SystemTable.name
+   }
+   
+)
+
+Mapping meta::relational::tests::milestoning::isolationFocusedMapping
+(
+   
+   meta::relational::tests::milestoning::StockProduct[StockProduct] : Relational{
+        ~filter [db]IsStockType 
+        //~filter [db]@Product_Exchange | [db]LNSEProducts
+      
+        id : [db]ProductTable.id, 
+        name : [db]ProductTable.name,
+     
+        classification(
+           type : [db]ProductTable.type,
+           exchange(
+              name : [db]@Product_Exchange | ProductExchangeTable.name
+           ),
+           system(
+              name : [db]@StockProduct_ClassificationSystem > [db]@ClassificationSystem_System | SystemTable.name
+           )
+        )
+   }  
+
+   meta::relational::tests::milestoning::ProductClassification[ProductClassification] : Relational{
+      type : [db]ProductClassificationTable.type,
+      description : [db]ProductClassificationTable.type_description
+   } 
+   
+   meta::relational::tests::milestoning::System : Relational{
+      name : [db]SystemTable.name
+   }
+   
+)
+
+Mapping meta::relational::tests::milestoning::otherwiseMapping
+(
+   
+   meta::relational::tests::milestoning::StockProduct[StockProduct] : Relational
+   {
+        ~filter [db]IsStockType 
+      
+        id : [db]ProductTable.id, 
+        
+        classification(
+           type : [db]ProductTable.type
+        ) Otherwise([ProductClassification]:[db]@Product_Classification)
+   }  
+
+   meta::relational::tests::milestoning::ProductClassification[ProductClassification] : Relational
+   {
+      type : [db]ProductClassificationTable.type,
+      description : [db]ProductClassificationTable.type_description,
+      exchange : [db]@Classification_Exchange
+   } 
+
+   meta::relational::tests::milestoning::Exchange : Relational
+   {
+      name : [db]ProductExchangeTable.name
+   }  
+
+)
+
+Mapping meta::relational::tests::milestoning::latestbitemporalmap
+(
+   meta::relational::tests::milestoning::Order : Relational{
+      id : [db]OrderTable.id,
+      biTemporalProduct : [db]@Order_BiTemporalProductWithLatest
+   } 
+   
+   meta::relational::tests::milestoning::BiTemporalProduct : Relational{
+      id : [db]BiTemporalProductTableWithLatest.id,
+      biTemporalClassification : [db]@BiTemporalProductWithLatest_BiTemporalClassificationWithLatest
+   } 
+   
+   meta::relational::tests::milestoning::BiTemporalProductClassification : Relational{
+      type : [db]BiTemporalProductClassificationTableWithLatest.type
+   } 
+      
+)
+
+Mapping meta::relational::tests::milestoning::InFromInclusiveMapping
+(
+   BiTemporalProduct[pInFrom] : Relational
+   {
+      id : [db]BiTemporalProductTable_In_From_Inclusive.id,
+      name : [db]BiTemporalProductTable_In_From_Inclusive.name
+   }
+   
+   Order[oInFrom] : Relational
+   {
+      id : [db]MyOrderTable.id,
+      biTemporalProduct[pInFrom] : [db]@MyOrder_BiTemporalProductTable_In_From_Inclusive
+   }
+)
+
+Mapping meta::relational::tests::milestoning::InThruInclusiveMapping
+(
+   BiTemporalProduct[pInThru] : Relational
+   {
+      id : [db]BiTemporalProductTable_In_Thru_Inclusive.id,
+      name : [db]BiTemporalProductTable_In_Thru_Inclusive.name
+   }
+   
+   Order[oInThru] : Relational
+   {
+      id : [db]MyOrderTable.id,
+      biTemporalProduct[pInThru] : [db]@MyOrder_BiTemporalProductTable_In_Thru_Inclusive
+   }
+)
+
+Mapping meta::relational::tests::milestoning::OutFromInclusiveMapping
+(
+   BiTemporalProduct[pOutFrom] : Relational
+   {
+      id : [db]BiTemporalProductTable_Out_From_Inclusive.id,
+      name : [db]BiTemporalProductTable_Out_From_Inclusive.name
+   }
+   
+   Order[oOutFrom] : Relational
+   {
+      id : [db]MyOrderTable.id,
+      biTemporalProduct[pOutFrom] : [db]@MyOrder_BiTemporalProductTable_Out_From_Inclusive
+   }
+)
+
+Mapping meta::relational::tests::milestoning::OutThruInclusiveMapping
+(
+   BiTemporalProduct[pOutThru] : Relational
+   {
+      id : [db]BiTemporalProductTable_Out_Thru_Inclusive.id,
+      name : [db]BiTemporalProductTable_Out_Thru_Inclusive.name
+   }
+   
+   Order[oOutThru] : Relational
+   {
+      id : [db]MyOrderTable.id,
+      biTemporalProduct[pOutThru] : [db]@MyOrder_BiTemporalProductTable_Out_Thru_Inclusive
+   }
+)
+
+Mapping meta::relational::tests::milestoning::InThruInclusiveUnionOutFromInclusiveMapping
+(
+   include meta::relational::tests::milestoning::InThruInclusiveMapping
+   include meta::relational::tests::milestoning::OutFromInclusiveMapping
+   
+   *BiTemporalProduct : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(pInThru, pOutFrom)
+   }
+)
+
+Mapping meta::relational::tests::milestoning::OutFromInclusiveUnionInThruInclusiveMapping
+(
+   include meta::relational::tests::milestoning::OutFromInclusiveMapping
+   include meta::relational::tests::milestoning::InThruInclusiveMapping
+   
+   *BiTemporalProduct : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(pOutFrom, pInThru)
+   }
+)
+
+Mapping meta::relational::tests::milestoning::InThruInclusiveUnionInThruInclusiveMapping
+(
+   include meta::relational::tests::milestoning::InThruInclusiveMapping
+   
+   BiTemporalProduct[pInThru2] : Relational
+   {
+      id : [db]BiTemporalProductTable_In_Thru_Inclusive.id,
+      name : [db]BiTemporalProductTable_In_Thru_Inclusive.name
+   }
+   
+   Order[oInThru2] : Relational
+   {
+      id : [db]MyOrderTable.id,
+      biTemporalProduct[pInThru2] : [db]@MyOrder_BiTemporalProductTable_In_Thru_Inclusive
+   }
+   
+   *Order : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(oInThru, oInThru2)
+   }
+)
+
+Mapping meta::relational::tests::milestoning::OutFromInclusiveUnionOutFromInclusiveMapping
+(
+   include meta::relational::tests::milestoning::OutFromInclusiveMapping
+   
+   BiTemporalProduct[pOutFrom2] : Relational
+   {
+      id : [db]BiTemporalProductTable_Out_From_Inclusive.id,
+      name : [db]BiTemporalProductTable_Out_From_Inclusive.name
+   }
+   
+   Order[oOutFrom2] : Relational
+   {
+      id : [db]MyOrderTable.id,
+      biTemporalProduct[pOutFrom2] : [db]@MyOrder_BiTemporalProductTable_Out_From_Inclusive
+   }
+   
+   *Order : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(oOutFrom, oOutFrom2)
+   }
+)
+
+Mapping meta::relational::tests::milestoning::businessSnapshotMilestoningMap
+(
+   meta::relational::tests::milestoning::Order[o] : Relational{
+      id : [db]OrderTable.id,
+      product[p] : [db]@Order_ProductWithBusinessSnapshotMilestoning
+   }
+   
+   meta::relational::tests::milestoning::Product[p] : Relational{
+      id : [db]ProductTableWithBusinessSnapshotMilestoning.id, 
+      name : [db]ProductTableWithBusinessSnapshotMilestoning.name,
+      classification[c] : [db]@ProductWithBusinessSnapshotMilestoning_ClassificationWithBusinessSnapshotMilestoning
+   }
+   
+   meta::relational::tests::milestoning::ProductClassification[c] : Relational{
+      type : [db]ProductClassificationTableWithBusinessSnapshotMilestoning.type,
+      description : [db]ProductClassificationTableWithBusinessSnapshotMilestoning.type_description
+   }
+)
+
+Mapping meta::relational::tests::milestoning::businessSnapshotMilestoningMapWithDynaFunction
+(
+   meta::relational::tests::milestoning::Order[o] : Relational{
+      id : [db]OrderTable.id,
+      product[p] : [db]@Order_ProductWithBusinessSnapshotMilestoning
+   }
+
+   meta::relational::tests::milestoning::Product[p] : Relational{
+      id : plus([db]ProductTableWithBusinessSnapshotMilestoning.id, [db]ProductTableWithBusinessSnapshotMilestoning.id),
+      name : [db]ProductTableWithBusinessSnapshotMilestoning.name,
+      classification[c] : [db]@ProductWithBusinessSnapshotMilestoning_ClassificationWithBusinessSnapshotMilestoning
+   }
+
+   meta::relational::tests::milestoning::ProductClassification[c] : Relational{
+      type : [db]ProductClassificationTableWithBusinessSnapshotMilestoning.type,
+      description : [db]ProductClassificationTableWithBusinessSnapshotMilestoning.type_description
+   }
+)
+
+Mapping meta::relational::tests::milestoning::businessSnapshotMilestoningUnionMap
+(
+   include meta::relational::tests::milestoning::businessSnapshotMilestoningMap
+   
+   *Order : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(o, o2)
+   }
+   
+   *Product : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(p, p2)
+   }
+   
+   *ProductClassification : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(c, c2)
+   }
+   
+   meta::relational::tests::milestoning::Order[o2] : Relational{
+      id : [db]OrderTable.id,
+      product[p2] : [db]@Order_ProductWithBusinessSnapshotMilestoning
+   }
+   
+   meta::relational::tests::milestoning::Product[p2] : Relational{
+      id : [db]ProductTableWithBusinessSnapshotMilestoning.id, 
+      name : [db]ProductTableWithBusinessSnapshotMilestoning.name,
+      classification[c2] : [db]@ProductWithBusinessSnapshotMilestoning_ClassificationWithBusinessSnapshotMilestoning
+   }
+   
+   meta::relational::tests::milestoning::ProductClassification[c2] : Relational{
+      type : [db]ProductClassificationTableWithBusinessSnapshotMilestoning.type,
+      description : [db]ProductClassificationTableWithBusinessSnapshotMilestoning.type_description
+   }
+)
+
+Mapping meta::relational::tests::milestoning::partiallyMilestoningUnionMap
+(  
+   *Order : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(o1, o2)
+   }
+   
+   *Product : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(p1, p2)
+   }
+   
+   *ProductClassification : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(c1, c2)
+   }
+   
+   meta::relational::tests::milestoning::Order[o1] : Relational{
+      id : [db]OrderTable.id,
+      product[p1] : [db]@Order_Product
+   }
+   
+   meta::relational::tests::milestoning::Product[p1] : Relational{
+      id : [db]ProductTable.id, 
+      name : [db]ProductTable.name,
+      classification[c1] : [db]@Product_Classification
+   }
+   
+   meta::relational::tests::milestoning::ProductClassification[c1] : Relational{
+      type : [db]ProductClassificationTable.type,
+      description : [db]ProductClassificationTable.type_description
+   }
+   
+   meta::relational::tests::milestoning::Order[o2] : Relational{
+      id : [db]OrderTable.id,
+      product[p2] : [db]@Order_ProductNoMilestoning
+   }
+   
+   meta::relational::tests::milestoning::Product[p2] : Relational{
+      id : [db]ProductTableNoMilestoning.id, 
+      name : [db]ProductTableNoMilestoning.name,
+      classification[c2] : [db]@ProductTableNoMilestoning_ProductClassificationTableNoMilestoning
+   }
+   
+   meta::relational::tests::milestoning::ProductClassification[c2] : Relational{
+      type : [db]ProductClassificationTableNoMilestoning.type,
+      description : [db]ProductClassificationTableNoMilestoning.type_description
+   }
+)
+
+Mapping meta::relational::tests::milestoning::hybridMilestoningUnionMap
+(  
+   *Order : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(o1, o2, o3, o4)
+   }
+   
+   *BiTemporalProduct : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(p1, p2, p3, p4)
+   }
+   
+   *BiTemporalProductClassification : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(c1, c2, c3, c4)
+   }
+   
+   meta::relational::tests::milestoning::Order[o1] : Relational{
+      id : [db]OrderTable.id,
+      biTemporalProduct[p1] : [db]@Order_BiTemporalProductWithBusinessMilestoning
+   }
+   
+   meta::relational::tests::milestoning::Order[o2] : Relational{
+      id : [db]OrderTable.id,
+      biTemporalProduct[p2] : [db]@Order_BiTemporalProductWithBusinessSnapshotMilestoning
+   }
+   
+   meta::relational::tests::milestoning::Order[o3] : Relational{
+      id : [db]OrderTable.id,
+      biTemporalProduct[p3] : [db]@Order_BiTemporalProductWithProcessingMilestoning
+   }
+   
+   meta::relational::tests::milestoning::Order[o4] : Relational{
+      id : [db]OrderTable.id,
+      biTemporalProduct[p4] : [db]@Order_BiTemporalProductWithNoMilestoning
+   }
+   
+   meta::relational::tests::milestoning::BiTemporalProduct[p1] : Relational{
+      id : [db]BiTemporalProductTableWithBusinessMilestoning.id, 
+      name : [db]BiTemporalProductTableWithBusinessMilestoning.name,
+      biTemporalClassification[c1] : [db]@BiTemporalProductWithBusinessMilestoning_BiTemporalClassificationWithBusinessMilestoning
+   }
+   
+   meta::relational::tests::milestoning::BiTemporalProduct[p2] : Relational{
+      id : [db]BiTemporalProductTableWithBusinessSnapshotMilestoning.id, 
+      name : [db]BiTemporalProductTableWithBusinessSnapshotMilestoning.name,
+      biTemporalClassification[c2] : [db]@BiTemporalProductWithBusinessSnapshotMilestoning_BiTemporalClassificationWithBusinessSnapshotMilestoning
+   }
+   
+   meta::relational::tests::milestoning::BiTemporalProduct[p3] : Relational{
+      id : [db]BiTemporalProductTableWithProcessingMilestoning.id, 
+      name : [db]BiTemporalProductTableWithProcessingMilestoning.name,
+      biTemporalClassification[c3] : [db]@BiTemporalProductWithProcessingMilestoning_BiTemporalClassificationWithProcessingMilestoning
+   }
+   
+   meta::relational::tests::milestoning::BiTemporalProduct[p4] : Relational{
+      id : [db]BiTemporalProductTableWithNoMilestoning.id, 
+      name : [db]BiTemporalProductTableWithNoMilestoning.name,
+      biTemporalClassification[c4] : [db]@BiTemporalProductWithNoMilestoning_BiTemporalClassificationWithNoMilestoning
+   }
+   
+   meta::relational::tests::milestoning::BiTemporalProductClassification[c1] : Relational{
+      type : [db]BiTemporalProductClassificationTableWithBusinessMilestoning.type,
+      description : [db]BiTemporalProductClassificationTableWithBusinessMilestoning.type_description
+   }
+   
+   meta::relational::tests::milestoning::BiTemporalProductClassification[c2] : Relational{
+      type : [db]BiTemporalProductClassificationTableWithBusinessSnapshotMilestoning.type,
+      description : [db]BiTemporalProductClassificationTableWithBusinessSnapshotMilestoning.type_description
+   }
+   
+   meta::relational::tests::milestoning::BiTemporalProductClassification[c3] : Relational{
+      type : [db]BiTemporalProductClassificationTableWithProcessingMilestoning.type,
+      description : [db]BiTemporalProductClassificationTableWithProcessingMilestoning.type_description
+   }
+   
+   meta::relational::tests::milestoning::BiTemporalProductClassification[c4] : Relational{
+      type : [db]BiTemporalProductClassificationTableWithNoMilestoning.type,
+      description : [db]BiTemporalProductClassificationTableWithNoMilestoning.type_description
+   }
+)
+###Mapping
+import testIsolation::*;
+import meta::relational::tests::milestoning::*;
+
+Mapping meta::relational::tests::milestoning::TestMapping
+(
+   Order: Relational
+   {
+      id: [db] OrderTable.id,
+      product: [db] @Order_Product
+      
+   }
+   
+   Product: Relational
+   {
+       ~mainTable [db]ProductTable
+      name: [db] @productproductBridge1 > @ productProductBridge2 | ProductTable3.name
+      
+   }
+       
+)
+
+###Mapping
+import meta::relational::tests::milestoning::*;
+
+Mapping meta::relational::tests::milestoning::milestoningUnionMapWithOrderNonUnion
+(  
+   
+   Order : Relational{
+      id : [db]OrderTable.id,
+      product[p1] : [db]@Order_Product,
+      product[p2] : [db]@Order_Product
+   }
+   
+   *Product : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(p1, p2)
+   }
+   
+   *ProductClassification : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(c1, c2)
+   }
+   
+   meta::relational::tests::milestoning::Product[p1] : Relational{
+      id : [db]ProductTable.id, 
+      name : [db]ProductTable.name,
+      classification[c1] : [db]@Product_Classification
+   }
+   
+   meta::relational::tests::milestoning::ProductClassification[c1] : Relational{
+      type : [db]ProductClassificationTable.type,
+      description : [db]ProductClassificationTable.type_description,
+      product[p1] : [db]@Product_Classification
+   }
+   
+   meta::relational::tests::milestoning::Product[p2] : Relational{
+      id : [db]ProductTable.id, 
+      name : [db]ProductTable.name,
+      classification[c2] : [db]@Product_Classification
+   }
+   
+   meta::relational::tests::milestoning::ProductClassification[c2] : Relational{
+      type : [db]ProductClassificationTable.type,
+      description : [db]ProductClassificationTable.type_description,
+      product[p2] : [db]@Product_Classification
+   }
+)
+
+###Relational
+Database meta::relational::tests::milestoning::ViewChainDb
+(
+   Table orderPNL (ID INT PRIMARY KEY, pnl INT, pName VARCHAR(200), linktoProduct INT)
+   Table ProductTable(ID INT PRIMARY KEY, name VARCHAR(200), type VARCHAR(200), linkToOrder INTEGER)
+   
+   Table intermediate 
+   (
+      joinId INT PRIMARY KEY,
+      attribute INT
+   )
+   
+   Table intermediateTwo 
+   (
+      joinId INT PRIMARY KEY,
+      linkToProduct INT,
+      type VARCHAR(200)
+   )
+   
+   View interTwoView
+   (
+      j: intermediateTwo.joinId,
+      l: intermediateTwo.linkToProduct,
+      n: intermediateTwo.type
+   )
+   
+   View ProductTableView
+   (
+      name: ProductTable.name,
+      type: ProductTable.type,
+      link :ProductTable.ID
+   )
+   
+   Join OrderPnl_inter(orderPNL.ID = intermediate.joinId )
+   Join Inter_Inter (intermediate.joinId = interTwoView.j)
+   Join InterTwo_Product(interTwoView.l = ProductTableView.link )
+
+)
+
+
+###Relational
+Database meta::relational::tests::milestoning::db(
+   Table OrderTable(id Integer PRIMARY KEY, orderDate DATE, prodFk Integer)
+   Table OrderDescriptionTable(id Integer PRIMARY KEY, description VARCHAR(200))
+   Table OrderDetailsTable(id Integer PRIMARY KEY, settlementDate Date)
+   Table MyOrderTable(id Integer PRIMARY KEY, prodFk Integer)
+
+   Table ProductTableNoMilestoning(
+            id Integer PRIMARY KEY, 
+            name VARCHAR(200) PRIMARY KEY,
+            type VARCHAR(200),
+            exchange VARCHAR(200),
+            classificationSystemId Integer,
+            referenceSystemName VARCHAR(200))   
+   
+   Table ProductTable(
+            milestoning(
+               business(BUS_FROM=from_z, BUS_THRU=thru_z, INFINITY_DATE=%9999-12-31T00:00:00.0000)
+            )
+            id Integer PRIMARY KEY, 
+            name VARCHAR(200) PRIMARY KEY,
+            type VARCHAR(200),
+            exchange VARCHAR(200),
+            classificationSystemId Integer,
+            referenceSystemName VARCHAR(200),
+            externalReferenceSystemName VARCHAR(200),
+            from_z DATE,
+            thru_z DATE)
+   
+   Table ProductTableWithBusinessSnapshotMilestoning(
+            milestoning(
+               business(BUS_SNAPSHOT_DATE=snapshotDate)
+            )
+            id Integer PRIMARY KEY, 
+            name VARCHAR(200),
+            type VARCHAR(200),
+            snapshotDate DATE)
+   
+   Table BiTemporalProductTable_In_From_Inclusive(
+            milestoning(
+               processing(PROCESSING_IN=in_z, PROCESSING_OUT=out_z, OUT_IS_INCLUSIVE=false, INFINITY_DATE=%9999-12-31T00:00:00.0000),
+               business(BUS_FROM=from_z, BUS_THRU=thru_z, THRU_IS_INCLUSIVE=false, INFINITY_DATE=%9999-12-31T00:00:00.0000)
+            )
+            id Integer PRIMARY KEY,
+            name VARCHAR(200) PRIMARY KEY,
+            in_z DATE, 
+            out_z DATE,      
+            from_z DATE, 
+            thru_z DATE) 
+   
+   Table BiTemporalProductTable_In_Thru_Inclusive(
+            milestoning(
+               processing(PROCESSING_IN=in_z, PROCESSING_OUT=out_z, OUT_IS_INCLUSIVE=false, INFINITY_DATE=%9999-12-31T00:00:00.0000),
+               business(BUS_FROM=from_z, BUS_THRU=thru_z, THRU_IS_INCLUSIVE=true, INFINITY_DATE=%9999-12-31T00:00:00.0000)
+            )
+            id Integer PRIMARY KEY, 
+            name VARCHAR(200) PRIMARY KEY,
+            in_z DATE, 
+            out_z DATE,      
+            from_z DATE, 
+            thru_z DATE)
+   
+   Table BiTemporalProductTable_Out_From_Inclusive(
+            milestoning(
+               processing(PROCESSING_IN=in_z, PROCESSING_OUT=out_z, OUT_IS_INCLUSIVE=true, INFINITY_DATE=%9999-12-31T00:00:00.0000),
+               business(BUS_FROM=from_z, BUS_THRU=thru_z, THRU_IS_INCLUSIVE=false, INFINITY_DATE=%9999-12-31T00:00:00.0000)
+            )
+            id Integer PRIMARY KEY, 
+            name VARCHAR(200) PRIMARY KEY,
+            type VARCHAR(200),
+            in_z DATE, 
+            out_z DATE,      
+            from_z DATE, 
+            thru_z DATE) 
+   
+   Table BiTemporalProductTable_Out_Thru_Inclusive(
+            milestoning(
+               processing(PROCESSING_IN=in_z, PROCESSING_OUT=out_z, OUT_IS_INCLUSIVE=true, INFINITY_DATE=%9999-12-31T00:00:00.0000),
+               business(BUS_FROM=from_z, BUS_THRU=thru_z, THRU_IS_INCLUSIVE=true, INFINITY_DATE=%9999-12-31T00:00:00.0000)
+            )
+            id Integer PRIMARY KEY, 
+            name VARCHAR(200) PRIMARY KEY,
+            type VARCHAR(200),
+            in_z DATE, 
+            out_z DATE,      
+            from_z DATE, 
+            thru_z DATE)
+   
+   Table BiTemporalProductTable(
+            milestoning(
+               processing(PROCESSING_IN=in_z, PROCESSING_OUT=out_z, INFINITY_DATE=%9999-12-31T00:00:00.0000),
+               business(BUS_FROM=from_z, BUS_THRU=thru_z, INFINITY_DATE=%9999-12-31T00:00:00.0000)
+            )
+            id Integer PRIMARY KEY, 
+            type VARCHAR(200),
+            in_z DATE, 
+            out_z DATE,
+            from_z DATE, 
+            thru_z DATE)
+   
+   Table BiTemporalProductTableWithBusinessMilestoning(
+            milestoning(
+               business(BUS_FROM=from_z, BUS_THRU=thru_z)
+            )
+            id Integer PRIMARY KEY, 
+            name VARCHAR(200),
+            type VARCHAR(200),
+            from_z DATE, 
+            thru_z DATE)
+   
+   Table BiTemporalProductTableWithBusinessSnapshotMilestoning(
+            milestoning(
+               business(BUS_SNAPSHOT_DATE=snapshotDate)
+            )
+            id Integer PRIMARY KEY, 
+            name VARCHAR(200),
+            type VARCHAR(200),
+            snapshotDate DATE)
+   
+   Table BiTemporalProductTableWithProcessingMilestoning(
+            milestoning(
+               processing(PROCESSING_IN=in_z, PROCESSING_OUT=out_z)
+            )
+            id Integer PRIMARY KEY, 
+            name VARCHAR(200),
+            type VARCHAR(200),
+            in_z DATE, 
+            out_z DATE)
+   
+   Table BiTemporalProductTableWithNoMilestoning(
+            id Integer PRIMARY KEY, 
+            name VARCHAR(200),
+            type VARCHAR(200))
+   
+   Table BiTemporalProductTableWithLatest(
+         milestoning(
+            processing(PROCESSING_IN=in_z, PROCESSING_OUT=out_z, INFINITY_DATE=%9999-12-31T00:00:00.0000),
+            business(BUS_FROM=from_z, BUS_THRU=thru_z, INFINITY_DATE=%9999-12-31)
+         )
+         id Integer PRIMARY KEY, 
+         type VARCHAR(200),
+         in_z DATE, 
+         out_z DATE,
+         from_z DATE, 
+         thru_z DATE)
+   
+   Table StockProductTable(
+            milestoning(
+               business(BUS_FROM=from_z, BUS_THRU=thru_z, INFINITY_DATE=%9999-12-31T00:00:00.0000)
+            )
+            id Integer, 
+            from_z DATE, 
+            thru_z DATE)
+      
+   Table ProductDescriptionTable(id Integer PRIMARY KEY, description VARCHAR(200))
+   
+   Table ProductSynonymTable(
+            milestoning(
+               business(BUS_FROM=from_z, BUS_THRU=thru_z)
+            )
+            prodId Integer,
+            name VARCHAR(200) PRIMARY KEY,
+            synonym VARCHAR(200) PRIMARY KEY,
+            type VARCHAR(200) PRIMARY KEY,
+            createdBy VARCHAR(200),
+            from_z DATE,
+            thru_z DATE)    
+            
+    Table ProductClassificationTableNoMilestoning(
+            type VARCHAR(200) PRIMARY KEY,
+            type_description VARCHAR(400),
+            system VARCHAR(200),
+            exchange VARCHAR(200))
+   
+    Table ProductClassificationTable(
+            milestoning(
+               business(BUS_FROM=from_z, BUS_THRU=thru_z, INFINITY_DATE=%9999-12-31T00:00:00.0000)
+            )
+            type VARCHAR(200) PRIMARY KEY,
+            type_description VARCHAR(400),
+            system VARCHAR(200),
+            exchange VARCHAR(200),
+            from_z DATE, 
+            thru_z DATE)
+   
+    Table ProductClassificationTableWithBusinessSnapshotMilestoning(
+            milestoning(
+               business(BUS_SNAPSHOT_DATE=snapshotDate)
+            )
+            type VARCHAR(200) PRIMARY KEY,
+            type_description VARCHAR(400),
+            snapshotDate DATE)
+   
+    Table BiTemporalProductClassificationTable(
+            milestoning(
+               processing(PROCESSING_IN=in_z, PROCESSING_OUT=out_z),
+               business(BUS_FROM=from_z, BUS_THRU=thru_z)
+            )
+            type VARCHAR(200) PRIMARY KEY,
+            type_description VARCHAR(400),
+            system VARCHAR(200),
+            exchange VARCHAR(200),
+            in_z DATE,
+            out_z DATE,
+            from_z DATE, 
+            thru_z DATE)
+   
+    Table BiTemporalProductClassificationTableWithBusinessMilestoning(
+            milestoning(
+               business(BUS_FROM=from_z, BUS_THRU=thru_z)
+            )
+            type VARCHAR(200) PRIMARY KEY,
+            type_description VARCHAR(400),
+            from_z DATE, 
+            thru_z DATE)
+    
+    Table BiTemporalProductClassificationTableWithBusinessSnapshotMilestoning(
+            milestoning(
+               business(BUS_SNAPSHOT_DATE=snapshotDate)
+            )
+            type VARCHAR(200) PRIMARY KEY,
+            type_description VARCHAR(400),
+            system VARCHAR(200),
+            snapshotDate DATE)
+   
+    Table BiTemporalProductClassificationTableWithProcessingMilestoning(
+            milestoning(
+               processing(PROCESSING_IN=in_z, PROCESSING_OUT=out_z)
+            )
+            type VARCHAR(200) PRIMARY KEY,
+            type_description VARCHAR(400),
+            in_z DATE,
+            out_z DATE)
+   
+    Table BiTemporalProductClassificationTableWithNoMilestoning(
+            type VARCHAR(200) PRIMARY KEY,
+            type_description VARCHAR(400))
+    
+    Table BiTemporalProductClassificationTableWithLatest(
+            milestoning(
+               processing(PROCESSING_IN=in_z, PROCESSING_OUT=out_z, INFINITY_DATE=%9999-12-31T00:00:00.0000),
+               business(BUS_FROM=from_z, BUS_THRU=thru_z, INFINITY_DATE=%9999-12-31T00:00:00.0000)
+            )
+            type VARCHAR(200) PRIMARY KEY,
+            type_description VARCHAR(400),
+            system VARCHAR(200),
+            exchange VARCHAR(200),
+            in_z DATE,
+            out_z DATE,
+            from_z DATE, 
+            thru_z DATE)
+   
+    Table ProductExchangeTable(
+            milestoning(
+               business(BUS_FROM=from_z, BUS_THRU=thru_z, INFINITY_DATE=%9999-12-31T00:00:00.0000)
+            )
+            city VARCHAR(200),
+            name VARCHAR(200),
+            from_z DATE, 
+            thru_z DATE)
+   
+    Table ProductExchangeTableNoMilestoning(
+            name VARCHAR(200),
+            from_z DATE, 
+            thru_z DATE)   
+
+    Table OrderToSystemADescriptions(
+            milestoning(
+               business(BUS_FROM=from_z, BUS_THRU=thru_z)
+            )
+            orderId Integer PRIMARY KEY,
+            systemADescriptionId Integer PRIMARY KEY,
+            from_z DATE, 
+            thru_z DATE)
+   
+    Table SystemAOrderDescriptionTable(descriptionId Integer PRIMARY KEY, description VARCHAR(200))
+    
+    Table CancelActivitiesTable(
+            milestoning(
+               business(BUS_FROM=from_z, BUS_THRU=thru_z)
+            )
+            productId Integer PRIMARY KEY, 
+            from_z DATE, 
+            thru_z DATE
+    )
+    
+    Table NewActivityInfoTable(
+            milestoning(
+               business(BUS_FROM=from_z, BUS_THRU=thru_z)
+            )
+            productId Integer PRIMARY KEY, 
+            created_by VARCHAR(200),
+            from_z DATE, 
+            thru_z DATE
+    )
+    
+    Table ProductClassificationSystemTable(
+            milestoning(
+               business(BUS_FROM=from_z, BUS_THRU=thru_z)
+            )
+            id Integer PRIMARY KEY, 
+            name VARCHAR(200),
+            from_z DATE, 
+            thru_z DATE)
+            
+    Table SystemTable(name VARCHAR(200) PRIMARY KEY)
+   
+    Table SystemDescriptionTable(
+            milestoning(
+               business(BUS_FROM=from_z, BUS_THRU=thru_z)
+            )
+            systemName Integer PRIMARY KEY, 
+            description VARCHAR(200),
+            from_z DATE, 
+            thru_z DATE)   
+   
+   
+    Table tradeTable(ID INT PRIMARY KEY, accountID INT)
+   
+    Table tradePnlTable( 
+            milestoning(business(BUS_FROM=from_z, BUS_THRU=thru_z))
+            TRADE_ID INT PRIMARY KEY, pnl FLOAT,from_z DATE,thru_z DATE)
+   
+    Table salesPersonTable(
+            milestoning(business(BUS_FROM=from_z, BUS_THRU=thru_z))
+            ACCOUNT_ID INT PRIMARY KEY, NAME VARCHAR(200), from_z DATE, thru_z DATE)
+
+    Table TraderTable(
+            milestoning(
+               processing(PROCESSING_IN=in_z, PROCESSING_OUT=out_z)
+            )
+            kerberos VARCHAR(20) PRIMARY KEY, 
+            in_z DATE,
+            out_z DATE)
+   
+    Table CertificationTable(
+            milestoning(
+               processing(PROCESSING_IN=in_z, PROCESSING_OUT=out_z)
+            )
+            kerberos VARCHAR(20) PRIMARY KEY,
+            name VARCHAR(20) PRIMARY KEY, 
+            in_z DATE,
+            out_z DATE)    
+   
+    Table BiTemporalLocationTable(
+          milestoning(
+               processing(PROCESSING_IN=in_z, PROCESSING_OUT=out_z),
+               business(BUS_FROM=from_z, BUS_THRU=thru_z, INFINITY_DATE=%9999-12-30T00:00:00.0000)
+          )
+          ID INT PRIMARY KEY, 
+          kerberos VARCHAR(20), 
+          PLACE VARCHAR(200),
+          in_z DATE,
+          out_z DATE,
+          from_z DATE, 
+          thru_z DATE)
+   
+    View tradePnlView
+    (
+       ~distinct 
+        TRADE_ID: tradePnlTable.TRADE_ID PRIMARY KEY,  
+        pnl: tradePnlTable.pnl, 
+        supportContact : @TradePnlTable_Trade > @Trade_SalesPerson | salesPersonTable.NAME
+    )
+
+    View salesPersonView
+    (
+       ACCOUNT_ID: salesPersonTable.ACCOUNT_ID,
+       SALES_PERSON_NAME : salesPersonTable.NAME
+    )    
+   
+    View tradePnlSuperView
+    (
+       ~distinct 
+       TRADE_ID: tradePnlTable.TRADE_ID PRIMARY KEY,  
+       pnl: tradePnlTable.pnl, 
+       supportContactViaView : @TradePnlTable_Trade > @Trade_SalesPerson > @SalesPersonTable_SalesPersonView | salesPersonView.SALES_PERSON_NAME
+    )  
+   
+    View tradePnlIntermediateView
+    (
+       ~distinct 
+       TRADE_ID: tradePnlTable.TRADE_ID PRIMARY KEY,  
+       pnl: tradePnlTable.pnl
+    ) 
+   
+    View tradePnlViewUsingView
+    (
+       TRADE_ID: tradePnlIntermediateView.TRADE_ID PRIMARY KEY,  
+       pnl: tradePnlIntermediateView.pnl, 
+       supportContactViaView : @tradePnlIntermediateView_TradePnlTable > @TradePnlTable_Trade > @Trade_SalesPerson > @SalesPersonTable_SalesPersonView | salesPersonView.SALES_PERSON_NAME
+    ) 
+   
+   Table ProductTable3
+   (
+      milestoning(
+               business(BUS_FROM=from_z, BUS_THRU=thru_z, INFINITY_DATE=%9999-12-31T00:00:00.0000)
+            )
+      id Integer PRIMARY KEY,
+      name VARCHAR(200),
+      from_z DATE, 
+      thru_z DATE
+   )
+   
+   Table ProductTable2
+   (
+      milestoning(
+               business(BUS_FROM=from_z, BUS_THRU=thru_z, INFINITY_DATE=%9999-12-31T00:00:00.0000)
+            )
+      identifier Integer PRIMARY KEY,
+      key Integer,
+      from_z DATE, 
+      thru_z DATE
+   )
+   
+   
+   Join Order_Product(OrderTable.prodFk=ProductTable.id)
+   Join Order_ProductWithBusinessSnapshotMilestoning(OrderTable.prodFk=ProductTableWithBusinessSnapshotMilestoning.id)
+   Join Order_BiTemporalProduct(OrderTable.prodFk=BiTemporalProductTable.id)
+   Join Order_BiTemporalProductWithBusinessMilestoning(OrderTable.prodFk=BiTemporalProductTableWithBusinessMilestoning.id)
+   Join Order_BiTemporalProductWithBusinessSnapshotMilestoning(OrderTable.prodFk=BiTemporalProductTableWithBusinessSnapshotMilestoning.id)
+   Join Order_BiTemporalProductWithProcessingMilestoning(OrderTable.prodFk=BiTemporalProductTableWithProcessingMilestoning.id)
+   Join Order_BiTemporalProductWithNoMilestoning(OrderTable.prodFk=BiTemporalProductTableWithNoMilestoning.id)
+   Join Order_ProductNoMilestoning(OrderTable.prodFk=ProductTableNoMilestoning.id)
+   Join Order_StockProduct(OrderTable.prodFk=StockProductTable.id)
+   Join Order_OrderDescription(OrderTable.id=OrderDescriptionTable.id)
+   Join Order_OrderDetails(OrderTable.id=OrderDetailsTable.id)
+   Join Order_OrderToSystemADescriptions(OrderTable.id=OrderToSystemADescriptions.orderId)
+   Join OrderToSystemADescriptions_SystemAOrderDescriptionTable(OrderToSystemADescriptions.systemADescriptionId=SystemAOrderDescriptionTable.descriptionId)
+   Join Order_CusipSynonym(OrderTable.prodFk=ProductSynonymTable.prodId and ProductSynonymTable.type='CUSIP')
+   Join Product_Classification(ProductTable.type=ProductClassificationTable.type)
+   Join ProductWithBusinessSnapshotMilestoning_ClassificationWithBusinessSnapshotMilestoning(ProductTableWithBusinessSnapshotMilestoning.type=ProductClassificationTableWithBusinessSnapshotMilestoning.type)
+   Join Product_BiTemporalClassification(ProductTable.type=BiTemporalProductClassificationTable.type)
+   Join BiTemporalProduct_Classification(BiTemporalProductTable.type=ProductClassificationTable.type)
+   Join BiTemporalProduct_BiTemporalClassification(BiTemporalProductTable.type=BiTemporalProductClassificationTable.type)
+   Join BiTemporalProductWithBusinessMilestoning_BiTemporalClassificationWithBusinessMilestoning(BiTemporalProductTableWithBusinessMilestoning.type=BiTemporalProductClassificationTableWithBusinessMilestoning.type)
+   Join BiTemporalProductWithBusinessSnapshotMilestoning_BiTemporalClassificationWithBusinessSnapshotMilestoning(BiTemporalProductTableWithBusinessSnapshotMilestoning.type=BiTemporalProductClassificationTableWithBusinessSnapshotMilestoning.type)
+   Join BiTemporalProductWithProcessingMilestoning_BiTemporalClassificationWithProcessingMilestoning(BiTemporalProductTableWithProcessingMilestoning.type=BiTemporalProductClassificationTableWithProcessingMilestoning.type)
+   Join BiTemporalProductWithNoMilestoning_BiTemporalClassificationWithNoMilestoning(BiTemporalProductTableWithNoMilestoning.type=BiTemporalProductClassificationTableWithNoMilestoning.type)
+   Join Product_Exchange(ProductTable.exchange=ProductExchangeTable.name)
+   Join Product_Synonym(ProductTable.name=ProductSynonymTable.name)
+   Join Product_NewActivityInfo(ProductTable.id=NewActivityInfoTable.productId)
+   Join Product_StockProduct(ProductTable.id = StockProductTable.id)
+   Join Product_CancelActivities(ProductTable.id=CancelActivitiesTable.productId)
+   Join Product_System(ProductTable.referenceSystemName=SystemTable.name)
+   Join StockProduct_Description(StockProductTable.id = ProductDescriptionTable.id)
+   Join StockProduct_ClassificationSystem(ProductTable.classificationSystemId=ProductClassificationSystemTable.id)
+   Join CancelActivities_NewActivityInfo(CancelActivitiesTable.productId=NewActivityInfoTable.productId)
+   Join ClassificationSystem_System(ProductClassificationSystemTable.name=SystemTable.name)
+   Join Classification_System(ProductClassificationTable.system=SystemTable.name)
+   Join Classification_Exchange(ProductClassificationTable.exchange=ProductExchangeTable.name)
+   Join Classification_Exchange_multipleOperations(ProductClassificationTable.exchange=ProductExchangeTable.name or (ProductClassificationTable.exchange is null and ProductExchangeTable.name is null))
+   Join ProductClassificationTableNoMilestoning_ExchangeNoMilestoning(ProductClassificationTableNoMilestoning.exchange=ProductExchangeTableNoMilestoning.name)
+   Join System_SystemDescrption(SystemTable.name=SystemDescriptionTable.systemName)
+   Join TradePnlTable_Trade(tradePnlTable.TRADE_ID = tradeTable.ID)
+   Join Trade_SalesPerson(tradeTable.accountID = salesPersonTable.ACCOUNT_ID)
+   Join Trader_Certifications(TraderTable.kerberos = CertificationTable.kerberos)
+   Join Trader_BiTemporalLocation(TraderTable.kerberos = BiTemporalLocationTable.kerberos)
+   Join BiTemporalProductWithLatest_BiTemporalClassification(BiTemporalProductTableWithLatest.type=BiTemporalProductClassificationTable.type)
+   Join BiTemporalProductWithLatest_BiTemporalClassificationWithLatest(BiTemporalProductTableWithLatest.type=BiTemporalProductClassificationTableWithLatest.type)
+   Join Order_BiTemporalProductWithLatest(OrderTable.prodFk=BiTemporalProductTableWithLatest.id)
+   Join ProductTableNoMilestoning_ProductClassificationTableNoMilestoning(ProductTableNoMilestoning.type = ProductClassificationTableNoMilestoning.type)
+   Join MyOrder_BiTemporalProductTable_In_From_Inclusive(MyOrderTable.prodFk = BiTemporalProductTable_In_From_Inclusive.id)
+   Join MyOrder_BiTemporalProductTable_In_Thru_Inclusive(MyOrderTable.prodFk = BiTemporalProductTable_In_Thru_Inclusive.id)
+   Join MyOrder_BiTemporalProductTable_Out_From_Inclusive(MyOrderTable.prodFk = BiTemporalProductTable_Out_From_Inclusive.id)
+   Join MyOrder_BiTemporalProductTable_Out_Thru_Inclusive(MyOrderTable.prodFk = BiTemporalProductTable_Out_Thru_Inclusive.id)
+   Join BiTemporalProductTable_Out_Thru_Inclusive_Classification(BiTemporalProductTable_Out_Thru_Inclusive.type=ProductClassificationTable.type)
+   Join BiTemporalProductTable_Out_From_Inclusive_Classification(BiTemporalProductTable_Out_From_Inclusive.type=ProductClassificationTable.type)
+   Join productproductBridge1(ProductTable.id  =  ProductTable2.identifier)
+   Join productProductBridge2(ProductTable2. identifier = ProductTable3.id)
+   Join SalesPersonTable_SalesPersonView(salesPersonTable.ACCOUNT_ID = salesPersonView.ACCOUNT_ID)
+   Join tradePnlIntermediateView_TradePnlTable(tradePnlIntermediateView.TRADE_ID = tradePnlTable.TRADE_ID)
+   
+   Filter IsStockType(ProductTable.type='STOCK')
+   Filter LNSEProducts(ProductExchangeTable.name='STOCK')
+   Filter NewActivityWithValidProduct(NewActivityInfoTable.productId > 0)
+)

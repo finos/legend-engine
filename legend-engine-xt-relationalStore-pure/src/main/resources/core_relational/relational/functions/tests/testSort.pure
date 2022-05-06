@@ -1,0 +1,37 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::mapping::*;
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::*;
+import meta::pure::profiles::*;
+
+function <<test.Test>> meta::relational::tests::query::sort::testSortSimple():Boolean[1]
+{
+   let result = execute(|Person.all()->sortBy(#/Person/lastName#), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 12);
+   assertEquals(['Allen', 'Firm B', 'Harris', 'Hill', 'Hill', 'Johnson', 'New York', 'Roberts', 'Smith', 'Smith', 'York', 'no Firm'], $result.values.lastName);
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName", "root".LASTNAME as "o_lastName" from personTable as "root" order by "root".LASTNAME', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test, test.ToFix>> meta::relational::tests::query::sort::testSortDeep():Boolean[1]
+{
+   let result = execute(|Person.all()->sortBy(p | $p.address->toOne().name), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSize($result.values, 9);
+   assertEquals('Smith', $result.values->at(0).lastName);
+   assertEquals('Hill', $result.values->at(1).lastName);
+   assertSameElements(['Harris', 'Allen', 'Johnson', 'Hill'], $result.values->drop(2)->take(4).lastName);
+   assertEquals('Roberts', $result.values->at(6).lastName);
+   assertEquals('select root.FIRSTNAME as "firstName", root.AGE as "age", root.LASTNAME as "lastName", addressTable_d1_d_m1.NAME as "o_name" from personTable as root left outer join addressTable as addressTable_d1_d_m1 on (addressTable_d1_d_m1.ID = root.ADDRESSID) order by "o_name"', $result->sqlRemoveFormatting());
+}
