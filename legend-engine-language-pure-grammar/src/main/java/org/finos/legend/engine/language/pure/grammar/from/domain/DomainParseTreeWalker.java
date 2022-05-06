@@ -663,6 +663,7 @@ public class DomainParseTreeWalker
     {
         CString string = new CString();
         string.multiplicity = getMultiplicityOneOne();
+        string.values = FastList.newListWith("");
         return string;
     }
 

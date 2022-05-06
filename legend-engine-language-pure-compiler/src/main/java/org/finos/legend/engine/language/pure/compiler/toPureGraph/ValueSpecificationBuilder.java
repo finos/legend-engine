@@ -137,7 +137,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
         return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
                 ._genericType(packageableElement._classifierGenericType())
                 ._multiplicity(this.context.pureModel.getMultiplicity("one"))
-                ._values(FastList.newListWith(packageableElement));
+                ._values(this.processingContext.peek().equals("Applying new") ? FastList.newList() : FastList.newListWith(packageableElement));
     }
 
     @Override
