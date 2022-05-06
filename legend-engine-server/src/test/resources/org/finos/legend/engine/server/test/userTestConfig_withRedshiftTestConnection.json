@@ -84,15 +84,15 @@
         "_type": "redshift",
         "host": "redshift-load-balancer-cb907ffe8879f6c2.elb.us-east-1.amazonaws.com",
         "port": 5439,
-        "databaseName": "dev",
+        "databaseName": "integration_db1",
         "clusterID": "",
         "region": "us-east-1"
       },
       "authenticationStrategy": {
         "_type": "userNamePassword",
         "baseVaultReference": "",
-        "userNameVaultReference": "REDSHIFT_LEGEND_INTEG_USERNAME",
-        "passwordVaultReference": "REDSHIFT_LEGEND_INTEG_PASSWORD"
+        "userNameVaultReference": "REDSHIFT_INTEGRATION_USER1_NAME",
+        "passwordVaultReference": "REDSHIFT_INTEGRATION_USER1_PASSWORD"
       },
       "type": "Redshift",
       "element" : "",

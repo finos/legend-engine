@@ -84,16 +84,16 @@
         "_type": "snowflake",
         "accountName": "ki79827",
         "region": "us-east-2",
-        "warehouseName": "LEGEND_INTEGRATION_WH1",
-        "databaseName": "LEGEND_INTEGRATION_DB1",
+        "warehouseName": "INTEGRATION_WH1",
+        "databaseName": "INTEGRATION_DB1",
         "cloudType": "aws",
-        "role": "LEGEND_INTEGRATION_ROLE1"
+        "role": "INTEGRATION_ROLE1"
       },
       "authenticationStrategy": {
         "_type": "snowflakePublic",
-        "privateKeyVaultReference": "SNOWFLAKE_LEGEND_INTEG_RO1_PRIVATEKEY",
-        "passPhraseVaultReference": "SNOWFLAKE_LEGEND_INTEG_RO1_PASSWORD",
-        "publicUserName": "LEGEND_INTEG_RO1"
+        "privateKeyVaultReference": "SNOWFLAKE_INTEGRATION_USER1_PRIVATEKEY",
+        "passPhraseVaultReference": "SNOWFLAKE_INTEGRATION_USER1_PASSWORD",
+        "publicUserName": "INTEGRATION_USER1"
       },
       "type": "Snowflake",
       "element" : "",
