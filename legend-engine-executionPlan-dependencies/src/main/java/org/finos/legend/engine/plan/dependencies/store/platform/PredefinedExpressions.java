@@ -14,10 +14,7 @@
 
 package org.finos.legend.engine.plan.dependencies.store.platform;
 
-import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.dependencies.domain.date.PureDate;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
-import org.pac4j.core.profile.CommonProfile;
 
 import java.util.Date;
 
@@ -28,8 +25,8 @@ public class PredefinedExpressions
         return PureDate.fromDate(new Date());
     }
 
-    public static String currentUserId(MutableList<CommonProfile> profiles)
+    public static String currentUserId(String authId)
     {
-        return IdentityFactoryProvider.getInstance().makeIdentity(profiles).getName();
+        return authId;
     }
 }
