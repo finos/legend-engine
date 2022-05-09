@@ -73,7 +73,7 @@ public class TestRelationalConnectionGrammarParser extends TestGrammarParser.Tes
                 "    accountType: MultiTenant;\n" +
                 "    organization: 'sampleOrganization';\n" +
                 "  };\n" +
-                "  auth: AwsOAuth\n" +
+                "  auth: awsOAuth\n" +
                 "  {" +
                 "       secretArn: 'name';\n" +
                 "       discoveryUrl: 'name';\n" +
@@ -96,7 +96,7 @@ public class TestRelationalConnectionGrammarParser extends TestGrammarParser.Tes
                 "    accountType: MultiTenant;\n" +
                 "    organization: 'sampleOrganization';\n" +
                 "  };\n" +
-                "  auth: AwsPK\n" +
+                "  auth: awsPK\n" +
                 "  {" +
                 "       secretArn: 'name';\n" +
                 "       user: 'name';\n" +

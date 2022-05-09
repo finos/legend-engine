@@ -21,6 +21,9 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.FinCloudTargetSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.List;
@@ -33,6 +36,16 @@ public interface IAwsGrammarComposerExtension extends PureGrammarComposerExtensi
         return ListIterate.selectInstancesOf(context.extensions, IAwsGrammarComposerExtension.class);
     }
 
+    static String process(FinCloudTargetSpecification datasourceSpecification, List<Function2<FinCloudTargetSpecification, PureGrammarComposerContext, String>> processors, PureGrammarComposerContext context)
+    {
+        return process(datasourceSpecification, processors, context, "Data Source Specification", datasourceSpecification.sourceInformation);
+    }
+
+    static String process(AuthenticationStrategy authenticationStrategy, List<Function2<AuthenticationStrategy, PureGrammarComposerContext, String>> processors, PureGrammarComposerContext context)
+    {
+        return process(authenticationStrategy, processors, context, "Authentication Strategy", authenticationStrategy.sourceInformation);
+    }
+
     static <T> String process(T item, List<Function2<T, PureGrammarComposerContext, String>> processors, PureGrammarComposerContext context, String type, SourceInformation srcInfo) {
         return ListIterate
                 .collect(processors, processor -> processor.value(item, context))
@@ -41,4 +54,18 @@ public interface IAwsGrammarComposerExtension extends PureGrammarComposerExtensi
                 .orElseThrow(() -> new EngineException("Unsupported " + type + " type '" + item.getClass() + "'", srcInfo, EngineErrorType.PARSER));
     }
 
+    static <T> String process(T item, List<Function3<T, Integer, PureGrammarComposerContext, String>> processors, PureGrammarComposerContext context, Integer offset, String type, SourceInformation srcInfo) {
+        return ListIterate
+                .collect(processors, processor -> processor.value(item, offset, context))
+                .select(Objects::nonNull)
+                .getFirstOptional()
+                .orElseThrow(() -> new EngineException("Unsupported " + type + " type '" + item.getClass() + "'", srcInfo, EngineErrorType.PARSER));
+    }
+    default List<Function2<AuthenticationStrategy, PureGrammarComposerContext, String>> getExtraAuthenticationStrategyComposers() {
+        return FastList.newList();
+    }
+
+    default List<Function2<FinCloudTargetSpecification, PureGrammarComposerContext, String>> getExtraDataSourceSpecificationComposers() {
+        return FastList.newList();
+    }
 }

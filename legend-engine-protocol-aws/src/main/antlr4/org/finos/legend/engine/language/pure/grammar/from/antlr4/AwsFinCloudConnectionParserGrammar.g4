@@ -12,8 +12,8 @@ options
 identifier:                                 VALID_STRING | STRING
                                             | STORE
                                             | IMPORT | NONE
-                                            | FINCLOUD_DATASET_ID | FINCLOUD_AUTHENTICATION_STRATEGY | FINCLOUD_TARGET_SPECIFICATION
-                                            | FINCLOUD_DATASOURCE_SPECIFICATION | FINCLOUD_API_URL
+                                            | FINCLOUD_DATASET_ID | FINCLOUD_AUTHENTICATION_STRATEGY
+                                            | FINCLOUD_API_URL
 ;
 
 // -------------------------------------- DEFINITION --------------------------------------
@@ -22,7 +22,7 @@ definition:                                 (
                                                 connectionStore
                                                 | datasetId
                                                 | authenticationStrategy
-                                                | targetSpecification
+                                                | apiUrl
                                             )*
                                             EOF
 ;
@@ -30,18 +30,19 @@ connectionStore:                            STORE COLON qualifiedName SEMI_COLON
 ;
 datasetId:                                  FINCLOUD_DATASET_ID COLON STRING SEMI_COLON
 ;
-authenticationStrategy:                    FINCLOUD_AUTHENTICATION_STRATEGY COLON STRING SEMI_COLON
+authenticationStrategy:                     FINCLOUD_AUTHENTICATION_STRATEGY COLON specification SEMI_COLON
 ;
-targetSpecification:                       FINCLOUD_TARGET_SPECIFICATION COLON
-                                                (
-                                                    datasourceSpecification
-                                                )
-                                           SEMI_COLON
+apiUrl:                                     FINCLOUD_API_URL COLON STRING SEMI_COLON
 ;
-datasourceSpecification:                   FINCLOUD_DATASOURCE_SPECIFICATION
-                                            BRACE_OPEN
-                                            (apiUrl)*
-                                            BRACE_CLOSE
+
+specification:                specificationType (specificationValueBody)?
 ;
-apiUrl:                                    FINCLOUD_API_URL COLON STRING SEMI_COLON
+
+specificationType:            VALID_STRING
+;
+
+specificationValueBody:       BRACE_OPEN (specificationValue)*
+;
+
+specificationValue:           SPECIFICATION_BRACE_OPEN | SPECIFICATION_CONTENT | SPECIFICATION_BRACE_CLOSE
 ;

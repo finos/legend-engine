@@ -1,5 +1,8 @@
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.FinCloudConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.block.function.Function2;
@@ -34,6 +37,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwareClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.S3Connection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.PostProcessor;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.ExecutionContext;
 import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.Binding;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
@@ -85,8 +89,37 @@ public class AwsCompilerExtension implements IAwsCompilerExtension
                         s3._region(s3Connection.region);
                         return s3;
                     }
+                    else if (connectionValue instanceof FinCloudConnection)
+                    {
+                        FinCloudConnection finCloudConnection = (FinCloudConnection) connectionValue;
+
+                        //check if _Impl is needed
+                        Root_meta_external_persistence_aws_metamodel_connection_AwsFinCloudConnection_Impl fc = new Root_meta_external_persistence_aws_metamodel_connection_AwsFinCloudConnection_Impl("");
+                        List<IAwsCompilerExtension> extensions = IAwsCompilerExtension.getExtensions(context);
+
+                        Root_meta_pure_alloy_connections_alloy_authentication_AuthenticationStrategy authenticationStrategy = IRelationalCompilerExtension.process(
+                                finCloudConnection.authenticationStrategy,
+                                ListIterate.flatCollect(extensions, IAwsCompilerExtension::getExtraAuthenticationStrategyProcessors),
+                                context);
+
+
+                        //we currently need to add both as __queryPostProcessorsWithParameter is used for plan generation
+                        //and _postProcessors is used for serialization of plan to protocol
+                        fc._authenticationStrategy(authenticationStrategy);
+
+                        return fc;
+                    }
                     return null;
                 }
         );
+    }
+
+    @Override
+    public List<Function2<AuthenticationStrategy, CompileContext, Root_meta_pure_alloy_connections_alloy_authentication_AuthenticationStrategy>> getExtraAuthenticationStrategyProcessors()
+    {
+        return Lists.mutable.with((strategy, context) -> {
+            AuthenticationStrategyBuilder authenticationStrategyBuilder = new AuthenticationStrategyBuilder();
+            return strategy.accept(authenticationStrategyBuilder);
+        });
     }
 }

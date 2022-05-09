@@ -53,7 +53,7 @@ public class TestRelationalConnectionCompilationRoundtrip
                 "    host: 'host';\n" +
                 "    port: 1234;\n" +
                 "  };\n" +
-                "  auth: AwsOAuth\n" +
+                "  auth: awsOAuth\n" +
                 "  {\n" +
                 "    secretArn: 'name';\n" +
                 "    discoveryUrl: 'name';\n" +
@@ -77,7 +77,7 @@ public class TestRelationalConnectionCompilationRoundtrip
                 "    host: 'host';\n" +
                 "    port: 1234;\n" +
                 "  };\n" +
-                "  auth: AwsPK\n" +
+                "  auth: awsPK\n" +
                 "  {\n" +
                 "    secretArn: 'name';\n" +
                 "    user: 'name';\n" +

@@ -16,7 +16,11 @@ STORE:                                      'store';
 
 FINCLOUD_DATASET_ID:                        'datasetId';
 FINCLOUD_AUTHENTICATION_STRATEGY:           'authenticationStrategy';
-FINCLOUD_TARGET_SPECIFICATION:              'targetSpecification';
-
-FINCLOUD_DATASOURCE_SPECIFICATION:          'datasourceSpecification';
 FINCLOUD_API_URL:                           'apiUrl';
+
+BRACE_OPEN:                             '{' -> pushMode(SPECIFICATION_ISLAND_MODE);
+
+mode SPECIFICATION_ISLAND_MODE;
+SPECIFICATION_BRACE_OPEN: '{' -> pushMode (SPECIFICATION_ISLAND_MODE);
+SPECIFICATION_BRACE_CLOSE: '}' -> popMode;
+SPECIFICATION_CONTENT: (~[{}])+;

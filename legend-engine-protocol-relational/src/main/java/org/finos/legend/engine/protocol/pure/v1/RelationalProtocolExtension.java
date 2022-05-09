@@ -31,6 +31,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.FinCloudConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.S3Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.*;
@@ -103,7 +104,8 @@ public class RelationalProtocolExtension implements PureProtocolExtension
                         .newInstance(Connection.class)
                         .withSubtypes(FastList.newListWith(
                                 Tuples.pair(RelationalDatabaseConnection.class, "RelationalDatabaseConnection"),
-                                Tuples.pair(S3Connection.class, "S3Connection")
+                                Tuples.pair(S3Connection.class, "S3Connection"),
+                                Tuples.pair(FinCloudConnection.class, "AwsFinCloudConnection")
                         )).build(),
                 // Execution context
                 ProtocolSubTypeInfo.Builder
