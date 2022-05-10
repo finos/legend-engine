@@ -56,6 +56,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Date;
 import java.util.stream.Collectors;
 
 public class TestServiceRunner
@@ -201,6 +202,33 @@ public class TestServiceRunner
 
         String result = multiParameterM2MServiceRunner.run(serviceRunnerInput);
         Assert.assertEquals("{\"firstName\":\"Peter\",\"lastName\":\"Smith\"}", result);
+    }
+
+    private static class SimpleServiceRunnerWithLetVariablePureExpression extends AbstractServicePlanExecutor
+    {
+        SimpleServiceRunnerWithLetVariablePureExpression()
+        {
+            super("test::Service", buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/simpleRelationalService.pure", "test::testMultiExpressionQueryWithMandatoryTemporalDate"), true);
+        }
+
+        @Override
+        public List<ServiceVariable> getServiceVariables()
+        {
+            return Collections.singletonList(new ServiceVariable("businessDate", Date.class, PURE_ONE));
+        }
+    }
+
+    @Test
+    public void testSimpleServiceRunnerWithLetVariablePureExpression()
+    {
+        SimpleServiceRunnerWithLetVariablePureExpression serviceRunnerWithLetVariablePureExpression = new SimpleServiceRunnerWithLetVariablePureExpression();
+        ServiceRunnerInput serviceRunnerInput = ServiceRunnerInput
+                .newInstance()
+                .withArgs(Arrays.asList("1982-01-20"))
+                .withSerializationFormat(SerializationFormat.PURE);
+
+        String result = serviceRunnerWithLetVariablePureExpression.run(serviceRunnerInput);
+        Assert.assertEquals("[{\"firstName\":\"Peter\",\"lastName\":\"Smith\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\"},{\"firstName\":\"Bob\",\"lastName\":\"Stevens\"}]", result);
     }
 
     @Test
