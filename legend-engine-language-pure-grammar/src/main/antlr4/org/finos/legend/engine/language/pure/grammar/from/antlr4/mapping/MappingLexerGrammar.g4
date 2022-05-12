@@ -10,7 +10,15 @@ IMPORT:                                 'import';
 INCLUDE:                                'include';
 TESTS:                                  'MappingTests';
 EXTENDS:                                'extends';
+// -------------------------------------- TEST -----------------------------------------
 
+MAPPING_TEST_SUITES:                'testSuites';
+MAPPING_TEST_ELEMENT_DATA:          'element';
+MAPPING_TEST_TESTS:                 'tests';
+MAPPING_TEST_ASSERTS:               'asserts';
+MAPPING_TEST_DATA:                  'testData';
+
+//--------------------------------------- LEGACY_TEST ---------------------------------
 TEST_QUERY:                             'query';
 TEST_INPUT_DATA:                        'data';
 TEST_ASSERT:                            'assert';

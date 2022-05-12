@@ -25,10 +25,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.EnumerationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingInclude;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregateSetImplementationContainer;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.ExpectedOutputMappingTestAssert;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTest;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTestAssert;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.xStore.XStoreAssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.xStore.XStorePropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.ObjectInputData;
@@ -109,17 +106,22 @@ public class HelperMappingGrammarComposer
                 ": " + xStorePropertyMapping.crossExpression.body.get(0).accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build());
     }
 
-    public static String renderMappingTest(MappingTest mappingTest, DEPRECATED_PureGrammarComposerCore transformer)
+    public static String renderMappingTest(MappingTest_Legacy mappingTestLegacy, DEPRECATED_PureGrammarComposerCore transformer)
     {
-        return "  " + mappingTest.name + "\n" +
+        return "  " + mappingTestLegacy.name + "\n" +
                 getTabString(2) + "(\n" +
-                getTabString(3) + "query: " + mappingTest.query.accept(transformer) + ";\n" +
+                getTabString(3) + "query: " + mappingTestLegacy.query.accept(transformer) + ";\n" +
                 getTabString(3) + "data:\n" +
                 getTabString(3) + "[\n" +
-                LazyIterate.collect(mappingTest.inputData, inputData -> getTabString(4) + renderMappingTestInputData(inputData, transformer.toContext())).makeString(",\n") + (mappingTest.inputData.isEmpty() ? "" : "\n") +
+                LazyIterate.collect(mappingTestLegacy.inputData, inputData -> getTabString(4) + renderMappingTestInputData(inputData, transformer.toContext())).makeString(",\n") + (mappingTestLegacy.inputData.isEmpty() ? "" : "\n") +
                 getTabString(3) + "];\n" +
-                getTabString(3) + "assert: " + renderMappingTestAssert(mappingTest._assert) + ";\n" +
+                getTabString(3) + "assert: " + renderMappingTestAssert(mappingTestLegacy._assert) + ";\n" +
                 getTabString(2) + ")";
+    }
+
+    public static String renderMappingTest(MappingTestSuite mappingTest, DEPRECATED_PureGrammarComposerCore transformer)
+    {
+        return null;
     }
 
     private static String renderMappingTestAssert(MappingTestAssert mappingTestAssert)

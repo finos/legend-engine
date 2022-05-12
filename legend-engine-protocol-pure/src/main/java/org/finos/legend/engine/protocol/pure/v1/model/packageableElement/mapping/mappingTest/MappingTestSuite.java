@@ -14,10 +14,10 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest;
 
-import org.finos.legend.engine.protocol.pure.v1.model.test.AtomicTest;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.TestData;
+import org.finos.legend.engine.protocol.pure.v1.model.test.TestSuite;
 
-public class MappingTest extends AtomicTest
+public class MappingTestSuite extends TestSuite
 {
-    public Lambda query;
+    public TestData testData;
 }

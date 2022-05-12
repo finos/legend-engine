@@ -401,6 +401,16 @@ public final class DEPRECATED_PureGrammarComposerCore implements
             builder.append(LazyIterate.collect(mapping.tests, mappingTest -> getTabString() + HelperMappingGrammarComposer.renderMappingTest(mappingTest, this)).makeString(",\n")).append(mapping.tests.isEmpty() ? "" : "\n");
             builder.append(getTabString()).append("]\n");
         }
+        else
+        {
+            if(!mapping.testSuites.isEmpty())
+            {
+                builder.append(getTabString()).append("testSuites:\n");
+                builder.append(getTabString()).append("[\n");
+                builder.append(String.join(",\n", ListIterate.collect(mapping.testSuites, testSuite -> HelperMappingGrammarComposer.renderMappingTest(testSuite, this)))).append("\n");
+                builder.append(getTabString()).append("]\n");
+            }
+        }
         return builder.append(")").toString();
     }
 

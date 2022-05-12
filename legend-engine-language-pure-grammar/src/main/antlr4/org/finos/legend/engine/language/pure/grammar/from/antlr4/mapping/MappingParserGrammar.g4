@@ -15,6 +15,8 @@ identifier:                     VALID_STRING | STRING
                                 | MAPPING | IMPORT
                                 | INCLUDE | TESTS | EXTENDS
                                 | TEST_QUERY | TEST_INPUT_DATA | TEST_ASSERT
+                                | MAPPING_TEST_SUITES  | MAPPING_TEST_DATA | MAPPING_TEST_ELEMENT_DATA
+                                | MAPPING_TEST_TESTS | MAPPING_TEST_ASSERTS
 ;
 
 // -------------------------------------- DEFINITION -------------------------------------
@@ -31,7 +33,7 @@ mapping:                        MAPPING qualifiedName
                                     PAREN_OPEN
                                         (includeMapping)*
                                         (mappingElement)*
-                                        (tests)?
+                                        (tests | mappingTestSuites)?
                                     PAREN_CLOSE
 ;
 includeMapping:                 INCLUDE qualifiedName
@@ -68,9 +70,33 @@ superClassMappingId:            mappingElementId
 ;
 mappingElementId:               word
 ;
+//--------------------------------------- TEST --------------------------------------------
 
-
-// -------------------------------------- TEST -------------------------------------
+mappingTestSuites:                      MAPPING_TEST_SUITES COLON BRACKET_OPEN (mappingTestSuite ( COMMA mappingTestSuite )*)? BRACKET_CLOSE
+;
+mappingTestSuite:                       identifier COLON BRACE_OPEN mappingTestSuiteData? | (mappingTestSuiteTests)* BRACE_CLOSE
+;
+mappingTestSuiteData:                   MAPPING_TEST_DATA BRACKET_OPEN (mappingTestElementsData (COMMA mappingTestElementsData)*)? BRACKET_CLOSE
+;
+mappingTestElementsData:                BRACE_OPEN MAPPING_TEST_ELEMENT_DATA COLON identifier SEMI_COLON TEST_INPUT_DATA COLON embeddedData SEMI_COLON BRACE_CLOSE
+;
+embeddedData:                           identifier ISLAND_OPEN (embeddedDataContent)*
+;
+embeddedDataContent:                    ISLAND_START | ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_HASH | ISLAND_BRACE_CLOSE | ISLAND_END
+;
+mappingTestSuiteTests:                  MAPPING_TEST_TESTS COLON BRACKET_OPEN ( mappingTestBlock ( COMMA mappingTestBlock )* )? BRACKET_CLOSE
+;
+mappingTestBlock:                       identifier COLON BRACE_OPEN TEST_QUERY COLON combinedExpression SEMI_COLON (mappingTestAsserts)* SEMI_COLON BRACE_CLOSE
+;
+mappingTestAsserts:                     MAPPING_TEST_ASSERTS COLON BRACKET_OPEN ( mappingTestAssert ( COMMA mappingTestAssert )* )? BRACKET_CLOSE
+;
+mappingTestAssert:                      identifier COLON testAssertion
+;
+testAssertion:                          identifier ISLAND_OPEN (testAssertionContent)*
+;
+testAssertionContent:                   ISLAND_START | ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_HASH | ISLAND_BRACE_CLOSE | ISLAND_END
+;
+// -------------------------------------- LEGACY TEST -------------------------------------
 
 tests:                          TESTS
                                     BRACKET_OPEN

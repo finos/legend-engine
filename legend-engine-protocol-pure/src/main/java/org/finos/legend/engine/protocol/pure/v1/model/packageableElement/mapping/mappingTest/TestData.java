@@ -14,10 +14,14 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest;
 
-import org.finos.legend.engine.protocol.pure.v1.model.test.AtomicTest;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
-public class MappingTest extends AtomicTest
+import java.util.List;
+
+
+public class TestData
 {
-    public Lambda query;
+    public List<ElementTestData> elementTestData;
+
+    public SourceInformation sourceInformation;
 }

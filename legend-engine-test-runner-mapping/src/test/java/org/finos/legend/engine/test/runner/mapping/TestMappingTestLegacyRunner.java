@@ -23,7 +23,7 @@ import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransformers;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTest_Legacy;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.test.runner.shared.TestResult;
@@ -36,7 +36,7 @@ import java.util.Objects;
 
 import static org.junit.Assert.assertEquals;
 
-public class TestMappingTestRunner
+public class TestMappingTestLegacyRunner
 {
     private static final ObjectMapper objectMapper = new ObjectMapper().configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
     private PlanExecutor planExecutor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors();
@@ -281,8 +281,8 @@ public class TestMappingTestRunner
     private RichMappingTestResult runTest(PureModelContextData pureModelContextData, PureModel pureModel)
     {
         Mapping mapping = pureModelContextData.getElementsOfType(Mapping.class).get(0);
-        MappingTest mappingTest = mapping.tests.get(0);
-        MappingTestRunner mappingTestRunner = new MappingTestRunner(pureModel, mapping.getPath(), mappingTest, planExecutor, core_relational_relational_router_router_extension.Root_meta_pure_router_extension_defaultRelationalExtensions__RouterExtension_MANY_(pureModel.getExecutionSupport()), LegendPlanTransformers.transformers, "vX_X_X");
+        MappingTest_Legacy mappingTestLegacy = mapping.tests.get(0);
+        MappingTestRunner mappingTestRunner = new MappingTestRunner(pureModel, mapping.getPath(), mappingTestLegacy, planExecutor, core_relational_relational_router_router_extension.Root_meta_pure_router_extension_defaultRelationalExtensions__RouterExtension_MANY_(pureModel.getExecutionSupport()), LegendPlanTransformers.transformers, "vX_X_X");
         return mappingTestRunner.setupAndRunTest();
     }
 

@@ -41,7 +41,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connect
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.ExpectedOutputMappingTestAssert;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTest_Legacy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.JsonModelConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.XmlModelConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.ObjectInputData;
@@ -76,27 +76,27 @@ public class MappingTestRunner
     private final PureModel pureModel;
     private final PlanExecutor executor;
     private final String mappingPath;
-    public final MappingTest mappingTest;
+    public final MappingTest_Legacy mappingTestLegacy;
     private final MutableList<PlanTransformer> planTransformers;
     private final RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions;
     private final Root_meta_pure_runtime_Runtime_Impl runtime;
     private final String pureVersion;
 
-    public MappingTestRunner(PureModel pureModel, String mappingPath, MappingTest mappingTest, PlanExecutor executor, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, MutableList<PlanTransformer> transformers, String pureVersion)
+    public MappingTestRunner(PureModel pureModel, String mappingPath, MappingTest_Legacy mappingTestLegacy, PlanExecutor executor, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, MutableList<PlanTransformer> transformers, String pureVersion)
     {
         this.pureModel = pureModel;
         this.executor = executor;
         this.mappingPath = mappingPath;
-        this.mappingTest = mappingTest;
+        this.mappingTestLegacy = mappingTestLegacy;
         this.runtime = new Root_meta_pure_runtime_Runtime_Impl("");
         this.planTransformers = transformers;
         this.extensions = extensions;
         this.pureVersion = pureVersion;
     }
 
-    public MappingTestRunner(PureModel pureModel, String mappingPath, MappingTest mappingTest, PlanExecutor executor, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, MutableList<PlanTransformer> transformers)
+    public MappingTestRunner(PureModel pureModel, String mappingPath, MappingTest_Legacy mappingTestLegacy, PlanExecutor executor, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, MutableList<PlanTransformer> transformers)
     {
-        this(pureModel, mappingPath, mappingTest, executor, extensions, transformers, null);
+        this(pureModel, mappingPath, mappingTestLegacy, executor, extensions, transformers, null);
     }
 
 
@@ -108,11 +108,11 @@ public class MappingTestRunner
 
     private void buildTestConnection(Consumer<? super Connection> connectionRegistrar)
     {
-        if (this.mappingTest.inputData.size() != 1)
+        if (this.mappingTestLegacy.inputData.size() != 1)
         {
             throw new RuntimeException("Only tests with one input data set are currently supported; " + mappingTest.inputData.size() + " supplied");
         }
-        InputData input = this.mappingTest.inputData.get(0);
+        InputData input = this.mappingTestLegacy.inputData.get(0);
         if (input instanceof ObjectInputData)
         {
             ObjectInputData objectInputData = ((ObjectInputData) input);
@@ -163,7 +163,7 @@ public class MappingTestRunner
     {
         try
         {
-            Result actualResult = this.executeLegend(this.mappingTest.query, this.mappingPath);
+            Result actualResult = this.executeLegend(this.mappingTestLegacy.query, this.mappingPath);
             List<JsonNode> actual = getResultValuesAsJson(actualResult);
             String rawActualJSON = objectMapper.writeValueAsString(actual);
 
@@ -172,25 +172,25 @@ public class MappingTestRunner
 
             this.assertEquals(expected, actual);
 
-            return new RichMappingTestResult(this.mappingPath, this.mappingTest.name, rawExpectedJSON, rawActualJSON);
+            return new RichMappingTestResult(this.mappingPath, this.mappingTestLegacy.name, rawExpectedJSON, rawActualJSON);
         }
         catch (ComparisonError c)
         {
-            return new RichMappingTestResult(this.mappingPath, this.mappingTest.name, c);
+            return new RichMappingTestResult(this.mappingPath, this.mappingTestLegacy.name, c);
         }
         catch (Exception e)
         {
-            return new RichMappingTestResult(this.mappingPath, this.mappingTest.name, e);
+            return new RichMappingTestResult(this.mappingPath, this.mappingTestLegacy.name, e);
         }
     }
 
     private String getExpected()
     {
-        if (this.mappingTest._assert instanceof ExpectedOutputMappingTestAssert)
+        if (this.mappingTestLegacy._assert instanceof ExpectedOutputMappingTestAssert)
         {
-            return ((ExpectedOutputMappingTestAssert) this.mappingTest._assert).expectedOutput;
+            return ((ExpectedOutputMappingTestAssert) this.mappingTestLegacy._assert).expectedOutput;
         }
-        throw new RuntimeException("Unsupported type of MappingTestAssert: " + this.mappingTest._assert.getClass().getName());
+        throw new RuntimeException("Unsupported type of MappingTestAssert: " + this.mappingTestLegacy._assert.getClass().getName());
     }
 
     protected Result executeLegend(Lambda lambda, String mappingPath)

@@ -41,7 +41,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregateSetImplementationContainer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.GroupByFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTest_Legacy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.xStore.XStoreAssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.ObjectInputData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.PurePropertyMapping;
@@ -321,10 +321,10 @@ public class HelperMappingBuilder
         return include;
     }
 
-    public static void processMappingTest(MappingTest mappingTest, CompileContext context)
+    public static void processMappingTest(MappingTest_Legacy mappingTestLegacy, CompileContext context)
     {
-        HelperValueSpecificationBuilder.buildLambda(mappingTest.query, context);
-        mappingTest.inputData.forEach(t -> HelperMappingBuilder.processMappingTestInputData(t, context));
+        HelperValueSpecificationBuilder.buildLambda(mappingTestLegacy.query, context);
+        mappingTestLegacy.inputData.forEach(t -> HelperMappingBuilder.processMappingTestInputData(t, context));
     }
 
     public static void processMappingTestInputData(InputData inputData, CompileContext context)
