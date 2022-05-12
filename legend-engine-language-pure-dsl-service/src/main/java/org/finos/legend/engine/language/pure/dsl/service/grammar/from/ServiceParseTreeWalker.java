@@ -34,21 +34,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.RuntimePointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ConnectionTestData;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Execution;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.KeyedExecutionParameter;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.KeyedSingleExecutionTest;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.MultiExecutionTest;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ParameterValue;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureMultiExecution;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureSingleExecution;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTest;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTestSuite;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTest_Legacy;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.SingleExecutionTest;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.TestData;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.TestContainer;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.*;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
@@ -119,7 +105,27 @@ public class ServiceParseTreeWalker
         {
             service.test = this.visitTest(testContext);
         }
+        // telemetry
+        ServiceParserGrammar.ServiceTelemetryContext telemetryContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.serviceTelemetry(), "telemetry", service.sourceInformation);
+        if(telemetryContext != null)
+        {
+            service.tags = this.visitServiceTelemetry(telemetryContext);
+        }
         return service;
+    }
+
+    private List<ServiceTag> visitServiceTelemetry(ServiceParserGrammar.ServiceTelemetryContext ctx) {
+        ServiceParserGrammar.MetricGroupsContext metricGroupsContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.metricGroups(), "metricGroupsTelemetry", this.walkerSourceInformation.getSourceInformation(ctx));
+        List<String> metricGroupsList = metricGroupsContext != null && metricGroupsContext.STRING() != null ? ListIterate.collect(metricGroupsContext.STRING(), metricGroupsCtx -> PureGrammarParserUtility.fromGrammarString(metricGroupsCtx.getText(), true)) : new ArrayList<>();
+
+        List<ServiceTag> serviceTagList = new ArrayList<>();
+        for(String metricGroup: metricGroupsList) {
+            ServiceTag serviceTag = new ServiceTag();
+            serviceTag.name = "metricGroup";
+            serviceTag.value = metricGroup;
+            serviceTagList.add(serviceTag);
+        }
+        return serviceTagList;
     }
 
     private ServiceTestSuite visitServiceTestSuite(ServiceParserGrammar.ServiceTestSuiteContext ctx)

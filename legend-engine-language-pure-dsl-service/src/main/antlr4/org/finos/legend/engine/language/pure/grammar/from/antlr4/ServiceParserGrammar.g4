@@ -18,7 +18,7 @@ identifier:                             VALID_STRING | STRING
                                         | SERVICE_PATTERN | SERVICE_OWNERS | SERVICE_DOCUMENTATION | SERVICE_AUTO_ACTIVATE_UPDATES
                                         | SERVICE_EXECUTION | SERVICE_FUNCTION | SERVICE_EXECUTION_KEY | SERVICE_EXECUTION_EXECUTIONS | SERVICE_RUNTIME | SERVICE_MAPPING
                                         | SERVICE_TEST_SUITES | SERVICE_TEST_DATA | SERVICE_TEST_CONNECTION_DATA | SERVICE_TEST_TESTS | SERVICE_TEST_ASSERTS | SERVICE_TEST_PARAMETERS
-                                        | SERVICE_TEST | PARAM_GROUP
+                                        | SERVICE_TEST | PARAM_GROUP | SERVICE_TELEMETRY | SERVICE_TELEMETRY_METRIC_GROUPS
 ;
 
 
@@ -42,6 +42,7 @@ service:                                SERVICE stereotypes? taggedValues? quali
                                                     | serviceExec
                                                     | serviceTest
                                                     | serviceTestSuites
+                                                    | serviceTelemetry
                                                 )*
                                             BRACE_CLOSE
 ;
@@ -201,4 +202,22 @@ testSingleValueParam:                        primitiveValue
 ;
 
 testParam:                              testListValueParam | testSingleValueParam
+;
+
+
+// -------------------------------------- TELEMETRY --------------------------------------
+
+serviceTelemetry:                       SERVICE_TELEMETRY COLON
+                                            BRACE_OPEN
+                                                (
+                                                    metricGroups
+                                                )*
+                                            BRACE_CLOSE
+;
+
+metricGroups:                           SERVICE_TELEMETRY_METRIC_GROUPS COLON
+                                            BRACKET_OPEN
+                                                (STRING (COMMA STRING)*)?
+                                            BRACKET_CLOSE
+                                        SEMI_COLON
 ;

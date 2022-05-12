@@ -245,4 +245,10 @@ public class HelperServiceBuilder
                 ._parametersValues(ListIterate.collect(testContainer.parametersValues, parameterValue -> parameterValue.accept(new ValueSpecificationBuilder(context, Lists.mutable.empty(), new ProcessingContext("")))))
                 ._assert(HelperValueSpecificationBuilder.buildLambda(testContainer._assert, context));
     }
+
+    public static Root_meta_legend_service_metamodel_ServiceTag processServiceTags(ServiceTag tag, CompileContext context) {
+        return new Root_meta_legend_service_metamodel_ServiceTag_Impl("")
+                ._name(tag.name)
+                ._value(tag.value);
+    }
 }

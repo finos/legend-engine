@@ -33,6 +33,9 @@ SERVICE_TEST_TESTS:                 'tests';
 SERVICE_TEST_ASSERTS:               'asserts';
 SERVICE_TEST_PARAMETERS:            'parameters';
 
+SERVICE_TELEMETRY:                  'telemetry';
+SERVICE_TELEMETRY_METRIC_GROUPS:    'metricGroups';
+
 PARAM_GROUP:                        'list';
 
 // -------------------------------------- LEGACY --------------------------------------

@@ -89,6 +89,11 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                             return pureServiceTestSuite;
                         }));
                     }
+                    // Service tags
+                    if (service.tags != null)
+                    {
+                        pureService._tags(ListIterate.collect(service.tags, tag->HelperServiceBuilder.processServiceTags( tag, context)));
+                    }
                 }));
     }
 

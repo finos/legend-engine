@@ -1182,4 +1182,36 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "}\n"
         );
     }
+
+
+    @Test
+    public void testServiceTelemetry() {
+        // check for single test parameter
+        test("###Service\n" +
+                "Service meta::pure::myServiceSingle\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners:\n" +
+                "  [\n" +
+                "    'ownerName',\n" +
+                "    'ownerName2'\n" +
+                "  ];\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: param: String[1]|demo::_NPerson.all()->graphFetch(#{demo::_NPerson{Age,Name}}#)->serialize(#{demo::_NPerson{Age,Name}}#);\n" +
+                "    mapping: meta::myMapping;\n" +
+                "    runtime: meta::myRuntime;\n" +
+                "  }\n" +
+                "  telemetry:\n" +
+                "  {\n" +
+                "    metricGroups:\n" +
+                "    [\n" +
+                "      'group1',\n" +
+                "      'group2'\n" +
+                "    ];\n" +
+                "  }\n" +
+                "}\n");
+    }
 }

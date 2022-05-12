@@ -224,4 +224,11 @@ public class HelperServiceGrammarComposer
         builder.append(getTabString(indentation)).append("];");
         return builder.toString();
     }
+
+    public static String renderServiceTelemetry(List<ServiceTag> tags, PureGrammarComposerContext context) {
+        int baseIndentation = 2;
+        StringBuilder builder = new StringBuilder().append(getTabString(baseIndentation)).append("metricGroups:\n").append(getTabString(baseIndentation)).append("[\n");
+        builder.append(LazyIterate.collect(tags, o -> getTabString(baseIndentation+1) + convertString(o.value, true)).makeString(",\n")).append("\n").append(getTabString(baseIndentation)).append("];\n");
+        return builder.toString();
+    }
 }

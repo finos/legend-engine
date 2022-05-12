@@ -2701,4 +2701,32 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
         //                ""
         //        );
     }
+
+    @Test
+    public void testServiceTelemetry() {
+        // check for single test parameter
+        test("###Mapping\n" +
+                "Mapping anything::somethingelse ()\n" +
+                "###Service\n" +
+                "Service anything::class\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners: ['test'];\n" +
+                "  documentation: 'test';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: '';\n" +
+                "    mapping: anything::somethingelse;\n" +
+                "    runtime:\n" +
+                "    #{\n" +
+                "     connections: [];\n" +
+                "    }#;\n" +
+                "  }\n" +
+                "  telemetry:\n" +
+                "  {\n" +
+                "    metricGroups: ['group1', 'group2'];\n" +
+                "  }\n" +
+                "}\n");
+    }
 }

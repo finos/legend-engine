@@ -27,7 +27,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.Package
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Execution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTag;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.*;
@@ -96,6 +98,15 @@ public class ServiceGrammarComposerExtension implements PureGrammarComposerExten
         {
             serviceBuilder.append(getTabString()).append("test: ");
             serviceBuilder.append(HelperServiceGrammarComposer.renderServiceTest(service.test, context));
+        }
+
+        List<ServiceTag> serviceTagList = service.tags != null ? ListIterate.select(service.tags, t -> "metricGroup".equals(t.name)) : new ArrayList<>();
+        if(!serviceTagList.isEmpty())
+        {
+            serviceBuilder.append(getTabString()).append("telemetry:\n");
+            serviceBuilder.append(getTabString()).append("{\n");
+            serviceBuilder.append(HelperServiceGrammarComposer.renderServiceTelemetry(serviceTagList, context));
+            serviceBuilder.append(getTabString()).append("}\n");
         }
         return serviceBuilder.append("}").toString();
     }

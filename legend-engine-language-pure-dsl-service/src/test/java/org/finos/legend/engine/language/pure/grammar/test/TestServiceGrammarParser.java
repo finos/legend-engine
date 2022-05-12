@@ -1124,4 +1124,46 @@ public class TestServiceGrammarParser extends TestGrammarParser.TestGrammarParse
                 "PARSER error at [43:17-22]: Unexpected token"
         );
     }
-}
+
+    @Test
+    public void testServiceTelemetry() {
+        // check for single test parameter
+        test("###Service\n" +
+                "Service meta::pure::myServiceSingle\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners: ['ownerName', 'ownerName2'];\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: |demo::_NPerson.all()->graphFetch(#{demo::_NPerson{Age,Name}}#)->serialize(#{demo::_NPerson{Age,Name}}#);\n" +
+                "    mapping: meta::myMapping;\n" +
+                "    runtime: meta::myRuntime;\n" +
+                "  }\n" +
+                "  telemetry:\n" +
+                "  {\n" +
+                "    metricGroups: ['group1', 'group2'];\n" +
+                "  }\n" +
+                "}\n");
+        test("###Service\n" +
+                "Service meta::pure::myServiceSingle\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners: ['ownerName', 'ownerName2'];\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: |demo::_NPerson.all()->graphFetch(#{demo::_NPerson{Age,Name}}#)->serialize(#{demo::_NPerson{Age,Name}}#);\n" +
+                "    mapping: meta::myMapping;\n" +
+                "    runtime: meta::myRuntime;\n" +
+                "  }\n" +
+                "  telemetry:\n" +
+                "  {\n" +
+                "    metricGroups: ['group1', 'group2'];\n" +
+                "    metricGroups: ['group1', 'group2'];\n" +
+                "  }\n" +
+                "}\n","PARSER error at [14:3-18:3]: Field 'metricGroupsTelemetry' should be specified only once");
+        }
+    }
