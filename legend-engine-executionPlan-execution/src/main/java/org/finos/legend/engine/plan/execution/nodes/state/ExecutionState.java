@@ -133,10 +133,7 @@ public class ExecutionState
     public ExecutionState setAuthUser(String user, boolean setTransformAllocation)
     {
         this.authId = user;
-        if (setTransformAllocation)
-        {
-            this.transformAllocation = true;
-        }
+        this.transformAllocation = setTransformAllocation;
         return this;
     }
 
