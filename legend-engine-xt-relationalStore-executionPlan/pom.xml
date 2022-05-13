@@ -161,13 +161,6 @@
         </dependency>
         <!-- Apache CSV (CSV return generation) -->
 
-        <!-- Required to support Configuration -->
-        <dependency>
-            <groupId>io.dropwizard</groupId>
-            <artifactId>dropwizard-core</artifactId>
-        </dependency>
-        <!-- Required to support Configuration -->
-
         <!-- COMMONS-LANG (ClassUtils)-->
         <dependency>
             <groupId>org.apache.commons</groupId>

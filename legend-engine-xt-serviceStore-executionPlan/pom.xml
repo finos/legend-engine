@@ -162,6 +162,11 @@
             <groupId>com.github.tomakehurst</groupId>
             <artifactId>wiremock-jre8</artifactId>
         </dependency>
+        <!-- Exclude wiremock version-->
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-io</artifactId>
+        </dependency>
         <!-- WIREMOCK -->
 
         <dependency>
