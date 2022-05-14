@@ -100,6 +100,11 @@ public class ServiceExecutionNodeExecutor implements ExecutionNodeVisitor<Result
         Map<String, Object> inputMap = Maps.mutable.empty();
         sources.forEach(v -> {
             Result res = this.executionState.getResult(v);
+            if (res == null)
+            {
+                return;
+            }
+
             if (res instanceof ConstantResult)
             {
                 inputMap.put(v, ((ConstantResult) res).getValue());
