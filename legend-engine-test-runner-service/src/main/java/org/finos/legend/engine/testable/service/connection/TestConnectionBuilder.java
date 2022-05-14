@@ -37,7 +37,12 @@ import org.finos.legend.engine.shared.core.url.DataProtocolHandler;
 import javax.ws.rs.core.MediaType;
 import java.io.Closeable;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Base64;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.ServiceLoader;
 
 public class TestConnectionBuilder implements ConnectionVisitor<Pair<Connection, List<Closeable>>>
 {
@@ -85,7 +90,7 @@ public class TestConnectionBuilder implements ConnectionVisitor<Pair<Connection,
     @Override
     public Pair<Connection, List<Closeable>> visit(JsonModelConnection jsonModelConnection)
     {
-        if(!(embeddedData instanceof ExternalFormatData && MediaType.APPLICATION_JSON.equals(((ExternalFormatData) embeddedData).contentType)))
+        if (!(embeddedData instanceof ExternalFormatData && MediaType.APPLICATION_JSON.equals(((ExternalFormatData) embeddedData).contentType)))
         {
             throw new UnsupportedOperationException("Json data should be provided for JsonModelConnection");
         }
@@ -101,7 +106,7 @@ public class TestConnectionBuilder implements ConnectionVisitor<Pair<Connection,
     @Override
     public Pair<Connection, List<Closeable>> visit(XmlModelConnection xmlModelConnection)
     {
-        if(!(embeddedData instanceof ExternalFormatData && MediaType.APPLICATION_XML.equals(((ExternalFormatData) embeddedData).contentType)))
+        if (!(embeddedData instanceof ExternalFormatData && MediaType.APPLICATION_XML.equals(((ExternalFormatData) embeddedData).contentType)))
         {
             throw new UnsupportedOperationException("Xml data should be provided for XmlModelConnection");
         }
