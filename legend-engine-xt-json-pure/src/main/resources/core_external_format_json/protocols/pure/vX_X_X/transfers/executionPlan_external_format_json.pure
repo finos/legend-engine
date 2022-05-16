@@ -30,6 +30,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::external:
 {
    ^meta::protocols::pure::vX_X_X::metamodel::external::format::json::executionPlan::JsonDeserializeExecutionNode(
       _type           = 'jsonDeserialize',
+      recordsToBeRead = $node.recordsToBeRead,
       resultType      = $node.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
       resultSizeRange = $node.resultSizeRange->map(s| $s->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()),
       binding         = $node.binding->elementToPath(),

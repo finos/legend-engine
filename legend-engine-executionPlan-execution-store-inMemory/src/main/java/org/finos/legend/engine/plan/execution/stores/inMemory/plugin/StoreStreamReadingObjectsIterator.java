@@ -27,15 +27,24 @@ public abstract class StoreStreamReadingObjectsIterator<T> implements Iterator<T
 {
     protected final IStoreStreamReader storeStreamReader;
     protected final Queue<IChecked<?>> queue = new LinkedList<>();
+    protected final Integer recordsToBeRead;
+    protected Integer recordsRead = 0;
 
-    public StoreStreamReadingObjectsIterator(IStoreStreamReader storeStreamReader)
+    public StoreStreamReadingObjectsIterator(IStoreStreamReader storeStreamReader, Integer recordsToBeRead)
     {
         this.storeStreamReader = storeStreamReader;
         this.storeStreamReader.initReading();
+        this.recordsToBeRead = recordsToBeRead;
     }
 
     public boolean hasNext()
     {
+        if (recordsToBeRead != null && recordsRead >= recordsToBeRead)
+        {
+            this.close();
+            return false;
+        }
+
         if (this.queue.peek() == null && !this.storeStreamReader.isFinished())
         {
             this.queue.addAll(this.storeStreamReader.readCheckedObjects());
@@ -53,22 +62,22 @@ public abstract class StoreStreamReadingObjectsIterator<T> implements Iterator<T
         this.storeStreamReader.destroyReading();
     }
 
-    public static StoreStreamReadingObjectsIterator<?> newObjectsIterator(IStoreStreamReader storeStreamReader, boolean enableConstraints, boolean checked)
+    public static StoreStreamReadingObjectsIterator<?> newObjectsIterator(IStoreStreamReader storeStreamReader, boolean enableConstraints, boolean checked, Integer recordsToBeRead)
     {
         return checked ?
                 enableConstraints ?
-                        new CheckedObjectsIteratorWithConstraintsEnabled<>(storeStreamReader) :
-                        new CheckedObjectsIteratorWithConstraintsDisabled<>(storeStreamReader) :
+                        new CheckedObjectsIteratorWithConstraintsEnabled<>(storeStreamReader, recordsToBeRead) :
+                        new CheckedObjectsIteratorWithConstraintsDisabled<>(storeStreamReader, recordsToBeRead) :
                 enableConstraints ?
-                        new ObjectsIteratorWithConstraintsEnabled<>(storeStreamReader) :
-                        new ObjectsIteratorWithConstraintsDisabled<>(storeStreamReader);
+                        new ObjectsIteratorWithConstraintsEnabled<>(storeStreamReader, recordsToBeRead) :
+                        new ObjectsIteratorWithConstraintsDisabled<>(storeStreamReader, recordsToBeRead);
     }
 
     private static class CheckedObjectsIteratorWithConstraintsEnabled<T> extends StoreStreamReadingObjectsIterator<IChecked<T>>
     {
-        private CheckedObjectsIteratorWithConstraintsEnabled(IStoreStreamReader storeStreamReader)
+        private CheckedObjectsIteratorWithConstraintsEnabled(IStoreStreamReader storeStreamReader, Integer recordsToBeRead)
         {
-            super(storeStreamReader);
+            super(storeStreamReader, recordsToBeRead);
         }
 
         @Override
@@ -80,7 +89,7 @@ public abstract class StoreStreamReadingObjectsIterator<T> implements Iterator<T
             }
 
             IChecked<?> next = super.queue.remove();
-
+            recordsRead++;
             if (next.getValue() != null && next.getValue() instanceof Constrained)
             {
                 List<IDefect> defects = new ArrayList<>(next.getDefects());
@@ -113,9 +122,9 @@ public abstract class StoreStreamReadingObjectsIterator<T> implements Iterator<T
 
     private static class CheckedObjectsIteratorWithConstraintsDisabled<T> extends StoreStreamReadingObjectsIterator<IChecked<T>>
     {
-        private CheckedObjectsIteratorWithConstraintsDisabled(IStoreStreamReader storeStreamReader)
+        private CheckedObjectsIteratorWithConstraintsDisabled(IStoreStreamReader storeStreamReader, Integer recordsToBeRead)
         {
-            super(storeStreamReader);
+            super(storeStreamReader, recordsToBeRead);
         }
 
         @Override
@@ -125,16 +134,17 @@ public abstract class StoreStreamReadingObjectsIterator<T> implements Iterator<T
             {
                 throw new NoSuchElementException("End of stream has passed");
             }
-
-            return (IChecked<T>) super.queue.remove();
+            IChecked<T> next = (IChecked<T>) super.queue.remove();
+            recordsRead++;
+            return next;
         }
     }
 
     private static class ObjectsIteratorWithConstraintsEnabled<T> extends StoreStreamReadingObjectsIterator<T>
     {
-        private ObjectsIteratorWithConstraintsEnabled(IStoreStreamReader storeStreamReader)
+        private ObjectsIteratorWithConstraintsEnabled(IStoreStreamReader storeStreamReader, Integer recordsToBeRead)
         {
-            super(storeStreamReader);
+            super(storeStreamReader, recordsToBeRead);
         }
 
         @Override
@@ -146,6 +156,7 @@ public abstract class StoreStreamReadingObjectsIterator<T> implements Iterator<T
             }
 
             IChecked<?> next = super.queue.remove();
+            recordsRead++;
             StoreStreamReadingObjectsIterator.throwIfCheckedObjectIsNullOrDefective(next);
 
             if (next.getValue() instanceof Constrained)
@@ -158,9 +169,9 @@ public abstract class StoreStreamReadingObjectsIterator<T> implements Iterator<T
 
     private static class ObjectsIteratorWithConstraintsDisabled<T> extends StoreStreamReadingObjectsIterator<T>
     {
-        private ObjectsIteratorWithConstraintsDisabled(IStoreStreamReader storeStreamReader)
+        private ObjectsIteratorWithConstraintsDisabled(IStoreStreamReader storeStreamReader, Integer recordsToBeRead)
         {
-            super(storeStreamReader);
+            super(storeStreamReader, recordsToBeRead);
         }
 
         @Override
@@ -172,6 +183,7 @@ public abstract class StoreStreamReadingObjectsIterator<T> implements Iterator<T
             }
 
             IChecked<?> next = super.queue.remove();
+            recordsRead++;
             StoreStreamReadingObjectsIterator.throwIfCheckedObjectIsNullOrDefective(next);
             return (T) next.getValue();
         }

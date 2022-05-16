@@ -245,6 +245,14 @@ Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping
   }
 )
 
+Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping2
+(
+  *meta::external::store::service::showcase::domain::S_Product[s_prod_set]: ServiceStore
+  {
+     ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] ProductServices.GetAllProductsService
+  }
+)
+
 ###ServiceStore
 ServiceStore meta::external::store::service::showcase::store::TradeProductServiceStore
 (
@@ -302,6 +310,14 @@ ServiceStore meta::external::store::service::showcase::store::TradeProductServic
    ServiceGroup ProductServices
    (
       path : '/products';
+
+      Service GetAllProductsService
+      (
+         path : '/getAllProducts';
+         method : GET;
+         security : [];
+         response : [meta::external::store::service::showcase::domain::S_Product <- meta::external::store::service::showcase::store::prodServiceStoreSchemaBinding];
+      )
 
       Service ProductByIdService
       (

@@ -55,9 +55,14 @@ function meta::external::format::json::executionPlan::generateSerializeNode(chec
 
 function meta::external::format::json::executionPlan::generateDeserializeNode(connection:Connection[1], children:ExecutionNode[1], tree:RootGraphFetchTree<Any>[0..1]): ExecutionNode[1]
 {
+   generateDeserializeNode($connection, $children, $tree, ^ExternalFormatNodeGenerationPayload());
+}
+
+function meta::external::format::json::executionPlan::generateDeserializeNode(connection:Connection[1], children:ExecutionNode[1], tree:RootGraphFetchTree<Any>[0..1], payload: ExternalFormatNodeGenerationPayload[1]): ExecutionNode[1]
+{
    assert($tree->isNotEmpty(), 'Deserialization without Graph Fetch Tree not yet supported');
    let returnedClass = $tree.class->toOne();
-   
+
    ^JsonDeserializeExecutionNode
    (
       resultType      = ^PartialClassResultType
@@ -69,6 +74,7 @@ function meta::external::format::json::executionPlan::generateDeserializeNode(co
       pathOffset      = $connection->cast(@ExternalFormatConnection).pathOffset->cast(@JsonPathReference),
       binding         = $connection->cast(@ExternalFormatConnection).element->cast(@Binding),
       tree            = $tree,
+      recordsToBeRead = $payload.recordsToBeRead,
       executionNodes  = $children
    );
 }
@@ -85,7 +91,7 @@ function meta::external::format::json::executionPlan::printPlanNodeToString(spac
 {
    [
       {node:JsonSerializeExecutionNode[1] |
-         'JSON_Serialize\n' + 
+         'JSON_Serialize\n' +
          $space + '(' + header($node, $space, $extensions) + '\n' +
          $space + '  checked = ' + $node.checked->toString() + '\n' +
          $space + '  binding = ' + $node.binding->elementToPath() + '\n' +
@@ -94,8 +100,9 @@ function meta::external::format::json::executionPlan::printPlanNodeToString(spac
          $space + ')\n'
       },
       {node:JsonDeserializeExecutionNode[1] |
-         'JSON_Deserialize\n' + 
+         'JSON_Deserialize\n' +
          $space + '(' + header($node, $space, $extensions) + '\n' +
+         if($node.recordsToBeRead->isNotEmpty(), | $space + '  recordsToBeRead = ' + $node.recordsToBeRead->toOne()->toString() + '\n', | '') +
          $space + '  binding = ' + $node.binding->elementToPath() + '\n' +
          if($node.pathOffset->isEmpty(), | '', | $space + '  pathOffset = ' + $node.pathOffset->cast(@JsonPathReference).path->toOne() + '\n')  +
          $node->childrenToString($space+'  ', $extensions) + '\n' +

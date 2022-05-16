@@ -19,4 +19,5 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.Execut
 public abstract class ExternalFormatDeserializeExecutionNode extends ExecutionNode
 {
     public PathReference pathOffset;
+    public Integer recordsToBeRead;
 }

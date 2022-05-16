@@ -23,6 +23,7 @@ Class meta::external::store::service::functions::pureToServiceStoreQuery::Servic
    processingParam        :  String[0..1];
    processingValue        :  Value[0..1];
    processedParamValueMap :  Map<String, Value>[1];
+   recordsToBeRead        :  Integer[0..1];
 }
 
 Class <<typemodifiers.abstract>> meta::external::store::service::functions::pureToServiceStoreQuery::Value
@@ -97,7 +98,7 @@ function meta::external::store::service::functions::pureToServiceStoreQuery::pro
 function meta::external::store::service::functions::pureToServiceStoreQuery::processFunction(f:FunctionExpression[1], parentQuery:ServiceStoreQuery[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1]):ServiceStoreQuery[1]
 {
    let func = findSupportedFunction($f, getSupportedFunctions());
-   if(!$func->isEmpty(), 
+   if(!$func->isEmpty(),
       | $func->toOne()->eval($f, $parentQuery, $inScopeVars, $debug);,
       | fail('Not Supported'); $parentQuery;
    );
@@ -109,6 +110,17 @@ function meta::external::store::service::functions::pureToServiceStoreQuery::pro
    let processingParam = $params.processingParam->toOne();
    let processingValue = $params.processingValue->toOne();
    ^$parentQuery(processedParamValueMap = $parentQuery.processedParamValueMap->keyValues()->concatenate(pair($processingParam, $processingValue))->newMap());
+}
+
+function meta::external::store::service::functions::pureToServiceStoreQuery::processTake(fe:FunctionExpression[1], parentQuery:ServiceStoreQuery[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1]):ServiceStoreQuery[1]
+{
+   let query = $fe.parametersValues->at(0)->processValueSpecification($parentQuery, $inScopeVars, $debug);
+
+   let recordsToBeRead = $fe.parametersValues->at(1)->cast(@InstanceValue).values->toOne();
+
+   assert($recordsToBeRead->instanceOf(Integer), | '->take with variable not supported in context of service store');
+
+   ^$query(recordsToBeRead = $recordsToBeRead->cast(@Integer)->concatenate($query.recordsToBeRead)->min());
 }
 
 function meta::external::store::service::functions::pureToServiceStoreQuery::processNoOp(fe:FunctionExpression[1], parentQuery:ServiceStoreQuery[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1]):ServiceStoreQuery[1]
@@ -137,6 +149,7 @@ function meta::external::store::service::functions::pureToServiceStoreQuery::get
       ^PureFunctionToServiceStoreFunctionPair(first=meta::pure::functions::collection::map_T_MANY__Function_1__V_MANY_, second=meta::external::store::service::functions::pureToServiceStoreQuery::processNoOp_FunctionExpression_1__ServiceStoreQuery_1__Map_1__DebugContext_1__ServiceStoreQuery_1_),
       ^PureFunctionToServiceStoreFunctionPair(first=meta::pure::functions::collection::map_T_m__Function_1__V_m_, second=meta::external::store::service::functions::pureToServiceStoreQuery::processNoOp_FunctionExpression_1__ServiceStoreQuery_1__Map_1__DebugContext_1__ServiceStoreQuery_1_),
       ^PureFunctionToServiceStoreFunctionPair(first=meta::pure::functions::collection::map_T_$0_1$__Function_1__V_$0_1$_, second=meta::external::store::service::functions::pureToServiceStoreQuery::processNoOp_FunctionExpression_1__ServiceStoreQuery_1__Map_1__DebugContext_1__ServiceStoreQuery_1_),
+      ^PureFunctionToServiceStoreFunctionPair(first=meta::pure::functions::collection::take_T_MANY__Integer_1__T_MANY_, second=meta::external::store::service::functions::pureToServiceStoreQuery::processTake_FunctionExpression_1__ServiceStoreQuery_1__Map_1__DebugContext_1__ServiceStoreQuery_1_),
       ^PureFunctionToServiceStoreFunctionPair(first=meta::pure::functions::multiplicity::toOne_T_MANY__T_1_, second=meta::external::store::service::functions::pureToServiceStoreQuery::processNoOp_FunctionExpression_1__ServiceStoreQuery_1__Map_1__DebugContext_1__ServiceStoreQuery_1_)
    ])
 }
