@@ -1,5 +1,6 @@
 package org.finos.legend.engine.language.pure.grammar.api.test;
 
+import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.language.pure.grammar.api.grammarToJson.GrammarToJson;
@@ -8,6 +9,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.shared.core.api.TestGrammar;
 import org.finos.legend.engine.shared.core.api.grammar.BatchResult;
+import org.finos.legend.engine.shared.core.api.grammar.GrammarAPI;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 import org.junit.Test;
 
@@ -38,7 +40,7 @@ public class TestGrammarValueSpecificationApi extends TestGrammar<ValueSpecifica
     @Test
     public void testBatch()
     {
-        testBatch(with(Tuples.pair("1", "1 + 1"),
+        testBatch(createBatchInput(Tuples.pair("1", "1 + 1"),
                   Tuples.pair("2", "true->func(\n" +
                                              "  2,\n" +
                                              "  'www'\n" +
@@ -48,12 +50,12 @@ public class TestGrammarValueSpecificationApi extends TestGrammar<ValueSpecifica
     @Test
     public void testBatchError()
     {
-        testBatchError( with(Tuples.pair("1", "1 + 1"),
+        testBatchError( createBatchInput(Tuples.pair("1", "1 + 1"),
                              Tuples.pair("2", "true->func(\n" +
                                 "  2\n" +
                                 "  'www'\n" +
                                 ")")),
-                        with(Tuples.pair("1", "1 + 1"),
+                        createExpectedBatchResult(Tuples.pair("1", "1 + 1"),
                                 Tuples.pair("2", "{\"message\":\"Unexpected token\",\"sourceInformation\":{\"endColumn\":7,\"endLine\":3,\"sourceId\":\"\",\"startColumn\":3,\"startLine\":3}}"))
                          );
     }
@@ -78,9 +80,9 @@ public class TestGrammarValueSpecificationApi extends TestGrammar<ValueSpecifica
     }
 
     @Override
-    public Function2<String, Boolean, Response> grammarToJson()
+    public Function<GrammarAPI.ParserInput, Response> grammarToJson()
     {
-        return (a, b) -> grammarToJson.valueSpecification(a, null, b);
+        return (a) -> grammarToJson.valueSpecification(a, null);
     }
 
     @Override
@@ -90,9 +92,9 @@ public class TestGrammarValueSpecificationApi extends TestGrammar<ValueSpecifica
     }
 
     @Override
-    public Function2<Map<String, String>, Boolean, Response> grammarToJsonB()
+    public Function<Map<String, GrammarAPI.ParserInput>, Response> grammarToJsonB()
     {
-        return (a, b) -> grammarToJson.valueSpecificationBatch(a, null, b);
+        return (a) -> grammarToJson.valueSpecificationBatch(a, null);
     }
 
     @Override

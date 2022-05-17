@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
 import org.eclipse.collections.api.block.function.Function2;
+import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.map.mutable.MapAdapter;
@@ -24,14 +25,14 @@ public class GrammarAPI
 {
     private static final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
 
-    protected <T> Response grammarToJson(String input, Function2<String, Boolean, T> func, ProfileManager<CommonProfile> pm, boolean returnSourceInfo, String spanText)
+    protected <T> Response grammarToJson(ParserInput input, Function3<String, String, Boolean, T> func, ProfileManager<CommonProfile> pm, String spanText)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         try (Scope scope = GlobalTracer.get().buildSpan(spanText).startActive(true))
         {
             try
             {
-                T data = func.apply(input, returnSourceInfo);
+                T data = func.value(input.value, input.sourceId, input.returnSourceInformation);
                 return ManageConstantResult.manageResult(profiles, data, objectMapper);
             }
             catch (Exception e)
@@ -41,7 +42,7 @@ public class GrammarAPI
         }
     }
 
-    protected <T> Response grammarToJsonBatch(Map<String, String> input, Function2<String, Boolean, T> func, Map<String, T> result, ProfileManager<CommonProfile> pm, boolean returnSourceInfo, String spanText)
+    protected <T> Response grammarToJsonBatch(Map<String, ParserInput> input, Function3<String, String, Boolean, T> func, Map<String, T> result, ProfileManager<CommonProfile> pm, String spanText)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         try (Scope scope = GlobalTracer.get().buildSpan(spanText).startActive(true))
@@ -51,7 +52,7 @@ public class GrammarAPI
             {
                 try
                 {
-                    result.put(key, func.apply(value, returnSourceInfo));
+                    result.put(key, func.value(value.value, value.sourceId != null ? value.sourceId : "", value.returnSourceInformation));
                 }
                 catch (EngineException e)
                 {
@@ -103,5 +104,12 @@ public class GrammarAPI
             ex.printStackTrace();
             return ExceptionTool.exceptionManager(ex, LoggingEventType.TRANSFORM_JSON_TO_GRAMMAR_ERROR, profiles);
         }
+    }
+
+    public static class ParserInput
+    {
+        public String value;
+        public boolean returnSourceInformation = true;
+        public String sourceId = "";
     }
 }

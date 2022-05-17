@@ -45,20 +45,20 @@ public class GraphQLGrammar extends GrammarAPI
     @POST
     @Path("grammarToJson")
     @ApiOperation(value = "Generates GraphQL protocol JSON from GraphQL language text")
-    @Consumes({MediaType.TEXT_PLAIN, APPLICATION_ZLIB})
+    @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Produces(MediaType.APPLICATION_JSON)
-    public Response grammarToJson(String grammar, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @DefaultValue("true") @QueryParam("returnSourceInfo") boolean returnSourceInfo)
+    public Response grammarToJson(ParserInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
-        return grammarToJson(grammar, (a, b) -> {
+        return grammarToJson(input, (a, b, c) -> {
             try
             {
-                return GraphQLGrammarParser.newInstance().parseDocument(grammar);
+                return GraphQLGrammarParser.newInstance().parseDocument(a);
             }
             catch (GraphQLParserException e)
             {
                 throw new EngineException(e.getMessage(), e.getSourceInformation(), EngineErrorType.PARSER);
             }
-        }, pm, returnSourceInfo, "Grammar to Json : GraphQL");
+        }, pm, "Grammar to Json : GraphQL");
     }
 
     // Required so that Jackson properly includes _type for the top level element
@@ -70,9 +70,9 @@ public class GraphQLGrammar extends GrammarAPI
     @ApiOperation(value = "Generates GraphQL protocol JSON from GraphQL language text (for multiple elements)")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Produces(MediaType.APPLICATION_JSON)
-    public Response grammarToJsonBatch(Map<String, String> grammars, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @DefaultValue("true") @QueryParam("returnSourceInfo") boolean returnSourceInfo)
+    public Response grammarToJsonBatch(Map<String, ParserInput> input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
-        return grammarToJsonBatch(grammars, (a, b) -> {
+        return grammarToJsonBatch(input, (a, b, c) -> {
             try
             {
                 return GraphQLGrammarParser.newInstance().parseDocument(a);
@@ -81,7 +81,7 @@ public class GraphQLGrammar extends GrammarAPI
             {
                 throw new EngineException(e.getMessage(), e.getSourceInformation(), EngineErrorType.PARSER);
             }
-        }, new TypedMap(), pm, returnSourceInfo, "Grammar to Json : GraphQL Batch");
+        }, new TypedMap(), pm, "Grammar to Json : GraphQL Batch");
     }
 
     @POST

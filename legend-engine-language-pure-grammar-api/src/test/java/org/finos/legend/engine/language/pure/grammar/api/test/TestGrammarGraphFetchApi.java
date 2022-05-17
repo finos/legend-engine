@@ -1,5 +1,6 @@
 package org.finos.legend.engine.language.pure.grammar.api.test;
 
+import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.language.pure.grammar.api.grammarToJson.GrammarToJson;
@@ -8,6 +9,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.RootGraphFetchTree;
 import org.finos.legend.engine.shared.core.api.TestGrammar;
 import org.finos.legend.engine.shared.core.api.grammar.BatchResult;
+import org.finos.legend.engine.shared.core.api.grammar.GrammarAPI;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 import org.junit.Test;
 
@@ -49,7 +51,7 @@ public class TestGrammarGraphFetchApi extends TestGrammar<RootGraphFetchTree>
     @Test
     public void testBatch()
     {
-        testBatch(with( Tuples.pair("1",  "#{\n" +
+        testBatch(createBatchInput( Tuples.pair("1",  "#{\n" +
                                                     "  demo::Query{\n" +
                                                     "    firms{\n" +
                                                     "      legalName,\n" +
@@ -72,7 +74,7 @@ public class TestGrammarGraphFetchApi extends TestGrammar<RootGraphFetchTree>
     @Test
     public void testBatchError()
     {
-        testBatchError(with(Tuples.pair("1",  "#{\n" +
+        testBatchError(createBatchInput(Tuples.pair("1",  "#{\n" +
                                                         "  demo::Query{\n" +
                                                         "    firms{\n" +
                                                         "      legalName,\n" +
@@ -85,7 +87,7 @@ public class TestGrammarGraphFetchApi extends TestGrammar<RootGraphFetchTree>
                 Tuples.pair("2",  "#{\n" +
                                             "  demo::Query" +
                                             "}#")),
-                with(Tuples.pair("1",  "#{\n" +
+                createExpectedBatchResult(Tuples.pair("1",  "#{\n" +
                                                 "  demo::Query{\n" +
                                                 "    firms{\n" +
                                                 "      legalName,\n" +
@@ -118,9 +120,9 @@ public class TestGrammarGraphFetchApi extends TestGrammar<RootGraphFetchTree>
     }
 
     @Override
-    public Function2<String, Boolean, Response> grammarToJson()
+    public Function<GrammarAPI.ParserInput, Response> grammarToJson()
     {
-        return (a, b) -> grammarToJson.graphFetch(a, null, b);
+        return (a) -> grammarToJson.graphFetch(a, null);
     }
 
     @Override
@@ -130,9 +132,9 @@ public class TestGrammarGraphFetchApi extends TestGrammar<RootGraphFetchTree>
     }
 
     @Override
-    public Function2<Map<String, String>, Boolean, Response> grammarToJsonB()
+    public Function<Map<String, GrammarAPI.ParserInput>, Response> grammarToJsonB()
     {
-        return (a, b) -> grammarToJson.graphFetchBatch(a, null, b);
+        return (a) -> grammarToJson.graphFetchBatch(a, null);
     }
 
     @Override
