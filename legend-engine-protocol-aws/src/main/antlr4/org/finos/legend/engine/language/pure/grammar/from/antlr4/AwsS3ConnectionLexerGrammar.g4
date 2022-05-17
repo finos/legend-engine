@@ -17,6 +17,7 @@ STORE:                                      'store';
 S3_PARTITION:                               'partition';
 S3_REGION:                                  'region';
 S3_BUCKET:                                  'bucket';
+S3_KEY:                                     'key';
 
 AWS:                                        'AWS';
 AWS_CN:                                     'AWS_CN';

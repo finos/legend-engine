@@ -102,6 +102,7 @@ public class AwsFinCloudGrammarComposerExtension implements IAwsGrammarComposerE
                         context.getIndentationString() + getTabString(baseIndentation + 1) + "datasetId: " + finCloudConnection.datasetId + ";\n" +
                         context.getIndentationString() + getTabString(baseIndentation + 1) + "authenticationStrategy: '" + authenticationStrategy + "';\n" +
                         context.getIndentationString() + getTabString(baseIndentation + 1) + "targetSpecification: '" + finCloudConnection.apiUrl + "';\n" +
+                        context.getIndentationString() + getTabString(baseIndentation + 1) + "queryInfo: '" + finCloudConnection.queryInfo + "';\n" +
                         context.getIndentationString() + "}");
             }
             return null;

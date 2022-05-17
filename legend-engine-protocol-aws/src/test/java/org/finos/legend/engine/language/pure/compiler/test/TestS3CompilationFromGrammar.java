@@ -30,6 +30,7 @@ public class TestS3CompilationFromGrammar extends TestCompilationFromGrammar.Tes
                         "  partition: AWS;\n" +
                         "  region: 'US';\n" +
                         "  bucket: 'abc';\n" +
+                        "  key: 'xyz';\n" +
                         "}\n");
     }
 
@@ -45,12 +46,13 @@ public class TestS3CompilationFromGrammar extends TestCompilationFromGrammar.Tes
                 "  partition: AWS;\n" +
                 "  region: 'US';\n" +
                 "  bucket: 'abc';\n" +
+                "  key: 'xyz';\n" +
                 "}";
     }
 
     @Override
     public String getDuplicatedElementTestExpectedErrorMessage() {
-        return "COMPILATION error at [5:1-11:1]: Duplicated element 'anything::somethingelse'";
+        return "COMPILATION error at [5:1-12:1]: Duplicated element 'anything::somethingelse'";
     }
 
     @Test
@@ -64,6 +66,7 @@ public class TestS3CompilationFromGrammar extends TestCompilationFromGrammar.Tes
                         "  partition: AWS;\n" +
                         "  region: 'US';\n" +
                         "  bucket: 'abc';\n" +
+                        "  key: 'xyz';\n" +
                         "}").getTwo();
         Root_meta_external_persistence_aws_metamodel_connection_AwsS3Connection connection = (Root_meta_external_persistence_aws_metamodel_connection_AwsS3Connection) pureModel.getConnection("meta::mySimpleConnection", SourceInformation.getUnknownSourceInformation());
 

@@ -36,6 +36,7 @@ public class TestAwsS3ConnectionGrammarParser extends TestGrammarParser.TestGram
                 "  partition: AWS;\n" +
                 "  region: 'US';\n" +
                 "  bucket: 'abc';\n" +
+                "  key: 'xyz';\n" +
                 "}\n\n";
     }
 
@@ -79,6 +80,7 @@ public class TestAwsS3ConnectionGrammarParser extends TestGrammarParser.TestGram
                 "  partition: AWS;\n" +
                 "  region: 'US';\n" +
                 "  bucket: 'abc';\n" +
+                "  key: 'xyz';\n" +
                 "}\n");
 
     }

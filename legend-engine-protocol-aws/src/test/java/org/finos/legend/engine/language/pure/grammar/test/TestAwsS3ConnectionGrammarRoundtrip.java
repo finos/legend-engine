@@ -14,6 +14,7 @@ public class TestAwsS3ConnectionGrammarRoundtrip extends TestGrammarRoundtrip.Te
                 "  partition: AWS;\n" +
                 "  region: 'US';\n" +
                 "  bucket: 'abc';\n" +
+                "  key: 'xyz';\n" +
                 "}\n");
     }
 }

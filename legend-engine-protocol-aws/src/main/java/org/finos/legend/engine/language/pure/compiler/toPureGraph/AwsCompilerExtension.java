@@ -87,6 +87,7 @@ public class AwsCompilerExtension implements IAwsCompilerExtension
                         s3._partition(context.resolveEnumValue("meta::external::persistence::aws::metamodel::AwsPartition", s3Connection.partition.name()));
                         s3._bucket(s3Connection.bucket);
                         s3._region(s3Connection.region);
+                        s3._key(s3Connection.key);
                         return s3;
                     }
                     else if (connectionValue instanceof FinCloudConnection)
@@ -106,6 +107,9 @@ public class AwsCompilerExtension implements IAwsCompilerExtension
                         //we currently need to add both as __queryPostProcessorsWithParameter is used for plan generation
                         //and _postProcessors is used for serialization of plan to protocol
                         fc._authenticationStrategy(authenticationStrategy);
+                        fc._apiUrl(finCloudConnection.apiUrl);
+                        fc._datasetId(finCloudConnection.datasetId);
+                        fc._queryInfo(finCloudConnection.queryInfo);
 
                         return fc;
                     }

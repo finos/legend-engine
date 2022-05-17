@@ -44,6 +44,10 @@ public class AwsS3ConnectionParseTreeWalker
         AwsS3ConnectionParserGrammar.BucketContext bucketContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.bucket(), "bucket", awsS3Connection.sourceInformation);
         awsS3Connection.bucket = PureGrammarParserUtility.fromGrammarString(bucketContext.STRING().getText(), true);
 
+        // key
+        AwsS3ConnectionParserGrammar.KeyContext keyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.key(), "key", awsS3Connection.sourceInformation);
+        awsS3Connection.key = PureGrammarParserUtility.fromGrammarString(keyContext.STRING().getText(), true);
+
     }
 
     /**********

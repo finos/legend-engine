@@ -13,7 +13,7 @@ identifier:                                 VALID_STRING | STRING
                                             | STORE
                                             | IMPORT | NONE
                                             | FINCLOUD_DATASET_ID | FINCLOUD_AUTHENTICATION_STRATEGY
-                                            | FINCLOUD_API_URL
+                                            | FINCLOUD_API_URL | FINCLOUD_QUERY_INFO
 ;
 
 // -------------------------------------- DEFINITION --------------------------------------
@@ -23,6 +23,7 @@ definition:                                 (
                                                 | datasetId
                                                 | authenticationStrategy
                                                 | apiUrl
+                                                | queryInfo
                                             )*
                                             EOF
 ;
@@ -33,6 +34,8 @@ datasetId:                                  FINCLOUD_DATASET_ID COLON STRING SEM
 authenticationStrategy:                     FINCLOUD_AUTHENTICATION_STRATEGY COLON specification SEMI_COLON
 ;
 apiUrl:                                     FINCLOUD_API_URL COLON STRING SEMI_COLON
+;
+queryInfo:                                  FINCLOUD_QUERY_INFO COLON STRING SEMI_COLON
 ;
 
 specification:                specificationType (specificationValueBody)?

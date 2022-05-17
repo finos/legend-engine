@@ -17,6 +17,7 @@ STORE:                                      'store';
 FINCLOUD_DATASET_ID:                        'datasetId';
 FINCLOUD_AUTHENTICATION_STRATEGY:           'authenticationStrategy';
 FINCLOUD_API_URL:                           'apiUrl';
+FINCLOUD_QUERY_INFO:                        'queryInfo';
 
 BRACE_OPEN:                             '{' -> pushMode(SPECIFICATION_ISLAND_MODE);
 

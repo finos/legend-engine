@@ -34,6 +34,7 @@ public class AwsGrammarComposerExtension implements IAwsGrammarComposerExtension
                         context.getIndentationString() + getTabString(baseIndentation + 1) + "partition: " + s3Connection.partition + ";\n" +
                         context.getIndentationString() + getTabString(baseIndentation + 1) + "region: '" + s3Connection.region + "';\n" +
                         context.getIndentationString() + getTabString(baseIndentation + 1) + "bucket: '" + s3Connection.bucket + "';\n" +
+                        context.getIndentationString() + getTabString(baseIndentation + 1) + "key: '" + s3Connection.key + "';\n" +
                         context.getIndentationString() + "}");
             }
             else if (connectionValue instanceof FinCloudConnection) {
@@ -56,6 +57,7 @@ public class AwsGrammarComposerExtension implements IAwsGrammarComposerExtension
                         context.getIndentationString() + getTabString(baseIndentation + 1) + "datasetId: '" + finCloudConnection.datasetId + "';\n" +
                         context.getIndentationString() + getTabString(baseIndentation + 1) + "authenticationStrategy: " + authenticationStrategy + ";\n" +
                         context.getIndentationString() + getTabString(baseIndentation + 1) + "apiUrl: '" + finCloudConnection.apiUrl + "';\n" +
+                        context.getIndentationString() + getTabString(baseIndentation + 1) + "queryInfo: '" + finCloudConnection.queryInfo + "';\n" +
                         context.getIndentationString() + "}");
             }
             return null;

@@ -52,6 +52,10 @@ public class AwsFinCloudConnectionParseTreeWalker {
         AwsFinCloudConnectionParserGrammar.ApiUrlContext apiUrlContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.apiUrl(), "apiUrl", awsFinCloudConnection.sourceInformation);
         awsFinCloudConnection.apiUrl = PureGrammarParserUtility.fromGrammarString(apiUrlContext.STRING().getText(), true);
 
+        // queryInfo
+        AwsFinCloudConnectionParserGrammar.QueryInfoContext queryInfoContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.queryInfo(), "queryInfo", awsFinCloudConnection.sourceInformation);
+        awsFinCloudConnection.queryInfo = PureGrammarParserUtility.fromGrammarString(queryInfoContext.STRING().getText(), true);
+
         // this.visit... ?
     }
 

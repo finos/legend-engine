@@ -32,16 +32,14 @@ public class TestAwsFinCloudConnectionGrammarParser extends TestGrammarParser.Te
                 "AwsFinCloudConnection " + ListAdapter.adapt(keywords).makeString("::") + "\n" +
                 "{\n" +
                 "  store: model::firm::Person;\n" +
-                "  datasetId: AWS;\n" +
-                "  authenticationStrategy: AwsPK\n" +
+                "  datasetId: 'aws';\n" +
+                "  authenticationStrategy: awsOAuth\n" +
                 "  {\n" +
                 "    secretArn: 'name';\n" +
-                "    user: 'name';\n" +
+                "    discoveryUrl: 'name';\n" +
                 "  };\n" +
-                "  targetSpecification: DatastoreSpecification\n" +
-                "  {\n" +
-                "    apiUrl: 'abc';\n" +
-                "  };\n" +
+                "  apiUrl: 'abc';\n" +
+                "  queryInfo: 'info';\n" +
                 "}\n\n";
     }
 
@@ -60,6 +58,7 @@ public class TestAwsFinCloudConnectionGrammarParser extends TestGrammarParser.Te
                 "    discoveryUrl: 'name';\n" +
                 "  };\n" +
                 "  apiUrl: 'test';\n" +
+                "  queryInfo: 'info';\n" +
                 "}\n");
 
     }

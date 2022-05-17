@@ -25,11 +25,16 @@ public class TestS3ConnectionCompilationRoundtrip {
                         "  partition: AWS;\n" +
                         "  region: 'US';\n" +
                         "  bucket: 'abc';\n" +
+                        "  key: 'xyz';\n" +
                         "}\n");
         Root_meta_external_persistence_aws_metamodel_connection_AwsS3Connection connection = (Root_meta_external_persistence_aws_metamodel_connection_AwsS3Connection) compiledGraph.getTwo().getConnection("meta::mySimpleConnection", SourceInformation.getUnknownSourceInformation());
 
         String bucket = connection._bucket();
 
         Assert.assertEquals(bucket, "abc");
+
+        String key = connection._key();
+
+        Assert.assertEquals(key, "xyz");
     }
 }

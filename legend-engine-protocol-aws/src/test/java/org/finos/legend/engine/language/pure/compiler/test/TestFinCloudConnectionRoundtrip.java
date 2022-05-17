@@ -27,6 +27,7 @@ public class TestFinCloudConnectionRoundtrip {
                         "    discoveryUrl: 'name';\n" +
                         "  };\n" +
                         "  apiUrl: 'test';\n" +
+                        "  queryInfo: 'info';\n" +
                 "}\n");
         Root_meta_external_persistence_aws_metamodel_connection_AwsFinCloudConnection connection = (Root_meta_external_persistence_aws_metamodel_connection_AwsFinCloudConnection) compiledGraph.getTwo().getConnection("meta::mySimpleConnection", SourceInformation.getUnknownSourceInformation());
         String secretArn = ((Root_meta_pure_alloy_connections_alloy_authentication_AwsOAuthAuthenticationStrategy_Impl) connection._authenticationStrategy())._secretArn();

@@ -18,6 +18,7 @@ public class TestAwsFinCloudConnectionGrammarRoundtrip extends TestGrammarRoundt
                 "    discoveryUrl: 'name';\n" +
                 "  };\n" +
                 "  apiUrl: 'test';\n" +
+                "  queryInfo: 'info';\n" +
                 "}\n");
     }
 }

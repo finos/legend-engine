@@ -13,6 +13,7 @@ public class FinCloudConnection extends Connection
     public String datasetId;
     public AuthenticationStrategy authenticationStrategy;
     public String apiUrl;
+    public String queryInfo;
     public SourceInformation sourceInformation;
 
     @Override

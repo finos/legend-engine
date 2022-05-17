@@ -11,6 +11,7 @@ public class S3Connection extends Connection
     public AwsPartition partition;
     public String region;
     public String bucket;
+    public String key;
 
     @Override
     public <T> T accept(ConnectionVisitor<T> connectionVisitor)
