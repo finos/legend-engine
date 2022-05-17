@@ -60,7 +60,8 @@ public class SnowflakeManager extends DatabaseManager
         {
             URL.append(accountName)
                     .append(".").append(region)
-                    .append(".").append(cloudType);
+                    // .append(".").append(cloudType)
+                    .append(cloudType.isEmpty() ? "" : "." + cloudType);
             URL.append(SNOWFLAKECOMPUTING_COM);
         }
         return URL.toString();
