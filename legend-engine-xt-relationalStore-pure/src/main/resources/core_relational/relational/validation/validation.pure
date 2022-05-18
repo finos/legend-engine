@@ -84,7 +84,18 @@ function meta::relational::validation::validate<T>(
    let validationQuery = generateValidationQuery($func, $projections, $postTDSOperation, $m, $runtime, $exeCtx, $constraintIds, $constraintInformation);
    execute($validationQuery, $m, $runtime, if($m.rootClassMappingByClass($class)->toOne()->instanceOf(RootRelationalInstanceSetImplementation), | ^$exeCtx(addDriverTablePkForProject=true), | $exeCtx), $extensions, noDebug());
 }
+function {doc.doc = 'Generates the query which can be executed to perform a validation from a Class'}
+meta::relational::validation::generateValidationQueryFromClass<T>(
+   class : Class<T>[1],
+   m : Mapping[1],
+   runtime : Runtime[1],
+   constraintIds: String[*]
+):FunctionDefinition<{->TabularDataSet[1]}>[1]
+{
+  let getallFunc = $class->meta::relational::validation::functions::createGetAllDefinition();
+  meta::relational::validation::generateValidationQuery($getallFunc,[],[], $m, $runtime, ^RelationalExecutionContext(), $constraintIds, [])->evaluateAndDeactivate();
 
+}
 function {doc.doc = 'Generates the query which can be executed to perform a validation, columns exclude primary keys - add primary keys in extra projections if directly using this'}
 meta::relational::validation::generateValidationQuery<T>(
    func : FunctionDefinition<{->T[*]}>[1],

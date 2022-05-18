@@ -34,6 +34,8 @@ import org.eclipse.jetty.servlets.CrossOriginFilter;
 import org.finos.legend.engine.application.query.api.ApplicationQuery;
 import org.finos.legend.engine.application.query.configuration.ApplicationQueryConfiguration;
 import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProviderConfiguration;
+
+import org.finos.legend.engine.constraint.pure.api.Validate;
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
 import org.finos.legend.engine.external.shared.format.extension.GenerationMode;
 import org.finos.legend.engine.external.shared.format.generations.loaders.CodeGenerators;
@@ -64,7 +66,6 @@ import org.finos.legend.engine.plan.execution.stores.relational.plugin.Relationa
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutor;
 import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStore;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
-import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransformers;
 import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
 import org.finos.legend.engine.query.graphQL.api.debug.GraphQLDebug;
 import org.finos.legend.engine.query.graphQL.api.execute.GraphQLExecute;
@@ -197,6 +198,8 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
         Function<PureModel, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension>> routerExtensions = (PureModel pureModel) -> generatorExtensions.flatCollect(e -> e.getExtraRouterExtensions(pureModel));
         environment.jersey().register(new Execute(modelManager, planExecutor, routerExtensions, generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers)));
+        environment.jersey().register(new Validate(modelManager, planExecutor, routerExtensions, generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers)));
+
         environment.jersey().register(new ExecutePlanStrategic(planExecutor));
         environment.jersey().register(new ExecutePlanLegacy(planExecutor));
 

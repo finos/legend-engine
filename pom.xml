@@ -124,6 +124,7 @@
         <module>legend-engine-extensions-collection-execution</module>
         <module>legend-engine-extensions-collection-generation</module>
         <module>legend-engine-testable</module>
+        <module>legend-engine-constraint-execution</module>
     </modules>
 
     <properties>
@@ -933,6 +934,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-testable</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-constraint-execution</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <!-- ENGINE -->

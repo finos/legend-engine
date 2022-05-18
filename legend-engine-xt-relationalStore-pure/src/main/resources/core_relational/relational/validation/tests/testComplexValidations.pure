@@ -310,7 +310,7 @@ function <<test.BeforePackage>> meta::relational::validation::complex::createTab
 
 function meta::relational::validation::complex::getRuntime():Runtime[1]
 {
-   meta::relational::tests::testRuntime(^Database());
+   meta::relational::tests::testRuntime(meta::relational::validation::complex::db);
 }
 
 function <<test.Test>> meta::relational::validation::complex::validateComplexValidation1():Boolean[1]
@@ -321,6 +321,23 @@ function <<test.Test>> meta::relational::validation::complex::validateComplexVal
                                    getRuntime(),
                                    ^RelationalExecutionContext(),
                                    ['constraint1'], meta::pure::router::extension::defaultRelationalExtensions());
+
+   assertEquals('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
+                'constraint1,Error,,1\n'+
+                'constraint1,Error,,1\n'+
+                'constraint1,Error,,1\n'+
+                'constraint1,Error,,1\n', $validationResult.values->toCSV());
+}
+
+
+function <<test.Test>> meta::relational::validation::complex::validateFromClass():Boolean[1]
+{
+   let fn = generateValidationQueryFromClass(LegalEntity,validationComplexMappingWithInnerJoins, getRuntime(), ['constraint1']);
+   let validationResult = execute($fn,
+                                   validationComplexMappingWithInnerJoins,
+                                   getRuntime(),
+                                   ^RelationalExecutionContext(addDriverTablePkForProject=true),
+                                   meta::pure::router::extension::defaultRelationalExtensions(),noDebug());
 
    assertEquals('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
                 'constraint1,Error,,1\n'+

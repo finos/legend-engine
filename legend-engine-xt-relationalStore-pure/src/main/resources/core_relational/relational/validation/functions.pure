@@ -50,6 +50,25 @@ function meta::relational::validation::functions::resolveVars(vs: ValueSpecifica
    ]);
 }
 
+function  meta::relational::validation::functions::createGetAllDefinition<T>(c: Class<T>[1]):FunctionDefinition<{->T[*]}>[1]
+{
+   let getAllExpression = ^FunctionExpression
+    (
+       func = getAll_Class_1__T_MANY_,
+       functionName = 'getAll',
+       importGroup = system::imports::coreImport,
+       genericType = ^GenericType(rawType = $c),
+       multiplicity = ZeroMany,
+       parametersValues = ^InstanceValue( genericType = ^GenericType(rawType = Class, typeArguments = ^GenericType(rawType = $c)),
+                                          multiplicity = PureOne,
+                                          values = $c
+                                        ))->evaluateAndDeactivate();
+    let classifierGenericType = ^GenericType(rawType = LambdaFunction, typeArguments = ^GenericType(rawType = ^FunctionType(returnMultiplicity = ZeroMany, returnType = ^GenericType(rawType = $c))));
+    let lambda = {|[]};
+    ^$lambda(classifierGenericType=$classifierGenericType, expressionSequence = $getAllExpression);
+}
+
+
 function meta::relational::validation::functions::generateConstraintNegatedProjectQuery<T>(func: FunctionDefinition<{->T[*]}>[1], projections: BasicColumnSpecification<T>[*], constraint: Constraint[1], constraintInformation: ConstraintContextInformation<Any>[*]):FunctionExpression[1]
 {
    let class = $func->functionType().returnType.rawType->toOne()->cast(@Class<Any>);

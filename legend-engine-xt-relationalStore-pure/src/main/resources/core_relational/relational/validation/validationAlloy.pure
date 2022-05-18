@@ -47,21 +47,10 @@ function <<doc.deprecated>> meta::relational::validation::alloy::alloyClassValid
 
 function <<access.private>> meta::relational::validation::alloy::createGetAll<T>(c: Class<T>[1]):FunctionExpression[1]
 {
-   let getAllExpression = ^SimpleFunctionExpression
-    (
-       func = getAll_Class_1__T_MANY_,
-       functionName = 'getAll',
-       importGroup = system::imports::coreImport,
-       genericType = ^GenericType(rawType = $c),
-       multiplicity = ZeroMany,
-       parametersValues = ^InstanceValue( genericType = ^GenericType(rawType = Class, typeArguments = ^GenericType(rawType = $c)),
-                                          multiplicity = PureOne,
-                                          values = $c
-                                        ))->evaluateAndDeactivate();
-    let classifierGenericType = ^GenericType(rawType = LambdaFunction, typeArguments = ^GenericType(rawType = ^FunctionType(returnMultiplicity = ZeroMany, returnType = ^GenericType(rawType = $c))));
-    let lambda = {|[]};
-    ^$lambda(classifierGenericType=$classifierGenericType, expressionSequence = $getAllExpression).expressionSequence->at(0)->cast(@FunctionExpression);
+   $c->meta::relational::validation::functions::createGetAllDefinition().expressionSequence->at(0)->cast(@FunctionExpression);
 }
+
+
 
 function meta::relational::validation::alloy::alloyClassValidationFunction<T, U>(classToValidate:Class<T>[1], constraintName:String[1], sourceMapping:Mapping[1], sourceRuntime:Runtime[1], exceptionMapping:Mapping[1], execptionTree:RootGraphFetchTree<U>[1]):LambdaFunction<{->String[1]}>[1]
 {
