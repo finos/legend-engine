@@ -26,7 +26,10 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.st
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.IdentityState;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.PlaintextUserPasswordCredential;
+import org.finos.legend.engine.shared.core.identity.credential.PrivateKeyCredential;
+import org.finos.legend.engine.shared.core.vault.Vault;
 
+import java.security.PrivateKey;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
@@ -60,11 +63,27 @@ public class UserNamePasswordAuthenticationStrategy extends AuthenticationStrate
     {
         Properties connectionProperties = new Properties();
         connectionProperties.putAll(properties);
-        IdentityState identityState = ConnectionStateManager.getInstance().getIdentityStateUsing(properties);
-        PlaintextUserPasswordCredential credential = (PlaintextUserPasswordCredential) getDatabaseCredential(identityState);
+
+        // IdentityState identityState = ConnectionStateManager.getInstance().getIdentityStateUsing(properties);
+        // PlaintextUserPasswordCredential credential = (PlaintextUserPasswordCredential) getDatabaseCredential(identityState);
+
+        PlaintextUserPasswordCredential credential = this.resolveCredential(properties, this.userNameVaultReference, this.passwordVaultReference);
         connectionProperties.put("user", credential.getUser());
         connectionProperties.put("password", credential.getPassword());
         return Tuples.pair(url, connectionProperties);
+    }
+
+    private PlaintextUserPasswordCredential resolveCredential(Properties properties, String userNameVaultReference, String passwordVaultReference)
+    {
+        IdentityState identityState = ConnectionStateManager.getInstance().getIdentityStateUsing(properties);
+        if (!identityState.getCredentialSupplier().isPresent())
+        {
+            String username = Vault.INSTANCE.getValue(userNameVaultReference);
+            String password = Vault.INSTANCE.getValue(passwordVaultReference);
+
+            return new PlaintextUserPasswordCredential(username, password);
+        }
+        return (PlaintextUserPasswordCredential) getDatabaseCredential(identityState);
     }
 
     @Override
