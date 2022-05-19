@@ -1831,7 +1831,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::letVariableFunctionAdju
    assertEquals($expectedJava, $withJava->planToString(true, meta::pure::router::extension::defaultRelationalExtensions()));
 }
 
-function <<test.Test>> meta::pure::executionPlan::tests::letVariablePureFunctionExpression() : Boolean[1]
+function <<test.Test>> meta::pure::executionPlan::tests::javaGenerationLetVariablePureExpression() : Boolean[1]
 {
    let lambda = {businessDate: StrictDate[0..1], CLSFtype: String[1]| let asOf = if($businessDate->isNotEmpty(), |$businessDate->toOne(), |now());
                                                                       meta::relational::tests::milestoning::Product.all($asOf)
