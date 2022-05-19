@@ -16,19 +16,53 @@ import meta::relational::runtime::*;
 import meta::relational::dbTestRunner::*;
 import meta::relational::tests::dbSpecificTests::H2::*;
 import meta::pure::alloy::connections::*;
+import meta::pure::test::*;
 
-function <<test.Test>> meta::relational::tests::dbSpecificTests::H2::runSQLQueryTests():Boolean[1]
+// function <<test.Test>> meta::relational::tests::dbSpecificTests::H2::runSQLQueryTests():Boolean[1]
+// {
+//   let connection = meta::relational::dbTestRunner::getTestConnection(DatabaseType.H2, meta::pure::router::extension::defaultRelationalExtensions());
+      
+//   let allTests = collectTests(meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::today);
+
+//   let unsupportedDynaFunctions = [];
+//   let failingSupportedDynaFunctions =['today'];
+
+//   let ignoredTests= $unsupportedDynaFunctions->concatenate($failingSupportedDynaFunctions)->map(dynaFuncName |
+//               let dynaFuncPackageName = 'meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::' + $dynaFuncName;
+//               $dynaFuncPackageName->pathToElement()->cast(@Package)->collectTests(););
+
+//   runTestsWith($allTests, $ignoredTests, DatabaseType.H2, $connection,  []);
+// }
+
+function <<test.TestCollection>> meta::relational::tests::dbSpecificTests::H2::runSQLQueryTestsParam(): PureTestCollection[1]
 {
   let connection = meta::relational::dbTestRunner::getTestConnection(DatabaseType.H2, meta::pure::router::extension::defaultRelationalExtensions());
-      
-  let allTests = collectTests(meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::today);
+  
+  meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions
+          ->collectParameterizedTests('H2',
+                ^DbTestConfig(dbType=DatabaseType.H2, connection=$connection), 
+                paramCustomizationsForDynaFunctionTests_FunctionDefinition_1__DbTestConfig_1__DbTestConfig_1_,
+                parameterization1TestFilter_FunctionDefinition_1__Boolean_1_);
+}
 
-  let unsupportedDynaFunctions = [];
-  let failingSupportedDynaFunctions =['today'];
+function meta::relational::tests::dbSpecificTests::H2::paramCustomizationsForDynaFunctionTests(f:FunctionDefinition<Any>[1], dbTestConfig:DbTestConfig[1]): DbTestConfig[1]
+{
+   let expectedSqls= [
+     pair(meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::abs::testNegative_DbTestConfig_1__Boolean_1_, 'my buggy h2 sql')
+   ]->newMap();
 
-  let ignoredTests= $unsupportedDynaFunctions->concatenate($failingSupportedDynaFunctions)->map(dynaFuncName |
-              let dynaFuncPackageName = 'meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::' + $dynaFuncName;
-              $dynaFuncPackageName->pathToElement()->cast(@Package)->collectTests(););
+  ^$dbTestConfig(expectedSql= $expectedSqls->get($f));
+}
 
-  runTestsWith($allTests, $ignoredTests, DatabaseType.H2, $connection,  []);
+function meta::relational::tests::dbSpecificTests::H2::parameterization1TestFilter(f:FunctionDefinition<Any>[1]): Boolean[1]
+{
+  // let unsupportedDynaFunctions = [];
+  // let failingSupportedDynaFunctions =['today'];
+
+  // let ignoredTests= $unsupportedDynaFunctions->concatenate($failingSupportedDynaFunctions)->map(dynaFuncName |
+  //             let dynaFuncPackageName = 'meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::' + $dynaFuncName;
+  //             $dynaFuncPackageName->pathToElement()->cast(@Package)->collectTests(););
+
+  // !$ignoredTests->contains($f) ;
+  true;
 }
