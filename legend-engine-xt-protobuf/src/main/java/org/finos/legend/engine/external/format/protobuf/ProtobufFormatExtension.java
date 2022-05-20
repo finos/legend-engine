@@ -83,6 +83,6 @@ public class ProtobufFormatExtension implements ExternalFormatExtension<Root_met
 
     @Override
     public List<String> getRegisterablePackageableElementNames() {
-        return null;
+        return Lists.mutable.empty();
     }
 }
