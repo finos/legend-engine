@@ -11,6 +11,7 @@ import org.finos.legend.engine.shared.core.api.TestGrammar;
 import org.finos.legend.engine.shared.core.api.grammar.BatchResult;
 import org.finos.legend.engine.shared.core.api.grammar.GrammarAPI;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
+import org.finos.legend.engine.shared.core.function.Function5;
 import org.junit.Test;
 
 import javax.ws.rs.core.Response;
@@ -120,13 +121,13 @@ public class TestGrammarGraphFetchApi extends TestGrammar<RootGraphFetchTree>
     }
 
     @Override
-    public Function<GrammarAPI.ParserInput, Response> grammarToJson()
+    public Function5<String, String, Integer, Integer, Boolean, Response> grammarToJson()
     {
-        return (a) -> grammarToJson.graphFetch(a, null);
+        return (a, b, c, d, e) -> grammarToJson.graphFetch(a, b, c, d, e, null);
     }
 
     @Override
-    public Function2<RenderStyle, RootGraphFetchTree, Response> jsonToGrammar()
+    public Function2<RootGraphFetchTree, RenderStyle, Response> jsonToGrammar()
     {
         return (a, b) -> jsonToGrammar.graphFetch(a, b, null);
     }
@@ -138,7 +139,7 @@ public class TestGrammarGraphFetchApi extends TestGrammar<RootGraphFetchTree>
     }
 
     @Override
-    public Function2<RenderStyle, Map<String, RootGraphFetchTree>, Response> jsonToGrammarB()
+    public Function2<Map<String, RootGraphFetchTree>, RenderStyle, Response> jsonToGrammarB()
     {
         return (a, b) -> jsonToGrammar.graphFetchBatch(a, b, null);
     }

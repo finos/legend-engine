@@ -12,6 +12,7 @@ import org.finos.legend.engine.shared.core.api.TestGrammar;
 import org.finos.legend.engine.shared.core.api.grammar.BatchResult;
 import org.finos.legend.engine.shared.core.api.grammar.GrammarAPI;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
+import org.finos.legend.engine.shared.core.function.Function5;
 import org.junit.Test;
 
 import javax.ws.rs.core.Response;
@@ -93,13 +94,13 @@ public class TestGrammarLambdaApi extends TestGrammar<Lambda>
     }
 
     @Override
-    public Function<GrammarAPI.ParserInput, Response> grammarToJson()
+    public Function5<String, String, Integer, Integer, Boolean, Response> grammarToJson()
     {
-        return (a) -> grammarToJson.lambda(a, null);
+        return (a, b, c, d, e) -> grammarToJson.lambda(a, b, c, d, e, null);
     }
 
     @Override
-    public Function2<RenderStyle, Lambda, Response> jsonToGrammar()
+    public Function2<Lambda, RenderStyle, Response> jsonToGrammar()
     {
         return (a, b) -> jsonToGrammar.lambda(a, b, null);
     }
@@ -111,7 +112,7 @@ public class TestGrammarLambdaApi extends TestGrammar<Lambda>
     }
 
     @Override
-    public Function2<RenderStyle, Map<String, Lambda>, Response> jsonToGrammarB()
+    public Function2<Map<String, Lambda>, RenderStyle, Response> jsonToGrammarB()
     {
         return (a, b) -> jsonToGrammar.lambdaBatch(a, b, null);
     }

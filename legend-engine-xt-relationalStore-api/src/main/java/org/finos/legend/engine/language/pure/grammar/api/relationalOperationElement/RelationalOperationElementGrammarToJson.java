@@ -13,9 +13,11 @@ import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.Map;
@@ -29,13 +31,18 @@ public class RelationalOperationElementGrammarToJson extends GrammarAPI
     @POST
     @Path("relationalOperationElement")
     @ApiOperation(value = "Generates Pure protocol JSON from Pure language text for relational operation elements")
-    @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
+    @Consumes({MediaType.TEXT_PLAIN, APPLICATION_ZLIB})
     @Produces(MediaType.APPLICATION_JSON)
-    public Response relationalOperationElement(ParserInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response relationalOperationElement(String text,
+                                               @DefaultValue("") @ApiParam("The source ID to be used by the parser") @QueryParam("sourceId") String sourceId,
+                                               @DefaultValue("0") @ApiParam("The line number the parser will offset by") @QueryParam("lineOffset") int lineOffset,
+                                               @DefaultValue("0") @ApiParam("The column number the parser will offset by") @QueryParam("columnOffset") int columnOffset,
+                                               @DefaultValue("true") @QueryParam("returnSourceInformation") boolean returnSourceInformation,
+                                               @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         PureGrammarParserExtensions.logExtensionList();
-        return grammarToJson(input,
-            RelationalGrammarParserExtension::parseRelationalOperationElement, pm, "Grammar to Json : RelationalOperationElement");
+        return grammarToJson(text,
+            (a) -> RelationalGrammarParserExtension.parseRelationalOperationElement(a, sourceId, lineOffset, columnOffset, returnSourceInformation), pm, "Grammar to Json : RelationalOperationElement");
     }
 
     // Required so that Jackson properly includes _type for the top level element

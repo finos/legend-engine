@@ -12,6 +12,7 @@ import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.grammar.BatchResult;
 import org.finos.legend.engine.shared.core.api.grammar.GrammarAPI;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
+import org.finos.legend.engine.shared.core.function.Function5;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionError;
 
 import javax.ws.rs.core.Response;
@@ -28,24 +29,21 @@ public abstract class TestGrammar<Z>
 
     public abstract Class<BatchResult<Z>> getBatchResultSpecializedClass();
 
-    public abstract Function<GrammarAPI.ParserInput, Response> grammarToJson();
+    public abstract Function5<String, String, Integer, Integer, Boolean, Response> grammarToJson();
 
-    public abstract Function2<RenderStyle, Z, Response> jsonToGrammar();
+    public abstract Function2<Z, RenderStyle, Response> jsonToGrammar();
 
     public abstract Function<Map<String, GrammarAPI.ParserInput>, Response> grammarToJsonB();
 
-    public abstract Function2<RenderStyle, Map<String, Z>, Response> jsonToGrammarB();
+    public abstract Function2<Map<String, Z>, RenderStyle, Response> jsonToGrammarB();
 
     protected void test(String str, boolean returnSourceInfo)
     {
         try
         {
-            GrammarAPI.ParserInput input = new GrammarAPI.ParserInput();
-            input.value = str;
-            input.returnSourceInformation = returnSourceInfo;
-            Response result = grammarToJson().apply(input);
+            Response result = grammarToJson().value(str, "", 0, 0, returnSourceInfo);
             String actual = result.getEntity().toString();
-            Response newResult = jsonToGrammar().apply(RenderStyle.PRETTY, objectMapper.readValue(actual, get_Class()));
+            Response newResult = jsonToGrammar().apply(objectMapper.readValue(actual, get_Class()), RenderStyle.PRETTY);
             assertEquals(str, newResult.getEntity().toString());
         }
         catch (Exception e)
@@ -58,9 +56,7 @@ public abstract class TestGrammar<Z>
     {
         try
         {
-            GrammarAPI.ParserInput input = new GrammarAPI.ParserInput();
-            input.value = str;
-            Response result = grammarToJson().apply(input);
+            Response result = grammarToJson().value(str, "", 0, 0, true);
             Object errorObject = result.getEntity();
             assertTrue(errorObject instanceof ExceptionError);
             ExceptionError error = (ExceptionError) errorObject;
@@ -83,7 +79,7 @@ public abstract class TestGrammar<Z>
         {
             Map<String, Z> fullResult = objectMapper.readValue(grammarToJsonB().apply(input).getEntity().toString(), getBatchResultSpecializedClass()).result;
             MapIterate.forEachKeyValue(input, (a, b) -> {
-                assertEquals(b.value, jsonToGrammar().apply(RenderStyle.PRETTY, fullResult.get(a))
+                assertEquals(b.value, jsonToGrammar().apply(fullResult.get(a), RenderStyle.PRETTY)
                     .getEntity()
                     .toString());
             });
@@ -108,8 +104,8 @@ public abstract class TestGrammar<Z>
                     if (val != null)
                     {
                         assertEquals(b,
-                            jsonToGrammar().apply(RenderStyle.PRETTY,
-                                    objectMapper.readValue(objectMapper.writeValueAsString(val), get_Class()))
+                            jsonToGrammar()
+                                .apply(objectMapper.readValue(objectMapper.writeValueAsString(val), get_Class()), RenderStyle.PRETTY)
                                 .getEntity()
                                 .toString());
                     }

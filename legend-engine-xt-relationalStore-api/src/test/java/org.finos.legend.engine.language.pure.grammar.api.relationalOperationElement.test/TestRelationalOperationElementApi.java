@@ -11,6 +11,7 @@ import org.finos.legend.engine.shared.core.api.TestGrammar;
 import org.finos.legend.engine.shared.core.api.grammar.BatchResult;
 import org.finos.legend.engine.shared.core.api.grammar.GrammarAPI;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
+import org.finos.legend.engine.shared.core.function.Function5;
 import org.junit.Test;
 
 import javax.ws.rs.core.Response;
@@ -68,13 +69,13 @@ public class TestRelationalOperationElementApi extends TestGrammar<RelationalOpe
     }
 
     @Override
-    public Function<GrammarAPI.ParserInput, Response> grammarToJson()
+    public Function5<String, String, Integer, Integer, Boolean, Response> grammarToJson()
     {
-        return (a) -> grammarToJson.relationalOperationElement(a, null);
+        return (a, b, c, d, e) -> grammarToJson.relationalOperationElement(a, b, c, d, e, null);
     }
 
     @Override
-    public Function2<RenderStyle, RelationalOperationElement, Response> jsonToGrammar()
+    public Function2<RelationalOperationElement, RenderStyle, Response> jsonToGrammar()
     {
         return (a, b) -> jsonToGrammar.relationalOperationElement(a, b, null);
     }
@@ -86,7 +87,7 @@ public class TestRelationalOperationElementApi extends TestGrammar<RelationalOpe
     }
 
     @Override
-    public Function2<RenderStyle, Map<String, RelationalOperationElement>, Response> jsonToGrammarB()
+    public Function2<Map<String, RelationalOperationElement>, RenderStyle, Response> jsonToGrammarB()
     {
         return (a, b) -> jsonToGrammar.relationalOperationElementBatch(a, b, null);
     }

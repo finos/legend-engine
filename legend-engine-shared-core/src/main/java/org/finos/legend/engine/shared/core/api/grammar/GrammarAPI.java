@@ -3,6 +3,7 @@ package org.finos.legend.engine.shared.core.api.grammar;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
+import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.factory.Maps;
@@ -26,15 +27,14 @@ public class GrammarAPI
 {
     private static final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
 
-    protected <T> Response grammarToJson(ParserInput input, Function5<String, String, Integer, Integer, Boolean, T> func, ProfileManager<CommonProfile> pm, String spanText)
+    protected <T> Response grammarToJson(String text, Function<String, T> func, ProfileManager<CommonProfile> pm, String spanText)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         try (Scope scope = GlobalTracer.get().buildSpan(spanText).startActive(true))
         {
             try
             {
-                ParserSourceInformationOffset sourceInformationOffset = input.sourceInformationOffset != null ? input.sourceInformationOffset : new ParserSourceInformationOffset();
-                T data = func.value(input.value, sourceInformationOffset.sourceId, sourceInformationOffset.lineOffset, sourceInformationOffset.columnOffset, input.returnSourceInformation);
+                T data = func.apply(text);
                 return ManageConstantResult.manageResult(profiles, data, objectMapper);
             }
             catch (Exception e)

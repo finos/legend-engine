@@ -11,6 +11,7 @@ import org.finos.legend.engine.shared.core.api.TestGrammar;
 import org.finos.legend.engine.shared.core.api.grammar.BatchResult;
 import org.finos.legend.engine.shared.core.api.grammar.GrammarAPI;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
+import org.finos.legend.engine.shared.core.function.Function5;
 import org.junit.Test;
 
 import javax.ws.rs.core.Response;
@@ -80,13 +81,13 @@ public class TestGrammarValueSpecificationApi extends TestGrammar<ValueSpecifica
     }
 
     @Override
-    public Function<GrammarAPI.ParserInput, Response> grammarToJson()
+    public Function5<String, String, Integer, Integer, Boolean, Response> grammarToJson()
     {
-        return (a) -> grammarToJson.valueSpecification(a, null);
+        return (a, b, c, d, e) -> grammarToJson.valueSpecification(a, b, c, d, e, null);
     }
 
     @Override
-    public Function2<RenderStyle, ValueSpecification, Response> jsonToGrammar()
+    public Function2<ValueSpecification, RenderStyle, Response> jsonToGrammar()
     {
         return (a, b) -> jsonToGrammar.valueSpecification(a, b, null);
     }
@@ -98,7 +99,7 @@ public class TestGrammarValueSpecificationApi extends TestGrammar<ValueSpecifica
     }
 
     @Override
-    public Function2<RenderStyle, Map<String, ValueSpecification>, Response> jsonToGrammarB()
+    public Function2<Map<String, ValueSpecification>, RenderStyle, Response> jsonToGrammarB()
     {
         return (a, b) -> jsonToGrammar.valueSpecificationBatch(a, b, null);
     }

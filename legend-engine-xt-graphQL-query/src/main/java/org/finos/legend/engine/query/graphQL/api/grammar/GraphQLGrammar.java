@@ -31,7 +31,12 @@ import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.Map;
@@ -45,11 +50,16 @@ public class GraphQLGrammar extends GrammarAPI
     @POST
     @Path("grammarToJson")
     @ApiOperation(value = "Generates GraphQL protocol JSON from GraphQL language text")
-    @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
+    @Consumes({MediaType.TEXT_PLAIN, APPLICATION_ZLIB})
     @Produces(MediaType.APPLICATION_JSON)
-    public Response grammarToJson(ParserInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response grammarToJson(String text,
+                                  @DefaultValue("") @ApiParam("The source ID to be used by the parser") @QueryParam("sourceId") String sourceId,
+                                  @DefaultValue("0") @ApiParam("The line number the parser will offset by") @QueryParam("lineOffset") int lineOffset,
+                                  @DefaultValue("0") @ApiParam("The column number the parser will offset by") @QueryParam("columnOffset") int columnOffset,
+                                  @DefaultValue("true") @QueryParam("returnSourceInformation") boolean returnSourceInformation,
+                                  @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
-        return grammarToJson(input, (a, b, c, d, e) -> {
+        return grammarToJson(text, (a) -> {
             try
             {
                 return GraphQLGrammarParser.newInstance().parseDocument(a);
@@ -85,21 +95,25 @@ public class GraphQLGrammar extends GrammarAPI
     }
 
     @POST
-    @Path("jsonToGrammar/{renderStyle}")
+    @Path("jsonToGrammar")
     @ApiOperation(value = "Generates GraphQL language text from GraphQL protocol JSON")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Produces(MediaType.TEXT_PLAIN)
-    public Response jsonToGrammar(@PathParam("renderStyle") @DefaultValue("PRETTY") RenderStyle renderStyle, ExecutableDocument document,  @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response jsonToGrammar(ExecutableDocument document,
+                                  @QueryParam("renderStyle") @DefaultValue("PRETTY") RenderStyle renderStyle,
+                                  @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         return jsonToGrammar(document, renderStyle, (vs, renderStyle1) -> GraphQLGrammarComposer.newInstance().renderDocument(vs), pm, "Json to Grammar : GraphQL");
     }
 
     @POST
-    @Path("jsonToGrammar/{renderStyle}/batch")
+    @Path("jsonToGrammar/batch")
     @ApiOperation(value = "Generates GraphQL language text from GraphQL protocol JSON")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Produces(MediaType.APPLICATION_JSON)
-    public Response jsonToGrammarBatch(@PathParam("renderStyle") @DefaultValue("PRETTY") RenderStyle renderStyle, Map<String, ExecutableDocument> documents, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response jsonToGrammarBatch(Map<String, ExecutableDocument> documents,
+                                       @QueryParam("renderStyle") @DefaultValue("PRETTY") RenderStyle renderStyle,
+                                       @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         return jsonToGrammarBatch(renderStyle, documents, (vs, renderStyle1) -> GraphQLGrammarComposer.newInstance().renderDocument(vs), pm, "Json to Grammar : GraphQL Batch");
     }

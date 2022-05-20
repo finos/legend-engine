@@ -9,6 +9,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.shared.core.api.TestGrammar;
 import org.finos.legend.engine.shared.core.api.grammar.GrammarAPI;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
+import org.finos.legend.engine.shared.core.function.Function5;
 import org.junit.Test;
 
 import javax.ws.rs.core.Response;
@@ -51,13 +52,13 @@ public class TestGrammarModelApi extends TestGrammar<PureModelContextData>
     }
 
     @Override
-    public Function<GrammarAPI.ParserInput, Response> grammarToJson()
+    public Function5<String, String, Integer, Integer, Boolean, Response> grammarToJson()
     {
-        return (a) -> grammarToJson.model(a, null);
+        return (a, b, c, d, e) -> grammarToJson.model(a, b, c, d, e, null);
     }
 
     @Override
-    public Function2<RenderStyle, PureModelContextData, Response> jsonToGrammar()
+    public Function2<PureModelContextData, RenderStyle, Response> jsonToGrammar()
     {
         return (a, b) -> jsonToGrammar.model(a, b, null);
     }
@@ -69,7 +70,7 @@ public class TestGrammarModelApi extends TestGrammar<PureModelContextData>
     }
 
     @Override
-    public Function2<RenderStyle, Map<String, PureModelContextData>, Response> jsonToGrammarB()
+    public Function2<Map<String, PureModelContextData>, RenderStyle, Response> jsonToGrammarB()
     {
         throw new RuntimeException("Not supported here");
     }
