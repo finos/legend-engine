@@ -55,7 +55,7 @@ public class TransformRelationalOperationElementGrammarToJson
             {
                 try
                 {
-                    RelationalOperationElement operation = RelationalGrammarParserExtension.parseRelationalOperationElement(key, value, returnSourceInfo);
+                    RelationalOperationElement operation = RelationalGrammarParserExtension.parseRelationalOperationElement(value, key, 0, 0, returnSourceInfo);
                     operations.put(key, operation);
                 }
                 catch (Exception e)
