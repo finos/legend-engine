@@ -175,6 +175,40 @@ Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping
     }
 )
 
+Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping2
+(
+    *meta::external::store::service::showcase::domain::Person[person_set]: Operation
+    {
+        meta::pure::router::operations::special_union_OperationSetImplementation_1__SetImplementation_MANY_(person_set1, person_set2, person_set3, person_set4, person_set5)
+    }
+
+    meta::external::store::service::showcase::domain::Person[person_set1]: ServiceStore
+    {
+        ~service [meta::external::store::service::showcase::store::EmployeeServiceStore1] EmployeeService
+    }
+
+    meta::external::store::service::showcase::domain::Person[person_set2]: ServiceStore
+    {
+        ~service [meta::external::store::service::showcase::store::EmployeeServiceStore2] EmployeeService
+    }
+
+    meta::external::store::service::showcase::domain::Person[person_set3]: ServiceStore
+    {
+        ~service [meta::external::store::service::showcase::store::EmployeeServiceStore3] EmployeeService
+    }
+
+    meta::external::store::service::showcase::domain::Person[person_set4]: ServiceStore
+    {
+        ~service [meta::external::store::service::showcase::store::EmployeeServiceStore4] EmployeeService
+    }
+
+    meta::external::store::service::showcase::domain::Person[person_set5]: ServiceStore
+    {
+        ~service [meta::external::store::service::showcase::store::EmployeeServiceStore5] EmployeeService
+    }
+)
+
+
 ###ServiceStore
 ServiceStore meta::external::store::service::showcase::store::TradeProductServiceStore
 (
@@ -260,6 +294,71 @@ ServiceStore meta::external::store::service::showcase::store::EmployeeServiceSto
    )
 )
 
+ServiceStore meta::external::store::service::showcase::store::EmployeeServiceStore1
+(
+   description : 'Service Store Union Example';
+
+   Service EmployeeService
+   (
+      path : '/employees';
+      method : GET;
+      security : [];
+      response : [meta::external::store::service::showcase::domain::Person <- meta::external::store::service::showcase::store::employeesServiceStoreSchemaBinding];
+   )
+)
+
+ServiceStore meta::external::store::service::showcase::store::EmployeeServiceStore2
+(
+   description : 'Service Store Union Example';
+
+   Service EmployeeService
+   (
+      path : '/employees';
+      method : GET;
+      security : [];
+      response : [meta::external::store::service::showcase::domain::Person <- meta::external::store::service::showcase::store::employeesServiceStoreSchemaBinding];
+   )
+)
+
+ServiceStore meta::external::store::service::showcase::store::EmployeeServiceStore3
+(
+   description : 'Service Store Union Example';
+
+   Service EmployeeService
+   (
+      path : '/employees';
+      method : GET;
+      security : [];
+      response : [meta::external::store::service::showcase::domain::Person <- meta::external::store::service::showcase::store::employeesServiceStoreSchemaBinding];
+   )
+)
+
+ServiceStore meta::external::store::service::showcase::store::EmployeeServiceStore4
+(
+   description : 'Service Store Union Example';
+
+   Service EmployeeService
+   (
+      path : '/employees';
+      method : GET;
+      security : [];
+      response : [meta::external::store::service::showcase::domain::Person <- meta::external::store::service::showcase::store::employeesServiceStoreSchemaBinding];
+   )
+)
+
+ServiceStore meta::external::store::service::showcase::store::EmployeeServiceStore5
+(
+   description : 'Service Store Union Example';
+
+   Service EmployeeService
+   (
+      path : '/employees';
+      method : GET;
+      security : [];
+      response : [meta::external::store::service::showcase::domain::Person <- meta::external::store::service::showcase::store::employeesServiceStoreSchemaBinding];
+   )
+)
+
 ###ExternalFormat
 Binding meta::external::store::service::showcase::store::tradeServiceStoreSchemaBinding
 {
@@ -300,6 +399,37 @@ Runtime meta::external::store::service::showcase::runtime::ServiceStoreRuntime
         [
             connection_3 : meta::external::store::service::showcase::connection::modelChainConnection,
             connection_4 : meta::external::store::service::showcase::connection::jsonModelConnection
+        ]
+    ];
+}
+
+Runtime meta::external::store::service::showcase::runtime::ServiceStoreRuntime2
+{
+    mappings :
+    [
+        meta::external::store::service::showcase::mapping::ServiceStoreMapping2
+    ];
+    connections :
+    [
+        meta::external::store::service::showcase::store::EmployeeServiceStore1 :
+        [
+            connection_1 : meta::external::store::service::showcase::connection::serviceStoreConnection3
+        ],
+        meta::external::store::service::showcase::store::EmployeeServiceStore2 :
+        [
+            connection_2 : meta::external::store::service::showcase::connection::serviceStoreConnection4
+        ],
+        meta::external::store::service::showcase::store::EmployeeServiceStore3 :
+        [
+            connection_3 : meta::external::store::service::showcase::connection::serviceStoreConnection5
+        ],
+        meta::external::store::service::showcase::store::EmployeeServiceStore4 :
+        [
+            connection_4 : meta::external::store::service::showcase::connection::serviceStoreConnection6
+        ],
+        meta::external::store::service::showcase::store::EmployeeServiceStore5 :
+        [
+            connection_5 : meta::external::store::service::showcase::connection::serviceStoreConnection7
         ]
     ];
 }
