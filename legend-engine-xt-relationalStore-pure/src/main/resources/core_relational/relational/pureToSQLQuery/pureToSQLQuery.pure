@@ -1791,10 +1791,46 @@ function meta::relational::functions::pureToSqlQuery::processCrossPropertyMappin
 
 function <<access.private>> meta::relational::functions::pureToSqlQuery::processSemiStructuredRelationalPropertyMapping(propertyMappings:SemiStructuredRelationalPropertyMapping[*], property:AbstractProperty<Any>[1], propertyOwnerClass:Class<Any>[1], srcOperation:SelectWithCursor[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:RouterExtension[*]): RelationalOperationElement[1]
 {
-   assert($propertyMappings->size() == 1, | 'Expected one semi structured property mapping expected. Got: ' + $propertyMappings->size()->toString());
+   assert($propertyMappings->size() >= 1, | 'Expected non-empty semi structured property mappings');
    let result = $propertyMappings->at(0).relationalOperationElement->processColumnsInRelationalOperationElements($state, $srcOperation, $nodeId, $aggFromMap, true, $context, $extensions);
    $result->validate([], $extensions);
-   $result;
+
+   if ($property.multiplicity->hasToOneUpperBound(),
+       | $result,
+       |
+         // Property is 1->MANY. Need to flatten
+         let arrayFlattening = ^SemiStructuredArrayFlatten(navigation = if($state.inFilter, | $result->cast(@SelectWithCursor).select.filteringOperation, | $result->cast(@SelectWithCursor).select.columns)->toOne());
+         let leftAlias = $result.currentTreeNode->toOne().alias;
+         let rightAlias = ^TableAlias(relationalElement = $arrayFlattening, name = 'arrayFlatten_' + $nodeId);
+         let join = ^Join(
+            name = 'arrayFlatten',
+            target = $rightAlias,
+            aliases = [pair($leftAlias, $rightAlias), pair($rightAlias, $leftAlias)],
+            operation = ^DynaFunction(name = 'equal', parameters = [^Literal(value = 1), ^Literal(value = 1)]) // True operation
+         );
+
+         let lateralJoinNode = ^JoinTreeNode(
+            database = ^Database(),
+            joinName = 'arrayFlatten',
+            alias = $rightAlias,
+            join = $join,
+            joinType = $joinType,
+            lateral = true
+         );
+
+         let joinAppliedNode = applyJoinInTree($result.select.data->toOne(), $result.currentTreeNode->toOne(), $lateralJoinNode, $srcOperation, $nodeId, $joinType, true, true, [], $state, $context, $extensions);
+         let joinAppliedNodeSelect = $joinAppliedNode.select;
+         let flattenOutput = ^SemiStructuredArrayFlattenOutput(tableAliasColumn = ^TableAliasColumn(alias = $joinAppliedNode.currentTreeNode.alias->toOne(), column = ^Column(name = 'result', type = ^meta::relational::metamodel::datatype::SemiStructured())), returnType  = $property.genericType.rawType);
+         let res = ^$joinAppliedNode(
+            select = ^$joinAppliedNodeSelect(
+               columns = if($state.inFilter,|[],|$flattenOutput),
+               filteringOperation = if($state.inFilter,|$flattenOutput,|[])
+            )
+         );
+
+         $res->validate([], $extensions);
+         $res;
+   );
 }
 
 function meta::relational::functions::pureToSqlQuery::manageSavedFilteringOperation(res:SelectWithCursor[1], srcOperation:SelectWithCursor[1]):SelectWithCursor[1]
@@ -2125,28 +2161,55 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::canProc
    let params = $f.parametersValues->evaluateAndDeactivate();
    if(($params->size() == 2) && ($params->at(0)->instanceOf(ExtendedRoutedValueSpecification)),
       | let firstParam = $params->at(0)->cast(@ExtendedRoutedValueSpecification);
-        ($firstParam.sets->size() == 1) && ($firstParam.sets->at(0)->instanceOf(SemiStructuredEmbeddedRelationalInstanceSetImplementation));,
+        ($firstParam.sets->size() == 1) && ($firstParam.sets->at(0)->instanceOf(SemiStructuredRelationalInstanceSetImplementation));,
       | false
    );
 }
 
 function <<access.private>> meta::relational::functions::pureToSqlQuery::processAt(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:RouterExtension[*]):RelationalOperationElement[1]
 {
-   let collectionOp = processValueSpecificationReturnPropertyMapping($f.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)->toOne();
-   let collectionSWC = $collectionOp.element->cast(@SelectWithCursor);
+   let leftSide = $f.parametersValues->at(0);
+   let byPassedLeftSide = $leftSide->deepByPassRouterInfo();
+
+   let toManyPropertyCallCheck = {vs:ValueSpecification[1] |
+      $vs->instanceOf(SimpleFunctionExpression) &&
+      $vs->cast(@SimpleFunctionExpression).func->instanceOf(Property) &&
+      (!$vs->cast(@SimpleFunctionExpression).func->cast(@Property<Nil,Any|*>).multiplicity->hasToOneUpperBound())
+   };
+
+   let isToManyPropertyCall    = $toManyPropertyCallCheck->eval($byPassedLeftSide);
+   let isToManyPropertyAutomap = $byPassedLeftSide->instanceOf(SimpleFunctionExpression) &&
+                                 ($byPassedLeftSide->cast(@SimpleFunctionExpression).functionName == 'map') &&
+                                 ($byPassedLeftSide->cast(@SimpleFunctionExpression)->map({fe |
+                                    let mapFn = $fe.parametersValues->evaluateAndDeactivate()->at(1)->cast(@InstanceValue).values->cast(@meta::pure::metamodel::function::FunctionDefinition<Any>);
+                                    let mapExpr = $mapFn.expressionSequence->evaluateAndDeactivate();
+                                    ($mapExpr->size() == 1) && $toManyPropertyCallCheck->eval($mapExpr->toOne()->deepByPassRouterInfo());
+                                 }));
+
+   assert($isToManyPropertyCall || $isToManyPropertyAutomap,
+          | '->at(...) function is supported only after direct access of 1->MANY properties. Current expression: ' + $f->deepByPassRouterInfo()->cast(@FunctionExpression)->meta::pure::router::printer::asString());
+
+   let processedLeftSide = processValueSpecificationReturnPropertyMapping($f.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)->toOne();
+   let propertyMappings = $processedLeftSide.currentPropertyMapping;
+
+   assert(($propertyMappings->size() >= 1) && $propertyMappings->forAll(pm | $pm->instanceOf(SemiStructuredRelationalPropertyMapping)),
+          | 'Expected semi structured property mappings. Got: ' + $propertyMappings->map(x | $x->genericType().rawType->toOne()->elementToPath())->joinStrings('[', ', ', ']'));
+
+   let preCollectionOp = processValueSpecification($f.parametersValues->at(0)->byPassRouterInfo()->cast(@SimpleFunctionExpression).parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
+   let collectionSWC = $propertyMappings->at(0)->cast(@SemiStructuredRelationalPropertyMapping).relationalOperationElement->processColumnsInRelationalOperationElements($state, $preCollectionOp, $nodeId, $aggFromMap, true, $context, $extensions)->cast(@SelectWithCursor);
    let collectionSelect = $collectionSWC.select;
 
    let arrayAccessBuilder = {r:RelationalOperationElement[*] |
-      assert($r->size() == 1, | 'Expected one relational operation element when processing \'get\'. Found: ' + $r->size()->toString());
-      assert($r->toOne()->instanceOf(SemiStructuredPropertyAccess), | '\'get\' function is supported only when accessing properties mapped to semi structured data');
+      assert($r->size() == 1, | 'Expected one relational operation element when processing \'at\'. Found: ' + $r->size()->toString());
+      assert($r->toOne()->instanceOf(SemiStructuredPropertyAccess), | '\'at\' function is supported only when accessing properties mapped to semi structured data');
       let ssp = $r->toOne()->cast(@SemiStructuredPropertyAccess);
-      assert($ssp.index->isEmpty(), | 'Detected unexpected multiple \'get\' function application ->at(...)->at(...)');
+      assert($ssp.index->isEmpty(), | 'Detected unexpected multiple \'at\' function application ->at(...)->at(...)');
       let indexSelect = processValueSpecification($f.parametersValues->at(1), $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor).select;
       ^$ssp(index = $state.inFilter->if(|$indexSelect.filteringOperation,|$indexSelect.columns)->toOne()->cast(@Literal));
    };
 
    let newSelect = $state.inFilter->if(|^$collectionSelect(filteringOperation = $arrayAccessBuilder->eval($collectionSelect.filteringOperation)),|^$collectionSelect(columns = $arrayAccessBuilder->eval($collectionSelect.columns)));
-   ^$collectionOp(element = ^$collectionSWC(select = $newSelect));
+   ^$processedLeftSide(element = ^$collectionSWC(select = $newSelect));
 }
 
 function meta::relational::functions::pureToSqlQuery::processNot(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:RouterExtension[*]):RelationalOperationElement[1]
@@ -2560,7 +2623,7 @@ function meta::relational::functions::pureToSqlQuery::processMap(f:FunctionExpre
 
    let milestoningContext=$newQuery.milestoningContext->concatenate($operation.milestoningContext)->first();
 
-   let isSemiStructuredPropertyMapping = ($newCurrentPropertyMapping->size() == 1) && $newCurrentPropertyMapping->toOne()->instanceOf(SemiStructuredRelationalPropertyMapping);
+   let isSemiStructuredPropertyMapping = ($newCurrentPropertyMapping->size() >= 1) && $newCurrentPropertyMapping->forAll(pm | $pm->instanceOf(SemiStructuredRelationalPropertyMapping));
    let extraColumn = if($isSemiStructuredPropertyMapping && ($select.columns->size() == 1),
                         | $select.columns->toOne()->reprocessAliases(^OldAliasToNewAlias(first = $mainQuery.currentTreeNode.alias.name->toOne(), second = $newQuery.currentTreeNode.alias->toOne())),
                         | []);
@@ -2683,7 +2746,8 @@ function meta::relational::functions::pureToSqlQuery::addSelfJoin(s:SelectSQLQue
       let oldToNewAlias = ^OldAliasToNewAlias(first=$rootJtnAlias.name, second=$genJtnAlias);
       let reprocessedJoinOp = $join.operation->map(o|$o->reprocessAliases($oldToNewAlias))->cast(@Operation);
       let reprocessedJoin = ^$join(operation=$reprocessedJoinOp, aliases=$join.aliases->map(a|pair($a.first->reprocessAliases($oldToNewAlias)->cast(@TableAlias)->toOne(),$a.second->reprocessAliases($oldToNewAlias)->cast(@TableAlias)->toOne())));
-      pair($c,^$c(join=$reprocessedJoin));
+      let reprocessedAlias = if($c.alias.relationalElement->instanceOf(SemiStructuredArrayFlatten), | let alias = $c.alias; ^$alias(relationalElement = $alias.relationalElement->reprocessAliases($oldToNewAlias));, | $c.alias);
+      pair($c,^$c(join=$reprocessedJoin, alias = $reprocessedAlias));
    );
    let reprocessedJoinJtns = $oldAndNewReprocessedJoinJtns.second;
 
@@ -3206,7 +3270,8 @@ function meta::relational::functions::pureToSqlQuery::processRelation(r: Relatio
                v:View[1]  | let selectWithCursor = processRelationalMappingSpecification($v, $c, $nodeId, $addPk, $pkOffset, true, $milestoningContext, ^$state(inFilter=false), $context, $extensions);
                             let select = $selectWithCursor.select;
                             let selectWithFiltersProcessed = ^$select(filteringOperation=$select.filteringOperation->concatenate($select.extraFilteringOperation))->pushSavedFilteringOperation($extensions);
-                            ^ViewSelectSQLQuery(view=$v, name=$v.name, columns = $selectWithFiltersProcessed.columns, selectSQLQuery = $selectWithFiltersProcessed, schema=$v.mainTable.schema);
+                            ^ViewSelectSQLQuery(view=$v, name=$v.name, columns = $selectWithFiltersProcessed.columns, selectSQLQuery = $selectWithFiltersProcessed, schema=$v.mainTable.schema);,
+               s:SemiStructuredArrayFlatten[1] | $s
              ]);
 }
 
@@ -3393,7 +3458,8 @@ function meta::relational::functions::pureToSqlQuery::processFilter(expression:F
                                                           |$state.inFilter->if( | $leftSide.select.filteringOperation,
                                                                                 | let byPassedLeft = $leftSidePure->byPassRouterInfo();
                                                                                   let isDataTypeInput = $byPassedLeft.genericType.rawType->isNotEmpty() && $byPassedLeft.genericType.rawType->toOne()->instanceOf(DataType);
-                                                                                  if ($isDataTypeInput, | $leftSide.select.columns, | []);)),
+                                                                                  let isSemiStructuredPropertyMapping = ($leftSideOp.currentPropertyMapping->size() >= 1) && $leftSideOp.currentPropertyMapping->forAll(pm | $pm->instanceOf(SemiStructuredRelationalPropertyMapping));
+                                                                                  if ($isDataTypeInput || $isSemiStructuredPropertyMapping, | $leftSide.select.columns, | []);)),
                                   //extraFilteringOperation = $leftSide.select.extraFilteringOperation,
                                   savedFilteringOperation = $savedFilteringOp,
                                   data = $tree
@@ -3872,7 +3938,7 @@ function meta::relational::functions::pureToSqlQuery::processIn(valueArg:ValueSp
    let isJoinToFilterTable = $state.inFilter && $leftTable != [] && $leftTable != $filterTable && $processedCollectionArg->at(0).select.filteringOperation->at(0)->instanceOf(TableAliasColumn);
 
    let valueFilter = if ($isJoinToFilterTable, | $reprocessedCollectionArg.select ,| $mergedSQL);
-   let value = if($state.inFilter,|$valueFilter.filteringOperation->filter(p|$p->instanceOf(TableAliasColumn) || $p->instanceOf(DynaFunction) || $p->instanceOf(JoinStrings))->at(0),|$mergedSQL.columns->at(0));
+   let value = if($state.inFilter,|$valueFilter.filteringOperation->filter(p|$p->instanceOf(TableAliasColumn) || $p->instanceOf(DynaFunction) || $p->instanceOf(JoinStrings) || $p->instanceOf(SemiStructuredArrayFlattenOutput) || $p->instanceOf(SemiStructuredObjectNavigation))->at(0),|$mergedSQL.columns->at(0));
    let collection = if($state.inFilter, |$mergedSQL.filteringOperation->filter(p|$p->instanceOf(Literal) || $p->instanceOf(LiteralList) )->at(0),|$mergedSQL.columns->at(1));
 
    let selectWithCursor = $value->extractSelectWithCursor($operation);
@@ -5563,8 +5629,10 @@ function meta::relational::functions::pureToSqlQuery::buildUniqueName(elements:R
          wc:WindowColumn[1]| $wc.columnName+'_'+ $wc.func->buildUniqueName($alias,$selectColumns, $extensions),
          j:JoinStrings[1]|'join_'+$j.strings->buildUniqueName($alias, $selectColumns, $extensions)+$j.prefix->buildUniqueName($alias, $selectColumns, $extensions)+$j.separator->buildUniqueName($alias, $selectColumns, $extensions)+$j.suffix->buildUniqueName($alias, $selectColumns, $extensions),
          rj:RelationalOperationElementWithJoin[1]| $rj.joinTreeNode->toOne().joinName+ $rj.relationalOperationElement->buildUniqueName($alias, $selectColumns, $extensions),
-         ssp:SemiStructuredPropertyAccess[1]|'ssp('+$ssp.operand->buildUniqueName($alias, $selectColumns, $extensions)+'['+$ssp.property->buildUniqueName($alias, $selectColumns, $extensions)+'])',
+         ssp:SemiStructuredPropertyAccess[1]|'ssp('+$ssp.operand->buildUniqueName($alias, $selectColumns, $extensions)+'['+$ssp.property->buildUniqueName($alias, $selectColumns, $extensions)+']'+if($ssp.index->isEmpty(),|'',|'['+$ssp.index->toOne()->buildUniqueName($alias, $selectColumns, $extensions)+']')+')',
          ssa:SemiStructuredArrayElementAccess[1]|'ssa('+$ssa.operand->buildUniqueName($alias, $selectColumns, $extensions)+'['+$ssa.index->buildUniqueName($alias, $selectColumns, $extensions)+'])',
+         ssf:SemiStructuredArrayFlatten[1]|'ss_flatten('+$ssf.navigation->buildUniqueName($alias, $selectColumns, $extensions)+')',
+         ssf:SemiStructuredArrayFlattenOutput[1]|'ss_flatten_output('+$ssf.tableAliasColumn->buildUniqueName($alias, $selectColumns, $extensions)+')',
          v:VarPlaceHolder[1]| $v.name
       ])->toOneMany()
    ))->joinStrings('_');
@@ -6042,7 +6110,7 @@ function meta::relational::functions::pureToSqlQuery::reprocessJoinTreeNode(sour
 
    let sourceAlias = $source.alias;
    let oldTargetAlias = $target.alias;
-   let newTargetAlias = ^TableAlias(name = $oldTargetAlias.name+$nodeId, relationalElement = $oldTargetAlias.relation);
+   let newTargetAlias = ^TableAlias(name = $oldTargetAlias.name+$nodeId, relationalElement = $oldTargetAlias.relation->match([s:SemiStructuredArrayFlatten[1] | ^$s(navigation = $s.navigation->reprocessAliases($list)), r:RelationalOperationElement[1]|$r]));
    let newAliasMapping = ^OldAliasToNewAlias(first=$oldTargetAlias.name, second=$newTargetAlias);
    let val = $list->concatenate($newAliasMapping);
 
@@ -6641,6 +6709,8 @@ function meta::relational::functions::pureToSqlQuery::reprocessAliases(element:R
                                             ^$wc(window=^$window(partition=$window.partition->map(p|$p->reprocessAliases($map, $oldColumnToNewColumn))->cast(@RelationalOperationElement), sortBy=$window.sortBy->map(p|$p->reprocessAliases($map, $oldColumnToNewColumn))->cast(@RelationalOperationElement),sortDirection=$window.sortDirection), func=$wf->reprocessAliases($map, $oldColumnToNewColumn)->cast(@DynaFunction));,
                         s:SemiStructuredPropertyAccess[1] | ^$s(operand = $s.operand->reprocessAliases($map, $oldColumnToNewColumn), property = $s.property->reprocessAliases($map, $oldColumnToNewColumn), index = $s.index->map(i | $i->reprocessAliases($map, $oldColumnToNewColumn))),
                         s:SemiStructuredArrayElementAccess[1] | ^$s(operand = $s.operand->reprocessAliases($map, $oldColumnToNewColumn), index = $s.index->reprocessAliases($map, $oldColumnToNewColumn)),
+                        s:SemiStructuredArrayFlatten[1] | ^$s(navigation = $s.navigation->reprocessAliases($map, $oldColumnToNewColumn)),
+                        s:SemiStructuredArrayFlattenOutput[1] | ^$s(tableAliasColumn = $s.tableAliasColumn->reprocessAliases($map, $oldColumnToNewColumn)->cast(@TableAliasColumn)),
                         r:RelationalOperationElement[1] | $r;
                     ]
                  );
@@ -6665,7 +6735,11 @@ function meta::relational::functions::pureToSqlQuery::reprocessTableAliasColumns
                         op:UnaryOperation[1]|^$op(nested=$op.nested->reprocessTableAliasColumns($map)),
                         op:BinaryOperation[1]|^$op(left=$op.left->reprocessTableAliasColumns($map), right=$op.right->reprocessTableAliasColumns($map)),
                         op:VariableArityOperation[1]|^$op(args=$op.args->map(arg | $arg->reprocessTableAliasColumns($map))),
-                        cn:ColumnName[1] | $cn
+                        cn:ColumnName[1] | $cn,
+                        s:SemiStructuredPropertyAccess[1] | ^$s(operand = $s.operand->reprocessTableAliasColumns($map), property = $s.property->reprocessTableAliasColumns($map), index = $s.index->map(i | $i->reprocessTableAliasColumns($map))),
+                        s:SemiStructuredArrayElementAccess[1] | ^$s(operand = $s.operand->reprocessTableAliasColumns($map), index = $s.index->reprocessTableAliasColumns($map)),
+                        s:SemiStructuredArrayFlatten[1] | ^$s(navigation = $s.navigation->reprocessTableAliasColumns($map)),
+                        s:SemiStructuredArrayFlattenOutput[1] | ^$s(tableAliasColumn = $s.tableAliasColumn->reprocessTableAliasColumns($map)->cast(@TableAliasColumn))
                     ]
                  )
 }
@@ -6769,7 +6843,8 @@ function meta::relational::functions::pureToSqlQuery::extractTableAliasColumns(e
                               wc: WindowColumn[1]| $wc.window->extractTableAliasColumns()->concatenate($wc.func->extractTableAliasColumns()),
                               w:meta::relational::metamodel::Window[1]| $w.partition->extractTableAliasColumns()->concatenate($w.sortBy->extractTableAliasColumns()),
                               f:meta::relational::functions::pureToSqlQuery::FreeMarkerOperationHolder[1]| $f.parameters->map(p|$p->extractTableAliasColumns());,
-                              s:SemiStructuredObjectNavigation[1]|$s.operand->extractTableAliasColumns()
+                              s:SemiStructuredObjectNavigation[1]|$s.operand->extractTableAliasColumns(),
+                              s:SemiStructuredArrayFlattenOutput[1]|$s.tableAliasColumn->extractTableAliasColumns()
                           ]
                       )
                );

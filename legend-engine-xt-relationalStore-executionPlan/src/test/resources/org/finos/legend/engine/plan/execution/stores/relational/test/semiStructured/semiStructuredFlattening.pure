@@ -1,0 +1,269 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class flatten::model::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+  firm: flatten::model::Firm[1];
+}
+
+Class flatten::model::Firm
+{
+  legalName: String[1];
+  otherNames: String[*];
+  addresses: flatten::model::Address[*];
+}
+
+Class flatten::model::Address
+{
+  name: String[1];
+}
+
+Class flatten::model::AddressWithLines extends flatten::model::Address
+{
+  lines: flatten::model::AddressLine[*];
+}
+
+Class flatten::model::AddressLine
+{
+  lineno: Integer[1];
+}
+
+Class flatten::model::StreetAddressLine extends flatten::model::AddressLine
+{
+  street: String[1];
+}
+
+Class flatten::model::CityAddressLine extends flatten::model::AddressLine
+{
+  city: String[1];
+}
+
+Class flatten::model::StateAddressLine extends flatten::model::AddressLine
+{
+  state: String[1];
+}
+
+###Relational
+Database flatten::store::SnowflakeDB
+(
+  Schema PERSON_SCHEMA
+  (
+    Table PERSON_TABLE
+    (
+      ID INTEGER PRIMARY KEY,
+      FIRSTNAME VARCHAR(100),
+      LASTNAME VARCHAR(100),
+      FIRM_DETAILS SEMISTRUCTURED,
+      MANAGERID INTEGER
+    )
+  )
+)
+
+
+###ExternalFormat
+Binding flatten::store::FirmBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    flatten::model::Firm,
+    flatten::model::Address,
+    flatten::model::AddressWithLines,
+    flatten::model::AddressLine,
+    flatten::model::StreetAddressLine,
+    flatten::model::CityAddressLine,
+    flatten::model::StateAddressLine
+  ];
+}
+
+###Mapping
+Mapping flatten::mapping::SnowflakeMapping
+(
+  flatten::model::Person: Relational
+  {
+    ~primaryKey
+    (
+      [flatten::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE.ID
+    )
+    ~mainTable [flatten::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE
+    firstName: [flatten::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE.FIRSTNAME,
+    lastName: [flatten::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE.LASTNAME,
+    firm: Binding flatten::store::FirmBinding : [flatten::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE.FIRM_DETAILS
+  }
+)
+
+###Runtime
+Runtime flatten::runtime::SnowflakeRuntime
+{
+    mappings :
+    [
+        flatten::mapping::SnowflakeMapping
+    ];
+    connections :
+    [
+        flatten::store::SnowflakeDB :
+        [
+            connection_1 : #{
+                RelationalDatabaseConnection {
+                    store: flatten::store::SnowflakeDB;
+                    type: Snowflake;
+                    specification: LocalH2{};
+                    auth: Test;
+                }
+            }#
+        ]
+    ];
+}
+
+###Pure
+function flatten::semiStructuredPrimitivePropertyFlattening(): TabularDataSet[1]
+{
+    flatten::model::Person.all()->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.firm.legalName, 'Firm Name'),
+        col(x | $x.firm.otherNames, 'Firm Other Name')
+
+    ])
+}
+
+function flatten::semiStructuredComplexPropertyFlattening(): TabularDataSet[1]
+{
+    flatten::model::Person.all()->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.firm.legalName, 'Firm Name'),
+        col(x | $x.firm.addresses.name, 'Firm Address Name')
+    ])
+}
+
+function flatten::semiStructuredPrimitivePropertyArrayIndexing(): TabularDataSet[1]
+{
+    flatten::model::Person.all()->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.firm.legalName, 'Firm Name'),
+        col(x | $x.firm.otherNames->at(0), 'Firm Other Name 0'),
+        col(x | $x.firm.otherNames->at(2), 'Firm Other Name 2')
+    ])
+}
+
+function flatten::semiStructuredComplexPropertyArrayIndexing(): TabularDataSet[1]
+{
+    flatten::model::Person.all()->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.firm.legalName, 'Firm Name'),
+        col(x | $x.firm.addresses->at(0).name, 'Firm Address 0 Name'),
+        col(x | $x.firm.addresses->at(2).name, 'Firm Address 2 Name')
+    ])
+}
+
+function flatten::semiStructuredComplexPropertyFlatteningFollowedBySubType(): TabularDataSet[1]
+{
+    flatten::model::Person.all()->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.firm.legalName, 'Firm Name'),
+        col(x | $x.firm.addresses->subType(@flatten::model::AddressWithLines)->map(a | $a.lines->at(0).lineno), 'Firm Address Line 0 Line No')
+    ])
+}
+
+function flatten::semiStructuredComplexPropertyArrayIndexingFollowedBySubType(): TabularDataSet[1]
+{
+    flatten::model::Person.all()->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.firm.legalName, 'Firm Name'),
+        col(x | $x.firm.addresses->at(0)->subType(@flatten::model::AddressWithLines).lines->at(0).lineno, 'Firm Address 0 Line 0 Line No')
+    ])
+}
+
+function flatten::semiStructuredPrimitivePropertyFiltering(): TabularDataSet[1]
+{
+    flatten::model::Person.all()
+    ->filter(x | $x.firm.otherNames->contains('A'))
+    ->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.firm.legalName, 'Firm Name')
+    ])
+    ->distinct()
+}
+
+function flatten::semiStructuredPrimitivePropertyFilteringInProject(): TabularDataSet[1]
+{
+    flatten::model::Person.all()->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.firm.legalName, 'Firm Name'),
+        col(x | $x.firm.otherNames->filter(x | $x->startsWith('A')), 'Firm Other Name')
+    ])
+}
+
+function flatten::semiStructuredComplexPropertyFiltering(): TabularDataSet[1]
+{
+    flatten::model::Person.all()
+    ->filter(p | $p.firm.addresses->exists(a | $a.name == 'B'))
+    ->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.firm.legalName, 'Firm Name')
+    ])
+}
+
+function flatten::semiStructuredComplexPropertyFilteringInProject(): TabularDataSet[1]
+{
+    flatten::model::Person.all()
+    ->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.firm.legalName, 'Firm Name'),
+        col(x | $x.firm.addresses->filter(a | $a.name == 'A').name, 'Firm Address Name 1'),
+        col(x | $x.firm.addresses->filter(a | $a.name == 'B').name, 'Firm Address Name 2')
+    ])
+}
+
+function flatten::semiStructuredComplexPropertyFilteringInProjectFollowedBySubType(): TabularDataSet[1]
+{
+    flatten::model::Person.all()
+    ->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.firm.legalName, 'Firm Name'),
+        col(x | $x.firm.addresses->filter(a | $a.name == 'A')->subType(@flatten::model::AddressWithLines).lines->at(0).lineno, 'Firm Address Name 1'),
+        col(x | $x.firm.addresses->filter(a | $a.name == 'B').name, 'Firm Address Name 2')
+    ])
+}
+
+function flatten::semiStructuredMultiLevelFlattening(): TabularDataSet[1]
+{
+    flatten::model::Person.all()
+    ->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.firm.legalName, 'Firm Name'),
+        col(x | $x.firm.addresses->filter(a | $a.name == 'A')->subType(@flatten::model::AddressWithLines).lines.lineno, 'Firm Address Name Line No')
+    ])
+}
+
+function flatten::semiStructuredSubAggregation(): TabularDataSet[1]
+{
+    flatten::model::Person.all()
+    ->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.firm.legalName, 'Firm Name'),
+        col(x | $x.firm.addresses.name->joinStrings(';'), 'Firm Address Names')
+    ])
+}
+
+function flatten::semiStructuredSubAggregationDeep(): TabularDataSet[1]
+{
+    flatten::model::Person.all()
+    ->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.firm.legalName, 'Firm Name'),
+        col(x | $x.firm.addresses->subType(@flatten::model::AddressWithLines).lines.lineno->sum(), 'Firm Address Line No Sum')
+    ])
+}

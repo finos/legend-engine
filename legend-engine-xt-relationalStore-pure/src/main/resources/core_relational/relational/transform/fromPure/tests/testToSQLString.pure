@@ -1631,3 +1631,31 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testToStri
    let sql = toSQLString($func, simpleRelationalMapping, DatabaseType.Postgres, meta::pure::router::extension::defaultRelationalExtensions());
    assertSameSQL('select "root".FIRSTNAME as "FirstName", upper(cast("root".AGE as varchar)) as "AgeString" from personTable as "root"', $sql);
 }
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testJoinStringsSnowflake():Boolean[1]
+{
+   let fn = {|Firm.all()->project([f|$f.legalName, f|$f.employees.firstName->joinStrings('')], ['legalName', 'employeesFirstName'])};
+   let snowflakeSql = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".LEGALNAME as "legalName", "gen_root_d_m2".aggCol as "employeesFirstName" from firmTable as "root" left outer join (select "gen_root".ID as ID, listagg("personTable_d#5".FIRSTNAME) as aggCol from firmTable as "gen_root" left outer join personTable as "personTable_d#5" on ("gen_root".ID = "personTable_d#5".FIRMID) group by "gen_root".ID) as "gen_root_d_m2" on ("root".ID = "gen_root_d_m2".ID)', $snowflakeSql);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testJoinStringsSnowflakeWithSeparator():Boolean[1]
+{
+   let fn = {|Firm.all()->project([f|$f.legalName, f|$f.employees.firstName->joinStrings('*')], ['legalName', 'employeesFirstName'])};
+   let snowflakeSql = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".LEGALNAME as "legalName", "gen_root_d_m2".aggCol as "employeesFirstName" from firmTable as "root" left outer join (select "gen_root".ID as ID, listagg("personTable_d#5".FIRSTNAME, \'*\') as aggCol from firmTable as "gen_root" left outer join personTable as "personTable_d#5" on ("gen_root".ID = "personTable_d#5".FIRMID) group by "gen_root".ID) as "gen_root_d_m2" on ("root".ID = "gen_root_d_m2".ID)', $snowflakeSql);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testJoinStringsArray():Boolean[1]
+{
+   let fn = {|Firm.all()->project([f|$f.legalName, f|['A', 'B', 'C']->joinStrings('')], ['legalName', 'employeesFirstName'])};
+   let snowflakeSql = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".LEGALNAME as "legalName", concat(\'A\', \'B\', \'C\') as "employeesFirstName" from firmTable as "root"', $snowflakeSql);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testJoinStringsArrayWithSeparator():Boolean[1]
+{
+   let fn = {|Firm.all()->project([f|$f.legalName, f|['A', 'B', 'C']->joinStrings('*')], ['legalName', 'employeesFirstName'])};
+   let snowflakeSql = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".LEGALNAME as "legalName", concat(\'A\', \'*\', \'B\', \'*\', \'C\') as "employeesFirstName" from firmTable as "root"', $snowflakeSql);
+}

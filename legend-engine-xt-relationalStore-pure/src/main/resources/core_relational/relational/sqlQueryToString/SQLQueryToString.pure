@@ -85,10 +85,10 @@ Class meta::relational::functions::sqlQueryToString::DbConfig
      $this.dbExtension.windowColumnProcessor->toOne()->eval($w, $sgc);
    }: String[1];
 
-   semiStructuredObjectNavigationProcessor(s:SemiStructuredObjectNavigation[1], sgc:SqlGenerationContext[1])
+   semiStructuredElementProcessor(s:RelationalOperationElement[1], sgc:SqlGenerationContext[1])
    {
-     assert($this.dbExtension.semiStructuredObjectNavigationProcessor->isNotEmpty(), 'Semi structured navigation not supported for Database Type: ' + $this.dbType->toString());
-     $this.dbExtension.semiStructuredObjectNavigationProcessor->toOne()->eval($s, $sgc);
+     assert($this.dbExtension.semiStructuredElementProcessor->isNotEmpty(), 'Semi structured array element processing not supported for Database Type: ' + $this.dbType->toString());
+     $this.dbExtension.semiStructuredElementProcessor->toOne()->eval($s, $sgc);
    }: String[1];
 
    joinStringsProcessor(j:JoinStrings[1], sgc:SqlGenerationContext[1])
@@ -104,7 +104,7 @@ Class meta::relational::functions::sqlQueryToString::DbExtension
    isDbReservedIdentifier: meta::pure::metamodel::function::Function<{String[1] -> Boolean[1]}>[1];
    literalProcessor: meta::pure::metamodel::function::Function<{Type[1] -> LiteralProcessor[1]}>[1];
    windowColumnProcessor: meta::pure::metamodel::function::Function<{WindowColumn[1], SqlGenerationContext[1] -> String[1]}>[0..1];
-   semiStructuredObjectNavigationProcessor: meta::pure::metamodel::function::Function<{SemiStructuredObjectNavigation[1], SqlGenerationContext[1] -> String[1]}>[0..1];
+   semiStructuredElementProcessor: meta::pure::metamodel::function::Function<{RelationalOperationElement[1], SqlGenerationContext[1] -> String[1]}>[0..1];
    joinStringsProcessor: meta::pure::metamodel::function::Function<{JoinStrings[1], SqlGenerationContext[1] -> String[1]}>[0..1];
 }
 
@@ -183,9 +183,9 @@ function meta::relational::functions::sqlQueryToString::createDbExtension(dbType
      )
    ]->evalByDbType($dbType, |[]);
 
-   let semiStructuredObjectNavigationProcessor = [
-     option(DatabaseType.Snowflake, |processSemiStructuredObjectNavigationForSnowflake_SemiStructuredObjectNavigation_1__SqlGenerationContext_1__String_1_),
-     option(DatabaseType.H2, |processSemiStructuredObjectNavigationForH2_SemiStructuredObjectNavigation_1__SqlGenerationContext_1__String_1_)
+   let semiStructuredElementProcessor = [
+     option(DatabaseType.Snowflake, |processSemiStructuredElementForSnowflake_RelationalOperationElement_1__SqlGenerationContext_1__String_1_),
+     option(DatabaseType.H2, |processSemiStructuredElementForH2_RelationalOperationElement_1__SqlGenerationContext_1__String_1_)
    ]->evalByDbType($dbType, |[]);
 
    let joinStringsProcessor = [
@@ -194,8 +194,9 @@ function meta::relational::functions::sqlQueryToString::createDbExtension(dbType
      option(DatabaseType.DB2, |processJoinStringsOperationForDB2_JoinStrings_1__SqlGenerationContext_1__String_1_),
      option(DatabaseType.SqlServer, |processJoinStringsOperationForSqlServer_JoinStrings_1__SqlGenerationContext_1__String_1_),
      option(DatabaseType.Postgres, |processJoinStringsOperationForPostgres_JoinStrings_1__SqlGenerationContext_1__String_1_),
+     option(DatabaseType.Snowflake, |processJoinStringsOperationForSnowflake_JoinStrings_1__SqlGenerationContext_1__String_1_),
      option(
-       [DatabaseType.MemSQL, DatabaseType.Presto, DatabaseType.BigQuery, DatabaseType.Redshift, DatabaseType.Snowflake, DatabaseType.Databricks],
+       [DatabaseType.MemSQL, DatabaseType.Presto, DatabaseType.BigQuery, DatabaseType.Redshift, DatabaseType.Databricks],
        |processJoinStringsOperationWithConcatCall_JoinStrings_1__SqlGenerationContext_1__String_1_
      )
    ]->evalByDbType($dbType, |[]);
@@ -205,7 +206,7 @@ function meta::relational::functions::sqlQueryToString::createDbExtension(dbType
       isDbReservedIdentifier = {str:String[1]| $str->in($reservedWords)},
       literalProcessor = {type:Type[1]| $literalProcessors->get(if($type->instanceOf(Enumeration), | Enum, | $type))->toOne()},
       windowColumnProcessor = $windowColumnProcessor,
-      semiStructuredObjectNavigationProcessor = $semiStructuredObjectNavigationProcessor,
+      semiStructuredElementProcessor = $semiStructuredElementProcessor,
       joinStringsProcessor = $joinStringsProcessor
    );
 }
@@ -303,7 +304,9 @@ function meta::relational::functions::sqlQueryToString::processOperation(relatio
                                           f:FreeMarkerOperationHolder[1]|processFreeMarkerOperationHolder($f, $dbConfig, $format, $generationState, $config, false, $extensions),
                                           d:DynaFunction[1]|processDynaFunction($d, $dbConfig, $format, $generationState, $config, $extensions),
                                           c:ColumnName[1]|processIdentifier($c.name->toOne(), $dbConfig),
-                                          s:SemiStructuredObjectNavigation[1]|$dbConfig.semiStructuredObjectNavigationProcessor($s, $sgc),
+                                          s:SemiStructuredObjectNavigation[1]|$dbConfig.semiStructuredElementProcessor($s, $sgc),
+                                          s:SemiStructuredArrayFlatten[1]|$dbConfig.semiStructuredElementProcessor($s, $sgc),
+                                          s:SemiStructuredArrayFlattenOutput[1]|$dbConfig.semiStructuredElementProcessor($s, $sgc),
                                           {f:meta::relational::metamodel::operation::Function[1]| assert(false, 'Don\'t know how to handle %s', $f->type()); 'TO DO'; }
                                        ])->toOneMany()
                                      );
@@ -820,7 +823,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::proce
     let strs = if(eq($prefix, '\'\''),
                   | if(eq($suffix, '\'\''), | $strings, | $strings->add($suffix)),
                   | if(eq($suffix, '\'\''), | $strings->add(0, $prefix), | $strings->add(0, $prefix)->add($suffix)));
-    if ($strs->size() == 0, | $strs->at(0), | if ($isGroupByCat, 
+    if ($strs->size() == 0, | $strs->at(0), | if ($isGroupByCat,
         |assert($groupByCat->isNotEmpty(), 'The database type \''+$sgc.dbConfig.dbType->id()+'\' is not supported yet!'); $groupByCat->toOne()->eval($strs->at(0), $separator);,
         |assert($stringCat->isNotEmpty(), 'The database type \''+$sgc.dbConfig.dbType->id()+'\' is not supported yet!'); $stringCat->toOne()->eval($strs, $separator);));
 }
@@ -834,6 +837,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::proce
 function <<access.private>> meta::relational::functions::sqlQueryToString::processJoinStringsOperationForSybaseIQ(js:JoinStrings[1], sgc:SqlGenerationContext[1]): String[1]
 {
    processJoinStringsOperation($js, $sgc, {col, sep| 'list(' + $col + ',' + $sep + ' )'}, {strs, sep| $strs->joinStrings(if('\'\'' == $sep, |'+', |'+' + $sep + '+'))});
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processJoinStringsOperationForSnowflake(js:JoinStrings[1], sgc:SqlGenerationContext[1]): String[1]
+{
+   processJoinStringsOperation($js, $sgc, {col, sep| 'listagg(' + $col + if($sep == '\'\'', |'', |', ' + $sep) + ')'},
+    {strs, sep| $strs->joinStrings('concat(', if('\'\'' == $sep, |', ', |', ' + $sep + ', ') , ')')});
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::processJoinStringsOperationForDB2(js:JoinStrings[1], sgc:SqlGenerationContext[1]): String[1]
@@ -904,6 +913,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::proce
                                                 ->processOperation($dbConfig, $format->indent(), $extensions),
                                        j:JoinTreeNode[1] |
                                              if($j.joinType == JoinType.INNER,| ' ' + $format.separator() + 'inner join ',|if($j.joinType == JoinType.LEFT_OUTER,| ' ' + $format.separator() + 'left outer join ',| ' ' + $format.separator() + 'right outer join '))
+                                                + if ($j.lateral == true, | 'lateral ', | '')
                                                 + $j.alias
                                                       ->map(a|^$a(name = '"' + $a.name + '"')) //Not sure why this is necessary, but it's retained to keep the generated SQL the same as previously (and does no real harm)
                                                       ->toOne()->processOperation($dbConfig, $format->indent(), $extensions) + $format.separator()
@@ -1049,6 +1059,15 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::proce
    '(' + $processedLeft + ' not in ' + if($processedRight->startsWith('(') && $processedRight->endsWith(')'), | $processedRight, | '(' + $processedRight + ')') + ' OR ' + $processedLeft + ' is null)';
 }
 
+function <<access.private>> meta::relational::functions::sqlQueryToString::processSemiStructuredElementForSnowflake(s:RelationalOperationElement[1], sgc:SqlGenerationContext[1]): String[1]
+{
+   $s->match([
+      o:SemiStructuredObjectNavigation[1] | $o->processSemiStructuredObjectNavigationForSnowflake($sgc),
+      a:SemiStructuredArrayFlatten[1] | $a->processSemiStructuredArrayFlattenForSnowflake($sgc),
+      a:SemiStructuredArrayFlattenOutput[1] | $a->processSemiStructuredArrayFlattenOutputForSnowflake($sgc)
+   ])  
+}
+
 function <<access.private>> meta::relational::functions::sqlQueryToString::processSemiStructuredObjectNavigationForSnowflake(s:SemiStructuredObjectNavigation[1], sgc:SqlGenerationContext[1]): String[1]
 {
    // https://docs.snowflake.com/en/user-guide/querying-semistructured.html
@@ -1060,13 +1079,40 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::proce
       a: SemiStructuredArrayElementAccess[1] | '[' + $a.index->cast(@Literal).value->toString() + ']'
    ]);
 
-   let castSuffix = if($s.returnType == String, | '::varchar', |
-                    if($s.returnType == StrictDate, | '::date', |
-                    if($s.returnType->isNotEmpty() && $s.returnType->toOne()->_subTypeOf(Date), | '::timestamp', |
-                    if($s.returnType->isNotEmpty() && $s.returnType->toOne()->instanceOf(Enumeration), | '::varchar', |
-                    ''))));
+   $elementAccess + castSuffixForSnowflakeSemiStructuredData($s.returnType);
+}
 
-   $elementAccess + $castSuffix;
+function <<access.private>> meta::relational::functions::sqlQueryToString::processSemiStructuredArrayFlattenForSnowflake(s:SemiStructuredArrayFlatten[1], sgc:SqlGenerationContext[1]): String[1]
+{
+   // https://docs.snowflake.com/en/sql-reference/functions/flatten.html
+
+   let processedNavigation = $s.navigation->processOperation($sgc);
+   'flatten(input => ' + $processedNavigation + ', outer => true, recursive => false, mode => \'array\')';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processSemiStructuredArrayFlattenOutputForSnowflake(s:SemiStructuredArrayFlattenOutput[1], sgc:SqlGenerationContext[1]): String[1]
+{
+   // https://docs.snowflake.com/en/sql-reference/functions/flatten.html
+
+   let doubleQuote = if($sgc.config.useQuotesForTableAliasColumn == false, |'', |'"');
+   let processedIdentifier = processIdentifier($doubleQuote + $s.tableAliasColumn.alias.name->toOne() + $doubleQuote, $sgc.dbConfig);
+   $processedIdentifier + '.' + processColumnName('value', $sgc.dbConfig) + castSuffixForSnowflakeSemiStructuredData($s.returnType);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::castSuffixForSnowflakeSemiStructuredData(type:Type[0..1]): String[1]
+{
+   if($type == String, | '::varchar', |
+   if($type == StrictDate, | '::date', |
+   if($type->isNotEmpty() && $type->toOne()->_subTypeOf(Date), | '::timestamp', |
+   if($type->isNotEmpty() && $type->toOne()->instanceOf(Enumeration), | '::varchar', |
+   ''))));
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processSemiStructuredElementForH2(s:RelationalOperationElement[1], sgc:SqlGenerationContext[1]): String[1]
+{
+   $s->match([
+      o:SemiStructuredObjectNavigation[1] | $o->processSemiStructuredObjectNavigationForH2($sgc)
+   ])  
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::processSemiStructuredObjectNavigationForH2(s:SemiStructuredObjectNavigation[1], sgc:SqlGenerationContext[1]): String[1]
