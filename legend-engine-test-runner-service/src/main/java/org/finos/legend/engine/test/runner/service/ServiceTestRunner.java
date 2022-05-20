@@ -276,7 +276,7 @@ public class ServiceTestRunner
             String javaCode = ServiceTestGenerationHelper.generateJavaForAsserts(asserts, this.service, this.pureModel, packageName, className);
             Class<?> assertsClass;
             RichServiceTestResult testRun;
-            try
+            try (Scope s = GlobalTracer.get().buildSpan("compile test asserts").startActive(true))
             {
                 assertsClass = compileJavaForAsserts(packageName, className, javaCode);
             }
