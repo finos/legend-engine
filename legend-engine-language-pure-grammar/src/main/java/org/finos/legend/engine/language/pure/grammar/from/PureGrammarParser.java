@@ -123,8 +123,10 @@ public class PureGrammarParser
     {
         String parserName = ctx.SECTION_START().getText().substring(4); // the prefix is `\n###` hence 4 characters
         SourceInformation parserNameSourceInformation = walkerSourceInformation.getSourceInformation(ctx.SECTION_START().getSymbol());
-        int lineOffset = ctx.SECTION_START().getSymbol().getLine() - 2; // since the CODE_BLOCK_START is `\n###` we have to subtract 1 more line than usual
-        ParseTreeWalkerSourceInformation sectionWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder("", lineOffset, 0).withReturnSourceInfo(returnSourceInfo).build();
+        // since the CODE_BLOCK_START is `\n###` we have to subtract 1 more line than usual
+        // also, we account for the line offset
+        int lineOffset = ctx.SECTION_START().getSymbol().getLine() - 2 + walkerSourceInformation.getLineOffset();
+        ParseTreeWalkerSourceInformation sectionWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, 0).withReturnSourceInfo(returnSourceInfo).build();
         SourceInformation sectionSourceInformation = walkerSourceInformation.getSourceInformation(ctx);
         if (ctx.sectionContent() != null)
         {

@@ -37,12 +37,11 @@ public class GrammarToJson extends GrammarAPI
     public Response model(String text,
                           @DefaultValue("") @ApiParam("The source ID to be used by the parser") @QueryParam("sourceId") String sourceId,
                           @DefaultValue("0") @ApiParam("The line number the parser will offset by") @QueryParam("lineOffset") int lineOffset,
-                          @DefaultValue("0") @ApiParam("The column number the parser will offset by") @QueryParam("columnOffset") int columnOffset,
                           @DefaultValue("true") @QueryParam("returnSourceInformation") boolean returnSourceInformation,
                           @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         PureGrammarParserExtensions.logExtensionList();
-        return grammarToJson(text, (a) -> PureGrammarParser.newInstance().parseModel(a, sourceId, lineOffset, columnOffset, returnSourceInformation), pm, "Grammar to Json : Model");
+        return grammarToJson(text, (a) -> PureGrammarParser.newInstance().parseModel(a, sourceId, lineOffset, 0, returnSourceInformation), pm, "Grammar to Json : Model");
     }
 
     @POST
