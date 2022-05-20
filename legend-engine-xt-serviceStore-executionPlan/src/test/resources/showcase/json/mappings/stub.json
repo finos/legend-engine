@@ -224,6 +224,58 @@
           }
         ]
       }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "urlPath": "/persons/getPersonsByFirstAndMiddleName",
+        "queryParameters": {
+          "firstName": {
+            "equalTo": "John"
+          },
+          "middleName": {
+            "equalTo": "Patricio"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": [
+          {
+            "firstName": "John",
+            "middleName": "Patricio",
+            "lastName": "Smith"
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "urlPath": "/persons/getPersonsByFirstAndMiddleName",
+        "queryParameters": {
+          "firstName": {
+            "equalTo": "John"
+          },
+          "middleName": {
+            "equalTo": "*"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": [
+          {
+            "firstName": "John",
+            "middleName": "Patricio",
+            "lastName": "Smith"
+          },
+          {
+            "firstName": "John",
+            "lastName": "Smith2"
+          }
+        ]
+      }
     }
   ]
 }
