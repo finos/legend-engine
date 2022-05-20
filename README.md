@@ -1,5 +1,5 @@
 [![FINOS - Incubating](https://cdn.jsdelivr.net/gh/finos/contrib-toolbox@master/images/badge-incubating.svg)](https://finosfoundation.atlassian.net/wiki/display/FINOS/Incubating)
-![legend-build](https://github.com/finos/legend-engine/workflows/legend-build/badge.svg)
+![Build CI](https://github.com/finos/legend-engine/workflows/Builc%20CI/badge.svg)
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=legend-engine&metric=security_rating&token=cbbc6d136c4f5671324244170afb9f0a6c22a7fb)](https://sonarcloud.io/dashboard?id=legend-engine)
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=legend-engine&metric=bugs&token=cbbc6d136c4f5671324244170afb9f0a6c22a7fb)](https://sonarcloud.io/dashboard?id=legend-engine)
 
