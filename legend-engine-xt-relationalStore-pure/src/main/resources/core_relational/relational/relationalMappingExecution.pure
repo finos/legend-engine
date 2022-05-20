@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import meta::pure::executionPlan::connection::*;
+import meta::relational::translation::*;
 import meta::relational::functions::typeInference::*;
 import meta::pure::deepfetch::execution::*;
 import meta::pure::router::extension::*;
@@ -162,7 +163,7 @@ function meta::relational::mapping::generateSQLExecutionNode(query:SQLQuery[1], 
    ^SQLExecutionNode
    (
       sqlQuery = $sql,
-      resultColumns = $query->match([sel:SelectSQLQuery[1] | $sel.columns->map(c| ^SQLResultColumn(label = $c->columnLabel($connection, $extensions), dataType = $c->getRelationalTypeFromRelationalOperationElement())), a:Any[1] | []]),
+      resultColumns = $query->match([sel:SelectSQLQuery[1] | $sel.columns->map(c| ^SQLResultColumn(label = $c->columnLabel($connection, $extensions), dataType = $c->getRelationalTypeFromRelationalOperationElement()->translateCoreTypeToDbSpecificType(^TranslationContext(dbType = $connection.type)))), a:Any[1] | []]),
       resultType = ^ResultType(type = Any),
       connection = $connection->meta::relational::mapping::updateConnection($extensions)->cast(@DatabaseConnection),
       supportFunctions = relationalPlanSupportFunctions($connection)
