@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.transactionmilestoning.derivation;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -20,11 +20,12 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = DateTimeValidityMilestoning.class, name = "dateTimeValidityMilestoning"),
+        @JsonSubTypes.Type(value = SourceSpecifiesInDateTime.class, name = "sourceSpecifiesInDateTime"),
+        @JsonSubTypes.Type(value = SourceSpecifiesInAndOutDateTime.class, name = "sourceSpecifiesInAndOutDateTime")
 })
-public abstract class ValidityMilestoning
+public abstract class TransactionDerivation
 {
     public SourceInformation sourceInformation;
 
-    public abstract <T> T accept(ValidityMilestoningVisitor<T> visitor);
+    public abstract <T> T accept(TransactionDerivationVisitor<T> visitor);
 }
