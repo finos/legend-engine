@@ -57,26 +57,12 @@ public class ParseTreeWalkerSourceInformation
 
     private final boolean returnSourceInfo;
 
-    private static final ParseTreeWalkerSourceInformation defaultWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder("", 0, 0).withReturnSourceInfo(true).build();
-    
-    private static final ParseTreeWalkerSourceInformation defaultWalkerWithStubSourceInformation = new ParseTreeWalkerSourceInformation.Builder("", 0, 0).withReturnSourceInfo(false).build();
-
     private ParseTreeWalkerSourceInformation(ParseTreeWalkerSourceInformation.Builder builder)
     {
         this.sourceId = builder.sourceId;
         this.lineOffset = builder.lineOffset;
         this.columnOffset = builder.columnOffset;
         this.returnSourceInfo = builder.returnSourceInfo;
-    }
-
-    public static ParseTreeWalkerSourceInformation DEFAULT_WALKER_SOURCE_INFORMATION(boolean returnSourceInfo)
-    {
-        return  returnSourceInfo?  defaultWalkerSourceInformation: defaultWalkerWithStubSourceInformation;
-    }
-
-    public static ParseTreeWalkerSourceInformation DEFAULT_WALKER_SOURCE_INFORMATION()
-    {
-        return  DEFAULT_WALKER_SOURCE_INFORMATION(true);
     }
 
     public String getSourceId()

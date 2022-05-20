@@ -38,7 +38,7 @@ public class TestRelationalOperationElementGrammarRoundtrip
         RelationalOperationElement operation = null;
         try
         {
-            RelationalOperationElement op = RelationalGrammarParserExtension.parseRelationalOperationElement(val, true);
+            RelationalOperationElement op = RelationalGrammarParserExtension.parseRelationalOperationElement(val, "", 0, 0, true);
             String json = objectMapper.writeValueAsString(op);
             operation = objectMapper.readValue(json, RelationalOperationElement.class);
             if (expectedErrorMsg != null)

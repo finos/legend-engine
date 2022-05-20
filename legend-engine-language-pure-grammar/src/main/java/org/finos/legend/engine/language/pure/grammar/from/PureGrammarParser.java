@@ -74,26 +74,31 @@ public class PureGrammarParser
         return new PureGrammarParser(PureGrammarParserExtensions.fromAvailableExtensions());
     }
 
-    public PureModelContextData parseModel(String code, boolean returnSourceInfo)
+    public PureModelContextData parseModel(String code, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)
     {
-        return this.parse(code, this.parsers, returnSourceInfo);
+        return this.parse(code, this.parsers, sourceId, lineOffset, columnOffset, returnSourceInfo);
     }
 
     public PureModelContextData parseModel(String code)
     {
-        return this.parse(code, this.parsers, true);
+        return this.parse(code, this.parsers, "", 0, 0, true);
     }
 
-    public Lambda parseLambda(String code, String lambdaId, boolean returnSourceInfo)
+    public Lambda parseLambda(String code)
     {
-        return new DomainParser().parseLambda(code, lambdaId, returnSourceInfo);
+        return this.parseLambda(code, "", 0, 0, true);
     }
 
-    private PureModelContextData parse(String code, DEPRECATED_PureGrammarParserLibrary parserLibrary, boolean returnSourceInfo)
+    public Lambda parseLambda(String code, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)
+    {
+        return new DomainParser().parseLambda(code, sourceId, lineOffset, columnOffset, returnSourceInfo);
+    }
+
+    private PureModelContextData parse(String code, DEPRECATED_PureGrammarParserLibrary parserLibrary, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)
     {
         String fullCode = DEFAULT_SECTION_BEGIN + code;
         PureGrammarParserContext parserContext = new PureGrammarParserContext(this.extensions);
-        ParseTreeWalkerSourceInformation walkerSourceInformation = ParseTreeWalkerSourceInformation.DEFAULT_WALKER_SOURCE_INFORMATION(returnSourceInfo);
+        ParseTreeWalkerSourceInformation walkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(sourceId, lineOffset, columnOffset).withReturnSourceInfo(returnSourceInfo).build();
         // init the parser
         ParserErrorListener errorListener = new ParserErrorListener(walkerSourceInformation);
         CodeLexerGrammar lexer = new CodeLexerGrammar(CharStreams.fromString(fullCode));
@@ -118,8 +123,10 @@ public class PureGrammarParser
     {
         String parserName = ctx.SECTION_START().getText().substring(4); // the prefix is `\n###` hence 4 characters
         SourceInformation parserNameSourceInformation = walkerSourceInformation.getSourceInformation(ctx.SECTION_START().getSymbol());
-        int lineOffset = ctx.SECTION_START().getSymbol().getLine() - 2; // since the CODE_BLOCK_START is `\n###` we have to subtract 1 more line than usual
-        ParseTreeWalkerSourceInformation sectionWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder("", lineOffset, 0).withReturnSourceInfo(returnSourceInfo).build();
+        // since the CODE_BLOCK_START is `\n###` we have to subtract 1 more line than usual
+        // also, we account for the line offset
+        int lineOffset = ctx.SECTION_START().getSymbol().getLine() - 2 + walkerSourceInformation.getLineOffset();
+        ParseTreeWalkerSourceInformation sectionWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, 0).withReturnSourceInfo(returnSourceInfo).build();
         SourceInformation sectionSourceInformation = walkerSourceInformation.getSourceInformation(ctx);
         if (ctx.sectionContent() != null)
         {
@@ -176,13 +183,13 @@ public class PureGrammarParser
         return section;
     }
 
-    public RootGraphFetchTree parseGraphFetch(String input, String s, boolean returnSourceInfo)
+    public RootGraphFetchTree parseGraphFetch(String input, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)
     {
-        return new DomainParser().parseGraphFetch(input, s, returnSourceInfo);
+        return new DomainParser().parseGraphFetch(input, sourceId, lineOffset, columnOffset, returnSourceInfo);
     }
 
-    public ValueSpecification parseValueSpecification(String input, String s, boolean returnSourceInfo)
+    public ValueSpecification parseValueSpecification(String input, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)
     {
-        return new DomainParser().parseValueSpecification(input, s, returnSourceInfo);
+        return new DomainParser().parseValueSpecification(input, sourceId, lineOffset, columnOffset, returnSourceInfo);
     }
 }

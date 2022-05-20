@@ -12,7 +12,6 @@ import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Maps;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.MapIterate;
-import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.language.pure.grammar.to.RelationalGrammarComposerExtension;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtensionLoader;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.RelationalOperationElement;
@@ -25,7 +24,12 @@ import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.Map;
@@ -37,11 +41,13 @@ import static org.finos.legend.engine.shared.core.operational.http.InflateInterc
 public class RelationalOperationElementJsonToGrammar
 {
     @POST
-    @Path("relationalOperationElement/{renderStyle}")
+    @Path("relationalOperationElement")
     @ApiOperation(value = "Generates Pure language text from Pure protocol JSON for relational operation elements")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Produces(MediaType.TEXT_PLAIN)
-    public Response relationalOperationElement(@PathParam("renderStyle") @DefaultValue("PRETTY") RenderStyle renderStyle, RelationalOperationElement input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response relationalOperationElement(RelationalOperationElement input,
+                                               @QueryParam("renderStyle") @DefaultValue("PRETTY") RenderStyle renderStyle,
+                                               @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         try (Scope scope = GlobalTracer.get().buildSpan("Service: jsonToGrammar relationalOperationElement").startActive(true))
@@ -56,11 +62,13 @@ public class RelationalOperationElementJsonToGrammar
     }
 
     @POST
-    @Path("relationalOperationElement/{renderStyle}/batch")
+    @Path("relationalOperationElement/batch")
     @ApiOperation(value = "Generates Pure language text from Pure protocol JSON for relational operation elements")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Produces(MediaType.APPLICATION_JSON)
-    public Response relationalOperationElementBatch(@PathParam("renderStyle") @DefaultValue("PRETTY") RenderStyle renderStyle, Map<String, RelationalOperationElement> input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response relationalOperationElementBatch(Map<String, RelationalOperationElement> input,
+                                                    @QueryParam("renderStyle") @DefaultValue("PRETTY") RenderStyle renderStyle,
+                                                    @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         try (Scope scope = GlobalTracer.get().buildSpan("Service: jsonToGrammar relationalOperationElement").startActive(true))
