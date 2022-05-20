@@ -19,20 +19,38 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.authentication.flows.*;
 import org.finos.legend.engine.authentication.flows.H2StaticWithTestUserPasswordFlow;
 import org.finos.legend.engine.authentication.provider.AbstractDatabaseAuthenticationFlowProvider;
+import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProviderConfiguration;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 
 public final class LegendDefaultDatabaseAuthenticationFlowProvider extends AbstractDatabaseAuthenticationFlowProvider
 {
+    private LegendDefaultDatabaseAuthenticationFlowProviderConfiguration databaseAuthenticationFlowProviderConfiguration;
+
     public LegendDefaultDatabaseAuthenticationFlowProvider()
     {
-        FLOWS.forEach(this::registerFlow);
     }
 
-    private static ImmutableList<DatabaseAuthenticationFlow> FLOWS = Lists.immutable.of(
-            new H2StaticWithTestUserPasswordFlow(),
-            new SnowflakeWithKeyPairFlow(),
-            new DatabricksWithApiTokenFlow(),
-            new BigQueryWithGCPApplicationDefaultCredentialsFlow(),
-            new SqlServerStaticWithUserPasswordFlow(),
-            new RedshiftWithUserPasswordFlow()
-    );
+    private ImmutableList<DatabaseAuthenticationFlow<? extends DatasourceSpecification, ? extends AuthenticationStrategy>> flows(){
+        return Lists.immutable.of(
+                new BigQueryWithGCPApplicationDefaultCredentialsFlow(),
+                new BigQueryWithGCPWorkloadIdentityFederationFlow(databaseAuthenticationFlowProviderConfiguration),
+                new DatabricksWithApiTokenFlow(),
+                new H2StaticWithTestUserPasswordFlow(),
+                new SnowflakeWithKeyPairFlow(),
+                new SqlServerStaticWithUserPasswordFlow(),
+                new RedshiftWithUserPasswordFlow()
+        );
+    }
+
+    @Override
+    public void configure(DatabaseAuthenticationFlowProviderConfiguration configuration) {
+        if(!(configuration instanceof LegendDefaultDatabaseAuthenticationFlowProviderConfiguration))
+        {
+            String message = "Mismatch in flow provider configuration. It should be an instance of " + LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.class.getSimpleName();
+            throw new RuntimeException(message);
+        }
+        this.databaseAuthenticationFlowProviderConfiguration = (LegendDefaultDatabaseAuthenticationFlowProviderConfiguration) configuration;
+        flows().forEach(this::registerFlow);
+    }
 }

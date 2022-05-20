@@ -161,8 +161,9 @@ public class RelationalProtocolExtension implements PureProtocolExtension
                                 Tuples.pair(UserNamePasswordAuthenticationStrategy.class, "userNamePassword"),
                                 Tuples.pair(SnowflakePublicAuthenticationStrategy.class, "snowflakePublic"),
                                 Tuples.pair(GCPApplicationDefaultCredentialsAuthenticationStrategy.class, "gcpApplicationDefaultCredentials"),
-                                Tuples.pair(ApiTokenAuthenticationStrategy.class, "apiToken")
-                                )).build(),
+                                Tuples.pair(ApiTokenAuthenticationStrategy.class, "apiToken"),
+                                Tuples.pair(GCPWorkloadIdentityFederationAuthenticationStrategy.class, "gcpWorkloadIdentityFederation")
+                        )).build(),
 
                 //Post Processor
                 ProtocolSubTypeInfo.Builder

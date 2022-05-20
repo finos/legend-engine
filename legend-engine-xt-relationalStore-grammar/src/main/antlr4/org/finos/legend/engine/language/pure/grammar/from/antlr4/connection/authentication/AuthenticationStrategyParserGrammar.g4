@@ -74,3 +74,21 @@ snowflakePublicAuthUserName:  SNOWFLAKE_AUTH_PUBLIC_USERNAME COLON STRING SEMI_C
 
 gcpApplicationDefaultCredentialsAuth : GCP_APPLICATION_DEFAULT_CREDENTIALS_AUTH
 ;
+
+gcpWorkloadIdentityFederationAuth: GCP_WORKLOAD_IDENTITY_FEDERATION_AUTH
+                                    BRACE_OPEN
+                                        (
+                                            serviceAccountEmailRef
+                                            | additionalGcpScopesRef
+                                        )*
+                                    BRACE_CLOSE
+;
+
+serviceAccountEmailRef:          SERVICE_ACCOUNT_EMAIL COLON STRING SEMI_COLON
+;
+
+additionalGcpScopesRef:                            ADDITIONAL_GCP_SCOPES COLON gcpScopesArray SEMI_COLON
+;
+
+gcpScopesArray:                                  BRACKET_OPEN ( STRING (COMMA STRING)* )? BRACKET_CLOSE
+;

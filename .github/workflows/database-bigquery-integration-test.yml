@@ -52,12 +52,17 @@ jobs:
       - name: Configure GCP credentials With Github Actions
         uses: google-github-actions/auth@v0
         with:
-          credentials_json: ${{ secrets.BIGQUERY_INTEGRATION_TEST_RO1_JSON }}
+          credentials_json: ${{ secrets.BIGQUERY_INTEGRATION_SA1_JSON }}
       - name: 'Set up Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@v0'
       - name: 'Use gcloud CLI'
         run: 'gcloud info'
       - name: Build + Run Integration Tests
+        env:
+          MAVEN_OPTS: -Xmx4000m
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_INTEGRATION_USER1_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_INTEGRATION_USER1_SECRET_ACCESS_KEY }}
         run: |
           mvn clean install -DskipTests=true
           mvn -P run-bigquery-integration -pl legend-engine-xt-relationalStore-executionPlan-connection-tests -Dtest="ExternalIntegration*BigQuery" test
+          mvn -P run-bigquery-integration -pl legend-engine-xt-relationalStore-executionPlan-execution-store-authentication -Dtest="ExternalIntegration*BigQuery*" test

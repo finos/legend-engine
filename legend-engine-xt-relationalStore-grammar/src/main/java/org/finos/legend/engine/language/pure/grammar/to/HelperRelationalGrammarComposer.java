@@ -19,6 +19,14 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.datasource.DataSourceSpecificationSourceCode;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.DefaultH2AuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.DelegatedKerberosAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPApplicationDefaultCredentialsAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.SnowflakePublicAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TestDatabaseAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.UserNamePasswordAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPWorkloadIdentityFederationAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.Mapper;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.MapperPostProcessor;
@@ -730,6 +738,17 @@ public class HelperRelationalGrammarComposer
         {
             GCPApplicationDefaultCredentialsAuthenticationStrategy auth = (GCPApplicationDefaultCredentialsAuthenticationStrategy)_auth;
             return "GCPApplicationDefaultCredentials";
+        }
+        else if (_auth instanceof GCPWorkloadIdentityFederationAuthenticationStrategy)
+        {
+            GCPWorkloadIdentityFederationAuthenticationStrategy auth = (GCPWorkloadIdentityFederationAuthenticationStrategy) _auth;
+            int baseIndentation = 1;
+            return "GCPWorkloadIdentityFederation" +
+                    "\n" +
+                    context.getIndentationString() + getTabString(baseIndentation) + "{\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "serviceAccountEmail: " + convertString(auth.serviceAccountEmail, true) + ";\n" +
+                    (auth.additionalGcpScopes != null && !auth.additionalGcpScopes.isEmpty() ? context.getIndentationString() + getTabString(baseIndentation + 1) + "additionalGcpScopes: [\n" + ListIterate.collect(auth.additionalGcpScopes, s -> context.getIndentationString() + getTabString(baseIndentation + 2) + convertString(s, true)).makeString(",\n") + "\n" + context.getIndentationString() + getTabString(baseIndentation + 2) + "];\n" : "") +
+                    context.getIndentationString() + getTabString(baseIndentation) + "}";
         }
         return null;
     }

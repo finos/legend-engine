@@ -207,6 +207,8 @@
         <json-smart.version>2.4.7</json-smart.version>
         <byte-buddy.version>1.11.20</byte-buddy.version>
         <wiremock.version>2.27.2</wiremock.version>
+        <io.netty.version>4.1.52.Final</io.netty.version>
+        <amazon.awssdk.version>2.17.129</amazon.awssdk.version>
 
         <!-- Plugin versions -->
         <maven.compiler.plugin.version>3.8.0</maven.compiler.plugin.version>
@@ -1819,6 +1821,28 @@
                         <artifactId>jaxb-api</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <!-- Amazon AWS SDK Versioning -->
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>bom</artifactId>
+                <version>${amazon.awssdk.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <!-- IO Netty -->
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-all</artifactId>
+                <version>${io.netty.version}</version>
             </dependency>
         </dependencies>
 
