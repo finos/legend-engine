@@ -74,26 +74,31 @@ public class PureGrammarParser
         return new PureGrammarParser(PureGrammarParserExtensions.fromAvailableExtensions());
     }
 
-    public PureModelContextData parseModel(String code, boolean returnSourceInfo)
+    public PureModelContextData parseModel(String code, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)
     {
-        return this.parse(code, this.parsers, returnSourceInfo);
+        return this.parse(code, this.parsers, sourceId, lineOffset, columnOffset, returnSourceInfo);
     }
 
     public PureModelContextData parseModel(String code)
     {
-        return this.parse(code, this.parsers, true);
+        return this.parse(code, this.parsers, "", 0, 0, true);
     }
 
-    public Lambda parseLambda(String code, String lambdaId, boolean returnSourceInfo)
+    public Lambda parseLambda(String code)
     {
-        return new DomainParser().parseLambda(code, lambdaId, returnSourceInfo);
+        return this.parseLambda(code, "", 0, 0, true);
     }
 
-    private PureModelContextData parse(String code, DEPRECATED_PureGrammarParserLibrary parserLibrary, boolean returnSourceInfo)
+    public Lambda parseLambda(String code, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)
+    {
+        return new DomainParser().parseLambda(code, sourceId, lineOffset, columnOffset, returnSourceInfo);
+    }
+
+    private PureModelContextData parse(String code, DEPRECATED_PureGrammarParserLibrary parserLibrary, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)
     {
         String fullCode = DEFAULT_SECTION_BEGIN + code;
         PureGrammarParserContext parserContext = new PureGrammarParserContext(this.extensions);
-        ParseTreeWalkerSourceInformation walkerSourceInformation = ParseTreeWalkerSourceInformation.DEFAULT_WALKER_SOURCE_INFORMATION(returnSourceInfo);
+        ParseTreeWalkerSourceInformation walkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(sourceId, lineOffset, columnOffset).withReturnSourceInfo(returnSourceInfo).build();
         // init the parser
         ParserErrorListener errorListener = new ParserErrorListener(walkerSourceInformation);
         CodeLexerGrammar lexer = new CodeLexerGrammar(CharStreams.fromString(fullCode));
@@ -176,13 +181,13 @@ public class PureGrammarParser
         return section;
     }
 
-    public RootGraphFetchTree parseGraphFetch(String input, String sourceId, boolean returnSourceInfo)
+    public RootGraphFetchTree parseGraphFetch(String input, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)
     {
-        return new DomainParser().parseGraphFetch(input, sourceId, returnSourceInfo);
+        return new DomainParser().parseGraphFetch(input, sourceId, lineOffset, columnOffset, returnSourceInfo);
     }
 
-    public ValueSpecification parseValueSpecification(String input, String sourceId, boolean returnSourceInfo)
+    public ValueSpecification parseValueSpecification(String input, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)
     {
-        return new DomainParser().parseValueSpecification(input, sourceId, returnSourceInfo);
+        return new DomainParser().parseValueSpecification(input, sourceId, lineOffset, columnOffset, returnSourceInfo);
     }
 }

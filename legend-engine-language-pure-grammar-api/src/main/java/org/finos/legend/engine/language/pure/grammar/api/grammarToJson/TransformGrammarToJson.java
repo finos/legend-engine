@@ -72,7 +72,7 @@ public class TransformGrammarToJson
             {
                 try
                 {
-                    Lambda lambda = parser.parseLambda(value, key, returnSourceInfo);
+                    Lambda lambda = parser.parseLambda(value, key, 0, 0, returnSourceInfo);
                     lambdas.put(key, lambda);
                 }
                 catch (Exception e)
@@ -98,7 +98,7 @@ public class TransformGrammarToJson
             {
                 try
                 {
-                    symmetricResult.modelDataContext = parser.parseModel(grammarInput.code, returnSourceInfo);
+                    symmetricResult.modelDataContext = parser.parseModel(grammarInput.code, "", 0, 0, returnSourceInfo);
                 }
                 catch (Exception e)
                 {

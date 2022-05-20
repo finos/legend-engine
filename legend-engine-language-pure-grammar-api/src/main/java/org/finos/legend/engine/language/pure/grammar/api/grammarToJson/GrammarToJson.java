@@ -36,7 +36,7 @@ public class GrammarToJson extends GrammarAPI
                           @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         PureGrammarParserExtensions.logExtensionList();
-        return grammarToJson(input, (a, b, c) -> PureGrammarParser.newInstance().parseModel(a, c), pm, "Grammar to Json : Model");
+        return grammarToJson(input, (a, b, c, d, e) -> PureGrammarParser.newInstance().parseModel(a, b, c, d, e), pm, "Grammar to Json : Model");
     }
 
     @POST
@@ -47,7 +47,7 @@ public class GrammarToJson extends GrammarAPI
     public Response lambda(ParserInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         PureGrammarParserExtensions.logExtensionList();
-        return grammarToJson(input, (a, b, c) -> PureGrammarParser.newInstance().parseLambda(a, b, c), pm, "Grammar to Json : Lambda");
+        return grammarToJson(input, (a, b, c, d, e) -> PureGrammarParser.newInstance().parseLambda(a, b, c, d, e), pm, "Grammar to Json : Lambda");
     }
 
     // Required so that Jackson properly includes _type for the top level element
@@ -65,7 +65,7 @@ public class GrammarToJson extends GrammarAPI
     public Response lambdaBatch(Map<String, ParserInput> input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         PureGrammarParserExtensions.logExtensionList();
-        return grammarToJsonBatch(input, (a, b, c)-> PureGrammarParser.newInstance().parseLambda(a, b, c), new TypedMap(), pm, "Grammar to Json : Lambda Batch");
+        return grammarToJsonBatch(input, (a, b, c, d, e)-> PureGrammarParser.newInstance().parseLambda(a, b, c, d, e), new TypedMap(), pm, "Grammar to Json : Lambda Batch");
     }
 
     @POST
@@ -76,7 +76,7 @@ public class GrammarToJson extends GrammarAPI
     public Response graphFetch(ParserInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         PureGrammarParserExtensions.logExtensionList();
-        return grammarToJson(input, (a, b, c) -> PureGrammarParser.newInstance().parseGraphFetch(a, b, c), pm, "Grammar to Json : GraphFetch");
+        return grammarToJson(input, (a, b, c, d, e) -> PureGrammarParser.newInstance().parseGraphFetch(a, b, c, d, e), pm, "Grammar to Json : GraphFetch");
     }
 
     // Required so that Jackson properly includes _type for the top level element
@@ -94,7 +94,7 @@ public class GrammarToJson extends GrammarAPI
     public Response graphFetchBatch(Map<String, ParserInput> input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         PureGrammarParserExtensions.logExtensionList();
-        return grammarToJsonBatch(input, (a, b, c)-> PureGrammarParser.newInstance().parseGraphFetch(a, b, c), new TypedMapGraph(), pm, "Grammar to Json : GraphFetch Batch");
+        return grammarToJsonBatch(input, (a, b, c, d, e)-> PureGrammarParser.newInstance().parseGraphFetch(a, b, c, d, e), new TypedMapGraph(), pm, "Grammar to Json : GraphFetch Batch");
     }
 
 
@@ -106,7 +106,7 @@ public class GrammarToJson extends GrammarAPI
     public Response valueSpecification(ParserInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         PureGrammarParserExtensions.logExtensionList();
-        return grammarToJson(input, (a, b, c) -> PureGrammarParser.newInstance().parseValueSpecification(a, b, c), pm, "Grammar to Json : Value Specification");
+        return grammarToJson(input, (a, b, c, d, e) -> PureGrammarParser.newInstance().parseValueSpecification(a, b, c, d ,e), pm, "Grammar to Json : Value Specification");
     }
 
     // Required so that Jackson properly includes _type for the top level element
@@ -124,6 +124,6 @@ public class GrammarToJson extends GrammarAPI
     public Response valueSpecificationBatch(Map<String, ParserInput> input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         PureGrammarParserExtensions.logExtensionList();
-        return grammarToJsonBatch(input, (a, b, c)-> PureGrammarParser.newInstance().parseValueSpecification(a, b, c), new TypedMapVS(), pm, "Grammar to Json : Value Specification Batch");
+        return grammarToJsonBatch(input, (a, b, c, d, e)-> PureGrammarParser.newInstance().parseValueSpecification(a, b, c, d, e), new TypedMapVS(), pm, "Grammar to Json : Value Specification Batch");
     }
 }

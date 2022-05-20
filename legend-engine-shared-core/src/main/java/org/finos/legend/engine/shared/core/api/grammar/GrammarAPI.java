@@ -11,6 +11,7 @@ import org.eclipse.collections.impl.map.mutable.MapAdapter;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
+import org.finos.legend.engine.shared.core.function.Function5;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
@@ -25,14 +26,15 @@ public class GrammarAPI
 {
     private static final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
 
-    protected <T> Response grammarToJson(ParserInput input, Function3<String, String, Boolean, T> func, ProfileManager<CommonProfile> pm, String spanText)
+    protected <T> Response grammarToJson(ParserInput input, Function5<String, String, Integer, Integer, Boolean, T> func, ProfileManager<CommonProfile> pm, String spanText)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         try (Scope scope = GlobalTracer.get().buildSpan(spanText).startActive(true))
         {
             try
             {
-                T data = func.value(input.value, input.sourceId, input.returnSourceInformation);
+                ParserSourceInformationOffset sourceInformationOffset = input.sourceInformationOffset != null ? input.sourceInformationOffset : new ParserSourceInformationOffset();
+                T data = func.value(input.value, sourceInformationOffset.sourceId, sourceInformationOffset.lineOffset, sourceInformationOffset.columnOffset, input.returnSourceInformation);
                 return ManageConstantResult.manageResult(profiles, data, objectMapper);
             }
             catch (Exception e)
@@ -42,7 +44,7 @@ public class GrammarAPI
         }
     }
 
-    protected <T> Response grammarToJsonBatch(Map<String, ParserInput> input, Function3<String, String, Boolean, T> func, Map<String, T> result, ProfileManager<CommonProfile> pm, String spanText)
+    protected <T> Response grammarToJsonBatch(Map<String, ParserInput> input, Function5<String, String, Integer, Integer, Boolean, T> func, Map<String, T> result, ProfileManager<CommonProfile> pm, String spanText)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         try (Scope scope = GlobalTracer.get().buildSpan(spanText).startActive(true))
@@ -52,7 +54,8 @@ public class GrammarAPI
             {
                 try
                 {
-                    result.put(key, func.value(value.value, value.sourceId != null ? value.sourceId : "", value.returnSourceInformation));
+                    ParserSourceInformationOffset sourceInformationOffset = value.sourceInformationOffset != null ? value.sourceInformationOffset : new ParserSourceInformationOffset();
+                    result.put(key, func.value(value.value, sourceInformationOffset.sourceId, sourceInformationOffset.lineOffset, sourceInformationOffset.columnOffset, value.returnSourceInformation));
                 }
                 catch (EngineException e)
                 {
@@ -106,10 +109,20 @@ public class GrammarAPI
         }
     }
 
+    public static class ParserSourceInformationOffset
+    {
+        public String sourceId = "";
+        public int lineOffset = 0;
+        public int columnOffset = 0;
+    }
+
     public static class ParserInput
     {
         public String value;
+        /**
+         * Default to `true` for backward compatibility reason
+         */
         public boolean returnSourceInformation = true;
-        public String sourceId = "";
+        public ParserSourceInformationOffset sourceInformationOffset;
     }
 }

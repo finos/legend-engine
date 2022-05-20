@@ -49,14 +49,14 @@ public class GraphQLGrammar extends GrammarAPI
     @Produces(MediaType.APPLICATION_JSON)
     public Response grammarToJson(ParserInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
-        return grammarToJson(input, (a, b, c) -> {
+        return grammarToJson(input, (a, b, c, d, e) -> {
             try
             {
                 return GraphQLGrammarParser.newInstance().parseDocument(a);
             }
-            catch (GraphQLParserException e)
+            catch (GraphQLParserException ex)
             {
-                throw new EngineException(e.getMessage(), e.getSourceInformation(), EngineErrorType.PARSER);
+                throw new EngineException(ex.getMessage(), ex.getSourceInformation(), EngineErrorType.PARSER);
             }
         }, pm, "Grammar to Json : GraphQL");
     }
@@ -72,14 +72,14 @@ public class GraphQLGrammar extends GrammarAPI
     @Produces(MediaType.APPLICATION_JSON)
     public Response grammarToJsonBatch(Map<String, ParserInput> input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
-        return grammarToJsonBatch(input, (a, b, c) -> {
+        return grammarToJsonBatch(input, (a, b, c, d, e) -> {
             try
             {
                 return GraphQLGrammarParser.newInstance().parseDocument(a);
             }
-            catch (GraphQLParserException e)
+            catch (GraphQLParserException ex)
             {
-                throw new EngineException(e.getMessage(), e.getSourceInformation(), EngineErrorType.PARSER);
+                throw new EngineException(ex.getMessage(), ex.getSourceInformation(), EngineErrorType.PARSER);
             }
         }, new TypedMap(), pm, "Grammar to Json : GraphQL Batch");
     }
