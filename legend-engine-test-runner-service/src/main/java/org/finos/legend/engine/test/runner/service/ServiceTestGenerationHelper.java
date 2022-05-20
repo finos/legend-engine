@@ -369,15 +369,13 @@ public class ServiceTestGenerationHelper
                 // Ignore and try sql generation with existing logic
             }
         }
-        MutableList<String> generatedData = Lists.mutable.empty();
         try(Scope scope = GlobalTracer.get().buildSpan("Generate setup data").startActive(true)) {
-             generatedData.withAll(core_relational_relational_helperFunctions_helperFunctions.Root_meta_relational_functions_database_setUpData_String_1__Mapping_MANY__Runtime_1__String_MANY_(
+             return Lists.mutable.withAll(core_relational_relational_helperFunctions_helperFunctions.Root_meta_relational_functions_database_setUpData_String_1__Mapping_MANY__Runtime_1__String_MANY_(
                     testData,
                     Lists.immutable.with(pureModel.getMapping(mappingPath)),
                     HelperRuntimeBuilder.buildPureRuntime(runtime, pureModel.getContext()),
                     pureModel.getExecutionSupport()));
         }
-        return generatedData;
     }
 
     private static MutableList<String> getSetupSqlsForCsvDataWithQuotes(Runtime runtime, String mappingPath, String testData, PureModel pureModel)
@@ -388,15 +386,13 @@ public class ServiceTestGenerationHelper
                     csvParser.getRecords(),
                     record -> new Root_meta_pure_functions_collection_List_Impl<String>("")._values(IteratorIterate.collect(record.iterator(), x -> x, FastList.newList()))
             );
-            MutableList<String> generatedData = Lists.mutable.empty();
             try(Scope scope = GlobalTracer.get().buildSpan("Generate setup data").startActive(true)) {
-                generatedData.addAll(core_relational_relational_helperFunctions_helperFunctions.Root_meta_relational_functions_database_setUpData_List_MANY__Mapping_MANY__Runtime_1__String_MANY_(
+                return Lists.mutable.withAll(generatedData.addAll(core_relational_relational_helperFunctions_helperFunctions.Root_meta_relational_functions_database_setUpData_List_MANY__Mapping_MANY__Runtime_1__String_MANY_(
                         csvRecords,
                         Lists.immutable.with(pureModel.getMapping(mappingPath)),
                         HelperRuntimeBuilder.buildPureRuntime(runtime, pureModel.getContext()),
-                        pureModel.getExecutionSupport()));
+                        pureModel.getExecutionSupport())));
             }
-             return generatedData;
         }
         catch (Exception e)
         {
