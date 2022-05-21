@@ -167,6 +167,8 @@
         <module>legend-engine-testable</module>
         <module>legend-engine-xt-daml-pure</module>
         <module>legend-engine-xt-haskell-grammar</module>
+        <module>legend-engine-xt-haskell-pure</module>
+        <module>legend-engine-xt-haskell-protocol</module>
     </modules>
 
     <properties>
@@ -849,6 +851,22 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-avro-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-haskell-grammar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-haskell-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-haskell-protocol</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

@@ -9,44 +9,24 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>legend-engine-xt-haskell-grammar</artifactId>
-    <name>Legend Engine - XT - Haskell - Grammar</name>
-
+    <artifactId>legend-engine-xt-haskell-protocol</artifactId>
+    <name>Legend Engine - XT - Haskell - Protocol</name>
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.antlr</groupId>
-                <artifactId>antlr4-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>antlr4</goal>
-                        </goals>
-                        <configuration>
-                            <visitor>true</visitor>
-                            <listener>true</listener>
-                            <treatWarningsAsErrors>true</treatWarningsAsErrors>
-                            <libDirectory>
-                                src/main/antlr4/org/finos/legend/engine/language/haskell/grammar/from/antlr4
-                            </libDirectory>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>Generate translator for metamodel</id>
+                        <id>generate metamodel</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>java</goal>
                         </goals>
                         <configuration>
                             <includePluginDependencies>true</includePluginDependencies>
-                            <mainClass>org.finos.legend.engine.protocol.generation.GenerateTranslator</mainClass>
+                            <mainClass>org.finos.legend.engine.protocol.generation.GenerateMetaClasses</mainClass>
                             <arguments>
                                 <argument>meta::external::language::haskell::metamodel</argument>
                                 <argument>org.finos.legend.engine.protocol.haskell.metamodel</argument>
@@ -61,6 +41,11 @@
                         <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-protocol-generation</artifactId>
                         <version>3.2.1-SNAPSHOT</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-xt-haskell-pure</artifactId>
+                        <version>${project.version}</version>
                     </dependency>
                 </dependencies>
             </plugin>
@@ -84,38 +69,5 @@
             </plugin>
         </plugins>
     </build>
-
-    <dependencies>
-        <!-- ANTLR -->
-        <dependency>
-            <groupId>org.antlr</groupId>
-            <artifactId>antlr4-runtime</artifactId>
-            <scope>compile</scope>
-        </dependency>
-        <!-- ANTLR -->
-
-        <!-- ENGINE -->
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-language-pure-compiler</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-haskell-protocol</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-haskell-pure</artifactId>
-        </dependency>
-        <!-- ENGINE -->
-
-        <!-- TEST -->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <!-- TEST -->
-    </dependencies>
 
 </project>
