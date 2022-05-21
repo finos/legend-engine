@@ -186,6 +186,8 @@
         <module>legend-engine-testable</module>
         <module>legend-engine-executionPlan-execution-authorizer</module>
         <module>legend-engine-xt-relationalStore-executionPlan-authorizer</module>
+        <module>legend-engine-xt-daml-pure</module>
+        <module>legend-engine-xt-haskell-grammar</module>
     </modules>
 
     <properties>
