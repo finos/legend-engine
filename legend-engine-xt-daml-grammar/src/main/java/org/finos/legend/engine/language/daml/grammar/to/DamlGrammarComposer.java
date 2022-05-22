@@ -5,6 +5,13 @@ import org.finos.legend.engine.protocol.haskell.metamodel.Field;
 import org.finos.legend.engine.protocol.haskell.metamodel.NamedConstructor;
 import org.finos.legend.engine.protocol.haskell.metamodel.RecordTypeConstructor;
 
+/**
+ * DAML grammar is like Haskell except for a few syntax changes
+ * See https://medium.com/daml-driven/four-tweaks-to-improve-haskell-b1de9c87f816
+ *
+ * DAML switches the colon convention for when ":" is used vs "::"
+ * DAML introduces a "with" keyword for Record types
+ */
 public class DamlGrammarComposer extends HaskellGrammarComposer {
     private DamlGrammarComposer() {
         super(":", "::");
