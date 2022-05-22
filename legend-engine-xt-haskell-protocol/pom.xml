@@ -70,4 +70,13 @@
         </plugins>
     </build>
 
+    <dependencies>
+        <!-- JACKSON -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+        </dependency>
+        <!-- JACKSON -->
+    </dependencies>
+
 </project>

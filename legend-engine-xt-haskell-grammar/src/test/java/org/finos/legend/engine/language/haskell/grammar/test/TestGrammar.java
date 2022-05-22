@@ -8,15 +8,29 @@ import org.junit.Test;
 
 public class TestGrammar {
 
+
+//    @Test
+//    public void testTypeDamlRoundtrip()
+//    {
+//        check("module Gs.Finance\n" +
+//                        "  where\n" +
+//                        "\n"+
+//                        "data Person = Person { id :: Int, name :: String }\n"
+//                "data Account = Account with\n" +
+//                        "  name: Text\n" +
+//                        "  number: Text\n" +
+//                        "    deriving (Eq, Ord, Show)\n"+
+//                        "\n");
+//    }
+
     @Test
     public void testTypeRoundtrip()
     {
-        check("type Car implements Vehicle & X & Z {\n" +
-                "  id: ID!\n" +
-                "  name: String!\n" +
-                "  values: [String]\n" +
-                "  length(unit: LengthUnit = METER): Float\n" +
-                "}");
+        check("module Gs.Finance\n" +
+                "  where\n" +
+                "\n"+
+                "data Person = Person { id :: Int, name :: String }\n" +
+                "    deriving (Eq, Ord, Show)\n");
     }
 
 
