@@ -32,6 +32,7 @@ public class DamlGrammarComposer extends HaskellGrammarComposer {
         }
     }
 
+    @Override
     protected void renderRecordTypeConstructor(StringBuilder builder, RecordTypeConstructor constructor)
     {
         for(Field field: constructor.fields)
