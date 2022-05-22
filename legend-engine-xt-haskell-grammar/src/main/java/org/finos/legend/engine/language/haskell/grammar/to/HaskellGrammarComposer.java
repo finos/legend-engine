@@ -11,7 +11,7 @@ public class HaskellGrammarComposer {
     private final String typeColonConvention;
     private final String consColonConvention;
 
-    private HaskellGrammarComposer(String typeColonConvention, String consColonConvention)
+    protected HaskellGrammarComposer(String typeColonConvention, String consColonConvention)
     {
         this.typeColonConvention = typeColonConvention;
         this.consColonConvention = consColonConvention;
@@ -66,7 +66,7 @@ public class HaskellGrammarComposer {
         }
     }
 
-    private void renderNamedConstructor(StringBuilder builder, NamedConstructor constructor) {
+    protected void renderNamedConstructor(StringBuilder builder, NamedConstructor constructor) {
         builder.append(constructor.name);
         //TODO: ADD FOR DAML.append(" with");
 
@@ -76,7 +76,7 @@ public class HaskellGrammarComposer {
         }
     }
 
-    private void renderRecordTypeConstructor(StringBuilder builder, RecordTypeConstructor constructor)
+    protected void renderRecordTypeConstructor(StringBuilder builder, RecordTypeConstructor constructor)
     {
         builder.append(" { ");
         boolean isFirstField = true;
@@ -91,7 +91,7 @@ public class HaskellGrammarComposer {
         builder.append(" }");
     }
 
-    private void renderFieldConstructor(StringBuilder builder, Field field) {
+    protected void renderFieldConstructor(StringBuilder builder, Field field) {
         builder.append(field.name).append(" ").append(this.typeColonConvention).append(" ");
         renderType(builder, field.type);
     }
