@@ -16,5 +16,83 @@ import meta::external::language::haskell::metamodel::*;
 
 Class meta::external::language::haskell::metamodel::HaskellModule
 {
+    id: String[1];
+    exports: String[*];
+    imports: meta::external::language::haskell::metamodel::Import[*];
+    elements: TopLevelDeclaration[*];
+}
 
+Class meta::external::language::haskell::metamodel::Import
+{
+    name: String[1];
+}
+
+Class meta::external::language::haskell::metamodel::TopLevelDeclaration
+{
+}
+
+Class meta::external::language::haskell::metamodel::DataType extends TopLevelDeclaration
+{
+    name: String[1];
+    constructors: NamedConstructor[*];
+    derivings:Deriving[*];
+}
+
+Class meta::external::language::haskell::metamodel::Deriving
+{
+    deriving:String[*];
+}
+
+Class meta::external::language::haskell::metamodel::NamedConstructor
+{
+    name: String[1];
+}
+
+Class meta::external::language::haskell::metamodel::DataTypeConstructor extends NamedConstructor
+{
+    types: HaskellType[*];
+}
+
+Class meta::external::language::haskell::metamodel::RecordTypeConstructor extends NamedConstructor
+{
+    fields: Field[*];
+}
+
+Class meta::external::language::haskell::metamodel::Field
+{
+    name: String[1];
+    type: HaskellType[1];
+}
+
+Class meta::external::language::haskell::metamodel::HaskellType
+{
+}
+
+Class meta::external::language::haskell::metamodel::Int extends HaskellType
+{
+}
+
+Class meta::external::language::haskell::metamodel::Integer extends HaskellType
+{
+}
+
+Class meta::external::language::haskell::metamodel::Float extends HaskellType
+{
+}
+
+Class meta::external::language::haskell::metamodel::Double extends HaskellType
+{
+}
+
+Class meta::external::language::haskell::metamodel::Text extends HaskellType
+{
+}
+
+Class meta::external::language::haskell::metamodel::Bool extends HaskellType
+{
+}
+
+Class meta::external::language::haskell::metamodel::NamedType extends HaskellType
+{
+    name:String[1];
 }
