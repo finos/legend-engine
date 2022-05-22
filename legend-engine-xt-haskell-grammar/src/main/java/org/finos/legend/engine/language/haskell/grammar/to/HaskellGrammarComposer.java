@@ -4,14 +4,22 @@ import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.protocol.haskell.metamodel.*;
 
 public class HaskellGrammarComposer {
+    private static final String HASKELL_TYPE_COLON_CONVENTION = "::";
+    private static final String HASKELL_CONS_COLON_CONVENTION = ":";
 
-    private HaskellGrammarComposer()
+    //Variants of haskell flip these conventions, make them configurable
+    private final String typeColonConvention;
+    private final String consColonConvention;
+
+    private HaskellGrammarComposer(String typeColonConvention, String consColonConvention)
     {
+        this.typeColonConvention = typeColonConvention;
+        this.consColonConvention = consColonConvention;
     }
 
     public static HaskellGrammarComposer newInstance()
     {
-        return new HaskellGrammarComposer();
+        return new HaskellGrammarComposer(HASKELL_TYPE_COLON_CONVENTION, HASKELL_CONS_COLON_CONVENTION);
     }
 
     public String renderModule(HaskellModule module)
@@ -45,24 +53,8 @@ public class HaskellGrammarComposer {
                 if(!isFirst)
                     builder.append("\n | ");
 
-                builder.append(constructor.name);
                 isFirst = false;
-                //TODO: ADD FOR DAML.append(" with");
-
-                if (constructor instanceof RecordTypeConstructor)
-                {
-                    builder.append(" { ");
-                    boolean isFirstField = true;
-                    for(Field field: ((RecordTypeConstructor) constructor).fields)
-                    {
-                        if(!isFirstField)
-                            builder.append(", ");
-
-                        renderFieldConstructor(builder, field);
-                        isFirstField = false;
-                    }
-                    builder.append(" }");
-                }
+                renderNamedConstructor(builder, constructor);
             }
         }
 
@@ -74,9 +66,33 @@ public class HaskellGrammarComposer {
         }
     }
 
+    private void renderNamedConstructor(StringBuilder builder, NamedConstructor constructor) {
+        builder.append(constructor.name);
+        //TODO: ADD FOR DAML.append(" with");
+
+        if (constructor instanceof RecordTypeConstructor)
+        {
+            renderRecordTypeConstructor(builder, (RecordTypeConstructor) constructor);
+        }
+    }
+
+    private void renderRecordTypeConstructor(StringBuilder builder, RecordTypeConstructor constructor)
+    {
+        builder.append(" { ");
+        boolean isFirstField = true;
+        for(Field field: constructor.fields)
+        {
+            if(!isFirstField)
+                builder.append(", ");
+
+            renderFieldConstructor(builder, field);
+            isFirstField = false;
+        }
+        builder.append(" }");
+    }
 
     private void renderFieldConstructor(StringBuilder builder, Field field) {
-        builder.append(field.name).append(" :: ");
+        builder.append(field.name).append(" ").append(this.typeColonConvention).append(" ");
         renderType(builder, field.type);
     }
 
