@@ -8,21 +8,6 @@ import org.junit.Test;
 
 public class TestGrammar {
 
-
-//    @Test
-//    public void testTypeDamlRoundtrip()
-//    {
-//        check("module Gs.Finance\n" +
-//                        "  where\n" +
-//                        "\n"+
-//                        "data Person = Person { id :: Int, name :: String }\n"
-//                "data Account = Account with\n" +
-//                        "  name: Text\n" +
-//                        "  number: Text\n" +
-//                        "    deriving (Eq, Ord, Show)\n"+
-//                        "\n");
-//    }
-
     @Test
     public void testTypeRoundtrip()
     {
