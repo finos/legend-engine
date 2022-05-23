@@ -112,6 +112,23 @@ public class ParseTreeWalkerSourceInformation
         return null;
     }
 
+    /**
+     * Create a new walker source information offset by the position of the token
+     *
+     * This is useful when we create sub grammars and must pass around walker source-information
+     */
+    public static ParseTreeWalkerSourceInformation offset(ParseTreeWalkerSourceInformation walkerSourceInformation, Token token)
+    {
+        // NOTE: since we could have disabled `returnSourceInformation` in the original walker source information
+        // we must enable that in the cloned on to get a non-nullable source information to create meaningful offset
+        SourceInformation sourceInformation = new Builder(walkerSourceInformation).withReturnSourceInfo(true).build()
+            .getSourceInformation(token);
+        return new Builder(walkerSourceInformation)
+            .withLineOffset(sourceInformation.startLine - 1)
+            .withColumnOffset(sourceInformation.startColumn)
+            .build();
+    }
+
     public static class Builder
     {
         private String sourceId;

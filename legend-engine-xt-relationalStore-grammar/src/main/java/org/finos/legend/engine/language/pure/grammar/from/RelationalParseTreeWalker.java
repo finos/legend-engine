@@ -418,10 +418,7 @@ public class RelationalParseTreeWalker
                 ctx.start.getInputStream().getText(Interval.of(ctx.start.getStartIndex(), ctx.stop.getStopIndex())),
                 ctx.milestoningType().getText(),
                 sourceInformation,
-                new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation)
-                        .withLineOffset(sourceInformation.startLine - 1)
-                        .withColumnOffset(sourceInformation.startColumn)
-                        .build()
+                ParseTreeWalkerSourceInformation.offset(walkerSourceInformation, ctx.getStart())
         );
 
         List<IRelationalGrammarParserExtension> extensions = IRelationalGrammarParserExtension.getExtensions();
