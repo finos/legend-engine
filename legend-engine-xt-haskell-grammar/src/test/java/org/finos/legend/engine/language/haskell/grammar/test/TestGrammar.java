@@ -18,6 +18,18 @@ public class TestGrammar {
                 "    deriving (Eq, Ord, Show)\n");
     }
 
+    @Test
+    public void testEnumRoundtrip()
+    {
+        check("module Gs.Finance\n" +
+                "  where\n" +
+                "\n"+
+                "data Color = Red\n" +
+                "  | Blue\n" +
+                "  | Green\n" +
+                "    deriving (Eq, Ord, Show)\n");
+    }
+
 
     protected void check(String value)
     {

@@ -51,7 +51,7 @@ public class HaskellGrammarComposer {
             for(NamedConstructor constructor: dataType.constructors)
             {
                 if(!isFirst)
-                    builder.append("\n | ");
+                    builder.append("\n  | ");
 
                 isFirst = false;
                 renderNamedConstructor(builder, constructor);
@@ -78,17 +78,20 @@ public class HaskellGrammarComposer {
 
     protected void renderRecordTypeConstructor(StringBuilder builder, RecordTypeConstructor constructor)
     {
-        builder.append(" { ");
-        boolean isFirstField = true;
-        for(Field field: constructor.fields)
+        if(!Iterate.isEmpty(constructor.fields))
         {
-            if(!isFirstField)
-                builder.append(", ");
+            builder.append(" { ");
+            boolean isFirstField = true;
+            for (Field field : constructor.fields)
+            {
+                if (!isFirstField)
+                    builder.append(", ");
 
-            renderFieldConstructor(builder, field);
-            isFirstField = false;
+                renderFieldConstructor(builder, field);
+                isFirstField = false;
+            }
+            builder.append(" }");
         }
-        builder.append(" }");
     }
 
     protected void renderFieldConstructor(StringBuilder builder, Field field) {
