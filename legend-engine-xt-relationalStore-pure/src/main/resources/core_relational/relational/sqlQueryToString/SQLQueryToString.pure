@@ -1364,7 +1364,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::proce
    // https://docs.snowflake.com/en/sql-reference/functions/flatten.html
 
    let doubleQuote = if($sgc.config.useQuotesForTableAliasColumn == false, |'', |'"');
-   let processedIdentifier = processIdentifier($doubleQuote + $s.tableAliasColumn.alias.name->toOne() + $doubleQuote, $sgc.dbConfig);
+   let processedIdentifier = $sgc.dbConfig.identifierProcessor($doubleQuote + $s.tableAliasColumn.alias.name->toOne() + $doubleQuote);
    $processedIdentifier + '.' + processColumnName('value', $sgc.dbConfig) + castSuffixForSnowflakeSemiStructuredData($s.returnType);
 }
 
