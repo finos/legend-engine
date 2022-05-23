@@ -3,6 +3,8 @@ package org.finos.legend.engine.language.haskell.grammar.from;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.haskell.grammar.from.antlr4.HaskellLexer;
 import org.finos.legend.engine.language.haskell.grammar.from.antlr4.HaskellParser;
@@ -111,13 +113,9 @@ public class HaskellGrammarParser {
         HaskellModule module = new HaskellModule();
 
         module.id = moduleContext.module_content().modid().getText();
-
         module.elements = ListIterate.collect(moduleContext.module_content().where_module().module_body().body().topdecls().topdecl(),
                 this::visitTopDecls);
 
-        //moduleContext.module_content().where_module().module_body().body().topdecls()
-
-        //document.definitions = ListIterate.collect(documentContext.definition(), this::visitDefinition);
         return module;
     }
 
@@ -135,7 +133,7 @@ public class HaskellGrammarParser {
         {
             DataType data = new DataType();
             data.name = ty_declContext.tycl_hdr().getText();
-            data.constructors = ListIterate.collect(ty_declContext.constrs().constrs1().constr(), this::visitConstrContext);
+            data.constructors = ListIterate.flatCollect(ty_declContext.constrs().constrs1().constr(), this::visitConstrContext);
             data.derivings = ListIterate.collect(ty_declContext.derivings().deriving(), this::visitDerivingContext);
             return data;
         }
@@ -143,32 +141,27 @@ public class HaskellGrammarParser {
         throw new RuntimeException("Unsupported declaration");
     }
 
-    private NamedConstructor visitConstrContext(HaskellParser.ConstrContext constrContext)
+    private List<NamedConstructor> visitConstrContext(HaskellParser.ConstrContext constrContext)
     {
-        return visitConstrStuffContext(constrContext.constr_stuff());
-    }
-
-    private NamedConstructor visitConstrStuffContext(HaskellParser.Constr_stuffContext constrContext)
-    {
-        //todo: check what type of constructor we have
-        RecordTypeConstructor constr = new RecordTypeConstructor();
-
-        if (constrContext.constr_tyapps() != null && !constrContext.constr_tyapps().isEmpty())
+        List<NamedConstructor> constructors = Lists.mutable.of();
+        for(HaskellParser.Constr_tyappContext constr_tyappContext : constrContext.constr_stuff().constr_tyapps().constr_tyapp())
         {
-            List<HaskellParser.Constr_tyappContext> tyapps = constrContext.constr_tyapps().constr_tyapp();
-            constr.name = tyapps.get(0).tyapp().getText();
-
-            if (tyapps.size() > 1)
+            if(constr_tyappContext.tyapp().atype() != null)
             {
-                for( int i=1; i<tyapps.size(); i++)
+                HaskellParser.AtypeContext atypeContext = constr_tyappContext.tyapp().atype();
+                if(atypeContext.fielddecls() != null)
                 {
-                    constr.fields = ListIterate.collect(tyapps.get(i).tyapp().atype().fielddecls().fielddecl(), this::visitFieldDeclContext);
+                    ((RecordTypeConstructor)constructors.get(constructors.size() - 1)).fields = ListIterate.collect(atypeContext.fielddecls().fielddecl(), this::visitFieldDeclContext);
+                }
+                else
+                {
+                    RecordTypeConstructor constr = new RecordTypeConstructor();
+                    constr.name = atypeContext.getText();
+                    constructors.add(constr);
                 }
             }
         }
-
-
-        return constr;
+        return constructors;
     }
 
     private Field visitFieldDeclContext(HaskellParser.FielddeclContext fielddeclContext)
