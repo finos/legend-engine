@@ -2,7 +2,6 @@ package org.finos.legend.engine.external.format.daml;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.external.format.daml.toModel.DamlToModelConfiguration;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
 import org.finos.legend.engine.external.shared.format.model.ExternalSchemaCompileContext;
@@ -17,6 +16,7 @@ import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamode
 import org.finos.legend.pure.generated.Root_meta_external_language_haskell_binding_toPure_HaskellModuleContainer;
 import org.finos.legend.pure.generated.Root_meta_external_language_haskell_binding_toPure_HaskellModuleContainer_Impl;
 
+import java.util.Collections;
 import java.util.List;
 
 public class DamlFormatExtension implements ExternalFormatExtension<Root_meta_external_language_haskell_binding_toPure_HaskellModuleContainer, DamlToModelConfiguration, ModelToSchemaConfiguration>
@@ -29,7 +29,7 @@ public class DamlFormatExtension implements ExternalFormatExtension<Root_meta_ex
 
     @Override
     public List<String> getContentTypes() {
-        return null;
+        return Collections.emptyList();
     }
 
     @Override
@@ -78,6 +78,6 @@ public class DamlFormatExtension implements ExternalFormatExtension<Root_meta_ex
 
     @Override
     public List<String> getRegisterablePackageableElementNames() {
-        return Lists.fixedSize.of();
+        return Collections.emptyList();
     }
 }
