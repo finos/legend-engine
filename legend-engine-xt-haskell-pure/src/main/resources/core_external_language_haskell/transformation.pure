@@ -1,0 +1,6 @@
+
+
+Class meta::external::language::haskell::binding::toPure::HaskellModuleContainer extends meta::external::shared::format::metamodel::SchemaDetail
+{
+  module : meta::external::language::haskell::metamodel::HaskellModule[1];
+}

@@ -191,6 +191,7 @@
         <module>legend-engine-xt-haskell-pure</module>
         <module>legend-engine-xt-haskell-protocol</module>
         <module>legend-engine-xt-daml-grammar</module>
+        <module>legend-engine-xt-daml-model</module>
     </modules>
 
     <properties>
