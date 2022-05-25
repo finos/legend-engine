@@ -53,3 +53,20 @@ function meta::relational::dbTestRunner::collectTests(pack: Package[1]): Functio
       x:Any[1]| []
    ]));
 }
+
+function meta::relational::dbTestRunner::executeInRelationalDb(sqls:String[*], conn:RelationalDatabaseConnection[1], extensions:meta::pure::router::extension::RouterExtension[*]):Boolean[1]
+{
+  meta::legend::test::mayExecuteLegendTest
+     (
+       {clientVersion, serverVersion, serializationKind, host, port |
+         let fStr = 'meta::protocols::pure::'+$clientVersion+'::invocation::execution::executeInRelationalDb::executeInRelationalDb_String_MANY__RelationalDatabaseConnection_1__String_1__Integer_1__RouterExtension_MANY__Boolean_1_';
+         let xf = $fStr->pathToElement()->cast(@Function<{String[*], RelationalDatabaseConnection[1], String[1], Integer[1], meta::pure::router::extension::RouterExtension[*]->Boolean[1]}>);
+         let res= $xf->evaluate(list($sqls)->concatenate([$conn, $host, $port]->map(v|list($v)))->concatenate(list($extensions)));
+         $res->cast(@Boolean)->toOne();
+         },
+       { |
+         println('**** Warning **** : Legend Engine Server not available');
+         false;
+       }
+     );
+}
