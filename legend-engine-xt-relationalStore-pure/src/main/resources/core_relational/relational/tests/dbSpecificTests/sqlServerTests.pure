@@ -17,31 +17,13 @@ import meta::relational::dbTestRunner::*;
 import meta::relational::tests::dbSpecificTests::SqlServer::*;
 import meta::pure::alloy::connections::*;
 import meta::pure::functions::meta::*;
+import meta::pure::test::*;
 
-function <<test.Test>> meta::relational::tests::dbSpecificTests::SqlServer::runSQLQueryTests():Boolean[1]
+function <<test.TestCollection>> meta::relational::tests::dbSpecificTests::sqlServer::runSQLQueryTestsParam(): PureTestCollection[1]
 {
-  let connection= meta::relational::dbTestRunner::getTestConnection(DatabaseType.SqlServer, meta::pure::router::extension::defaultRelationalExtensions());
-
-  let allTests = collectTests(meta::relational::tests::dbSpecificTests::sqlQueryTests);
-
-  let unsupportedDynaFunctions = [
-    'indexOf',
-    'adjust',
-    'firstDayOfWeek',
-    'dayOfMonth',
-    'previousDayOfWeek',
-    'mostRecentDayOfWeek',
-    'mod', 'rem', 'log','joinStrings', 'dateDiff', 'sqlTrue', 'sqlFalse'
-    ];
-
-  let failingSupportedDynaFunctions =[ 
-      'second', 'minute', 'hour', 'quarter', 'quarterNumber', 'year', 
-      'firstDayOfMonth'
-      ];
-
-  let ignoredTests= $unsupportedDynaFunctions->concatenate($failingSupportedDynaFunctions)->map(dynaFuncName |
-              let dynaFuncPackageName = 'meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::' + $dynaFuncName;
-              $dynaFuncPackageName->pathToElement()->cast(@Package)->collectTests(););
-
-  runTestsWith($allTests, $ignoredTests, DatabaseType.SqlServer, $connection,  []);
+  let connection = meta::relational::dbTestRunner::getTestConnection(DatabaseType.SqlServer, meta::pure::router::extension::defaultRelationalExtensions());
+  
+  meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions
+          ->collectParameterizedTests('SqlServer',
+                ^DbTestConfig(dbType=DatabaseType.SqlServer, connection=$connection), [], []);
 }
