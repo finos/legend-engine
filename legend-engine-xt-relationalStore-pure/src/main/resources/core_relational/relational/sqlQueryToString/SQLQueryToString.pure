@@ -24,6 +24,7 @@ import meta::relational::runtime::*;
 import meta::relational::functions::sqlQueryToString::functions::*;
 import meta::relational::metamodel::datatype::*;
 import meta::pure::profiles::*;
+import meta::relational::metamodel::*;
 
 Enum meta::relational::functions::sqlQueryToString::GenerationSide
 {
@@ -141,6 +142,7 @@ Class meta::relational::functions::sqlQueryToString::DbExtension
    columnNameToIdentifier: meta::pure::metamodel::function::Function<{String[1], DbConfig[1] -> String[1]}>[0..1];
    identifierProcessor: meta::pure::metamodel::function::Function<{String[1], DbConfig[1] -> String[1]}>[1];
    dynaFuncDispatch: meta::pure::metamodel::function::Function<{DynaFunction[1], SqlGenerationContext[1] -> DynaFunctionToSql[1]}>[1];
+   relationalDDLCommandsProvider : meta::relational::functions::sqlQueryToString::RelationalDDLCommandsProvider[0..1];
 }
 
 Class meta::relational::functions::sqlQueryToString::SqlGenerationContext
@@ -231,7 +233,7 @@ function meta::relational::functions::sqlQueryToString::createDbExtension(dbType
      option(DatabaseType.BigQuery, |getLiteralProcessorsForBigQuery()),
      option(DatabaseType.Redshift, |getLiteralProcessorsForRedshift())
    ]->evalByDbType($dbType, |newMap([]->cast(@Pair<Type, LiteralProcessor>))));
-   
+
    let literalProcessor = {type:Type[1]| $literalProcessors->get(if($type->instanceOf(Enumeration), | Enum, | $type))->toOne()};
 
    let windowColumnProcessor = [
@@ -300,6 +302,18 @@ function meta::relational::functions::sqlQueryToString::createDbExtension(dbType
      option(DatabaseType.SybaseIQ, |getDynaFunctionToSqlForSybaseIQ())
    ]->evalByDbType($dbType, |[]->cast(@DynaFunctionToSql))->groupBy(d| $d.funcName))->getDynaFunctionDispatcher();
 
+   let relationalDDLCommandsProvider = [
+    option([DatabaseType.H2, DatabaseType.Postgres, DatabaseType.SybaseIQ ],
+           |^RelationalDDLCommandsProvider(
+                createSchema =  meta::relational::functions::sqlQueryToString::createSchemaStatementH2_String_1__String_1_,
+                dropSchema =  meta::relational::functions::sqlQueryToString::dropSchemaStatementH2_String_1__String_1_,
+                createTable =  meta::relational::functions::sqlQueryToString::createTableStatementH2_Table_1__Boolean_1__DbConfig_1__String_1_,
+                dropTable =  meta::relational::functions::sqlQueryToString::dropTableStatementH2_Table_1__String_1_,
+                loadValuesToDbTable =  meta::relational::functions::sqlQueryToString::loadValuesToDbTableH2_List_1__Table_1__Column_MANY__DbConfig_1__String_MANY_
+              );
+          )
+  ]->evalByDbType($dbType, |[]);
+
    ^DbExtension(
       isBooleanLiteralSupported = $isBooleanLiteralSupported,
       collectionThresholdLimit = $collectionThresholdLimit,
@@ -313,7 +327,8 @@ function meta::relational::functions::sqlQueryToString::createDbExtension(dbType
       schemaNameToIdentifier = $schemaNameToIdentifier,
       columnNameToIdentifier = $columnNameToIdentifier,
       identifierProcessor = $identifierProcessor,
-      dynaFuncDispatch = $dynaFuncDispatch
+      dynaFuncDispatch = $dynaFuncDispatch,
+      relationalDDLCommandsProvider = $relationalDDLCommandsProvider
    );
 }
 
@@ -3105,4 +3120,60 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::trans
    let order = if($ascending == $trueVal, | 'asc', | 'desc');
 
    $func + '(' + $percentile + ') within group (order by ' + $column + ' ' + $order + ')';
+}
+
+Class meta::relational::functions::sqlQueryToString::RelationalDDLCommandsProvider
+{
+  createSchema: meta::pure::metamodel::function::Function<{String[1]->String[1]}>[0..1];
+  dropSchema : meta::pure::metamodel::function::Function<{String[1]->String[1]}>[0..1];
+
+  dropTable : meta::pure::metamodel::function::Function<{Table[1] -> String[1]}>[0..1];
+  createTable : meta::pure::metamodel::function::Function<{Table[1], Boolean[1], DbConfig[1]-> String[1]}>[0..1];
+
+  loadValuesToDbTable: meta::pure::metamodel::function::Function<{ List<List<String>>[1], Table[1], Column[*], DbConfig[1] ->  String[*]}>[0..1];
+}
+
+function <<access.private>>  meta::relational::functions::sqlQueryToString::createSchemaStatementH2(schema:String[1]) : String[1]
+{
+   'Create Schema ' + $schema + ';';
+}
+
+function <<access.private>>  meta::relational::functions::sqlQueryToString::dropSchemaStatementH2(schema:String[1]) : String[1]
+{
+   'Drop schema if exists ' + $schema + ' cascade;';
+}
+
+function <<access.private>>  meta::relational::functions::sqlQueryToString::dropTableStatementH2(t:Table[1]) : String[1]
+{
+  'Drop table if exists '+if($t.schema.name == 'default',|'',|$t.schema.name+'.')+$t.name+';';
+}
+
+function <<access.private>>  meta::relational::functions::sqlQueryToString::createTableStatementH2(t:Table[1], applyConstraints:Boolean[1], dbConfig:DbConfig[1]) : String[1]
+{
+  'Create Table '+if($t.schema.name == 'default',|'',|$t.schema.name+'.')+$t.name+
+      + '('
+      + $t.columns->cast(@meta::relational::metamodel::Column)
+         ->map(c | $c.name->meta::relational::functions::sqlQueryToString::processColumnName($dbConfig) + ' ' +  meta::relational::functions::sqlQueryToString::getColumnTypeSqlTextH2($c.type) + if($c.nullable->isEmpty() || $applyConstraints == false, | '', | if($c.nullable == true , | ' NULL', | ' NOT NULL' )))
+        ->joinStrings(',')
+      + if ($t.primaryKey->isEmpty() || $applyConstraints == false, | '', | ', PRIMARY KEY(' + $t.primaryKey->map(c | $c.name)->joinStrings(',') + ')')
+      +');';
+}
+
+function <<access.private>>  meta::relational::functions::sqlQueryToString::getColumnTypeSqlTextH2(columnType:meta::relational::metamodel::datatype::DataType[1]):String[1]
+{
+   $columnType->match([
+      s : meta::relational::metamodel::datatype::SemiStructured[1] | 'VARCHAR(4000)',
+      a : Any[*] | meta::relational::metamodel::datatype::dataTypeToSqlText($columnType)
+   ])
+}
+
+function <<access.private>>  meta::relational::functions::sqlQueryToString::loadValuesToDbTableH2(data :List<List<String>>[1], table:Table[1],columns : Column[*], dbConfig: DbConfig[1]) : String[*]
+{
+    $data.values->map(row |  let sql = 'insert into ' + if($table.schema.name=='default', |'' ,|$table.schema.name + '.') + $table.name + ' ('
+            + $columns.name->map(colName | $colName->meta::relational::functions::sqlQueryToString::processColumnName($dbConfig))->joinStrings(',')
+            +') '
+            + 'values ('
+            + $row.values->meta::relational::functions::database::testDataSQLgeneration::convertValuesToCsv($columns.type)
+            + ');';
+   );
 }

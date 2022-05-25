@@ -73,64 +73,115 @@ function meta::relational::functions::toDDL::dropAndCreateSchemaInDb(schema: Str
    true;
 }
 
-function meta::relational::functions::toDDL::createSchemaStatement(schema:String[1]) : String[1]
+//use corresponding functions parameterized with dbType instead
+function <<doc.deprecated>> meta::relational::functions::toDDL::createSchemaStatement(schema:String[1]) : String[1]
 {
-   'Create Schema ' + $schema + ';';
+   meta::relational::functions::toDDL::createSchemaStatement($schema, createDbConfig(DatabaseType.H2));
 }
 
-function meta::relational::functions::toDDL::dropSchemaStatement(schema:String[1]) : String[1]
+function meta::relational::functions::toDDL::createSchemaStatement(schema:String[1], dbConfig:DbConfig[1]) : String[1]
 {
-   'Drop schema if exists ' + $schema + ' cascade;';
+  assert($dbConfig.dbExtension.relationalDDLCommandsProvider->size()==1, ' No relational commands provider found for given db type : '+ $dbConfig.dbType->toString());
+  assert($dbConfig.dbExtension.relationalDDLCommandsProvider->toOne().createSchema->size()==1, ' No create schema command provider found for given db type : '+ $dbConfig.dbType->toString());
+  $dbConfig.dbExtension.relationalDDLCommandsProvider->toOne().createSchema->toOne()->eval($schema);
 }
 
-function meta::relational::functions::toDDL::dropTableStatement(database:Database[1], tableName: String[1]) : String[1]
+function <<doc.deprecated>> meta::relational::functions::toDDL::dropSchemaStatement(schema:String[1]) : String[1]
 {
-    dropTableStatement($database, 'default', $tableName);
+   dropSchemaStatement($schema, createDbConfig(DatabaseType.H2));
 }
 
-function meta::relational::functions::toDDL::createTableStatement(database:Database[1], tableName: String[1]) : String[1]
+function meta::relational::functions::toDDL::dropSchemaStatement(schema:String[1], dbConfig:DbConfig[1]) : String[1]
 {
-    createTableStatement($database, 'default', $tableName);
+  assert($dbConfig.dbExtension.relationalDDLCommandsProvider->size()==1, ' No relational commands provider found for given db type : '+ $dbConfig.dbType->toString());
+  assert($dbConfig.dbExtension.relationalDDLCommandsProvider->toOne().dropSchema->size()==1, ' No drop Schema command provider found for given db type : '+ $dbConfig.dbType->toString());
+  $dbConfig.dbExtension.relationalDDLCommandsProvider->toOne().dropSchema->toOne()->eval($schema);
 }
 
-function meta::relational::functions::toDDL::dropTableStatement(database:Database[1], schema: String[1], tableName: String[1]) : String[1]
+function <<doc.deprecated>> meta::relational::functions::toDDL::dropTableStatement(database:Database[1], tableName: String[1]) : String[1]
 {
-   dropTableStatement($database, $schema, $tableName, getTableToTableIdentityFunction());
+    dropTableStatement($database, $tableName, createDbConfig(DatabaseType.H2));
 }
 
-function meta::relational::functions::toDDL::dropTableStatement(database:Database[1], schema: String[1], tableName: String[1], tablePostProcess: Function<{Table[1]->Table[1]}>[1]) : String[1]
+function meta::relational::functions::toDDL::dropTableStatement(database:Database[1], tableName: String[1], dbConfig:DbConfig[1]) : String[1]
+{
+    dropTableStatement($database, 'default', $tableName, $dbConfig);
+}
+
+function <<doc.deprecated>> meta::relational::functions::toDDL::createTableStatement(database:Database[1], tableName: String[1]) : String[1]
+{
+    createTableStatement($database, $tableName, createDbConfig(DatabaseType.H2));
+}
+
+function meta::relational::functions::toDDL::createTableStatement(database:Database[1], tableName: String[1], dbConfig:DbConfig[1]) : String[1]
+{
+    createTableStatement($database, 'default', $tableName, $dbConfig);
+}
+
+function <<doc.deprecated>> meta::relational::functions::toDDL::dropTableStatement(database:Database[1], schema: String[1], tableName: String[1]) : String[1]
+{
+   dropTableStatement($database, $schema, $tableName , createDbConfig(DatabaseType.H2));
+}
+
+function meta::relational::functions::toDDL::dropTableStatement(database:Database[1], schema: String[1], tableName: String[1], dbConfig:DbConfig[1]) : String[1]
+{
+   dropTableStatement($database, $schema, $tableName, getTableToTableIdentityFunction(), $dbConfig);
+}
+
+function <<doc.deprecated>> meta::relational::functions::toDDL::dropTableStatement(database:Database[1], schema: String[1], tableName: String[1], tablePostProcess: Function<{Table[1]->Table[1]}>[1]) : String[1]
+{
+    dropTableStatement($database, $schema, $tableName, $tablePostProcess, createDbConfig(DatabaseType.H2));
+}
+
+function meta::relational::functions::toDDL::dropTableStatement(database:Database[1], schema: String[1], tableName: String[1], tablePostProcess: Function<{Table[1]->Table[1]}>[1], dbConfig:DbConfig[1]) : String[1]
 {
    let t = $tablePostProcess->eval(getTable($database, $schema, $tableName));
-
-   'Drop table if exists '+if($t.schema.name == 'default',|'',|$t.schema.name+'.')+$t.name+';';
+   dropTableStatement($t, $dbConfig);
 }
 
-function meta::relational::functions::toDDL::createTableStatement(database:Database[1], schema: String[1], tableName: String[1]) : String[1]
+function  meta::relational::functions::toDDL::dropTableStatement(t:Table[1], dbConfig:DbConfig[1]) : String[1]
 {
-   createTableStatement($database, $schema, $tableName, getTableToTableIdentityFunction(), true);
+  assert($dbConfig.dbExtension.relationalDDLCommandsProvider->size()==1, ' No relational commands provider found for given db type : '+ $dbConfig.dbType->toString());
+  assert($dbConfig.dbExtension.relationalDDLCommandsProvider->toOne().dropTable->size()==1, ' No drop table command provider found for given db type : '+ $dbConfig.dbType->toString());
+  $dbConfig.dbExtension.relationalDDLCommandsProvider->toOne().dropTable->toOne()->eval($t);
 }
 
+function <<doc.deprecated>>  meta::relational::functions::toDDL::createTableStatement(database:Database[1], schema: String[1], tableName: String[1]) : String[1]
+{
+   createTableStatement($database, $schema, $tableName, createDbConfig(DatabaseType.H2));
+}
+
+function meta::relational::functions::toDDL::createTableStatement(database:Database[1], schema: String[1], tableName: String[1], dbConfig:DbConfig[1]) : String[1]
+{
+   createTableStatement($database, $schema, $tableName, getTableToTableIdentityFunction(), true, $dbConfig);
+}
+
+//deprecated
 function <<access.private>> meta::relational::functions::toDDL::createTableStatement(database:Database[1], schema: String[1], tableName: String[1], tablePostProcess: Function<{Table[1]->Table[1]}>[1], applyConstraints:Boolean[1]) : String[1]
 {
-   // if no db type provided, then assume we are doing this for H2
-   let dbConfig = createDbConfig(DatabaseType.H2);
-   createTableStatement($database, DatabaseType.H2, $schema, $tableName, $tablePostProcess, $applyConstraints);
+   createTableStatement($database, $schema, $tableName, $tablePostProcess, $applyConstraints, createDbConfig(DatabaseType.H2));
 }
 
+//deprecated
 function <<access.private>> meta::relational::functions::toDDL::createTableStatement(database:Database[1], dbType:DatabaseType[1], schema: String[1], tableName: String[1], tablePostProcess: Function<{Table[1]->Table[1]}>[1], applyConstraints:Boolean[1]) : String[1]
 {
-   let dbConfig = createDbConfig($dbType);
-   let t = $tablePostProcess->eval(getTable($database, $schema, $tableName));
-
-   'Create Table '+if($t.schema.name == 'default',|'',|$t.schema.name+'.')+$t.name+
-      + '('
-      + $t.columns->cast(@meta::relational::metamodel::Column)
-         ->map(c | $c.name->meta::relational::functions::sqlQueryToString::processColumnName($dbConfig) + ' ' + meta::relational::functions::toDDL::getColumnTypeSqlText($c.type, $dbConfig.dbType) + if($c.nullable->isEmpty() || $applyConstraints == false, | '', | if($c.nullable == true , | ' NULL', | ' NOT NULL' )))
-        ->joinStrings(',')
-      + if ($t.primaryKey->isEmpty() || $applyConstraints == false, | '', | ', PRIMARY KEY(' + $t.primaryKey->map(c | $c.name)->joinStrings(',') + ')')
-      +');';
+   createTableStatement($database, $schema, $tableName, $tablePostProcess, $applyConstraints, createDbConfig($dbType));
 }
 
+function <<access.private>> meta::relational::functions::toDDL::createTableStatement(database:Database[1], schema: String[1], tableName: String[1], tablePostProcess: Function<{Table[1]->Table[1]}>[1], applyConstraints:Boolean[1], dbConfig:DbConfig[1]) : String[1]
+{
+   let t = $tablePostProcess->eval(getTable($database, $schema, $tableName));
+   $t->createTableStatement($applyConstraints, $dbConfig);
+}
+
+function  meta::relational::functions::toDDL::createTableStatement(t:Table[1], applyConstraints:Boolean[1], dbConfig:DbConfig[1]) : String[1]
+{
+  assert($dbConfig.dbExtension.relationalDDLCommandsProvider->size()==1, ' No relational commands provider found for given db type : '+ $dbConfig.dbType->toString());
+  assert($dbConfig.dbExtension.relationalDDLCommandsProvider->toOne().createTable->size()==1, ' No create table command provider found for given db type : '+ $dbConfig.dbType->toString());
+  $dbConfig.dbExtension.relationalDDLCommandsProvider->toOne().createTable->toOne()->eval($t,  $applyConstraints , $dbConfig);
+}
+
+//deprecated
 function <<access.private>> meta::relational::functions::toDDL::getColumnTypeSqlText(columnType:meta::relational::metamodel::datatype::DataType[1], dbType:DatabaseType[1]):String[1] 
 {
    $columnType->match([
@@ -139,6 +190,7 @@ function <<access.private>> meta::relational::functions::toDDL::getColumnTypeSql
    ])
 }
 
+//deprecated
 function <<access.private>> meta::relational::functions::toDDL::getSemiStructuredColumnTypeSqlText(columnType:meta::relational::metamodel::datatype::SemiStructured[1], dbType:DatabaseType[1]):String[1] 
 {
    if ($dbType == DatabaseType.H2,
@@ -161,16 +213,6 @@ function meta::relational::functions::toDDL::insertSQLQueryResultIntoTable(table
    executeInDb($stmt, $connection);
 }
 
-function meta::relational::functions::toDDL::createTempTableStatement() : meta::pure::metamodel::function::Function<{String[1], Column[*], DatabaseType[1]->String[1]}>[1]
-{
-  {ttName:String[1], cols: Column[*], dbType: DatabaseType[1]|
-        let colsAsString = '('+$cols->map(c|$c.name + ' ' + meta::relational::metamodel::datatype::dataTypeToSqlText($c.type))->joinStrings(',')+')';
-
-        if($dbType == DatabaseType.H2,| 'Create LOCAL TEMPORARY TABLE '+$ttName+$colsAsString+';';
-                                     ,| if([DatabaseType.Sybase, DatabaseType.SybaseIQ]->contains($dbType),| 'Declare LOCAL TEMPORARY TABLE '+$ttName+$colsAsString+' on commit preserve rows;'
-                                                                                                          ,| assert(false, | 'Temporay table creation for db type: '+$dbType->toString()+' is not supported');'';));
-  }
-}
 
 function meta::relational::functions::toDDL::getTableToTableIdentityFunction():Function<{Table[1]->Table[1]}>[1]
 {
@@ -186,4 +228,15 @@ function <<access.private>> meta::relational::functions::toDDL::getTable(databas
    let t = $schema->toOne().table($tableName);
 
    if ($t->isEmpty(), | fail('No table found with name ' + $tableName + ' in schema ' + $schemaName + ' in ' + $database.name->toOne()); $t->toOne();, | $t->toOne());
+}
+
+function meta::relational::functions::toDDL::createTempTableStatement() : meta::pure::metamodel::function::Function<{String[1], Column[*], DatabaseType[1]->String[1]}>[1]
+{
+  {ttName:String[1], cols: Column[*], dbType: DatabaseType[1]|
+        let colsAsString = '('+$cols->map(c|$c.name + ' ' + meta::relational::metamodel::datatype::dataTypeToSqlText($c.type))->joinStrings(',')+')';
+
+        if($dbType == DatabaseType.H2,| 'Create LOCAL TEMPORARY TABLE '+$ttName+$colsAsString+';';
+                                     ,| if([DatabaseType.Sybase, DatabaseType.SybaseIQ]->contains($dbType),| 'Declare LOCAL TEMPORARY TABLE '+$ttName+$colsAsString+' on commit preserve rows;'
+                                                                                                          ,| assert(false, | 'Temporay table creation for db type: '+$dbType->toString()+' is not supported');'';));
+  }
 }
