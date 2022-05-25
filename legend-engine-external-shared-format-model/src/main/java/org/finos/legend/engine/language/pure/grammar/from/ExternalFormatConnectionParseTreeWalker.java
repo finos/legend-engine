@@ -63,10 +63,7 @@ public class ExternalFormatConnectionParseTreeWalker
                 ctx.specification().getText(),
                 specification.specificationType().getText(),
                 sourceInformation,
-                new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation)
-                        .withLineOffset(sourceInformation.startLine - 1)
-                        .withColumnOffset(sourceInformation.startColumn)
-                        .build()
+                ParseTreeWalkerSourceInformation.offset(walkerSourceInformation, ctx.getStart())
         );
 
         List<IExternalFormatGrammarParserExtension> extensions = IExternalFormatGrammarParserExtension.getExtensions();

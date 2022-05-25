@@ -79,6 +79,11 @@ public class PureGrammarParser
         return this.parse(code, this.parsers, sourceId, lineOffset, columnOffset, returnSourceInfo);
     }
 
+    public PureModelContextData parseModel(String code, boolean returnSourceInformation)
+    {
+        return this.parseModel(code, "", 0, 0, returnSourceInformation);
+    }
+
     public PureModelContextData parseModel(String code)
     {
         return this.parse(code, this.parsers, "", 0, 0, true);
@@ -92,6 +97,11 @@ public class PureGrammarParser
     public Lambda parseLambda(String code, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)
     {
         return new DomainParser().parseLambda(code, sourceId, lineOffset, columnOffset, returnSourceInfo);
+    }
+
+    public Lambda parseLambda(String code, String sourceId, boolean returnSourceInfo)
+    {
+        return this.parseLambda(code, sourceId, 0, 0, returnSourceInfo);
     }
 
     private PureModelContextData parse(String code, DEPRECATED_PureGrammarParserLibrary parserLibrary, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)

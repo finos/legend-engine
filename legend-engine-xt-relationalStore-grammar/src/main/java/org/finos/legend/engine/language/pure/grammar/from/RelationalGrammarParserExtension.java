@@ -232,9 +232,9 @@ public class RelationalGrammarParserExtension implements IRelationalGrammarParse
         return Lists.immutable.with(MappingTestInputDataParser.newParser("Relational", RelationalGrammarParserExtension::parseObjectInputData));
     }
 
-    private static InputData parseObjectInputData(MappingParserGrammar.TestInputElementContext inputDataContext, ParseTreeWalkerSourceInformation sourceInformation)
+    private static InputData parseObjectInputData(MappingParserGrammar.TestInputElementContext inputDataContext, ParseTreeWalkerSourceInformation walkerSourceInformation)
     {
-        SourceInformation testInputDataSourceInformation = sourceInformation.getSourceInformation(inputDataContext);
+        SourceInformation testInputDataSourceInformation = walkerSourceInformation.getSourceInformation(inputDataContext);
         RelationalInputData relationalInputData = new RelationalInputData();
         relationalInputData.sourceInformation = testInputDataSourceInformation;
 
@@ -248,7 +248,7 @@ public class RelationalGrammarParserExtension implements IRelationalGrammarParse
         }
         catch (IllegalArgumentException e)
         {
-            throw new EngineException("Mapping test relational input data does not support format '" + inputDataContext.testInputFormat().getText() + "'. Possible values: " + ArrayIterate.makeString(RelationalInputType.values(), ", "), sourceInformation.getSourceInformation(inputDataContext.testInputFormat()), EngineErrorType.PARSER);
+            throw new EngineException("Mapping test relational input data does not support format '" + inputDataContext.testInputFormat().getText() + "'. Possible values: " + ArrayIterate.makeString(RelationalInputType.values(), ", "), walkerSourceInformation.getSourceInformation(inputDataContext.testInputFormat()), EngineErrorType.PARSER);
         }
 
         relationalInputData.database = inputDataContext.testInputSrc().getText();
