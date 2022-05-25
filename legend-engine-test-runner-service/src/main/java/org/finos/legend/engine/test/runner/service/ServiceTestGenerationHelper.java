@@ -369,8 +369,9 @@ public class ServiceTestGenerationHelper
                 // Ignore and try sql generation with existing logic
             }
         }
-        try(Scope scope = GlobalTracer.get().buildSpan("Generate setup data").startActive(true)) {
-             return Lists.mutable.withAll(core_relational_relational_helperFunctions_helperFunctions.Root_meta_relational_functions_database_setUpData_String_1__Mapping_MANY__Runtime_1__String_MANY_(
+        try (Scope scope = GlobalTracer.get().buildSpan("Generate setup data").startActive(true))
+        {
+            return Lists.mutable.withAll(core_relational_relational_helperFunctions_helperFunctions.Root_meta_relational_functions_database_setUpData_String_1__Mapping_MANY__Runtime_1__String_MANY_(
                     testData,
                     Lists.immutable.with(pureModel.getMapping(mappingPath)),
                     HelperRuntimeBuilder.buildPureRuntime(runtime, pureModel.getContext()),
@@ -386,7 +387,8 @@ public class ServiceTestGenerationHelper
                     csvParser.getRecords(),
                     record -> new Root_meta_pure_functions_collection_List_Impl<String>("")._values(IteratorIterate.collect(record.iterator(), x -> x, FastList.newList()))
             );
-            try(Scope scope = GlobalTracer.get().buildSpan("Generate setup data").startActive(true)) {
+            try (Scope scope = GlobalTracer.get().buildSpan("Generate setup data").startActive(true))
+            {
                 return Lists.mutable.withAll(core_relational_relational_helperFunctions_helperFunctions.Root_meta_relational_functions_database_setUpData_List_MANY__Mapping_MANY__Runtime_1__String_MANY_(
                         csvRecords,
                         Lists.immutable.with(pureModel.getMapping(mappingPath)),
