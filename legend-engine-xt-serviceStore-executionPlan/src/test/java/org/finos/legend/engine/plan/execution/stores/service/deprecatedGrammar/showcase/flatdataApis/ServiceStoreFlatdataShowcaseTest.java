@@ -43,7 +43,7 @@ public class ServiceStoreFlatdataShowcaseTest extends ServiceStoreTestSuite
                         "}";
         pureGrammar = ServiceStoreTestUtils.readGrammarFromPureFile("/deprecatedGrammar/showcase/flatdata/testGrammar.pure") + "\n\n" + serviceStoreConnection;
     }
-    
+
     @Test
     public void serviceStoreSimpleExample()
     {

@@ -27,7 +27,16 @@ import org.finos.legend.engine.protocol.pure.v1.model.data.ServiceStubMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.data.contentPattern.StringValuePattern;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.HttpMethod;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.*;
+import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_data_ExternalFormatData;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_data_ServiceResponseDefinition;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_data_ServiceResponseDefinition_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_data_ServiceRequestPattern;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_data_ServiceRequestPattern_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_data_ServiceStoreEmbeddedData;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_data_ServiceStoreEmbeddedData_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_data_ServiceStubMapping;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_data_ServiceStubMapping_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_data_StringValuePattern;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.map.PureMap;
 
 import java.util.Map;
@@ -67,16 +76,16 @@ public class HelperServiceStoreEmbeddedDataCompiler
         Root_meta_external_store_service_metamodel_data_ServiceRequestPattern pureServiceRequestPattern = new Root_meta_external_store_service_metamodel_data_ServiceRequestPattern_Impl("");
         pureServiceRequestPattern._method(context.pureModel.getEnumValue("meta::pure::functions::io::http::HTTPMethod", serviceRequestPattern.method.name()));
 
-        if(serviceRequestPattern.url != null)
+        if (serviceRequestPattern.url != null)
         {
             pureServiceRequestPattern._url(serviceRequestPattern.url);
         }
-        if(serviceRequestPattern.urlPath != null)
+        if (serviceRequestPattern.urlPath != null)
         {
             pureServiceRequestPattern._urlPath(serviceRequestPattern.urlPath);
         }
 
-        if(serviceRequestPattern.queryParams != null && serviceRequestPattern.queryParams.size() > 0)
+        if (serviceRequestPattern.queryParams != null && serviceRequestPattern.queryParams.size() > 0)
         {
             Map<String, Root_meta_external_store_service_metamodel_data_StringValuePattern> map = Maps.mutable.empty();
             serviceRequestPattern.queryParams.forEach((key, value) -> map.put(key, this.compileStringValuePattern(value)));
@@ -84,7 +93,7 @@ public class HelperServiceStoreEmbeddedDataCompiler
             pureServiceRequestPattern._headerParams(new PureMap(map));
         }
 
-        if(serviceRequestPattern.headerParams != null && serviceRequestPattern.headerParams.size() > 0)
+        if (serviceRequestPattern.headerParams != null && serviceRequestPattern.headerParams.size() > 0)
         {
             Map<String, Root_meta_external_store_service_metamodel_data_StringValuePattern> map = Maps.mutable.empty();
             serviceRequestPattern.headerParams.forEach((key, value) -> map.put(key, this.compileStringValuePattern(value)));
@@ -92,7 +101,7 @@ public class HelperServiceStoreEmbeddedDataCompiler
             pureServiceRequestPattern._headerParams(new PureMap(map));
         }
 
-        if(serviceRequestPattern.bodyPatterns != null && serviceRequestPattern.bodyPatterns.size() > 0)
+        if (serviceRequestPattern.bodyPatterns != null && serviceRequestPattern.bodyPatterns.size() > 0)
         {
             pureServiceRequestPattern._bodyPatterns(ListIterate.collect(serviceRequestPattern.bodyPatterns, this::compileStringValuePattern));
         }
@@ -102,22 +111,22 @@ public class HelperServiceStoreEmbeddedDataCompiler
 
     private void validateServiceRequestPattern(ServiceRequestPattern serviceRequestPattern)
     {
-        if(serviceRequestPattern.method == HttpMethod.GET && (serviceRequestPattern.bodyPatterns != null && !serviceRequestPattern.bodyPatterns.isEmpty()))
+        if (serviceRequestPattern.method == HttpMethod.GET && (serviceRequestPattern.bodyPatterns != null && !serviceRequestPattern.bodyPatterns.isEmpty()))
         {
             throw new EngineException("Request Body pattern should not be provided for GET requests", serviceRequestPattern.sourceInformation, EngineErrorType.COMPILATION);
         }
 
-        if(serviceRequestPattern.url == null && serviceRequestPattern.urlPath == null)
+        if (serviceRequestPattern.url == null && serviceRequestPattern.urlPath == null)
         {
             throw new EngineException("Either url or urlPath must be provided with each request", serviceRequestPattern.sourceInformation, EngineErrorType.COMPILATION);
         }
 
-        if(serviceRequestPattern.url != null && serviceRequestPattern.urlPath != null)
+        if (serviceRequestPattern.url != null && serviceRequestPattern.urlPath != null)
         {
             throw new EngineException("Both url and urlPath must not be provided with any request", serviceRequestPattern.sourceInformation, EngineErrorType.COMPILATION);
         }
 
-        if(serviceRequestPattern.url != null && (serviceRequestPattern.queryParams != null && !serviceRequestPattern.queryParams.isEmpty()))
+        if (serviceRequestPattern.url != null && (serviceRequestPattern.queryParams != null && !serviceRequestPattern.queryParams.isEmpty()))
         {
             throw new EngineException("urlPath (in place of url) should be used with query parameters", serviceRequestPattern.sourceInformation, EngineErrorType.COMPILATION);
         }

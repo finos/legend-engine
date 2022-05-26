@@ -20,7 +20,10 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
 import org.finos.legend.engine.language.pure.grammar.to.data.contentPattern.HelperContentPatternGrammarComposer;
-import org.finos.legend.engine.protocol.pure.v1.model.data.*;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ServiceRequestPattern;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ServiceResponseDefinition;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ServiceStoreEmbeddedData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ServiceStubMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.data.contentPattern.StringValuePattern;
 
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;

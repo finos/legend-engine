@@ -712,10 +712,10 @@ public class ServiceStoreJsonShowcaseTest extends ServiceStoreTestSuite
 
         String expectedRes = "{\"builder\":{\"_type\":\"json\"},\"values\":{\"firstName\":\"John\",\"middleName\":\"Patricio\",\"lastName\":\"Smith\"}}";
 
-        Assert.assertEquals(expectedRes, executePlan(plan, Maps.immutable.with("firstName" , "John", "middleName", "Patricio").toMap()));
+        Assert.assertEquals(expectedRes, executePlan(plan, Maps.immutable.with("firstName", "John", "middleName", "Patricio").toMap()));
 
         String expectedResWithoutMiddleName = "{\"builder\":{\"_type\":\"json\"},\"values\":[{\"firstName\":\"John\",\"middleName\":\"Patricio\",\"lastName\":\"Smith\"},{\"firstName\":\"John\",\"middleName\":null,\"lastName\":\"Smith2\"}]}";
 
-        Assert.assertEquals(expectedResWithoutMiddleName, executePlan(plan, Maps.immutable.with("firstName" , "John").toMap()));
+        Assert.assertEquals(expectedResWithoutMiddleName, executePlan(plan, Maps.immutable.with("firstName", "John").toMap()));
     }
 }

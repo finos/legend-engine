@@ -57,8 +57,10 @@ public class ServiceTestableRunnerExtension implements TestableRunnerExtension
 
         ServiceTestRunner testRunner = new ServiceTestRunner((Root_meta_legend_service_metamodel_Service) testable, pureVersion);
 
-        return ((Root_meta_legend_service_metamodel_Service) testable)._tests().flatCollect(testSuite -> {
-            List<AtomicTestId> atomicTestIds = ((Root_meta_pure_test_TestSuite) testSuite)._tests().collect(test -> {
+        return ((Root_meta_legend_service_metamodel_Service) testable)._tests().flatCollect(testSuite ->
+        {
+            List<AtomicTestId> atomicTestIds = ((Root_meta_pure_test_TestSuite) testSuite)._tests().collect(test ->
+            {
                 AtomicTestId id = new AtomicTestId();
                 id.testSuiteId = testSuite._id();
                 id.atomicTestId = test._id();
