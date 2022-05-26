@@ -267,3 +267,15 @@ function flatten::semiStructuredSubAggregationDeep(): TabularDataSet[1]
         col(x | $x.firm.addresses->subType(@flatten::model::AddressWithLines).lines.lineno->sum(), 'Firm Address Line No Sum')
     ])
 }
+
+function flatten::semiStructuredMultiFlatten(): TabularDataSet[1]
+{
+    flatten::model::Person.all()
+    ->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.firm.addresses.name, 'Firm Address Name'),
+        col(x | $x.firm.addresses->subType(@flatten::model::AddressWithLines).lines->at(0).lineno, 'Firm Address Line 0 No'),
+        col(x | $x.firm.addresses->filter(a |  $a.name == 'A').name, 'Firm Address Name A'),
+        col(x | $x.firm.otherNames, 'Firm Other Name')
+    ])
+}
