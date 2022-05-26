@@ -1,0 +1,46 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::json::*;
+import meta::alloy::metadataServer::*;
+import meta::pure::mapping::*;
+
+function {service.url='/alloy/pureModelFromMapping/{version}/{mappingPathStr}'} meta::alloy::metadataServer::pureModelFromMappingStr(mappingPathStr:String[1], version:String[1]):String[1]
+{
+   let funcStr = 'meta::protocols::pure::'+$version+'::transformation::fromPureGraph::buildBasePureModelFromMappingStr_String_1__String_1_';
+   let func = $funcStr->pathToElement()->cast(@Function<Any>);
+   $func->evaluate(list($mappingPathStr))->toOne()->toString();
+}
+
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::buildBasePureModelFromMappingStr(mappingStr:String[1]):String[1]
+{
+  meta::protocols::pure::vX_X_X::transformation::fromPureGraph::buildBasePureModelFromMappingStr($mappingStr, meta::pure::router::extension::defaultRelationalExtensions());
+}
+
+function {service.url='/alloy/pureModelFromStore/{version}/{storePath}'} meta::alloy::metadataServer::pureModelFromStoreStr(storePath:String[1], version:String[1]):String[1]
+{
+   let funcStr = 'meta::protocols::pure::'+$version+'::transformation::fromPureGraph::buildBasePureModelFromStoreStr_String_1__String_1_';
+   let func = $funcStr->pathToElement()->cast(@Function<Any>);
+   $func->evaluate(list($storePath))->toOne()->toOne()->toString();
+}
+
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::buildBasePureModelFromStoreStr(mappingStr:String[1]):String[1]
+{
+  meta::protocols::pure::vX_X_X::transformation::fromPureGraph::buildBasePureModelFromStoreStr($mappingStr, meta::pure::router::extension::defaultRelationalExtensions());
+}
+
+function {service.url='/alloy/pureServerBaseVersion'} meta::alloy::metadataServer::pureServerBaseVersion():String[1]
+{
+   '-1';
+}

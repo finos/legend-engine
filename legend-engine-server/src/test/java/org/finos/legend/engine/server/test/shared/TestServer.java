@@ -26,6 +26,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.server.Server;
 import org.finos.legend.engine.shared.core.url.EngineUrlStreamHandlerFactory;
+import org.finos.legend.engine.shared.core.vault.EnvironmentVaultImplementation;
+import org.finos.legend.engine.shared.core.vault.Vault;
 
 public class TestServer extends Server<TestServerConfiguration>
 {
@@ -41,6 +43,7 @@ public class TestServer extends Server<TestServerConfiguration>
     public void run(TestServerConfiguration serverConfiguration, Environment environment)
     {
         super.run(serverConfiguration, environment);
+        Vault.INSTANCE.registerImplementation(new EnvironmentVaultImplementation());
         environment.jersey().register(new TestConnectionProviderApi(getTestConnections(serverConfiguration)));
     }
 
@@ -54,6 +57,7 @@ public class TestServer extends Server<TestServerConfiguration>
             if (serverConfiguration.testConnectionsToEnable.contains(dbType))
             {
                 testConnections.putIfAbsent(dbType, serverConfiguration.staticTestConnections.get(dbType));
+                System.out.println("Configured to reach static connection for database : " + dbType);
             }
         }
 

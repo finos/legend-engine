@@ -19,8 +19,6 @@ env:
   CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-  SNOWFLAKE_LEGEND_INTEG_RO1_PRIVATEKEY: ${{ secrets.SNOWFLAKE_LEGEND_INTEG_RO1_PRIVATEKEY }}
-  SNOWFLAKE_LEGEND_INTEG_RO1_PASSWORD: ${{ secrets.SNOWFLAKE_LEGEND_INTEG_RO1_PASSWORD }}
 
 on:
   schedule:
@@ -28,8 +26,12 @@ on:
   push:
     branches:
       - master
+      - refactor-integration-tests
 jobs:
   build:
+    # NOTE: we cannot run this action in fork because secrets are not accessible from forks
+    # See https://community.sonarsource.com/t/github-action-ci-build-fail-with-set-the-sonar-token-env-variable/38997
+    if: github.repository == 'finos/legend-engine'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
@@ -52,7 +54,10 @@ jobs:
       - name: Download deps and plugins
         run: mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies
       - name: Build + Run Integration Tests
+        env:
+          SNOWFLAKE_INTEGRATION_USER1_PRIVATEKEY: ${{ secrets.SNOWFLAKE_INTEGRATION_USER1_PRIVATEKEY }}
+          SNOWFLAKE_INTEGRATION_USER1_PASSWORD: ${{ secrets.SNOWFLAKE_INTEGRATION_USER1_PASSWORD }}
         run: |
           mvn clean install -DskipTests=true
-          mvn -pl legend-engine-executionPlan-execution-store-relational-connection  -Dtest="ExternalIntegration*Snowflake*" test
-          mvn -pl legend-engine-executionPlan-execution-store-relational-connection-tests  -Dtest="ExternalIntegration*Snowflake*" test
+          mvn -pl legend-engine-xt-relationalStore-executionPlan-connection  -Dtest="ExternalIntegration*Snowflake*" test
+          mvn -pl legend-engine-xt-relationalStore-executionPlan-connection-tests  -Dtest="ExternalIntegration*Snowflake*" test

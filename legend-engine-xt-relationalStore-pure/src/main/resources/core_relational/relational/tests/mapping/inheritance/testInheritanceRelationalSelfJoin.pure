@@ -1,0 +1,130 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::tests::mapping::inheritance::*;
+import meta::relational::tests::mapping::inheritance::cross::*;
+import meta::relational::tests::mapping::inheritance::relational::*;
+import meta::relational::tests::model::inheritance::*;
+import meta::relational::tests::*;
+import meta::pure::profiles::*;
+import meta::pure::mapping::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::runtime::*;
+
+function <<test.BeforePackage>> meta::relational::tests::mapping::inheritance::relational::selfJoin::setUp():Boolean[1]
+{
+    meta::relational::tests::mapping::inheritance::createTablesAndFillDbSelfJoin();
+}
+
+function <<test.Test>> meta::relational::tests::mapping::inheritance::relational::selfJoin::testSubTypeProjectSharedNonDirectlyRouted():Boolean[1]
+{
+   let result1 = execute(|Person.all().roadVehicles->project([p|$p.id, p|$p->subType(@Car).engineType], ['id', 'engine']), meta::relational::tests::mapping::inheritance::relational::selfJoin::inheritanceMappingDBSelfJoin, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   assertEquals(5, $result1.rows->size());
+   assertSameElements(['1 TDSNull', '1 V', '2 TDSNull', '2 U', '3 H'], $result1.rows->map(r|$r.get('id')->toString()+' '+$r.get('engine')->toString()));
+}
+
+function meta::relational::tests::mapping::inheritance::createTablesAndFillDbSelfJoin():Boolean[1]
+{
+   let connection = testRuntime().connectionByElement(db)->cast(@TestDatabaseConnection);
+
+   executeInDb('Drop table if exists OneTable;', $connection);
+   executeInDb('Create Table OneTable (id INT, type INT, vid INT, name VARCHAR(200), wheelCount INT, engineType INT, description VARCHAR(200), personId INT);', $connection);
+   executeInDb('insert into OneTable (id, type, vid, name, wheelCount, engineType, description, personId) values (1, 1, null, \'David Scott\', null, null, null, null);', $connection);
+   executeInDb('insert into OneTable (id, type, vid, name, wheelCount, engineType, description, personId) values (2, 1, null, \'Atul Anand\', null, null, null, null);', $connection);
+   executeInDb('insert into OneTable (id, type, vid, name, wheelCount, engineType, description, personId) values (3, 2, 1, null, 4, 1, \'Peugeot\', 1);', $connection);
+   executeInDb('insert into OneTable (id, type, vid, name, wheelCount, engineType, description, personId) values (4, 2, 2, null, 4, 2, \'Renault\', 1);', $connection);
+   executeInDb('insert into OneTable (id, type, vid, name, wheelCount, engineType, description, personId) values (5, 2, 3, null, 4, 3, \'Nissan\', 2);', $connection);
+   executeInDb('insert into OneTable (id, type, vid, name, wheelCount, engineType, description, personId) values (6, 3, 1, null, 2, null, \'MBK\', 1);', $connection);
+   executeInDb('insert into OneTable (id, type, vid, name, wheelCount, engineType, description, personId) values (7, 3, 2, null, 3, null, \'BMX\', 2);', $connection);
+
+   true;
+}
+
+###Relational
+Database meta::relational::tests::mapping::inheritance::relational::selfJoin::myDB
+(
+    Table OneTable
+    (
+        ID INT PRIMARY KEY,
+        type INT,
+        vid INT,
+        name VARCHAR(200),
+        wheelCount INT,
+        engineType INT, 
+        description VARCHAR(200),
+        personId INT
+    )
+    
+    Join PersonCar(OneTable.ID = {target}.personId)
+    Join PersonBicycle(OneTable.ID = {target}.personId)
+    Filter PersonFilter(OneTable.type = 1)
+    Filter CarFilter(OneTable.type = 2)
+    Filter BicycleFilter(OneTable.type = 3)
+)
+
+
+###Mapping
+import meta::relational::tests::mapping::inheritance::relational::selfJoin::*;
+import meta::relational::tests::model::inheritance::*;
+
+Mapping meta::relational::tests::mapping::inheritance::relational::selfJoin::inheritanceMappingDBSelfJoin
+(
+   Person : Relational
+            {
+               ~filter [myDB]PersonFilter
+               name : [myDB] OneTable.name,
+               vehicles[map1] : [myDB]@PersonCar,
+               vehicles[map2] : [myDB]@PersonBicycle,
+               roadVehicles[map1] : [myDB]@PersonCar,
+               roadVehicles[map2] : [myDB]@PersonBicycle
+            }
+            
+   Car[map1]: Relational
+            {
+               ~filter [myDB]CarFilter
+               id : [myDB] OneTable.vid,
+               engineType : EnumerationMapping engineTypeMapping : [myDB] OneTable.engineType,
+               wheelCount :  [myDB] OneTable.wheelCount,
+               description : [myDB] OneTable.description,
+               person : [myDB]@PersonCar
+            }
+
+   Bicycle[map2] : Relational
+            {
+               ~filter [myDB]BicycleFilter
+               id : [myDB] OneTable.vid,
+               wheelCount :  [myDB] OneTable.wheelCount,
+               description : [myDB] OneTable.description,
+               person : [myDB]@PersonBicycle
+            }
+
+   EngineType: EnumerationMapping engineTypeMapping
+   {
+      V: [1],
+      U: [2],
+      H: [3],
+      W: [4],
+      X: [5]
+   }
+
+   Vehicle : Operation
+                 {
+                    meta::pure::router::operations::inheritance_OperationSetImplementation_1__SetImplementation_MANY_()
+                 }
+
+   RoadVehicle : Operation
+                 {
+                    meta::pure::router::operations::inheritance_OperationSetImplementation_1__SetImplementation_MANY_()
+                 }
+)

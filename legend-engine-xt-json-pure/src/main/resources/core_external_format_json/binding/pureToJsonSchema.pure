@@ -1,0 +1,102 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::shared::format::binding::*;
+import meta::external::shared::format::binding::toString::*;
+import meta::external::shared::format::metamodel::*;
+import meta::external::shared::format::utils::*;
+
+import meta::external::format::json::metamodel::*;
+import meta::external::format::json::binding::fromPure::*;
+
+import meta::json::schema::fromSchema::*;
+import meta::json::schema::generation::*;
+
+import meta::pure::model::unit::*;
+
+/// ========================================================================================================================================================
+// Entry points 
+// ========================================================================================================================================================
+
+Class meta::external::format::json::binding::fromPure::ModelToJsonSchemaConfiguration extends meta::external::shared::format::binding::fromPure::ModelToSchemaConfiguration
+{
+}
+
+function meta::external::format::json::binding::fromPure::pureToJsonSchema(config:ModelToJsonSchemaConfiguration[1]): Binding[1]
+{
+   pureToJsonSchema($config, noDebug());
+}
+
+function meta::external::format::json::binding::fromPure::pureToJsonSchemaWithDebug(config:ModelToJsonSchemaConfiguration[1]): Binding[1]
+{
+   pureToJsonSchema($config, debug());
+}
+
+function meta::external::format::json::binding::fromPure::pureToJsonSchema(config:ModelToJsonSchemaConfiguration[1], debug:DebugContext[1]): Binding[1]
+{
+   let generatedSchemaSet = generate($config, $debug);
+   let result             = createBinding($generatedSchemaSet, $config);
+      
+   $debug->log(|'\nGenerated the following:\n\n'+$result->bindingToString());
+   $result;
+}
+
+// ========================================================================================================================================================
+// generation
+// ========================================================================================================================================================
+
+function <<access.private>> meta::external::format::json::binding::fromPure::generate(config:ModelToJsonSchemaConfiguration[1], debug:DebugContext[1]): SchemaSet[1]
+{
+   let jsonConfig        = ^JSONSchemaConfig(scopeElements = $config.sourceModel);
+   let jsonSchemaOutputs = generateJsonSchemaFromPureWithScope($jsonConfig);
+   
+   let schemaSetSepPos  = $config.targetSchemaSet->lastIndexOf('::');
+   let schemaSetPkgName = $config.targetSchemaSet->substring(0, $schemaSetSepPos);
+   
+   let schemaSet = ^SchemaSet(
+      package = pathToPackage($schemaSetPkgName, true),
+      name    = $config.targetSchemaSet->substring($schemaSetSepPos+2),
+      format  = 'JSON'
+   );
+   $jsonSchemaOutputs->map(o | $o->jsonSchemaOutputToSchema($schemaSet));   
+   $schemaSet;
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::createBinding(schemaSet:SchemaSet[1], config:ModelToJsonSchemaConfiguration[1]): Binding[1]
+{
+   let opSepPos  = $config.targetBinding->lastIndexOf('::');
+   let opPkgName = $config.targetBinding->substring(0, $opSepPos);
+   
+   ^Binding(
+      package     = pathToPackage($opPkgName, true),
+      name        = $config.targetBinding->substring($opSepPos+2),
+      schemaSet   = $schemaSet, 
+      contentType = 'application/json',
+      modelUnit   = newModelUnit()->include($config.sourceModel)
+   );
+}
+
+// ========================================================================================================================================================
+// helper functions
+// ========================================================================================================================================================
+
+function <<access.private>> meta::external::format::json::binding::fromPure::jsonSchemaOutputToSchema(output:JSONSchemaOutput[1], schemaSet: SchemaSet[1]): Schema[*]
+{
+   ^Schema(
+      set = $schemaSet,
+      id = $output.fileName->refToFileName(),
+      location = $output.fileName,
+      detail = ^JsonSchema(content = $output.content)
+   )
+}

@@ -28,6 +28,9 @@ on:
       - master
 jobs:
   build:
+    # NOTE: we cannot run this action in fork because secrets are not accessible from forks
+    # See https://community.sonarsource.com/t/github-action-ci-build-fail-with-set-the-sonar-token-env-variable/38997
+    if: github.repository == 'finos/legend-engine'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
@@ -54,7 +57,7 @@ jobs:
           mvn clean install -DskipTests=true
       - name : Run Connection Protocol Integration Tests
         run :
-          mvn -pl legend-engine-executionPlan-execution-store-relational-connection-tests  -Dtest="ExternalIntegration*SqlServer*" test
+          mvn -pl legend-engine-xt-relationalStore-executionPlan-connection-tests  -Dtest="ExternalIntegration*SqlServer*" test
       - name : Run Sql Generation Tests
         run :
           mvn -pl legend-engine-server -Dtest="Test_Relational_DbSpecific_SqlServer_UsingPureClientTestSuite" test

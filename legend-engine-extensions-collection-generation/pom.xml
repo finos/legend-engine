@@ -19,7 +19,7 @@
     <parent>
         <artifactId>legend-engine</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>3.0.1-SNAPSHOT</version>
+        <version>3.2.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -50,15 +50,15 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-external-format-flatdata-model</artifactId>
+            <artifactId>legend-engine-xt-flatdata-model</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-external-format-json-model</artifactId>
+            <artifactId>legend-engine-xt-json-model</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-external-format-xml-model</artifactId>
+            <artifactId>legend-engine-xt-xml-model</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -70,7 +70,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-protocol-persistence</artifactId>
+            <artifactId>legend-engine-xt-persistence-protocol</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -90,19 +90,19 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-protocol-relational</artifactId>
+            <artifactId>legend-engine-xt-relationalStore-protocol</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-language-pure-store-relational</artifactId>
+            <artifactId>legend-engine-xt-relationalStore-grammar</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-protocol-external-store-service</artifactId>
+            <artifactId>legend-engine-xt-serviceStore-protocol</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-language-external-store-service</artifactId>
+            <artifactId>legend-engine-xt-serviceStore-grammar</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -110,15 +110,15 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-protocol-external-format-flatdata</artifactId>
+            <artifactId>legend-engine-xt-flatdata-protocol</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-protocol-external-format-json</artifactId>
+            <artifactId>legend-engine-xt-json-protocol</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-protocol-external-format-xml</artifactId>
+            <artifactId>legend-engine-xt-xml-protocol</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -126,7 +126,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-external-format-protobuf</artifactId>
+            <artifactId>legend-engine-xt-protobuf</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

@@ -47,7 +47,7 @@ public class HelperTestAssertionGrammarParser
      *     HelperTestAssertionGrammarParser.parseTestAssertion(ctx.testAssertion(), walkerSourceInformation, extensions)
      * </pre>
      */
-    public static TestAssertion parseTestAssertion(ParserRuleContext testAssertionContext, ParseTreeWalkerSourceInformation parentSourceInformation, PureGrammarParserExtensions extensions)
+    public static TestAssertion parseTestAssertion(ParserRuleContext testAssertionContext, ParseTreeWalkerSourceInformation parentWalkerSourceInformation, PureGrammarParserExtensions extensions)
     {
         List<ParseTree> children = testAssertionContext.children;
         if (children.size() < 3 || !children.get(0).getClass().getSimpleName().equals("IdentifierContext") || !(children.get(1) instanceof TerminalNode))
@@ -67,7 +67,7 @@ public class HelperTestAssertionGrammarParser
         TestAssertionParser parser = extensions.getExtraTestAssertionParser(assertionType);
         if (parser == null)
         {
-            throw new EngineException("Unknown test assertion type: " + assertionType, parentSourceInformation.getSourceInformation(identifierContext), EngineErrorType.PARSER);
+            throw new EngineException("Unknown test assertion type: " + assertionType, parentWalkerSourceInformation.getSourceInformation(identifierContext), EngineErrorType.PARSER);
         }
 
         StringBuilder builder = new StringBuilder();
@@ -77,11 +77,11 @@ public class HelperTestAssertionGrammarParser
 
         // prepare island grammar walker source information
         int startLine = islandOpen.getSymbol().getLine();
-        int lineOffset = parentSourceInformation.getLineOffset() + startLine - 1;
+        int lineOffset = parentWalkerSourceInformation.getLineOffset() + startLine - 1;
         // only add current walker source information column offset if this is the first line
-        int columnOffset = (startLine == 1 ? parentSourceInformation.getColumnOffset() : 0) + islandOpen.getSymbol().getCharPositionInLine() + islandOpen.getSymbol().getText().length();
-        ParseTreeWalkerSourceInformation walkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(parentSourceInformation).withLineOffset(lineOffset).withColumnOffset(columnOffset).build();
-        SourceInformation sourceInformation = parentSourceInformation.getSourceInformation(testAssertionContext);
+        int columnOffset = (startLine == 1 ? parentWalkerSourceInformation.getColumnOffset() : 0) + islandOpen.getSymbol().getCharPositionInLine() + islandOpen.getSymbol().getText().length();
+        ParseTreeWalkerSourceInformation walkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(parentWalkerSourceInformation).withLineOffset(lineOffset).withColumnOffset(columnOffset).build();
+        SourceInformation sourceInformation = parentWalkerSourceInformation.getSourceInformation(testAssertionContext);
 
         if (text.isEmpty())
         {

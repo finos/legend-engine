@@ -1,0 +1,514 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+ 
+import meta::pure::graphFetch::tests::XStoreUnion::inMemoryAndRelational::*;
+ 
+Class meta::pure::graphFetch::tests::XStoreUnion::inMemoryAndRelational::Trade
+{
+   tradeId : Integer[1];
+   traderKerb: String[0..1];
+   quantity : Integer[1];
+}
+ 
+Class meta::pure::graphFetch::tests::XStoreUnion::inMemoryAndRelational::Product
+{
+   productId : String[1];
+   productName : String[1];
+   description : String[1];
+}
+ 
+Association meta::pure::graphFetch::tests::XStoreUnion::inMemoryAndRelational::Trade_Product
+{
+   product : Product[1];
+   trades : Trade[*];
+}
+ 
+Class meta::pure::graphFetch::tests::XStoreUnion::inMemoryAndRelational::S_Trade
+{
+   s_tradeId       : Integer[1];
+   s_traderDetails : String[1];
+   s_tradeDetails  : String[1];
+}
+
+Class meta::pure::graphFetch::tests::XStoreUnion::inMemoryAndRelational::S_Trade2
+{
+   s_tradeId       : Integer[1];
+   s_traderDetails : String[1];
+   s_tradeDetails  : String[1];
+}
+
+Class meta::pure::graphFetch::tests::XStoreUnion::inMemoryAndRelational::S_Trade3
+{
+   s_tradeId       : Integer[1];
+   s_traderDetails : String[1];
+   s_tradeDetails  : String[1];
+}
+
+Class meta::pure::graphFetch::tests::XStoreUnion::inMemoryAndRelational::S_Trade4
+{
+   s_tradeId       : Integer[1];
+   s_traderDetails : String[1];
+   s_tradeDetails  : String[1];
+}
+
+
+###Relational
+Database meta::pure::graphFetch::tests::XStoreUnion::inMemoryAndRelational::dbUnion
+(
+   Table tradeTable (tradeId INT PRIMARY KEY, quantity INT, productId VARCHAR(100), traderKerb VARCHAR(100))
+   Table productTable (productId VARCHAR(100) PRIMARY KEY, productName VARCHAR(100), description VARCHAR(1000))
+
+   Join trade_product(productTable.productId = tradeTable.productId)
+)
+
+###Mapping
+import meta::pure::graphFetch::tests::XStoreUnion::inMemoryAndRelational::*;
+
+Mapping meta::pure::graphFetch::tests::XStoreUnion::inMemoryAndRelational::crossMappingUnion
+(
+   Trade[trade_set_relational] : Relational
+   {
+      tradeId : [dbUnion]tradeTable.tradeId,
+      traderKerb : [dbUnion]tradeTable.traderKerb,
+      quantity : [dbUnion]tradeTable.quantity,
+      product[prod_set_relational] : [dbUnion]@trade_product
+   }
+
+   Product[prod_set_relational] : Relational
+   {
+      productId : [dbUnion]productTable.productId,
+      productName : [dbUnion]productTable.productName,
+      description : [dbUnion]productTable.description
+   }
+
+   Trade[trade_set_model] : Pure
+   {
+      ~src S_Trade
+      tradeId     : $src.s_tradeId,
+      traderKerb  : $src.s_traderDetails->split(':')->at(0),
+      quantity    : $src.s_tradeDetails->split(':')->at(1)->parseInteger(),
+      product[prod_set_model] : $src
+   }
+
+   Product[prod_set_model] : Pure
+   {
+      ~src S_Trade
+      productId   : $src.s_tradeDetails->split(':')->at(0),
+      productName : $src.s_tradeDetails->split(':')->at(2),
+      description : ''
+   }
+
+   *Product: Operation
+   {
+     meta::pure::router::operations::special_union_OperationSetImplementation_1__SetImplementation_MANY_(prod_set_relational, prod_set_model)
+   }
+
+   *Trade: Operation
+   {
+     meta::pure::router::operations::special_union_OperationSetImplementation_1__SetImplementation_MANY_(trade_set_relational, trade_set_model)
+   }
+)
+
+Mapping meta::pure::graphFetch::tests::XStoreUnion::inMemoryAndRelational::crossMappingUnion2
+(
+   Trade[trade_set_relational] : Relational
+   {
+      tradeId : [dbUnion]tradeTable.tradeId,
+      traderKerb : [dbUnion]tradeTable.traderKerb,
+      quantity : [dbUnion]tradeTable.quantity,
+      product[prod_set_relational] : [dbUnion]@trade_product
+   }
+
+   Product[prod_set_relational] : Relational
+   {
+      productId : [dbUnion]productTable.productId,
+      productName : [dbUnion]productTable.productName,
+      description : [dbUnion]productTable.description
+   }
+
+   Trade[trade_set_model] : Pure
+   {
+      ~src S_Trade
+      tradeId     : $src.s_tradeId,
+      traderKerb  : $src.s_traderDetails->split(':')->at(0),
+      quantity    : $src.s_tradeDetails->split(':')->at(1)->parseInteger(),
+      product[prod_set_model] : $src
+   }
+
+   Product[prod_set_model] : Pure
+   {
+      ~src S_Trade
+      productId   : $src.s_tradeDetails->split(':')->at(0),
+      productName : $src.s_tradeDetails->split(':')->at(2),
+      description : ''
+   }
+
+   Trade[trade_set_model2] : Pure
+   {
+      ~src S_Trade2
+      tradeId     : $src.s_tradeId,
+      traderKerb  : $src.s_traderDetails->split(':')->at(0),
+      quantity    : $src.s_tradeDetails->split(':')->at(1)->parseInteger(),
+      product[prod_set_model2] : $src
+   }
+
+   Trade[trade_set_model3] : Pure
+   {
+      ~src S_Trade3
+      tradeId     : $src.s_tradeId,
+      traderKerb  : $src.s_traderDetails->split(':')->at(0),
+      quantity    : $src.s_tradeDetails->split(':')->at(1)->parseInteger(),
+      product[prod_set_model3] : $src
+   }
+
+   Trade[trade_set_model4] : Pure
+   {
+      ~src S_Trade4
+      tradeId     : $src.s_tradeId,
+      traderKerb  : $src.s_traderDetails->split(':')->at(0),
+      quantity    : $src.s_tradeDetails->split(':')->at(1)->parseInteger(),
+      product[prod_set_model4] : $src
+   }
+
+   Product[prod_set_model2] : Pure
+   {
+      ~src S_Trade2
+      productId   : $src.s_tradeDetails->split(':')->at(0),
+      productName : $src.s_tradeDetails->split(':')->at(2),
+      description : ''
+   }
+
+   Product[prod_set_model3] : Pure
+   {
+      ~src S_Trade3
+      productId   : $src.s_tradeDetails->split(':')->at(0),
+      productName : $src.s_tradeDetails->split(':')->at(2),
+      description : ''
+   }
+
+   Product[prod_set_model4] : Pure
+   {
+      ~src S_Trade4
+      productId   : $src.s_tradeDetails->split(':')->at(0),
+      productName : $src.s_tradeDetails->split(':')->at(2),
+      description : ''
+   }
+
+   *Product: Operation
+   {
+     meta::pure::router::operations::special_union_OperationSetImplementation_1__SetImplementation_MANY_(prod_set_relational, prod_set_model, prod_set_model2, prod_set_model3, prod_set_model4)
+   }
+
+   *Trade: Operation
+   {
+     meta::pure::router::operations::special_union_OperationSetImplementation_1__SetImplementation_MANY_(trade_set_model, trade_set_model2, trade_set_model3, trade_set_model4, trade_set_relational)
+   }
+)
+
+###Pure
+import meta::pure::runtime::*;
+import meta::pure::executionPlan::profiles::*;
+import meta::pure::executionPlan::toString::*;
+import meta::pure::executionPlan::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::graphFetch::tests::XStoreUnion::inMemoryAndRelational::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::functions::toDDL::*;
+import meta::pure::graphFetcha::tests::XStore::*;
+import meta::relational::runtime::*;
+
+function <<test.BeforePackage>> meta::pure::graphFetch::tests::XStoreUnion::inMemoryAndRelational::createTablesInDb():Boolean[1]
+{
+   let runtime =  ^Runtime(connections = [^TestDatabaseConnection(element=dbUnion, type=DatabaseType.H2)]);
+   let dbConn  = $runtime.connections->at(0)->cast(@DatabaseConnection);
+
+   dropAndCreateTableInDb(dbUnion, 'tradeTable', $dbConn);
+   dropAndCreateTableInDb(dbUnion, 'productTable', $dbConn);
+
+   executeInDb('insert into tradeTable (tradeId, quantity, productId, traderkerb) values (1, 100, 30, \'abc\');', $dbConn);
+   executeInDb('insert into tradeTable (tradeId, quantity, productId, traderkerb) values (2, 200, 31, \'abc\');', $dbConn);
+   executeInDb('insert into tradeTable (tradeId, quantity, productId, traderkerb) values (3, 300, 30, \'xyz\');', $dbConn);
+   executeInDb('insert into tradeTable (tradeId, quantity, productId, traderkerb) values (4, 400, 31, \'xyz\');', $dbConn);
+
+   executeInDb('insert into productTable (productId, productname, description) values (30, \'Prod_1\', \'Product 1 description\');', $dbConn);
+   executeInDb('insert into productTable (productId, productname, description) values (31, \'Prod_2\', \'Product 2 description\');', $dbConn);
+
+   true;
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pure::graphFetch::tests::XStoreUnion::inMemoryAndRelational::testSimpleUnionCrossStore():Boolean[1]
+{
+   let tree = #{
+      Trade {
+         tradeId,
+         traderKerb,
+         quantity
+      }
+   }#;
+   let query = {|Trade.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::pure::graphFetch::tests::XStoreUnion::inMemoryAndRelational::crossMappingUnion;
+
+   let jsonConnection = ^meta::pure::mapping::modelToModel::JsonModelConnection
+                         (
+                            element = ^meta::pure::mapping::modelToModel::ModelStore(),
+                            class   = S_Trade,
+                            url     = 'data:application/json,'+
+                                      '{"s_tradeId": 5, "s_tradeDetails": "40:100:Prod_3", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
+                                      '{"s_tradeId": 6, "s_tradeDetails": "41:200:Prod_4", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
+                                      '{"s_tradeId": 7, "s_tradeDetails": "40:300:Prod_3", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}'+
+                                      '{"s_tradeId": 8, "s_tradeDetails": "41:400:Prod_4", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}'
+                         );
+   let dbRuntime = meta::relational::tests::testRuntime();
+   let runtime = ^$dbRuntime(connections = $dbRuntime.connections->concatenate($jsonConnection));
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"quantity":100,"traderKerb":"abc","tradeId":1},'+
+       '{"quantity":200,"traderKerb":"abc","tradeId":2},'+
+       '{"quantity":300,"traderKerb":"xyz","tradeId":3},'+
+       '{"quantity":400,"traderKerb":"xyz","tradeId":4},'+
+       '{"quantity":100,"traderKerb":"abc","tradeId":5},'+
+       '{"quantity":200,"traderKerb":"abc","tradeId":6},'+
+       '{"quantity":300,"traderKerb":"xyz","tradeId":7},'+
+       '{"quantity":400,"traderKerb":"xyz","tradeId":8}]',
+      $result
+   );
+
+   true;
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pure::graphFetch::tests::XStoreUnion::inMemoryAndRelational::testNestedUnionCrossStore():Boolean[1]
+{
+   let tree = #{
+      Trade {
+         tradeId,
+         traderKerb,
+         quantity,
+         product {
+            productId,
+            productName,
+            description
+         }
+      }
+   }#;
+   let query = {|Trade.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::pure::graphFetch::tests::XStoreUnion::inMemoryAndRelational::crossMappingUnion;
+
+   let jsonConnection = ^meta::pure::mapping::modelToModel::JsonModelConnection
+                         (
+                            element = ^meta::pure::mapping::modelToModel::ModelStore(),
+                            class   = S_Trade,
+                            url     = 'data:application/json,'+
+                                      '{"s_tradeId": 5, "s_tradeDetails": "40:100:Prod_3", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
+                                      '{"s_tradeId": 6, "s_tradeDetails": "41:200:Prod_4", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
+                                      '{"s_tradeId": 7, "s_tradeDetails": "40:300:Prod_3", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}'+
+                                      '{"s_tradeId": 8, "s_tradeDetails": "41:400:Prod_4", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}'
+                         );
+   let dbRuntime = meta::relational::tests::testRuntime();
+   let runtime = ^$dbRuntime(connections = $dbRuntime.connections->concatenate($jsonConnection));
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"product":{"productId":"30","description":"Product 1 description","productName":"Prod_1"},"quantity":100,"traderKerb":"abc","tradeId":1},'+
+       '{"product":{"productId":"31","description":"Product 2 description","productName":"Prod_2"},"quantity":200,"traderKerb":"abc","tradeId":2},'+
+       '{"product":{"productId":"30","description":"Product 1 description","productName":"Prod_1"},"quantity":300,"traderKerb":"xyz","tradeId":3},'+
+       '{"product":{"productId":"31","description":"Product 2 description","productName":"Prod_2"},"quantity":400,"traderKerb":"xyz","tradeId":4},'+
+       '{"product":{"productId":"40","description":"","productName":"Prod_3"},"quantity":100,"traderKerb":"abc","tradeId":5},'+
+       '{"product":{"productId":"41","description":"","productName":"Prod_4"},"quantity":200,"traderKerb":"abc","tradeId":6},'+
+       '{"product":{"productId":"40","description":"","productName":"Prod_3"},"quantity":300,"traderKerb":"xyz","tradeId":7},'+
+       '{"product":{"productId":"41","description":"","productName":"Prod_4"},"quantity":400,"traderKerb":"xyz","tradeId":8}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pure::graphFetch::tests::XStoreUnion::inMemoryAndRelational::testSimpleUnionOnMultipleSetsCrossStore():Boolean[1]
+{
+   let tree = #{
+      Trade {
+         tradeId,
+         traderKerb,
+         quantity
+      }
+   }#;
+   let query = {|Trade.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::pure::graphFetch::tests::XStoreUnion::inMemoryAndRelational::crossMappingUnion2;
+
+   let jsonConnection = ^meta::pure::mapping::modelToModel::JsonModelConnection
+                         (
+                            element = ^meta::pure::mapping::modelToModel::ModelStore(),
+                            class   = S_Trade,
+                            url     = 'data:application/json,'+
+                                      '{"s_tradeId": 5, "s_tradeDetails": "40:100:Prod_3", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
+                                      '{"s_tradeId": 6, "s_tradeDetails": "41:200:Prod_4", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
+                                      '{"s_tradeId": 7, "s_tradeDetails": "40:300:Prod_3", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}'+
+                                      '{"s_tradeId": 8, "s_tradeDetails": "41:400:Prod_4", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}'
+                         );
+
+   let jsonConnection2 = ^meta::pure::mapping::modelToModel::JsonModelConnection
+                         (
+                            element = ^meta::pure::mapping::modelToModel::ModelStore(),
+                            class   = S_Trade2,
+                            url     = 'data:application/json,'+
+                                      '{"s_tradeId": 9 , "s_tradeDetails": "40:100:Prod_3", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
+                                      '{"s_tradeId": 10, "s_tradeDetails": "41:200:Prod_4", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
+                                      '{"s_tradeId": 11, "s_tradeDetails": "40:300:Prod_3", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}'+
+                                      '{"s_tradeId": 12, "s_tradeDetails": "41:400:Prod_4", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}'
+                         );
+
+   let jsonConnection3 = ^meta::pure::mapping::modelToModel::JsonModelConnection
+                         (
+                            element = ^meta::pure::mapping::modelToModel::ModelStore(),
+                            class   = S_Trade3,
+                            url     = 'data:application/json,'+
+                                      '{"s_tradeId": 13 , "s_tradeDetails": "40:100:Prod_3", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
+                                      '{"s_tradeId": 14, "s_tradeDetails": "41:200:Prod_4", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
+                                      '{"s_tradeId": 15, "s_tradeDetails": "40:300:Prod_3", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}'+
+                                      '{"s_tradeId": 16, "s_tradeDetails": "41:400:Prod_4", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}'
+                         );
+
+   let jsonConnection4 = ^meta::pure::mapping::modelToModel::JsonModelConnection
+                         (
+                            element = ^meta::pure::mapping::modelToModel::ModelStore(),
+                            class   = S_Trade4,
+                            url     = 'data:application/json,'+
+                                      '{"s_tradeId": 17, "s_tradeDetails": "40:100:Prod_3", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
+                                      '{"s_tradeId": 18, "s_tradeDetails": "41:200:Prod_4", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
+                                      '{"s_tradeId": 19, "s_tradeDetails": "40:300:Prod_3", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}'+
+                                      '{"s_tradeId": 20, "s_tradeDetails": "41:400:Prod_4", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}'
+                         );
+
+   let dbRuntime = meta::relational::tests::testRuntime();
+   let runtime = ^$dbRuntime(connections = $dbRuntime.connections->concatenate([$jsonConnection, $jsonConnection2, $jsonConnection3, $jsonConnection4]));
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"quantity":100,"traderKerb":"abc","tradeId":1},'+
+       '{"quantity":200,"traderKerb":"abc","tradeId":2},'+
+       '{"quantity":300,"traderKerb":"xyz","tradeId":3},'+
+       '{"quantity":400,"traderKerb":"xyz","tradeId":4},'+
+       '{"quantity":100,"traderKerb":"abc","tradeId":5},'+
+       '{"quantity":200,"traderKerb":"abc","tradeId":6},'+
+       '{"quantity":300,"traderKerb":"xyz","tradeId":7},'+
+       '{"quantity":400,"traderKerb":"xyz","tradeId":8},'+
+       '{"quantity":100,"traderKerb":"abc","tradeId":9},'+
+       '{"quantity":200,"traderKerb":"abc","tradeId":10},'+
+       '{"quantity":300,"traderKerb":"xyz","tradeId":11},'+
+       '{"quantity":400,"traderKerb":"xyz","tradeId":12},'+
+       '{"quantity":100,"traderKerb":"abc","tradeId":13},'+
+       '{"quantity":200,"traderKerb":"abc","tradeId":14},'+
+       '{"quantity":300,"traderKerb":"xyz","tradeId":15},'+
+       '{"quantity":400,"traderKerb":"xyz","tradeId":16},'+
+       '{"quantity":100,"traderKerb":"abc","tradeId":17},'+
+       '{"quantity":200,"traderKerb":"abc","tradeId":18},'+
+       '{"quantity":300,"traderKerb":"xyz","tradeId":19},'+
+       '{"quantity":400,"traderKerb":"xyz","tradeId":20}]',
+      $result
+   );
+
+   true;
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pure::graphFetch::tests::XStoreUnion::inMemoryAndRelational::testNestedUnionOnMultipleSetsCrossStore():Boolean[1]
+{
+   let tree = #{
+      Trade {
+         tradeId,
+         traderKerb,
+         quantity,
+         product {
+            productId,
+            productName,
+            description
+         }
+      }
+   }#;
+   let query = {|Trade.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::pure::graphFetch::tests::XStoreUnion::inMemoryAndRelational::crossMappingUnion2;
+
+   let jsonConnection = ^meta::pure::mapping::modelToModel::JsonModelConnection
+                         (
+                            element = ^meta::pure::mapping::modelToModel::ModelStore(),
+                            class   = S_Trade,
+                            url     = 'data:application/json,'+
+                                      '{"s_tradeId": 5, "s_tradeDetails": "40:100:Prod_3", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
+                                      '{"s_tradeId": 6, "s_tradeDetails": "41:200:Prod_4", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
+                                      '{"s_tradeId": 7, "s_tradeDetails": "40:300:Prod_3", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}'+
+                                      '{"s_tradeId": 8, "s_tradeDetails": "41:400:Prod_4", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}'
+                         );
+
+   let jsonConnection2 = ^meta::pure::mapping::modelToModel::JsonModelConnection
+                         (
+                            element = ^meta::pure::mapping::modelToModel::ModelStore(),
+                            class   = S_Trade2,
+                            url     = 'data:application/json,'+
+                                      '{"s_tradeId": 9, "s_tradeDetails": "40:100:Prod_3", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
+                                      '{"s_tradeId": 10, "s_tradeDetails": "41:200:Prod_4", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
+                                      '{"s_tradeId": 11, "s_tradeDetails": "40:300:Prod_3", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}'+
+                                      '{"s_tradeId": 12, "s_tradeDetails": "41:400:Prod_4", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}'
+                         );
+
+   let jsonConnection3 = ^meta::pure::mapping::modelToModel::JsonModelConnection
+                         (
+                            element = ^meta::pure::mapping::modelToModel::ModelStore(),
+                            class   = S_Trade3,
+                            url     = 'data:application/json,'+
+                                      '{"s_tradeId": 13 , "s_tradeDetails": "40:100:Prod_3", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
+                                      '{"s_tradeId": 14, "s_tradeDetails": "41:200:Prod_4", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
+                                      '{"s_tradeId": 15, "s_tradeDetails": "40:300:Prod_3", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}'+
+                                      '{"s_tradeId": 16, "s_tradeDetails": "41:400:Prod_4", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}'
+                         );
+
+   let jsonConnection4 = ^meta::pure::mapping::modelToModel::JsonModelConnection
+                         (
+                            element = ^meta::pure::mapping::modelToModel::ModelStore(),
+                            class   = S_Trade4,
+                            url     = 'data:application/json,'+
+                                      '{"s_tradeId": 17, "s_tradeDetails": "40:100:Prod_3", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
+                                      '{"s_tradeId": 18, "s_tradeDetails": "41:200:Prod_4", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
+                                      '{"s_tradeId": 19, "s_tradeDetails": "40:300:Prod_3", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}'+
+                                      '{"s_tradeId": 20, "s_tradeDetails": "41:400:Prod_4", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}'
+                         );
+
+   let dbRuntime = meta::relational::tests::testRuntime();
+   let runtime = ^$dbRuntime(connections = $dbRuntime.connections->concatenate([$jsonConnection, $jsonConnection2, $jsonConnection3, $jsonConnection4]));
+
+   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"product":{"productId":"30","description":"Product 1 description","productName":"Prod_1"},"quantity":100,"traderKerb":"abc","tradeId":1},'+
+       '{"product":{"productId":"31","description":"Product 2 description","productName":"Prod_2"},"quantity":200,"traderKerb":"abc","tradeId":2},'+
+       '{"product":{"productId":"30","description":"Product 1 description","productName":"Prod_1"},"quantity":300,"traderKerb":"xyz","tradeId":3},'+
+       '{"product":{"productId":"31","description":"Product 2 description","productName":"Prod_2"},"quantity":400,"traderKerb":"xyz","tradeId":4},'+
+       '{"product":{"productId":"40","description":"","productName":"Prod_3"},"quantity":100,"traderKerb":"abc","tradeId":5},'+
+       '{"product":{"productId":"41","description":"","productName":"Prod_4"},"quantity":200,"traderKerb":"abc","tradeId":6},'+
+       '{"product":{"productId":"40","description":"","productName":"Prod_3"},"quantity":300,"traderKerb":"xyz","tradeId":7},'+
+       '{"product":{"productId":"41","description":"","productName":"Prod_4"},"quantity":400,"traderKerb":"xyz","tradeId":8},'+
+       '{"product":{"productId":"40","description":"","productName":"Prod_3"},"quantity":100,"traderKerb":"abc","tradeId":9},'+
+       '{"product":{"productId":"41","description":"","productName":"Prod_4"},"quantity":200,"traderKerb":"abc","tradeId":10},'+
+       '{"product":{"productId":"40","description":"","productName":"Prod_3"},"quantity":300,"traderKerb":"xyz","tradeId":11},'+
+       '{"product":{"productId":"41","description":"","productName":"Prod_4"},"quantity":400,"traderKerb":"xyz","tradeId":12},'+
+       '{"product":{"productId":"40","description":"","productName":"Prod_3"},"quantity":100,"traderKerb":"abc","tradeId":13},'+
+       '{"product":{"productId":"41","description":"","productName":"Prod_4"},"quantity":200,"traderKerb":"abc","tradeId":14},'+
+       '{"product":{"productId":"40","description":"","productName":"Prod_3"},"quantity":300,"traderKerb":"xyz","tradeId":15},'+
+       '{"product":{"productId":"41","description":"","productName":"Prod_4"},"quantity":400,"traderKerb":"xyz","tradeId":16},'+
+       '{"product":{"productId":"40","description":"","productName":"Prod_3"},"quantity":100,"traderKerb":"abc","tradeId":17},'+
+       '{"product":{"productId":"41","description":"","productName":"Prod_4"},"quantity":200,"traderKerb":"abc","tradeId":18},'+
+       '{"product":{"productId":"40","description":"","productName":"Prod_3"},"quantity":300,"traderKerb":"xyz","tradeId":19},'+
+       '{"product":{"productId":"41","description":"","productName":"Prod_4"},"quantity":400,"traderKerb":"xyz","tradeId":20}]',
+      $result
+   );
+}

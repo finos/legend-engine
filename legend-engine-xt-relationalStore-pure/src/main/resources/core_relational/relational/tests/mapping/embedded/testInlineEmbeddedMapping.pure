@@ -1,0 +1,344 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+
+import meta::pure::runtime::*;
+import meta::relational::runtime::*;
+import meta::relational::metamodel::execute::*;
+import meta::csv::*;
+import meta::relational::mapping::*;
+
+import meta::relational::tests::mapping::embedded::advanced::model::*;
+import meta::relational::tests::mapping::embedded::advanced::mapping::*;
+import meta::relational::tests::mapping::embedded::advanced::store::*;
+import meta::relational::tests::mapping::embedded::advanced::*;
+
+
+function  meta::relational::tests::mapping::embedded::advanced::testRuntime():Runtime[1]
+{
+  meta::relational::tests::testRuntime(eDB);
+}
+
+ function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::testProjection():Boolean[1]
+ {
+
+
+   let result = execute(|Product.all()->project([p| $p.name, p | $p.bondDetails.description], ['name', 'description'])
+                         , testMappingEmbedded, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+  assertEquals('name,description\n' + 'Product 1,Bond 1\n' + 'Product 2,Bond 2\n' + 'Product 3,SuperBond 3 super\n', $result.values->toOne()->toCSV());
+  assertEquals('select "root".PRODUCT_NAME as "name", "root".BOND_DETAILS as "description" from PRODUCT_DENORM as "root"', $result->sqlRemoveFormatting());
+
+   true;
+ }
+
+ function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::testFilter():Boolean[1]
+ {
+    let result = execute(|Product.all()->filter(p | $p.bondDetails.type == '7 weeks' )
+                                     ->project( [p | $p.name, p | $p.bondDetails.type], ['name', 'type'])
+                                     , testMappingEmbedded, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+   assertEquals('name,type\n' + 'Product 3,7 weeks\n', $result.values->toOne()->toCSV());
+   assertEquals('select "root".PRODUCT_NAME as "name", "root".BOND_TYPE as "type" from PRODUCT_DENORM as "root" where "root".BOND_TYPE = \'7 weeks\'', $result->sqlRemoveFormatting());
+
+ }
+
+ function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::testDenormWithComplexFilter():Boolean[1]
+ {
+   //filter with two embedded properties in the filter
+   let result = execute(|Product.all()->filter(p | $p.bondDetails.type->startsWith('5') && $p.bondDetails.description->startsWith('Bond'))
+                                     ->project( [p | $p.name, p | $p.bondDetails.type], ['name', 'type'])
+                                     , testMappingEmbedded, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+
+   assertEquals('name,type\n' + 'Product 1,5 years\n' + 'Product 2,5 years\n', $result.values->toOne()->toCSV());
+   assertEquals('select "root".PRODUCT_NAME as "name", "root".BOND_TYPE as "type" from PRODUCT_DENORM as "root" where ("root".BOND_TYPE like \'5%\' and "root".BOND_DETAILS like \'Bond%\')', $result->sqlRemoveFormatting());
+  }
+
+
+ function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::testGroupBy():Boolean[1]
+ {
+   let result = execute(|Product.all()->groupBy( [p | $p.bondDetails.type] ,
+                                  [agg(x|if ( $x.market == 'LSE' ,|5.0,|1.0),
+                                       y|$y->sum()
+                                       )],
+                                  ['Bond Type', 'Profit']
+                                  ), testMappingEmbedded,testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+   assertEquals('Bond Type,Profit\n' + '5 years,10.0\n' + '7 weeks,1.0\n', $result.values->toOne()->toCSV());
+   assertEquals( 'select "root".BOND_TYPE as "Bond Type", sum(case when "root".MARKET_NAME = \'LSE\' then 5.0 else 1.0 end) as "Profit" from PRODUCT_DENORM as "root" group by "Bond Type"', $result->sqlRemoveFormatting());
+
+ }
+
+ function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::testGroupByComplexAgg():Boolean[1]
+ {
+   let result = execute(|Product.all()->groupBy( [p | $p.bondDetails.type] ,
+                                  [agg(x|if($x.bondDetails.type->startsWith('5'),|5.0,|1.0),
+                                       y|$y->sum()
+                                       )],
+                                  ['Bond Type', 'sum']
+                                  ), testMappingEmbedded, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+   assertEquals('Bond Type,sum\n' + '5 years,10.0\n' + '7 weeks,1.0\n', $result.values->toOne()->toCSV());
+   assertEquals( 'select "root".BOND_TYPE as "Bond Type", sum(case when "root".BOND_TYPE like \'5%\' then 5.0 else 1.0 end) as "sum" from PRODUCT_DENORM as "root" group by "Bond Type"', $result->sqlRemoveFormatting());
+
+ }
+
+ function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::testQualifierProperty():Boolean[1]
+ {
+    let result = execute(|Product.all()->filter(p | $p.bondDetails.duration == '5' )
+                                       ->project( [p | $p.name, p | $p.bondDetails.duration], ['name', 'duration'])
+                                     , testMappingEmbedded, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+
+   assertEquals('name,duration\n' + 'Product 1,5\n' + 'Product 2,5\n', $result.values->toOne()->toCSV());
+   assertEquals('select "root".PRODUCT_NAME as "name", case when "root".BOND_TYPE like \'5%\' then 5 else 0 end as "duration" from PRODUCT_DENORM as "root" where case when "root".BOND_TYPE like \'5%\' then 5 else 0 end = \'5\'', $result->sqlRemoveFormatting());
+
+ }
+
+ function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::testInlineEmbeddedMappingWithAssociationFromRootMapping():Boolean[1]
+ {
+   let result = execute(|Product.all()->filter(p|$p.name == 'Product 1')->project([p| $p.name, p| $p.bondDetails.bondClassification.type], ['name','bondClassification']), testMappingEmbeddedParent, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions(), noDebug());
+   assertEquals('name,bondClassification\n' + 'Product 1,Corporate\n', $result.values->toOne()->toCSV());
+   assertEquals('select "root".PRODUCT_NAME as "name", "bondclassificationtable_0".type as "bondClassification" from PRODUCT_DENORM as "root" left outer join BondClassificationTable as "bondclassificationtable_0" on ("root".PRODUCT_ID = "bondclassificationtable_0".PRODUCT_ID) where "root".PRODUCT_NAME = \'Product 1\'', $result->sqlRemoveFormatting());
+ }
+
+ function <<test.ToFix>> meta::relational::tests::mapping::embedded::advanced::testProjectionWithMultipleRootMappings():Boolean[1]
+ {
+
+   let result = execute(|Product.all()->project([p| $p.name, p | $p.bondDetails.description], ['name', 'description'])
+                         ,testMappingEmbedded, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   fail();
+ }
+
+function <<test.BeforePackage>> meta::relational::tests::mapping::embedded::advanced::setUp():Boolean[1]
+{
+   meta::relational::tests::mapping::embedded::advanced::store::createTablesAndFillDb();
+
+}
+
+
+function meta::relational::tests::mapping::embedded::advanced::store::createTablesAndFillDb():Boolean[1]
+{
+  let connection = testRuntime().connectionByElement(eDB)->cast(@TestDatabaseConnection);
+
+  meta::relational::functions::toDDL::dropAndCreateTableInDb(eDB, 'PRODUCT_DENORM', $connection);
+  meta::relational::functions::toDDL::dropAndCreateTableInDb(eDB, 'BOND_DETAIL', $connection);
+  meta::relational::functions::toDDL::dropAndCreateTableInDb(eDB, 'Party', $connection);
+  meta::relational::functions::toDDL::dropAndCreateTableInDb(eDB, 'BondClassificationTable', $connection);
+
+  let s = 'insert into PRODUCT_DENORM (PRODUCT_ID, PRODUCT_NAME, MARKET_NAME, BOND_DETAILS, BOND_TYPE,BOND_STATUS,ISSUER,HOLDER,ISSUER_ADDRESS_NAME,HOLDER_ADDRESS_NAME,SUBPRODUCT_ID,SUBPRODUCT_NAME ) values ';
+
+
+  executeInDb($s + '(1, \'Product 1\', \'LSE\', \'Bond 1\', \'5 years\',\'Open\',\'issuer1\',\'holder1\',\'addressi1\',\'addressh1\',2,\'Product 2\' );', $connection);
+  executeInDb($s + '(2, \'Product 2\', \'LSE\',   \'Bond 2\', \'5 years\',\'Open\',\'issuer2\',\'holder1\',\'addressi2\',\'addressh1\', 5, \'Product 3\' );',  $connection);
+  executeInDb($s + '(5, \'Product 3\', \'MILAN\', \'SuperBond 3 super\', \'7 weeks\',\'Closed\',\'issuer3\',\'holder3\' ,\'addressi3\',\'addressh3\',2,\'Product 2\' );', $connection);
+
+  let b = 'insert into BOND_DETAIL (BOND_ID, NOT_SO_GOOD_DETAIL, TYPE, STATUS, HOLDERID ) values ';
+
+
+  executeInDb($b + '(1, \'P 1\', \'15 years\',\'Open\', 3);', $connection);
+  executeInDb($b + '(2, \'P 2\', \'15 years\',\'Open\', 4);',  $connection);
+  executeInDb($b + '(5, \'P 3\', \'5 years\',\'Open\', 5);', $connection);
+
+  let c = 'insert into PARTY (ID, NAME ) values ';
+
+  executeInDb($c + '(3, \'Party 1\');', $connection);
+  executeInDb($c + '(4, \'Party 2\');',  $connection);
+  executeInDb($c + '(5, \'Party 3\');', $connection);
+
+  let d = 'insert into BondClassificationTable(PRODUCT_ID, TYPE) values ';
+   
+  executeInDb($d + '(1, \'Corporate\');', $connection);
+
+  true;
+}
+
+
+
+###Pure
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::mapping::embedded::advanced::model::*;
+
+Enum meta::relational::tests::mapping::embedded::advanced::model::Status
+{
+    Pending, Open, Closed
+}
+
+Enum meta::relational::tests::mapping::embedded::advanced::model::PartyType
+{
+   Company, Bearer, Goverment
+}
+
+Class meta::relational::tests::mapping::embedded::advanced::model::Party
+{
+  name : String[1];
+  type:  PartyType[1]; 
+  address: Address[1];
+  description(){
+     $this.name+$this.type->toString();
+  }:String[1]; 
+   
+}
+
+
+Class meta::relational::tests::mapping::embedded::advanced::model::BondDetail
+{
+  description : String[1];
+  type : String[1];
+  status: Status[1];
+  issuer:Party[1];
+  holder:Party[1]; 
+   
+  isBond(){true}:Boolean[1];
+  duration(){if($this.type->startsWith('5'),|5,|0)}:Integer[1];
+  durationStartsWith(start:String[1]){ $this.type->startsWith($start)}:Boolean[1];
+  fullName(){ $this.type+' '+$this.description}:String[1];
+  prefixedDescription(prefix:String[1]){ $prefix + $this.description }:String[1];
+}
+
+Class meta::relational::tests::mapping::embedded::advanced::model::Product
+{
+  name : String[1];
+  market: String [1];
+  bondDetails : BondDetail[1];
+  subProduct : meta::relational::tests::mapping::embedded::advanced::model::Product[1] ;
+}
+
+
+Class meta::relational::tests::mapping::embedded::advanced::model::BondClassification
+{
+   type : String[1];  
+}
+
+Association meta::relational::tests::mapping::embedded::advanced::model::BondDetailBondClassification
+{
+    bondDetail : meta::relational::tests::mapping::embedded::advanced::model::BondDetail[*];
+    bondClassification : meta::relational::tests::mapping::embedded::advanced::model::BondClassification[*];
+}
+
+
+###Relational
+
+Database meta::relational::tests::mapping::embedded::advanced::store::eDB
+(
+
+  Table PRODUCT_DENORM
+  (
+      PRODUCT_ID INT PRIMARY KEY,
+      PRODUCT_NAME VARCHAR(200),
+      MARKET_NAME VARCHAR(200),
+      BOND_DETAILS VARCHAR(200),
+      BOND_TYPE VARCHAR(10),
+      BOND_STATUS VARCHAR(10),
+      ISSUER_TYPE VARCHAR(10),
+      ISSUER VARCHAR(10),
+      ISSUER_ADDRESS_NAME VARCHAR(200),
+      ISSUER_ADDRESS_STREET VARCHAR(200),
+      HOLDER_TYPE VARCHAR(10),
+      HOLDER VARCHAR(10),
+      HOLDER_ADDRESS_NAME VARCHAR(200),
+      HOLDER_ADDRESS_STREET VARCHAR(200),
+      SUBPRODUCT_ID INT,
+      SUBPRODUCT_NAME VARCHAR(200)
+  )
+
+   Join productSelfJoin(PRODUCT_DENORM.PRODUCT_ID = {target}.PRODUCT_ID)
+   Join subProductSelfJoin(PRODUCT_DENORM.SUBPRODUCT_ID = {target}.PRODUCT_ID)
+
+
+  Table BOND_DETAIL
+  (
+      BOND_ID INT PRIMARY KEY,
+      NOT_SO_GOOD_DETAIL VARCHAR(200),
+      TYPE VARCHAR(10),
+      STATUS VARCHAR(10),
+      HOLDERID INT
+  )
+   
+  Table Party
+  (
+     id INT PRIMARY KEY,
+     name VARCHAR(200)
+  )
+            
+  Table BondClassificationTable
+  (
+     PRODUCT_ID INT PRIMARY KEY,
+     type VARCHAR(200) PRIMARY KEY
+  )
+
+  Join BondDetailJoin(PRODUCT_DENORM.PRODUCT_ID = BOND_DETAIL.BOND_ID)
+  Join BondDetailPartyJoin(BOND_DETAIL.HOLDERID = Party.id)
+  Join BondDetailBondClassification(PRODUCT_DENORM.PRODUCT_ID = BondClassificationTable.PRODUCT_ID)
+  Filter productFilter1(PRODUCT_DENORM.BOND_STATUS = 'Open' )
+  Filter productFilter2(PRODUCT_DENORM.BOND_STATUS != 'Open' )
+
+)
+
+###Mapping
+
+import meta::relational::tests::mapping::embedded::advanced::store::*;
+import meta::relational::tests::mapping::embedded::advanced::model::*;
+
+
+Mapping meta::relational::tests::mapping::embedded::advanced::mapping::testMappingEmbedded
+(
+
+ //USE CASE 1: Embedded Reference mapping
+
+   Product[ProdMapping]: Relational
+   {
+      scope([eDB]PRODUCT_DENORM)
+      (
+         name: PRODUCT_NAME,
+         market: MARKET_NAME,
+         bondDetails (
+                // no mappings are required here, they will be linked from Root mapping BondDetail
+         ) Inline[myBondMapping]
+      )
+   }
+
+   BondDetail[myBondMapping]: Relational
+   {
+      scope([eDB]PRODUCT_DENORM)
+      (
+         description:BOND_DETAILS,
+         type: BOND_TYPE
+      )
+   }
+     
+   meta::relational::tests::mapping::embedded::advanced::model::BondClassification[BondClassification] : Relational
+   {
+      type : [eDB]BondClassificationTable.type
+   }
+      
+)
+
+Mapping meta::relational::tests::mapping::embedded::advanced::mapping::testMappingEmbeddedParent
+(
+   include meta::relational::tests::mapping::embedded::advanced::mapping::testMappingEmbedded
+   
+   meta::relational::tests::mapping::embedded::advanced::model::BondDetailBondClassification : Relational
+   {
+      AssociationMapping
+      (
+         bondDetail [BondClassification, myBondMapping]: [eDB]@BondDetailBondClassification,
+         bondClassification [myBondMapping, BondClassification]: [eDB]@BondDetailBondClassification
+      )
+   }
+)
+
+
+

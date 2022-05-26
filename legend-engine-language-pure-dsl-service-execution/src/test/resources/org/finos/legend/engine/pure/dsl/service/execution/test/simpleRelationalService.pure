@@ -78,6 +78,12 @@ function test::fetchOptionalActiveEmployment(optionalActiveEmployment:Boolean[0.
     test::Person.all()->filter(p|$p.activeEmployment==$optionalActiveEmployment)->graphFetch(#{test::Person{firstName,lastName}}#)->serialize(#{test::Person{firstName,lastName}}#)
 }
 
+function test::testMultiExpressionQueryWithMandatoryTemporalDate(businessDate: StrictDate[0..1]): String[1]
+{
+   let asOf = if($businessDate->isNotEmpty(), |$businessDate->toOne(), |now());
+   test::Person.all($asOf)->graphFetch(#{test::Person{firstName,lastName}}#)->serialize(#{test::Person{firstName,lastName}}#);
+}
+
 function test::fetchWithUserId(): String[1]
 {
    let currentUser = meta::pure::runtime::currentUserId();

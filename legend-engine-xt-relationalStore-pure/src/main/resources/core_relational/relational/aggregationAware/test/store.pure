@@ -1,0 +1,201 @@
+###Relational
+
+Database meta::relational::tests::aggregationAware::store::aggregationAwareStore
+(
+   Schema base_view 
+   (
+      Table SalesTable (
+         id integer PRIMARY KEY,
+         sales_date date PRIMARY KEY,
+         is_cancelled_flag varchar(1) PRIMARY KEY,
+         product_id bigint PRIMARY KEY,
+         revenue bigint PRIMARY KEY,
+         discount bigint,
+         emp_id bigint PRIMARY KEY
+      )
+      
+      Table Calendar (
+         dt_date date,
+         fiscal_year integer,
+         fiscal_month integer,
+         fiscal_qtr integer,
+         oid bigint PRIMARY KEY,
+         region varchar(32)
+      )
+      
+      Table ProductLine (
+         prod_line_id bigint PRIMARY KEY,
+         prod_line_name varchar(200)
+      )
+      
+      Table Product (
+         prod_id bigint PRIMARY KEY,
+         prod_name varchar(200),
+         prod_line_id bigint
+      )
+
+      Table ProductDescription (
+         milestoning(business(BUS_FROM=from_z, BUS_THRU=thru_z))
+         from_z TIMESTAMP PRIMARY KEY,
+         thru_z TIMESTAMP,
+         prod_id bigint PRIMARY KEY,
+         prod_description varchar(200)
+      )
+      
+      Table Employee (
+         emp_id bigint PRIMARY KEY,
+         first_name varchar(200),
+         last_name varchar(200)
+      )
+   )
+   
+   Schema user_view_agg 
+   (
+      Table SalesTable_User (
+         id integer PRIMARY KEY,
+         sales_date date PRIMARY KEY,
+         is_cancelled_flag varchar(1) PRIMARY KEY,
+         product_id bigint PRIMARY KEY,
+         revenue bigint PRIMARY KEY,
+         discount bigint,
+         emp_id bigint PRIMARY KEY
+      )
+      
+      Table SalesTable_Day (
+         id integer PRIMARY KEY,
+         first_date date PRIMARY KEY,
+         is_cancelled_flag varchar(1) PRIMARY KEY,
+         product_id bigint PRIMARY KEY,
+         discount bigint,
+         revenue bigint PRIMARY KEY
+      )
+      
+      Table SalesTable_Month (
+         id integer PRIMARY KEY,
+         first_date date PRIMARY KEY,
+         is_cancelled_flag varchar(1) PRIMARY KEY,
+         product_id bigint PRIMARY KEY,
+         discount bigint,
+         revenue bigint PRIMARY KEY
+      )
+      
+      Table SalesTable_Qtr (
+         id integer PRIMARY KEY,
+         first_date date PRIMARY KEY,
+         is_cancelled_flag varchar(1) PRIMARY KEY,
+         product_id bigint PRIMARY KEY,
+         discount bigint,
+         revenue bigint PRIMARY KEY
+      )
+   )
+   
+   Schema user_view_multi_agg 
+   (
+      Table SalesTable_Product_Month (
+         sales_date date PRIMARY KEY,
+         product_id bigint PRIMARY KEY,
+         discount bigint,
+         revenue bigint PRIMARY KEY
+      )
+      
+      Table SalesTable_ProdLine_Year (
+         sales_date date PRIMARY KEY,
+         prod_line_id bigint PRIMARY KEY,
+         discount bigint,
+         revenue bigint PRIMARY KEY
+      )
+      
+      Table SalesTable_ProdLine_SalesPerson_Year (
+         sales_date date PRIMARY KEY,
+         prod_line_id bigint PRIMARY KEY,
+         emp_id bigint PRIMARY KEY,
+         discount bigint,
+         revenue bigint PRIMARY KEY
+      )
+   )
+   
+   
+   Join Sales_To_Calendar(base_view.SalesTable.sales_date = base_view.Calendar.dt_date)
+   Join Sales_To_Employee(base_view.SalesTable.emp_id = base_view.Employee.emp_id)
+   Join Sales_To_Product(base_view.SalesTable.product_id = base_view.Product.prod_id)
+   
+   Join Sales_User_To_Calendar(user_view_agg.SalesTable_User.sales_date = base_view.Calendar.dt_date)
+   Join Sales_User_To_Employee(user_view_agg.SalesTable_User.emp_id = base_view.Employee.emp_id)
+   Join Sales_User_To_Product(user_view_agg.SalesTable_User.product_id = base_view.Product.prod_id)
+   
+   Join Sales_Day_To_Calendar(user_view_agg.SalesTable_Day.first_date = base_view.Calendar.dt_date)   
+   Join Sales_Month_To_Calendar(user_view_agg.SalesTable_Month.first_date = base_view.Calendar.dt_date)
+   Join Sales_Qtr_To_Calendar(user_view_agg.SalesTable_Qtr.first_date = base_view.Calendar.dt_date)
+   
+   Join Sales_Day_To_Product(user_view_agg.SalesTable_Day.product_id = base_view.Product.prod_id)   
+   Join Sales_Month_To_Product(user_view_agg.SalesTable_Month.product_id = base_view.Product.prod_id)
+   Join Sales_Qtr_To_Product(user_view_agg.SalesTable_Qtr.product_id = base_view.Product.prod_id)
+   
+   Join Product_To_ProLine(base_view.Product.prod_line_id = base_view.ProductLine.prod_line_id)
+   Join Product_To_Description(base_view.Product.prod_id = base_view.ProductDescription.prod_id)
+   
+   Join Sales_Product_Month_To_Calendar (user_view_multi_agg.SalesTable_Product_Month.sales_date = base_view.Calendar.dt_date)
+   Join Sales_Product_Month_To_Product (user_view_multi_agg.SalesTable_Product_Month.product_id = base_view.Product.prod_id)
+   
+   Join Sales_ProdLine_Year_To_Calendar (user_view_multi_agg.SalesTable_ProdLine_Year.sales_date = base_view.Calendar.dt_date)
+   Join Sales_ProdLine_Year_To_ProdLine (user_view_multi_agg.SalesTable_ProdLine_Year.prod_line_id = base_view.ProductLine.prod_line_id)
+   
+   Join Sales_ProdLine_SalesPerson_Year_To_Calendar (user_view_multi_agg.SalesTable_ProdLine_SalesPerson_Year.sales_date = base_view.Calendar.dt_date)
+   Join Sales_ProdLine_SalesPerson_Year_To_ProdLine (user_view_multi_agg.SalesTable_ProdLine_SalesPerson_Year.prod_line_id = base_view.ProductLine.prod_line_id)
+   Join Sales_ProdLine_SalesPerson_Year_To_Employee(user_view_multi_agg.SalesTable_ProdLine_SalesPerson_Year.emp_id = base_view.Employee.emp_id)
+
+)
+
+###Pure
+import meta::pure::runtime::*;
+import meta::relational::tests::aggregationAware::store::*;
+import meta::relational::tests::aggregationAware::*;
+import meta::relational::runtime::*;
+import meta::relational::functions::toDDL::*;
+import meta::relational::metamodel::execute::*;
+
+function meta::relational::tests::aggregationAware::runtime(): Runtime[1]
+{
+   meta::relational::tests::testRuntime(aggregationAwareStore);
+}
+
+function <<test.BeforePackage>> meta::relational::tests::aggregationAware::setUp():Any[*]
+{
+   let connection = runtime().connectionByElement(aggregationAwareStore)->cast(@TestDatabaseConnection);
+   [
+      dropSchemaStatement('base_view'),
+      dropSchemaStatement('user_view_agg'),
+      dropSchemaStatement('user_view_multi_agg'),
+
+      createSchemaStatement('base_view'),
+      createSchemaStatement('user_view_agg'),
+      createSchemaStatement('user_view_multi_agg'),
+      
+      createTableStatement(aggregationAwareStore, 'base_view', 'SalesTable'),
+      createTableStatement(aggregationAwareStore, 'base_view', 'Calendar'),
+      createTableStatement(aggregationAwareStore, 'base_view', 'Product'),
+      createTableStatement(aggregationAwareStore, 'base_view', 'ProductLine'),
+      createTableStatement(aggregationAwareStore, 'base_view', 'ProductDescription'),
+      createTableStatement(aggregationAwareStore, 'base_view', 'Employee'),
+      createTableStatement(aggregationAwareStore, 'user_view_agg', 'SalesTable_User'),
+      createTableStatement(aggregationAwareStore, 'user_view_agg', 'SalesTable_Day'),
+      createTableStatement(aggregationAwareStore, 'user_view_agg', 'SalesTable_Qtr'),
+      createTableStatement(aggregationAwareStore, 'user_view_agg', 'SalesTable_Month'),
+      createTableStatement(aggregationAwareStore, 'user_view_multi_agg', 'SalesTable_Product_Month'),
+      createTableStatement(aggregationAwareStore, 'user_view_multi_agg', 'SalesTable_ProdLine_Year'),
+      createTableStatement(aggregationAwareStore, 'user_view_multi_agg', 'SalesTable_ProdLine_SalesPerson_Year')
+   ]->map(s|executeInDb($s, $connection));
+   
+   let calendarInsert =
+      'insert into base_view.Calendar ' +
+      '( ' +
+        'oid, ' +
+        'dt_date, ' +
+        'fiscal_year, ' +
+        'fiscal_month, ' +
+        'fiscal_qtr ' +
+      ') '+
+      'values ' + 
+      '(52456699, \'2014-01-10\', 2014, 10 , 1)';
+   $calendarInsert->executeInDb($connection);
+}

@@ -1,0 +1,97 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::tests::mapping::enumeration::model::mapping::*;
+import meta::relational::tests::mapping::enumeration::model::store::*;
+import meta::relational::tests::mapping::enumeration::model::domain::*;
+import meta::relational::tests::mapping::enumeration::*;
+
+function <<test.ToFix>> meta::relational::tests::mapping::enumeration::testMappingWithTranspose():Boolean[1]
+{
+ 
+    let result = execute(|Employee.all(), employeeTestMappingWithTransposeFunction, enumTestRuntime(), meta::pure::router::extension::defaultRelationalExtensions(),debug());
+    assertSize($result.values, 3);
+    assertSameElements(['Alice', 'Bob', 'Curtis'], $result.values->map(e | $e.name));
+
+    let alice = $result.values->filter(e | $e.name == 'Alice')->toOne();
+    assertEquals(%1983-03-15 , $alice.dateOfHire);
+    //assertSameElements([],$alice.skills);
+
+
+    let bob = $result.values->filter(e | $e.name == 'Bob')->toOne();
+    assertEquals(%2003-07-19 , $bob.dateOfHire);
+   // assertSameElements([Skills.SQL,Skills.Java],$bob.skills);
+
+    let curtis = $result.values->filter(e | $e.name == 'Curtis')->toOne();
+    assertEquals(%2012-08-25, $curtis.dateOfHire);
+   // assertSameElements([Skills.Java,Skills.Web],$curtis.skills);
+
+}
+
+function <<test.ToFix>> meta::relational::tests::mapping::enumeration::testMappingTransposeFilter():Boolean[1]
+{
+ 
+   let result = execute(|Employee.all()->filter(e | $e.skills->contains(Skills.SQL)), employeeTestMappingWithTransposeFunction, enumTestRuntime(), meta::pure::router::extension::defaultRelationalExtensions(),debug());
+   assertSize($result.values, 2);
+   assertSameElements(['Bob', 'Curtis'], $result.values->map(e | $e.name));  
+}
+
+
+
+function <<test.ToFix>> meta::relational::tests::mapping::enumeration::testMappingTransposeProject():Boolean[1]
+{
+ 
+    let result = execute(|Employee.all()->project([e|$e.name,e|$e.skills],['name','skill'])
+                         , employeeTestMappingWithTransposeFunction, enumTestRuntime(), meta::pure::router::extension::defaultRelationalExtensions(),debug());
+   
+    assertSize($result.values->at(0), 5);
+
+  
+}
+
+
+###Mapping
+import meta::relational::tests::mapping::enumeration::model::store::*;
+import meta::relational::tests::mapping::enumeration::model::domain::*;
+Mapping meta::relational::tests::mapping::enumeration::model::mapping::employeeTestMappingWithTransposeFunction
+(
+
+    EmployeeType: EnumerationMapping EmpTypes
+    {
+        CONTRACT:  ['FTC', 'FTO'],
+        FULL_TIME: 'FTE'
+    }
+   
+   Skills: EnumerationMapping skillsEnum
+   {
+        Java:'1',
+        SQL:'2',
+        JavaScript:'3',
+        Web:'4'
+      
+      
+   }
+
+    Employee: Relational
+    {
+        scope([myDB]default.employeeTable)
+        (
+            id: id,
+            name: name,
+            dateOfHire: doh,
+            skills: EnumerationMapping skillsEnum : transpose(skills, ',')        
+            
+        )
+    }
+)

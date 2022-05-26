@@ -29,6 +29,7 @@ import org.eclipse.collections.impl.factory.Sets;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.plan.execution.stores.relational.AlloyH2Server;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
+import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
 import org.finos.legend.pure.configuration.PureRepositoriesExternal;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
 import org.finos.legend.pure.m3.execution.test.TestCollection;
@@ -127,9 +128,9 @@ public class PureTestHelper
 
     public static ServersState initEnvironment(boolean withH2, String serverConfigFilePath) throws Exception
     {
-        int engineServerPort = 1100 + (int) (Math.random() * 30000);
-        int metadataServerPort = 1100 + (int) (Math.random() * 30000);
-        int relationalDBPort = 1100 + (int) (Math.random() * 30000);
+        int engineServerPort = DynamicPortGenerator.generatePort();
+        int metadataServerPort = DynamicPortGenerator.generatePort();
+        int relationalDBPort = DynamicPortGenerator.generatePort();
 
         org.h2.tools.Server h2Server = null;
 

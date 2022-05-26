@@ -1,0 +1,65 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::mapping::*;
+import meta::relational::metamodel::operation::*;
+import meta::relational::postProcessor::*;
+import meta::relational::metamodel::join::*;
+import meta::relational::metamodel::*;
+import meta::pure::router::extension::*;
+import meta::relational::metamodel::relation::*;
+
+function meta::relational::postProcessor::nonExecutable(selectSQLQuery:SelectSQLQuery[1], extensions:RouterExtension[*]):Result<SelectSQLQuery|1>[1]
+{
+   ^Result<SelectSQLQuery|1>(values=$selectSQLQuery->processRelationalOperationForNonExecutable($extensions)->cast(@SelectSQLQuery))
+}
+
+
+
+function meta::relational::postProcessor::processRelationalOperationForNonExecutable(relationalOperationElement:RelationalOperationElement[1], extensions:RouterExtension[*]):RelationalOperationElement[1]
+{
+   $relationalOperationElement->match([
+                    u:Union[1] | ^$u(queries = $u.queries->map(q|$q->processRelationalOperationForNonExecutable($extensions))->cast(@SelectSQLQuery)),
+                    s:SelectSQLQuery[1] | let nonExecutableOperation = ^DynaFunction(name = 'equal', parameters=[^Literal(value=1),^Literal(value=2)]);
+                                            ^$s(
+                                                data=$s.data->toOne()->joinNonExecutable($extensions)->cast(@RootJoinTreeNode),
+                                                columns = $s.columns->map(c|$c->match([a:Alias[1] | $a.relationalElement->match([
+                                                                                                          s:SelectSQLQuery[1]|^$a(relationalElement = $s->processRelationalOperationForNonExecutable($extensions)),
+                                                                                                          r:RelationalOperationElement[1]|$a
+                                                                                                        ]),
+                                                                                       a:RelationalOperationElement[1] | $a])
+                                                                     ),
+                                                filteringOperation= if($s.filteringOperation->isEmpty(), | $nonExecutableOperation, | meta::relational::functions::pureToSqlQuery::andFilters($nonExecutableOperation->concatenate($s.filteringOperation), $extensions))
+                                             );,
+                    a:Alias[1] | ^$a(relationalElement=$a.relationalElement->processRelationalOperationForNonExecutable($extensions)),
+                    t:Table[1] | $t,
+                    u:UnaryOperation[1] | ^$u(nested=processRelationalOperationForNonExecutable($u.nested, $extensions)),
+                    b:BinaryOperation[1] | ^$b(left=processRelationalOperationForNonExecutable($b.left, $extensions), right=processRelationalOperationForNonExecutable($b.right, $extensions)),
+                    ta : TableAliasColumn[1] | $ta,
+                    va : VariableArityOperation[1] | ^$va(args=$va.args->map(e | $e->processRelationalOperationForNonExecutable($extensions))),
+                    d : DynaFunction[1] | ^$d(parameters=$d.parameters->map(p | $p->processRelationalOperationForNonExecutable($extensions))),
+                    l : Literal[1] | $l,
+                    ll : LiteralList[1] | $ll,
+                    rel: RelationalOperationElement[1] | $rel
+                  ]);
+}
+
+function meta::relational::postProcessor::joinNonExecutable(r:RelationalTreeNode[1], extensions:RouterExtension[*]):RelationalTreeNode[1]
+{
+   ^$r
+   (
+      alias=$r.alias->processRelationalOperationForNonExecutable($extensions)->cast(@TableAlias),
+      childrenData=$r.childrenData->map(c | $c->cast(@JoinTreeNode)->joinNonExecutable($extensions))
+   )
+}

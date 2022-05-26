@@ -1,0 +1,41 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::transform::fromPure::*;
+import meta::relational::translation::*;
+
+function meta::relational::transform::fromPure::pureTypeToDataType(t:Type[1]):meta::relational::metamodel::datatype::DataType[0..1]
+{
+   pureTypeToDataTypeMap()->get($t);
+}
+
+function meta::relational::transform::fromPure::pureTypeToDataType(t:Type[1], translationContext:TranslationContext[1]):meta::relational::metamodel::datatype::DataType[0..1]
+{
+   let dataType = pureTypeToDataTypeMap()->get($t);
+   $dataType->translateCoreTypeToDbSpecificType($translationContext);
+}
+
+function meta::relational::transform::fromPure::pureTypeToDataTypeMap():Map<Type, meta::relational::metamodel::datatype::DataType>[1]
+{
+   newMap([
+      pair(Integer, ^meta::relational::metamodel::datatype::Integer()),
+      pair(Float, ^meta::relational::metamodel::datatype::Float()),
+      pair(Number, ^meta::relational::metamodel::datatype::Float()),
+      pair(String, ^meta::relational::metamodel::datatype::Varchar(size = 200)),
+      pair(Date, ^meta::relational::metamodel::datatype::Timestamp()),
+      pair(DateTime, ^meta::relational::metamodel::datatype::Timestamp()),
+      pair(StrictDate, ^meta::relational::metamodel::datatype::Date()),
+      pair(Boolean, ^meta::relational::metamodel::datatype::Bit())
+   ]);
+}

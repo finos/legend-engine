@@ -1,0 +1,224 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::transform::*;
+import meta::pure::runtime::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::functions::toDDL::*;
+import meta::pure::mapping::modelToModel::test::shared::*;
+import meta::relational::runtime::*;
+
+function meta::pure::mapping::modelToModel::test::shared::getConnection():Connection[1]
+{
+   ^TestDatabaseConnection(
+      element = relationalDB,
+      type=DatabaseType.H2
+   )
+}
+
+function meta::pure::mapping::modelToModel::test::shared::initData():Boolean[1]
+{
+   let connection = getConnection()->cast(@DatabaseConnection);
+   dropAndCreateTableInDb(relationalDB, 'default', 'SPerson', $connection);
+   dropAndCreateTableInDb(relationalDB, 'default', 'Person', $connection);
+   dropAndCreateTableInDb(relationalDB, 'default', 'Firm', $connection);
+   dropAndCreateTableInDb(relationalDB, 'default', 'Trade', $connection);
+   dropAndCreateTableInDb(relationalDB, 'default', 'Product', $connection);
+   executeInDb('insert into SPerson (fullname) values (\'Pierre Doe\');', $connection);
+   executeInDb('insert into SPerson (fullname) values (\'Pierre XE\');', $connection);
+   executeInDb('insert into SPerson (fullname) values (\'_Hey Yo\');', $connection);
+   executeInDb('insert into Person (fullname,firm) values (\'Pierre Doe\',\'A\');', $connection);
+   executeInDb('insert into Person (fullname,firm) values (\'A. Only One\',\'A\');', $connection);
+   executeInDb('insert into Firm (name) values (\'A\');', $connection);
+   executeInDb('insert into Trade (id,side,productID) values (1,1,1);', $connection);
+   executeInDb('insert into Trade (id,side,productID) values (2,0,1);', $connection);
+   executeInDb('insert into Trade (id,side,productID) values (3,1,2);', $connection);
+   executeInDb('insert into Trade (id,side,productID) values (4,1,3);', $connection);
+   executeInDb('insert into Product (id,name,region) values (1,\'p1\',\' NYC\');', $connection);
+   executeInDb('insert into Product (id,name,region) values (2,\'p2\',\' NYC\');', $connection);
+   executeInDb('insert into Product (id,name,region) values (3,\'p3\',\' LDN\');', $connection);
+   true;
+
+}
+
+
+###Mapping
+import meta::pure::mapping::modelToModel::test::shared::*;
+import meta::pure::mapping::modelToModel::test::shared::src::*;
+import meta::pure::mapping::modelToModel::test::shared::dest::*;
+import meta::pure::mapping::modelToModel::test::*;
+
+Mapping meta::pure::mapping::modelToModel::test::shared::relationalMapping
+(
+
+    Region : EnumerationMapping regionMapping
+    {
+        NewYork          : 'NYC',
+        London           : 'LDN'
+    }
+
+   _S_Person : Relational
+            {
+               fullName : [relationalDB]SPerson.fullname
+            }
+
+   _Person : Relational
+            {
+               fullName : [relationalDB]Person.fullname,
+               addresses : [relationalDB]@PersonAddresses,
+               firm : [relationalDB]@FirmPerson
+            }
+
+   _PersonSrc1: Relational
+            {
+               nameFrom1: [relationalDB]Person.fullname
+            }
+
+   _PersonSrc2: Relational
+            {
+               nameFrom2: [relationalDB]Person.fullname
+            }
+
+   _Firm : Relational
+           {
+              name : [relationalDB]Firm.name,
+              employees: [relationalDB]@FirmPerson
+           }
+
+   _FirmX: Relational
+           {
+              name : [relationalDB]Firm.name,
+              pathToEmployeesSet1 : [relationalDB]@FirmPerson,
+              pathToEmployeesSet2 : [relationalDB]@FirmPerson
+           }
+
+   _Trade : Relational
+            {
+               side : [relationalDB]Trade.side,
+               product: [relationalDB]@TradeProduct
+            }
+
+   _Product : Relational
+            {
+               name:  [relationalDB]Product.name,
+               region:  [relationalDB]Product.region
+            }
+
+   _Product2 : Relational
+            {
+               name:  [relationalDB]Product.name,
+               region: EnumerationMapping regionMapping : trim([relationalDB]Product.region)
+            }
+
+   Address : Relational
+           {
+              street : [relationalDB]Address.street
+           }   
+)
+
+
+
+
+###Relational
+Database meta::pure::mapping::modelToModel::test::shared::relationalDB
+(
+   Table SPerson(fullname VARCHAR(200) PRIMARY KEY)
+   Table Person(fullname VARCHAR(1000) PRIMARY KEY, firm VARCHAR(200))
+   Table Firm(name VARCHAR(200) PRIMARY KEY)
+   Join FirmPerson(Person.firm = Firm.name)
+   Table Trade(id INTEGER PRIMARY KEY, side INTEGER, productID INTEGER)
+   Table Product(id INTEGER PRIMARY KEY, name VARCHAR(200), region VARCHAR(20))
+   Join TradeProduct(Product.id = Trade.productID)
+   Table Address(id INTEGER PRIMARY KEY, street VARCHAR(200), personFK VARCHAR(1000))
+   Join PersonAddresses(Address.personFK = Person.fullname)
+)
+
+###Relational
+Database meta::relational::transform::toPure::tests::SimpleDb1
+(
+    Table personTable (
+       id INT PRIMARY KEY,
+       firstName VARCHAR(200),
+       last_name VARCHAR(200),
+       a VARCHAR(2),
+       B VARCHAR(2), 
+       is_valid BIT, 
+       is_valid_not_nullable BIT NOT NULL
+       )
+   
+    Table FirmTable(
+       ID INT PRIMARY KEY, 
+       LEGALNAME VARCHAR(200) NOT NULL,
+       ALTERNATIVE_NAME VARCHAR(200)
+       )
+   
+    Table Others(
+       ID INT PRIMARY KEY,
+       NAME VARCHAR(200) NOT NULL
+    )
+)
+
+
+###Pure
+Class meta::relational::transform::toPure::tests::PersonTable
+{
+  id : Integer[1];
+  firstName : String[0..1];
+  lastName : String[0..1];
+  a : String[0..1];
+  b : String[0..1];
+  isValid : Boolean[0..1];
+  isValidNotNullable : Boolean[1];
+}
+
+Class meta::relational::transform::toPure::tests::FirmTable
+{
+  id : Integer[1];
+  legalname : String[1];
+  alternativeName : String[0..1];
+}
+
+Class meta::relational::transform::toPure::tests::Other
+{
+  id : Integer[1];
+  name : String[1];
+}
+
+###Mapping
+Mapping meta::relational::transform::toPure::tests::SimpleDb1Mapping
+(
+   *meta::relational::transform::toPure::tests::FirmTable : Relational
+   {
+     id : [meta::relational::transform::toPure::tests::SimpleDb1]FirmTable.ID,
+     legalname : [meta::relational::transform::toPure::tests::SimpleDb1]FirmTable.LEGALNAME,
+     alternativeName : [meta::relational::transform::toPure::tests::SimpleDb1]FirmTable.ALTERNATIVE_NAME
+   }
+
+   *meta::relational::transform::toPure::tests::Other : Relational
+   {
+     id : [meta::relational::transform::toPure::tests::SimpleDb1]Others.ID,
+     name : [meta::relational::transform::toPure::tests::SimpleDb1]Others.NAME
+   }
+
+   *meta::relational::transform::toPure::tests::PersonTable : Relational
+   {
+     id : [meta::relational::transform::toPure::tests::SimpleDb1]personTable.id,
+     firstName : [meta::relational::transform::toPure::tests::SimpleDb1]personTable.firstName,
+     lastName : [meta::relational::transform::toPure::tests::SimpleDb1]personTable.last_name,
+     a : [meta::relational::transform::toPure::tests::SimpleDb1]personTable.a,
+     b : [meta::relational::transform::toPure::tests::SimpleDb1]personTable.B,
+     isValid : case(isNull([meta::relational::transform::toPure::tests::SimpleDb1]personTable.is_valid),sqlNull(),case(equal([meta::relational::transform::toPure::tests::SimpleDb1]personTable.is_valid,1),sqlTrue(),sqlFalse())),
+     isValidNotNullable : case(equal([meta::relational::transform::toPure::tests::SimpleDb1]personTable.is_valid_not_nullable,1),sqlTrue(),sqlFalse())
+   }
+)

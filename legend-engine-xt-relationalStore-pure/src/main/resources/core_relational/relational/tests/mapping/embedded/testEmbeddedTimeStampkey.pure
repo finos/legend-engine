@@ -1,0 +1,124 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+Class meta::relational::tests::mapping::embedded::model::ClassWithTimeStampKey
+{
+   <<equality.Key>>     
+   id1         : Integer[1];  
+   <<equality.Key>>
+   id2        : Date[1];
+   id3        : String[1];  
+   embeddedElement: meta::relational::tests::mapping::embedded::model::EmbeddedElement[0..1];
+}
+
+Class meta::relational::tests::mapping::embedded::model::EmbeddedElement
+{
+    propFloat: Float[0..1];
+    propString : String[0..1];
+    propInt    : Integer[0..1];    
+}
+
+
+
+###Mapping
+import meta::relational::tests::mapping::embedded::model::*;
+import meta::relational::tests::mapping::embedded::model::store::*;
+
+Mapping meta::relational::tests::mapping::embedded::model::mapping::EmbeddedWithTimstampKeys
+(
+   ClassWithTimeStampKey: Relational
+   {
+	   scope([myDB]DATA_WITH_TIMESTAMPS_KEYS)
+	   (
+           id1:          ID1,
+           id2:          ID2,
+           id3:          ID3,
+           embeddedElement(
+   		      propString:  PROP_STRING,
+		      propInt: PROP_INT
+           )   
+	   )
+   }
+)
+
+
+
+###Pure
+import meta::relational::runtime::*;
+import meta::relational::runtime::authentication::*;
+import meta::pure::profiles::*;
+import meta::pure::runtime::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::tests::mapping::embedded::model::*;
+import meta::relational::tests::mapping::embedded::model::store::*;
+import meta::relational::tests::mapping::embedded::model::mapping::*;
+import meta::pure::functions::date::*;
+import meta::pure::functions::string::*;
+
+
+function meta::relational::tests::mapping::embedded::model::store::testDataTypeMappingRuntimeWithTz():Runtime[1]
+{
+   meta::relational::tests::testRuntime(myDB);
+}
+
+
+function <<test.ToFix>> meta::relational::tests::mapping::embedded::testTimeStampPrimaryKeyStringAsDate():Boolean[1]
+{       
+     
+  let stringDate = '2016-01-25 10:00:00.000000000'; //EST 2016-01-25 10:00:00......GMT : 2016-01-25 15:00:00
+  
+  // translates string to date assumes string is time in EST, resulting date is traslated to GMT
+  let res = execute(| ClassWithTimeStampKey.all() 
+              -> filter(x|$x.id2  == $stringDate )
+             ,EmbeddedWithTimstampKeys
+             ,testDataTypeMappingRuntimeWithTz()
+          , meta::pure::router::extension::defaultRelationalExtensions());
+
+ 
+   assertNotEmpty($res.values);    
+   let first = $res.values->at(0);
+   assertEquals(1, $first.id1);  
+   println('Filter with Date from String :' + $first.id2->toString());
+   assertEquals($first.embeddedElement.propString, 'foo', 'Embedded Element is not supposed to be null'); 
+  
+   true;
+}
+
+
+function <<test.ToFix>> meta::relational::tests::mapping::embedded::testTimeStampPrimaryKeyDateInFilter():Boolean[1]
+{       
+     
+   //date in UTC
+   let date = meta::pure::functions::date::date(2016,1,25,15,0,00.000000000); //EST 20016-01-25 15:00:00......
+   print('date:');
+   println($date);
+  
+   let res2 = execute(| ClassWithTimeStampKey.all() 
+               -> filter(x|$x.id2  == $date )
+             ,EmbeddedWithTimstampKeys
+             ,testDataTypeMappingRuntimeWithTz(), meta::pure::router::extension::defaultRelationalExtensions());
+
+   assertNotEmpty($res2.values);
+   
+   let first2 = $res2.values->at(0);
+   println('Filter with date from date : ' + $first2.id2->toString());
+   assertEquals(4, $first2.id1);
+   assertEquals($first2.embeddedElement.propString, 'foo', 'Embedded Element is not supposed to be null'); 
+     
+   true;
+}
+
+
+
+

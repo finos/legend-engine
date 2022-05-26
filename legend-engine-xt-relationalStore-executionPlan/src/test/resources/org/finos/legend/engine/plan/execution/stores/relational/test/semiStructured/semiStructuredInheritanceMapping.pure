@@ -1,0 +1,241 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class inheritance::model::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+  firm: inheritance::model::Firm[1];
+}
+
+Class inheritance::model::Firm
+{
+  legalName: String[1];
+  address: inheritance::model::Address[1];
+}
+
+Class inheritance::model::Address
+{
+  name: String[1];
+}
+
+Class inheritance::model::AddressWithLines extends inheritance::model::Address
+{
+  lines: inheritance::model::AddressLine[*];
+}
+
+Class inheritance::model::AddressLine
+{
+  lineno: Integer[1];
+}
+
+Class inheritance::model::StreetAddressLine extends inheritance::model::AddressLine
+{
+  street: String[1];
+}
+
+Class inheritance::model::CityAddressLine extends inheritance::model::AddressLine
+{
+  city: String[1];
+}
+
+Class inheritance::model::StateAddressLine extends inheritance::model::AddressLine
+{
+  state: String[1];
+}
+
+###Relational
+Database inheritance::store::SnowflakeDB
+(
+  Schema PERSON_SCHEMA
+  (
+    Table PERSON_TABLE
+    (
+      ID INTEGER PRIMARY KEY,
+      FIRSTNAME VARCHAR(100),
+      LASTNAME VARCHAR(100),
+      FIRM_DETAILS SEMISTRUCTURED,
+      MANAGERID INTEGER
+    )
+  )
+)
+
+Database inheritance::store::H2DB
+(
+  Schema PERSON_SCHEMA
+  (
+    Table PERSON_TABLE
+    (
+      ID INTEGER PRIMARY KEY,
+      FIRSTNAME VARCHAR(100),
+      LASTNAME VARCHAR(100),
+      FIRM_DETAILS VARCHAR(1000),
+      MANAGERID INTEGER
+    )
+  )
+)
+
+
+###ExternalFormat
+Binding inheritance::store::FirmBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    inheritance::model::Firm,
+    inheritance::model::Address,
+    inheritance::model::AddressWithLines,
+    inheritance::model::AddressLine,
+    inheritance::model::StreetAddressLine,
+    inheritance::model::CityAddressLine,
+    inheritance::model::StateAddressLine
+  ];
+}
+
+###Mapping
+Mapping inheritance::mapping::SnowflakeMapping
+(
+  inheritance::model::Person: Relational
+  {
+    ~primaryKey
+    (
+      [inheritance::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE.ID
+    )
+    ~mainTable [inheritance::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE
+    firstName: [inheritance::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE.FIRSTNAME,
+    lastName: [inheritance::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE.LASTNAME,
+    firm: Binding inheritance::store::FirmBinding : [inheritance::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE.FIRM_DETAILS
+  }
+)
+
+Mapping inheritance::mapping::H2Mapping
+(
+  inheritance::model::Person: Relational
+  {
+    ~primaryKey
+    (
+      [inheritance::store::H2DB]PERSON_SCHEMA.PERSON_TABLE.ID
+    )
+    ~mainTable [inheritance::store::H2DB]PERSON_SCHEMA.PERSON_TABLE
+    firstName: [inheritance::store::H2DB]PERSON_SCHEMA.PERSON_TABLE.FIRSTNAME,
+    lastName: [inheritance::store::H2DB]PERSON_SCHEMA.PERSON_TABLE.LASTNAME,
+    firm: Binding inheritance::store::FirmBinding : [inheritance::store::H2DB]PERSON_SCHEMA.PERSON_TABLE.FIRM_DETAILS
+  }
+)
+
+###Runtime
+Runtime inheritance::runtime::SnowflakeRuntime
+{
+    mappings :
+    [
+        inheritance::mapping::SnowflakeMapping
+    ];
+    connections :
+    [
+        inheritance::store::SnowflakeDB :
+        [
+            connection_1 : #{
+                RelationalDatabaseConnection {
+                    store: inheritance::store::SnowflakeDB;
+                    type: Snowflake;
+                    specification: LocalH2{};
+                    auth: Test;
+                }
+            }#
+        ]
+    ];
+}
+
+Runtime inheritance::runtime::H2Runtime
+{
+    mappings :
+    [
+        inheritance::mapping::H2Mapping
+    ];
+    connections :
+    [
+        inheritance::store::H2DB :
+        [
+            connection_1 : #{
+                RelationalDatabaseConnection {
+                    store: inheritance::store::H2DB;
+                    type: H2;
+                    specification: LocalH2{
+                        testDataSetupSqls: [
+                            'DROP SCHEMA IF EXISTS PERSON_SCHEMA CASCADE;',
+                            'CREATE SCHEMA PERSON_SCHEMA;',
+                            'CREATE TABLE PERSON_SCHEMA.PERSON_TABLE(ID INT PRIMARY KEY, FIRSTNAME VARCHAR(100), LASTNAME VARCHAR(100), FIRM_DETAILS VARCHAR(1000), MANAGERID INT);',
+                            'INSERT INTO PERSON_SCHEMA.PERSON_TABLE(ID,FIRSTNAME,LASTNAME,FIRM_DETAILS,MANAGERID) VALUES (1,\'Peter\',\'Smith\',\'{"legalName": "Firm X", "address": {"name": "A1", "lines": [{"lineno": 1, "street": "s1"}, {"lineno": 2, "city": "c1"}, {"lineno": 3, "state": "s1"}]}}\',2);',
+                            'INSERT INTO PERSON_SCHEMA.PERSON_TABLE(ID,FIRSTNAME,LASTNAME,FIRM_DETAILS,MANAGERID) VALUES (2,\'John\',\'Johnson\',\'{"legalName": "Firm X", "address": {"name": "A1", "lines": [{"lineno": 1, "street": "s1"}, {"lineno": 2, "city": "c1"}, {"lineno": 3, "state": "s1"}]}}\',4);',
+                            'INSERT INTO PERSON_SCHEMA.PERSON_TABLE(ID,FIRSTNAME,LASTNAME,FIRM_DETAILS,MANAGERID) VALUES (3,\'John\',\'Hill\',\'{"legalName": "Firm X", "address": {"name": "A1", "lines": [{"lineno": 1, "street": "s1"}, {"lineno": 2, "city": "c1"}, {"lineno": 3, "state": "s1"}]}}\',2);',
+                            'INSERT INTO PERSON_SCHEMA.PERSON_TABLE(ID,FIRSTNAME,LASTNAME,FIRM_DETAILS,MANAGERID) VALUES (4,\'Anthony\',\'Allen\',\'{"legalName": "Firm X", "address": {"name": "A1", "lines": [{"lineno": 1, "street": "s1"}, {"lineno": 2, "city": "c1"}, {"lineno": 3, "state": "s1"}]}}\',null)',
+                            'INSERT INTO PERSON_SCHEMA.PERSON_TABLE(ID,FIRSTNAME,LASTNAME,FIRM_DETAILS,MANAGERID) VALUES (5,\'Fabrice\',\'Roberts\',\'{"legalName": "Firm A", "address": {"name": "A2", "lines": [{"lineno": 1, "street": "s2"}, {"lineno": 2, "city": "c2"}]}}\',null)',
+                            'INSERT INTO PERSON_SCHEMA.PERSON_TABLE(ID,FIRSTNAME,LASTNAME,FIRM_DETAILS,MANAGERID) VALUES (6,\'Oliver\',\'Hill\',\'{"legalName": "Firm B", "address": {"name": "A3", "lines": [{"lineno": 1, "street": "s3"}]}}\',7)',
+                            'INSERT INTO PERSON_SCHEMA.PERSON_TABLE(ID,FIRSTNAME,LASTNAME,FIRM_DETAILS,MANAGERID) VALUES (7,\'David\',\'Harris\',\'{"legalName": "Firm B", "address": {"name": "A3", "lines": [{"lineno": 1, "street": "s3"}]}}\',null)'
+                        ];
+                    };
+                    auth: Test;
+                }
+            }#
+        ]
+    ];
+}
+
+###Pure
+function inheritance::semiStructuredPropertyAccessAtBaseClass(): TabularDataSet[1]
+{
+    inheritance::model::Person.all()->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.firm.address.name, 'Firm Address Name')
+    ])
+}
+
+function inheritance::semiStructuredPropertyAccessAtSubClass(): TabularDataSet[1]
+{
+    inheritance::model::Person.all()->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.firm.address->subType(@inheritance::model::AddressWithLines).lines->at(0).lineno, 'Firm Address 0 Line No')
+    ])
+}
+
+function inheritance::semiStructuredPropertyAccessAtSubClassNested(): TabularDataSet[1]
+{
+    inheritance::model::Person.all()->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.firm.address->subType(@inheritance::model::AddressWithLines).lines->at(0).lineno, 'Firm Address 0 Line No'),
+        col(x | $x.firm.address->subType(@inheritance::model::AddressWithLines).lines->at(0)->subType(@inheritance::model::StreetAddressLine).street, 'Firm Address Street'),
+        col(x | $x.firm.address->subType(@inheritance::model::AddressWithLines).lines->at(1)->subType(@inheritance::model::CityAddressLine).city, 'Firm Address City'),
+        col(x | $x.firm.address->subType(@inheritance::model::AddressWithLines).lines->at(2)->subType(@inheritance::model::StateAddressLine).state, 'Firm Address State')
+    ])
+}
+
+function inheritance::semiStructuredPropertyAccessAtSubClassNestedUsingProjectWithFunctions(): TabularDataSet[1]
+{
+    inheritance::model::Person.all()->project(
+        [
+            x | $x.firstName,
+            x | $x.firm.address->subType(@inheritance::model::AddressWithLines).lines->at(0).lineno,
+            x | $x.firm.address->subType(@inheritance::model::AddressWithLines).lines->at(0)->subType(@inheritance::model::StreetAddressLine).street,
+            x | $x.firm.address->subType(@inheritance::model::AddressWithLines).lines->at(1)->subType(@inheritance::model::CityAddressLine).city,
+            x | $x.firm.address->subType(@inheritance::model::AddressWithLines).lines->at(2)->subType(@inheritance::model::StateAddressLine).state
+        ],
+        [
+            'First Name',
+            'Firm Address 0 Line No',
+            'Firm Address Street',
+            'Firm Address City',
+            'Firm Address State'
+        ]
+    )
+}

@@ -1,0 +1,115 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::json::*;
+import meta::relational::mapping::*;
+import meta::alloy::objectReference::*;
+import meta::pure::runtime::*;
+import meta::pure::mapping::*;
+
+function meta::alloy::objectReference::decodeObjectReferencesAndGetPkMap(clientVersion:String[1], encodedObjectReferences : String[1], extensions:meta::pure::router::extension::RouterExtension[*]):String[1]
+{
+   let versionedFuncString = 'meta::protocols::pure::'+$clientVersion+'::invocation::execution::execute::getAlloyObjectReferenceAsMap_String_1__Map_1_';
+   let versionedFunc       = $versionedFuncString->pathToElement()->cast(@Function<{String[1]->Map<String, Any>[1]}>);
+
+   let refs                = $encodedObjectReferences->split(',');
+
+   $refs->map(ref | let parsedObjectRef = $versionedFunc->eval($ref->trim());
+                    $parsedObjectRef->getPkMapFromObjectReference($extensions);)->toJSON();
+}
+
+function <<access.private>> meta::alloy::objectReference::getPkMapFromObjectReference(parsedObjectRef : Map<String, Any>[1], extensions:meta::pure::router::extension::RouterExtension[*]):Map<String, Any>[1]
+{
+   let pathToMapping           = $parsedObjectRef->get('pathToMapping')->cast(@String)->toOne();
+   let orgPkMap                = $parsedObjectRef->get('pkMap')->cast(@Map<String, Any>)->toOne();
+   let operationResolvedSetsId = $parsedObjectRef->get('operationResolvedSetsId')->cast(@List<String>).values->toOneMany();
+   let setId                   = $parsedObjectRef->get('setId')->cast(@String)->toOne();
+   let type                    = $parsedObjectRef->get('type')->cast(@String)->toOne();
+
+   let mapping                 = $pathToMapping->pathToElement()->cast(@Mapping);
+   let setIdx                  = $operationResolvedSetsId->indexOf($setId);
+
+   let set                     = $mapping.classMappingById($setId)->toOne();
+
+   if($type->toLower() == 'relational',
+      |let newPkMap = resolvePrimaryKeysNames($set->cast(@RelationalInstanceSetImplementation), $orgPkMap, if($operationResolvedSetsId->size() == 1, | '', | '_' + $setIdx->toString()), false, $extensions);
+       [pair('pathToMapping', $pathToMapping),
+        pair('setId', $setId),
+        pair('pkMap', $newPkMap)]->newMap();,
+      |fail('Not Supported yet !!'); ^Map<String, String>(););
+}
+
+//TODO: move this function to core module and access relational specific logic via extensions
+function meta::alloy::objectReference::decodeAndParseAlloyObjectReference(ref : String[1]):Map<String, Any>[1]
+{
+   assert($ref->substring(0, 4) == 'ASOR', | 'Encoded Object Reference should start with "ASOR"');
+   let decodedRef = $ref->substring(5)->decodeBase64();
+   let version = $decodedRef->substring(0, 3)->parseInteger();
+
+   if($version == 1,
+      | parseAlloyObjectReferenceV1($decodedRef->substring(4)),
+      | fail('Version v1 only supported!'); parseAlloyObjectReferenceV1($ref);
+   );
+}
+
+function meta::alloy::objectReference::parseAlloyObjectReferenceV1(ref : String[1]):Map<String, Any>[1]
+{
+   let lengthStringSize = $ref->substring(0, 3)->parseInteger();
+
+   let typeStart = 4 + $lengthStringSize + 1;
+   let typeStringLength = $ref->substring(4, 4 + $lengthStringSize)->parseInteger();
+   let typeEnd = $typeStart + $typeStringLength;
+   let type = $ref->substring($typeStart, $typeEnd);
+
+   if($type->toLower() == 'relational',
+      |parseAlloyRelationalStoreObjectReferenceV1($ref->substring($typeEnd+1), $lengthStringSize, $type),
+      |fail('Not Supported Yet!!'); []->newMap(););
+}
+
+function meta::alloy::objectReference::parseAlloyRelationalStoreObjectReferenceV1(ref : String[1], lengthStringSize:Integer[1], type:String[1]):Map<String, Any>[1]
+{
+   let mappingStart = $lengthStringSize + 1;
+   let mappingStringLength = $ref->substring(0, $mappingStart - 1)->parseInteger();
+   let mappingEnd = $mappingStart + $mappingStringLength;
+   let mapping = $ref->substring($mappingStart, $mappingEnd);
+
+   let allSetsStart = $mappingEnd + 1 + $lengthStringSize + 1;
+   let allSetsStringLength = $ref->substring($mappingEnd + 1, $allSetsStart - 1)->parseInteger();
+   let allSetsEnd = $allSetsStart + $allSetsStringLength;
+   let allSets = $ref->substring($allSetsStart, $allSetsEnd);
+
+   let setStart = $allSetsEnd + 1 + $lengthStringSize + 1;
+   let setStringLength = $ref->substring($allSetsEnd + 1, $setStart - 1)->parseInteger();
+   let setEnd = $setStart + $setStringLength;
+   let set = $ref->substring($setStart, $setEnd);
+
+   let dbConnStart = $setEnd + 1 + $lengthStringSize + 1;
+   let dbConnStringLength = $ref->substring($setEnd + 1, $dbConnStart - 1)->parseInteger();
+   let dbConnEnd = $dbConnStart + $dbConnStringLength;
+   let dbConn = $ref->substring($dbConnStart, $dbConnEnd);
+
+   let pkMapStart = $dbConnEnd + 1 + $lengthStringSize + 1;
+   let pkMapStringLength = $ref->substring($dbConnEnd + 1, $pkMapStart - 1)->parseInteger();
+   let pkMapEnd = $pkMapStart + $pkMapStringLength;
+   let pkMap = $ref->substring($pkMapStart, $pkMapEnd);
+
+   [
+      pair('type', $type),
+      pair('pathToMapping', $mapping),
+      pair('operationResolvedSetsId', $allSets->split(';')->list()),
+      pair('setId', $set),
+      pair('databaseConnection', $dbConn),
+      pair('pkMap', $pkMap->fromJSON(Map)->cast(@Map<String, Any>))
+   ]->newMap();
+}

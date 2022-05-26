@@ -1,0 +1,330 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::shared::format::binding::*;
+import meta::external::shared::format::binding::validation::*;
+import meta::external::shared::format::utils::*;
+import meta::external::format::flatdata::binding::validation::*;
+import meta::external::format::flatdata::metamodel::*;
+import meta::pure::model::unit::*;
+
+Class meta::external::format::flatdata::binding::validation::FlatDataBindingDetail extends SuccessfulBindingDetail
+{
+   schemaBindingDetail   : SchemaBindingDetail[0..1];
+   sectionBindingDetails : SectionBindingDetail[*];
+}
+
+Class meta::external::format::flatdata::binding::validation::SchemaBindingDetail extends BindingDetail
+{
+   class   : Class<Any>[1];
+   details : SectionToProperty[*];   
+}
+
+Class meta::external::format::flatdata::binding::validation::SectionToProperty
+{
+   section  : FlatDataSection[1];
+   property : Property<Nil,Any|*>[1];
+}
+
+Class meta::external::format::flatdata::binding::validation::SectionBindingDetail extends BindingDetail
+{
+   section        : FlatDataSection[1];
+   class          : Class<Any>[1];
+   details        : FieldToProperty[*];
+   schemaProperty : Property<Nil,Any|*>[0..1];
+}
+
+Class meta::external::format::flatdata::binding::validation::FieldToProperty
+{
+   field    : FlatDataRecordField[1];
+   property : Property<Nil,Any|*>[1];
+}
+
+function meta::external::format::flatdata::binding::validation::bindDetails(binding: Binding[1]): BindingDetail[1]
+{
+   assert($binding.schemaSet.format == 'FlatData');
+   
+   let flatData  = if($binding.schemaId->isEmpty(),
+                      | $binding.schemaSet.schemas->at(0).detail->cast(@FlatData),
+                      | $binding.schemaSet.schemas->filter(s| $s.id == $binding.schemaId)->toOne().detail->cast(@FlatData)
+                   );
+   let sections  = $flatData.sections->filter(s | $s.recordType->isNotEmpty());
+   let classes   = $binding.modelUnit->resolve().classes;
+
+   let sectionBindingDetails = $sections->map(s| $s->findMatchingClasses($classes));      
+   if($sectionBindingDetails->exists(sc| $sc->instanceOf(FailedBindingDetail)),
+      | ^FailedBindingDetail(errorMessages=$sectionBindingDetails->filter(sc| $sc->instanceOf(FailedBindingDetail))->cast(@FailedBindingDetail).errorMessages),
+      {|
+         let sectionDetails = $sectionBindingDetails->cast(@SectionBindingDetail);
+
+         let schemaBindingDetails  = $flatData->findMatchingSchemaClass($classes);   
+         $schemaBindingDetails->match([
+            f : FailedBindingDetail[1] | $f,
+            s0: BindingDetail[0]       | ^FlatDataBindingDetail(
+                                            sectionBindingDetails         = $sectionDetails, 
+                                            fetchMappedPropertiesForClass = {class:Class<Any>[1] | 
+                                                                               let sectionForClass = $sectionBindingDetails->cast(@SectionBindingDetail)->filter(s | $s.class == $class);
+                                                                               $sectionForClass.details.property;
+                                                                            }
+                                         ),
+            {s: SchemaBindingDetail[1] |
+               let matchedSectionDetails = $s.details->map({sectionToProperty|
+                  let section       = $sectionToProperty.section;               
+                  let sectionDetail = $sectionDetails->filter(sd| $sd.section == $section);
+                  
+                  $sectionDetail->match([
+                     {s0: SectionBindingDetail[0] | 
+                        ^FailedBindingDetail(errorMessages = 'Section \''+$section.name+'\': Section found for schema but missing in details');
+                     },
+                     {s1: SectionBindingDetail[1] | 
+                        let sectionClassProperties = $s1.class->hierarchicalProperties()->concatenate($s1.class->hierarchicalPropertiesFromAssociations());
+                        let schemaProperty         = $sectionClassProperties->filter(p| $p->functionReturnType().rawType == $s.class);
+                        let expectedClass          = $sectionToProperty.property->functionReturnType().rawType->toOne()->cast(@Class<Any>);
+                        
+                        if($schemaProperty->size() > 1,
+                           | ^FailedBindingDetail(errorMessages = 'Section \''+$section.name+'\': Has ambiguous properties for the schemaSection found for schema: ' + $schemaProperty.name->joinStrings(',')),
+                           |
+                        if($expectedClass != $s1.class,
+                           | ^FailedBindingDetail(errorMessages = 'Section \''+$section.name+'\': Section found for schema for class ' + $expectedClass->elementToPath() + ' but in details for class ' + $s1.class->elementToPath()),
+                           | ^$s1(schemaProperty=$schemaProperty->first())
+                        ));
+                     },
+                     {sm: SectionBindingDetail[*] | 
+                        ^FailedBindingDetail(errorMessages = 'Section \''+$section.name+'\': Section found for schema but ambiguous in details');
+                     }
+                  ]);
+               });
+               
+               if($matchedSectionDetails->exists(sc| $sc->instanceOf(FailedBindingDetail)),
+                  | ^FailedBindingDetail(errorMessages=$matchedSectionDetails->filter(sc| $sc->instanceOf(FailedBindingDetail))->cast(@FailedBindingDetail).errorMessages),
+                  | ^FlatDataBindingDetail(
+                       schemaBindingDetail           = $s, 
+                       sectionBindingDetails         = $matchedSectionDetails->cast(@SectionBindingDetail), 
+                       fetchMappedPropertiesForClass = {class:Class<Any>[1] | 
+                                                          let sectionForClass = $matchedSectionDetails->cast(@SectionBindingDetail)->filter(s | $s.class == $class);
+                                                          $sectionForClass.details.property->concatenate($sectionForClass.schemaProperty);
+                                                       }
+                    )
+               );
+            }
+         ]);
+      }   
+   );
+}
+
+function <<access.private>> meta::external::format::flatdata::binding::validation::findMatchingSchemaClass(schema:FlatData[1], classes:Class<Any>[*]): BindingDetail[0..1]
+{
+   let matches     = $classes->map(c| pair($c, matchSchemaClass($schema, $c)));
+   let goodMatches = $matches->filter(p| $p.second.unmatchedSections->isEmpty());
+
+   if($goodMatches->size() <= 1,
+      | $goodMatches->first()->map(p| ^SchemaBindingDetail(class = $p.first, details = $p.second.matches)),
+      | ^FailedBindingDetail(errorMessages = 'Ambiguous matches for schema sections against classes in the model: ' + $goodMatches.first.name->joinStrings('(', ',', ')'));
+   );
+}
+
+function <<access.private>> meta::external::format::flatdata::binding::validation::findMatchingClasses(section:FlatDataSection[1], classes:Class<Any>[*]): BindingDetail[1]
+{
+   let matches     = $classes->map(c| pair($c, matchClass($section, $c)));
+   let goodMatches = $matches->filter(p| $p.second.unmatchedFields->isEmpty());
+
+   if($goodMatches->size() == 0,
+      {|
+         let partialMatches = $matches->filter(p| $p.second.matches->isNotEmpty() || $p.second.nonMatches->isNotEmpty());
+         if($partialMatches->isEmpty(),
+            | ^FailedBindingDetail(errorMessages = 'Section \''+$section.name+'\': Could not match any fields to classes in the model: ' + $classes.name->joinStrings('(', ',', ')')),
+            | ^FailedBindingDetail(errorMessages = $partialMatches
+                  ->map({pm|
+                     let matchedFields   = $pm.second.matches->map(m| $m.field.label + '[' + $m.property.name->toOne() + ']')->joinStrings('(', ',', ')');
+                     let unmatchedFields = $pm.second.unmatchedFields->map({unmatched|
+                        let nonMatches  = $pm.second.nonMatches->filter(nm| $nm.field == $unmatched);
+                        let fullMatches = $nonMatches->filter(nm| $nm.nameMatches && $nm.typeMatches && $nm.multiplicityMatches);
+                        if ($fullMatches->size() > 1,
+                            | $unmatched.label + '[ambiguous for properties: '+ $fullMatches.property.name->joinStrings('|') +']',
+                            |
+                        if ($nonMatches->isNotEmpty(),
+                            | $unmatched.label + $nonMatches->map(nm| $nm.property.name->toOne() + if($nm.typeMatches, |'', |' wrong type') + if($nm.multiplicityMatches, |'', |' wrong multiplicity'))->joinStrings('[', '|', ']'),
+                            | $unmatched.label + '[No matching properties]'
+                        ));
+                     })->joinStrings('(', ',', ')');
+
+                     'Section \''+$section.name+'\': Could only partially match fields to class ' + $pm.first.name->toOne() + ' matched fields: ' + $matchedFields + ' unmatched fields: ' + $unmatchedFields;
+                  })
+              )
+         );
+      },
+      |
+   if($goodMatches->size() == 1,
+      {|
+         ^SectionBindingDetail(
+            section = $section,
+            class   = $goodMatches->toOne().first,
+            details = $goodMatches->toOne().second.matches
+         );
+      },
+      {|
+         let nameMatch = $goodMatches->filter(p| $p.first.name->toOne()->equalIgnoreCase($section.name));
+         if($nameMatch->size() == 1,
+            | ^SectionBindingDetail(
+                 section = $section,
+                 class   = $nameMatch->toOne().first,
+                 details = $nameMatch->toOne().second.matches
+              ),
+            | ^FailedBindingDetail(errorMessages = 'Section \''+$section.name+'\': Ambiguous matches against classes in the model: ' + $goodMatches.first.name->joinStrings('(', ',', ')'));
+         );
+      }
+   ));
+}
+
+Class <<access.private>> meta::external::format::flatdata::binding::validation::NonMatch extends FieldToProperty
+{
+   nameMatches         : Boolean[1];
+   typeMatches         : Boolean[1];
+   multiplicityMatches : Boolean[1];
+}
+
+Class <<access.private>> meta::external::format::flatdata::binding::validation::PropertyMatchState
+{
+   unmatchedFields     : FlatDataRecordField[*];
+   unmatchedProperties : Property<Nil,Any|*>[*];
+   matches             : FieldToProperty[*];
+   nonMatches          : NonMatch[*];
+}
+
+function <<access.private>> meta::external::format::flatdata::binding::validation::matchClass(section:FlatDataSection[1], class:Class<Any>[1]): PropertyMatchState[1]
+{
+   let initialState = ^PropertyMatchState(
+      unmatchedFields     = $section.recordType.fields,
+      unmatchedProperties = $class->hierarchicalProperties()
+   );
+   
+   let matchedState = orderedMatchers()->fold(
+      {matcher, state|
+         let matches = $state.unmatchedFields->fold(
+            {field, state2|
+               let props = $state2.unmatchedProperties->filter(p| $matcher->eval($field.label, $p.name) && dataTypeMatches($field, $p) && multiplicityMatches($field, $p));
+               if($props->size() == 1, 
+                  | ^PropertyMatchState(
+                       unmatchedFields     = $state2.unmatchedFields->remove($field),
+                       unmatchedProperties = $state2.unmatchedProperties->removeAll($props),
+                       matches             = $state2.matches->add(^FieldToProperty(field=$field, property=$props->toOne()))
+                    );,                  
+                  | $state2
+               );
+            },
+            $state
+         );
+      },
+      $initialState
+   );
+
+   // Further pass allows better error reporting; it does not identify further matches
+
+   orderedMatchers()->fold(
+      {matcher, state|
+         let nonMatches = $state.unmatchedFields->map({field|
+            let props = $state.unmatchedProperties->filter(p| $matcher->eval($field.label, $p.name));
+            $props->map(p| ^NonMatch(
+               field               = $field, 
+               property            = $p, 
+               nameMatches         = true, 
+               typeMatches         = dataTypeMatches($field, $p), 
+               multiplicityMatches = multiplicityMatches($field, $p)
+            ));
+         });
+         ^$state(
+            nonMatches = $state.nonMatches->concatenate($nonMatches)->removeDuplicates({nm1, nm2| $nm1.field == $nm2.field && $nm1.property == $nm2.property})
+         );
+      },
+      $matchedState
+   );   
+}
+
+Class <<access.private>> meta::external::format::flatdata::binding::validation::SchemaPropertyMatchState
+{
+   unmatchedSections   : FlatDataSection[*];
+   unmatchedProperties : Property<Nil,Any|*>[*];
+   matches             : SectionToProperty[*];
+   nonMatches          : NonMatch[*];
+}
+
+function <<access.private>> meta::external::format::flatdata::binding::validation::matchSchemaClass(schema:FlatData[1], class:Class<Any>[1]): SchemaPropertyMatchState[1]
+{
+   let initialState = ^SchemaPropertyMatchState(
+      unmatchedSections   = $schema.sections->filter(s | $s.recordType->isNotEmpty()),
+      unmatchedProperties = $class->hierarchicalProperties()->concatenate($class->hierarchicalPropertiesFromAssociations())
+   );
+   
+   let matchedState = orderedMatchers()->fold(
+      {matcher, state|
+         let matches = $state.unmatchedSections->fold(
+            {section, state2|
+               let props = $state2.unmatchedProperties->filter(p| $matcher->eval($section.name, $p.name));
+               if($props->size() == 1, 
+                  | ^SchemaPropertyMatchState(
+                       unmatchedSections   = $state2.unmatchedSections->remove($section),
+                       unmatchedProperties = $state2.unmatchedProperties->removeAll($props),
+                       matches             = $state2.matches->add(^SectionToProperty(section=$section, property=$props->toOne()))
+                    );,                  
+                  | $state2
+               );
+            },
+            $state
+         );
+      },
+      $initialState
+   );
+}
+
+function <<access.private>> meta::external::format::flatdata::binding::validation::orderedMatchers(): Function<{String[1],String[1]->Boolean[1]}>[*]
+{
+   [
+      {fdName:String[1], pName:String[1]| $fdName == $pName},
+      {fdName:String[1], pName:String[1]| equalIgnoreCase($fdName, $pName)},
+      {fdName:String[1], pName:String[1]| purifyPropertyName($fdName) == $pName},
+      {fdName:String[1], pName:String[1]| equalIgnoreCase(purifyPropertyName($fdName), $pName)},
+      {fdName:String[1], pName:String[1]| purifyPropertyName($fdName) == purifyPropertyName($pName)},
+      {fdName:String[1], pName:String[1]| equalIgnoreCase(purifyPropertyName($fdName), purifyPropertyName($pName))}
+   ];
+}
+
+function <<access.private>> meta::external::format::flatdata::binding::validation::multiplicityMatches(field:FlatDataRecordField[1], property:Property<Nil,Any|*>[1]): Boolean[1]
+{
+   if($field.type.optional, 
+      |$property.multiplicity == ZeroOne, 
+      |$property.multiplicity == PureOne
+   );   
+}
+
+function <<access.private>> meta::external::format::flatdata::binding::validation::dataTypeMatches(field:FlatDataRecordField[1], property:Property<Nil,Any|*>[1]): Boolean[1]
+{
+   let pureType = $property->functionReturnType().rawType->toOne();
+   $field.type->match([
+      s:FlatDataString[1]   | $pureType == String || $pureType->instanceOf(Enumeration),
+      b:FlatDataBoolean[1]  | $pureType == Boolean,
+      i:FlatDataInteger[1]  | $pureType == Integer || $pureType == Float || $pureType == Decimal,
+      i:FlatDataDecimal[1]  | $pureType == Float || $pureType == Decimal,
+      i:FlatDataDate[1]     | $pureType == StrictDate,
+      i:FlatDataDateTime[1] | $pureType == DateTime
+   ]);
+}
+
+function <<access.private>> meta::external::format::flatdata::binding::validation::printState(section:FlatDataSection[1], class:Class<Any>[1], state:PropertyMatchState[1]): Any[*]
+{
+   println($class.name->toOne() + ' :: ' + $section.name);
+   println('matches             : ' + $state.matches->map(m| $m.field.label + '<->' + $m.property.name->toOne())->joinStrings('  '));
+   println('unmatchedFields     : ' + $state.unmatchedFields.label->joinStrings(','));
+   println('unmatchedProperties : ' + $state.unmatchedProperties.name->joinStrings(','));
+   println('nonMatches          : ' + $state.nonMatches->map(nm| $nm.field.label + '*' + $nm.property.name->toOne() + '(' + $nm.nameMatches->toString() + ',' + $nm.typeMatches->toString() + ',' + $nm.multiplicityMatches->toString() + ')')->joinStrings('  '));                 
+}

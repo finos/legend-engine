@@ -1,0 +1,502 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Enum meta::external::store::service::showcase::domain::SynonymType
+{
+  CUSIP,
+  ISIN
+}
+
+Class meta::external::store::service::showcase::domain::Product
+{
+  productId   : String[1];
+  productName : String[1];
+  description : String[1];
+}
+
+Class meta::external::store::service::showcase::domain::Synonym
+{
+  name : String[1];
+  type : meta::external::store::service::showcase::domain::SynonymType[1];
+}
+
+Class meta::external::store::service::showcase::domain::Trade
+{
+  tradeId    : String[1];
+  traderKerb : String[0..1];
+  quantity   : Integer[1];
+  productName() {$this.product.productName}: String[0..1];
+  justProduct() {$this.product}: meta::external::store::service::showcase::domain::Product[0..1];
+}
+
+Class meta::external::store::service::showcase::domain::Trader
+{
+  kerberos  : String[1];
+  firstName : String[1];
+  lastName  : String[1];
+}
+
+Association meta::external::store::service::showcase::domain::Product_Synonym
+{
+  product  : meta::external::store::service::showcase::domain::Product[1];
+  synonyms : meta::external::store::service::showcase::domain::Synonym[*];
+}
+
+Association meta::external::store::service::showcase::domain::Trade_Product
+{
+  product : meta::external::store::service::showcase::domain::Product[1];
+  trades  : meta::external::store::service::showcase::domain::Trade[*];
+}
+
+Association meta::external::store::service::showcase::domain::Trade_Trader
+{
+  trader : meta::external::store::service::showcase::domain::Trader[1];
+  trades : meta::external::store::service::showcase::domain::Trade[*];
+}
+
+Class meta::external::store::service::showcase::domain::S_Product
+{
+  s_productId   : String[1];
+  s_productName : String[1];
+  s_description : String[1];
+  s_synonyms    : meta::external::store::service::showcase::domain::S_Synonym[*];
+}
+
+Class meta::external::store::service::showcase::domain::S_Synonym
+{
+  s_name : String[1];
+  s_type : String[1];
+}
+
+Class meta::external::store::service::showcase::domain::S_Trade
+{
+  s_tradeId       : String[1];
+  s_traderDetails : String[1];
+  s_tradeDetails  : String[1];
+}
+
+Association meta::external::store::service::showcase::domain::S_Trade_S_Product
+{
+  s_product : meta::external::store::service::showcase::domain::S_Product[0..1];
+  s_trades  : meta::external::store::service::showcase::domain::S_Trade[*];
+}
+
+Class meta::external::store::service::showcase::domain::Firm
+{
+  name           : String[1];
+  employeesCount : Integer[1];
+}
+
+Class meta::external::store::service::showcase::domain::Person
+{
+  firstName  : String[1];
+  middleName : String[0..1];
+  lastName   : String[1];
+}
+
+###Mapping
+Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping
+(
+  *meta::external::store::service::showcase::domain::S_Trade[s_trade_set]: ServiceStore
+  {
+     ~service [meta::external::store::service::showcase::store::ShowcaseServiceStore] TradeServices.AllTradeService
+
+     ~service [meta::external::store::service::showcase::store::ShowcaseServiceStore] TradeServices.TradeByIdService
+     (
+         ~request
+         (
+            parameters
+            (
+                "trade id" = $this.s_tradeId
+            )
+         )
+     )
+
+     ~service [meta::external::store::service::showcase::store::ShowcaseServiceStore] TradeServices.TradeByTradeDetailsService
+     (
+         ~request
+         (
+            parameters
+            (
+                "trade.details" = $this.s_tradeDetails
+            )
+         )
+     )
+
+     ~service [meta::external::store::service::showcase::store::ShowcaseServiceStore] TradeServices.TradeByTraderDetailsService
+     (
+         ~request
+         (
+            parameters
+            (
+                "trader.details" = $this.s_traderDetails
+            )
+         )
+     )
+  }
+
+  *meta::external::store::service::showcase::domain::S_Product[s_prod_set]: ServiceStore
+  {
+     +s_tradeId: String[1];
+
+     ~service [meta::external::store::service::showcase::store::ShowcaseServiceStore] ProductServices.ProductByIdService
+     (
+         ~request
+         (
+            parameters
+            (
+                id = $this.s_tradeId->split(':')->at(0)
+            )
+         )
+     )
+
+     ~service [meta::external::store::service::showcase::store::ShowcaseServiceStore] ProductServices.ProductByIdService
+     (
+         ~request
+         (
+            parameters
+            (
+                id = $this.s_productId
+            )
+         )
+     )
+
+     ~service [meta::external::store::service::showcase::store::ShowcaseServiceStore] ProductServices.ProductByNameService
+     (
+         ~request
+         (
+            parameters
+            (
+                name = 'product 30'
+            )
+         )
+     )
+
+     ~service [meta::external::store::service::showcase::store::ShowcaseServiceStore] ProductServices.ProductByNameAndDescriptionService
+     (
+         ~request
+         (
+            parameters
+            (
+                name = $this.s_productName,
+                description = $this.s_description
+            )
+         )
+     )
+
+     ~service [meta::external::store::service::showcase::store::ShowcaseServiceStore] ProductServices.ProductByNameAndDescriptionService
+     (
+         ~request
+         (
+            parameters
+            (
+                name = 'product 30',
+                description = $this.s_description
+            )
+         )
+     )
+  }
+
+  *meta::external::store::service::showcase::domain::Firm[firm_set]: ServiceStore
+  {
+     ~service [meta::external::store::service::showcase::store::ShowcaseServiceStore] FirmServices.FirmByName
+     (
+         ~request
+         (
+            parameters
+            (
+                name = $this.name
+            )
+         )
+     )
+
+     ~service [meta::external::store::service::showcase::store::ShowcaseServiceStore] FirmServices.FirmsByNames
+     (
+         ~request
+         (
+            parameters
+            (
+                name = ['FirmA', 'FirmB', 'FirmC']
+            )
+         )
+     )
+  }
+
+  *meta::external::store::service::showcase::domain::Person[person_set]: ServiceStore
+  {
+     ~service [meta::external::store::service::showcase::store::ShowcaseServiceStore] PersonServices.PersonsByFirstAndMiddleName
+     (
+         ~request
+         (
+            parameters
+            (
+                firstName = $this.firstName,
+                middleName = $this.middleName->orElse('*')
+            )
+         )
+     )
+  }
+
+  meta::external::store::service::showcase::domain::Trade[trade_set]: Pure
+  {
+    ~src meta::external::store::service::showcase::domain::S_Trade
+
+    tradeId: $src.s_tradeId,
+    +prodId: String[1]: $src.s_tradeDetails->split(':')->at(0),
+    quantity: $src.s_tradeDetails->split(':')->at(1)->parseInteger(),
+    trader[trader_set]: $src
+  }
+
+  meta::external::store::service::showcase::domain::Trader[trader_set]:Pure
+  {
+    ~src meta::external::store::service::showcase::domain::S_Trade
+
+    kerberos  : $src.s_traderDetails->split(':')->at(0),
+    firstName : $src.s_traderDetails->split(':')->at(1),
+    lastName  : $src.s_traderDetails->split(':')->at(2)
+  }
+
+  meta::external::store::service::showcase::domain::Product[prod_set]: Pure
+  {
+    ~src meta::external::store::service::showcase::domain::S_Product
+
+    productId: $src.s_productId,
+    productName: $src.s_productName,
+    description: $src.s_description,
+    synonyms[synonym_set]: $src.s_synonyms
+  }
+
+  meta::external::store::service::showcase::domain::Synonym[synonym_set]:Pure
+  {
+    ~src meta::external::store::service::showcase::domain::S_Synonym
+
+    name: $src.s_name,
+    type: EnumerationMapping SynonymTypeMapping: $src.s_type
+  }
+
+  meta::external::store::service::showcase::domain::SynonymType: EnumerationMapping SynonymTypeMapping
+  {
+    CUSIP: ['cusip', 'CUSIP'],
+    ISIN: ['isin', 'ISIN']
+  }
+
+  meta::external::store::service::showcase::domain::S_Trade_S_Product[s_cross_set]: XStore
+  {
+    s_product[s_trade_set, s_prod_set]: $this.s_tradeDetails == $that.s_tradeId
+  }
+
+  meta::external::store::service::showcase::domain::Trade_Product[cross_set]: XStore
+  {
+    product[trade_set, prod_set]: $this.prodId == $that.productId
+  }
+)
+
+###ServiceStore
+ServiceStore meta::external::store::service::showcase::store::ShowcaseServiceStore
+(
+   description : 'Showcase Service Store';
+
+   ServiceGroup TradeServices
+   (
+      path : '/trades';
+
+      Service AllTradeService
+      (
+         path : '/allTradesService';
+         method : GET;
+         security : [];
+         response : [meta::external::store::service::showcase::domain::S_Trade <- meta::external::store::service::showcase::store::tradeServiceStoreSchemaBinding];
+      )
+
+      Service TradeByIdService
+      (
+         path : '/{trade id}';
+         method : GET;
+         parameters :
+         (
+            "trade id" : String (location = path)
+         );
+         security : [];
+         response : [meta::external::store::service::showcase::domain::S_Trade <- meta::external::store::service::showcase::store::tradeServiceStoreSchemaBinding];
+      )
+
+      Service TradeByTradeDetailsService
+      (
+         path : '/details';
+         method : GET;
+         parameters :
+         (
+            "trade.details" : String (location = query)
+         );
+         security : [];
+         response : [meta::external::store::service::showcase::domain::S_Trade <- meta::external::store::service::showcase::store::tradeServiceStoreSchemaBinding];
+      )
+
+      Service TradeByTraderDetailsService
+      (
+         path : '/traderDetails';
+         method : GET;
+         parameters :
+         (
+            "trader.details" : String (location = query, allowReserved = true)
+         );
+         security : [];
+         response : [meta::external::store::service::showcase::domain::S_Trade <- meta::external::store::service::showcase::store::tradeServiceStoreSchemaBinding];
+      )
+   )
+
+   ServiceGroup ProductServices
+   (
+      path : '/products';
+
+      Service ProductByIdService
+      (
+         path : '/getProductById/{id}';
+         method : GET;
+         parameters :
+         (
+            id : String (location = path)
+         );
+         security : [];
+         response : [meta::external::store::service::showcase::domain::S_Product <- meta::external::store::service::showcase::store::prodServiceStoreSchemaBinding];
+      )
+
+      Service ProductByNameService
+      (
+         path : '/getProductByName';
+         method : GET;
+         parameters :
+         (
+            name : String (location = query)
+         );
+         security : [];
+         response : [meta::external::store::service::showcase::domain::S_Product <- meta::external::store::service::showcase::store::prodServiceStoreSchemaBinding];
+      )
+
+      Service ProductByNameAndDescriptionService
+      (
+         path : '/getProductByNameAndDescription';
+         method : GET;
+         parameters :
+         (
+            name        : String (location = query),
+            description : String (location = query)
+         );
+         security : [];
+         response : [meta::external::store::service::showcase::domain::S_Product <- meta::external::store::service::showcase::store::prodServiceStoreSchemaBinding];
+      )
+   )
+
+   ServiceGroup FirmServices
+   (
+      path : '/firms';
+
+      Service FirmByName
+      (
+         path : '/getFirmByName';
+         method : GET;
+         parameters :
+         (
+            name : String (location = header)
+         );
+         security : [];
+         response : [meta::external::store::service::showcase::domain::Firm <- meta::external::store::service::showcase::store::firmServiceStoreSchemaBinding];
+      )
+
+      Service FirmsByNames
+      (
+         path : '/getFirmsByNames';
+         method : GET;
+         parameters :
+         (
+            name : [String] (location = header, style = simple, explode = true)
+         );
+         security : [];
+         response : [meta::external::store::service::showcase::domain::Firm <- meta::external::store::service::showcase::store::firmServiceStoreSchemaBinding];
+      )
+   )
+
+   ServiceGroup PersonServices
+   (
+      path : '/persons';
+
+      Service PersonsByFirstAndMiddleName
+      (
+         path : '/getPersonsByFirstAndMiddleName';
+         method : GET;
+         parameters :
+         (
+            firstName : String (location = query),
+            middleName : String (location = query)
+         );
+         security : [];
+         response : [meta::external::store::service::showcase::domain::Person <- meta::external::store::service::showcase::store::personServiceStoreSchemaBinding];
+      )
+   )
+)
+
+###ExternalFormat
+Binding meta::external::store::service::showcase::store::tradeServiceStoreSchemaBinding
+{
+  contentType   : 'application/json';
+  modelIncludes : [ meta::external::store::service::showcase::domain::S_Trade ];
+}
+
+Binding meta::external::store::service::showcase::store::prodServiceStoreSchemaBinding
+{
+  contentType   : 'application/json';
+  modelIncludes : [ meta::external::store::service::showcase::domain::S_Product, meta::external::store::service::showcase::domain::S_Synonym ];
+}
+
+Binding meta::external::store::service::showcase::store::firmServiceStoreSchemaBinding
+{
+  contentType   : 'application/json';
+  modelIncludes : [ meta::external::store::service::showcase::domain::Firm ];
+}
+
+Binding meta::external::store::service::showcase::store::personServiceStoreSchemaBinding
+{
+  contentType   : 'application/json';
+  modelIncludes : [ meta::external::store::service::showcase::domain::Person ];
+}
+
+###Runtime
+Runtime meta::external::store::service::showcase::runtime::ServiceStoreRuntime
+{
+    mappings :
+    [
+        meta::external::store::service::showcase::mapping::ServiceStoreMapping
+    ];
+    connections :
+    [
+        meta::external::store::service::showcase::store::ShowcaseServiceStore :
+        [
+            connection_1 : meta::external::store::service::showcase::connection::serviceStoreConnection
+        ],
+        ModelStore :
+        [
+            connection_2 : meta::external::store::service::showcase::connection::modelChainConnection
+        ]
+    ];
+}
+
+###Connection
+ModelChainConnection meta::external::store::service::showcase::connection::modelChainConnection
+{
+    mappings :
+    [
+        meta::external::store::service::showcase::mapping::ServiceStoreMapping
+    ];
+}

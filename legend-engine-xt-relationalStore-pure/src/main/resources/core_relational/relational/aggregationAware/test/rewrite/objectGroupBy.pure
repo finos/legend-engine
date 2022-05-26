@@ -1,0 +1,241 @@
+import meta::relational::functions::asserts::*;
+import meta::pure::router::printer::*;
+import meta::pure::router::extension::*;
+import meta::pure::runtime::*;
+import meta::relational::tests::aggregationAware::mapping::*;
+import meta::relational::tests::aggregationAware::domain::*;
+import meta::relational::tests::aggregationAware::*;
+
+
+function <<test.Test>> meta::relational::tests::aggregationAware::testRewrite::objectGroupBy::testRewriteCanAggregateGroupByOnLiteralWithSumAgg():Boolean[1]
+{
+   let query = {|
+      Wholesales.all()->groupBy(
+         [x|1], 
+         [agg(x|$x.revenue.price, y|$y->sum())], 
+         ['Name', 'Total Price Sum']
+      )
+   };
+   let mapping = mappingWithMonthCannotBeAggregated;
+   let runtime = runtime();
+   
+   let result = execute($query, $mapping, $runtime, defaultRelationalExtensions());
+   
+   assertSameSQL('select 1 as "Name", sum("root".revenue) as "Total Price Sum" from user_view_agg.SalesTable_Day as "root" group by "Name"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::aggregationAware::testRewrite::objectGroupBy::testRewriteCanAggregateGroupByOnLiteralWithMultipleAgg():Boolean[1]
+{
+   let query = {|
+      Wholesales.all()->groupBy(
+         [x|1],
+         [agg(x|$x.revenue.price, y|$y->sum()),
+         agg(x|$x.revenue.price, y|$y->max())],
+         ['Name', 'Total Price Sum', 'Total Price Max']
+      )
+   };
+   let mapping = mappingWithMonthCannotBeAggregated;
+   let runtime = runtime();
+
+   let result = execute($query, $mapping, $runtime, defaultRelationalExtensions());
+
+   assertSameSQL('select 1 as "Name", sum("root".revenue) as "Total Price Sum", max("root".revenue) as "Total Price Max" from user_view_agg.SalesTable_Day as "root" group by "Name"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::aggregationAware::testRewrite::objectGroupBy::testRewriteSwitchToSalesTable():Boolean[1]
+{
+   let query = {|
+      meta::relational::tests::aggregationAware::domain::Wholesales.all()
+      ->groupBy([x | $x.product.productId,
+         x | $x.discount,
+         x | $x.salesDate.date,
+         x | $x.salesDate.fiscalMonth,
+         x | $x.salesDate.fiscalYear],
+                [agg(x | $x.revenue.price, y | $y->sum())],
+                ['Product ID',
+                   'Discount',
+                   'Product Date/Date',
+                   'Product Date/Fiscal Month/Value',
+                   'Product Date/Fiscal Year/Value',
+                   'Revenue/Total Price Sum']
+          );
+   };
+   let mapping = simpleMapping;
+   let runtime = runtime();
+   
+   let result = execute($query, $mapping, $runtime, defaultRelationalExtensions());
+   
+   assertSameSQL('select "product_0".prod_id as "Product ID", "root".discount as "Discount", "calendar_0".dt_date as "Product Date/Date", "calendar_0".fiscal_month as "Product Date/Fiscal Month/Value", "calendar_0".fiscal_year as "Product Date/Fiscal Year/Value", sum("root".revenue) as "Revenue/Total Price Sum" from base_view.SalesTable as "root" left outer join base_view.Product as "product_0" on ("root".product_id = "product_0".prod_id) left outer join base_view.Calendar as "calendar_0" on ("root".sales_date = "calendar_0".dt_date) group by "Product ID","Discount","Product Date/Date","Product Date/Fiscal Month/Value","Product Date/Fiscal Year/Value"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::aggregationAware::testRewrite::objectGroupBy::testRewriteSwitchToSalesTableWithQualifiedProperty():Boolean[1]
+{
+   let query = {|
+      meta::relational::tests::aggregationAware::domain::Wholesales.all()
+      ->groupBy([x | $x.description],
+                [agg(x | $x.revenue.price, y | $y->sum())],
+                ['Product Description',
+                   'Total Price Sum']
+          );
+   };
+   let mapping = simpleMapping;
+   let runtime = runtime();
+   
+   let result = execute($query, $mapping, $runtime, defaultRelationalExtensions());
+   
+   assertSameSQL('select concat("product_0".prod_name, \': \', cast("root".revenue as varchar)) as "Product Description", sum("root".revenue) as "Total Price Sum" from user_view_agg.SalesTable_Month as "root" left outer join base_view.Product as "product_0" on ("root".product_id = "product_0".prod_id) group by "Product Description"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::aggregationAware::testRewrite::objectGroupBy::testRewriteWithTDSJoin():Boolean[1]
+{
+   let query = {|
+      meta::relational::tests::aggregationAware::domain::Wholesales.all()
+      ->filter(item | ($item.isCancelled == 'N') && ($item.product.productId == 2238011724))
+      ->groupBy([x | $x.product.productId,x | $x.isCancelled],[agg(x | $x.revenue.price, y | $y->sum())],['Product ID','Is Cancelled','Total Price 1'])
+      ->join(
+         meta::relational::tests::aggregationAware::domain::Wholesales.all()
+         ->filter(item | $item.product.productId == 2238011724)
+         ->groupBy([x | $x.product.productId],[agg(x | $x.revenue.price, y | $y->sum())],['Product ID','Total Price 2']),
+         meta::relational::metamodel::join::JoinType.INNER, 
+         ['Product ID']
+      )
+      ->filter(x| abs($x.getFloat('Total Price 1') - $x.getFloat('Total Price 2')) > 1 ) 
+      ->restrict(['Product ID','Total Price 1','Total Price 2'])
+   };
+   let mapping = simpleMapping;
+   let runtime = runtime();
+   
+   let result = execute($query, $mapping, $runtime, defaultRelationalExtensions());
+   
+   assertSameSQL('select "salestable_month_0"."Product ID" as "Product ID", "salestable_month_0"."Total Price 1" as "Total Price 1", "salestable_month_0"."Total Price 2" as "Total Price 2" from (select "salestable_month_1"."Product ID" as "Product ID", "salestable_month_1"."Is Cancelled" as "Is Cancelled", "salestable_month_1"."Total Price 1" as "Total Price 1", "salestable_month_3"."Total Price 2" as "Total Price 2" from (select "product_0".prod_id as "Product ID", case when "root".is_cancelled_flag = \'Y\' then \'true\' else \'false\' end as "Is Cancelled", sum("root".revenue) as "Total Price 1" from user_view_agg.SalesTable_Month as "root" left outer join base_view.Product as "product_0" on ("root".product_id = "product_0".prod_id) where (case when "root".is_cancelled_flag = \'Y\' then \'true\' else \'false\' end = \'N\' and "product_0".prod_id = 2238011724) group by "Product ID","Is Cancelled") as "salestable_month_1" inner join (select "product_0".prod_id as "Product ID", sum("root".revenue) as "Total Price 2" from user_view_agg.SalesTable_Month as "root" left outer join base_view.Product as "product_0" on ("root".product_id = "product_0".prod_id) where "product_0".prod_id = 2238011724 group by "Product ID") as "salestable_month_3" on ("salestable_month_1"."Product ID" = "salestable_month_3"."Product ID")) as "salestable_month_0" where abs(("salestable_month_0"."Total Price 1" - "salestable_month_0"."Total Price 2")) > 1', $result);
+}
+
+function <<test.Test>> meta::relational::tests::aggregationAware::testRewrite::objectGroupBy::testRewriteSwitchToProductMonthTable():Boolean[1]
+{
+   let query = {|
+      meta::relational::tests::aggregationAware::domain::Wholesales.all()
+      ->filter(x | $x.salesDate.fiscalYear == 2017)
+      ->groupBy([x | $x.product.productId, x | $x.product.productName, x | $x.product.productLine.name , x | $x.salesDate.fiscalMonth],[agg(x | $x.revenue.price, y | $y->sum())],['Product ID', 'Product Name', 'Product Line', 'Month', 'Total Price 1'])
+   };
+   let mapping = mappingWithMultiDimensionAggregates;
+   let runtime = runtime();
+   
+   let result = execute($query, $mapping, $runtime, defaultRelationalExtensions());
+   
+   assertSameSQL('select "product_0".prod_id as "Product ID", "product_0".prod_name as "Product Name", "productline_0".prod_line_name as "Product Line", "calendar_0".fiscal_month as "Month", sum("root".revenue) as "Total Price 1" from user_view_multi_agg.SalesTable_Product_Month as "root" left outer join base_view.Product as "product_0" on ("root".product_id = "product_0".prod_id) left outer join base_view.ProductLine as "productline_0" on ("product_0".prod_line_id = "productline_0".prod_line_id) left outer join base_view.Calendar as "calendar_0" on ("root".sales_date = "calendar_0".dt_date) where "calendar_0".fiscal_year = 2017 group by "Product ID","Product Name","Product Line","Month"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::aggregationAware::testRewrite::objectGroupBy::testRewriteSwitchToProdLineYearTable():Boolean[1]
+{
+   let query = {|
+      meta::relational::tests::aggregationAware::domain::Wholesales.all()
+      ->groupBy([x | $x.product.productLine.name, x | $x.product.productLine.products.productName->joinStrings(',')],[agg(x | $x.revenue.price, y | $y->sum())],['Product Line','Products Concat', 'Total Price 1'])
+   };
+   let mapping = mappingWithMultiDimensionAggregates;
+   let runtime = runtime();
+   
+   let result = execute($query, $mapping, $runtime, defaultRelationalExtensions());
+   
+   assertSameSQL('select "productline_0".prod_line_name as "Product Line", "salestable_prodline_year_1".aggCol as "Products Concat", sum("root".revenue) as "Total Price 1" from user_view_multi_agg.SalesTable_ProdLine_Year as "root" left outer join base_view.ProductLine as "productline_0" on ("root".prod_line_id = "productline_0".prod_line_id) left outer join (select "salestable_prodline_year_2".revenue as revenue, "salestable_prodline_year_2".prod_line_id as prod_line_id, "salestable_prodline_year_2".sales_date as sales_date, group_concat("product_0".prod_name separator \',\' ) as aggCol from user_view_multi_agg.SalesTable_ProdLine_Year as "salestable_prodline_year_2" left outer join base_view.ProductLine as "productline_1" on ("salestable_prodline_year_2".prod_line_id = "productline_1".prod_line_id) left outer join base_view.Product as "product_0" on ("product_0".prod_line_id = "productline_1".prod_line_id) group by "salestable_prodline_year_2".sales_date,"salestable_prodline_year_2".prod_line_id,"salestable_prodline_year_2".revenue) as "salestable_prodline_year_1" on ("root".revenue = "salestable_prodline_year_1".revenue and "root".prod_line_id = "salestable_prodline_year_1".prod_line_id and "root".sales_date = "salestable_prodline_year_1".sales_date) group by "Product Line","Products Concat"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::aggregationAware::testRewrite::objectGroupBy::testRewriteSwitchToProdLineSalesPersonYearTable():Boolean[1]
+{
+   let query = {|
+      meta::relational::tests::aggregationAware::domain::Wholesales.all()
+      ->groupBy([x | $x.person.lastName, x | $x.product.productLine.name, x | $x.product.productLine.products.productName->joinStrings(',')],[agg(x | $x.revenue.price, y | $y->sum())],['Sales Person Last Name', 'Product Line','Products Concat', 'Total Price 1'])
+   };
+   let mapping = mappingWithMultiDimensionAggregates;
+   let runtime = runtime();
+   
+   let result = execute($query, $mapping, $runtime, defaultRelationalExtensions());
+   
+   assertSameSQL('select "employee_0".last_name as "Sales Person Last Name", "productline_0".prod_line_name as "Product Line", "salestable_prodline_salesperson_year_1".aggCol as "Products Concat", sum("root".revenue) as "Total Price 1" from user_view_multi_agg.SalesTable_ProdLine_SalesPerson_Year as "root" left outer join base_view.Employee as "employee_0" on ("root".emp_id = "employee_0".emp_id) left outer join base_view.ProductLine as "productline_0" on ("root".prod_line_id = "productline_0".prod_line_id) left outer join (select "salestable_prodline_salesperson_year_2".revenue as revenue, "salestable_prodline_salesperson_year_2".emp_id as emp_id, "salestable_prodline_salesperson_year_2".prod_line_id as prod_line_id, "salestable_prodline_salesperson_year_2".sales_date as sales_date, group_concat("product_0".prod_name separator \',\' ) as aggCol from user_view_multi_agg.SalesTable_ProdLine_SalesPerson_Year as "salestable_prodline_salesperson_year_2" left outer join base_view.ProductLine as "productline_1" on ("salestable_prodline_salesperson_year_2".prod_line_id = "productline_1".prod_line_id) left outer join base_view.Product as "product_0" on ("product_0".prod_line_id = "productline_1".prod_line_id) group by "salestable_prodline_salesperson_year_2".sales_date,"salestable_prodline_salesperson_year_2".prod_line_id,"salestable_prodline_salesperson_year_2".emp_id,"salestable_prodline_salesperson_year_2".revenue) as "salestable_prodline_salesperson_year_1" on ("root".revenue = "salestable_prodline_salesperson_year_1".revenue and "root".emp_id = "salestable_prodline_salesperson_year_1".emp_id and "root".prod_line_id = "salestable_prodline_salesperson_year_1".prod_line_id and "root".sales_date = "salestable_prodline_salesperson_year_1".sales_date) group by "Sales Person Last Name","Product Line","Products Concat"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::aggregationAware::testRewrite::objectGroupBy::testRewriteEmployeeToSales():Boolean[1]
+{
+   let query = {|
+      meta::relational::tests::aggregationAware::domain::Employee.all()
+      ->project([x | $x.firstName, x | $x.sales.product.productId, x | $x.sales.discount], ['Sales Person First Name', 'Product ID', 'Discount'])
+   };
+   let mapping = mappingWithMultiDimensionAggregates;
+   let runtime = runtime();
+   
+   let result = execute($query, $mapping, $runtime, defaultRelationalExtensions());
+   
+   assertEmpty($result.activities->filter(s|$s->instanceOf(meta::pure::mapping::aggregationAware::AggregationAwareActivity)));
+   assertSameSQL('select "root".first_name as "Sales Person First Name", "product_0".prod_id as "Product ID", "salestable_0".discount as "Discount" from base_view.Employee as "root" left outer join base_view.SalesTable as "salestable_0" on ("salestable_0".emp_id = "root".emp_id) left outer join base_view.Product as "product_0" on ("salestable_0".product_id = "product_0".prod_id)', $result);
+}
+
+function <<test.Test>> meta::relational::tests::aggregationAware::testRewrite::objectGroupBy::testRewriteEmployeeToSalesBackToEmployee():Boolean[1]
+{
+   let query = {|
+      meta::relational::tests::aggregationAware::domain::Employee.all()
+      ->project([x | $x.firstName, x | $x.sales.person.firstName, x | $x.sales.discount], ['Sales Person First Name', 'All Sales Person First Name', 'Discount'])
+   };
+   let mapping = mappingWithMultiDimensionAggregates;
+   let runtime = runtime();
+   
+   let result = execute($query, $mapping, $runtime, defaultRelationalExtensions());
+   
+   assertEmpty($result.activities->filter(s|$s->instanceOf(meta::pure::mapping::aggregationAware::AggregationAwareActivity)));
+   assertSameSQL('select "root".first_name as "Sales Person First Name", "employee_1".first_name as "All Sales Person First Name", "salestable_0".discount as "Discount" from base_view.Employee as "root" left outer join base_view.SalesTable as "salestable_0" on ("salestable_0".emp_id = "root".emp_id) left outer join base_view.Employee as "employee_1" on ("salestable_0".emp_id = "employee_1".emp_id)', $result);
+}
+
+function <<test.Test>> meta::relational::tests::aggregationAware::testRewrite::objectGroupBy::testRewriteEmployeeToSalesToProduct():Boolean[1]
+{
+   let query = {|
+      meta::relational::tests::aggregationAware::domain::Employee.all()
+      ->project([x | $x.firstName,  x | $x.sales.product.productId, x | $x.sales.product.productName, x | $x.sales.person.firstName, x | $x.sales.discount], ['Sales Person First Name', 'Product ID', 'Product Name', 'All Sales Person First Name', 'Discount'])
+   };
+   let mapping = mappingWithMultiDimensionAggregates;
+   let runtime = runtime();
+   
+   let result = execute($query, $mapping, $runtime, defaultRelationalExtensions());
+   
+   assertEmpty($result.activities->filter(s|$s->instanceOf(meta::pure::mapping::aggregationAware::AggregationAwareActivity)));
+   assertSameSQL('select "root".first_name as "Sales Person First Name", "product_0".prod_id as "Product ID", "product_0".prod_name as "Product Name", "employee_1".first_name as "All Sales Person First Name", "salestable_0".discount as "Discount" from base_view.Employee as "root" left outer join base_view.SalesTable as "salestable_0" on ("salestable_0".emp_id = "root".emp_id) left outer join base_view.Product as "product_0" on ("salestable_0".product_id = "product_0".prod_id) left outer join base_view.Employee as "employee_1" on ("salestable_0".emp_id = "employee_1".emp_id)', $result);
+}
+
+function <<test.Test>> meta::relational::tests::aggregationAware::testRewrite::objectGroupBy::testRewriteEmployeeToSalesToProductToProdLine():Boolean[1]
+{
+   let query = {|
+      meta::relational::tests::aggregationAware::domain::Employee.all()
+      ->project([x | $x.firstName,  x | $x.sales.product.productId, x | $x.sales.product.productLine.name, x | $x.sales.person.firstName, x | $x.sales.discount], ['Sales Person First Name', 'Product ID', 'Product Line', 'All Sales Person First Name', 'Discount'])
+   };
+   let mapping = mappingWithMultiDimensionAggregates;
+   let runtime = runtime();
+   
+   let result = execute($query, $mapping, $runtime, defaultRelationalExtensions());
+   
+   assertEmpty($result.activities->filter(s|$s->instanceOf(meta::pure::mapping::aggregationAware::AggregationAwareActivity)));
+   assertSameSQL('select "root".first_name as "Sales Person First Name", "product_0".prod_id as "Product ID", "productline_0".prod_line_name as "Product Line", "employee_1".first_name as "All Sales Person First Name", "salestable_0".discount as "Discount" from base_view.Employee as "root" left outer join base_view.SalesTable as "salestable_0" on ("salestable_0".emp_id = "root".emp_id) left outer join base_view.Product as "product_0" on ("salestable_0".product_id = "product_0".prod_id) left outer join base_view.ProductLine as "productline_0" on ("product_0".prod_line_id = "productline_0".prod_line_id) left outer join base_view.Employee as "employee_1" on ("salestable_0".emp_id = "employee_1".emp_id)', $result);
+}
+
+function <<test.Test>> meta::relational::tests::aggregationAware::testRewrite::objectGroupBy::testRewriteWithMilestonedDescriptionPropertyAccess():Boolean[1]
+{
+   let query = {|
+      let date = %2021-01-01;
+      let str = 'abc';
+
+      Wholesales.all()
+      ->groupBy(
+         [
+            x | $x.product.productId,
+            x | $x.product.productDescription($date).description->toOne() + ':' + $str
+         ],
+         [agg(x | $x.revenue.price, y | $y->sum())],
+         [
+            'Product ID',
+            'Product Description',
+            'Revenue/Total Price Sum'
+         ]
+      );
+   };
+   let mapping = mappingWithMultiDimensionAggregates;
+   let runtime = runtime();
+
+   let result = execute($query, $mapping, $runtime, defaultRelationalExtensions());
+   assertSameSQL('select "product_0".prod_id as "Product ID", concat("productdescription_0".prod_description, \':\', \'abc\') as "Product Description", sum("root".revenue) as "Revenue/Total Price Sum" from user_view_multi_agg.SalesTable_Product_Month as "root" left outer join base_view.Product as "product_0" on ("root".product_id = "product_0".prod_id) left outer join (select "productdescription_1".prod_description as prod_description, "productdescription_1".prod_id as prod_id from base_view.ProductDescription as "productdescription_1" where "productdescription_1".from_z <= \'2021-01-01\' and "productdescription_1".thru_z > \'2021-01-01\') as "productdescription_0" on ("product_0".prod_id = "productdescription_0".prod_id) group by "Product ID","Product Description"', $result);
+}

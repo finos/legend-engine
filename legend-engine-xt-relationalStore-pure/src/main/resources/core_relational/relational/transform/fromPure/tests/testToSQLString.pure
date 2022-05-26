@@ -1,0 +1,1661 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::tests::functions::sqlstring::*;
+import meta::pure::mapping::*;
+import meta::relational::functions::asserts::*;
+import meta::relational::mapping::*;
+import meta::relational::tests::*;
+import meta::relational::tests::model::simple::*;
+import meta::pure::profiles::*;
+import meta::relational::functions::sqlstring::*;
+import meta::relational::runtime::*;
+
+
+Class meta::relational::tests::functions::sqlstring::TestCase
+{
+   id: String[1];
+   query: FunctionDefinition<{->Any[*]}>[1];
+   mapping: Mapping[1];
+   dbType: DatabaseType[1];
+   expectedSql: String[1];
+   generateUsageFor: Function<Any>[*];
+   
+}
+
+function meta::relational::tests::functions::sqlstring::testCasesForDocGeneration():TestCase[*]
+{
+   [
+      ^TestCase(
+         id ='testToSqlGenerationForBooleanInProject_SybaseIQ_StartsWith',
+         query = |Person.all()->project([
+            a | $a.firstName->startsWith('tri')
+         ],
+                                        ['a']),
+         mapping = simpleRelationalMapping,
+         dbType = DatabaseType.SybaseIQ,
+         expectedSql = 'select case when ("root".FIRSTNAME like \'tri%\') then \'true\' else \'false\' end as "a" from personTable as "root"',
+         generateUsageFor = [meta::pure::functions::string::startsWith_String_1__String_1__Boolean_1_]
+      ),
+
+      ^TestCase(
+         id ='testToSQLStringWithAggregation',
+         query = |Person.all()->project(p|$p.firstName,'firstName')->groupBy('firstName', agg('new', e|$e, y|$y->count())),
+         mapping = meta::relational::tests::simpleRelationalMapping,
+         dbType = meta::relational::runtime::DatabaseType.H2,
+         expectedSql = 'select "root".FIRSTNAME as "firstName", count(*) as "new" from personTable as "root" group by "firstName"',
+         generateUsageFor = [meta::pure::tds::groupBy_TabularDataSet_1__String_MANY__AggregateValue_MANY__TabularDataSet_1_]
+      ),
+      
+      ^TestCase(
+         id ='testToSQLStringWithAbs_2',
+         query = |Person.all()->project(p|$p.firstName,'firstName')->groupBy('firstName', agg('new', e|$e, y| abs($y->count()))),
+         mapping = meta::relational::tests::simpleRelationalMapping,
+         dbType = meta::relational::runtime::DatabaseType.H2,
+         expectedSql = 'select "root".FIRSTNAME as "firstName", abs(count(*)) as "new" from personTable as "root" group by "firstName"',
+         generateUsageFor = [meta::pure::functions::math::abs_Integer_1__Integer_1_]
+      ),
+      
+      ^TestCase(
+         id ='testToSQLStringJoinStrings_SybaseIQ',
+         query = {|Firm.all()->groupBy([f|$f.legalName],
+                                     agg(x|$x.employees.firstName,y|$y->joinStrings('*')),
+                                     ['legalName', 'employeesFirstName']
+                                  )},
+         mapping = meta::relational::tests::simpleRelationalMapping,
+         dbType = meta::relational::runtime::DatabaseType.SybaseIQ,
+         expectedSql = 'select "root".LEGALNAME as "legalName", list("personTable_d#4_d_m1".FIRSTNAME,\'*\') as "employeesFirstName" from firmTable as "root" left outer join personTable as "personTable_d#4_d_m1" on ("root".ID = "personTable_d#4_d_m1".FIRMID) group by "legalName"',
+         generateUsageFor = [meta::pure::functions::string::joinStrings_String_MANY__String_1__String_1_]
+      ),
+      
+      ^TestCase(
+         id ='testToSQLStringTodaySQLServer',
+         query = |Trade.all()->filter(t|datePart($t.settlementDateTime) == today())
+                                   ->project(t|$t.id, 'tradeId'),
+         mapping = meta::relational::tests::simpleRelationalMapping,
+         dbType = meta::relational::runtime::DatabaseType.SqlServer,
+         expectedSql = 'select "root".ID as "tradeId" from tradeTable as "root" where cast("root".settlementDateTime as date) = cast(getdate() as date)',
+         generateUsageFor = [meta::pure::functions::date::today__StrictDate_1_]
+      ),
+      
+      ^TestCase(
+         id ='testTakePostgres',
+         query = |Person.all()->project([#/Person/firstName!name#])->take(0),
+         mapping = meta::relational::tests::simpleRelationalMapping,
+         dbType = meta::relational::runtime::DatabaseType.Postgres,
+         expectedSql = 'select "root".FIRSTNAME as "name" from personTable as "root" limit 0',
+         generateUsageFor = [meta::pure::tds::take_TabularDataSet_1__Integer_1__TabularDataSet_1_]
+      )
+      
+   ]
+}
+
+function meta::relational::tests::functions::sqlstring::runTestCaseById(testCaseId: String[1]): Boolean[1]
+{
+   let filtered = meta::relational::tests::functions::sqlstring::testCasesForDocGeneration()->filter(c|$c.id==$testCaseId);
+   assert($filtered->size()==1, 'Number of test cases found is not 1.');
+   let testCase = $filtered->toOne();
+   
+   let result = toSQLString($testCase.query, $testCase.mapping, $testCase.dbType, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals($testCase.expectedSql, $result, '\nSQL not as expected for \'%s\'\n\nexpected: %s\nactual:   %s', [$testCase.id, $testCase.expectedSql, $result]);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLString():Boolean[1]
+{
+   let s = toSQLString(|Person.all()->filter(p|$p.firstName == 'John'), meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.H2, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME = \'John\'', $s);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringPrestoSchemaNameShouldContainCatalogName():Boolean[1]
+{
+   let s = toSQLString(|Person.all(), meta::relational::tests::simpleRelationalMappingPersonForPresto, meta::relational::runtime::DatabaseType.Presto, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age" from catalog.schema.personTable as "root"', $s);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringNonPrestoSchemaNameShouldNotConvertDollarSign():Boolean[1]
+{
+   let s = toSQLString(|Person.all(), meta::relational::tests::simpleRelationalMappingPersonForPresto, meta::relational::runtime::DatabaseType.H2, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age" from catalog$schema.personTable as "root"', $s);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringComposite():Boolean[1]
+{
+   let s = toSQLString(|Person.all()->filter(p|$p.firstName == 'John'), meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Composite, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME = \'John\'', $s);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringWithAggregation():Boolean[1]
+{
+   meta::relational::tests::functions::sqlstring::runTestCaseById('testToSQLStringWithAggregation');
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringWithConditionalProjectSybaseIQ():Boolean[1]
+{
+   let s = toSQLString(|Person.all()->project(p|$p.firstName == 'John', 'isJohn'), meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select case when ("root".FIRSTNAME = \'John\') then \'true\' else \'false\' end as "isJohn" from personTable as "root"', $s);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringWithAggregationDB2():Boolean[1]
+{
+   let s = toSQLString(|Person.all()->groupBy([p:Person[1]|$p.firstName], 
+                                                agg(e|$e.age, y|$y->sum()),
+                                                ['firstName', 'age']), 
+                                                meta::relational::tests::simpleRelationalMapping, 
+                                                meta::relational::runtime::DatabaseType.DB2, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".FIRSTNAME as "firstName", sum("root".AGE) as "age" from personTable as "root" group by "root".FIRSTNAME', $s);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringWithAggregationSnowflake():Boolean[1]
+{
+   let s = toSQLString(|Person.all()->groupBy([p:Person[1]|$p.firstName], 
+                                                agg(e|$e.age, y|$y->sum()),
+                                                ['firstName', 'age']), 
+                                                meta::relational::tests::simpleRelationalMapping, 
+                                                meta::relational::runtime::DatabaseType.Snowflake, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".FIRSTNAME as "firstName", sum("root".AGE) as "age" from personTable as "root" group by "root".FIRSTNAME', $s);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringWithOrderbySnowflake():Boolean[1]
+{
+   let s = toSQLString(|Person.all()->groupBy([p:Person[1]|$p.firstName], 
+                                                agg(e|$e.age, y|$y->sum()),
+                                                ['firstName', 'age'])->sort(asc('age'))->limit(5), 
+                                                meta::relational::tests::simpleRelationalMapping, 
+                                                meta::relational::runtime::DatabaseType.Snowflake, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".FIRSTNAME as "firstName", sum("root".AGE) as "age" from personTable as "root" group by "root".FIRSTNAME order by "age" limit 5', $s);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringWithRelativeDateDB2():Boolean[1]
+{
+   let s1 = toSQLString(|Trade.all()->filter(t|$t.settlementDateTime > today()->adjust(-1, DurationUnit.MONTHS))->project([t| $t.id, t| $t.settlementDateTime] ,['id', 'settlementDateTime']), 
+         meta::relational::tests::simpleRelationalMapping, 
+         meta::relational::runtime::DatabaseType.DB2, meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertEquals('select "root".ID as "id", "root".settlementDateTime as "settlementDateTime" from tradeTable as "root" where ("root".settlementDateTime is not null and "root".settlementDateTime > date(current date) - 1 MONTHS)', $s1);
+
+   let s2 = toSQLString(|Trade.all()->filter(t|$t.settlementDateTime > today()->adjust(-3, DurationUnit.DAYS))->project([t| $t.id, t| $t.settlementDateTime] ,['id', 'settlementDateTime']), 
+         meta::relational::tests::simpleRelationalMapping, 
+         meta::relational::runtime::DatabaseType.DB2, meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertEquals('select "root".ID as "id", "root".settlementDateTime as "settlementDateTime" from tradeTable as "root" where ("root".settlementDateTime is not null and "root".settlementDateTime > date(current date) - 3 DAYS)', $s2);
+
+   let s3 = toSQLString(|Trade.all()->filter(t|$t.settlementDateTime > today()->adjust(-2, DurationUnit.WEEKS))->project([t| $t.id, t| $t.settlementDateTime] ,['id', 'settlementDateTime']), 
+         meta::relational::tests::simpleRelationalMapping, 
+         meta::relational::runtime::DatabaseType.DB2, meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertEquals('select "root".ID as "id", "root".settlementDateTime as "settlementDateTime" from tradeTable as "root" where ("root".settlementDateTime is not null and "root".settlementDateTime > date(current date) - 14 DAYS)', $s3);
+   
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringWithAdjust():Boolean[1]
+{
+   let s1 = toSQLString(|Trade.all()->filter(t|$t.settlementDateTime > today()->adjust(10000000, DurationUnit.MICROSECONDS))->project([t| $t.id, t| $t.settlementDateTime] ,['id', 'settlementDateTime']), 
+         meta::relational::tests::simpleRelationalMapping, 
+         meta::relational::runtime::DatabaseType.MemSQL, meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertEquals('select `root`.ID as `id`, `root`.settlementDateTime as `settlementDateTime` from tradeTable as `root` where (`root`.settlementDateTime is not null and `root`.settlementDateTime > adddate(curdate(), INTERVAL 10000000 MICROSECOND))', $s1);
+ 
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringWithAbs():Boolean[1]
+{
+   let s = toSQLString(|Trade.all()->project([t| abs($t.quantity), a| abs(-2)] ,['absoluteQuantity', 'positiveTwo']), meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.H2, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select abs("root".quantity) as "absoluteQuantity", abs(-2) as "positiveTwo" from tradeTable as "root"', $s);
+   
+   meta::relational::tests::functions::sqlstring::runTestCaseById('testToSQLStringWithAbs_2');
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringJoinStrings():Boolean[1]
+{
+   meta::relational::tests::functions::sqlstring::runTestCaseById('testToSQLStringJoinStrings_SybaseIQ');
+   let fn = {|Firm.all()->groupBy([f|$f.legalName],
+                                     agg(x|$x.employees.firstName,y|$y->joinStrings('*')),
+                                     ['legalName', 'employeesFirstName']
+                                  )};
+   
+   let h2Sql = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.H2, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".LEGALNAME as "legalName", group_concat("personTable_d#4_d_m1".FIRSTNAME separator \'*\') as "employeesFirstName" from firmTable as "root" left outer join personTable as "personTable_d#4_d_m1" on ("root".ID = "personTable_d#4_d_m1".FIRMID) group by "legalName"', $h2Sql);
+
+   let postGresSql = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Postgres, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".LEGALNAME as "legalName", string_agg("personTable_d#4_d_m1".FIRSTNAME, Text\'*\') as "employeesFirstName" from firmTable as "root" left outer join personTable as "personTable_d#4_d_m1" on ("root".ID = "personTable_d#4_d_m1".FIRMID) group by "legalName"', $postGresSql);
+
+   let memSqlSql = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.MemSQL, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select `root`.LEGALNAME as `legalName`, group_concat(`personTable_d#4_d_m1`.FIRSTNAME separator \'*\') as `employeesFirstName` from firmTable as `root` left outer join personTable as `personTable_d#4_d_m1` on (`root`.ID = `personTable_d#4_d_m1`.FIRMID) group by `legalName`', $memSqlSql);
+
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringJoinStringsSimpleConcat():Boolean[1]
+{
+   let fn = {|Person.all()->project([p | $p.firstName + '_' + $p.lastName], ['firstName_lastName'])};
+   let sybaseSql = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".FIRSTNAME+\'_\'+"root".LASTNAME as "firstName_lastName" from personTable as "root"', $sybaseSql);
+   
+   let h2Sql = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.H2, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select concat("root".FIRSTNAME, \'_\', "root".LASTNAME) as "firstName_lastName" from personTable as "root"', $h2Sql);
+
+   let prestoSql = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Presto, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select concat("root".FIRSTNAME, \'_\', "root".LASTNAME) as "firstName_lastName" from personTable as "root"', $prestoSql);
+
+   let postGresSql = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Postgres, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select concat(Text\'\', "root".FIRSTNAME, Text\'_\', "root".LASTNAME, Text\'\') as "firstName_lastName" from personTable as "root"', $postGresSql);
+
+   let db2Sql = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.DB2, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select ("root".FIRSTNAME concat \'_\' concat "root".LASTNAME) as "firstName_lastName" from personTable as "root"', $db2Sql);
+
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringWithCodeBlock():Boolean[1]
+{
+   let fn = {| let endDate = %2015-01-01->add(^Duration(number=1, unit=DurationUnit.MONTHS));
+               let datePath = #/meta::relational::tests::model::simple::Trade/date#;
+
+               Trade.all()->filter(x | $x->meta::relational::tests::functions::sqlstring::filterReportDates($endDate, $datePath))
+                          ->project([t|$t.account.name, t|$t.quantity], ['accountName', 'quantity']);
+   };
+   let s = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.H2, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "accountTable_d#4_d_m1".name as "accountName", "root".quantity as "quantity" from tradeTable as "root" left outer join accountTable as "accountTable_d#4_d_m1" on ("root".accountID = "accountTable_d#4_d_m1".ID) where "root".tradeDate <= \'2015-02-01\'', $s);
+}
+
+function meta::relational::tests::functions::sqlstring::filterReportDates<T>(x:T[1], end:Date[1], path:Function<{T[1]->Date[0..1]}>[1]):Boolean[1]
+{
+   $x->map($path)->toOne() <= $end;
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringSQLServer():Boolean[1]
+{
+   let s = toSQLString(|Person.all()->filter(p|$p.firstName == 'John'), meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.SqlServer, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME = \'John\'', $s);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringConcatSQLServer():Boolean[1]
+{
+   let s = toSQLString(|Person.all()->filter(p|$p.firstName == 'John')
+                                    ->project(p|$p.firstName + ' ' + $p.lastName, 'fullName'),
+                                    meta::relational::tests::simpleRelationalMapping,
+                                    meta::relational::runtime::DatabaseType.SqlServer, meta::pure::router::extension::defaultRelationalExtensions());
+
+   assertEquals('select "root".FIRSTNAME+\' \'+"root".LASTNAME as "fullName" from personTable as "root" where "root".FIRSTNAME = \'John\'', $s);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringConcatPostgres():Boolean[1]
+{
+   let s = toSQLString(|Person.all()->filter(p|$p.firstName == 'John')
+                                    ->project(p|$p.firstName + ' ' + $p.lastName, 'fullName'),
+                                    meta::relational::tests::simpleRelationalMapping,
+                                    meta::relational::runtime::DatabaseType.Postgres, meta::pure::router::extension::defaultRelationalExtensions());
+
+   assertEquals('select concat(Text\'\', "root".FIRSTNAME, Text\' \', "root".LASTNAME, Text\'\') as "fullName" from personTable as "root" where "root".FIRSTNAME = Text\'John\'', $s);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringTodaySQLServer():Boolean[1]
+{
+   meta::relational::tests::functions::sqlstring::runTestCaseById('testToSQLStringTodaySQLServer');
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testNonExecutableSQLString():Boolean[1]
+{
+   let s = toNonExecutableSQLString(|Trade.all()->filter(t | $t.product.cusipSynonym.name == 'CUSIP1')
+                                         ->groupBy([t|$t.product.cusipSynonym.name],
+                                           agg(x|$x.quantity, y|$y->sum()),
+                                             ['Cusip', 'Total Quantity']),
+                                    meta::relational::tests::simpleRelationalMapping,
+                                    meta::relational::runtime::DatabaseType.H2, meta::pure::router::extension::defaultRelationalExtensions());
+
+   assertSameSQL('select "synonymTable_d#4_f_d#5".NAME as "Cusip", sum("root".quantity) as "Total Quantity" from tradeTable as "root" left outer join productSchema.productTable as "productTable_d#6" on ("root".prodId = "productTable_d#6".ID) left outer join (select "synonymTable_d#4_f_d#5".PRODID as PRODID, "synonymTable_d#4_f_d#5".NAME as NAME from productSchema.synonymTable as "synonymTable_d#4_f_d#5" where "synonymTable_d#4_f_d#5".TYPE = \'CUSIP\' and 1 = 2) as "synonymTable_d#4_f_d#5" on ("synonymTable_d#4_f_d#5".PRODID = "productTable_d#6".ID) left outer join productSchema.synonymTable as "synonymTable_d#6_f_d#5_d#2_m1_r_d_m2_md" on ("synonymTable_d#6_f_d#5_d#2_m1_r_d_m2_md".PRODID = "productTable_d#6".ID and "synonymTable_d#6_f_d#5_d#2_m1_r_d_m2_md".TYPE = \'CUSIP\') where "synonymTable_d#6_f_d#5_d#2_m1_r_d_m2_md".NAME = \'CUSIP1\' and 1 = 2 group by "Cusip"', $s);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testTakePostgres():Boolean[1]
+{
+   meta::relational::tests::functions::sqlstring::runTestCaseById('testTakePostgres');
+}
+
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testProcessLiteralForPostgres():Boolean[1]
+{
+   let result = toSQLString(|Person.all()->project([
+                                                      a | 'String',
+                                                      b | %2016-03-01,
+                                                      c | %2016-03-01T12:18:18.976+0200,
+                                                      d | 1,
+                                                      e | 1.1
+                                                   ],
+                                                   ['a','b','c','d', 'e'])->take(0),
+                              simpleRelationalMapping, DatabaseType.Postgres, meta::pure::router::extension::defaultRelationalExtensions());
+   print($result);
+   assertEquals('select Text\'String\' as "a", Date\'2016-03-01\' as "b", Timestamp\'2016-03-01 10:18:18.976\' as "c", 1 as "d", 1.1 as "e" from personTable as "root" limit 0', $result);
+   true;
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testProcessLiteralForPresto():Boolean[1]
+{
+   let result = toSQLString(|Person.all()->project([
+                                                      a | %2016-03-01,
+                                                      b | %2016-03-01T12:18:18.976+0200,
+                                                      c | true
+                                                   ],
+                                                   ['a','b','c'])->take(0),
+                              simpleRelationalMapping, DatabaseType.Presto, meta::pure::router::extension::defaultRelationalExtensions());
+   print($result);
+   assertEquals('select Date(\'2016-03-01\') as "a", Timestamp\'2016-03-01 10:18:18.976\' as "b", true as "c" from personTable as "root" limit 0', $result);
+   true;
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testProcessLiteralForASE():Boolean[1]
+{
+   let result = toSQLString(|Person.all()->project([
+                                                      a | 'String',
+                                                      b | %2016-03-01,
+                                                      c | %2016-03-01T12:18:18.976+0200,
+                                                      d | 1,
+                                                      e | 1.1
+                                                   ],
+                                                   ['a','b','c','d', 'e'])->take(0),
+                              simpleRelationalMapping, DatabaseType.Sybase, meta::pure::router::extension::defaultRelationalExtensions());
+   print($result);
+   assertEquals('select top 0 \'String\' as "a", convert(DATE, \'2016-03-01\', 101) as "b", convert(DATETIME, \'2016-03-01 10:18:18.976\', 101) as "c", 1 as "d", 1.1 as "e" from personTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testProcessLiteralForIQ():Boolean[1]
+{
+   let result = toSQLString(|Person.all()->project([
+                                                      a | 'String',
+                                                      b | %2016-03-01,
+                                                      c | %2016-03-01T12:18:18.976+0200,
+                                                      d | 1,
+                                                      e | 1.1
+                                                   ],
+                                                   ['a','b','c','d', 'e'])->take(0),
+                              simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   print($result);
+   assertEquals('select top 0 \'String\' as "a", convert(DATE, \'2016-03-01\', 121) as "b", convert(DATETIME, \'2016-03-01 10:18:18.976\', 121) as "c", 1 as "d", 1.1 as "e" from personTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testRoundPostgres():Boolean[1]
+{
+   let result = toSQLString(|Person.all()->project([p | round($p.age->toOne() / 100)], ['round']),
+                              simpleRelationalMapping, DatabaseType.Postgres, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select round((((1.0 * "root".AGE) / 100))::numeric, 0) as "round" from personTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testRoundToDecimalsPostgres():Boolean[1]
+{
+   let result = toSQLString(|Person.all()->project([p | round(cast($p.age->toOne() / 100, @Decimal), 2)], ['round']),
+                              simpleRelationalMapping, DatabaseType.Postgres, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select round((((1.0 * "root".AGE) / 100))::numeric, 2) as "round" from personTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringWithLength():Boolean[1]
+{
+   [DatabaseType.H2, DatabaseType.Sybase,
+    DatabaseType.SybaseIQ, DatabaseType.Composite, DatabaseType.Postgres]->map(db|
+      let s = toSQLString(|Person.all()->project(p|length($p.firstName), 'nameLength'), simpleRelationalMapping, $db, meta::pure::router::extension::defaultRelationalExtensions());
+      assertEquals('select char_length("root".FIRSTNAME) as "nameLength" from personTable as "root"', $s);
+   );
+   
+   let db2sql = toSQLString(|Person.all()->project(p|length($p.firstName), 'nameLength'), simpleRelationalMapping, DatabaseType.DB2, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select CHARACTER_LENGTH("root".FIRSTNAME,CODEUNITS32) as "nameLength" from personTable as "root"', $db2sql);
+
+   let memsql = toSQLString(|Person.all()->project(p|length($p.firstName), 'nameLength'), simpleRelationalMapping, DatabaseType.MemSQL, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select char_length(`root`.FIRSTNAME) as `nameLength` from personTable as `root`', $memsql);
+
+   let mssql = toSQLString(|Person.all()->project(p|length($p.firstName), 'nameLength'), simpleRelationalMapping, DatabaseType.SqlServer, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select len("root".FIRSTNAME) as "nameLength" from personTable as "root"', $mssql);
+
+   let presto = toSQLString(|Person.all()->project(p|length($p.firstName), 'nameLength'), simpleRelationalMapping, DatabaseType.Presto, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select length("root".FIRSTNAME) as "nameLength" from personTable as "root"', $presto);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringWithPosition():Boolean[1]
+{
+   [DatabaseType.H2, DatabaseType.Composite]->map(db|
+      let s = toSQLString(
+              |meta::relational::tests::mapping::propertyfunc::model::domain::Person.all()->project(p|$p.firstName, 'firstName'),
+               meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMapping, $db, meta::pure::router::extension::defaultRelationalExtensions());
+
+      assertEquals('select substring("root".FULLNAME, 0, position(\',\', "root".FULLNAME)-1) as "firstName" from personTable as "root"', $s);
+   );
+   
+   [DatabaseType.Sybase, DatabaseType.SybaseIQ]->map(db|
+      let s = toSQLString(
+              |meta::relational::tests::mapping::propertyfunc::model::domain::Person.all()->project(p|$p.firstName, 'firstName'),
+               meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMapping, $db, meta::pure::router::extension::defaultRelationalExtensions());
+
+      assertEquals('select substring("root".FULLNAME, 0, charindex(\',\', "root".FULLNAME)-1) as "firstName" from personTable as "root"', $s);
+   );
+
+   let postgresSql = toSQLString(
+              |meta::relational::tests::mapping::propertyfunc::model::domain::Person.all()->project(p|$p.firstName, 'firstName'),
+               meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMapping, DatabaseType.Postgres, meta::pure::router::extension::defaultRelationalExtensions());
+
+   assertEquals('select substring("root".FULLNAME, 0, position(Text\',\' in "root".FULLNAME)-1) as "firstName" from personTable as "root"', $postgresSql);
+
+   let prestoSql = toSQLString(
+              |meta::relational::tests::mapping::propertyfunc::model::domain::Person.all()->project(p|$p.firstName, 'firstName'),
+               meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMapping, DatabaseType.Presto, meta::pure::router::extension::defaultRelationalExtensions());
+
+   assertEquals('select substring("root".FULLNAME, 0, position(\',\' in "root".FULLNAME)-1) as "firstName" from personTable as "root"', $prestoSql);
+
+
+   let memsql = toSQLString(
+              |meta::relational::tests::mapping::propertyfunc::model::domain::Person.all()->project(p|$p.firstName, 'firstName'),
+               meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMapping, DatabaseType.MemSQL, meta::pure::router::extension::defaultRelationalExtensions());
+
+   assertEquals('select substring(`root`.FULLNAME, 0, LOCATE(\',\', `root`.FULLNAME)-1) as `firstName` from personTable as `root`', $memsql);
+
+   let mssql = toSQLString(
+              |meta::relational::tests::mapping::propertyfunc::model::domain::Person.all()->project(p|$p.firstName, 'firstName'),
+               meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMapping, DatabaseType.SqlServer, meta::pure::router::extension::defaultRelationalExtensions());
+
+   assertEquals('select substring("root".FULLNAME, 0, charindex(\',\', "root".FULLNAME)-1) as "firstName" from personTable as "root"', $mssql);
+   
+   let db2sql = toSQLString(
+              |meta::relational::tests::mapping::propertyfunc::model::domain::Person.all()->project(p|$p.firstName, 'firstName'),
+               meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMapping, DatabaseType.DB2, meta::pure::router::extension::defaultRelationalExtensions());
+
+   assertEquals('select substr("root".FULLNAME, 0, position(\',\', "root".FULLNAME)-1) as "firstName" from personTable as "root"', $db2sql);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringIndexOfSnowflake():Boolean[1]
+{
+   let sql = toSQLString(
+              |meta::relational::tests::model::simple::Person.all()->project(p|$p.firstName->indexOf('Jo'), 'index'),
+               meta::relational::tests::simpleRelationalMapping, DatabaseType.Snowflake, meta::pure::router::extension::defaultRelationalExtensions());
+
+   assertEquals('select CHARINDEX(\'Jo\', "root".FIRSTNAME) as "index" from personTable as "root"', $sql);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringWithStdDevSample():Boolean[1]
+{
+   [DatabaseType.SybaseIQ, DatabaseType.H2, DatabaseType.DB2, DatabaseType.Postgres, DatabaseType.Presto]->map(db|
+      let s = toSQLString(
+              |meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionDemo.all()->project(p|$p.float1StdDevSample, 'stdDevSample'),
+               meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping, $db, meta::pure::router::extension::defaultRelationalExtensions());
+
+      assertEquals('select stddev_samp("root".int1) as "stdDevSample" from dataTable as "root"', $s);
+   );
+
+   
+   let s1 = toSQLString(
+           |meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionDemo.all()->project(p|$p.float1StdDevSample, 'stdDevSample'),
+            meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping, DatabaseType.MemSQL, meta::pure::router::extension::defaultRelationalExtensions());
+
+   assertEquals('select stddev_samp(`root`.int1) as `stdDevSample` from dataTable as `root`', $s1);
+   
+   let s2 = toSQLString(
+           |meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionDemo.all()->project(p|$p.float1StdDevSample, 'stdDevSample'),
+            meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping, DatabaseType.SqlServer, meta::pure::router::extension::defaultRelationalExtensions());
+
+   assertEquals('select stdev("root".int1) as "stdDevSample" from dataTable as "root"', $s2);
+
+   true;
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringWithStdDevPopulation():Boolean[1]
+{
+   [DatabaseType.SybaseIQ, DatabaseType.H2, DatabaseType.DB2, DatabaseType.Postgres, DatabaseType.Presto]->map(db|
+      let s = toSQLString(
+              |meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionDemo.all()->project(p|$p.float1StdDevPopulation, 'stdDevPopulation'),
+               meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping, $db, meta::pure::router::extension::defaultRelationalExtensions());
+
+      assertEquals('select stddev_pop("root".int1) as "stdDevPopulation" from dataTable as "root"', $s);
+   );
+
+   let s1 = toSQLString(
+           |meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionDemo.all()->project(p|$p.float1StdDevPopulation, 'stdDevPopulation'),
+            meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping, DatabaseType.MemSQL, meta::pure::router::extension::defaultRelationalExtensions());
+            
+   assertEquals('select stddev_pop(`root`.int1) as `stdDevPopulation` from dataTable as `root`', $s1);
+   
+   let s2 = toSQLString(
+           |meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionDemo.all()->project(p|$p.float1StdDevPopulation, 'stdDevPopulation'),
+            meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping, DatabaseType.SqlServer, meta::pure::router::extension::defaultRelationalExtensions());
+
+   assertEquals('select stdevp("root".int1) as "stdDevPopulation" from dataTable as "root"', $s2);
+
+   true;
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForH2ForDifferenceInYears():Boolean[1]
+{
+   let result = toSQLString(|Trade.all()->project([
+                                                     t | dateDiff($t.settlementDateTime, now(), DurationUnit.YEARS)
+                                                  ],
+                                                  ['DiffYears']),
+                            simpleRelationalMapping, DatabaseType.H2, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select datediff(year,"root".settlementDateTime,current_timestamp()) as "DiffYears" from tradeTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForPrestoForDifferenceInYears():Boolean[1]
+{
+   let result = toSQLString(|Trade.all()->project([
+                                                     t | dateDiff($t.settlementDateTime, now(), DurationUnit.YEARS)
+                                                  ],
+                                                  ['DiffYears']),
+                            simpleRelationalMapping, DatabaseType.Presto, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select date_diff(\'year\',"root".settlementDateTime,current_timestamp) as "DiffYears" from tradeTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForSybaseIQForDifferenceInYears():Boolean[1]
+{
+   let result = toSQLString(|Trade.all()->project([
+                                                     t | dateDiff($t.settlementDateTime, now(), DurationUnit.YEARS)
+                                                  ],
+                                                  ['DiffYears']),
+                            simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select datediff(yy,"root".settlementDateTime,now()) as "DiffYears" from tradeTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForPostgresForDifferenceInYears():Boolean[1]
+{
+   let result = toSQLString(|Person.all()->project([
+                                                      a | dateDiff(%2012-01-01, %2011-10-02, DurationUnit.YEARS)
+                                                   ],
+                                                   ['a']),
+                              simpleRelationalMapping, DatabaseType.Postgres, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select (DATE_PART(\'year\', Date\'2012-01-01\') - DATE_PART(\'year\', Date\'2011-10-02\')) as "a" from personTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForH2ForDifferenceInMonths():Boolean[1]
+{
+   let result = toSQLString(|Trade.all()->project([
+                                                     t | dateDiff($t.settlementDateTime, now(), DurationUnit.MONTHS)
+                                                  ],
+                                                  ['DiffMonths']),
+                            simpleRelationalMapping, DatabaseType.H2, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select datediff(month,"root".settlementDateTime,current_timestamp()) as "DiffMonths" from tradeTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForPrestoForDifferenceInMonths():Boolean[1]
+{
+   let result = toSQLString(|Trade.all()->project([
+                                                     t | dateDiff($t.settlementDateTime, now(), DurationUnit.MONTHS)
+                                                  ],
+                                                  ['DiffMonths']),
+                            simpleRelationalMapping, DatabaseType.Presto, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select date_diff(\'month\',"root".settlementDateTime,current_timestamp) as "DiffMonths" from tradeTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForSybaseIQForDifferenceInMonths():Boolean[1]
+{
+   let result = toSQLString(|Trade.all()->project([
+                                                     t | dateDiff($t.settlementDateTime, now(), DurationUnit.MONTHS)
+                                                  ],
+                                                  ['DiffMonths']),
+                            simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select datediff(mm,"root".settlementDateTime,now()) as "DiffMonths" from tradeTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForPostgresForDifferenceInMonths():Boolean[1]
+{
+   let result = toSQLString(|Person.all()->project([
+                                                      a | dateDiff(%2012-01-01, %2011-10-02, DurationUnit.MONTHS)
+                                                   ],
+                                                   ['a']),
+                              simpleRelationalMapping, DatabaseType.Postgres, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select ((DATE_PART(\'year\', Date\'2012-01-01\') - DATE_PART(\'year\', Date\'2011-10-02\')) * 12 + (DATE_PART(\'month\', Date\'2012-01-01\') - DATE_PART(\'month\', Date\'2011-10-02\'))) as "a" from personTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForH2ForDifferenceInWeeks():Boolean[1]
+{
+   let result = toSQLString(|Trade.all()->project([
+                                                     t | dateDiff($t.settlementDateTime, now(), DurationUnit.WEEKS)
+                                                  ],
+                                                  ['DiffWeeks']),
+                            simpleRelationalMapping, DatabaseType.H2, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select datediff(week,"root".settlementDateTime,current_timestamp()) as "DiffWeeks" from tradeTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForPrestoForDifferenceInWeeks():Boolean[1]
+{
+   let result = toSQLString(|Trade.all()->project([
+                                                     t | dateDiff($t.settlementDateTime, now(), DurationUnit.WEEKS)
+                                                  ],
+                                                  ['DiffWeeks']),
+                            simpleRelationalMapping, DatabaseType.Presto, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select date_diff(\'week\',"root".settlementDateTime,current_timestamp) as "DiffWeeks" from tradeTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForSybaseIQForDifferenceInWeeks():Boolean[1]
+{
+   let result = toSQLString(|Trade.all()->project([
+                                                     t | dateDiff($t.settlementDateTime, now(), DurationUnit.WEEKS)
+                                                  ],
+                                                  ['DiffWeeks']),
+                            simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select datediff(wk,"root".settlementDateTime,now()) as "DiffWeeks" from tradeTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForPostgresForDifferenceInWeeks():Boolean[1]
+{
+   let result = toSQLString(|Person.all()->project([
+                                                      a | dateDiff(%2012-01-01, %2011-10-02, DurationUnit.WEEKS)
+                                                   ],
+                                                   ['a']),
+                              simpleRelationalMapping, DatabaseType.Postgres, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select (TRUNC(DATE_PART(\'day\', Date\'2012-01-01\' - Date\'2011-10-02\')/7)) as "a" from personTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForH2ForDifferenceInDays():Boolean[1]
+{
+   let result = toSQLString(|Trade.all()->project([
+                                                     t | dateDiff($t.settlementDateTime, now(), DurationUnit.DAYS)
+                                                  ],
+                                                  ['DiffDays']),
+                            simpleRelationalMapping, DatabaseType.H2, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select datediff(day,"root".settlementDateTime,current_timestamp()) as "DiffDays" from tradeTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForPrestoForDifferenceInDays():Boolean[1]
+{
+   let result = toSQLString(|Trade.all()->project([
+                                                     t | dateDiff($t.settlementDateTime, now(), DurationUnit.DAYS)
+                                                  ],
+                                                  ['DiffDays']),
+                            simpleRelationalMapping, DatabaseType.Presto, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select date_diff(\'day\',"root".settlementDateTime,current_timestamp) as "DiffDays" from tradeTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForSybaseIQForDifferenceInDays():Boolean[1]
+{
+   let result = toSQLString(|Trade.all()->project([
+                                                     t | dateDiff($t.settlementDateTime, now(), DurationUnit.DAYS)
+                                                  ],
+                                                  ['DiffDays']),
+                            simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select datediff(dd,"root".settlementDateTime,now()) as "DiffDays" from tradeTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForPostgresForDifferenceInDays():Boolean[1]
+{
+   let result = toSQLString(|Person.all()->project([
+                                                      a | dateDiff(%2011-12-31T01:00:00.0, %2011-12-29T23:00:00.0, DurationUnit.DAYS)
+                                                   ],
+                                                  ['a']),
+                              simpleRelationalMapping, DatabaseType.Postgres, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select (DATE_PART(\'day\', Timestamp\'2011-12-31 01:00:00.0\' - Timestamp\'2011-12-29 23:00:00.0\')) as "a" from personTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForH2ForDifferenceInHours():Boolean[1]
+{
+   let result = toSQLString(|Trade.all()->project([
+                                                     t | dateDiff($t.settlementDateTime, now(), DurationUnit.HOURS)
+                                                  ],
+                                                  ['DiffHours']),
+                            simpleRelationalMapping, DatabaseType.H2, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select datediff(hour,"root".settlementDateTime,current_timestamp()) as "DiffHours" from tradeTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForPrestoForDifferenceInHours():Boolean[1]
+{
+   let result = toSQLString(|Trade.all()->project([
+                                                     t | dateDiff($t.settlementDateTime, now(), DurationUnit.HOURS)
+                                                  ],
+                                                  ['DiffHours']),
+                            simpleRelationalMapping, DatabaseType.Presto, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select date_diff(\'hour\',"root".settlementDateTime,current_timestamp) as "DiffHours" from tradeTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForSybaseIQForDifferenceInHours():Boolean[1]
+{
+   let result = toSQLString(|Trade.all()->project([
+                                                     t | dateDiff($t.settlementDateTime, now(), DurationUnit.HOURS)
+                                                  ],
+                                                  ['DiffHours']),
+                            simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select datediff(hh,"root".settlementDateTime,now()) as "DiffHours" from tradeTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForPostgresForDifferenceInHours():Boolean[1]
+{
+   let result = toSQLString(|Person.all()->project([
+                                                      a | dateDiff(%2011-12-30T08:55:00.0, %2011-12-30T09:05:00.0, DurationUnit.HOURS)
+                                                   ],
+                                                   ['a']),
+                              simpleRelationalMapping, DatabaseType.Postgres, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select ((DATE_PART(\'day\', Timestamp\'2011-12-30 08:55:00.0\' - Timestamp\'2011-12-30 09:05:00.0\')) * 24 + (DATE_PART(\'hour\', Timestamp\'2011-12-30 08:55:00.0\' - Timestamp\'2011-12-30 09:05:00.0\'))) as "a" from personTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForH2ForDifferenceInMinutes():Boolean[1]
+{
+   let result = toSQLString(|Trade.all()->project([
+                                                     t | dateDiff($t.settlementDateTime, now(), DurationUnit.MINUTES)
+                                                  ],
+                                                  ['DiffMinutes']),
+                            simpleRelationalMapping, DatabaseType.H2, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select datediff(minute,"root".settlementDateTime,current_timestamp()) as "DiffMinutes" from tradeTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForPrestoForDifferenceInMinutes():Boolean[1]
+{
+   let result = toSQLString(|Trade.all()->project([
+                                                     t | dateDiff($t.settlementDateTime, now(), DurationUnit.MINUTES)
+                                                  ],
+                                                  ['DiffMinutes']),
+                            simpleRelationalMapping, DatabaseType.Presto, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select date_diff(\'minute\',"root".settlementDateTime,current_timestamp) as "DiffMinutes" from tradeTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForSybaseIQForDifferenceInMinutes():Boolean[1]
+{
+   let result = toSQLString(|Trade.all()->project([
+                                                     t | dateDiff($t.settlementDateTime, now(), DurationUnit.MINUTES)
+                                                  ],
+                                                  ['DiffMinutes']),
+                            simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select datediff(mi,"root".settlementDateTime,now()) as "DiffMinutes" from tradeTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForPostgresForDifferenceInMinutes():Boolean[1]
+{
+   let result = toSQLString(|Person.all()->project([
+                                                      a | dateDiff(%2011-12-30T08:55:00.0, %2011-12-30T09:05:00.0, DurationUnit.MINUTES)
+                                                   ],
+                                                   ['a']),
+                              simpleRelationalMapping, DatabaseType.Postgres, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select (((DATE_PART(\'day\', Timestamp\'2011-12-30 08:55:00.0\' - Timestamp\'2011-12-30 09:05:00.0\')) * 24 + (DATE_PART(\'hour\', Timestamp\'2011-12-30 08:55:00.0\' - Timestamp\'2011-12-30 09:05:00.0\'))) * 60 + (DATE_PART(\'minute\', Timestamp\'2011-12-30 08:55:00.0\' - Timestamp\'2011-12-30 09:05:00.0\'))) as "a" from personTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForH2ForDifferenceInSeconds():Boolean[1]
+{
+   let result = toSQLString(|Trade.all()->project([
+                                                     t | dateDiff($t.settlementDateTime, now(), DurationUnit.SECONDS)
+                                                  ],
+                                                  ['DiffSeconds']),
+                            simpleRelationalMapping, DatabaseType.H2, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select datediff(second,"root".settlementDateTime,current_timestamp()) as "DiffSeconds" from tradeTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForPrestoForDifferenceInSeconds():Boolean[1]
+{
+   let result = toSQLString(|Trade.all()->project([
+                                                     t | dateDiff($t.settlementDateTime, now(), DurationUnit.SECONDS)
+                                                  ],
+                                                  ['DiffSeconds']),
+                            simpleRelationalMapping, DatabaseType.Presto, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select date_diff(\'second\',"root".settlementDateTime,current_timestamp) as "DiffSeconds" from tradeTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForSybaseIQForDifferenceInSeconds():Boolean[1]
+{
+   let result = toSQLString(|Trade.all()->project([
+                                                     t | dateDiff($t.settlementDateTime, now(), DurationUnit.SECONDS)
+                                                  ],
+                                                  ['DiffSeconds']),
+                            simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select datediff(ss,"root".settlementDateTime,now()) as "DiffSeconds" from tradeTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForPostgresForDifferenceInSeconds():Boolean[1]
+{
+   let result = toSQLString(|Person.all()->project([
+                                                      a | dateDiff(%2011-12-30T08:55:00.0, %2011-12-30T09:05:00.0, DurationUnit.SECONDS)
+                                                   ],
+                                                   ['a']),
+                              simpleRelationalMapping, DatabaseType.Postgres, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select ((((DATE_PART(\'day\', Timestamp\'2011-12-30 08:55:00.0\' - Timestamp\'2011-12-30 09:05:00.0\')) * 24 + (DATE_PART(\'hour\', Timestamp\'2011-12-30 08:55:00.0\' - Timestamp\'2011-12-30 09:05:00.0\'))) * 60 + (DATE_PART(\'minute\', Timestamp\'2011-12-30 08:55:00.0\' - Timestamp\'2011-12-30 09:05:00.0\'))) * 60 + (DATE_PART(\'second\', Timestamp\'2011-12-30 08:55:00.0\' - Timestamp\'2011-12-30 09:05:00.0\'))) as "a" from personTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForH2ForDifferenceInMilliseconds():Boolean[1]
+{
+   let result = toSQLString(|Trade.all()->project([
+                                                     t | dateDiff($t.settlementDateTime, now(), DurationUnit.MILLISECONDS)
+                                                  ],
+                                                  ['DiffMilliseconds']),
+                            simpleRelationalMapping, DatabaseType.H2, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select datediff(millisecond,"root".settlementDateTime,current_timestamp()) as "DiffMilliseconds" from tradeTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForPrestoForDifferenceInMilliseconds():Boolean[1]
+{
+   let result = toSQLString(|Trade.all()->project([
+                                                     t | dateDiff($t.settlementDateTime, now(), DurationUnit.MILLISECONDS)
+                                                  ],
+                                                  ['DiffMilliseconds']),
+                            simpleRelationalMapping, DatabaseType.Presto, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select date_diff(\'millisecond\',"root".settlementDateTime,current_timestamp) as "DiffMilliseconds" from tradeTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForSybaseIQForDifferenceInMilliseconds():Boolean[1]
+{
+   let result = toSQLString(|Trade.all()->project([
+                                                     t | dateDiff($t.settlementDateTime, now(), DurationUnit.MILLISECONDS)
+                                                  ],
+                                                  ['DiffMilliseconds']),
+                            simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select datediff(ms,"root".settlementDateTime,now()) as "DiffMilliseconds" from tradeTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForPostgresForDifferenceInMilliseconds():Boolean[1]
+{
+   let result = toSQLString(|Trade.all()->project([
+                                                     t | dateDiff($t.settlementDateTime, now(), DurationUnit.MILLISECONDS)
+                                                  ],
+                                                  ['DiffMilliseconds']),
+                            simpleRelationalMapping, DatabaseType.Postgres, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select (((((DATE_PART(\'day\', "root".settlementDateTime - now())) * 24 + (DATE_PART(\'hour\', "root".settlementDateTime - now()))) * 60 + (DATE_PART(\'minute\', "root".settlementDateTime - now()))) * 60 + (DATE_PART(\'second\', "root".settlementDateTime - now()))) * 1000 + (DATE_PART(\'milliseconds\', "root".settlementDateTime - now()))) as "DiffMilliseconds" from tradeTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testDayOfWeekNumber():Boolean[1]
+{
+   let result = toSQLString(|Trade.all()->project([
+                                                     t | dayOfWeekNumber($t.date)
+                                                  ],
+                                                  ['DayOfWeekNumber']),
+                            simpleRelationalMapping, DatabaseType.Presto, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select day_of_week("root".tradeDate) as "DayOfWeekNumber" from tradeTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationForStartsWithFunctionForPostgres():Boolean[1]
+{
+   let result = toSQLString(|Person.all()->project([
+                                                      a | $a.firstName->startsWith('tri')
+                                                   ],
+                                                   ['a']),
+                              simpleRelationalMapping, DatabaseType.Postgres, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".FIRSTNAME like \'tri%\' as "a" from personTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationForBooleanInProject_SybaseIQ_StartsWith():Boolean[1]
+{
+   meta::relational::tests::functions::sqlstring::runTestCaseById('testToSqlGenerationForBooleanInProject_SybaseIQ_StartsWith');
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationForBooleanInFilter_SybaseIQ():Boolean[1]
+{
+   let result = toSQLString(|Interaction.all()->filter(a | $a.active)->project([i | $i.id],['id']),
+                              simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".ID as "id" from interactionTable as "root" where case when "root"."active" = \'Y\' then \'true\' else \'false\' end = \'true\'', $result);
+}
+
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationForBooleanInFilterWithAnd_SybaseIQ():Boolean[1]
+{
+   let result = toSQLString(|Interaction.all()->filter(a | $a.id == 1 && $a.active)->project([i | $i.id],['id']),
+                              simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".ID as "id" from interactionTable as "root" where ("root".ID = 1 and case when "root"."active" = \'Y\' then \'true\' else \'false\' end = \'true\')', $result);
+}
+
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationForBooleanInFilterWithAnd_WithDistinct_SybaseIQ():Boolean[1]
+{
+   let result = toSQLString(|Interaction.all()->filter(a | $a.id == 1 && $a.active)->project([i | $i.id],['id'])->distinct(),
+                              simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select distinct "root".ID as "id" from interactionTable as "root" where ("root".ID = 1 and case when "root"."active" = \'Y\' then \'true\' else \'false\' end = \'true\')', $result);
+}
+
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationForBooleanInFilterWithAndIsNull_SybaseIQ():Boolean[1]
+{
+   let result = toSQLString(|Interaction.all()->filter(a | $a.id->isEmpty() && $a.active)->project([i | $i.id],['id']),
+                              simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".ID as "id" from interactionTable as "root" where ("root".ID is null and case when "root"."active" = \'Y\' then \'true\' else \'false\' end = \'true\')', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationForBooleanInFilterWithAndNotEqual_SybaseIQ():Boolean[1]
+{
+   let result = toSQLString(|Interaction.all()->filter(a | $a.id != 1 && $a.active)->project([i | $i.id],['id']),
+                              simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".ID as "id" from interactionTable as "root" where (("root".ID <> 1 OR "root".ID is null) and case when "root"."active" = \'Y\' then \'true\' else \'false\' end = \'true\')', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationForConstanNumInFilterWithNotEqual_SybaseIQ():Boolean[1]
+{
+   let result = toSQLString(|Synonym.all()->filter(s | $s.type != 'ISIN')->project([s | $s.name],['name']),
+                              simpleRelationalMappingWithEnumConstant, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".NAME as "name" from productSchema.synonymTable as "root" where (\'CUSIP\' <> \'ISIN\')', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationForBooleanInProject_SybaseIQ_IsEmpty():Boolean[1]
+{
+   let result = toSQLString(|Person.all()->project([
+                                                      a | $a.firstName->isEmpty()
+                                                   ],
+                                                   ['a']),
+                              simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select case when ("root".FIRSTNAME is null) then \'true\' else \'false\' end as "a" from personTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationForBooleanInProject_SybaseIQ_And():Boolean[1]
+{
+   let result = toSQLString(|Person.all()->project([
+                                                      a | $a.firstName == 'A' && $a.lastName == 'B'
+                                                   ],
+                                                   ['a']),
+                              simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select case when (("root".FIRSTNAME = \'A\' and "root".LASTNAME = \'B\')) then \'true\' else \'false\' end as "a" from personTable as "root"', $result);
+}
+
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationForBooleanInProject_SybaseIQ_If():Boolean[1]
+{
+   let result = toSQLString(|Person.all()->project([
+                                                      a | if ($a.firstName == 'A', | true, | false)
+                                                   ],
+                                                   ['a']),
+                              simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select case when "root".FIRSTNAME = \'A\' then \'true\' else \'false\' end as "a" from personTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationForBooleanInFilter_SybaseIQ_If():Boolean[1]
+{
+   let result = toSQLString(|Person.all()->filter(a | if ($a.firstName == 'A', | true, | false)),
+                              simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where case when "root".FIRSTNAME = \'A\' then \'true\' else \'false\' end = \'true\'', $result);
+}
+
+function <<test.ToFix>> meta::relational::tests::functions::sqlstring::testToSqlGenerationForBooleanInProject_SybaseIQ_NestedIf():Boolean[1]
+{
+   let result = toSQLString(|Person.all()->project([
+                                                      a | if ( if ($a.firstName == 'B', | true, | false), | true, | false)
+                                                   ], 
+                                                   ['a']), 
+                              simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select case when case when "root".FIRSTNAME = \'B\' then \'true\' else \'false\' end = \'true\' then \'true\' else \'false\' end as "a" from personTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationForBooleanInProject_SybaseIQ_Or():Boolean[1]
+{
+   let result = toSQLString(|Person.all()->project([
+                                                      a | true || false
+                                                   ], 
+                                                   ['a']), 
+                              simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select case when ((\'true\' = \'true\' or \'false\' = \'true\')) then \'true\' else \'false\' end as "a" from personTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testSqlGenerationForAdjustFunctionUsageInProjectionForPostgres():Boolean[1]
+{
+   let result = toSQLString(|Person.all()->project([
+                                                      a | adjust(%2011-12-30T08:55:00.0, 1, DurationUnit.SECONDS)
+                                                   ], 
+                                                   ['a']), 
+                              simpleRelationalMapping, DatabaseType.Postgres, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select (Timestamp\'2011-12-30 08:55:00.0\' + (INTERVAL \'1 SECONDS\' * 1)) as "a" from personTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testSqlGenerationForAdjustFunctionWithHourForPostgres():Boolean[1]
+{
+   let result = toSQLString(|Person.all()->project([
+                                                      a | adjust(%2011-12-30T08:55:00.0->datePart(), %2011-12-30T08:55:00.0->hour(), DurationUnit.HOURS)
+                                                   ], 
+                                                   ['a']), 
+                              simpleRelationalMapping, DatabaseType.Postgres, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select (Date(Timestamp\'2011-12-30 08:55:00.0\') + (INTERVAL \'1 HOURS\' * date_part(\'hour\', Timestamp\'2011-12-30 08:55:00.0\'))) as "a" from personTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testSqlGenerationForAdjustStrictDateUsageInProjectionForPostgres():Boolean[1]
+{
+   let result = toSQLString(|Person.all()->project([
+                                                      a | adjust(%2011-12-30, 86400, DurationUnit.SECONDS)
+                                                   ], 
+                                                   ['a']), 
+                              simpleRelationalMapping, DatabaseType.Postgres, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select (Date\'2011-12-30\' + (INTERVAL \'1 SECONDS\' * 86400)) as "a" from personTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testSqlGenerationForAdjustStrictDateUsageInFiltersForPostgres():Boolean[1]
+{
+   let result = toSQLString(|Trade.all()->filter(it| adjust(%2011-12-30, 86400, DurationUnit.SECONDS) > %2011-12-30)->project([
+                                                      a | 'a'
+                                                   ], 
+                                                   ['a']), 
+                              simpleRelationalMapping, DatabaseType.Postgres, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select Text\'a\' as "a" from tradeTable as "root" where (Date\'2011-12-30\' + (INTERVAL \'1 SECONDS\' * 86400)) > Date\'2011-12-30\'', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testSqlGenerationForAdjustStrictDateUsageInProjectionForH2():Boolean[1]
+{
+   let result = toSQLString(|Person.all()->project([
+                                                      a | adjust(%2011-12-30, 86400, DurationUnit.SECONDS)
+                                                   ], 
+                                                   ['a']), 
+                              simpleRelationalMapping, DatabaseType.H2, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select dateadd(SECOND, 86400, \'2011-12-30\') as "a" from personTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testSqlGenerationForAdjustStrictDateUsageInFiltersForH2():Boolean[1]
+{
+   let result = toSQLString(|Trade.all()->filter(it| adjust(%2011-12-30, 86400, DurationUnit.SECONDS) > %2011-12-30)->project([
+                                                      a | 'a'
+                                                   ], 
+                                                   ['a']), 
+                              simpleRelationalMapping, DatabaseType.H2, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select \'a\' as "a" from tradeTable as "root" where dateadd(SECOND, 86400, \'2011-12-30\') > \'2011-12-30\'', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testSqlGenerationForAdjustStrictDateUsageInProjectionForPresto():Boolean[1]
+{
+   let result = toSQLString(|Person.all()->project([
+                                                      a | adjust(%2011-12-30, 2, DurationUnit.DAYS)
+                                                   ],
+                                                   ['a']),
+                              simpleRelationalMapping, DatabaseType.Presto, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select date_add(\'DAY\', 2, Date(\'2011-12-30\')) as "a" from personTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testSqlGenerationForAdjustTimestampUsageInProjectionForPresto():Boolean[1]
+{
+   let result = toSQLString(|Person.all()->project([
+                                                      a | adjust(%2011-12-30T08:55:12, 3, DurationUnit.MINUTES)
+                                                   ],
+                                                   ['a']),
+                              simpleRelationalMapping, DatabaseType.Presto, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select date_add(\'MINUTE\', 3, Timestamp\'2011-12-30 08:55:12\') as "a" from personTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testSqlGenerationForAdjustStrictDateUsageInFiltersForPresto():Boolean[1]
+{
+   let result = toSQLString(|Trade.all()->filter(it| adjust(%2011-12-30, 2, DurationUnit.DAYS) > %2011-12-30)->project([
+                                                      a | 'a'
+                                                   ],
+                                                   ['a']),
+                              simpleRelationalMapping, DatabaseType.Presto, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select \'a\' as "a" from tradeTable as "root" where date_add(\'DAY\', 2, Date(\'2011-12-30\')) > Date(\'2011-12-30\')', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testSqlGenerationForDatePartForSybaseIQ():Boolean[1]
+{
+   let result = toSQLString(|Location.all()->project([
+                                                      a | $a.censusdate->toOne()->datePart()
+                                                   ], 
+                                                   ['a']), 
+                              simpleRelationalMappingInc, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select date("root"."date") as "a" from locationTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testSqlGenerationForDatePartForSybaseASE():Boolean[1]
+{
+   let result = toSQLString(|Location.all()->project([
+                                                      a | $a.censusdate->toOne()->datePart()
+                                                   ], 
+                                                   ['a']), 
+                              simpleRelationalMappingInc, DatabaseType.Sybase, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select cast("root"."DATE" as date) as "a" from locationTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testSqlGenerationForDatePartForH2():Boolean[1]
+{
+   let result = toSQLString(|Location.all()->project([
+                                                      a | $a.censusdate->toOne()->datePart()
+                                                   ],
+                                                   ['a']),
+                              simpleRelationalMappingInc, DatabaseType.H2, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select cast(truncate("root".date) as date) as "a" from locationTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testSqlGenerationForPreviousDayOfWeekForPresto():Boolean[1]
+{
+   let result = toSQLString(|Trade.all()->filter(d | $d.date == previousDayOfWeek(DayOfWeek.Friday))->project(x | $x.date, 'date'),
+                              simpleRelationalMapping, DatabaseType.Presto, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".tradeDate as "date" from tradeTable as "root" where "root".tradeDate = date_add(\'day\', case when 5 - day_of_week(current_date) >= 0 then 5 - day_of_week(current_date) - 7 else 5 - day_of_week(current_date) end, current_date)', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testSqlGenerationForMostRecentDayOfWeekForPresto():Boolean[1]
+{
+   let result = toSQLString(|Trade.all()->filter(d | $d.date == mostRecentDayOfWeek(DayOfWeek.Wednesday))->project(x | $x.date, 'date'),
+                              simpleRelationalMapping, DatabaseType.Presto, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".tradeDate as "date" from tradeTable as "root" where "root".tradeDate = date_add(\'day\', case when 3 - day_of_week(current_date) > 0 then 3 - day_of_week(current_date) - 7 else 3 - day_of_week(current_date) end, current_date)', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testSqlGenerationForAdjustFunctionUsageInFiltersForPostgres():Boolean[1]
+{
+   let result = toSQLString(|Trade.all()->filter(it| adjust(%2011-12-30T08:55:00.0, 1, DurationUnit.DAYS) > %2011-12-30T08:55:00.0)->project([
+                                                      a | 'a'
+                                                   ], 
+                                                   ['a']), 
+                              simpleRelationalMapping, DatabaseType.Postgres, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select Text\'a\' as "a" from tradeTable as "root" where (Timestamp\'2011-12-30 08:55:00.0\' + (INTERVAL \'1 DAYS\' * 1)) > Timestamp\'2011-12-30 08:55:00.0\'', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationForProjectLambdaWithSquareBrackets_SybaseIQ():Boolean[1]
+{
+   let result = toSQLString(
+      |Person.all()->project([a|$a.firstName->startsWith('Dummy [With Sq Brackets]')], ['a']),
+      simpleRelationalMapping, 
+      DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+      
+   assertEquals('select case when ("root".FIRSTNAME like \'Dummy \\[With Sq Brackets]%\' escape \'\\\') then \'true\' else \'false\' end as "a" from personTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationForFilterWithSquareBrackets_SybaseIQ():Boolean[1]
+{
+   let result = toSQLString(
+      |Person.all()
+         ->project([#/Person/firstName!name#])
+         ->filter(a|$a.getString('name')->startsWith('Dummy [With Sq Brackets]')),
+      simpleRelationalMapping, 
+      DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+      
+   assertEquals('select "root".FIRSTNAME as "name" from personTable as "root" where "root".FIRSTNAME like \'Dummy \\[With Sq Brackets]%\' escape \'\\\'', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationFirstDayOfMonth():Boolean[1]
+{
+   let expected = [
+      pair(DatabaseType.SybaseIQ, 'select dateadd(DAY, -(day("root".tradeDate) - 1), "root".tradeDate) as "date" from tradeTable as "root"'),
+      pair(DatabaseType.H2, 'select dateadd(DAY, -(dayofmonth("root".tradeDate) - 1), "root".tradeDate) as "date" from tradeTable as "root"'),
+      pair(DatabaseType.DB2, 'select date(1) + (year("root".tradeDate)-1) YEARS + (month("root".tradeDate)-1) MONTHS as "date" from tradeTable as "root"'),
+      pair(DatabaseType.MemSQL, 'select subdate(`root`.tradeDate, INTERVAL dayofmonth(`root`.tradeDate) - 1 DAY)  as `date` from tradeTable as `root`'),
+      pair(DatabaseType.Sybase, 'select dateadd(DAY, -(day("root".tradeDate) - 1), "root".tradeDate) as "date" from tradeTable as "root"'),
+      pair(DatabaseType.Presto, 'select date_trunc(\'month\', "root".tradeDate) as "date" from tradeTable as "root"')
+   ];
+   
+   $expected->map(p|
+      let driver = $p.first;
+      let expectedSql = $p.second;
+               
+      let result = toSQLString(
+         |Trade.all()
+            ->project(col(t|$t.date->firstDayOfMonth(), 'date')),
+         simpleRelationalMapping, 
+         $driver, meta::pure::router::extension::defaultRelationalExtensions());
+
+      assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
+   )->distinct() == [true];
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationFirstDayOfThisMonth():Boolean[1]
+{
+   let expected = [
+      pair(DatabaseType.Presto, 'select date_trunc(\'month\', current_date) as "date" from tradeTable as "root"')
+   ];
+
+   $expected->map(p|
+      let driver = $p.first;
+      let expectedSql = $p.second;
+
+      let result = toSQLString(
+         |Trade.all()
+            ->project(col(t|firstDayOfThisMonth(), 'date')),
+         simpleRelationalMapping,
+         $driver, meta::pure::router::extension::defaultRelationalExtensions());
+
+      assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
+   )->distinct() == [true];
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationFirstDayOfYear():Boolean[1]
+{
+   let expected = [
+      pair(DatabaseType.SybaseIQ, 'select dateadd(DAY, -(datepart(dayofyear, "root".tradeDate) - 1), "root".tradeDate) as "date" from tradeTable as "root"'),
+      pair(DatabaseType.H2, 'select dateadd(DAY, -(dayofyear("root".tradeDate) - 1), "root".tradeDate) as "date" from tradeTable as "root"'),
+      pair(DatabaseType.DB2, 'select date(1) + (year("root".tradeDate)-1) YEARS as "date" from tradeTable as "root"'),
+      pair(DatabaseType.MemSQL, 'select subdate(`root`.tradeDate, INTERVAL dayofyear(`root`.tradeDate) - 1 DAY) as `date` from tradeTable as `root`'),
+      pair(DatabaseType.Sybase, 'select dateadd(DAY, -(datepart(dayofyear, "root".tradeDate) - 1), "root".tradeDate) as "date" from tradeTable as "root"'),
+      pair(DatabaseType.Presto, 'select date_trunc(\'year\', "root".tradeDate) as "date" from tradeTable as "root"')
+   ];
+   
+   $expected->map(p|
+      let driver = $p.first;
+      let expectedSql = $p.second;
+               
+      let result = toSQLString(
+         |Trade.all()
+            ->project(col(t|$t.date->firstDayOfYear(), 'date')),
+         simpleRelationalMapping, 
+         $driver, meta::pure::router::extension::defaultRelationalExtensions());
+   
+      assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
+   )->distinct() == [true];
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationFirstDayOfThisYear():Boolean[1]
+{
+   let expected = [
+      pair(DatabaseType.SybaseIQ, 'select dateadd(DAY, -(datepart(dayofyear, today()) - 1), today()) as "date" from tradeTable as "root"'),
+      pair(DatabaseType.H2, 'select dateadd(DAY, -(dayofyear(current_date()) - 1), current_date()) as "date" from tradeTable as "root"'),
+      pair(DatabaseType.DB2, 'select date(1) + (year(current date)-1) YEARS as "date" from tradeTable as "root"'),
+      pair(DatabaseType.MemSQL, 'select subdate(curdate(), INTERVAL dayofyear(current_date()) - 1 DAY) as `date` from tradeTable as `root`'),
+      pair(DatabaseType.Sybase, 'select dateadd(DAY, -(datepart(dayofyear, today()) - 1), today()) as "date" from tradeTable as "root"'),
+      pair(DatabaseType.Presto, 'select date_trunc(\'year\', current_date) as "date" from tradeTable as "root"')
+   ];
+   
+   $expected->map(p|
+      let driver = $p.first;
+      let expectedSql = $p.second;
+               
+      let result = toSQLString(
+         |Trade.all()
+            ->project(col(t|firstDayOfThisYear(), 'date')),
+         simpleRelationalMapping, 
+         $driver, meta::pure::router::extension::defaultRelationalExtensions());
+   
+      assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
+   )->distinct() == [true];
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationFirstDayOfThisQuarter():Boolean[1]
+{
+   let expected = [
+      pair(DatabaseType.MemSQL, 'select adddate(subdate(curdate(), INTERVAL dayofyear(current_date()) - 1 DAY), INTERVAL (quarter(curdate()) -1) QUARTER) as `date` from tradeTable as `root`'),
+      pair(DatabaseType.Presto, 'select date_trunc(\'quarter\', current_date) as "date" from tradeTable as "root"')
+   ];
+   
+   $expected->map(p|
+      let driver = $p.first;
+      let expectedSql = $p.second;
+               
+      let result = toSQLString(
+         |Trade.all()
+            ->project(col(t|firstDayOfThisQuarter(), 'date')),
+         simpleRelationalMapping, 
+         $driver, meta::pure::router::extension::defaultRelationalExtensions());
+   
+      assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
+   )->distinct() == [true];
+}
+
+function meta::relational::tests::functions::sqlstring::testToSqlGenerationFirstDayOfQuarter(databaseType:DatabaseType[1], expectedSql:String[1]):Boolean[1]
+{
+   let result = toSQLString(
+      |Trade.all()
+         ->project(col(t|$t.date->firstDayOfQuarter(), 'date')),
+      simpleRelationalMapping, 
+      $databaseType, meta::pure::router::extension::defaultRelationalExtensions());
+
+   assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$databaseType, $expectedSql, $result]);
+   
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationFirstDayOfQuarter_SybaseIQ():Boolean[1]
+{
+   testToSqlGenerationFirstDayOfQuarter(DatabaseType.SybaseIQ, 'select dateadd(QUARTER, quarter("root".tradeDate) - 1, dateadd(DAY, -(datepart(dayofyear, "root".tradeDate) - 1), "root".tradeDate)) as "date" from tradeTable as "root"');
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationFirstDayOfQuarter_H2():Boolean[1]
+{
+   testToSqlGenerationFirstDayOfQuarter(DatabaseType.H2, 'select dateadd(MONTH, 3 * quarter("root".tradeDate) - 3, dateadd(DAY, -(dayofyear("root".tradeDate) - 1), "root".tradeDate)) as "date" from tradeTable as "root"');
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationFirstDayOfQuarter_DB2():Boolean[1]
+{
+   testToSqlGenerationFirstDayOfQuarter(DatabaseType.DB2, 'select date(1) + ((year("root".tradeDate)-1) YEARS) + (3 * QUARTER("root".tradeDate) - 3) MONTHS as "date" from tradeTable as "root"');
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationFirstDayOfQuarter_MemSQL():Boolean[1]
+{
+   testToSqlGenerationFirstDayOfQuarter(DatabaseType.MemSQL, 'select adddate(subdate(`root`.tradeDate, INTERVAL dayofyear(`root`.tradeDate) - 1 DAY), INTERVAL (quarter(date(`root`.tradeDate) -1)) QUARTER) as `date` from tradeTable as `root`');
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationFirstDayOfQuarter_Sybase():Boolean[1]
+{
+   testToSqlGenerationFirstDayOfQuarter(DatabaseType.Sybase, 'select dateadd(QUARTER, quarter("root".tradeDate) - 1, dateadd(DAY, -(datepart(dayofyear, "root".tradeDate) - 1), "root".tradeDate)) as "date" from tradeTable as "root"');
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationFirstDayOfQuarter_Presto():Boolean[1]
+{
+   testToSqlGenerationFirstDayOfQuarter(DatabaseType.Presto, 'select date_trunc(\'quarter\', "root".tradeDate) as "date" from tradeTable as "root"');
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationFirstDayOfWeek():Boolean[1]
+{
+   let expected = [
+      pair(DatabaseType.SybaseIQ, 'select dateadd(DAY, -(mod(datepart(weekday, "root".tradeDate)+5, 7)), "root".tradeDate) as "date" from tradeTable as "root"'),
+      pair(DatabaseType.H2, 'select dateadd(DAY, -(mod(dayofweek("root".tradeDate)+5, 7)), "root".tradeDate) as "date" from tradeTable as "root"'),
+      pair(DatabaseType.Presto, 'select date_trunc(\'week\', "root".tradeDate) as "date" from tradeTable as "root"')
+   ];
+   
+   $expected->map(p|
+      let driver = $p.first;
+      let expectedSql = $p.second;
+               
+      let result = toSQLString(
+         |Trade.all()
+            ->project(col(t|$t.date->firstDayOfWeek(), 'date')),
+         simpleRelationalMapping, 
+         $driver, meta::pure::router::extension::defaultRelationalExtensions());
+   
+      assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
+   )->distinct() == [true];
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testSqlGenerationForBooleanProject_IQ():Boolean[1]
+{
+   
+   let result1a = toSQLString(|Interaction.all()->project(col(p|true, 'active')), 
+                              simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select \'true\' as "active" from interactionTable as "root"', $result1a);
+
+   let result1b = toSQLString(|Interaction.all()->project(col(p|!true, 'active')), 
+                              simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select case when (not \'true\' = \'true\') then \'true\' else \'false\' end as "active" from interactionTable as "root"', $result1b);
+
+   let result1c = toSQLString(|Interaction.all()->project(col(p|false, 'active')), 
+                              simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select \'false\' as "active" from interactionTable as "root"', $result1c);
+
+   let result1d = toSQLString(|Interaction.all()->project(col(p|!false, 'active')), 
+                              simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select case when (not \'false\' = \'true\') then \'true\' else \'false\' end as "active" from interactionTable as "root"', $result1d);
+   
+   let result2 = toSQLString(|Interaction.all()->project(col(p|$p.active, 'active')), 
+                              simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select case when "root"."active" = \'Y\' then \'true\' else \'false\' end as "active" from interactionTable as "root"', $result2);
+
+   let result3 = toSQLString(|Interaction.all()->project(col(p|$p.active == true, 'active')), 
+                              simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select case when (case when "root"."active" = \'Y\' then \'true\' else \'false\' end = \'true\') then \'true\' else \'false\' end as "active" from interactionTable as "root"', $result3);
+
+   let result4 = toSQLString(|Interaction.all()->project(col(p|$p.active && true, 'active')), 
+                              simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select case when ((case when "root"."active" = \'Y\' then \'true\' else \'false\' end = \'true\' and \'true\' = \'true\')) then \'true\' else \'false\' end as "active" from interactionTable as "root"', $result4);
+
+   let result5 = toSQLString(|Interaction.all()->project(col(p|if($p.active, |1, |0), 'active')), 
+                              simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select case when case when "root"."active" = \'Y\' then \'true\' else \'false\' end = \'true\' then 1 else 0 end as "active" from interactionTable as "root"', $result5);
+   
+   let result6 = toSQLString(|Interaction.all()->project(col(p|$p.active->in(true), 'active')), 
+                              simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select case when (case when "root"."active" = \'Y\' then \'true\' else \'false\' end = \'true\') then \'true\' else \'false\' end as "active" from interactionTable as "root"', $result6); 
+
+   let result7 = toSQLString(|Interaction.all()->project(col(p|$p.target.firstName->isEmpty(), 'active')), 
+                              simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select case when ("personTable_d#5_d_m1".FIRSTNAME is null) then \'true\' else \'false\' end as "active" from interactionTable as "root" left outer join personTable as "personTable_d#5_d_m1" on ("root".targetId = "personTable_d#5_d_m1".ID)', $result7); 
+
+   let result10 = toSQLString(|Interaction.all()->project(col(p|!$p.target.firstName->isEmpty(), 'active')), 
+                              simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select case when (not "personTable_d#6_d_m1".FIRSTNAME is null) then \'true\' else \'false\' end as "active" from interactionTable as "root" left outer join personTable as "personTable_d#6_d_m1" on ("root".targetId = "personTable_d#6_d_m1".ID)', $result10); 
+
+   let result13 = toSQLString(|Interaction.all()->project(col(p|($p.target.firstName->isEmpty() || $p.target.firstName->isEmpty()), 'active')), 
+                              simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select case when (("personTable_d#2_dy0_d#4_d_m1".FIRSTNAME is null or "personTable_d#2_dy0_d#4_d_m1".FIRSTNAME is null)) then \'true\' else \'false\' end as "active" from interactionTable as "root" left outer join personTable as "personTable_d#2_dy0_d#4_d_m1" on ("root".targetId = "personTable_d#2_dy0_d#4_d_m1".ID)', $result13);    
+   
+   let result14 = toSQLString(|Interaction.all()->project(col(p|($p.target.firstName->isEmpty() && $p.target.firstName->isEmpty()), 'active')), 
+                              simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select case when (("personTable_d#2_dy0_d#4_d_m1".FIRSTNAME is null and "personTable_d#2_dy0_d#4_d_m1".FIRSTNAME is null)) then \'true\' else \'false\' end as "active" from interactionTable as "root" left outer join personTable as "personTable_d#2_dy0_d#4_d_m1" on ("root".targetId = "personTable_d#2_dy0_d#4_d_m1".ID)', $result14);      
+}
+
+function <<test.Test, test.ToFix>> meta::relational::tests::functions::sqlstring::testSqlGenerationForBooleanProject_IQ2():Boolean[1]
+{
+   let result8 = toSQLString(|Interaction.all()->project(col(p|$p.target.firstName->isEmpty() == true, 'active')), 
+                              simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select case when ("personTable_d#6_d_m1".FIRSTNAME is null) then \'true\' else \'false\' end as "active" from interactionTable as "root" left outer join personTable as "personTable_d#6_d_m1" on ("root".targetId = "personTable_d#6_d_m1".ID)', $result8); 
+
+   let result9 = toSQLString(|Interaction.all()->project(col(p|$p.target.firstName->isEmpty() == false, 'active')), 
+                              simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select case when (not "personTable_d#6_d_m1".FIRSTNAME is null) then \'true\' else \'false\' end as "active" from interactionTable as "root" left outer join personTable as "personTable_d#6_d_m1" on ("root".targetId = "personTable_d#6_d_m1".ID)', $result9); 
+
+   let result11 = toSQLString(|Interaction.all()->project(col(p|$p.target.firstName->isEmpty()->in(false), 'active')), 
+                              simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select case when (not "personTable_d#6_d_m1".FIRSTNAME is null) then \'true\' else \'false\' end as "active" from interactionTable as "root" left outer join personTable as "personTable_d#6_d_m1" on ("root".targetId = "personTable_d#6_d_m1".ID)', $result11);    
+
+   let result12 = toSQLString(|Interaction.all()->project(col(p|!($p.target.firstName->isEmpty()->in(false)), 'active')), 
+                              simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select case when (("personTable_d#7_d_m1".FIRSTNAME is null)) then \'true\' else \'false\' end as "active" from interactionTable as "root" left outer join personTable as "personTable_d#7_d_m1" on ("root".targetId = "personTable_d#7_d_m1".ID)', $result12);    
+}
+
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testSqlGenerationForBooleanFilter_IQ():Boolean[1]
+{
+   let result1a = toSQLString(|Interaction.all()->filter(p|true)->project(col(p|$p.id, 'id')), 
+                              simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".ID as "id" from interactionTable as "root" where \'true\' = \'true\'', $result1a);
+   
+   let result1b = toSQLString(|Interaction.all()->filter(p|!true)->project(col(p|$p.id, 'id')), 
+                              simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".ID as "id" from interactionTable as "root" where not \'true\' = \'true\'', $result1b);
+
+   let result1c = toSQLString(|Interaction.all()->filter(p|false)->project(col(p|$p.id, 'id')), 
+                              simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".ID as "id" from interactionTable as "root" where \'false\' = \'true\'', $result1c);
+   
+   let result1d = toSQLString(|Interaction.all()->filter(p|!false)->project(col(p|$p.id, 'id')), 
+                              simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".ID as "id" from interactionTable as "root" where not \'false\' = \'true\'', $result1d);
+
+   let result2 = toSQLString(|Interaction.all()->filter(p|$p.active)->project(col(p|$p.id, 'id')), 
+                              simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".ID as "id" from interactionTable as "root" where case when "root"."active" = \'Y\' then \'true\' else \'false\' end = \'true\'', $result2);
+
+   let result3 = toSQLString(|Interaction.all()->filter(p|$p.active == true)->project(col(p|$p.id, 'id')), 
+                              simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".ID as "id" from interactionTable as "root" where case when "root"."active" = \'Y\' then \'true\' else \'false\' end = \'true\'', $result3);
+   
+   let result4 = toSQLString(|Interaction.all()->filter(p|$p.active && true)->project(col(p|$p.id, 'id')), 
+                              simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".ID as "id" from interactionTable as "root" where (case when "root"."active" = \'Y\' then \'true\' else \'false\' end = \'true\' and \'true\' = \'true\')', $result4); 
+   
+   let result5 = toSQLString(|Interaction.all()->filter(p|if($p.active, |1, |0) == 1)->project(col(p|$p.id, 'id')), 
+                              simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".ID as "id" from interactionTable as "root" where case when case when "root"."active" = \'Y\' then \'true\' else \'false\' end = \'true\' then 1 else 0 end = 1', $result5); 
+   
+   let result6 = toSQLString(|Interaction.all()->filter(p|$p.active->in(true))->project(col(p|$p.id, 'id')), 
+                              simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".ID as "id" from interactionTable as "root" where case when "root"."active" = \'Y\' then \'true\' else \'false\' end = \'true\'', $result6); 
+   
+   let result7 = toSQLString(|Interaction.all()->filter(p|$p.target.firstName->isEmpty())->project(col(p|$p.id, 'id')), 
+                              simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".ID as "id" from interactionTable as "root" left outer join personTable as "personTable_d#6_d#2_m1" on ("root".targetId = "personTable_d#6_d#2_m1".ID) where "personTable_d#6_d#2_m1".FIRSTNAME is null', $result7); 
+
+   let result10 = toSQLString(|Interaction.all()->filter(p|!$p.target.firstName->isEmpty())->project(col(p|$p.id, 'id')), 
+                              simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".ID as "id" from interactionTable as "root" left outer join personTable as "personTable_d#7_d#2_m1" on ("root".targetId = "personTable_d#7_d#2_m1".ID) where not "personTable_d#7_d#2_m1".FIRSTNAME is null', $result10); 
+   
+   let result13 = toSQLString(|Interaction.all()->filter(p|$p.target.firstName->isEmpty() || $p.target.firstName->isEmpty())->project(col(p|$p.id, 'id')), 
+                              simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".ID as "id" from interactionTable as "root" left outer join personTable as "personTable_d#3_dy0_d#4_d#2_m1" on ("root".targetId = "personTable_d#3_dy0_d#4_d#2_m1".ID) where ("personTable_d#3_dy0_d#4_d#2_m1".FIRSTNAME is null or "personTable_d#3_dy0_d#4_d#2_m1".FIRSTNAME is null)', $result13);    
+
+   let result14 = toSQLString(|Interaction.all()->filter(p|$p.target.firstName->isEmpty() && $p.target.firstName->isEmpty())->project(col(p|$p.id, 'id')), 
+                              simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".ID as "id" from interactionTable as "root" left outer join personTable as "personTable_d#3_dy0_d#4_d#2_m1" on ("root".targetId = "personTable_d#3_dy0_d#4_d#2_m1".ID) where ("personTable_d#3_dy0_d#4_d#2_m1".FIRSTNAME is null and "personTable_d#3_dy0_d#4_d#2_m1".FIRSTNAME is null)', $result14);    
+}
+
+
+function <<test.Test, test.ToFix>> meta::relational::tests::functions::sqlstring::testSqlGenerationForBooleanFilter_IQ2():Boolean[1]
+{
+   let result8 = toSQLString(|Interaction.all()->filter(p|$p.target.firstName->isEmpty() == true)->project(col(p|$p.id, 'id')), 
+                              simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".ID as "id" from interactionTable as "root" left outer join personTable as "personTable_d#7_d#2_m1" on ("root".targetId = "personTable_d#7_d#2_m1".ID) where "personTable_d#7_d#2_m1".FIRSTNAME is null', $result8); 
+
+   let result9 = toSQLString(|Interaction.all()->filter(p|$p.target.firstName->isEmpty() == false)->project(col(p|$p.id, 'id')), 
+                              simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".ID as "id" from interactionTable as "root" left outer join personTable as "personTable_d#7_d#2_m1" on ("root".targetId = "personTable_d#7_d#2_m1".ID) where not "personTable_d#7_d#2_m1".FIRSTNAME is null', $result9); 
+
+   let result11 = toSQLString(|Interaction.all()->filter(p|$p.target.firstName->isEmpty()->in(false))->project(col(p|$p.id, 'id')), 
+                              simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".ID as "id" from interactionTable as "root" left outer join personTable as "personTable_d#7_d#2_m1" on ("root".targetId = "personTable_d#7_d#2_m1".ID) where not "personTable_d#7_d#2_m1".FIRSTNAME is null', $result11);    
+
+   let result12 = toSQLString(|Interaction.all()->filter(p|!$p.target.firstName->isEmpty()->in(false))->project(col(p|$p.id, 'id')), 
+                              simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".ID as "id" from interactionTable as "root" left outer join personTable as "personTable_d#8_d#2_m1" on ("root".targetId = "personTable_d#8_d#2_m1".ID) where ("personTable_d#8_d#2_m1".FIRSTNAME is null)', $result12);    
+
+   let result15 = toSQLString(|Interaction.all()->filter(p|isTrue($p.target.firstName == 'Andrew')), 
+                              simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".ID as "id" from interactionTable as "root" left outer join personTable as "personTable_d#7_d#2_m1" on ("root".targetId = "personTable_d#7_d#2_m1".ID) where ("personTable_d#7_d#2_m1".FIRSTNAME is null and "personTable_d#7_d#2_m1".FIRSTNAME is null)', $result15);    
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateMinuteSecondExtractionForSybaseIQ():Boolean[1]
+{
+   let result = toSQLString(|Trade.all()->project([
+                                                     t | $t.settlementDateTime->cast(@Date)->toOne()->minute(),
+                                                     t | $t.settlementDateTime->cast(@Date)->toOne()->second()
+                                                  ],
+                                                  ['settlementDateTimeMinute', 'settlementDateTimeSecond']),
+                            simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select minute("root".settlementDateTime) as "settlementDateTimeMinute", second("root".settlementDateTime) as "settlementDateTimeSecond" from tradeTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringWithReplace():Boolean[1]
+{
+    let sybaseSql = toSQLString(|Person.all()->project(p|$p.firstName->replace('A', 'a'), 'lowerA'), simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+    assertEquals('select replace("root".FIRSTNAME, \'A\', \'a\') as "lowerA" from personTable as "root"', $sybaseSql);
+
+    let db2Sql    = toSQLString(|Person.all()->project(p|$p.firstName->replace('A', 'a'), 'lowerA'), simpleRelationalMapping, DatabaseType.DB2, meta::pure::router::extension::defaultRelationalExtensions());
+    assertEquals('select replace("root".FIRSTNAME, \'A\', \'a\') as "lowerA" from personTable as "root"', $db2Sql);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testSybaseKeyWordInSubSelect():Boolean[1]
+{
+   let date=%2018-03-05;
+   let result = meta::relational::functions::sqlstring::toSQLString(|Firm.all()->project([f|$f.legalName, f|$f.employees.locations->filter(o|$o.censusdate == $date).censusdate], ['firm','employee address census date']), simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select "root".LEGALNAME as "firm", "locationTable_d#5_f_d_d_m2_r"."date" as "employee address census date" from firmTable as "root" left outer join personTable as "personTable_d#7_d_m2" on ("root".ID = "personTable_d#7_d_m2".FIRMID) left outer join (select "locationTable_d#5_f_d".PERSONID as PERSONID, "locationTable_d#5_f_d"."date" as "date" from locationTable as "locationTable_d#5_f_d" where "locationTable_d#5_f_d"."date" = convert(DATE, \'2018-03-05\', 121)) as "locationTable_d#5_f_d_d_m2_r" on ("personTable_d#7_d_m2".ID = "locationTable_d#5_f_d_d_m2_r".PERSONID)', $result); 
+}
+
+
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testSybaseDistinctTake():Boolean[1]
+{
+   let iq = meta::relational::functions::sqlstring::toSQLString(|Person.all()->project(f|$f.firstName, 'firstName')->distinct()->take(10), simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   let ase = meta::relational::functions::sqlstring::toSQLString(|Person.all()->project(f|$f.firstName, 'firstName')->distinct()->take(10), simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   
+   let sql = 'select distinct top 10 "root".FIRSTNAME as "firstName" from personTable as "root"';
+   
+   assertSameSQL($sql, $iq); 
+   assertSameSQL($sql, $ase); 
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testPrestoDistinctTake():Boolean[1]
+{
+   let presto = meta::relational::functions::sqlstring::toSQLString(|Person.all()->project(f|$f.firstName, 'firstName')->distinct()->take(10), simpleRelationalMapping, DatabaseType.Presto, meta::pure::router::extension::defaultRelationalExtensions());
+   
+   let sql = 'select distinct "root".FIRSTNAME as "firstName" from personTable as "root" limit 10';
+   
+   assertSameSQL($sql, $presto); 
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testSqlGenerationDivide_AllDBs():Boolean[1]
+{
+   let query = {|Trade.all()->filter(t | $t.id == 2)->map(t | $t.quantity->divide(1000000))};
+   let expectedSQL = 'select ((1.0 * "root".quantity) / 1000000) from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeEventViewMaxTradeEventDate_d#4_d#4_m5" on ("root".ID = "tradeEventViewMaxTradeEventDate_d#4_d#4_m5".trade_id) where "root".ID = 2';
+   let expectedMemSQL = $expectedSQL->replace('"','`');
+   
+   let resultSybaseIQ = meta::relational::functions::sqlstring::toSQLString($query, simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL($expectedSQL, $resultSybaseIQ);
+   let resultDB2 = meta::relational::functions::sqlstring::toSQLString($query, simpleRelationalMapping, DatabaseType.DB2, meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL($expectedSQL, $resultDB2);
+   let resultMemSQL = meta::relational::functions::sqlstring::toSQLString($query, simpleRelationalMapping, DatabaseType.MemSQL, meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL($expectedMemSQL, $resultMemSQL);
+   let resultPostgresSQL = meta::relational::functions::sqlstring::toSQLString($query, simpleRelationalMapping, DatabaseType.Postgres, meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL($expectedSQL, $resultPostgresSQL);
+   let resultSqlServer = meta::relational::functions::sqlstring::toSQLString($query, simpleRelationalMapping, DatabaseType.SqlServer, meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL($expectedSQL, $resultSqlServer);
+   let resultComposite = meta::relational::functions::sqlstring::toSQLString($query, simpleRelationalMapping, DatabaseType.Composite, meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL($expectedSQL, $resultComposite);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringWithQuoteIdentifiersFlag():Boolean[1]
+{
+   let runtime = ^meta::pure::runtime::Runtime(connections = ^TestDatabaseConnection(element = meta::relational::tests::db,
+                                                                                     type = DatabaseType.Snowflake,
+                                                                                     quoteIdentifiers = true
+                                                                                  ));
+
+   let result = toSQLStringPretty(|Synonym.all()->filter(s | $s.type != 'ISIN')->project([s | $s.name],['name']),
+                                  simpleRelationalMappingWithEnumConstant, $runtime, meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertEquals('select 	"root"."NAME" as "name" from "productSchema"."synonymTable" as "root" where (\'CUSIP\' <> \'ISIN\')', $result->replace('\n', ''));
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringWithQuoteIdentifiersFlagInColumnName():Boolean[1]
+{
+   let runtime = ^meta::pure::runtime::Runtime(connections = ^TestDatabaseConnection(element = meta::relational::tests::db,
+                                                                                     type = DatabaseType.Snowflake,
+                                                                                     quoteIdentifiers = true
+                                                                                  ));
+
+   let result = toSQLStringPretty(|Product.all()->project([#/Product/name!prodName#])->sort(asc('prodName'))->drop(2)->limit(5),
+                                   simpleRelationalMapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertEquals('select 	"prodName" as "prodName" from (		select 			"root"."NAME" as "prodName" 		from "productSchema"."productTable" as "root" 		order by "prodName"		 limit \'\' offset 2) as "subselect" limit 5', $result->replace('\n', ''));
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testMemSQLSubstring() : Boolean[1]
+{
+  let runtime = ^meta::pure::runtime::Runtime(connections = ^TestDatabaseConnection(element = meta::relational::tests::db,type = DatabaseType.MemSQL));
+
+   let result = toSQLStringPretty({|Firm.all()->project([
+        c | $c.legalName,
+        c | substring($c.legalName, 0, 5)
+      ],
+      [
+        'legalName',
+        'subname'
+      ]
+    )},simpleRelationalMapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions());
+
+   assertEquals('select 	`root`.LEGALNAME as `legalName`, 	substring(`root`.LEGALNAME, 0, 5) as `subname` from firmTable as `root`', $result->replace('\n', ''));
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testMemSQLSubstringWithNonZeroIndex() : Boolean[1]
+{
+  let runtime = ^meta::pure::runtime::Runtime(connections = ^TestDatabaseConnection(element = meta::relational::tests::db,type = DatabaseType.MemSQL));
+
+   let result = toSQLStringPretty({|Firm.all()->project([
+        c | $c.legalName,
+        c | substring($c.legalName, 2, 3)
+      ],
+      [
+        'legalName',
+        'subname'
+      ]
+    )},simpleRelationalMapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions());
+
+   assertEquals('select 	`root`.LEGALNAME as `legalName`, 	substring(`root`.LEGALNAME, 2, 3) as `subname` from firmTable as `root`', $result->replace('\n', ''));
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testIsDistinctSQLGeneration():Boolean[1]
+{
+   let func = {|Firm.all()->groupBy(
+      [t|$t.legalName],
+      [agg(x|$x.employees.firstName,y|$y->isDistinct())],
+      ['LegalName', 'IsDistinctFirstName']
+   )};
+
+   let h2 = toSQLString($func, simpleRelationalMapping, DatabaseType.H2, meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select "root".LEGALNAME as "LegalName", count(distinct("personTable_d#4_d_m1".FIRSTNAME)) = count("personTable_d#4_d_m1".FIRSTNAME) as "IsDistinctFirstName" from firmTable as "root" left outer join personTable as "personTable_d#4_d_m1" on ("root".ID = "personTable_d#4_d_m1".FIRMID) group by "LegalName"', $h2);
+
+   let iq = toSQLString($func, simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select "root".LEGALNAME as "LegalName", case when (count(distinct("personTable_d#4_d_m1".FIRSTNAME)) = count("personTable_d#4_d_m1".FIRSTNAME)) then \'true\' else \'false\' end as "IsDistinctFirstName" from firmTable as "root" left outer join personTable as "personTable_d#4_d_m1" on ("root".ID = "personTable_d#4_d_m1".FIRMID) group by "LegalName"', $iq);
+
+   let db2 = toSQLString($func, simpleRelationalMapping, DatabaseType.DB2, meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select "root".LEGALNAME as "LegalName", case when (count(distinct("personTable_d#4_d_m1".FIRSTNAME)) = count("personTable_d#4_d_m1".FIRSTNAME)) then \'true\' else \'false\' end as "IsDistinctFirstName" from firmTable as "root" left outer join personTable as "personTable_d#4_d_m1" on ("root".ID = "personTable_d#4_d_m1".FIRMID) group by "root".LEGALNAME', $db2);
+
+   let memSql = toSQLString($func, simpleRelationalMapping, DatabaseType.MemSQL, meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select `root`.LEGALNAME as `LegalName`, count(distinct(`personTable_d#4_d_m1`.FIRSTNAME)) = count(`personTable_d#4_d_m1`.FIRSTNAME) as `IsDistinctFirstName` from firmTable as `root` left outer join personTable as `personTable_d#4_d_m1` on (`root`.ID = `personTable_d#4_d_m1`.FIRMID) group by `LegalName`', $memSql);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToStringOnPostgres():Boolean[1]
+{
+   let func = {|Person.all()->project([col(x | $x.firstName, 'FirstName'), col(x | $x.age->toOne()->toString()->toUpper(), 'AgeString')])};
+   let sql = toSQLString($func, simpleRelationalMapping, DatabaseType.Postgres, meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select "root".FIRSTNAME as "FirstName", upper(cast("root".AGE as varchar)) as "AgeString" from personTable as "root"', $sql);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testJoinStringsSnowflake():Boolean[1]
+{
+   let fn = {|Firm.all()->project([f|$f.legalName, f|$f.employees.firstName->joinStrings('')], ['legalName', 'employeesFirstName'])};
+   let snowflakeSql = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".LEGALNAME as "legalName", "gen_root_d_m2".aggCol as "employeesFirstName" from firmTable as "root" left outer join (select "gen_root".ID as ID, listagg("personTable_d#5".FIRSTNAME) as aggCol from firmTable as "gen_root" left outer join personTable as "personTable_d#5" on ("gen_root".ID = "personTable_d#5".FIRMID) group by "gen_root".ID) as "gen_root_d_m2" on ("root".ID = "gen_root_d_m2".ID)', $snowflakeSql);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testJoinStringsSnowflakeWithSeparator():Boolean[1]
+{
+   let fn = {|Firm.all()->project([f|$f.legalName, f|$f.employees.firstName->joinStrings('*')], ['legalName', 'employeesFirstName'])};
+   let snowflakeSql = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".LEGALNAME as "legalName", "gen_root_d_m2".aggCol as "employeesFirstName" from firmTable as "root" left outer join (select "gen_root".ID as ID, listagg("personTable_d#5".FIRSTNAME, \'*\') as aggCol from firmTable as "gen_root" left outer join personTable as "personTable_d#5" on ("gen_root".ID = "personTable_d#5".FIRMID) group by "gen_root".ID) as "gen_root_d_m2" on ("root".ID = "gen_root_d_m2".ID)', $snowflakeSql);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testJoinStringsArray():Boolean[1]
+{
+   let fn = {|Firm.all()->project([f|$f.legalName, f|['A', 'B', 'C']->joinStrings('')], ['legalName', 'employeesFirstName'])};
+   let snowflakeSql = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".LEGALNAME as "legalName", concat(\'A\', \'B\', \'C\') as "employeesFirstName" from firmTable as "root"', $snowflakeSql);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testJoinStringsArrayWithSeparator():Boolean[1]
+{
+   let fn = {|Firm.all()->project([f|$f.legalName, f|['A', 'B', 'C']->joinStrings('*')], ['legalName', 'employeesFirstName'])};
+   let snowflakeSql = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('select "root".LEGALNAME as "legalName", concat(\'A\', \'*\', \'B\', \'*\', \'C\') as "employeesFirstName" from firmTable as "root"', $snowflakeSql);
+}

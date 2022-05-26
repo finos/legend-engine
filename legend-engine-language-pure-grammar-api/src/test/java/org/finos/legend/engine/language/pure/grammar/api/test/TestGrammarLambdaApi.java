@@ -1,6 +1,8 @@
 package org.finos.legend.engine.language.pure.grammar.api.test;
 
+import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.block.function.Function2;
+import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.language.pure.grammar.api.grammarToJson.GrammarToJson;
 import org.finos.legend.engine.language.pure.grammar.api.jsonToGrammar.JsonToGrammar;
@@ -8,7 +10,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.shared.core.api.TestGrammar;
 import org.finos.legend.engine.shared.core.api.grammar.BatchResult;
+import org.finos.legend.engine.shared.core.api.grammar.GrammarAPI;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
+import org.finos.legend.engine.shared.core.function.Function5;
 import org.junit.Test;
 
 import javax.ws.rs.core.Response;
@@ -52,7 +56,7 @@ public class TestGrammarLambdaApi extends TestGrammar<Lambda>
     @Test
     public void testBatch()
     {
-        testBatch(with(Tuples.pair("1", "a: String[1]|'hello'"),
+        testBatch(createBatchInput(Tuples.pair("1", "a: String[1]|'hello'"),
                 Tuples.pair("2", "src: String[1]|$src"),
                 Tuples.pair("3", "src: Integer[2]|$src->first()->toOne()"),
                 Tuples.pair("4", "{src: Integer[1]|\n  let a = 1;\n  $a + 1;\n}"))
@@ -62,9 +66,9 @@ public class TestGrammarLambdaApi extends TestGrammar<Lambda>
     @Test
     public void testBatchError()
     {
-        testBatchError(with(Tuples.pair("1", "a: String[1]|'hello'"),
+        testBatchError(createBatchInput(Tuples.pair("1", "a: String[1]|'hello'"),
                         Tuples.pair("2", "src: String[1]|$src,")),
-                with(Tuples.pair("1", "a: String[1]|'hello'"),
+                createExpectedBatchResult(Tuples.pair("1", "a: String[1]|'hello'"),
                         Tuples.pair("2", "{\"message\":\"Unexpected token\",\"sourceInformation\":{\"endColumn\":20,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":20,\"startLine\":1}}"))
         );
     }
@@ -90,25 +94,25 @@ public class TestGrammarLambdaApi extends TestGrammar<Lambda>
     }
 
     @Override
-    public Function2<String, Boolean, Response> grammarToJson()
+    public Function5<String, String, Integer, Integer, Boolean, Response> grammarToJson()
     {
-        return (a, b) -> grammarToJson.lambda(a, null, b);
+        return (a, b, c, d, e) -> grammarToJson.lambda(a, b, c, d, e, null);
     }
 
     @Override
-    public Function2<RenderStyle, Lambda, Response> jsonToGrammar()
+    public Function2<Lambda, RenderStyle, Response> jsonToGrammar()
     {
         return (a, b) -> jsonToGrammar.lambda(a, b, null);
     }
 
     @Override
-    public Function2<Map<String, String>, Boolean, Response> grammarToJsonB()
+    public Function<Map<String, GrammarAPI.ParserInput>, Response> grammarToJsonB()
     {
-        return (a, b) -> grammarToJson.lambdaBatch(a, null, b);
+        return (a) -> grammarToJson.lambdaBatch(a, null);
     }
 
     @Override
-    public Function2<RenderStyle, Map<String, Lambda>, Response> jsonToGrammarB()
+    public Function2<Map<String, Lambda>, RenderStyle, Response> jsonToGrammarB()
     {
         return (a, b) -> jsonToGrammar.lambdaBatch(a, b, null);
     }

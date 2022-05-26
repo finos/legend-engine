@@ -1,0 +1,34 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::mapping::*;
+
+import meta::protocols::pure::vX_X_X::metamodel::executionPlan::*;
+import meta::protocols::pure::vX_X_X::metamodel::executionPlan::external::format::json::*;
+import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::external::format::json::*;
+
+import meta::pure::router::extension::*;
+            
+function meta::protocols::pure::vX_X_X::external::format::json::serializerExtension(type:String[1]): meta::pure::router::extension::SerializerExtension[1]
+{
+   ^meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X(
+      transfers_executionPlan_transformNode = 
+         {mapping:Mapping[1], extensions:RouterExtension[*] |
+            [
+               s:meta::external::format::json::executionPlan::JsonSerializeExecutionNode[1]   | transformSerializeNode($s, $mapping, $extensions),
+               d:meta::external::format::json::executionPlan::JsonDeserializeExecutionNode[1] | transformDeserializeNode($d, $mapping, $extensions)
+            ]
+         }   
+   );
+}

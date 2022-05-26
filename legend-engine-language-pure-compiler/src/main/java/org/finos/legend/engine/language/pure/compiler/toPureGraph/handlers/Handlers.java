@@ -1321,37 +1321,37 @@ public class Handlers
         return typeOne(vs, Sets.immutable.with(type));
     }
 
-    private boolean typeOne(ValueSpecification vs, ImmutableSet<String> type)
+    public boolean typeOne(ValueSpecification vs, ImmutableSet<String> type)
     {
         return isNilOrType(vs, type) && isOne(vs._multiplicity());
     }
 
-    private boolean typeZeroOne(ValueSpecification vs, String type)
+    public boolean typeZeroOne(ValueSpecification vs, String type)
     {
         return typeZeroOne(vs, Sets.immutable.with(type));
     }
 
-    private boolean typeZeroOne(ValueSpecification vs, ImmutableSet<String> type)
+    public boolean typeZeroOne(ValueSpecification vs, ImmutableSet<String> type)
     {
         return isNilOrType(vs, type) && matchZeroOne(vs._multiplicity());
     }
 
-    private boolean typeOneMany(ValueSpecification vs, String type)
+    public boolean typeOneMany(ValueSpecification vs, String type)
     {
         return typeOneMany(vs, Sets.immutable.with(type));
     }
 
-    private boolean typeOneMany(ValueSpecification vs, ImmutableSet<String> type)
+    public boolean typeOneMany(ValueSpecification vs, ImmutableSet<String> type)
     {
         return type.contains(vs._genericType()._rawType()._name()) && isMinimumOne(vs._multiplicity());
     }
 
-    private boolean typeMany(ValueSpecification vs, String type)
+    public boolean typeMany(ValueSpecification vs, String type)
     {
         return isNilOrType(vs, type);
     }
 
-    private boolean typeMany(ValueSpecification vs, ImmutableSet<String> type)
+    public boolean typeMany(ValueSpecification vs, ImmutableSet<String> type)
     {
         return isNilOrType(vs, type);
     }

@@ -1,0 +1,54 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::mapping::*;
+import meta::pure::router::extension::*;
+import meta::relational::tests::milestoning::multi::*;
+import meta::pure::store::*;
+import meta::pure::runtime::*;
+import meta::relational::milestoning::temporalpostprocessor::*;
+import meta::relational::postProcessor::*;
+import meta::relational::functions::database::*;
+import meta::relational::tests::*;
+import meta::relational::functions::asserts::*;
+import meta::relational::tests::milestoning::temporalpostprocessor::*;
+import meta::relational::milestoning::*;
+import meta::relational::metamodel::operation::*;
+import meta::relational::metamodel::*;
+import meta::csv::metamodel::execute::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::runtime::*;
+import meta::relational::tests::model::simple::*;
+
+function meta::relational::tests::milestoning::temporalpostprocessor::setUp():Any[0..1]
+{
+   meta::relational::tests::milestoning::initSimpleRelationalDbWithMilestoningColumns();
+}
+
+//Alloy Exclsuion Reason : Runtime post processors not supported
+function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::milestoning::temporalpostprocessor::testLatestTemporalMilestoningPostProcessor():Boolean[1]
+{
+   meta::relational::tests::milestoning::initSimpleRelationalDbWithMilestoningColumns();
+   let ignoredDate = %2015-10-16T00:00:00;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let latestDatePP = dateEqualityTemporalMilestoningProcessor(meta::relational::tests::db, 'thru_z', %9999-12-31T00:00:00.000, defaultRelationalExtensions());
+
+   let updatedRuntime = $runtime->addPostProcessors([], $latestDatePP);
+
+   let result = execute(|Product.all()->project([p|$p.name, p|$p.synonyms.name],['name','synonym']), simpleRelationalMapping, $updatedRuntime, meta::pure::router::extension::defaultRelationalExtensions());
+   let tds = $result.values->at(0);
+   assertEquals(['Firm A,ISIN1', 'Firm D,ISIN2'],$tds.rows->map(r|$r.values->makeString(',')));
+   assertSameSQL('select "root".NAME as "name", "synonymtable_0".NAME as "synonym" from productSchema.productTable as "root" left outer join productSchema.synonymTable as "synonymtable_0" on ("synonymtable_0".PRODID = "root".ID and "synonymtable_0".thru_z = \'9999-12-31 00:00:00.000\') where "root".thru_z = \'9999-12-31 00:00:00.000\'', $result);
+}

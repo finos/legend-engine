@@ -1,0 +1,349 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::relational::functions::asserts::*;
+import meta::csv::*;
+import meta::pure::runtime::*;
+import meta::relational::tests::milestoning::businessdate::*;
+import meta::relational::tests::*;
+import meta::pure::functions::collection::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::tests::milestoning::*;
+import meta::relational::runtime::*;
+import meta::relational::tests::milestoning::*;
+
+function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::milestoning::temporalDateProjectionQuery::testProcessingTemporalQueryWithInnerQuery():Boolean[1]
+{
+   let query = {|Product->getAllForEachDate(Calendar.all()->filter(x|($x.calendarDate > %2020-01-02) && ($x.calendarDate < %2020-02-02)).calendarDate)->filter(x|$x.businessDate > %2020-01-07)->project([col(x | $x.name, 'name'),col(x|$x.businessDate,'date')])};
+   let result = execute($query,Calendarmap,^Runtime(connections=meta::relational::tests::milestoning::initDatabaseForCalendar()), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedValue = 'name,date\n'+
+                        'ProductName,2020-01-08\n'+
+                           'ProductName2,2020-01-08\n'+
+                           'ProductName3,2020-01-08\n'+
+                           'ProductName,2020-01-09\n'+
+                           'ProductName2,2020-01-09\n'+
+                           'ProductName3,2020-01-09\n'+
+                           'ProductName,2020-01-10\n'+
+                           'ProductName2,2020-01-10\n'+
+                           'ProductName3,2020-01-10\n'+
+                           'ProductName,2020-01-11\n'+
+                           'ProductName2,2020-01-11\n'+
+                           'ProductName3,2020-01-11\n'+
+                           'ProductName2,2020-01-30\n'+
+                           'ProductName3,2020-01-30\n'+
+                           'ProductName2,2020-02-01\n'+
+                           'ProductName3,2020-02-01\n';
+   let actualValue = $result.values->toCSV();
+   assertSameElements($expectedValue, $actualValue);
+}
+
+function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::milestoning::temporalDateProjectionQuery::testProcessingTemporalQueryWithInclusivityBehaviour():Boolean[1]
+{
+   let query = {|Product->getAllForEachDate(Calendar.all()->filter(x|($x.calendarDate > %2015-10-13) && ($x.calendarDate < %2015-10-19)).calendarDate)->project([col(x | $x.name, 'name'),col(x|$x.businessDate,'date')])};
+   let result = execute($query,Calendarmap,^Runtime(connections=meta::relational::tests::milestoning::initDatabaseForCalendar()), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedValue = 'name,date\n'+
+                       'ProductName1,2015-10-15\n'+
+                       'ProductName3,2015-10-15\n'+
+                       'ProductName2,2015-10-16\n'+
+                       'ProductName3,2015-10-16\n'+
+                       'ProductName2,2015-10-17\n'+
+                       'ProductName3,2015-10-17\n';
+   let actualValue = $result.values->toCSV();
+   assertSameElements($expectedValue, $actualValue);
+}
+
+function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::milestoning::temporalDateProjectionQuery::testProcessingTemporalQueryWithInnerQueryWithFilter():Boolean[1]
+{
+   let query = {|Product->getAllForEachDate(Calendar.all()->filter(x|($x.calendarDate > %2020-01-02) && ($x.calendarDate < %2020-01-15)).calendarDate)->filter(x|$x.name == 'ProductName3')->project([col(x | $x.name, 'name'),col(x|$x.businessDate,'date')])};
+   let result = execute($query,Calendarmap,^Runtime(connections=meta::relational::tests::milestoning::initDatabaseForCalendar()), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedValue = 'name,date\n'+
+                       'ProductName3,2020-01-03\n'+
+                       'ProductName3,2020-01-04\n'+
+                       'ProductName3,2020-01-08\n'+
+                       'ProductName3,2020-01-09\n'+
+                       'ProductName3,2020-01-10\n'+
+                       'ProductName3,2020-01-11\n';
+   let actualValue = $result.values->toCSV();
+   assertSameElements($expectedValue, $actualValue);
+   assertSameSQL('select "root".name as "name", "calendartable_0".calendar_date as "date" from (select "root".calendar_date from CalendarTable as "root" where ("root".calendar_date > \'2020-01-02\' and "root".calendar_date < \'2020-01-15\')) as "calendartable_0" left outer join ProductTable as "root" on ("root".from_z <= "calendartable_0".calendar_date and "root".thru_z > "calendartable_0".calendar_date) where "root".name = \'ProductName3\'',$result);
+}
+
+function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::milestoning::temporalDateProjectionQuery::testProcessingTemporalQueryWithInnerQueryWithQualifiedProperty():Boolean[1]
+{
+   let query = {|Product->getAllForEachDate(Calendar.all()->filter(x|($x.calendarDate > %2020-01-02) && ($x.calendarDate < %2020-02-02)).calendarDate)->filter(x|$x.classification($x.businessDate).type == 'STOCK')->project([col(x | $x.classification($x.businessDate).type,'type'),col(x|$x.classification($x.businessDate).description, 'type_description'),col(x|$x.businessDate,'date')])->distinct()->sort(['type_description','date'])};
+   let result = execute($query,Calendarmap,^Runtime(connections=meta::relational::tests::milestoning::initDatabaseForCalendar()), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedValue = 'type,type_description,date\n'+
+                        'STOCK,STOCK DESC-V1,2020-01-03\n'+
+                        'STOCK,STOCK DESC-V1,2020-01-04\n'+
+                        'STOCK,STOCK DESC-V1,2020-01-08\n'+
+                        'STOCK,STOCK DESC-V1,2020-01-09\n'+
+                        'STOCK,STOCK DESC-V4,2020-01-03\n'+
+                        'STOCK,STOCK DESC-V4,2020-01-04\n'+
+                        'STOCK,STOCK DESC-V4,2020-01-08\n'+
+                        'STOCK,STOCK DESC-V4,2020-01-09\n'+
+                        'STOCK,STOCK DESC-V4,2020-01-10\n'+
+                        'STOCK,STOCK DESC-V4,2020-01-11\n'+
+                        'STOCK,STOCK DESC-V4,2020-01-30\n'+
+                        'STOCK,STOCK DESC-V4,2020-02-01\n';
+   let actualValue = $result.values->toCSV();
+   assertSameElements($expectedValue, $actualValue);
+}
+
+function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::milestoning::temporalDateProjectionQuery::testProcessingTemporalQueryWithInnerQueryOnDeepProperty():Boolean[1]
+{
+   let query = {|Product->getAllForEachDate(Calendar.all()->filter(x|($x.calendarDate > %2020-01-02) && ($x.calendarDate < %2020-02-02)).calendarDate)->filter(x|$x.classification($x.businessDate).type == 'STOCK')->project([col(x | $x.classification($x.businessDate).exchange.name, 'name'),col(x|$x.classification($x.businessDate).description,'type'),col(x|$x.businessDate,'date')])->distinct()->sort(['date','type'])};
+   let result = execute($query,Calendarmap,^Runtime(connections=meta::relational::tests::milestoning::initDatabaseForCalendar()), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedValue = 'name,type,date\n'+
+                        'LNSE,STOCK DESC-V1,2020-01-03\n'+
+                        'LNSE,STOCK DESC-V4,2020-01-03\n'+
+                        'LNSE,STOCK DESC-V1,2020-01-04\n'+
+                        'LNSE,STOCK DESC-V4,2020-01-04\n'+
+                        'LNSE,STOCK DESC-V1,2020-01-08\n'+
+                        'LNSE,STOCK DESC-V4,2020-01-08\n'+
+                        'LNSE,STOCK DESC-V1,2020-01-09\n'+
+                        'LNSE,STOCK DESC-V4,2020-01-09\n'+
+                        'LNSE,STOCK DESC-V4,2020-01-10\n'+
+                        'LNSE,STOCK DESC-V4,2020-01-11\n'+
+                        'LNSE,STOCK DESC-V4,2020-01-30\n'+
+                        'LNSE,STOCK DESC-V4,2020-02-01\n';
+   let actualValue = $result.values->toCSV();
+   assertSameElements($expectedValue, $actualValue);
+}
+
+function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::milestoning::temporalDateProjectionQuery::testProcessingTemporalQueryMilestonedThisBusinessDatesInProject():Boolean[1]
+{
+   let query = {|Product->getAllForEachDate(Calendar.all()->filter(x|($x.calendarDate > %2020-01-02) && ($x.calendarDate < %2020-01-07)).calendarDate)->filter(x|$x.classification($x.businessDate).type == 'STOCK')->project([col(x | $x.classificationTypeStr,'type'),col(x|$x.classification($x.businessDate).description,'description'),col(x|$x.businessDate,'date')])->distinct()->sort(['date','description'])};
+   let result = execute($query,Calendarmap,^Runtime(connections=meta::relational::tests::milestoning::initDatabaseForCalendar()), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedValue = 'type,description,date\n'+
+                        'STOCK,STOCK DESC-V1,2020-01-03\n'+
+                        'STOCK,STOCK DESC-V4,2020-01-03\n'+
+                        'STOCK,STOCK DESC-V1,2020-01-04\n'+
+                        'STOCK,STOCK DESC-V4,2020-01-04\n';
+   let actualValue = $result.values->toCSV();
+   assertSameElements($expectedValue, $actualValue);
+}
+
+function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::milestoning::temporalDateProjectionQuery::testProcessingTemporalQueryInPosition1InQualfiedPropertySequence():Boolean[1]
+{
+   let query = {|Product->getAllForEachDate(Calendar.all()->filter(x|($x.calendarDate > %2020-01-02) && ($x.calendarDate < %2020-01-07)).calendarDate)->filter(x|$x.classification($x.businessDate).type == 'STOCK')->project([col(x | $x.classificationExchangeName1,'type'),col(x|$x.classification($x.businessDate).description,'description'),col(x|$x.businessDate,'date')])->distinct()->sort(['date','description'])};
+   let result = execute($query,Calendarmap,^Runtime(connections=meta::relational::tests::milestoning::initDatabaseForCalendar()), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedValue = 'type,description,date\n'+
+                        'LNSE,STOCK DESC-V1,2020-01-03\n'+
+                        'LNSE,STOCK DESC-V4,2020-01-03\n'+
+                        'LNSE,STOCK DESC-V1,2020-01-04\n'+
+                        'LNSE,STOCK DESC-V4,2020-01-04\n';
+   let actualValue = $result.values->toCSV();
+   assertSameElements($expectedValue,$actualValue);
+   true;
+}
+
+function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::milestoning::temporalDateProjectionQuery::testProcessingTemporalQueryWithFilterInMapping():Boolean[1]
+{
+   let query = {|StockProduct->getAllForEachDate(Calendar.all()->filter(x|($x.calendarDate > %2020-01-02) && ($x.calendarDate <%2020-01-07)).calendarDate)->filter(x|$x.classification($x.businessDate).exchange.name == 'LNSE')->project([col(x | $x.classificationExchangeName1,'type'),col(x|$x.classification($x.businessDate).description,'description'),col(x|$x.businessDate,'date')])->distinct()->sort(['date','description'])};
+   let result = execute($query,Calendarmap,^Runtime(connections=meta::relational::tests::milestoning::initDatabaseForCalendar()), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedValue = 'type,description,date\n'+
+                        'LNSE,STOCK DESC-V1,2020-01-03\n'+
+                        'LNSE,STOCK DESC-V4,2020-01-03\n'+
+                        'LNSE,STOCK DESC-V1,2020-01-04\n'+
+                        'LNSE,STOCK DESC-V4,2020-01-04\n';
+   let actualValue = $result.values->toCSV();
+   assertSameElements($expectedValue, $actualValue);
+}
+
+function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::milestoning::temporalDateProjectionQuery::testProcessingTemporalQueryWithAssociationProperty():Boolean[1]
+{
+   let query = {|Product->getAllForEachDate(Calendar.all()->filter(x|($x.calendarDate > %2020-01-02) && ($x.calendarDate < %2020-02-02)).calendarDate)->filter(p|$p.orders->exists(o|$o.id == 1))->project([col(x|$x.businessDate,'date')])};
+   let result = execute($query,Calendarmap,^Runtime(connections=meta::relational::tests::milestoning::initDatabaseForCalendar()), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedValue = 'date\n'+
+                        '2020-01-03\n'+
+                        '2020-01-04\n'+
+                        '2020-01-08\n'+
+                        '2020-01-09\n'+
+                        '2020-01-10\n'+
+                        '2020-01-11\n';
+   let actualValue = $result.values->toCSV();
+   assertSameElements($expectedValue, $actualValue);
+}
+
+function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::milestoning::temporalDateProjectionQuery::testProcessingTemporalModelQueryOnRoot():Boolean[1]
+{
+   let query = {|Certification->getAllForEachDate(Calendar.all()->filter(x|($x.calendarDate > %2020-01-02) && ($x.calendarDate < %2020-01-07)).calendarDate)->filter(x|$x.name == 'APCE' || $x.name == 'SRCE')->project([x|$x.name, x|$x.processingDate], ['name', 'date'])->distinct()};
+   let result = execute($query,Calendarmap,^Runtime(connections=meta::relational::tests::milestoning::initDatabaseForCalendar()), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedValue = 'name,date\n'+
+                        'SRCE,2020-01-03\n'+
+                        'SRCE,2020-01-04\n';
+   let actualValue = $result.values->toCSV();
+   assertSameElements($expectedValue, $actualValue);
+}
+
+function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::milestoning::temporalDateProjectionQuery::testProcessingTemporalModelOnPropertyWithPropogatedDate():Boolean[1]
+{
+   let query = {|Certification->getAllForEachDate(Calendar.all()->filter(x|($x.calendarDate > %2020-01-02) && ($x.calendarDate < %2020-01-07)).calendarDate)->filter(x|$x.trader($x.processingDate).kerberos == 'ggekko')->project([x|$x.trader($x.processingDate).kerberos, x|$x.processingDate], ['kerberos', 'date'])};
+   let result = execute($query,Calendarmap,^Runtime(connections=meta::relational::tests::milestoning::initDatabaseForCalendar()), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedValue = 'kerberos,date\n'+
+                        'ggekko,2020-01-03\n'+
+                        'ggekko,2020-01-04\n';
+   let actualValue = $result.values->toCSV();
+   assertSameElements($expectedValue, $actualValue);
+}
+
+// function <<test.Test>> meta::relational::tests::milestoning::temporalProjectionQuery::testProcessingTemporalQueryWithListOfDates():Boolean[1]
+// {
+//    let result = execute(|Product->getAllForEachDate([%2020-05-10,%2020-06-10,%2019-02-15]), milestoningmap, testRuntime()), meta::pure::router::extension::defaultRelationalExtensions());
+//    assertSameSQL();
+// }
+
+function meta::relational::tests::milestoning::initDatabaseForCalendar():TestDatabaseConnection[1]
+{
+   let connection = ^TestDatabaseConnection(element = Calendardb, type = DatabaseType.H2);
+  
+   executeInDb('drop table if exists CalendarTable;',$connection);
+   executeInDb('create table CalendarTable (calendar_date DATE PRIMARY KEY, quarter_number INT)',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-01-01\', 1);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-01-02\', 1);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-01-03\', 1);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-01-04\', 1);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-01-08\', 1);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-01-09\', 1);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-01-10\', 1);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-01-11\', 1);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-01-30\', 1);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-02-01\', 1);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-02-02\', 1);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-02-03\', 1);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-02-04\', 1);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-02-08\', 1);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-02-09\', 1);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-02-10\', 1);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-02-11\', 1);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-03-01\', 1);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-03-02\', 1);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-03-03\', 1);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-03-04\', 1);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-03-08\', 1);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-03-09\', 1);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-03-10\', 1);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-03-11\', 1);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-04-01\', 1);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-04-02\', 1);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-04-03\', 1);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-04-04\', 1);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-04-08\', 1);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-04-09\', 1);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-04-10\', 1);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-04-11\', 1);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-05-01\', 2);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-05-02\', 2);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-05-03\', 2);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-05-04\', 2);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-05-08\', 2);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-05-09\', 2);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-05-10\', 2);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-05-11\', 2);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-06-01\', 2);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-06-02\', 2);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-06-03\', 2);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-06-04\', 2);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-06-08\', 2);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-06-09\', 2);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-06-10\', 2);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-06-11\', 2);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-07-01\', 2);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-07-02\', 2);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-07-03\', 2);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-07-04\', 2);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-07-08\', 2);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-07-09\', 2);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-07-10\', 2);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-07-11\', 2);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-08-01\', 2);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-08-02\',2);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-08-03\', 2);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-08-04\', 2);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-08-08\', 2);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-08-09\', 2);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-08-10\', 2);',$connection);
+   executeInDb('insert into CalendarTable values(\'2020-08-11\', 2);',$connection);
+   executeInDb('insert into CalendarTable values(\'2015-10-15\', 2);',$connection);
+   executeInDb('insert into CalendarTable values(\'2015-10-16\', 2);',$connection);
+   executeInDb('insert into CalendarTable values(\'2015-10-17\', 2);',$connection);
+   
+   executeInDb('drop table if exists ProductExchangeTable;',$connection);
+   executeInDb('create table ProductExchangeTable (name VARCHAR(200), city VARCHAR(200), from_z TIMESTAMP, thru_z TIMESTAMP);',$connection);
+   executeInDb('insert into ProductExchangeTable values(\'ISE\',\'Dublin\',\'2020-01-09 00:00:00\',\'2020-01-31 00:00:00\');',$connection);
+   executeInDb('insert into ProductExchangeTable values(\'LNSE\',\'London\',\'2015-8-15 00:00:00\',\'9999-12-31 00:00:00\');',$connection);
+   executeInDb('insert into ProductExchangeTable values(\'LNSE\',\'London\',\'2014-1-15 00:00:00\',\'2014-1-16 00:00:00\');',$connection);
+   
+   executeInDb('drop table if exists ProductTable;',$connection);
+   executeInDb('create table ProductTable (id Integer, name VARCHAR(200),type VARCHAR(200),exchange VARCHAR(200), referenceSystemName VARCHAR(200), EXTERNALREFERENCESYSTEMNAME VARCHAR(200), classificationSystemId Integer, from_z TIMESTAMP, thru_z TIMESTAMP);',$connection);
+   executeInDb('insert into ProductTable values(1,\'ProductName\',\'STOCK\',\'ISE\', \'SYS1\',\'SYS1\', 1, \'2020-01-01 00:00:00\', \'2020-01-30 00:00:00\');',$connection);
+   executeInDb('insert into ProductTable values(2,\'ProductName1\',\'STOCK\',\'LNSE\', \'SYS1\',\'SYS1\', 1, \'2015-8-26 00:00:00\', \'2015-10-16 00:00:00\');',$connection);
+   executeInDb('insert into ProductTable values(2,\'ProductName2\',\'STOCK\',\'LNSE\', \'SYS1\', \'SYS1\',1, \'2015-10-16 00:00:00\', \'9999-12-31 00:00:00\');',$connection);
+   executeInDb('insert into ProductTable values(3,\'ProductName3\',\'OPTION\',\'ISE\', \'SYS1\', \'SYS1\',1, \'2015-8-26 00:00:00\', \'9999-12-31 00:00:00\');',$connection);
+   
+   executeInDb('drop table if exists OrderTable;',$connection);
+   executeInDb('create table OrderTable (orderDate TIMESTAMP, id Integer, prodFk Integer)',$connection);
+   executeInDb('insert into OrderTable values(\'2015-8-26 00:00:00\', 1,1);',$connection);
+   executeInDb('insert into OrderTable values(\'2015-8-26 00:00:00\', 2,2);',$connection);
+   
+   executeInDb('drop table if exists ProductClassificationTable;',$connection);
+   executeInDb('create table ProductClassificationTable (type VARCHAR(200),type_description VARCHAR(400),system VARCHAR(200), exchange VARCHAR(200), from_z TIMESTAMP, thru_z TIMESTAMP);',$connection);
+   executeInDb('insert into ProductClassificationTable values(\'STOCK\',\'STOCK DESC-V1\',\'SYS1\', \'LNSE\', \'2020-01-02 00:00:00\', \'2020-01-10 00:00:00\');',$connection);
+   executeInDb('insert into ProductClassificationTable values(\'STOCK\',\'STOCK DESC-V2\',\'SYS1\', \'LNSE\', \'2015-8-17 00:00:00\',\'2015-9-15 00:00:00\');',$connection);
+   executeInDb('insert into ProductClassificationTable values(\'STOCK\',\'STOCK DESC-V3\',\'SYS1\', \'LNSE\', \'2015-9-15 00:00:00\',\'2015-10-17 00:00:00\');',$connection);
+   executeInDb('insert into ProductClassificationTable values(\'STOCK\',\'STOCK DESC-V4\',\'SYS1\', \'LNSE\', \'2015-10-17 00:00:00\',\'9999-12-31 00:00:00\');',$connection);
+   executeInDb('insert into ProductClassificationTable values(\'OPTION\',\'OPTION DESC-V1\',\'SYS1\', \'ISE\', \'2015-1-15 00:00:00\',\'2015-1-16 00:00:00\');',$connection);
+   
+   executeInDb('Drop table if exists CertificationTable;', $connection);
+   executeInDb('Create Table CertificationTable(kerberos VARCHAR(20), name VARCHAR(200),in_z TIMESTAMP, out_z TIMESTAMP);', $connection);
+   executeInDb('insert into CertificationTable (kerberos, name, in_z, out_z) values (\'ggekko\', \'SRCE\',\'2020-01-02 00:00:00\',\'2020-01-10 00:00:00\');', $connection);
+   executeInDb('insert into CertificationTable (kerberos, name, in_z, out_z) values (\'ggekko\', \'APCE\',\'2015-9-15 00:00:00\',\'2015-10-17 00:00:00\');', $connection);
+   executeInDb('insert into CertificationTable (kerberos, name, in_z, out_z) values (\'bfox\', \'SRCE\',\'1987-1-1 00:00:00\',\'9999-12-31 00:00:00\');', $connection);
+   
+   executeInDb('Drop table if exists TraderTable;', $connection);
+   executeInDb('Create Table TraderTable(kerberos VARCHAR(20),in_z TIMESTAMP, out_z TIMESTAMP);', $connection);
+   executeInDb('insert into TraderTable (kerberos, in_z, out_z) values (\'ggekko\',\'2020-01-01 00:00:00\',\'2020-01-10 00:00:00\');', $connection);
+   executeInDb('insert into TraderTable (kerberos, in_z, out_z) values (\'bfox\',\'2015-1-1 00:00:00\',\'2015-12-31 00:00:00\');', $connection);
+   $connection;
+}
+
+Class meta::relational::tests::milestoning::Calendar{
+   calendarDate : Date[1];
+   quarterNumberInYear     : Integer[1];
+   }
+
+###Relational 
+Database meta::relational::tests::milestoning::Calendardb(
+   
+   include meta::relational::tests::milestoning::db 
+   
+   Table CalendarTable(
+      calendar_date DATE PRIMARY KEY,
+      quarter_number INT
+   )
+)
+
+###Mapping
+
+import meta::relational::tests::milestoning::*;
+Mapping meta::relational::tests::milestoning::Calendarmap(
+   
+   include milestoningmap[db->Calendardb] 
+   
+   Calendar :Relational{
+      calendarDate : [Calendardb]CalendarTable.calendar_date,
+      quarterNumberInYear : [Calendardb]CalendarTable.quarter_number
+   }
+)

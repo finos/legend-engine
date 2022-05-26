@@ -1,0 +1,108 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::format::protobuf::metamodel::*;
+import meta::external::format::protobuf::serialization::*;
+
+function meta::external::format::protobuf::serialization::toString(file:ProtoFile[1]):String[1]
+{
+  let packageName = if( $file.package->isEmpty(), | '', | $file.package->toOne() );
+
+   'syntax = "' + $file.syntax.name + '";\n'
+   + if( $file.package->isEmpty(), | '', | 'package ' + $packageName + ';\n\n' )
+   + if( $file.imports->isEmpty(), | '', | $file.imports->map( i | 'import "' + if( $i.importType->isEmpty(), | '', | $i.importType->toOne().name + ' ' ) + $i.name + '";\n')->joinStrings('','','\n'))
+   + if( $file.options->isEmpty(), | '', | $file.options->map(o | $o->meta::external::format::protobuf::serialization::toString())->joinStrings() + '\n')                                         
+   + if( $file.topLevelDefs->isEmpty(), | '', | $file.topLevelDefs->map(t | $t->meta::external::format::protobuf::serialization::topLevelItemToString($packageName))->joinStrings('\n\n'));
+}
+
+function meta::external::format::protobuf::serialization::toString(p:ProtoItemDefinition[1],currentPackage:String[1]):String[1]
+{
+   $p->match(
+      [
+         m:Message[1]|$m->toString($currentPackage),
+         e:meta::external::format::protobuf::metamodel::Enumeration[1]|$e->toString($currentPackage),
+         field:Field[1]| $field->toString($currentPackage),
+         o:OneOf[1]| '  oneof ' + $o.name + ' {\n' + $o.field->map(f | '  ' + $f->toString($currentPackage))->joinStrings('\n') + '\n  }',
+         mo:MessageOption[1]| $mo.option->meta::external::format::protobuf::serialization::toString()
+      ]
+   )
+}
+
+function meta::external::format::protobuf::serialization::topLevelItemToString(p:ProtoItemDefinition[1],currentPackage:String[1]):String[1]
+{
+   $p->match(
+      [
+         m:Message[1]|$m->toString($currentPackage),
+         e:meta::external::format::protobuf::metamodel::Enumeration[1]|$e->toString($currentPackage),
+         service:Service[1]|'service ' + $service.name + ' {' + $service.content->map(f | $f->meta::external::format::protobuf::serialization::toString($currentPackage))->joinStrings('\n','\n','\n') + '}'
+      ]
+   )
+}
+
+function meta::external::format::protobuf::serialization::toString(message:Message[1],currentPackage:String[1]):String[1]
+{
+  'message ' + $message.name + ' {\n' + $message.content->map(f | $f->meta::external::format::protobuf::serialization::toString($currentPackage))->joinStrings('\n') + '\n}'
+}
+
+function meta::external::format::protobuf::serialization::toString(enum:meta::external::format::protobuf::metamodel::Enumeration[1],currentPackage:String[1]):String[1]
+{
+  'enum '+$enum.name+' {\n'+$enum.values->map(v|'  '+$v.constant+' = '+$enum.values->indexOf($v)->toString())->joinStrings(';\n')+';\n}'
+}
+
+function meta::external::format::protobuf::serialization::toString(s:ServiceBodyItem[1],currentPackage:String[1]):String[1]
+{
+   $s->match(
+     [
+       rpc:RemoteProcedureCall[1]|'  rpc ' + $rpc.name + '(' + toString($rpc.requestType, $currentPackage) + ') returns (' + toString($rpc.returnType, $currentPackage) + ') {' + if($rpc.options->isEmpty(), | '', | $rpc.options->map(o | $o->toString())->joinStrings('\n','\n','')) + '}',
+       o:ServiceOption[1]|'  ' + meta::external::format::protobuf::serialization::toString($o.option)
+     ]
+   )
+}
+
+function meta::external::format::protobuf::serialization::toString(field:Field[1],currentPackage:String[1]):String[1]
+{
+   '  ' + if($field.repeated, | 'repeated ', | '') + meta::external::format::protobuf::serialization::toString($field.type, $currentPackage)+ ' ' + $field.name + ' = ' + $field.number->toString() + ';'
+}
+
+function meta::external::format::protobuf::serialization::toString(t:ProtoBufType[1],currentPackage:String[1]):String[1]
+{
+  $t->match([
+                t:MessagePtr[1]|if(!$t.package->isEmpty() && $currentPackage != $t.package, | $t.package + '.', | '') + $t.name,
+                t:EnumPtr[1]|if(!$t.package->isEmpty() && $currentPackage != $t.package, | $t.package + '.', | '') + $t.name,
+                m:MapType[1]|'map<' + $m.keyType->toString($currentPackage) + ',' + $m.valueType->toString($currentPackage) + '>',
+                t:ScalarType[1]|$t->genericType().rawType.name->toOne()->toLower()
+            ])
+}
+
+function meta::external::format::protobuf::serialization::toString(t:MessageType[1],currentPackage:String[1]):String[1]
+{
+   if($t.stream->isTrue(), |'stream ' ,|'') + $t.type->toString($currentPackage)
+}
+
+function meta::external::format::protobuf::serialization::toString(o:Option[1]):String[1]
+{
+  'option ' + if( $o.name->contains('.'), | '(' + $o.name + ')', | $o.name ) + ' = ' + $o.value->toString() + ';\n'
+}
+
+function meta::external::format::protobuf::serialization::toString(v:Literal[1]):String[1]
+{
+  $v->match([
+    b:BlockLiteral[1] | '{ ' + $b.values->map( v | $v.name + ': ' + $v.value->toString())->joinStrings(',') + ' }',
+    s:StringLiteral[1] | '"' + $s.value + '"',
+    i:IntLiteral[1] | $i.value->toString(),
+    f:FloatLiteral[1] | $f.value->toString(),
+    b:BoolLiteral[1] | $b.value->toString(),
+    e:IdentifierLiteral[1] | $e.value->toString()
+  ])
+} 

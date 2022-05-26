@@ -1,0 +1,183 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::mapping::*;
+import meta::pure::router::extension::*;
+import meta::pure::mapping::modelToModel::*;
+import meta::pure::graphFetch::execution::*;
+import meta::relational::validation::functions::*;
+import meta::relational::validation::alloy::*;
+import meta::pure::metamodel::constraint::*;
+import meta::pure::executionPlan::*;
+import meta::pure::graphFetch::*;
+import meta::pure::runtime::*;
+
+Class meta::relational::validation::alloy::ClassValidationException
+{
+   constraintName : String[1];
+   owner : String[0..1];
+   externalId : String[0..1];
+   enforcementLevel : String[0..1];
+   message : String[0..1];
+   classId : String[0..1];
+}
+
+function <<doc.deprecated>> meta::relational::validation::alloy::alloyClassValidation<T, U>(classToValidate:Class<T>[1], constraintName:String[1], sourceMapping:Mapping[1], sourceRuntime:Runtime[1], exceptionMapping:Mapping[1], execptionTree:RootGraphFetchTree<U>[1], extensions:RouterExtension[*]):Result<String|1>[1]
+{
+   let fd = alloyClassValidationFunction($classToValidate, $constraintName, $sourceMapping, $sourceRuntime, $exceptionMapping, $execptionTree);
+   execute($fd, ^Mapping(), ^Runtime(), ^ExecutionContext(enableConstraints=false), $extensions);
+}
+
+function <<doc.deprecated>> meta::relational::validation::alloy::alloyClassValidationExecutionPlan<T, U>(classToValidate:Class<T>[1], constraintName:String[1], sourceMapping:Mapping[1], sourceRuntime:Runtime[1], exceptionMapping:Mapping[1], execptionTree:RootGraphFetchTree<U>[1], extensions:RouterExtension[*]):ExecutionPlan[1]
+{
+   let fd = alloyClassValidationFunction($classToValidate, $constraintName, $sourceMapping, $sourceRuntime, $exceptionMapping, $execptionTree);
+   executionPlan($fd, ^ExecutionContext(enableConstraints=false), $extensions);
+}
+
+function <<access.private>> meta::relational::validation::alloy::createGetAll<T>(c: Class<T>[1]):FunctionExpression[1]
+{
+   let getAllExpression = ^SimpleFunctionExpression
+    (
+       func = getAll_Class_1__T_MANY_,
+       functionName = 'getAll',
+       importGroup = system::imports::coreImport,
+       genericType = ^GenericType(rawType = $c),
+       multiplicity = ZeroMany,
+       parametersValues = ^InstanceValue( genericType = ^GenericType(rawType = Class, typeArguments = ^GenericType(rawType = $c)),
+                                          multiplicity = PureOne,
+                                          values = $c
+                                        ))->evaluateAndDeactivate();
+    let classifierGenericType = ^GenericType(rawType = LambdaFunction, typeArguments = ^GenericType(rawType = ^FunctionType(returnMultiplicity = ZeroMany, returnType = ^GenericType(rawType = $c))));
+    let lambda = {|[]};
+    ^$lambda(classifierGenericType=$classifierGenericType, expressionSequence = $getAllExpression).expressionSequence->at(0)->cast(@FunctionExpression);
+}
+
+function meta::relational::validation::alloy::alloyClassValidationFunction<T, U>(classToValidate:Class<T>[1], constraintName:String[1], sourceMapping:Mapping[1], sourceRuntime:Runtime[1], exceptionMapping:Mapping[1], execptionTree:RootGraphFetchTree<U>[1]):LambdaFunction<{->String[1]}>[1]
+{
+   let exceptionType = $execptionTree.class;
+   assert($exceptionType->subTypeOf(ClassValidationException),'The root of the exception graph fetch tree should be a subtype of ClassConstraintException');
+   let eventDataGraphFetchTree = $execptionTree.subTrees->cast(@PropertyGraphFetchTree)->filter(st|$st.property.name->toOne() == 'eventData');
+
+   let eventDataProperty = if($eventDataGraphFetchTree->isNotEmpty(),| $eventDataGraphFetchTree.property->toOne()
+                                                                    ,| [])->cast(@Property<Nil, Any|*>);
+
+   let eventDataGraphFetchTreeSubTrees = if($eventDataGraphFetchTree->isNotEmpty(),| $eventDataGraphFetchTree.subTrees
+                                                                                  ,| []);
+
+
+   let constraint = $classToValidate.constraints->filter(c|$c.name == $constraintName)->toOne();
+   let f = {c:Class<Any>[1]|$constraint.functionDefinition->concatenate($constraint.messageFunction)};
+   let sourceGraphTree =^RootGraphFetchTree<T>(class=$classToValidate, subTrees=$eventDataGraphFetchTree.subTrees)->meta::pure::graphFetch::ensureFunctionRequirements($classToValidate, $f, [], false)->cast(@RootGraphFetchTree<Any>);
+
+   let violationsQuery = buildViolationsQuery($classToValidate, $constraint, $sourceMapping, $sourceGraphTree, $sourceRuntime);
+   let violationsToExceptions = buildViolationsToExceptionsTransformation($classToValidate, $constraint, $exceptionMapping, $execptionTree, $eventDataProperty);
+
+   let lambda = {|''};
+
+   ^$lambda(expressionSequence = [$violationsQuery, $violationsToExceptions]);
+}
+
+function <<access.private>> meta::relational::validation::alloy::buildViolationsQuery<T>(classToValidate:Class<T>[1], constraint:Constraint[1], sourceMapping:Mapping[1], sourceGraphTree:RootGraphFetchTree<T>[1], sourceRuntime:Runtime[1]):FunctionExpression[1]
+{
+    let getAll = createGetAll($classToValidate);
+    let constraintQueryExpr = $classToValidate->meta::relational::validation::functions::generateConstraintNegatedFilteredQuery($getAll, $constraint);
+    let graphFetch = ^SimpleFunctionExpression(func=graphFetch_T_MANY__RootGraphFetchTree_1__T_MANY_ , parametersValues=[$constraintQueryExpr, ^InstanceValue(values=$sourceGraphTree, genericType=^GenericType(rawType=RootGraphFetchTree), multiplicity=PureOne)], functionName='graphFetch', genericType=^GenericType(rawType=$classToValidate), multiplicity = ZeroMany, importGroup=system::imports::coreImport);
+
+    let deactivatedMapping = ^InstanceValue(values=$sourceMapping, genericType=^GenericType(rawType=Mapping), multiplicity=PureOne) ;
+    let deactivatedRuntime = ^InstanceValue(values=$sourceRuntime->evaluateAndDeactivate(), genericType=^GenericType(rawType=NonExecutableValueSpecification), multiplicity=PureOne);
+
+    let from = ^SimpleFunctionExpression(func=from_T_m__Mapping_1__Runtime_1__T_m_, functionName='from', importGroup=system::imports::coreImport, genericType=^GenericType(rawType=$classToValidate), multiplicity=ZeroMany, parametersValues=[$graphFetch, $deactivatedMapping, $deactivatedRuntime])->evaluateAndDeactivate();
+
+    ^SimpleFunctionExpression(func=letFunction_String_1__T_m__T_m_, parametersValues=[^InstanceValue(values= $constraint.name, genericType=^GenericType(rawType=String), multiplicity=PureOne), $from], functionName = 'letFunction', genericType = ^GenericType(rawType=$classToValidate),multiplicity = ZeroMany, importGroup = system::imports::coreImport);
+}
+
+function <<access.private>> meta::relational::validation::alloy::buildViolationsToExceptionsTransformation<T>(classToValidate:Class<T>[1], constraint:Constraint[1], exceptionMapping:Mapping[1], m2mTree:RootGraphFetchTree<T>[1], eventDataProperty:Property<Nil, T|*>[0..1]):FunctionExpression[1]
+{
+    let m2mType = $m2mTree.class;
+    let m2mGetAll = createGetAll($m2mType);
+    let m2mGraphFetch = ^SimpleFunctionExpression(func=graphFetch_T_MANY__RootGraphFetchTree_1__T_MANY_ , parametersValues=[$m2mGetAll, ^InstanceValue(values=$m2mTree, genericType=^GenericType(rawType=RootGraphFetchTree), multiplicity=PureOne)], functionName='graphFetch', genericType=^GenericType(rawType=$m2mType), multiplicity = ZeroMany, importGroup=system::imports::coreImport);
+    let m2mSerialize = ^SimpleFunctionExpression(func=serialize_T_MANY__RootGraphFetchTree_1__String_1_ , parametersValues=[$m2mGraphFetch, ^InstanceValue(values=$m2mTree, genericType=^GenericType(rawType=RootGraphFetchTree), multiplicity=PureOne)], functionName='graphFetch', genericType=^GenericType(rawType=$m2mType), multiplicity = ZeroMany, importGroup=system::imports::coreImport);
+
+    let mappingWithDefaultPropertiesMapped = $m2mType->addClassValidationExceptionMappings($constraint, $exceptionMapping, $eventDataProperty);
+    let m2mDeactivatedMapping = ^InstanceValue(values=$mappingWithDefaultPropertiesMapped, genericType=^GenericType(rawType=Mapping), multiplicity=PureOne) ;
+    let m2mDeactivatedRuntime = runtimeExpression($classToValidate, $constraint.name->toOne());
+
+    ^SimpleFunctionExpression(func=from_T_m__Mapping_1__Runtime_1__T_m_, functionName='from', importGroup=system::imports::coreImport, genericType=^GenericType(rawType=$m2mType), multiplicity=ZeroMany, parametersValues=[$m2mSerialize, $m2mDeactivatedMapping, $m2mDeactivatedRuntime])->evaluateAndDeactivate();
+}
+
+function <<access.private>> meta::relational::validation::alloy::addClassValidationExceptionMappings<T, U>(exceptionType:Class<T>[1], constraint:Constraint[1], exceptionMapping:Mapping[1], eventDataProperty:Property<Nil, U|*>[0..1]):Mapping[1]
+{
+   let exceptionSetImpl = $exceptionMapping.rootClassMappingByClass($exceptionType)->cast(@PureInstanceSetImplementation)->toOne();
+   let templateLambda = {|''};
+   let constantPropertyMappings = Constraint.properties->filter(p| ClassValidationException.properties.name->contains($p.name->toOne()))
+                                                       ->filter(p| $p.name!='messageFunction')
+                                                       ->filter(p| $p->functionReturnType().rawType == String)
+                                                          ->map(p| let val = $p->eval($constraint);
+                                                                   if($val->isNotEmpty(),| let iv = ^InstanceValue(values=$val, genericType=^GenericType(rawType=String), multiplicity=PureOne);
+                                                                                           let transform = ^$templateLambda(expressionSequence=$iv);
+                                                                                           ^PurePropertyMapping( property = ClassValidationException.properties->filter(cvp|$cvp.name == $p.name)->toOne(),
+                                                                                                                 sourceSetImplementationId = $exceptionSetImpl.id,
+                                                                                                                 targetSetImplementationId = '',
+                                                                                                                 transform = $transform);
+                                                                                        ,| []);
+                                                               );
+
+   let messageFunctionPropertyMapping = if($constraint.messageFunction->isNotEmpty(),| let exceptionMessageFunction = if($eventDataProperty->isNotEmpty(),| $constraint.messageFunction->evaluateAndDeactivate()->toOne()->injectThisReplacementWithSrcEventData($eventDataProperty->toOne(), $exceptionType);
+                                                                                                                                                         ,| $constraint.messageFunction->evaluateAndDeactivate()->toOne()->injectThisReplacement(^VariableExpression(name='src', genericType=^GenericType(rawType=$exceptionSetImpl.srcClass), multiplicity=PureOne)))->cast(@LambdaFunction<Any>)->toOne();
+                                                                                       ^PurePropertyMapping( property = ClassValidationException.properties->filter(cvp|$cvp.name == 'message')->toOne(),
+                                                                                                             sourceSetImplementationId = $exceptionSetImpl.id,
+                                                                                                             targetSetImplementationId = '',
+                                                                                                             transform = $exceptionMessageFunction);
+                                                                                    ,| []);
+
+   let updatedExceptionSetImpl = ^$exceptionSetImpl(propertyMappings=$exceptionSetImpl.propertyMappings->concatenate($constantPropertyMappings)->concatenate($messageFunctionPropertyMapping));
+   ^$exceptionMapping(classMappings=$exceptionMapping.classMappings->filter(cm|$cm != $exceptionSetImpl)->concatenate($updatedExceptionSetImpl));
+}
+
+function <<access.private>> meta::relational::validation::alloy::injectThisReplacementWithSrcEventData<T>(l:FunctionDefinition<Any>[1], eventDataProperty:Property<Nil, T|*>[1], exceptionType:Class<T>[1]):FunctionDefinition<Any>[1]
+{
+   let srcVariableExpression = ^VariableExpression(name='src', genericType=$eventDataProperty->functionReturnType(), multiplicity=PureOne);
+   $l->injectThisReplacement($srcVariableExpression);
+}
+
+function <<access.private>> meta::relational::validation::alloy::injectThisReplacement(l:FunctionDefinition<Any>[1], thisReplacement:ValueSpecification[1]):FunctionDefinition<Any>[1]
+{
+   $l->match([ l:LambdaFunction<Any>[1]| let expressionSequence = $l.expressionSequence->toOne()->cast(@ValueSpecification);
+                                         let expressionSequenceUpdated = $expressionSequence->injectThisReplacement($thisReplacement);
+                                         ^$l(expressionSequence=$expressionSequenceUpdated);,
+               f:FunctionDefinition<Any>[1]| fail('Non LambdaFunction FunctionDefinition not supported when replacing Constraint $this reference');$f;
+            ])
+}
+
+function <<access.private>> meta::relational::validation::alloy::injectThisReplacement(vs:ValueSpecification[1], thisReplacement:ValueSpecification[1]):ValueSpecification[1]
+{
+   $vs->evaluateAndDeactivate()
+      ->match([ f:FunctionExpression[1] | ^$f(parametersValues = $f.parametersValues->evaluateAndDeactivate()->map(pv|$pv->injectThisReplacement($thisReplacement))),
+                v:VariableExpression[1] | if($v.name == 'this',| $thisReplacement
+                                                              ,| $v);,
+                     i:InstanceValue[1] | ^$i(values=$i.values->evaluateAndDeactivate()->map(v|$v->match([v:ValueSpecification[1]|$v->injectThisReplacement($thisReplacement), a:Any[1]|$a]))),
+                v:ValueSpecification[1] | $v
+             ])
+}
+
+
+function <<access.private>> meta::relational::validation::alloy::runtimeExpression<T>(type:Class<T>[1], constraintName:String[1]):ValueSpecification[1]
+{
+   let runtimeFactory = {|getRuntimeWithModelConnection($type, $constraintName)};
+   let typeGt = ^GenericType(rawType=$type);
+   let iv = ^InstanceValue(genericType=^GenericType(rawType=Class, typeArguments=$typeGt), values=$type, multiplicity=PureOne);
+   let ve = ^VariableExpression(name=$constraintName, multiplicity=PureOne, genericType=$typeGt);
+   let rfe = $runtimeFactory.expressionSequence->at(0)->evaluateAndDeactivate()->cast(@FunctionExpression);
+   ^$rfe(parametersValues=$iv->concatenate($ve));
+}

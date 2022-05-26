@@ -1,0 +1,71 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+
+import meta::relational::metamodel::execute::*;
+import meta::relational::functions::asserts::*;
+import meta::relational::runtime::*;
+import meta::relational::tests::milestoning::*;
+import meta::relational::tests::milestoning::distinct::*;
+import meta::relational::tests::*;
+
+function <<test.BeforePackage>> meta::relational::tests::milestoning::distinct::setUp():Any[0..1]
+{
+   let connection = meta::relational::tests::testRuntime(milestoningdistinctdb).connections->toOne()->cast(@TestDatabaseConnection);
+   
+   executeInDb('drop table if exists ProductTable;',$connection);
+   executeInDb('create table ProductTable (id Integer, name VARCHAR(200),type VARCHAR(200), from_z TIMESTAMP, thru_z TIMESTAMP);',$connection);
+   executeInDb('insert into ProductTable values(1,\'ProductName\',\'STOCK\',\'2015-8-15 00:00:00\', \'9999-12-31 00:00:00\');',$connection);
+   executeInDb('insert into ProductTable values(1,\'ProductName\',\'STOCK\',\'2015-8-15 00:00:00\', \'9999-12-31 00:00:00\');',$connection);
+   executeInDb('insert into ProductTable values(1,\'ProductName\',\'STOCK\',\'2015-8-15 00:00:00\', \'9999-12-31 00:00:00\');',$connection);
+   executeInDb('insert into ProductTable values(2,\'ProductName1\',\'STOCK\',\'2015-8-15 00:00:00\', \'9999-12-31 00:00:00\');',$connection);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::distinct::testDistinctUsageAtRootOfMilestonedQuery():Boolean[1]
+{
+   let busDate = %2015-10-16;
+   let result = execute(|Product.all(%2015-8-16)->project([p|$p.id, p|$p.name, p|$p.type],['id','name', 'type']), milestoningdistinctmapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let tds = $result.values->at(0);
+   assertEquals(['1,ProductName,STOCK', '2,ProductName1,STOCK'], $tds.rows->map(r|$r.values->makeString(','))->sort());
+   assertSameSQL('select "root".id as "id", "root".name as "name", "root".type as "type" from (select distinct "producttable_1".id as id, "producttable_1".name as name, "producttable_1".type as type, \'2015-08-16\' as "k_businessDate" from ProductTable as "producttable_1" where "producttable_1".from_z <= \'2015-08-16\' and "producttable_1".thru_z > \'2015-08-16\') as "root"', $result);   
+}
+
+###Relational
+Database meta::relational::tests::milestoning::distinct::milestoningdistinctdb(
+   
+   Table ProductTable(
+            milestoning(
+               business(BUS_FROM=from_z, BUS_THRU=thru_z)
+            )
+            id Integer PRIMARY KEY, 
+            name VARCHAR(200) PRIMARY KEY,
+            type VARCHAR(200),
+            from_z DATE PRIMARY KEY,
+            thru_z DATE)
+)
+
+###Mapping
+import meta::relational::tests::milestoning::distinct::*;
+import meta::relational::tests::milestoning::*;
+
+Mapping meta::relational::tests::milestoning::distinct::milestoningdistinctmapping
+(
+   Product : Relational{
+      ~distinct
+      id : [milestoningdistinctdb]ProductTable.id, 
+      name : [milestoningdistinctdb]ProductTable.name,
+      type : [milestoningdistinctdb]ProductTable.type
+   }    
+)
+   

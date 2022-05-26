@@ -1,0 +1,102 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::mapping::*;
+import meta::relational::translation::*;
+import meta::pure::executionPlan::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::functions::pureToSqlQuery::*;
+import meta::relational::postProcessor::*;
+import meta::relational::transform::fromPure::*;
+import meta::relational::runtime::*;
+import meta::pure::router::extension::*;
+import meta::pure::runtime::*;
+import meta::relational::metamodel::*;
+
+function meta::relational::postProcessor::getObjectReferenceStoreType():String[1]
+{
+   'Relational'
+}
+
+function meta::relational::postProcessor::processObjectReferenceInOperation(query:SQLQuery[1], runtime:Runtime[1], store:Database[0..1], exeCtx:ExecutionContext[1], extensions:RouterExtension[*]):PostProcessorResult[1]
+{
+   let connection = $runtime->connectionByElement($store->toOne())->meta::relational::mapping::updateConnection($extensions)->cast(@DatabaseConnection);
+   let tempTableNamePrefix     = 'tempTableForObjectReferenceIn_';
+   let columnName              = 'ObjectReferenceInCollectionColumn';
+   
+   let varPrefixForStoringPKValues  = 'tempVarForStoringPKValues_';
+
+   let translationContext = ^TranslationContext(dbType = $connection.type);
+   let transform  =  {r: RelationalOperationElement[1], uniqueId: Integer[1] |
+                        $r->match([
+                           d  : DynaFunction[1] | if($d.name == 'objectReferenceIn',
+                                                     |
+                                                     let tempTableName        = $tempTableNamePrefix + $uniqueId->toString();
+                                                     let tempTableColumnName  = $columnName;
+
+                                                     let selectSQLQuery       = generateTempTableSelectSQLQuery('default', $tempTableName, $tempTableColumnName, pureTypeToDataType(String, $translationContext)->toOne());
+
+                                                     ^DynaFunction(name       = 'in', 
+                                                                   parameters = [$d.parameters->at(0), $selectSQLQuery]);,
+                                                     |$d);,
+                           rel : RelationalOperationElement[1] | $rel;
+                        ])
+                     };
+
+   let transformedQuery = $query->transform($transform, ^Map<RelationalOperationElement, RelationalOperationElement>());
+   let changedFunctions = $transformedQuery.second->keyValues()->filter(p | $p.first->instanceOf(DynaFunction) && $p.first->cast(@DynaFunction).name == 'objectReferenceIn' && $p.first->buildUniqueName(true, $extensions) != $p.second->buildUniqueName(true, $extensions));
+   
+   $changedFunctions->fold({func, result |
+                          let origObjectRefInFunction               = $func.first->cast(@DynaFunction);
+                          let newObjectRefInFunction                = $func.second->cast(@DynaFunction);
+
+                          let tempTableName                         = $newObjectRefInFunction.parameters->at(1)->cast(@SelectSQLQuery).data.alias.name->toOne();
+                          let tempTableColumnName                   = $columnName;
+                          let nameForAllocationNodeStoringPkValues  = $tempTableName->replace($tempTableNamePrefix, $varPrefixForStoringPKValues);
+
+                          let collectionVarName                     = $origObjectRefInFunction.parameters->at(1)->cast(@LiteralList).values.value->cast(@VarPlaceHolder).name->toOne();
+      
+                          let pkOrder                               = $origObjectRefInFunction.parameters->at(2)->cast(@LiteralList).values.value->cast(@String);
+                          let storeType                             = getObjectReferenceStoreType();
+                          let transformLambda                       = {objectRefs:String[*]| 
+                                                                          $objectRefs->parseObjectReferences($storeType, $pkOrder)};
+                          let reprocessedLambda                     = $transformLambda->reprocessLambdaWithInScopeVars([pair('pkOrder', ^List<String>(values = $pkOrder)), pair('storeType', ^List<String>(values = $storeType))]->newMap());
+                          let reprocessedExpressionSeq              = $reprocessedLambda.expressionSequence->toOne()->evaluateAndDeactivate()->cast(@SimpleFunctionExpression);
+                          let expressionSeqWithInputVarName         = ^$reprocessedExpressionSeq(parametersValues = [^VariableExpression(name=$collectionVarName, genericType = ^GenericType(rawType=String), multiplicity=ZeroMany), 
+                                                                                                                     $reprocessedExpressionSeq.parametersValues->at(1),
+                                                                                                                     $reprocessedExpressionSeq.parametersValues->at(2)]);
+                          let allocationNodeForPkValues             = ^AllocationExecutionNode(
+                                                                                varName        = $nameForAllocationNodeStoringPkValues,
+                                                                                executionNodes = ^PureExpressionPlatformExecutionNode(
+                                                                                                     expression = $expressionSeqWithInputVarName, 
+                                                                                                     resultType = ^ResultType(type = List)),
+                                                                                resultType     = ^ResultType(type = List)
+                                                                             );
+
+                          let createAndPopulateTempTableNode        = ^CreateAndPopulateTempTableExecutionNode(
+                                                                          inputVarNames           = $nameForAllocationNodeStoringPkValues,
+                                                                          tempTableName           = $tempTableName,
+                                                                          tempTableColumnMetaData = ^TempTableColumnMetaData(
+                                                                                                        column = ^SQLResultColumn(label = $tempTableColumnName,
+                                                                                                                                  dataType = pureTypeToDataType(String, $translationContext)->toOne())
+                                                                                                     ),
+                                                                          connection              = $connection,
+                                                                          resultType              = ^VoidResultType(type=Void)
+                                                                       );
+
+                           let executionNodesToBeAdded              = $allocationNodeForPkValues->concatenate($createAndPopulateTempTableNode);
+
+                           ^$result(executionNodes += $executionNodesToBeAdded);
+            }, ^PostProcessorResult(query = $transformedQuery.first->cast(@SQLQuery)));
+}
