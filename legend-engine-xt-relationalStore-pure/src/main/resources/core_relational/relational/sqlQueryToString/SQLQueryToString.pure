@@ -96,6 +96,31 @@ Class meta::relational::functions::sqlQueryToString::DbConfig
      assert($this.dbExtension.joinStringsProcessor->isNotEmpty(), 'Join strings operation not supported for Database Type: ' + $this.dbType->toString());
      $this.dbExtension.joinStringsProcessor->toOne()->eval($j, $sgc);
    }: String[1];
+
+   selectSQLQueryProcessor(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1])
+   {
+     $this.dbExtension.selectSQLQueryProcessor->eval($s, $sgc, $isSubSelect);
+   }: String[1];
+
+   schemaNameToIdentifier(s:String[1])
+   {
+     if($this.dbExtension.schemaNameToIdentifier->isEmpty(), |$s, |$this.dbExtension.schemaNameToIdentifier->toOne()->eval($s, $this));
+   }: String[1];
+
+   tableNameToIdentifier(s:String[1])
+   {
+     if($this.dbExtension.tableNameToIdentifier->isEmpty(), |$s, |$this.dbExtension.tableNameToIdentifier->toOne()->eval($s, $this));
+   }: String[1];
+
+   columnNameToIdentifier(s:String[1])
+   {
+     if($this.dbExtension.columnNameToIdentifier->isEmpty(), |$s, |$this.dbExtension.columnNameToIdentifier->toOne()->eval($s, $this));
+   }: String[1];
+
+   identifierProcessor(s:String[1])
+   {
+     $this.dbExtension.identifierProcessor->eval($s, $this);
+   }: String[1];
 }
 
 Class meta::relational::functions::sqlQueryToString::DbExtension
@@ -106,6 +131,11 @@ Class meta::relational::functions::sqlQueryToString::DbExtension
    windowColumnProcessor: meta::pure::metamodel::function::Function<{WindowColumn[1], SqlGenerationContext[1] -> String[1]}>[0..1];
    semiStructuredElementProcessor: meta::pure::metamodel::function::Function<{RelationalOperationElement[1], SqlGenerationContext[1] -> String[1]}>[0..1];
    joinStringsProcessor: meta::pure::metamodel::function::Function<{JoinStrings[1], SqlGenerationContext[1] -> String[1]}>[0..1];
+   selectSQLQueryProcessor: meta::pure::metamodel::function::Function<{SelectSQLQuery[1], SqlGenerationContext[1], Boolean[1] -> String[1]}>[1];
+   schemaNameToIdentifier: meta::pure::metamodel::function::Function<{String[1], DbConfig[1] -> String[1]}>[0..1];
+   tableNameToIdentifier: meta::pure::metamodel::function::Function<{String[1], DbConfig[1] -> String[1]}>[0..1];
+   columnNameToIdentifier: meta::pure::metamodel::function::Function<{String[1], DbConfig[1] -> String[1]}>[0..1];
+   identifierProcessor: meta::pure::metamodel::function::Function<{String[1], DbConfig[1] -> String[1]}>[1];
 }
 
 Class meta::relational::functions::sqlQueryToString::SqlGenerationContext
@@ -201,13 +231,42 @@ function meta::relational::functions::sqlQueryToString::createDbExtension(dbType
      )
    ]->evalByDbType($dbType, |[]);
 
+   let selectSQLQueryProcessor = [
+     option(DatabaseType.SybaseIQ, |processSelectSQLQueryForSybaseIQ_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_),
+     option(DatabaseType.MemSQL, |processSelectSQLQueryForMemSQL_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_),
+     option(DatabaseType.DB2, |processSelectSQLQueryForDB2_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_),
+     option(DatabaseType.Sybase, |processSelectSQLQueryForSybase_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_),
+     option(DatabaseType.Presto, |processSelectSQLQueryForPresto_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_),
+     option(DatabaseType.Snowflake, |processSelectSQLQueryForSnowflake_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_),
+     option(DatabaseType.Postgres, |processSelectSQLQueryForPostgres_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_),
+     option(DatabaseType.BigQuery, |processSelectSQLQueryForBigQuery_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_),
+     option(DatabaseType.Databricks, |processSelectSQLQueryForDatabricks_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_)
+   ]->evalByDbType($dbType, |processSelectSQLQueryDefault_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_);
+
+   let schemaNameToIdentifier = [
+     option(DatabaseType.Presto, |schemaNameToIdentifierForPresto_String_1__DbConfig_1__String_1_)
+   ]->evalByDbType($dbType, |[]);
+
+   let columnNameToIdentifier = [
+     option(DatabaseType.SybaseIQ, |columnNameToIdentifierForSybaseIQ_String_1__DbConfig_1__String_1_),
+     option([DatabaseType.H2, DatabaseType.Postgres], |[])
+   ]->evalByDbType($dbType, |columnNameToIdentifierDefault_String_1__DbConfig_1__String_1_);
+
+   let identifierProcessor = [
+     option([DatabaseType.MemSQL, DatabaseType.BigQuery, DatabaseType.Databricks], |processIdentifierWithBackTicks_String_1__DbConfig_1__String_1_)
+   ]->evalByDbType($dbType, |processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_);
+
    ^DbExtension(
       dynaFuncDispatch = getDynaFunctionMappings($dbType),
       isDbReservedIdentifier = {str:String[1]| $str->in($reservedWords)},
       literalProcessor = {type:Type[1]| $literalProcessors->get(if($type->instanceOf(Enumeration), | Enum, | $type))->toOne()},
       windowColumnProcessor = $windowColumnProcessor,
       semiStructuredElementProcessor = $semiStructuredElementProcessor,
-      joinStringsProcessor = $joinStringsProcessor
+      joinStringsProcessor = $joinStringsProcessor,
+      selectSQLQueryProcessor = $selectSQLQueryProcessor,
+      schemaNameToIdentifier = $schemaNameToIdentifier,
+      columnNameToIdentifier = $columnNameToIdentifier,
+      identifierProcessor = $identifierProcessor
    );
 }
 
@@ -273,11 +332,11 @@ function meta::relational::functions::sqlQueryToString::processOperation(relatio
                                           alias:Alias[1]|
                                                 let innerTerm = $alias.relationalElement->match([
                                                    r : VarSetPlaceHolder[1]|$r->processOperation($dbConfig, $format, $generationState, $config, $extensions),
-                                                   s : SelectSQLQuery[1]|$s->processSelectSQLQuery($dbConfig, $format, $config, true, $extensions),
+                                                   s : SelectSQLQuery[1]|$s->processSelectSQLQuery($sgc, true),
                                                    r : RelationalOperationElement[1]|$r->processOperation($dbConfig, $format, $generationState, $config, $extensions)
                                                 ]);
 
-                                                let identifier = $alias.name->processIdentifier($dbConfig);
+                                                let identifier = $dbConfig.identifierProcessor($alias.name);
                                             
                                                 let sqlOp = $alias.relationalElement->instanceOf(SelectSQLQuery) || $alias.relationalElement->instanceOf(VarCrossSetPlaceHolder);
 
@@ -295,15 +354,15 @@ function meta::relational::functions::sqlQueryToString::processOperation(relatio
                                                                                                                                            if ($schema == 'default',|'',|$schema+'.');
                                                                                                                                       )
                                                                                                                                     ,|''
-                                                                ) + if ($config.generateJoinTarget == $c.alias, |'',|processIdentifier($doubleQuote+$c.alias.name->toOne()+$doubleQuote, $dbConfig) + '.') + processColumnName($c.column.name->toOne(), $dbConfig);,
+                                                                ) + if ($config.generateJoinTarget == $c.alias, |'',|$dbConfig.identifierProcessor($doubleQuote+$c.alias.name->toOne()+$doubleQuote) + '.') + processColumnName($c.column.name->toOne(), $dbConfig);,
                                           l:Literal[1]| processLiteral($l, $dbConfig),
                                           ll:LiteralList[1] | $ll.values->map(e | $e->processOperation($dbConfig, $format, $generationState, $config, $extensions))->joinStrings('(', ', ', ')'),
-                                          s:SelectSQLQuery[1]| $s->processSelectSQLQuery($dbConfig, $format, $config, false, $extensions),
-                                          u:UnionAll[1]| '('+$u.queries->map(q|$q->processSelectSQLQuery($dbConfig, $format, $config, false, $extensions))->makeString(' UNION ALL ')+')',
-                                          u:Union[1]| '('+$u.queries->map(q|$q->processSelectSQLQuery($dbConfig, $format, $config, false, $extensions))->makeString(' UNION ')+')',
+                                          s:SelectSQLQuery[1]| $s->processSelectSQLQuery($sgc, false),
+                                          u:UnionAll[1]| '('+$u.queries->map(q|$q->processSelectSQLQuery($sgc, false))->makeString(' UNION ALL ')+')',
+                                          u:Union[1]| '('+$u.queries->map(q|$q->processSelectSQLQuery($sgc, false))->makeString(' UNION ')+')',
                                           f:FreeMarkerOperationHolder[1]|processFreeMarkerOperationHolder($f, $dbConfig, $format, $generationState, $config, false, $extensions),
                                           d:DynaFunction[1]|processDynaFunction($d, $dbConfig, $format, $generationState, $config, $extensions),
-                                          c:ColumnName[1]|processIdentifier($c.name->toOne(), $dbConfig),
+                                          c:ColumnName[1]|$dbConfig.identifierProcessor($c.name->toOne()),
                                           s:SemiStructuredObjectNavigation[1]|$dbConfig.semiStructuredElementProcessor($s, $sgc),
                                           s:SemiStructuredArrayFlatten[1]|$dbConfig.semiStructuredElementProcessor($s, $sgc),
                                           s:SemiStructuredArrayFlattenOutput[1]|$dbConfig.semiStructuredElementProcessor($s, $sgc),
@@ -560,16 +619,10 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::proce
                     ,| $dateParameter);
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::processDistinct(s:SelectSQLQuery[1], format:Format[1]):String[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::processTop(s:SelectSQLQuery[1], format:Format[1]):String[1]
 {
-   if ($s.distinct->isEmpty() || !$s.distinct->toOne(),|'',|'distinct ');
-}
-
-function <<access.private>> meta::relational::functions::sqlQueryToString::processTop(s:SelectSQLQuery[1], dbType:DatabaseType[1], format:Format[1]):String[1]
-{
-   if ($s.fromRow == [] && $s.toRow != [] && !$s.toRow->toOne().value->instanceOf(SQLNull) && databaseUsesTopForTake($dbType),
+   if ($s.fromRow == [] && $s.toRow != [] && !$s.toRow->toOne().value->instanceOf(SQLNull),
          |'top '+$s.toRow->toOne()->getValueForTake()+' ', |'');
-
 }
 
 function  meta::relational::functions::sqlQueryToString::getValueForTake(l:Literal[1]):String[1]
@@ -580,85 +633,83 @@ function  meta::relational::functions::sqlQueryToString::getValueForTake(l:Liter
    ]);
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::processLimit(s:SelectSQLQuery[1], dbType:DatabaseType[1], format:Format[1]):String[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::processLimit(s:SelectSQLQuery[1], format:Format[1],
+              takeProcessor:meta::pure::metamodel::function::Function<{SelectSQLQuery[1], Format[1] -> String[1]}>[0..1],
+              sliceOrDropProcessor:meta::pure::metamodel::function::Function<{SelectSQLQuery[1], Format[1], Any[1] -> String[1]}>[1]):String[1]
 {
    if ($s.fromRow == [] && $s.toRow == [],
       |
          // No limit or offset required
          '';
-      , |
+      , |let size = if ($s.toRow == [] || $s.fromRow == [],
+                      | -1,
+                      |$s.toRow.value->match([
+                          i:Integer[1]| $s.toRow->toOne().value->cast(@Integer) - $s.fromRow->toOne().value->cast(@Integer) ,
+                          v:VarPlaceHolder[1]|[$s.toRow->toOne().value->cast(@VarPlaceHolder).name, $s.fromRow->toOne().value->cast(@VarPlaceHolder).name]->joinStrings('${','?number - ', '?number}')
+                          ])
+                      );
          if ($s.fromRow == [],
             |
                // We have a "take"
                assert($s.toRow->isNotEmpty());
-
-               if(!databaseUsesTopForTake($dbType) && $dbType != DatabaseType.DB2,
-                  | '%s limit %s'->format([$format.separator, $s.toRow->toOne()->getValueForTake()]),
-                  | ''
-                  );
+               if($takeProcessor->isNotEmpty(), |$takeProcessor->toOne()->eval($s, $format), |'');
             ,
             |
                //We have a "slice" or a "drop"
                assert($s.fromRow->isNotEmpty());
-
-               let size = if ($s.toRow == [],
-                              | -1,
-                              |$s.toRow.value->match([
-                                 i:Integer[1]| $s.toRow->toOne().value->cast(@Integer) - $s.fromRow->toOne().value->cast(@Integer) ,
-                                 v:VarPlaceHolder[1]|[$s.toRow->toOne().value->cast(@VarPlaceHolder).name, $s.fromRow->toOne().value->cast(@VarPlaceHolder).name]->joinStrings('${','?number - ', '?number}')
-                                 ])
-                             );
-
-
-               if($dbType == DatabaseType.Postgres,
-                  |'%s offset %s'->format([$format.separator, $s.fromRow->toOne()->getValueForTake()]) + if ($size == -1, | '', | ' limit %s'->format($size)),
-                  | if ($dbType == DatabaseType.Presto,
-                     | processLimitForPresto($format, $s.fromRow, $size),
-                     | if($dbType == DatabaseType.Snowflake,
-                        | processLimitForSnowflake($format, $s.fromRow, $size),
-                        |
-                     // queries where specifying query with "limit 100,1000" would return 1100 rows.
-                     // However when a order by column is specified, the expected number of rows is returned (i.e. 900 rows).
-                     // Given that a slice without an order is largely meaningless, we'll simply report an error (rather than trying to simulate something)
-                     //
-                     // http://infocenter.sybase.com/help/index.jsp?topic=/com.sybase.infocenter.dc00801.1601/doc/html/san1281564978024.html
-
-                     assert($dbType != DatabaseType.SybaseIQ || $s.orderBy->isNotEmpty(), | $dbType->makeString() + ' requires an order by column for meaningful limit/offset');
-
-                     '%s limit %s,%s'->format([$format.separator, $s.fromRow->toOne()->getValueForTake(), $size]);
-                  )));
-            )
+               $sliceOrDropProcessor->eval($s, $format, $size);
+            );
       );
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::processLimitForSnowflake(format:Format[1], fromRow:Literal[0..1], size:Any[1]):String[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::processSliceOrDropDefault(s:SelectSQLQuery[1], format:Format[1], size:Any[1]):String[1]
 {
-   if ($fromRow->isNotEmpty(),
+   '%s limit %s,%s'->format([$format.separator, $s.fromRow->toOne()->getValueForTake(), $size]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processSliceOrDropForPostgres(s:SelectSQLQuery[1], format:Format[1], size:Any[1]):String[1]
+{
+   '%s offset %s'->format([$format.separator, $s.fromRow->toOne()->getValueForTake()]) + if ($size == -1, | '', | ' limit %s'->format($size));
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processSliceOrDropForSybaseIQ(s:SelectSQLQuery[1], format:Format[1], size:Any[1]):String[1]
+{
+    // queries where specifying query with "limit 100,1000" would return 1100 rows.
+    // However when a order by column is specified, the expected number of rows is returned (i.e. 900 rows).
+    // Given that a slice without an order is largely meaningless, we'll simply report an error (rather than trying to simulate something)
+    //
+    // http://infocenter.sybase.com/help/index.jsp?topic=/com.sybase.infocenter.dc00801.1601/doc/html/san1281564978024.html
+
+    assert($s.orderBy->isNotEmpty(), | 'SybaseIQ requires an order by column for meaningful limit/offset');
+    '%s limit %s,%s'->format([$format.separator, $s.fromRow->toOne()->getValueForTake(), $size]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processSliceOrDropForSnowflake(s:SelectSQLQuery[1], format:Format[1], size:Any[1]):String[1]
+{
+   if ($s.fromRow->isNotEmpty(),
        | if ($size == -1,
-             | '%s limit \'\' offset %s'->format([$format.separator, $fromRow->toOne()->getValueForTake()]),
-             | '%s limit %s offset %s'->format([$format.separator, $size, $fromRow->toOne()->getValueForTake()])),
+             | '%s limit \'\' offset %s'->format([$format.separator, $s.fromRow->toOne()->getValueForTake()]),
+             | '%s limit %s offset %s'->format([$format.separator, $size, $s.fromRow->toOne()->getValueForTake()])),
        | '%s limit %s'->format($size));
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::processLimitForPresto(format:Format[1], fromRow:Literal[0..1], size:Any[1]):String[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::processSliceOrDropForPresto(s:SelectSQLQuery[1], format:Format[1], size:Any[1]):String[1]
 {
-   if ($fromRow->isNotEmpty(),
+   if ($s.fromRow->isNotEmpty(),
        | if ($size == -1,
-            | '%s offset %s'->format([$format.separator, $fromRow->toOne()->getValueForTake()]),
-            | '%s offset %s rows fetch next %s rows only'->format([$format.separator, $fromRow->toOne()->getValueForTake(), $size])),
+            | '%s offset %s'->format([$format.separator, $s.fromRow->toOne()->getValueForTake()]),
+            | '%s offset %s rows fetch next %s rows only'->format([$format.separator, $s.fromRow->toOne()->getValueForTake(), $size])),
        | '%s limit %s'->format($size));
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::processTopForDB2(s:SelectSQLQuery[1], dbType:DatabaseType[1],format:Format[1]):String[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::processTakeDefault(s:SelectSQLQuery[1], format:Format[1]):String[1]
 {
-   if ($dbType == DatabaseType.DB2
-       ,|if ($s.fromRow == [] && $s.toRow != [], | ' ' + $format.separator +'fetch first ' + $s.toRow->toOne()->getValueForTake()->toString() +' rows only', |'')
-       ,|'');
+   '%s limit %s'->format([$format.separator, $s.toRow->toOne()->getValueForTake()]);
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::databaseUsesTopForTake(dbType:DatabaseType[1]):Boolean[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::processTakeForDB2(s:SelectSQLQuery[1], format:Format[1]):String[1]
 {
-   $dbType != DatabaseType.MemSQL && $dbType != DatabaseType.Postgres && $dbType != DatabaseType.DB2  && $dbType != DatabaseType.Snowflake && $dbType != DatabaseType.Presto && $dbType != DatabaseType.BigQuery && $dbType != DatabaseType.Databricks;
+   ' ' + $format.separator +'fetch first ' + $s.toRow->toOne()->getValueForTake()->toString() +' rows only';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::rewriteSliceAsWindowFunction(selectQuery:SelectSQLQuery[1]):SelectSQLQuery[1]
@@ -741,54 +792,241 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::rewri
       );
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::processSelectSQLQuery(selectQuery:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:RouterExtension[*]):String[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::processSelectSQLQuery(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
 {
-   // Sybase IQ does not support limit / offset in a subselect, so we need to adjust it, e.g.
-   //       select * from (select top 10 "root".id as "ID" from trades as "root" ) as x
-   // gives
-   //       SQL Anywhere Error -1001030: Feature,  TOP/FIRST/LIMIT in a view, is not supported.
-   // but instead needs to be
-   //      select * from (select "limitoffset_via_window_subquery"."ID" as "ID" from (select "root".id as "ID", row_number() OVER (Order By "root".id) as "row_number" from trades as "root")
-   //            as "limitoffset_via_window_subquery" where "limitoffset_via_window_subquery".row_number < 10) as x
-   // Also see https://www.jooq.org/doc/3.1/manual/sql-building/sql-statements/select-statement/limit-clause/#N467C4
-
-   let s = if(($isSubSelect && ($dbConfig.dbType == DatabaseType.SybaseIQ) && ($selectQuery.fromRow->isNotEmpty() || $selectQuery.toRow->isNotEmpty())) || ($dbConfig.dbType == DatabaseType.MemSQL && $selectQuery.fromRow->isNotEmpty() && $selectQuery.toRow->isEmpty()),
-              | $selectQuery->rewriteSliceAsWindowFunction(),
-              | $selectQuery
-              );
-
    if ($s.columns->isEmpty() && !$s.data->isEmpty() && $s.data.alias.relationalElement->toOne()->instanceOf(Union) && $s.data.children->isEmpty(),
-      | $s.data.alias.relationalElement->toOne()->processOperation($dbConfig, $format->indent(), $config, $extensions),
-      | let opStr = if($s.filteringOperation->isEmpty(), |'', |$s.filteringOperation->map(s|$s->maybeWrapAsBooleanOperation($dbConfig.dbType, $extensions)->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
-        let havingStr = if($s.havingOperation->isEmpty(), |'', |$s.havingOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
-
-        $format.separator + 'select ' +
-
-        if ($dbConfig.dbType == DatabaseType.SybaseIQ || $dbConfig.dbType == DatabaseType.Sybase,
-              |processDistinct($s, $format) +
-               processTop($s, $dbConfig.dbType, $format),
-              |processTop($s, $dbConfig.dbType, $format) +
-               processDistinct($s, $format)
-           )+
-        printColumns($s.columns, $dbConfig, $format->indent(), $extensions) +
-        if($s.data == [],|'',| ' ' + $format.separator + 'from ' + $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), $extensions)) +
-        if (eq($opStr, ''), |'', | ' ' + $format.separator + 'where ' + $opStr) +
-        if ($s.groupBy->isEmpty(),|'',| ' ' + $format.separator + 'group by '+$s.groupBy->processGroupByColumns($dbConfig, $format->indent(), $extensions)->makeString(','))+
-        if (eq($havingStr, ''), |'', | ' ' + $format.separator + 'having ' + $havingStr) +
-        if ($s.orderBy->isEmpty(),|'',| ' ' + $format.separator + 'order by '+ $s.orderBy->map(o | $o.column->match([a:Alias[1]|$a.name->processIdentifier($dbConfig), r:RelationalOperationElement[1]|$r->processOperation($dbConfig, $format->indent(), $config, $extensions)]) + if ($o.direction == meta::relational::metamodel::SortDirection.ASC, |'', | ' desc'))->makeString(','))+
-        + processTopForDB2($s,$dbConfig.dbType,$format)
-        + processLimit($s, $dbConfig.dbType, $format);
+      | $s.data.alias.relationalElement->toOne()->processOperation($sgc.dbConfig, $sgc.format->indent(), $sgc.config, $sgc.extensions),
+      | $sgc.dbConfig.selectSQLQueryProcessor($s, $sgc, $isSubSelect)
    );
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::processGroupByColumns(columns:RelationalOperationElement[*], dbConfig : DbConfig[1], format:Format[1], extensions:RouterExtension[*]):String[*]
+function <<access.private>> meta::relational::functions::sqlQueryToString::processSelectSQLQueryDefault(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
 {
-   let supportsAliasInGroupBy = !($dbConfig.dbType->in([DatabaseType.DB2, DatabaseType.Sybase, DatabaseType.Presto, DatabaseType.Snowflake]));
+   $s->processSelectSQLQueryDefault($sgc.dbConfig, $sgc.format, $sgc.config, $isSubSelect, $sgc.extensions);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processSelectSQLQueryDefault(s:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:RouterExtension[*]):String[1]
+{
+  let opStr = if($s.filteringOperation->isEmpty(), |'', |$s.filteringOperation->map(s|$s->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+  let havingStr = if($s.havingOperation->isEmpty(), |'', |$s.havingOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+
+  $format.separator + 'select ' + processTop($s, $format) + if($s.distinct == true,|'distinct ',|'') +
+  processSelectColumns($s.columns, $dbConfig, $format->indent(), true, $extensions) +
+  if($s.data == [],|'',| ' ' + $format.separator + 'from ' + $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), [], $extensions)) +
+  if (eq($opStr, ''), |'', | ' ' + $format.separator + 'where ' + $opStr) +
+  if ($s.groupBy->isEmpty(),|'',| ' ' + $format.separator + 'group by '+$s.groupBy->processGroupByColumns($dbConfig, $format->indent(), true, $extensions)->makeString(','))+
+  if (eq($havingStr, ''), |'', | ' ' + $format.separator + 'having ' + $havingStr) +
+  if ($s.orderBy->isEmpty(),|'',| ' ' + $format.separator + 'order by '+ $s.orderBy->processOrderBy($dbConfig, $format->indent(), $config, $extensions)->makeString(','))+
+  + processLimit($s, $format, [], processSliceOrDropDefault_SelectSQLQuery_1__Format_1__Any_1__String_1_);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processSelectSQLQueryForSybaseIQ(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
+{
+   $s->processSelectSQLQueryForSybaseIQ($sgc.dbConfig, $sgc.format, $sgc.config, $isSubSelect, $sgc.extensions);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processSelectSQLQueryForSybaseIQ(sq:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:RouterExtension[*]):String[1]
+{
+  // Sybase IQ does not support limit / offset in a subselect, so we need to adjust it, e.g.
+  //       select * from (select top 10 "root".id as "ID" from trades as "root" ) as x
+  // gives
+  //       SQL Anywhere Error -1001030: Feature,  TOP/FIRST/LIMIT in a view, is not supported.
+  // but instead needs to be
+  //      select * from (select "limitoffset_via_window_subquery"."ID" as "ID" from (select "root".id as "ID", row_number() OVER (Order By "root".id) as "row_number" from trades as "root")
+  //            as "limitoffset_via_window_subquery" where "limitoffset_via_window_subquery".row_number < 10) as x
+  // Also see https://www.jooq.org/doc/3.1/manual/sql-building/sql-statements/select-statement/limit-clause/#N467C4
+
+  let s = if($isSubSelect && ($sq.fromRow->isNotEmpty() || $sq.toRow->isNotEmpty()), |$sq->rewriteSliceAsWindowFunction(), |$sq);
+  let opStr = if($s.filteringOperation->isEmpty(), |'', |$s.filteringOperation->map(s|$s->wrapAsBooleanOperation($extensions)->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+  let havingStr = if($s.havingOperation->isEmpty(), |'', |$s.havingOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+  
+  $format.separator + 'select ' + if($s.distinct == true,|'distinct ',|'') + processTop($s, $format) +
+  processSelectColumns($s.columns, $dbConfig, $format->indent(), false, $extensions) +
+  if ($s.data == [],|'',| ' ' + $format.separator + 'from ' + $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), [], $extensions)) +
+  if (eq($opStr, ''), |'', | ' ' + $format.separator + 'where ' + $opStr) +
+  if ($s.groupBy->isEmpty(),|'',| ' ' + $format.separator + 'group by '+$s.groupBy->processGroupByColumns($dbConfig, $format->indent(), true, $extensions)->makeString(','))+
+  if (eq($havingStr, ''), |'', | ' ' + $format.separator + 'having ' + $havingStr) +
+  if ($s.orderBy->isEmpty(),|'',| ' ' + $format.separator + 'order by '+ $s.orderBy->processOrderBy($dbConfig, $format->indent(), $config, $extensions)->makeString(','))+
+  + processLimit($s, $format, [], processSliceOrDropForSybaseIQ_SelectSQLQuery_1__Format_1__Any_1__String_1_);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processSelectSQLQueryForMemSQL(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
+{
+   $s->processSelectSQLQueryForMemSQL($sgc.dbConfig, $sgc.format, $sgc.config, $isSubSelect, $sgc.extensions);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processSelectSQLQueryForMemSQL(sq:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:RouterExtension[*]):String[1]
+{
+  let s = if($sq.fromRow->isNotEmpty() && $sq.toRow->isEmpty(), |$sq->rewriteSliceAsWindowFunction(), |$sq);
+  let opStr = if($s.filteringOperation->isEmpty(), |'', |$s.filteringOperation->map(s|$s->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+  let havingStr = if($s.havingOperation->isEmpty(), |'', |$s.havingOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+  let joinOrder = [JoinType.INNER, JoinType.LEFT_OUTER, JoinType.RIGHT_OUTER];
+
+  $format.separator + 'select ' + if($s.distinct == true,|'distinct ',|'') +
+  processSelectColumns($s.columns, $dbConfig, $format->indent(), true, $extensions) +
+  if($s.data == [],|'',| ' ' + $format.separator + 'from ' + $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), $joinOrder, $extensions)) +
+  if (eq($opStr, ''), |'', | ' ' + $format.separator + 'where ' + $opStr) +
+  if ($s.groupBy->isEmpty(),|'',| ' ' + $format.separator + 'group by '+$s.groupBy->processGroupByColumns($dbConfig, $format->indent(), true, $extensions)->makeString(','))+
+  if (eq($havingStr, ''), |'', | ' ' + $format.separator + 'having ' + $havingStr) +
+  if ($s.orderBy->isEmpty(),|'',| ' ' + $format.separator + 'order by '+ $s.orderBy->processOrderBy($dbConfig, $format->indent(), $config, $extensions)->makeString(','))+
+  + processLimit($s, $format, processTakeDefault_SelectSQLQuery_1__Format_1__String_1_, processSliceOrDropDefault_SelectSQLQuery_1__Format_1__Any_1__String_1_);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processSelectSQLQueryForDB2(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
+{
+   $s->processSelectSQLQueryForDB2($sgc.dbConfig, $sgc.format, $sgc.config, $isSubSelect, $sgc.extensions);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processSelectSQLQueryForDB2(s:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:RouterExtension[*]):String[1]
+{
+  let opStr = if($s.filteringOperation->isEmpty(), |'', |$s.filteringOperation->map(s|$s->wrapAsBooleanOperation($extensions)->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+  let havingStr = if($s.havingOperation->isEmpty(), |'', |$s.havingOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+
+  $format.separator + 'select ' + if($s.distinct == true,|'distinct ',|'') +
+  processSelectColumns($s.columns, $dbConfig, $format->indent(), false, $extensions) +
+  if($s.data == [],|'',| ' ' + $format.separator + 'from ' + $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), [], $extensions)) +
+  if (eq($opStr, ''), |'', | ' ' + $format.separator + 'where ' + $opStr) +
+  if ($s.groupBy->isEmpty(),|'',| ' ' + $format.separator + 'group by '+$s.groupBy->processGroupByColumns($dbConfig, $format->indent(), false, $extensions)->makeString(','))+
+  if (eq($havingStr, ''), |'', | ' ' + $format.separator + 'having ' + $havingStr) +
+  if ($s.orderBy->isEmpty(),|'',| ' ' + $format.separator + 'order by '+ $s.orderBy->processOrderBy($dbConfig, $format->indent(), $config, $extensions)->makeString(','))+
+  + processLimit($s, $format, processTakeForDB2_SelectSQLQuery_1__Format_1__String_1_, processSliceOrDropDefault_SelectSQLQuery_1__Format_1__Any_1__String_1_);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processSelectSQLQueryForSybase(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
+{
+   $s->processSelectSQLQueryForSybase($sgc.dbConfig, $sgc.format, $sgc.config, $isSubSelect, $sgc.extensions);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processSelectSQLQueryForSybase(s:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:RouterExtension[*]):String[1]
+{
+  let opStr = if($s.filteringOperation->isEmpty(), |'', |$s.filteringOperation->map(s|$s->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+  let havingStr = if($s.havingOperation->isEmpty(), |'', |$s.havingOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+
+  $format.separator + 'select ' + if($s.distinct == true,|'distinct ',|'') + processTop($s, $format) +
+  processSelectColumns($s.columns, $dbConfig, $format->indent(), true, $extensions) +
+  if($s.data == [],|'',| ' ' + $format.separator + 'from ' + $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), [], $extensions)) +
+  if (eq($opStr, ''), |'', | ' ' + $format.separator + 'where ' + $opStr) +
+  if ($s.groupBy->isEmpty(),|'',| ' ' + $format.separator + 'group by '+$s.groupBy->processGroupByColumns($dbConfig, $format->indent(), false, $extensions)->makeString(','))+
+  if (eq($havingStr, ''), |'', | ' ' + $format.separator + 'having ' + $havingStr) +
+  if ($s.orderBy->isEmpty(),|'',| ' ' + $format.separator + 'order by '+ $s.orderBy->processOrderBy($dbConfig, $format->indent(), $config, $extensions)->makeString(','))+
+  + processLimit($s, $format, [], processSliceOrDropDefault_SelectSQLQuery_1__Format_1__Any_1__String_1_);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processSelectSQLQueryForPresto(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
+{
+   $s->processSelectSQLQueryForPresto($sgc.dbConfig, $sgc.format, $sgc.config, $isSubSelect, $sgc.extensions);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processSelectSQLQueryForPresto(s:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:RouterExtension[*]):String[1]
+{
+  let opStr = if($s.filteringOperation->isEmpty(), |'', |$s.filteringOperation->map(s|$s->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+  let havingStr = if($s.havingOperation->isEmpty(), |'', |$s.havingOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+
+  $format.separator + 'select ' + if($s.distinct == true,|'distinct ',|'') +
+  processSelectColumns($s.columns, $dbConfig, $format->indent(), true, $extensions) +
+  if($s.data == [],|'',| ' ' + $format.separator + 'from ' + $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), [], $extensions)) +
+  if (eq($opStr, ''), |'', | ' ' + $format.separator + 'where ' + $opStr) +
+  if ($s.groupBy->isEmpty(),|'',| ' ' + $format.separator + 'group by '+$s.groupBy->processGroupByColumns($dbConfig, $format->indent(), false, $extensions)->makeString(','))+
+  if (eq($havingStr, ''), |'', | ' ' + $format.separator + 'having ' + $havingStr) +
+  if ($s.orderBy->isEmpty(),|'',| ' ' + $format.separator + 'order by '+ $s.orderBy->processOrderBy($dbConfig, $format->indent(), $config, $extensions)->makeString(','))+
+  + processLimit($s, $format, processTakeDefault_SelectSQLQuery_1__Format_1__String_1_, processSliceOrDropForPresto_SelectSQLQuery_1__Format_1__Any_1__String_1_);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processSelectSQLQueryForSnowflake(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
+{
+   $s->processSelectSQLQueryForSnowflake($sgc.dbConfig, $sgc.format, $sgc.config, $isSubSelect, $sgc.extensions);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processSelectSQLQueryForSnowflake(s:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:RouterExtension[*]):String[1]
+{
+  let opStr = if($s.filteringOperation->isEmpty(), |'', |$s.filteringOperation->map(s|$s->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+  let havingStr = if($s.havingOperation->isEmpty(), |'', |$s.havingOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+
+  $format.separator + 'select ' + if($s.distinct == true,|'distinct ',|'') +
+  processSelectColumns($s.columns, $dbConfig, $format->indent(), true, $extensions) +
+  if($s.data == [],|'',| ' ' + $format.separator + 'from ' + $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), [], $extensions)) +
+  if (eq($opStr, ''), |'', | ' ' + $format.separator + 'where ' + $opStr) +
+  if ($s.groupBy->isEmpty(),|'',| ' ' + $format.separator + 'group by '+$s.groupBy->processGroupByColumns($dbConfig, $format->indent(), false, $extensions)->makeString(','))+
+  if (eq($havingStr, ''), |'', | ' ' + $format.separator + 'having ' + $havingStr) +
+  if ($s.orderBy->isEmpty(),|'',| ' ' + $format.separator + 'order by '+ $s.orderBy->processOrderBy($dbConfig, $format->indent(), $config, $extensions)->makeString(','))+
+  + processLimit($s, $format, processTakeDefault_SelectSQLQuery_1__Format_1__String_1_, processSliceOrDropForSnowflake_SelectSQLQuery_1__Format_1__Any_1__String_1_);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processSelectSQLQueryForPostgres(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
+{
+   $s->processSelectSQLQueryForPostgres($sgc.dbConfig, $sgc.format, $sgc.config, $isSubSelect, $sgc.extensions);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processSelectSQLQueryForPostgres(s:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:RouterExtension[*]):String[1]
+{
+  let opStr = if($s.filteringOperation->isEmpty(), |'', |$s.filteringOperation->map(s|$s->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+  let havingStr = if($s.havingOperation->isEmpty(), |'', |$s.havingOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+
+  $format.separator + 'select ' + if($s.distinct == true,|'distinct ',|'') +
+  processSelectColumns($s.columns, $dbConfig, $format->indent(), true, $extensions) +
+  if($s.data == [],|'',| ' ' + $format.separator + 'from ' + $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), [], $extensions)) +
+  if (eq($opStr, ''), |'', | ' ' + $format.separator + 'where ' + $opStr) +
+  if ($s.groupBy->isEmpty(),|'',| ' ' + $format.separator + 'group by '+$s.groupBy->processGroupByColumns($dbConfig, $format->indent(), true, $extensions)->makeString(','))+
+  if (eq($havingStr, ''), |'', | ' ' + $format.separator + 'having ' + $havingStr) +
+  if ($s.orderBy->isEmpty(),|'',| ' ' + $format.separator + 'order by '+ $s.orderBy->processOrderBy($dbConfig, $format->indent(), $config, $extensions)->makeString(','))+
+  + processLimit($s, $format, processTakeDefault_SelectSQLQuery_1__Format_1__String_1_, processSliceOrDropForPostgres_SelectSQLQuery_1__Format_1__Any_1__String_1_);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processSelectSQLQueryForBigQuery(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
+{
+   $s->processSelectSQLQueryForBigQuery($sgc.dbConfig, $sgc.format, $sgc.config, $isSubSelect, $sgc.extensions);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processSelectSQLQueryForBigQuery(s:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:RouterExtension[*]):String[1]
+{
+  let opStr = if($s.filteringOperation->isEmpty(), |'', |$s.filteringOperation->map(s|$s->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+  let havingStr = if($s.havingOperation->isEmpty(), |'', |$s.havingOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+
+  $format.separator + 'select ' + if($s.distinct == true,|'distinct ',|'') +
+  processSelectColumns($s.columns, $dbConfig, $format->indent(), true, $extensions) +
+  if($s.data == [],|'',| ' ' + $format.separator + 'from ' + $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), [], $extensions)) +
+  if (eq($opStr, ''), |'', | ' ' + $format.separator + 'where ' + $opStr) +
+  if ($s.groupBy->isEmpty(),|'',| ' ' + $format.separator + 'group by '+$s.groupBy->processGroupByColumns($dbConfig, $format->indent(), true, $extensions)->makeString(','))+
+  if (eq($havingStr, ''), |'', | ' ' + $format.separator + 'having ' + $havingStr) +
+  if ($s.orderBy->isEmpty(),|'',| ' ' + $format.separator + 'order by '+ $s.orderBy->processOrderBy($dbConfig, $format->indent(), $config, $extensions)->makeString(','))+
+  + processLimit($s, $format, processTakeDefault_SelectSQLQuery_1__Format_1__String_1_, processSliceOrDropDefault_SelectSQLQuery_1__Format_1__Any_1__String_1_);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processSelectSQLQueryForDatabricks(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
+{
+   $s->processSelectSQLQueryForDatabricks($sgc.dbConfig, $sgc.format, $sgc.config, $isSubSelect, $sgc.extensions);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processSelectSQLQueryForDatabricks(s:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:RouterExtension[*]):String[1]
+{
+  let opStr = if($s.filteringOperation->isEmpty(), |'', |$s.filteringOperation->map(s|$s->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+  let havingStr = if($s.havingOperation->isEmpty(), |'', |$s.havingOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+
+  $format.separator + 'select ' + if($s.distinct == true,|'distinct ',|'') +
+  processSelectColumns($s.columns, $dbConfig, $format->indent(), true, $extensions) +
+  if($s.data == [],|'',| ' ' + $format.separator + 'from ' + $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), [], $extensions)) +
+  if (eq($opStr, ''), |'', | ' ' + $format.separator + 'where ' + $opStr) +
+  if ($s.groupBy->isEmpty(),|'',| ' ' + $format.separator + 'group by '+$s.groupBy->processGroupByColumns($dbConfig, $format->indent(), true, $extensions)->makeString(','))+
+  if (eq($havingStr, ''), |'', | ' ' + $format.separator + 'having ' + $havingStr) +
+  if ($s.orderBy->isEmpty(),|'',| ' ' + $format.separator + 'order by '+ $s.orderBy->processOrderBy($dbConfig, $format->indent(), $config, $extensions)->makeString(','))+
+  + processLimit($s, $format, processTakeDefault_SelectSQLQuery_1__Format_1__String_1_, processSliceOrDropDefault_SelectSQLQuery_1__Format_1__Any_1__String_1_);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processGroupByColumns(columns:RelationalOperationElement[*], dbConfig : DbConfig[1], format:Format[1], supportsAliasInGroupBy:Boolean[1], extensions:RouterExtension[*]):String[*]
+{
    $columns->map(c | $c->match([
-                                a:Alias[1] | if($supportsAliasInGroupBy == true, | $a->cast(@Alias).name->processIdentifier($dbConfig)
+                                a:Alias[1] | if($supportsAliasInGroupBy == true, | $dbConfig.identifierProcessor($a->cast(@Alias).name)
                                                                                , | $a->cast(@Alias).relationalElement->processOperation($dbConfig, $format, $extensions)),
                                 c:TableAliasColumn[1] | $c->processOperation($dbConfig, $format, $extensions)
                                 ]));
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processOrderBy(orderBy:OrderBy[*], dbConfig : DbConfig[1], format:Format[1], config:Config[1], extensions:RouterExtension[*]):String[*]
+{
+   $orderBy->map(o | $o.column->match([
+        a:Alias[1]|$dbConfig.identifierProcessor($a.name),
+        r:RelationalOperationElement[1]|$r->processOperation($dbConfig, $format, $config, $extensions)
+   ]) + if ($o.direction == meta::relational::metamodel::SortDirection.ASC, |'', | ' desc'));
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::processLiteralValue(value:Any[1], dbTimeZone:String[1]):String[1]
@@ -865,11 +1103,11 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::proce
    processJoinStringsOperation($js, $sgc, [], {strs, sep| $strs->joinStrings('concat(', if('\'\'' == $sep, |', ', |',' + $sep + ',') , ')')});
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::printColumns(s:RelationalOperationElement[*], dbConfig : DbConfig[1], format:Format[1], extensions:RouterExtension[*]):String[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::processSelectColumns(s:RelationalOperationElement[*], dbConfig : DbConfig[1], format:Format[1], conditionalExprAllowed:Boolean[1], extensions:RouterExtension[*]):String[1]
 {
    if ($s->size() == 0,
          |'*',
-         | $format.separator + $s->map(r|  $r->match([a:Alias[1] | let shouldWrapWithCase = ( $a.relationalElement->isBooleanOperation($extensions) && !supportsConditionalExpressionInSelectColumns($dbConfig.dbType) );
+         | $format.separator + $s->map(r|  $r->match([a:Alias[1] | let shouldWrapWithCase = ( $a.relationalElement->isBooleanOperation($extensions) && !$conditionalExprAllowed );
 
                                                                    $shouldWrapWithCase->if(|'case when (' + $a.relationalElement->processOperation($dbConfig, $format, ^GenerationState(generationSide = GenerationSide.Select, withinWhenClause = true), $extensions) + ') then \'true\' else \'false\' end as ' + $a.name,
                                                                                            | $r->processOperation($dbConfig, $format, ^GenerationState(generationSide = GenerationSide.Select, withinWhenClause = false), $extensions)
@@ -882,22 +1120,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::print
        );
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::maybeWrapAsBooleanOperation(e:RelationalOperationElement[1], dbType:DatabaseType[1], extensions:RouterExtension[*]):RelationalOperationElement[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::wrapAsBooleanOperation(e:RelationalOperationElement[1], extensions:RouterExtension[*]):RelationalOperationElement[1]
 {
-   if ($e->isBooleanOperation($extensions) || supportsConditionalExpressionInSelectColumns($dbType), | $e, | ^DynaFunction(name ='equal', parameters=[$e, ^Literal(value=true)]););
+   if ($e->isBooleanOperation($extensions), | $e, | ^DynaFunction(name ='equal', parameters=[$e, ^Literal(value=true)]));
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::supportsConditionalExpressionInSelectColumns(dbType:DatabaseType[1]):Boolean[1]
-{
-   !($dbType == DatabaseType.SybaseIQ) && !($dbType == DatabaseType.DB2)
-}
-
-function <<access.private>> meta::relational::functions::formatAliasName(alias: TableAlias[1], dbConfig:DbConfig[1]):TableAlias[1]
-{
-  if ($dbConfig.dbType == DatabaseType.BigQuery, | ^$alias(name =  $alias.name ), | ^$alias(name = '"' + $alias.name + '"'))
-}
-
-function <<access.private>> meta::relational::functions::sqlQueryToString::processJoinTreeNode(joinTreeNode:RelationalTreeNode[1], parent:TableAlias[0..1], dbConfig : DbConfig[1], format:Format[1], extensions:RouterExtension[*]):String[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::processJoinTreeNode(joinTreeNode:RelationalTreeNode[1], parent:TableAlias[0..1], dbConfig : DbConfig[1], format:Format[1], joinOrder:JoinType[*], extensions:RouterExtension[*]):String[1]
 {
    let tableAlias = $joinTreeNode->match(
                                     [
@@ -921,19 +1149,55 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::proce
                                        a:Any[1] | ''
                                     ]
                                     );
-   let children = if($dbConfig.dbType == DatabaseType.MemSQL,
-                     |$joinTreeNode.children()->sortBy({node | if($node.joinType == JoinType.INNER, |1, |if($node.joinType == JoinType.LEFT_OUTER, |2, |3))}),
+   let children = if($joinOrder->isNotEmpty(),
+                     |$joinTreeNode.children()->sortBy({node | if($node.joinType->isEmpty(), |2, |$joinOrder->indexOf($node.joinType->toOne()))}),
                      |$joinTreeNode.children());
-   $children->map(child | processJoinTreeNode($child, $tableAlias->cast(@TableAlias), $dbConfig, $format, $extensions))->joinStrings($val, '', '');
+   $children->map(child | processJoinTreeNode($child, $tableAlias->cast(@TableAlias), $dbConfig, $format, $joinOrder, $extensions))->joinStrings($val, '', '');
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::tableToString(table:Table[1], dbConfig : DbConfig[1]):String[1]
 {
-   let schemaName = if ($dbConfig.dbType == DatabaseType.Presto,
-                        | $table.schema.name->replace('$', '.'),
-                        | $table.schema.name
-                     );
-   if($schemaName == 'default', | $table.name->processIdentifier($dbConfig), | $schemaName->processIdentifier($dbConfig) + '.' + $table.name->processIdentifier($dbConfig));
+   let schemaName = $dbConfig.schemaNameToIdentifier($table.schema.name);
+   let tableName = $dbConfig.tableNameToIdentifier($table.name);
+   if($schemaName == 'default', | $dbConfig.identifierProcessor($tableName), | $dbConfig.identifierProcessor($schemaName) + '.' + $dbConfig.identifierProcessor($tableName));
+}
+
+function meta::relational::functions::sqlQueryToString::processColumnName(name:String[1], dbConfig:DbConfig[1]):String[1]
+{
+   $dbConfig.identifierProcessor($dbConfig.columnNameToIdentifier($name));
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::schemaNameToIdentifierForPresto(schemaName: String[1], dbConfig: DbConfig[1]): String[1]
+{
+   $schemaName->replace('$', '.');
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::columnNameToIdentifierForSybaseIQ(columnName: String[1], dbConfig: DbConfig[1]): String[1]
+{
+   if($dbConfig.isDbReservedIdentifier($columnName->toLower()), |'"' + $columnName->toLower() + '"', |$columnName);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::columnNameToIdentifierDefault(columnName: String[1], dbConfig: DbConfig[1]): String[1]
+{
+   if($columnName->toLower()->in(['kerberos', 'date', 'first']), |'"' + $columnName->toUpper() + '"', |$columnName);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processIdentifierWithBackTicks(identifier:String[1], dbConfig: DbConfig[1]):String[1]
+{
+   $identifier->processIdentifierWithQuoteChar('`', $dbConfig);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processIdentifierWithDoubleQuotes(identifier:String[1], dbConfig: DbConfig[1]):String[1]
+{
+   $identifier->processIdentifierWithQuoteChar('"', $dbConfig);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processIdentifierWithQuoteChar(identifier:String[1], quoteChar: String[1], dbConfig : DbConfig[1]):String[1]
+{
+  if($dbConfig.quoteIdentifiers || $identifier->startsWith('"') || $dbConfig.isDbReservedIdentifier($identifier),
+    | '%s%s%s'->format([$quoteChar, $identifier->replace('"', ''), $quoteChar]),
+    | $identifier
+  );
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::removeQuotes(s:String[1]):String[1]
@@ -957,6 +1221,11 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::proce
    let params = if($res.transform->isEmpty(), | $processedParams, | $res.transform->toOne()->eval($processedParams));
 
    if($nestedFreeMarkerOperationHolder, |format($res->toOne().format, $params), |'(${' + format($res->toOne().format, $params) + '})');
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::maybeWrapAsBooleanOperation(e:RelationalOperationElement[1], dbType:DatabaseType[1], extensions:RouterExtension[*]):RelationalOperationElement[1]
+{
+   if (($dbType != DatabaseType.SybaseIQ) && ($dbType != DatabaseType.DB2), | $e, | $e->wrapAsBooleanOperation($extensions));
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::processDynaFunction(func:DynaFunction[1], dbConfig : DbConfig[1], format:Format[1], generationState:GenerationState[1], config: Config[1], extensions:RouterExtension[*]):String[1]
@@ -1095,7 +1364,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::proce
    // https://docs.snowflake.com/en/sql-reference/functions/flatten.html
 
    let doubleQuote = if($sgc.config.useQuotesForTableAliasColumn == false, |'', |'"');
-   let processedIdentifier = processIdentifier($doubleQuote + $s.tableAliasColumn.alias.name->toOne() + $doubleQuote, $sgc.dbConfig);
+   let processedIdentifier = $sgc.dbConfig.identifierProcessor($doubleQuote + $s.tableAliasColumn.alias.name->toOne() + $doubleQuote);
    $processedIdentifier + '.' + processColumnName('value', $sgc.dbConfig) + castSuffixForSnowflakeSemiStructuredData($s.returnType);
 }
 
@@ -1979,33 +2248,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::trans
    ]);
 }
 
-function meta::relational::functions::sqlQueryToString::processColumnName(name:String[1], dbConfig:DbConfig[1]):String[1]
-{
-    let lowerName = $name->toLower();
-    let dbType = $dbConfig.dbType;
-
-    let res = if ($dbType == DatabaseType.H2 || $dbType == DatabaseType.Postgres,
-         | [],
-         | if ($dbType == DatabaseType.SybaseIQ,
-               |
-                  if($dbConfig.isDbReservedIdentifier($lowerName),
-                     | '"' + $lowerName + '"',
-                     | []
-                     ),
-               |
-                  if($lowerName->in(['kerberos', 'date', 'first']),
-                     | '"' + $name->toUpper() + '"',
-                     | []
-                     )
-
-                )
-         );
-
-    let mappedName = if ($res->isEmpty(),|$name, |$res->toOne());
-
-    $mappedName->processIdentifier($dbConfig);
-}
-
 function <<access.private>> meta::relational::functions::sqlQueryToString::postgresReservedWords():String[*]
 {
   [];
@@ -2409,27 +2651,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::proce
    let dbUnitType = $enumList->zip($dbTypeUnitPair.values)->filter(h | $h.first == $durationUnit).second->toOne();
    assert($dbUnitType->isNotEmpty(), $durationUnit + ' is not supported by ' + toString($dbType) + ' in the DateDiff Function.');
    $dbUnitType;
-}
-
-
-
-function <<access.private>> meta::relational::functions::sqlQueryToString::processIdentifier(originalIdentifier:String[1], dbConfig : DbConfig[1]):String[1]
-{
-  let processedIdentifier = $originalIdentifier->map(identifier|
-                                 if($dbConfig.quoteIdentifiers || $identifier->startsWith('"'),
-                                    | '"%s"'->format($identifier->replace('"', '')),
-                                    | $identifier
-                                    )
-                              )->map(identifier|
-                                 if(!$identifier->startsWith('"') && $dbConfig.isDbReservedIdentifier($identifier),
-                                    | '"%s"'->format($identifier),
-                                    | $identifier
-                                    )
-                              );
-
-  if(($dbConfig.dbType == DatabaseType.MemSQL || $dbConfig.dbType == DatabaseType.BigQuery || $dbConfig.dbType == DatabaseType.Databricks) && $processedIdentifier->startsWith('"') && $processedIdentifier->endsWith('"'),
-       | '`' + $processedIdentifier->substring(1, $processedIdentifier->length() - 1) + '`',
-       | $processedIdentifier);
 }
 
 function meta::relational::functions::sqlQueryToString::createSelectOneRowSql(table:Table[1], schema:Schema[1], dbType:DatabaseType[1]):String[1]
