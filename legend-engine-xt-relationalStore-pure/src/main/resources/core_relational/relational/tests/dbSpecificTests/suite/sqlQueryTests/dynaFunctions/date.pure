@@ -14,6 +14,7 @@
 
 import meta::relational::metamodel::*;
 import meta::relational::dbTestRunner::*;
+import meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::*;
 
 function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::adjust::testAdjust(config:DbTestConfig[1]):String[0..1]
 {
@@ -107,6 +108,85 @@ function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }
 
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::datePart::testDatePartWithDateTime(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='datePart', parameters=[^Literal(value=%2014-12-04T15:22:23)]);
+  let expected = ^Literal(value=%2014-12-04->convertToDateTime());
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::datePart::testDatePartWithStrictDate(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='datePart', parameters=[^Literal(value=%2014-12-04)]);
+  let expected = ^Literal(value=%2014-12-04->convertToDateTime());
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::dateDiff::testYearsDiffPositive(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='dateDiff', parameters=[^Literal(value=%2013-12-04T15:22:23), ^Literal(value=%2014-12-04T15:22:23), ^Literal(value=DurationUnit.YEARS) ]);
+  let expected = ^Literal(value=1);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::dateDiff::testYearsDiffZero(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='dateDiff', parameters=[^Literal(value=%2014-12-04T15:22:23), ^Literal(value=%2014-12-04T15:22:23), ^Literal(value=DurationUnit.YEARS) ]);
+  let expected = ^Literal(value=0);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::dateDiff::testYearsDiffNegative(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='dateDiff', parameters=[^Literal(value=%2014-12-04T15:22:23), ^Literal(value=%2013-12-04T15:22:23), ^Literal(value=DurationUnit.YEARS) ]);
+  let expected = ^Literal(value=-1);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::dateDiff::testMonthsDiff(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='dateDiff', parameters=[^Literal(value=%2013-12-04T15:22:23), ^Literal(value=%2014-12-04T15:22:23), ^Literal(value=DurationUnit.MONTHS) ]);
+  let expected = ^Literal(value=12);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::dateDiff::testDaysDiff(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='dateDiff', parameters=[^Literal(value=%2014-12-01T15:22:23), ^Literal(value=%2014-12-04T15:22:23), ^Literal(value=DurationUnit.DAYS) ]);
+  let expected = ^Literal(value=3);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::dateDiff::testHoursDiff(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='dateDiff', parameters=[^Literal(value=%2014-12-03T14:22:23), ^Literal(value=%2014-12-04T15:22:23), ^Literal(value=DurationUnit.HOURS) ]);
+  let expected = ^Literal(value=25);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::dateDiff::testMinutesDiff(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='dateDiff', parameters=[^Literal(value=%2014-12-04T14:22:23), ^Literal(value=%2014-12-04T15:22:23), ^Literal(value=DurationUnit.MINUTES) ]);
+  let expected = ^Literal(value=60);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::dateDiff::testSecondsDiff(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='dateDiff', parameters=[^Literal(value=%2014-12-04T14:22:23), ^Literal(value=%2014-12-04T15:22:23), ^Literal(value=DurationUnit.SECONDS) ]);
+  let expected = ^Literal(value=3600);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::dateDiff::testMilliSecondsDiff(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='dateDiff', parameters=[^Literal(value=%2014-12-04T14:22:23), ^Literal(value=%2014-12-04T15:22:23), ^Literal(value=DurationUnit.MILLISECONDS) ]);
+  let expected = ^Literal(value=3600000);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+//TODO - micro and nanoseconds are not supported by any db yet 
+
 //firstDay
 function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::firstDayOfWeek::testFirstDayOfWeek(config:DbTestConfig[1]):String[0..1]
 {
@@ -149,3 +229,54 @@ function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests
   let expected = ^Literal(value=%2014-01-01);
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }
+
+
+//variable result functions - get value from pure/legend engine and compare with value returned with db engine
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::now::testNow(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='now', parameters=[]);
+  let expected = ^Literal(value=now());      
+
+  let equalityComparator = timestampEqualityComparatorGenerator([30] ,DurationUnit.SECONDS);              // assuming clocks of db engine and legend engine are synced within 30 seconds 
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $equalityComparator, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::today::testToday(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='today', parameters=[]);
+  let expected = ^Literal(value=today()->convertToDateTime());                              
+  let equalityComparator = timestampEqualityComparatorGenerator([0] ,DurationUnit.DAYS);             
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $equalityComparator, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::firstDayOfThisMonth::testFirstDayOfThisMonth(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='firstDayOfThisMonth', parameters=[]);
+  let expected = ^Literal(value=firstDayOfThisMonth()->convertToDateTime());   
+  let equalityComparator = timestampEqualityComparatorGenerator([0] ,DurationUnit.DAYS);            
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $equalityComparator, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::firstDayOfThisQuarter::testFirstDayOfThisQuarter(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='firstDayOfThisQuarter', parameters=[]);
+  let expected = ^Literal(value=firstDayOfThisQuarter()->convertToDateTime());   
+  let equalityComparator = timestampEqualityComparatorGenerator([0] ,DurationUnit.DAYS);            
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $equalityComparator, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::firstDayOfThisYear::testFirstDayOfThisYear(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='firstDayOfThisYear', parameters=[]);
+  let expected = ^Literal(value=firstDayOfThisYear()->convertToDateTime());   
+  let equalityComparator = timestampEqualityComparatorGenerator([0] ,DurationUnit.DAYS);              // use datediff to compare dates
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $equalityComparator, $config);
+}       
+
+function meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::convertToDateTime(d:Date[1]): DateTime[1]
+{
+  $d->match([
+      sd :StrictDate[1] |  meta::pure::functions::date::date(year($sd), monthNumber($sd), dayOfMonth($sd), 0, 0 ,0); ,                 // type cast StrictDate to dateTime,(as strictdates in expected value are converted to datetime,to retain timezone info)
+      dt: DateTime[1]   | $dt;
+  ]);
+}          

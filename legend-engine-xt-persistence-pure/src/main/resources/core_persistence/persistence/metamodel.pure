@@ -26,6 +26,7 @@ import meta::pure::persistence::metamodel::persister::ingestmode::delta::merge::
 import meta::pure::persistence::metamodel::persister::sink::*;
 import meta::pure::persistence::metamodel::persister::targetshape::*;
 import meta::pure::persistence::metamodel::persister::transactionmilestoning::*;
+import meta::pure::persistence::metamodel::persister::transactionmilestoning::derivation::*;
 import meta::pure::persistence::metamodel::persister::validitymilestoning::*;
 import meta::pure::persistence::metamodel::persister::validitymilestoning::derivation::*;
 import meta::pure::persistence::metamodel::reader::*;
@@ -439,6 +440,9 @@ meta::pure::persistence::metamodel::persister::transactionmilestoning::DateTimeT
 
    {doc.doc = 'The name of the output field representing the "out" datetime in the underlying system.'}
    dateTimeOutName: String[1];
+
+   {doc.doc = 'The approach to derive transaction (processing) temporal data from source data.'}
+   derivation: TransactionDerivation[0..1];
 }
 
 Class
@@ -456,7 +460,39 @@ meta::pure::persistence::metamodel::persister::transactionmilestoning::BatchIdAn
 
    {doc.doc = 'The name of the output field representing the "out" datetime in the underlying system.'}
    dateTimeOutName: String[1];
+
+   {doc.doc = 'The approach to derive transaction (processing) temporal data from source data.'}
+   derivation: TransactionDerivation[0..1];
 }
+
+// transaction derivation from source data
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = 'Strategy for representing the transaction (processing) temporal dimension in the underlying system.'}
+meta::pure::persistence::metamodel::persister::transactionmilestoning::derivation::TransactionDerivation
+{
+}
+
+Class
+{doc.doc = 'Source data provide transaction in datetime.'}
+meta::pure::persistence::metamodel::persister::transactionmilestoning::derivation::SourceSpecifiesTransactionInDate extends TransactionDerivation
+{
+   {doc.doc = 'The property in the model class or column in the TDS that provides the "in" datetime for temporal (processing) temporal dimension.'}
+   sourceDateTimeInField: String[1];
+}
+
+Class
+{doc.doc = 'Source data provide transaction in and out datetimes.'}
+meta::pure::persistence::metamodel::persister::transactionmilestoning::derivation::SourceSpecifiesTransactionInAndOutDate extends TransactionDerivation
+{
+   {doc.doc = 'The property in the model class or column in the TDS that provides the "in" datetime for temporal (processing) temporal dimension.'}
+   sourceDateTimeInField: String[1];
+
+   {doc.doc = 'The property in the model class or column in the TDS that provides the "out" datetime for temporal (processing) temporal dimension.'}
+   sourceDateTimeOutField: String[1];
+}
+
 
 /**********
  * validity milestoning

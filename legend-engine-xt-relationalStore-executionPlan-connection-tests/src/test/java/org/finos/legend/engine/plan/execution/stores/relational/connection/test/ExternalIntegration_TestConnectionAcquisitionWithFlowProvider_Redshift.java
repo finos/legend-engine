@@ -64,8 +64,8 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Redsh
 
     private void usePropertiesVault() {
         Properties properties = new Properties();
-        properties.put("redshift/user", "XXXX");
-        properties.put("redshift/password", "XXXX");
+        properties.put("REDSHIFT_LEGEND_INTEG_USERNAME", "XXXX");
+        properties.put("REDSHIFT_LEGEND_INTEG_PASSWORD", "XXXX");
         this.vaultImplementation = new PropertiesVaultImplementation(properties);
         Vault.INSTANCE.registerImplementation(this.vaultImplementation);
     }
@@ -90,7 +90,7 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Redsh
             RelationalDatabaseConnection systemUnderTest = this.redshiftWithUserPassword();
             Connection connection = this.connectionManagerSelector.getDatabaseConnection((Subject) null, systemUnderTest);
             // TODO : epsstan - connection acquisition fails with increased concurrency. Do we have a bug or is this a driver issue ?
-            testConnection(connection, 1, "select * from pg_namespace");
+            testConnection(connection, 1, "select * from test");
         }
         finally {
             ConnectionStateManager.getInstance().close();
@@ -100,15 +100,15 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Redsh
     private RelationalDatabaseConnection redshiftWithUserPassword()
     {
         RedshiftDatasourceSpecification redshiftDatasourceSpecification = new RedshiftDatasourceSpecification();
-        redshiftDatasourceSpecification.databaseName = "dev";
+        redshiftDatasourceSpecification.databaseName = "integration_db1";
         redshiftDatasourceSpecification.host = REDSHIFT_CLUSTER_NAME;
         redshiftDatasourceSpecification.port = 5439;
         redshiftDatasourceSpecification.region = "us-east-1";
         redshiftDatasourceSpecification.clusterID = "";
         UserNamePasswordAuthenticationStrategy authenticationStrategy = new UserNamePasswordAuthenticationStrategy();
         authenticationStrategy.baseVaultReference = "";
-        authenticationStrategy.userNameVaultReference = "REDSHIFT_LEGEND_INTEG_USERNAME";
-        authenticationStrategy.passwordVaultReference = "REDSHIFT_LEGEND_INTEG_PASSWORD";
+        authenticationStrategy.userNameVaultReference = "REDSHIFT_INTEGRATION_USER1_NAME";
+        authenticationStrategy.passwordVaultReference = "REDSHIFT_INTEGRATION_USER1_PASSWORD";
         RelationalDatabaseConnection connection = new RelationalDatabaseConnection(redshiftDatasourceSpecification, authenticationStrategy, DatabaseType.Redshift);
         connection.type = DatabaseType.Redshift;
         return connection;

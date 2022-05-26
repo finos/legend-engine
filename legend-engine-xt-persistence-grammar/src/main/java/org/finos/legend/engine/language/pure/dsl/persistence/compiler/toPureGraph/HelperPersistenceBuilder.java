@@ -15,7 +15,7 @@
 package org.finos.legend.engine.language.pure.dsl.persistence.compiler.toPureGraph;
 
 import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.factory.Sets;
+import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
@@ -57,6 +57,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.sink.SinkVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.targetshape.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.transactionmilestoning.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.transactionmilestoning.derivation.SourceSpecifiesInAndOutDateTime;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.transactionmilestoning.derivation.SourceSpecifiesInDateTime;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.transactionmilestoning.derivation.TransactionDerivation;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.transactionmilestoning.derivation.TransactionDerivationVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.DateTimeValidityMilestoning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.ValidityMilestoning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.ValidityMilestoningVisitor;
@@ -78,8 +82,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.proper
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
+import java.util.*;
 
 public class HelperPersistenceBuilder
 {
@@ -87,7 +90,6 @@ public class HelperPersistenceBuilder
 
     private static final TriggerBuilder TRIGGER_BUILDER = new TriggerBuilder();
     private static final AuditingBuilder AUDITING_BUILDER = new AuditingBuilder();
-    private static final TransactionMilestoningBuilder TRANSACTION_MILESTONING_BUILDER = new TransactionMilestoningBuilder();
 
     private HelperPersistenceBuilder()
     {
@@ -154,7 +156,7 @@ public class HelperPersistenceBuilder
         {
             if (connectionRequired)
             {
-                throw new EngineException(String.format("Connection is required"), sourceInformation, EngineErrorType.COMPILATION);
+                throw new EngineException("Connection is required", sourceInformation, EngineErrorType.COMPILATION);
             }
             return null;
         }
@@ -164,9 +166,9 @@ public class HelperPersistenceBuilder
         return pureConnection;
     }
 
-    public static Root_meta_pure_persistence_metamodel_persister_targetshape_TargetShape buildTargetShape(TargetShape targetShape, CompileContext context)
+    public static Root_meta_pure_persistence_metamodel_persister_targetshape_TargetShape buildTargetShape(TargetShape targetShape, Map<String, Class<?>> modelClassByProperty, CompileContext context)
     {
-        return targetShape.accept(new TargetShapeBuilder(context));
+        return targetShape.accept(new TargetShapeBuilder(modelClassByProperty, context));
     }
 
     public static Root_meta_pure_persistence_metamodel_persister_deduplication_DeduplicationStrategy buildDeduplicationStrategy(DeduplicationStrategy deduplicationStrategy, Class<?> inputClass, CompileContext context)
@@ -174,9 +176,9 @@ public class HelperPersistenceBuilder
         return deduplicationStrategy.accept(new DeduplicationStrategyBuilder(inputClass, context));
     }
 
-    public static Root_meta_pure_persistence_metamodel_persister_ingestmode_IngestMode buildIngestMode(IngestMode ingestMode, Iterable<String> leafModelClasses, CompileContext context)
+    public static Root_meta_pure_persistence_metamodel_persister_ingestmode_IngestMode buildIngestMode(IngestMode ingestMode, Collection<Class<?>> modelClasses, CompileContext context)
     {
-        return ingestMode.accept(new IngestModeBuilder(leafModelClasses, context));
+        return ingestMode.accept(new IngestModeBuilder(modelClasses, context));
     }
 
     public static Root_meta_pure_persistence_metamodel_persister_audit_Auditing buildAuditing(Auditing auditing)
@@ -184,19 +186,24 @@ public class HelperPersistenceBuilder
         return auditing.accept(AUDITING_BUILDER);
     }
 
-    public static Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_TransactionMilestoning buildTransactionMilestoning(TransactionMilestoning transactionMilestoning)
+    public static Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_TransactionMilestoning buildTransactionMilestoning(TransactionMilestoning transactionMilestoning, Collection<Class<?>> modelClasses, CompileContext context)
     {
-        return transactionMilestoning.accept(TRANSACTION_MILESTONING_BUILDER);
+        return transactionMilestoning.accept(new TransactionMilestoningBuilder(modelClasses, context));
     }
 
-    public static Root_meta_pure_persistence_metamodel_persister_validitymilestoning_ValidityMilestoning buildValidityMilestoning(ValidityMilestoning validityMilestoning, Iterable<String> leafModelClasses, CompileContext context)
+    public static Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_derivation_TransactionDerivation buildTransactionDerivation(TransactionDerivation transactionDerivation, Collection<Class<?>> modelClasses, CompileContext context)
     {
-        return validityMilestoning.accept(new ValidityMilestoningBuilder(leafModelClasses, context));
+        return transactionDerivation.accept(new TransactionDerivationBuilder(modelClasses, context));
     }
 
-    public static Root_meta_pure_persistence_metamodel_persister_validitymilestoning_derivation_ValidityDerivation buildValidityDerivation(ValidityDerivation validityDerivation, Iterable<String> leafModelClasses, CompileContext context)
+    public static Root_meta_pure_persistence_metamodel_persister_validitymilestoning_ValidityMilestoning buildValidityMilestoning(ValidityMilestoning validityMilestoning, Collection<Class<?>> modelClasses, CompileContext context)
     {
-        return validityDerivation.accept(new ValidityDerivationBuilder(leafModelClasses, context));
+        return validityMilestoning.accept(new ValidityMilestoningBuilder(modelClasses, context));
+    }
+
+    public static Root_meta_pure_persistence_metamodel_persister_validitymilestoning_derivation_ValidityDerivation buildValidityDerivation(ValidityDerivation validityDerivation, Collection<Class<?>> modelClasses, CompileContext context)
+    {
+        return validityDerivation.accept(new ValidityDerivationBuilder(modelClasses, context));
     }
 
     // helper methods
@@ -260,12 +267,13 @@ public class HelperPersistenceBuilder
         @Override
         public Root_meta_pure_persistence_metamodel_persister_Persister visit(BatchPersister val)
         {
-            Iterable<String> leafModelClasses = val.targetShape.accept(new LeafModelClassExtractor(context));
+            Map<String, Class<?>> modelClassByProperty = val.targetShape.accept(new ModelClassByPropertyExtractor(context));
+            Collection<Class<?>> modelClasses = modelClassByProperty.values();
 
             return new Root_meta_pure_persistence_metamodel_persister_BatchPersister_Impl("")
                     ._sink(buildSink(val.sink, context))
-                    ._ingestMode(buildIngestMode(val.ingestMode, leafModelClasses, context))
-                    ._targetShape(buildTargetShape(val.targetShape, context));
+                    ._ingestMode(buildIngestMode(val.ingestMode, modelClasses, context))
+                    ._targetShape(buildTargetShape(val.targetShape, modelClassByProperty, context));
         }
 
         @Override
@@ -325,40 +333,44 @@ public class HelperPersistenceBuilder
         }
     }
 
-    private static class LeafModelClassExtractor implements TargetShapeVisitor<Iterable<String>>
+    private static class ModelClassByPropertyExtractor implements TargetShapeVisitor<Map<String, Class<?>>>
     {
         private final CompileContext context;
 
-        private LeafModelClassExtractor(CompileContext context)
+        private ModelClassByPropertyExtractor(CompileContext context)
         {
             this.context = context;
         }
 
         @Override
-        public Iterable<String> visit(FlatTarget val)
+        public Map<String, Class<?>> visit(FlatTarget val)
         {
-            return Sets.fixedSize.of(val.modelClass);
+            return Maps.fixedSize.of(null, context.resolveClass(val.modelClass));
         }
 
         @Override
-        public Iterable<String> visit(MultiFlatTarget val)
+        public Map<String, Class<?>> visit(MultiFlatTarget val)
         {
-            return Iterate.collect(val.parts, p -> {
+            return Iterate.injectInto(Maps.mutable.<String, Class<?>>of(), val.parts, (map, p) -> {
                 AbstractProperty<?> pureModelProperty = context.resolveProperty(val.modelClass, p.modelProperty);
                 Type leafType = pureModelProperty._genericType()._rawType();
                 Assert.assertTrue(leafType instanceof Class, () -> String.format("Target shape modelProperty '%s' must refer to a class.", p.modelProperty), p.sourceInformation, EngineErrorType.COMPILATION);
 
-                return determineFullPath(leafType);
-            });
+                Class<?> modelClass = context.resolveClass(determineFullPath(leafType));
+                map.put(p.modelProperty, modelClass);
+                return map;
+            }).asUnmodifiable();
         }
     }
 
     private static class TargetShapeBuilder implements TargetShapeVisitor<Root_meta_pure_persistence_metamodel_persister_targetshape_TargetShape>
     {
+        Map<String, Class<?>> modelClassByProperty;
         private final CompileContext context;
 
-        private TargetShapeBuilder(CompileContext context)
+        private TargetShapeBuilder(Map<String, Class<?>> modelClassByProperty, CompileContext context)
         {
+            this.modelClassByProperty = modelClassByProperty;
             this.context = context;
         }
 
@@ -387,14 +399,13 @@ public class HelperPersistenceBuilder
         private Root_meta_pure_persistence_metamodel_persister_targetshape_MultiFlatTargetPart resolvePart(MultiFlatTargetPart part, Class<?> modelClass, CompileContext context)
         {
             Property<?, ?> property = validateAndResolveProperty(modelClass, part.modelProperty, part.sourceInformation, context);
-            Type targetType = property._genericType()._rawType();
-            Assert.assertTrue(targetType instanceof Class, () -> String.format("Target shape modelProperty '%s' must refer to a class.", part.modelProperty), part.sourceInformation, EngineErrorType.COMPILATION);
+            Class<?> nestedModelClass = modelClassByProperty.get(property._name());
 
             return new Root_meta_pure_persistence_metamodel_persister_targetshape_MultiFlatTargetPart_Impl("")
                     ._modelProperty(property)
                     ._targetName(part.targetName)
-                    ._partitionFields(ListIterate.collect(part.partitionFields, p -> validateAndResolvePropertyName(modelClass, p, part.sourceInformation, context)))
-                    ._deduplicationStrategy(buildDeduplicationStrategy(part.deduplicationStrategy, modelClass, context));
+                    ._partitionFields(ListIterate.collect(part.partitionFields, p -> validateAndResolvePropertyName(nestedModelClass, p, part.sourceInformation, context)))
+                    ._deduplicationStrategy(buildDeduplicationStrategy(part.deduplicationStrategy, nestedModelClass, context));
         }
     }
 
@@ -438,12 +449,12 @@ public class HelperPersistenceBuilder
 
     private static class IngestModeBuilder implements IngestModeVisitor<Root_meta_pure_persistence_metamodel_persister_ingestmode_IngestMode>
     {
-        private final Iterable<String> leafModelClasses;
+        private final Collection<Class<?>> modelClasses;
         private final CompileContext context;
 
-        private IngestModeBuilder(Iterable<String> leafModelClasses, CompileContext context)
+        private IngestModeBuilder(Collection<Class<?>> modelClasses, CompileContext context)
         {
-            this.leafModelClasses = leafModelClasses;
+            this.modelClasses = modelClasses;
             this.context = context;
         }
 
@@ -458,22 +469,22 @@ public class HelperPersistenceBuilder
         public Root_meta_pure_persistence_metamodel_persister_ingestmode_IngestMode visit(UnitemporalSnapshot val)
         {
             return new Root_meta_pure_persistence_metamodel_persister_ingestmode_snapshot_UnitemporalSnapshot_Impl("")
-                    ._transactionMilestoning(buildTransactionMilestoning(val.transactionMilestoning));
+                    ._transactionMilestoning(buildTransactionMilestoning(val.transactionMilestoning, modelClasses, context));
         }
 
         @Override
         public Root_meta_pure_persistence_metamodel_persister_ingestmode_IngestMode visit(BitemporalSnapshot val)
         {
             return new Root_meta_pure_persistence_metamodel_persister_ingestmode_snapshot_BitemporalSnapshot_Impl("")
-                    ._transactionMilestoning(buildTransactionMilestoning(val.transactionMilestoning))
-                    ._validityMilestoning(buildValidityMilestoning(val.validityMilestoning, leafModelClasses, context));
+                    ._transactionMilestoning(buildTransactionMilestoning(val.transactionMilestoning, modelClasses, context))
+                    ._validityMilestoning(buildValidityMilestoning(val.validityMilestoning, modelClasses, context));
         }
 
         @Override
         public Root_meta_pure_persistence_metamodel_persister_ingestmode_IngestMode visit(NontemporalDelta val)
         {
             return new Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_NontemporalDelta_Impl("")
-                    ._mergeStrategy(buildMergeStrategy(val.mergeStrategy, leafModelClasses, context))
+                    ._mergeStrategy(buildMergeStrategy(val.mergeStrategy, modelClasses, context))
                     ._auditing(buildAuditing(val.auditing));
         }
 
@@ -481,17 +492,17 @@ public class HelperPersistenceBuilder
         public Root_meta_pure_persistence_metamodel_persister_ingestmode_IngestMode visit(UnitemporalDelta val)
         {
             return new Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_UnitemporalDelta_Impl("")
-                    ._mergeStrategy(buildMergeStrategy(val.mergeStrategy, leafModelClasses, context))
-                    ._transactionMilestoning(buildTransactionMilestoning(val.transactionMilestoning));
+                    ._mergeStrategy(buildMergeStrategy(val.mergeStrategy, modelClasses, context))
+                    ._transactionMilestoning(buildTransactionMilestoning(val.transactionMilestoning, modelClasses, context));
         }
 
         @Override
         public Root_meta_pure_persistence_metamodel_persister_ingestmode_IngestMode visit(BitemporalDelta val)
         {
             return new Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_BitemporalDelta_Impl("")
-                    ._mergeStrategy(buildMergeStrategy(val.mergeStrategy, leafModelClasses, context))
-                    ._transactionMilestoning(buildTransactionMilestoning(val.transactionMilestoning))
-                    ._validityMilestoning(buildValidityMilestoning(val.validityMilestoning, leafModelClasses, context));
+                    ._mergeStrategy(buildMergeStrategy(val.mergeStrategy, modelClasses, context))
+                    ._transactionMilestoning(buildTransactionMilestoning(val.transactionMilestoning, modelClasses, context))
+                    ._validityMilestoning(buildValidityMilestoning(val.validityMilestoning, modelClasses, context));
         }
 
         @Override
@@ -502,28 +513,28 @@ public class HelperPersistenceBuilder
                     ._filterDuplicates(val.filterDuplicates);
         }
 
-        public Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_merge_MergeStrategy buildMergeStrategy(MergeStrategy mergeStrategy, Iterable<String> leafModelClasses, CompileContext context)
+        public Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_merge_MergeStrategy buildMergeStrategy(MergeStrategy mergeStrategy, Collection<Class<?>> modelClasses, CompileContext context)
         {
-            return mergeStrategy.accept(new MergeStrategyBuilder(leafModelClasses, context));
+            return mergeStrategy.accept(new MergeStrategyBuilder(modelClasses, context));
         }
     }
 
     private static class MergeStrategyBuilder implements MergeStrategyVisitor<Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_merge_MergeStrategy>
     {
-        private final Iterable<String> leafModelClasses;
+        private final Collection<Class<?>> modelClasses;
         private final CompileContext context;
 
-        private MergeStrategyBuilder(Iterable<String> leafModelClasses, CompileContext context)
+        private MergeStrategyBuilder(Collection<Class<?>> modelClasses, CompileContext context)
         {
-            this.leafModelClasses = leafModelClasses;
+            this.modelClasses = modelClasses;
             this.context = context;
         }
 
         @Override
         public Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_merge_MergeStrategy visit(DeleteIndicatorMergeStrategy val)
         {
-            String deleteProperty = Lists.immutable.ofAll(leafModelClasses)
-                    .collect(c -> validateAndResolvePropertyName(context.resolveClass(c), val.deleteField, val.sourceInformation, context))
+            String deleteProperty = Lists.immutable.ofAll(modelClasses)
+                    .collect(c -> validateAndResolvePropertyName(c, val.deleteField, val.sourceInformation, context))
                     .distinct()
                     .getOnly();
 
@@ -557,6 +568,15 @@ public class HelperPersistenceBuilder
 
     private static class TransactionMilestoningBuilder implements TransactionMilestoningVisitor<Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_TransactionMilestoning>
     {
+        private final Collection<Class<?>> modelClasses;
+        private final CompileContext context;
+
+        private TransactionMilestoningBuilder(Collection<Class<?>> modelClasses, CompileContext context)
+        {
+            this.modelClasses = modelClasses;
+            this.context = context;
+        }
+
         @Override
         public Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_TransactionMilestoning visit(BatchIdAndDateTimeTransactionMilestoning val)
         {
@@ -564,7 +584,8 @@ public class HelperPersistenceBuilder
                     ._batchIdInName(val.batchIdInName)
                     ._batchIdOutName(val.batchIdOutName)
                     ._dateTimeInName(val.dateTimeInName)
-                    ._dateTimeOutName(val.dateTimeOutName);
+                    ._dateTimeOutName(val.dateTimeOutName)
+                    ._derivation(val.derivation == null ? null : buildTransactionDerivation(val.derivation, modelClasses, context));
         }
 
         @Override
@@ -580,18 +601,61 @@ public class HelperPersistenceBuilder
         {
             return new Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_DateTimeTransactionMilestoning_Impl("")
                     ._dateTimeInName(val.dateTimeInName)
-                    ._dateTimeOutName(val.dateTimeOutName);
+                    ._dateTimeOutName(val.dateTimeOutName)
+                    ._derivation(val.derivation == null ? null : buildTransactionDerivation(val.derivation, modelClasses, context));
+        }
+    }
+
+    private static class TransactionDerivationBuilder implements TransactionDerivationVisitor<Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_derivation_TransactionDerivation>
+    {
+        private final Collection<Class<?>> modelClasses;
+        private final CompileContext context;
+
+        private TransactionDerivationBuilder(Collection<Class<?>> modelClasses, CompileContext context)
+        {
+            this.modelClasses = modelClasses;
+            this.context = context;
+        }
+
+        @Override
+        public Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_derivation_TransactionDerivation visit(SourceSpecifiesInAndOutDateTime val)
+        {
+            String sourceDateTimeInField = Lists.immutable.ofAll(modelClasses)
+                    .collect(c -> validateAndResolvePropertyName(c, val.sourceDateTimeInField, val.sourceInformation, context))
+                    .distinct()
+                    .getOnly();
+
+            String sourceDateTimeOutField = Lists.immutable.ofAll(modelClasses)
+                    .collect(c -> validateAndResolvePropertyName(c, val.sourceDateTimeOutField, val.sourceInformation, context))
+                    .distinct()
+                    .getOnly();
+
+            return new Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_derivation_SourceSpecifiesTransactionInAndOutDate_Impl("")
+                    ._sourceDateTimeInField(sourceDateTimeInField)
+                    ._sourceDateTimeOutField(sourceDateTimeOutField);
+        }
+
+        @Override
+        public Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_derivation_TransactionDerivation visit(SourceSpecifiesInDateTime val)
+        {
+            String sourceDateTimeInField = Lists.immutable.ofAll(modelClasses)
+                    .collect(c -> validateAndResolvePropertyName(c, val.sourceDateTimeInField, val.sourceInformation, context))
+                    .distinct()
+                    .getOnly();
+
+            return new Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_derivation_SourceSpecifiesTransactionInDate_Impl("")
+                    ._sourceDateTimeInField(sourceDateTimeInField);
         }
     }
 
     private static class ValidityMilestoningBuilder implements ValidityMilestoningVisitor<Root_meta_pure_persistence_metamodel_persister_validitymilestoning_ValidityMilestoning>
     {
-        private final Iterable<String> leafModelClasses;
+        private final Collection<Class<?>> modelClasses;
         private final CompileContext context;
 
-        private ValidityMilestoningBuilder(Iterable<String> leafModelClasses, CompileContext context)
+        private ValidityMilestoningBuilder(Collection<Class<?>> modelClasses, CompileContext context)
         {
-            this.leafModelClasses = leafModelClasses;
+            this.modelClasses = modelClasses;
             this.context = context;
         }
 
@@ -599,33 +663,33 @@ public class HelperPersistenceBuilder
         public Root_meta_pure_persistence_metamodel_persister_validitymilestoning_ValidityMilestoning visit(DateTimeValidityMilestoning val)
         {
             return new Root_meta_pure_persistence_metamodel_persister_validitymilestoning_DateTimeValidityMilestoning_Impl("")
-                    ._derivation(buildValidityDerivation(val.derivation, leafModelClasses, context))
                     ._dateTimeFromName(val.dateTimeFromName)
-                    ._dateTimeThruName(val.dateTimeThruName);
+                    ._dateTimeThruName(val.dateTimeThruName)
+                    ._derivation(buildValidityDerivation(val.derivation, modelClasses, context));
         }
     }
 
     private static class ValidityDerivationBuilder implements ValidityDerivationVisitor<Root_meta_pure_persistence_metamodel_persister_validitymilestoning_derivation_ValidityDerivation>
     {
-        private final Iterable<String> leafModelClasses;
+        private final Collection<Class<?>> modelClasses;
         private final CompileContext context;
 
-        private ValidityDerivationBuilder(Iterable<String> leafModelClasses, CompileContext context)
+        private ValidityDerivationBuilder(Collection<Class<?>> modelClasses, CompileContext context)
         {
-            this.leafModelClasses = leafModelClasses;
+            this.modelClasses = modelClasses;
             this.context = context;
         }
 
         @Override
         public Root_meta_pure_persistence_metamodel_persister_validitymilestoning_derivation_ValidityDerivation visit(SourceSpecifiesFromAndThruDateTime val)
         {
-            String sourceDateTimeFromField = Lists.immutable.ofAll(leafModelClasses)
-                    .collect(c -> validateAndResolvePropertyName(context.resolveClass(c), val.sourceDateTimeFromField, val.sourceInformation, context))
+            String sourceDateTimeFromField = Lists.immutable.ofAll(modelClasses)
+                    .collect(c -> validateAndResolvePropertyName(c, val.sourceDateTimeFromField, val.sourceInformation, context))
                     .distinct()
                     .getOnly();
 
-            String sourceDateTimeThruField = Lists.immutable.ofAll(leafModelClasses)
-                    .collect(c -> validateAndResolvePropertyName(context.resolveClass(c), val.sourceDateTimeThruField, val.sourceInformation, context))
+            String sourceDateTimeThruField = Lists.immutable.ofAll(modelClasses)
+                    .collect(c -> validateAndResolvePropertyName(c, val.sourceDateTimeThruField, val.sourceInformation, context))
                     .distinct()
                     .getOnly();
 
@@ -637,8 +701,8 @@ public class HelperPersistenceBuilder
         @Override
         public Root_meta_pure_persistence_metamodel_persister_validitymilestoning_derivation_ValidityDerivation visit(SourceSpecifiesFromDateTime val)
         {
-            String sourceDateTimeFromField = Lists.immutable.ofAll(leafModelClasses)
-                    .collect(c -> validateAndResolvePropertyName(context.resolveClass(c), val.sourceDateTimeFromField, val.sourceInformation, context))
+            String sourceDateTimeFromField = Lists.immutable.ofAll(modelClasses)
+                    .collect(c -> validateAndResolvePropertyName(c, val.sourceDateTimeFromField, val.sourceInformation, context))
                     .distinct()
                     .getOnly();
 

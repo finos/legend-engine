@@ -76,6 +76,14 @@ public class AuthenticationStrategyTransformer implements AuthenticationStrategy
         {
             return new GCPApplicationDefaultCredentialsAuthenticationStrategy();
         }
+        else if (authenticationStrategy instanceof GCPWorkloadIdentityFederationAuthenticationStrategy)
+        {
+            GCPWorkloadIdentityFederationAuthenticationStrategy gcpWorkloadIdentityFederationAuthenticationStrategy = (GCPWorkloadIdentityFederationAuthenticationStrategy) authenticationStrategy;
+            return new org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.GCPWorkloadIdentityFederationAuthenticationStrategy(
+                    gcpWorkloadIdentityFederationAuthenticationStrategy.serviceAccountEmail,
+                    gcpWorkloadIdentityFederationAuthenticationStrategy.additionalGcpScopes
+            );
+        }
         return null;
     }
 }

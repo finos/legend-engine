@@ -79,6 +79,7 @@ public class TestExtensions
             .with(org.finos.legend.engine.external.format.flatdata.FlatDataExternalFormatExtension.class)
             .with(org.finos.legend.engine.external.format.json.JsonExternalFormatExtension.class)
             .with(org.finos.legend.engine.external.format.xsd.XsdExternalFormatExtension.class)
+            .with(org.finos.legend.engine.external.format.protobuf.ProtobufFormatExtension.class)
             .toImmutable();
 
     @Test

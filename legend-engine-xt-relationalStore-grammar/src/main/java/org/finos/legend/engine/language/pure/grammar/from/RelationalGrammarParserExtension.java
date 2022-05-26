@@ -192,6 +192,8 @@ public class RelationalGrammarParserExtension implements IRelationalGrammarParse
                     return parseAuthenticationStrategy(code, p -> walker.visitSnowflakePublicAuthenticationStrategy(code, p.snowflakePublicAuth()));
                 case "GCPApplicationDefaultCredentials":
                     return parseAuthenticationStrategy(code, p -> walker.visitGCPApplicationDefaultCredentialsAuthenticationStrategy(code, p.gcpApplicationDefaultCredentialsAuth() ));
+                case "GCPWorkloadIdentityFederation":
+                    return parseAuthenticationStrategy(code, p -> walker.visitGCPWorkloadIdentityFederationAuthenticationStrategy(code, p.gcpWorkloadIdentityFederationAuth()));
                 default:
                     return null;
             }
@@ -230,9 +232,9 @@ public class RelationalGrammarParserExtension implements IRelationalGrammarParse
         return Lists.immutable.with(MappingTestInputDataParser.newParser("Relational", RelationalGrammarParserExtension::parseObjectInputData));
     }
 
-    private static InputData parseObjectInputData(MappingParserGrammar.TestInputElementContext inputDataContext, ParseTreeWalkerSourceInformation sourceInformation)
+    private static InputData parseObjectInputData(MappingParserGrammar.TestInputElementContext inputDataContext, ParseTreeWalkerSourceInformation walkerSourceInformation)
     {
-        SourceInformation testInputDataSourceInformation = sourceInformation.getSourceInformation(inputDataContext);
+        SourceInformation testInputDataSourceInformation = walkerSourceInformation.getSourceInformation(inputDataContext);
         RelationalInputData relationalInputData = new RelationalInputData();
         relationalInputData.sourceInformation = testInputDataSourceInformation;
 
@@ -246,7 +248,7 @@ public class RelationalGrammarParserExtension implements IRelationalGrammarParse
         }
         catch (IllegalArgumentException e)
         {
-            throw new EngineException("Mapping test relational input data does not support format '" + inputDataContext.testInputFormat().getText() + "'. Possible values: " + ArrayIterate.makeString(RelationalInputType.values(), ", "), sourceInformation.getSourceInformation(inputDataContext.testInputFormat()), EngineErrorType.PARSER);
+            throw new EngineException("Mapping test relational input data does not support format '" + inputDataContext.testInputFormat().getText() + "'. Possible values: " + ArrayIterate.makeString(RelationalInputType.values(), ", "), walkerSourceInformation.getSourceInformation(inputDataContext.testInputFormat()), EngineErrorType.PARSER);
         }
 
         relationalInputData.database = inputDataContext.testInputSrc().getText();
@@ -343,10 +345,10 @@ public class RelationalGrammarParserExtension implements IRelationalGrammarParse
         return new SourceCodeParserInfo(connectionValueSourceCode.code, input, connectionValueSourceCode.sourceInformation, connectionValueSourceCode.walkerSourceInformation, lexer, parser, parser.definition());
     }
 
-    public static RelationalOperationElement parseRelationalOperationElement(String code, boolean returnSourceInfo)
+    public static RelationalOperationElement parseRelationalOperationElement(String code, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)
     {
         CharStream input = CharStreams.fromString(code);
-        ParseTreeWalkerSourceInformation parseTreeWalkerSourceInformation= new ParseTreeWalkerSourceInformation.Builder("", 0, 0).withReturnSourceInfo(returnSourceInfo).build();
+        ParseTreeWalkerSourceInformation parseTreeWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(sourceId, lineOffset, columnOffset).withReturnSourceInfo(returnSourceInfo).build();
         ParserErrorListener errorListener = new ParserErrorListener(parseTreeWalkerSourceInformation);
         RelationalLexerGrammar lexer = new RelationalLexerGrammar(input);
         lexer.removeErrorListeners();

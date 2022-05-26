@@ -34,7 +34,8 @@ public class ServiceStoreExecutorBuilder implements StoreExecutorBuilder
     }
 
     @Override
-    public StoreExecutor build(StoreExecutorConfiguration storeExecutorConfiguration) {
+    public StoreExecutor build(StoreExecutorConfiguration storeExecutorConfiguration)
+    {
         return ServiceStoreExecutor.INSTANCE;
     }
 }

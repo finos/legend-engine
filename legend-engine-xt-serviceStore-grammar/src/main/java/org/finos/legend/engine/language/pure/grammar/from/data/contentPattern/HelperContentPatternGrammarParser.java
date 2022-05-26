@@ -47,7 +47,7 @@ public class HelperContentPatternGrammarParser
      *     HelperContentPatternGrammarParser.parseContentPattern(ctx.serviceRequestContentPattern(), walkerSourceInformation, extensions)
      * </pre>
      */
-    public static ContentPattern parseContentPattern(ParserRuleContext contentPatternContext, ParseTreeWalkerSourceInformation parentSourceInformation, PureGrammarParserExtensions extensions)
+    public static ContentPattern parseContentPattern(ParserRuleContext contentPatternContext, ParseTreeWalkerSourceInformation parentWalkerSourceInformation, PureGrammarParserExtensions extensions)
     {
         List<ParseTree> children = contentPatternContext.children;
         if (children.size() < 3 || !children.get(0).getClass().getSimpleName().equals("IdentifierContext") || !(children.get(1) instanceof TerminalNode))
@@ -67,7 +67,7 @@ public class HelperContentPatternGrammarParser
         ContentPatternGrammarParser parser = ListIterate.detect(ContentPatternParserExtensionLoader.extensions(), e -> e.getType().equals(dataType));
         if (parser == null)
         {
-            throw new EngineException("Unknown contentPattern pattern type: " + dataType, parentSourceInformation.getSourceInformation(identifierContext), EngineErrorType.PARSER);
+            throw new EngineException("Unknown contentPattern pattern type: " + dataType, parentWalkerSourceInformation.getSourceInformation(identifierContext), EngineErrorType.PARSER);
         }
 
         StringBuilder builder = new StringBuilder();
@@ -77,11 +77,11 @@ public class HelperContentPatternGrammarParser
 
         // prepare island grammar walker source information
         int startLine = islandOpen.getSymbol().getLine();
-        int lineOffset = parentSourceInformation.getLineOffset() + startLine - 1;
+        int lineOffset = parentWalkerSourceInformation.getLineOffset() + startLine - 1;
         // only add current walker source information column offset if this is the first line
-        int columnOffset = (startLine == 1 ? parentSourceInformation.getColumnOffset() : 0) + islandOpen.getSymbol().getCharPositionInLine() + islandOpen.getSymbol().getText().length();
-        ParseTreeWalkerSourceInformation walkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(parentSourceInformation).withLineOffset(lineOffset).withColumnOffset(columnOffset).build();
-        SourceInformation sourceInformation = parentSourceInformation.getSourceInformation(contentPatternContext);
+        int columnOffset = (startLine == 1 ? parentWalkerSourceInformation.getColumnOffset() : 0) + islandOpen.getSymbol().getCharPositionInLine() + islandOpen.getSymbol().getText().length();
+        ParseTreeWalkerSourceInformation walkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(parentWalkerSourceInformation).withLineOffset(lineOffset).withColumnOffset(columnOffset).build();
+        SourceInformation sourceInformation = parentWalkerSourceInformation.getSourceInformation(contentPatternContext);
 
         if (text.isEmpty())
         {

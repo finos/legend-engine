@@ -409,515 +409,515 @@ public class TestServiceStoreMappingGrammarRoundtrip extends TestGrammarRoundtri
     public void testDeprecatedGrammar()
     {
         testLegacyToStrategicTransformation("###Mapping\n" +
-                "Mapping test::mapping\n" +
-                "(\n" +
-                "  *test::model: ServiceStore\n" +
-                "  {\n" +
-                "    ~service [test::ServiceStore] TestService\n" +
-                "    (\n" +
-                "      prop : $service.parameters.param\n" +
-                "    )\n" +
-                "  }\n" +
-                ")\n",
+                        "Mapping test::mapping\n" +
+                        "(\n" +
+                        "  *test::model: ServiceStore\n" +
+                        "  {\n" +
+                        "    ~service [test::ServiceStore] TestService\n" +
+                        "    (\n" +
+                        "      prop : $service.parameters.param\n" +
+                        "    )\n" +
+                        "  }\n" +
+                        ")\n",
                 "###Mapping\n" +
-                "Mapping test::mapping\n" +
-                "(\n" +
-                "  *test::model: ServiceStore\n" +
-                "  {\n" +
-                "    ~service [test::ServiceStore] TestService\n" +
-                "    (\n" +
-                "      ~request\n" +
-                "      (\n" +
-                "        parameters\n" +
-                "        (\n" +
-                "          param = $this.prop\n" +
-                "        )\n" +
-                "      )\n" +
-                "    )\n" +
-                "  }\n" +
-                ")\n");
-
-        testLegacyToStrategicTransformation("###Mapping\n" +
-                "Mapping test::mapping\n" +
-                "(\n" +
-                "  *test::model: ServiceStore\n" +
-                "  {\n" +
-                "    ~service [test::ServiceStore] TestService\n" +
-                "    (\n" +
-                "      prop : $service.parameters.\"param name\"\n" +
-                "    )\n" +
-                "  }\n" +
-                ")\n",
-                "###Mapping\n" +
-                "Mapping test::mapping\n" +
-                "(\n" +
-                "  *test::model: ServiceStore\n" +
-                "  {\n" +
-                "    ~service [test::ServiceStore] TestService\n" +
-                "    (\n" +
-                "      ~request\n" +
-                "      (\n" +
-                "        parameters\n" +
-                "        (\n" +
-                "          \"param name\" = $this.prop\n" +
-                "        )\n" +
-                "      )\n" +
-                "    )\n" +
-                "  }\n" +
+                        "Mapping test::mapping\n" +
+                        "(\n" +
+                        "  *test::model: ServiceStore\n" +
+                        "  {\n" +
+                        "    ~service [test::ServiceStore] TestService\n" +
+                        "    (\n" +
+                        "      ~request\n" +
+                        "      (\n" +
+                        "        parameters\n" +
+                        "        (\n" +
+                        "          param = $this.prop\n" +
+                        "        )\n" +
+                        "      )\n" +
+                        "    )\n" +
+                        "  }\n" +
                         ")\n");
 
         testLegacyToStrategicTransformation("###Mapping\n" +
-                "Mapping test::mapping\n" +
-                "(\n" +
-                "  *test::model: ServiceStore\n" +
-                "  {\n" +
-                "    ~service [test::ServiceStore] TestService\n" +
-                "    (\n" +
-                "      ~paramMapping\n" +
-                "      (\n" +
-                "        serializationFormat : 'CSV'\n" +
-                "      )\n" +
-                "    )\n" +
-                "  }\n" +
-                ")\n",
+                        "Mapping test::mapping\n" +
+                        "(\n" +
+                        "  *test::model: ServiceStore\n" +
+                        "  {\n" +
+                        "    ~service [test::ServiceStore] TestService\n" +
+                        "    (\n" +
+                        "      prop : $service.parameters.\"param name\"\n" +
+                        "    )\n" +
+                        "  }\n" +
+                        ")\n",
                 "###Mapping\n" +
-                "Mapping test::mapping\n" +
-                "(\n" +
-                "  *test::model: ServiceStore\n" +
-                "  {\n" +
-                "    ~service [test::ServiceStore] TestService\n" +
-                "    (\n" +
-                "      ~request\n" +
-                "      (\n" +
-                "        parameters\n" +
-                "        (\n" +
-                "          serializationFormat = 'CSV'\n" +
-                "        )\n" +
-                "      )\n" +
-                "    )\n" +
-                "  }\n" +
-                ")\n");
+                        "Mapping test::mapping\n" +
+                        "(\n" +
+                        "  *test::model: ServiceStore\n" +
+                        "  {\n" +
+                        "    ~service [test::ServiceStore] TestService\n" +
+                        "    (\n" +
+                        "      ~request\n" +
+                        "      (\n" +
+                        "        parameters\n" +
+                        "        (\n" +
+                        "          \"param name\" = $this.prop\n" +
+                        "        )\n" +
+                        "      )\n" +
+                        "    )\n" +
+                        "  }\n" +
+                        ")\n");
 
         testLegacyToStrategicTransformation("###Mapping\n" +
-                "Mapping test::mapping\n" +
-                "(\n" +
-                "  *test::model: ServiceStore\n" +
-                "  {\n" +
-                "    ~service [test::ServiceStore] TestService\n" +
-                "    (\n" +
-                "      ~paramMapping\n" +
-                "      (\n" +
-                "        \"param name\" : 'CSV'\n" +
-                "      )\n" +
-                "    )\n" +
-                "  }\n" +
-                ")\n",
+                        "Mapping test::mapping\n" +
+                        "(\n" +
+                        "  *test::model: ServiceStore\n" +
+                        "  {\n" +
+                        "    ~service [test::ServiceStore] TestService\n" +
+                        "    (\n" +
+                        "      ~paramMapping\n" +
+                        "      (\n" +
+                        "        serializationFormat : 'CSV'\n" +
+                        "      )\n" +
+                        "    )\n" +
+                        "  }\n" +
+                        ")\n",
                 "###Mapping\n" +
-                "Mapping test::mapping\n" +
-                "(\n" +
-                "  *test::model: ServiceStore\n" +
-                "  {\n" +
-                "    ~service [test::ServiceStore] TestService\n" +
-                "    (\n" +
-                "      ~request\n" +
-                "      (\n" +
-                "        parameters\n" +
-                "        (\n" +
-                "          \"param name\" = 'CSV'\n" +
-                "        )\n" +
-                "      )\n" +
-                "    )\n" +
-                "  }\n" +
-                ")\n");
+                        "Mapping test::mapping\n" +
+                        "(\n" +
+                        "  *test::model: ServiceStore\n" +
+                        "  {\n" +
+                        "    ~service [test::ServiceStore] TestService\n" +
+                        "    (\n" +
+                        "      ~request\n" +
+                        "      (\n" +
+                        "        parameters\n" +
+                        "        (\n" +
+                        "          serializationFormat = 'CSV'\n" +
+                        "        )\n" +
+                        "      )\n" +
+                        "    )\n" +
+                        "  }\n" +
+                        ")\n");
 
         testLegacyToStrategicTransformation("###Mapping\n" +
-                "Mapping test::mapping\n" +
-                "(\n" +
-                "  *test::model: ServiceStore\n" +
-                "  {\n" +
-                "    ~service [test::ServiceStore] TestServiceGroup.TestService\n" +
-                "    (\n" +
-                "      ~paramMapping\n" +
-                "      (\n" +
-                "        param : $this.prop\n" +
-                "      )\n" +
-                "      prop1 : $service.parameters.param1\n" +
-                "    )\n" +
-                "  }\n" +
-                ")\n",
+                        "Mapping test::mapping\n" +
+                        "(\n" +
+                        "  *test::model: ServiceStore\n" +
+                        "  {\n" +
+                        "    ~service [test::ServiceStore] TestService\n" +
+                        "    (\n" +
+                        "      ~paramMapping\n" +
+                        "      (\n" +
+                        "        \"param name\" : 'CSV'\n" +
+                        "      )\n" +
+                        "    )\n" +
+                        "  }\n" +
+                        ")\n",
                 "###Mapping\n" +
-                "Mapping test::mapping\n" +
-                "(\n" +
-                "  *test::model: ServiceStore\n" +
-                "  {\n" +
-                "    ~service [test::ServiceStore] TestServiceGroup.TestService\n" +
-                "    (\n" +
-                "      ~request\n" +
-                "      (\n" +
-                "        parameters\n" +
-                "        (\n" +
-                "          param = $this.prop,\n" +
-                "          param1 = $this.prop1\n" +
-                "        )\n" +
-                "      )\n" +
-                "    )\n" +
-                "  }\n" +
-                ")\n");
+                        "Mapping test::mapping\n" +
+                        "(\n" +
+                        "  *test::model: ServiceStore\n" +
+                        "  {\n" +
+                        "    ~service [test::ServiceStore] TestService\n" +
+                        "    (\n" +
+                        "      ~request\n" +
+                        "      (\n" +
+                        "        parameters\n" +
+                        "        (\n" +
+                        "          \"param name\" = 'CSV'\n" +
+                        "        )\n" +
+                        "      )\n" +
+                        "    )\n" +
+                        "  }\n" +
+                        ")\n");
 
         testLegacyToStrategicTransformation("###Mapping\n" +
-                "Mapping test::mapping\n" +
-                "(\n" +
-                "  *test::model: ServiceStore\n" +
-                "  {\n" +
-                "    ~service [test::ServiceStore] TestServiceGroup1.TestServiceGroup2.TestService\n" +
-                "    (\n" +
-                "      ~paramMapping\n" +
-                "      (\n" +
-                "        param : $this.prop\n" +
-                "      )\n" +
-                "    )\n" +
-                "  }\n" +
-                ")\n",
+                        "Mapping test::mapping\n" +
+                        "(\n" +
+                        "  *test::model: ServiceStore\n" +
+                        "  {\n" +
+                        "    ~service [test::ServiceStore] TestServiceGroup.TestService\n" +
+                        "    (\n" +
+                        "      ~paramMapping\n" +
+                        "      (\n" +
+                        "        param : $this.prop\n" +
+                        "      )\n" +
+                        "      prop1 : $service.parameters.param1\n" +
+                        "    )\n" +
+                        "  }\n" +
+                        ")\n",
                 "###Mapping\n" +
-                "Mapping test::mapping\n" +
-                "(\n" +
-                "  *test::model: ServiceStore\n" +
-                "  {\n" +
-                "    ~service [test::ServiceStore] TestServiceGroup1.TestServiceGroup2.TestService\n" +
-                "    (\n" +
-                "      ~request\n" +
-                "      (\n" +
-                "        parameters\n" +
-                "        (\n" +
-                "          param = $this.prop\n" +
-                "        )\n" +
-                "      )\n" +
-                "    )\n" +
-                "  }\n" +
-                ")\n");
+                        "Mapping test::mapping\n" +
+                        "(\n" +
+                        "  *test::model: ServiceStore\n" +
+                        "  {\n" +
+                        "    ~service [test::ServiceStore] TestServiceGroup.TestService\n" +
+                        "    (\n" +
+                        "      ~request\n" +
+                        "      (\n" +
+                        "        parameters\n" +
+                        "        (\n" +
+                        "          param = $this.prop,\n" +
+                        "          param1 = $this.prop1\n" +
+                        "        )\n" +
+                        "      )\n" +
+                        "    )\n" +
+                        "  }\n" +
+                        ")\n");
 
         testLegacyToStrategicTransformation("###Mapping\n" +
-                "Mapping test::mapping\n" +
-                "(\n" +
-                "  *test::model: ServiceStore\n" +
-                "  {\n" +
-                "    ~service [test::ServiceStore] TestServiceGroup1.TestServiceGroup2.TestService\n" +
-                "    (\n" +
-                "      prop1 : $service.parameters.param1\n" +
-                "    )\n" +
-                "  }\n" +
-                ")\n",
+                        "Mapping test::mapping\n" +
+                        "(\n" +
+                        "  *test::model: ServiceStore\n" +
+                        "  {\n" +
+                        "    ~service [test::ServiceStore] TestServiceGroup1.TestServiceGroup2.TestService\n" +
+                        "    (\n" +
+                        "      ~paramMapping\n" +
+                        "      (\n" +
+                        "        param : $this.prop\n" +
+                        "      )\n" +
+                        "    )\n" +
+                        "  }\n" +
+                        ")\n",
                 "###Mapping\n" +
-                "Mapping test::mapping\n" +
-                "(\n" +
-                "  *test::model: ServiceStore\n" +
-                "  {\n" +
-                "    ~service [test::ServiceStore] TestServiceGroup1.TestServiceGroup2.TestService\n" +
-                "    (\n" +
-                "      ~request\n" +
-                "      (\n" +
-                "        parameters\n" +
-                "        (\n" +
-                "          param1 = $this.prop1\n" +
-                "        )\n" +
-                "      )\n" +
-                "    )\n" +
-                "  }\n" +
-                ")\n");
+                        "Mapping test::mapping\n" +
+                        "(\n" +
+                        "  *test::model: ServiceStore\n" +
+                        "  {\n" +
+                        "    ~service [test::ServiceStore] TestServiceGroup1.TestServiceGroup2.TestService\n" +
+                        "    (\n" +
+                        "      ~request\n" +
+                        "      (\n" +
+                        "        parameters\n" +
+                        "        (\n" +
+                        "          param = $this.prop\n" +
+                        "        )\n" +
+                        "      )\n" +
+                        "    )\n" +
+                        "  }\n" +
+                        ")\n");
 
         testLegacyToStrategicTransformation("###Mapping\n" +
-                "Mapping test::mapping\n" +
-                "(\n" +
-                "  *test::model: ServiceStore\n" +
-                "  {\n" +
-                "    ~service [test::ServiceStore] TestServiceGroup1.TestServiceGroup2.TestService\n" +
-                "    (\n" +
-                "      ~paramMapping\n" +
-                "      (\n" +
-                "        param2 : 1\n" +
-                "      )\n" +
-                "      prop1 : $service.parameters.param1\n" +
-                "    )\n" +
-                "  }\n" +
-                ")\n",
+                        "Mapping test::mapping\n" +
+                        "(\n" +
+                        "  *test::model: ServiceStore\n" +
+                        "  {\n" +
+                        "    ~service [test::ServiceStore] TestServiceGroup1.TestServiceGroup2.TestService\n" +
+                        "    (\n" +
+                        "      prop1 : $service.parameters.param1\n" +
+                        "    )\n" +
+                        "  }\n" +
+                        ")\n",
                 "###Mapping\n" +
-                "Mapping test::mapping\n" +
-                "(\n" +
-                "  *test::model: ServiceStore\n" +
-                "  {\n" +
-                "    ~service [test::ServiceStore] TestServiceGroup1.TestServiceGroup2.TestService\n" +
-                "    (\n" +
-                "      ~request\n" +
-                "      (\n" +
-                "        parameters\n" +
-                "        (\n" +
-                "          param2 = 1,\n" +
-                "          param1 = $this.prop1\n" +
-                "        )\n" +
-                "      )\n" +
-                "    )\n" +
-                "  }\n" +
-                ")\n");
+                        "Mapping test::mapping\n" +
+                        "(\n" +
+                        "  *test::model: ServiceStore\n" +
+                        "  {\n" +
+                        "    ~service [test::ServiceStore] TestServiceGroup1.TestServiceGroup2.TestService\n" +
+                        "    (\n" +
+                        "      ~request\n" +
+                        "      (\n" +
+                        "        parameters\n" +
+                        "        (\n" +
+                        "          param1 = $this.prop1\n" +
+                        "        )\n" +
+                        "      )\n" +
+                        "    )\n" +
+                        "  }\n" +
+                        ")\n");
 
         testLegacyToStrategicTransformation("###Mapping\n" +
-                "Mapping test::mapping\n" +
-                "(\n" +
-                "  *test::model: ServiceStore\n" +
-                "  {\n" +
-                "    ~service [test::ServiceStore] TestServiceGroup.TestService1\n" +
-                "    (\n" +
-                "      ~paramMapping\n" +
-                "      (\n" +
-                "        param : $this.prop + $this.prop2,\n" +
-                "        param2 : 1\n" +
-                "      )\n" +
-                "      prop2 : $service.parameters.param1\n" +
-                "    )\n" +
-                "    ~service [test::ServiceStore] TestServiceGroup.TestService2\n" +
-                "    (\n" +
-                "      prop1 : $service.parameters.param1,\n" +
-                "      prop2 : $service.parameters.param2\n" +
-                "    )\n" +
-                "  }\n" +
-                ")\n",
+                        "Mapping test::mapping\n" +
+                        "(\n" +
+                        "  *test::model: ServiceStore\n" +
+                        "  {\n" +
+                        "    ~service [test::ServiceStore] TestServiceGroup1.TestServiceGroup2.TestService\n" +
+                        "    (\n" +
+                        "      ~paramMapping\n" +
+                        "      (\n" +
+                        "        param2 : 1\n" +
+                        "      )\n" +
+                        "      prop1 : $service.parameters.param1\n" +
+                        "    )\n" +
+                        "  }\n" +
+                        ")\n",
                 "###Mapping\n" +
-                "Mapping test::mapping\n" +
-                "(\n" +
-                "  *test::model: ServiceStore\n" +
-                "  {\n" +
-                "    ~service [test::ServiceStore] TestServiceGroup.TestService1\n" +
-                "    (\n" +
-                "      ~request\n" +
-                "      (\n" +
-                "        parameters\n" +
-                "        (\n" +
-                "          param = $this.prop + $this.prop2,\n" +
-                "          param2 = 1,\n" +
-                "          param1 = $this.prop2\n" +
-                "        )\n" +
-                "      )\n" +
-                "    )\n" +
-                "    ~service [test::ServiceStore] TestServiceGroup.TestService2\n" +
-                "    (\n" +
-                "      ~request\n" +
-                "      (\n" +
-                "        parameters\n" +
-                "        (\n" +
-                "          param1 = $this.prop1,\n" +
-                "          param2 = $this.prop2\n" +
-                "        )\n" +
-                "      )\n" +
-                "    )\n" +
-                "  }\n" +
-                ")\n");
+                        "Mapping test::mapping\n" +
+                        "(\n" +
+                        "  *test::model: ServiceStore\n" +
+                        "  {\n" +
+                        "    ~service [test::ServiceStore] TestServiceGroup1.TestServiceGroup2.TestService\n" +
+                        "    (\n" +
+                        "      ~request\n" +
+                        "      (\n" +
+                        "        parameters\n" +
+                        "        (\n" +
+                        "          param2 = 1,\n" +
+                        "          param1 = $this.prop1\n" +
+                        "        )\n" +
+                        "      )\n" +
+                        "    )\n" +
+                        "  }\n" +
+                        ")\n");
 
         testLegacyToStrategicTransformation("###Mapping\n" +
-                "Mapping test::mapping\n" +
-                "(\n" +
-                "  *test::model: ServiceStore\n" +
-                "  {\n" +
-                "    +localProp : String[1];\n" +
-                "\n" +
-                "    ~service [test::ServiceStore] TestServiceGroup.TestService1\n" +
-                "    (\n" +
-                "      ~paramMapping\n" +
-                "      (\n" +
-                "        param : $this.localProp + $this.prop,\n" +
-                "        param2 : 1\n" +
-                "      )\n" +
-                "    )\n" +
-                "    ~service [test::ServiceStore] TestServiceGroup.TestService2\n" +
-                "    (\n" +
-                "      localProp : $service.parameters.param1\n" +
-                "    )\n" +
-                "  }\n" +
-                ")\n",
+                        "Mapping test::mapping\n" +
+                        "(\n" +
+                        "  *test::model: ServiceStore\n" +
+                        "  {\n" +
+                        "    ~service [test::ServiceStore] TestServiceGroup.TestService1\n" +
+                        "    (\n" +
+                        "      ~paramMapping\n" +
+                        "      (\n" +
+                        "        param : $this.prop + $this.prop2,\n" +
+                        "        param2 : 1\n" +
+                        "      )\n" +
+                        "      prop2 : $service.parameters.param1\n" +
+                        "    )\n" +
+                        "    ~service [test::ServiceStore] TestServiceGroup.TestService2\n" +
+                        "    (\n" +
+                        "      prop1 : $service.parameters.param1,\n" +
+                        "      prop2 : $service.parameters.param2\n" +
+                        "    )\n" +
+                        "  }\n" +
+                        ")\n",
                 "###Mapping\n" +
-                "Mapping test::mapping\n" +
-                "(\n" +
-                "  *test::model: ServiceStore\n" +
-                "  {\n" +
-                "    +localProp : String[1];\n" +
-                "\n" +
-                "    ~service [test::ServiceStore] TestServiceGroup.TestService1\n" +
-                "    (\n" +
-                "      ~request\n" +
-                "      (\n" +
-                "        parameters\n" +
-                "        (\n" +
-                "          param = $this.localProp + $this.prop,\n" +
-                "          param2 = 1\n" +
-                "        )\n" +
-                "      )\n" +
-                "    )\n" +
-                "    ~service [test::ServiceStore] TestServiceGroup.TestService2\n" +
-                "    (\n" +
-                "      ~request\n" +
-                "      (\n" +
-                "        parameters\n" +
-                "        (\n" +
-                "          param1 = $this.localProp\n" +
-                "        )\n" +
-                "      )\n" +
-                "    )\n" +
-                "  }\n" +
-                ")\n");
+                        "Mapping test::mapping\n" +
+                        "(\n" +
+                        "  *test::model: ServiceStore\n" +
+                        "  {\n" +
+                        "    ~service [test::ServiceStore] TestServiceGroup.TestService1\n" +
+                        "    (\n" +
+                        "      ~request\n" +
+                        "      (\n" +
+                        "        parameters\n" +
+                        "        (\n" +
+                        "          param = $this.prop + $this.prop2,\n" +
+                        "          param2 = 1,\n" +
+                        "          param1 = $this.prop2\n" +
+                        "        )\n" +
+                        "      )\n" +
+                        "    )\n" +
+                        "    ~service [test::ServiceStore] TestServiceGroup.TestService2\n" +
+                        "    (\n" +
+                        "      ~request\n" +
+                        "      (\n" +
+                        "        parameters\n" +
+                        "        (\n" +
+                        "          param1 = $this.prop1,\n" +
+                        "          param2 = $this.prop2\n" +
+                        "        )\n" +
+                        "      )\n" +
+                        "    )\n" +
+                        "  }\n" +
+                        ")\n");
 
         testLegacyToStrategicTransformation("###Mapping\n" +
-                "Mapping test::mapping\n" +
-                "(\n" +
-                "  *test::model: ServiceStore\n" +
-                "  {\n" +
-                "    +localProp1 : String[1];\n" +
-                "    +localProp2 : Boolean[1];\n" +
-                "\n" +
-                "    ~service [test::ServiceStore] TestServiceGroup.TestService1\n" +
-                "    (\n" +
-                "      ~paramMapping\n" +
-                "      (\n" +
-                "        param : $this.prop,\n" +
-                "        param2 : 1\n" +
-                "      )\n" +
-                "    )\n" +
-                "    ~service [test::ServiceStore] TestServiceGroup.TestService2\n" +
-                "    (\n" +
-                "      localProp1 : $service.parameters.param1,\n" +
-                "      localProp2 : $service.parameters.param2\n" +
-                "    )\n" +
-                "  }\n" +
-                ")\n",
+                        "Mapping test::mapping\n" +
+                        "(\n" +
+                        "  *test::model: ServiceStore\n" +
+                        "  {\n" +
+                        "    +localProp : String[1];\n" +
+                        "\n" +
+                        "    ~service [test::ServiceStore] TestServiceGroup.TestService1\n" +
+                        "    (\n" +
+                        "      ~paramMapping\n" +
+                        "      (\n" +
+                        "        param : $this.localProp + $this.prop,\n" +
+                        "        param2 : 1\n" +
+                        "      )\n" +
+                        "    )\n" +
+                        "    ~service [test::ServiceStore] TestServiceGroup.TestService2\n" +
+                        "    (\n" +
+                        "      localProp : $service.parameters.param1\n" +
+                        "    )\n" +
+                        "  }\n" +
+                        ")\n",
                 "###Mapping\n" +
-                "Mapping test::mapping\n" +
-                "(\n" +
-                "  *test::model: ServiceStore\n" +
-                "  {\n" +
-                "    +localProp1 : String[1];\n" +
-                "    +localProp2 : Boolean[1];\n" +
-                "\n" +
-                "    ~service [test::ServiceStore] TestServiceGroup.TestService1\n" +
-                "    (\n" +
-                "      ~request\n" +
-                "      (\n" +
-                "        parameters\n" +
-                "        (\n" +
-                "          param = $this.prop,\n" +
-                "          param2 = 1\n" +
-                "        )\n" +
-                "      )\n" +
-                "    )\n" +
-                "    ~service [test::ServiceStore] TestServiceGroup.TestService2\n" +
-                "    (\n" +
-                "      ~request\n" +
-                "      (\n" +
-                "        parameters\n" +
-                "        (\n" +
-                "          param1 = $this.localProp1,\n" +
-                "          param2 = $this.localProp2\n" +
-                "        )\n" +
-                "      )\n" +
-                "    )\n" +
-                "  }\n" +
-                ")\n");
+                        "Mapping test::mapping\n" +
+                        "(\n" +
+                        "  *test::model: ServiceStore\n" +
+                        "  {\n" +
+                        "    +localProp : String[1];\n" +
+                        "\n" +
+                        "    ~service [test::ServiceStore] TestServiceGroup.TestService1\n" +
+                        "    (\n" +
+                        "      ~request\n" +
+                        "      (\n" +
+                        "        parameters\n" +
+                        "        (\n" +
+                        "          param = $this.localProp + $this.prop,\n" +
+                        "          param2 = 1\n" +
+                        "        )\n" +
+                        "      )\n" +
+                        "    )\n" +
+                        "    ~service [test::ServiceStore] TestServiceGroup.TestService2\n" +
+                        "    (\n" +
+                        "      ~request\n" +
+                        "      (\n" +
+                        "        parameters\n" +
+                        "        (\n" +
+                        "          param1 = $this.localProp\n" +
+                        "        )\n" +
+                        "      )\n" +
+                        "    )\n" +
+                        "  }\n" +
+                        ")\n");
 
         testLegacyToStrategicTransformation("###Mapping\n" +
-                "Mapping test::mapping\n" +
-                "(\n" +
-                "  *test::model: ServiceStore\n" +
-                "  {\n" +
-                "    ~service [test::ServiceStore] TestServiceGroup1.TestServiceGroup2.TestService\n" +
-                "    (\n" +
-                "      ~paramMapping\n" +
-                "      (\n" +
-                "        param : $this.prop,\n" +
-                "        param2 : 1\n" +
-                "      )\n" +
-                "      prop1 : $service.parameters.param1\n" +
-                "    )\n" +
-                "  }\n" +
-                "  *test::model1: ServiceStore\n" +
-                "  {\n" +
-                "    ~service [test::ServiceStore] TestServiceGroup1.TestServiceGroup2.TestService\n" +
-                "    (\n" +
-                "      ~paramMapping\n" +
-                "      (\n" +
-                "        param : $this.prop,\n" +
-                "        param2 : 1\n" +
-                "      )\n" +
-                "      prop1 : $service.parameters.param1\n" +
-                "    )\n" +
-                "  }\n" +
-                ")\n",
+                        "Mapping test::mapping\n" +
+                        "(\n" +
+                        "  *test::model: ServiceStore\n" +
+                        "  {\n" +
+                        "    +localProp1 : String[1];\n" +
+                        "    +localProp2 : Boolean[1];\n" +
+                        "\n" +
+                        "    ~service [test::ServiceStore] TestServiceGroup.TestService1\n" +
+                        "    (\n" +
+                        "      ~paramMapping\n" +
+                        "      (\n" +
+                        "        param : $this.prop,\n" +
+                        "        param2 : 1\n" +
+                        "      )\n" +
+                        "    )\n" +
+                        "    ~service [test::ServiceStore] TestServiceGroup.TestService2\n" +
+                        "    (\n" +
+                        "      localProp1 : $service.parameters.param1,\n" +
+                        "      localProp2 : $service.parameters.param2\n" +
+                        "    )\n" +
+                        "  }\n" +
+                        ")\n",
                 "###Mapping\n" +
-                "Mapping test::mapping\n" +
-                "(\n" +
-                "  *test::model: ServiceStore\n" +
-                "  {\n" +
-                "    ~service [test::ServiceStore] TestServiceGroup1.TestServiceGroup2.TestService\n" +
-                "    (\n" +
-                "      ~request\n" +
-                "      (\n" +
-                "        parameters\n" +
-                "        (\n" +
-                "          param = $this.prop,\n" +
-                "          param2 = 1,\n" +
-                "          param1 = $this.prop1\n" +
-                "        )\n" +
-                "      )\n" +
-                "    )\n" +
-                "  }\n" +
-                "  *test::model1: ServiceStore\n" +
-                "  {\n" +
-                "    ~service [test::ServiceStore] TestServiceGroup1.TestServiceGroup2.TestService\n" +
-                "    (\n" +
-                "      ~request\n" +
-                "      (\n" +
-                "        parameters\n" +
-                "        (\n" +
-                "          param = $this.prop,\n" +
-                "          param2 = 1,\n" +
-                "          param1 = $this.prop1\n" +
-                "        )\n" +
-                "      )\n" +
-                "    )\n" +
-                "  }\n" +
-                ")\n");
+                        "Mapping test::mapping\n" +
+                        "(\n" +
+                        "  *test::model: ServiceStore\n" +
+                        "  {\n" +
+                        "    +localProp1 : String[1];\n" +
+                        "    +localProp2 : Boolean[1];\n" +
+                        "\n" +
+                        "    ~service [test::ServiceStore] TestServiceGroup.TestService1\n" +
+                        "    (\n" +
+                        "      ~request\n" +
+                        "      (\n" +
+                        "        parameters\n" +
+                        "        (\n" +
+                        "          param = $this.prop,\n" +
+                        "          param2 = 1\n" +
+                        "        )\n" +
+                        "      )\n" +
+                        "    )\n" +
+                        "    ~service [test::ServiceStore] TestServiceGroup.TestService2\n" +
+                        "    (\n" +
+                        "      ~request\n" +
+                        "      (\n" +
+                        "        parameters\n" +
+                        "        (\n" +
+                        "          param1 = $this.localProp1,\n" +
+                        "          param2 = $this.localProp2\n" +
+                        "        )\n" +
+                        "      )\n" +
+                        "    )\n" +
+                        "  }\n" +
+                        ")\n");
+
+        testLegacyToStrategicTransformation("###Mapping\n" +
+                        "Mapping test::mapping\n" +
+                        "(\n" +
+                        "  *test::model: ServiceStore\n" +
+                        "  {\n" +
+                        "    ~service [test::ServiceStore] TestServiceGroup1.TestServiceGroup2.TestService\n" +
+                        "    (\n" +
+                        "      ~paramMapping\n" +
+                        "      (\n" +
+                        "        param : $this.prop,\n" +
+                        "        param2 : 1\n" +
+                        "      )\n" +
+                        "      prop1 : $service.parameters.param1\n" +
+                        "    )\n" +
+                        "  }\n" +
+                        "  *test::model1: ServiceStore\n" +
+                        "  {\n" +
+                        "    ~service [test::ServiceStore] TestServiceGroup1.TestServiceGroup2.TestService\n" +
+                        "    (\n" +
+                        "      ~paramMapping\n" +
+                        "      (\n" +
+                        "        param : $this.prop,\n" +
+                        "        param2 : 1\n" +
+                        "      )\n" +
+                        "      prop1 : $service.parameters.param1\n" +
+                        "    )\n" +
+                        "  }\n" +
+                        ")\n",
+                "###Mapping\n" +
+                        "Mapping test::mapping\n" +
+                        "(\n" +
+                        "  *test::model: ServiceStore\n" +
+                        "  {\n" +
+                        "    ~service [test::ServiceStore] TestServiceGroup1.TestServiceGroup2.TestService\n" +
+                        "    (\n" +
+                        "      ~request\n" +
+                        "      (\n" +
+                        "        parameters\n" +
+                        "        (\n" +
+                        "          param = $this.prop,\n" +
+                        "          param2 = 1,\n" +
+                        "          param1 = $this.prop1\n" +
+                        "        )\n" +
+                        "      )\n" +
+                        "    )\n" +
+                        "  }\n" +
+                        "  *test::model1: ServiceStore\n" +
+                        "  {\n" +
+                        "    ~service [test::ServiceStore] TestServiceGroup1.TestServiceGroup2.TestService\n" +
+                        "    (\n" +
+                        "      ~request\n" +
+                        "      (\n" +
+                        "        parameters\n" +
+                        "        (\n" +
+                        "          param = $this.prop,\n" +
+                        "          param2 = 1,\n" +
+                        "          param1 = $this.prop1\n" +
+                        "        )\n" +
+                        "      )\n" +
+                        "    )\n" +
+                        "  }\n" +
+                        ")\n");
 
 
         testLegacyToStrategicTransformation("###Mapping\n" +
-                "Mapping test::mapping\n" +
-                "(\n" +
-                "  *test::model: ServiceStore\n" +
-                "  {\n" +
-                "    ~service [test::ServiceStore] TestServiceGroup1.TestServiceGroup2.TestService\n" +
-                "    (\n" +
-                "      ~path $service.response.pathProperty\n" +
-                "      ~paramMapping\n" +
-                "      (\n" +
-                "        param : $this.prop,\n" +
-                "        param2 : 1\n" +
-                "      )\n" +
-                "    )\n" +
-                "  }\n" +
-                ")\n",
+                        "Mapping test::mapping\n" +
+                        "(\n" +
+                        "  *test::model: ServiceStore\n" +
+                        "  {\n" +
+                        "    ~service [test::ServiceStore] TestServiceGroup1.TestServiceGroup2.TestService\n" +
+                        "    (\n" +
+                        "      ~path $service.response.pathProperty\n" +
+                        "      ~paramMapping\n" +
+                        "      (\n" +
+                        "        param : $this.prop,\n" +
+                        "        param2 : 1\n" +
+                        "      )\n" +
+                        "    )\n" +
+                        "  }\n" +
+                        ")\n",
                 "###Mapping\n" +
-                "Mapping test::mapping\n" +
-                "(\n" +
-                "  *test::model: ServiceStore\n" +
-                "  {\n" +
-                "    ~service [test::ServiceStore] TestServiceGroup1.TestServiceGroup2.TestService\n" +
-                "    (\n" +
-                "      ~path $service.response.pathProperty\n" +
-                "      ~request\n" +
-                "      (\n" +
-                "        parameters\n" +
-                "        (\n" +
-                "          param = $this.prop,\n" +
-                "          param2 = 1\n" +
-                "        )\n" +
-                "      )\n" +
-                "    )\n" +
-                "  }\n" +
-                ")\n");
+                        "Mapping test::mapping\n" +
+                        "(\n" +
+                        "  *test::model: ServiceStore\n" +
+                        "  {\n" +
+                        "    ~service [test::ServiceStore] TestServiceGroup1.TestServiceGroup2.TestService\n" +
+                        "    (\n" +
+                        "      ~path $service.response.pathProperty\n" +
+                        "      ~request\n" +
+                        "      (\n" +
+                        "        parameters\n" +
+                        "        (\n" +
+                        "          param = $this.prop,\n" +
+                        "          param2 = 1\n" +
+                        "        )\n" +
+                        "      )\n" +
+                        "    )\n" +
+                        "  }\n" +
+                        ")\n");
     }
 
     public void testLegacyToStrategicTransformation(String fromCode, String toCode)

@@ -99,9 +99,9 @@ public class ServiceStoreGrammarComposerExtension implements IServiceStoreGramma
 
                 return Tuples.pair(ServiceStoreGrammarParserExtension.SERVICE_STORE_CONNECTION_TYPE,
                         context.getIndentationString() + "{\n" +
-                        context.getIndentationString() + getTabString() + "store: " + serviceStoreConnection.element + ";\n" +
-                        context.getIndentationString() + getTabString() + "baseUrl: " + PureGrammarComposerUtility.convertString(serviceStoreConnection.baseUrl, true) + ";\n" +
-                        context.getIndentationString() + "}");
+                                context.getIndentationString() + getTabString() + "store: " + serviceStoreConnection.element + ";\n" +
+                                context.getIndentationString() + getTabString() + "baseUrl: " + PureGrammarComposerUtility.convertString(serviceStoreConnection.baseUrl, true) + ";\n" +
+                                context.getIndentationString() + "}");
             }
             return null;
         });

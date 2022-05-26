@@ -21,14 +21,18 @@ import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
-import org.finos.legend.engine.language.pure.grammar.from.antlr4.ServiceStoreParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.data.embedded.serviceStore.ServiceStoreEmbeddedDataParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.data.contentPattern.HelperContentPatternGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.data.embedded.HelperEmbeddedDataGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
-import org.finos.legend.engine.protocol.pure.v1.model.data.*;
+import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ExternalFormatData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ServiceRequestPattern;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ServiceResponseDefinition;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ServiceStoreEmbeddedData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ServiceStubMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.data.contentPattern.StringValuePattern;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.HttpMethod;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
@@ -105,9 +109,10 @@ public class ServiceStoreEmbeddedDataParseTreeWalker
         if (queryParamCtx != null)
         {
             serviceRequestPattern.queryParams = Maps.mutable.empty();
-            ListIterate.forEach(queryParamCtx.serviceRequestParameterPattern(), c -> {
+            ListIterate.forEach(queryParamCtx.serviceRequestParameterPattern(), c ->
+                    {
                         Pair<String, StringValuePattern> p = visitServiceRequestParameterPattern(c);
-                        if(serviceRequestPattern.queryParams.containsKey(p.getOne()))
+                        if (serviceRequestPattern.queryParams.containsKey(p.getOne()))
                         {
                             throw new EngineException("Query Param : '" + p.getOne() + "' value should be defined only once", this.walkerSourceInformation.getSourceInformation(c), EngineErrorType.PARSER);
                         }
@@ -121,9 +126,10 @@ public class ServiceStoreEmbeddedDataParseTreeWalker
         if (headerParamCtx != null)
         {
             serviceRequestPattern.headerParams = Maps.mutable.empty();
-            ListIterate.forEach(headerParamCtx.serviceRequestParameterPattern(), c -> {
+            ListIterate.forEach(headerParamCtx.serviceRequestParameterPattern(), c ->
+                    {
                         Pair<String, StringValuePattern> p = visitServiceRequestParameterPattern(c);
-                        if(serviceRequestPattern.headerParams.containsKey(p.getOne()))
+                        if (serviceRequestPattern.headerParams.containsKey(p.getOne()))
                         {
                             throw new EngineException("Header Param : '" + p.getOne() + "' value should be defined only once", this.walkerSourceInformation.getSourceInformation(c), EngineErrorType.PARSER);
                         }

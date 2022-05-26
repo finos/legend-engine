@@ -25,9 +25,13 @@ on:
   push:
     branches:
       - master
+      - refactor-integration-tests
 jobs:
   build:
     name: Build
+    # NOTE: we cannot run this action in fork because secrets are not accessible from forks
+    # See https://community.sonarsource.com/t/github-action-ci-build-fail-with-set-the-sonar-token-env-variable/38997
+    if: github.repository == 'finos/legend-engine'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
@@ -55,7 +59,7 @@ jobs:
         run: mvn -v
       - name: Connection Protocol Integration Tests
         env:
-          REDSHIFT_LEGEND_INTEG_USERNAME: ${{ secrets.REDSHIFT_LEGEND_INTEG_USERNAME }}
-          REDSHIFT_LEGEND_INTEG_PASSWORD: ${{ secrets.REDSHIFT_LEGEND_INTEG_PASSWORD }}
+          REDSHIFT_INTEGRATION_USER1_NAME: ${{ secrets.REDSHIFT_INTEGRATION_USER1_NAME }}
+          REDSHIFT_INTEGRATION_USER1_PASSWORD: ${{ secrets.REDSHIFT_INTEGRATION_USER1_PASSWORD }}
         run: |
           mvn -pl legend-engine-xt-relationalStore-executionPlan-connection-tests  -Dtest="ExternalIntegration*Redshift*" test

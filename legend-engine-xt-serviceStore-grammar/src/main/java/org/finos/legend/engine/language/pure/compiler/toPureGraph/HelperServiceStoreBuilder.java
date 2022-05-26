@@ -20,9 +20,42 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.to.HelperServiceStoreGrammarComposer;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.BooleanTypeReference;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ComplexTypeReference;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.FloatTypeReference;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.IntegerTypeReference;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.Location;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.SecurityScheme;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.Service;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServiceGroup;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServiceGroupPtr;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServiceParameter;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServicePtr;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServiceStore;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServiceStoreElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.StringTypeReference;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.TypeReference;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.*;
+import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_BooleanTypeReference_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_ComplexTypeReference;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_ComplexTypeReference_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_FloatTypeReference_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_IntegerTypeReference_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_SecurityScheme;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_SerializationFormat;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_SerializationFormat_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_Service;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_Service_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_ServiceGroup;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_ServiceGroup_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_ServiceParameter;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_ServiceParameter_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_ServiceStore;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_ServiceStoreElement;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_StringTypeReference_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_TypeReference;
+import org.finos.legend.pure.generated.core_pure_model_modelUnit;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 
 import java.util.Collections;
@@ -123,7 +156,8 @@ public class HelperServiceStoreBuilder
 
     private static List<Root_meta_external_store_service_metamodel_ServiceStoreElement> compileServiceStoreElements(List<ServiceStoreElement> elements, Root_meta_external_store_service_metamodel_ServiceStore owner, Root_meta_external_store_service_metamodel_ServiceGroup parent, CompileContext context)
     {
-        return ListIterate.collect(elements, element -> {
+        return ListIterate.collect(elements, element ->
+        {
             if (element instanceof ServiceGroup)
             {
                 return compileServiceGroup((ServiceGroup) element, owner, parent, context);
@@ -242,7 +276,7 @@ public class HelperServiceStoreBuilder
     private static void validateServiceParameter(ServiceParameter serviceParameter)
     {
         List<String> bannedHeaderParamNames = FastList.newListWith("Accept", "Content-Type", "Authorization");
-        if(serviceParameter.location == Location.HEADER && bannedHeaderParamNames.contains(serviceParameter.name))
+        if (serviceParameter.location == Location.HEADER && bannedHeaderParamNames.contains(serviceParameter.name))
         {
             throw new EngineException("Header parameters cannot have following names : [" + String.join(",", bannedHeaderParamNames) + "]", serviceParameter.sourceInformation, EngineErrorType.COMPILATION);
         }

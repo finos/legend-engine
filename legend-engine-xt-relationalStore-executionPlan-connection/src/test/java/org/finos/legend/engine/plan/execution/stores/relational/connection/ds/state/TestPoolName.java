@@ -20,9 +20,9 @@ import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvi
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Arrays;
+import java.util.Collections;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class TestPoolName extends TestConnectionManagement
 {
@@ -50,12 +50,12 @@ public class TestPoolName extends TestConnectionManagement
     {
         Identity user1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("pool1");
         Identity user2 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("pool2");
-        DataSourceSpecification ds1 = buildLocalDataSourceSpecification(Arrays.asList("DROP TABLE IF EXISTS T1;"));
+        DataSourceSpecification ds1 = buildLocalDataSourceSpecification(Collections.singletonList("DROP TABLE IF EXISTS T1;"));
 
         String pool1 = connectionStateManager.poolNameFor(user1,ds1.getConnectionKey());
-        assertEquals("DBPool_LocalH2_port:49153_sqlCS:3263863932_type:TestDB_pool1_org.finos.legend.engine.shared.core.identity.credential.AnonymousCredential", pool1);
+        assertTrue(pool1.matches("DBPool_LocalH2_port:\\d{5}_sqlCS:3263863932_type:TestDB_pool1_org\\.finos\\.legend\\.engine\\.shared\\.core\\.identity\\.credential\\.AnonymousCredential"));
 
         String pool2 = connectionStateManager.poolNameFor(user2,ds1.getConnectionKey());
-        assertEquals("DBPool_LocalH2_port:49153_sqlCS:3263863932_type:TestDB_pool2_org.finos.legend.engine.shared.core.identity.credential.AnonymousCredential", pool2);
+        assertTrue(pool2.matches("DBPool_LocalH2_port:\\d{5}_sqlCS:3263863932_type:TestDB_pool2_org\\.finos\\.legend\\.engine\\.shared\\.core\\.identity\\.credential\\.AnonymousCredential"));
     }
 }

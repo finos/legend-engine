@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>3.1.1-SNAPSHOT</version>
+    <version>3.2.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -36,6 +36,8 @@
         <module>legend-engine-xt-graphQL-query</module>
         <module>legend-engine-xt-graphQL-pure</module>
 
+        <module>legend-engine-xt-protobuf-grammar</module>
+        <module>legend-engine-xt-protobuf-protocol</module>
         <module>legend-engine-xt-protobuf</module>
         <module>legend-engine-xt-protobuf-pure</module>
 
@@ -75,6 +77,8 @@
         <module>legend-engine-xt-relationalStore-api</module>
         <module>legend-engine-xt-relationalStore-grammar</module>
         <module>legend-engine-xt-relationalStore-protocol</module>
+
+
 
         <module>legend-engine-pure-ide-light</module>
         <module>legend-engine-pure-ide-light-metadata-pure</module>
@@ -128,7 +132,7 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>2.1.1</legend.pure.version>
+        <legend.pure.version>2.2.0</legend.pure.version>
         <legend.shared.version>0.21.0</legend.shared.version>
 
         <!-- SONAR -->
@@ -207,6 +211,8 @@
         <json-smart.version>2.4.7</json-smart.version>
         <byte-buddy.version>1.11.20</byte-buddy.version>
         <wiremock.version>2.27.2</wiremock.version>
+        <io.netty.version>4.1.52.Final</io.netty.version>
+        <amazon.awssdk.version>2.17.129</amazon.awssdk.version>
 
         <!-- Plugin versions -->
         <maven.compiler.plugin.version>3.8.0</maven.compiler.plugin.version>
@@ -387,6 +393,7 @@
                 <configuration>
                     <useSystemClassLoader>true</useSystemClassLoader>
                     <useManifestOnlyJar>false</useManifestOnlyJar>
+                    <trimStackTrace>false</trimStackTrace>
                     <reportsDirectory>
                         ${project.parent.basedir}/legend-engine-test-reports/surefire-reports-aggregate
                     </reportsDirectory>
@@ -685,6 +692,16 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-protobuf</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-protobuf-grammar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-protobuf-protocol</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -1690,6 +1707,11 @@
             </dependency>
             <dependency>
                 <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-io</artifactId>
+                <version>${jetty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-servlets</artifactId>
                 <version>${jetty.version}</version>
             </dependency>
@@ -1807,10 +1829,6 @@
                 <version>${wiremock.version}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.eclipse.jetty</groupId>
-                        <artifactId>jetty-io</artifactId>
-                    </exclusion>
-                    <exclusion>
                         <groupId>org.conscrypt</groupId>
                         <artifactId>conscrypt-openjdk-uber</artifactId>
                     </exclusion>
@@ -1819,6 +1837,28 @@
                         <artifactId>jaxb-api</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <!-- Amazon AWS SDK Versioning -->
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>bom</artifactId>
+                <version>${amazon.awssdk.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <!-- IO Netty -->
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-all</artifactId>
+                <version>${io.netty.version}</version>
             </dependency>
         </dependencies>
 

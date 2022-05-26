@@ -29,6 +29,10 @@ public class PureIDELight extends PureIDEServer
                     .flatMap(s -> Optional.ofNullable(s.ideFilesLocation))
                     .orElse("legend-engine-pure-ide-light/src/main/resources/pure_ide");
 
+            String coreFilesLocation = Optional.ofNullable(sourceLocationConfiguration)
+                    .flatMap(s -> Optional.ofNullable(s.coreFilesLocation))
+                    .orElse("../legend-pure");
+
             return Lists.mutable
                     .<RepositoryCodeStorage>with(new ClassLoaderCodeStorage(CodeRepository.newPlatformCodeRepository()))
                     .with(this.buildCore("legend-engine-xt-persistence-pure", "persistence"))
@@ -39,8 +43,8 @@ public class PureIDELight extends PureIDEServer
                     .with(this.buildCore("legend-engine-xt-xml-pure", "external-format-xml"))
                     .with(this.buildCore("legend-engine-xt-graphQL-pure", "external-query-graphql"))
                     .with(this.buildCore("legend-engine-pure-ide-light-metadata-pure", "ide_metadata"))
-                    .with(this.buildCore("../legend-pure/legend-pure-code-compiled-core", ""))
-                    .with(this.buildCore("../legend-pure/legend-pure-code-compiled-core-external-shared", "external-shared"))
+                    .with(this.buildCore(coreFilesLocation + "/legend-pure-code-compiled-core", ""))
+                    .with(this.buildCore(coreFilesLocation + "/legend-pure-code-compiled-core-external-shared", "external-shared"))
                     .with(new MutableFSCodeStorage(new PureIDECodeRepository(), Paths.get(ideFilesLocation)));
         }
         catch (IOException e)

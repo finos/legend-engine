@@ -15,24 +15,104 @@
 import meta::relational::metamodel::*;
 import meta::relational::dbTestRunner::*;
 
-//boolean operations
-function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::and::testAnd(config:DbTestConfig[1]):String[0..1]
+//operations on booleans
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::sqlTrue::testSqlTrue(config:DbTestConfig[1]):String[0..1]
 {
-  let dynaFunc = ^DynaFunction(name='and', parameters=[^DynaFunction(name='greaterThan', parameters=[^Literal(value=11), ^Literal(value=1)]),
-                                                       ^DynaFunction(name='lessThan', parameters=[^Literal(value=11), ^Literal(value=1)])]);
-  // let dynaFunc = ^DynaFunction(name='and', parameters=[^Literal(value=true), ^Literal(value=false)]);   // use conditions instead of booleans directly , as some dbs dont support boolean datatype
- 
+  let dynaFunc = ^DynaFunction(name= 'sqlTrue');
+  let expected = ^Literal(value=true);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::sqlFalse::testSqlFalse(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='sqlFalse');
   let expected = ^Literal(value=false);
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }
 
-function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::or::testOr(config:DbTestConfig[1]):String[0..1]
+//TODO activate these tests once we have stabilised boolean datatype by providing custom boolean literal propcessors for dbs that dont support boolean datatypes
+function <<dbTest.Ignore>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::and::testAnd(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='and', parameters=[^Literal(value=true), ^Literal(value=false)]);
+  let expected = ^Literal(value=false);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Ignore>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::and::testAndWithSqlBooleanDynaFunctions(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='and', parameters=[^DynaFunction(name='sqlTrue'), ^DynaFunction(name='sqlFalse')]);
+  let expected = ^Literal(value=false);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::and::testAndwithConditions(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='and', parameters=[^DynaFunction(name='greaterThan', parameters=[^Literal(value=11), ^Literal(value=1)]),
+                                                       ^DynaFunction(name='lessThan', parameters=[^Literal(value=11), ^Literal(value=1)])]);
+  let expected = ^Literal(value=false);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Ignore>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::or::testOr(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='or', parameters=[^Literal(value=true), ^Literal(value=false)]);
+  let expected = ^Literal(value=true);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::or::testOrWithConditions(config:DbTestConfig[1]):String[0..1]
 {
   let dynaFunc = ^DynaFunction(name='or', parameters=[^DynaFunction(name='greaterThan', parameters=[^Literal(value=11), ^Literal(value=1)]),
                                                       ^DynaFunction(name='lessThan', parameters=[^Literal(value=11), ^Literal(value=1)])]);
   let expected = ^Literal(value=true);
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }
+
+function <<dbTest.Ignore>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::or::testOrWithSqlBooleanDynaFunctions(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='or', parameters=[^DynaFunction(name='sqlTrue'), ^DynaFunction(name='sqlFalse')]);
+  let expected = ^Literal(value=true);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::sqlNull::testIsNull(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='isNull', parameters= [^DynaFunction(name='sqlNull')]);
+  let expected = ^Literal(value=true);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+//TODO expand these tests on row results when testing with 'setup data' is available 
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::isNull::testSqlNull(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='isNull', parameters= [^DynaFunction(name='sqlNull')]);
+  let expected = ^Literal(value=true);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::isNotNull::testSqlNull(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='isNotNull', parameters= [^DynaFunction(name='sqlNull')]);
+  let expected = ^Literal(value=false);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::isEmpty::testSqlNull(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='isEmpty', parameters= [^DynaFunction(name='sqlNull')]);
+  let expected = ^Literal(value=true);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::isNotEmpty::testSqlNull(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='isNotEmpty', parameters= [^DynaFunction(name='sqlNull')]);
+  let expected = ^Literal(value=false);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+// Operations with Boolean Results
 
 // object equality
 function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::equal::testNumberEquality(config:DbTestConfig[1]):String[0..1]

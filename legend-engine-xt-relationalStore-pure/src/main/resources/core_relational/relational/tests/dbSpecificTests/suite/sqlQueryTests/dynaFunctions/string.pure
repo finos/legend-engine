@@ -50,6 +50,21 @@ function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }
 
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::length::testWithString(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='length', parameters=[^Literal(value='String Random')]);
+  let expected = ^Literal(value=13);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+//TODO activate after length function is made uniform for different dbs , behaves differently for sqlserver for now
+function <<dbTest.Ignore>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::length::testWithTrailingSpaces(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='length', parameters=[^Literal(value='String Random  ')]);
+  let expected = ^Literal(value=13);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
 function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::indexOf::testChar(config:DbTestConfig[1]):String[0..1]
 {
   let dynaFunc = ^DynaFunction(name='indexOf', parameters=[^Literal(value='String Random'),^Literal(value='o')]);
@@ -63,6 +78,29 @@ function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests
   let expected = ^Literal(value=9);
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }
+
+//TODO activate these tests once we have stabilised dynaFunction implementations for indexOf and position
+function <<dbTest.Ignore>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::indexOf::testCharFromAGivenStartIndexToSearchFrom(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='indexOf', parameters=[^Literal(value='String Random'),^Literal(value='r'), ^Literal(value=6)]);
+  let expected = ^Literal(value=2);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Ignore>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::position::testChar(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='position', parameters=[^Literal(value='String Random'),^Literal(value='o')]);
+  let expected = ^Literal(value=12);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Ignore>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::position::testString(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='position', parameters=[^Literal(value='String Random'),^Literal(value='and')]);
+  let expected = ^Literal(value=9);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
 
 function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::rtrim::testNoSpace(config:DbTestConfig[1]):String[0..1]
 {

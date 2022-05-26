@@ -53,8 +53,8 @@ function meta::relational::dbTestRunner::runDynaFunctionDatabaseTest(dynaFunc:Dy
           if($res->isEmpty(),
               | [],                                  //legend engine not available 
               | let areEqual = if($equalityComparator->isNotEmpty(),
-                                  | $equalityComparator->toOne()->eval($res.values, $newExpectedResult.value);, // expected values are wrapped in Literals currently
-                                  | equal($res.values, $newExpectedResult.value)
+                                  | $equalityComparator->toOne()->eval($res.values->toOneMany(), $newExpectedResult.value->toOneMany());, // expected values are wrapped in Literals currently
+                                  | defaultEqualityComparator($res.values->toOneMany(), $newExpectedResult.value->toOneMany());
                                  );
                   if($areEqual , 
                     | [],
@@ -82,10 +82,31 @@ function meta::relational::dbTestRunner::defaultDynaFunctionSqlQueryGenerator(dy
 function meta::relational::dbTestRunner::overwriteDynaFunctionExpectedResult(expectedResult:Literal[1..*], testConfig:DbTestConfig[1]): Literal[1..*]
 { 
   $expectedResult.value->match([
-          b: Boolean[1] | if($b==true, |^Literal(value=1), |^Literal(value=0)),  // if dynaFunc returns true , returns 1 , else 0  
+          b: Boolean[1] | if($b==true, |^Literal(value=1), |^Literal(value=0)),  // if dynaFunc returns true , returns 1 , else 0
           a: Any[1] |  $expectedResult
     ]);
 }
+
+
+
+function meta::relational::dbTestRunner::defaultEqualityComparator(actual:Any[1..*], expected:Any[1..*] ): Boolean[1]
+{
+  zip($actual ,$expected)->map(x|
+            $x.first->match([
+              n1:Number[1] |   $x.second->match([ 
+                   n2:Number[1] |  (abs($n1 - $n2) == 0)  ||  (abs($n1 - $n2) == 0.0) ;
+                  ]);,              // use number diff to avoid following : 1.0 == 1 (float vs int)  OR  1.000 == 1.0 ( difference in precision digits )
+              sd1:StrictDate[1] | $x.second->match([ 
+                   sd2:StrictDate[1]  |   abs(dateDiff($sd1, $sd2, DurationUnit.DAYS)) == 0 ; 
+                  ]);,              // use date diff to compare as dates might have varying precision but same values : %2022-10-01 == %2022-10-01T00:00:00+0000
+              dt1:DateTime[1] | $x.second->match([ 
+                   dt2:DateTime[1]  |   abs(dateDiff($dt1, $dt2, DurationUnit.SECONDS)) == 0 ; 
+                  ]);,              // use date diff to compare as dates might have varying precision but same values : %2022-10-01T00:00:00+0000 == %2022-10-01T00:00:00.0000+0000
+              a:Any[1] |     equal($x.first , $x.second);
+            ]);
+            )->and();
+}
+
 
 function meta::relational::dbTestRunner::floatEqualityComparatorGenerator(tolerance:Any[1..*]) :  Function<{Any[1..*], Any[1..*] -> Boolean[1]}>[1]
 {
@@ -97,6 +118,21 @@ function meta::relational::dbTestRunner::floatEqualityComparatorGenerator(tolera
                   $x->match([
                     a:Pair<Pair<Number,Number>,Number>[1] |
                           if( abs($a.first->cast(@Pair<Number,Number>).first - $a.first->cast(@Pair<Number,Number>).second) <= abs($a.second->cast(@Number)), |true, |false);,
+                    b:Any[1] | false;
+                  ]))->and();
+  }
+}
+
+function meta::relational::dbTestRunner::timestampEqualityComparatorGenerator(tolerance:Any[1..*], du:DurationUnit[1]) :  Function<{Any[1..*], Any[1..*] -> Boolean[1]}>[1]
+{
+  {actual:Any[1..*], expected:Any[1..*] |      
+        assert($expected->size() == $actual->size());
+        assert($expected->size() == $tolerance->size());
+        
+        zip(zip($actual ,$expected ), $tolerance )->map(x|
+                  $x->match([
+                    a:Pair<Pair<Date,Date>,Number>[1] |
+                          if(abs(dateDiff($a.first->cast(@Pair<Date,Date>).first, $a.first->cast(@Pair<Date,Date>).second, $du)) <= abs($a.second->cast(@Number)), |true, |false);,
                     b:Any[1] | false;
                   ]))->and();
   }
@@ -128,4 +164,3 @@ function meta::relational::dbTestRunner::wrapSQLStringInExecutionPlan(sqlString:
         )
     );
 }
-

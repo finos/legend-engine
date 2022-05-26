@@ -55,7 +55,7 @@ public class TestServiceStoreGrammarParser extends TestGrammarParser.TestGrammar
                 "    );\n" +
                 "    response : ExampleClass <- tests::store::exampleBinding;\n" +
                 "    security : [];\n" +
-                "  )\n"+
+                "  )\n" +
                 ")\n", "PARSER error at [6:12-26]: Path should start with '/' & should not end with '/'");
 
         // Path not starting with slash
@@ -72,7 +72,7 @@ public class TestServiceStoreGrammarParser extends TestGrammarParser.TestGrammar
                 "    );\n" +
                 "    response : ExampleClass <- tests::store::exampleBinding;\n" +
                 "    security : [];\n" +
-                "  )\n"+
+                "  )\n" +
                 ")\n", "PARSER error at [6:12-24]: Path should start with '/' & should not end with '/'");
 
         // List param should have style & explode
@@ -89,7 +89,7 @@ public class TestServiceStoreGrammarParser extends TestGrammarParser.TestGrammar
                 "    );\n" +
                 "    response : ExampleClass <- tests::store::exampleBinding;\n" +
                 "    security : [];\n" +
-                "  )\n"+
+                "  )\n" +
                 ")\n", "PARSER error at [10:7-57]: Field 'style' is required");
 
         // List param should have style & explode
@@ -106,7 +106,7 @@ public class TestServiceStoreGrammarParser extends TestGrammarParser.TestGrammar
                 "    );\n" +
                 "    response : ExampleClass <- tests::store::exampleBinding;\n" +
                 "    security : [];\n" +
-                "  )\n"+
+                "  )\n" +
                 ")\n", "PARSER error at [10:7-73]: Field 'explode' is required");
 
         // Non-list param should not have style & explode
@@ -123,7 +123,7 @@ public class TestServiceStoreGrammarParser extends TestGrammarParser.TestGrammar
                 "    );\n" +
                 "    response : ExampleClass <- tests::store::exampleBinding ;\n" +
                 "    security : [];\n" +
-                "  )\n"+
+                "  )\n" +
                 ")\n", "PARSER error at [10:56-69]: style should not be provided with non-list service parameter");
 
         // Service with non-unique id's
@@ -140,7 +140,7 @@ public class TestServiceStoreGrammarParser extends TestGrammarParser.TestGrammar
                 "    );\n" +
                 "    response : ExampleClass <- tests::store::exampleBinding;\n" +
                 "    security : [];\n" +
-                "  )\n"+
+                "  )\n" +
                 "  Service TestService\n" +
                 "  (\n" +
                 "    path : '/testService';\n" +
@@ -151,7 +151,7 @@ public class TestServiceStoreGrammarParser extends TestGrammarParser.TestGrammar
                 "    );\n" +
                 "    response : ExampleClass <- tests::store::exampleBinding;\n" +
                 "    security : [];\n" +
-                "  )\n"+
+                "  )\n" +
                 ")\n", "PARSER error at [2:1-26:1]: Service Store Elements should have unique ids. Multiple elements found with ids - [TestService]");
 
         // Elements with non-unique id's
@@ -168,7 +168,7 @@ public class TestServiceStoreGrammarParser extends TestGrammarParser.TestGrammar
                 "    );\n" +
                 "    response : ExampleClass <- tests::store::exampleBinding;\n" +
                 "    security : [];\n" +
-                "  )\n"+
+                "  )\n" +
                 "  ServiceGroup TestServices\n" +
                 "  (\n" +
                 "    path : '/testServices';\n\n" +
@@ -182,7 +182,7 @@ public class TestServiceStoreGrammarParser extends TestGrammarParser.TestGrammar
                 "      );\n" +
                 "      response : ExampleClass <- tests::store::exampleBinding;\n" +
                 "      security : [];\n" +
-                "    )\n"+
+                "    )\n" +
                 "  )\n" +
                 ")\n", "PARSER error at [2:1-31:1]: Service Store Elements should have unique ids. Multiple elements found with ids - [TestServices]");
 
@@ -201,7 +201,7 @@ public class TestServiceStoreGrammarParser extends TestGrammarParser.TestGrammar
                 "    );\n" +
                 "    response : ExampleClass <- tests::store::exampleBinding;\n" +
                 "    security : [];\n" +
-                "  )\n"+
+                "  )\n" +
                 ")\n", "PARSER error at [4:3-15:3]: Request Body should not be specified for GET end point");
 
         // Path param should be part of url
@@ -218,7 +218,7 @@ public class TestServiceStoreGrammarParser extends TestGrammarParser.TestGrammar
                 "    );\n" +
                 "    response : ExampleClass <- tests::store::exampleBinding;\n" +
                 "    security : [];\n" +
-                "  )\n"+
+                "  )\n" +
                 ")\n", "PARSER error at [4:3-14:3]: Path parameters should be specified in path as '{param_name}'. [serializationFormat] parameters were not found in path /testService");
 
         // Invalid security scheme
@@ -235,7 +235,7 @@ public class TestServiceStoreGrammarParser extends TestGrammarParser.TestGrammar
                 "    );\n" +
                 "    response : ExampleClass <- tests::store::exampleBinding;\n" +
                 "    security : [INVALID];\n" +
-                "  )\n"+
+                "  )\n" +
                 ")\n", "PARSER error at [13:17-23]: Unsupported SecurityScheme - INVALID");
 
         // Invalid method
@@ -252,7 +252,7 @@ public class TestServiceStoreGrammarParser extends TestGrammarParser.TestGrammar
                 "    );\n" +
                 "    response : ExampleClass <- tests::store::exampleBinding;\n" +
                 "    security : [];\n" +
-                "  )\n"+
+                "  )\n" +
                 ")\n", "PARSER error at [7:5-17]: Unsupported HTTP Method type - PUT. Supported types are - GET,POST");
 
         // Invalid location
@@ -269,7 +269,7 @@ public class TestServiceStoreGrammarParser extends TestGrammarParser.TestGrammar
                 "    );\n" +
                 "    response : ExampleClass <- tests::store::exampleBinding;\n" +
                 "    security : [];\n" +
-                "  )\n"+
+                "  )\n" +
                 ")\n", "PARSER error at [10:7-61]: Unsupported Parameter Location - requestBody. Supported Locations are - header,path,query");
 
         // Path parameters can't be optional
@@ -286,7 +286,7 @@ public class TestServiceStoreGrammarParser extends TestGrammarParser.TestGrammar
                 "    );\n" +
                 "    response : ExampleClass <- tests::store::exampleBinding;\n" +
                 "    security : [];\n" +
-                "  )\n"+
+                "  )\n" +
                 ")\n", "PARSER error at [10:55-70]: Path parameters cannot be optional");
     }
 }

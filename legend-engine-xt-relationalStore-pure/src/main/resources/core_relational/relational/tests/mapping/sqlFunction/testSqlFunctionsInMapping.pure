@@ -106,7 +106,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::joinString
     let stringVals = ['Joe Bloggs', 'Mrs.Smith', 'John'];
     let separator = ':';
     let snowflakeSql = toSQLString(|SqlFunctionDemo.all()->project([s|joinStrings($stringVals, $separator)], ['concatenatedCOL']),testMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::pure::router::extension::defaultRelationalExtensions());
-    assertEquals('select concat(\'Joe Bloggs\',\':\',\'Mrs.Smith\',\':\',\'John\') as "concatenatedCOL" from dataTable as "root"',$snowflakeSql);
+    assertEquals('select concat(\'Joe Bloggs\', \':\', \'Mrs.Smith\', \':\', \'John\') as "concatenatedCOL" from dataTable as "root"',$snowflakeSql);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::rtrim::testProject():Boolean[1]

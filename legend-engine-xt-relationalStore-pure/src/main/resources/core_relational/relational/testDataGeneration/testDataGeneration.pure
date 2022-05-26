@@ -744,6 +744,7 @@ import meta::relational::testDataGeneration::executionPlan::*;
 import meta::relational::metamodel::relation::*;
 import meta::relational::metamodel::*;
 import meta::relational::runtime::*;
+import meta::relational::translation::*;
 import meta::relational::metamodel::join::*;
 import meta::relational::metamodel::execute::*;
 import meta::relational::metamodel::operation::*;
@@ -852,7 +853,7 @@ function meta::relational::testDataGeneration::executionPlan::planTestDataGenera
                                        relationType = $relationDataQuery.relation->instanceOf(View)->if(|RelationType.VIEW,|RelationType.TABLE),
                                        schemaName = $relationDataQuery.relation->match([t:Table[1]|$t.schema,v:View[1]|$v.schema])->cast(@Schema).name,
                                        database = $relationDataQuery.relation->match([t:Table[1]|$t.schema,v:View[1]|$v.schema])->cast(@Schema).database->elementToPath(),
-                                       columns = $relationDataQuery.columns->cast(@Alias)->map(x | ^Column(name = $x.name, type=$x.relationalElement->meta::relational::functions::typeInference::inferRelationalType()->toOne())),
+                                       columns = $relationDataQuery.columns->cast(@Alias)->map(x | ^Column(name = $x.name, type=$x.relationalElement->meta::relational::functions::typeInference::inferRelationalType(^TranslationContext(dbType=$dbConnection.type))->toOne())),
                                        type = RelationData
                                     );
                   let relationalNode = ^RelationalRelationDataInstantiationExecutionNode(executionNodes = generateSQLExecutionNode($relationDataQuery, $dbConnection, $extensions), resultType = $resultType, resultSizeRange = ZeroMany);
@@ -939,7 +940,7 @@ function meta::relational::testDataGeneration::executionPlan::planTestDataGenera
                                  relationType = $relationDataQuery.relation->instanceOf(View)->if(|RelationType.VIEW,|RelationType.TABLE),
                                  schemaName = $relationDataQuery.relation->match([t:Table[1]|$t.schema,v:View[1]|$v.schema])->cast(@Schema).name,
                                  database = $relationDataQuery.relation->match([t:Table[1]|$t.schema,v:View[1]|$v.schema])->cast(@Schema).database->elementToPath(),
-                                 columns = $relationDataQuery.columns->cast(@Alias)->map(x | ^Column(name = $x.name, type=$x.relationalElement->meta::relational::functions::typeInference::inferRelationalType()->toOne())),
+                                 columns = $relationDataQuery.columns->cast(@Alias)->map(x | ^Column(name = $x.name, type=$x.relationalElement->meta::relational::functions::typeInference::inferRelationalType(^TranslationContext(dbType=$dbConnection.type))->toOne())),
                                  type = RelationData
                               );
             let relationalNode = ^RelationalRelationDataInstantiationExecutionNode(executionNodes = generateSQLExecutionNode($relationDataQuery, $dbConnection, $extensions), resultType = $resultType, resultSizeRange = ZeroMany);
@@ -968,7 +969,8 @@ function meta::relational::testDataGeneration::executionPlan::planTestDataGenera
    let view = $relationTree.view;
    let mainRelation = $view.mainRelation;
    let currentIndices = $indices->add('v');
-
+   let translationContext = ^TranslationContext(dbType=$dbConnection->cast(@DatabaseConnection).type);
+               
    let initialNodes = $mainRelation->match([
       {table : Table[1] |
          let pksAndErrorNodes = if ($root,
@@ -1053,13 +1055,14 @@ function meta::relational::testDataGeneration::executionPlan::planTestDataGenera
                let postProcessResult = postProcessSQLQuery($rootSelect, $dbConnection.element->cast(@Database), [], [], $runtime, $exeCtx, $extensions);
 
                let relationDataQuery = $postProcessResult.query->cast(@RelationDataSelectSqlQuery);
+               
                let resultType = ^RelationResultType
                                  (
                                     relationName = $relationDataQuery.relation.name,
                                     relationType = $relationDataQuery.relation->instanceOf(View)->if(|RelationType.VIEW,|RelationType.TABLE),
                                     schemaName = $relationDataQuery.relation->match([t:Table[1]|$t.schema,v:View[1]|$v.schema])->cast(@Schema).name,
                                     database = $relationDataQuery.relation->match([t:Table[1]|$t.schema,v:View[1]|$v.schema])->cast(@Schema).database->elementToPath(),
-                                    columns = $relationDataQuery.columns->cast(@Alias)->map(x | ^Column(name = $x.name, type=$x.relationalElement->meta::relational::functions::typeInference::inferRelationalType()->toOne())),
+                                    columns = $relationDataQuery.columns->cast(@Alias)->map(x | ^Column(name = $x.name, type=$x.relationalElement->meta::relational::functions::typeInference::inferRelationalType($translationContext)->toOne())),
                                     type = RelationData
                                  );
                let relationalNode = ^RelationalRelationDataInstantiationExecutionNode(executionNodes = generateSQLExecutionNode($relationDataQuery, $dbConnection, $extensions), resultType = $resultType, resultSizeRange = ZeroMany);
@@ -1103,7 +1106,7 @@ function meta::relational::testDataGeneration::executionPlan::planTestDataGenera
          let viewQueryReprocessed = $viewQuery.select->fixRelations($tableOldToNew)->quoteVarPlaceHolderTableAliasColumnsIfNotQuouted()->cast(@SelectSQLQuery);
          let viewRelationDataQuery = ^RelationDataSelectSqlQuery(
             relation = $relationTree.view,
-            columnSubset = $relationTree.view.columnMappings->map(x | ^Column(name = $x.columnName->addQuotesIfNoQuotes(), type = $x.relationalOperationElement->meta::relational::functions::typeInference::inferRelationalType()->toOne())),
+            columnSubset = $relationTree.view.columnMappings->map(x | ^Column(name = $x.columnName->addQuotesIfNoQuotes(), type = $x.relationalOperationElement->meta::relational::functions::typeInference::inferRelationalType($translationContext)->toOne())),
             columns = $viewQueryReprocessed.columns->cast(@Alias)->map(x | ^$x(name = $x.name->addQuotesIfNoQuotes())),
             distinct = $viewQueryReprocessed.distinct,
             data = $viewQueryReprocessed.data,
@@ -1125,11 +1128,11 @@ function meta::relational::testDataGeneration::executionPlan::planTestDataGenera
                               relationType = $relationDataQuery.relation->instanceOf(View)->if(|RelationType.VIEW,|RelationType.TABLE),
                               schemaName = $relationDataQuery.relation->match([t:Table[1]|$t.schema,v:View[1]|$v.schema])->cast(@Schema).name,
                               database = $relationDataQuery.relation->match([t:Table[1]|$t.schema,v:View[1]|$v.schema])->cast(@Schema).database->elementToPath(),
-                              columns = $relationDataQuery.columns->cast(@Alias)->map(x | ^Column(name = $x.name, type=$x.relationalElement->meta::relational::functions::typeInference::inferRelationalType()->toOne())),
+                              columns = $relationDataQuery.columns->cast(@Alias)->map(x | ^Column(name = $x.name, type=$x.relationalElement->meta::relational::functions::typeInference::inferRelationalType($translationContext)->toOne())),
                               type = RelationData
                            );
          let sqlExecutionNode = generateSQLExecutionNode($relationDataQuery, $dbConnection, $extensions)->cast(@SQLExecutionNode);
-         let relationalNode = ^RelationalRelationDataInstantiationExecutionNode(executionNodes = ^$sqlExecutionNode(resultColumns = $relationDataQuery->match([sel:SelectSQLQuery[1] | $sel.columns->map(c| ^SQLResultColumn(label = $c->cast(@Alias).name, dataType = $c->meta::relational::functions::typeInference::inferRelationalType()->toOne())), a:Any[1] | []])), resultType = $resultType, resultSizeRange = ZeroMany);
+         let relationalNode = ^RelationalRelationDataInstantiationExecutionNode(executionNodes = ^$sqlExecutionNode(resultColumns = $relationDataQuery->match([sel:SelectSQLQuery[1] | $sel.columns->map(c| ^SQLResultColumn(label = $c->cast(@Alias).name, dataType = $c->meta::relational::functions::typeInference::inferRelationalType($translationContext)->toOne())), a:Any[1] | []])), resultType = $resultType, resultSizeRange = ZeroMany);
 
          let nodes = $postProcessResult.executionNodes->concatenate($relationalNode)->concatenate($postProcessResult.postExecutionNodes);
          let finalNode = if($nodes->size() > 1,
@@ -1182,7 +1185,7 @@ function <<access.protected>> meta::relational::testDataGeneration::executionPla
                              relationType = $relationDataQuery.relation->instanceOf(View)->if(|RelationType.VIEW,|RelationType.TABLE),
                              schemaName = $relationDataQuery.relation->match([t:Table[1]|$t.schema,v:View[1]|$v.schema])->cast(@Schema).name,
                              database = $relationDataQuery.relation->match([t:Table[1]|$t.schema,v:View[1]|$v.schema])->cast(@Schema).database->elementToPath(),
-                             columns = $relationDataQuery.columns->cast(@Alias)->map(x | ^Column(name = $x.name, type=$x.relationalElement->meta::relational::functions::typeInference::inferRelationalType()->toOne())),
+                             columns = $relationDataQuery.columns->cast(@Alias)->map(x | ^Column(name = $x.name, type=$x.relationalElement->meta::relational::functions::typeInference::inferRelationalType(^TranslationContext(dbType=$dbConnection.type))->toOne())),
                              type = RelationData
                           );
         let relationalNode = ^RelationalRelationDataInstantiationExecutionNode(executionNodes = generateSQLExecutionNode($relationDataQuery, $dbConnection, $extensions), resultType = $resultType, resultSizeRange = ZeroMany);

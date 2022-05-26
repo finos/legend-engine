@@ -24,7 +24,7 @@ public class EqualToJsonContentPatternCompiler implements ContentPatternCompiler
     @Override
     public boolean supports(ContentPattern contentPattern)
     {
-        if(contentPattern instanceof EqualToJsonPattern)
+        if (contentPattern instanceof EqualToJsonPattern)
         {
             return true;
         }

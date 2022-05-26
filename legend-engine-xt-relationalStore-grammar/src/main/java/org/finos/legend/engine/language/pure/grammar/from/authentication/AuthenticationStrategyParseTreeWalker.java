@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.grammar.from.authentication;
 
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.authentication.AuthenticationStrategyParserGrammar;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.*;
@@ -85,6 +86,20 @@ public class AuthenticationStrategyParseTreeWalker
     {
         GCPApplicationDefaultCredentialsAuthenticationStrategy authStrategy = new GCPApplicationDefaultCredentialsAuthenticationStrategy();
         authStrategy.sourceInformation = code.getSourceInformation();
+        return authStrategy;
+    }
+
+    public GCPWorkloadIdentityFederationAuthenticationStrategy visitGCPWorkloadIdentityFederationAuthenticationStrategy(AuthenticationStrategySourceCode code, AuthenticationStrategyParserGrammar.GcpWorkloadIdentityFederationAuthContext authCtx)
+    {
+        GCPWorkloadIdentityFederationAuthenticationStrategy authStrategy = new GCPWorkloadIdentityFederationAuthenticationStrategy();
+        authStrategy.sourceInformation = code.getSourceInformation();
+        AuthenticationStrategyParserGrammar.ServiceAccountEmailRefContext gcpServiceAccountEmailRefContext = PureGrammarParserUtility.validateAndExtractRequiredField(authCtx.serviceAccountEmailRef(), "serviceAccountEmail", code.getSourceInformation());
+        authStrategy.serviceAccountEmail = PureGrammarParserUtility.fromGrammarString(gcpServiceAccountEmailRefContext.STRING().getText(), true);
+        AuthenticationStrategyParserGrammar.AdditionalGcpScopesRefContext additionalGcpScopesRefContext = PureGrammarParserUtility.validateAndExtractOptionalField(authCtx.additionalGcpScopesRef(),"additionalGcpScopes", code.getSourceInformation());
+        if (additionalGcpScopesRefContext != null)
+        {
+            authStrategy.additionalGcpScopes = ListIterate.collect(additionalGcpScopesRefContext.gcpScopesArray().STRING(), ctx -> PureGrammarParserUtility.fromGrammarString(ctx.getText(), true));
+        }
         return authStrategy;
     }
 }

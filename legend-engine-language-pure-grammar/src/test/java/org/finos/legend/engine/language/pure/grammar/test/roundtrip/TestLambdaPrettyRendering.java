@@ -246,6 +246,6 @@ public class TestLambdaPrettyRendering
 
     private static void testLambda(String text, String formattedText, RenderStyle renderStyle)
     {
-        Assert.assertEquals(formattedText, new DomainParser().parseLambda(text, "", true).accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withRenderStyle(renderStyle).build()));
+        Assert.assertEquals(formattedText, new DomainParser().parseLambda(text, "", 0, 0, true).accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withRenderStyle(renderStyle).build()));
     }
 }

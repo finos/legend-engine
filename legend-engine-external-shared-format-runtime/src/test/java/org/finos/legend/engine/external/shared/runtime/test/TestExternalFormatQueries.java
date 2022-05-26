@@ -93,7 +93,7 @@ public abstract class TestExternalFormatQueries
             PureModel model = Compiler.compile(modelData, DeploymentMode.TEST, null);
 
             PureGrammarParser parser = PureGrammarParser.newInstance();
-            Lambda lambdaProtocol = parser.parseLambda(query, "query", true);
+            Lambda lambdaProtocol = parser.parseLambda(query);
             LambdaFunction<?> lambda = HelperValueSpecificationBuilder.buildLambda(lambdaProtocol.body, Lists.fixedSize.<Variable>empty(), model.getContext());
 
             ExecutionContext context = new Root_meta_pure_runtime_ExecutionContext_Impl(" ")._enableConstraints(true);

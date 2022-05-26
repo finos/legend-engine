@@ -261,9 +261,9 @@ public class CorePureGrammarParser implements PureGrammarParserExtension
         return aggregateSpecification;
     }
 
-    private static InputData parseObjectInputData(MappingParserGrammar.TestInputElementContext inputDataContext, ParseTreeWalkerSourceInformation sourceInformation)
+    private static InputData parseObjectInputData(MappingParserGrammar.TestInputElementContext inputDataContext, ParseTreeWalkerSourceInformation walkerSourceInformation)
     {
-        SourceInformation testInputDataSourceInformation = sourceInformation.getSourceInformation(inputDataContext);
+        SourceInformation testInputDataSourceInformation = walkerSourceInformation.getSourceInformation(inputDataContext);
         ObjectInputData objectInputData = new ObjectInputData();
         objectInputData.sourceInformation = testInputDataSourceInformation;
         try
@@ -275,7 +275,7 @@ public class CorePureGrammarParser implements PureGrammarParserExtension
             objectInputData.inputType = ObjectInputType.valueOf(inputDataContext.testInputFormat().getText());
         } catch (IllegalArgumentException e)
         {
-            throw new EngineException("Mapping test object input data does not support format '" + inputDataContext.testInputFormat().getText() + "'. Possible values: " + ArrayIterate.makeString(ObjectInputType.values(), ", "), sourceInformation.getSourceInformation(inputDataContext.testInputFormat()), EngineErrorType.PARSER);
+            throw new EngineException("Mapping test object input data does not support format '" + inputDataContext.testInputFormat().getText() + "'. Possible values: " + ArrayIterate.makeString(ObjectInputType.values(), ", "), walkerSourceInformation.getSourceInformation(inputDataContext.testInputFormat()), EngineErrorType.PARSER);
         }
         objectInputData.sourceClass = PureGrammarParserUtility.fromQualifiedName(inputDataContext.testInputSrc().qualifiedName().packagePath() == null ? Collections.emptyList() : inputDataContext.testInputSrc().qualifiedName().packagePath().identifier(), inputDataContext.testInputSrc().qualifiedName().identifier());
         objectInputData.data = ListIterate.collect(inputDataContext.testInputDataContent().STRING(), x -> PureGrammarParserUtility.fromGrammarString(x.getText(), false)).makeString("");

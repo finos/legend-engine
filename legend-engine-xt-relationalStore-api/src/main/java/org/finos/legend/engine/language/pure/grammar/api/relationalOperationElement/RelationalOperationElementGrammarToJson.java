@@ -1,31 +1,23 @@
 package org.finos.legend.engine.language.pure.grammar.api.relationalOperationElement;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.opentracing.Scope;
-import io.opentracing.util.GlobalTracer;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.map.mutable.UnifiedMap;
-import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.RelationalGrammarParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
-import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.RelationalOperationElement;
-import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.grammar.GrammarAPI;
-import org.finos.legend.engine.shared.core.api.grammar.ParserError;
-import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
-import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
-import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
-import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.Map;
@@ -41,10 +33,16 @@ public class RelationalOperationElementGrammarToJson extends GrammarAPI
     @ApiOperation(value = "Generates Pure protocol JSON from Pure language text for relational operation elements")
     @Consumes({MediaType.TEXT_PLAIN, APPLICATION_ZLIB})
     @Produces(MediaType.APPLICATION_JSON)
-    public Response relationalOperationElement(String input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @QueryParam("returnSourceInfo") boolean returnSourceInfo)
+    public Response relationalOperationElement(String text,
+                                               @DefaultValue("") @ApiParam("The source ID to be used by the parser") @QueryParam("sourceId") String sourceId,
+                                               @DefaultValue("0") @ApiParam("The line number the parser will offset by") @QueryParam("lineOffset") int lineOffset,
+                                               @DefaultValue("0") @ApiParam("The column number the parser will offset by") @QueryParam("columnOffset") int columnOffset,
+                                               @DefaultValue("true") @QueryParam("returnSourceInformation") boolean returnSourceInformation,
+                                               @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         PureGrammarParserExtensions.logExtensionList();
-        return grammarToJson(input, (a, b) -> RelationalGrammarParserExtension.parseRelationalOperationElement(a, b), pm, returnSourceInfo, "Grammar to Json : RelationalOperationElement");
+        return grammarToJson(text,
+            (a) -> RelationalGrammarParserExtension.parseRelationalOperationElement(a, sourceId, lineOffset, columnOffset, returnSourceInformation), pm, "Grammar to Json : RelationalOperationElement");
     }
 
     // Required so that Jackson properly includes _type for the top level element
@@ -56,9 +54,10 @@ public class RelationalOperationElementGrammarToJson extends GrammarAPI
     @ApiOperation(value = "Generates Pure protocol JSON from Pure language text for relational operation elements")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Produces(MediaType.APPLICATION_JSON)
-    public Response relationalOperationElementBatch(Map<String, String> input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @QueryParam("returnSourceInfo") boolean returnSourceInfo)
+    public Response relationalOperationElementBatch(Map<String, ParserInput> input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         PureGrammarParserExtensions.logExtensionList();
-        return grammarToJsonBatch(input, (a, b) -> RelationalGrammarParserExtension.parseRelationalOperationElement(a, b), new TypedMap(), pm, returnSourceInfo, "Grammar to Json : RelationalOperationElement Batch");
+        return grammarToJsonBatch(input,
+            RelationalGrammarParserExtension::parseRelationalOperationElement, new TypedMap(), pm, "Grammar to Json : RelationalOperationElement Batch");
     }
 }

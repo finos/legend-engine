@@ -61,12 +61,16 @@ function meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection:
                                                             pair('test', 'TestDatabaseAuthenticationStrategy'),
                                                             pair('snowflakePublic', 'SnowflakePublicAuthenticationStrategy'),
                                                             pair('gcpApplicationDefaultCredentials', 'GCPApplicationDefaultCredentialsAuthenticationStrategy'),
+                                                            pair('apiToken', 'ApiTokenAuthenticationStrategy'),
+                                                            pair('gcpWorkloadIdentityFederationWithAWS','GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy'),
 
                                                             pair('static', 'StaticDatasourceSpecification'),
                                                             pair('h2Embedded', 'EmbeddedH2DatasourceSpecification'),
                                                             pair('h2Local', 'LocalH2DatasourceSpecification('),
                                                             pair('snowflake', 'SnowflakeDatasourceSpecification'),
-                                                            pair('bigQuery', 'BigQueryDatasourceSpecification')
+                                                            pair('bigQuery', 'BigQueryDatasourceSpecification'),
+                                                            pair('databricks', 'DatabricksDatasourceSpecification'),
+                                                            pair('redshift', 'RedshiftDatasourceSpecification')
                                                           ]
                                             )
                 );
@@ -130,6 +134,17 @@ function meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection:
       b:meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::authentication::GCPApplicationDefaultCredentialsAuthenticationStrategy[1] |
          ^meta::pure::alloy::connections::alloy::authentication::GCPApplicationDefaultCredentialsAuthenticationStrategy(
             // _type = 'gcpApplicationDefaultCredentials'
+         ),
+      l:meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::authentication::ApiTokenAuthenticationStrategy[1] |
+         ^meta::pure::alloy::connections::alloy::authentication::ApiTokenAuthenticationStrategy(
+            // _type = 'apiToken',
+            apiToken = $l.apiToken
+         ),
+      b:meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::authentication::GCPWorkloadIdentityFederationAuthenticationStrategy[1] |
+         ^meta::pure::alloy::connections::alloy::authentication::GCPWorkloadIdentityFederationAuthenticationStrategy(
+            // _type = 'gcpWorkloadIdentityFederationWithAWS',
+            serviceAccountEmail = $b.serviceAccountEmail,
+            additionalGcpScopes = $b.additionalGcpScopes
          )
    ]);
 }
@@ -179,7 +194,25 @@ function meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection:
             //  _type = 'bigQuery',
              projectId = $b.projectId,
              defaultDataset = $b.defaultDataset
-         )
+         ),
+      d:meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::DatabricksDatasourceSpecification[1] |
+          ^meta::pure::alloy::connections::alloy::specification::DatabricksDatasourceSpecification(
+              // _type = 'databricks',
+              hostname = $d.hostname,
+              port = $d.port,
+              protocol = $d.protocol,
+              httpPath = $d.httpPath
+         ),
+     r:meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::legend::specification::RedshiftDatasourceSpecification[1] |
+          ^meta::pure::legend::connections::legend::specification::RedshiftDatasourceSpecification(
+              //  _type = 'redshift',
+                clusterID = $r.clusterID,
+                port =$r.port,
+                region = $r.region,
+                databaseName = $r.databaseName,
+                endpointURL = $r.endpointURL,
+                host = $r.host 
+         )   
    ]);
 }
 

@@ -367,6 +367,46 @@ public class TestRelationalConnectionGrammarRoundtrip extends TestGrammarRoundtr
     }
 
     @Test
+    public void testBigQueryGCPWorkloadIdentityFederation()
+    {
+        test("###Connection\n" +
+                "RelationalDatabaseConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  store: store::Store;\n" +
+                "  type: BigQuery;\n" +
+                "  specification: BigQuery\n" +
+                "  {\n" +
+                "    projectId: 'proj1';\n" +
+                "    defaultDataset: 'dataset1';\n" +
+                "  };\n" +
+                "  auth: GCPWorkloadIdentityFederation\n" +
+                "  {\n" +
+                "    serviceAccountEmail: 'name';\n" +
+                "  };\n" +
+                "}\n");
+
+        test("###Connection\n" +
+                "RelationalDatabaseConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  store: store::Store;\n" +
+                "  type: BigQuery;\n" +
+                "  specification: BigQuery\n" +
+                "  {\n" +
+                "    projectId: 'proj1';\n" +
+                "    defaultDataset: 'dataset1';\n" +
+                "  };\n" +
+                "  auth: GCPWorkloadIdentityFederation\n" +
+                "  {\n" +
+                "    serviceAccountEmail: 'name';\n" +
+                "    additionalGcpScopes: [\n" +
+                "      'gcpScope',\n" +
+                "      'anotherGcpScope'\n" +
+                "      ];\n" +
+                "  };\n" +
+                "}\n");
+    }
+
+    @Test
     public void testSingleMapperPostProcessors()
     {
         testPostProcessor(

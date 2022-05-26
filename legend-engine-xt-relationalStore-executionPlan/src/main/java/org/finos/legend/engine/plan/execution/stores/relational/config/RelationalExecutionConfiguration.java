@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.config;
 
-import io.dropwizard.Configuration;
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProvider;
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProviderConfiguration;
@@ -24,7 +23,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.authe
 
 import java.util.List;
 
-public class RelationalExecutionConfiguration extends Configuration implements StoreExecutorConfiguration
+public class RelationalExecutionConfiguration implements StoreExecutorConfiguration
 {
     public TemporaryTestDbConfiguration temporarytestdb;
     public String tempPath;
