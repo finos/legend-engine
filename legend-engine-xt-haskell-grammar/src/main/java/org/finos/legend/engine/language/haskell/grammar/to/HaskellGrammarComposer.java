@@ -44,6 +44,7 @@ public class HaskellGrammarComposer {
 
     private void renderTopLevelDecl(StringBuilder builder, DataType dataType)
     {
+        renderDocumentation(builder, dataType.documentation);
         builder.append("data ").append(dataType.name);
 
         if(!Iterate.isEmpty(dataType.constructors ))
@@ -69,6 +70,7 @@ public class HaskellGrammarComposer {
     }
 
     protected void renderNamedConstructor(StringBuilder builder, NamedConstructor constructor) {
+        renderDocumentation(builder, constructor.documentation);
         builder.append(constructor.name);
 
         if (constructor instanceof RecordTypeConstructor)
@@ -85,6 +87,7 @@ public class HaskellGrammarComposer {
             boolean isFirstField = true;
             for (Field field : constructor.fields)
             {
+                renderDocumentation(builder, field.documentation);
                 if (!isFirstField)
                     builder.append(", ");
 
@@ -126,5 +129,13 @@ public class HaskellGrammarComposer {
 
     private void renderDeriving(StringBuilder builder, Deriving deriving) {
         builder.append(String.join(", ",deriving.deriving));
+    }
+
+    private void renderDocumentation(StringBuilder builder, String docs)
+    {
+        if (docs != null)
+        {
+            builder.append("-- |").append(docs).append("\n");
+        }
     }
 }
