@@ -68,7 +68,6 @@ public class HaskellGrammarComposer {
 
     protected void renderNamedConstructor(StringBuilder builder, NamedConstructor constructor) {
         builder.append(constructor.name);
-        //TODO: ADD FOR DAML.append(" with");
 
         if (constructor instanceof RecordTypeConstructor)
         {
