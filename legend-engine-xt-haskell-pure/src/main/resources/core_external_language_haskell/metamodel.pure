@@ -19,7 +19,7 @@ Class meta::external::language::haskell::metamodel::HaskellModule
     id: String[1];
     exports: String[*];
     imports: meta::external::language::haskell::metamodel::Import[*];
-    elements: TopLevelDeclaration[*];
+    elements: ModuleElement[*];
 }
 
 Class meta::external::language::haskell::metamodel::Import
@@ -27,11 +27,11 @@ Class meta::external::language::haskell::metamodel::Import
     name: String[1];
 }
 
-Class meta::external::language::haskell::metamodel::TopLevelDeclaration
+Class meta::external::language::haskell::metamodel::ModuleElement
 {
 }
 
-Class meta::external::language::haskell::metamodel::DataType extends TopLevelDeclaration
+Class meta::external::language::haskell::metamodel::DataType extends ModuleElement
 {
     name: String[1];
     constructors: NamedConstructor[*];
@@ -90,6 +90,25 @@ Class meta::external::language::haskell::metamodel::Text extends HaskellType
 
 Class meta::external::language::haskell::metamodel::Bool extends HaskellType
 {
+}
+
+Class meta::external::language::haskell::metamodel::DateTime extends HaskellType
+{
+}
+
+Class meta::external::language::haskell::metamodel::Num extends HaskellType
+{
+}
+
+Class meta::external::language::haskell::metamodel::ListType extends HaskellType
+{
+    type:HaskellType[1];
+}
+
+Class meta::external::language::haskell::metamodel::TupleType extends HaskellType
+{
+    first:HaskellType[1];
+    second:HaskellType[1];
 }
 
 Class meta::external::language::haskell::metamodel::NamedType extends HaskellType

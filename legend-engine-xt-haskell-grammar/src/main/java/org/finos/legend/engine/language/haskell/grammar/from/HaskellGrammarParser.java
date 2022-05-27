@@ -4,7 +4,6 @@ import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.haskell.grammar.from.antlr4.HaskellLexer;
 import org.finos.legend.engine.language.haskell.grammar.from.antlr4.HaskellParser;
@@ -119,7 +118,7 @@ public class HaskellGrammarParser {
         return module;
     }
 
-    private TopLevelDeclaration visitTopDecls(HaskellParser.TopdeclContext topdeclContext)
+    private ModuleElement visitTopDecls(HaskellParser.TopdeclContext topdeclContext)
     {
         if (topdeclContext.ty_decl() != null)
             return visitTypeDecl(topdeclContext.ty_decl());

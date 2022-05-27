@@ -1,0 +1,84 @@
+import meta::external::language::haskell::metamodel::*;
+import meta::external::language::haskell::binding::fromPure::*;
+
+function meta::external::language::haskell::binding::fromPure::buildHaskellModuleFromPureTypes(cl:Class<Any>[1]):HaskellModule[1]
+{  
+  let types = $cl->scanTypes([]);
+  let typesMap = seedTypes($types, buildDefaultPrimitiveTypesMap());
+  let res = transformPureTypesToHaskell($types, $typesMap);
+  $res;
+}
+
+function meta::external::language::haskell::binding::fromPure::scanTypes(t:Type[1], processed:Type[*]):Type[*]
+{
+   if (!$processed->contains($t),
+       |$t->concatenate(if($t->instanceOf(Class),
+                         |$t->cast(@Class<Any>)->allProperties().genericType.rawType->distinct()
+                            ->concatenate($t->cast(@Class<Any>)->meta::pure::functions::meta::findAllSpecializations())
+                            ->filter(t|($t->instanceOf(Class) || $t->instanceOf(meta::pure::metamodel::type::Enumeration)) && $t != Any)
+                            ->map(c|$c->meta::external::language::haskell::binding::fromPure::scanTypes($processed->concatenate($t)))->distinct(),
+                         |[]
+                       )),
+       |[]
+   );
+}
+
+function meta::external::language::haskell::binding::fromPure::buildDefaultPrimitiveTypesMap():Map<Type,HaskellType>[1]
+{
+  newMap(
+      [
+         pair(Integer, ^meta::external::language::haskell::metamodel::Int()),
+         pair(Float, ^meta::external::language::haskell::metamodel::Double()),
+         pair(String, ^meta::external::language::haskell::metamodel::Text()),
+         pair(Boolean, ^meta::external::language::haskell::metamodel::Bool()),
+         pair(DateTime , ^meta::external::language::haskell::metamodel::DateTime()),
+         //pair(Date , 'TODO'),
+         //pair(StrictDate , 'TODO'),
+         pair(Number , ^meta::external::language::haskell::metamodel::Num())
+      ])
+}
+
+function meta::external::language::haskell::binding::fromPure::seedTypes(types:Type[*],primTypes:Map<Type,HaskellType>[1]):Map<Type,HaskellType>[1]
+{
+  $primTypes->putAll($types->map(t | pair($t, ^NamedType(name=$t.name->toOne()))))
+}
+
+function meta::external::language::haskell::binding::fromPure::transformPureTypesToHaskell(types:Type[*], typesMap:Map<Type,HaskellType>[1]):HaskellModule[1]
+{
+  let decls = $types->map(t | $t->pureTypeToHaskell($typesMap));
+  ^HaskellModule(id='TODO Module Name',
+                 elements=$decls);
+}
+
+function meta::external::language::haskell::binding::fromPure::pureTypeToHaskell(t:Type[1], typesMap:Map<Type,HaskellType>[1]):ModuleElement[1]
+{
+  $t->match([
+    c:Class<Any>[1] | $c->classToDataType($typesMap),
+    e:Enumeration<Any>[1] | $e->enumerationToDataType()
+  ]);
+}
+
+function meta::external::language::haskell::binding::fromPure::classToDataType(c:Class<Any>[1], typesMap:Map<Type,HaskellType>[1]):meta::external::language::haskell::metamodel::DataType[1]
+{
+  ^meta::external::language::haskell::metamodel::DataType(
+    name=$c.name->toOne(),
+    constructors=^RecordTypeConstructor(name=$c.name->toOne(),
+                                        fields=$c->allProperties()->map( p |  let type = $typesMap->get($p.genericType.rawType->toOne());
+                                                                              if($type->isEmpty(), | println('Failed to map type:' + $p.genericType.rawType.name->toOne()), |'');
+                                                                              let typeWithMul = if(!$p.multiplicity->hasUpperBound() || ($p.multiplicity.upperBound->toOne().value > 1),
+                                                                                                   | ^ListType(type=$type->toOne()),
+                                                                                                   | $type->toOne());   
+                                                                              ^Field(name=$p.name->toOne(),
+                                                                                    type=$typeWithMul);
+                                        )
+    )
+  );
+}
+
+function meta::external::language::haskell::binding::fromPure::enumerationToDataType(e:Enumeration<Any>[1]):meta::external::language::haskell::metamodel::DataType[1]
+{
+  ^meta::external::language::haskell::metamodel::DataType(
+    name=$e->enumName(),
+    constructors=$e->enumValues()->map( v | ^NamedConstructor(name=$v->toString()))
+  );
+}

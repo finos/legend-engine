@@ -27,7 +27,7 @@ public class HaskellGrammarComposer {
         StringBuilder builder = new StringBuilder();
         builder.append("module ").append(module.id).append("\n  where\n\n");
 
-        for( TopLevelDeclaration dataType: module.elements)
+        for( ModuleElement dataType: module.elements)
         {
             if (dataType instanceof DataType)
             {

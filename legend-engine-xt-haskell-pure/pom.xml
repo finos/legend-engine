@@ -106,6 +106,10 @@
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m3-core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m3-platform</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
@@ -122,6 +126,7 @@
             <artifactId>legend-pure-code-compiled-core-external-shared</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <!-- PURE -->
 
         <dependency>
             <groupId>org.eclipse.collections</groupId>
@@ -131,7 +136,6 @@
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections-api</artifactId>
         </dependency>
-        <!-- PURE -->
 
     </dependencies>
 
