@@ -10,7 +10,8 @@ Class meta::external::language::haskell::binding::fromPure::tests::Trade
    account : Account[1];
 }
 
-Enum meta::external::language::haskell::binding::fromPure::tests::AccountType
+Enum {doc.doc='Types of account'}
+meta::external::language::haskell::binding::fromPure::tests::AccountType
 {
    TRADING,
    WASH,
@@ -42,6 +43,7 @@ function <<test.Test>> meta::external::language::haskell::binding::fromPure::tes
   let accountType = $res.elements->cast(@meta::external::language::haskell::metamodel::DataType)
                            ->filter(x | $x.name->toOne() == 'AccountType');
   assertEquals('AccountType', $accountType.name);
+  assertEquals('Types of account', $accountType.documentation);
   assertSize($accountType.constructors, 3);
   assertEquals(['TRADING', 'WASH', 'TEST'], $accountType.constructors->cast(@meta::external::language::haskell::metamodel::NamedConstructor).name);
 
