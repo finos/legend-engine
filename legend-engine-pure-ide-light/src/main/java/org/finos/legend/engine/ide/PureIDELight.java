@@ -66,6 +66,7 @@ public class PureIDELight extends PureIDEServer
                     .with(this.buildCore("legend-engine-xt-avro-pure", "external-format-avro"))
                     .with(this.buildCore("legend-engine-xt-rosetta-pure", "external-format-rosetta"))
                     .with(this.buildCore("legend-engine-xt-morphir-pure", "external-language-morphir"))
+                    .with(this.buildCore("legend-engine-xt-haskell-pure", "external-language-haskell"))
                     .with(this.buildCore("legend-engine-pure-ide-light-metadata-pure", "ide_metadata"))
                     .with(this.buildCore("legend-engine-pure-code-compiled-core", ""))
                     .with(this.buildCore("legend-engine-xt-analytics-mapping-pure", "analytics-mapping"))
