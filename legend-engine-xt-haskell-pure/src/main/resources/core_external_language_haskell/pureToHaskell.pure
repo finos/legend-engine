@@ -61,6 +61,7 @@ function meta::external::language::haskell::binding::fromPure::pureTypeToHaskell
 function meta::external::language::haskell::binding::fromPure::classToDataType(c:Class<Any>[1], typesMap:Map<Type,HaskellType>[1]):meta::external::language::haskell::metamodel::DataType[1]
 {
   ^meta::external::language::haskell::metamodel::DataType(
+    documentation=$c->meta::pure::functions::doc::getDocs()->joinStrings('\n'),
     name=$c.name->toOne(),
     constructors=^RecordTypeConstructor(name=$c.name->toOne(),
                                         fields=$c->allProperties()->map( p |  let type = $typesMap->get($p.genericType.rawType->toOne());
