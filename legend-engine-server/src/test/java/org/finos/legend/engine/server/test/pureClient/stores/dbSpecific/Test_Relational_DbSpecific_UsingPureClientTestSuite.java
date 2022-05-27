@@ -31,13 +31,11 @@ import static org.finos.legend.engine.server.test.shared.PureTestHelper.*;
 @Ignore
 public class Test_Relational_DbSpecific_UsingPureClientTestSuite extends TestSuite
 {
-    static final ThreadLocal<ServersState> state = new ThreadLocal<>();
-    static boolean shouldCleanUp;
-
     public static Test createSuite(String pureTestCollectionPath,String testServerConfigFilePath) throws Exception
     {
         //Run test engine server - needs to be setup before as we need testParam(connection details) to create test suite
-        shouldCleanUp= PureTestHelper.initClientVersionIfNotAlreadySet("vX_X_X");
+        boolean shouldCleanUp= PureTestHelper.initClientVersionIfNotAlreadySet("vX_X_X");
+        final ThreadLocal<ServersState> state = new ThreadLocal<>();
         state.set( PureTestHelper.initEnvironment(false, testServerConfigFilePath));
 
         CompiledExecutionSupport executionSupport = getClassLoaderExecutionSupport();
