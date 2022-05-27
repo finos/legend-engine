@@ -29,6 +29,16 @@ public class TestGrammar {
     }
 
     @Test
+    public void testTypeWithOptionalFieldsRoundtrip()
+    {
+        check("module Gs.Finance\n" +
+                "  where\n" +
+                "\n"+
+                "data Trade = Trade { id :: Optional Int, notionals :: Optional [Double] }\n" +
+                "    deriving (Eq, Ord, Show)\n");
+    }
+
+    @Test
     public void testEnumRoundtrip()
     {
         check("module Gs.Finance\n" +
