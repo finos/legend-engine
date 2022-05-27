@@ -49,9 +49,9 @@ import org.finos.legend.engine.shared.core.operational.opentracing.HttpRequestHe
 import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
 
+import javax.security.auth.Subject;
 import java.util.List;
 import java.util.function.Supplier;
-import javax.security.auth.Subject;
 
 import static io.opentracing.propagation.Format.Builtin.HTTP_HEADERS;
 import static org.finos.legend.engine.shared.core.kerberos.ExecSubject.exec;
@@ -100,7 +100,7 @@ public class SDLCLoader implements ModelLoader
     @Override
     public boolean shouldCache(PureModelContext context)
     {
-        return this.supports(context) && (isCacheablePureSDLC(((PureModelContextPointer)context).sdlcInfo) || isCacheableAlloySDLC(((PureModelContextPointer)context).sdlcInfo));
+        return this.supports(context) && (isCacheablePureSDLC(((PureModelContextPointer) context).sdlcInfo) || isCacheableAlloySDLC(((PureModelContextPointer) context).sdlcInfo));
     }
 
     private boolean isCacheablePureSDLC(SDLC sdlc)
@@ -120,7 +120,7 @@ public class SDLCLoader implements ModelLoader
     @Override
     public PureModelContext cacheKey(PureModelContext context, MutableList<CommonProfile> pm)
     {
-        if (isCacheablePureSDLC(((PureModelContextPointer)context).sdlcInfo))
+        if (isCacheablePureSDLC(((PureModelContextPointer) context).sdlcInfo))
         {
             final Subject executionSubject = getSubject();
             Function0<PureModelContext> pureModelContextFunction = () -> this.pureLoader.getCacheKey(context, pm, executionSubject);
@@ -174,10 +174,13 @@ public class SDLCLoader implements ModelLoader
                     PureModelContextData loadedProject = this.alloyLoader.loadAlloyProject(pm, sdlc, clientVersion);
                     loadedProject.origin.sdlcInfo.packageableElementPointers = sdlc.packageableElementPointers;
                     List<String> missingPaths = this.alloyLoader.checkAllPathsExist(loadedProject, sdlc);
-                    if (missingPaths.isEmpty()) {
+                    if (missingPaths.isEmpty())
+                    {
                         return loadedProject;
-                    } else {
-                        throw new RuntimeException("The following PackageableElementPointers:" + missingPaths.toString() +  " do not exist in the project data loaded from the metadata server");
+                    }
+                    else
+                    {
+                        throw new RuntimeException("The following PackageableElementPointers:" + missingPaths.toString() + " do not exist in the project data loaded from the metadata server");
                     }
                 }
             };
@@ -231,7 +234,7 @@ public class SDLCLoader implements ModelLoader
             HttpEntity entity1 = response.getEntity();
             PureModelContextData modelContextData = objectMapper.readValue(entity1.getContent(), PureModelContextData.class);
             Assert.assertTrue(modelContextData.getSerializer() != null, () -> "Engine was unable to load information from the Pure SDLC <a href='" + url + "'>link</a>");
-            LOGGER.info(new LogInfo(pm, stopEvent, (double)System.currentTimeMillis() - start).toString());
+            LOGGER.info(new LogInfo(pm, stopEvent, (double) System.currentTimeMillis() - start).toString());
             if (span != null)
             {
                 scope.span().log(String.valueOf(stopEvent));

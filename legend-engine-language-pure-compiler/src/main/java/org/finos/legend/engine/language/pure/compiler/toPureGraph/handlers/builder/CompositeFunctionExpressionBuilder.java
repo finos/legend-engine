@@ -54,19 +54,20 @@ public class CompositeFunctionExpressionBuilder extends FunctionExpressionBuilde
     @Override
     public void addFunctionHandler(FunctionHandler handler)
     {
-        List<FunctionExpressionBuilder> target = this.builders.stream().filter(f->f.getParametersSize().isPresent() && f.getParametersSize().get() == handler.getParametersSize()).collect(Collectors.toList());
+        List<FunctionExpressionBuilder> target = this.builders.stream().filter(f -> f.getParametersSize().isPresent() && f.getParametersSize().get() == handler.getParametersSize()).collect(Collectors.toList());
         target.get(0).handlers().add(handler);
     }
 
     @Override
     public Boolean supportFunctionHandler(FunctionHandler handler)
     {
-        List<FunctionExpressionBuilder> target = this.builders.stream().filter(f->f.getParametersSize().isPresent() && f.getParametersSize().get() == handler.getParametersSize()).collect(Collectors.toList());
+        List<FunctionExpressionBuilder> target = this.builders.stream().filter(f -> f.getParametersSize().isPresent() && f.getParametersSize().get() == handler.getParametersSize()).collect(Collectors.toList());
         return !target.isEmpty();
     }
 
     @Override
-    public Optional<Integer> getParametersSize() {
+    public Optional<Integer> getParametersSize()
+    {
         return Optional.empty();
     }
 

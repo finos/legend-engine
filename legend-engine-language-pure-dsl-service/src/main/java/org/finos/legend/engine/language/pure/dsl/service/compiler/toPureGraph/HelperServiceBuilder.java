@@ -16,27 +16,61 @@ package org.finos.legend.engine.language.pure.dsl.service.compiler.toPureGraph;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.collections.api.RichIterable;
-import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.*;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperRuntimeBuilder;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.EmbeddedDataFirstPassBuilder;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ConnectionTestData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Execution;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.KeyedExecutionParameter;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.KeyedSingleExecutionTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.MultiExecutionTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ParameterValue;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureMultiExecution;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureSingleExecution;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTest_Legacy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.SingleExecutionTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.TestContainer;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.TestData;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.*;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_ConnectionTestData;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_ConnectionTestData_Impl;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Execution;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_KeyedExecutionParameter;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_KeyedExecutionParameter_Impl;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_KeyedSingleExecutionTest;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_KeyedSingleExecutionTest_Impl;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_MultiExecutionTest;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_MultiExecutionTest_Impl;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_ParameterValue;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_ParameterValue_Impl;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PureMultiExecution_Impl;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PureSingleExecution_Impl;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_SingleExecutionTest_Impl;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Test;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_TestContainer;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_TestContainer_Impl;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_TestData;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_TestData_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.PrimitiveType;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class HelperServiceBuilder
@@ -91,7 +125,7 @@ public class HelperServiceBuilder
                     ._executionParameters(ListIterate.collect(pureMultiExecution.executionParameters, executionParameter -> processServiceKeyedExecutionParameter(executionParameter, context, executionKeyValues)));
         }
         return getServiceCompilerExtensions(context).stream().flatMap(extension -> extension.getExtraServiceExecutionProcessors().stream()).map(processor -> processor.value(execution, context)).filter(Objects::nonNull).findFirst()
-                                                    .orElseThrow(() -> new UnsupportedOperationException("Unsupported service execution type '" + execution.getClass().getSimpleName() + "'"));
+                .orElseThrow(() -> new UnsupportedOperationException("Unsupported service execution type '" + execution.getClass().getSimpleName() + "'"));
     }
 
     private static Root_meta_legend_service_metamodel_KeyedExecutionParameter processServiceKeyedExecutionParameter(KeyedExecutionParameter keyedExecutionParameter, CompileContext context, Set<String> executionKeyValues)
@@ -224,7 +258,7 @@ public class HelperServiceBuilder
             return multiTest;
         }
         return getServiceCompilerExtensions(context).stream().flatMap(extension -> extension.getExtraServiceTestProcessors().stream()).map(processor -> processor.value(serviceTest, execution, context)).filter(Objects::nonNull).findFirst()
-                                                    .orElseThrow(() -> new UnsupportedOperationException("Unsupported service test type '" + serviceTest.getClass().getSimpleName() + "'"));
+                .orElseThrow(() -> new UnsupportedOperationException("Unsupported service test type '" + serviceTest.getClass().getSimpleName() + "'"));
     }
 
     private static Root_meta_legend_service_metamodel_KeyedSingleExecutionTest processServiceKeyedSingleExecutionTest(KeyedSingleExecutionTest keyedSingleExecutionTest, CompileContext context, Set<String> testKeyValues)

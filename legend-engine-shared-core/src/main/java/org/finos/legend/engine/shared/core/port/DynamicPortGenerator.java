@@ -29,11 +29,14 @@ public class DynamicPortGenerator
     private static final int NUMBER_OF_TRIES = 10;
     private static final AtomicInteger testPort = new AtomicInteger(MIN_TEST_PORT + new Random().nextInt(MAX_TEST_PORT - MIN_TEST_PORT));
 
-    public static int generatePort() {
-        for (int i = 0; i < NUMBER_OF_TRIES; i++) {
+    public static int generatePort()
+    {
+        for (int i = 0; i < NUMBER_OF_TRIES; i++)
+        {
             int port = testPort.updateAndGet(current -> current == MAX_TEST_PORT ? MIN_TEST_PORT : current + 1);
 
-            if (isAvailable(port)) {
+            if (isAvailable(port))
+            {
                 return port;
             }
         }
@@ -41,11 +44,14 @@ public class DynamicPortGenerator
         throw new EngineException("Unable to obtain dynamic port");
     }
 
-    private static boolean isAvailable(int port) {
-        try (ServerSocket ignored = new ServerSocket(port)) {
+    private static boolean isAvailable(int port)
+    {
+        try (ServerSocket ignored = new ServerSocket(port))
+        {
             return true;
         }
-        catch (IOException e) {
+        catch (IOException e)
+        {
             return false;
         }
     }

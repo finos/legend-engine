@@ -90,7 +90,7 @@ public class ProtobufGenerationService
             LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE_PROTOBUF_CODE_INTERACTIVE_START : LoggingEventType.GENERATE_PROTOBUF_CODE_START).toString());
             PureModel pureModel = pureModelFunc.value();
             Object result = core_external_format_protobuf_transformation_pureToProtocolBuffers.Root_meta_external_format_protobuf_generation_generateProtobufFromPureWithScope_ProtobufConfig_1__ProtobufOutput_MANY_(protobufConfig.transformToPure(pureModel), pureModel.getExecutionSupport()).collect(v -> new GenerationOutput(v._content(), v._fileName(), v._format())).toList();
-            LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE_PROTOBUF_CODE_INTERACTIVE_STOP : LoggingEventType.GENERATE_PROTOBUF_CODE_STOP, (double)System.currentTimeMillis() - start).toString());
+            LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE_PROTOBUF_CODE_INTERACTIVE_STOP : LoggingEventType.GENERATE_PROTOBUF_CODE_STOP, (double) System.currentTimeMillis() - start).toString());
             return ManageConstantResult.manageResult(pm, result);
         }
         catch (Exception ex)

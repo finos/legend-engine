@@ -1,3 +1,17 @@
+//  Copyright 2022 Goldman Sachs
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+
 package org.finos.legend.engine.language.protobuf3.grammar.test;
 
 import org.eclipse.collections.impl.factory.Lists;
@@ -7,14 +21,15 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.protobuf3.metamodel.Message;
 import org.finos.legend.engine.protocol.protobuf3.metamodel.ProtoFile;
 import org.finos.legend.engine.protocol.protobuf3.metamodel.Syntax;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.Translator;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
-import org.finos.legend.engine.protocol.protobuf3.metamodel.Translator;
 import org.finos.legend.pure.generated.Root_meta_external_format_protobuf_metamodel_ProtoFile;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class TestProtobuf3 {
+public class TestProtobuf3
+{
 
     @Test
     public void testFile()
@@ -57,7 +72,7 @@ public class TestProtobuf3 {
         Assert.assertEquals("tutorial", proto._package);
 
         Assert.assertEquals(1, proto.imports.size());
-        Assert.assertEquals("google/protobuf/timestamp.proto",proto.imports.get(0).name);
+        Assert.assertEquals("google/protobuf/timestamp.proto", proto.imports.get(0).name);
 
         Assert.assertEquals(2, proto.topLevelDefs.size());
 
@@ -73,7 +88,8 @@ public class TestProtobuf3 {
     }
 
     @Test
-    public void testService() {
+    public void testService()
+    {
         String service =
                 "syntax = \"proto3\";\n" +
                         "package helloworld;\n" +

@@ -26,5 +26,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 public abstract class Sink
 {
     public SourceInformation sourceInformation;
+
     public abstract <T> T accept(SinkVisitor<T> visitor);
 }

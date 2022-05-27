@@ -16,7 +16,6 @@ package org.finos.legend.engine.protocol.pure.v1.model.data;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr;
 
 import java.util.Map;
 

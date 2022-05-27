@@ -74,16 +74,16 @@ public class ResultNormalizer
             return ((String) o).replace("'", "\'").replace("\\", "\\\\");
         }
 
-        if(o instanceof IReferencedObject)
+        if (o instanceof IReferencedObject)
         {
             Field[] fields = o.getClass().getDeclaredFields();
             Map<String, Object> fieldToNormalizedValueMap = new HashMap<>();
-            for(Field f:fields)
+            for (Field f : fields)
             {
                 try
                 {
                     f.setAccessible(true);
-                    fieldToNormalizedValueMap.put(f.getName(),normalizeToSql(f.get(o),databaseTimeZone));
+                    fieldToNormalizedValueMap.put(f.getName(), normalizeToSql(f.get(o), databaseTimeZone));
 
                 }
                 catch (IllegalAccessException e)

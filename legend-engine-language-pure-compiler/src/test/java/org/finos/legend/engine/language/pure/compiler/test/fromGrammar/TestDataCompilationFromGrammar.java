@@ -279,59 +279,59 @@ public class TestDataCompilationFromGrammar extends TestCompilationFromGrammar.T
     public void testInCorrectModelStoreData()
     {
         test("###Pure\n" +
-                "Enum enums::Gender\n" +
-                "{\n" +
-                "  MALE, FEMALE, OTHER\n" +
-                "}\n" +
-                "Class my::Address\n" +
-                "{\n" +
-                "  street : String[1];\n" +
-                "}\n" +
-                "Class my::Person\n" +
-                "{\n" +
-                "  givenNames  : String[*];\n" +
-                "  lastName    : String[1];\n" +
-                "  dateOfBirth : StrictDate[1];\n" +
-                "  timeOfBirth : StrictTime[1];\n" +
-                "  timeOfDeath : DateTime[0..1];\n" +
-                "  isAlive     : Boolean[1];\n" +
-                "  height      : Float[1];\n" +
-                "  girth       : Decimal[1];\n" +
-                "  shoeSize    : Integer[1];\n" +
-                "  score1      : Integer[1];\n" +
-                "  score2      : Float[1];\n" +
-                "  score3      : Decimal[1];\n" +
-                "  gender      : enums::Gender[1];\n" +
-                "  address     : my::Address[1];\n" +
-                "}\n" +
-                "\n" +
-                "###Data\n" +
-                "Data meta::data::MyData\n" +
-                "{\n" +
-                "  ModelStore #{\n" +
-                "    my::Person: [\n" +
-                "      ^my::Person(\n" +
-                "        givenNames  = ['Fred', 'William'],\n" +
-                "        lastName    = 'Bloggs',\n" +
-                "        dateOfBirth = %2001-03-12,\n" +
-                "        timeOfBirth = %12:23,\n" +
-                "        timeOfDeath = %2020-09-11T12:56:24.487,\n" +
-                "        isAlive     = false,\n" +
-                "        height      = 1.76,\n" +
-                "        girth       = 0.98D,\n" +
-                "        shoeSize    = 10,\n" +
-                "        score1      = -1,\n" +
-                "        score2      = -1.3,\n" +
-                "        score3      = -1.8D,\n" +
-                "        gender      = enums::Gender.MALE,\n" +
-                "        address     = ^my::Address(street = 'A Road')\n" +
-                "      ),\n" +
-                "      ^my::Address(\n" +
-                "        street = 'B Road'\n" +
-                "      )\n" +
-                "    ]\n" +
-                "  }#\n" +
-                "}\n",
+                        "Enum enums::Gender\n" +
+                        "{\n" +
+                        "  MALE, FEMALE, OTHER\n" +
+                        "}\n" +
+                        "Class my::Address\n" +
+                        "{\n" +
+                        "  street : String[1];\n" +
+                        "}\n" +
+                        "Class my::Person\n" +
+                        "{\n" +
+                        "  givenNames  : String[*];\n" +
+                        "  lastName    : String[1];\n" +
+                        "  dateOfBirth : StrictDate[1];\n" +
+                        "  timeOfBirth : StrictTime[1];\n" +
+                        "  timeOfDeath : DateTime[0..1];\n" +
+                        "  isAlive     : Boolean[1];\n" +
+                        "  height      : Float[1];\n" +
+                        "  girth       : Decimal[1];\n" +
+                        "  shoeSize    : Integer[1];\n" +
+                        "  score1      : Integer[1];\n" +
+                        "  score2      : Float[1];\n" +
+                        "  score3      : Decimal[1];\n" +
+                        "  gender      : enums::Gender[1];\n" +
+                        "  address     : my::Address[1];\n" +
+                        "}\n" +
+                        "\n" +
+                        "###Data\n" +
+                        "Data meta::data::MyData\n" +
+                        "{\n" +
+                        "  ModelStore #{\n" +
+                        "    my::Person: [\n" +
+                        "      ^my::Person(\n" +
+                        "        givenNames  = ['Fred', 'William'],\n" +
+                        "        lastName    = 'Bloggs',\n" +
+                        "        dateOfBirth = %2001-03-12,\n" +
+                        "        timeOfBirth = %12:23,\n" +
+                        "        timeOfDeath = %2020-09-11T12:56:24.487,\n" +
+                        "        isAlive     = false,\n" +
+                        "        height      = 1.76,\n" +
+                        "        girth       = 0.98D,\n" +
+                        "        shoeSize    = 10,\n" +
+                        "        score1      = -1,\n" +
+                        "        score2      = -1.3,\n" +
+                        "        score3      = -1.8D,\n" +
+                        "        gender      = enums::Gender.MALE,\n" +
+                        "        address     = ^my::Address(street = 'A Road')\n" +
+                        "      ),\n" +
+                        "      ^my::Address(\n" +
+                        "        street = 'B Road'\n" +
+                        "      )\n" +
+                        "    ]\n" +
+                        "  }#\n" +
+                        "}\n",
                 "COMPILATION error at [29:1-54:1]: Error in 'meta::data::MyData': Instance types does not align with associated type"
         );
 

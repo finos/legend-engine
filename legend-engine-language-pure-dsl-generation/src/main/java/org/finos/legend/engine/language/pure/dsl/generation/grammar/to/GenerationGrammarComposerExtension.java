@@ -37,36 +37,36 @@ public class GenerationGrammarComposerExtension implements PureGrammarComposerEx
     public List<Function3<List<PackageableElement>, PureGrammarComposerContext, String, String>> getExtraSectionComposers()
     {
         return Lists.mutable.with(
-            (elements, context, sectionName) ->
-            {
-                if (!GenerationParserExtension.FILE_GENERATION_SECTION_NAME.equals(sectionName))
+                (elements, context, sectionName) ->
                 {
-                    return null;
-                }
-                return ListIterate.collect(elements, element ->
-                {
-                    if (element instanceof FileGenerationSpecification)
+                    if (!GenerationParserExtension.FILE_GENERATION_SECTION_NAME.equals(sectionName))
                     {
-                        return renderFileGenerationSpecification((FileGenerationSpecification) element);
+                        return null;
                     }
-                    return "/* Can't transform element '" + element.getPath() + "' in this section */";
-                }).makeString("\n\n");
-            },
-            (elements, context, sectionName) ->
-            {
-                if (!GenerationParserExtension.GENERATION_SPECIFICATION_SECTION_NAME.equals(sectionName))
-                {
-                    return null;
-                }
-                return ListIterate.collect(elements, element ->
-                {
-                    if (element instanceof GenerationSpecification)
+                    return ListIterate.collect(elements, element ->
                     {
-                        return renderGenerationSpecification((GenerationSpecification) element);
+                        if (element instanceof FileGenerationSpecification)
+                        {
+                            return renderFileGenerationSpecification((FileGenerationSpecification) element);
+                        }
+                        return "/* Can't transform element '" + element.getPath() + "' in this section */";
+                    }).makeString("\n\n");
+                },
+                (elements, context, sectionName) ->
+                {
+                    if (!GenerationParserExtension.GENERATION_SPECIFICATION_SECTION_NAME.equals(sectionName))
+                    {
+                        return null;
                     }
-                    return "/* Can't transform element '" + element.getPath() + "' in this section */";
-                }).makeString("\n\n");
-            }
+                    return ListIterate.collect(elements, element ->
+                    {
+                        if (element instanceof GenerationSpecification)
+                        {
+                            return renderGenerationSpecification((GenerationSpecification) element);
+                        }
+                        return "/* Can't transform element '" + element.getPath() + "' in this section */";
+                    }).makeString("\n\n");
+                }
         );
     }
 
@@ -74,29 +74,29 @@ public class GenerationGrammarComposerExtension implements PureGrammarComposerEx
     public List<Function3<List<PackageableElement>, PureGrammarComposerContext, List<String>, PureFreeSectionGrammarComposerResult>> getExtraFreeSectionComposers()
     {
         return Lists.mutable.with(
-            (elements, context, composedSections) ->
-            {
-                List<FileGenerationSpecification> composableElements = ListIterate.selectInstancesOf(elements, FileGenerationSpecification.class);
-                return composableElements.isEmpty() ? null : new PureFreeSectionGrammarComposerResult(LazyIterate.collect(composableElements, GenerationGrammarComposerExtension::renderFileGenerationSpecification).makeString("###" + GenerationParserExtension.FILE_GENERATION_SECTION_NAME + "\n", "\n\n", ""), composableElements);
-            }, (elements, context, composedSections) ->
-            {
-                List<GenerationSpecification> composableElements = ListIterate.selectInstancesOf(elements, GenerationSpecification.class);
-                return composableElements.isEmpty() ? null : new PureFreeSectionGrammarComposerResult(LazyIterate.collect(composableElements, GenerationGrammarComposerExtension::renderGenerationSpecification).makeString("###" + GenerationParserExtension.GENERATION_SPECIFICATION_SECTION_NAME + "\n", "\n\n", ""), composableElements);
-            }
+                (elements, context, composedSections) ->
+                {
+                    List<FileGenerationSpecification> composableElements = ListIterate.selectInstancesOf(elements, FileGenerationSpecification.class);
+                    return composableElements.isEmpty() ? null : new PureFreeSectionGrammarComposerResult(LazyIterate.collect(composableElements, GenerationGrammarComposerExtension::renderFileGenerationSpecification).makeString("###" + GenerationParserExtension.FILE_GENERATION_SECTION_NAME + "\n", "\n\n", ""), composableElements);
+                }, (elements, context, composedSections) ->
+                {
+                    List<GenerationSpecification> composableElements = ListIterate.selectInstancesOf(elements, GenerationSpecification.class);
+                    return composableElements.isEmpty() ? null : new PureFreeSectionGrammarComposerResult(LazyIterate.collect(composableElements, GenerationGrammarComposerExtension::renderGenerationSpecification).makeString("###" + GenerationParserExtension.GENERATION_SPECIFICATION_SECTION_NAME + "\n", "\n\n", ""), composableElements);
+                }
         );
     }
 
     private static String renderGenerationSpecification(GenerationSpecification generationSpecification)
     {
         return "GenerationSpecification " + PureGrammarComposerUtility.convertPath(generationSpecification.getPath()) +
-            "\n{\n" +
-            (generationSpecification.generationNodes.isEmpty() ? "" :
-                "  generationNodes: [\n"
-                    + LazyIterate.collect(generationSpecification.generationNodes, HelperGenerationSpecificationGrammarComposer::renderGenerationNode).makeString(",\n") + (generationSpecification.generationNodes.isEmpty() ? "" : "\n") +
-                    "  ];\n"
-            ) +
-            HelperGenerationSpecificationGrammarComposer.renderFileGenerationNode(generationSpecification.fileGenerations) + (generationSpecification.fileGenerations.isEmpty() ? "" : "\n") +
-            "}";
+                "\n{\n" +
+                (generationSpecification.generationNodes.isEmpty() ? "" :
+                        "  generationNodes: [\n"
+                                + LazyIterate.collect(generationSpecification.generationNodes, HelperGenerationSpecificationGrammarComposer::renderGenerationNode).makeString(",\n") + (generationSpecification.generationNodes.isEmpty() ? "" : "\n") +
+                                "  ];\n"
+                ) +
+                HelperGenerationSpecificationGrammarComposer.renderFileGenerationNode(generationSpecification.fileGenerations) + (generationSpecification.fileGenerations.isEmpty() ? "" : "\n") +
+                "}";
     }
 
     private static String renderFileGenerationSpecification(FileGenerationSpecification fileGeneration)

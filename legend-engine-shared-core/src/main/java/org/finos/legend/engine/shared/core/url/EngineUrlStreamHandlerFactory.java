@@ -31,7 +31,12 @@ public class EngineUrlStreamHandlerFactory implements URLStreamHandlerFactory
 {
     static final EngineUrlStreamHandlerFactory INSTANCE = new EngineUrlStreamHandlerFactory();
 
-    private enum State { UNINITIALIZED, INITIALIZED, INITIALIZATION_FAILED }
+    private enum State
+    {
+        UNINITIALIZED,
+        INITIALIZED,
+        INITIALIZATION_FAILED
+    }
 
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
     private static final List<String> JRE_PROTOCOLS = Arrays.asList("file", "ftp", "http", "https", "jar", "mailto");

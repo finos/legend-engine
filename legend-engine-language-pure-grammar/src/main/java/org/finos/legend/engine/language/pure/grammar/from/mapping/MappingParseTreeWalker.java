@@ -94,9 +94,12 @@ public class MappingParseTreeWalker
         mappingInclude.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
         List<MappingParserGrammar.StoreSubPathContext> storeSubPathContextList = ctx.storeSubPath();
 
-        if (storeSubPathContextList.size() == 1) {
+        if (storeSubPathContextList.size() == 1)
+        {
             visitStoreSubPath(storeSubPathContextList.get(0), mappingInclude);
-        } else {
+        }
+        else
+        {
             mappingInclude.sourceDatabasePath = null;
             mappingInclude.targetDatabasePath = null;
         }

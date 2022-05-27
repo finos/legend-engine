@@ -47,9 +47,10 @@ public class ClassValidator
 
     private void validateProperties(PureModel pureModel, Map<String, Class> classes)
     {
-        classes.values().forEach(c -> {
+        classes.values().forEach(c ->
+        {
             MutableMultimap<String, Property> prop = Iterate.groupBy(c.properties, p -> p.name);
-            pureModel.addWarnings(prop.multiValuesView().flatCollect(a -> a.size() > 1 ? Lists.mutable.with(new Warning(a.getFirst().sourceInformation, "Duplicate property '"+a.getFirst().name+"' in the Class "+pureModel.buildPackageString(c._package, c.name))):Lists.mutable.empty()));
+            pureModel.addWarnings(prop.multiValuesView().flatCollect(a -> a.size() > 1 ? Lists.mutable.with(new Warning(a.getFirst().sourceInformation, "Duplicate property '" + a.getFirst().name + "' in the Class " + pureModel.buildPackageString(c._package, c.name))) : Lists.mutable.empty()));
         });
     }
 

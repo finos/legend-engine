@@ -97,7 +97,8 @@ public class ProtobufGenerationExtension implements GenerationExtension
     @Override
     public List<Root_meta_pure_generation_metamodel_GenerationOutput> generateFromElement(PackageableElement element, CompileContext compileContext)
     {
-        if(element instanceof FileGenerationSpecification) {
+        if (element instanceof FileGenerationSpecification)
+        {
             FileGenerationSpecification specification = (FileGenerationSpecification) element;
             ProtobufGenerationConfig protobufGenerationConfig = ProtobufGenerationConfigFromFileGenerationSpecificationBuilder.build(specification);
             RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationOutput> output = core_external_format_protobuf_transformation_pureToProtocolBuffers.Root_meta_external_format_protobuf_generation_generateProtobufFromPureWithScope_ProtobufConfig_1__ProtobufOutput_MANY_(protobufGenerationConfig.transformToPure(compileContext.pureModel), compileContext.pureModel.getExecutionSupport());
