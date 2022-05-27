@@ -171,11 +171,11 @@ public class HaskellGrammarParser {
         return field;
     }
 
-    private HaskellType visitATypeContext(HaskellParser.AtypeContext atypeContext)
+    private List<HaskellType> visitATypeContext(HaskellParser.AtypeContext atypeContext)
     {
         if( atypeContext.ktype() != null) {
 
-            HaskellType type = visitKTypeContext(atypeContext.ktype());
+            List<HaskellType> type = visitKTypeContext(atypeContext.ktype());
 
             //This is a list type
             if( atypeContext.OpenSquareBracket() != null)
@@ -184,30 +184,27 @@ public class HaskellGrammarParser {
                 if( atypeContext.ktype() != null) {
                     listType.type = type;
                 }
-                return listType;
+                return Lists.fixedSize.of(listType);
             }
             return type;
         }
         else if( atypeContext.ntgtycon() != null) {
-            return visitNtgtyconContext(atypeContext.ntgtycon());
+            return Lists.fixedSize.of(visitNtgtyconContext(atypeContext.ntgtycon()));
         }
 
         throw new RuntimeException("Not supported yet");
     }
 
-    private HaskellType visitBTypeContext(HaskellParser.BtypeContext btypeContext)
+    private List<HaskellType> visitBTypeContext(HaskellParser.BtypeContext btypeContext)
     {
         if( btypeContext.tyapps() != null)
         {
-            HaskellParser.TyappContext tyappContext = btypeContext.tyapps().tyapp(0);
-            if( tyappContext.atype() != null) {
-                return visitATypeContext(tyappContext.atype());
-            }
+            return ListIterate.flatCollect(btypeContext.tyapps().tyapp(), this::visitTyappContext);
         }
         throw new RuntimeException("Not supported yet");
     }
 
-    private HaskellType visitCTypeContext(HaskellParser.CtypeContext ctypeContext)
+    private List<HaskellType> visitCTypeContext(HaskellParser.CtypeContext ctypeContext)
     {
         if( ctypeContext.type_() != null)
         {
@@ -216,7 +213,7 @@ public class HaskellGrammarParser {
         throw new RuntimeException("Not supported yet");
     }
 
-    private HaskellType visitKTypeContext(HaskellParser.KtypeContext ktypeContext)
+    private List<HaskellType> visitKTypeContext(HaskellParser.KtypeContext ktypeContext)
     {
         if( ktypeContext.ctype() != null)
         {
@@ -252,6 +249,15 @@ public class HaskellGrammarParser {
         throw new RuntimeException("Not supported yet");
     }
 
+    private List<HaskellType> visitTyappContext(HaskellParser.TyappContext tyappContext)
+    {
+        if( tyappContext.atype() != null)
+        {
+            return visitATypeContext(tyappContext.atype());
+        }
+        throw new RuntimeException("Not supported yet");
+    }
+
     private HaskellType visitTyconContext(HaskellParser.TyconContext tyconContext)
     {
         if( tyconContext.conid() != null)
@@ -268,7 +274,7 @@ public class HaskellGrammarParser {
         return type;
     }
 
-    private HaskellType visitTypeContext(HaskellParser.Type_Context typeContext)
+    private List<HaskellType> visitTypeContext(HaskellParser.Type_Context typeContext)
     {
         if( typeContext.btype() != null)
         {

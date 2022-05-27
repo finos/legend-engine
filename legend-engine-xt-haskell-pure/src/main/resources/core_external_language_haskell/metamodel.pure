@@ -61,7 +61,7 @@ Class meta::external::language::haskell::metamodel::RecordTypeConstructor extend
 Class meta::external::language::haskell::metamodel::Field
 {
     name: String[1];
-    type: HaskellType[1];
+    type: HaskellType[1..*];
 }
 
 Class meta::external::language::haskell::metamodel::HaskellType
@@ -102,7 +102,7 @@ Class meta::external::language::haskell::metamodel::Num extends HaskellType
 
 Class meta::external::language::haskell::metamodel::ListType extends HaskellType
 {
-    type:HaskellType[1];
+    type:HaskellType[1..*];
 }
 
 Class meta::external::language::haskell::metamodel::TupleType extends HaskellType

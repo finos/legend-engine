@@ -3,6 +3,8 @@ package org.finos.legend.engine.language.haskell.grammar.to;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.protocol.haskell.metamodel.*;
 
+import java.util.List;
+
 public class HaskellGrammarComposer {
     private static final String HASKELL_TYPE_COLON_CONVENTION = "::";
     private static final String HASKELL_CONS_COLON_CONVENTION = ":";
@@ -95,7 +97,17 @@ public class HaskellGrammarComposer {
 
     protected void renderFieldConstructor(StringBuilder builder, Field field) {
         builder.append(field.name).append(" ").append(this.typeColonConvention).append(" ");
-        renderType(builder, field.type);
+        renderTypes(builder, field.type);
+    }
+
+    private void renderTypes(StringBuilder builder, List<HaskellType> types) {
+        boolean isFirst = true;
+        for(HaskellType type: types) {
+            if(!isFirst) builder.append(" ");
+            isFirst = false;
+
+            renderType(builder, type);
+        }
     }
 
     private void renderType(StringBuilder builder, HaskellType type) {
@@ -107,7 +119,7 @@ public class HaskellGrammarComposer {
         else if (type instanceof ListType)
         {
             builder.append("[");
-            renderType(builder, ((ListType)type).type);
+            renderTypes(builder, ((ListType)type).type);
             builder.append("]");
         }
     }
