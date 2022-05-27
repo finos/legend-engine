@@ -24,5 +24,23 @@ function <<test.TestCollection>> meta::relational::tests::dbSpecificTests::redsh
   
   meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions
           ->collectParameterizedTests('Redshift',
-                ^DbTestConfig(dbType=DatabaseType.Redshift, connection=$connection), [], []);
+                ^DbTestConfig(dbType=DatabaseType.Redshift, connection=$connection), [],
+                meta::relational::tests::dbSpecificTests::redshift::runSQLQueryTestsParamFilter_FunctionDefinition_1__Boolean_1_
+                );
+}
+
+function meta::relational::tests::dbSpecificTests::redshift::runSQLQueryTestsParamFilter(f:FunctionDefinition<Any>[1]):Boolean[1]
+{
+  // currently hardcoding unsupported funcs, In future fetch this from db extensions and skip
+  let unsupportedDynaFunctions = [ 'adjust', 'dateDiff', 'datePart','dayOfMonth', 'dayOfWeekNumber', 
+                                   'firstDayOfMonth', 'firstDayOfQuarter','firstDayOfThisMonth','firstDayOfThisQuarter', 'firstDayOfThisYear','firstDayOfWeek' ,'firstDayOfYear' , 
+                                   'indexOf', 'left', 'length', 'ltrim',
+                                  'mostRecentDayOfWeek','previousDayOfWeek',
+                                  'quarter', 'quarterNumber'];
+
+  let ignoredTests= $unsupportedDynaFunctions->map(dynaFuncName |
+              let dynaFuncPackageName = 'meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::' + $dynaFuncName;
+              $dynaFuncPackageName->pathToElement()->cast(@Package)->collectTests(););
+
+  !$ignoredTests->contains($f);
 }

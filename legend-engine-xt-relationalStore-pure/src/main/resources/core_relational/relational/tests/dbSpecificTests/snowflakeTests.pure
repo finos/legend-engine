@@ -25,5 +25,20 @@ function <<test.TestCollection>> meta::relational::tests::dbSpecificTests::snowf
   
   meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions
           ->collectParameterizedTests('Snowflake',
-                ^DbTestConfig(dbType=DatabaseType.Snowflake, connection=$connection), [], []);
+                ^DbTestConfig(dbType=DatabaseType.Snowflake, connection=$connection), [],
+                meta::relational::tests::dbSpecificTests::snowflake::runSQLQueryTestsParamFilter_FunctionDefinition_1__Boolean_1_
+                );
+}
+
+
+function meta::relational::tests::dbSpecificTests::snowflake::runSQLQueryTestsParamFilter(f:FunctionDefinition<Any>[1]):Boolean[1]
+{
+  // currently hardcoding unsupported funcs, In future fetch this from db extensions and skip
+  let unsupportedDynaFunctions = ['dayOfMonth'];
+
+  let ignoredTests= $unsupportedDynaFunctions->map(dynaFuncName |
+              let dynaFuncPackageName = 'meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::' + $dynaFuncName;
+              $dynaFuncPackageName->pathToElement()->cast(@Package)->collectTests(););
+
+  !$ignoredTests->contains($f);
 }

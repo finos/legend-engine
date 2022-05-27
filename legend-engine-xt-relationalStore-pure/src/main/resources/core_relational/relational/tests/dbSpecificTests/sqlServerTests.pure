@@ -25,5 +25,21 @@ function <<test.TestCollection>> meta::relational::tests::dbSpecificTests::sqlSe
   
   meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions
           ->collectParameterizedTests('SqlServer',
-                ^DbTestConfig(dbType=DatabaseType.SqlServer, connection=$connection), [], []);
+                ^DbTestConfig(dbType=DatabaseType.SqlServer, connection=$connection), [],
+                meta::relational::tests::dbSpecificTests::sqlServer::runSQLQueryTestsParamFilter_FunctionDefinition_1__Boolean_1_);
+}
+
+function meta::relational::tests::dbSpecificTests::sqlServer::runSQLQueryTestsParamFilter(f:FunctionDefinition<Any>[1]):Boolean[1]
+{
+  // currently hardcoding unsupported funcs, In future fetch this from db extensions and skip
+   let unsupportedDynaFunctions = [
+     'adjust', 'dateDiff', 'dayOfMonth', 'firstDayOfWeek', 'indexOf', 'joinStrings', 'mod',
+     'mostRecentDayOfWeek', 'previousDayOfWeek', 'rem'
+    ];
+
+  let ignoredTests= $unsupportedDynaFunctions->map(dynaFuncName |
+              let dynaFuncPackageName = 'meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::' + $dynaFuncName;
+              $dynaFuncPackageName->pathToElement()->cast(@Package)->collectTests(););
+
+  !$ignoredTests->contains($f);
 }
