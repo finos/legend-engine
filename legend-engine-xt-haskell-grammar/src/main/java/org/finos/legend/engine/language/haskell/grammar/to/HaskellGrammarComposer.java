@@ -104,6 +104,12 @@ public class HaskellGrammarComposer {
             NamedType namedType = (NamedType)type;
             builder.append(namedType.name);
         }
+        else if (type instanceof ListType)
+        {
+            builder.append("[");
+            renderType(builder, ((ListType)type).type);
+            builder.append("]");
+        }
     }
 
     private void renderDeriving(StringBuilder builder, Deriving deriving) {
