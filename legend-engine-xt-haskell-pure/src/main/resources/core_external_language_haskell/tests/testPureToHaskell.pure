@@ -3,7 +3,7 @@ import meta::external::language::haskell::binding::fromPure::*;
 
 Class meta::external::language::haskell::binding::fromPure::tests::Trade
 {
-   type:String[1];
+   type:String[0..1];
    id:Integer[1];
    npv:Float[1];
    notionals:Float[*];
@@ -36,7 +36,7 @@ function <<test.Test>> meta::external::language::haskell::binding::fromPure::tes
   assertEquals('Trade', $tc.name);
   assertSize($tc.fields,5);
   assertEquals(['type', 'id', 'npv', 'notionals', 'account'],$tc.fields.name);
-  assertEquals(['Text', 'Int', 'Double', 'ListType', 'NamedType'],$tc.fields.type.classifierGenericType.rawType.name);
+  assertEquals(['NamedType', 'Text', 'Int', 'Double', 'NamedType', 'ListType', 'NamedType'],$tc.fields.type.classifierGenericType.rawType.name);
 
   let accountType = $res.elements->cast(@meta::external::language::haskell::metamodel::DataType)
                            ->filter(x | $x.name->toOne() == 'AccountType');
