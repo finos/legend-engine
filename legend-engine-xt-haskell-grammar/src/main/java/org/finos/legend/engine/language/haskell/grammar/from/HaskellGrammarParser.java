@@ -167,10 +167,114 @@ public class HaskellGrammarParser {
     {
         Field field = new Field();
         field.name = fielddeclContext.sig_vars().getText();
-        NamedType type = new NamedType();
-        type.name = fielddeclContext.ctype().getText();
-        field.type = type;
+        field.type = visitCTypeContext(fielddeclContext.ctype());
         return field;
+    }
+
+    private HaskellType visitATypeContext(HaskellParser.AtypeContext atypeContext)
+    {
+        if( atypeContext.ktype() != null) {
+
+            HaskellType type = visitKTypeContext(atypeContext.ktype());
+
+            //This is a list type
+            if( atypeContext.OpenSquareBracket() != null)
+            {
+                ListType listType = new ListType();
+                if( atypeContext.ktype() != null) {
+                    listType.type = type;
+                }
+                return listType;
+            }
+            return type;
+        }
+        else if( atypeContext.ntgtycon() != null) {
+            return visitNtgtyconContext(atypeContext.ntgtycon());
+        }
+
+        throw new RuntimeException("Not supported yet");
+    }
+
+    private HaskellType visitBTypeContext(HaskellParser.BtypeContext btypeContext)
+    {
+        if( btypeContext.tyapps() != null)
+        {
+            HaskellParser.TyappContext tyappContext = btypeContext.tyapps().tyapp(0);
+            if( tyappContext.atype() != null) {
+                return visitATypeContext(tyappContext.atype());
+            }
+        }
+        throw new RuntimeException("Not supported yet");
+    }
+
+    private HaskellType visitCTypeContext(HaskellParser.CtypeContext ctypeContext)
+    {
+        if( ctypeContext.type_() != null)
+        {
+            return visitTypeContext(ctypeContext.type_());
+        }
+        throw new RuntimeException("Not supported yet");
+    }
+
+    private HaskellType visitKTypeContext(HaskellParser.KtypeContext ktypeContext)
+    {
+        if( ktypeContext.ctype() != null)
+        {
+            return visitCTypeContext(ktypeContext.ctype());
+        }
+        throw new RuntimeException("Not supported yet");
+    }
+
+    private HaskellType visitNtgtyconContext(HaskellParser.NtgtyconContext ntgtyconContext)
+    {
+        if( ntgtyconContext.oqtycon() != null)
+        {
+            return visitOqtyconContext(ntgtyconContext.oqtycon());
+        }
+        throw new RuntimeException("Not supported yet");
+    }
+
+    private HaskellType visitOqtyconContext(HaskellParser.OqtyconContext oqtyconContext)
+    {
+        if( oqtyconContext.qtycon() != null)
+        {
+            return visitQtyconContext(oqtyconContext.qtycon());
+        }
+        throw new RuntimeException("Not supported yet");
+    }
+
+    private HaskellType visitQtyconContext(HaskellParser.QtyconContext qtyconContext)
+    {
+        if( qtyconContext.tycon() != null)
+        {
+            return visitTyconContext(qtyconContext.tycon());
+        }
+        throw new RuntimeException("Not supported yet");
+    }
+
+    private HaskellType visitTyconContext(HaskellParser.TyconContext tyconContext)
+    {
+        if( tyconContext.conid() != null)
+        {
+            return visitConidContext(tyconContext.conid());
+        }
+        throw new RuntimeException("Not supported yet");
+    }
+
+    private HaskellType visitConidContext(HaskellParser.ConidContext conidContext)
+    {
+        NamedType type = new NamedType();
+        type.name = conidContext.CONID().getText();
+        return type;
+    }
+
+    private HaskellType visitTypeContext(HaskellParser.Type_Context typeContext)
+    {
+        if( typeContext.btype() != null)
+        {
+            return visitBTypeContext(typeContext.btype());
+        }
+        throw new RuntimeException("Not supported yet");
     }
 
     private Deriving visitDerivingContext(HaskellParser.DerivingContext derivingContext)
