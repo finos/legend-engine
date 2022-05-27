@@ -29,6 +29,7 @@ Class meta::external::language::haskell::metamodel::Import
 
 Class meta::external::language::haskell::metamodel::ModuleElement
 {
+   documentation: String[0..1];
 }
 
 Class meta::external::language::haskell::metamodel::DataType extends ModuleElement
