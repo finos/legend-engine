@@ -19,6 +19,16 @@ public class TestGrammar {
     }
 
     @Test
+    public void testTypeWithListRoundtrip()
+    {
+        check("module Gs.Finance\n" +
+                "  where\n" +
+                "\n"+
+                "data Trade = Trade { id :: Int, notionals :: [Double] }\n" +
+                "    deriving (Eq, Ord, Show)\n");
+    }
+
+    @Test
     public void testEnumRoundtrip()
     {
         check("module Gs.Finance\n" +

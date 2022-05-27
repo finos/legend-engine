@@ -1,0 +1,46 @@
+import meta::external::language::haskell::binding::fromPure::tests::*;
+import meta::external::language::haskell::binding::fromPure::*;
+
+Class meta::external::language::haskell::binding::fromPure::tests::Trade
+{
+   type:String[1];
+   id:Integer[1];
+   npv:Float[1];
+   notionals:Float[*];
+   account : Account[1];
+}
+
+Enum meta::external::language::haskell::binding::fromPure::tests::AccountType
+{
+   TRADING,
+   WASH,
+   TEST
+}
+
+Class meta::external::language::haskell::binding::fromPure::tests::Account
+{
+   name : String[1];
+   enum : AccountType[1];
+   opened: DateTime[1];
+}
+
+function <<test.Test>> meta::external::language::haskell::binding::fromPure::tests::testPureToHaskell():Boolean[1]
+{
+  let res = buildHaskellModuleFromPureTypes(Trade);
+  assertSize($res.elements, 3);
+  let trade = $res.elements->cast(@meta::external::language::haskell::metamodel::DataType)
+                           ->filter(x | $x.name->toOne() == 'Trade');
+  assertEquals('Trade', $trade.name);
+  assertSize($trade.constructors, 1);
+  let tc = $trade.constructors->first()->cast(@meta::external::language::haskell::metamodel::RecordTypeConstructor);
+  assertEquals('Trade', $tc.name);
+  assertSize($tc.fields,5);
+  assertEquals(['type', 'id', 'npv', 'notionals', 'account'],$tc.fields.name);
+  assertEquals(['Text', 'Int', 'Double', 'ListType', 'NamedType'],$tc.fields.type.classifierGenericType.rawType.name);
+
+  let accountType = $res.elements->cast(@meta::external::language::haskell::metamodel::DataType)
+                           ->filter(x | $x.name->toOne() == 'AccountType');
+  assertEquals('AccountType', $accountType.name);
+  assertSize($accountType.constructors, 3);
+  assertEquals(['TRADING', 'WASH', 'TEST'], $accountType.constructors->cast(@meta::external::language::haskell::metamodel::NamedConstructor).name);
+}
