@@ -186,6 +186,20 @@ public class TestSemiStructuredFlattening extends AbstractTestSemiStructured
         Assert.assertEquals(snowflakeExpected, snowflakePlan);
     }
 
+    @Test
+    public void testSemiStructuredMultiFlatten()
+    {
+        String snowflakePlan = this.buildExecutionPlanString("flatten::semiStructuredMultiFlatten", snowflakeMapping, snowflakeRuntime);
+        String snowflakeExpected = "Relational\n" +
+                "(\n" +
+                "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address Name, String, \"\", \"\"), (Firm Address Line 0 No, Integer, \"\", \"\"), (Firm Address Name A, String, \"\", \"\"), (Firm Other Name, String, \"\", \"\")]\n" +
+                "  resultColumns = [(\"First Name\", VARCHAR(100)), (\"Firm Address Name\", \"\"), (\"Firm Address Line 0 No\", \"\"), (\"Firm Address Name A\", \"\"), (\"Firm Other Name\", \"\")]\n" +
+                "  sql = select \"root\".FIRSTNAME as \"First Name\", \"ss_flatten_0\".value['name']::varchar as \"Firm Address Name\", \"ss_flatten_0\".value['lines'][0]['lineno'] as \"Firm Address Line 0 No\", \"ss_flatten_1\".value['name']::varchar as \"Firm Address Name A\", \"ss_flatten_2\".value::varchar as \"Firm Other Name\" from PERSON_SCHEMA.PERSON_TABLE as \"root\" left outer join lateral flatten(input => \"root\".FIRM_DETAILS['addresses'], outer => true, recursive => false, mode => 'array') as \"ss_flatten_0\" on (1 = 1) left outer join lateral flatten(input => \"root\".FIRM_DETAILS['addresses'], outer => true, recursive => false, mode => 'array') as \"ss_flatten_1\" on (1 = 1 and \"ss_flatten_1\".value['name']::varchar = 'A') left outer join lateral flatten(input => \"root\".FIRM_DETAILS['otherNames']::varchar, outer => true, recursive => false, mode => 'array') as \"ss_flatten_2\" on (1 = 1)\n" +
+                "  connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
+                ")\n";
+        Assert.assertEquals(snowflakeExpected, snowflakePlan);
+    }
+
 
     public String modelResourcePath()
     {
