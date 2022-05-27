@@ -71,7 +71,8 @@ function meta::external::language::haskell::binding::fromPure::classToDataType(c
                                                                                                    | $type->toOne());
                                                                               let typeWithMulOpt = if($p.multiplicity.lowerBound.value == 0, | [^NamedType(name='Optional'), $typeWithMul], | $typeWithMul);                     
                                                                               ^Field(name=$p.name->toOne(),
-                                                                                    type=$typeWithMulOpt);
+                                                                                     documentation=$p->meta::pure::functions::doc::getDocs()->joinStrings('\n'),
+                                                                                     type=$typeWithMulOpt);
                                         )
     )
   );
@@ -82,6 +83,7 @@ function meta::external::language::haskell::binding::fromPure::enumerationToData
   ^meta::external::language::haskell::metamodel::DataType(
     documentation=$e->meta::pure::functions::doc::getDocs()->joinStrings('\n'),
     name=$e->enumName(),
-    constructors=$e->enumValues()->map( v | ^NamedConstructor(name=$v->toString()))
+    constructors=$e->enumValues()->map( v | ^NamedConstructor(name=$v->toString(),
+                                                              documentation=$v->cast(@meta::pure::metamodel::extension::AnnotatedElement)->meta::pure::functions::doc::getDocs()->joinStrings('\n')))
   );
 }

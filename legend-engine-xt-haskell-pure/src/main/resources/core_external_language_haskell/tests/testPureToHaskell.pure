@@ -5,6 +5,7 @@ Class meta::external::language::haskell::binding::fromPure::tests::Trade
 {
    type:String[0..1];
    id:Integer[1];
+   {doc.doc='Net Present Value'}
    npv:Float[1];
    notionals:Float[*];
    account : Account[1];
@@ -15,6 +16,7 @@ meta::external::language::haskell::binding::fromPure::tests::AccountType
 {
    TRADING,
    WASH,
+   {doc.doc='Used for testing'}
    TEST
 }
 
@@ -39,6 +41,7 @@ function <<test.Test>> meta::external::language::haskell::binding::fromPure::tes
   assertSize($tc.fields,5);
   assertEquals(['type', 'id', 'npv', 'notionals', 'account'],$tc.fields.name);
   assertEquals(['NamedType', 'Text', 'Int', 'Double', 'NamedType', 'ListType', 'NamedType'],$tc.fields.type.classifierGenericType.rawType.name);
+  assertEquals(['', '', 'Net Present Value', '', ''],$tc.fields.documentation);
 
   let accountType = $res.elements->cast(@meta::external::language::haskell::metamodel::DataType)
                            ->filter(x | $x.name->toOne() == 'AccountType');
@@ -46,6 +49,7 @@ function <<test.Test>> meta::external::language::haskell::binding::fromPure::tes
   assertEquals('Types of account', $accountType.documentation);
   assertSize($accountType.constructors, 3);
   assertEquals(['TRADING', 'WASH', 'TEST'], $accountType.constructors->cast(@meta::external::language::haskell::metamodel::NamedConstructor).name);
+  assertEquals(['', '', 'Used for testing'], $accountType.constructors->cast(@meta::external::language::haskell::metamodel::NamedConstructor).documentation);
 
   let account = $res.elements->cast(@meta::external::language::haskell::metamodel::DataType)
                            ->filter(x | $x.name->toOne() == 'Account');
