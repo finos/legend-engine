@@ -67,9 +67,10 @@ function meta::external::language::haskell::binding::fromPure::classToDataType(c
                                                                               if($type->isEmpty(), | println('Failed to map type:' + $p.genericType.rawType.name->toOne()), |'');
                                                                               let typeWithMul = if(!$p.multiplicity->hasUpperBound() || ($p.multiplicity.upperBound->toOne().value > 1),
                                                                                                    | ^ListType(type=$type->toOne()),
-                                                                                                   | $type->toOne());   
+                                                                                                   | $type->toOne());
+                                                                              let typeWithMulOpt = if($p.multiplicity.lowerBound.value == 0, | [^NamedType(name='Optional'), $typeWithMul], | $typeWithMul);                     
                                                                               ^Field(name=$p.name->toOne(),
-                                                                                    type=$typeWithMul);
+                                                                                    type=$typeWithMulOpt);
                                         )
     )
   );
