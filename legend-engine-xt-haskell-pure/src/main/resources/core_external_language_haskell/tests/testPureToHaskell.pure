@@ -31,7 +31,10 @@ meta::external::language::haskell::binding::fromPure::tests::Account
 
 function <<test.Test>> meta::external::language::haskell::binding::fromPure::tests::testPureToHaskell():Boolean[1]
 {
-  let res = buildHaskellModuleFromPureTypes(Trade);
+  let modules = haskellFromPureElements(Trade);
+  assertSize($modules, 1);
+  let res = $modules->first();
+  assertEquals('Meta.External.Language.Haskell.Binding.FromPure.Tests',$res.id);
   assertSize($res.elements, 3);
   let trade = $res.elements->cast(@meta::external::language::haskell::metamodel::DataType)
                            ->filter(x | $x.name->toOne() == 'Trade');
@@ -41,7 +44,7 @@ function <<test.Test>> meta::external::language::haskell::binding::fromPure::tes
   assertEquals('Trade', $tc.name);
   assertSize($tc.fields,5);
   assertEquals(['type', 'id', 'npv', 'notionals', 'account'],$tc.fields.name);
-  assertEquals(['Optional', 'Text', 'Int', 'Double', 'Optional', 'ListType', 'Account'],$tc.fields.type->map( t | $t->toString()));
+  assertEquals(['Optional', 'Text', 'Int', 'Double', 'Optional', '[Double]', 'Account'],$tc.fields.type->map( t | $t->toString()));
   assertEquals(['', '', 'Net Present Value', '', ''],$tc.fields.documentation);
   assertEquals(['deriving (Eq, Ord, Show)'], $trade.deriving->map(d | $d->toString()));
 

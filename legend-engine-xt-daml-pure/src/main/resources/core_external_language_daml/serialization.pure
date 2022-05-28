@@ -1,0 +1,6 @@
+import meta::external::language::haskell::metamodel::*;
+
+function meta::external::language::daml::format::toString(module:HaskellModule[1]):String[1]
+{
+  meta::external::language::haskell::format::toString($module);
+}  

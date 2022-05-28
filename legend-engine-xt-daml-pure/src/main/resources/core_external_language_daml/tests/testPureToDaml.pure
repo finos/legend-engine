@@ -15,7 +15,10 @@ Class meta::external::language::daml::binding::fromPure::tests::AllPrimitives
 
 function <<test.Test>> meta::external::language::daml::binding::fromPure::tests::testPureToDaml():Boolean[1]
 {
-  let res = buildDamlHaskellModuleFromPureTypes(AllPrimitives);
+  let modules = damlFromPureElements(AllPrimitives);
+  assertSize($modules, 1);
+  let res = $modules->first();
+  assertEquals('Meta.External.Language.Daml.Binding.FromPure.Tests', $res.id);
   assertSize($res.elements, 1);
 
   let data = $res.elements->first()->cast(@meta::external::language::haskell::metamodel::DataType);
