@@ -1,9 +1,43 @@
 import meta::external::language::haskell::metamodel::*;
 
+function meta::external::language::haskell::format::toString(module:HaskellModule[1]):String[1]
+{
+  'module (' + $module.id + ') with\n\n' +
+  $module.elements->map(e | $e->meta::external::language::haskell::format::toString())->makeString('','\n','')
+}
+
+function meta::external::language::haskell::format::toString(element:meta::external::language::haskell::metamodel::ModuleElement[1]):String[1]
+{
+  $element->match([
+    d:meta::external::language::haskell::metamodel::DataType[1] | $d->meta::external::language::haskell::format::toString()
+  ])
+}
+
+function meta::external::language::haskell::format::toString(dataType:meta::external::language::haskell::metamodel::DataType[1]):String[1]
+{
+  'data ' + $dataType.name + ' = ' +
+  $dataType.constructors->map(c | $c->meta::external::language::haskell::format::toString())->makeString('','','\n') +
+  $dataType.deriving->map(d | '  ' + $d->meta::external::language::haskell::format::toString())->makeString('','','\n')
+}
+
+function meta::external::language::haskell::format::toString(c:NamedConstructor[1]):String[1]
+{
+  $c.name + 
+  $c->match([
+    r:RecordTypeConstructor[1] | $r.fields->map(f | $f->meta::external::language::haskell::format::toString())->makeString(' {\n',',\n','\n}')
+  ])
+}
+
+function meta::external::language::haskell::format::toString(f:Field[1]):String[1]
+{
+  '  ' + $f.name + ' :: ' + $f.type->map(t | $t->meta::external::language::haskell::format::toString())->makeString('',' ', '')
+}  
+
 function meta::external::language::haskell::format::toString(type:HaskellType[1]):String[1]
 {
   $type->match([
     t:NamedTypeRef[1] | $t.name,
+    l:ListType[1] | '[' + $l.type->map(t | $t->meta::external::language::haskell::format::toString())->makeString('',' ', '') + ']',
     a:Any[1] | $type.classifierGenericType.rawType->toOne()->toString()
   ])
 }

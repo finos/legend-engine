@@ -1,0 +1,13 @@
+import meta::external::language::daml::generation::*;
+import meta::pure::generation::metamodel::*;
+
+function meta::external::language::daml::generation::generateDamlFromPure(config:DamlConfig[1]):GenerationOutput[*]
+{
+   $config.allPackageScopeElements()->generateDamlFromPure();
+}
+
+function meta::external::language::daml::generation::generateDamlFromPure(elements:PackageableElement[*]):GenerationOutput[*]
+{
+    let modules = $elements->toOneMany()->meta::external::language::daml::binding::fromPure::damlFromPureElements();
+    $modules->map(m | ^GenerationOutput(content=$m->meta::external::language::daml::format::toString(),fileName=$m.id->replace('.','_') + '.daml'));
+}

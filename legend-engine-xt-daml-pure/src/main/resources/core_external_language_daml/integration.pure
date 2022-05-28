@@ -1,0 +1,16 @@
+import meta::external::language::daml::generation::*;
+import meta::pure::generation::metamodel::*;
+
+Class meta::external::language::daml::generation::DamlConfig extends GenerationConfiguration
+{
+}
+
+function <<access.private>>  meta::external::language::daml::generation::defaultConfig():DamlConfig[1]
+{
+    ^DamlConfig();
+}
+
+function <<access.private, Generation.Configuration>>  meta::external::language::daml::generation::describeConfiguration():GenerationParameter[*]
+{
+    [];
+}

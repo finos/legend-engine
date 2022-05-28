@@ -192,6 +192,7 @@
         <module>legend-engine-xt-haskell-protocol</module>
         <module>legend-engine-xt-daml-grammar</module>
         <module>legend-engine-xt-daml-model</module>
+        <module>legend-engine-xt-daml</module>
     </modules>
 
     <properties>
@@ -1112,6 +1113,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-analytics-mapping-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-daml-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

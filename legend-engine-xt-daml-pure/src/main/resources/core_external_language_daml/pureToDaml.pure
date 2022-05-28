@@ -2,10 +2,10 @@ import meta::external::language::haskell::metamodel::*;
 import meta::external::language::haskell::binding::fromPure::*;
 import meta::external::language::daml::binding::fromPure::*;
 
-function meta::external::language::daml::binding::fromPure::buildDamlHaskellModuleFromPureTypes(cl:Class<Any>[1]):HaskellModule[1]
+function meta::external::language::daml::binding::fromPure::damlFromPureElements(elements:PackageableElement[1..*]):HaskellModule[*]
 {
   //DAML is based on Haskell but defines some of it's own primitive data types
-  $cl->buildHaskellModuleFromPureTypes(buildDamlPrimitiveTypesMap());
+  $elements->haskellFromPureElements(buildDamlPrimitiveTypesMap());
 }
 
 function meta::external::language::daml::binding::fromPure::buildDamlPrimitiveTypesMap():Map<Type,HaskellType>[1]
