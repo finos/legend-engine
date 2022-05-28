@@ -16,15 +16,15 @@ function meta::external::language::haskell::format::toString(element:meta::exter
 function meta::external::language::haskell::format::toString(dataType:meta::external::language::haskell::metamodel::DataType[1]):String[1]
 {
   'data ' + $dataType.name + ' = ' +
-  $dataType.constructors->map(c | $c->meta::external::language::haskell::format::toString())->makeString('','\n','') +
+  $dataType.constructors->map(c | $c->meta::external::language::haskell::format::toString())->makeString('',' | ','') +
   $dataType.deriving->map(d | ' ' + $d->meta::external::language::haskell::format::toString())->makeString('','','\n')
 }
 
 function meta::external::language::haskell::format::toString(c:NamedConstructor[1]):String[1]
 {
-  $c.name + 
   $c->match([
-    r:RecordTypeConstructor[1] | $r.fields->map(f | $f->meta::external::language::haskell::format::toString())->makeString(' {\n',',\n','\n}')
+    r:RecordTypeConstructor[1] | $c.name + $r.fields->map(f | $f->meta::external::language::haskell::format::toString())->makeString(' {\n',',\n','\n}'),
+    n:NamedConstructor[1] | $c.name
   ])
 }
 
