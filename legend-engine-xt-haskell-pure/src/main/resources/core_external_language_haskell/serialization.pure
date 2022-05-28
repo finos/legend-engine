@@ -10,5 +10,5 @@ function meta::external::language::haskell::format::toString(type:HaskellType[1]
 
 function meta::external::language::haskell::format::toString(deriving:Deriving[1]):String[1]
 {
-  $deriving.types->map(t | $t->meta::external::language::haskell::format::toString())->makeString('(',', ',')');
+  $deriving.types->map(t | $t->meta::external::language::haskell::format::toString())->makeString('deriving (',', ',')');
 }
