@@ -1,0 +1,25 @@
+import meta::external::language::daml::binding::fromPure::tests::*;
+import meta::external::language::daml::binding::fromPure::*;
+import meta::external::language::haskell::format::*;
+
+
+Class meta::external::language::daml::binding::fromPure::tests::AllPrimitives
+{
+  name:String[0..1];
+  id:Integer[1];
+  npv:Float[1];
+  today:StrictDate[1];
+  startTime:DateTime[1];
+  isOk:Boolean[1];
+}
+
+function <<test.Test>> meta::external::language::daml::binding::fromPure::tests::testPureToDaml():Boolean[1]
+{
+  let res = buildDamlHaskellModuleFromPureTypes(AllPrimitives);
+  assertSize($res.elements, 1);
+
+  let data = $res.elements->first()->cast(@meta::external::language::haskell::metamodel::DataType);
+  let dc = $data.constructors->first()->cast(@meta::external::language::haskell::metamodel::RecordTypeConstructor);
+  assertSize($dc.fields, 6);
+  assertEquals(['Optional', 'Text', 'Int', 'Decimal', 'Date', 'Time', 'Bool'],$dc.fields.type->map( t | $t->toString()));
+}

@@ -3,8 +3,13 @@ import meta::external::language::haskell::binding::fromPure::*;
 
 function meta::external::language::haskell::binding::fromPure::buildHaskellModuleFromPureTypes(cl:Class<Any>[1]):HaskellModule[1]
 {  
+  $cl->buildHaskellModuleFromPureTypes(buildDefaultPrimitiveTypesMap());
+}
+
+function meta::external::language::haskell::binding::fromPure::buildHaskellModuleFromPureTypes(cl:Class<Any>[1],primTypes:Map<Type,HaskellType>[1]):HaskellModule[1]
+{
   let types = $cl->scanTypes([]);
-  let typesMap = seedTypes($types, buildDefaultPrimitiveTypesMap());
+  let typesMap = seedTypes($types, $primTypes);
   let res = transformPureTypesToHaskell($types, $typesMap);
   $res;
 }
