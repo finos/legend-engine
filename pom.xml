@@ -232,6 +232,7 @@
         <exec.maven.plugin.version>3.0.0</exec.maven.plugin.version>
         <build-helper.maven.plugin.version>3.2.0</build-helper.maven.plugin.version>
         <dockerfile.maven.plugin.version>1.4.13</dockerfile.maven.plugin.version>
+        <maven.plugin.puppycrawl.version>8.25</maven.plugin.puppycrawl.version>
     </properties>
 
     <scm>
