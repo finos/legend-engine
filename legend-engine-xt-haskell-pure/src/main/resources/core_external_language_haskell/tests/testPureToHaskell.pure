@@ -1,5 +1,6 @@
 import meta::external::language::haskell::binding::fromPure::tests::*;
 import meta::external::language::haskell::binding::fromPure::*;
+import meta::external::language::haskell::format::*;
 
 Class meta::external::language::haskell::binding::fromPure::tests::Trade
 {
@@ -40,7 +41,7 @@ function <<test.Test>> meta::external::language::haskell::binding::fromPure::tes
   assertEquals('Trade', $tc.name);
   assertSize($tc.fields,5);
   assertEquals(['type', 'id', 'npv', 'notionals', 'account'],$tc.fields.name);
-  assertEquals(['NamedType', 'Text', 'Int', 'Double', 'NamedType', 'ListType', 'NamedType'],$tc.fields.type.classifierGenericType.rawType.name);
+  assertEquals(['Optional', 'Text', 'Int', 'Double', 'Optional', 'ListType', 'Account'],$tc.fields.type->map( t | $t->toString()));
   assertEquals(['', '', 'Net Present Value', '', ''],$tc.fields.documentation);
 
   let accountType = $res.elements->cast(@meta::external::language::haskell::metamodel::DataType)

@@ -89,6 +89,10 @@ Class meta::external::language::haskell::metamodel::Double extends HaskellType
 {
 }
 
+Class meta::external::language::haskell::metamodel::Decimal extends HaskellType
+{
+}
+
 Class meta::external::language::haskell::metamodel::Text extends HaskellType
 {
 }
@@ -118,5 +122,6 @@ Class meta::external::language::haskell::metamodel::TupleType extends HaskellTyp
 
 Class meta::external::language::haskell::metamodel::NamedType extends HaskellType
 {
-    name:String[1];
+  module:String[0..1];
+  name:String[1];
 }

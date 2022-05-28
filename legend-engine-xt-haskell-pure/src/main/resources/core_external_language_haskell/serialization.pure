@@ -1,0 +1,9 @@
+import meta::external::language::haskell::metamodel::*;
+
+function meta::external::language::haskell::format::toString(type:HaskellType[1]):String[1]
+{
+  $type->match([
+    t:NamedType[1] | $t.name,
+    a:Any[1] | $type.classifierGenericType.rawType->toOne()->toString()
+  ])
+}
