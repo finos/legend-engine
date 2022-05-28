@@ -23,12 +23,10 @@ function <<test.Test>> meta::external::language::daml::generation::tests::testGe
 '  name :: Text,\n' +
 '  age :: Int,\n' +
 '  addresses :: Optional [Address]\n' +
-'}\n' +
-'  deriving (Eq, Ord, Show)\n' +
-'\n' + 
+'} deriving (Eq, Ord, Show)\n' +
+'\n'+
 'data Address = Address {\n' +
 '  street :: Text\n' +
-'}\n' + 
-'  deriving (Eq, Ord, Show)\n'
+'} deriving (Eq, Ord, Show)\n'
 ,$out.content);
 }
