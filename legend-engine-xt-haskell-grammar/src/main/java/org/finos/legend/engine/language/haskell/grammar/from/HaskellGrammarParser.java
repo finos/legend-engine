@@ -133,7 +133,7 @@ public class HaskellGrammarParser {
             DataType data = new DataType();
             data.name = ty_declContext.tycl_hdr().getText();
             data.constructors = ListIterate.flatCollect(ty_declContext.constrs().constrs1().constr(), this::visitConstrContext);
-            data.derivings = ListIterate.collect(ty_declContext.derivings().deriving(), this::visitDerivingContext);
+            data.deriving = ListIterate.collect(ty_declContext.derivings().deriving(), this::visitDerivingContext);
             return data;
         }
 
@@ -269,7 +269,7 @@ public class HaskellGrammarParser {
 
     private HaskellType visitConidContext(HaskellParser.ConidContext conidContext)
     {
-        NamedType type = new NamedType();
+        NamedTypeRef type = new NamedTypeRef();
         type.name = conidContext.CONID().getText();
         return type;
     }
@@ -286,12 +286,32 @@ public class HaskellGrammarParser {
     private Deriving visitDerivingContext(HaskellParser.DerivingContext derivingContext)
     {
         Deriving deriving = new Deriving();
-        deriving.deriving = ListIterate.collect(derivingContext.deriv_clause_types().deriv_types().ktypedoc(), this::visitKtypedocContext);
+        deriving.types = ListIterate.flatCollect(derivingContext.deriv_clause_types().deriv_types().ktypedoc(), this::visitKtypedocContext);
         return deriving;
     }
 
-    private String visitKtypedocContext(HaskellParser.KtypedocContext ktypedocContext)
+    private List<HaskellType> visitKtypedocContext(HaskellParser.KtypedocContext ktypedocContext)
     {
-        return ktypedocContext.getText();
+        return visitCtypedocContext(ktypedocContext.ctypedoc());
+    }
+
+    private List<HaskellType> visitCtypedocContext(HaskellParser.CtypedocContext ctypedocContext)
+    {
+        if( ctypedocContext.typedoc() != null)
+        {
+            return visitTypedocContext(ctypedocContext.typedoc());
+        }
+        throw new RuntimeException("Not supported yet");
+
+    }
+
+    private List<HaskellType> visitTypedocContext(HaskellParser.TypedocContext typedocContext)
+    {
+        if( typedocContext.btype() != null)
+        {
+            return visitBTypeContext(typedocContext.btype());
+        }
+        throw new RuntimeException("Not supported yet");
+
     }
 }

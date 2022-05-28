@@ -40,12 +40,12 @@ Class meta::external::language::haskell::metamodel::DataType extends ModuleEleme
 {
     name: String[1];
     constructors: NamedConstructor[*];
-    derivings:Deriving[*];
+    deriving:Deriving[*];
 }
 
 Class meta::external::language::haskell::metamodel::Deriving
 {
-    deriving:String[*];
+    types:HaskellType[*];
 }
 
 Class meta::external::language::haskell::metamodel::NamedConstructor extends meta::external::language::haskell::metamodel::AnnotatedElement
@@ -120,7 +120,7 @@ Class meta::external::language::haskell::metamodel::TupleType extends HaskellTyp
     second:HaskellType[1];
 }
 
-Class meta::external::language::haskell::metamodel::NamedType extends HaskellType
+Class meta::external::language::haskell::metamodel::NamedTypeRef extends HaskellType
 {
   module:String[0..1];
   name:String[1];
