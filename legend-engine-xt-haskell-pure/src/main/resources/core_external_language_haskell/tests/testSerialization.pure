@@ -1,0 +1,27 @@
+import meta::external::language::haskell::binding::fromPure::tests::*;
+import meta::external::language::haskell::binding::fromPure::*;
+
+function <<test.Test>> meta::external::language::haskell::format::tests::testToString():Boolean[1]
+{
+  let modules = haskellFromPureElements(Trade);
+  assertSize($modules, 1);
+  assertEquals(
+'module (Meta.External.Language.Haskell.Binding.FromPure.Tests) with\n' +
+'\n' +
+'data Trade = Trade {\n' +
+'  type :: Optional Text,\n' +
+'  id :: Int,\n' +
+'  npv :: Double,\n' +
+'  notionals :: Optional [Double],\n' +
+'  account :: Account\n' +
+'} deriving (Eq, Ord, Show)\n' +
+'\n' +
+'data Account = Account {\n' +
+'  name :: Text,\n' +
+'  enum :: AccountType,\n' +
+'  opened :: DateTime\n' +
+'} deriving (Eq, Ord, Show)\n' +
+'\n' + 
+'data AccountType = TRADING | WASH | TEST deriving (Eq, Ord, Show)\n'
+, $modules->first()->toOne()->meta::external::language::haskell::format::toString());
+}  
