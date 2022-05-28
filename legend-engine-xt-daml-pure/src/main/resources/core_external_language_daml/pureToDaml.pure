@@ -17,8 +17,8 @@ function meta::external::language::daml::binding::fromPure::buildDamlPrimitiveTy
          pair(Float, ^meta::external::language::haskell::metamodel::Decimal()),
          pair(String, ^meta::external::language::haskell::metamodel::Text()),
          pair(Boolean, ^meta::external::language::haskell::metamodel::Bool()),
-         pair(DateTime , ^meta::external::language::haskell::metamodel::NamedType(module='DA',name='Time')),
-         pair(StrictDate , ^meta::external::language::haskell::metamodel::NamedType(module='DA',name='Date')),
+         pair(DateTime , ^meta::external::language::haskell::metamodel::NamedTypeRef(module='DA',name='Time')),
+         pair(StrictDate , ^meta::external::language::haskell::metamodel::NamedTypeRef(module='DA',name='Date')),
          pair(Number , ^meta::external::language::haskell::metamodel::Num())
       ])
 }

@@ -61,11 +61,10 @@ public class HaskellGrammarComposer {
             }
         }
 
-        for(Deriving deriving: dataType.derivings)
+        for(Deriving deriving: dataType.deriving)
         {
-            builder.append("\n    deriving (");
+            builder.append("\n    ");
             renderDeriving(builder, deriving);
-            builder.append(")");
         }
     }
 
@@ -100,13 +99,13 @@ public class HaskellGrammarComposer {
 
     protected void renderFieldConstructor(StringBuilder builder, Field field) {
         builder.append(field.name).append(" ").append(this.typeColonConvention).append(" ");
-        renderTypes(builder, field.type);
+        renderTypes(builder, field.type, " ");
     }
 
-    private void renderTypes(StringBuilder builder, List<HaskellType> types) {
+    private void renderTypes(StringBuilder builder, List<HaskellType> types, String separator) {
         boolean isFirst = true;
         for(HaskellType type: types) {
-            if(!isFirst) builder.append(" ");
+            if(!isFirst) builder.append(separator);
             isFirst = false;
 
             renderType(builder, type);
@@ -114,21 +113,23 @@ public class HaskellGrammarComposer {
     }
 
     private void renderType(StringBuilder builder, HaskellType type) {
-        if (type instanceof NamedType)
+        if (type instanceof NamedTypeRef)
         {
-            NamedType namedType = (NamedType)type;
+            NamedTypeRef namedType = (NamedTypeRef)type;
             builder.append(namedType.name);
         }
         else if (type instanceof ListType)
         {
             builder.append("[");
-            renderTypes(builder, ((ListType)type).type);
+            renderTypes(builder, ((ListType)type).type, " ");
             builder.append("]");
         }
     }
 
     private void renderDeriving(StringBuilder builder, Deriving deriving) {
-        builder.append(String.join(", ",deriving.deriving));
+        builder.append("deriving (");
+        renderTypes(builder, deriving.types, ", ");
+        builder.append(")");
     }
 
     private void renderDocumentation(StringBuilder builder, String docs)
