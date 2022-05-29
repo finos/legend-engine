@@ -34,7 +34,9 @@ function meta::external::format::protobuf::metamodel::serialization::toString(p:
          e:meta::external::format::protobuf::metamodel::Enumeration[1]|$e->toString($currentPackage),
          field:Field[1]| $field->toString($currentPackage),
          o:OneOf[1]| '  oneof ' + $o.name + ' {\n' + $o.field->map(f | '  ' + $f->toString($currentPackage))->joinStrings('\n') + '\n  }',
-         mo:MessageOption[1]| $mo.option->meta::external::format::protobuf::metamodel::serialization::toString()
+         mo:MessageOption[1]| $mo.option->meta::external::format::protobuf::metamodel::serialization::toString(),
+         rn:ReservedFieldNames[1] | $rn->meta::external::format::protobuf::metamodel::serialization::toString(),
+         rr:ReservedFieldRanges[1] | $rr->meta::external::format::protobuf::metamodel::serialization::toString()
       ]
    )
 }
@@ -73,6 +75,16 @@ function meta::external::format::protobuf::metamodel::serialization::toString(s:
 function meta::external::format::protobuf::metamodel::serialization::toString(field:Field[1],currentPackage:String[1]):String[1]
 {
    '  ' + if($field.repeated, | 'repeated ', | '') + meta::external::format::protobuf::metamodel::serialization::toString($field.type, $currentPackage)+ ' ' + $field.name + ' = ' + $field.number->toString() + ';'
+}
+
+function meta::external::format::protobuf::metamodel::serialization::toString(rn:ReservedFieldNames[1]):String[1]
+{
+   $rn.names->map( n | '\"' + $n + '\"')->makeString('  reserved ',', ',';')
+}
+
+function meta::external::format::protobuf::metamodel::serialization::toString(rn:ReservedFieldRanges[1]):String[1]
+{
+   $rn.ranges->map(r | if($r.top->isEmpty(), | $r.bottom->toString(), | $r.bottom->toString() + ' to ' + $r.top->toOne()->toString()))->makeString('  reserved ',', ',';')
 }
 
 function meta::external::format::protobuf::metamodel::serialization::toString(t:ProtoBufType[1],currentPackage:String[1]):String[1]

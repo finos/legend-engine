@@ -82,13 +82,26 @@ public class TestProtobuf3
     }
 
     @Test
-    public void testOneOf() {
+    public void testOneOf()
+    {
         String message = "syntax = \"proto3\";\n" +
                 "message SampleMessage {\n" +
                 "  oneof test_oneof {\n" +
                 "    string name = 4;\n" +
                 "    SubMessage sub_message = 9;\n" +
                 "  }\n" +
+                "}";
+
+        check(message);
+    }
+
+    @Test
+    public void testReserved()
+    {
+        String message = "syntax = \"proto3\";\n" +
+                "message Foo {\n" +
+                "  reserved 2, 15, 9 to 11;\n" +
+                "  reserved \"foo\", \"bar\";\n" +
                 "}";
 
         check(message);

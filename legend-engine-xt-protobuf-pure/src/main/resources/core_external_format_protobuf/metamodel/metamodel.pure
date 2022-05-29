@@ -131,7 +131,13 @@ Class meta::external::format::protobuf::metamodel::ReservedFieldNames extends me
 
 Class meta::external::format::protobuf::metamodel::ReservedFieldRanges extends meta::external::format::protobuf::metamodel::ProtoItemDefinition
 {
-  numbers:Integer[*];
+  ranges:Range[*];
+}
+
+Class meta::external::format::protobuf::metamodel::Range
+{
+  bottom:Integer[1];
+  top:Integer[0..1];
 }
 
 Class meta::external::format::protobuf::metamodel::Service extends meta::external::format::protobuf::metamodel::ProtoItemDefinition
