@@ -145,7 +145,7 @@ public class HaskellGrammarParser {
         return visitConstrTyappsContext(constrContext.constr_stuff().constr_tyapps().constr_tyapp());
     }
 
-    protected List<NamedConstructor> visitConstrTyappsContext(List<HaskellParser.Constr_tyappContext> constr_tyappsContext)
+    private List<NamedConstructor> visitConstrTyappsContext(List<HaskellParser.Constr_tyappContext> constr_tyappsContext)
     {
         MutableList<NamedConstructor> constructors = Lists.mutable.of();
         for(HaskellParser.Constr_tyappContext constr_tyappContext : constr_tyappsContext)
