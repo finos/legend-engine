@@ -4,6 +4,7 @@ import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.haskell.grammar.from.antlr4.HaskellLexer;
 import org.finos.legend.engine.language.haskell.grammar.from.antlr4.HaskellParser;
@@ -15,7 +16,7 @@ import java.util.List;
 
 public class HaskellGrammarParser {
 
-    private HaskellGrammarParser()
+    protected HaskellGrammarParser()
     {
     }
 
@@ -140,27 +141,36 @@ public class HaskellGrammarParser {
         throw new RuntimeException("Unsupported declaration");
     }
 
-    private List<NamedConstructor> visitConstrContext(HaskellParser.ConstrContext constrContext)
+    private List<NamedConstructor> visitConstrContext(HaskellParser.ConstrContext constrContext) {
+        return visitConstrTyappsContext(constrContext.constr_stuff().constr_tyapps().constr_tyapp());
+    }
+
+    protected List<NamedConstructor> visitConstrTyappsContext(List<HaskellParser.Constr_tyappContext> constr_tyappsContext)
     {
-        List<NamedConstructor> constructors = Lists.mutable.of();
-        for(HaskellParser.Constr_tyappContext constr_tyappContext : constrContext.constr_stuff().constr_tyapps().constr_tyapp())
+        MutableList<NamedConstructor> constructors = Lists.mutable.of();
+        for(HaskellParser.Constr_tyappContext constr_tyappContext : constr_tyappsContext)
         {
             if(constr_tyappContext.tyapp().atype() != null)
             {
                 HaskellParser.AtypeContext atypeContext = constr_tyappContext.tyapp().atype();
-                if(atypeContext.fielddecls() != null)
-                {
-                    ((RecordTypeConstructor)constructors.get(constructors.size() - 1)).fields = ListIterate.collect(atypeContext.fielddecls().fielddecl(), this::visitFieldDeclContext);
+                if(atypeContext.fielddecls() != null) {
+                    RecordTypeConstructor constructor = new RecordTypeConstructor();
+                    constructor.fields = visitFielddeclsContext(atypeContext.fielddecls());
+                    NamedConstructor nc = constructors.get(constructors.size() - 1);
+                    constructor.name = nc.name;
+                    constructors.set(constructors.size() - 1, constructor);
                 }
-                else
-                {
-                    RecordTypeConstructor constr = new RecordTypeConstructor();
-                    constr.name = atypeContext.getText();
-                    constructors.add(constr);
+                else {
+                    constructors.add(visitATypeContextAsConstructor(constr_tyappContext.tyapp().atype()));
                 }
             }
         }
         return constructors;
+    }
+
+    private List<Field> visitFielddeclsContext(HaskellParser.FielddeclsContext fielddeclsContext)
+    {
+        return ListIterate.collect(fielddeclsContext.fielddecl(),this::visitFieldDeclContext);
     }
 
     private Field visitFieldDeclContext(HaskellParser.FielddeclContext fielddeclContext)
@@ -171,25 +181,42 @@ public class HaskellGrammarParser {
         return field;
     }
 
-    private List<HaskellType> visitATypeContext(HaskellParser.AtypeContext atypeContext)
-    {
-        if( atypeContext.ktype() != null) {
-
-            List<HaskellType> type = visitKTypeContext(atypeContext.ktype());
+    private HaskellType visitATypeContextAsType(HaskellParser.AtypeContext atypeContext) {
+        if (atypeContext.ktype() != null) {
+             List<HaskellType> type = visitKTypeContext(atypeContext.ktype());
 
             //This is a list type
-            if( atypeContext.OpenSquareBracket() != null)
-            {
+            if (atypeContext.OpenSquareBracket() != null) {
                 ListType listType = new ListType();
-                if( atypeContext.ktype() != null) {
+                if (atypeContext.ktype() != null) {
                     listType.type = type;
                 }
-                return Lists.fixedSize.of(listType);
+                return listType;
             }
-            return type;
+            else {
+                if(type.size() != 1) throw new RuntimeException("Unexpected");
+                return type.get(0);
+            }
+        } else {
+            NamedConstructor nc = visitATypeContextAsConstructor(atypeContext);
+            NamedTypeRef tr = new NamedTypeRef();
+            tr.name = nc.name;
+            return tr;
         }
-        else if( atypeContext.ntgtycon() != null) {
-            return Lists.fixedSize.of(visitNtgtyconContext(atypeContext.ntgtycon()));
+    }
+
+    private NamedConstructor visitATypeContextAsConstructor(HaskellParser.AtypeContext atypeContext)
+    {
+        if( atypeContext.fielddecls() != null)
+        {
+            RecordTypeConstructor constructor = new RecordTypeConstructor();
+            constructor.fields = visitFielddeclsContext(atypeContext.fielddecls());
+            return constructor;
+        }
+        else if (atypeContext.ntgtycon() != null) {
+            NamedConstructor type = new DataTypeConstructor();
+            type.name = visitNtgtyconContext(atypeContext.ntgtycon());
+            return type;
         }
 
         throw new RuntimeException("Not supported yet");
@@ -199,7 +226,7 @@ public class HaskellGrammarParser {
     {
         if( btypeContext.tyapps() != null)
         {
-            return ListIterate.flatCollect(btypeContext.tyapps().tyapp(), this::visitTyappContext);
+            return ListIterate.collect(btypeContext.tyapps().tyapp(), this::visitTyappContext);
         }
         throw new RuntimeException("Not supported yet");
     }
@@ -222,7 +249,7 @@ public class HaskellGrammarParser {
         throw new RuntimeException("Not supported yet");
     }
 
-    private HaskellType visitNtgtyconContext(HaskellParser.NtgtyconContext ntgtyconContext)
+    private String visitNtgtyconContext(HaskellParser.NtgtyconContext ntgtyconContext)
     {
         if( ntgtyconContext.oqtycon() != null)
         {
@@ -231,7 +258,7 @@ public class HaskellGrammarParser {
         throw new RuntimeException("Not supported yet");
     }
 
-    private HaskellType visitOqtyconContext(HaskellParser.OqtyconContext oqtyconContext)
+    private String visitOqtyconContext(HaskellParser.OqtyconContext oqtyconContext)
     {
         if( oqtyconContext.qtycon() != null)
         {
@@ -240,7 +267,7 @@ public class HaskellGrammarParser {
         throw new RuntimeException("Not supported yet");
     }
 
-    private HaskellType visitQtyconContext(HaskellParser.QtyconContext qtyconContext)
+    private String visitQtyconContext(HaskellParser.QtyconContext qtyconContext)
     {
         if( qtyconContext.tycon() != null)
         {
@@ -249,16 +276,16 @@ public class HaskellGrammarParser {
         throw new RuntimeException("Not supported yet");
     }
 
-    private List<HaskellType> visitTyappContext(HaskellParser.TyappContext tyappContext)
+    private HaskellType visitTyappContext(HaskellParser.TyappContext tyappContext)
     {
         if( tyappContext.atype() != null)
         {
-            return visitATypeContext(tyappContext.atype());
+            return visitATypeContextAsType(tyappContext.atype());
         }
         throw new RuntimeException("Not supported yet");
     }
 
-    private HaskellType visitTyconContext(HaskellParser.TyconContext tyconContext)
+    private String visitTyconContext(HaskellParser.TyconContext tyconContext)
     {
         if( tyconContext.conid() != null)
         {
@@ -267,11 +294,9 @@ public class HaskellGrammarParser {
         throw new RuntimeException("Not supported yet");
     }
 
-    private HaskellType visitConidContext(HaskellParser.ConidContext conidContext)
+    private String visitConidContext(HaskellParser.ConidContext conidContext)
     {
-        NamedTypeRef type = new NamedTypeRef();
-        type.name = conidContext.CONID().getText();
-        return type;
+        return conidContext.CONID().getText();
     }
 
     private List<HaskellType> visitTypeContext(HaskellParser.Type_Context typeContext)
