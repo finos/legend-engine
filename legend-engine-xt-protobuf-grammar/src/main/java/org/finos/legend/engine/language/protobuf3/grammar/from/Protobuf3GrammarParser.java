@@ -27,6 +27,7 @@ import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.protobuf3.grammar.from.antlr4.Protobuf3Lexer;
 import org.finos.legend.engine.language.protobuf3.grammar.from.antlr4.Protobuf3Parser;
 import org.finos.legend.engine.protocol.protobuf3.metamodel.BlockLiteral;
@@ -52,6 +53,7 @@ import org.finos.legend.engine.protocol.protobuf3.metamodel.Message;
 import org.finos.legend.engine.protocol.protobuf3.metamodel.MessagePtr;
 import org.finos.legend.engine.protocol.protobuf3.metamodel.MessageType;
 import org.finos.legend.engine.protocol.protobuf3.metamodel.Option;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.OneOf;
 import org.finos.legend.engine.protocol.protobuf3.metamodel.ProtoBufType;
 import org.finos.legend.engine.protocol.protobuf3.metamodel.ProtoFile;
 import org.finos.legend.engine.protocol.protobuf3.metamodel.ProtoImport;
@@ -342,6 +344,11 @@ public class Protobuf3GrammarParser
                 Enumeration enumeration = visitEnumDef(elementContext.enumDef());
                 content.add(enumeration);
             }
+            else if (elementContext.oneof() != null )
+            {
+                OneOf oneOf = visitOneofContext(elementContext.oneof());
+                content.add(oneOf);
+            }
             else
             {
                 throw new RuntimeException("Unknown message element");
@@ -350,6 +357,31 @@ public class Protobuf3GrammarParser
         }
         message.content = content;
         return message;
+    }
+
+    private OneOf visitOneofContext(Protobuf3Parser.OneofContext oneofContext) {
+        OneOf oneOf = new OneOf();
+        oneOf.name = oneofContext.oneofName().ident().getText();
+        oneOf.field = ListIterate.collect(oneofContext.oneofField(), this::visitOneofFieldContext);
+        return oneOf;
+    }
+
+    private Field visitOneofFieldContext(Protobuf3Parser.OneofFieldContext oneofFieldContext) {
+        Field field = new Field();
+        field.name = oneofFieldContext.fieldName().ident().getText();
+        field.number = Long.parseLong(oneofFieldContext.fieldNumber().intLit().getText());
+        field.type = visitProtoType(oneofFieldContext.type_());
+        if( oneofFieldContext.fieldOptions() != null) {
+            field.options = ListIterate.collect(oneofFieldContext.fieldOptions().fieldOption(), this::visitFieldOptionContext);
+        }
+        return field;
+    }
+
+    private Option visitFieldOptionContext(Protobuf3Parser.FieldOptionContext fieldOptionContext){
+        Option option = new Option();
+        option.name = fieldOptionContext.optionName().getText();
+        option.value = visitConstant(fieldOptionContext.constant());
+        return option;
     }
 
     private Service visitServiceDef(Protobuf3Parser.ServiceDefContext serviceDefContext)

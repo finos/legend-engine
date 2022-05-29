@@ -82,8 +82,20 @@ public class TestProtobuf3
     }
 
     @Test
-    public void testService()
-    {
+    public void testOneOf() {
+        String message = "syntax = \"proto3\";\n" +
+                "message SampleMessage {\n" +
+                "  oneof test_oneof {\n" +
+                "    string name = 4;\n" +
+                "    SubMessage sub_message = 9;\n" +
+                "  }\n" +
+                "}";
+
+        check(message);
+    }
+
+    @Test
+    public void testService() {
         String service =
                 "syntax = \"proto3\";\n" +
                         "package helloworld;\n" +
