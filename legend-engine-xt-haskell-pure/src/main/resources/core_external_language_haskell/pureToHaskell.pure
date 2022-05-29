@@ -6,15 +6,25 @@ function meta::external::language::haskell::binding::fromPure::haskellFromPureEl
   $elements->haskellFromPureElements(buildDefaultPrimitiveTypesMap());
 }
 
-function meta::external::language::haskell::binding::fromPure::haskellFromPureElements(elements:PackageableElement[1..*],primTypes:Map<Type,HaskellType>[1]):HaskellModule[*]
+function meta::external::language::haskell::binding::fromPure::haskellFromPureElements(inputs:PackageableElement[1..*],primTypes:Map<Type,HaskellType>[1]):HaskellModule[*]
 {
+  let elements = $inputs->map( i | $i->selectTransformableElements());
   let classes = $elements->filter(e | $e->instanceOf(Class))->cast(@Class<Any>);
-  let types = $classes->fold({t,l|$t->scanTypes($l)}, []);
-  let everything = $types->concatenate($elements)->distinct();
+  let types = $classes->fold({t,l|$l->concatenate($t->scanTypes($l))}, []);
   let typesByPackage = $types->groupBy(t | $t->cast(@PackageableElement).package->toOne());
   let typesMap = seedTypes($types, $primTypes);
   let defaultDerivings = ^Deriving(types=[^NamedTypeRef(name='Eq'),^NamedTypeRef(name='Ord'),^NamedTypeRef(name='Show')]);
   $typesByPackage->keyValues()->map(p|haskellModuleFromPurePackageElements($p.first,$p.second.values,$typesMap,$defaultDerivings));
+}
+
+function meta::external::language::haskell::binding::fromPure::selectTransformableElements(e:PackageableElement[1]):PackageableElement[*]
+{
+  $e->match([
+    p:Package[1] | $p->getAllPackageElements(true)->map(pe | $pe->selectTransformableElements()),
+    c:Class<Any>[1] | $c,
+    e:Enumeration<Any>[1] | $e,
+    a:Any[1] | []
+  ])
 }
 
 function meta::external::language::haskell::binding::fromPure::haskellModuleFromPurePackageElements(p:Package[1],elements:Type[*],typesMap:Map<Type,HaskellType>[1], deriving:Deriving[*]):HaskellModule[1]
@@ -31,7 +41,8 @@ function meta::external::language::haskell::binding::fromPure::purePackageToHask
 
 function meta::external::language::haskell::binding::fromPure::scanTypes(t:Type[1], processed:Type[*]):Type[*]
 {
-   if (!$processed->contains($t),
+  //println('fold');
+   let r = if (!$processed->contains($t),
        |$t->concatenate(if($t->instanceOf(Class),
                          |$t->cast(@Class<Any>)->allProperties().genericType.rawType->distinct()
                             ->concatenate($t->cast(@Class<Any>)->meta::pure::functions::meta::findAllSpecializations())
@@ -41,6 +52,8 @@ function meta::external::language::haskell::binding::fromPure::scanTypes(t:Type[
                        )),
        |[]
    );
+   //println($r);
+   $r;
 }
 
 function meta::external::language::haskell::binding::fromPure::buildDefaultPrimitiveTypesMap():Map<Type,HaskellType>[1]

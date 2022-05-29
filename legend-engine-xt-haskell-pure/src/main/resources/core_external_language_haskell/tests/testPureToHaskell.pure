@@ -61,3 +61,12 @@ function <<test.Test>> meta::external::language::haskell::binding::fromPure::tes
                            ->filter(x | $x.name->toOne() == 'Account');
   assertEquals('A financial account', $account.documentation); 
 }
+
+function <<test.Test>> meta::external::language::haskell::binding::fromPure::tests::testPurePackageToHaskell():Boolean[1]
+{
+  let modules = haskellFromPureElements(meta::external::language::haskell::binding::fromPure::tests);
+  assertSize($modules, 1);
+  let res = $modules->first();
+  assertEquals('Meta.External.Language.Haskell.Binding.FromPure.Tests',$res.id);
+  assertSize($res.elements, 3);
+}

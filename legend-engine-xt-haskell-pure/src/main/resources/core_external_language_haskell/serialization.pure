@@ -42,7 +42,7 @@ function meta::external::language::haskell::format::toString(type:HaskellType[1]
   $type->match([
     t:NamedTypeRef[1] | $t.name,
     l:ListType[1] | '[' + $l.type->map(t | $t->meta::external::language::haskell::format::toString())->makeString('',' ', '') + ']',
-    a:Any[1] | $type.classifierGenericType.rawType->toOne()->toString()
+    a:Any[1] | $type->type().name->toOne()
   ])
 }
 
