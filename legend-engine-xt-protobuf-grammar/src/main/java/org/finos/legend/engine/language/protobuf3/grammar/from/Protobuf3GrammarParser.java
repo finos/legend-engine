@@ -312,7 +312,7 @@ public class Protobuf3GrammarParser
             {
                 Enum protoEnum = new Enum();
                 protoEnum.constant = enumElement.enumField().ident().getText();
-                protoEnum.constantNumber = Long.parseLong(enumElement.enumField().intLit().getText());
+                protoEnum.constantNumber = visitIntLitContext(enumElement.enumField().intLit());
                 enums.add(protoEnum);
             }
             enumeration.values = enums;
@@ -333,7 +333,7 @@ public class Protobuf3GrammarParser
                 Field field = new Field();
                 field.type = visitProtoType(elementContext.field().type_());
                 field.name = elementContext.field().fieldName().ident().getText();
-                field.number = Long.parseLong(elementContext.field().fieldNumber().intLit().getText());
+                field.number = visitIntLitContext(elementContext.field().fieldNumber().intLit());
                 field.repeated = elementContext.field().REPEATED() != null;
                 content.add(field);
             }
@@ -387,7 +387,7 @@ public class Protobuf3GrammarParser
     private Field visitOneofFieldContext(Protobuf3Parser.OneofFieldContext oneofFieldContext) {
         Field field = new Field();
         field.name = oneofFieldContext.fieldName().ident().getText();
-        field.number = Long.parseLong(oneofFieldContext.fieldNumber().intLit().getText());
+        field.number = visitIntLitContext(oneofFieldContext.fieldNumber().intLit());
         field.type = visitProtoType(oneofFieldContext.type_());
         if( oneofFieldContext.fieldOptions() != null) {
             field.options = ListIterate.collect(oneofFieldContext.fieldOptions().fieldOption(), this::visitFieldOptionContext);

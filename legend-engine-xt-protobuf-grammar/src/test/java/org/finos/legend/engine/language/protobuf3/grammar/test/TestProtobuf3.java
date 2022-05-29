@@ -82,6 +82,19 @@ public class TestProtobuf3
     }
 
     @Test
+    public void testEnumNonSequentialNumbers()
+    {
+        String message = "syntax = \"proto3\";\n" +
+        "enum PhoneType {\n" +
+                "  MOBILE = 0;\n" +
+                "  HOME = 3;\n" +
+                "  WORK = 7;\n" +
+                "}";
+
+        check(message);
+    }
+
+    @Test
     public void testOneOf()
     {
         String message = "syntax = \"proto3\";\n" +
