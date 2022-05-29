@@ -57,6 +57,7 @@ public class PureIDELight extends PureIDEServer
                     .with(this.buildCore("legend-engine-xt-protobuf-pure", "external-format-protobuf"))
                     .with(this.buildCore("legend-engine-xt-xml-pure", "external-format-xml"))
                     .with(this.buildCore("legend-engine-xt-graphQL-pure", "external-query-graphql"))
+                    .with(this.buildCore("legend-engine-xt-protobuf-pure", "external-format-protobuf"))
                     .with(this.buildCore("legend-engine-pure-ide-light-metadata-pure", "ide_metadata"))
                     .with(this.buildCore(coreFilesLocation + "/legend-pure-code-compiled-core", ""))
                     .with(this.buildCore(coreFilesLocation + "/legend-pure-code-compiled-core-external-shared", "external-shared"))
