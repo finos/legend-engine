@@ -8,6 +8,7 @@ function meta::external::language::haskell::format::toString(module:HaskellModul
 
 function meta::external::language::haskell::format::toString(element:meta::external::language::haskell::metamodel::ModuleElement[1]):String[1]
 {
+  $element->cast(@meta::external::language::haskell::metamodel::AnnotatedElement)->meta::external::language::haskell::format::toString() + 
   $element->match([
     d:meta::external::language::haskell::metamodel::DataType[1] | $d->meta::external::language::haskell::format::toString()
   ])
@@ -15,8 +16,10 @@ function meta::external::language::haskell::format::toString(element:meta::exter
 
 function meta::external::language::haskell::format::toString(dataType:meta::external::language::haskell::metamodel::DataType[1]):String[1]
 {
-  'data ' + $dataType.name + ' = ' +
-  $dataType.constructors->map(c | $c->meta::external::language::haskell::format::toString())->makeString('',' | ','') +
+  'data ' + $dataType.name + 
+  if($dataType.constructors->size() > 1, | '\n  = ', | ' = ') +
+  $dataType.constructors->map(c | 
+          $c->meta::external::language::haskell::format::toString())->makeString('','\n  | ','') +
   $dataType.deriving->map(d | ' ' + $d->meta::external::language::haskell::format::toString())->makeString('','','\n')
 }
 
@@ -25,7 +28,8 @@ function meta::external::language::haskell::format::toString(c:NamedConstructor[
   $c->match([
     r:RecordTypeConstructor[1] | $c.name + $r.fields->map(f | $f->meta::external::language::haskell::format::toString())->makeString(' {\n',',\n','\n}'),
     n:NamedConstructor[1] | $c.name
-  ])
+  ]) + 
+  $c->cast(@meta::external::language::haskell::metamodel::AnnotatedElement)->meta::external::language::haskell::format::toString(true, '\n  ') 
 }
 
 function meta::external::language::haskell::format::toString(f:Field[1]):String[1]
@@ -45,4 +49,15 @@ function meta::external::language::haskell::format::toString(type:HaskellType[1]
 function meta::external::language::haskell::format::toString(deriving:Deriving[1]):String[1]
 {
   $deriving.types->map(t | $t->meta::external::language::haskell::format::toString())->makeString('deriving (',', ',')');
+}
+
+function meta::external::language::haskell::format::toString(annotatedElement:meta::external::language::haskell::metamodel::AnnotatedElement[1]):String[1]
+{
+  $annotatedElement->meta::external::language::haskell::format::toString(false,'');
+}
+function meta::external::language::haskell::format::toString(annotatedElement:meta::external::language::haskell::metamodel::AnnotatedElement[1],below:Boolean[1],prefix:String[1]):String[1]
+{
+  if($annotatedElement.documentation->isEmpty()
+          , | ''
+          , | $prefix + if($below, | '-- ^ ', |'-- | ') + $annotatedElement.documentation->toOne() + '\n');
 }

@@ -16,12 +16,19 @@ function <<test.Test>> meta::external::language::haskell::format::tests::testToS
 '  account :: Account\n' +
 '} deriving (Eq, Ord, Show)\n' +
 '\n' +
+'-- | A financial account\n' +
 'data Account = Account {\n' +
 '  name :: Text,\n' +
 '  enum :: AccountType,\n' +
 '  opened :: DateTime\n' +
 '} deriving (Eq, Ord, Show)\n' +
 '\n' + 
-'data AccountType = TRADING | WASH | TEST deriving (Eq, Ord, Show)\n'
+'-- | Types of account\n' +
+'data AccountType\n' +
+'  = TRADING\n' +
+'  | WASH\n' +
+'  | TEST\n' + 
+'  -- ^ Used for testing\n' +
+' deriving (Eq, Ord, Show)\n'
 , $modules->first()->toOne()->meta::external::language::haskell::format::toString());
 }  

@@ -45,7 +45,7 @@ function <<test.Test>> meta::external::language::haskell::binding::fromPure::tes
   assertSize($tc.fields,5);
   assertEquals(['type', 'id', 'npv', 'notionals', 'account'],$tc.fields.name);
   assertEquals(['Optional', 'Text', 'Int', 'Double', 'Optional', '[Double]', 'Account'],$tc.fields.type->map( t | $t->toString()));
-  assertEquals(['', '', 'Net Present Value', '', ''],$tc.fields.documentation);
+  assertEquals(['Net Present Value'],$tc.fields.documentation);
   assertEquals(['deriving (Eq, Ord, Show)'], $trade.deriving->map(d | $d->toString()));
 
   let accountType = $res.elements->cast(@meta::external::language::haskell::metamodel::DataType)
@@ -54,7 +54,7 @@ function <<test.Test>> meta::external::language::haskell::binding::fromPure::tes
   assertEquals('Types of account', $accountType.documentation);
   assertSize($accountType.constructors, 3);
   assertEquals(['TRADING', 'WASH', 'TEST'], $accountType.constructors->cast(@meta::external::language::haskell::metamodel::NamedConstructor).name);
-  assertEquals(['', '', 'Used for testing'], $accountType.constructors->cast(@meta::external::language::haskell::metamodel::NamedConstructor).documentation);
+  assertEquals(['Used for testing'], $accountType.constructors->cast(@meta::external::language::haskell::metamodel::NamedConstructor).documentation);
   assertEquals(['deriving (Eq, Ord, Show)'], $accountType.deriving->map(d | $d->toString()));
 
   let account = $res.elements->cast(@meta::external::language::haskell::metamodel::DataType)
