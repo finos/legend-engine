@@ -10,9 +10,9 @@ public class DamlGenerationConfigFromFileGenerationSpecificationBuilder {
     public static DamlGenerationConfig build(FileGenerationSpecification fileGeneration)
     {
         Assert.assertTrue(fileGeneration.type.equals(FileGenerationType.daml.name()), () -> "File generation of type of rosetta expected, got '" + fileGeneration.type + "'");
-        DamlGenerationConfig rosettaConfig = new DamlGenerationConfig();
+        DamlGenerationConfig config = new DamlGenerationConfig();
         ConfigBuilder.noConfigurationPropertiesCheck(fileGeneration);
-        ConfigBuilder.setScopeElements(fileGeneration, rosettaConfig);
-        return rosettaConfig;
+        ConfigBuilder.setScopeElements(fileGeneration, config);
+        return config;
     }
 }
