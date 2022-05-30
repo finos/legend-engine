@@ -49,6 +49,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.snapshot.NontemporalSnapshot;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.snapshot.UnitemporalSnapshot;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.sink.ObjectStorageSink;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.sink.FinancialCloudSink;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.sink.RelationalSink;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.sink.Sink;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.targetshape.*;
@@ -278,6 +279,10 @@ public class PersistenceParseTreeWalker
         {
             return visitObjectStorageSink(ctx.objectStorageSink());
         }
+        else if (ctx.financialCloudSink() != null)
+        {
+            return visitFinancialCloudSink(ctx.financialCloudSink());
+        }
         throw new EngineException("Unrecognized sink", sourceInformation, EngineErrorType.PARSER);
     }
 
@@ -305,6 +310,18 @@ public class PersistenceParseTreeWalker
         // binding
         PersistenceParserGrammar.BindingPointerContext bindingPointerContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.bindingPointer(), "binding", sink.sourceInformation);
         sink.binding = visitBindingPointer(bindingPointerContext, sink.sourceInformation);
+
+        return sink;
+    }
+
+    private FinancialCloudSink visitFinancialCloudSink(PersistenceParserGrammar.FinancialCloudSinkContext ctx)
+    {
+        FinancialCloudSink sink = new FinancialCloudSink();
+        sink.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // connection
+        PersistenceParserGrammar.SinkConnectionContext sinkConnectionContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.sinkConnection(), "connection", sink.sourceInformation);
+        sink.connection = visitConnectionFromSink(sinkConnectionContext, sink.sourceInformation);
 
         return sink;
     }

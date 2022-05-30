@@ -97,6 +97,83 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
     }
 
     @Test
+    public void persistenceToFinCloud()
+    {
+        test("###Persistence\n" +
+                "import test::*;\n" +
+                "Persistence test::TestPersistence\n" +
+                "{\n" +
+                "  doc: 'test doc';\n" +
+                "  trigger: Manual;\n" +
+                "  serviceInput:\n" +
+                "  #{\n" +
+                "    JsonModelConnection\n" +
+                "    {\n" +
+                "      class: org::dxl::Animal;\n" +
+                "      url: 'my_url2';\n" +
+                "    }\n" +
+                "  }#\n" +
+                "  service: test::service::Service;\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    sink: FinCloud\n" +
+                "    {\n" +
+                "      connection:\n" +
+                "      #{\n" +
+                "        JsonModelConnection\n" +
+                "        {\n" +
+                "          class: org::dxl::Animal;\n" +
+                "          url: 'my_url2';\n" +
+                "        }\n" +
+                "      }#\n" +
+                "    }\n" +
+                "    ingestMode: BitemporalSnapshot\n" +
+                "    {\n" +
+                "      transactionMilestoning: BatchId\n" +
+                "      {\n" +
+                "        batchIdInName: 'batchIdIn';\n" +
+                "        batchIdOutName: 'batchIdOut';\n" +
+                "      }\n" +
+                "      validityMilestoning: DateTime\n" +
+                "      {\n" +
+                "        dateTimeFromName: 'FROM_Z';\n" +
+                "        dateTimeThruName: 'THRU_Z';\n" +
+                "        derivation: SourceSpecifiesFromAndThruDateTime\n" +
+                "        {\n" +
+                "          sourceDateTimeFromField: sourceFrom;\n" +
+                "          sourceDateTimeThruField: sourceThru;\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }\n" +
+                "    targetShape: Flat\n" +
+                "    {\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      partitionFields: [propertyA, propertyB];\n" +
+                "      deduplicationStrategy: MaxVersion\n" +
+                "      {\n" +
+                "        versionField: version;\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "  notifier:\n" +
+                "  {\n" +
+                "    notifyees:\n" +
+                "    [\n" +
+                "      Email\n" +
+                "      {\n" +
+                "        address: 'x.y@z.com';\n" +
+                "      },\n" +
+                "      PagerDuty\n" +
+                "      {\n" +
+                "        url: 'https://x.com';\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  }\n" +
+                "}\n");
+    }
+
+    @Test
     public void persistenceMultiFlat()
     {
         test("###Persistence\n" +

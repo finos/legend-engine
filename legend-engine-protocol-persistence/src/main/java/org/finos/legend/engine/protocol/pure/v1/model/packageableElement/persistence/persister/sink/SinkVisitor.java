@@ -18,4 +18,5 @@ public interface SinkVisitor<T>
 {
     T visit(RelationalSink val);
     T visit(ObjectStorageSink val);
+    T visit(FinancialCloudSink val);
 }

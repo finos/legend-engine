@@ -49,6 +49,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.snapshot.NontemporalSnapshot;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.snapshot.UnitemporalSnapshot;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.sink.ObjectStorageSink;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.sink.FinancialCloudSink;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.sink.RelationalSink;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.sink.Sink;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.sink.SinkVisitor;
@@ -269,6 +270,16 @@ public class HelperPersistenceGrammarComposer
                     renderConnection(val.connection, "connection", indentLevel + 1, context) +
                     getTabString(indentLevel) + "}\n";
         }
+
+        @Override
+        public String visit(FinancialCloudSink val)
+        {
+            return getTabString(indentLevel) + "sink: FinCloud\n" +
+                    getTabString(indentLevel) + "{\n" +
+                    renderConnection(val.connection, "connection", indentLevel + 1, context) +
+                    getTabString(indentLevel) + "}\n";
+        }
+
 
         private static String renderBinding(String binding, int indentLevel)
         {

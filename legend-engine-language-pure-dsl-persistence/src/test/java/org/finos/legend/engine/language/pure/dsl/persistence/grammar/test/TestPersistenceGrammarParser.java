@@ -518,6 +518,41 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     }
 
     @Test
+    public void finCloudSinkConnection()
+    {
+        test("###Persistence\n" +
+                "\n" +
+                "Persistence test::TestPersistence \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
+                "  persister: Streaming\n" +
+                "  {\n" +
+                "    sink: FinCloud\n" +
+                "    {\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [10:11-12:5]: Field 'connection' is required");
+        test("###Persistence\n" +
+                "\n" +
+                "Persistence test::TestPersistence \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
+                "  persister: Streaming\n" +
+                "  {\n" +
+                "    sink: FinCloud\n" +
+                "    {\n" +
+                "      connection: test::Con;\n" +
+                "      connection: test::Con;\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [10:11-14:5]: Field 'connection' should be specified only once");
+    }
+
+    @Test
     public void persisterBatchSink()
     {
         test("###Persistence\n" +

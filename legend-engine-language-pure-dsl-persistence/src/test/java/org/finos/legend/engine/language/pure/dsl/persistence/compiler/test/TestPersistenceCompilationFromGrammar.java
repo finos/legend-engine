@@ -826,6 +826,76 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
     }
 
     @Test
+    public void finCloudSinkNoConnection()
+    {
+        test("Class test::Person\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::ServiceResult\n" +
+                "{\n" +
+                "   deleted: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::Mapping ()\n" +
+                "\n" +
+                "###Service\n" +
+                "Service test::Service \n" +
+                "{\n" +
+                "  pattern : 'test';\n" +
+                "  documentation : 'test';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: src: test::Person[1]|$src.name;\n" +
+                "    mapping: test::Mapping;\n" +
+                "    runtime:\n" +
+                "    #{\n" +
+                "      connections: [];\n" +
+                "    }#;\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'test';\n" +
+                "    asserts: [];\n" +
+                "  }\n" +
+                "}\n" +
+                "###ExternalFormat\n" +
+                "Binding test::Binding\n" +
+                "{\n" +
+                "  contentType: 'application/json';\n" +
+                "  modelIncludes: [\n" +
+                "    test::Person\n" +
+                "  ];\n" +
+                "}\n" +
+                "###Persistence\n" +
+                "\n" +
+                "Persistence test::TestPersistence \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    sink: FinCloud\n" +
+                "    {\n" +
+                "    }\n" +
+                "    ingestMode: NontemporalSnapshot\n" +
+                "    {\n" +
+                "      auditing: None;\n" +
+                "    }\n" +
+                "    targetShape: Flat\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ServiceResult;\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [52:11-54:5]: Field 'connection' is required");
+    }
+
+    @Test
     public void objectStorageSinkNoConnection()
     {
         test("Class test::Person\n" +

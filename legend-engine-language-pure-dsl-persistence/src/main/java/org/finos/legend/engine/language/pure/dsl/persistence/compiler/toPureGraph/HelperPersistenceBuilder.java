@@ -52,6 +52,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.snapshot.NontemporalSnapshot;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.snapshot.UnitemporalSnapshot;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.sink.ObjectStorageSink;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.sink.FinancialCloudSink;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.sink.RelationalSink;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.sink.Sink;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.sink.SinkVisitor;
@@ -326,6 +327,13 @@ public class HelperPersistenceBuilder
         {
             return new Root_meta_pure_persistence_metamodel_persister_sink_ObjectStorageSink_Impl("")
                     ._binding(buildBinding(val.binding, val.sourceInformation, context))
+                    ._connection(buildConnection(val.connection, true, val.sourceInformation, context));
+        }
+
+        @Override
+        public Root_meta_pure_persistence_metamodel_persister_sink_Sink visit(FinancialCloudSink val)
+        {
+            return new Root_meta_pure_persistence_metamodel_persister_sink_FinancialCloudSink_Impl("")
                     ._connection(buildConnection(val.connection, true, val.sourceInformation, context));
         }
     }

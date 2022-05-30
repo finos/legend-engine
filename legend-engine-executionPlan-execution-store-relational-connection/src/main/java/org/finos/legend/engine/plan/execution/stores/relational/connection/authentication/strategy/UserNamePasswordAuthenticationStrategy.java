@@ -28,14 +28,19 @@ import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.PlaintextUserPasswordCredential;
 import org.finos.legend.engine.shared.core.identity.credential.PrivateKeyCredential;
 import org.finos.legend.engine.shared.core.vault.Vault;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.security.PrivateKey;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 public class UserNamePasswordAuthenticationStrategy extends AuthenticationStrategy
 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserNamePasswordAuthenticationStrategy.class);
+
     private final String userNameVaultReference;
     private final String passwordVaultReference;
 
@@ -68,6 +73,10 @@ public class UserNamePasswordAuthenticationStrategy extends AuthenticationStrate
         // PlaintextUserPasswordCredential credential = (PlaintextUserPasswordCredential) getDatabaseCredential(identityState);
 
         PlaintextUserPasswordCredential credential = this.resolveCredential(properties, this.userNameVaultReference, this.passwordVaultReference);
+        LOGGER.info("UserNamePasswordAuthenticationStrategy.handleConnections is here");
+        LOGGER.info("UserNamePasswordAuthenticationStrategy.handleConnections got credential {}", credential.getUser());
+        LOGGER.info("UserNamePasswordAuthenticationStrategy.handleConnections connection properties {}", connectionProperties);
+
         connectionProperties.put("user", credential.getUser());
         connectionProperties.put("password", credential.getPassword());
         return Tuples.pair(url, connectionProperties);
@@ -75,6 +84,7 @@ public class UserNamePasswordAuthenticationStrategy extends AuthenticationStrate
 
     private PlaintextUserPasswordCredential resolveCredential(Properties properties, String userNameVaultReference, String passwordVaultReference)
     {
+        LOGGER.info("UserNamePasswordAuthenticationStrategy.resolveCredential for {} and {}", userNameVaultReference, passwordVaultReference);
         IdentityState identityState = ConnectionStateManager.getInstance().getIdentityStateUsing(properties);
         if (!identityState.getCredentialSupplier().isPresent())
         {
