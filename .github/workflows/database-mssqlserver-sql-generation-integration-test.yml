@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-name: Database BigQuery Integration Tests
+name: Database MSSQLServer SQL Generation Integration Tests
 
 env:
   CI_DEPLOY_USERNAME: ${{ secrets.CI_DEPLOY_USERNAME }}
@@ -30,7 +30,6 @@ jobs:
   build:
     # NOTE: we cannot run this action in fork because secrets are not accessible from forks
     # See https://community.sonarsource.com/t/github-action-ci-build-fail-with-set-the-sonar-token-env-variable/38997
-    if: github.repository == 'finos/legend-engine'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
@@ -52,20 +51,13 @@ jobs:
         run: mvn -v
       - name: Download deps and plugins
         run: mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies
-      - name: Configure GCP credentials With Github Actions
-        uses: google-github-actions/auth@v0
-        with:
-          credentials_json: ${{ secrets.BIGQUERY_INTEGRATION_SA1_JSON }}
-      - name: 'Set up Cloud SDK'
-        uses: 'google-github-actions/setup-gcloud@v0'
-      - name: 'Use gcloud CLI'
-        run: 'gcloud info'
-      - name: Build + Run Integration Tests
+      - name: Build
         env:
           MAVEN_OPTS: -Xmx4000m
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_INTEGRATION_USER1_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_INTEGRATION_USER1_SECRET_ACCESS_KEY }}
         run: |
           mvn clean install -DskipTests=true
-          mvn -P run-bigquery-integration -pl legend-engine-xt-relationalStore-executionPlan-connection-tests -Dtest="ExternalIntegration*BigQuery" test
-          mvn -P run-bigquery-integration -pl legend-engine-xt-relationalStore-executionPlan-connection-authentication -Dtest="ExternalIntegration*BigQuery*" test
+      - name : Run Sql Generation Tests
+        env:
+          MAVEN_OPTS: -Xmx4000m
+        run :
+          mvn -pl legend-engine-server -Dtest="Test_Relational_DbSpecific_SqlServer_UsingPureClientTestSuite" test

@@ -64,6 +64,8 @@ jobs:
       - name: Download deps and plugins
         run: mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies
       - name: Build + Run Integration Tests
+        env:
+          MAVEN_OPTS: -Xmx4000m
         run: |
           mvn clean install -DskipTests=true
           mvn -P run-databricks-integration -pl legend-engine-xt-relationalStore-executionPlan-connection-tests  -Dtest="ExternalIntegration*Databricks*" test
