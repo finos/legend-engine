@@ -68,4 +68,4 @@ jobs:
         run: |
           mvn clean install -DskipTests=true
           mvn -P run-bigquery-integration -pl legend-engine-xt-relationalStore-executionPlan-connection-tests -Dtest="ExternalIntegration*BigQuery" test
-          mvn -P run-bigquery-integration -pl legend-engine-xt-relationalStore-executionPlan-execution-store-authentication -Dtest="ExternalIntegration*BigQuery*" test
+          mvn -P run-bigquery-integration -pl legend-engine-xt-relationalStore-executionPlan-connection-authentication -Dtest="ExternalIntegration*BigQuery*" test
