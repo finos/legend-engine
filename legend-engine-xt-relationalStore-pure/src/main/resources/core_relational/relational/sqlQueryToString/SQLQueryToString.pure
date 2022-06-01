@@ -188,6 +188,11 @@ function meta::relational::functions::sqlQueryToString::createDbConfig( dbType:D
    );
 }
 
+function meta::relational::functions::sqlQueryToString::getDatabaseTypes():DatabaseType[*]
+{
+  [DatabaseType.DB2, DatabaseType.H2, DatabaseType.MemSQL, DatabaseType.Sybase, DatabaseType.SybaseIQ, DatabaseType.Composite, DatabaseType.Postgres, DatabaseType.SqlServer, DatabaseType.Snowflake, DatabaseType.Hive, DatabaseType.Presto, DatabaseType.BigQuery, DatabaseType.Redshift, DatabaseType.Databricks];
+}
+
 function meta::relational::functions::sqlQueryToString::createDbExtension(dbType:DatabaseType[1], dbTimeZone:String[0..1]):DbExtension[1]
 {
    let isBooleanLiteralSupported = !$dbType->in([DatabaseType.SybaseIQ, DatabaseType.DB2]);
