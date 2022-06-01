@@ -16,25 +16,31 @@ import meta::relational::runtime::*;
 import meta::relational::dbTestRunner::*;
 import meta::pure::alloy::connections::*;
 import meta::pure::functions::meta::*;
+import meta::pure::test::*;
 
-function <<test.Test>> meta::relational::tests::dbSpecificTests::redshift::runSQLQueryTests():Boolean[1]
+function <<test.TestCollection>> meta::relational::tests::dbSpecificTests::redshift::runSQLQueryTestsParam(): PureTestCollection[1]
 {
-  let connection= meta::relational::dbTestRunner::getTestConnection(DatabaseType.Redshift, meta::pure::router::extension::defaultRelationalExtensions());
+  let connection = meta::relational::dbTestRunner::getTestConnection(DatabaseType.Redshift, meta::pure::router::extension::defaultRelationalExtensions());
+  
+  meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions
+          ->collectParameterizedTests('Redshift',
+                ^DbTestConfig(dbType=DatabaseType.Redshift, connection=$connection), [],
+                meta::relational::tests::dbSpecificTests::redshift::runSQLQueryTestsParamFilter_FunctionDefinition_1__Boolean_1_
+                );
+}
 
-  let allTests = collectTests(meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions);
+function meta::relational::tests::dbSpecificTests::redshift::runSQLQueryTestsParamFilter(f:FunctionDefinition<Any>[1]):Boolean[1]
+{
+  // currently hardcoding unsupported funcs, In future fetch this from db extensions and skip
+  let unsupportedDynaFunctions = [ 'adjust', 'dateDiff', 'datePart','dayOfMonth', 'dayOfWeekNumber', 
+                                   'firstDayOfMonth', 'firstDayOfQuarter','firstDayOfThisMonth','firstDayOfThisQuarter', 'firstDayOfThisYear','firstDayOfWeek' ,'firstDayOfYear' , 
+                                   'indexOf', 'left', 'length', 'ltrim',
+                                  'mostRecentDayOfWeek','previousDayOfWeek',
+                                  'quarter', 'quarterNumber'];
 
-  let unsupportedDynaFunctions = ['adjust', 'dayOfWeekNumber', 'dayOfMonth', 'quarter', 'quarterNumber', 'datePart',
-                                  'dateDiff', 'firstDayOfWeek' , 'previousDayOfWeek', 'mostRecentDayOfWeek', 'firstDayOfMonth', 'firstDayOfThisMonth',
-                                   'firstDayOfQuarter', 'firstDayOfThisQuarter', 'firstDayOfYear' , 'firstDayOfThisYear' ,
-                                   'length', 'indexOf', 'ltrim', 'left' ];
-
-  let failingSupportedDynaFunctions =[
-          'joinStrings'
-    ];
-
-  let ignoredTests= $unsupportedDynaFunctions->concatenate($failingSupportedDynaFunctions)->map(dynaFuncName |
+  let ignoredTests= $unsupportedDynaFunctions->map(dynaFuncName |
               let dynaFuncPackageName = 'meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::' + $dynaFuncName;
               $dynaFuncPackageName->pathToElement()->cast(@Package)->collectTests(););
 
-  runTestsWith($allTests, $ignoredTests, DatabaseType.Redshift, $connection,  []);
+  !$ignoredTests->contains($f);
 }

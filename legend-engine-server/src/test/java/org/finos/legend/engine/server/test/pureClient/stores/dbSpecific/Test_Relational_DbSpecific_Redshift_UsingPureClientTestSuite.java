@@ -19,7 +19,7 @@ import junit.framework.Test;
 public class Test_Relational_DbSpecific_Redshift_UsingPureClientTestSuite
         extends Test_Relational_DbSpecific_UsingPureClientTestSuite
 {
-    public static Test suite()
+    public static Test suite() throws Exception
     {
         return createSuite("meta::relational::tests::dbSpecificTests::redshift","org/finos/legend/engine/server/test/userTestConfig_withRedshiftTestConnection.json");
     }
