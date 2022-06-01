@@ -15,13 +15,13 @@
 package org.finos.legend.engine.plan.execution.result.object;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.eclipse.collections.impl.Counter;
-import org.finos.legend.engine.plan.execution.result.serialization.ExecutionResultObjectMapperFactory;
-import org.finos.legend.engine.plan.execution.result.serialization.Serializer;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.stream.Stream;
+import org.eclipse.collections.impl.Counter;
+import org.finos.legend.engine.plan.execution.result.serialization.ExecutionResultObjectMapperFactory;
+import org.finos.legend.engine.plan.execution.result.serialization.Serializer;
 
 public class StreamingObjectResultJSONSerializer extends Serializer
 {
@@ -65,14 +65,25 @@ public class StreamingObjectResultJSONSerializer extends Serializer
 
     private void streamObjects(OutputStream outputStream)
     {
+        this.serializeStream(this.streamingObjectResult.getObjectStream(), outputStream);
+    }
+
+    private void streamCollection(OutputStream outputStream, List collection) throws IOException
+    {
+        this.serializeStream(collection.stream(), outputStream);
+        outputStream.flush();
+    }
+
+    private void serializeStream(Stream<Object> objects, OutputStream outputStream)
+    {
         final Counter counter = new Counter(1);
-        this.streamingObjectResult.getObjectStream().forEach(val ->
+        objects.forEach(val ->
         {
             try
             {
                 if (counter.getCount() > 1)
                 {
-                    outputStream.write(",".getBytes());
+                    outputStream.write(b_comma);
 
                 }
                 objectMapper.writeValue(outputStream, val);
@@ -83,17 +94,6 @@ public class StreamingObjectResultJSONSerializer extends Serializer
                 throw new RuntimeException(e);
             }
         });
-    }
-
-    private void streamCollection(OutputStream outputStream, List collection) throws IOException
-    {
-        for (int i = 0; i < collection.size() - 1; i++)
-        {
-            objectMapper.writeValue(outputStream, collection.get(i));
-            outputStream.write(b_comma);
-        }
-        objectMapper.writeValue(outputStream, collection.get(collection.size() - 1));
-        outputStream.flush();
     }
 }
 
