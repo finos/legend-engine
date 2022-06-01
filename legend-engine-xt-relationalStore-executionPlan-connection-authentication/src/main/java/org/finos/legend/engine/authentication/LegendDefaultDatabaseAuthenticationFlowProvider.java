@@ -20,6 +20,7 @@ import org.finos.legend.engine.authentication.flows.BigQueryWithGCPApplicationDe
 import org.finos.legend.engine.authentication.flows.BigQueryWithGCPWorkloadIdentityFederationFlow;
 import org.finos.legend.engine.authentication.flows.DatabricksWithApiTokenFlow;
 import org.finos.legend.engine.authentication.flows.H2StaticWithTestUserPasswordFlow;
+import org.finos.legend.engine.authentication.flows.PostgresStaticWithUserPasswordFlow;
 import org.finos.legend.engine.authentication.flows.RedshiftWithUserPasswordFlow;
 import org.finos.legend.engine.authentication.flows.SnowflakeWithKeyPairFlow;
 import org.finos.legend.engine.authentication.flows.SqlServerStaticWithUserPasswordFlow;
