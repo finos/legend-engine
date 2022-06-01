@@ -82,7 +82,7 @@ public class TestServiceTestRunner
     @Test
     public void testSucceedingServiceWithMultiParam() throws Exception
     {
-        test("legend-sdlc-test-services-with-multi-param.json","test::legend::service::execution::test::m2m::simpleJsonServiceMultiParam", TestResult.SUCCESS, false);
+        test("legend-sdlc-test-services-with-multi-param.json", "test::legend::service::execution::test::m2m::simpleJsonServiceMultiParam", TestResult.SUCCESS, false);
     }
 
     @Test

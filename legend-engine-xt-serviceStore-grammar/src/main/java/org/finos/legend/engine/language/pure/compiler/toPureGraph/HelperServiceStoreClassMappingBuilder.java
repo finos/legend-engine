@@ -25,12 +25,52 @@ import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtens
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtensionLoader;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.mapping.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.mapping.RootServiceStoreClassMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.mapping.ServiceMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.mapping.ServiceRequestBodyBuildInfo;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.mapping.ServiceRequestBuildInfo;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.mapping.ServiceRequestParameterBuildInfo;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.mapping.ServiceRequestParametersBuildInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.path.Path;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.*;
+import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
+import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_validation_BindingDetail;
+import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_validation_SuccessfulBindingDetail;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_BooleanTypeReference;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_ComplexTypeReference;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_FloatTypeReference;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_IntegerTypeReference;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_mapping_EmbeddedServiceStoreSetImplementation;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_mapping_EmbeddedServiceStoreSetImplementation_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_mapping_ServiceRequestBodyBuildInfo;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_mapping_ServiceRequestBodyBuildInfo_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_mapping_ServiceRequestBuildInfo;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_mapping_ServiceRequestBuildInfo_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_mapping_ServiceRequestParameterBuildInfo;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_mapping_ServiceRequestParameterBuildInfo_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_mapping_ServiceRequestParametersBuildInfo;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_mapping_ServiceRequestParametersBuildInfo_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_mapping_ServiceStorePropertyMapping;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_mapping_ServiceStorePropertyMapping_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_mapping_RootServiceInstanceSetImplementation;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_mapping_RootServiceInstanceSetImplementation_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_mapping_ServiceMapping;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_mapping_ServiceMapping_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_Service;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_ServiceParameter;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_StringTypeReference;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_TypeReference;
+import org.finos.legend.pure.generated.Root_meta_pure_mapping_MappingClass_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_LambdaFunction_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_property_Property_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_path_Path_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_relationship_Generalization_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl;
+import org.finos.legend.pure.generated.core_pure_corefunctions_metaExtension;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EmbeddedSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMappingsImplementation;
@@ -310,7 +350,7 @@ public class HelperServiceStoreClassMappingBuilder
 
         if (sourceDataType != pureClass)
         {
-            throw new EngineException("Response type of source service should match mapping class. Found response type : " + getElementFullPath((PackageableElement)sourceDataType, context.pureModel.getExecutionSupport()) + " does not match mapping class : " + getElementFullPath(pureClass, context.pureModel.getExecutionSupport()), sourceInformation, EngineErrorType.COMPILATION);
+            throw new EngineException("Response type of source service should match mapping class. Found response type : " + getElementFullPath((PackageableElement) sourceDataType, context.pureModel.getExecutionSupport()) + " does not match mapping class : " + getElementFullPath(pureClass, context.pureModel.getExecutionSupport()), sourceInformation, EngineErrorType.COMPILATION);
         }
 
         RichIterable<String> requiredServiceParameters = serviceMapping._service()._parameters().collectIf(Root_meta_external_store_service_metamodel_ServiceParameter::_required, Root_meta_external_store_service_metamodel_ServiceParameter::_name);
@@ -392,8 +432,8 @@ public class HelperServiceStoreClassMappingBuilder
     private static ExternalFormatExtension getExtension(Root_meta_external_shared_format_binding_Binding binding)
     {
         return ExternalFormatExtensionLoader.extensions().values().stream()
-                                            .filter(ext -> ext.getContentTypes().contains(binding._contentType()))
-                                            .findFirst()
-                                            .orElseThrow(() -> new EngineException("Unknown contentType '" + binding._contentType() + "'", SourceInformation.getUnknownSourceInformation(), EngineErrorType.COMPILATION));  // Should never reach here as binding should be compiled before
+                .filter(ext -> ext.getContentTypes().contains(binding._contentType()))
+                .findFirst()
+                .orElseThrow(() -> new EngineException("Unknown contentType '" + binding._contentType() + "'", SourceInformation.getUnknownSourceInformation(), EngineErrorType.COMPILATION));  // Should never reach here as binding should be compiled before
     }
 }

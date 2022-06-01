@@ -19,9 +19,9 @@ import junit.framework.Test;
 public class Test_Relational_DbSpecific_SqlServer_UsingPureClientTestSuite
         extends Test_Relational_DbSpecific_UsingPureClientTestSuite
 {
-    public static Test suite()
+    public static Test suite() throws Exception
     {
-        return createSuite("meta::relational::tests::dbSpecificTests::SqlServer","org/finos/legend/engine/server/test/userTestConfig_withSqlServerTestConnection.json");
+        return createSuite("meta::relational::tests::dbSpecificTests::sqlServer","org/finos/legend/engine/server/test/userTestConfig_withSqlServerTestConnection.json");
     }
 }
 

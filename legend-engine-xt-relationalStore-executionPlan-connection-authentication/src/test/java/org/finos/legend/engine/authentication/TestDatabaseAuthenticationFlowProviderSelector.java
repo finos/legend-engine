@@ -14,14 +14,10 @@
 
 package org.finos.legend.engine.authentication;
 
-import java.lang.reflect.Field;
-import java.util.Optional;
-
-import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProvider;
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProviderSelector;
 import org.junit.Before;
-import org.junit.Test;
-import static org.junit.Assert.*;
+
+import java.lang.reflect.Field;
 
 public class TestDatabaseAuthenticationFlowProviderSelector
 {

@@ -34,7 +34,14 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.exe
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.ExecutionContext;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.PropertyGraphFetchTree;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.RootGraphFetchTree;
-import org.finos.legend.pure.generated.*;
+import org.finos.legend.pure.generated.Root_meta_pure_graphFetch_PropertyGraphFetchTree_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_graphFetch_RootGraphFetchTree_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_LambdaFunction_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_router_analytics_AnalyticsExecutionContext_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_runtime_ExecutionContext_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.graphFetch.GraphFetchTree;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
@@ -47,9 +54,9 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.FunctionExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpressionAccessor;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
 
 import java.util.List;
 import java.util.Objects;
@@ -99,9 +106,9 @@ public class HelperValueSpecificationBuilder
         ctx.pop();
 
         LambdaFunction lambda = new Root_meta_pure_metamodel_function_LambdaFunction_Impl<>(lambdaId)
-                                        ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(context.pureModel.getType("meta::pure::metamodel::function::LambdaFunction"))._typeArguments(FastList.newListWith(functionType)))
-                                        ._openVariables(cleanedOpenVariables)
-                                        ._expressionSequence(valueSpecifications);
+                ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(context.pureModel.getType("meta::pure::metamodel::function::LambdaFunction"))._typeArguments(FastList.newListWith(functionType)))
+                ._openVariables(cleanedOpenVariables)
+                ._expressionSequence(valueSpecifications);
 
         return context.getCompilerExtensions().getExtraLambdaPostProcessors().stream()
                 .reduce(lambda, (originalLambda, processor) -> processor.value(originalLambda, context, ctx), (p1, p2) -> p1);
@@ -120,7 +127,7 @@ public class HelperValueSpecificationBuilder
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification result;
 
         if (firstArgument instanceof Enum // Only for backward compatibility!
-            || (processedParameters.get(0)._genericType()._rawType().equals(context.pureModel.getType("meta::pure::metamodel::type::Enumeration"))))
+                || (processedParameters.get(0)._genericType()._rawType().equals(context.pureModel.getType("meta::pure::metamodel::type::Enumeration"))))
         {
             Multiplicity m = new Multiplicity();
             m.lowerBound = 1;
@@ -193,7 +200,7 @@ public class HelperValueSpecificationBuilder
                 }
                 appliedProperty.parameters.addAll(localParameters);
                 automaLambdaparam.name = automapName;
-                automaLambdaparam._class = HelperModelBuilder.getElementFullPath((PackageableElement)inferredVariable._genericType()._rawType(), context.pureModel.getExecutionSupport());
+                automaLambdaparam._class = HelperModelBuilder.getElementFullPath((PackageableElement) inferredVariable._genericType()._rawType(), context.pureModel.getExecutionSupport());
                 automaLambdaparam.multiplicity = m;
                 automapLambda.body = Lists.mutable.of(appliedProperty);
 
@@ -215,7 +222,7 @@ public class HelperValueSpecificationBuilder
                         ._parametersValues(processedParameters);
                 if (MilestoningDatePropagationHelper.isGeneratedMilestonedQualifiedPropertyWithMissingDates(foundProperty, context, parameters.size()))
                 {
-                    MilestoningDatePropagationHelper.updateFunctionExpressionWithMilestoningDateParams((FunctionExpression)result, foundProperty, sourceInformation, processingContext);
+                    MilestoningDatePropagationHelper.updateFunctionExpressionWithMilestoningDateParams((FunctionExpression) result, foundProperty, sourceInformation, processingContext);
                 }
                 MilestoningDatePropagationHelper.updateMilestoningContext(foundProperty, processingContext, context, (SimpleFunctionExpression) result);
             }

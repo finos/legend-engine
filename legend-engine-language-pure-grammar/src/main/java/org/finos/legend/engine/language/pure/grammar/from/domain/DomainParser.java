@@ -78,21 +78,21 @@ public class DomainParser implements DEPRECATED_SectionGrammarParser
         return section;
     }
 
-    public Lambda parseLambda(String code, String lambdaId, boolean returnSourceInfo)
+    public Lambda parseLambda(String code, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)
     {
-        return parseLambda(code, lambdaId, new PureGrammarParserContext(PureGrammarParserExtensions.fromExtensions(Lists.immutable.empty())), returnSourceInfo);
+        return parseLambda(code, new PureGrammarParserContext(PureGrammarParserExtensions.fromExtensions(Lists.immutable.empty())), sourceId, lineOffset, columnOffset, returnSourceInfo);
     }
 
-    public Lambda parseLambda(String code, String lambdaId, PureGrammarParserContext parserContext, boolean returnSourceInfo)
+    public Lambda parseLambda(String code, PureGrammarParserContext parserContext, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)
     {
-        ParseTreeWalkerSourceInformation lambdaWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(lambdaId, 0, 0).withReturnSourceInfo(returnSourceInfo).build();
+        ParseTreeWalkerSourceInformation lambdaWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(sourceId, lineOffset, columnOffset).withReturnSourceInfo(returnSourceInfo).build();
         String prefix = "function go():Any[*]{";
         String fullCode = prefix + code + "}";
         ParseTreeWalkerSourceInformation walkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(lambdaWalkerSourceInformation)
                 // NOTE: as we prepend the lambda with this prefix, we need to subtract this prefix length from the column offset
                 .withColumnOffset(lambdaWalkerSourceInformation.getColumnOffset() - prefix.length()).build();
         SourceCodeParserInfo sectionParserInfo = this.getParserInfo(fullCode, null, walkerSourceInformation, true);
-        DomainParseTreeWalker walker = new DomainParseTreeWalker(walkerSourceInformation, parserContext, (ImportAwareCodeSection) null);
+        DomainParseTreeWalker walker = new DomainParseTreeWalker(walkerSourceInformation, parserContext, null);
         return (Lambda) walker.concreteFunctionDefinition(((DomainParserGrammar.DefinitionContext) sectionParserInfo.rootContext).elementDefinition(0).functionDefinition());
     }
 
@@ -122,7 +122,7 @@ public class DomainParser implements DEPRECATED_SectionGrammarParser
         return walker.primitiveValue(((DomainParserGrammar) sectionParserInfo.parser).primitiveValue(), "line", typeParametersNames, lambdaContext, "", true, false);
     }
 
-    public RootGraphFetchTree parseGraphFetch(String input, String s, boolean returnSourceInfo)
+    public RootGraphFetchTree parseGraphFetch(String input, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)
     {
 //        PureGrammarParserContext parserContext =  new PureGrammarParserContext(PureGrammarParserExtensions.fromExtensions(Lists.immutable.empty()));
 //        ParseTreeWalkerSourceInformation lambdaWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(s, 0, 0).withReturnSourceInfo(returnSourceInfo).build();
@@ -133,20 +133,21 @@ public class DomainParser implements DEPRECATED_SectionGrammarParser
 //                .withColumnOffset(lambdaWalkerSourceInformation.getColumnOffset() - prefix.length()).build();
 //        SourceCodeParserInfo sectionParserInfo = this.getParserInfo(fullCode, null, walkerSourceInformation, true);
 //        DomainParseTreeWalker walker = new DomainParseTreeWalker(walkerSourceInformation, parserContext, (ImportAwareCodeSection) null);
-        return (RootGraphFetchTree) parseValueSpecification(input,s,returnSourceInfo);//walker.combinedExpression(((DomainParserGrammar.DefinitionContext) sectionParserInfo.rootContext).elementDefinition(0).functionDefinition().codeBlock().programLine(0).letExpression().combinedExpression(), "", Lists.mutable.empty(), null, "", false, returnSourceInfo);
+        return (RootGraphFetchTree) parseValueSpecification(input, sourceId, lineOffset, columnOffset, returnSourceInfo);
+        //walker.combinedExpression(((DomainParserGrammar.DefinitionContext) sectionParserInfo.rootContext).elementDefinition(0).functionDefinition().codeBlock().programLine(0).letExpression().combinedExpression(), "", Lists.mutable.empty(), null, "", false, returnSourceInfo);
     }
 
-    public ValueSpecification parseValueSpecification(String input, String s, boolean returnSourceInfo)
+    public ValueSpecification parseValueSpecification(String input, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)
     {
-        PureGrammarParserContext parserContext =  new PureGrammarParserContext(PureGrammarParserExtensions.fromExtensions(Lists.immutable.empty()));
-        ParseTreeWalkerSourceInformation lambdaWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(s, 0, 0).withReturnSourceInfo(returnSourceInfo).build();
+        PureGrammarParserContext parserContext = new PureGrammarParserContext(PureGrammarParserExtensions.fromExtensions(Lists.immutable.empty()));
+        ParseTreeWalkerSourceInformation lambdaWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(sourceId, lineOffset, columnOffset).withReturnSourceInfo(returnSourceInfo).build();
         String prefix = "function go():Any[*]{let x = ";
         String fullCode = prefix + input + ";}";
         ParseTreeWalkerSourceInformation walkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(lambdaWalkerSourceInformation)
                 // NOTE: as we prepend the lambda with this prefix, we need to subtract this prefix length from the column offset
                 .withColumnOffset(lambdaWalkerSourceInformation.getColumnOffset() - prefix.length()).build();
         SourceCodeParserInfo sectionParserInfo = this.getParserInfo(fullCode, null, walkerSourceInformation, true);
-        DomainParseTreeWalker walker = new DomainParseTreeWalker(walkerSourceInformation, parserContext, (ImportAwareCodeSection) null);
+        DomainParseTreeWalker walker = new DomainParseTreeWalker(walkerSourceInformation, parserContext, null);
         return (ValueSpecification) walker.combinedExpression(((DomainParserGrammar.DefinitionContext) sectionParserInfo.rootContext).elementDefinition(0).functionDefinition().codeBlock().programLine(0).letExpression().combinedExpression(), "", Lists.mutable.empty(), null, "", false, returnSourceInfo);
     }
 }

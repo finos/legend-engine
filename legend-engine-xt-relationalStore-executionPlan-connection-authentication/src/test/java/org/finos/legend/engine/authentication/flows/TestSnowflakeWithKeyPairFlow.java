@@ -14,18 +14,6 @@
 
 package org.finos.legend.engine.authentication.flows;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.security.PrivateKey;
-import java.security.SecureRandom;
-import java.security.Security;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import net.snowflake.client.jdbc.internal.org.bouncycastle.jce.provider.BouncyCastleProvider;
 import net.snowflake.client.jdbc.internal.org.bouncycastle.openssl.PKCS8Generator;
 import net.snowflake.client.jdbc.internal.org.bouncycastle.openssl.jcajce.JcaPEMWriter;
@@ -42,6 +30,19 @@ import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvi
 import org.finos.legend.engine.shared.core.vault.Vault;
 import org.junit.Before;
 import org.junit.Ignore;
+
+import java.io.IOException;
+import java.io.StringWriter;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.PrivateKey;
+import java.security.SecureRandom;
+import java.security.Security;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -105,7 +106,7 @@ public class TestSnowflakeWithKeyPairFlow
         JcaPKCS8Generator jcaPKCS8Generator = new JcaPKCS8Generator(privateKey, encryptor);
         PemObject pemObject = jcaPKCS8Generator.generate();
         StringWriter stringWriter = new StringWriter();
-        try(JcaPEMWriter pemWriter = new JcaPEMWriter(stringWriter))
+        try (JcaPEMWriter pemWriter = new JcaPEMWriter(stringWriter))
         {
             pemWriter.writeObject(pemObject);
         }
@@ -117,7 +118,7 @@ public class TestSnowflakeWithKeyPairFlow
         JcaPKCS8Generator jcaPKCS8Generator = new JcaPKCS8Generator(privateKey, null);
         PemObject pemObject = jcaPKCS8Generator.generate();
         StringWriter stringWriter = new StringWriter();
-        try(JcaPEMWriter pemWriter = new JcaPEMWriter(stringWriter))
+        try (JcaPEMWriter pemWriter = new JcaPEMWriter(stringWriter))
         {
             pemWriter.writeObject(pemObject);
         }

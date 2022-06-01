@@ -99,14 +99,21 @@ Class meta::external::store::service::showcase::domain::Firm
   employeesCount : Integer[1];
 }
 
+Class meta::external::store::service::showcase::domain::Person
+{
+  firstName  : String[1];
+  middleName : String[0..1];
+  lastName   : String[1];
+}
+
 ###Mapping
 Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping
 (
   *meta::external::store::service::showcase::domain::S_Trade[s_trade_set]: ServiceStore
   {
-     ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] TradeServices.AllTradeService
+     ~service [meta::external::store::service::showcase::store::ShowcaseServiceStore] TradeServices.AllTradeService
 
-     ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] TradeServices.TradeByIdService
+     ~service [meta::external::store::service::showcase::store::ShowcaseServiceStore] TradeServices.TradeByIdService
      (
          ~request
          (
@@ -117,7 +124,7 @@ Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping
          )
      )
 
-     ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] TradeServices.TradeByTradeDetailsService
+     ~service [meta::external::store::service::showcase::store::ShowcaseServiceStore] TradeServices.TradeByTradeDetailsService
      (
          ~request
          (
@@ -128,7 +135,7 @@ Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping
          )
      )
 
-     ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] TradeServices.TradeByTraderDetailsService
+     ~service [meta::external::store::service::showcase::store::ShowcaseServiceStore] TradeServices.TradeByTraderDetailsService
      (
          ~request
          (
@@ -144,7 +151,7 @@ Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping
   {
      +s_tradeId: String[1];
 
-     ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] ProductServices.ProductByIdService
+     ~service [meta::external::store::service::showcase::store::ShowcaseServiceStore] ProductServices.ProductByIdService
      (
          ~request
          (
@@ -155,7 +162,7 @@ Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping
          )
      )
 
-     ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] ProductServices.ProductByIdService
+     ~service [meta::external::store::service::showcase::store::ShowcaseServiceStore] ProductServices.ProductByIdService
      (
          ~request
          (
@@ -166,7 +173,7 @@ Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping
          )
      )
 
-     ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] ProductServices.ProductByNameService
+     ~service [meta::external::store::service::showcase::store::ShowcaseServiceStore] ProductServices.ProductByNameService
      (
          ~request
          (
@@ -177,7 +184,7 @@ Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping
          )
      )
 
-     ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] ProductServices.ProductByNameAndDescriptionService
+     ~service [meta::external::store::service::showcase::store::ShowcaseServiceStore] ProductServices.ProductByNameAndDescriptionService
      (
          ~request
          (
@@ -189,7 +196,7 @@ Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping
          )
      )
 
-     ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] ProductServices.ProductByNameAndDescriptionService
+     ~service [meta::external::store::service::showcase::store::ShowcaseServiceStore] ProductServices.ProductByNameAndDescriptionService
      (
          ~request
          (
@@ -204,7 +211,7 @@ Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping
 
   *meta::external::store::service::showcase::domain::Firm[firm_set]: ServiceStore
   {
-     ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] FirmServices.FirmByName
+     ~service [meta::external::store::service::showcase::store::ShowcaseServiceStore] FirmServices.FirmByName
      (
          ~request
          (
@@ -215,13 +222,28 @@ Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping
          )
      )
 
-     ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] FirmServices.FirmsByNames
+     ~service [meta::external::store::service::showcase::store::ShowcaseServiceStore] FirmServices.FirmsByNames
      (
          ~request
          (
             parameters
             (
                 name = ['FirmA', 'FirmB', 'FirmC']
+            )
+         )
+     )
+  }
+
+  *meta::external::store::service::showcase::domain::Person[person_set]: ServiceStore
+  {
+     ~service [meta::external::store::service::showcase::store::ShowcaseServiceStore] PersonServices.PersonsByFirstAndMiddleName
+     (
+         ~request
+         (
+            parameters
+            (
+                firstName = $this.firstName,
+                middleName = $this.middleName->orElse('*')
             )
          )
      )
@@ -282,7 +304,7 @@ Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping
 )
 
 ###ServiceStore
-ServiceStore meta::external::store::service::showcase::store::TradeProductServiceStore
+ServiceStore meta::external::store::service::showcase::store::ShowcaseServiceStore
 (
    description : 'Showcase Service Store';
 
@@ -405,6 +427,24 @@ ServiceStore meta::external::store::service::showcase::store::TradeProductServic
          response : [meta::external::store::service::showcase::domain::Firm <- meta::external::store::service::showcase::store::firmServiceStoreSchemaBinding];
       )
    )
+
+   ServiceGroup PersonServices
+   (
+      path : '/persons';
+
+      Service PersonsByFirstAndMiddleName
+      (
+         path : '/getPersonsByFirstAndMiddleName';
+         method : GET;
+         parameters :
+         (
+            firstName : String (location = query),
+            middleName : String (location = query)
+         );
+         security : [];
+         response : [meta::external::store::service::showcase::domain::Person <- meta::external::store::service::showcase::store::personServiceStoreSchemaBinding];
+      )
+   )
 )
 
 ###ExternalFormat
@@ -426,6 +466,12 @@ Binding meta::external::store::service::showcase::store::firmServiceStoreSchemaB
   modelIncludes : [ meta::external::store::service::showcase::domain::Firm ];
 }
 
+Binding meta::external::store::service::showcase::store::personServiceStoreSchemaBinding
+{
+  contentType   : 'application/json';
+  modelIncludes : [ meta::external::store::service::showcase::domain::Person ];
+}
+
 ###Runtime
 Runtime meta::external::store::service::showcase::runtime::ServiceStoreRuntime
 {
@@ -435,7 +481,7 @@ Runtime meta::external::store::service::showcase::runtime::ServiceStoreRuntime
     ];
     connections :
     [
-        meta::external::store::service::showcase::store::TradeProductServiceStore :
+        meta::external::store::service::showcase::store::ShowcaseServiceStore :
         [
             connection_1 : meta::external::store::service::showcase::connection::serviceStoreConnection
         ],

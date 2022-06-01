@@ -13,5 +13,7 @@
 // limitations under the License.
 
 package org.finos.legend.engine.plan.dependencies.store.platform;
-public interface IPlatformPureExpressionExecutionNodeGraphFetchMergeSpecifics {
+
+public interface IPlatformPureExpressionExecutionNodeGraphFetchMergeSpecifics
+{
 }

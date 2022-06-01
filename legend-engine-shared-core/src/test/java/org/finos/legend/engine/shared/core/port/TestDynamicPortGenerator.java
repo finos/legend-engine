@@ -20,7 +20,8 @@ import org.junit.Test;
 public class TestDynamicPortGenerator
 {
     @Test
-    public void generatePort() {
+    public void generatePort()
+    {
         int port = DynamicPortGenerator.generatePort();
 
         Assert.assertTrue(port >= DynamicPortGenerator.MIN_TEST_PORT);

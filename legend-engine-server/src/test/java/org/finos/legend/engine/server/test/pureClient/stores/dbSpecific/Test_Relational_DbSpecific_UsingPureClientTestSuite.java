@@ -14,9 +14,12 @@
 
 package org.finos.legend.engine.server.test.pureClient.stores.dbSpecific;
 
+import junit.extensions.TestSetup;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.finos.legend.engine.server.test.shared.PureTestHelper;
+import org.finos.legend.engine.server.test.shared.ServersState;
+import org.finos.legend.pure.code.core.compiled.test.PureTestBuilderHelper;
 import org.finos.legend.pure.m3.execution.test.TestCollection;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 import org.junit.Ignore;
@@ -28,17 +31,33 @@ import static org.finos.legend.engine.server.test.shared.PureTestHelper.*;
 @Ignore
 public class Test_Relational_DbSpecific_UsingPureClientTestSuite extends TestSuite
 {
-    public static Test createSuite(String pureTestCollectionPath,String testServerConfigFilePath){
-            return wrapSuite(
-                    () -> PureTestHelper.initClientVersionIfNotAlreadySet("vX_X_X"),
-                    () -> {
-                        CompiledExecutionSupport executionSupport = getClassLoaderExecutionSupport(true);
-                        TestSuite suite = new TestSuite();
-                        suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests(pureTestCollectionPath, executionSupport.getProcessorSupport(), ci -> satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
+    public static Test createSuite(String pureTestCollectionPath,String testServerConfigFilePath) throws Exception
+    {
+        //Run test engine server - needs to be setup before as we need testParam(connection details) to create test suite
+        boolean shouldCleanUp= PureTestHelper.initClientVersionIfNotAlreadySet("vX_X_X");
+        final ThreadLocal<ServersState> state = new ThreadLocal<>();
+        state.set( PureTestHelper.initEnvironment(false, testServerConfigFilePath));
 
-                        return suite;
-                    },
-                    false, testServerConfigFilePath);
-        }
+        CompiledExecutionSupport executionSupport = getClassLoaderExecutionSupport();
+
+        TestSuite suite = new TestSuite();
+        suite.addTest(PureTestBuilderHelper.buildSuite(TestCollection.collectTests(pureTestCollectionPath, executionSupport.getProcessorSupport(), fn -> PureTestBuilderHelper.generatePureTestCollection(fn, executionSupport), ci -> PureTestBuilderHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
+
+        return new TestSetup(suite)
+        {
+            @Override
+            protected void tearDown() throws Exception
+            {
+                super.tearDown();
+                state.get().shutDown();
+                state.remove();
+                if (shouldCleanUp)
+                {
+                    cleanUp();
+                }
+                System.out.println("STOP");
+            }
+        };
+    }
 }
 

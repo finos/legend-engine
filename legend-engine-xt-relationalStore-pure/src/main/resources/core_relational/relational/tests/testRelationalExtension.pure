@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import meta::pure::runtime::*;
+import meta::relational::translation::*;
 import meta::pure::router::extension::*;
 import meta::relational::runtime::*;
 import meta::csv::*;
@@ -30,6 +31,16 @@ function <<test.Test>> meta::relational::metamodel::execute::tests::testExecuteI
    true;
 }
 
+function <<test.Test>> meta::relational::tests::typeInference::testTranslateDbType():Boolean[1]
+{
+   let translator = {type: meta::relational::metamodel::datatype::DataType[1]| $type->match([
+              v: meta::relational::metamodel::datatype::Varchar[1]| format('STRING(%d)', $v.size),
+              a: meta::relational::metamodel::datatype::DataType[1]| []
+           ])};
+   let dType = translateCoreTypeToDbSpecificType(^meta::relational::metamodel::datatype::Varchar(size = 100), ^TranslationContext(coreTypeToDbSpecificSqlTranslator=$translator));
+   
+   assertEquals('STRING(100)', $dType->toOne()->meta::relational::metamodel::datatype::dataTypeToSqlText());
+}
 
 function <<test.Test>> meta::relational::tests::typeInference::testTableAliasColumnInference():Boolean[1]
 {

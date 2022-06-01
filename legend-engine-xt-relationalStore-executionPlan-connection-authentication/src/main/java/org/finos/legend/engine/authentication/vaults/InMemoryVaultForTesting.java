@@ -14,10 +14,10 @@
 
 package org.finos.legend.engine.authentication.vaults;
 
+import org.finos.legend.engine.shared.core.vault.VaultImplementation;
+
 import java.util.HashMap;
 import java.util.Map;
-
-import org.finos.legend.engine.shared.core.vault.VaultImplementation;
 
 public class InMemoryVaultForTesting implements VaultImplementation
 {

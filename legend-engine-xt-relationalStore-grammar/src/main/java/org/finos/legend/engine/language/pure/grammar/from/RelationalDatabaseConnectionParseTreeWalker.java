@@ -99,10 +99,7 @@ public class RelationalDatabaseConnectionParseTreeWalker
                 spec.getText(),
                 spec.specificationType().getText(),
                 sourceInformation,
-                new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation)
-                        .withLineOffset(sourceInformation.startLine - 1)
-                        .withColumnOffset(sourceInformation.startColumn)
-                        .build()
+                ParseTreeWalkerSourceInformation.offset(walkerSourceInformation, spec.getStart())
         );
 
         PostProcessor processor = IRelationalGrammarParserExtension.process(code, parsers);
@@ -124,10 +121,7 @@ public class RelationalDatabaseConnectionParseTreeWalker
                 ctx.specification().getText(),
                 specification.specificationType().getText(),
                 sourceInformation,
-                new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation)
-                        .withLineOffset(sourceInformation.startLine - 1)
-                        .withColumnOffset(sourceInformation.startColumn)
-                        .build()
+                ParseTreeWalkerSourceInformation.offset(walkerSourceInformation, ctx.getStart())
         );
 
         List<IRelationalGrammarParserExtension> extensions = IRelationalGrammarParserExtension.getExtensions();
@@ -151,10 +145,7 @@ public class RelationalDatabaseConnectionParseTreeWalker
                 ctx.specification().getText(),
                 specification.specificationType().getText(),
                 sourceInformation,
-                new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation)
-                        .withLineOffset(sourceInformation.startLine - 1)
-                        .withColumnOffset(sourceInformation.startColumn)
-                        .build()
+                ParseTreeWalkerSourceInformation.offset(walkerSourceInformation, ctx.getStart())
         );
 
         List<IRelationalGrammarParserExtension> extensions = IRelationalGrammarParserExtension.getExtensions();

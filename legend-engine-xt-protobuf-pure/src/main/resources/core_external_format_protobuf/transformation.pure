@@ -1,0 +1,5 @@
+
+Class meta::external::format::protobuf::binding::toPure::introspection::ProtoFileContainer extends meta::external::shared::format::metamodel::SchemaDetail
+{
+  protoFile : meta::external::format::protobuf::metamodel::ProtoFile[1];
+}

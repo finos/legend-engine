@@ -1,3 +1,17 @@
+//  Copyright 2022 Goldman Sachs
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+
 package org.finos.legend.engine.shared.core.deployment;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -6,29 +20,30 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class DeploymentVersionInfo {
-    @JsonProperty(value="git.branch", required = true)
+public class DeploymentVersionInfo
+{
+    @JsonProperty(value = "git.branch", required = true)
     public String branch;
 
-    @JsonProperty(value="git.build.time", required = true)
+    @JsonProperty(value = "git.build.time", required = true)
     public String buildTime;
 
-    @JsonProperty(value="git.build.version", required = true)
+    @JsonProperty(value = "git.build.version", required = true)
     public String buildVersion;
 
-    @JsonProperty(value="git.closest.tag.name", required = true)
+    @JsonProperty(value = "git.closest.tag.name", required = true)
     public String buildTag;
 
-    @JsonProperty(value="git.commit.id", required = true)
+    @JsonProperty(value = "git.commit.id", required = true)
     public String commitId;
 
-    @JsonProperty(value="git.commit.id.abbrev")
+    @JsonProperty(value = "git.commit.id.abbrev")
     public String commitIdAbbreviated;
 
-    @JsonProperty(value="git.commit.time")
+    @JsonProperty(value = "git.commit.time")
     public String commitTime;
 
-    @JsonProperty(value="git.total.commit.count")
+    @JsonProperty(value = "git.total.commit.count")
     public String commitCount;
 
 }

@@ -14,11 +14,11 @@
 
 package org.finos.legend.engine.shared.core.identity.factory;
 
-import java.util.Iterator;
-import java.util.ServiceLoader;
-
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
+
+import java.util.Iterator;
+import java.util.ServiceLoader;
 
 public class IdentityFactoryProvider
 {

@@ -45,7 +45,32 @@ public class TestServiceStoreUnion extends ServiceStoreTestSuite
                         "{\n" +
                         "    store   : meta::external::store::service::showcase::store::EmployeeServiceStore;\n" +
                         "    baseUrl : 'http://127.0.0.1:" + getPort() + "';\n" +
-                        "}";
+                        "}\n\n" +
+                        "ServiceStoreConnection meta::external::store::service::showcase::connection::serviceStoreConnection3\n" +
+                        "{\n" +
+                        "    store   : meta::external::store::service::showcase::store::EmployeeServiceStore1;\n" +
+                        "    baseUrl : 'http://127.0.0.1:" + getPort() + "';\n" +
+                        "}\n\n" +
+                        "ServiceStoreConnection meta::external::store::service::showcase::connection::serviceStoreConnection4\n" +
+                        "{\n" +
+                        "    store   : meta::external::store::service::showcase::store::EmployeeServiceStore2;\n" +
+                        "    baseUrl : 'http://127.0.0.1:" + getPort() + "';\n" +
+                        "}\n\n" +
+                        "ServiceStoreConnection meta::external::store::service::showcase::connection::serviceStoreConnection5\n" +
+                        "{\n" +
+                        "    store   : meta::external::store::service::showcase::store::EmployeeServiceStore3;\n" +
+                        "    baseUrl : 'http://127.0.0.1:" + getPort() + "';\n" +
+                        "}\n\n" +
+                        "ServiceStoreConnection meta::external::store::service::showcase::connection::serviceStoreConnection6\n" +
+                        "{\n" +
+                        "    store   : meta::external::store::service::showcase::store::EmployeeServiceStore4;\n" +
+                        "    baseUrl : 'http://127.0.0.1:" + getPort() + "';\n" +
+                        "}\n\n" +
+                        "ServiceStoreConnection meta::external::store::service::showcase::connection::serviceStoreConnection7\n" +
+                        "{\n" +
+                        "    store   : meta::external::store::service::showcase::store::EmployeeServiceStore5;\n" +
+                        "    baseUrl : 'http://127.0.0.1:" + getPort() + "';\n" +
+                        "}\n\n";
         pureGrammar = ServiceStoreTestUtils.readGrammarFromPureFile("/features/union/testGrammar.pure") + "\n\n" + serviceStoreConnection;
     }
 
@@ -186,6 +211,36 @@ public class TestServiceStoreUnion extends ServiceStoreTestSuite
         SingleExecutionPlan plan = buildPlanForQuery(pureGrammar + "\n\n" + query);
 
         String expectedRes = "{\"builder\":{\"_type\":\"json\"},\"values\":[{\"firstName\":\"FirstName ServiceStore\",\"lastName\":\"LastName ServiceStore\",\"firmId\":\"ServiceStore\"},{\"firstName\":\"FirstName Model\",\"lastName\":\"LastName Model\",\"firmId\":\"Model\"}]}";
+
+        Assert.assertEquals(expectedRes, executePlan(plan));
+    }
+
+    @Test
+    public void serviceStoreUnionWithMultipleMappings()
+    {
+        String query = "###Pure\n" +
+                "function showcase::query(): Any[1]\n" +
+                "{\n" +
+                "   {|meta::external::store::service::showcase::domain::Person.all()" +
+                "       ->graphFetch(#{\n" +
+                "           meta::external::store::service::showcase::domain::Person {\n" +
+                "               firstName,\n" +
+                "               lastName,\n" +
+                "               firmId\n" +
+                "           }\n" +
+                "         }#)" +
+                "       ->serialize(#{\n" +
+                "           meta::external::store::service::showcase::domain::Person {\n" +
+                "               firstName,\n" +
+                "               lastName,\n" +
+                "               firmId\n" +
+                "           }\n" +
+                "        }#)};\n" +
+                "}";
+
+        SingleExecutionPlan plan = buildPlanForQuery(pureGrammar + "\n\n" + query, "meta::external::store::service::showcase::mapping::ServiceStoreMapping2", "meta::external::store::service::showcase::runtime::ServiceStoreRuntime2");
+
+        String expectedRes = "{\"builder\":{\"_type\":\"json\"},\"values\":[{\"firstName\":\"FirstName ServiceStore\",\"lastName\":\"LastName ServiceStore\",\"firmId\":\"ServiceStore\"},{\"firstName\":\"FirstName ServiceStore\",\"lastName\":\"LastName ServiceStore\",\"firmId\":\"ServiceStore\"},{\"firstName\":\"FirstName ServiceStore\",\"lastName\":\"LastName ServiceStore\",\"firmId\":\"ServiceStore\"},{\"firstName\":\"FirstName ServiceStore\",\"lastName\":\"LastName ServiceStore\",\"firmId\":\"ServiceStore\"},{\"firstName\":\"FirstName ServiceStore\",\"lastName\":\"LastName ServiceStore\",\"firmId\":\"ServiceStore\"}]}";
 
         Assert.assertEquals(expectedRes, executePlan(plan));
     }

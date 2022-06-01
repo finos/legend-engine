@@ -25,14 +25,13 @@ import org.finos.legend.engine.language.pure.modelManager.sdlc.SDLCLoader;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.MetaDataServerConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
-import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureSDLC;
 import org.finos.legend.engine.shared.core.kerberos.HttpClientBuilder;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.pac4j.core.profile.CommonProfile;
-import org.pac4j.core.profile.ProfileManager;
 
 import javax.security.auth.Subject;
 
@@ -47,7 +46,7 @@ public class PureServerLoader
 
     public String buildPureMetadataVersionURL(String urlSuffix)
     {
-        return  metaDataServerConfiguration.getPure().getBaseUrl()+ "/alloy/pureServerBaseVersion" + urlSuffix;
+        return metaDataServerConfiguration.getPure().getBaseUrl() + "/alloy/pureServerBaseVersion" + urlSuffix;
     }
 
     protected String buildPureMetadataURL(PackageableElementPointer pointer, String urlSegment, String clientVersion, String urlSuffix)
@@ -58,14 +57,14 @@ public class PureServerLoader
     protected HttpUriRequest buildRequest(String url, MutableList<CommonProfile> profiles)
     {
         RequestBuilder builder = RequestBuilder.get(url);
-        HttpUriRequest httpUriRequest =  builder.build();
+        HttpUriRequest httpUriRequest = builder.build();
         return httpUriRequest;
     }
 
     public String getBaseServerVersion(MutableList<CommonProfile> profiles, Subject executionSubject)
     {
-        CloseableHttpClient httpclient =  (CloseableHttpClient) HttpClientBuilder.getHttpClient(new BasicCookieStore());
-        HttpUriRequest request = buildRequest(buildPureMetadataVersionURL(executionSubject == null ? "" : "?auth=kerberos"),profiles);
+        CloseableHttpClient httpclient = (CloseableHttpClient) HttpClientBuilder.getHttpClient(new BasicCookieStore());
+        HttpUriRequest request = buildRequest(buildPureMetadataVersionURL(executionSubject == null ? "" : "?auth=kerberos"), profiles);
         try (CloseableHttpResponse response = httpclient.execute(request))
         {
             int statusCode = response.getStatusLine().getStatusCode();
@@ -85,10 +84,10 @@ public class PureServerLoader
     {
         PureModelContextPointer deepCopy = new PureModelContextPointer();
         PureSDLC sdlc = new PureSDLC();
-        sdlc.packageableElementPointers = ((PureSDLC)((PureModelContextPointer)context).sdlcInfo).packageableElementPointers;
+        sdlc.packageableElementPointers = ((PureSDLC) ((PureModelContextPointer) context).sdlcInfo).packageableElementPointers;
         deepCopy.sdlcInfo = sdlc;
-        deepCopy.serializer = ((PureModelContextPointer)context).serializer;
-        deepCopy.sdlcInfo.baseVersion = this.getBaseServerVersion(profiles,executionSubject);
+        deepCopy.serializer = ((PureModelContextPointer) context).serializer;
+        deepCopy.sdlcInfo.baseVersion = this.getBaseServerVersion(profiles, executionSubject);
         return deepCopy;
     }
 

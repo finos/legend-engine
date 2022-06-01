@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-name: legend-build
+name: Build CI
 
 env:
   CI_DEPLOY_USERNAME: ${{ secrets.CI_DEPLOY_USERNAME }}
@@ -24,6 +24,7 @@ on: [push, pull_request]
 
 jobs:
   build:
+    name: Build
     if: "!contains(github.event.head_commit.message, '[maven-release-plugin]')"
     runs-on: ubuntu-latest
     steps:
@@ -61,7 +62,7 @@ jobs:
           MAVEN_OPTS: -Xmx4000m
       - name: Build + Test
         if: (github.repository != 'finos/legend-engine') || (github.ref != 'refs/heads/master')
-        run: mvn install javadoc:javadoc
+        run: mvn install javadoc:javadoc -Dmaven.test.failure.ignore=true
         env:
           MAVEN_OPTS: -Xmx4000m
       - name: Build + Test + Maven Deploy + Sonar + Docker Snapshot
@@ -70,4 +71,16 @@ jobs:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
           MAVEN_OPTS: -Xmx4000m
-        run: mvn javadoc:javadoc deploy -P sonar,docker-snapshot
+        run: mvn javadoc:javadoc deploy -Dmaven.test.failure.ignore=true -P sonar,docker-snapshot
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: legend-engine-test-reports/surefire-reports-aggregate/*.xml
+      - name: Upload CI Event
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: event-file
+          path: ${{ github.event_path }}

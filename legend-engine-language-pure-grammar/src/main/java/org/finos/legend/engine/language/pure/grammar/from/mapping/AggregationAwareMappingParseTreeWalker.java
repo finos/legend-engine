@@ -25,7 +25,12 @@ import org.finos.legend.engine.language.pure.grammar.from.extension.MappingEleme
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregateFunction;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregateSetImplementationContainer;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregateSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwareClassMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwarePropertyMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.GroupByFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.PureInstanceClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
@@ -84,10 +89,13 @@ public class AggregationAwareMappingParseTreeWalker
             classMapping.id = classMapping.id == null ? mapping.id + "_Main" : classMapping.id + "_Main";
             mapping.mainSetImplementation = classMapping;
 
-            if (classMapping instanceof PureInstanceClassMapping) {
-                mapping.propertyMappings = ListIterate.collect(((PureInstanceClassMapping)classMapping).propertyMappings, this::visitAggregationAwarePropertyMapping);
+            if (classMapping instanceof PureInstanceClassMapping)
+            {
+                mapping.propertyMappings = ListIterate.collect(((PureInstanceClassMapping) classMapping).propertyMappings, this::visitAggregationAwarePropertyMapping);
             }
-        } else {
+        }
+        else
+        {
             throw new EngineException("Invalid parser result for " + mappingElementSourceCode.name + ": " + mappingElement, this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
         }
 
@@ -118,12 +126,14 @@ public class AggregationAwareMappingParseTreeWalker
         if (element instanceof AggregateSpecification)
         {
             aggregateSetImplementationContainer.aggregateSpecification = (AggregateSpecification) element;
-        } else {
+        }
+        else
+        {
             throw new EngineException("Invalid parser result for " + mappingElementSourceCode.name + ": " + element, this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
         }
     }
 
-    private void visitAggregateMappingContext(AggregationAwareParserGrammar.AggregateMappingContext ctx,  AggregateSetImplementationContainer aggregateSetImplementationContainer, AggregationAwareClassMapping parent)
+    private void visitAggregateMappingContext(AggregationAwareParserGrammar.AggregateMappingContext ctx, AggregateSetImplementationContainer aggregateSetImplementationContainer, AggregationAwareClassMapping parent)
     {
         String parserName = ctx.parserName().getText();
         int startLine = ctx.BRACE_OPEN().getSymbol().getLine();
@@ -144,7 +154,9 @@ public class AggregationAwareMappingParseTreeWalker
             classMapping.id = classMapping.id == null ? parent.id + "_Aggregate_" + aggregateSetImplementationContainer.index :
                     classMapping.id + "_Aggregate_" + aggregateSetImplementationContainer.index;
             aggregateSetImplementationContainer.setImplementation = classMapping;
-        } else {
+        }
+        else
+        {
             throw new EngineException("Invalid parser result for " + mappingElementSourceCode.name + ": " + mappingElement, this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
         }
 

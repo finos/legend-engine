@@ -69,7 +69,7 @@
     "tempPath": "/tmp/",
     "flowProviderClass": "org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProvider",
     "flowProviderConfiguration": {
-      "_type" : "legendDefault"
+        "_type": "legendDefault"
     }
   }
 }

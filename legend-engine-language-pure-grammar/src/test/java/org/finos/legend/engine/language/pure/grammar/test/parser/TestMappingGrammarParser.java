@@ -552,7 +552,7 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
                 "   }:String[*];\n" +
                 "}\n"
         );
-        Multiplicity latest = ((CLatestDate)((AppliedProperty)model.getElementsOfType(Class.class).get(0).qualifiedProperties.get(0).body.get(0)).parameters.get(1)).multiplicity;
+        Multiplicity latest = ((CLatestDate) ((AppliedProperty) model.getElementsOfType(Class.class).get(0).qualifiedProperties.get(0).body.get(0)).parameters.get(1)).multiplicity;
         Assert.assertTrue(latest.isUpperBoundEqualTo(1), () -> "CLatestDate must have multiplicity set to 1");
     }
 }

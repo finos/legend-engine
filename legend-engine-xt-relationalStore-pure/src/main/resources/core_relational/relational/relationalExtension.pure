@@ -19,6 +19,7 @@ import meta::relational::metamodel::*;
 import meta::relational::runtime::*;
 import meta::relational::metamodel::execute::*;
 import meta::relational::functions::typeInference::*;
+import meta::relational::translation::*;
 
 function meta::relational::metamodel::execute::executeInDb(sql:String[1], databaseConnectionFunction:Function<{->DatabaseConnection[1]}>[1]):ResultSet[1]
 {
@@ -96,7 +97,19 @@ function meta::relational::functions::typeInference::inferDynaFunctionReturnType
 
 function meta::relational::functions::typeInference::inferRelationalType(rop: RelationalOperationElement[1]):meta::relational::metamodel::datatype::DataType[0..1]
 {
-   inferRelationalType($rop, true);
+   inferRelationalType($rop, true); 
+}
+
+function meta::relational::functions::typeInference::inferRelationalType(rop: RelationalOperationElement[1], translationContext:TranslationContext[1]):meta::relational::metamodel::datatype::DataType[0..1]
+{
+   let relationalType = inferRelationalType($rop); 
+   $relationalType->translateCoreTypeToDbSpecificType($translationContext);
+}
+
+function meta::relational::functions::typeInference::inferRelationalType(rop: RelationalOperationElement[1], failOnMatchFailure:Boolean[1], translationContext:TranslationContext[1]):meta::relational::metamodel::datatype::DataType[0..1]
+{
+   let relationalType = inferRelationalType($rop, $failOnMatchFailure); 
+   $relationalType->translateCoreTypeToDbSpecificType($translationContext);
 }
 
 function meta::relational::functions::typeInference::inferRelationalType(rop: RelationalOperationElement[1], failOnMatchFailure:Boolean[1]):meta::relational::metamodel::datatype::DataType[0..1]

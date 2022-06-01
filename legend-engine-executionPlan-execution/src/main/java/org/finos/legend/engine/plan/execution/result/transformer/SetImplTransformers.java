@@ -14,11 +14,11 @@
 
 package org.finos.legend.engine.plan.execution.result.transformer;
 
-import org.finos.legend.engine.plan.dependencies.domain.date.PureDate;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.plan.dependencies.domain.date.PureDate;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.DateFunctions;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.StrictDate;
 
@@ -58,25 +58,25 @@ public class SetImplTransformers
         transformers = Lists.mutable.empty();
     }
 
-    private Boolean toBoolean(Object o) 
+    private Boolean toBoolean(Object o)
     {
         if (o == null)
         {
             return null;
-        } 
-        else if (o instanceof Boolean) 
+        }
+        else if (o instanceof Boolean)
         {
             return (Boolean) o;
-        } 
+        }
         else if (o instanceof String)
         {
             return Boolean.parseBoolean((String) o);
-        } 
-        else if (o instanceof  Number)
+        }
+        else if (o instanceof Number)
         {
             return ((Number) o).intValue() != 0;
-        } 
-        else 
+        }
+        else
         {
             throw new IllegalArgumentException("Transformer Error: Could not convert to Boolean");
         }

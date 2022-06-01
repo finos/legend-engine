@@ -37,7 +37,7 @@ public class ReferenceEmbeddedDataParser implements EmbeddedDataParser
     @Override
     public EmbeddedData parse(String code, ParseTreeWalkerSourceInformation walkerSourceInformation, SourceInformation sourceInformation, PureGrammarParserExtensions extensions)
     {
-        if("".equals(code.trim()))
+        if ("".equals(code.trim()))
         {
             throw new EngineException("Path should be provided for DataElementReference", sourceInformation, EngineErrorType.PARSER);
         }

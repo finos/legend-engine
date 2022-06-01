@@ -33,6 +33,13 @@ See the following docs for details :
 * https://cloud.google.com/bigquery/docs/authentication
 * https://cloud.google.com/docs/authentication/production 
 
+__Workload Identity Federation__
+
+Legend supports Workload Identity Federation using AWS as identity provider to connect to BigQuery. This means that BigQuery JDBC driver will require any valid Service Account Access Token obtained using configured authentication flow during runtime to connect to BigQuery.
+
+See the following docs for details :
+* https://cloud.google.com/iam/docs/workload-identity-federation
+
 ## Simba BiqQuery Driver 
 
 Legend uses the Simba BigQuery JDBC Driver. However, this driver is not open source software.

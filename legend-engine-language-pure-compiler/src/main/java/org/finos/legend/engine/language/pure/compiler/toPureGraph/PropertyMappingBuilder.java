@@ -50,7 +50,6 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.G
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
 import org.finos.legend.pure.m4.coreinstance.SourceInformation;
 
-import java.util.Optional;
 import java.util.function.Function;
 
 public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMapping>
@@ -103,10 +102,10 @@ public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.
         Property property = HelperMappingBuilder.getMappedProperty(propertyMapping, this.context);
         pm.setSourceInformation(SourceInformationHelper.toM3SourceInformation(propertyMapping.sourceInformation));
         pm._property(property)
-          ._explodeProperty(propertyMapping.explodeProperty)
-          ._sourceSetImplementationId(propertyMapping.source)
-          ._targetSetImplementationId(HelperMappingBuilder.getPropertyMappingTargetId(propertyMapping, property, context))
-          ._owner(owner);
+                ._explodeProperty(propertyMapping.explodeProperty)
+                ._sourceSetImplementationId(propertyMapping.source)
+                ._targetSetImplementationId(HelperMappingBuilder.getPropertyMappingTargetId(propertyMapping, property, context))
+                ._owner(owner);
         String mappingName = owner._parent().getName();
         pm._transform(HelperMappingBuilder.processPurePropertyMappingTransform(propertyMapping, propertyMapping.transform, owner, owner._srcClass(), this.context, mappingName));
 
@@ -185,15 +184,15 @@ public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.
 
         String propertyName = propertyMapping.property.property;
         String edgePointPropertyName = MilestoningFunctions.getEdgePointPropertyName(propertyName);
-        Function<Type, Boolean> isTypeTemporalMilestoned = type -> Milestoning.temporalStereotypes(((PackageableElement)type)._stereotypes()) != null;
+        Function<Type, Boolean> isTypeTemporalMilestoned = type -> Milestoning.temporalStereotypes(((PackageableElement) type)._stereotypes()) != null;
         Property property = parent._association()._properties().detect(p -> (propertyName.equals(p.getName())) || (isTypeTemporalMilestoned.apply(p._genericType()._rawType()) && edgePointPropertyName.equals(p.getName())));
         Assert.assertTrue(property != null, () -> "Can't find property '" + propertyName + "' in association '" + (HelperModelBuilder.getElementFullPath(parent._association(), context.pureModel.getExecutionSupport())) + "'", propertyMapping.property.sourceInformation, EngineErrorType.COMPILATION);
 
         return xpm._property(property)
-                  ._localMappingProperty(propertyMapping.localMappingProperty != null)
-                  ._sourceSetImplementationId(propertyMapping.source == null ? parent._id() : propertyMapping.source)
-                  ._targetSetImplementationId(HelperMappingBuilder.getPropertyMappingTargetId(propertyMapping))
-                  ._owner(parent)._crossExpression(lambda);
+                ._localMappingProperty(propertyMapping.localMappingProperty != null)
+                ._sourceSetImplementationId(propertyMapping.source == null ? parent._id() : propertyMapping.source)
+                ._targetSetImplementationId(HelperMappingBuilder.getPropertyMappingTargetId(propertyMapping))
+                ._owner(parent)._crossExpression(lambda);
     }
 
     @Override
@@ -202,10 +201,10 @@ public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.
         org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.aggregationAware.AggregationAwarePropertyMapping apm = new Root_meta_pure_mapping_aggregationAware_AggregationAwarePropertyMapping_Impl("");
         Property property = HelperMappingBuilder.getMappedProperty(propertyMapping, this.context);
         apm._localMappingProperty(propertyMapping.localMappingProperty != null)
-           ._property(property)
-           ._sourceSetImplementationId(propertyMapping.source == null || propertyMapping.source.isEmpty() ? immediateParent._id() : propertyMapping.source)
-           ._targetSetImplementationId(HelperMappingBuilder.getPropertyMappingTargetId(propertyMapping, property, context))
-           ._owner(immediateParent);
+                ._property(property)
+                ._sourceSetImplementationId(propertyMapping.source == null || propertyMapping.source.isEmpty() ? immediateParent._id() : propertyMapping.source)
+                ._targetSetImplementationId(HelperMappingBuilder.getPropertyMappingTargetId(propertyMapping, property, context))
+                ._owner(immediateParent);
         return apm;
     }
 }

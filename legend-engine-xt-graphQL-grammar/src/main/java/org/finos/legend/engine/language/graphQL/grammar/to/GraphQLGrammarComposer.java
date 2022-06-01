@@ -20,9 +20,41 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.graphQL.metamodel.Definition;
 import org.finos.legend.engine.protocol.graphQL.metamodel.DefinitionVisitor;
 import org.finos.legend.engine.protocol.graphQL.metamodel.Document;
-import org.finos.legend.engine.protocol.graphQL.metamodel.executable.*;
-import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.*;
-import org.finos.legend.engine.protocol.graphQL.metamodel.value.*;
+import org.finos.legend.engine.protocol.graphQL.metamodel.executable.ExecutableDefinition;
+import org.finos.legend.engine.protocol.graphQL.metamodel.executable.Field;
+import org.finos.legend.engine.protocol.graphQL.metamodel.executable.FragmentDefinition;
+import org.finos.legend.engine.protocol.graphQL.metamodel.executable.FragmentSpread;
+import org.finos.legend.engine.protocol.graphQL.metamodel.executable.InLineFragment;
+import org.finos.legend.engine.protocol.graphQL.metamodel.executable.OperationDefinition;
+import org.finos.legend.engine.protocol.graphQL.metamodel.executable.Selection;
+import org.finos.legend.engine.protocol.graphQL.metamodel.executable.SelectionVisitor;
+import org.finos.legend.engine.protocol.graphQL.metamodel.executable.VariableDefinition;
+import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.DirectiveDefinition;
+import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.EnumTypeDefinition;
+import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.FieldDefinition;
+import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.InputValueDefinition;
+import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.InterfaceTypeDefinition;
+import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.ListTypeReference;
+import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.NamedTypeReference;
+import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.ObjectTypeDefinition;
+import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.ScalarTypeDefinition;
+import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.SchemaDefinition;
+import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.Type;
+import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.TypeReference;
+import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.TypeReferenceVisitor;
+import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.TypeSystemDefinition;
+import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.UnionTypeDefinition;
+import org.finos.legend.engine.protocol.graphQL.metamodel.value.BooleanValue;
+import org.finos.legend.engine.protocol.graphQL.metamodel.value.EnumValue;
+import org.finos.legend.engine.protocol.graphQL.metamodel.value.FloatValue;
+import org.finos.legend.engine.protocol.graphQL.metamodel.value.IntValue;
+import org.finos.legend.engine.protocol.graphQL.metamodel.value.ListValue;
+import org.finos.legend.engine.protocol.graphQL.metamodel.value.NullValue;
+import org.finos.legend.engine.protocol.graphQL.metamodel.value.ObjectValue;
+import org.finos.legend.engine.protocol.graphQL.metamodel.value.StringValue;
+import org.finos.legend.engine.protocol.graphQL.metamodel.value.Value;
+import org.finos.legend.engine.protocol.graphQL.metamodel.value.ValueVisitor;
+import org.finos.legend.engine.protocol.graphQL.metamodel.value.Variable;
 
 import java.util.List;
 
@@ -103,7 +135,7 @@ public class GraphQLGrammarComposer
             @Override
             public String visit(OperationDefinition operationDefinition)
             {
-                return (operationDefinition.type == null ? "": operationDefinition.type.name()) + " " + operationDefinition.name + (operationDefinition.variables.isEmpty() ? "" : "(" + ListIterate.collect(operationDefinition.variables, v -> render(v)).makeString(", ") + ")") + " {\n" +
+                return (operationDefinition.type == null ? "" : operationDefinition.type.name()) + " " + operationDefinition.name + (operationDefinition.variables.isEmpty() ? "" : "(" + ListIterate.collect(operationDefinition.variables, v -> render(v)).makeString(", ") + ")") + " {\n" +
                         renderSelectionSet(operationDefinition.selectionSet, "  ") +
                         "\n}";
             }

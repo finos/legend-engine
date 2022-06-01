@@ -18,40 +18,50 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.pure.generated.Root_meta_pure_test_Testable;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.ServiceLoader;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class TestableRunnerExtensionLoader
 {
-    private static final AtomicReference<List<TestableRunnerExtension>> INSTANCE = new AtomicReference<>();
-
-    public static List<TestableRunnerExtension> extensions()
-    {
-        return INSTANCE.updateAndGet(existing ->
-        {
-            if (existing == null)
-            {
-                List<TestableRunnerExtension> extensions = Lists.mutable.empty();
-                for (TestableRunnerExtension extension : ServiceLoader.load(TestableRunnerExtension.class))
-                {
-                    extensions.add(extension);
-                }
-                return extensions;
-            }
-            else
-            {
-                return existing;
-            }
-        });
-    }
-
     public static TestRunner forTestable(Root_meta_pure_test_Testable testable)
     {
-        return extensions().stream()
+        return forTestable(testable, getCurrentThreadClassLoader());
+    }
+
+    public static TestRunner forTestable(Root_meta_pure_test_Testable testable, ClassLoader classLoader)
+    {
+        return extensions(classLoader).stream()
                 .map(ext -> ext.getTestRunner(testable))
                 .filter(Objects::nonNull)
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("No testable runner for " + testable.getClass().getSimpleName()));
+    }
+
+    public static Map<String, ? extends TestableRunnerExtension> getClassifierPathToTestableRunnerMap()
+    {
+        return getClassifierPathToTestableRunnerMap(getCurrentThreadClassLoader());
+    }
+
+    public static Map<String, ? extends TestableRunnerExtension> getClassifierPathToTestableRunnerMap(ClassLoader classLoader)
+    {
+        return extensions(classLoader).stream().collect(Collectors.toMap(TestableRunnerExtension::getSupportedClassifierPath, Function.identity()));
+    }
+
+    private static List<TestableRunnerExtension> extensions(ClassLoader classLoader)
+    {
+        List<TestableRunnerExtension> extensions = Lists.mutable.empty();
+        for (TestableRunnerExtension extension : ServiceLoader.load(TestableRunnerExtension.class, classLoader))
+        {
+            extensions.add(extension);
+        }
+        return extensions;
+    }
+
+    private static ClassLoader getCurrentThreadClassLoader()
+    {
+        return Thread.currentThread().getContextClassLoader();
     }
 }

@@ -14,15 +14,16 @@
 
 package org.finos.legend.engine.shared.core.identity.credential;
 
-import java.security.PrivilegedActionException;
-
-import javax.security.auth.Subject;
-
 import org.finos.legend.engine.shared.core.identity.Identity;
 
-public class KerberosUtils {
+import javax.security.auth.Subject;
+import java.security.PrivilegedActionException;
 
-    public static <T> T doAs(final Identity identity, final java.security.PrivilegedAction<T> action) {
+public class KerberosUtils
+{
+
+    public static <T> T doAs(final Identity identity, final java.security.PrivilegedAction<T> action)
+    {
         LegendKerberosCredential wrapper = identity.getCredential(LegendKerberosCredential.class).get();
         return Subject.doAs(wrapper.getSubject(), action);
     }

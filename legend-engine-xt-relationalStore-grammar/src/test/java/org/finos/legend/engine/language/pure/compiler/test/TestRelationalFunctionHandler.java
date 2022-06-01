@@ -47,25 +47,25 @@ public class TestRelationalFunctionHandler
     public void testColumnValueDifferenceCompile()
     {
         test("Class test::Trade" +
-                "{"+
-                "   date : StrictDate[1];"+
+                "{" +
+                "   date : StrictDate[1];" +
                 "   quantity : Float[1];" +
                 "   id : Integer[1];" +
-                "}"+
-                "Class test::B"+
-                "{"+
-                "   z(){"+
-                "   test::Trade.all()"+
-                "       ->groupBy([x|$x.date->adjust(0, DurationUnit.DAYS)],"+
-                "       [ agg(x | $x.quantity, y | $y->sum()), agg(x | $x.id, y | $y->count())],"+
-                "       ['tradeDate','quantity','count'])"+
-                "       ->columnValueDifference("+
-                "           test::Trade.all()"+
-                "               ->groupBy([x|$x.date->adjust(0, DurationUnit.DAYS)],"+
-                "               [ agg(x | $x.quantity, y | $y->sum()), agg(x | $x.id, y | $y->count())],"+
-                "               ['tradeDate','quantity','count']),"+
-                "           ['tradeDate'],['quantity','count'])"+
-                "   }:meta::pure::tds::TabularDataSet[1];"+
+                "}" +
+                "Class test::B" +
+                "{" +
+                "   z(){" +
+                "   test::Trade.all()" +
+                "       ->groupBy([x|$x.date->adjust(0, DurationUnit.DAYS)]," +
+                "       [ agg(x | $x.quantity, y | $y->sum()), agg(x | $x.id, y | $y->count())]," +
+                "       ['tradeDate','quantity','count'])" +
+                "       ->columnValueDifference(" +
+                "           test::Trade.all()" +
+                "               ->groupBy([x|$x.date->adjust(0, DurationUnit.DAYS)]," +
+                "               [ agg(x | $x.quantity, y | $y->sum()), agg(x | $x.id, y | $y->count())]," +
+                "               ['tradeDate','quantity','count'])," +
+                "           ['tradeDate'],['quantity','count'])" +
+                "   }:meta::pure::tds::TabularDataSet[1];" +
                 "}");
     }
 
@@ -73,25 +73,25 @@ public class TestRelationalFunctionHandler
     public void testRowValueDifferenceCompile()
     {
         test("Class test::Trade" +
-                "{"+
-                "   date : StrictDate[1];"+
+                "{" +
+                "   date : StrictDate[1];" +
                 "   quantity : Float[1];" +
                 "   id : Integer[1];" +
-                "}"+
-                "Class test::B"+
-                "{"+
-                "   z(){"+
-                "   test::Trade.all()"+
-                "       ->groupBy([x|$x.date->adjust(0, DurationUnit.DAYS)],"+
-                "       [ agg(x | $x.quantity, y | $y->sum()), agg(x | $x.id, y | $y->count())],"+
-                "       ['tradeDate','quantity','count'])"+
-                "       ->rowValueDifference("+
-                "           test::Trade.all()"+
-                "               ->groupBy([x|$x.date->adjust(0, DurationUnit.DAYS)],"+
-                "               [ agg(x | $x.quantity, y | $y->sum()), agg(x | $x.id, y | $y->count())],"+
-                "               ['tradeDate','quantity','count']),"+
-                "           ['tradeDate'],['quantity','count'])"+
-                "   }:meta::pure::tds::TabularDataSet[1];"+
+                "}" +
+                "Class test::B" +
+                "{" +
+                "   z(){" +
+                "   test::Trade.all()" +
+                "       ->groupBy([x|$x.date->adjust(0, DurationUnit.DAYS)]," +
+                "       [ agg(x | $x.quantity, y | $y->sum()), agg(x | $x.id, y | $y->count())]," +
+                "       ['tradeDate','quantity','count'])" +
+                "       ->rowValueDifference(" +
+                "           test::Trade.all()" +
+                "               ->groupBy([x|$x.date->adjust(0, DurationUnit.DAYS)]," +
+                "               [ agg(x | $x.quantity, y | $y->sum()), agg(x | $x.id, y | $y->count())]," +
+                "               ['tradeDate','quantity','count'])," +
+                "           ['tradeDate'],['quantity','count'])" +
+                "   }:meta::pure::tds::TabularDataSet[1];" +
                 "}");
     }
 }

@@ -71,7 +71,8 @@ public class ConfigBuilder
     public static void duplicateCheck(List<ConfigurationProperty> properties)
     {
         Set<String> configPropertyNames = new HashSet<>();
-        properties.forEach(configurationProperty -> {
+        properties.forEach(configurationProperty ->
+        {
             if (!configPropertyNames.add(configurationProperty.name))
             {
                 throw new EngineException("Duplicated configuration property name: '" + configurationProperty.name + "'");

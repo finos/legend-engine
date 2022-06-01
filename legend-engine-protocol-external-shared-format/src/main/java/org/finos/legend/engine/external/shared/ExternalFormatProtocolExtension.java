@@ -25,10 +25,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.extern
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.external.shared.UrlStreamExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.Binding;
 import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.ExternalFormatConnection;
 import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.ExternalFormatSchemaSet;
 import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.ExternalSource;
-import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.Binding;
 import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.UrlStreamExternalSource;
 
 import java.util.List;
@@ -40,24 +40,24 @@ public class ExternalFormatProtocolExtension implements PureProtocolExtension
     {
         return Lists.mutable.with(() -> Lists.mutable.with(
                 ProtocolSubTypeInfo.Builder.newInstance(PackageableElement.class)
-                                           .withSubtypes(FastList.newListWith(
-                                                   Tuples.pair(ExternalFormatSchemaSet.class, "externalFormatSchemaSet"),
-                                                   Tuples.pair(Binding.class, "binding")
-                                           )).build(),
+                        .withSubtypes(FastList.newListWith(
+                                Tuples.pair(ExternalFormatSchemaSet.class, "externalFormatSchemaSet"),
+                                Tuples.pair(Binding.class, "binding")
+                        )).build(),
                 ProtocolSubTypeInfo.Builder.newInstance(Connection.class)
-                                           .withSubtypes(FastList.newListWith(
-                                                   Tuples.pair(ExternalFormatConnection.class, "ExternalFormatConnection")
-                                           )).build(),
+                        .withSubtypes(FastList.newListWith(
+                                Tuples.pair(ExternalFormatConnection.class, "ExternalFormatConnection")
+                        )).build(),
 
                 ProtocolSubTypeInfo.Builder.newInstance(ExternalSource.class)
                         .withSubtypes(FastList.newListWith(
                                 Tuples.pair(UrlStreamExternalSource.class, "urlStream")
                         )).build(),
                 ProtocolSubTypeInfo.Builder.newInstance(ExecutionNode.class)
-                                           .withSubtypes(FastList.newListWith(
-                                                   Tuples.pair(DataQualityExecutionNode.class, "dataQuality"),
-                                                   Tuples.pair(UrlStreamExecutionNode.class, "urlStream")
-                                           )).build()
+                        .withSubtypes(FastList.newListWith(
+                                Tuples.pair(DataQualityExecutionNode.class, "dataQuality"),
+                                Tuples.pair(UrlStreamExecutionNode.class, "urlStream")
+                        )).build()
 
         ));
     }

@@ -481,6 +481,7 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
                 "   let x = ^anything::goes2(v2=^anything::goes(v='value'))\n" +
                 "}\n");
     }
+
     @Test
     public void testMetaNewFunctionWithSingleParameter()
     {
@@ -681,17 +682,18 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
                 "}\n"
         );
     }
+
     @Test
     public void testUnderscores()
     {
-        test(   "function my::under_score::function_example(): Any[1]\n" +
+        test("function my::under_score::function_example(): Any[1]\n" +
                 "{\n" +
                 "   my::under_score::function_example2()\n" +
-                "}\n\n"+
+                "}\n\n" +
                 "function my::under_score::function_example2(): Any[1]\n" +
-                        "{\n" +
-                        "   'a'\n" +
-                        "}\n"
+                "{\n" +
+                "   'a'\n" +
+                "}\n"
         );
     }
 
@@ -700,8 +702,8 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     {
         String code =
                 "function example::somethingElse(input: Integer[1]): Any[0..1]\n" +
-                        "{\n"+
-                        "   [1, $input]->meta::pure::functions::math::max()\n"+
+                        "{\n" +
+                        "   [1, $input]->meta::pure::functions::math::max()\n" +
                         "}\n";
         test(code);
     }

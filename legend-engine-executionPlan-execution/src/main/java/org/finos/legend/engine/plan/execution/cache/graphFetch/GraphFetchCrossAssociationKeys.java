@@ -137,7 +137,8 @@ public class GraphFetchCrossAssociationKeys
                 .filter(GlobalGraphFetchExecutionNode.class::isInstance)
                 .map(GlobalGraphFetchExecutionNode.class::cast)
                 .filter(g -> g.xStorePropertyFetchDetails != null && g.xStorePropertyFetchDetails.supportsCaching)
-                .map(g -> {
+                .map(g ->
+                {
                     XStorePropertyFetchDetails fetch = g.xStorePropertyFetchDetails;
                     return new GraphFetchCrossAssociationKeys(plan, planIdentifier, fetch.propertyPath, fetch.sourceMappingId, fetch.sourceSetId, fetch.targetMappingId, fetch.targetSetId, fetch.targetPropertiesOrdered, fetch.subTree);
                 })

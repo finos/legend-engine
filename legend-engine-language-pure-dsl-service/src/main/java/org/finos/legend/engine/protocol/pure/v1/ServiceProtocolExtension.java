@@ -39,6 +39,8 @@ import java.util.Map;
 
 public class ServiceProtocolExtension implements PureProtocolExtension
 {
+    public static final String SERVICE_CLASSIFIER_PATH = "meta::legend::service::metamodel::Service";
+
     @Override
     public List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()
     {
@@ -78,6 +80,6 @@ public class ServiceProtocolExtension implements PureProtocolExtension
     @Override
     public Map<Class<? extends PackageableElement>, String> getExtraProtocolToClassifierPathMap()
     {
-        return Maps.mutable.with(Service.class, "meta::legend::service::metamodel::Service");
+        return Maps.mutable.with(Service.class, SERVICE_CLASSIFIER_PATH);
     }
 }

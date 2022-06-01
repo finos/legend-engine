@@ -38,6 +38,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 public abstract class IngestMode
 {
     public SourceInformation sourceInformation;
-    
+
     public abstract <T> T accept(IngestModeVisitor<T> visitor);
 }

@@ -35,7 +35,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.m
 
 import java.util.Objects;
 
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.*;
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.unsupported;
 
 public class HelperMappingGrammarComposer
 {
@@ -151,10 +153,11 @@ public class HelperMappingGrammarComposer
         return (id != null ? ("[" + PureGrammarComposerUtility.convertIdentifier(id) + "]") : "");
     }
 
-    public static String renderAggregateSetImplementationContainer(AggregateSetImplementationContainer agg,  DEPRECATED_PureGrammarComposerCore transformer)
+    public static String renderAggregateSetImplementationContainer(AggregateSetImplementationContainer agg, DEPRECATED_PureGrammarComposerCore transformer)
     {
         String aggregateMapping = "";
-        if(agg.setImplementation != null) {
+        if (agg.setImplementation != null)
+        {
             transformer.setBaseTabLevel(4);
             aggregateMapping = "~aggregateMapping" + agg.setImplementation.accept(transformer);
             transformer.setBaseTabLevel(1);
@@ -169,7 +172,7 @@ public class HelperMappingGrammarComposer
                 LazyIterate.collect(agg.aggregateSpecification.aggregateValues, aggregateFunction -> getTabString(6) + "( " + "~mapFn:" + aggregateFunction.mapFn.accept(transformer).replaceFirst("\\|", "")
                         + " ," + " ~aggregateFn: " + aggregateFunction.aggregateFn.accept(transformer).replaceFirst("\\|", "") + " )").makeString(",\n") +
                 "\n" + getTabString(5) + ")\n" +
-                getTabString(4) +  "},\n" +
+                getTabString(4) + "},\n" +
                 getTabString(4) + aggregateMapping +
                 "\n" + getTabString(3) + ")\n";
     }

@@ -17,5 +17,6 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persis
 public interface NotifyeeVisitor<T>
 {
     T visit(EmailNotifyee val);
+
     T visit(PagerDutyNotifyee val);
 }

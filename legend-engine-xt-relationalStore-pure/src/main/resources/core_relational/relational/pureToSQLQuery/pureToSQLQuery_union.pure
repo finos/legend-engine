@@ -124,7 +124,10 @@ function meta::relational::functions::pureToSqlQuery::union::managePrimaryKeys(a
                       let newKeys = $setImpls->map(s|if($s == $setImpl,
                                                           |$key,
                                                           |if($state.importDataFlow==true,
-                                                              |$s.resolvePrimaryKey()->map(p|^Alias(name='"'+$p->cast(@TableAliasColumn).column.name+'_'+$setImpls->indexOf($s)->toString()+'"', relationalElement = $sqlNull)),
+                                                              |$s.resolvePrimaryKey()->map(p|
+                                                                let column = $p->cast(@TableAliasColumn).column;
+                                                                let relationalElement = if($state.importDataFlowImplementationCount->isEmpty(), |$column.type->getDefaultLiteralValue(), |$sqlNull);
+                                                                ^Alias(name='"'+$column.name+'_'+$setImpls->indexOf($s)->toString()+'"', relationalElement = $relationalElement);),
                                                               |range(0, $s.resolvePrimaryKey()->size(), 1)->map(p| ^Alias(name='"pk_'+$p->toString()+'_'+$setImpls->indexOf($s)->toString()+'"', relationalElement = $sqlNull))
                                                            )
 
@@ -132,6 +135,22 @@ function meta::relational::functions::pureToSqlQuery::union::managePrimaryKeys(a
                                                    );
                       ^$q(columns=$newKeys);
                    );
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::union::getDefaultLiteralValue(type: meta::relational::metamodel::datatype::DataType[1]): Literal[1]
+{
+  let pureTypeToDefaultValueMap = [
+    pair(Integer, 0),
+    pair(Float, 0.0),
+    pair(Number, 0.0),
+    pair(String, ''),
+    pair(Date, %9999-01-01T00:00:00),
+    pair(DateTime, %9999-01-01T00:00:00),
+    pair(StrictDate, %9999-01-01),
+    pair(Boolean, false)
+  ]->newMap();
+  let value = $pureTypeToDefaultValueMap->get($type->meta::relational::metamodel::datatype::dataTypeToCompatiblePureType())->toOne();
+  ^Literal(value=$value);
 }
 
 function meta::relational::functions::pureToSqlQuery::union::buildUnion(setImpls:RootRelationalInstanceSetImplementation[*], relationalPropertyMappings:RelationalPropertyMapping[*], inAsso:Boolean[1], inProject:Boolean[1], milestoningContext: TemporalMilestoningContext[0..1], nodeId:String[1], state:State[1], context:DebugContext[1], extensions:RouterExtension[*]):Union[1]

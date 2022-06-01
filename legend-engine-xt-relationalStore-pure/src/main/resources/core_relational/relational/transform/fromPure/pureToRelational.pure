@@ -13,10 +13,17 @@
 // limitations under the License.
 
 import meta::relational::transform::fromPure::*;
+import meta::relational::translation::*;
 
 function meta::relational::transform::fromPure::pureTypeToDataType(t:Type[1]):meta::relational::metamodel::datatype::DataType[0..1]
 {
    pureTypeToDataTypeMap()->get($t);
+}
+
+function meta::relational::transform::fromPure::pureTypeToDataType(t:Type[1], translationContext:TranslationContext[1]):meta::relational::metamodel::datatype::DataType[0..1]
+{
+   let dataType = pureTypeToDataTypeMap()->get($t);
+   $dataType->translateCoreTypeToDbSpecificType($translationContext);
 }
 
 function meta::relational::transform::fromPure::pureTypeToDataTypeMap():Map<Type, meta::relational::metamodel::datatype::DataType>[1]

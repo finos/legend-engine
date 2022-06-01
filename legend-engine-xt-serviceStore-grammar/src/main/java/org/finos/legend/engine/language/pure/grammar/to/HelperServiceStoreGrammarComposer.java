@@ -18,8 +18,27 @@ import org.eclipse.collections.impl.list.mutable.ListAdapter;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.mapping.*;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.mapping.LocalMappingProperty;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.mapping.RootServiceStoreClassMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.mapping.ServiceMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.mapping.ServiceRequestBodyBuildInfo;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.mapping.ServiceRequestBuildInfo;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.mapping.ServiceRequestParameterBuildInfo;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.mapping.ServiceRequestParametersBuildInfo;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.BooleanTypeReference;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ComplexTypeReference;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.FloatTypeReference;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.IntegerTypeReference;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.SecurityScheme;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.Service;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServiceGroup;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServiceGroupPtr;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServiceParameter;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServicePtr;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServiceStore;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServiceStoreElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.StringTypeReference;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.TypeReference;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.List;
@@ -79,15 +98,15 @@ public class HelperServiceStoreGrammarComposer
         if (service.parameters != null && !service.parameters.isEmpty())
         {
             builder.append(getTabString(baseIndentation + 1)).append("parameters :\n")
-                   .append(getTabString(baseIndentation + 1)).append("(\n")
-                   .append(String.join(",\n", ListIterate.collect(service.parameters, param -> renderServiceParameter(param, baseIndentation + 2))))
-                   .append("\n")
-                   .append(getTabString(baseIndentation + 1)).append(");\n");
+                    .append(getTabString(baseIndentation + 1)).append("(\n")
+                    .append(String.join(",\n", ListIterate.collect(service.parameters, param -> renderServiceParameter(param, baseIndentation + 2))))
+                    .append("\n")
+                    .append(getTabString(baseIndentation + 1)).append(");\n");
         }
         builder.append(getTabString(baseIndentation + 1)).append("response : ").append(renderTypeReference(service.response)).append(";\n");
         builder.append(getTabString(baseIndentation + 1)).append("security : [")
-               .append(String.join(",", ListIterate.collect(service.security, HelperServiceStoreGrammarComposer::renderAuthenticationStrategy)))
-               .append("];\n");
+                .append(String.join(",", ListIterate.collect(service.security, HelperServiceStoreGrammarComposer::renderAuthenticationStrategy)))
+                .append("];\n");
 
         builder.append(getTabString(baseIndentation)).append(")\n");
     }
@@ -97,12 +116,12 @@ public class HelperServiceStoreGrammarComposer
         StringBuilder builder = new StringBuilder();
 
         builder.append(getTabString(baseIndentation))
-               .append(renderServiceParameterName(param.name))
-               .append(" : ")
-               .append(renderTypeReference(param.type))
-               .append(" ( ")
-               .append("location = ")
-               .append(param.location.toString().toLowerCase());
+                .append(renderServiceParameterName(param.name))
+                .append(" : ")
+                .append(renderTypeReference(param.type))
+                .append(" ( ")
+                .append("location = ")
+                .append(param.location.toString().toLowerCase());
 
         if (param.serializationFormat != null && param.serializationFormat.style != null)
         {
@@ -203,11 +222,11 @@ public class HelperServiceStoreGrammarComposer
     private static void visitLocalMappingProperty(LocalMappingProperty localMappingProperty, StringBuilder builder, int baseIndentation)
     {
         builder.append(getTabString(baseIndentation))
-               .append("+")
-               .append(PureGrammarComposerUtility.convertIdentifier(localMappingProperty.name))
-               .append(" : ")
-               .append(localMappingProperty.type).append("[").append(HelperDomainGrammarComposer.renderMultiplicity(localMappingProperty.multiplicity)).append("]")
-               .append(";\n");
+                .append("+")
+                .append(PureGrammarComposerUtility.convertIdentifier(localMappingProperty.name))
+                .append(" : ")
+                .append(localMappingProperty.type).append("[").append(HelperDomainGrammarComposer.renderMultiplicity(localMappingProperty.multiplicity)).append("]")
+                .append(";\n");
     }
 
     private static void visitServiceMapping(ServiceMapping serviceMapping, StringBuilder builder, int baseIndentation)
@@ -221,8 +240,8 @@ public class HelperServiceStoreGrammarComposer
             if (serviceMapping.pathOffset != null && !(serviceMapping.pathOffset.path.isEmpty()))
             {
                 builder.append(getTabString(baseIndentation + 1)).append("~path " + SERVICE_MAPPING_PATH_PREFIX + ".")
-                       .append(ListAdapter.adapt(serviceMapping.pathOffset.path).collect(p -> HelperValueSpecificationGrammarComposer.renderPathElement(p, DEPRECATED_PureGrammarComposerCore.Builder.newInstance().build())).makeString("."))
-                       .append("\n");
+                        .append(ListAdapter.adapt(serviceMapping.pathOffset.path).collect(p -> HelperValueSpecificationGrammarComposer.renderPathElement(p, DEPRECATED_PureGrammarComposerCore.Builder.newInstance().build())).makeString("."))
+                        .append("\n");
             }
 
             if (serviceMapping.requestBuildInfo != null)
@@ -237,7 +256,7 @@ public class HelperServiceStoreGrammarComposer
     private static void visitServiceRequestBuildInfo(ServiceRequestBuildInfo requestBuildInfo, StringBuilder builder, int baseIndentation)
     {
         builder.append(getTabString(baseIndentation)).append("~request\n")
-               .append(getTabString(baseIndentation)).append("(\n");
+                .append(getTabString(baseIndentation)).append("(\n");
 
         if (requestBuildInfo.requestParametersBuildInfo != null)
         {
@@ -255,7 +274,7 @@ public class HelperServiceStoreGrammarComposer
     private static void visitServiceRequestParametersBuildInfo(ServiceRequestParametersBuildInfo requestParametersBuildInfo, StringBuilder builder, int baseIndentation)
     {
         builder.append(getTabString(baseIndentation)).append("parameters\n")
-               .append(getTabString(baseIndentation)).append("(\n");
+                .append(getTabString(baseIndentation)).append("(\n");
 
         builder.append(String.join(",\n", ListIterate.collect(requestParametersBuildInfo.parameterBuildInfoList, paramBuildInfo -> composeServiceRequestParameterBuildInfo(paramBuildInfo, baseIndentation + 1))));
         builder.append("\n");
@@ -271,8 +290,8 @@ public class HelperServiceStoreGrammarComposer
     private static void visitServiceRequestBodyBuildInfo(ServiceRequestBodyBuildInfo requestBodyBuildInfo, StringBuilder builder, int baseIndentation)
     {
         builder.append(getTabString(baseIndentation)).append("body = ")
-               .append(requestBodyBuildInfo.transform.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().build()).replaceFirst("\\|", ""))
-               .append("\n");
+                .append(requestBodyBuildInfo.transform.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().build()).replaceFirst("\\|", ""))
+                .append("\n");
     }
 
     private static String renderServiceParameterName(String serviceParameter)

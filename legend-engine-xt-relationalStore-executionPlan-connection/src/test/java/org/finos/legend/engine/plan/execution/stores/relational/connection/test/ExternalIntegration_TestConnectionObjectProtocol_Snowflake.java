@@ -54,13 +54,13 @@ public class ExternalIntegration_TestConnectionObjectProtocol_Snowflake extends 
         SnowflakeDataSourceSpecification ds =
                 new SnowflakeDataSourceSpecification(
                         new SnowflakeDataSourceSpecificationKey("ki79827", "us-east-2",
-                                "LEGEND_INTEGRATION_WH1",
-                                "LEGEND_INTEGRATION_DB1", "aws", null,
-                                "LEGEND_INTEGRATION_ROLE1"),
+                                "INTEGRATION_WH1",
+                                "INTEGRATION_DB1", "aws", null,
+                                "INTEGRATION_ROLE1"),
                         new SnowflakeManager(),
-                        new SnowflakePublicAuthenticationStrategy("SNOWFLAKE_LEGEND_INTEG_RO1_PRIVATEKEY", "SNOWFLAKE_LEGEND_INTEG_RO1_PASSWORD", "LEGEND_INTEG_RO1"));
+                        new SnowflakePublicAuthenticationStrategy("SNOWFLAKE_INTEGRATION_USER1_PRIVATEKEY", "SNOWFLAKE_INTEGRATION_USER1_PASSWORD", "INTEGRATION_USER1"));
         try (Connection connection = toDBConnection.valueOf(ds)) {
-            testConnection(connection, "select * from LEGEND_INTEGRATION_DB1.SCHEMA1.TABLE1");
+            testConnection(connection, "select * from INTEGRATION_DB1.INTEGRATION_SCHEMA1.test");
         }
     }
 }

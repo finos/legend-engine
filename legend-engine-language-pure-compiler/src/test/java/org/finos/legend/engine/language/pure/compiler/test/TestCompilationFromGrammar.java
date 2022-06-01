@@ -140,7 +140,7 @@ public class TestCompilationFromGrammar
     @Test
     public void testCompilationFromGrammarWithMergeOperation()
     {
-        TestCompilationFromGrammarTestSuite.test( "Class  example::SourcePersonWithFirstName\n" +
+        TestCompilationFromGrammarTestSuite.test("Class  example::SourcePersonWithFirstName\n" +
                 "{\n" +
                 "   id:Integer[1];\n" +
                 "   firstName:String[1];\n" +

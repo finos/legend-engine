@@ -21,8 +21,6 @@ import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.map.mutable.UnifiedMap;
 import org.eclipse.collections.impl.tuple.Tuples;
-import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
-import org.finos.legend.engine.shared.javaCompiler.StringJavaSource;
 import org.finos.legend.engine.plan.execution.nodes.ExecutionNodeExecutor;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
@@ -35,6 +33,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.JavaPl
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
+import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
+import org.finos.legend.engine.shared.javaCompiler.StringJavaSource;
 import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
 
@@ -278,7 +278,7 @@ public class ExecutionNodeJavaPlatformHelper
                 {
                     LOGGER.info(new LogInfo(pm, LoggingEventType.JAVA_COMPILATION_START, "Node: " + node.getClass().getName()).toString());
                     compiler.compile(classesToCompile);
-                    LOGGER.info(new LogInfo(pm, LoggingEventType.JAVA_COMPILATION_STOP, (double)System.currentTimeMillis() - start).toString());
+                    LOGGER.info(new LogInfo(pm, LoggingEventType.JAVA_COMPILATION_STOP, (double) System.currentTimeMillis() - start).toString());
                 }
             }
             catch (Exception jce)

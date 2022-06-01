@@ -85,7 +85,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.lang.Class;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -276,7 +275,7 @@ public class ServiceTestRunner
             String javaCode = ServiceTestGenerationHelper.generateJavaForAsserts(asserts, this.service, this.pureModel, packageName, className);
             Class<?> assertsClass;
             RichServiceTestResult testRun;
-            try
+            try (Scope s = GlobalTracer.get().buildSpan("compile test asserts").startActive(true))
             {
                 assertsClass = compileJavaForAsserts(packageName, className, javaCode);
             }

@@ -14,9 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.config;
 
-import io.dropwizard.Configuration;
-
-public class TemporaryTestDbConfiguration extends Configuration
+public class TemporaryTestDbConfiguration
 {
     public Integer port;
 

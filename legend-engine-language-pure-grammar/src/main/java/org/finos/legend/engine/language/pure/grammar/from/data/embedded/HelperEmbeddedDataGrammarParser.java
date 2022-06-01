@@ -19,8 +19,8 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
-import org.finos.legend.engine.language.pure.grammar.from.extension.data.EmbeddedDataParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
+import org.finos.legend.engine.language.pure.grammar.from.extension.data.EmbeddedDataParser;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
@@ -47,7 +47,7 @@ public class HelperEmbeddedDataGrammarParser
      *     EmbeddedDataParser.parseEmbeddedData(ctx.embeddedData(), walkerSourceInformation)
      * </pre>
      */
-    public static EmbeddedData parseEmbeddedData(ParserRuleContext embeddedDataContext, ParseTreeWalkerSourceInformation parentSourceInformation, PureGrammarParserExtensions extensions)
+    public static EmbeddedData parseEmbeddedData(ParserRuleContext embeddedDataContext, ParseTreeWalkerSourceInformation parentWalkerSourceInformation, PureGrammarParserExtensions extensions)
     {
         List<ParseTree> children = embeddedDataContext.children;
         if (children.size() < 3 || !children.get(0).getClass().getSimpleName().equals("IdentifierContext") || !(children.get(1) instanceof TerminalNode))
@@ -67,7 +67,7 @@ public class HelperEmbeddedDataGrammarParser
         EmbeddedDataParser parser = extensions.getExtraEmbeddedDataParser(dataType);
         if (parser == null)
         {
-            throw new EngineException("Unknown embedded data type: " + dataType, parentSourceInformation.getSourceInformation(identifierContext), EngineErrorType.PARSER);
+            throw new EngineException("Unknown embedded data type: " + dataType, parentWalkerSourceInformation.getSourceInformation(identifierContext), EngineErrorType.PARSER);
         }
 
         StringBuilder builder = new StringBuilder();
@@ -77,11 +77,11 @@ public class HelperEmbeddedDataGrammarParser
 
         // prepare island grammar walker source information
         int startLine = islandOpen.getSymbol().getLine();
-        int lineOffset = parentSourceInformation.getLineOffset() + startLine - 1;
+        int lineOffset = parentWalkerSourceInformation.getLineOffset() + startLine - 1;
         // only add current walker source information column offset if this is the first line
-        int columnOffset = (startLine == 1 ? parentSourceInformation.getColumnOffset() : 0) + islandOpen.getSymbol().getCharPositionInLine() + islandOpen.getSymbol().getText().length();
-        ParseTreeWalkerSourceInformation walkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(parentSourceInformation).withLineOffset(lineOffset).withColumnOffset(columnOffset).build();
-        SourceInformation sourceInformation = parentSourceInformation.getSourceInformation(embeddedDataContext);
+        int columnOffset = (startLine == 1 ? parentWalkerSourceInformation.getColumnOffset() : 0) + islandOpen.getSymbol().getCharPositionInLine() + islandOpen.getSymbol().getText().length();
+        ParseTreeWalkerSourceInformation walkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(parentWalkerSourceInformation).withLineOffset(lineOffset).withColumnOffset(columnOffset).build();
+        SourceInformation sourceInformation = parentWalkerSourceInformation.getSourceInformation(embeddedDataContext);
 
         if (text.isEmpty())
         {

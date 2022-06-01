@@ -61,7 +61,8 @@ public interface IRelationalGrammarParserExtension extends PureGrammarParserExte
         return process(code, processors, "Milestoning");
     }
 
-    static <T extends SpecificationSourceCode, U> U process(T code, List<Function<T, U>> processors, String type) {
+    static <T extends SpecificationSourceCode, U> U process(T code, List<Function<T, U>> processors, String type)
+    {
         return ListIterate
                 .collect(processors, processor -> processor.apply(code))
                 .select(Objects::nonNull)
@@ -69,19 +70,23 @@ public interface IRelationalGrammarParserExtension extends PureGrammarParserExte
                 .orElseThrow(() -> new EngineException("Unsupported " + type + " type '" + code.getType() + "'", code.getSourceInformation(), EngineErrorType.PARSER));
     }
 
-    default List<Function<DataSourceSpecificationSourceCode, DatasourceSpecification>> getExtraDataSourceSpecificationParsers() {
+    default List<Function<DataSourceSpecificationSourceCode, DatasourceSpecification>> getExtraDataSourceSpecificationParsers()
+    {
         return Collections.emptyList();
     }
 
-    default List<Function<AuthenticationStrategySourceCode, AuthenticationStrategy>> getExtraAuthenticationStrategyParsers() {
+    default List<Function<AuthenticationStrategySourceCode, AuthenticationStrategy>> getExtraAuthenticationStrategyParsers()
+    {
         return Collections.emptyList();
     }
 
-    default List<Function<PostProcessorSpecificationSourceCode, PostProcessor>> getExtraPostProcessorParsers() {
+    default List<Function<PostProcessorSpecificationSourceCode, PostProcessor>> getExtraPostProcessorParsers()
+    {
         return Collections.emptyList();
     }
 
-    default List<Function<MilestoningSpecificationSourceCode, Milestoning>> getExtraMilestoningParsers() {
+    default List<Function<MilestoningSpecificationSourceCode, Milestoning>> getExtraMilestoningParsers()
+    {
         return Collections.emptyList();
     }
 }

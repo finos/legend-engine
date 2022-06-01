@@ -16,13 +16,25 @@ import meta::relational::runtime::*;
 import meta::relational::dbTestRunner::*;
 import meta::relational::tests::dbSpecificTests::H2::*;
 import meta::pure::alloy::connections::*;
+import meta::pure::test::*;
 
-function <<test.Test>> meta::relational::tests::dbSpecificTests::H2::runSQLQueryTests():Boolean[1]
+function <<test.TestCollection>> meta::relational::tests::dbSpecificTests::H2::runSQLQueryTestsParam(): PureTestCollection[1]
 {
   let connection = meta::relational::dbTestRunner::getTestConnection(DatabaseType.H2, meta::pure::router::extension::defaultRelationalExtensions());
-      
-  let allTests = collectTests(meta::relational::tests::dbSpecificTests::sqlQueryTests);
-  let ignoredTests= [] ;
   
-  runTestsWith($allTests, $ignoredTests, DatabaseType.H2, $connection,  []);
+  meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions
+          ->collectParameterizedTests('H2',
+                ^DbTestConfig(dbType=DatabaseType.H2, connection=$connection), 
+                paramCustomizationsForDynaFunctionTests_FunctionDefinition_1__DbTestConfig_1__DbTestConfig_1_,
+                []);
+}
+
+function meta::relational::tests::dbSpecificTests::H2::paramCustomizationsForDynaFunctionTests(f:FunctionDefinition<Any>[1], dbTestConfig:DbTestConfig[1]): DbTestConfig[1]
+{
+  //optionally assert db specific sql for a bunch of tests
+   let expectedSqls= [
+     pair(meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::abs::testNegative_DbTestConfig_1__Boolean_1_, 'select abs(-1)')
+   ]->newMap();
+
+  ^$dbTestConfig(expectedSql= $expectedSqls->get($f));
 }

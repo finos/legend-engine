@@ -320,6 +320,85 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/deserializeAndMapMultiSectionCsvResult.json")));
     }
 
+    @Test
+    public void testDeserializeAndMapMultiSectionWithImmaterialFooterCsv()
+    {
+        String model = "###Pure\n" +
+                "Class test::LoanPrice\n" +
+                "{\n" +
+                "  accountNo: Integer[0..1];\n" +
+                "  productId: String[0..1];\n" +
+                "  productIdType: String[0..1];\n" +
+                "  eventDate: StrictDate[0..1];\n" +
+                "  currency: String[0..1];\n" +
+                "  closePrice: Float[0..1];\n" +
+                "  askPrice: Float[0..1];\n" +
+                "  bidPrice: Float[0..1];\n" +
+                "}\n";
+
+        String schemaCode = newExternalSchemaSetGrammarBuilder("test::WholeLoanPriceFileSchema", "FlatData")
+                .withSchemaText("section header: DelimitedWithoutHeadings\n" +
+                        "{\n" +
+                        "  delimiter: ' ';\n" +
+                        "  scope.forNumberOfLines: 1;\n" +
+                        "\n" +
+                        "  Record\n" +
+                        "  {\n" +
+                        "    closeOfBusiness {3}: DATE(format='yyyyMMdd');\n" +
+                        "  }\n" +
+                        "}\n" +
+                        "\n" +
+                        "section prices: DelimitedWithoutHeadings\n" +
+                        "{\n" +
+                        "  scope.default;\n" +
+                        "  delimiter: '~';\n" +
+                        "\n" +
+                        "  Record\n" +
+                        "  {\n" +
+                        "    Account_ID   {1}: INTEGER;\n" +
+                        "    Synonym_Type {2}: STRING;\n" +
+                        "    Synonym      {3}: STRING;\n" +
+                        "    Currency     {4}: STRING;\n" +
+                        "    Close_Price  {9}: DECIMAL;\n" +
+                        "  }\n" +
+                        "}\n" +
+                        "section footer : ImmaterialLines\n" +
+                        "{\n" +
+                        "  scope.forNumberOfLines: 1;\n" +
+                        "}\n "
+                )
+                .build();
+
+        PureModelContextData generated = SchemaToModelGenerationTest.generateModel(schemaCode, fromFlatDataConfig("test::WholeLoanPriceFileSchema", "PriceFile"));
+
+        String mapping = "###Mapping\n" +
+                "Mapping test::PriceRowToLoanPrice\n" +
+                "(\n" +
+                "  *test::LoanPrice: Pure\n" +
+                "  {\n" +
+                "    ~src test::gen::PricesRecord\n" +
+                "    accountNo: $src.accountId,\n" +
+                "    productId: $src.synonym,\n" +
+                "    productIdType: $src.synonymType,\n" +
+                "    eventDate: $src.priceFile.header.closeOfBusiness,\n" +
+                "    currency: $src.currency,\n" +
+                "    closePrice: $src.closePrice\n" +
+                "  }\n" +
+                ")\n";
+
+        String grammar = model + schemaCode + mapping + urlStreamRuntime("test::PriceRowToLoanPrice", "test::gen::TestBinding");
+        String tree = "#{test::LoanPrice{accountNo,productIdType,productId,eventDate,currency,closePrice}}#";
+
+        String result = runTest(generated,
+                grammar,
+                "|test::LoanPrice.all()->graphFetchChecked("+tree+")->serialize("+tree+")",
+                "test::PriceRowToLoanPrice",
+                "test::runtime",
+                resourceAsString("queries/prices_with_footer.csv"));
+
+        MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/deserializeAndMapMultiSectionCsvResult.json")));
+    }
+
     private String tradeSelfMapping()
     {
         return "###Mapping\n" +

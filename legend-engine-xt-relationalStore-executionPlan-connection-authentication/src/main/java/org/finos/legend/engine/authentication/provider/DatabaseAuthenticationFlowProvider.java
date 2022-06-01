@@ -14,10 +14,10 @@
 
 package org.finos.legend.engine.authentication.provider;
 
-import java.util.Optional;
-
 import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
+
+import java.util.Optional;
 
 public interface DatabaseAuthenticationFlowProvider
 {

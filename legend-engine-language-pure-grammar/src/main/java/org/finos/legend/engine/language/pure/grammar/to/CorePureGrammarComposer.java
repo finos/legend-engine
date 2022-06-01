@@ -83,9 +83,9 @@ public class CorePureGrammarComposer implements PureGrammarComposerExtension
         StringBuilder str = new StringBuilder();
 
         str.append("Data ")
-           .append(HelperDomainGrammarComposer.renderAnnotations(dataElement.stereotypes, dataElement.taggedValues))
-           .append(PureGrammarComposerUtility.convertPath(dataElement.getPath()))
-           .append("\n");
+                .append(HelperDomainGrammarComposer.renderAnnotations(dataElement.stereotypes, dataElement.taggedValues))
+                .append(PureGrammarComposerUtility.convertPath(dataElement.getPath()))
+                .append("\n");
 
         str.append("{\n");
         str.append(HelperEmbeddedDataGrammarComposer.composeEmbeddedData(dataElement.data, updatedContext));

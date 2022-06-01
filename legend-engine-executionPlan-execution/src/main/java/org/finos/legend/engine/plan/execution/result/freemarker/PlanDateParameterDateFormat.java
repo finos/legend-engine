@@ -23,10 +23,10 @@ import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.slf4j.Logger;
 
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.regex.Matcher;
@@ -72,7 +72,8 @@ public class PlanDateParameterDateFormat extends TemplateDateFormat
         public LocalDateTime parse(String date) throws DateTimeParseException
         {
             LocalDateTime localDateTime;
-            if (this.hasTimeOffset) {
+            if (this.hasTimeOffset)
+            {
                 localDateTime = OffsetDateTime.parse(date, this.dateFormatter).atZoneSameInstant(ZoneOffset.UTC).toLocalDateTime();
             }
             else if (this.isDateTime)

@@ -34,15 +34,6 @@ public class TestGrammarRoundtrip
 
     public static class TestGrammarRoundtripTestSuite
     {
-        /**
-         * This method is used for testing when the grammar and the protocol is 100% bijective
-         * This also checks for indentation formatting
-         */
-        public static void test(String code)
-        {
-            test(code, null);
-        }
-
         public void testFrom(String code, String expectedProtocolPath)
         {
             String expectedProtocol = new Scanner(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream(expectedProtocolPath), "Can't find resource '" + expectedProtocolPath + "'"), "UTF-8").useDelimiter("\\A").next();
@@ -58,12 +49,22 @@ public class TestGrammarRoundtrip
             }
         }
 
+        /**
+         * This method is used for testing when the grammar and the protocol is 100% bijective
+         * This also checks for indentation formatting
+         */
+        public static void test(String code)
+        {
+            test(code, null);
+        }
+
         private static void test(String code, String message)
         {
             PureModelContextData modelData = null;
             try
             {
-                modelData = PureGrammarParser.newInstance().parseModel(code);
+                // NOTE: no need to get source information
+                modelData = PureGrammarParser.newInstance().parseModel(code, "", 0, 0, false);
                 String json = objectMapper.writeValueAsString(modelData);
                 modelData = objectMapper.readValue(json, PureModelContextData.class);
             }
@@ -103,7 +104,8 @@ public class TestGrammarRoundtrip
         private static void testFormat(String code, String unformattedCode, boolean omitSectionIndex)
         {
             PureGrammarComposer grammarTransformer = PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().build());
-            PureModelContextData parsedModel = PureGrammarParser.newInstance().parseModel(unformattedCode);
+            // NOTE: no need to get source information
+            PureModelContextData parsedModel = PureGrammarParser.newInstance().parseModel(unformattedCode, "", 0, 0, false);
             if (omitSectionIndex)
             {
                 parsedModel = PureModelContextData.newPureModelContextData(parsedModel.getSerializer(), parsedModel.getOrigin(), LazyIterate.reject(parsedModel.getElements(), e -> e instanceof SectionIndex));

@@ -21,17 +21,18 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.plan.execution.stores.service.test.contentPattern.ContentPatternToWiremockPatternGenerator;
 import org.finos.legend.engine.plan.execution.stores.service.test.contentPattern.ContentPatternToWiremockPatternGeneratorExtensionLoader;
-import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
-import org.finos.legend.engine.protocol.pure.v1.model.data.*;
-import org.finos.legend.engine.protocol.pure.v1.model.data.contentPattern.EqualToJsonPattern;
-import org.finos.legend.engine.protocol.pure.v1.model.data.contentPattern.EqualToPattern;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ExternalFormatData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ServiceRequestPattern;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ServiceResponseDefinition;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ServiceStoreEmbeddedData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ServiceStubMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.data.contentPattern.StringValuePattern;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.HttpMethod;
-import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.Optional;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 
 public class TestServerSetupHelper
 {
@@ -85,7 +86,7 @@ public class TestServerSetupHelper
                 builder = WireMock.post(urlPathEqualTo(requestPattern.urlPath));
             }
 
-            if(!requestPattern.bodyPatterns.isEmpty())
+            if (!requestPattern.bodyPatterns.isEmpty())
             {
                 builder.withRequestBody(getWireMockStringValuePattern(requestPattern.bodyPatterns.get(0)));
             }
@@ -95,11 +96,11 @@ public class TestServerSetupHelper
             throw new UnsupportedOperationException("ServiceStore test server ");
         }
 
-        if(requestPattern.queryParams != null)
+        if (requestPattern.queryParams != null)
         {
             requestPattern.queryParams.forEach((key, value) -> builder.withQueryParam(key, getWireMockStringValuePattern(value)));
         }
-        if(requestPattern.headerParams != null)
+        if (requestPattern.headerParams != null)
         {
             requestPattern.headerParams.forEach((key, value) -> builder.withHeader(key, getWireMockStringValuePattern(value)));
         }
