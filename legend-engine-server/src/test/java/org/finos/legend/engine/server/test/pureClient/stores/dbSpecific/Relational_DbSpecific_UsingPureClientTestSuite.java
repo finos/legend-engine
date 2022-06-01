@@ -29,7 +29,7 @@ import static org.finos.legend.engine.server.test.shared.PureTestHelper.*;
 
 //Base classs for db specific tests - dont run this test directly
 @Ignore
-public class Test_Relational_DbSpecific_UsingPureClientTestSuite extends TestSuite
+public abstract class Relational_DbSpecific_UsingPureClientTestSuite extends TestSuite
 {
     public static Test createSuite(String pureTestCollectionPath,String testServerConfigFilePath) throws Exception
     {
