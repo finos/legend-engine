@@ -57,7 +57,8 @@ public interface IRelationalGrammarComposerExtension extends PureGrammarComposer
         return process(milestoning, processors, context, offset, "Milestoning", milestoning.sourceInformation);
     }
 
-    static <T> String process(T item, List<Function2<T, PureGrammarComposerContext, String>> processors, PureGrammarComposerContext context, String type, SourceInformation srcInfo) {
+    static <T> String process(T item, List<Function2<T, PureGrammarComposerContext, String>> processors, PureGrammarComposerContext context, String type, SourceInformation srcInfo)
+    {
         return ListIterate
                 .collect(processors, processor -> processor.value(item, context))
                 .select(Objects::nonNull)
@@ -65,7 +66,8 @@ public interface IRelationalGrammarComposerExtension extends PureGrammarComposer
                 .orElseThrow(() -> new EngineException("Unsupported " + type + " type '" + item.getClass() + "'", srcInfo, EngineErrorType.PARSER));
     }
 
-    static <T> String process(T item, List<Function3<T, Integer, PureGrammarComposerContext, String>> processors, PureGrammarComposerContext context, Integer offset, String type, SourceInformation srcInfo) {
+    static <T> String process(T item, List<Function3<T, Integer, PureGrammarComposerContext, String>> processors, PureGrammarComposerContext context, Integer offset, String type, SourceInformation srcInfo)
+    {
         return ListIterate
                 .collect(processors, processor -> processor.value(item, offset, context))
                 .select(Objects::nonNull)
@@ -73,19 +75,23 @@ public interface IRelationalGrammarComposerExtension extends PureGrammarComposer
                 .orElseThrow(() -> new EngineException("Unsupported " + type + " type '" + item.getClass() + "'", srcInfo, EngineErrorType.PARSER));
     }
 
-    default List<Function2<AuthenticationStrategy, PureGrammarComposerContext, String>> getExtraAuthenticationStrategyComposers() {
+    default List<Function2<AuthenticationStrategy, PureGrammarComposerContext, String>> getExtraAuthenticationStrategyComposers()
+    {
         return FastList.newList();
     }
 
-    default List<Function2<DatasourceSpecification, PureGrammarComposerContext, String>> getExtraDataSourceSpecificationComposers() {
+    default List<Function2<DatasourceSpecification, PureGrammarComposerContext, String>> getExtraDataSourceSpecificationComposers()
+    {
         return FastList.newList();
     }
 
-    default List<Function2<PostProcessor, PureGrammarComposerContext, String>> getExtraPostProcessorComposers() {
+    default List<Function2<PostProcessor, PureGrammarComposerContext, String>> getExtraPostProcessorComposers()
+    {
         return FastList.newList();
     }
 
-    default List<Function3<Milestoning, Integer, PureGrammarComposerContext, String>> getExtraMilestoningComposers() {
+    default List<Function3<Milestoning, Integer, PureGrammarComposerContext, String>> getExtraMilestoningComposers()
+    {
         return FastList.newList();
     }
 }

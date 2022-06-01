@@ -435,7 +435,7 @@ public class CompileContext
         {
             String packageName = functionName.substring(0, functionName.lastIndexOf(this.PACKAGE_SEPARATOR));
             String name = functionName.substring(functionName.lastIndexOf(this.PACKAGE_SEPARATOR) + this.PACKAGE_SEPARATOR.length());
-            if(metaPackages.contains(packageName))
+            if (metaPackages.contains(packageName))
             {
                 extractedFunctionName = name;
             }

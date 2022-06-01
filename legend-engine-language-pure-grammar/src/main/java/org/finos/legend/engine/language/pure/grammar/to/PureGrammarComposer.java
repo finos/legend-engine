@@ -89,12 +89,12 @@ public class PureGrammarComposer
 
         // FIXME: the following logic should be removed completely when we move to use extensions
         Predicate<PackageableElement> isDomainElement = e ->
-            (e instanceof Class) ||
-                (e instanceof Association) ||
-                (e instanceof Enumeration) ||
-                (e instanceof Function) ||
-                (e instanceof Profile) ||
-                (e instanceof Measure);
+                (e instanceof Class) ||
+                        (e instanceof Association) ||
+                        (e instanceof Enumeration) ||
+                        (e instanceof Function) ||
+                        (e instanceof Profile) ||
+                        (e instanceof Measure);
         if (ListIterate.anySatisfy(elements, isDomainElement))
         {
             this.DEPRECATED_renderSection(DomainParser.name, ListIterate.select(elements, isDomainElement), elementsToCompose, composedSections);
@@ -143,10 +143,10 @@ public class PureGrammarComposer
             if (!elements.isEmpty())
             {
                 builder.append(this.context.extraSectionComposers.stream().map(composer -> composer.value(elements, this.context, section.parserName)).filter(Objects::nonNull).findFirst()
-                    // NOTE: this is the old way (no-plugin) way to render section elements, this approach is not great since it does not enforce
-                    // the types of elements a section can have, the newer approach does the check and compose unsupported message when such violations occur
-                    // TO BE REMOVED when we moved everything to extensions
-                    .orElseGet(() -> LazyIterate.collect(elements, this::DEPRECATED_renderElement).makeString("\n\n")));
+                        // NOTE: this is the old way (no-plugin) way to render section elements, this approach is not great since it does not enforce
+                        // the types of elements a section can have, the newer approach does the check and compose unsupported message when such violations occur
+                        // TO BE REMOVED when we moved everything to extensions
+                        .orElseGet(() -> LazyIterate.collect(elements, this::DEPRECATED_renderElement).makeString("\n\n")));
                 builder.append("\n");
             }
             composedSections.add(builder.toString());

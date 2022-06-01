@@ -50,7 +50,8 @@ public class ExecutionPlanDependenciesFilter implements ClassPathFilter
      * libraries that are guaranteed to be available at compile time through a reference
      * to them here.
      */
-    public static void main(String[] args) {
+    public static void main(String[] args)
+    {
         System.out.println(com.fasterxml.jackson.core.JsonFactory.class.getSimpleName());
         System.out.println(com.fasterxml.jackson.dataformat.xml.XmlFactory.class.getSimpleName());
         System.out.println(org.openjdk.jol.info.ClassLayout.class.getSimpleName());

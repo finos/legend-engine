@@ -53,7 +53,8 @@ public class PostProcessorParseTreeWalker
         return func.apply(parser);
     }
 
-    public MapperPostProcessor visitMapperPostProcessor(PostProcessorSpecificationSourceCode code, PostProcessorParserGrammar.MapperPostProcessorContext ctx) {
+    public MapperPostProcessor visitMapperPostProcessor(PostProcessorSpecificationSourceCode code, PostProcessorParserGrammar.MapperPostProcessorContext ctx)
+    {
         List<Mapper> mappers = ListIterate.collect(ctx.mappers().mapper(), mapper -> visitMapper(code, mapper));
 
         MapperPostProcessor processor = new MapperPostProcessor();
@@ -62,11 +63,15 @@ public class PostProcessorParseTreeWalker
         return processor;
     }
 
-    private Mapper visitMapper(PostProcessorSpecificationSourceCode code, PostProcessorParserGrammar.MapperContext mapper) {
+    private Mapper visitMapper(PostProcessorSpecificationSourceCode code, PostProcessorParserGrammar.MapperContext mapper)
+    {
 
-        if (mapper.tableMapper() != null) {
+        if (mapper.tableMapper() != null)
+        {
             return visitTableMapper(code, mapper.tableMapper());
-        } else if (mapper.schemaMapper() != null) {
+        }
+        else if (mapper.schemaMapper() != null)
+        {
             return visitSchemaMapper(code, mapper.schemaMapper());
         }
 
@@ -107,15 +112,18 @@ public class PostProcessorParseTreeWalker
         return mapper;
     }
 
-    public static <T extends RuleContext> T required(List<T> contexts, String fieldName, SourceInformation sourceInformation) {
+    public static <T extends RuleContext> T required(List<T> contexts, String fieldName, SourceInformation sourceInformation)
+    {
         return PureGrammarParserUtility.validateAndExtractRequiredField(contexts, fieldName, sourceInformation);
     }
 
-    public static <T extends RuleContext> T optional(List<T> contexts, String fieldName, SourceInformation sourceInformation) {
+    public static <T extends RuleContext> T optional(List<T> contexts, String fieldName, SourceInformation sourceInformation)
+    {
         return PureGrammarParserUtility.validateAndExtractRequiredField(contexts, fieldName, sourceInformation);
     }
 
-    private String string(TerminalNode text) {
+    private String string(TerminalNode text)
+    {
         return PureGrammarParserUtility.fromGrammarString(text.getText(), true);
     }
 }

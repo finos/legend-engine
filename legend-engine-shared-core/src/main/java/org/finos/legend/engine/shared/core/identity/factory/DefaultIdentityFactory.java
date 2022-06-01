@@ -14,12 +14,6 @@
 
 package org.finos.legend.engine.shared.core.identity.factory;
 
-import java.security.Principal;
-import java.util.List;
-import java.util.Optional;
-
-import javax.security.auth.Subject;
-
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
@@ -30,6 +24,11 @@ import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCre
 import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
 import org.finos.legend.server.pac4j.kerberos.KerberosProfile;
 import org.pac4j.core.profile.CommonProfile;
+
+import javax.security.auth.Subject;
+import java.security.Principal;
+import java.util.List;
+import java.util.Optional;
 
 public final class DefaultIdentityFactory implements IdentityFactory
 {

@@ -14,9 +14,9 @@
 
 package org.finos.legend.engine.shared.core.identity.credential;
 
-import java.util.Objects;
-
 import org.finos.legend.engine.shared.core.identity.Credential;
+
+import java.util.Objects;
 
 public class PlaintextUserPasswordCredential implements Credential
 {

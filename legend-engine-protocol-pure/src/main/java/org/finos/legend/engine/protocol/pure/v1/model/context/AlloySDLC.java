@@ -48,6 +48,6 @@ public class AlloySDLC extends SDLC
     @Override
     public int hashCode()
     {
-        return Objects.hashCode(this.project) + 89 * Objects.hashCode(this.version)+ 17 * Objects.hashCode(this.groupId) + 17 * Objects.hashCode(artifactId);
+        return Objects.hashCode(this.project) + 89 * Objects.hashCode(this.version) + 17 * Objects.hashCode(this.groupId) + 17 * Objects.hashCode(artifactId);
     }
 }

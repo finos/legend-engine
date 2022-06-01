@@ -53,15 +53,15 @@ public class LimitedByteArrayOutputStream extends ByteArrayOutputStream
     public synchronized String toString()
     {
         return (received <= maxCapacity)
-               ? super.toString()
-               : super.toString() + "...";
+                ? super.toString()
+                : super.toString() + "...";
     }
 
     @Override
     public synchronized String toString(String charsetName) throws UnsupportedEncodingException
     {
         return (received <= maxCapacity)
-               ? super.toString(charsetName)
-               : super.toString(charsetName) + "...";
+                ? super.toString(charsetName)
+                : super.toString(charsetName) + "...";
     }
 }

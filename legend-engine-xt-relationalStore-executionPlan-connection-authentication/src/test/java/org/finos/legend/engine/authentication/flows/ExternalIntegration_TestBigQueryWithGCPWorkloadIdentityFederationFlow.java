@@ -26,10 +26,12 @@ import org.finos.legend.engine.shared.core.vault.Vault;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
-import static org.junit.Assert.*;
-
-public class ExternalIntegration_TestBigQueryWithGCPWorkloadIdentityFederationFlow {
+public class ExternalIntegration_TestBigQueryWithGCPWorkloadIdentityFederationFlow
+{
     private final Identity identity1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("identity1");
     private static final LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.AWSConfig awsConfig = new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.AWSConfig(
             "us-east-1",
@@ -52,7 +54,8 @@ public class ExternalIntegration_TestBigQueryWithGCPWorkloadIdentityFederationFl
     }
 
     @Test
-    public void makeCredential() throws Exception {
+    public void makeCredential() throws Exception
+    {
         LegendDefaultDatabaseAuthenticationFlowProviderConfiguration flowProviderConfiguration = LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.Builder.newInstance()
                 .withAwsConfig(awsConfig)
                 .withGcpWorkloadConfig(gcpWorkloadConfig)

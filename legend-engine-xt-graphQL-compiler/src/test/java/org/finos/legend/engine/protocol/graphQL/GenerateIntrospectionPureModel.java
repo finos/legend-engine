@@ -1,3 +1,17 @@
+//  Copyright 2022 Goldman Sachs
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+
 package org.finos.legend.engine.protocol.graphQL;
 
 import org.eclipse.collections.api.RichIterable;
@@ -13,7 +27,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 
 public class GenerateIntrospectionPureModel
 {
-    public static void main(String args[])
+    public static void main(String[] args)
     {
         PureModel pureModel = new PureModel(PureModelContextData.newBuilder().build(), Lists.mutable.empty(), DeploymentMode.TEST);
         String introspection = "type __Schema {\n" +
@@ -100,7 +114,7 @@ public class GenerateIntrospectionPureModel
 
         GraphQLGrammarParser parser = GraphQLGrammarParser.newInstance();
         Document document = parser.parseDocument(introspection);
-        RichIterable<? extends Type> types =  org.finos.legend.pure.generated.core_external_query_graphql_transformation.Root_meta_external_query_graphQL_binding_toPure_typeSystem_graphQLTypeSystemtoPure_Document_1__String_1__Type_MANY_(new Translator().translate(document, pureModel), "meta::external::query::graphQL::introspection::model", pureModel.getExecutionSupport());
+        RichIterable<? extends Type> types = org.finos.legend.pure.generated.core_external_query_graphql_transformation.Root_meta_external_query_graphQL_binding_toPure_typeSystem_graphQLTypeSystemtoPure_Document_1__String_1__Type_MANY_(new Translator().translate(document, pureModel), "meta::external::query::graphQL::introspection::model", pureModel.getExecutionSupport());
         String res = types.collect(t -> core_pure_serialization_toPureGrammar.Root_meta_pure_metamodel_serialization_grammar_printType_Type_1__String_1_(t, pureModel.getExecutionSupport())).makeString("\n");
         System.out.println(res);
     }

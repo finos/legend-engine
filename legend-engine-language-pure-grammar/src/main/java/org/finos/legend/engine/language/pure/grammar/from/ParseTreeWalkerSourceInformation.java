@@ -87,7 +87,7 @@ public class ParseTreeWalkerSourceInformation
 
     public SourceInformation getSourceInformation(ParserRuleContext parserRuleContext)
     {
-        return  getSourceInformation(this.sourceId, parserRuleContext.getStart(), parserRuleContext.getStop(), this.lineOffset, this.columnOffset);
+        return getSourceInformation(this.sourceId, parserRuleContext.getStart(), parserRuleContext.getStop(), this.lineOffset, this.columnOffset);
     }
 
     public SourceInformation getSourceInformation(Token token)
@@ -100,8 +100,10 @@ public class ParseTreeWalkerSourceInformation
         return getSourceInformation(this.sourceId, startToken, endToken, this.lineOffset, this.columnOffset);
     }
 
-    private SourceInformation getSourceInformation(String sourceId, Token startToken, Token endToken, int lineOffset, int columnOffset) {
-        if (returnSourceInfo) {
+    private SourceInformation getSourceInformation(String sourceId, Token startToken, Token endToken, int lineOffset, int columnOffset)
+    {
+        if (returnSourceInfo)
+        {
             // NOTE: column offset should only apply to the first line (see the example and note in `columnOffset` attribute above)
             int startLine = startToken.getLine() + lineOffset;
             int startColumn = startToken.getCharPositionInLine() + 1 + (startToken.getLine() == 1 ? columnOffset : 0);
@@ -170,11 +172,11 @@ public class ParseTreeWalkerSourceInformation
             return this;
         }
 
-      public ParseTreeWalkerSourceInformation.Builder withReturnSourceInfo(boolean returnSourceInfo)
-      {
-        this.returnSourceInfo = returnSourceInfo;
-        return this;
-      }
+        public ParseTreeWalkerSourceInformation.Builder withReturnSourceInfo(boolean returnSourceInfo)
+        {
+            this.returnSourceInfo = returnSourceInfo;
+            return this;
+        }
 
         public ParseTreeWalkerSourceInformation build()
         {

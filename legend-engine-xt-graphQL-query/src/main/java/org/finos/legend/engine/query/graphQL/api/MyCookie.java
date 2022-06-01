@@ -54,7 +54,8 @@ public class MyCookie implements Cookie
     @Override
     public Date getExpiryDate()
     {
-        if (this.cookie.getMaxAge() >= 0) {
+        if (this.cookie.getMaxAge() >= 0)
+        {
             return new Date(System.currentTimeMillis() + this.cookie.getMaxAge() * 1000L);
         }
         throw new RuntimeException("");

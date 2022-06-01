@@ -105,7 +105,7 @@ public class PureGrammarParserUtility
     public static String validatePath(String path, SourceInformation sourceInformation)
     {
         List<String> parts = new ArrayList<>();
-        for (String identifier: path.split(PACKAGE_SEPARATOR))
+        for (String identifier : path.split(PACKAGE_SEPARATOR))
         {
             if (identifier.startsWith("'"))
             {

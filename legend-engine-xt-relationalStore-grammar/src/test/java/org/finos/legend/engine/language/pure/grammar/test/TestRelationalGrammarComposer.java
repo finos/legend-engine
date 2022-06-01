@@ -131,20 +131,20 @@ public class TestRelationalGrammarComposer
         PureGrammarComposer grammarTransformer = PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().build());
         String formatted = grammarTransformer.renderPureModelContextData(context);
         String expected =
-                "###Mapping\n"+
-                        "Mapping testDB::test\n"+
-                        "(\n"+
-                        "  *meta::relational::tests::model::simple::Person[meta_relational_tests_model_simple_Person]: Relational\n"+
-                        "  {\n"+
-                        "    ~primaryKey\n"+
-                        "    (\n"+
-                        "      [meta::relational::tests::mapping::join::model::store::db]personTable.ID\n"+
-                        "    )\n"+
-                        "    ~mainTable [meta::relational::tests::mapping::join::model::store::db]personTable\n"+
-                        "    firstName: [meta::relational::tests::mapping::join::model::store::db]personTable.FIRSTNAME,\n"+
-                        "    lastName: [meta::relational::tests::mapping::join::model::store::db]personTable.LASTNAME,\n "+
-                        "   age: [meta::relational::tests::mapping::join::model::store::db]@Person_MiddleTable > (OUTER) [meta::relational::tests::mapping::join::model::store::db]@MiddleTable_PersonExtension | [meta::relational::tests::mapping::join::model::store::db]personExtensionTable.AGE\n"+
-                        "  }\n"+
+                "###Mapping\n" +
+                        "Mapping testDB::test\n" +
+                        "(\n" +
+                        "  *meta::relational::tests::model::simple::Person[meta_relational_tests_model_simple_Person]: Relational\n" +
+                        "  {\n" +
+                        "    ~primaryKey\n" +
+                        "    (\n" +
+                        "      [meta::relational::tests::mapping::join::model::store::db]personTable.ID\n" +
+                        "    )\n" +
+                        "    ~mainTable [meta::relational::tests::mapping::join::model::store::db]personTable\n" +
+                        "    firstName: [meta::relational::tests::mapping::join::model::store::db]personTable.FIRSTNAME,\n" +
+                        "    lastName: [meta::relational::tests::mapping::join::model::store::db]personTable.LASTNAME,\n " +
+                        "   age: [meta::relational::tests::mapping::join::model::store::db]@Person_MiddleTable > (OUTER) [meta::relational::tests::mapping::join::model::store::db]@MiddleTable_PersonExtension | [meta::relational::tests::mapping::join::model::store::db]personExtensionTable.AGE\n" +
+                        "  }\n" +
                         ")\n";
 
         Assert.assertEquals(expected, formatted);

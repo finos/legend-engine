@@ -84,7 +84,7 @@ public class SnowflakeWithKeyPairFlow implements DatabaseAuthenticationFlow<Snow
 
         if (privateKey == null || passPhrase == null)
         {
-            throw new RuntimeException("Can't find the privateKey ("+privateKeyVaultReference+") or the passPhrase ("+passPhraseVaultReference+") in the vault");
+            throw new RuntimeException("Can't find the privateKey (" + privateKeyVaultReference + ") or the passPhrase (" + passPhraseVaultReference + ") in the vault");
         }
 
         if (!privateKey.startsWith("-----BEGIN ENCRYPTED PRIVATE KEY-----"))
@@ -124,7 +124,7 @@ public class SnowflakeWithKeyPairFlow implements DatabaseAuthenticationFlow<Snow
             }
             else
             {
-                throw new UnsupportedOperationException(pemObject.getClass()+" is not supported yet");
+                throw new UnsupportedOperationException(pemObject.getClass() + " is not supported yet");
             }
         }
         catch (Exception e)

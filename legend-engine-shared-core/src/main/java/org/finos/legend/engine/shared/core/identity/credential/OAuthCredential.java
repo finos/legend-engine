@@ -18,7 +18,8 @@ import org.finos.legend.engine.shared.core.identity.Credential;
 
 import java.util.Objects;
 
-public class OAuthCredential implements Credential {
+public class OAuthCredential implements Credential
+{
     private final String accessToken;
 
     public OAuthCredential(String accessToken)
@@ -26,7 +27,8 @@ public class OAuthCredential implements Credential {
         this.accessToken = accessToken;
     }
 
-    public String getAccessToken() {
+    public String getAccessToken()
+    {
         return accessToken;
     }
 

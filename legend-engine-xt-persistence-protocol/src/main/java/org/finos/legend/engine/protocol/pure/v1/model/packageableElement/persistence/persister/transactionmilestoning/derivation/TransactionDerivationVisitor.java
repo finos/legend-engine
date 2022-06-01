@@ -17,5 +17,6 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persis
 public interface TransactionDerivationVisitor<T>
 {
     T visit(SourceSpecifiesInDateTime val);
+
     T visit(SourceSpecifiesInAndOutDateTime val);
 }

@@ -17,7 +17,13 @@ package org.finos.legend.engine.language.pure.grammar.from.datasource;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.datasource.DataSourceSpecificationParserGrammar;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.BigQueryDatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatabricksDatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.EmbeddedH2DatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.RedshiftDatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
 
 import java.util.Optional;
 
@@ -40,7 +46,8 @@ public class DataSourceSpecificationParseTreeWalker
         return dsSpec;
     }
 
-    public EmbeddedH2DatasourceSpecification visitEmbeddedH2DatasourceSpecification(DataSourceSpecificationSourceCode code, DataSourceSpecificationParserGrammar.EmbeddedH2DatasourceSpecificationContext dbSpecCtx) {
+    public EmbeddedH2DatasourceSpecification visitEmbeddedH2DatasourceSpecification(DataSourceSpecificationSourceCode code, DataSourceSpecificationParserGrammar.EmbeddedH2DatasourceSpecificationContext dbSpecCtx)
+    {
         EmbeddedH2DatasourceSpecification dsSpec = new EmbeddedH2DatasourceSpecification();
         dsSpec.sourceInformation = code.getSourceInformation();
         // databaseName
@@ -55,7 +62,8 @@ public class DataSourceSpecificationParseTreeWalker
         return dsSpec;
     }
 
-    public DatabricksDatasourceSpecification visitDatabricksDatasourceSpecification(DataSourceSpecificationSourceCode code, DataSourceSpecificationParserGrammar.DatabricksDatasourceSpecificationContext dbSpecCtx) {
+    public DatabricksDatasourceSpecification visitDatabricksDatasourceSpecification(DataSourceSpecificationSourceCode code, DataSourceSpecificationParserGrammar.DatabricksDatasourceSpecificationContext dbSpecCtx)
+    {
         DatabricksDatasourceSpecification dsSpec = new DatabricksDatasourceSpecification();
         dsSpec.sourceInformation = code.getSourceInformation();
 
@@ -74,7 +82,8 @@ public class DataSourceSpecificationParseTreeWalker
         return dsSpec;
     }
 
-    public SnowflakeDatasourceSpecification visitSnowflakeDatasourceSpecification(DataSourceSpecificationSourceCode code, DataSourceSpecificationParserGrammar.SnowflakeDatasourceSpecificationContext dbSpecCtx) {
+    public SnowflakeDatasourceSpecification visitSnowflakeDatasourceSpecification(DataSourceSpecificationSourceCode code, DataSourceSpecificationParserGrammar.SnowflakeDatasourceSpecificationContext dbSpecCtx)
+    {
         SnowflakeDatasourceSpecification dsSpec = new SnowflakeDatasourceSpecification();
         dsSpec.sourceInformation = code.getSourceInformation();
         // databaseName
@@ -90,7 +99,7 @@ public class DataSourceSpecificationParseTreeWalker
         DataSourceSpecificationParserGrammar.SnowflakeRegionContext regionCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.snowflakeRegion(), "region", dsSpec.sourceInformation);
         dsSpec.region = PureGrammarParserUtility.fromGrammarString(regionCtx.STRING().getText(), true);
         // cloudType
-        DataSourceSpecificationParserGrammar.CloudTypeContext cloudTypeCtx= PureGrammarParserUtility.validateAndExtractOptionalField(dbSpecCtx.cloudType(), "cloudType", dsSpec.sourceInformation);
+        DataSourceSpecificationParserGrammar.CloudTypeContext cloudTypeCtx = PureGrammarParserUtility.validateAndExtractOptionalField(dbSpecCtx.cloudType(), "cloudType", dsSpec.sourceInformation);
         if (cloudTypeCtx != null)
         {
             dsSpec.cloudType = PureGrammarParserUtility.fromGrammarString(cloudTypeCtx.STRING().getText(), true);
@@ -101,7 +110,7 @@ public class DataSourceSpecificationParseTreeWalker
         {
             dsSpec.quotedIdentifiersIgnoreCase = Boolean.parseBoolean(snowflakeQuotedIdentifiersIgnoreCaseCtx.BOOLEAN().getText());
         }
-       // proxyHost
+        // proxyHost
         DataSourceSpecificationParserGrammar.DbProxyHostContext proxyHostContext = PureGrammarParserUtility.validateAndExtractOptionalField(dbSpecCtx.dbProxyHost(), "proxyHost", dsSpec.sourceInformation);
         Optional.ofNullable(proxyHostContext).ifPresent(hostCtx -> dsSpec.proxyHost = PureGrammarParserUtility.fromGrammarString(hostCtx.STRING().getText(), true));
         // proxyPort
@@ -118,13 +127,14 @@ public class DataSourceSpecificationParseTreeWalker
         Optional.ofNullable(organizationContext).ifPresent(organizationCtx -> dsSpec.organization = PureGrammarParserUtility.fromGrammarString(organizationCtx.STRING().getText(), true));
 
         // role
-        DataSourceSpecificationParserGrammar.DbRoleContext roleContext= PureGrammarParserUtility.validateAndExtractOptionalField(dbSpecCtx.dbRole(), "role", dsSpec.sourceInformation);
+        DataSourceSpecificationParserGrammar.DbRoleContext roleContext = PureGrammarParserUtility.validateAndExtractOptionalField(dbSpecCtx.dbRole(), "role", dsSpec.sourceInformation);
         Optional.ofNullable(roleContext).ifPresent(roleCtx -> dsSpec.role = PureGrammarParserUtility.fromGrammarString(roleCtx.STRING().getText(), true));
 
         return dsSpec;
     }
 
-    public StaticDatasourceSpecification visitStaticDatasourceSpecification(DataSourceSpecificationSourceCode code, DataSourceSpecificationParserGrammar.StaticDatasourceSpecificationContext dbSpecCtx) {
+    public StaticDatasourceSpecification visitStaticDatasourceSpecification(DataSourceSpecificationSourceCode code, DataSourceSpecificationParserGrammar.StaticDatasourceSpecificationContext dbSpecCtx)
+    {
         StaticDatasourceSpecification dsSpec = new StaticDatasourceSpecification();
         dsSpec.sourceInformation = code.getSourceInformation();
         // host
@@ -139,7 +149,8 @@ public class DataSourceSpecificationParseTreeWalker
         return dsSpec;
     }
 
-    public BigQueryDatasourceSpecification visitBigQueryDatasourceSpecification(DataSourceSpecificationSourceCode code, DataSourceSpecificationParserGrammar.BigQueryDatasourceSpecificationContext dbSpecCtx) {
+    public BigQueryDatasourceSpecification visitBigQueryDatasourceSpecification(DataSourceSpecificationSourceCode code, DataSourceSpecificationParserGrammar.BigQueryDatasourceSpecificationContext dbSpecCtx)
+    {
         BigQueryDatasourceSpecification dsSpec = new BigQueryDatasourceSpecification();
         dsSpec.sourceInformation = code.getSourceInformation();
         // project id

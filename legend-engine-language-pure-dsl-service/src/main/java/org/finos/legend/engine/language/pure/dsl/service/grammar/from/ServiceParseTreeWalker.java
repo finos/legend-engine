@@ -47,8 +47,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTestSuite;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTest_Legacy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.SingleExecutionTest;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.TestData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.TestContainer;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.TestData;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
@@ -115,7 +115,7 @@ public class ServiceParseTreeWalker
         }
         // test
         ServiceParserGrammar.ServiceTestContext testContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.serviceTest(), "test", service.sourceInformation);
-        if(testContext != null)
+        if (testContext != null)
         {
             service.test = this.visitTest(testContext);
         }
@@ -130,7 +130,7 @@ public class ServiceParseTreeWalker
 
         // data
         ServiceParserGrammar.ServiceTestSuiteDataContext testSuiteDataContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.serviceTestSuiteData(), "data", serviceTestSuite.sourceInformation);
-        if(testSuiteDataContext != null)
+        if (testSuiteDataContext != null)
         {
             serviceTestSuite.testData = visitServiceTestData(testSuiteDataContext);
         }
@@ -148,7 +148,7 @@ public class ServiceParseTreeWalker
 
         testData.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
         ServiceParserGrammar.ServiceTestConnectionsDataContext testConnectionsDataContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.serviceTestConnectionsData(), "connections", testData.sourceInformation);
-        if(testConnectionsDataContext != null)
+        if (testConnectionsDataContext != null)
         {
             testData.connectionsTestData = ListIterate.collect(testConnectionsDataContext.serviceTestConnectionData(), this::visitServiceTestConnectionData);
         }
@@ -177,7 +177,7 @@ public class ServiceParseTreeWalker
 
         // parameters
         ServiceParserGrammar.ServiceTestParametersContext testParametersContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.serviceTestParameters(), "parameters", serviceTest.sourceInformation);
-        if(testParametersContext != null)
+        if (testParametersContext != null)
         {
             serviceTest.parameters = ListIterate.collect(testParametersContext.serviceTestParameter(), this::visitServiceTestParameter);
         }
@@ -361,23 +361,23 @@ public class ServiceParseTreeWalker
 
     private List<ValueSpecification> visitTestParameters(ServiceParserGrammar.TestParametersContext ctx)
     {
-        List<ValueSpecification> testParameters = ctx != null && ctx.testParam() != null ? ListIterate.collect(ctx.testParam(), this::visitParam): null;
+        List<ValueSpecification> testParameters = ctx != null && ctx.testParam() != null ? ListIterate.collect(ctx.testParam(), this::visitParam) : null;
         return testParameters;
     }
 
     private ValueSpecification visitParam(ServiceParserGrammar.TestParamContext ctx)
     {
-        if(ctx != null)
+        if (ctx != null)
         {
-            if(ctx.testListValueParam() != null)
+            if (ctx.testListValueParam() != null)
             {
                 List<ValueSpecification> paramValues = ListIterate.collect(ctx.testListValueParam().primitiveValue(), this::visitTestParameter);
-                PureList param =  new PureList();
+                PureList param = new PureList();
                 param.values = paramValues;
                 param.sourceInformation = walkerSourceInformation.getSourceInformation(ctx.testListValueParam());
                 return param;
             }
-            else if(ctx.testSingleValueParam() != null)
+            else if (ctx.testSingleValueParam() != null)
             {
                 return visitTestParameter(ctx.testSingleValueParam().primitiveValue());
             }
@@ -385,7 +385,8 @@ public class ServiceParseTreeWalker
         throw new UnsupportedOperationException();
     }
 
-    private ValueSpecification visitTestParameter(ServiceParserGrammar.PrimitiveValueContext ctx) {
+    private ValueSpecification visitTestParameter(ServiceParserGrammar.PrimitiveValueContext ctx)
+    {
         DomainParser parser = new DomainParser();
         int startLine = ctx.getStart().getLine();
         int lineOffset = walkerSourceInformation.getLineOffset() + startLine - 1;

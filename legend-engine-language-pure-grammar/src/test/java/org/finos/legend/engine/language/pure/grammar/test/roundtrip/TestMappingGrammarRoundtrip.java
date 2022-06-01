@@ -209,7 +209,7 @@ public class TestMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
     }
 
 
-        @Test
+    @Test
     public void testMergeModelMapping()
     {
         test("###Mapping\n" +

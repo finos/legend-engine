@@ -52,6 +52,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecificat
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
+
 import java.util.List;
 import java.util.function.BiConsumer;
 
@@ -161,7 +162,7 @@ public class Milestoning
         originalMilestonedProperties.addAllIterable(target._originalMilestonedProperties().select(x -> ((AbstractProperty<?>) x)._owner().equals(association)));
     }
 
-    private static void applyMilestoningPropertyTransformations(CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> clazz, Function<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class, RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property>> propertiesGetter, Function<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class, RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty>> qualifiedPropertiesGetter,org.eclipse.collections.api.block.function.Function<Class, RichIterable<? extends Property>> originalMilestonedPropertiesGetter, BiConsumer<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class, ListIterable<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property>> propertiesSetter, BiConsumer<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class, ListIterable<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty>> qualifiedPropertiesSetter, BiConsumer<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class, ListIterable<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property>> originalPropertySetter)
+    private static void applyMilestoningPropertyTransformations(CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> clazz, Function<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class, RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property>> propertiesGetter, Function<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class, RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty>> qualifiedPropertiesGetter, org.eclipse.collections.api.block.function.Function<Class, RichIterable<? extends Property>> originalMilestonedPropertiesGetter, BiConsumer<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class, ListIterable<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property>> propertiesSetter, BiConsumer<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class, ListIterable<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty>> qualifiedPropertiesSetter, BiConsumer<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class, ListIterable<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property>> originalPropertySetter)
     {
         RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property> properties = propertiesGetter.valueOf(clazz).reject(isGeneratedMilestoningNonDateProperty());
         RichIterable<MilestoningPropertyTransformation> milestoningPropertyTransformations = properties.collect(p -> milestoningPropertyTransformations(p, context, clazz, p._owner())).select(MilestoningPropertyTransformation::isTransformed);
@@ -182,7 +183,7 @@ public class Milestoning
 
     private static MilestoningPropertyTransformation milestoningPropertyTransformations(Property<?, ?> originalProperty, CompileContext context, Class<?> sourceClass, PropertyOwner propertyOwner)
     {
-        MilestoningStereotype returnTypeMilestoningStereotype = temporalStereotypes(((PackageableElement)originalProperty._genericType()._rawType())._stereotypes());
+        MilestoningStereotype returnTypeMilestoningStereotype = temporalStereotypes(((PackageableElement) originalProperty._genericType()._rawType())._stereotypes());
         MilestoningPropertyTransformation milestoningPropertyTransformation = new MilestoningPropertyTransformation(originalProperty);
 
         if (returnTypeMilestoningStereotype != null)
@@ -198,7 +199,7 @@ public class Milestoning
 
             MilestoningStereotype sourceMilestoningStereotype = temporalStereotypes(sourceClass._stereotypes());
             milestoningQualifiedPropertyWithArg.withAll(milestoningRangeQualifiedProperty);
-            if(sourceMilestoningStereotype != null && (sourceMilestoningStereotype.equals(returnTypeMilestoningStereotype) || MilestoningStereotypeEnum.bitemporal.equals(sourceMilestoningStereotype)))
+            if (sourceMilestoningStereotype != null && (sourceMilestoningStereotype.equals(returnTypeMilestoningStereotype) || MilestoningStereotypeEnum.bitemporal.equals(sourceMilestoningStereotype)))
             {
                 QualifiedProperty<?> milestoningQualifiedPropertyNoArg = newSingleDateMilestoningQualifiedPropertyNoArg(context, sourceClass, propertyOwner, originalProperty, returnTypeMilestoningStereotype, withMilestoningStereotype, edgePointProperty);
                 milestoningQualifiedPropertyWithArg.add(milestoningQualifiedPropertyNoArg);

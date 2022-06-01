@@ -151,7 +151,8 @@ public class HelperRuntimeBuilder
         });
         // convert EngineRuntime with connection as a map indexes by store to Pure runtime which only contains an array of connections
         org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Runtime pureRuntime = new Root_meta_pure_runtime_Runtime_Impl("Root::meta::pure::runtime::Runtime");
-        ListIterate.forEach(connections, connection -> {
+        ListIterate.forEach(connections, connection ->
+        {
             final org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection pureConnection = connection.accept(new ConnectionFirstPassBuilder(context));
             connection.accept(new ConnectionSecondPassBuilder(context, pureConnection));
             pureRuntime._connectionsAdd(pureConnection);

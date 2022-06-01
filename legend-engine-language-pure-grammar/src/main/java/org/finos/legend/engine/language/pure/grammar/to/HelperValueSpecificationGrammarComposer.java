@@ -43,7 +43,9 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.*;
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabSize;
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.unsupported;
 
 public class HelperValueSpecificationGrammarComposer
 {
@@ -65,16 +67,17 @@ public class HelperValueSpecificationGrammarComposer
         SPECIAL_INFIX.put("or", "||");
     }
 
-    public static boolean isPrimitiveValue(ValueSpecification valueSpecification) {
+    public static boolean isPrimitiveValue(ValueSpecification valueSpecification)
+    {
         return (valueSpecification instanceof CString ||
-            valueSpecification instanceof CBoolean ||
-            valueSpecification instanceof CInteger ||
-            valueSpecification instanceof CFloat ||
-            valueSpecification instanceof CDecimal ||
-            valueSpecification instanceof CDateTime ||
-            valueSpecification instanceof CStrictDate ||
-            valueSpecification instanceof CStrictTime ||
-            valueSpecification instanceof CLatestDate
+                valueSpecification instanceof CBoolean ||
+                valueSpecification instanceof CInteger ||
+                valueSpecification instanceof CFloat ||
+                valueSpecification instanceof CDecimal ||
+                valueSpecification instanceof CDateTime ||
+                valueSpecification instanceof CStrictDate ||
+                valueSpecification instanceof CStrictTime ||
+                valueSpecification instanceof CLatestDate
         );
     }
 
@@ -94,10 +97,10 @@ public class HelperValueSpecificationGrammarComposer
         if (firstArgument instanceof Lambda)
         {
             return renderFunctionName(functionName, transformer) + "("
-                + (transformer.isRenderingPretty() ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(2)) : "")
-                + ListIterate.collect(parameters, p -> p.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(transformer).withIndentation(getTabSize(2)).build()))
-                .makeString("," + (transformer.isRenderingPretty() ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(2)) : " "))
-                + (transformer.isRenderingPretty() ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(1)) : "") + ")";
+                    + (transformer.isRenderingPretty() ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(2)) : "")
+                    + ListIterate.collect(parameters, p -> p.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(transformer).withIndentation(getTabSize(2)).build()))
+                    .makeString("," + (transformer.isRenderingPretty() ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(2)) : " "))
+                    + (transformer.isRenderingPretty() ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(1)) : "") + ")";
         }
         if (otherArguments.size() == 0)
         {
@@ -105,25 +108,26 @@ public class HelperValueSpecificationGrammarComposer
             {
                 return functionName + "(" + firstArgument.accept(transformer) + ")";
             }
-            else if (isPrimitiveValue(firstArgument)) {
+            else if (isPrimitiveValue(firstArgument))
+            {
                 return renderFunctionName(functionName, transformer) + "(" + firstArgument.accept(transformer) + ")";
             }
             return firstArgument.accept(transformer) + (transformer.isRenderingHTML() ? "<span class='pureGrammar-arrow'>" : "") + "->" + (transformer.isRenderingHTML() ? "</span>" : "")
-                + renderFunctionName(functionName, transformer) + "()";
+                    + renderFunctionName(functionName, transformer) + "()";
         }
         if (otherArguments.size() == 1 && isPrimitiveValue(otherArguments.get(0)))
         {
             return firstArgument.accept(transformer) + (transformer.isRenderingHTML() ? "<span class='pureGrammar-arrow'>" : "") + "->" + (transformer.isRenderingHTML() ? "</span>" : "")
-                + renderFunctionName(functionName, transformer) + "("
-                + otherArguments.get(0).accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(transformer).withIndentation(getTabSize(1)).build())
-                + ")";
+                    + renderFunctionName(functionName, transformer) + "("
+                    + otherArguments.get(0).accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(transformer).withIndentation(getTabSize(1)).build())
+                    + ")";
         }
         return firstArgument.accept(transformer) + (transformer.isRenderingHTML() ? "<span class='pureGrammar-arrow'>" : "") + "->" + (transformer.isRenderingHTML() ? "</span>" : "")
-            + renderFunctionName(functionName, transformer) + "("
-            + (transformer.isRenderingPretty() ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(1)) : "") +
-            ListIterate.collect(otherArguments, p -> p.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(transformer).withIndentation(getTabSize(1)).build()))
-                .makeString("," + (transformer.isRenderingPretty() ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(1)) : " "))
-            + (transformer.isRenderingPretty() ? transformer.returnChar() + transformer.getIndentationString() : "") + ")";
+                + renderFunctionName(functionName, transformer) + "("
+                + (transformer.isRenderingPretty() ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(1)) : "") +
+                ListIterate.collect(otherArguments, p -> p.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(transformer).withIndentation(getTabSize(1)).build()))
+                        .makeString("," + (transformer.isRenderingPretty() ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(1)) : " "))
+                + (transformer.isRenderingPretty() ? transformer.returnChar() + transformer.getIndentationString() : "") + ")";
     }
 
     public static String renderFunctionName(String name, DEPRECATED_PureGrammarComposerCore transformer)
@@ -180,19 +184,20 @@ public class HelperValueSpecificationGrammarComposer
 
     public static String renderCollection(List<?> values, org.eclipse.collections.api.block.function.Function<Object, String> func, DEPRECATED_PureGrammarComposerCore transformer)
     {
-        if (values.isEmpty()) {
+        if (values.isEmpty())
+        {
             return "[]";
         }
         // If there is one entry and the entry is either a primitive value or a variable, we will not create new line
         boolean toCreateNewLine = transformer.isRenderingPretty() &&
-            (values.size() != 1 ||
-                !(values.get(0) instanceof ValueSpecification) ||
-                (!isPrimitiveValue((ValueSpecification) values.get(0)) && !(values.get(0) instanceof Variable)));
+                (values.size() != 1 ||
+                        !(values.get(0) instanceof ValueSpecification) ||
+                        (!isPrimitiveValue((ValueSpecification) values.get(0)) && !(values.get(0) instanceof Variable)));
         return "[" +
-            (toCreateNewLine ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(1)) : "") +
-            LazyIterate.collect(values, func).makeString("," + (transformer.isRenderingPretty() ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(1)) : " ")) +
-            (toCreateNewLine ? transformer.returnChar() + transformer.getIndentationString() : "") +
-            "]";
+                (toCreateNewLine ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(1)) : "") +
+                LazyIterate.collect(values, func).makeString("," + (transformer.isRenderingPretty() ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(1)) : " ")) +
+                (toCreateNewLine ? transformer.returnChar() + transformer.getIndentationString() : "") +
+                "]";
     }
 
     public static String renderDecimal(BigDecimal b, DEPRECATED_PureGrammarComposerCore transformer)
@@ -280,13 +285,13 @@ public class HelperValueSpecificationGrammarComposer
     public static String getFunctionName(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function fn)
     {
         int signatureIndex = fn.name.indexOf(getFunctionSignature(fn));
-        String name = signatureIndex > 0 ? fn.name.substring(0,signatureIndex) : fn.name;
+        String name = signatureIndex > 0 ? fn.name.substring(0, signatureIndex) : fn.name;
         return fn._package == null || fn._package.isEmpty() ? name : fn._package + "::" + name;
     }
 
     private static String getFunctionSignature(Function function)
     {
-        String functionSignature  = LazyIterate.collect(function.parameters, HelperValueSpecificationGrammarComposer::getParameterSignature).select(Objects::nonNull).makeString("__")
+        String functionSignature = LazyIterate.collect(function.parameters, HelperValueSpecificationGrammarComposer::getParameterSignature).select(Objects::nonNull).makeString("__")
                 + "__" + getClassSignature(function.returnType) + "_" + getMultiplicitySignature(function.returnMultiplicity) + "_";
         return function.parameters.size() > 0 ? "_" + functionSignature : functionSignature;
     }

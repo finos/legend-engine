@@ -21,14 +21,18 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.Package
 
 import java.util.Map;
 
-public class ProtocolToClassifierPathLoader {
+public class ProtocolToClassifierPathLoader
+{
 
     public static Map<Class<? extends PackageableElement>, String> getProtocolClassToClassifierMap()
     {
         Map<Class<? extends PackageableElement>, String> protocolToClassifierMap = Maps.mutable.empty();
-        for (PureProtocolExtension extension : PureProtocolExtensionLoader.extensions()) {
-            extension.getExtraProtocolToClassifierPathMap().forEach((key, value) -> {
-                if (protocolToClassifierMap.containsKey(key)) {
+        for (PureProtocolExtension extension : PureProtocolExtensionLoader.extensions())
+        {
+            extension.getExtraProtocolToClassifierPathMap().forEach((key, value) ->
+            {
+                if (protocolToClassifierMap.containsKey(key))
+                {
                     throw new RuntimeException("Conflicting classifier paths for class '" + key.getName() + "'");
                 }
             });

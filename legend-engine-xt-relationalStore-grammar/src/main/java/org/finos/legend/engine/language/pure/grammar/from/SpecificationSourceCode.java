@@ -23,7 +23,8 @@ public class SpecificationSourceCode
     private final SourceInformation sourceInformation;
     private final ParseTreeWalkerSourceInformation walkerSourceInformation;
 
-    public SpecificationSourceCode(String code, String type, SourceInformation sourceInformation, ParseTreeWalkerSourceInformation walkerSourceInformation) {
+    public SpecificationSourceCode(String code, String type, SourceInformation sourceInformation, ParseTreeWalkerSourceInformation walkerSourceInformation)
+    {
         this.code = code;
         this.type = type;
         this.sourceInformation = sourceInformation;

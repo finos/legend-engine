@@ -16,9 +16,9 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph.test.assertio
 
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
-import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertionVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertionVisitor;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_pure_test_assertion_TestAssertion;
 

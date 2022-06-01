@@ -139,7 +139,7 @@ public class DomainParser implements DEPRECATED_SectionGrammarParser
 
     public ValueSpecification parseValueSpecification(String input, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)
     {
-        PureGrammarParserContext parserContext =  new PureGrammarParserContext(PureGrammarParserExtensions.fromExtensions(Lists.immutable.empty()));
+        PureGrammarParserContext parserContext = new PureGrammarParserContext(PureGrammarParserExtensions.fromExtensions(Lists.immutable.empty()));
         ParseTreeWalkerSourceInformation lambdaWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(sourceId, lineOffset, columnOffset).withReturnSourceInfo(returnSourceInfo).build();
         String prefix = "function go():Any[*]{let x = ";
         String fullCode = prefix + input + ";}";

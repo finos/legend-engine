@@ -57,7 +57,8 @@ public class RequiredInferenceSimilarSignatureFunctionExpressionBuilder extends 
     }
 
     @Override
-    public Optional<Integer> getParametersSize() {
+    public Optional<Integer> getParametersSize()
+    {
         return handlers.getParametersSize();
     }
 

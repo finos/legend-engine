@@ -16,10 +16,10 @@ package org.finos.legend.engine.shared.core.kerberos;
 
 import org.eclipse.collections.impl.block.function.checked.ThrowingFunction0;
 
+import javax.security.auth.Subject;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
-import javax.security.auth.Subject;
 
 public class ExecSubject
 {
