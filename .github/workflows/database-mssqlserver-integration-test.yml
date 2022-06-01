@@ -1,4 +1,4 @@
-# Copyright 2020 FINOS
+# Copyright 2022 Goldman Sachs
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ env:
 
 on:
   schedule:
-    - cron: '0 0 * * 2' # every Tuesday on default/base branch
+    - cron: "0 0 * * 2" # every Tuesday on default/base branch
   push:
     branches:
       - master
@@ -57,8 +57,7 @@ jobs:
           MAVEN_OPTS: -Xmx4000m
         run: |
           mvn clean install -DskipTests=true
-      - name : Run Connection Protocol Integration Tests
+      - name: Run Connection Protocol Integration Tests
         env:
           MAVEN_OPTS: -Xmx4000m
-        run :
-          mvn -pl legend-engine-xt-relationalStore-executionPlan-connection-tests  -Dtest="ExternalIntegration*SqlServer*" test
+        run: mvn -pl legend-engine-xt-relationalStore-executionPlan-connection-tests  -Dtest="ExternalIntegration*SqlServer*" test
