@@ -88,10 +88,6 @@ public class ServiceExecutionNodeExecutor implements ExecutionNodeVisitor<Result
                 {
                     requiredSources.addAll(ListIterate.collect(node.requiredVariableInputs, s -> s.name));
                 }
-                if (node.propertyInputMap != null)
-                {
-                    requiredSources.addAll(node.propertyInputMap.values()); //TODO: TO BE REMOVED
-                }
 
                 Map<String, Object> outputMap = nodeSpecifics.resolveServiceParameters(getInputMapForSources(requiredSources));
                 outputMap.forEach((key, value) -> this.executionState.addParameterValue(key, value));
