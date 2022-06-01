@@ -708,7 +708,7 @@ public class Library
             return Double.compare(left.doubleValue(), right.doubleValue());
         }
         return Library.toBigDecimal(left).compareTo(Library
-                                                                                            .toBigDecimal(right));
+                .toBigDecimal(right));
     }
 
     private static boolean isSpecialNumber(Number x)
@@ -761,7 +761,7 @@ public class Library
         {
             throw new RuntimeException("Step in range can't be 0");
         }
-        long limit = Math.signum((float)stop - start) != Math.signum(step) ? 0L : (stop - start) % step == 0 ? (stop - start) / step : (stop - start) / step + 1;
+        long limit = Math.signum((float) stop - start) != Math.signum(step) ? 0L : (stop - start) % step == 0 ? (stop - start) / step : (stop - start) / step + 1;
         return LongStream.iterate(start, (long x) -> x + step).limit(limit).boxed();
     }
 
@@ -852,11 +852,11 @@ public class Library
 
     public static <T> T at(T in, long index)
     {
-        if(in == null)
+        if (in == null)
         {
             throw new IllegalStateException("The system is trying to get an element at offset " + index + " where the collection is of size 0");
         }
-        if(index != 0)
+        if (index != 0)
         {
             throw new IllegalStateException("The system is trying to get an element at offset " + index + " where the collection is of size 1");
         }
@@ -869,16 +869,16 @@ public class Library
         {
             throw new IllegalStateException("The system is trying to get an element at offset " + index + " where the collection is of size 0");
         }
-        if(index < 0 || index >= in.size())
+        if (index < 0 || index >= in.size())
         {
             throw new IllegalStateException("The system is trying to get an element at offset " + index + " where the collection is of size " + in.size());
         }
-        return in.get((int)index);
+        return in.get((int) index);
     }
 
     public static <T> Integer indexOf(T in, T object)
     {
-        if(in == null)
+        if (in == null)
         {
             return -1;
         }

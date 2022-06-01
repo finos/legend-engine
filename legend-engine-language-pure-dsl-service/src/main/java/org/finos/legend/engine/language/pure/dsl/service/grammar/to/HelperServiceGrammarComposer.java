@@ -16,14 +16,28 @@ package org.finos.legend.engine.language.pure.dsl.service.grammar.to;
 
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
-import org.finos.legend.engine.language.pure.grammar.to.*;
+import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarComposerCore;
+import org.finos.legend.engine.language.pure.grammar.to.HelperRuntimeGrammarComposer;
+import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.language.pure.grammar.to.data.HelperEmbeddedDataGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.test.assertion.HelperTestAssertionGrammarComposer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.LegacyRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.RuntimePointer;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ConnectionTestData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Execution;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.KeyedExecutionParameter;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.KeyedSingleExecutionTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.MultiExecutionTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ParameterValue;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureMultiExecution;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureSingleExecution;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTestSuite;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTest_Legacy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.SingleExecutionTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.TestContainer;
 
 import java.util.List;
 
@@ -101,12 +115,12 @@ public class HelperServiceGrammarComposer
 
         // testData
 
-        if(serviceTestSuite.testData != null)
+        if (serviceTestSuite.testData != null)
         {
             str.append(getTabString(baseIndentation + 1)).append("data").append(":\n");
             str.append(getTabString(baseIndentation + 1)).append("[\n");
 
-            if(serviceTestSuite.testData.connectionsTestData != null && !serviceTestSuite.testData.connectionsTestData.isEmpty())
+            if (serviceTestSuite.testData.connectionsTestData != null && !serviceTestSuite.testData.connectionsTestData.isEmpty())
             {
                 str.append(getTabString(baseIndentation + 2)).append("connections").append(":\n");
                 str.append(getTabString(baseIndentation + 2)).append("[\n");
@@ -118,7 +132,7 @@ public class HelperServiceGrammarComposer
         }
 
         // tests
-        if(serviceTestSuite.tests != null)
+        if (serviceTestSuite.tests != null)
         {
             str.append(getTabString(baseIndentation + 1)).append("tests").append(":\n");
             str.append(getTabString(baseIndentation + 1)).append("[\n");
@@ -149,7 +163,7 @@ public class HelperServiceGrammarComposer
         str.append(getTabString(baseIndentation)).append("{\n");
 
         // Parameters
-        if(test.parameters != null && !test.parameters.isEmpty())
+        if (test.parameters != null && !test.parameters.isEmpty())
         {
             str.append(getTabString(baseIndentation + 1)).append("parameters:\n");
             str.append(getTabString(baseIndentation + 1)).append("[\n");
@@ -158,7 +172,7 @@ public class HelperServiceGrammarComposer
         }
 
         // Asserts
-        if(test.assertions != null)
+        if (test.assertions != null)
         {
             str.append(getTabString(baseIndentation + 1)).append("asserts:\n");
             str.append(getTabString(baseIndentation + 1)).append("[\n");

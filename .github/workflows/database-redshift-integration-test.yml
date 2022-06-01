@@ -54,11 +54,12 @@ jobs:
       - name: Download deps and plugins
         run: mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies
       - name: Build
+        env:
+          MAVEN_OPTS: -Xmx4000m
         run: mvn clean install -DskipTests=true
-      - name: Print out mvn version
-        run: mvn -v
       - name: Connection Protocol Integration Tests
         env:
+          MAVEN_OPTS: -Xmx4000m
           REDSHIFT_INTEGRATION_USER1_NAME: ${{ secrets.REDSHIFT_INTEGRATION_USER1_NAME }}
           REDSHIFT_INTEGRATION_USER1_PASSWORD: ${{ secrets.REDSHIFT_INTEGRATION_USER1_PASSWORD }}
         run: |

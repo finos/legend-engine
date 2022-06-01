@@ -227,7 +227,7 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
             return new StreamingObjectResult<>(streamingObjectResults.stream().flatMap(StreamingObjectResult::getObjectStream), streamingObjectResults.get(0).getResultBuilder(), childResult);
         }
 
-         if (Arrays.asList(clazz.getInterfaces()).contains(IPlatformPureExpressionExecutionNodeGraphFetchMergeSpecifics.class))
+        if (Arrays.asList(clazz.getInterfaces()).contains(IPlatformPureExpressionExecutionNodeGraphFetchMergeSpecifics.class))
         {
             StreamingObjectResult<?> streamResult = (StreamingObjectResult) pureExpressionPlatformExecutionNode.executionNodes.get(0).accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
 
@@ -444,7 +444,7 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
                 if (nonEmptyObjectList)
                 {
                     long currentObjectCount = objectCount.addAndGet(parentObjects.size());
-                    memoryStatistics.accept(batch.getTotalObjectMemoryUtilization()/(parentObjects.size() * 1.0));
+                    memoryStatistics.accept(batch.getTotalObjectMemoryUtilization() / (parentObjects.size() * 1.0));
 
                     if (graphFetchResult.getGraphFetchSpan() != null)
                     {
@@ -480,7 +480,7 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
 
             }).flatMap(Collection::stream);
             boolean realizeAsConstant = this.executionState.inAllocation && ExecutionNodeResultHelper.isResultSizeRangeSet(globalGraphFetchExecutionNode) && ExecutionNodeResultHelper.isSingleRecordResult(globalGraphFetchExecutionNode);
-            if(realizeAsConstant)
+            if (realizeAsConstant)
             {
                 return new ConstantResult(objectStream.findFirst().orElseThrow(() -> new RuntimeException("Constant value not found")));
             }
@@ -564,7 +564,8 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
                 .filter(GraphFetchCacheByTargetCrossKeys.class::isInstance)
                 .map(GraphFetchCacheByTargetCrossKeys.class::cast)
                 .filter(cache -> cache.getGraphFetchCrossAssociationKeys() != null)
-                .filter(cache -> {
+                .filter(cache ->
+                {
                     GraphFetchCrossAssociationKeys c = cache.getGraphFetchCrossAssociationKeys();
                     return c.getPropertyPath().equals(fetchDetails.propertyPath) &&
                             c.getSourceMappingId().equals(fetchDetails.sourceMappingId) &&

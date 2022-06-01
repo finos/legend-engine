@@ -91,7 +91,7 @@ public class PureGrammarComposerUtility
     public static String convertString(String val, boolean escape, boolean doubleQuotes)
     {
         StringBuilder builder = new StringBuilder();
-        if(doubleQuotes)
+        if (doubleQuotes)
         {
             builder.append("\"");
 

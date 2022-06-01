@@ -30,10 +30,19 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connect
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Association;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Enumeration;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.*;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Measure;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Profile;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMappingVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MergeOperationClassMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.OperationClassMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMappingVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwareClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwarePropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.xStore.XStorePropertyMapping;
@@ -52,27 +61,63 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.applica
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedQualifiedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.UnknownAppliedFunction;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.AggregateValue;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CBoolean;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDateTime;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDecimal;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CFloat;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CInteger;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CLatestDate;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CStrictDate;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CStrictTime;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CString;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Enum;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.EnumValue;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.*;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ExecutionContextInstance;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.HackedClass;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.HackedUnit;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.KeyExpression;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.MappingInstance;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Pair;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PrimitiveType;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PureList;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.RuntimeInstance;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.SerializationConfig;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TDSAggregateValue;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TDSColumnInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TDSSortInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TdsOlapAggregation;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TdsOlapRank;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.UnitInstance;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.UnitType;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Whatever;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.PropertyGraphFetchTree;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.RootGraphFetchTree;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.path.Path;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.*;
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabSize;
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.unsupported;
 
 public final class DEPRECATED_PureGrammarComposerCore implements
-    PackageableElementVisitor<String>,
-    ValueSpecificationVisitor<String>,
-    ClassMappingVisitor<String>,
-    PropertyMappingVisitor<String>,
-    ConnectionVisitor<String>
+        PackageableElementVisitor<String>,
+        ValueSpecificationVisitor<String>,
+        ClassMappingVisitor<String>,
+        PropertyMappingVisitor<String>,
+        ConnectionVisitor<String>
 {
     private final String indentationString;
     private final RenderStyle renderStyle;
@@ -209,7 +254,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         {
             String space = RenderStyle.PRETTY_HTML.equals(this.renderStyle) ? "<span class='pureGrammar-space'></span>" : " ";
             this.indentationString = RenderStyle.PRETTY.equals(this.renderStyle) || RenderStyle.PRETTY_HTML.equals(this.renderStyle) || indentInStandardRenderingMode
-                ? this.indentationString + StringUtils.repeat(space, count) : this.indentationString;
+                    ? this.indentationString + StringUtils.repeat(space, count) : this.indentationString;
             return this;
         }
 
@@ -282,9 +327,9 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     public String visit(Enumeration _enum)
     {
         return "Enum " + HelperDomainGrammarComposer.renderAnnotations(_enum.stereotypes, _enum.taggedValues) + PureGrammarComposerUtility.convertPath(_enum.getPath()) +
-            "\n{\n" +
-            LazyIterate.collect(_enum.values, enumValue -> getTabString() + HelperDomainGrammarComposer.renderEnumValue(enumValue)).makeString(",\n") + (_enum.values.isEmpty() ? "" : "\n") +
-            "}";
+                "\n{\n" +
+                LazyIterate.collect(_enum.values, enumValue -> getTabString() + HelperDomainGrammarComposer.renderEnumValue(enumValue)).makeString(",\n") + (_enum.values.isEmpty() ? "" : "\n") +
+                "}";
     }
 
     @Override
@@ -337,21 +382,21 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     public String visit(Association association)
     {
         return "Association " + HelperDomainGrammarComposer.renderAnnotations(association.stereotypes, association.taggedValues) + PureGrammarComposerUtility.convertPath(association.getPath()) + "\n" +
-            "{\n" +
-            LazyIterate.collect(association.properties, p -> getTabString() + HelperDomainGrammarComposer.renderProperty(p, this) + ";").makeString("\n") + (association.properties.isEmpty() ? "" : "\n") +
-            LazyIterate.collect(association.qualifiedProperties, p -> getTabString() + HelperDomainGrammarComposer.renderDerivedProperty(p, this) + ";").makeString("\n") + (association.qualifiedProperties.isEmpty() ? "" : "\n") +
-            "}";
+                "{\n" +
+                LazyIterate.collect(association.properties, p -> getTabString() + HelperDomainGrammarComposer.renderProperty(p, this) + ";").makeString("\n") + (association.properties.isEmpty() ? "" : "\n") +
+                LazyIterate.collect(association.qualifiedProperties, p -> getTabString() + HelperDomainGrammarComposer.renderDerivedProperty(p, this) + ";").makeString("\n") + (association.qualifiedProperties.isEmpty() ? "" : "\n") +
+                "}";
     }
 
     @Override
     public String visit(Function function)
     {
         return "function " + HelperDomainGrammarComposer.renderAnnotations(function.stereotypes, function.taggedValues) + PureGrammarComposerUtility.convertPath(HelperValueSpecificationGrammarComposer.getFunctionName(function))
-            + "(" + LazyIterate.collect(function.parameters, p -> p.accept(Builder.newInstance(this).withVariableInFunctionSignature().build())).makeString(", ") + ")"
-            + ": " + function.returnType + "[" + HelperDomainGrammarComposer.renderMultiplicity(function.returnMultiplicity) + "]\n" +
-            "{\n" +
-            LazyIterate.collect(function.body, b -> "   " + b.accept(this)).makeString(";\n") + (function.body.size() > 1 ? ";" : "") +
-            "\n}";
+                + "(" + LazyIterate.collect(function.parameters, p -> p.accept(Builder.newInstance(this).withVariableInFunctionSignature().build())).makeString(", ") + ")"
+                + ": " + function.returnType + "[" + HelperDomainGrammarComposer.renderMultiplicity(function.returnMultiplicity) + "]\n" +
+                "{\n" +
+                LazyIterate.collect(function.body, b -> "   " + b.accept(this)).makeString(";\n") + (function.body.size() > 1 ? ";" : "") +
+                "\n}";
     }
 
 
@@ -375,9 +420,9 @@ public final class DEPRECATED_PureGrammarComposerCore implements
             builder.append(isMappingContentEmpty ? "" : "\n");
             isMappingContentEmpty = false;
             builder.append(LazyIterate.collect(mapping.classMappings, classMapping -> getTabString() + (classMapping.root ? "*" : "")
-                + classMapping._class + HelperMappingGrammarComposer.renderClassMappingId(classMapping)
-                + (classMapping.extendsClassMappingId != null ? " extends " + HelperMappingGrammarComposer.renderMappingId(classMapping.extendsClassMappingId) : "")
-                + classMapping.accept(this)).makeString("\n"));
+                    + classMapping._class + HelperMappingGrammarComposer.renderClassMappingId(classMapping)
+                    + (classMapping.extendsClassMappingId != null ? " extends " + HelperMappingGrammarComposer.renderMappingId(classMapping.extendsClassMappingId) : "")
+                    + classMapping.accept(this)).makeString("\n"));
             builder.append("\n");
         }
         if (!mapping.associationMappings.isEmpty())
@@ -426,7 +471,8 @@ public final class DEPRECATED_PureGrammarComposerCore implements
                     getTabString(2) + OperationClassMapping.opsToFunc.get(operationClassMapping.operation) + "([" + LazyIterate.collect(operationClassMapping.parameters, Functions.identity()).makeString(",") + "]," +
                     ((MergeOperationClassMapping) operationClassMapping).validationFunction.body.get(0).accept(this) + ")\n" +
                     getTabString() + "}";
-        } else
+        }
+        else
         {
             return ": " + "Operation\n" +
                     getTabString() + "{\n" +
@@ -446,10 +492,10 @@ public final class DEPRECATED_PureGrammarComposerCore implements
             pureFilter = getTabString(2) + "~filter " + filterString + "\n";
         }
         return ": " + "Pure\n" +
-            getTabString(getBaseTabLevel()) + "{\n" +
-            (pureInstanceClassMapping.srcClass == null ? "" : getTabString(getBaseTabLevel() + 1) + "~src " + pureInstanceClassMapping.srcClass + "\n") + pureFilter +
-            LazyIterate.collect(pureInstanceClassMapping.propertyMappings, propertyMapping -> getTabString(getBaseTabLevel() + 1) + propertyMapping.accept(this)).makeString(",\n") + (pureInstanceClassMapping.propertyMappings.isEmpty() ? "" : "\n") +
-            getTabString(getBaseTabLevel()) + "}";
+                getTabString(getBaseTabLevel()) + "{\n" +
+                (pureInstanceClassMapping.srcClass == null ? "" : getTabString(getBaseTabLevel() + 1) + "~src " + pureInstanceClassMapping.srcClass + "\n") + pureFilter +
+                LazyIterate.collect(pureInstanceClassMapping.propertyMappings, propertyMapping -> getTabString(getBaseTabLevel() + 1) + propertyMapping.accept(this)).makeString(",\n") + (pureInstanceClassMapping.propertyMappings.isEmpty() ? "" : "\n") +
+                getTabString(getBaseTabLevel()) + "}";
     }
 
     @Override
@@ -458,11 +504,11 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         purePropertyMapping.transform.parameters = Collections.emptyList();
         String lambdaString = purePropertyMapping.transform.accept(this).replaceFirst("\\|", "");
         return (purePropertyMapping.localMappingProperty != null ? "+" : "") + PureGrammarComposerUtility.convertIdentifier(purePropertyMapping.property.property) +
-            (purePropertyMapping.localMappingProperty != null ? ": " + purePropertyMapping.localMappingProperty.type + "[" + HelperDomainGrammarComposer.renderMultiplicity(purePropertyMapping.localMappingProperty.multiplicity) + "]" : "") +
-            (purePropertyMapping.explodeProperty != null && purePropertyMapping.explodeProperty ? "*" : "") +
-            (purePropertyMapping.target == null || purePropertyMapping.target.isEmpty() ? "" : "[" + PureGrammarComposerUtility.convertIdentifier(purePropertyMapping.target) + "]") +
-            (purePropertyMapping.enumMappingId == null ? "" : ": EnumerationMapping " + purePropertyMapping.enumMappingId) +
-            ": " + lambdaString;
+                (purePropertyMapping.localMappingProperty != null ? ": " + purePropertyMapping.localMappingProperty.type + "[" + HelperDomainGrammarComposer.renderMultiplicity(purePropertyMapping.localMappingProperty.multiplicity) + "]" : "") +
+                (purePropertyMapping.explodeProperty != null && purePropertyMapping.explodeProperty ? "*" : "") +
+                (purePropertyMapping.target == null || purePropertyMapping.target.isEmpty() ? "" : "[" + PureGrammarComposerUtility.convertIdentifier(purePropertyMapping.target) + "]") +
+                (purePropertyMapping.enumMappingId == null ? "" : ": EnumerationMapping " + purePropertyMapping.enumMappingId) +
+                ": " + lambdaString;
     }
 
     @Override
@@ -482,12 +528,12 @@ public final class DEPRECATED_PureGrammarComposerCore implements
             setBaseTabLevel(1);
         }
         return ": " + "AggregationAware " + "\n" +
-            getTabString() + "{\n" +
-            getTabString(2) + "Views" + ":" + " [\n" +
-            (classMapping.aggregateSetImplementations == null ? "" : LazyIterate.collect(classMapping.aggregateSetImplementations, implementation -> getTabString(3) + HelperMappingGrammarComposer.renderAggregateSetImplementationContainer(implementation, this)).makeString(",\n")) +
-            getTabString(2) + "],\n" +
-            getTabString(2) + mainMapping + "\n" +
-            getTabString() + "}";
+                getTabString() + "{\n" +
+                getTabString(2) + "Views" + ":" + " [\n" +
+                (classMapping.aggregateSetImplementations == null ? "" : LazyIterate.collect(classMapping.aggregateSetImplementations, implementation -> getTabString(3) + HelperMappingGrammarComposer.renderAggregateSetImplementationContainer(implementation, this)).makeString(",\n")) +
+                getTabString(2) + "],\n" +
+                getTabString(2) + mainMapping + "\n" +
+                getTabString() + "}";
     }
 
     @Override
@@ -503,8 +549,8 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     public String visit(PackageableConnection packageableConnection)
     {
         return HelperConnectionGrammarComposer.getConnectionValueName(packageableConnection.connectionValue, this.toContext()) +
-            " " + PureGrammarComposerUtility.convertPath(packageableConnection.getPath()) + "\n" +
-            packageableConnection.connectionValue.accept(this);
+                " " + PureGrammarComposerUtility.convertPath(packageableConnection.getPath()) + "\n" +
+                packageableConnection.connectionValue.accept(this);
     }
 
     @Override
@@ -526,9 +572,9 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     {
         int baseIndentation = 0;
         return this.indentationString + getTabString(baseIndentation) + "{\n" +
-            this.indentationString + getTabString(baseIndentation + 1) + "class: " + jsonModelConnection._class + ";\n" +
-            this.indentationString + getTabString(baseIndentation + 1) + "url: " + convertString(jsonModelConnection.url, true) + ";\n" +
-            this.indentationString + getTabString(baseIndentation) + "}";
+                this.indentationString + getTabString(baseIndentation + 1) + "class: " + jsonModelConnection._class + ";\n" +
+                this.indentationString + getTabString(baseIndentation + 1) + "url: " + convertString(jsonModelConnection.url, true) + ";\n" +
+                this.indentationString + getTabString(baseIndentation) + "}";
     }
 
     @Override
@@ -536,9 +582,9 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     {
         int baseIndentation = 0;
         return this.indentationString + getTabString(baseIndentation) + "{\n" +
-            this.indentationString + getTabString(baseIndentation + 1) + "class: " + xmlModelConnection._class + ";\n" +
-            this.indentationString + getTabString(baseIndentation + 1) + "url: " + convertString(xmlModelConnection.url, true) + ";\n" +
-            this.indentationString + getTabString(baseIndentation) + "}";
+                this.indentationString + getTabString(baseIndentation + 1) + "class: " + xmlModelConnection._class + ";\n" +
+                this.indentationString + getTabString(baseIndentation + 1) + "url: " + convertString(xmlModelConnection.url, true) + ";\n" +
+                this.indentationString + getTabString(baseIndentation) + "}";
     }
 
     @Override
@@ -558,8 +604,8 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         }
         String mappings = "[\n" + mappingsValue + this.indentationString + getTabString(baseIndentation + 1) + "]";
         return this.indentationString + getTabString(baseIndentation) + "{\n" +
-            this.indentationString + getTabString(baseIndentation + 1) + "mappings: " + mappings + ";\n" +
-            this.indentationString + getTabString(baseIndentation) + "}";
+                this.indentationString + getTabString(baseIndentation + 1) + "mappings: " + mappings + ";\n" +
+                this.indentationString + getTabString(baseIndentation) + "}";
     }
 
 
@@ -569,9 +615,9 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     public String visit(PackageableRuntime packageableRuntime)
     {
         return "Runtime " + PureGrammarComposerUtility.convertPath(packageableRuntime.getPath()) + "\n" +
-            "{" +
-            HelperRuntimeGrammarComposer.renderRuntimeValue(packageableRuntime.runtimeValue, 1, false, this) +
-            "\n}";
+                "{" +
+                HelperRuntimeGrammarComposer.renderRuntimeValue(packageableRuntime.runtimeValue, 1, false, this) +
+                "\n}";
     }
 
 
@@ -611,10 +657,10 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     public String visit(Variable variable)
     {
         return (this.isRenderingHTML() ? "<span class='pureGrammar-var'>" : "") +
-            (this.isVariableInFunctionSignature ? "" : "$") +
-            PureGrammarComposerUtility.convertIdentifier(variable.name) +
-            (this.isRenderingHTML() ? "</span>" : "") +
-            (variable._class != null ? ": " + HelperValueSpecificationGrammarComposer.printFullPath(variable._class, this) + "[" + HelperDomainGrammarComposer.renderMultiplicity(variable.multiplicity) + "]" : "");
+                (this.isVariableInFunctionSignature ? "" : "$") +
+                PureGrammarComposerUtility.convertIdentifier(variable.name) +
+                (this.isRenderingHTML() ? "</span>" : "") +
+                (variable._class != null ? ": " + HelperValueSpecificationGrammarComposer.printFullPath(variable._class, this) + "[" + HelperDomainGrammarComposer.renderMultiplicity(variable.multiplicity) + "]" : "");
     }
 
     @Override
@@ -627,10 +673,10 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         boolean addWrapper = lambda.body.size() > 1 || lambda.parameters.size() > 1;
         boolean addCR = lambda.body.size() > 1;
         return (addWrapper ? "{" : "")
-            + (lambda.parameters.isEmpty() ? "" : LazyIterate.collect(lambda.parameters, variable -> variable.accept(Builder.newInstance(this).withVariableInFunctionSignature().build())).makeString(","))
-            + "|" + (addCR ? this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) : "")
-            + LazyIterate.collect(lambda.body, valueSpecification -> valueSpecification.accept(addCR ? DEPRECATED_PureGrammarComposerCore.Builder.newInstance(this).withIndentation(getTabSize(1)).build() : this)).makeString(";" + this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)))
-            + (addCR ? ";" + this.returnChar() : "") + (addWrapper ? this.indentationString + "}" : "");
+                + (lambda.parameters.isEmpty() ? "" : LazyIterate.collect(lambda.parameters, variable -> variable.accept(Builder.newInstance(this).withVariableInFunctionSignature().build())).makeString(","))
+                + "|" + (addCR ? this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) : "")
+                + LazyIterate.collect(lambda.body, valueSpecification -> valueSpecification.accept(addCR ? DEPRECATED_PureGrammarComposerCore.Builder.newInstance(this).withIndentation(getTabSize(1)).build() : this)).makeString(";" + this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)))
+                + (addCR ? ";" + this.returnChar() : "") + (addWrapper ? this.indentationString + "}" : "");
     }
 
     @Override
@@ -640,8 +686,8 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         {
             int index = path.startType.lastIndexOf("::");
             String type = index == -1 ?
-                "<span class='pureGrammar-packageableElement'>" + PureGrammarComposerUtility.convertPath(path.startType) + "</span>" :
-                "<span class='pureGrammar-package'>" + PureGrammarComposerUtility.convertPath(path.startType.substring(0, index + 2)) + "</span><span class='pureGrammar-packageableElement'>" + PureGrammarComposerUtility.convertIdentifier(path.startType.substring(index + 2)) + "</span>";
+                    "<span class='pureGrammar-packageableElement'>" + PureGrammarComposerUtility.convertPath(path.startType) + "</span>" :
+                    "<span class='pureGrammar-package'>" + PureGrammarComposerUtility.convertPath(path.startType.substring(0, index + 2)) + "</span><span class='pureGrammar-packageableElement'>" + PureGrammarComposerUtility.convertIdentifier(path.startType.substring(index + 2)) + "</span>";
             return "#/" + type + (path.path.isEmpty() ? "" : "/" + ListAdapter.adapt(path.path).collect(p -> HelperValueSpecificationGrammarComposer.renderPathElement(p, this)).makeString("/")) + (path.name == null || "".equals(path.name) ? "" : "!" + path.name) + "#";
         }
         return "#/" + PureGrammarComposerUtility.convertPath(path.startType) + (path.path.isEmpty() ? "" : "/" + ListAdapter.adapt(path.path).collect(p -> HelperValueSpecificationGrammarComposer.renderPathElement(p, this)).makeString("/")) + (path.name == null || "".equals(path.name) ? "" : "!" + path.name) + "#";
@@ -689,21 +735,21 @@ public final class DEPRECATED_PureGrammarComposerCore implements
             }
             // NOTE: we only handle case when there are 2 parameters because that is the expected form for infix operators
             boolean toCreateNewLine = this.isRenderingPretty() &&
-                !HelperValueSpecificationGrammarComposer.isPrimitiveValue(parameters.get(0)) &&
-                !HelperValueSpecificationGrammarComposer.isPrimitiveValue(parameters.get(1));
+                    !HelperValueSpecificationGrammarComposer.isPrimitiveValue(parameters.get(0)) &&
+                    !HelperValueSpecificationGrammarComposer.isPrimitiveValue(parameters.get(1));
             return HelperValueSpecificationGrammarComposer.possiblyAddParenthesis(function, parameters.get(0), this)
-                + " "
-                + HelperValueSpecificationGrammarComposer.SPECIAL_INFIX.get(function)
-                + (toCreateNewLine ? this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) : " ")
-                + HelperValueSpecificationGrammarComposer.possiblyAddParenthesis(function, parameters.get(1), this);
+                    + " "
+                    + HelperValueSpecificationGrammarComposer.SPECIAL_INFIX.get(function)
+                    + (toCreateNewLine ? this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) : " ")
+                    + HelperValueSpecificationGrammarComposer.possiblyAddParenthesis(function, parameters.get(1), this);
         }
         else if ("if".equals(function))
         {
             return HelperValueSpecificationGrammarComposer.renderFunctionName(function, this) + "(" +
-                (this.isRenderingPretty() ? this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) : "") +
-                ListIterate.collect(parameters, p -> p.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(this).withIndentation(getTabSize(1)).build()))
-                    .makeString("," + (this.isRenderingPretty() ? this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) : " ")) +
-                (this.isRenderingPretty() ? this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(0)) : "") + ")";
+                    (this.isRenderingPretty() ? this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) : "") +
+                    ListIterate.collect(parameters, p -> p.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(this).withIndentation(getTabSize(1)).build()))
+                            .makeString("," + (this.isRenderingPretty() ? this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) : " ")) +
+                    (this.isRenderingPretty() ? this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(0)) : "") + ")";
         }
         return HelperValueSpecificationGrammarComposer.renderFunction(appliedFunction, this);
     }
@@ -823,10 +869,10 @@ public final class DEPRECATED_PureGrammarComposerCore implements
             subTreeString = rootGraphFetchTree.subTrees.stream().map(x -> x.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(this).withIndentation(getTabSize(1)).build())).collect(Collectors.joining("," + (this.isRenderingPretty() ? this.returnChar() : "")));
         }
         return "#{" + (this.isRenderingPretty() ? this.returnChar() : "") +
-            DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) + HelperValueSpecificationGrammarComposer.printFullPath(rootGraphFetchTree._class, this) + "{" + (this.isRenderingPretty() ? this.returnChar() : "") +
-            subTreeString + (this.isRenderingPretty() ? this.returnChar() : "") +
-            DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) + "}" + (this.isRenderingPretty() ? this.returnChar() : "") +
-            this.indentationString + "}#";
+                DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) + HelperValueSpecificationGrammarComposer.printFullPath(rootGraphFetchTree._class, this) + "{" + (this.isRenderingPretty() ? this.returnChar() : "") +
+                subTreeString + (this.isRenderingPretty() ? this.returnChar() : "") +
+                DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) + "}" + (this.isRenderingPretty() ? this.returnChar() : "") +
+                this.indentationString + "}#";
     }
 
     @Override
@@ -842,8 +888,8 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         if (propertyGraphFetchTree.subTrees != null && !propertyGraphFetchTree.subTrees.isEmpty())
         {
             subTreeString = "{" + (this.isRenderingPretty() ? this.returnChar() : "") +
-                propertyGraphFetchTree.subTrees.stream().map(x -> x.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(this).withIndentation(getTabSize(1)).build())).collect(Collectors.joining("," + (this.isRenderingPretty() ? this.returnChar() : ""))) + (this.isRenderingPretty() ? this.returnChar() : "") +
-                DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) + "}";
+                    propertyGraphFetchTree.subTrees.stream().map(x -> x.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(this).withIndentation(getTabSize(1)).build())).collect(Collectors.joining("," + (this.isRenderingPretty() ? this.returnChar() : ""))) + (this.isRenderingPretty() ? this.returnChar() : "") +
+                    DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) + "}";
         }
 
         String parametersString = "";
@@ -871,9 +917,9 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     public String visit(AppliedQualifiedProperty appliedQualifiedProperty)
     {
         return appliedQualifiedProperty.parameters.get(0).accept(this)
-            + "."
-            + (this.isRenderingHTML() ? "<span class=pureGrammar-property>" : "") + PureGrammarComposerUtility.convertIdentifier(appliedQualifiedProperty.qualifiedProperty) + (this.isRenderingHTML() ? "</span>" : "")
-            + (appliedQualifiedProperty.parameters.size() > 1 ? "(" + LazyIterate.collect(appliedQualifiedProperty.parameters.subList(1, appliedQualifiedProperty.parameters.size()), l -> l.accept(this)).makeString(", ") + ")" : "");
+                + "."
+                + (this.isRenderingHTML() ? "<span class=pureGrammar-property>" : "") + PureGrammarComposerUtility.convertIdentifier(appliedQualifiedProperty.qualifiedProperty) + (this.isRenderingHTML() ? "</span>" : "")
+                + (appliedQualifiedProperty.parameters.size() > 1 ? "(" + LazyIterate.collect(appliedQualifiedProperty.parameters.subList(1, appliedQualifiedProperty.parameters.size()), l -> l.accept(this)).makeString(", ") + ")" : "");
     }
 
     @Override

@@ -48,7 +48,7 @@ public class FreeMarkerExecutor
             if (v instanceof ConstantResult)
             {
                 Object value = ((ConstantResult) v).getValue();
-                if (value!=null)
+                if (value != null)
                 {
                     value = dbType != null ?
                             (databaseTimeZone != null ?

@@ -78,19 +78,19 @@ public class TestGraphQLRoundtrip
     @Test
     public void testEnumRoundtrip()
     {
-        check("enum Direction {\n"+
-                    "  NORTH\n"+
-                    "  SOUTH\n"+
-                    "  EAST\n"+
-                    "  WEST\n"+
-                    "}");
+        check("enum Direction {\n" +
+                "  NORTH\n" +
+                "  SOUTH\n" +
+                "  EAST\n" +
+                "  WEST\n" +
+                "}");
     }
 
     @Test
     public void testDirectiveDefinitionRoundtrip()
     {
         check("directive @doc(value: String) on UNION | FIELD\n\n" +
-                    "directive @cool on UNION | FIELD");
+                "directive @cool on UNION | FIELD");
     }
 
     @Test

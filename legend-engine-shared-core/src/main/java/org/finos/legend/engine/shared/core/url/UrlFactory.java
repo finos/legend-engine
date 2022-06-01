@@ -33,7 +33,7 @@ public class UrlFactory
         URLStreamHandler handler = EngineUrlStreamHandlerFactory.INSTANCE.createURLStreamHandler(protocol);
 
         return handler == null
-            ? new URL(spec)
-            : new URL(null, spec, handler);
+                ? new URL(spec)
+                : new URL(null, spec, handler);
     }
 }

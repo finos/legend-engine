@@ -14,8 +14,8 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service;
 
-import org.finos.legend.engine.protocol.pure.v1.model.executionOption.ExecutionOption;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.executionOption.ExecutionOption;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
 
 import java.util.List;

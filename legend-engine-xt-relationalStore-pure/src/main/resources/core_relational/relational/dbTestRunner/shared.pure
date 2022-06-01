@@ -16,53 +16,12 @@ import meta::relational::runtime::*;
 import meta::relational::dbTestRunner::*;
 import meta::pure::alloy::connections::*;
 
-Profile meta::relational::dbTestRunner::dbTest
-{
-   stereotypes : [ Test, Ignore ];
-}
 
 Class meta::relational::dbTestRunner::DbTestConfig
 {
    dbType: DatabaseType[1];
    connection: RelationalDatabaseConnection[0..1];
    expectedSql: String[0..1];
-}
-
-function meta::relational::dbTestRunner::collectTests(pack: Package[1]): Function<{DbTestConfig[1] -> String[0..1]}>[*]
-{
-   $pack.children->map(c| $c->match([
-      f:Function<Any>[1]| if($f.stereotypes->contains(dbTest->stereotype('Test')), |$f->cast(@Function<{DbTestConfig[1] -> String[0..1]}>), |[]),
-      p:Package[1]| collectTests($p),
-      x:Any[1]| []
-   ]));
-}
-
-function meta::relational::dbTestRunner::runTestsWith(
-                                               allTests: Function<{DbTestConfig[1] -> String[0..1]}>[*],
-                                               ignoredTests : Function<{DbTestConfig[1] -> String[0..1]}>[*],
-                                               dbType: DatabaseType[1],
-                                               connection: RelationalDatabaseConnection[0..1],
-                                               expectedSqls: Map<Function<{DbTestConfig[1] -> String[0..1]}>, String>[0..1]
-                                               ): Boolean[1]
-{
-  println('Running DB Tests for : '+ $dbType->toString());
-
-  //list of failed test ids with corresponding error messages
-  let failedTests = $allTests->filter(t|!$ignoredTests->contains($t))->map(f|
-      println('   running test : '+ $f->elementToPath());
-      let result = $f->eval(^DbTestConfig(dbType=$dbType, connection=$connection, expectedSql=if($expectedSqls->isEmpty(), |[], |$expectedSqls->toOne()->get($f))));
-      if($result->isEmpty(), |[], |$f->elementToPath() + ': ' + $result->toOne());
-  );
-
-  let passed= ($allTests->size() - ($ignoredTests->size() + $failedTests->size()));
-  println('Test Summary : \n' +
-          '    Tests Passed = ' +  $passed->toString()+ '\n' +
-          '    Tests Failed = ' +  $failedTests->size()->toString() + 
-                if($failedTests->isEmpty(), |'\n' , |$failedTests->joinStrings('\n                ','\n                ','\n')) + 
-          '    Tests Ignored = ' + $ignoredTests->size()->toString() + '\n'
-          );
-          
-  assert($failedTests->isEmpty());
 }
 
 function meta::relational::dbTestRunner::getTestConnection(dbType:DatabaseType[1], extensions:meta::pure::router::extension::RouterExtension[*]):RelationalDatabaseConnection[0..1]
@@ -84,4 +43,13 @@ function meta::relational::dbTestRunner::getTestConnection(dbType:DatabaseType[1
          []->cast(@RelationalDatabaseConnection);
        }
      );
+}
+
+function meta::relational::dbTestRunner::collectTests(pack: Package[1]): Function<{DbTestConfig[1] -> Boolean[1]}>[*]
+{
+   $pack.children->map(c| $c->match([
+      f:Function<Any>[1]| if($f.stereotypes->contains(meta::pure::test::paramTest->stereotype('Test')), |$f->cast(@Function<{DbTestConfig[1] -> Boolean[1]}>), |[]),
+      p:Package[1]| collectTests($p),
+      x:Any[1]| []
+   ]));
 }

@@ -19,5 +19,6 @@ import java.util.List;
 public interface GenerationPropertyItem
 {
     List<GenerationItemType> getTypes();
+
     List<String> getEnums();
 }

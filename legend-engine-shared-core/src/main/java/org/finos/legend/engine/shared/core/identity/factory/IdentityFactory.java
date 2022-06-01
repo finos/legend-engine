@@ -22,7 +22,8 @@ import javax.security.auth.Subject;
 import java.util.Collections;
 import java.util.List;
 
-public interface IdentityFactory {
+public interface IdentityFactory
+{
     Identity makeIdentity(Subject subject);
 
     Identity makeIdentity(MutableList<CommonProfile> profiles);

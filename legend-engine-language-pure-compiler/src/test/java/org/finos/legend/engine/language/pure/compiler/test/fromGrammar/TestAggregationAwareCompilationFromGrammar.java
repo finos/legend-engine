@@ -565,7 +565,8 @@ public class TestAggregationAwareCompilationFromGrammar extends TestCompilationF
     @Test
     public void testAggregationAwareMappingErrorInAggregateViewTarget()
     {
-        try {
+        try
+        {
             test("###Pure\n" +
                     "Class test::Sales\n" +
                     "{\n" +
@@ -636,14 +637,16 @@ public class TestAggregationAwareCompilationFromGrammar extends TestCompilationF
                     ")\n"
             );
             Assert.fail();
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
             Assert.assertEquals("Can't find property 'salesDate_NonExistent' in class 'test::Sales_By_Date'", e.getMessage());
         }
     }
 
     @Test
-    public void testAggregationAwareMappingErrorInAggregateViewProperty() {
+    public void testAggregationAwareMappingErrorInAggregateViewProperty()
+    {
         try
         {
             test(
@@ -716,14 +719,16 @@ public class TestAggregationAwareCompilationFromGrammar extends TestCompilationF
                             "  }\n" +
                             ")\n");
             Assert.fail();
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
             Assert.assertEquals("Can't find property 'salesDate_NonExistent' in [Sales, Any]", e.getMessage());
         }
     }
 
     @Test
-    public void testAggregationAwareMappingErrorInAggregateViewModelOperationGroupByFunction() {
+    public void testAggregationAwareMappingErrorInAggregateViewModelOperationGroupByFunction()
+    {
         try
         {
             test(
@@ -791,7 +796,8 @@ public class TestAggregationAwareCompilationFromGrammar extends TestCompilationF
                             "  }\n" +
                             ")\n");
             Assert.fail();
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
             Assert.assertEquals("Can't find property 'salesDate_NonExistent' in class 'test::Sales'", e.getMessage());
         }
@@ -800,7 +806,8 @@ public class TestAggregationAwareCompilationFromGrammar extends TestCompilationF
     @Test
     public void testAggregationAwareMappingErrorInAggregateViewModelOperationAggregateFunction()
     {
-        try {
+        try
+        {
             test("###Pure\n" +
                     "Class test::Sales\n" +
                     "{\n" +
@@ -865,14 +872,16 @@ public class TestAggregationAwareCompilationFromGrammar extends TestCompilationF
                     "  }\n" +
                     ")\n");
             Assert.fail();
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
             Assert.assertEquals("Can't resolve the builder for function 'summation' - stack:[Lambda, new lambda, Applying summation]", e.getMessage());
         }
     }
 
     @Override
-    protected String getDuplicatedElementTestCode() {
+    protected String getDuplicatedElementTestCode()
+    {
         return "Class anything::class {}\n" +
                 "###Mapping\n" +
                 "Mapping anything::somethingelse ()\n" +
@@ -883,7 +892,8 @@ public class TestAggregationAwareCompilationFromGrammar extends TestCompilationF
     }
 
     @Override
-    protected String getDuplicatedElementTestExpectedErrorMessage() {
+    protected String getDuplicatedElementTestExpectedErrorMessage()
+    {
         return "COMPILATION error at [5:1-7:1]: Duplicated element 'anything::class'";
     }
 }

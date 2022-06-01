@@ -74,7 +74,7 @@ public class HelperDomainGrammarComposer
 
     public static String renderProperty(Property property, DEPRECATED_PureGrammarComposerCore transformer)
     {
-        return renderAnnotations(property.stereotypes, property.taggedValues) + PureGrammarComposerUtility.convertIdentifier(property.name) + ": " + property.type + "[" + renderMultiplicity(property.multiplicity) + "]" + (property.defaultValue != null? " = " + property.defaultValue.value.accept(transformer) : "");
+        return renderAnnotations(property.stereotypes, property.taggedValues) + PureGrammarComposerUtility.convertIdentifier(property.name) + ": " + property.type + "[" + renderMultiplicity(property.multiplicity) + "]" + (property.defaultValue != null ? " = " + property.defaultValue.value.accept(transformer) : "");
     }
 
     public static String renderDerivedProperty(QualifiedProperty qualifiedProperty, DEPRECATED_PureGrammarComposerCore transformer)

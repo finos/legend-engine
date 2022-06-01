@@ -1802,8 +1802,9 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
          let arrayFlattening = ^SemiStructuredArrayFlatten(navigation = if($state.inFilter, | $result->cast(@SelectWithCursor).select.filteringOperation, | $result->cast(@SelectWithCursor).select.columns)->toOne());
          let leftAlias = $result.currentTreeNode->toOne().alias;
          let rightAlias = ^TableAlias(relationalElement = $arrayFlattening, name = 'arrayFlatten_' + $nodeId);
+         let joinName = 'join_arrayFlatten_' + $arrayFlattening->buildUniqueName(true, true, $extensions);
          let join = ^Join(
-            name = 'arrayFlatten',
+            name = $joinName,
             target = $rightAlias,
             aliases = [pair($leftAlias, $rightAlias), pair($rightAlias, $leftAlias)],
             operation = ^DynaFunction(name = 'equal', parameters = [^Literal(value = 1), ^Literal(value = 1)]) // True operation
@@ -1811,7 +1812,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
 
          let lateralJoinNode = ^JoinTreeNode(
             database = ^Database(),
-            joinName = 'arrayFlatten',
+            joinName = $joinName,
             alias = $rightAlias,
             join = $join,
             joinType = $joinType,

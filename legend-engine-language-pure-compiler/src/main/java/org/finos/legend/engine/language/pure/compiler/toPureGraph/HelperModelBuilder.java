@@ -108,7 +108,7 @@ public class HelperModelBuilder
     public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression createVariableForMapped(LambdaFunction mapFn, CompileContext context)
     {
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression ve = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("")._name("mapped");
-        final GenericType genericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(((Root_meta_pure_metamodel_type_FunctionType_Impl)mapFn._classifierGenericType()._typeArguments().getFirst()._rawType())._returnType._rawType());
+        final GenericType genericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(((Root_meta_pure_metamodel_type_FunctionType_Impl) mapFn._classifierGenericType()._typeArguments().getFirst()._rawType())._returnType._rawType());
         ve._genericType(genericType);
         Multiplicity multiplicity = new Multiplicity();
         multiplicity.lowerBound = 0;
@@ -136,7 +136,7 @@ public class HelperModelBuilder
                     ._stereotypes(ListIterate.collect(property.stereotypes, s -> context.resolveStereotype(s.profile, s.value, s.profileSourceInformation, s.sourceInformation)))
                     ._taggedValues(ListIterate.collect(property.taggedValues, t -> new Root_meta_pure_metamodel_extension_TaggedValue_Impl("")._tag(context.resolveTag(t.tag.profile, t.tag.value, t.tag.profileSourceInformation, t.sourceInformation))._value(t.value)))
                     ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(context.pureModel.getType("meta::pure::metamodel::function::property::QualifiedProperty"))
-                                                                                                           ._typeArguments(Lists.fixedSize.of(PureModel.buildFunctionType(Lists.mutable.of(thisVariable).withAll(ListIterate.collect(property.parameters, p -> (VariableExpression) p.accept(new ValueSpecificationBuilder(context, Lists.mutable.empty(), processingContext)))), context.resolveGenericType(property.returnType, property.sourceInformation), context.pureModel.getMultiplicity(property.returnMultiplicity)))))
+                            ._typeArguments(Lists.fixedSize.of(PureModel.buildFunctionType(Lists.mutable.of(thisVariable).withAll(ListIterate.collect(property.parameters, p -> (VariableExpression) p.accept(new ValueSpecificationBuilder(context, Lists.mutable.empty(), processingContext)))), context.resolveGenericType(property.returnType, property.sourceInformation), context.pureModel.getMultiplicity(property.returnMultiplicity)))))
                     ._owner(owner);
         };
     }
@@ -151,7 +151,7 @@ public class HelperModelBuilder
     {
         if (signatureType != null && !actualReturnType.equals(signatureType) && !org.finos.legend.pure.m3.navigation.type.Type.subTypeOf(actualReturnType, signatureType, context.pureModel.getExecutionSupport().getProcessorSupport()))
         {
-            throw new EngineException(errorStub + " - Type error: '" + getElementFullPath((PackageableElement) actualReturnType, context.pureModel.getExecutionSupport()) + "' is not a subtype of '" + getElementFullPath((PackageableElement)signatureType, context.pureModel.getExecutionSupport()) + "'", errorSourceInformation, EngineErrorType.COMPILATION);
+            throw new EngineException(errorStub + " - Type error: '" + getElementFullPath((PackageableElement) actualReturnType, context.pureModel.getExecutionSupport()) + "' is not a subtype of '" + getElementFullPath((PackageableElement) signatureType, context.pureModel.getExecutionSupport()) + "'", errorSourceInformation, EngineErrorType.COMPILATION);
         }
     }
 
@@ -252,28 +252,29 @@ public class HelperModelBuilder
      */
     public static String getSignature(Function function)
     {
-        return getFunctionNameWithoutSignature(function)+getFunctionSignatureSuffix(function);
+        return getFunctionNameWithoutSignature(function) + getFunctionSignatureSuffix(function);
     }
 
 
     private static String getFunctionSignatureSuffix(Function function)
     {
-        return  "_" + LazyIterate.collect(function.parameters, p -> p._class != null ? p._class + "_" + getMultiplicitySignature(p.multiplicity) : null).select(Objects::nonNull).makeString("__")
+        return "_" + LazyIterate.collect(function.parameters, p -> p._class != null ? p._class + "_" + getMultiplicitySignature(p.multiplicity) : null).select(Objects::nonNull).makeString("__")
                 // TODO: do we have to take care of void return type ~ Nil?
                 + "__" + function.returnType + "_" + getMultiplicitySignature(function.returnMultiplicity) + "_";
     }
+
     public static String getFunctionNameWithoutSignature(Function function)
     {
-        String signaureSuffix=  terseSignatureSuffix(function);
-        return function.name.endsWith(signaureSuffix)? function.name.substring(0,function.name.length()-signaureSuffix.length()) : function.name;
+        String signaureSuffix = terseSignatureSuffix(function);
+        return function.name.endsWith(signaureSuffix) ? function.name.substring(0, function.name.length() - signaureSuffix.length()) : function.name;
     }
 
 
     public static String getTerseSignature(Function function)
     {
         String suffix = terseSignatureSuffix(function);
-       //A function name may or may not already have a signature. Only add it if it's not present
-        return function.name.endsWith(suffix)? function.name : function.name+suffix;
+        //A function name may or may not already have a signature. Only add it if it's not present
+        return function.name.endsWith(suffix) ? function.name : function.name + suffix;
     }
 
     private static String terseSignatureSuffix(Function function)
@@ -283,7 +284,6 @@ public class HelperModelBuilder
                 + "__" + getClassSignature(function.returnType) + "_" + getMultiplicitySignature(function.returnMultiplicity) + "_";
 
     }
-
 
 
     private static String getParameterSignature(Variable p)
@@ -379,11 +379,11 @@ public class HelperModelBuilder
 
     /**
      * Recursively go through hierarchical/generalization chain and find the property and resolve to edge point property for milestoned properties.
-    */
+     */
     public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property getPropertyOrResolvedEdgePointProperty(CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, Optional<? extends List<? extends org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification>> parameters, String name, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation)
     {
         AbstractProperty<?> abstractProperty = HelperModelBuilder.getAppliedProperty(context, _class, parameters, name, sourceInformation);
-        if((abstractProperty instanceof QualifiedProperty) && Milestoning.temporalStereotypes(((PackageableElement)abstractProperty._genericType()._rawType())._stereotypes()) != null)
+        if ((abstractProperty instanceof QualifiedProperty) && Milestoning.temporalStereotypes(((PackageableElement) abstractProperty._genericType()._rawType())._stereotypes()) != null)
         {
             return (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property) HelperModelBuilder.getAppliedProperty(context, _class, parameters, MilestoningFunctions.getEdgePointPropertyName(name), sourceInformation);
         }

@@ -42,15 +42,15 @@ public class AlloySDLCLoader
         if (alloySDLC.project != null)
         {
             url = (isLatestRevision(alloySDLC)) ?
-                metaDataServerConfiguration.getAlloy().getBaseUrl() + "/projects/" + alloySDLC.project + "/revisions/latest/pureModelContextData/" + clientVersion :
-                metaDataServerConfiguration.getAlloy().getBaseUrl() + "/projects/" + alloySDLC.project + "/versions/" + alloySDLC.version + "/pureModelContextData/" + clientVersion;
+                    metaDataServerConfiguration.getAlloy().getBaseUrl() + "/projects/" + alloySDLC.project + "/revisions/latest/pureModelContextData/" + clientVersion :
+                    metaDataServerConfiguration.getAlloy().getBaseUrl() + "/projects/" + alloySDLC.project + "/versions/" + alloySDLC.version + "/pureModelContextData/" + clientVersion;
         }
         else
         {
             Assert.assertTrue(alloySDLC.groupId != null && alloySDLC.artifactId != null, () -> "AlloySDLC info must contain and group and artifact IDs if project ID is not specified");
             url = (isLatestRevision(alloySDLC)) ?
-                metaDataServerConfiguration.getAlloy().getBaseUrl() + "/projects/" + alloySDLC.groupId + "/" + alloySDLC.artifactId + "/revisions/latest/pureModelContextData?clientVersion=" + clientVersion :
-                metaDataServerConfiguration.getAlloy().getBaseUrl() + "/projects/" + alloySDLC.groupId + "/" + alloySDLC.artifactId + "/versions/" + alloySDLC.version + "/pureModelContextData?clientVersion=" + clientVersion;
+                    metaDataServerConfiguration.getAlloy().getBaseUrl() + "/projects/" + alloySDLC.groupId + "/" + alloySDLC.artifactId + "/revisions/latest/pureModelContextData?clientVersion=" + clientVersion :
+                    metaDataServerConfiguration.getAlloy().getBaseUrl() + "/projects/" + alloySDLC.groupId + "/" + alloySDLC.artifactId + "/versions/" + alloySDLC.version + "/pureModelContextData?clientVersion=" + clientVersion;
         }
         return SDLCLoader.loadMetadataFromHTTPURL(pm, LoggingEventType.METADATA_REQUEST_ALLOY_PROJECT_START, LoggingEventType.METADATA_REQUEST_ALLOY_PROJECT_STOP, url);
     }

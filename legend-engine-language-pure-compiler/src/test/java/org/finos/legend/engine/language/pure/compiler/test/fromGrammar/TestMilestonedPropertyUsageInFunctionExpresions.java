@@ -27,10 +27,12 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite{
+public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite
+{
 
     @Override
-    public String getDuplicatedElementTestCode() {
+    public String getDuplicatedElementTestCode()
+    {
         return "Class anything::class {}\n" +
                 "###Mapping\n" +
                 "Mapping anything::somethingelse ()\n" +
@@ -41,7 +43,8 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
     }
 
     @Override
-    public String getDuplicatedElementTestExpectedErrorMessage() {
+    public String getDuplicatedElementTestExpectedErrorMessage()
+    {
         return "COMPILATION error at [5:1-7:1]: Duplicated element 'anything::somethingelse'";
     }
 
@@ -66,7 +69,8 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
     }
 
     @Test
-    public void testDatePropagationFromBusinessTemporalSourceToBusinessTemporalTarget() {
+    public void testDatePropagationFromBusinessTemporalSourceToBusinessTemporalTarget()
+    {
         Pair<PureModelContextData, PureModel> modelWithInput =
                 test("###Pure\n" +
                         "Class <<temporal.businesstemporal>> main::Person\n" +
@@ -96,7 +100,8 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
     }
 
     @Test
-    public void testDatePropagationFromBiTemporalSourceToBusinessTemporalTarget() {
+    public void testDatePropagationFromBiTemporalSourceToBusinessTemporalTarget()
+    {
         Pair<PureModelContextData, PureModel> modelWithInput =
                 test("###Pure\n" +
                         "Class <<temporal.bitemporal>> main::Person\n" +
@@ -125,8 +130,10 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
         Assert.assertEquals(DateFunctions.newPureDate(2022, 12, 13), parameterValue._values().toList().get(0));
     }
 
-    @Test @Ignore
-    public void testDatePropagationNotSupportedFromProcessingTemporalSourceToBusinessTemporalTarget() {
+    @Test
+    @Ignore
+    public void testDatePropagationNotSupportedFromProcessingTemporalSourceToBusinessTemporalTarget()
+    {
         test("###Pure\n" +
                 "Class <<temporal.processingtemporal>> main::Person\n" +
                 "{\n" +
@@ -146,7 +153,8 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
     }
 
     @Test
-    public void testDatePropagationSupportedInProjectFromBitemporalToBusinessTemporal() {
+    public void testDatePropagationSupportedInProjectFromBitemporalToBusinessTemporal()
+    {
         Pair<PureModelContextData, PureModel> modelWithInput =
                 test("###Pure\n" +
                         "Class main::Person\n" +
@@ -181,7 +189,8 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
     }
 
     @Test
-    public void testDatePropagationSupportedInProjectFromBitemporalToProcessingTemporal() {
+    public void testDatePropagationSupportedInProjectFromBitemporalToProcessingTemporal()
+    {
         Pair<PureModelContextData, PureModel> modelWithInput =
                 test("###Pure\n" +
                         "Class main::Person\n" +
@@ -216,7 +225,8 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
     }
 
     @Test
-    public void testBusinessDatePropagatedToBitemporalWhenProcessingDateSupplied() {
+    public void testBusinessDatePropagatedToBitemporalWhenProcessingDateSupplied()
+    {
         Pair<PureModelContextData, PureModel> modelWithInput =
                 test("###Pure\n" +
                         "Class main::Person\n" +
@@ -251,7 +261,8 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
     }
 
     @Test
-    public void testProcessingDatePropagatedToBitemporalWhenBusinessDateSupplied() {
+    public void testProcessingDatePropagatedToBitemporalWhenBusinessDateSupplied()
+    {
         Pair<PureModelContextData, PureModel> modelWithInput =
                 test("###Pure\n" +
                         "Class main::Person\n" +
@@ -285,8 +296,10 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
         Assert.assertEquals(DateFunctions.newPureDate(2021, 11, 12), parameterValue._values().toList().get(0));
     }
 
-    @Test @Ignore
-    public void testProcessingDateDoesntPropagateToBusinessContext() {
+    @Test
+    @Ignore
+    public void testProcessingDateDoesntPropagateToBusinessContext()
+    {
         test("###Pure\n" +
                 "Class <<temporal.processingtemporal>> test::Product{\n" +
                 "   classification : test::Classification[*];\n" +
@@ -303,8 +316,10 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
                 "}\n", "COMPILATION error at [11:1-14:1]: Error in 'main::walkTree': No-Arg milestoned property: 'exchange' must be either called in a milestoning context or supplied with [businessDate] parameters");
     }
 
-    @Test @Ignore
-    public void testBusinessDateDoesntPropagateToBusinessContext() {
+    @Test
+    @Ignore
+    public void testBusinessDateDoesntPropagateToBusinessContext()
+    {
         test("###Pure\n" +
                 "Class <<temporal.businesstemporal>> test::Product{\n" +
                 "   classification : test::Classification[*];\n" +
@@ -322,7 +337,8 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
     }
 
     @Test
-    public void testProcessingMilestoningContextAllowedToPropagateFromNoArgQualifiedPropertyThroughMapToNoArgMilestonedPropertyInLambda() {
+    public void testProcessingMilestoningContextAllowedToPropagateFromNoArgQualifiedPropertyThroughMapToNoArgMilestonedPropertyInLambda()
+    {
         test("###Pure\n" +
                 "Class <<temporal.processingtemporal>> test::Product{\n" +
                 "   classification : test::Classification[*];\n" +
@@ -337,7 +353,8 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
     }
 
     @Test
-    public void testMilestoningContextAllowedToPropagateFromNoArgQualifiedPropertyThroughMapToNoArgMilestonedPropertyInLambda() {
+    public void testMilestoningContextAllowedToPropagateFromNoArgQualifiedPropertyThroughMapToNoArgMilestonedPropertyInLambda()
+    {
         test("###Pure\n" +
                 "Class <<temporal.businesstemporal>> test::Product{\n" +
                 "   classification : test::Classification[*];\n" +
@@ -357,8 +374,10 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
                 "}\n");
     }
 
-    @Test @Ignore
-    public void testMilestoningContextNotAllowedToPropagateFromEdgePointPropertyThroughMapToNoArgMilestonedPropertyInLambda() {
+    @Test
+    @Ignore
+    public void testMilestoningContextNotAllowedToPropagateFromEdgePointPropertyThroughMapToNoArgMilestonedPropertyInLambda()
+    {
         test("###Pure\n" +
                 "Class <<temporal.businesstemporal>> test::Product{\n" +
                 "   classification : test::Classification[*];\n" +
@@ -377,8 +396,10 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
                 "}\n", "COMPILATION error at [15:73-80]: No-Arg milestoned property: 'exchange' must be either called in a milestoning context or supplied with [businessDate] parameters");
     }
 
-    @Test @Ignore
-    public void testMilestoningContextNotAllowedToPropagateFromDerivedPropertyThroughMapToNoArgMilestonedPropertyInLambda() {
+    @Test
+    @Ignore
+    public void testMilestoningContextNotAllowedToPropagateFromDerivedPropertyThroughMapToNoArgMilestonedPropertyInLambda()
+    {
         test("###Pure\n" +
                 "Class <<temporal.businesstemporal>> test::Product{\n" +
                 "   classification : test::Classification[*];\n" +
@@ -398,8 +419,10 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
                 "}\n", "COMPILATION error at [16:77-84]: No-Arg milestoned property: 'exchange' must be either called in a milestoning context or supplied with [businessDate] parameters");
     }
 
-    @Test @Ignore
-    public void testMilestoningContextNotAllowedToPropagateFromNoArgQualifiedPropertyThroughMapToFilter() {
+    @Test
+    @Ignore
+    public void testMilestoningContextNotAllowedToPropagateFromNoArgQualifiedPropertyThroughMapToFilter()
+    {
         test("###Pure\n" +
                 "Class <<temporal.businesstemporal>> test::Product{\n" +
                 "   classification : test::Classification[*];\n" +
@@ -419,7 +442,8 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
                 "}\n", "COMPILATION error at [16:121-128]: No-Arg milestoned property: 'exchange' must be either called in a milestoning context or supplied with [businessDate] parameters");
     }
 
-    public void testMilestoningContextAllowedToPropagateFromNoArgQualifiedPropertyThroughFilterToNoArgMilestonedPropertyInLambda(boolean extraFilter) {
+    public void testMilestoningContextAllowedToPropagateFromNoArgQualifiedPropertyThroughFilterToNoArgMilestonedPropertyInLambda(boolean extraFilter)
+    {
         test("###Pure\n" +
                 "Class <<temporal.businesstemporal>> test::Product{\n" +
                 "   classification : test::Classification[*];\n" +
@@ -441,12 +465,14 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
     }
 
     @Test
-    public void testMilestoningContextAllowedToPropagateFromNoArgQualifiedPropertyThroughFilterToNoArgMilestonedPropertyInLambda() {
+    public void testMilestoningContextAllowedToPropagateFromNoArgQualifiedPropertyThroughFilterToNoArgMilestonedPropertyInLambda()
+    {
         testMilestoningContextAllowedToPropagateFromNoArgQualifiedPropertyThroughFilterToNoArgMilestonedPropertyInLambda(false);
         testMilestoningContextAllowedToPropagateFromNoArgQualifiedPropertyThroughFilterToNoArgMilestonedPropertyInLambda(true);
     }
 
-    public void testMilestoningContextNotAllowedToPropagateFromAllThroughEdgePointPropertyToNoArgMilestonedPropertyInFilter(boolean extraFilter, String errorNo) {
+    public void testMilestoningContextNotAllowedToPropagateFromAllThroughEdgePointPropertyToNoArgMilestonedPropertyInFilter(boolean extraFilter, String errorNo)
+    {
         test("###Pure\n" +
                 "Class <<temporal.businesstemporal>> test::Product{\n" +
                 "   classification : test::Classification[*];\n" +
@@ -466,13 +492,16 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
                 "}\n", "COMPILATION error at " + errorNo + ": No-Arg milestoned property: 'exchange' must be either called in a milestoning context or supplied with [businessDate] parameters");
     }
 
-    @Test @Ignore
-    public void testMilestoningContextNotAllowedToPropagateFromAllThroughEdgePointPropertyToNoArgMilestonedPropertyInFilter() {
+    @Test
+    @Ignore
+    public void testMilestoningContextNotAllowedToPropagateFromAllThroughEdgePointPropertyToNoArgMilestonedPropertyInFilter()
+    {
         testMilestoningContextNotAllowedToPropagateFromAllThroughEdgePointPropertyToNoArgMilestonedPropertyInFilter(false, "[16:78-85]");
         testMilestoningContextNotAllowedToPropagateFromAllThroughEdgePointPropertyToNoArgMilestonedPropertyInFilter(true, "[16:103-110]");
     }
 
-    public void testMilestoningContextNotAllowedToPropagateFromAllThroughDerivedPropertyToNoArgMilestonedPropertyInFilter(boolean extraFilter, String errorNo) {
+    public void testMilestoningContextNotAllowedToPropagateFromAllThroughDerivedPropertyToNoArgMilestonedPropertyInFilter(boolean extraFilter, String errorNo)
+    {
         test("###Pure\n" +
                 "Class <<temporal.businesstemporal>> test::Product{\n" +
                 "   classification : test::Classification[*];\n" +
@@ -493,14 +522,17 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
                 "}\n", "COMPILATION error at " + errorNo + ": No-Arg milestoned property: 'exchange' must be either called in a milestoning context or supplied with [businessDate] parameters");
     }
 
-    @Test @Ignore
-    public void testMilestoningContextNotAllowedToPropagateFromAllThroughDerivedPropertyToNoArgMilestonedPropertyInFilter() {
+    @Test
+    @Ignore
+    public void testMilestoningContextNotAllowedToPropagateFromAllThroughDerivedPropertyToNoArgMilestonedPropertyInFilter()
+    {
         testMilestoningContextNotAllowedToPropagateFromAllThroughDerivedPropertyToNoArgMilestonedPropertyInFilter(false, "[17:80-87]");
         testMilestoningContextNotAllowedToPropagateFromAllThroughDerivedPropertyToNoArgMilestonedPropertyInFilter(true, "[17:105-112]");
     }
 
     @Test
-    public void testMilestoningContextAllowedToPropagateFromAllThroughFilterThroughExistsToNoArgMilestonedPropertyInLambda() {
+    public void testMilestoningContextAllowedToPropagateFromAllThroughFilterThroughExistsToNoArgMilestonedPropertyInLambda()
+    {
         test("###Pure\n" +
                 "Class <<temporal.businesstemporal>> test::Product{\n" +
                 "   classification : test::Classification[*];\n" +
@@ -520,7 +552,8 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
                 "}\n");
     }
 
-    @Test @Ignore
+    @Test
+    @Ignore
     public void testMilestoningContextNotAllowedToPropagateFromEdgePointPropertyThroughExistsToNoArgMilestonedPropertyInLambda()
     {
         test("###Pure\n" +
@@ -541,8 +574,10 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
                 "}\n", "COMPILATION error at [15:89-96]: No-Arg milestoned property: 'exchange' must be either called in a milestoning context or supplied with [businessDate] parameters");
     }
 
-    @Test @Ignore
-    public void testMilestoningContextNotAllowedToPropagateFromDerivedPropertyThroughExistsToNoArgMilestonedPropertyInLambda() {
+    @Test
+    @Ignore
+    public void testMilestoningContextNotAllowedToPropagateFromDerivedPropertyThroughExistsToNoArgMilestonedPropertyInLambda()
+    {
         test("###Pure\n" +
                 "Class <<temporal.businesstemporal>> test::Product{\n" +
                 "   classification : test::Classification[*];\n" +
@@ -563,7 +598,8 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
     }
 
     @Test
-    public void testMilestoningContextAllowedToPropagateThroughSubTypeToNoArgMilestonedProperty() {
+    public void testMilestoningContextAllowedToPropagateThroughSubTypeToNoArgMilestonedProperty()
+    {
         test("###Pure\n" +
                 "Class <<temporal.businesstemporal>> test::Product{\n" +
                 "   classification : test::Classification[*];\n" +
@@ -584,7 +620,8 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
     }
 
     @Test
-    public void testMilestoningContextAllowedToPropagateFromNoArgQualifiedPropertyThroughMapThroughSubTypeToNoArgMilestonedPropertyInLambda() {
+    public void testMilestoningContextAllowedToPropagateFromNoArgQualifiedPropertyThroughMapThroughSubTypeToNoArgMilestonedPropertyInLambda()
+    {
         test("###Pure\n" +
                 "Class <<temporal.businesstemporal>> test::Product{\n" +
                 "   classification : test::Classification[*];\n" +
@@ -604,7 +641,8 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
                 "}\n");
     }
 
-    @Test @Ignore
+    @Test
+    @Ignore
     public void testMilestoningContextNotAllowedToPropagateThroughFunctionWhichDoesNotAllowMilestoningContextPropagation()
     {
         test("###Pure\n" +
@@ -622,7 +660,8 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
     }
 
     @Test
-    public void testMilestoningContextAllowedToPropagateFromAllToMultipleNoArgQualifiedProperties() {
+    public void testMilestoningContextAllowedToPropagateFromAllToMultipleNoArgQualifiedProperties()
+    {
         test("###Pure\n" +
                 "Class <<temporal.businesstemporal>> test::Product{\n" +
                 "   classification : test::Classification[*];\n" +
@@ -640,7 +679,8 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
     }
 
     @Test
-    public void testMilestoningContextAllowedToPropagateAsVariableFromAllToNoArgQualifiedProperty() {
+    public void testMilestoningContextAllowedToPropagateAsVariableFromAllToNoArgQualifiedProperty()
+    {
         test("###Pure\n" +
                 "Class <<temporal.businesstemporal>> test::Product{\n" +
                 "   classification : test::Classification[*];\n" +
@@ -655,8 +695,10 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
                 "}\n");
     }
 
-    @Test @Ignore
-    public void testMilestoningContextNotAllowedToPropagateFromMilestonedQualifiedPropertyToNoArgMilestonedProperty() {
+    @Test
+    @Ignore
+    public void testMilestoningContextNotAllowedToPropagateFromMilestonedQualifiedPropertyToNoArgMilestonedProperty()
+    {
         test("###Pure\n" +
                 "Class <<temporal.businesstemporal>> test::Product{\n" +
                 "   classification : test::Classification[*];\n" +
@@ -674,8 +716,10 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
                 "}\n", "COMPILATION error at [12:1-15:1]: Error in 'main::walkTree': No-Arg milestoned property: 'exchange' must be either called in a milestoning context or supplied with [businessDate] parameters");
     }
 
-    @Test @Ignore
-    public void testMilestoningContextNotAllowedToPropagateFromAllThroughEdgePointPropertyToNoArgMilestonedProperty() {
+    @Test
+    @Ignore
+    public void testMilestoningContextNotAllowedToPropagateFromAllThroughEdgePointPropertyToNoArgMilestonedProperty()
+    {
         test("###Pure\n" +
                 "Class <<temporal.businesstemporal>> test::Product{\n" +
                 "   classification : test::Classification[1];\n" +
@@ -692,7 +736,8 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
                 "}\n", "COMPILATION error at [11:1-14:1]: Error in 'main::walkTree': No-Arg milestoned property: 'exchange' must be either called in a milestoning context or supplied with [businessDate] parameters");
     }
 
-    @Test @Ignore
+    @Test
+    @Ignore
     public void testProcessingErrorWhenMilestoningContextIsNotAvailableToNoArgMilestonedProperty()
     {
         test("###Pure\n" +
@@ -763,7 +808,8 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
                 "}\n");
     }
 
-    @Test @Ignore
+    @Test
+    @Ignore
     public void testBiTemporalDatesNotSupplied()
     {
         test("###Pure\n" +
@@ -801,7 +847,8 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
                 "function main::walkTree(): Any[*] { {|test::Order.all().createdLocation(%2020-11-12).place.name} }\n");
     }
 
-    @Test @Ignore
+    @Test
+    @Ignore
     public void testBiTemporalPropertyUsageWhenOnlyOneDatePropagated()
     {
         test("###Pure\n" +
@@ -849,7 +896,8 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
     }
 
     //alloy doesn't support allVersionsInRange
-    @Test @Ignore
+    @Test
+    @Ignore
     public void testAllVersionsInRangePropertyUsageForBusinessTemporalWithNoDatesSupplied()
     {
         test("###Pure\n" +
@@ -865,7 +913,8 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
                 "}\n", "Compilation error at (resource:test.pure line:4 column:55), \"The property 'classificationAllVersionsInRange' is milestoned with stereotypes: [ businesstemporal ] and requires 2 date parameters : [start, end]");
     }
 
-    @Test @Ignore
+    @Test
+    @Ignore
     public void testAllVersionsInRangePropertyUsageForBusinessTemporalWithOneDateSupplied()
     {
         test("###Pure\n" +
@@ -881,7 +930,8 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
                 "}\n", "Compilation error at (resource:test.pure line:4 column:55), \"The system can't find a match for the function: classificationAllVersionsInRange(_:Product[1],_:StrictDate[1])");
     }
 
-    @Test @Ignore
+    @Test
+    @Ignore
     public void testAllVersionsInRangePropertyUsageForBusinessTemporalWithThreeDatesSupplied()
     {
         test("###Pure\n" +
@@ -897,7 +947,8 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
                 "}\n", "Compilation error at (resource:test.pure line:4 column:55), \"The system can't find a match for the function: classificationAllVersionsInRange(_:Product[1],_:StrictDate[1],_:StrictDate[1],_:StrictDate[1])");
     }
 
-    @Test @Ignore
+    @Test
+    @Ignore
     public void testAllVersionsInRangePropertyUsageForBusinessTemporal()
     {
         test("###Pure\n" +
@@ -913,7 +964,8 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
                 "}\n");
     }
 
-    @Test @Ignore
+    @Test
+    @Ignore
     public void testAllVersionsInRangePropertyUsageForProcessingTemporalWithNoDatesSupplied()
     {
         test("###Pure\n" +
@@ -929,7 +981,8 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
                 "}\n", "Compilation error at (resource:test.pure line:4 column:55), \"The property 'classificationAllVersionsInRange' is milestoned with stereotypes: [ processingtemporal ] and requires 2 date parameters : [start, end]");
     }
 
-    @Test @Ignore
+    @Test
+    @Ignore
     public void testAllVersionsInRangePropertyUsageForProcessingTemporalWithOneDateSupplied()
     {
         test("###Pure\n" +
@@ -945,7 +998,8 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
                 "}\n", "Compilation error at (resource:test.pure line:4 column:55), \"The system can't find a match for the function: classificationAllVersionsInRange(_:Product[1],_:StrictDate[1])");
     }
 
-    @Test @Ignore
+    @Test
+    @Ignore
     public void testAllVersionsInRangePropertyUsageForProcessingTemporalWithThreeDatesSupplied()
     {
         test("###Pure\n" +
@@ -961,7 +1015,8 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
                 "}\n", "Compilation error at (resource:test.pure line:4 column:55), \"The system can't find a match for the function: classificationAllVersionsInRange(_:Product[1],_:StrictDate[1],_:StrictDate[1],_:StrictDate[1])");
     }
 
-    @Test @Ignore
+    @Test
+    @Ignore
     public void testAllVersionsInRangePropertyUsageForProcessingTemporal()
     {
         test("###Pure\n" +
@@ -977,7 +1032,8 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
                 "}\n");
     }
 
-    @Test @Ignore
+    @Test
+    @Ignore
     public void testAllVersionsInRangePropertyUsageForLatestDate()
     {
         test("###Pure\n" +

@@ -14,20 +14,13 @@
 
 package org.finos.legend.engine.plan.execution.nodes.helpers.platform;
 
-import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.impl.factory.Lists;
-import org.finos.legend.engine.plan.compilation.ExecutionPlanDependenciesFilter;
 import org.codehaus.commons.compiler.CompileException;
 import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.map.mutable.UnifiedMap;
-import org.finos.legend.engine.shared.javaCompiler.ClassPathFilter;
-import org.finos.legend.engine.shared.javaCompiler.CompositeClassPathFilter;
-import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
-import org.finos.legend.engine.shared.javaCompiler.JavaCompileException;
-import org.finos.legend.engine.shared.javaCompiler.JavaVersion;
-import org.finos.legend.engine.shared.javaCompiler.SingleFileCompiler;
-import org.finos.legend.engine.shared.javaCompiler.StringJavaSource;
+import org.finos.legend.engine.plan.compilation.ExecutionPlanDependenciesFilter;
 import org.finos.legend.engine.plan.execution.result.ErrorResult;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.CompiledClass;
@@ -36,6 +29,13 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.JavaCl
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.JavaPlatformImplementation;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
+import org.finos.legend.engine.shared.javaCompiler.ClassPathFilter;
+import org.finos.legend.engine.shared.javaCompiler.CompositeClassPathFilter;
+import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
+import org.finos.legend.engine.shared.javaCompiler.JavaCompileException;
+import org.finos.legend.engine.shared.javaCompiler.JavaVersion;
+import org.finos.legend.engine.shared.javaCompiler.SingleFileCompiler;
+import org.finos.legend.engine.shared.javaCompiler.StringJavaSource;
 import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
 
@@ -74,7 +74,7 @@ public class JavaHelper
                 compiler = compilePlanSlow(singleExecutionPlan);
             }
 
-            LOGGER.info(new LogInfo(pm, LoggingEventType.JAVA_COMPILATION_STOP, (double)System.currentTimeMillis() - start).toString());
+            LOGGER.info(new LogInfo(pm, LoggingEventType.JAVA_COMPILATION_STOP, (double) System.currentTimeMillis() - start).toString());
 
             return compiler;
         }

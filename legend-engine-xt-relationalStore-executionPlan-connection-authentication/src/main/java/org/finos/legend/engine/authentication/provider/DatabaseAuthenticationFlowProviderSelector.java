@@ -14,13 +14,14 @@
 
 package org.finos.legend.engine.authentication.provider;
 
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.factory.Lists;
+import org.eclipse.collections.impl.utility.Iterate;
+
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.function.Supplier;
 
-import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.impl.factory.Lists;
-import org.eclipse.collections.impl.utility.Iterate;
 /*
     The selector is used to load a flow provider from the classpath.
  */

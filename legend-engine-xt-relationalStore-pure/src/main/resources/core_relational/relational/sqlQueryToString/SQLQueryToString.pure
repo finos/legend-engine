@@ -2286,7 +2286,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memSQ
        'then',' time',' timestamp',' timezone_hour',' timezone_minute',' trailing',' translate',' translation',' trim',' true',
        'unknown',' upper',' usage',
        'value', 'varchar',
-       'when',' whenever',' write',' year',
+       'when',' whenever','window',' write',' year',
        'zone'
        ];
 }

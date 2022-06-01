@@ -14,8 +14,6 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.context;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 
 public class PureSDLC extends SDLC

@@ -223,6 +223,7 @@ public class TestCompilerExtensions
     private static class TestElement4 extends TestElement345
     {
     }
+
     private static class TestElement5 extends TestElement345
     {
     }

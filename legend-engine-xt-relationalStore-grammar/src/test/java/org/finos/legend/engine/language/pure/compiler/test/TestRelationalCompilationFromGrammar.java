@@ -256,16 +256,16 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
     {
         // PROCESSING_IN missing
         test("###Relational\n" +
-                "Database app::db\n" +
-                "(\n" +
-                "    Table personTable" +
-                "    (" +
-                "       milestoning(processing(PROCESSING_IN = dummyIn, PROCESSING_OUT = dummyOut))" +
-                "       ID INT PRIMARY KEY, MANAGERID INT, dummyOut TIMESTAMP\n" +
-                "    )\n" +
-                ")",
+                        "Database app::db\n" +
+                        "(\n" +
+                        "    Table personTable" +
+                        "    (" +
+                        "       milestoning(processing(PROCESSING_IN = dummyIn, PROCESSING_OUT = dummyOut))" +
+                        "       ID INT PRIMARY KEY, MANAGERID INT, dummyOut TIMESTAMP\n" +
+                        "    )\n" +
+                        ")",
                 "COMPILATION error at [4:47-108]: Milestone column 'dummyIn' not found on table definition"
-            );
+        );
 
         // PROCESSING_OUT missing
         test("###Relational\n" +
@@ -981,7 +981,8 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
     }
 
     @Test
-    public void testFilterMappingWithInnerJoin() {
+    public void testFilterMappingWithInnerJoin()
+    {
         test("import other::*;\n" +
                 "\n" +
                 "Class other::Person\n" +
@@ -1008,7 +1009,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "    id INT PRIMARY KEY,\n" +
                 "    legalName VARCHAR(200)\n" +
                 "   )\n" +
-                "   View personFirmView\n"+
+                "   View personFirmView\n" +
                 "   (\n" +
                 "    id : personTable.id,\n" +
                 "    firstName : personTable.firstName,\n" +
@@ -1031,7 +1032,8 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
     }
 
     @Test
-    public void testInnerJoinReferenceInRelationalMapping() {
+    public void testInnerJoinReferenceInRelationalMapping()
+    {
         String model = "Class simple::Person\n" +
                 "{\n" +
                 "  firstName: String[1];\n" +
@@ -1076,9 +1078,9 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "  Join Firm_Person(firmTable.ID = personTable.FIRMID)\n" +
                 ")\n" +
                 "\n" +
-                "\n" ;
+                "\n";
 
-        test( model +
+        test(model +
                 "###Mapping\n" +
                 "Mapping simple::simpleRelationalMappingInc\n" +
                 "(\n" +
@@ -1090,7 +1092,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "\n" +
                 ")");
 
-        test( model +
+        test(model +
                 "###Mapping\n" +
                 "Mapping simple::simpleRelationalMappingInc\n" +
                 "(\n" +
@@ -1162,7 +1164,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "  ];\n" +
                 "}\n";
 
-        test( model +
+        test(model +
                 "###Mapping\n" +
                 "Mapping simple::simpleRelationalMappingInc\n" +
                 "(\n" +
@@ -1175,7 +1177,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "  }\n" +
                 ")\n", "COMPILATION error at [45:8-68]: Binding transformer can be used with complex properties only. Property 'age' return type is 'Integer'");
 
-        test( model +
+        test(model +
                 "###Mapping\n" +
                 "Mapping simple::simpleRelationalMappingInc\n" +
                 "(\n" +
@@ -1189,7 +1191,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "  }\n" +
                 ")\n", "COMPILATION error at [46:12-73]: Class: simple::Person should be included in modelUnit for binding: simple::TestBinding");
 
-        test( model +
+        test(model +
                 "###Mapping\n" +
                 "Mapping simple::simpleRelationalMappingInc\n" +
                 "(\n" +
@@ -1203,7 +1205,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "  }\n" +
                 ")\n");
 
-        test( model +
+        test(model +
                 "###Mapping\n" +
                 "Mapping simple::simpleRelationalMappingInc\n" +
                 "(\n" +
@@ -1285,7 +1287,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
     @Test
     public void testUnknownSetImplementationIdWarning() throws Exception
     {
-        Pair<PureModelContextData, PureModel>  res = test("Class simple::Person\n" +
+        Pair<PureModelContextData, PureModel> res = test("Class simple::Person\n" +
                 "{\n" +
                 "  lastName: String[1];\n" +
                 "  firm: simple::Firm[1];\n" +
@@ -1306,7 +1308,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "  )\n" +
                 "\n" +
                 "  Join personSelfJoin(personTable.ID = {target}.ID)\n" +
-                ")\n"+
+                ")\n" +
                 "###Mapping\n" +
                 "Mapping simple::simpleRelationalMappingInc\n" +
                 "(\n" +
@@ -1318,7 +1320,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "  }\n" +
                 ")\n");
 
-        MutableList<Warning> warnings =  res.getTwo().getWarnings();
+        MutableList<Warning> warnings = res.getTwo().getWarnings();
         Assert.assertEquals(1, warnings.size());
         Assert.assertEquals("{\"sourceInformation\":{\"sourceId\":\"simple::simpleRelationalMappingInc\",\"startLine\":30,\"startColumn\":12,\"endLine\":30,\"endColumn\":43},\"message\":\"Error 'x' can't be found in the mapping simple::simpleRelationalMappingInc\"}", new ObjectMapper().writeValueAsString(warnings.get(0)));
     }

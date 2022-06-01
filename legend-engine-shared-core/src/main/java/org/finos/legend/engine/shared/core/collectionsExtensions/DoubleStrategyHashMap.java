@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.shared.core.collectionsExtensions;
 
-
 import org.eclipse.collections.impl.map.strategy.mutable.UnifiedMapWithHashingStrategy;
 
 import java.util.function.BiFunction;

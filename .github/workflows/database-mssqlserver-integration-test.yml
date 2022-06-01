@@ -53,11 +53,12 @@ jobs:
       - name: Download deps and plugins
         run: mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies
       - name: Build
+        env:
+          MAVEN_OPTS: -Xmx4000m
         run: |
           mvn clean install -DskipTests=true
       - name : Run Connection Protocol Integration Tests
+        env:
+          MAVEN_OPTS: -Xmx4000m
         run :
           mvn -pl legend-engine-xt-relationalStore-executionPlan-connection-tests  -Dtest="ExternalIntegration*SqlServer*" test
-      - name : Run Sql Generation Tests
-        run :
-          mvn -pl legend-engine-server -Dtest="Test_Relational_DbSpecific_SqlServer_UsingPureClientTestSuite" test
