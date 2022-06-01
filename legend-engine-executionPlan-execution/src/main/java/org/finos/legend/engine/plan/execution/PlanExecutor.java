@@ -203,7 +203,8 @@ public class PlanExecutor
             {
                 state.setAuthUser((singleExecutionPlan.kerberos == null) ? user : singleExecutionPlan.kerberos);
             }
-            if (state.authId == null) {
+            if (state.authId == null)
+            {
                 state.setAuthUser(IdentityFactoryProvider.getInstance().makeIdentity(profiles).getName(), false);
             }
             singleExecutionPlan.getExecutionStateParams(org.eclipse.collections.api.factory.Maps.mutable.empty()).forEach(state::addParameterValue);
