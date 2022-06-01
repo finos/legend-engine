@@ -16,7 +16,7 @@ package org.finos.legend.engine.server.test.pureClient.stores.dbSpecific;
 
 import junit.framework.Test;
 
-public class Test_Relational_DbSpecific_H2_UsingPureClientTestSuite extends Test_Relational_DbSpecific_UsingPureClientTestSuite
+public class Test_Relational_DbSpecific_H2_UsingPureClientTestSuite extends Relational_DbSpecific_UsingPureClientTestSuite
 {
     public static Test suite() throws Exception
     {
