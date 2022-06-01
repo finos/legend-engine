@@ -57,8 +57,6 @@ jobs:
         env:
           MAVEN_OPTS: -Xmx4000m
         run: mvn clean install -DskipTests=true
-      - name: Print out mvn version
-        run: mvn -v
       - name: Connection Protocol Integration Tests
         env:
           MAVEN_OPTS: -Xmx4000m
