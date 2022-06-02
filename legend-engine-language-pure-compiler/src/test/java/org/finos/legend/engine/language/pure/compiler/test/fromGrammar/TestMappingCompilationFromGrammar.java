@@ -224,7 +224,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "                primeId : $src.primeId\n" +
                 "             }\n" +
                 "   \n" +
-                ")" ,"COMPILATION error at [14:1-29:1]: Mapping'test::map'failed with error 'Invalid function new_Class_1__String_1__KeyExpression_MANY__T_1_ called 1 times"
+                ")" ,"COMPILATION error at [14:1-29:1]: The new function/operator(^) is unsupported in property mappings, violated in property 'test_A.b' of mapping 'test::map'"
                 );
 
         test(models+
@@ -248,7 +248,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "                primeId : $src.primeId\n" +
                 "             }\n" +
                 "   \n" +
-                ")" ,"COMPILATION error at [18:1-33:1]: Mapping'test::map'failed with error 'Invalid function new_Class_1__String_1__KeyExpression_MANY__T_1_ called 1 times"
+                ")" ,"COMPILATION error at [18:1-33:1]: The new function/operator(^) is unsupported in property mappings, violated in property 'test_A.b' of mapping 'test::map'"
         );
 
         test(models+
@@ -274,7 +274,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "                primeId : $src.primeId\n" +
                 "             }\n" +
                 "   \n" +
-                ")" ,"COMPILATION error at [20:1-35:1]: Mapping'test::map'failed with error 'Invalid function new_Class_1__String_1__KeyExpression_MANY__T_1_ called 2 times"
+                ")" ,"COMPILATION error at [20:1-35:1]: The new function/operator(^) is unsupported in property mappings, violated in property 'test_A.b' of mapping 'test::map'"
         );
 
         test(models+
@@ -302,7 +302,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "                primeId : $src.primeId\n" +
                 "             }\n" +
                 "   \n" +
-                ")" ,"COMPILATION error at [22:1-37:1]: Mapping'test::map'failed with error 'Invalid function new_Class_1__String_1__KeyExpression_MANY__T_1_ called 1 times"
+                ")" ,"COMPILATION error at [22:1-37:1]: The new function/operator(^) is unsupported in property mappings, violated in property 'test_A.b' of mapping 'test::map'"
         );
 
         test(models+
@@ -327,7 +327,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "                primeId : $src.primeId\n" +
                 "             }\n" +
                 "   \n" +
-                ")" ,"COMPILATION error at [19:1-34:1]: Mapping'test::map'failed with error 'Invalid function new_Class_1__String_1__KeyExpression_MANY__T_1_ called 1 times"
+                ")" ,"COMPILATION error at [19:1-34:1]: The new function/operator(^) is unsupported in property mappings, violated in property 'test_A.b' of mapping 'test::map'"
         );
 
         test(models +

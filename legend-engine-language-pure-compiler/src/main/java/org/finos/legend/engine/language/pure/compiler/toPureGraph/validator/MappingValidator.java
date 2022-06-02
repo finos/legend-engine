@@ -241,28 +241,27 @@ public class MappingValidator
     {
         pureMappings.forEach((mappingPath, mapping) ->
         {
-            try
-            {
                 mapping._classMappings().forEach(cm ->
                         {
                             if(cm instanceof InstanceSetImplementation)
                             {
                                 ((InstanceSetImplementation)cm)._propertyMappings().forEach(pm ->
                                         {
-                                            if(pm instanceof Root_meta_pure_mapping_modelToModel_PurePropertyMapping_Impl && ((Root_meta_pure_mapping_modelToModel_PurePropertyMapping_Impl) pm)._transform!=null && ((Root_meta_pure_mapping_modelToModel_PurePropertyMapping_Impl) pm)._transform instanceof Root_meta_pure_metamodel_function_LambdaFunction_Impl)
+                                            if(pm instanceof Root_meta_pure_mapping_modelToModel_PurePropertyMapping_Impl)
                                             {
-
                                                     Root_meta_pure_mapping_modelToModel_PurePropertyMapping_Impl ppm = (Root_meta_pure_mapping_modelToModel_PurePropertyMapping_Impl) pm;
-                                                    if(ppm._transform!= null && ppm._transform instanceof Root_meta_pure_metamodel_function_LambdaFunction_Impl){
+
+                                                    if(ppm._transform instanceof Root_meta_pure_metamodel_function_LambdaFunction_Impl)
+                                                    {
                                                         (((Root_meta_pure_metamodel_function_LambdaFunction_Impl)ppm._transform)._expressionSequence).forEach(ex ->
                                                         {
                                                             RichIterable<? extends FunctionExpression> fe = core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_findExpressionsForFunctionInValueSpecification_ValueSpecification_1__Function_MANY__FunctionExpression_MANY_
                                                                     ((ValueSpecification)ex,
                                                                             Lists.mutable.of(pureModel.getFunction("meta::pure::functions::lang::new_Class_1__String_1__KeyExpression_MANY__T_1_",true)),
                                                                             pureModel.getExecutionSupport());
-                                                            if(fe.size() > 0)
+                                                            if(!fe.isEmpty())
                                                             {
-                                                                throw new EngineException("Invalid function new_Class_1__String_1__KeyExpression_MANY__T_1_ called " + fe.size() + " times");
+                                                                throw new EngineException("The new function/operator(^) is unsupported in property mappings, violated in property '" + ppm._transform + "' of mapping '" + mappingPath + "'", mappings.get(mappingPath).sourceInformation, EngineErrorType.COMPILATION);
                                                             }
                                                         });
                                                     }
@@ -271,11 +270,6 @@ public class MappingValidator
                             }
 
                         });
-            }
-            catch (EngineException e)
-            {
-                throw new EngineException("Mapping'" + mappingPath + "'failed with error '" + e.getMessage(), mappings.get(mappingPath).sourceInformation, EngineErrorType.COMPILATION);
-            }
         });
 
     }
