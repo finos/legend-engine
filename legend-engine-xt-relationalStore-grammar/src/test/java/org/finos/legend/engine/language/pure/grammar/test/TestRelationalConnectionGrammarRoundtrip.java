@@ -83,7 +83,7 @@ public class TestRelationalConnectionGrammarRoundtrip extends TestGrammarRoundtr
                 "  {\n" +
                 "    userNameVaultReference: 'user';\n" +
                 "    passwordVaultReference: 'pwd';\n" +
-                "  };\n"+
+                "  };\n" +
                 "}\n");
     }
 
