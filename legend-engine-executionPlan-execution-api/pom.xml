@@ -81,6 +81,10 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-executionPlan-execution-authorizer</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-shared-core</artifactId>
         </dependency>
         <!-- ENGINE -->
@@ -145,6 +149,10 @@
         <dependency>
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-executionPlan-execution-authorizer</artifactId>
         </dependency>
         <!-- ECLIPSE COLLECTIONS -->
     </dependencies>
