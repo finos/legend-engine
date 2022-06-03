@@ -29,14 +29,9 @@ import meta::pure::alloy::connections::alloy::specification::*;
 
 function meta::relational::postProcessor::getCollectionThresholdLimitForDatabaseType(dbType:DatabaseType[1], isTestRun:Boolean[1]):Integer[0..1]
 {
-   let threshMap = newMap([pair(DatabaseType.DB2, 32767),
-                           pair(DatabaseType.MemSQL, 1048576),
-                           pair(DatabaseType.Snowflake, 16348),
-                           pair(DatabaseType.SybaseIQ, 250000)]);
-
    let thresholdForTests = 50;
 
-   if($isTestRun, | $thresholdForTests, | $threshMap->get($dbType));
+   if($isTestRun, | $thresholdForTests, | $dbType->createDbConfig([]).dbExtension.collectionThresholdLimit);
 }
 
 function <<access.private>> meta::relational::postProcessor::prefixForWrapperAllocationNodeName():String[1]

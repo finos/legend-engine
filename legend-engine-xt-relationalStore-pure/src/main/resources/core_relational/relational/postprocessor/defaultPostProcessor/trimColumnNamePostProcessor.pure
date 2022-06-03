@@ -22,6 +22,7 @@ import meta::relational::postProcessor::reAliasColumnName::*;
 import meta::relational::metamodel::relation::*;
 import meta::relational::metamodel::*;
 import meta::pure::functions::collection::*;
+import meta::relational::functions::sqlQueryToString::*;
 
 function meta::relational::postProcessor::reAliasColumnName::trimColumnName(query:SelectSQLQuery[1],connection:DatabaseConnection[1]):Result<SelectSQLQuery|1>[1]
 {
@@ -49,24 +50,14 @@ function meta::relational::postProcessor::reAliasColumnName::trimColumnName(quer
 function meta::relational::postProcessor::reAliasColumnName::lengthConfig(runtime: Runtime[1]):Integer[1]
 {
   let type =  $runtime.connections->filter(c|$c->instanceOf(DatabaseConnection))->cast(@DatabaseConnection).type;
-  let config = dbAliasLimit();
 
-  let length = $config->get($type->cast(@DatabaseType)->toOne());
+  let length = $type->cast(@DatabaseType)->toOne()->createDbConfig([]).dbExtension.aliasLimit;
   if($length->isEmpty(),
      | fail('Db not configured for column rename');0;,
      | $length
   )->toOne();
 }
 
-function meta::relational::postProcessor::reAliasColumnName::dbAliasLimit():Map<DatabaseType, Integer>[1]
-{
-  newMap([
-    pair(DatabaseType.DB2, 128),
-    pair(DatabaseType.H2, 1000),
-    pair(DatabaseType.SybaseIQ, 255),
-    pair(DatabaseType.Snowflake, 255)
-  ]);
-}
 function  meta::relational::postProcessor::reAliasColumnName::search(q:RelationalOperationElement[*],runtime:Runtime[1] ): Pair<String,String>[*]
 {
    $q->map(r| $r->match([

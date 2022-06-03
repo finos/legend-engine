@@ -14,36 +14,24 @@
 
 import meta::relational::runtime::*;
 import meta::relational::translation::*;
+import meta::relational::functions::sqlQueryToString::*;
 
 Class meta::relational::translation::TranslationContext
 {
    dbType: DatabaseType[0..1];
-   coreTypeToDbSpecificSqlTranslator: Function<{meta::relational::metamodel::datatype::DataType[1] -> String[0..1]}>[0..1];
+   coreTypeToDbSpecificSqlTranslator: Function<{meta::relational::metamodel::datatype::CoreDataType[1] -> String[0..1]}>[0..1];
 }
 
 function meta::relational::translation::translateCoreTypeToDbSpecificType(type: meta::relational::metamodel::datatype::DataType[0..1], translationContext : TranslationContext[1]): meta::relational::metamodel::datatype::DataType[0..1]
 {
    if($type->isEmpty() || ($translationContext.dbType->isEmpty() && $translationContext.coreTypeToDbSpecificSqlTranslator->isEmpty()), |$type,
-      |let translator = if($translationContext.coreTypeToDbSpecificSqlTranslator->isEmpty(), |coreTypeToDbSpecificSqlTranslator($translationContext.dbType->toOne()), |$translationContext.coreTypeToDbSpecificSqlTranslator);
+      |let translator = if($translationContext.coreTypeToDbSpecificSqlTranslator->isEmpty(), |$translationContext.dbType->toOne()->createDbConfig([]).dbExtension.coreTypeToDbSpecificSqlTranslator, |$translationContext.coreTypeToDbSpecificSqlTranslator);
        if($translator->isEmpty(), |$type,
-          |let dbSpecificSql = $translator->toOne()->eval($type->toOne());
+          |let dbSpecificSql = $translator->toOne()->eval($type->toOne()->cast(@meta::relational::metamodel::datatype::CoreDataType));
            if($dbSpecificSql->isEmpty(), |$type, |^meta::relational::metamodel::datatype::DbSpecificDataType(
                                                     coreDataType=$type->toOne()->cast(@meta::relational::metamodel::datatype::CoreDataType),
                                                     dbSpecificSql=$dbSpecificSql->toOne())
            );
        );
    );
-}
-
-function <<access.private>> meta::relational::translation::coreTypeToDbSpecificSqlTranslator(dbType:DatabaseType[1]): Function<{meta::relational::metamodel::datatype::DataType[1] -> String[0..1]}>[0..1]
-{
-  //  newMap([
-  //     pair(DatabaseType.BigQuery,
-  //          type: meta::relational::metamodel::datatype::DataType[1]| $type->match([
-  //             v: meta::relational::metamodel::datatype::Varchar[1]| format('STRING(%d)', $v.size),
-  //             a: meta::relational::metamodel::datatype::DataType[1]| []
-  //          ])
-  //     )
-  //  ])->get($dbType);
-  [];
 }
