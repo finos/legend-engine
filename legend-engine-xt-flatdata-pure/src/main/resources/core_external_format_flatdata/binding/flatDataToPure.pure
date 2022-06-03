@@ -68,7 +68,7 @@ Class meta::external::format::flatdata::binding::toPure::FlatDataToModelConfigur
 
 function meta::external::format::flatdata::binding::toPure::defaultConfig(): FlatDataToModelConfiguration[1]
 {
-  ^FlatDataToModelConfiguration(targetPackage='target::package', targetBinding='target::package::GeneratedBinding', purifyNames=true);
+  ^FlatDataToModelConfiguration(format='FlatData', targetPackage='target::package', targetBinding='target::package::GeneratedBinding', purifyNames=true);
 }
 
 function <<Generation.Configuration>>  meta::external::format::flatdata::binding::toPure::describeConfiguration(): GenerationParameter[*]

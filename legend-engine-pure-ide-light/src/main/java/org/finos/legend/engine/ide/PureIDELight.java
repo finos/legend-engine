@@ -18,7 +18,7 @@ public class PureIDELight extends PureIDEServer
 {
     public static void main(String[] args) throws Exception
     {
-        new PureIDELight().run(args);
+        new PureIDELight().run(args.length == 0 ? new String[]{"server","legend-engine-pure-ide-light/src/main/resources/ideLightConfig.json"}: args);
     }
 
     public MutableList<RepositoryCodeStorage> buildRepositories(SourceLocationConfiguration sourceLocationConfiguration)
@@ -40,6 +40,7 @@ public class PureIDELight extends PureIDEServer
                     .with(this.buildCore("legend-engine-xt-serviceStore-pure", "servicestore"))
                     .with(this.buildCore("legend-engine-xt-flatdata-pure", "external-format-flatdata"))
                     .with(this.buildCore("legend-engine-xt-json-pure", "external-format-json"))
+                    .with(this.buildCore("legend-engine-xt-protobuf-pure", "external-format-protobuf"))
                     .with(this.buildCore("legend-engine-xt-xml-pure", "external-format-xml"))
                     .with(this.buildCore("legend-engine-xt-graphQL-pure", "external-query-graphql"))
                     .with(this.buildCore("legend-engine-pure-ide-light-metadata-pure", "ide_metadata"))

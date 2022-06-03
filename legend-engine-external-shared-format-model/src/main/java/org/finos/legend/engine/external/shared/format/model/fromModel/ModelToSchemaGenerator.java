@@ -70,7 +70,7 @@ public class ModelToSchemaGenerator extends Generator
             ExternalFormatSchema externalFormatSchema = new ExternalFormatSchema();
             externalFormatSchema.id = schema._id();
             externalFormatSchema.location = schema._location();
-            externalFormatSchema.content = schemaExtension.metamodelToText(schema._detail());
+            externalFormatSchema.content = schemaExtension.metamodelToText(schema._detail(), pureModel);
             result.schemas.add(externalFormatSchema);
         }
         return result;

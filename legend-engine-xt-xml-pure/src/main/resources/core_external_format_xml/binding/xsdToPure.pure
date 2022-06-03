@@ -85,7 +85,7 @@ Class meta::external::format::xml::binding::toPure::XsdToModelConfiguration exte
 
 function meta::external::format::xml::binding::toPure::defaultConfig(): XsdToModelConfiguration[1]
 {
-  ^XsdToModelConfiguration(targetPackage='target::package', targetBinding='target::package::GeneratedBinding', inlineCollectionClasses=true, includeUnreachableClasses=false);
+  ^XsdToModelConfiguration(format='XSD', targetPackage='target::package', targetBinding='target::package::GeneratedBinding', inlineCollectionClasses=true, includeUnreachableClasses=false);
 }
 
 function <<Generation.Configuration>>  meta::external::format::xml::binding::toPure::describeConfiguration(): GenerationParameter[*]

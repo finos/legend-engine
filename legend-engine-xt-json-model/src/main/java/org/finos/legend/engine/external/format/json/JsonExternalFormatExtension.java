@@ -41,7 +41,7 @@ import java.util.List;
 
 public class JsonExternalFormatExtension implements ExternalFormatExtension<Root_meta_external_format_json_metamodel_JsonSchema, JsonSchemaToModelConfiguration, ModelToJsonSchemaConfiguration>
 {
-    private static final String TYPE = "JSON";
+    public static final String TYPE = "JSON";
     private static final boolean IN_DEBUG = ManagementFactory.getRuntimeMXBean().getInputArguments().toString().contains(":jdwp");
 
     @Override
@@ -69,7 +69,7 @@ public class JsonExternalFormatExtension implements ExternalFormatExtension<Root
     }
 
     @Override
-    public String metamodelToText(Root_meta_external_format_json_metamodel_JsonSchema schemaDetail)
+    public String metamodelToText(Root_meta_external_format_json_metamodel_JsonSchema schemaDetail, PureModel pureModel)
     {
         return schemaDetail._content();
     }

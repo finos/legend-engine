@@ -22,7 +22,8 @@ import org.finos.legend.engine.protocol.protobuf3.metamodel.Syntax;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class TestProtobuf3 {
+public class TestProtobuf3
+{
 
     @Test
     public void testFile()
@@ -65,7 +66,7 @@ public class TestProtobuf3 {
         Assert.assertEquals("tutorial", proto._package);
 
         Assert.assertEquals(1, proto.imports.size());
-        Assert.assertEquals("google/protobuf/timestamp.proto",proto.imports.get(0).name);
+        Assert.assertEquals("google/protobuf/timestamp.proto", proto.imports.get(0).name);
 
         Assert.assertEquals(2, proto.topLevelDefs.size());
 
@@ -81,7 +82,8 @@ public class TestProtobuf3 {
     }
 
     @Test
-    public void testService() {
+    public void testService()
+    {
         String service =
                 "syntax = \"proto3\";\n" +
                         "package helloworld;\n" +

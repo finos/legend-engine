@@ -12,13 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.external.format.protobuf.schema.generations;
+package org.finos.legend.engine.external.format.protobuf.fromModel;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import org.finos.legend.engine.external.shared.format.generations.GenerationInput;
-
-public class ProtobufGenerationInput extends GenerationInput
+public enum OptimizeMode
 {
-    @JsonProperty(required = true)
-    public ProtobufGenerationConfig config;
+    SPEED,
+    CODE_SIZE,
+    LITE_RUNTIME
 }

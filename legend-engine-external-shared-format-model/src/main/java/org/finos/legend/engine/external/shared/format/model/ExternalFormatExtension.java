@@ -78,7 +78,7 @@ public interface ExternalFormatExtension<
     /**
      * Called to convert a compiled schema detail back to its textual (schema-specific grammar) form
      */
-    String metamodelToText(Metamodel schemaDetail);
+    String metamodelToText(Metamodel schemaDetail, PureModel pureModel);
 
     /**
      * Determines whether this extension supports model generation.

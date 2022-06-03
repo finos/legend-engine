@@ -1,4 +1,4 @@
-// Copyright 2021 Goldman Sachs
+// Copyright 2020 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,15 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.external.format.xsd.fromModel;
+package org.finos.legend.engine.external.format.protobuf.deprecated.generation.configuration;
 
-import org.finos.legend.engine.external.format.xsd.XsdExternalFormatExtension;
-import org.finos.legend.engine.external.shared.format.model.fromModel.ModelToSchemaConfiguration;
+import java.util.Collections;
+import java.util.List;
 
-public class ModelToXsdConfiguration extends ModelToSchemaConfiguration
+@Deprecated
+public class Options
 {
-    public ModelToXsdConfiguration()
-    {
-        super(XsdExternalFormatExtension.TYPE);
-    }
+    public String javaPackage;
+    public String javaOuterClassname;
+    public Boolean javaMultipleFiles;
+    public OptimizeMode optimizeFor;
+    public List<CustomOption> customOptions = Collections.EMPTY_LIST;
 }

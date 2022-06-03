@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.external.format.protobuf.schema.generations;
+package org.finos.legend.engine.external.format.protobuf.deprecated.generation;
 
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
@@ -21,6 +21,8 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.list.MutableList;
+import org.finos.legend.engine.external.format.protobuf.deprecated.generation.configuration.ProtobufGenerationConfig;
+import org.finos.legend.engine.external.format.protobuf.deprecated.generation.configuration.ProtobufGenerationInput;
 import org.finos.legend.engine.external.shared.format.generations.GenerationOutput;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
@@ -30,7 +32,7 @@ import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
-import org.finos.legend.pure.generated.core_external_format_protobuf_transformation_pureToProtocolBuffers;
+import org.finos.legend.pure.generated.core_external_format_protobuf_deprecated;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
@@ -89,8 +91,8 @@ public class ProtobufGenerationService
             long start = System.currentTimeMillis();
             LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE_PROTOBUF_CODE_INTERACTIVE_START : LoggingEventType.GENERATE_PROTOBUF_CODE_START).toString());
             PureModel pureModel = pureModelFunc.value();
-            Object result = core_external_format_protobuf_transformation_pureToProtocolBuffers.Root_meta_external_format_protobuf_generation_generateProtobufFromPureWithScope_ProtobufConfig_1__ProtobufOutput_MANY_(protobufConfig.transformToPure(pureModel), pureModel.getExecutionSupport()).collect(v -> new GenerationOutput(v._content(), v._fileName(), v._format())).toList();
-            LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE_PROTOBUF_CODE_INTERACTIVE_STOP : LoggingEventType.GENERATE_PROTOBUF_CODE_STOP, (double) System.currentTimeMillis() - start).toString());
+            Object result = core_external_format_protobuf_deprecated.Root_meta_external_format_protobuf_deprecated_generation_internal_transform_ProtobufConfig_1__GenerationOutput_MANY_(protobufConfig.transformToPure(pureModel), pureModel.getExecutionSupport()).collect(v -> new GenerationOutput(v._content(), v._fileName(), v._format())).toList();
+            LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE_PROTOBUF_CODE_INTERACTIVE_STOP : LoggingEventType.GENERATE_PROTOBUF_CODE_STOP, (double)System.currentTimeMillis() - start).toString());
             return ManageConstantResult.manageResult(pm, result);
         }
         catch (Exception ex)
