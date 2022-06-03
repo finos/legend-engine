@@ -85,7 +85,7 @@ public class TestProtobuf3
     public void testEnumNonSequentialNumbers()
     {
         String message = "syntax = \"proto3\";\n" +
-        "enum PhoneType {\n" +
+                "enum PhoneType {\n" +
                 "  MOBILE = 0;\n" +
                 "  HOME = 3;\n" +
                 "  WORK = 7;\n" +
@@ -121,7 +121,8 @@ public class TestProtobuf3
     }
 
     @Test
-    public void testService() {
+    public void testService()
+    {
         String service =
                 "syntax = \"proto3\";\n" +
                         "package helloworld;\n" +
