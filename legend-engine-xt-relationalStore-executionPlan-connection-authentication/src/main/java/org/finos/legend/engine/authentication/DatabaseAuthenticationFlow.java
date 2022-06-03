@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.authentication;
 
+import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.map.ImmutableMap;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
@@ -49,4 +51,42 @@ public interface DatabaseAuthenticationFlow<D extends DatasourceSpecification, A
         In cases like GCP Application Default Credentials, where the credential might already be available in the runtime environment (e.g GCP K8s), the flow still has to provide a no-op credential object.
      */
     Credential makeCredential(Identity identity, D datasourceSpecification, A authenticationStrategy) throws Exception;
+
+    default Credential makeCredential(Identity identity, D datasourceSpecification, A authenticationStrategy, RuntimeContext credentialAcquisitionContext) throws Exception
+    {
+           return this.makeCredential(identity, datasourceSpecification, authenticationStrategy);
+    }
+
+    /*
+        This is intended to carry 'runtime context' that is not part of the model (i.e datasource spec and auth spec), but is needed to create a credential.
+        For e.g. this can be used to inject server/platform configuration required to connect to external vault.
+     */
+    class RuntimeContext
+    {
+        private ImmutableMap<String, String> contextParams = Maps.immutable.empty();
+
+        public static RuntimeContext newWith(ImmutableMap<String, String> contextParams)
+        {
+            return new RuntimeContext(contextParams);
+        }
+
+        public static RuntimeContext empty()
+        {
+            return new RuntimeContext();
+        }
+
+        private RuntimeContext(ImmutableMap<String, String> contextParams)
+        {
+            this.contextParams = contextParams;
+        }
+
+        private RuntimeContext()
+        {
+        }
+
+        public ImmutableMap<String, String> getContextParams()
+        {
+            return contextParams;
+        }
+    }
 }
