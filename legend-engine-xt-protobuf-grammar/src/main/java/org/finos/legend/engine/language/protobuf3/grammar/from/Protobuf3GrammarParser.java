@@ -347,14 +347,14 @@ public class Protobuf3GrammarParser
                 Enumeration enumeration = visitEnumDef(elementContext.enumDef());
                 content.add(enumeration);
             }
-            else if (elementContext.oneof() != null )
+            else if (elementContext.oneof() != null)
             {
                 OneOf oneOf = visitOneofContext(elementContext.oneof());
                 content.add(oneOf);
             }
             else if (elementContext.reserved() != null)
             {
-                if(elementContext.reserved().reservedFieldNames() != null)
+                if (elementContext.reserved().reservedFieldNames() != null)
                 {
                     content.add(visitReservedFieldNamesContext(elementContext.reserved().reservedFieldNames()));
                 }
@@ -377,25 +377,29 @@ public class Protobuf3GrammarParser
         return message;
     }
 
-    private OneOf visitOneofContext(Protobuf3Parser.OneofContext oneofContext) {
+    private OneOf visitOneofContext(Protobuf3Parser.OneofContext oneofContext)
+    {
         OneOf oneOf = new OneOf();
         oneOf.name = oneofContext.oneofName().ident().getText();
         oneOf.field = ListIterate.collect(oneofContext.oneofField(), this::visitOneofFieldContext);
         return oneOf;
     }
 
-    private Field visitOneofFieldContext(Protobuf3Parser.OneofFieldContext oneofFieldContext) {
+    private Field visitOneofFieldContext(Protobuf3Parser.OneofFieldContext oneofFieldContext)
+    {
         Field field = new Field();
         field.name = oneofFieldContext.fieldName().ident().getText();
         field.number = visitIntLitContext(oneofFieldContext.fieldNumber().intLit());
         field.type = visitProtoType(oneofFieldContext.type_());
-        if( oneofFieldContext.fieldOptions() != null) {
+        if (oneofFieldContext.fieldOptions() != null)
+        {
             field.options = ListIterate.collect(oneofFieldContext.fieldOptions().fieldOption(), this::visitFieldOptionContext);
         }
         return field;
     }
 
-    private Option visitFieldOptionContext(Protobuf3Parser.FieldOptionContext fieldOptionContext){
+    private Option visitFieldOptionContext(Protobuf3Parser.FieldOptionContext fieldOptionContext)
+    {
         Option option = new Option();
         option.name = fieldOptionContext.optionName().getText();
         option.value = visitConstant(fieldOptionContext.constant());
@@ -421,7 +425,8 @@ public class Protobuf3GrammarParser
         Range range = new Range();
         List<Long> values = ListIterate.collect(rangeContext.intLit(), this::visitIntLitContext);
         range.bottom = visitIntLitContext(rangeContext.intLit(0));
-        if (rangeContext.intLit().size() > 1){
+        if (rangeContext.intLit().size() > 1)
+        {
             range.top = visitIntLitContext(rangeContext.intLit(1));
         }
         return range;
