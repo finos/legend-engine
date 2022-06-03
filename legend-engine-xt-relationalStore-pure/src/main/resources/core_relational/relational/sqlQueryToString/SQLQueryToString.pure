@@ -72,7 +72,7 @@ Class meta::relational::functions::sqlQueryToString::DbConfig
 
    literalProcessor(type:Type[1])
    {
-     getLiteralProcessorForType($type, $this.dbExtension.literalProcessor, $this.dbTimeZone);
+     getLiteralProcessorForType($type, $this.dbExtension.literalProcessor);
    }: LiteralProcessor[1];
 
    windowColumnProcessor(w:WindowColumn[1], sgc:SqlGenerationContext[1])
@@ -188,7 +188,7 @@ function meta::relational::functions::sqlQueryToString::createDbConfig( dbType:D
       dbType = $dbType,
       dbTimeZone = $dbTimeZone,
       quoteIdentifiers = if($quoteIdentifiers->isEmpty(), |false, |$quoteIdentifiers->toOne()),
-      dbExtension = $dbType->createDbExtension($dbTimeZone)
+      dbExtension = $dbType->createDbExtension()
    );
 }
 
@@ -197,7 +197,7 @@ function meta::relational::functions::sqlQueryToString::getDatabaseTypes():Datab
   [DatabaseType.DB2, DatabaseType.H2, DatabaseType.MemSQL, DatabaseType.Sybase, DatabaseType.SybaseIQ, DatabaseType.Composite, DatabaseType.Postgres, DatabaseType.SqlServer, DatabaseType.Snowflake, DatabaseType.Hive, DatabaseType.Presto, DatabaseType.BigQuery, DatabaseType.Redshift, DatabaseType.Databricks];
 }
 
-function meta::relational::functions::sqlQueryToString::createDbExtension(dbType:DatabaseType[1], dbTimeZone:String[0..1]):DbExtension[1]
+function meta::relational::functions::sqlQueryToString::createDbExtension(dbType:DatabaseType[1]):DbExtension[1]
 {
    let isBooleanLiteralSupported = !$dbType->in([DatabaseType.SybaseIQ, DatabaseType.DB2]);
 
@@ -222,14 +222,14 @@ function meta::relational::functions::sqlQueryToString::createDbExtension(dbType
 
    let isDbReservedIdentifier = {str:String[1]| $str->in($reservedWords)};
 
-   let literalProcessors = getDefaultLiteralProcessors($dbTimeZone)->putAll([
-     option(DatabaseType.SybaseIQ, |getLiteralProcessorsForSybaseIQ($dbTimeZone)),
-     option(DatabaseType.Sybase, |getLiteralProcessorsForSybaseASE($dbTimeZone)),
-     option(DatabaseType.Databricks, |getLiteralProcessorsForDatabricks($dbTimeZone)),
-     option(DatabaseType.Postgres, |getLiteralProcessorsForPostgres($dbTimeZone)),
-     option(DatabaseType.Presto, |getLiteralProcessorsForPresto($dbTimeZone)),
-     option(DatabaseType.BigQuery, |getLiteralProcessorsForBigQuery($dbTimeZone)),
-     option(DatabaseType.Redshift, |getLiteralProcessorsForRedshift($dbTimeZone))
+   let literalProcessors = getDefaultLiteralProcessors()->putAll([
+     option(DatabaseType.SybaseIQ, |getLiteralProcessorsForSybaseIQ()),
+     option(DatabaseType.Sybase, |getLiteralProcessorsForSybaseASE()),
+     option(DatabaseType.Databricks, |getLiteralProcessorsForDatabricks()),
+     option(DatabaseType.Postgres, |getLiteralProcessorsForPostgres()),
+     option(DatabaseType.Presto, |getLiteralProcessorsForPresto()),
+     option(DatabaseType.BigQuery, |getLiteralProcessorsForBigQuery()),
+     option(DatabaseType.Redshift, |getLiteralProcessorsForRedshift())
    ]->evalByDbType($dbType, |newMap([]->cast(@Pair<Type, LiteralProcessor>))));
    
    let literalProcessor = {type:Type[1]| $literalProcessors->get(if($type->instanceOf(Enumeration), | Enum, | $type))->toOne()};
@@ -436,109 +436,114 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::proce
         |')') ;
 }
 
+function <<access.private>> meta::relational::functions::sqlQueryToString::literalTransform(t: meta::pure::metamodel::function::Function<{Nil[1] -> String[1]}>[1]): meta::pure::metamodel::function::Function<{Nil[1], String[0..1] -> String[1]}>[1]
+{
+  {x:Nil[1], dbTimeZone:String[0..1]| $t->eval($x)};
+}
+
 Class <<access.private>> meta::relational::functions::sqlQueryToString::LiteralProcessor
 {
    types:Type[*];
    format: String[1];
-   transform: meta::pure::metamodel::function::Function<{Nil[1]->String[1]}>[1];
+   transform: meta::pure::metamodel::function::Function<{Nil[1], String[0..1] -> String[1]}>[1];
 
-   formatValue(value:Any[1]) {
-      $this.format->format($this.transformValue($value))
+   formatValue(value:Any[1], dbTimeZone:String[0..1]) {
+      $this.format->format($this.transformValue($value, $dbTimeZone))
    }:String[1];
 
-   transformValue(value:Any[1]) {
-      $this.transform->eval($value)
+   transformValue(value:Any[1], dbTimeZone:String[0..1]) {
+      $this.transform->eval($value, $dbTimeZone)
    }:String[1];
 }
 
-function meta::relational::functions::sqlQueryToString::getLiteralProcessorForType(type:Type[1], literalProcessor: meta::pure::metamodel::function::Function<{Type[1] -> LiteralProcessor[1]}>[1], dbTimeZone:String[0..1]): LiteralProcessor[1]
+function meta::relational::functions::sqlQueryToString::getLiteralProcessorForType(type:Type[1], literalProcessor: meta::pure::metamodel::function::Function<{Type[1] -> LiteralProcessor[1]}>[1]): LiteralProcessor[1]
 {
    if($type->equal(VarPlaceHolder),
-      |^LiteralProcessor(format = '%s', transform = {v:VarPlaceHolder[1] | convertPlaceHolderToSQLString($v, $literalProcessor, $dbTimeZone)}),
+      |^LiteralProcessor(format = '%s', transform = {v:VarPlaceHolder[1], dbTimeZone:String[0..1] | convertPlaceHolderToSQLString($v, $literalProcessor, $dbTimeZone)}),
       |$literalProcessor->eval($type));
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::getDefaultLiteralProcessors(dbTimeZone:String[0..1]):Map<Type,LiteralProcessor>[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::getDefaultLiteralProcessors():Map<Type,LiteralProcessor>[1]
 {
    newMap([
-      pair(Enum,           ^LiteralProcessor(format = '%s',     transform = toString_Any_1__String_1_)),
-      pair(String,         ^LiteralProcessor(format = '\'%s\'', transform = convertStringToSQLString_String_1__String_1_)),
-      pair(Number,         ^LiteralProcessor(format = '%s',     transform = toString_Any_1__String_1_)),
-      pair(Integer,        ^LiteralProcessor(format = '%s',     transform = toString_Any_1__String_1_)),
-      pair(Float,          ^LiteralProcessor(format = '%s',     transform = toString_Any_1__String_1_)),
-      pair(Decimal,        ^LiteralProcessor(format = '%s',     transform = toString_Any_1__String_1_)),
-      pair(Boolean,        ^LiteralProcessor(format = '\'%s\'', transform = toString_Any_1__String_1_)),
-      pair(SQLNull,        ^LiteralProcessor(format = '%s',     transform = convertSQLNullToSQLString_SQLNull_1__String_1_)),
-      pair(StrictDate,     ^LiteralProcessor(format = '\'%s\'', transform = {d:StrictDate[1] | $d->convertDateToSqlString($dbTimeZone)})),
-      pair(DateTime,       ^LiteralProcessor(format = '\'%s\'', transform = {d:DateTime[1] | $d->convertDateToSqlString($dbTimeZone)})),
-      pair(Date,           ^LiteralProcessor(format = '\'%s\'', transform = {d:Date[1] | $d->convertDateToSqlString($dbTimeZone)}))
+      pair(Enum,           ^LiteralProcessor(format = '%s',     transform = toString_Any_1__String_1_->literalTransform())),
+      pair(String,         ^LiteralProcessor(format = '\'%s\'', transform = convertStringToSQLString_String_1__String_1_->literalTransform())),
+      pair(Number,         ^LiteralProcessor(format = '%s',     transform = toString_Any_1__String_1_->literalTransform())),
+      pair(Integer,        ^LiteralProcessor(format = '%s',     transform = toString_Any_1__String_1_->literalTransform())),
+      pair(Float,          ^LiteralProcessor(format = '%s',     transform = toString_Any_1__String_1_->literalTransform())),
+      pair(Decimal,        ^LiteralProcessor(format = '%s',     transform = toString_Any_1__String_1_->literalTransform())),
+      pair(Boolean,        ^LiteralProcessor(format = '\'%s\'', transform = toString_Any_1__String_1_->literalTransform())),
+      pair(SQLNull,        ^LiteralProcessor(format = '%s',     transform = convertSQLNullToSQLString_SQLNull_1__String_1_->literalTransform())),
+      pair(StrictDate,     ^LiteralProcessor(format = '\'%s\'', transform = {d:StrictDate[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(DateTime,       ^LiteralProcessor(format = '\'%s\'', transform = {d:DateTime[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(Date,           ^LiteralProcessor(format = '\'%s\'', transform = {d:Date[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)}))
    ]);
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::getLiteralProcessorsForSybaseASE(dbTimeZone:String[0..1]):Map<Type,LiteralProcessor>[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::getLiteralProcessorsForSybaseASE():Map<Type,LiteralProcessor>[1]
 {
    newMap([
-      pair(StrictDate,     ^LiteralProcessor(format = 'convert(DATE, \'%s\', 101)',     transform = {d:StrictDate[1] | $d->convertDateToSqlString($dbTimeZone)})),
-      pair(DateTime,       ^LiteralProcessor(format = 'convert(DATETIME, \'%s\', 101)', transform = {d:DateTime[1] | $d->convertDateToSqlString($dbTimeZone)})),
-      pair(Date,           ^LiteralProcessor(format = 'convert(DATETIME, \'%s\', 101)', transform = {d:Date[1] | $d->convertDateToSqlString($dbTimeZone)}))
+      pair(StrictDate,     ^LiteralProcessor(format = 'convert(DATE, \'%s\', 101)',     transform = {d:StrictDate[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(DateTime,       ^LiteralProcessor(format = 'convert(DATETIME, \'%s\', 101)', transform = {d:DateTime[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(Date,           ^LiteralProcessor(format = 'convert(DATETIME, \'%s\', 101)', transform = {d:Date[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)}))
    ])
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::getLiteralProcessorsForSybaseIQ(dbTimeZone:String[0..1]):Map<Type,LiteralProcessor>[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::getLiteralProcessorsForSybaseIQ():Map<Type,LiteralProcessor>[1]
 {
    newMap([
-      pair(StrictDate,     ^LiteralProcessor(format = 'convert(DATE, \'%s\', 121)',     transform = {d:StrictDate[1] | $d->convertDateToSqlString($dbTimeZone)})),
-      pair(DateTime,       ^LiteralProcessor(format = 'convert(DATETIME, \'%s\', 121)', transform = {d:DateTime[1] | $d->convertDateToSqlString($dbTimeZone)})),
-      pair(Date,           ^LiteralProcessor(format = 'convert(DATETIME, \'%s\', 121)', transform = {d:Date[1] | $d->convertDateToSqlString($dbTimeZone)}))
+      pair(StrictDate,     ^LiteralProcessor(format = 'convert(DATE, \'%s\', 121)',     transform = {d:StrictDate[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(DateTime,       ^LiteralProcessor(format = 'convert(DATETIME, \'%s\', 121)', transform = {d:DateTime[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(Date,           ^LiteralProcessor(format = 'convert(DATETIME, \'%s\', 121)', transform = {d:Date[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)}))
    ])
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::getLiteralProcessorsForDatabricks(dbTimeZone:String[0..1]):Map<Type,LiteralProcessor>[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::getLiteralProcessorsForDatabricks():Map<Type,LiteralProcessor>[1]
 {
    newMap([
-      pair(StrictDate,     ^LiteralProcessor(format = 'to_date(\'%s\')',    transform = {d:StrictDate[1] | $d->convertDateToSqlString($dbTimeZone)})),
-      pair(DateTime,       ^LiteralProcessor(format = 'to_timestamp(\'%s\')', transform = {d:DateTime[1] | $d->convertDateToSqlString($dbTimeZone)})),
-      pair(Date,           ^LiteralProcessor(format = 'to_date(\'%s\')',    transform = {d:Date[1] | $d->convertDateToSqlString($dbTimeZone)}))
+      pair(StrictDate,     ^LiteralProcessor(format = 'to_date(\'%s\')',    transform = {d:StrictDate[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(DateTime,       ^LiteralProcessor(format = 'to_timestamp(\'%s\')', transform = {d:DateTime[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(Date,           ^LiteralProcessor(format = 'to_date(\'%s\')',    transform = {d:Date[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)}))
    ])
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::getLiteralProcessorsForPostgres(dbTimeZone:String[0..1]):Map<Type,LiteralProcessor>[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::getLiteralProcessorsForPostgres():Map<Type,LiteralProcessor>[1]
 {
    newMap([
-      pair(Enum,           ^LiteralProcessor(format = 'Text%s',          transform = toString_Any_1__String_1_)),
-      pair(String,         ^LiteralProcessor(format = 'Text\'%s\'',          transform = convertStringToSQLString_String_1__String_1_)),
-      pair(Boolean,        ^LiteralProcessor(format = 'Boolean\'%s\'',   transform = toString_Any_1__String_1_)),
-      pair(StrictDate,     ^LiteralProcessor(format = 'Date\'%s\'',      transform = {d:StrictDate[1] | $d->convertDateToSqlString($dbTimeZone)})),
-      pair(DateTime,       ^LiteralProcessor(format = 'Timestamp\'%s\'', transform = {d:DateTime[1] | $d->convertDateToSqlString($dbTimeZone)})),
-      pair(Date,           ^LiteralProcessor(format = 'Timestamp\'%s\'', transform = {d:Date[1] | $d->convertDateToSqlString($dbTimeZone)}))
+      pair(Enum,           ^LiteralProcessor(format = 'Text%s',          transform = toString_Any_1__String_1_->literalTransform())),
+      pair(String,         ^LiteralProcessor(format = 'Text\'%s\'',          transform = convertStringToSQLString_String_1__String_1_->literalTransform())),
+      pair(Boolean,        ^LiteralProcessor(format = 'Boolean\'%s\'',   transform = toString_Any_1__String_1_->literalTransform())),
+      pair(StrictDate,     ^LiteralProcessor(format = 'Date\'%s\'',      transform = {d:StrictDate[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(DateTime,       ^LiteralProcessor(format = 'Timestamp\'%s\'', transform = {d:DateTime[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(Date,           ^LiteralProcessor(format = 'Timestamp\'%s\'', transform = {d:Date[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)}))
    ])
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::getLiteralProcessorsForPresto(dbTimeZone:String[0..1]):Map<Type,LiteralProcessor>[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::getLiteralProcessorsForPresto():Map<Type,LiteralProcessor>[1]
 {
    newMap([
-      pair(StrictDate,     ^LiteralProcessor(format = 'Date(\'%s\')',      transform = {d:StrictDate[1] | $d->convertDateToSqlString($dbTimeZone)})),
-      pair(DateTime,       ^LiteralProcessor(format = 'Timestamp\'%s\'', transform = {d:DateTime[1] | $d->convertDateToSqlString($dbTimeZone)})),
-      pair(Date,           ^LiteralProcessor(format = 'Timestamp\'%s\'', transform = {d:Date[1] | $d->convertDateToSqlString($dbTimeZone)})),
-      pair(Boolean,        ^LiteralProcessor(format = '%s', transform = toString_Any_1__String_1_))
+      pair(StrictDate,     ^LiteralProcessor(format = 'Date(\'%s\')',      transform = {d:StrictDate[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(DateTime,       ^LiteralProcessor(format = 'Timestamp\'%s\'', transform = {d:DateTime[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(Date,           ^LiteralProcessor(format = 'Timestamp\'%s\'', transform = {d:Date[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(Boolean,        ^LiteralProcessor(format = '%s', transform = toString_Any_1__String_1_->literalTransform()))
    ])
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::getLiteralProcessorsForBigQuery(dbTimeZone:String[0..1]):Map<Type,LiteralProcessor>[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::getLiteralProcessorsForBigQuery():Map<Type,LiteralProcessor>[1]
 {
    newMap([
-      pair(StrictDate,     ^LiteralProcessor(format = 'PARSE_DATE(\'%%Y-%%m-%%d\', \'%s\')',   transform = {d:StrictDate[1] | $d->convertDateToSqlString($dbTimeZone)})),
-      pair(DateTime,       ^LiteralProcessor(format = 'PARSE_DATETIME(\'%%Y-%%m-%%d %%H:%%M:%%E6S\', \'%s\')', transform = {d:DateTime[1] | $d->convertDateToSqlString($dbTimeZone)})),
-      pair(Date,           ^LiteralProcessor(format = 'PARSE_DATE(\'%%Y-%%m-%%d\', \'%s\')', transform = {d:Date[1] | $d->convertDateToSqlString($dbTimeZone)}))
+      pair(StrictDate,     ^LiteralProcessor(format = 'PARSE_DATE(\'%%Y-%%m-%%d\', \'%s\')',   transform = {d:StrictDate[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(DateTime,       ^LiteralProcessor(format = 'PARSE_DATETIME(\'%%Y-%%m-%%d %%H:%%M:%%E6S\', \'%s\')', transform = {d:DateTime[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(Date,           ^LiteralProcessor(format = 'PARSE_DATE(\'%%Y-%%m-%%d\', \'%s\')', transform = {d:Date[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)}))
    ])
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::getLiteralProcessorsForRedshift(dbTimeZone:String[0..1]):Map<Type,LiteralProcessor>[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::getLiteralProcessorsForRedshift():Map<Type,LiteralProcessor>[1]
 {
    newMap([
-      pair(StrictDate,     ^LiteralProcessor(format = 'Date\'%s\'',      transform = {d:StrictDate[1] | $d->convertDateToSqlString($dbTimeZone)})),
-      pair(DateTime,       ^LiteralProcessor(format = 'Timestamp\'%s\'', transform = {d:DateTime[1] | $d->convertDateToSqlString($dbTimeZone)})),
-      pair(Date,           ^LiteralProcessor(format = 'Timestamp\'%s\'', transform = {d:Date[1] | $d->convertDateToSqlString($dbTimeZone)}))
+      pair(StrictDate,     ^LiteralProcessor(format = 'Date\'%s\'',      transform = {d:StrictDate[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(DateTime,       ^LiteralProcessor(format = 'Timestamp\'%s\'', transform = {d:DateTime[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(Date,           ^LiteralProcessor(format = 'Timestamp\'%s\'', transform = {d:Date[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)}))
    ])
 }
 
@@ -561,16 +566,16 @@ function  meta::relational::functions::sqlQueryToString::processLiteralDefaultFo
    if(!$a->type()==String,
       | if($a->type()==List,
            | $a->cast(@List<Any>)->processLiteralListForPlanService($type, $dbConfig, $dbType, $dbTimeZone)->joinStrings(','),
-           | $processor.formatValue($a)),
-      |$processor.formatValue($a)->replace('\'\'', '\''));
+           | $processor.formatValue($a, $dbTimeZone)),
+      |$processor.formatValue($a, $dbTimeZone)->replace('\'\'', '\''));
 }
 
 function meta::relational::functions::sqlQueryToString::processLiteralListForPlanService(a:List<Any>[*], type:Type[1], dbConfig : DbConfig[1], dbType:DatabaseType[1], dbTimeZone : String[0..1]): String[1]
 {
 
    $a.values->map(v|$v->match([
-                     s:String[1]| $dbConfig.literalProcessor($type).formatValue($s)->replace('\'\'', '\''),
-                     a:Any[1]| $dbConfig.literalProcessor($type).formatValue($a)
+                     s:String[1]| $dbConfig.literalProcessor($type).formatValue($s, $dbTimeZone)->replace('\'\'', '\''),
+                     a:Any[1]| $dbConfig.literalProcessor($type).formatValue($a, $dbTimeZone)
                   ]))
    ->joinStrings(',');
 }
@@ -584,13 +589,13 @@ function meta::relational::functions::sqlQueryToString::processLiteralValue(a:An
 function <<access.private>> meta::relational::functions::sqlQueryToString::processLiteralValue(a:Any[1], dbConfig : DbConfig[1]) : String[1]
 {
    let processor = $dbConfig.literalProcessor($a->type());
-   $processor.formatValue($a);
+   $processor.formatValue($a, $dbConfig.dbTimeZone);
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::processLiteralValue(a:Any[1], literalProcessor: meta::pure::metamodel::function::Function<{Type[1] -> LiteralProcessor[1]}>[1]) : String[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::processLiteralValue(a:Any[1], dbTimeZone: String[0..1], literalProcessor: meta::pure::metamodel::function::Function<{Type[1] -> LiteralProcessor[1]}>[1]) : String[1]
 {
    let processor = $literalProcessor->eval($a->type());
-   $processor.formatValue($a);
+   $processor.formatValue($a, $dbTimeZone);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::convertStringToSQLString(s:String[1]):String[1]
@@ -2224,9 +2229,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::getDy
     dynaFnToSql('rowNumber',              $allStates,            ^ToSql(format='row_number()')),
     dynaFnToSql('sin',                    $allStates,            ^ToSql(format='sin(%s)')),
     dynaFnToSql('size',                   $allStates,            ^ToSql(format='count(%s)', transform={p:String[*]|if($p->isEmpty(),|'*',|$p)})),
-    dynaFnToSql('sqlFalse',               $allStates,            ^ToSql(format='%s', transform={p:String[*]|processLiteralValue(false, $literalProcessor)})),
+    dynaFnToSql('sqlFalse',               $allStates,            ^ToSql(format='%s', transform={p:String[*]|processLiteralValue(false, [], $literalProcessor)})),
     dynaFnToSql('sqlNull',                $allStates,            ^ToSql(format='null')),
-    dynaFnToSql('sqlTrue',                $allStates,            ^ToSql(format='%s', transform={p:String[*]|processLiteralValue(true, $literalProcessor)})),
+    dynaFnToSql('sqlTrue',                $allStates,            ^ToSql(format='%s', transform={p:String[*]|processLiteralValue(true, [], $literalProcessor)})),
     dynaFnToSql('sqrt',                   $allStates,            ^ToSql(format='sqrt(%s)')),
     dynaFnToSql('startsWith',             $allStates,            ^ToSql(format=likePattern('%s%%'), transform={p:String[2]|$p->transformLikeParamsDefault()})),
     dynaFnToSql('sub',                    $allStates,            ^ToSql(format='%s-%s')),
@@ -3085,8 +3090,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::dateT
 function <<access.private>> meta::relational::functions::sqlQueryToString::transformPercentile(args: String[*], literalProcessor: meta::pure::metamodel::function::Function<{Type[1] -> LiteralProcessor[1]}>[1]): String[1]
 {
    let boolProc = $literalProcessor->eval(Boolean);
-   let trueVal  = $boolProc.formatValue(true);
-   let falseVal = $boolProc.formatValue(false);
+   let trueVal  = $boolProc.formatValue(true, []);
+   let falseVal = $boolProc.formatValue(false, []);
 
    let column     = $args->at(0);
    let percentile = $args->at(1);
