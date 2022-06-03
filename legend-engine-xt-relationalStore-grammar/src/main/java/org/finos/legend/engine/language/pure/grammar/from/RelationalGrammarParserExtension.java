@@ -182,6 +182,8 @@ public class RelationalGrammarParserExtension implements IRelationalGrammarParse
                     return parseAuthenticationStrategy(code, p -> walker.visitDefaultH2AuthenticationStrategy(code, p.defaultH2Auth()));
                 case "DelegatedKerberos":
                     return parseAuthenticationStrategy(code, p -> walker.visitDelegatedKerberosAuthenticationStrategy(code, p.delegatedKerberosAuth()));
+                case "MiddleTierKeytab":
+                    return parseAuthenticationStrategy(code, p -> walker.visitMiddleTierKeytabAuthenticationStrategy(code, p.keytabAuth()));
                 case "UserNamePassword":
                     return parseAuthenticationStrategy(code, p -> walker.visitUserNamePasswordAuthenticationStrategy(code, p.userNamePasswordAuth()));
                 case "Test":

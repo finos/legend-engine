@@ -6,6 +6,10 @@ H2_DEFAULT_AUTH:                            'DefaultH2';
 TEST_DB_AUTH:                               'Test';
 DELEGATED_KERBEROS_AUTH:                    'DelegatedKerberos';
 SERVER_PRINCIPAL:                           'serverPrincipal';
+MIDDLETIER_KEYTAB_AUTH:                     'MiddleTierKeytab';
+MIDDLETIER_KEYTAB_PRINCIPAL:                'principal';
+MIDDLETIER_KEYTAB_VAULT_REFERENCE:          'keytabVaultReference';
+MIDDLETIER_KEYTAB_METADATA_VAULT_REFERENCE: 'keytabMetadataVaultReference';
 USERNAME_PASSWORD_AUTH:                     'UserNamePassword';
 USERNAME_PASSWORD_AUTH_BASE_VAULT_REF:      'baseVaultReference';
 USERNAME_PASSWORD_AUTH_USERNAME_VAULT_REF:  'userNameVaultReference';
@@ -36,3 +40,4 @@ SERVICE_ACCOUNT_EMAIL:                                      'serviceAccountEmail
 ADDITIONAL_GCP_SCOPES:                                                  'additionalGcpScopes';
 BRACKET_OPEN:                                               '[';
 BRACKET_CLOSE:                                              ']';
+

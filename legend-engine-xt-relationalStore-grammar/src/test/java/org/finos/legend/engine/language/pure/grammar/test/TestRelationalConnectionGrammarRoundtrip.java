@@ -367,6 +367,29 @@ public class TestRelationalConnectionGrammarRoundtrip extends TestGrammarRoundtr
     }
 
     @Test
+    public void testKeytabAuth()
+    {
+        test("###Connection\n" +
+                "RelationalDatabaseConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  store: store::Store;\n" +
+                "  type: SqlServer;\n" +
+                "  specification: Static\n" +
+                "  {\n" +
+                "    name: 'name';\n" +
+                "    host: 'host';\n" +
+                "    port: 1234;\n" +
+                "  };\n" +
+                "  auth: Keytab\n" +
+                "  {\n" +
+                "    principal: 'foo';\n" +
+                "    keytabVaultReference: 'ref1';\n" +
+                "    keytabMetadataVaultReference: 'ref2';\n" +
+                "  };\n" +
+                "}\n");
+    }
+
+    @Test
     public void testBigQueryGCPWorkloadIdentityFederation()
     {
         test("###Connection\n" +

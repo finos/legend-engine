@@ -22,6 +22,7 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
 import org.finos.legend.engine.authentication.credential.CredentialSupplier;
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProvider;
+import org.finos.legend.engine.plan.execution.stores.StoreExecutionState;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.OAuthProfile;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.AuthenticationStrategyKey;
@@ -132,7 +133,7 @@ public class RelationalConnectionManager implements ConnectionManager
         // TODO : pass identity into this method
         RelationalDatabaseConnection testConnection = buildTestDatabaseDatasourceSpecification();
         Identity identity = IdentityFactoryProvider.getInstance().makeIdentity((Subject) null);
-        Optional<CredentialSupplier> credentialHolder = RelationalConnectionManager.getCredential(flowProviderHolder, testConnection, identity );
+        Optional<CredentialSupplier> credentialHolder = RelationalConnectionManager.getCredential(flowProviderHolder, testConnection, identity, StoreExecutionState.RuntimeContext.empty());
         return this.getDataSourceSpecification(testConnection).getConnectionUsingIdentity(identity, credentialHolder);
     }
 
@@ -150,17 +151,17 @@ public class RelationalConnectionManager implements ConnectionManager
         return testConnection;
     }
 
-    public static Optional<CredentialSupplier> getCredential(Optional<DatabaseAuthenticationFlowProvider> flowProviderHolder, RelationalDatabaseConnection connection, Identity identity)
+    public static Optional<CredentialSupplier> getCredential(Optional<DatabaseAuthenticationFlowProvider> flowProviderHolder, RelationalDatabaseConnection connection, Identity identity, StoreExecutionState.RuntimeContext runtimeContext)
     {
         if (!flowProviderHolder.isPresent())
         {
             // The use of flows has not been enabled
             return Optional.empty();
         }
-        return RelationalConnectionManager.getCredential(flowProviderHolder.get(), connection, identity);
+        return RelationalConnectionManager.getCredential(flowProviderHolder.get(), connection, identity, runtimeContext);
     }
 
-    public static Optional<CredentialSupplier> getCredential(DatabaseAuthenticationFlowProvider flowProvider, RelationalDatabaseConnection connection, Identity identity)
+    public static Optional<CredentialSupplier> getCredential(DatabaseAuthenticationFlowProvider flowProvider, RelationalDatabaseConnection connection, Identity identity, StoreExecutionState.RuntimeContext runtimeContext)
     {
         Optional<DatabaseAuthenticationFlow> flowHolder = flowProvider.lookupFlow(connection);
         if (!flowHolder.isPresent())
@@ -176,7 +177,7 @@ public class RelationalConnectionManager implements ConnectionManager
             LOGGER.warn(message);
             return Optional.empty();
         }
-        CredentialSupplier credentialSupplier = new CredentialSupplier(flowHolder.get(), connection.datasourceSpecification, connection.authenticationStrategy);
+        CredentialSupplier credentialSupplier = new CredentialSupplier(flowHolder.get(), connection.datasourceSpecification, connection.authenticationStrategy, DatabaseAuthenticationFlow.RuntimeContext.newWith(runtimeContext.getContextParams().castToMap()));
         return Optional.of(credentialSupplier);
     }
 

@@ -132,7 +132,7 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>2.2.1</legend.pure.version>
+        <legend.pure.version>2.2.2-SNAPSHOT</legend.pure.version>
         <legend.shared.version>0.22.0</legend.shared.version>
 
         <!-- SONAR -->
@@ -225,7 +225,7 @@
         <maven.plugin.plugin.version>3.6.0</maven.plugin.plugin.version>
         <maven.enforcer.plugin.version>3.0.0-M1</maven.enforcer.plugin.version>
         <maven.jar.plugin.version>3.1.2</maven.jar.plugin.version>
-        <maven.javadoc.plugin.version>3.3.1</maven.javadoc.plugin.version>
+        <maven.javadoc.plugin.version>${hadoop-minikdc.version}</maven.javadoc.plugin.version>
         <maven.checkstyle.plugin.version>3.1.1</maven.checkstyle.plugin.version>
         <versions.maven.plugin.version>2.7</versions.maven.plugin.version>
         <nexus.staging.maven.plugin.version>1.6.8</nexus.staging.maven.plugin.version>
@@ -234,6 +234,7 @@
         <build-helper.maven.plugin.version>3.2.0</build-helper.maven.plugin.version>
         <dockerfile.maven.plugin.version>1.4.13</dockerfile.maven.plugin.version>
         <maven.plugin.puppycrawl.version>8.25</maven.plugin.puppycrawl.version>
+        <hadoop-minikdc.version>3.3.1</hadoop-minikdc.version>
     </properties>
 
     <scm>
@@ -1804,6 +1805,24 @@
                 <version>1.16.3</version>
             </dependency>
             <!-- Test Containers -->
+
+            <!-- Test Kerberos -->
+            <dependency>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-minikdc</artifactId>
+                <version>${hadoop-minikdc.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>log4j</groupId>
+                        <artifactId>log4j</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-log4j12</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <!-- Test Kerberos -->
 
             <dependency>
                 <groupId>net.minidev</groupId>

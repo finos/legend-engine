@@ -21,15 +21,21 @@ import org.finos.legend.engine.plan.execution.stores.StoreExecutionState;
 import org.finos.legend.engine.plan.execution.stores.StoreState;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNodeVisitor;
 import org.pac4j.core.profile.CommonProfile;
-import org.pac4j.core.profile.ProfileManager;
 
 public class InMemoryStoreExecutionState implements StoreExecutionState
 {
     private final InMemoryStoreState state;
+    private RuntimeContext runtimeContext;
+
+    public InMemoryStoreExecutionState(InMemoryStoreState state, RuntimeContext runtimeContext)
+    {
+        this.state = state;
+        this.runtimeContext = runtimeContext;
+    }
 
     public InMemoryStoreExecutionState(InMemoryStoreState state)
     {
-        this.state = state;
+        this(state, RuntimeContext.empty());
     }
 
     @Override
@@ -47,6 +53,16 @@ public class InMemoryStoreExecutionState implements StoreExecutionState
     @Override
     public StoreExecutionState copy()
     {
-        return new InMemoryStoreExecutionState(this.state);
+        return new InMemoryStoreExecutionState(this.state, this.runtimeContext);
+    }
+
+    @Override
+    public RuntimeContext getRuntimeContext() {
+        return this.runtimeContext;
+    }
+
+    @Override
+    public void setRuntimeContext(RuntimeContext runtimeContext) {
+        this.runtimeContext = runtimeContext;
     }
 }

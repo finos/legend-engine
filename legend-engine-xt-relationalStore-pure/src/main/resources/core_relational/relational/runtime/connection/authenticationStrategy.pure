@@ -16,9 +16,28 @@ Class <<typemodifiers.abstract>> meta::pure::alloy::connections::alloy::authenti
 {
 }
 
+Class  <<typemodifiers.abstract>> meta::pure::alloy::connections::alloy::authentication::KerberosAuthenticationStrategy extends meta::pure::alloy::connections::alloy::authentication::AuthenticationStrategy
+{
+
+}
+
 Class meta::pure::alloy::connections::alloy::authentication::DelegatedKerberosAuthenticationStrategy extends meta::pure::alloy::connections::alloy::authentication::AuthenticationStrategy
 {
    serverPrincipal: String[0..1];
+}
+
+Class
+{doc.doc = 'Authentication using a keytab file'}
+meta::pure::alloy::connections::alloy::authentication::MiddleTierKeytabAuthenticationStrategy extends meta::pure::alloy::connections::alloy::authentication::KerberosAuthenticationStrategy
+{
+    {doc.doc = 'Kerberos principal name'}
+    principal: String[1];
+
+    {doc.doc = 'Keytab vault reference'}
+    keytabVaultReference: String[1];
+
+    {doc.doc = 'Metadata about the contexts in which this keytab can be used'}
+    keytabMetadataVaultReference: String[1];
 }
 
 Class meta::pure::alloy::connections::alloy::authentication::UserNamePasswordAuthenticationStrategy extends meta::pure::alloy::connections::alloy::authentication::AuthenticationStrategy

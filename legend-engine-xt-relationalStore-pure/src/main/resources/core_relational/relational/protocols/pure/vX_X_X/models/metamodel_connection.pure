@@ -29,6 +29,13 @@ Class meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::a
    serverPrincipal: String[0..1];
 }
 
+Class meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::authentication::MiddleTierKeytabAuthenticationStrategy extends meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::authentication::AuthenticationStrategy
+{
+   principal: String[1];
+   keytabVaultReference: String[1];
+   keytabMetadataVaultReference: String[1];
+}
+
 Class meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::authentication::UserNamePasswordAuthenticationStrategy extends meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::authentication::AuthenticationStrategy
 {
    baseVaultReference: String[0..1];

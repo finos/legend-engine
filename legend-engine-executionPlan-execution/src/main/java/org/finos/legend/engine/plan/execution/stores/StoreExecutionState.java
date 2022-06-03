@@ -14,11 +14,15 @@
 
 package org.finos.legend.engine.plan.execution.stores;
 
+import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.map.ImmutableMap;
+import org.eclipse.collections.api.map.MutableMap;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNodeVisitor;
 import org.pac4j.core.profile.CommonProfile;
+import java.util.Map;
 
 public interface StoreExecutionState
 {
@@ -27,4 +31,37 @@ public interface StoreExecutionState
     ExecutionNodeVisitor<Result> getVisitor(MutableList<CommonProfile> profiles, ExecutionState executionState);
 
     StoreExecutionState copy();
+
+    RuntimeContext getRuntimeContext();
+
+    void setRuntimeContext(RuntimeContext runtimeContext);
+
+    class RuntimeContext
+    {
+        final MutableMap<String, String> contextParams = Maps.mutable.empty();
+
+        public static RuntimeContext newWith(Map<String, String> contextParams)
+        {
+            return new RuntimeContext(contextParams);
+        }
+
+        public static RuntimeContext empty()
+        {
+            return new RuntimeContext();
+        }
+
+        private RuntimeContext(Map<String, String> contextParams)
+        {
+            this.contextParams.putAll(contextParams);
+        }
+
+        private RuntimeContext()
+        {
+        }
+
+        public ImmutableMap<String, String> getContextParams()
+        {
+            return contextParams.toImmutable();
+        }
+    }
 }

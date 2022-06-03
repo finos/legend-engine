@@ -34,6 +34,8 @@ public class FakeServiceStoreExecutorBuilder implements StoreExecutorBuilder {
         @Override
         public StoreExecutionState buildStoreExecutionState() {
             return new StoreExecutionState() {
+                private RuntimeContext runtimeContext;
+
                 @Override
                 public StoreState getStoreState() {
                     return new StoreState() {
@@ -57,6 +59,16 @@ public class FakeServiceStoreExecutorBuilder implements StoreExecutorBuilder {
                 @Override
                 public StoreExecutionState copy() {
                     return null;
+                }
+
+                @Override
+                public RuntimeContext getRuntimeContext() {
+                    return this.runtimeContext;
+                }
+
+                @Override
+                public void setRuntimeContext(RuntimeContext runtimeContext) {
+                    this.runtimeContext = runtimeContext;
                 }
             };
         }

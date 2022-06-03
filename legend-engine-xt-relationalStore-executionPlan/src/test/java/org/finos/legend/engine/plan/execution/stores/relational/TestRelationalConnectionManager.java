@@ -6,6 +6,7 @@ import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
 import org.finos.legend.engine.authentication.credential.CredentialSupplier;
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProvider;
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProviderConfiguration;
+import org.finos.legend.engine.plan.execution.stores.StoreExecutionState;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.strategic.RelationalConnectionManager;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
@@ -82,7 +83,7 @@ public class TestRelationalConnectionManager
         DatabaseAuthenticationFlowProvider flowProvider = new NoOpFlowProvider();
 
         Identity identity = DefaultIdentityFactory.INSTANCE.makeUnknownIdentity();
-        Optional<CredentialSupplier> credential = RelationalConnectionManager.getCredential(flowProvider, connectionSpec, identity);
+        Optional<CredentialSupplier> credential = RelationalConnectionManager.getCredential(flowProvider, connectionSpec, identity, StoreExecutionState.RuntimeContext.empty());
         assertFalse(credential.isPresent());
     }
 

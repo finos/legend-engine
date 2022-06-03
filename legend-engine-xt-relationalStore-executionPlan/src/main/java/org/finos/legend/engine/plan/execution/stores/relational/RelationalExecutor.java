@@ -354,7 +354,7 @@ public class RelationalExecutor
             }
             return blockConnection;
         }
-        return executionState.getRelationalExecutor().getConnectionManager().getDatabaseConnection(profiles, databaseConnection);
+        return executionState.getRelationalExecutor().getConnectionManager().getDatabaseConnection(profiles, databaseConnection, executionState.getRuntimeContext());
     }
 
     public static String process(String query, Map<?, ?> vars, String templateFunctions)

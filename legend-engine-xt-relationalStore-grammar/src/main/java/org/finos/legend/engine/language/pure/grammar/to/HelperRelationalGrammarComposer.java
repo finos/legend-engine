@@ -23,6 +23,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.DelegatedKerberosAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPApplicationDefaultCredentialsAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPWorkloadIdentityFederationAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.MiddleTierKeytabAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.SnowflakePublicAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TestDatabaseAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.UserNamePasswordAuthenticationStrategy;
@@ -700,6 +701,21 @@ public class HelperRelationalGrammarComposer
                             ? ("\n" +
                             context.getIndentationString() + getTabString(baseIndentation) + "{\n" +
                             context.getIndentationString() + getTabString(baseIndentation + 1) + "serverPrincipal: " + convertString(auth.serverPrincipal, true) + ";\n" +
+                            context.getIndentationString() + getTabString(baseIndentation) + "}")
+                            : ""
+                    );
+        }
+        else if (_auth instanceof MiddleTierKeytabAuthenticationStrategy)
+        {
+            MiddleTierKeytabAuthenticationStrategy auth = (MiddleTierKeytabAuthenticationStrategy)_auth;
+            int baseIndentation = 1;
+            return "MiddleTierKeytab" +
+                    (auth.keytabVaultReference != null
+                            ? ("\n" +
+                            context.getIndentationString() + getTabString(baseIndentation) + "{\n" +
+                            context.getIndentationString() + getTabString(baseIndentation + 1) + "principal: " + convertString(auth.principal, true) + ";\n" +
+                            context.getIndentationString() + getTabString(baseIndentation + 1) + "keytabVaultReference: " + convertString(auth.keytabVaultReference, true) + ";\n" +
+                            context.getIndentationString() + getTabString(baseIndentation + 1) + "keytabMetadataVaultReference: " + convertString(auth.keytabMetadataVaultReference, true) + ";\n" +
                             context.getIndentationString() + getTabString(baseIndentation) + "}")
                             : ""
                     );

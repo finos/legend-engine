@@ -37,6 +37,27 @@ delegatedKerberosAuthConfig:            BRACE_OPEN
 ;
 serverPrincipalConfig:                  SERVER_PRINCIPAL COLON STRING SEMI_COLON
 ;
+
+keytabAuth:                             MIDDLETIER_KEYTAB_AUTH keytabAuthConfig?
+;
+keytabAuthConfig:                       BRACE_OPEN
+                                            (
+                                                keytabPrincipalConfig
+                                                | keytabVaultReferenceConfig
+                                                | keytabMetadataVaultReferenceConfig
+                                            )*
+                                        BRACE_CLOSE
+;
+
+keytabPrincipalConfig:                  MIDDLETIER_KEYTAB_PRINCIPAL COLON STRING SEMI_COLON
+;
+
+keytabVaultReferenceConfig:             MIDDLETIER_KEYTAB_VAULT_REFERENCE COLON STRING SEMI_COLON
+;
+
+keytabMetadataVaultReferenceConfig:               MIDDLETIER_KEYTAB_METADATA_VAULT_REFERENCE COLON STRING SEMI_COLON
+;
+
 userNamePasswordAuth:                   USERNAME_PASSWORD_AUTH
                                             BRACE_OPEN
                                                 (

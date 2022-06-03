@@ -27,6 +27,11 @@ public class AuthenticationStrategyKeyGenerator implements AuthenticationStrateg
         {
             return new DelegatedKerberosAuthenticationStrategyKey(((DelegatedKerberosAuthenticationStrategy) authenticationStrategy).serverPrincipal);
         }
+        else if(authenticationStrategy instanceof MiddleTierKeytabAuthenticationStrategy)
+        {
+            MiddleTierKeytabAuthenticationStrategy middleTierKeytabAuthenticationStrategy = (MiddleTierKeytabAuthenticationStrategy) authenticationStrategy;
+            return new MiddleTierKeytabAuthenticationStrategyKey(middleTierKeytabAuthenticationStrategy.principal, middleTierKeytabAuthenticationStrategy.keytabVaultReference, middleTierKeytabAuthenticationStrategy.keytabMetadataVaultReference);
+        }
         else if(authenticationStrategy instanceof UserNamePasswordAuthenticationStrategy)
         {
             UserNamePasswordAuthenticationStrategy userNamePasswordAuthStrategy = (UserNamePasswordAuthenticationStrategy) authenticationStrategy;

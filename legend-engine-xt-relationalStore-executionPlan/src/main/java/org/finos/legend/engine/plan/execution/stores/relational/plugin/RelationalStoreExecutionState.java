@@ -30,17 +30,19 @@ public class RelationalStoreExecutionState implements StoreExecutionState
     private final RelationalStoreState state;
     private boolean retainConnection;
     private BlockConnectionContext blockConnectionContext;
+    private RuntimeContext runtimeContext;
 
-    private RelationalStoreExecutionState(RelationalStoreState storeState, boolean retainConnection, BlockConnectionContext blockConnectionContext)
+    private RelationalStoreExecutionState(RelationalStoreState storeState, boolean retainConnection, BlockConnectionContext blockConnectionContext, RuntimeContext runtimeContext)
     {
         this.state = storeState;
         this.retainConnection = retainConnection;
         this.blockConnectionContext = blockConnectionContext;
+        this.runtimeContext = runtimeContext;
     }
 
     public RelationalStoreExecutionState(RelationalStoreState storeState)
     {
-        this(storeState, false, new BlockConnectionContext());
+        this(storeState, false, new BlockConnectionContext(), StoreExecutionState.RuntimeContext.empty());
     }
 
     @Override
@@ -58,7 +60,18 @@ public class RelationalStoreExecutionState implements StoreExecutionState
     @Override
     public StoreExecutionState copy()
     {
-        return new RelationalStoreExecutionState(this.state, this.retainConnection, this.retainConnection ? this.blockConnectionContext : this.blockConnectionContext.copy());
+        return new RelationalStoreExecutionState(this.state, this.retainConnection, this.retainConnection ? this.blockConnectionContext : this.blockConnectionContext.copy(), this.runtimeContext);
+    }
+
+    @Override
+    public StoreExecutionState.RuntimeContext getRuntimeContext()
+    {
+        return this.runtimeContext;
+    }
+
+    @Override
+    public void setRuntimeContext(RuntimeContext runtimeContext) {
+        this.runtimeContext = runtimeContext;
     }
 
     public RelationalExecutor getRelationalExecutor()

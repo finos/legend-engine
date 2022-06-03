@@ -207,6 +207,15 @@ public abstract class DataSourceSpecification
             jdbcConfig.setMinimumIdle(minPoolSize);
             jdbcConfig.setJdbcUrl(getJdbcUrl(host, port, databaseName, properties));
             jdbcConfig.setConnectionTimeout(authenticationStrategy.getConnectionTimeout());
+            /*
+                Setting setInitializationFailTimeout=-1 disables Hikari's fail fast connection acquisition.
+                With fail fast enabled, Hikari will attempt to create a connection as soon as the Hikari data source is constructed.
+                This requires that all the authn properties required to establish a connection are available.
+
+                In some cases, all the authn properties are not available when the Hikari data source is constructed.
+                Therefore we disable the fail fast behavior.
+             */
+            jdbcConfig.setInitializationFailTimeout(-1);
             jdbcConfig.addDataSourceProperty("cachePrepStmts", false);
             jdbcConfig.addDataSourceProperty("prepStmtCacheSize", 0);
             jdbcConfig.addDataSourceProperty("prepStmtCacheSqlLimit", 0);

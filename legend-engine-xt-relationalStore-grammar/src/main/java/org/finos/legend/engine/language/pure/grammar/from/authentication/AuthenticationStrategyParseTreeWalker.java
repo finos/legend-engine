@@ -22,6 +22,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.DelegatedKerberosAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPApplicationDefaultCredentialsAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPWorkloadIdentityFederationAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.MiddleTierKeytabAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.SnowflakePublicAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TestDatabaseAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.UserNamePasswordAuthenticationStrategy;
@@ -49,6 +50,28 @@ public class AuthenticationStrategyParseTreeWalker
         {
             AuthenticationStrategyParserGrammar.ServerPrincipalConfigContext accessCtx = PureGrammarParserUtility.validateAndExtractOptionalField(authCtx.delegatedKerberosAuthConfig().serverPrincipalConfig(), "serverPrincipal", authStrategy.sourceInformation);
             authStrategy.serverPrincipal = PureGrammarParserUtility.fromGrammarString(accessCtx.STRING().getText(), true);
+        }
+        authStrategy.sourceInformation = code.getSourceInformation();
+        return authStrategy;
+    }
+
+    public MiddleTierKeytabAuthenticationStrategy visitMiddleTierKeytabAuthenticationStrategy(AuthenticationStrategySourceCode code, AuthenticationStrategyParserGrammar.KeytabAuthContext authCtx)
+    {
+        MiddleTierKeytabAuthenticationStrategy authStrategy = new MiddleTierKeytabAuthenticationStrategy();
+        if (authCtx.keytabAuthConfig() != null)
+        {
+            AuthenticationStrategyParserGrammar.KeytabPrincipalConfigContext principalConfigContext =
+                    PureGrammarParserUtility.validateAndExtractOptionalField(authCtx.keytabAuthConfig().keytabPrincipalConfig(), "principal", authStrategy.sourceInformation);
+            authStrategy.principal = PureGrammarParserUtility.fromGrammarString(principalConfigContext.STRING().getText(), true);
+
+            AuthenticationStrategyParserGrammar.KeytabVaultReferenceConfigContext keytabVaultReferenceConfigContext =
+                    PureGrammarParserUtility.validateAndExtractOptionalField(authCtx.keytabAuthConfig().keytabVaultReferenceConfig(), "keytabVaultReference", authStrategy.sourceInformation);
+            authStrategy.keytabVaultReference = PureGrammarParserUtility.fromGrammarString(keytabVaultReferenceConfigContext.STRING().getText(), true);
+
+            AuthenticationStrategyParserGrammar.KeytabMetadataVaultReferenceConfigContext keytabMetadataVaultReferenceConfigContext =
+                    PureGrammarParserUtility.validateAndExtractOptionalField(authCtx.keytabAuthConfig().keytabMetadataVaultReferenceConfig(), "keytabMetadataVaultReference", authStrategy.sourceInformation);
+            authStrategy.keytabMetadataVaultReference = PureGrammarParserUtility.fromGrammarString(keytabMetadataVaultReferenceConfigContext.STRING().getText(), true);
+
         }
         authStrategy.sourceInformation = code.getSourceInformation();
         return authStrategy;
