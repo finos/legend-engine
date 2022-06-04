@@ -60,7 +60,7 @@ public class FixtureExternalFormatExtension implements ExternalFormatExtension<R
     }
 
     @Override
-    public String metamodelToText(Root_meta_external_shared_format_metamodel_SchemaDetail schemaDetail)
+    public String metamodelToText(Root_meta_external_shared_format_metamodel_SchemaDetail schemaDetail, PureModel pureModel)
     {
         return "";
     }

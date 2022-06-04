@@ -1,1 +1,1 @@
-org.finos.legend.engine.external.format.protobuf.extension.ProtobufGenerationExtension
+org.finos.legend.engine.external.format.protobuf.deprecated.generation.ProtobufGenerationExtension

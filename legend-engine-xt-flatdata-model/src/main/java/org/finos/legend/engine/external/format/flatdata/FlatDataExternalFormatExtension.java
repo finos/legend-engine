@@ -34,7 +34,7 @@ import java.util.List;
 
 public class FlatDataExternalFormatExtension implements ExternalFormatExtension<Root_meta_external_format_flatdata_metamodel_FlatData, FlatDataToModelConfiguration, ModelToFlatDataConfiguration>
 {
-    private static final String TYPE = "FlatData";
+    public static final String TYPE = "FlatData";
     private static final boolean IN_DEBUG = ManagementFactory.getRuntimeMXBean().getInputArguments().toString().contains(":jdwp");
 
     @Override
@@ -62,7 +62,7 @@ public class FlatDataExternalFormatExtension implements ExternalFormatExtension<
     }
 
     @Override
-    public String metamodelToText(Root_meta_external_format_flatdata_metamodel_FlatData schemaDetail)
+    public String metamodelToText(Root_meta_external_format_flatdata_metamodel_FlatData schemaDetail, PureModel pureModel)
     {
         Root_meta_external_format_flatdata_metamodel_FlatData flatData = schemaDetail;
         return FlatDataGrammarHelper.toGrammar(transformFlatData(flatData));

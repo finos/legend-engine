@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.external.format.protobuf.extension;
+package org.finos.legend.engine.external.format.protobuf.deprecated.generation;
 
 import org.eclipse.collections.api.RichIterable;
-import org.finos.legend.engine.external.format.protobuf.schema.generations.ProtobufGenerationConfig;
-import org.finos.legend.engine.external.format.protobuf.schema.generations.ProtobufGenerationService;
+import org.finos.legend.engine.external.format.protobuf.deprecated.generation.configuration.ProtobufGenerationConfig;
+import org.finos.legend.engine.external.format.protobuf.deprecated.generation.configuration.ProtobufGenerationConfigFromFileGenerationSpecificationBuilder;
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
 import org.finos.legend.engine.external.shared.format.extension.GenerationMode;
 import org.finos.legend.engine.external.shared.format.generations.description.FileGenerationDescription;
@@ -30,12 +30,12 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.Package
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationSpecification;
 import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationConfiguration;
 import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationOutput;
-import org.finos.legend.pure.generated.core_external_format_protobuf_integration;
-import org.finos.legend.pure.generated.core_external_format_protobuf_transformation_pureToProtocolBuffers;
+import org.finos.legend.pure.generated.core_external_format_protobuf_deprecated;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Deprecated
 public class ProtobufGenerationExtension implements GenerationExtension
 {
     @Override
@@ -77,7 +77,7 @@ public class ProtobufGenerationExtension implements GenerationExtension
             @Override
             public List<GenerationProperty> getProperties(PureModel pureModel)
             {
-                return FileGenerationDescription.extractGenerationProperties(core_external_format_protobuf_integration.Root_meta_external_format_protobuf_generation_describeConfiguration__GenerationParameter_MANY_(pureModel.getExecutionSupport()));
+                return FileGenerationDescription.extractGenerationProperties(core_external_format_protobuf_deprecated.Root_meta_external_format_protobuf_deprecated_generation_configuration_describeConfiguration__GenerationParameter_MANY_(pureModel.getExecutionSupport()));
             }
         };
     }
@@ -101,7 +101,7 @@ public class ProtobufGenerationExtension implements GenerationExtension
         {
             FileGenerationSpecification specification = (FileGenerationSpecification) element;
             ProtobufGenerationConfig protobufGenerationConfig = ProtobufGenerationConfigFromFileGenerationSpecificationBuilder.build(specification);
-            RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationOutput> output = core_external_format_protobuf_transformation_pureToProtocolBuffers.Root_meta_external_format_protobuf_generation_generateProtobufFromPureWithScope_ProtobufConfig_1__ProtobufOutput_MANY_(protobufGenerationConfig.transformToPure(compileContext.pureModel), compileContext.pureModel.getExecutionSupport());
+            RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationOutput> output = core_external_format_protobuf_deprecated.Root_meta_external_format_protobuf_deprecated_generation_transform_ProtobufConfig_1__GenerationOutput_MANY_(protobufGenerationConfig.transformToPure(compileContext.pureModel), compileContext.pureModel.getExecutionSupport());
             return new ArrayList<>(output.toList());
         }
         return null;
@@ -110,6 +110,6 @@ public class ProtobufGenerationExtension implements GenerationExtension
     @Override
     public Root_meta_pure_generation_metamodel_GenerationConfiguration defaultConfig(CompileContext context)
     {
-        return core_external_format_protobuf_integration.Root_meta_external_format_protobuf_generation_defaultConfig__ProtobufConfig_1_(context.pureModel.getExecutionSupport());
+        return core_external_format_protobuf_deprecated.Root_meta_external_format_protobuf_deprecated_generation_configuration_defaultConfig__ProtobufConfig_1_(context.pureModel.getExecutionSupport());
     }
 }

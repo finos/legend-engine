@@ -33,7 +33,7 @@ import java.util.List;
 
 public class XsdExternalFormatExtension implements ExternalFormatExtension<Root_meta_external_format_xml_metamodel_xsd_XsdSchema, XsdToModelConfiguration, ModelToXsdConfiguration>
 {
-    private static final String TYPE = "XSD";
+    public static final String TYPE = "XSD";
     private static final boolean DEBUG_MODEL_GEN = ManagementFactory.getRuntimeMXBean().getInputArguments().toString().contains(":jdwp");
 
     @Override
@@ -95,7 +95,7 @@ public class XsdExternalFormatExtension implements ExternalFormatExtension<Root_
     }
 
     @Override
-    public String metamodelToText(Root_meta_external_format_xml_metamodel_xsd_XsdSchema schemaDetail)
+    public String metamodelToText(Root_meta_external_format_xml_metamodel_xsd_XsdSchema schemaDetail, PureModel pureModel)
     {
         // TODO XSD Model to text
         return null;

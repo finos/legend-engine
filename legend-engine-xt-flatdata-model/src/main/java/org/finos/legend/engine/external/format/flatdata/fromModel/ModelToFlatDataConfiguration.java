@@ -14,8 +14,13 @@
 
 package org.finos.legend.engine.external.format.flatdata.fromModel;
 
+import org.finos.legend.engine.external.format.flatdata.FlatDataExternalFormatExtension;
 import org.finos.legend.engine.external.shared.format.model.fromModel.ModelToSchemaConfiguration;
 
 public class ModelToFlatDataConfiguration extends ModelToSchemaConfiguration
 {
+    public ModelToFlatDataConfiguration()
+    {
+        super(FlatDataExternalFormatExtension.TYPE);
+    }
 }

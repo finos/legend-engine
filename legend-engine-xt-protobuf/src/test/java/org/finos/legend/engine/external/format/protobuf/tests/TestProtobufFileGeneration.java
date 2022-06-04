@@ -15,16 +15,17 @@
 package org.finos.legend.engine.external.format.protobuf.tests;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.finos.legend.engine.external.format.protobuf.schema.generations.ProtobufGenerationConfig;
-import org.finos.legend.engine.external.format.protobuf.extension.ProtobufGenerationConfigFromFileGenerationSpecificationBuilder;
+import org.finos.legend.engine.external.format.protobuf.deprecated.generation.configuration.ProtobufGenerationConfigFromFileGenerationSpecificationBuilder;
+import org.finos.legend.engine.external.format.protobuf.deprecated.generation.configuration.ProtobufGenerationConfig;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationSpecification;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
-import org.finos.legend.pure.generated.Root_meta_external_format_protobuf_generation_ProtobufConfig;
+import org.finos.legend.pure.generated.Root_meta_external_format_protobuf_deprecated_generation_configuration_ProtobufConfig;
 import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationOutput;
-import org.finos.legend.pure.generated.core_external_format_protobuf_transformation_pureToProtocolBuffers;
+import org.finos.legend.pure.generated.core_external_format_protobuf_deprecated;
+import org.finos.legend.pure.generated.core_external_format_protobuf_transformation_transformation;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -43,8 +44,8 @@ public class TestProtobufFileGeneration
             PureModel pureModel = new PureModel(pureModelContextData, null, DeploymentMode.TEST);
             FileGenerationSpecification fileGeneration = pureModelContextData.getElementsOfType(FileGenerationSpecification.class).get(0);
             ProtobufGenerationConfig protobufConfig = ProtobufGenerationConfigFromFileGenerationSpecificationBuilder.build(fileGeneration);
-            Root_meta_external_format_protobuf_generation_ProtobufConfig metaModelConfig = protobufConfig.transformToPure(pureModel);
-            List<? extends Root_meta_pure_generation_metamodel_GenerationOutput> outputs = core_external_format_protobuf_transformation_pureToProtocolBuffers.Root_meta_external_format_protobuf_generation_generateProtobufFromPureWithScope_ProtobufConfig_1__ProtobufOutput_MANY_(metaModelConfig, pureModel.getExecutionSupport()).toList();
+            Root_meta_external_format_protobuf_deprecated_generation_configuration_ProtobufConfig metaModelConfig = protobufConfig.transformToPure(pureModel);
+            List<? extends Root_meta_pure_generation_metamodel_GenerationOutput> outputs = core_external_format_protobuf_deprecated.Root_meta_external_format_protobuf_deprecated_generation_internal_transform_ProtobufConfig_1__GenerationOutput_MANY_(metaModelConfig, pureModel.getExecutionSupport()).toList();
             Assert.assertEquals(outputs.size(), 2);
             Assert.assertEquals("_other.proto", outputs.get(0)._fileName());
             Assert.assertEquals("syntax = \"proto3\";\n" +
