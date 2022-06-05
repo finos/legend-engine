@@ -14,8 +14,8 @@
 
 package org.finos.legend.engine.external.format.flatdata.shared.driver.core.fieldHandler;
 
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataRecordField;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.RawFlatData;
+import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataRecordField;
 
 import java.util.function.Function;
 
@@ -23,7 +23,7 @@ public class StringFieldHandler extends FieldHandler
 {
     public StringFieldHandler(FlatDataRecordField field, int fieldIndex, Function<RawFlatData, String> rawDataAccessor)
     {
-        super(field, fieldIndex, s-> null, rawDataAccessor);
+        super(field, fieldIndex, s -> null, rawDataAccessor);
     }
 
     @Override

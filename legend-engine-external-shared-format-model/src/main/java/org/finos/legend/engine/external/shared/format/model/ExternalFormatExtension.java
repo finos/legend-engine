@@ -20,7 +20,11 @@ import org.finos.legend.engine.external.shared.format.model.fromModel.ModelToSch
 import org.finos.legend.engine.external.shared.format.model.toModel.SchemaToModelConfiguration;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.pure.generated.*;
+import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
+import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_validation_BindingDetail;
+import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_SchemaDetail;
+import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_SchemaSet;
+import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationParameter;
 
 import java.util.List;
 
@@ -31,7 +35,6 @@ import java.util.List;
  * compiled version of the external schema.  This is a metamodel class graph expressed in PURE.  It
  * will represent the semantically checked and canonicalized data model (for example inclusions maybe
  * inlined and references reconciled).
- *
  */
 public interface ExternalFormatExtension<
         Metamodel extends Root_meta_external_shared_format_metamodel_SchemaDetail,
@@ -91,7 +94,7 @@ public interface ExternalFormatExtension<
     /**
      * Provides the properties used to configure model generation.
      */
-    default RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationParameter>  getModelGenerationProperties(PureModel pureModel)
+    default RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationParameter> getModelGenerationProperties(PureModel pureModel)
     {
         if (this.supportsModelGeneration())
         {
@@ -116,7 +119,7 @@ public interface ExternalFormatExtension<
     /**
      * Provides the properties used to configure model generation.
      */
-    default RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationParameter>  getSchemaGenerationProperties(PureModel pureModel)
+    default RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationParameter> getSchemaGenerationProperties(PureModel pureModel)
     {
         if (this.supportsSchemaGeneration())
         {

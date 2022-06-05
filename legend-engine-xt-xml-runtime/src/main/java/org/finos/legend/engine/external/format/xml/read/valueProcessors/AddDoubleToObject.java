@@ -20,7 +20,7 @@ import org.finos.legend.engine.external.format.xml.shared.datatypes.DoubleSimple
 import org.finos.legend.engine.external.shared.runtime.dependencies.ExternalDataAdder;
 import org.finos.legend.engine.external.shared.runtime.dependencies.ExternalDataDoubleAdder;
 
-public class AddDoubleToObject<T>  implements ValueProcessor<T>
+public class AddDoubleToObject<T> implements ValueProcessor<T>
 {
     private final ExternalDataDoubleAdder<T> dataAdder;
     private final DoubleSimpleTypeHandler handler;

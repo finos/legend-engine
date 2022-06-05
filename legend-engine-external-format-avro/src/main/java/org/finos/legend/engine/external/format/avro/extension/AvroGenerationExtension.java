@@ -94,8 +94,10 @@ public class AvroGenerationExtension implements GenerationExtension
     }
 
     @Override
-    public List<Root_meta_pure_generation_metamodel_GenerationOutput> generateFromElement(PackageableElement element, CompileContext compileContext) {
-        if (element instanceof FileGenerationSpecification) {
+    public List<Root_meta_pure_generation_metamodel_GenerationOutput> generateFromElement(PackageableElement element, CompileContext compileContext)
+    {
+        if (element instanceof FileGenerationSpecification)
+        {
             FileGenerationSpecification specification = (FileGenerationSpecification) element;
             AvroGenerationConfig avroGenerationConfig = AvroGenerationConfigFromFileGenerationSpecificationBuilder.build(specification);
             RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationOutput> output =

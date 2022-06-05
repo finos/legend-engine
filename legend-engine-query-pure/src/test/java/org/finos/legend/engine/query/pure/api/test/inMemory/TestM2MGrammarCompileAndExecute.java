@@ -34,13 +34,13 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lam
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.BaseExecutionContext;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.PropertyGraphFetchTree;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.RootGraphFetchTree;
+import org.finos.legend.engine.query.pure.api.Execute;
 import org.finos.legend.engine.shared.core.api.model.ExecuteInput;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.url.EngineUrlStreamHandlerFactory;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.finos.legend.engine.query.pure.api.Execute;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Response;
@@ -110,7 +110,8 @@ public class TestM2MGrammarCompileAndExecute
     }
 
     @Test
-    public void testM2MBigDecimalValue() throws IOException {
+    public void testM2MBigDecimalValue() throws IOException
+    {
         PureModelContextData contextData = PureGrammarParser.newInstance().parseModel("" +
                 "Class test::A\n" +
                 "{\n" +
@@ -245,7 +246,7 @@ public class TestM2MGrammarCompileAndExecute
     {
         ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
         PlanExecutor executor = PlanExecutor.newPlanExecutor(InMemory.build());
-        HttpServletRequest request = (HttpServletRequest) Proxy.newProxyInstance(getClass().getClassLoader(), new java.lang.Class<?>[]{HttpServletRequest.class}, new ReflectiveInvocationHandler(new Request()));
+        HttpServletRequest request = (HttpServletRequest) Proxy.newProxyInstance(getClass().getClassLoader(), new java.lang.Class<?>[] {HttpServletRequest.class}, new ReflectiveInvocationHandler(new Request()));
         //Should use: core_pure_extensions_extension.Root_meta_pure_router_extension_defaultExtensions__RouterExtension_MANY_(modelManager.)
         Response result = new Execute(modelManager, executor, (PureModel pureModel) -> Lists.mutable.empty(), LegendPlanTransformers.transformers).execute(request, input, SerializationFormat.defaultFormat, null, null);
         Assert.assertEquals(200, result.getStatus());

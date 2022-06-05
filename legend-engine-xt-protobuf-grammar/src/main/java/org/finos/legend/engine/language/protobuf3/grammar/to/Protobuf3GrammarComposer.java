@@ -15,11 +15,51 @@
 package org.finos.legend.engine.language.protobuf3.grammar.to;
 
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.BlockLiteral;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.Bool;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.BoolLiteral;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.Bytes;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.EnumPtr;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.Enumeration;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.Field;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.Fixed32;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.Fixed64;
 import org.finos.legend.engine.protocol.protobuf3.metamodel.Float;
-import org.finos.legend.engine.protocol.protobuf3.metamodel.*;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.FloatLiteral;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.IdentifierLiteral;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.Int32;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.Int64;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.IntLiteral;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.Literal;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.LiteralVisitor;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.MapType;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.Message;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.MessageOption;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.MessagePtr;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.MessageType;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.OneOf;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.Option;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.ProtoBufType;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.ProtoBufTypeVisitor;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.ProtoFile;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.ProtoItemDefinition;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.ProtoItemDefinitionVisitor;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.RemoteProcedureCall;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.ReservedFieldNames;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.ReservedFieldRanges;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.SFixed32;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.SFixed64;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.SInt32;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.SInt64;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.ScalarType;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.Service;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.ServiceBodyItem;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.ServiceBodyItemVisitor;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.ServiceOption;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.StringLiteral;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.UInt32;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.UInt64;
 
-import java.lang.Double;
-import java.lang.String;
 import java.util.Locale;
 
 public class Protobuf3GrammarComposer

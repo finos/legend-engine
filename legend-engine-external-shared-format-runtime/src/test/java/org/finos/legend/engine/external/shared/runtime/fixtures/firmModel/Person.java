@@ -14,11 +14,6 @@
 
 package org.finos.legend.engine.external.shared.runtime.fixtures.firmModel;
 
-import java.time.temporal.Temporal;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.List;
 import org.finos.legend.engine.external.shared.runtime.dependencies.ExternalDataAdder;
 import org.finos.legend.engine.external.shared.runtime.dependencies.ExternalDataBooleanAdder;
 import org.finos.legend.engine.external.shared.runtime.dependencies.ExternalDataDoubleAdder;
@@ -30,6 +25,12 @@ import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IDefect;
 import org.finos.legend.engine.plan.dependencies.domain.date.PureDate;
 import org.finos.legend.engine.plan.dependencies.store.shared.IReferencedObject;
 
+import java.time.temporal.Temporal;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.List;
+
 public class Person implements IReferencedObject, IExternalData
 {
 
@@ -39,6 +40,7 @@ public class Person implements IReferencedObject, IExternalData
         {
             return new Person();
         }
+
         public String getPureClassName()
         {
             return "meta::external::shared::testpack::simple::Person";
@@ -71,11 +73,13 @@ public class Person implements IReferencedObject, IExternalData
 
     private List<AddressUse> addresses;
 
-    public String getFirstName() {
+    public String getFirstName()
+    {
         return this.firstNameSize == 0 ? null : this.firstName;
     }
 
-    public void _firstNameAdd(String value) {
+    public void _firstNameAdd(String value)
+    {
         if (this.firstNameSize == 0)
         {
             this.firstName = value;
@@ -83,11 +87,13 @@ public class Person implements IReferencedObject, IExternalData
         this.firstNameSize++;
     }
 
-    public String getLastName() {
+    public String getLastName()
+    {
         return this.lastNameSize == 0 ? null : this.lastName;
     }
 
-    public void _lastNameAdd(String value) {
+    public void _lastNameAdd(String value)
+    {
         if (this.lastNameSize == 0)
         {
             this.lastName = value;
@@ -95,11 +101,13 @@ public class Person implements IReferencedObject, IExternalData
         this.lastNameSize++;
     }
 
-    public PureDate getDateOfBirth() {
+    public PureDate getDateOfBirth()
+    {
         return this.dateOfBirthSize == 0 ? null : this.dateOfBirth;
     }
 
-    public void _dateOfBirthAdd(Temporal value) {
+    public void _dateOfBirthAdd(Temporal value)
+    {
         if (this.dateOfBirthSize == 0)
         {
             this.dateOfBirth = PureDate.fromTemporal(value, Calendar.DAY_OF_MONTH);
@@ -107,11 +115,13 @@ public class Person implements IReferencedObject, IExternalData
         this.dateOfBirthSize++;
     }
 
-    public boolean getIsAlive() {
+    public boolean getIsAlive()
+    {
         return this.isAliveSize == 0 ? null : this.isAlive;
     }
 
-    public void _isAliveAdd(boolean value) {
+    public void _isAliveAdd(boolean value)
+    {
         if (this.isAliveSize == 0)
         {
             this.isAlive = value;
@@ -119,11 +129,13 @@ public class Person implements IReferencedObject, IExternalData
         this.isAliveSize++;
     }
 
-    public double getHeightInMeters() {
+    public double getHeightInMeters()
+    {
         return this.heightInMetersSize == 0 ? null : this.heightInMeters;
     }
 
-    public void _heightInMetersAdd(double value) {
+    public void _heightInMetersAdd(double value)
+    {
         if (this.heightInMetersSize == 0)
         {
             this.heightInMeters = value;
@@ -131,11 +143,13 @@ public class Person implements IReferencedObject, IExternalData
         this.heightInMetersSize++;
     }
 
-    public Firm getFirm() {
+    public Firm getFirm()
+    {
         return this.firmSize == 0 ? null : this.firm;
     }
 
-    void _firmAddImpl(Firm value) {
+    void _firmAddImpl(Firm value)
+    {
         if (this.firmSize == 0)
         {
             this.firm = value;
@@ -143,16 +157,19 @@ public class Person implements IReferencedObject, IExternalData
         this.firmSize++;
     }
 
-    public void _firmAdd(Firm value) {
+    public void _firmAdd(Firm value)
+    {
         this._firmAddImpl(value);
         value._employeesAddImpl(this);
     }
 
-    public List<AddressUse> getAddresses() {
+    public List<AddressUse> getAddresses()
+    {
         return this.addresses == null ? Collections.<AddressUse>emptyList() : this.addresses;
     }
 
-    public void _addressesAdd(AddressUse value) {
+    public void _addressesAdd(AddressUse value)
+    {
         if (this.addresses == null)
         {
             this.addresses = new ArrayList<AddressUse>();
@@ -160,7 +177,8 @@ public class Person implements IReferencedObject, IExternalData
         this.addresses.add(value);
     }
 
-    public List<IDefect> checkMultiplicities() {
+    public List<IDefect> checkMultiplicities()
+    {
         List<IDefect> defects = new ArrayList<IDefect>();
         if (this.firstNameSize < 1L || this.firstNameSize > 1L)
         {
@@ -189,7 +207,8 @@ public class Person implements IReferencedObject, IExternalData
         return defects;
     }
 
-    public static ExternalDataAdder<Person> _getAdderForProperty(String propertyName) {
+    public static ExternalDataAdder<Person> _getAdderForProperty(String propertyName)
+    {
         if (propertyName.equals("firstName"))
         {
             return new ExternalDataObjectAdder<Person, String>("firstName")
@@ -266,7 +285,8 @@ public class Person implements IReferencedObject, IExternalData
         }
     }
 
-    public String getAlloyStoreObjectReference$() {
+    public String getAlloyStoreObjectReference$()
+    {
         return null;
     }
 }

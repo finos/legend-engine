@@ -17,7 +17,11 @@ package org.finos.legend.engine.external.format.flatdata.shared.driver.core.data
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.fieldHandler.FieldHandler;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.ParsedFlatDataToObject;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.RawFlatData;
-import org.finos.legend.engine.plan.dependencies.domain.dataQuality.*;
+import org.finos.legend.engine.plan.dependencies.domain.dataQuality.BasicChecked;
+import org.finos.legend.engine.plan.dependencies.domain.dataQuality.BasicDefect;
+import org.finos.legend.engine.plan.dependencies.domain.dataQuality.EnforcementLevel;
+import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IChecked;
+import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IDefect;
 
 import java.util.List;
 import java.util.Optional;
@@ -84,7 +88,7 @@ abstract class AbstractDataFactory<T>
                 }
                 return Optional.of(BasicChecked.newChecked(value, unparsed.getValue(), defects));
             }
-            else if(defects.isEmpty())
+            else if (defects.isEmpty())
             {
                 return Optional.empty();
             }

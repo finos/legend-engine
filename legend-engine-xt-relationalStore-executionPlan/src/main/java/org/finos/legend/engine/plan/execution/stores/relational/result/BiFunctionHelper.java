@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.result;
 
-
 import java.util.function.BiFunction;
 
 @FunctionalInterface
@@ -24,7 +23,8 @@ public interface BiFunctionHelper<T1, T2, R, E extends Exception>
 
     static <T1, T2, R, E extends Exception> BiFunction<T1, T2, R> unchecked(BiFunctionHelper<T1, T2, R, E> f)
     {
-        return (t1, t2) -> {
+        return (t1, t2) ->
+        {
             try
             {
                 return f.apply(t1, t2);

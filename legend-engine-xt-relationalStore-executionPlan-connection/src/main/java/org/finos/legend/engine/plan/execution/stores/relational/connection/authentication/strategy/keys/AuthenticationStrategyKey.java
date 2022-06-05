@@ -19,6 +19,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public interface AuthenticationStrategyKey
 {
     String shortId();
+
     @JsonProperty("type")
     String type();
 }

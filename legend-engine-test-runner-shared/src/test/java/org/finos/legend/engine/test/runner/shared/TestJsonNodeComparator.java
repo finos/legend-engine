@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.test.runner.shared;
 
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.BigIntegerNode;

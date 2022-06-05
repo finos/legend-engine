@@ -52,10 +52,10 @@ public class TestPoolName extends TestConnectionManagement
         Identity user2 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("pool2");
         DataSourceSpecification ds1 = buildLocalDataSourceSpecification(Collections.singletonList("DROP TABLE IF EXISTS T1;"));
 
-        String pool1 = connectionStateManager.poolNameFor(user1,ds1.getConnectionKey());
+        String pool1 = connectionStateManager.poolNameFor(user1, ds1.getConnectionKey());
         assertTrue(pool1.matches("DBPool_LocalH2_port:\\d{5}_sqlCS:3263863932_type:TestDB_pool1_org\\.finos\\.legend\\.engine\\.shared\\.core\\.identity\\.credential\\.AnonymousCredential"));
 
-        String pool2 = connectionStateManager.poolNameFor(user2,ds1.getConnectionKey());
+        String pool2 = connectionStateManager.poolNameFor(user2, ds1.getConnectionKey());
         assertTrue(pool2.matches("DBPool_LocalH2_port:\\d{5}_sqlCS:3263863932_type:TestDB_pool2_org\\.finos\\.legend\\.engine\\.shared\\.core\\.identity\\.credential\\.AnonymousCredential"));
     }
 }

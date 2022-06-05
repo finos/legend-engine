@@ -24,6 +24,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-configuration</artifactId>
     <name>Legend Engine - Configuration</name>
+
     <dependencies>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>

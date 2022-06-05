@@ -25,7 +25,8 @@ public class DatabaseBuilderInput
 
     public TargetDatabase targetDatabase;
 
-    public DatabaseBuilderInput() {
+    public DatabaseBuilderInput()
+    {
         this.config = new DatabaseBuilderConfig();
         this.targetDatabase = new TargetDatabase();
     }

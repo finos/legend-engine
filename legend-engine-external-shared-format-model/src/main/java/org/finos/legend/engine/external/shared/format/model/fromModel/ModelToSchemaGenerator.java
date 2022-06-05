@@ -14,9 +14,9 @@
 
 package org.finos.legend.engine.external.shared.format.model.fromModel;
 
-import org.finos.legend.engine.external.shared.format.model.Generator;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtensionLoader;
+import org.finos.legend.engine.external.shared.format.model.Generator;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.ExternalFormatSchema;
@@ -45,7 +45,7 @@ public class ModelToSchemaGenerator extends Generator
             throw new IllegalArgumentException("Unknown schema format: " + configuration.format);
         }
 
-        Class<?> configClass = (Class<?>) ((ParameterizedType)schemaExtension.getClass().getGenericInterfaces()[0]).getActualTypeArguments()[2];
+        Class<?> configClass = (Class<?>) ((ParameterizedType) schemaExtension.getClass().getGenericInterfaces()[0]).getActualTypeArguments()[2];
         if (!configClass.isInstance(configuration))
         {
             throw new IllegalArgumentException("Invalid configuration for " + configuration.format + " model generation: " + configuration.getClass().getSimpleName());
@@ -65,7 +65,7 @@ public class ModelToSchemaGenerator extends Generator
         result.name = schemaSet._name();
         result._package = elementToPath(schemaSet._package());
         result.format = schemaSet._format();
-        for (Root_meta_external_shared_format_metamodel_Schema schema: schemaSet._schemas())
+        for (Root_meta_external_shared_format_metamodel_Schema schema : schemaSet._schemas())
         {
             ExternalFormatSchema externalFormatSchema = new ExternalFormatSchema();
             externalFormatSchema.id = schema._id();

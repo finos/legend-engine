@@ -18,11 +18,11 @@ import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlo
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProviderConfiguration;
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProviderSelector;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutor;
+import org.finos.legend.engine.plan.execution.stores.StoreExecutorBuilder;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutorConfiguration;
+import org.finos.legend.engine.plan.execution.stores.StoreType;
 import org.finos.legend.engine.plan.execution.stores.relational.config.RelationalExecutionConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
-import org.finos.legend.engine.plan.execution.stores.StoreExecutorBuilder;
-import org.finos.legend.engine.plan.execution.stores.StoreType;
 
 import java.util.Optional;
 
@@ -48,8 +48,10 @@ public class RelationalStoreExecutorBuilder implements StoreExecutorBuilder
     }
 
     @Override
-    public StoreExecutor build(StoreExecutorConfiguration storeExecutorConfiguration) {
-        if (!(storeExecutorConfiguration instanceof RelationalExecutionConfiguration)) {
+    public StoreExecutor build(StoreExecutorConfiguration storeExecutorConfiguration)
+    {
+        if (!(storeExecutorConfiguration instanceof RelationalExecutionConfiguration))
+        {
             String message = String.format("Invalid argument. Expected %s but found %s", RelationalExecutionConfiguration.class.getCanonicalName(), storeExecutorConfiguration.getClass().getCanonicalName());
             throw new RuntimeException(message);
         }
@@ -60,7 +62,7 @@ public class RelationalStoreExecutorBuilder implements StoreExecutorBuilder
         }
         if (relationalExecutionConfiguration.temporarytestdb == null)
         {
-            relationalExecutionConfiguration.temporarytestdb =  new TemporaryTestDbConfiguration(DEFAULT_PORT);
+            relationalExecutionConfiguration.temporarytestdb = new TemporaryTestDbConfiguration(DEFAULT_PORT);
         }
         Optional<DatabaseAuthenticationFlowProvider> flowProviderHolder = this.configureDatabaseAuthenticationFlowProvider(relationalExecutionConfiguration);
         RelationalStoreState state = new RelationalStoreState(relationalExecutionConfiguration.temporarytestdb, relationalExecutionConfiguration, flowProviderHolder);

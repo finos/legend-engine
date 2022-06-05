@@ -39,7 +39,7 @@ public class InstrumentedConnectionStateManager extends ConnectionStateManager
     protected Set<Pair<String, DataSourceStatistics>> findUnusedPoolsOlderThan(Duration duration)
     {
         Set<Pair<String, DataSourceStatistics>> set = super.findUnusedPoolsOlderThan(duration);
-        Assert.assertEquals(expectedSize,set.size());
+        Assert.assertEquals(expectedSize, set.size());
         try
         {
             this.countDownLatch.await();

@@ -52,7 +52,8 @@ public class TestLocalH2ConnectionState extends DbSpecificTests
             "insert into FirmTable (id, legalName) values (1, 'firm')");
 
     @Override
-    protected Subject getSubject() {
+    protected Subject getSubject()
+    {
         return null;
     }
 
@@ -66,7 +67,8 @@ public class TestLocalH2ConnectionState extends DbSpecificTests
     }
 
     @Test
-    public void stateAccumulatedForLocalH2() throws Exception {
+    public void stateAccumulatedForLocalH2() throws Exception
+    {
         ConnectionStateManager stateManager = ConnectionStateManager.getInstance();
         assertEquals("mismatch in state count", 0, stateManager.size());
 
@@ -86,7 +88,8 @@ public class TestLocalH2ConnectionState extends DbSpecificTests
         assertEquals("mismatch in state count", 1, stateManager.size());
     }
 
-    private RelationalDatabaseConnection buildLocalH2DatasourceSpec() throws Exception {
+    private RelationalDatabaseConnection buildLocalH2DatasourceSpec() throws Exception
+    {
 
         LocalH2DatasourceSpecification localH2DatasourceSpec = buildDataSourceSpecification(SETUP_SQLS);
         TestDatabaseAuthenticationStrategy testDatabaseAuthSpec = new TestDatabaseAuthenticationStrategy();

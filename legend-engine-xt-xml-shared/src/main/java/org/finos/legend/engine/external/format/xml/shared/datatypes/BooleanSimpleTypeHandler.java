@@ -17,5 +17,6 @@ package org.finos.legend.engine.external.format.xml.shared.datatypes;
 public interface BooleanSimpleTypeHandler
 {
     boolean parseBoolean(String text);
+
     String toText(boolean value);
 }

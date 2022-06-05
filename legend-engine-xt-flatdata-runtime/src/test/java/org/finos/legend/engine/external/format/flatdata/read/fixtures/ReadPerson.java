@@ -37,12 +37,14 @@ import java.time.temporal.Temporal;
 public class ReadPerson implements IFlatDataDeserializeExecutionNodeSpecifics<Person>
 {
 
-    public FlatDataSection flatDataSection_Person() {
+    public FlatDataSection flatDataSection_Person()
+    {
         FlatDataRecordType recordType = new FlatDataRecordType().withField("firstName", new FlatDataString(false)).withField("lastName", new FlatDataString(false)).withField("dateOfBirth", new FlatDataDate(true)).withField("isAlive", new FlatDataBoolean(false)).withField("heightInMeters", new FlatDataDecimal(false));
         return new FlatDataSection("Person", "DelimitedWithHeadings").withProperty("scope.untilEof", true).withProperty("delimiter", ",").withRecordType(recordType);
     }
 
-    public ParsedFlatDataToObject<meta_external_shared_format_executionPlan_testing_model_firm_Person_Impl> flatDataSection_Factory_Person(FlatDataRecordType recordType) {
+    public ParsedFlatDataToObject<meta_external_shared_format_executionPlan_testing_model_firm_Person_Impl> flatDataSection_Factory_Person(FlatDataRecordType recordType)
+    {
         FlatDataRecordField firstNameField = recordType.getFields().stream().filter((FlatDataRecordField f) -> f.getLabel().equals("firstName")).findFirst().get();
         FlatDataRecordField lastNameField = recordType.getFields().stream().filter((FlatDataRecordField f) -> f.getLabel().equals("lastName")).findFirst().get();
         FlatDataRecordField dateOfBirthField = recordType.getFields().stream().filter((FlatDataRecordField f) -> f.getLabel().equals("dateOfBirth")).findFirst().get();
@@ -91,7 +93,8 @@ public class ReadPerson implements IFlatDataDeserializeExecutionNodeSpecifics<Pe
         };
     }
 
-    public FlatDataContext<Person> createContext() {
+    public FlatDataContext<Person> createContext()
+    {
         FlatData schema = new FlatData().withSection(this.flatDataSection_Person());
         return new FlatDataContext<Person>(schema, "test::gen::TestSchema").withSectionToObjectFactory("Person", this::flatDataSection_Factory_Person);
     }

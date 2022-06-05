@@ -16,10 +16,6 @@ package org.finos.legend.engine.external.format.xml.shared.datatypes;
 
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Supplier;
 
 public class BuiltInDataTypes
 {

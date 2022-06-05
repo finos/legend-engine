@@ -79,7 +79,7 @@ public class FlatDataJavaCompilerExtension implements ExecutionPlanJavaCompilerE
     }
 
     /**
-     *  Use to generate content of core_external_format_flatdata/executionPlan/engine.pure (see GeneratePureConfig)
+     * Use to generate content of core_external_format_flatdata/executionPlan/engine.pure (see GeneratePureConfig)
      */
     public static void main(String[] args)
     {

@@ -25,7 +25,7 @@ public class FlatDataRecordField
         this(label, type, null);
     }
 
-    public FlatDataRecordField(String label, FlatDataDataType type,  String address)
+    public FlatDataRecordField(String label, FlatDataDataType type, String address)
     {
         this.label = label;
         this.type = type;

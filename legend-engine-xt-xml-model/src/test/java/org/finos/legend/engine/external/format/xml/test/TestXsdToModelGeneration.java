@@ -822,24 +822,24 @@ public class TestXsdToModelGeneration extends SchemaToModelGenerationTest
     {
         String schemaCode = newExternalSchemaSetGrammarBuilder("test::InheritedLengthRestriction", "XSD")
                 .withSchemaText(null, "inherited-length-restriction.xsd", "<?xml version='1.0'?>\n" +
-                                        "<xs:schema xmlns:xs=\"http://www.w3.org/2001/XMLSchema\">\n" +
-                                        "  <xs:simpleType name=\"NormalizedString\">\n" +
-                                        "    <xs:restriction base=\"xs:normalizedString\">\n" +
-                                        "      <xs:minLength value=\"0\" />\n" +
-                                        "    </xs:restriction>\n" +
-                                        "  </xs:simpleType>\n" +
-                                        "  <xs:simpleType name=\"NonEmptyScheme\">\n" +
-                                        "    <xs:restriction base=\"NormalizedString\">\n" +
-                                        "      <xs:minLength value=\"1\"></xs:minLength>\n" +
-                                        "      <xs:maxLength value=\"255\" />\n" +
-                                        "    </xs:restriction>\n" +
-                                        "  </xs:simpleType>\n" +
-                                        "  <xs:complexType name=\"AccountId\">\n" +
-                                        "    <xs:simpleContent>\n" +
-                                        "      <xs:extension base=\"NonEmptyScheme\" />\n" +
-                                        "    </xs:simpleContent>\n" +
-                                        "  </xs:complexType>\n" +
-                                        "</xs:schema>\n")
+                        "<xs:schema xmlns:xs=\"http://www.w3.org/2001/XMLSchema\">\n" +
+                        "  <xs:simpleType name=\"NormalizedString\">\n" +
+                        "    <xs:restriction base=\"xs:normalizedString\">\n" +
+                        "      <xs:minLength value=\"0\" />\n" +
+                        "    </xs:restriction>\n" +
+                        "  </xs:simpleType>\n" +
+                        "  <xs:simpleType name=\"NonEmptyScheme\">\n" +
+                        "    <xs:restriction base=\"NormalizedString\">\n" +
+                        "      <xs:minLength value=\"1\"></xs:minLength>\n" +
+                        "      <xs:maxLength value=\"255\" />\n" +
+                        "    </xs:restriction>\n" +
+                        "  </xs:simpleType>\n" +
+                        "  <xs:complexType name=\"AccountId\">\n" +
+                        "    <xs:simpleContent>\n" +
+                        "      <xs:extension base=\"NonEmptyScheme\" />\n" +
+                        "    </xs:simpleContent>\n" +
+                        "  </xs:complexType>\n" +
+                        "</xs:schema>\n")
                 .build();
 
         PureModelContextData model = generateModel(schemaCode, config("test::InheritedLengthRestriction", "test::gen", false, true));
@@ -890,7 +890,7 @@ public class TestXsdToModelGeneration extends SchemaToModelGenerationTest
                 .withSchemaResource("shared", "fpml-shared-5-10.xsd", "fpml-sample/fpml-shared-5-10.xsd")
                 .build();
 
-        PureModelContextData model = generateModel(schemaCode, config("test::fmpl::FpML_5_10", "shared",  "test::gen", false, true));
+        PureModelContextData model = generateModel(schemaCode, config("test::fmpl::FpML_5_10", "shared", "test::gen", false, true));
         assertModelTexts(modelTextsFromResource("fpml-sample/genResult.txt"), modelTextsFromContextData(model));
     }
 

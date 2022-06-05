@@ -24,40 +24,40 @@ public class TestXsdCompilation extends ExternalSchemaCompilationTest
     public void testExternalFormat()
     {
         test("###ExternalFormat\n" +
-                     "SchemaSet test::Example1\n" +
-                     "{\n" +
-                     "  format: XSD;\n" +
-                     "  schemas: [\n" +
-                     "    {\n" +
-                     "        location: 'filename1.xsd';\n" +
-                     "        content: " + PureGrammarComposerUtility.convertString("<?xml version=\"1.0\"?>\n" +
-                                                                                            "<xs:schema xmlns:xs=\"http://www.w3.org/2001/XMLSchema\">\n" +
-                                                                                            "  <xs:element name=\"person\">\n" +
-                                                                                            "    <xs:complexType name=\"Square\">\n" +
-                                                                                            "      <xs:sequence>\n" +
-                                                                                            "        <xs:element name=\"first-name\" type=\"xs:token\" />\n" +
-                                                                                            "        <xs:element name=\"last-name\" type=\"xs:token\" />\n" +
-                                                                                            "      </xs:sequence>\n" +
-                                                                                            "    </xs:complexType>\n" +
-                                                                                            "  </xs:element>\n" +
-                                                                                            "</xs:schema>", true) + ";\n" +
-                     "    },\n" +
-                     "    {\n" +
-                     "        location: 'filename2.xsd';\n" +
-                     "        content: " + PureGrammarComposerUtility.convertString("<?xml version=\"1.0\"?>\n" +
-                                                                                            "<xs:schema xmlns:xs=\"http://www.w3.org/2001/XMLSchema\">\n" +
-                                                                                            "  <xs:element name=\"person\">\n" +
-                                                                                            "    <xs:complexType name=\"Square\">\n" +
-                                                                                            "      <xs:sequence>\n" +
-                                                                                            "        <xs:element name=\"first-name\" type=\"xs:token\" />\n" +
-                                                                                            "        <xs:element name=\"last-name\" type=\"xs:token\" />\n" +
-                                                                                            "      </xs:sequence>\n" +
-                                                                                            "    </xs:complexType>\n" +
-                                                                                            "  </xs:element>\n" +
-                                                                                            "</xs:schema>", true) + ";\n" +
-                     "    }\n" +
-                     "  ];\n" +
-                     "}\n"
+                "SchemaSet test::Example1\n" +
+                "{\n" +
+                "  format: XSD;\n" +
+                "  schemas: [\n" +
+                "    {\n" +
+                "        location: 'filename1.xsd';\n" +
+                "        content: " + PureGrammarComposerUtility.convertString("<?xml version=\"1.0\"?>\n" +
+                "<xs:schema xmlns:xs=\"http://www.w3.org/2001/XMLSchema\">\n" +
+                "  <xs:element name=\"person\">\n" +
+                "    <xs:complexType name=\"Square\">\n" +
+                "      <xs:sequence>\n" +
+                "        <xs:element name=\"first-name\" type=\"xs:token\" />\n" +
+                "        <xs:element name=\"last-name\" type=\"xs:token\" />\n" +
+                "      </xs:sequence>\n" +
+                "    </xs:complexType>\n" +
+                "  </xs:element>\n" +
+                "</xs:schema>", true) + ";\n" +
+                "    },\n" +
+                "    {\n" +
+                "        location: 'filename2.xsd';\n" +
+                "        content: " + PureGrammarComposerUtility.convertString("<?xml version=\"1.0\"?>\n" +
+                "<xs:schema xmlns:xs=\"http://www.w3.org/2001/XMLSchema\">\n" +
+                "  <xs:element name=\"person\">\n" +
+                "    <xs:complexType name=\"Square\">\n" +
+                "      <xs:sequence>\n" +
+                "        <xs:element name=\"first-name\" type=\"xs:token\" />\n" +
+                "        <xs:element name=\"last-name\" type=\"xs:token\" />\n" +
+                "      </xs:sequence>\n" +
+                "    </xs:complexType>\n" +
+                "  </xs:element>\n" +
+                "</xs:schema>", true) + ";\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n"
         );
     }
 
@@ -65,24 +65,24 @@ public class TestXsdCompilation extends ExternalSchemaCompilationTest
     public void testMissingSchemaLocation()
     {
         test("###ExternalFormat\n" +
-                     "SchemaSet test::Example1\n" +
-                     "{\n" +
-                     "  format: XSD;\n" +
-                     "  schemas: [\n" +
-                     "    { content: " + PureGrammarComposerUtility.convertString("<?xml version=\"1.0\"?>\n" +
-                                                                                          "<xs:schema xmlns:xs=\"http://www.w3.org/2001/XMLSchema\">\n" +
-                                                                                          "  <xs:element name=\"person\">\n" +
-                                                                                          "    <xs:complexType name=\"Square\">\n" +
-                                                                                          "      <xs:sequence>\n" +
-                                                                                          "        <xs:element name=\"first-name\" type=\"xs:token\" />\n" +
-                                                                                          "        <xs:element name=\"last-name\" type=\"xs:token\" />\n" +
-                                                                                          "      </xs:sequence>\n" +
-                                                                                          "    </xs:complexType>\n" +
-                                                                                          "  </xs:element>\n" +
-                                                                                          "</xs:schema>", true) + "; }" +
-                     "  ];\n" +
-                     "}\n",
-             "COMPILATION error at [6:7-374]: Error in schema content: Location must be specified for XSD schemas"
+                        "SchemaSet test::Example1\n" +
+                        "{\n" +
+                        "  format: XSD;\n" +
+                        "  schemas: [\n" +
+                        "    { content: " + PureGrammarComposerUtility.convertString("<?xml version=\"1.0\"?>\n" +
+                        "<xs:schema xmlns:xs=\"http://www.w3.org/2001/XMLSchema\">\n" +
+                        "  <xs:element name=\"person\">\n" +
+                        "    <xs:complexType name=\"Square\">\n" +
+                        "      <xs:sequence>\n" +
+                        "        <xs:element name=\"first-name\" type=\"xs:token\" />\n" +
+                        "        <xs:element name=\"last-name\" type=\"xs:token\" />\n" +
+                        "      </xs:sequence>\n" +
+                        "    </xs:complexType>\n" +
+                        "  </xs:element>\n" +
+                        "</xs:schema>", true) + "; }" +
+                        "  ];\n" +
+                        "}\n",
+                "COMPILATION error at [6:7-374]: Error in schema content: Location must be specified for XSD schemas"
         );
     }
 
@@ -90,26 +90,26 @@ public class TestXsdCompilation extends ExternalSchemaCompilationTest
     public void testNotWellFormedSchema()
     {
         test("###ExternalFormat\n" +
-                     "SchemaSet test::Example1\n" +
-                     "{\n" +
-                     "  format: XSD;\n" +
-                     "  schemas: [\n" +
-                     "    {\n" +
-                     "        location: 'filename1.xsd';\n" +
-                     "        content: " + PureGrammarComposerUtility.convertString("<?xml version=\"1.0\"?>\n" +
-                                                                                            "<xs:schema xmlns:xs=\"http://www.w3.org/2001/XMLSchema\">\n" +
-                                                                                            "  <xs:element name=\"person\">\n" +
-                                                                                            "    <xs:complexType name=\"Square\">\n" +
-                                                                                            "      <xs:sequence>\n" +
-                                                                                            "        <xs:element name=\"first-name\" type=\"xs:token\" />\n" +
-                                                                                            "        <xs:element name=\"last-name\" type=\"xs:token\" />\n" +
-                                                                                            "    </xs:complexType>\n" +
-                                                                                            "  </xs:element>\n" +
-                                                                                            "</xs:schema>", true) + ";\n" +
-                     "    }\n" +
-                     "  ];\n" +
-                     "}\n",
-             "COMPILATION error at [8:9-354]: Error in schema content [8:7]: The element type \"xs:sequence\" must be terminated by the matching end-tag \"</xs:sequence>\"."
+                        "SchemaSet test::Example1\n" +
+                        "{\n" +
+                        "  format: XSD;\n" +
+                        "  schemas: [\n" +
+                        "    {\n" +
+                        "        location: 'filename1.xsd';\n" +
+                        "        content: " + PureGrammarComposerUtility.convertString("<?xml version=\"1.0\"?>\n" +
+                        "<xs:schema xmlns:xs=\"http://www.w3.org/2001/XMLSchema\">\n" +
+                        "  <xs:element name=\"person\">\n" +
+                        "    <xs:complexType name=\"Square\">\n" +
+                        "      <xs:sequence>\n" +
+                        "        <xs:element name=\"first-name\" type=\"xs:token\" />\n" +
+                        "        <xs:element name=\"last-name\" type=\"xs:token\" />\n" +
+                        "    </xs:complexType>\n" +
+                        "  </xs:element>\n" +
+                        "</xs:schema>", true) + ";\n" +
+                        "    }\n" +
+                        "  ];\n" +
+                        "}\n",
+                "COMPILATION error at [8:9-354]: Error in schema content [8:7]: The element type \"xs:sequence\" must be terminated by the matching end-tag \"</xs:sequence>\"."
         );
     }
 }

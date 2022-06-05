@@ -25,7 +25,8 @@ public class ApiTokenAuthenticationStrategyKey implements AuthenticationStrategy
         this.apiToken = apiToken;
     }
 
-    public String getApiToken() {
+    public String getApiToken()
+    {
         return this.apiToken;
     }
 

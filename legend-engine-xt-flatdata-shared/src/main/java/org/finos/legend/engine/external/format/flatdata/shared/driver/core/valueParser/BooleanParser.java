@@ -22,6 +22,7 @@ import java.util.Map;
 public abstract class BooleanParser implements ValueParser
 {
     private static Map<String, String> COMMON_MAPPINGS = Maps.mutable.empty();
+
     static
     {
         COMMON_MAPPINGS.put("true", "false");
@@ -36,6 +37,7 @@ public abstract class BooleanParser implements ValueParser
     }
 
     public abstract boolean parse(String s) throws ParseException;
+
     public abstract String toString(boolean b);
 
     public static BooleanParser of(String trueString, String falseString)
@@ -150,8 +152,8 @@ public abstract class BooleanParser implements ValueParser
         public String validate(String s)
         {
             return trueString.equalsIgnoreCase(s) || falseString.equalsIgnoreCase(s)
-                   ? null
-                   : "Invalid boolean: neither '" + trueString + "' nor '" + falseString + "'";
+                    ? null
+                    : "Invalid boolean: neither '" + trueString + "' nor '" + falseString + "'";
         }
 
         @Override

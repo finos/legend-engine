@@ -79,7 +79,7 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Snowf
     public void testSnowflakePublicConnection_subject() throws Exception
     {
         RelationalDatabaseConnection systemUnderTest = this.snowflakeWithKeyPairSpec();
-        Connection connection = this.connectionManagerSelector.getDatabaseConnection((Subject)null, systemUnderTest);
+        Connection connection = this.connectionManagerSelector.getDatabaseConnection((Subject) null, systemUnderTest);
         testConnection(connection, "select * from INTEGRATION_DB1.INTEGRATION_SCHEMA1.test");
     }
 
@@ -87,7 +87,7 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Snowf
     public void testSnowflakePublicConnection_profile() throws Exception
     {
         RelationalDatabaseConnection systemUnderTest = this.snowflakeWithKeyPairSpec();
-        Connection connection = this.connectionManagerSelector.getDatabaseConnection((MutableList<CommonProfile>)null, systemUnderTest);
+        Connection connection = this.connectionManagerSelector.getDatabaseConnection((MutableList<CommonProfile>) null, systemUnderTest);
         testConnection(connection, "select * from INTEGRATION_DB1.INTEGRATION_SCHEMA1.test");
     }
 

@@ -151,10 +151,10 @@ public class SchemaSetCompiler
         {
             Objects.requireNonNull(location, "Cannot find schema for null location");
             return srcSchemaSet.schemas.stream()
-                                       .filter(s -> location.equals(s.location))
-                                       .findFirst()
-                                       .map(s -> s.content)
-                                       .orElseThrow(() -> new IllegalArgumentException("No schema found for location: " + location));
+                    .filter(s -> location.equals(s.location))
+                    .findFirst()
+                    .map(s -> s.content)
+                    .orElseThrow(() -> new IllegalArgumentException("No schema found for location: " + location));
         }
 
         @Override

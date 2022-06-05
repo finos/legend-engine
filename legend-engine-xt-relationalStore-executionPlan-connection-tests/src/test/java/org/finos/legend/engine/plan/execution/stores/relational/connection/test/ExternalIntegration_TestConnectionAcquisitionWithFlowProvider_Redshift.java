@@ -64,7 +64,8 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Redsh
         //usePropertiesVault();
     }
 
-    private void usePropertiesVault() {
+    private void usePropertiesVault()
+    {
         Properties properties = new Properties();
         properties.put("REDSHIFT_LEGEND_INTEG_USERNAME", "XXXX");
         properties.put("REDSHIFT_LEGEND_INTEG_PASSWORD", "XXXX");
@@ -88,13 +89,15 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Redsh
     @Test
     public void testRedshiftUserPasswordConnection() throws Exception
     {
-        try {
+        try
+        {
             RelationalDatabaseConnection systemUnderTest = this.redshiftWithUserPassword();
             Connection connection = this.connectionManagerSelector.getDatabaseConnection((Subject) null, systemUnderTest);
             // TODO : epsstan - connection acquisition fails with increased concurrency. Do we have a bug or is this a driver issue ?
             testConnection(connection, 1, "select * from test");
         }
-        finally {
+        finally
+        {
             ConnectionStateManager.getInstance().close();
         }
     }

@@ -29,7 +29,12 @@ import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataPro
 import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataSection;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IChecked;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.LongSupplier;
 
 abstract class AbstractBloombergReadDriver<T> extends StreamingReadDriver<T>
@@ -72,7 +77,8 @@ abstract class AbstractBloombergReadDriver<T> extends StreamingReadDriver<T>
 
         List<FlatDataProperty> properties = section.getSectionProperties();
         FlatDataUtils.getStrings(properties, BloombergDataDriverDescription.FILTER_PROPERTY)
-                .ifPresent(clauses -> {
+                .ifPresent(clauses ->
+                {
                     for (String clause : clauses)
                     {
                         String[] kv = clause.split("=");

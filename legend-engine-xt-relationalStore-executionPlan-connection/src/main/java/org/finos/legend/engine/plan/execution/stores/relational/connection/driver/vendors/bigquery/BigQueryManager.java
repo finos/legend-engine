@@ -17,8 +17,6 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.driv
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.GCPApplicationDefaultCredentialsAuthenticationStrategy;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.GCPApplicationDefaultCredentialsAuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.BigQueryDataSourceSpecification;
@@ -39,7 +37,7 @@ public class BigQueryManager extends DatabaseManager
         String url = String.format("jdbc:bigquery://https://www.googleapis.com/bigquery/v2:443;" +
                         "ProjectId=%s;" +
                         this.buildParamForOptionalProperty(extraUserDataSourceProperties, BigQueryDataSourceSpecification.BIGQUERY_DATASET_NAME, "DefaultDataset") +
-                        this.buildParamForOptionalProperty(extraUserDataSourceProperties,BigQueryDataSourceSpecification.BIGQUERY_PROXY_HOST,"ProxyHost") +
+                        this.buildParamForOptionalProperty(extraUserDataSourceProperties, BigQueryDataSourceSpecification.BIGQUERY_PROXY_HOST, "ProxyHost") +
                         this.buildParamForOptionalProperty(extraUserDataSourceProperties, BigQueryDataSourceSpecification.BIGQUERY_PROXY_PORT, "ProxyPort"),
                 extraUserDataSourceProperties.getProperty(BigQueryDataSourceSpecification.BIGQUERY_PROJECT_ID));
         return url;
@@ -50,7 +48,7 @@ public class BigQueryManager extends DatabaseManager
         String optionalPropertyValue = extraUserDataSourceProperties.getProperty(optionalPropertyKey);
         if (optionalPropertyValue != null && !optionalPropertyValue.trim().isEmpty())
         {
-            return String.format("%s=%s;",optionalProperty,optionalPropertyValue);
+            return String.format("%s=%s;", optionalProperty, optionalPropertyValue);
         }
         else
         {

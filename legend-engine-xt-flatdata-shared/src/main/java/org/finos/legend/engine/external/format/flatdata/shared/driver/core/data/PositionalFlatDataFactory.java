@@ -84,7 +84,7 @@ public class PositionalFlatDataFactory<T> extends AbstractDataFactory<T>
             @Override
             public Object getAddress()
             {
-                return (long) index+1;
+                return (long) index + 1;
             }
 
             @Override

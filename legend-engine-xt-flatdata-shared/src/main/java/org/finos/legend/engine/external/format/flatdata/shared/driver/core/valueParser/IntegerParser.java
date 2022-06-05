@@ -27,10 +27,15 @@ public abstract class IntegerParser implements ValueParser
     private static final Predicate<String> VALID_FORMAT = Pattern.compile("#,#*(#|0+)").asPredicate();
 
     public abstract long parseLong(String s) throws ParseException;
+
     public abstract double parseDouble(String s) throws ParseException;
+
     public abstract BigDecimal parseBigDecimal(String s) throws ParseException;
+
     public abstract String toString(long l);
+
     public abstract String toString(double d);
+
     public abstract String toString(BigDecimal bd);
 
     public static IntegerParser of()
@@ -132,7 +137,7 @@ public abstract class IntegerParser implements ValueParser
             this.formatString = formatString;
             DecimalFormat fmt = format.get();
             isValidInteger = fmt.isGroupingUsed()
-                    ? Pattern.compile("[+-]?\\d{1,"+fmt.getGroupingSize()+"}(\\d{"+fmt.getGroupingSize()+"},)*").asPredicate()
+                    ? Pattern.compile("[+-]?\\d{1," + fmt.getGroupingSize() + "}(\\d{" + fmt.getGroupingSize() + "},)*").asPredicate()
                     : DEFAULT_IS_VALID_INTEGER;
         }
 

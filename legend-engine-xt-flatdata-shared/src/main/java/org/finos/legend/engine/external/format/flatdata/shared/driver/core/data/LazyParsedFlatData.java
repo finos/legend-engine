@@ -32,7 +32,18 @@ import java.util.List;
 public class LazyParsedFlatData implements ParsedFlatData
 {
     private enum FieldState
-    {INVALID, VERIFIED, MISSING, PARSED_STRING, PARSED_BOOLEAN, PARSED_LONG, PARSED_DOUBLE, PARSED_BIG_DECIMAL, PARSED_LOCAL_DATE, PARSED_INSTANT}
+    {
+        INVALID,
+        VERIFIED,
+        MISSING,
+        PARSED_STRING,
+        PARSED_BOOLEAN,
+        PARSED_LONG,
+        PARSED_DOUBLE,
+        PARSED_BIG_DECIMAL,
+        PARSED_LOCAL_DATE,
+        PARSED_INSTANT
+    }
 
     final RawFlatData rawFlatData;
     final List<FieldHandler> fieldHandlers;
@@ -63,8 +74,8 @@ public class LazyParsedFlatData implements ParsedFlatData
     {
         String suffix = "'" + handler.getField().getLabel() + "' with value: " + handler.rawValue(rawFlatData) + ", error: ParseException " + errorMessage;
         IDefect defect = handler.getField().isOptional()
-                         ? BasicDefect.newInvalidInputErrorDefect("Failed to read " + suffix, definingPath)
-                         : BasicDefect.newInvalidInputCriticalDefect("Failed to read mandatory " + suffix, definingPath);
+                ? BasicDefect.newInvalidInputErrorDefect("Failed to read " + suffix, definingPath)
+                : BasicDefect.newInvalidInputCriticalDefect("Failed to read mandatory " + suffix, definingPath);
         defects.add(defect);
         states[handler.getFieldIndex()] = FieldState.INVALID;
     }
@@ -318,7 +329,7 @@ public class LazyParsedFlatData implements ParsedFlatData
     private FieldHandler fieldHandler(FlatDataRecordField field)
     {
         return (field instanceof FieldHandlerRecordField)
-               ? ((FieldHandlerRecordField) field).getFieldHandler()
-               : fieldHandlers.stream().filter(f -> f.getField().getLabel().equals(field.getLabel())).findFirst().orElseThrow(() -> new IllegalArgumentException("No field handler for " + field.getLabel()));
+                ? ((FieldHandlerRecordField) field).getFieldHandler()
+                : fieldHandlers.stream().filter(f -> f.getField().getLabel().equals(field.getLabel())).findFirst().orElseThrow(() -> new IllegalArgumentException("No field handler for " + field.getLabel()));
     }
 }

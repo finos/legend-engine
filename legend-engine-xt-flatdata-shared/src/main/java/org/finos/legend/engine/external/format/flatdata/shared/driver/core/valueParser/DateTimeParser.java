@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 public abstract class DateTimeParser implements ValueParser
 {
     public abstract Instant parse(String s) throws ParseException;
+
     public abstract String toString(Instant dateTime);
 
     public static DateTimeParser of(List<String> format, String timeZone)
@@ -37,7 +38,7 @@ public abstract class DateTimeParser implements ValueParser
 
     public static DateTimeParser of(DateTimeParser base, String timeZone)
     {
-        if (!(base instanceof  BasicDateTimeParser))
+        if (!(base instanceof BasicDateTimeParser))
         {
             throw new IllegalArgumentException("Can only override timezone on a BasicDateTimeParser");
         }
@@ -74,7 +75,7 @@ public abstract class DateTimeParser implements ValueParser
         {
             if (formatter == null)
             {
-                for (int i=0; i<possibleFormatters.size(); i++)
+                for (int i = 0; i < possibleFormatters.size(); i++)
                 {
                     try
                     {
@@ -119,6 +120,7 @@ public abstract class DateTimeParser implements ValueParser
                 }
             }
         }
+
         @Override
         public String validate(String s)
         {
@@ -129,7 +131,7 @@ public abstract class DateTimeParser implements ValueParser
         {
             if (formatter == null)
             {
-                for (int i=0; i<possibleFormatters.size(); i++)
+                for (int i = 0; i < possibleFormatters.size(); i++)
                 {
                     try
                     {
@@ -154,7 +156,7 @@ public abstract class DateTimeParser implements ValueParser
                 }
                 catch (DateTimeParseException e)
                 {
-                    return "Unparseable datetime: \"" + s + "\" for format '" + format  + "'";
+                    return "Unparseable datetime: \"" + s + "\" for format '" + format + "'";
                 }
             }
         }

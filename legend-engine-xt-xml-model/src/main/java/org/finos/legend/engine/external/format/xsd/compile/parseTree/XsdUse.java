@@ -14,7 +14,8 @@
 
 package org.finos.legend.engine.external.format.xsd.compile.parseTree;
 
-public enum XsdUse {
+public enum XsdUse
+{
     OPTIONAL,
     PROHIBITED,
     REQUIRED

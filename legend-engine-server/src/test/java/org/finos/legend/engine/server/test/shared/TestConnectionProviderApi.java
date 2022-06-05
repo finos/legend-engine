@@ -32,7 +32,11 @@ import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 import org.slf4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -52,7 +56,7 @@ public class TestConnectionProviderApi
 
     Map<DatabaseType, RelationalDatabaseConnection> testConnectionByDatabaseType = new HashMap<DatabaseType, RelationalDatabaseConnection>();
 
-    public TestConnectionProviderApi( Map<DatabaseType, RelationalDatabaseConnection> testConnections)
+    public TestConnectionProviderApi(Map<DatabaseType, RelationalDatabaseConnection> testConnections)
     {
         this.testConnectionByDatabaseType = testConnections;
     }
@@ -61,30 +65,30 @@ public class TestConnectionProviderApi
     @Path("/{databaseType}")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     public Response getTestConnection(@Context HttpServletRequest request,
-                                              @PathParam("databaseType") DatabaseType databaseType,
-                                              @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+                                      @PathParam("databaseType") DatabaseType databaseType,
+                                      @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
-        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles( pm );
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
 
         try
         {
-            LOGGER.info( new LogInfo( profiles, LoggingEventType.EXECUTION_PLAN_EXEC_START, "" ).toString() );
+            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_PLAN_EXEC_START, "").toString());
 
-            if ( this.testConnectionByDatabaseType.containsKey( databaseType ) )
+            if (this.testConnectionByDatabaseType.containsKey(databaseType))
             {
-                RelationalDatabaseConnection conn = this.testConnectionByDatabaseType.get( databaseType );
+                RelationalDatabaseConnection conn = this.testConnectionByDatabaseType.get(databaseType);
                 return Response.ok(objectMapper.writeValueAsString(conn)).build();
             }
             else
             {
                 String message = "No Connection found available for Database Type:" + databaseType;
-                return Response.status( 500 ).type( MediaType.APPLICATION_JSON_TYPE )
-                        .entity( new ResultManager.ErrorMessage( 20, "{\"message\":\"" + message + "\"}" ) ).build();
+                return Response.status(500).type(MediaType.APPLICATION_JSON_TYPE)
+                        .entity(new ResultManager.ErrorMessage(20, "{\"message\":\"" + message + "\"}")).build();
             }
         }
-        catch ( Exception ex )
+        catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager( ex, LoggingEventType.EXECUTION_PLAN_EXEC_ERROR, profiles );
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTION_PLAN_EXEC_ERROR, profiles);
         }
     }
 }

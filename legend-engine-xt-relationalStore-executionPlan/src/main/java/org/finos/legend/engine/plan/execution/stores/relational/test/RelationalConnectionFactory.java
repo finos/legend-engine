@@ -1,3 +1,17 @@
+//  Copyright 2022 Goldman Sachs
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+
 package org.finos.legend.engine.plan.execution.stores.relational.test;
 
 import org.eclipse.collections.api.factory.Lists;
@@ -29,7 +43,7 @@ public class RelationalConnectionFactory implements ConnectionFactoryExtension
             LocalH2DatasourceSpecification localH2DatasourceSpecification = new LocalH2DatasourceSpecification();
             if (relationalInputData.inputType == RelationalInputType.SQL)
             {
-                localH2DatasourceSpecification.testDataSetupSqls = Lists.mutable.of(relationalInputData.data.split("(?<!\\\\);")).collect(r -> r.replace("\\;",";") + ";");
+                localH2DatasourceSpecification.testDataSetupSqls = Lists.mutable.of(relationalInputData.data.split("(?<!\\\\);")).collect(r -> r.replace("\\;", ";") + ";");
             }
             else if (relationalInputData.inputType == RelationalInputType.CSV)
             {
@@ -37,7 +51,7 @@ public class RelationalConnectionFactory implements ConnectionFactoryExtension
             }
             else
             {
-                throw new RuntimeException(relationalInputData.inputType+" is not supported");
+                throw new RuntimeException(relationalInputData.inputType + " is not supported");
             }
             connection.datasourceSpecification = localH2DatasourceSpecification;
             return Optional.of(connection);

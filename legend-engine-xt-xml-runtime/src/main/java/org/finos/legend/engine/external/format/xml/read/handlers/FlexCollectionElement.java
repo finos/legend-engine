@@ -30,7 +30,10 @@ import java.util.function.Predicate;
 public class FlexCollectionElement extends Element
 {
     private enum Type
-    {IN_CONTAINER, REPEATED_ELEMENT}
+    {
+        IN_CONTAINER,
+        REPEATED_ELEMENT
+    }
 
     private Type type = null;
 

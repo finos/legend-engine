@@ -1,3 +1,17 @@
+//  Copyright 2022 Goldman Sachs
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+
 package org.finos.legend.engine.language.pure.grammar.api.test;
 
 import org.eclipse.collections.api.block.function.Function;
@@ -37,8 +51,23 @@ public class TestGrammarGraphFetchApi extends TestGrammar<RootGraphFetchTree>
     @Test
     public void testSimpleParsingError()
     {
-        testError( "#{\n" +
-                        "  demo::Query\n" +
+        testError("#{\n" +
+                "  demo::Query\n" +
+                "    firms{\n" +
+                "      legalName,\n" +
+                "      employees{\n" +
+                "        lastName\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}#", "Unexpected token", new SourceInformation("", 3, 5, 3, 9));
+    }
+
+    @Test
+    public void testBatch()
+    {
+        testBatch(createBatchInput(Tuples.pair("1", "#{\n" +
+                        "  demo::Query{\n" +
                         "    firms{\n" +
                         "      legalName,\n" +
                         "      employees{\n" +
@@ -46,58 +75,43 @@ public class TestGrammarGraphFetchApi extends TestGrammar<RootGraphFetchTree>
                         "      }\n" +
                         "    }\n" +
                         "  }\n" +
-                        "}#", "Unexpected token", new SourceInformation("", 3, 5, 3, 9));
-    }
-
-    @Test
-    public void testBatch()
-    {
-        testBatch(createBatchInput( Tuples.pair("1",  "#{\n" +
-                                                    "  demo::Query{\n" +
-                                                    "    firms{\n" +
-                                                    "      legalName,\n" +
-                                                    "      employees{\n" +
-                                                    "        lastName\n" +
-                                                    "      }\n" +
-                                                    "    }\n" +
-                                                    "  }\n" +
-                                                    "}#"),
-                        Tuples.pair("2",  "#{\n" +
-                                                    "  demo::Query{\n" +
-                                                    "    firms{\n" +
-                                                    "      legalName\n" +
-                                                    "    }\n" +
-                                                    "  }\n" +
-                                                    "}#"))
+                        "}#"),
+                Tuples.pair("2", "#{\n" +
+                        "  demo::Query{\n" +
+                        "    firms{\n" +
+                        "      legalName\n" +
+                        "    }\n" +
+                        "  }\n" +
+                        "}#"))
         );
     }
 
     @Test
     public void testBatchError()
     {
-        testBatchError(createBatchInput(Tuples.pair("1",  "#{\n" +
-                                                        "  demo::Query{\n" +
-                                                        "    firms{\n" +
-                                                        "      legalName,\n" +
-                                                        "      employees{\n" +
-                                                        "        lastName\n" +
-                                                        "      }\n" +
-                                                        "    }\n" +
-                                                        "  }\n" +
-                                                        "}#"),
-                Tuples.pair("2",  "#{\n" +
-                                            "  demo::Query" +
-                                            "}#")),
-                createExpectedBatchResult(Tuples.pair("1",  "#{\n" +
-                                                "  demo::Query{\n" +
-                                                "    firms{\n" +
-                                                "      legalName,\n" +
-                                                "      employees{\n" +
-                                                "        lastName\n" +
-                                                "      }\n" +
-                                                "    }\n" +
-                                                "  }\n" +
-                                                "}#"),
+        testBatchError(createBatchInput(Tuples.pair("1", "#{\n" +
+                                "  demo::Query{\n" +
+                                "    firms{\n" +
+                                "      legalName,\n" +
+                                "      employees{\n" +
+                                "        lastName\n" +
+                                "      }\n" +
+                                "    }\n" +
+                                "  }\n" +
+                                "}#"),
+                        Tuples.pair("2", "#{\n" +
+                                "  demo::Query" +
+                                "}#")),
+                createExpectedBatchResult(Tuples.pair("1", "#{\n" +
+                                "  demo::Query{\n" +
+                                "    firms{\n" +
+                                "      legalName,\n" +
+                                "      employees{\n" +
+                                "        lastName\n" +
+                                "      }\n" +
+                                "    }\n" +
+                                "  }\n" +
+                                "}#"),
                         Tuples.pair("2", "{\"message\":\"Unexpected token\",\"sourceInformation\":{\"endColumn\":18,\"endLine\":2,\"sourceId\":\"\",\"startColumn\":14,\"startLine\":2}}"))
         );
     }
@@ -112,7 +126,8 @@ public class TestGrammarGraphFetchApi extends TestGrammar<RootGraphFetchTree>
     }
 
     public static class MyClass extends BatchResult<RootGraphFetchTree>
-    {}
+    {
+    }
 
     @Override
     public Class getBatchResultSpecializedClass()

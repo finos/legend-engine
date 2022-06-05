@@ -42,11 +42,11 @@ import org.finos.legend.pure.runtime.java.compiled.metadata.ClassCache;
 import org.finos.legend.pure.runtime.java.compiled.metadata.FunctionCache;
 import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataLazy;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 public class TestMetaDataServer
 {
@@ -216,8 +216,9 @@ public class TestMetaDataServer
         AbstractHandler storeHandle = registerService(
                 "/alloy/pureModelFromStore",
                 messageFromPureJAR ?
-                        (_package, version) -> PureFunctions.alloy_metadataServer_pureModelFromStore(_package, version, core_relational_relational_router_router_extension.Root_meta_pure_router_extension_defaultRelationalExtensions__RouterExtension_MANY_(executionSupport), executionSupport):
-                        (_package, version) -> {
+                        (_package, version) -> PureFunctions.alloy_metadataServer_pureModelFromStore(_package, version, core_relational_relational_router_router_extension.Root_meta_pure_router_extension_defaultRelationalExtensions__RouterExtension_MANY_(executionSupport), executionSupport) :
+                        (_package, version) ->
+                        {
                             String key = "" + _package + version;
                             String res = fromStores.get(key);
                             System.out.println(key);
@@ -231,7 +232,7 @@ public class TestMetaDataServer
         AbstractHandler pureBaseVersionHandler = createPureBaseVersionHandler();
 
         HandlerCollection handlerCollection = new HandlerCollection();
-        handlerCollection.setHandlers(new Handler[]{
+        handlerCollection.setHandlers(new Handler[] {
                 mappingHandle,
                 storeHandle,
                 versionHandler,

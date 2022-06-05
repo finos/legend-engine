@@ -14,10 +14,6 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.Properties;
-
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionException;
@@ -27,6 +23,10 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.authe
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics;
 import org.finos.legend.engine.shared.core.identity.Identity;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Properties;
 
 /*
     This class represents authentication using GCP ADC (Application Default Credentials).

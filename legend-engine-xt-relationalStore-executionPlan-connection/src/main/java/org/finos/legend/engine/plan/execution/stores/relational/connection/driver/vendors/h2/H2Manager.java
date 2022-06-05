@@ -14,12 +14,12 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2;
 
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.EmbeddedH2DataSourceSpecification;
-import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.impl.factory.Lists;
 
 import java.util.Properties;
 
@@ -34,13 +34,13 @@ public class H2Manager extends DatabaseManager
     @Override
     public String buildURL(String host, int port, String databaseName, Properties extraUserDataSourceProperties, AuthenticationStrategy authenticationStrategy)
     {
-        if(isEmbeddedMode(extraUserDataSourceProperties))
+        if (isEmbeddedMode(extraUserDataSourceProperties))
         {
-            String dataDirectoryPath =  extraUserDataSourceProperties.getProperty(EmbeddedH2DataSourceSpecification.H2_DATA_DIRECTORY_PATH).replace("\\", "/");
-            String autoServerMode =  extraUserDataSourceProperties.getProperty(EmbeddedH2DataSourceSpecification.H2_AUTO_SERVER_MODE);
+            String dataDirectoryPath = extraUserDataSourceProperties.getProperty(EmbeddedH2DataSourceSpecification.H2_DATA_DIRECTORY_PATH).replace("\\", "/");
+            String autoServerMode = extraUserDataSourceProperties.getProperty(EmbeddedH2DataSourceSpecification.H2_AUTO_SERVER_MODE);
             return "jdbc:h2:file:" + dataDirectoryPath + "/" + databaseName + ";AUTO_SERVER=" + autoServerMode;
         }
-        return "jdbc:h2:tcp://" + host + ":" + port + "/mem:" +databaseName;
+        return "jdbc:h2:tcp://" + host + ":" + port + "/mem:" + databaseName;
     }
 
     @Override
@@ -50,7 +50,8 @@ public class H2Manager extends DatabaseManager
     }
 
     @Override
-    public RelationalDatabaseCommands relationalDatabaseSupport() {
+    public RelationalDatabaseCommands relationalDatabaseSupport()
+    {
         return new H2Commands();
     }
 

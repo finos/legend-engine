@@ -43,7 +43,7 @@ public class DateParser implements ValueParser
     {
         if (formatter == null)
         {
-            for (int i=0; i<possibleFormatters.size(); i++)
+            for (int i = 0; i < possibleFormatters.size(); i++)
             {
                 try
                 {
@@ -77,7 +77,7 @@ public class DateParser implements ValueParser
     {
         if (formatter == null)
         {
-            for (int i=0; i<possibleFormatters.size(); i++)
+            for (int i = 0; i < possibleFormatters.size(); i++)
             {
                 try
                 {
@@ -102,7 +102,7 @@ public class DateParser implements ValueParser
             }
             catch (DateTimeParseException e)
             {
-                return "Unparseable date: \"" + s + "\" for format '" + format  + "'";
+                return "Unparseable date: \"" + s + "\" for format '" + format + "'";
             }
         }
     }

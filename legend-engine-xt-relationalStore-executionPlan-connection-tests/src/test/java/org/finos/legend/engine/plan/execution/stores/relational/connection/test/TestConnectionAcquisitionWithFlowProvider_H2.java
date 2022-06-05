@@ -70,7 +70,7 @@ public class TestConnectionAcquisitionWithFlowProvider_H2 extends DbSpecificTest
     public void testLocalTestConnection_subject() throws Exception
     {
         RelationalDatabaseConnection systemUnderTest = this.localH2WithUserPasswordSpec();
-        Connection connection = this.connectionManagerSelector.getDatabaseConnection((Subject)null, systemUnderTest);
+        Connection connection = this.connectionManagerSelector.getDatabaseConnection((Subject) null, systemUnderTest);
         testConnection(connection, "SELECT * FROM PersonTable");
     }
 
@@ -78,7 +78,7 @@ public class TestConnectionAcquisitionWithFlowProvider_H2 extends DbSpecificTest
     public void testLocalTestConnection_profile() throws Exception
     {
         RelationalDatabaseConnection systemUnderTest = this.localH2WithUserPasswordSpec();
-        Connection connection = this.connectionManagerSelector.getDatabaseConnection((MutableList<CommonProfile>)null, systemUnderTest);
+        Connection connection = this.connectionManagerSelector.getDatabaseConnection((MutableList<CommonProfile>) null, systemUnderTest);
         testConnection(connection, "SELECT * FROM PersonTable");
     }
 

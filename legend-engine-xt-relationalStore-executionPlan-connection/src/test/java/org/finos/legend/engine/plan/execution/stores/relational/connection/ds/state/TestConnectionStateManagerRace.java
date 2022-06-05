@@ -50,19 +50,20 @@ public class TestConnectionStateManagerRace extends TestConnectionManagement
 
 
     @Test
-    public void testEvictionRace() throws InterruptedException, SQLException {
+    public void testEvictionRace() throws InterruptedException, SQLException
+    {
         // cache has 2 state objects
         Identity user1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("pool1");
         Identity user2 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("pool2");
         DataSourceSpecification ds1 = buildLocalDataSourceSpecification(Arrays.asList("DROP TABLE IF EXISTS T1;"));
-        String pool1 = connectionStateManager.poolNameFor(user1,ds1.getConnectionKey());
-        String pool2 = connectionStateManager.poolNameFor(user2,ds1.getConnectionKey());
+        String pool1 = connectionStateManager.poolNameFor(user1, ds1.getConnectionKey());
+        String pool2 = connectionStateManager.poolNameFor(user2, ds1.getConnectionKey());
 
         Connection c = requestConnection(user1, ds1);
         c.close();
         Assert.assertEquals(1, connectionStateManager.get(pool1).getStatistics().getRequestedConnections());
-        Connection c1 =requestConnection(user1, ds1);
-        Connection c2 =requestConnection(user2, ds1);
+        Connection c1 = requestConnection(user1, ds1);
+        Connection c2 = requestConnection(user2, ds1);
         DataSourceStatistics pool1Version1 = DataSourceStatistics.clone(connectionStateManager.get(pool1).getStatistics());
         assertEquals(2, connectionStateManager.size());
         assertPoolStateExists(pool1, pool2);

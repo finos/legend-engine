@@ -20,7 +20,7 @@ public class Test_Relational_DbSpecific_H2_UsingPureClientTestSuite extends Rela
 {
     public static Test suite() throws Exception
     {
-        return createSuite("meta::relational::tests::dbSpecificTests::H2","org/finos/legend/engine/server/test/userTestConfig_withH2TestConnection.json");
+        return createSuite("meta::relational::tests::dbSpecificTests::H2", "org/finos/legend/engine/server/test/userTestConfig_withH2TestConnection.json");
     }
 }
 

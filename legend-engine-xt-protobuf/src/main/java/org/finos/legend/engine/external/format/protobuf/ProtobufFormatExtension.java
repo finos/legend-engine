@@ -17,14 +17,22 @@ package org.finos.legend.engine.external.format.protobuf;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
-import org.finos.legend.engine.external.format.protobuf.deprecated.generation.configuration.CustomOption;
 import org.finos.legend.engine.external.format.protobuf.fromModel.ModelToProtobufConfiguration;
 import org.finos.legend.engine.external.format.protobuf.toModel.ProtobufToModelConfiguration;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
 import org.finos.legend.engine.external.shared.format.model.ExternalSchemaCompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.pure.generated.*;
+import org.finos.legend.pure.generated.Root_meta_external_format_protobuf_binding_ProtobufSchema;
+import org.finos.legend.pure.generated.Root_meta_external_format_protobuf_binding_fromPure_ModelToProtobufDataConfiguration;
+import org.finos.legend.pure.generated.Root_meta_external_format_protobuf_binding_fromPure_ModelToProtobufDataConfiguration_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_format_protobuf_binding_fromPure_ProtobufOption_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
+import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_validation_BindingDetail;
+import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_SchemaSet;
+import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationParameter;
+import org.finos.legend.pure.generated.core_external_format_protobuf_metamodel_metamodel_serialization;
+import org.finos.legend.pure.generated.core_external_format_protobuf_transformation_transformation;
 
 import java.util.List;
 

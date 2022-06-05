@@ -15,15 +15,14 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.api.schema;
 
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.api.schema.model.DatabaseBuilderInput;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.api.schema.model.DatabasePattern;
-import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
 import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
@@ -35,13 +34,20 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Database;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Schema;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Table;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.BigInt;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Bit;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.DataType;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Date;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Decimal;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Double;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.SmallInt;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Timestamp;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.TinyInt;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.VarChar;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.lang.Integer;
 import java.util.Comparator;
 import java.util.List;
 
@@ -53,7 +59,8 @@ public class TestSchemaExploration
     private ConnectionManagerSelector connectionManager;
 
     @Before
-    public void setup() {
+    public void setup()
+    {
         TemporaryTestDbConfiguration conf = new TemporaryTestDbConfiguration();
         conf.port = Integer.parseInt(System.getProperty("h2ServerPort", "1234"));
         this.connectionManager = new ConnectionManagerSelector(conf, FastList.newList());
@@ -92,7 +99,7 @@ public class TestSchemaExploration
         databaseBuilderInput.targetDatabase._package = "my::package";
         databaseBuilderInput.targetDatabase.name = "db";
         databaseBuilderInput.config.enrichTables = true;
-        databaseBuilderInput.config.enrichColumns  = true;
+        databaseBuilderInput.config.enrichColumns = true;
 
         Database expected = filterCommonDatabase(FastList.newListWith("SCHEMA_1", "SCHEMA11"), FastList.newListWith("TABLE_1", "TABLE11"), true, false);
         test(databaseBuilderInput, expected);
@@ -106,7 +113,7 @@ public class TestSchemaExploration
         databaseBuilderInput.targetDatabase._package = "my::package";
         databaseBuilderInput.targetDatabase.name = "db";
         databaseBuilderInput.config.enrichTables = true;
-        databaseBuilderInput.config.enrichColumns  = true;
+        databaseBuilderInput.config.enrichColumns = true;
         databaseBuilderInput.config.enrichPrimaryKeys = true;
 
         Database expected = filterCommonDatabase(FastList.newListWith("SCHEMA_1", "SCHEMA11"), FastList.newListWith("TABLE_1", "TABLE11"), true, true);
@@ -192,13 +199,18 @@ public class TestSchemaExploration
         Assert.assertEquals(objectMapper.writeValueAsString(expected), objectMapper.writeValueAsString(store));
     }
 
-    private void sort(Database database) {
+    private void sort(Database database)
+    {
         database.schemas.sort(Comparator.comparing(a -> a.name));
-        database.schemas.forEach(schema -> {
+        database.schemas.forEach(schema ->
+        {
             schema.tables.sort(Comparator.comparing(a -> a.name));
-            if (schema.tables != null) {
-                schema.tables.forEach(table -> {
-                    if (table.columns != null) {
+            if (schema.tables != null)
+            {
+                schema.tables.forEach(table ->
+                {
+                    if (table.columns != null)
+                    {
                         table.columns.sort(Comparator.comparing(a -> a.name));
                     }
                 });
@@ -206,12 +218,15 @@ public class TestSchemaExploration
         });
     }
 
-    private Database filterCommonDatabase(List<String> schemas, List<String> tables, boolean enrichColumns, boolean enrichPks) {
+    private Database filterCommonDatabase(List<String> schemas, List<String> tables, boolean enrichColumns, boolean enrichPks)
+    {
         Database database = createCommonDatabase();
         database.schemas = ListIterate.select(database.schemas, s -> schemas.contains(s.name));
-        database.schemas.forEach(schema -> {
+        database.schemas.forEach(schema ->
+        {
             schema.tables = ListIterate.select(schema.tables, t -> tables.contains(t.name));
-            schema.tables.forEach(table -> {
+            schema.tables.forEach(table ->
+            {
                 table.columns = enrichColumns ? table.columns : null;
                 table.primaryKey = enrichPks ? table.primaryKey : null;
             });
@@ -220,7 +235,8 @@ public class TestSchemaExploration
         return database;
     }
 
-    private Database createCommonDatabase() {
+    private Database createCommonDatabase()
+    {
         Table table = new Table();
         table.name = "db";
 
@@ -235,7 +251,8 @@ public class TestSchemaExploration
         return database;
     }
 
-    private Schema createCommonSchema(String name) {
+    private Schema createCommonSchema(String name)
+    {
         Schema schema = new Schema();
         schema.name = name;
         schema.tables = FastList.newListWith(
@@ -246,7 +263,8 @@ public class TestSchemaExploration
         return schema;
     }
 
-    private Table createCommonTable(String name) {
+    private Table createCommonTable(String name)
+    {
         VarChar varchar = new VarChar();
         varchar.size = 100;
 
@@ -269,7 +287,8 @@ public class TestSchemaExploration
         return table;
     }
 
-    private Column createColumn(String name, DataType type, boolean nullable) {
+    private Column createColumn(String name, DataType type, boolean nullable)
+    {
         Column column = new Column();
         column.name = name;
         column.type = type;
@@ -278,7 +297,8 @@ public class TestSchemaExploration
         return column;
     }
 
-    private RelationalDatabaseConnection createCommonConnection() {
+    private RelationalDatabaseConnection createCommonConnection()
+    {
         RelationalDatabaseConnection connection = new RelationalDatabaseConnection();
         AuthenticationStrategy authenticationStrategy = new TestDatabaseAuthenticationStrategy();
         LocalH2DatasourceSpecification datasourceSpecification = new LocalH2DatasourceSpecification();
@@ -292,7 +312,8 @@ public class TestSchemaExploration
         return connection;
     }
 
-    private List<String> createTestSQL() {
+    private List<String> createTestSQL()
+    {
         return ListIterate.flatCollect(FastList.newListWith(
                 FastList.newListWith("DROP ALL OBJECTS"),
                 createCommonSchemaStatements("SCHEMA_1"),
@@ -304,7 +325,8 @@ public class TestSchemaExploration
         ), s -> s);
     }
 
-    private List<String> createCommonTableStatements(String schema, String table) {
+    private List<String> createCommonTableStatements(String schema, String table)
+    {
         return FastList.newListWith(
                 dropTable(schema, table),
                 createTable(schema, table,
@@ -317,7 +339,8 @@ public class TestSchemaExploration
         );
     }
 
-    private String dropTable(String schema, String table) {
+    private String dropTable(String schema, String table)
+    {
         return "Drop Table if exists " + schema + "." + table + ";";
     }
 
@@ -326,7 +349,8 @@ public class TestSchemaExploration
         return "Create Table " + schema + "." + table + "(" + columns.makeString(", ") + ", PRIMARY KEY (" + pks.makeString(", ") + "));";
     }
 
-    private List<String> createCommonSchemaStatements(String name) {
+    private List<String> createCommonSchemaStatements(String name)
+    {
         return FastList.newListWith(
                 "Drop Schema if exists " + name + ";",
                 "Create Schema " + name + ";"

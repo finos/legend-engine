@@ -14,8 +14,6 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.serialization;
 
-import org.finos.legend.engine.plan.execution.stores.relational.result.TempTableStreamingResult;
-
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.lang3.ClassUtils;
@@ -25,6 +23,7 @@ import org.eclipse.collections.impl.factory.Maps;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.plan.execution.nodes.helpers.freemarker.FreeMarkerExecutor;
 import org.finos.legend.engine.plan.execution.result.serialization.CsvSerializer;
+import org.finos.legend.engine.plan.execution.stores.relational.result.TempTableStreamingResult;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.TempTableColumnMetaData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.result.SQLResultColumn;
 
@@ -94,8 +93,7 @@ public class StreamingTempTableResultCSVSerializer extends CsvSerializer
                         {
                             try
                             {
-                                methodWithParametersList.add(Tuples.pair(objectClass.getMethod(key.identifierForGetter, key.parametersForGetter.keySet().stream().map(String::getClass).toArray(Class[]::new))
-                                        , key.parametersForGetter.values().toArray()));
+                                methodWithParametersList.add(Tuples.pair(objectClass.getMethod(key.identifierForGetter, key.parametersForGetter.keySet().stream().map(String::getClass).toArray(Class[]::new)), key.parametersForGetter.values().toArray()));
                             }
                             catch (Exception e)
                             {

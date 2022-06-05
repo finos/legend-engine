@@ -1,17 +1,18 @@
+//  Copyright 2022 Goldman Sachs
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+
 package org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy;
-
-import java.io.StringReader;
-import java.security.KeyFactory;
-import java.security.PrivateKey;
-import java.security.Security;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.Properties;
-
-import javax.crypto.EncryptedPrivateKeyInfo;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
 
 import com.google.common.base.Splitter;
 import net.snowflake.client.jdbc.internal.org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
@@ -30,12 +31,24 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.authe
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.AuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.SnowflakePublicAuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.IdentityState;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.ConnectionStateManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.ConnectionStateManager;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.IdentityState;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.PrivateKeyCredential;
 import org.finos.legend.engine.shared.core.vault.Vault;
+
+import javax.crypto.EncryptedPrivateKeyInfo;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
+import java.io.StringReader;
+import java.security.KeyFactory;
+import java.security.PrivateKey;
+import java.security.Security;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Properties;
 
 public class SnowflakePublicAuthenticationStrategy extends AuthenticationStrategy
 {
@@ -88,7 +101,7 @@ public class SnowflakePublicAuthenticationStrategy extends AuthenticationStrateg
             PrivateKey privateKey = this.getEncryptedPrivateKey(privateKeyVaultReference, passPhraseVaultReference);
             return new PrivateKeyCredential(publicUserName, privateKey);
         }
-        return (PrivateKeyCredential)super.getDatabaseCredential(identityState);
+        return (PrivateKeyCredential) super.getDatabaseCredential(identityState);
     }
 
     private PrivateKey getEncryptedPrivateKey(String privateKeyVaultReference, String passPhraseVaultReference)
@@ -98,7 +111,7 @@ public class SnowflakePublicAuthenticationStrategy extends AuthenticationStrateg
 
         if (privateKey == null || passPhrase == null)
         {
-            throw new RuntimeException("Can't find the privateKey ("+privateKeyVaultReference+") or the passPhrase ("+passPhraseVaultReference+") in the vault");
+            throw new RuntimeException("Can't find the privateKey (" + privateKeyVaultReference + ") or the passPhrase (" + passPhraseVaultReference + ") in the vault");
         }
 
         if (!privateKey.startsWith("-----BEGIN ENCRYPTED PRIVATE KEY-----"))
@@ -138,7 +151,7 @@ public class SnowflakePublicAuthenticationStrategy extends AuthenticationStrateg
             }
             else
             {
-                throw new UnsupportedOperationException(pemObject.getClass()+" is not supported yet");
+                throw new UnsupportedOperationException(pemObject.getClass() + " is not supported yet");
             }
         }
         catch (Exception e)

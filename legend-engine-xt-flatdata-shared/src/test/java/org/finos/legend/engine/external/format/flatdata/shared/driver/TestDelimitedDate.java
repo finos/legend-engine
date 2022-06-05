@@ -48,8 +48,8 @@ public class TestDelimitedDate extends AbstractDriverTest
         String dataType = "DATE(optional, format=['dd/MM/yyyy', 'dd MMM yyyy'])";
         runTest("2001-08-13", dataType, "13/08/2001");
         runTest("2001-08-13", dataType, "13 Aug 2001");
-        runTest(new String[] {"2001-08-13","1983-01-01"}, dataType, new String[] {"13 Aug 2001", "01 Jan 1983"});
-        runTest(new String[] {null,"1983-01-01"}, dataType, new String[] {null, "01 Jan 1983"});
+        runTest(new String[] {"2001-08-13", "1983-01-01"}, dataType, new String[] {"13 Aug 2001", "01 Jan 1983"});
+        runTest(new String[] {null, "1983-01-01"}, dataType, new String[] {null, "01 Jan 1983"});
         runTestInvalid(new String[] {null, "Failed to read 'DOB' with value: 13/08/2001, error: ParseException Unparseable date: \"13/08/2001\" for format 'dd MMM yyyy'"},
                 "",
                 dataType,
@@ -64,10 +64,10 @@ public class TestDelimitedDate extends AbstractDriverTest
         runTest("2001-08-13", dataType, "13/08/2001");
         runTest("2001-08-13", dataType, "13 Aug 2001");
         runTest("2001-08-13", dataType, "2001-08-13");
-        runTest(new String[] {"2001-08-13","1983-01-01"}, dataType, new String[] {"13/08/2001", "01/01/1983"});
-        runTest(new String[] {"2001-08-13","1983-01-01"}, dataType, new String[] {"13 Aug 2001", "01 Jan 1983"});
-        runTest(new String[] {"2001-08-13","1983-01-01"}, dataType, new String[] {"2001-08-13", "1983-01-01"});
-        runTest(new String[] {null,"1983-01-01"}, dataType, new String[] {null, "1983-01-01"});
+        runTest(new String[] {"2001-08-13", "1983-01-01"}, dataType, new String[] {"13/08/2001", "01/01/1983"});
+        runTest(new String[] {"2001-08-13", "1983-01-01"}, dataType, new String[] {"13 Aug 2001", "01 Jan 1983"});
+        runTest(new String[] {"2001-08-13", "1983-01-01"}, dataType, new String[] {"2001-08-13", "1983-01-01"});
+        runTest(new String[] {null, "1983-01-01"}, dataType, new String[] {null, "1983-01-01"});
         runTestInvalid(new String[] {null, "Failed to read 'DOB' with value: 13/08/2001, error: ParseException Unparseable date: \"13/08/2001\" for format 'yyyy-MM-dd'"},
                 "",
                 dataType,
@@ -156,27 +156,27 @@ public class TestDelimitedDate extends AbstractDriverTest
     private void runTest(String[] expected, String properties, String dobDataType, String[] rawDates)
     {
         FlatData flatData = parseFlatData("section default: DelimitedWithHeadings\n" +
-                                                  "{\n" +
-                                                  "  scope.untilEof;\n" +
-                                                  "  delimiter       : ',';\n" +
-                                                  "  nullString      : '';\n" +
-                                                  "  " + properties + "\n" +
-                                                  "\n" +
-                                                  "  Record\n" +
-                                                  "  {\n" +
-                                                  "    NAME : STRING;\n" +
-                                                  "    DOB  : " + dobDataType + ";\n" +
-                                                  "  }\n" +
-                                                  "}\n"
+                "{\n" +
+                "  scope.untilEof;\n" +
+                "  delimiter       : ',';\n" +
+                "  nullString      : '';\n" +
+                "  " + properties + "\n" +
+                "\n" +
+                "  Record\n" +
+                "  {\n" +
+                "    NAME : STRING;\n" +
+                "    DOB  : " + dobDataType + ";\n" +
+                "  }\n" +
+                "}\n"
         );
 
         List<IChecked<Person>> records = deserialize(Person.class, flatData, testCsv(rawDates));
         Assert.assertEquals(rawDates.length, records.size());
-        for (int i=0; i<rawDates.length; i++)
+        for (int i = 0; i < rawDates.length; i++)
         {
             assertNoDefects(records.get(i));
             Person person = records.get(i).getValue();
-            Assert.assertEquals("name"+i, person.name);
+            Assert.assertEquals("name" + i, person.name);
             if (expected[i] == null)
             {
                 Assert.assertNull(person.dob);
@@ -196,22 +196,22 @@ public class TestDelimitedDate extends AbstractDriverTest
     private void runTestInvalid(String[] expectedErrors, String properties, String dobDataType, String[] rawDates)
     {
         FlatData flatData = parseFlatData("section default: DelimitedWithHeadings\n" +
-                                                  "{\n" +
-                                                  "  scope.untilEof;\n" +
-                                                  "  delimiter       : ',';\n" +
-                                                  "  " + properties + "\n" +
-                                                  "\n" +
-                                                  "  Record\n" +
-                                                  "  {\n" +
-                                                  "    NAME : STRING;\n" +
-                                                  "    DOB  : " + dobDataType + ";\n" +
-                                                  "  }\n" +
-                                                  "}\n"
+                "{\n" +
+                "  scope.untilEof;\n" +
+                "  delimiter       : ',';\n" +
+                "  " + properties + "\n" +
+                "\n" +
+                "  Record\n" +
+                "  {\n" +
+                "    NAME : STRING;\n" +
+                "    DOB  : " + dobDataType + ";\n" +
+                "  }\n" +
+                "}\n"
         );
 
         List<IChecked<Person>> records = deserialize(Person.class, flatData, testCsv(rawDates));
         Assert.assertEquals(rawDates.length, records.size());
-        for (int i=0; i<expectedErrors.length; i++)
+        for (int i = 0; i < expectedErrors.length; i++)
         {
             if (expectedErrors[i] == null)
             {
@@ -226,11 +226,11 @@ public class TestDelimitedDate extends AbstractDriverTest
 
     private String testCsv(String[] rawDates)
     {
-        String[] rows = new String[rawDates.length+1];
+        String[] rows = new String[rawDates.length + 1];
         rows[0] = "NAME,DOB";
-        for (int i=0; i<rawDates.length; i++)
+        for (int i = 0; i < rawDates.length; i++)
         {
-            rows[i+1] = "name" + i + "," + (rawDates[i] == null ? "" : rawDates[i]);
+            rows[i + 1] = "name" + i + "," + (rawDates[i] == null ? "" : rawDates[i]);
         }
         return data("\n", rows);
     }

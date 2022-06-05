@@ -14,13 +14,15 @@
 
 package org.finos.legend.engine.external.shared.runtime.fixtures.firmModel;
 
-public enum AddressType {
+public enum AddressType
+{
     Headquarters,
     RegionalOffice,
     Home,
     Holiday;
 
-    public String getName() {
+    public String getName()
+    {
         return this.toString();
     }
 }

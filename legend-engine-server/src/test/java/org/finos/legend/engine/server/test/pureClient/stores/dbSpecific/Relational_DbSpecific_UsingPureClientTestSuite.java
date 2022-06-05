@@ -24,19 +24,20 @@ import org.finos.legend.pure.m3.execution.test.TestCollection;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 import org.junit.Ignore;
 
-import static org.finos.legend.engine.server.test.shared.PureTestHelper.*;
+import static org.finos.legend.engine.server.test.shared.PureTestHelper.cleanUp;
+import static org.finos.legend.engine.server.test.shared.PureTestHelper.getClassLoaderExecutionSupport;
 
 
 //Base classs for db specific tests - dont run this test directly
 @Ignore
 public abstract class Relational_DbSpecific_UsingPureClientTestSuite extends TestSuite
 {
-    public static Test createSuite(String pureTestCollectionPath,String testServerConfigFilePath) throws Exception
+    public static Test createSuite(String pureTestCollectionPath, String testServerConfigFilePath) throws Exception
     {
         //Run test engine server - needs to be setup before as we need testParam(connection details) to create test suite
-        boolean shouldCleanUp= PureTestHelper.initClientVersionIfNotAlreadySet("vX_X_X");
+        boolean shouldCleanUp = PureTestHelper.initClientVersionIfNotAlreadySet("vX_X_X");
         final ThreadLocal<ServersState> state = new ThreadLocal<>();
-        state.set( PureTestHelper.initEnvironment(false, testServerConfigFilePath));
+        state.set(PureTestHelper.initEnvironment(false, testServerConfigFilePath));
 
         CompiledExecutionSupport executionSupport = getClassLoaderExecutionSupport();
 

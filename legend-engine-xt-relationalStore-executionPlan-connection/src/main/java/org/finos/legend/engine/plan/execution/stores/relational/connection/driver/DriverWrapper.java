@@ -49,7 +49,8 @@ public abstract class DriverWrapper implements Driver
 
     protected abstract String getClassName();
 
-    protected Driver getDriver() {
+    protected Driver getDriver()
+    {
         return this.driver;
     }
 
@@ -59,7 +60,7 @@ public abstract class DriverWrapper implements Driver
         DataSourceWithStatistics ds = null;
         try
         {
-            String poolName = (String)info.get(ConnectionStateManager.POOL_NAME_KEY);
+            String poolName = (String) info.get(ConnectionStateManager.POOL_NAME_KEY);
             if (poolName == null)
             {
                 throw new IllegalStateException("Connection properties dont have " + ConnectionStateManager.POOL_NAME_KEY);
@@ -80,11 +81,11 @@ public abstract class DriverWrapper implements Driver
         catch (Exception e)
         {
             ds.logConnectionError();
-            LOGGER.error("Error connecting to db [{}], pool stats [{}]", url,connectionStateManager.getPoolStatisticsAsJSON(ds),e);
+            LOGGER.error("Error connecting to db [{}], pool stats [{}]", url, connectionStateManager.getPoolStatisticsAsJSON(ds), e);
             if (e instanceof SQLException)
             {
                 StringBuffer buffer = new StringBuffer();
-                for (SQLException ex = (SQLException)e; ex != null; ex = ex.getNextException())
+                for (SQLException ex = (SQLException) e; ex != null; ex = ex.getNextException())
                 {
                     buffer.append("\n------------------------------\n");
                     buffer.append("   State      :" + ex.getSQLState() + "\n");
