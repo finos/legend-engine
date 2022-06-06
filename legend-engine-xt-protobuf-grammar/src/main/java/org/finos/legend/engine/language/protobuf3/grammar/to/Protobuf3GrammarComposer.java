@@ -15,6 +15,7 @@
 package org.finos.legend.engine.language.protobuf3.grammar.to;
 
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.eclipse.collections.impl.utility.StringIterate;
 import org.finos.legend.engine.protocol.protobuf3.metamodel.BlockLiteral;
 import org.finos.legend.engine.protocol.protobuf3.metamodel.Bool;
 import org.finos.legend.engine.protocol.protobuf3.metamodel.BoolLiteral;
@@ -131,13 +132,13 @@ public class Protobuf3GrammarComposer
             @Override
             public String visit(ReservedFieldNames val)
             {
-                throw new RuntimeException("Not supported yet");
+                return "  reserved " + ListIterate.collect(val.names, n -> "\"" + n + "\"").makeString(", ") + ";";
             }
 
             @Override
             public String visit(ReservedFieldRanges val)
             {
-                throw new RuntimeException("Not supported yet");
+                return "  reserved " + ListIterate.collect(val.ranges, r -> r.top != null ? r.bottom + " to " + r.top : r.bottom).makeString(", ") + ";";
             }
         });
     }
