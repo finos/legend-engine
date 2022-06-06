@@ -14,13 +14,12 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.blockConnection;
 
-import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
-import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutionState;
-
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.factory.Maps;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
+import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutionState;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.pac4j.core.profile.CommonProfile;

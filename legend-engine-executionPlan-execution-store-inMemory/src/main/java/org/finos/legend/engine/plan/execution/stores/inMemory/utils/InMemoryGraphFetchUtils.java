@@ -24,16 +24,16 @@ import java.util.function.Function;
 
 public class InMemoryGraphFetchUtils
 {
-    private final static Function<IInMemoryCrossStoreGraphFetchExecutionNodeSpecifics, Function<Object, Integer>> PARENT_OBJECT_KEYS_HASHING_FUNCTION =
+    private static final Function<IInMemoryCrossStoreGraphFetchExecutionNodeSpecifics, Function<Object, Integer>> PARENT_OBJECT_KEYS_HASHING_FUNCTION =
             (nodeSpecifics) -> (obj) -> hashWithParent(obj, nodeSpecifics);
 
-    private final static Function<IInMemoryCrossStoreGraphFetchExecutionNodeSpecifics, BiFunction<Object, Object, Boolean>> PARENT_OBJECT_KEYS_EQUALITY_FUNCTION =
+    private static final Function<IInMemoryCrossStoreGraphFetchExecutionNodeSpecifics, BiFunction<Object, Object, Boolean>> PARENT_OBJECT_KEYS_EQUALITY_FUNCTION =
             (nodeSpecifics) -> (obj1, obj2) -> equalsWithParent(obj1, obj2, nodeSpecifics);
 
-    private final static Function<IInMemoryCrossStoreGraphFetchExecutionNodeSpecifics, Function<Object, Integer>> CHILD_OBJECT_KEYS_HASHING_FUNCTION =
+    private static final Function<IInMemoryCrossStoreGraphFetchExecutionNodeSpecifics, Function<Object, Integer>> CHILD_OBJECT_KEYS_HASHING_FUNCTION =
             (nodeSpecifics) -> (obj) -> hashWithChild(obj, nodeSpecifics);
 
-    private final static Function<IInMemoryCrossStoreGraphFetchExecutionNodeSpecifics, BiFunction<Object, Object, Boolean>> OBJECT_SQL_RESULT_HETEROGENEOUS_EQUALS_FUNCTION =
+    private static final Function<IInMemoryCrossStoreGraphFetchExecutionNodeSpecifics, BiFunction<Object, Object, Boolean>> OBJECT_SQL_RESULT_HETEROGENEOUS_EQUALS_FUNCTION =
             (nodeSpecifics) -> (obj1, obj2) -> heterogeneousEqualsParentAndChildObject(obj1, obj2, nodeSpecifics);
 
     public static DoubleHashingStrategy<Object, Object> parentChildDoubleHashStrategy(IInMemoryCrossStoreGraphFetchExecutionNodeSpecifics nodeSpecifics)

@@ -21,7 +21,7 @@ public class Test_Relational_DbSpecific_SqlServer_UsingPureClientTestSuite
 {
     public static Test suite() throws Exception
     {
-        return createSuite("meta::relational::tests::dbSpecificTests::sqlServer","org/finos/legend/engine/server/test/userTestConfig_withSqlServerTestConnection.json");
+        return createSuite("meta::relational::tests::dbSpecificTests::sqlServer", "org/finos/legend/engine/server/test/userTestConfig_withSqlServerTestConnection.json");
     }
 }
 

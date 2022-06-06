@@ -33,8 +33,6 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.intThat;
-import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -71,19 +69,19 @@ public class TestConnectionStateManager extends TestConnectionManagement
         DataSourceSpecification ds1 = buildLocalDataSourceSpecification(Arrays.asList("DROP TABLE IF EXISTS T1"));
         DataSourceSpecification ds2 = buildLocalDataSourceSpecification(Arrays.asList("DROP TABLE IF EXISTS T2"));
         DataSourceSpecification ds3 = buildLocalDataSourceSpecification(Collections.emptyList());
-        assertPoolExists(false,"user1",ds1.getConnectionKey());
-        assertPoolExists(false,"user2",ds2.getConnectionKey());
-        assertPoolExists(false,"user3",ds3.getConnectionKey());
+        assertPoolExists(false, "user1", ds1.getConnectionKey());
+        assertPoolExists(false, "user2", ds2.getConnectionKey());
+        assertPoolExists(false, "user3", ds3.getConnectionKey());
 
-        requestConnection("user1",ds1);
-        requestConnection("user2",ds2);
-        requestConnection("user3",ds3);
-        requestConnection("user1",ds1);
+        requestConnection("user1", ds1);
+        requestConnection("user2", ds2);
+        requestConnection("user3", ds3);
+        requestConnection("user1", ds1);
 
         Assert.assertEquals(3, connectionStateManager.size());
-        assertPoolExists(true,"user1",ds1.getConnectionKey());
-        assertPoolExists(true,"user2",ds2.getConnectionKey());
-        assertPoolExists(true,"user3",ds3.getConnectionKey());
+        assertPoolExists(true, "user1", ds1.getConnectionKey());
+        assertPoolExists(true, "user2", ds2.getConnectionKey());
+        assertPoolExists(true, "user3", ds3.getConnectionKey());
 
     }
 
@@ -113,11 +111,12 @@ public class TestConnectionStateManager extends TestConnectionManagement
         assertPoolExists(true, user1.getName(), ds1.getConnectionKey());
         assertPoolExists(true, user2.getName(), ds1.getConnectionKey());
         String pool2 = connectionStateManager.poolNameFor(user2, ds1.getConnectionKey());
-        assertPoolStateExists(pool1, pool2);;
+        assertPoolStateExists(pool1, pool2);
     }
 
     @Test
-    public void testDataSourceEviction() throws SQLException {
+    public void testDataSourceEviction() throws SQLException
+    {
         Identity user1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user1");
         Identity user2 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user2");
         Identity user3 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user3");
@@ -173,8 +172,8 @@ public class TestConnectionStateManager extends TestConnectionManagement
     }
 
     @Test
-    public void testDataSourceEvictionWithUnclosedConnection() throws SQLException {
-
+    public void testDataSourceEvictionWithUnclosedConnection() throws SQLException
+    {
         Identity user1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user1");
         Identity user2 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user2");
         Identity user3 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user3");
@@ -264,7 +263,8 @@ public class TestConnectionStateManager extends TestConnectionManagement
 
 
     @Test
-    public void testShutdown() throws IOException {
+    public void testShutdown() throws IOException
+    {
         Identity user1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user1");
         Identity user2 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user2");
         Identity user3 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user3");
@@ -288,10 +288,10 @@ public class TestConnectionStateManager extends TestConnectionManagement
     public void testPoolIdentityIsValid()
     {
         Credential mockCredential = mock(Credential.class);
-        Identity identityOne = new Identity("mock",mockCredential);
+        Identity identityOne = new Identity("mock", mockCredential);
         when(mockCredential.isValid()).thenReturn(true);
         DataSourceSpecification ds1 = buildLocalDataSourceSpecification(Collections.emptyList());
-        String poolName = connectionStateManager.poolNameFor(identityOne,ds1.getConnectionKey());
+        String poolName = connectionStateManager.poolNameFor(identityOne, ds1.getConnectionKey());
         Assert.assertNotNull(poolName);
 
         requestConnection(identityOne, ds1);
@@ -300,13 +300,13 @@ public class TestConnectionStateManager extends TestConnectionManagement
         requestConnection(identityOne, ds1);
         Assert.assertEquals(1, connectionStateManager.size());
         DataSourceWithStatistics dataSourceWithStatistics1 = connectionStateManager.get(poolName);
-        Assert.assertEquals(dataSourceWithStatistics.getStatistics().getFirstConnectionRequest(),dataSourceWithStatistics1.getStatistics().getFirstConnectionRequest());
+        Assert.assertEquals(dataSourceWithStatistics.getStatistics().getFirstConnectionRequest(), dataSourceWithStatistics1.getStatistics().getFirstConnectionRequest());
 
         //mock expiring of credentials
         when(mockCredential.isValid()).thenReturn(false);
         requestConnection(identityOne, ds1);
         Assert.assertEquals(1, connectionStateManager.size());
         DataSourceWithStatistics dataSourceWithStatisticsAfter = connectionStateManager.get(poolName);
-        Assert.assertNotEquals(dataSourceWithStatistics.getStatistics().getFirstConnectionRequest(),dataSourceWithStatisticsAfter.getStatistics().getFirstConnectionRequest());
+        Assert.assertNotEquals(dataSourceWithStatistics.getStatistics().getFirstConnectionRequest(), dataSourceWithStatisticsAfter.getStatistics().getFirstConnectionRequest());
     }
 }

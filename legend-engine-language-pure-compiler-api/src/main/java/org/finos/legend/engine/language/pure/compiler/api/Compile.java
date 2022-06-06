@@ -39,10 +39,7 @@ import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 import org.slf4j.Logger;
 
-import java.util.HashMap;
-import java.util.Map;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.HttpMethod;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -50,6 +47,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
 
@@ -111,7 +110,7 @@ public class Compile
             Map<String, String> result = new HashMap<>();
             long end = System.currentTimeMillis();
             MetricsHandler.observe("lambda return type", start, end);
-            MetricsHandler.observeRequest(uriInfo != null ? uriInfo.getPath(): null, start, end);
+            MetricsHandler.observeRequest(uriInfo != null ? uriInfo.getPath() : null, start, end);
             // This is an object in case we want to add more information on the lambda.
             result.put("returnType", typeName);
             return Response.ok(result, MediaType.APPLICATION_JSON_TYPE).build();

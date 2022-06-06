@@ -14,13 +14,12 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.serialization;
 
-import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
-
 import org.apache.poi.xssf.streaming.SXSSFCell;
 import org.apache.poi.xssf.streaming.SXSSFRow;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.finos.legend.engine.plan.execution.result.serialization.Serializer;
+import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -142,6 +141,9 @@ public class ExcelTDSSerializer extends Serializer
 
     private enum ValueType
     {
-        NUMERIC, DATE, STRING, OTHER
+        NUMERIC,
+        DATE,
+        STRING,
+        OTHER
     }
 }

@@ -14,8 +14,8 @@
 
 package org.finos.legend.engine.external.format.xml.read.handlers;
 
-import org.finos.legend.engine.external.format.xml.read.ReadHandler;
 import org.finos.legend.engine.external.format.xml.read.DeserializeContext;
+import org.finos.legend.engine.external.format.xml.read.ReadHandler;
 
 public class Document extends ReadHandler
 {

@@ -26,12 +26,15 @@ import java.util.stream.Stream;
 public interface FlatDataProcessor<T>
 {
     void readData(InputStream inputStream, Consumer<IChecked<T>> consumer);
+
     void writeData(Stream<T> inputStream, OutputStream outputStream);
 
     interface Builder<T>
     {
         Builder<T> withDefiningPath(String definingPath);
+
         Builder<T> withToObjectFactoryFactory(String sectionId, Function<FlatDataRecordType, ParsedFlatDataToObject<?>> toObjectFactoryFactory);
+
         Builder<T> withFromObjectFactoryFactory(String sectionId, Function<FlatDataRecordType, ObjectToParsedFlatData<?>> fromObjectFactoryFactory);
 
         FlatDataProcessor<T> build();

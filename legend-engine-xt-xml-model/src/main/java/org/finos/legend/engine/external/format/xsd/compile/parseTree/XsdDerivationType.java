@@ -18,7 +18,8 @@ import org.eclipse.collections.impl.factory.Lists;
 
 import java.util.List;
 
-public enum XsdDerivationType {
+public enum XsdDerivationType
+{
     EXTENSION,
     RESTRICTION,
     SUBSTITUTION,

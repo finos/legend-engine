@@ -40,7 +40,8 @@ public class ServersState
                 this.H2Server.shutdown();
                 this.H2Server.stop();
             }
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
             throw new RuntimeException(e);
         }

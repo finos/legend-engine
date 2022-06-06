@@ -16,5 +16,7 @@ package org.finos.legend.engine.external.format.xml.shared.datatypes;
 
 public enum XsdWhiteSpaceType
 {
-    PRESERVE, REPLACE, COLLAPSE
+    PRESERVE,
+    REPLACE,
+    COLLAPSE
 }

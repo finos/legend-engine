@@ -22,8 +22,10 @@ public interface SimpleTypeHandler<T>
     QName getName();
 
     T parse(String text);
+
     String toText(T value);
 
     SimpleTypeHandler<T> derive(QName derivativeName, Facet... facets);
+
     SimpleTypeHandler<T> derive(QName derivativeName, List<Facet> facets);
 }

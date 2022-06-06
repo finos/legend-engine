@@ -31,7 +31,8 @@ public class DiagramCompilerExtension implements CompilerExtension
                     // NOTE: we stub out since this element doesn't have an equivalent packageable element form in PURE metamodel
                     return new Root_meta_pure_metamodel_PackageableElement_Impl("");
                 },
-                (diagram, context) -> {
+                (diagram, context) ->
+                {
                     diagram.classViews.forEach(view -> HelperDiagramBuilder.processClassView(view, context));
                     diagram.propertyViews.forEach(view -> HelperDiagramBuilder.processPropertyView(view, context, diagram));
                     diagram.generalizationViews.forEach(view -> HelperDiagramBuilder.processGeneralizationView(view, diagram));

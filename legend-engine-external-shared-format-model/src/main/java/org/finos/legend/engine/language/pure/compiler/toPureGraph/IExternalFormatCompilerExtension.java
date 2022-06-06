@@ -39,12 +39,13 @@ public interface IExternalFormatCompilerExtension extends CompilerExtension
         return process(externalSource, processors, context, "External Source Specification", externalSource.sourceInformation);
     }
 
-    static <T, U> U process(T item, List<Function2<T, CompileContext, U>> processors, CompileContext context, String type, SourceInformation srcInfo) {
+    static <T, U> U process(T item, List<Function2<T, CompileContext, U>> processors, CompileContext context, String type, SourceInformation srcInfo)
+    {
         return ListIterate
                 .collect(processors, processor -> processor.value(item, context))
                 .select(Objects::nonNull)
                 .getFirstOptional()
-                .orElseThrow(() -> new EngineException("Unsupported " + type + " type '" + item.getClass() + "'" , srcInfo, EngineErrorType.COMPILATION));
+                .orElseThrow(() -> new EngineException("Unsupported " + type + " type '" + item.getClass() + "'", srcInfo, EngineErrorType.COMPILATION));
     }
 
     default List<Function2<ExternalSource, CompileContext, Root_meta_external_shared_format_executionPlan_ExternalSource>> getExtraExternalSourceSpecificationProcessors()

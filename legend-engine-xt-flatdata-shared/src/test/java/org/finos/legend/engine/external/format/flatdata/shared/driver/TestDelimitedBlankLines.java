@@ -28,16 +28,16 @@ public class TestDelimitedBlankLines extends AbstractDriverTest
     public void canReadAndSkipBlankLines()
     {
         FlatData flatData = parseFlatData("section default: DelimitedWithHeadings\n" +
-                                                  "{\n" +
-                                                  "  scope.untilEof;\n" +
-                                                  "  delimiter : ',';\n" +
-                                                  "  mayContainBlankLines;\n" +
-                                                  "\n" +
-                                                  "  Record\n" +
-                                                  "  {\n" +
-                                                  "    NAME : STRING;\n" +
-                                                  "  }\n" +
-                                                  "}");
+                "{\n" +
+                "  scope.untilEof;\n" +
+                "  delimiter : ',';\n" +
+                "  mayContainBlankLines;\n" +
+                "\n" +
+                "  Record\n" +
+                "  {\n" +
+                "    NAME : STRING;\n" +
+                "  }\n" +
+                "}");
 
         String data = data("\n", "", "NAME", "\t", "John Doe", "    ", "Jane Doe", "", "");
 
@@ -54,20 +54,20 @@ public class TestDelimitedBlankLines extends AbstractDriverTest
     public void whitespaceDelimitersNotConsideredBlankLine()
     {
         FlatData flatData = parseFlatData("section default: DelimitedWithHeadings\n" +
-                                                  "{\n" +
-                                                  "  scope.untilEof;\n" +
-                                                  "  delimiter : '\\t';\n" +
-                                                  "  mayContainBlankLines;\n" +
-                                                  "\n" +
-                                                  "  Record\n" +
-                                                  "  {\n" +
-                                                  "    NAME    : STRING;\n" +
-                                                  "    ADDRESS : STRING;\n" +
-                                                  "  }\n" +
-                                                  "}"
+                "{\n" +
+                "  scope.untilEof;\n" +
+                "  delimiter : '\\t';\n" +
+                "  mayContainBlankLines;\n" +
+                "\n" +
+                "  Record\n" +
+                "  {\n" +
+                "    NAME    : STRING;\n" +
+                "    ADDRESS : STRING;\n" +
+                "  }\n" +
+                "}"
         );
 
-        String data = data("\n", "NAME\tADDRESS", "", "\t" );
+        String data = data("\n", "NAME\tADDRESS", "", "\t");
 
         List<IChecked<Person>> records = deserialize(Person.class, flatData, data);
 

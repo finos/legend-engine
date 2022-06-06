@@ -17,5 +17,6 @@ package org.finos.legend.engine.external.format.xml.shared.datatypes;
 public interface DoubleSimpleTypeHandler
 {
     double parseDouble(String text);
+
     String toText(double value);
 }

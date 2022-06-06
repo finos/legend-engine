@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.api.schema;
 
-
 import io.swagger.annotations.Api;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
@@ -50,7 +49,8 @@ public class SchemaExplorationApi
     private final ConnectionManagerSelector connectionManager;
 
 
-    public SchemaExplorationApi(ModelManager modelManager, RelationalStoreExecutor relationalStoreExecutor) {
+    public SchemaExplorationApi(ModelManager modelManager, RelationalStoreExecutor relationalStoreExecutor)
+    {
         this.modelManager = modelManager;
         this.connectionManager = relationalStoreExecutor.getStoreState().getRelationalExecutor().getConnectionManager();
     }
@@ -59,15 +59,19 @@ public class SchemaExplorationApi
     @Path("schemaExploration")
     @POST
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
-    public Response buildDatabase(DatabaseBuilderInput databaseBuilderInput, @Pac4JProfileManager ProfileManager<CommonProfile> pm) {
+    public Response buildDatabase(DatabaseBuilderInput databaseBuilderInput, @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        try {
+        try
+        {
 
             SchemaExportation databaseBuilder = SchemaExportation.newBuilder(databaseBuilderInput);
             Database database = databaseBuilder.build(this.connectionManager, profiles);
             PureModelContextData graph = PureModelContextData.newBuilder().withElement(database).build();
             return Response.ok(graph, MediaType.APPLICATION_JSON_TYPE).build();
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             return ExceptionTool.exceptionManager(e, LoggingEventType.COMPILE_ERROR, profiles);
         }
     }

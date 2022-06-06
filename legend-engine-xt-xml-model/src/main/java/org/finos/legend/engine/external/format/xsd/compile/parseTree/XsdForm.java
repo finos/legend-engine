@@ -14,7 +14,8 @@
 
 package org.finos.legend.engine.external.format.xsd.compile.parseTree;
 
-public enum XsdForm {
+public enum XsdForm
+{
     QUALIFIED,
     UNQUALIFIED
 }

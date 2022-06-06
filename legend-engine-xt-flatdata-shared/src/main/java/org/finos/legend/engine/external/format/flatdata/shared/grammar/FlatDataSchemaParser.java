@@ -26,7 +26,19 @@ import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.external.format.flatdata.shared.antlr4.FlatDataLexerGrammar;
 import org.finos.legend.engine.external.format.flatdata.shared.antlr4.FlatDataParserGrammar;
-import org.finos.legend.engine.external.format.flatdata.shared.model.*;
+import org.finos.legend.engine.external.format.flatdata.shared.model.FlatData;
+import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataBoolean;
+import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataDataType;
+import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataDate;
+import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataDateTime;
+import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataDecimal;
+import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataInteger;
+import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataProperty;
+import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataRecordField;
+import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataRecordType;
+import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataSection;
+import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataString;
+import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataTemporal;
 
 import java.util.Collections;
 import java.util.List;
@@ -133,7 +145,7 @@ public class FlatDataSchemaParser
                     throw error("No value for section property: " + name, value);
                 }
             }
-            else  if (value.sectionPropertyValueArray() != null)
+            else if (value.sectionPropertyValueArray() != null)
             {
                 FlatDataParserGrammar.SectionPropertyValueLiteralsContext arrayValues = value.sectionPropertyValueArray().sectionPropertyValueLiterals();
                 if (arrayValues == null)
@@ -168,12 +180,12 @@ public class FlatDataSchemaParser
         String label = fromIdentifier(ctx.recordTypeLabel().identifier());
 
         String address = ctx.recordTypeAddress() == null
-                         ? null
-                         : ctx.recordTypeAddress().getText().substring(1, ctx.recordTypeAddress().getText().length() - 1);
+                ? null
+                : ctx.recordTypeAddress().getText().substring(1, ctx.recordTypeAddress().getText().length() - 1);
 
         List<FlatDataParserGrammar.RecordTypeDataTypeAttributeContext> attributes = ctx.recordTypeDataType().recordTypeDataTypeAttributes() != null
-                                                                                    ? ctx.recordTypeDataType().recordTypeDataTypeAttributes().recordTypeDataTypeAttribute()
-                                                                                    : Collections.emptyList();
+                ? ctx.recordTypeDataType().recordTypeDataTypeAttributes().recordTypeDataTypeAttribute()
+                : Collections.emptyList();
         Map<String, List<String>> dataTypeAttributes = Maps.mutable.empty();
         boolean optional = false;
         for (FlatDataParserGrammar.RecordTypeDataTypeAttributeContext a : attributes)

@@ -29,30 +29,30 @@ public class TestDelimitedWithHeadings extends AbstractDriverTest
     public void canReadErrorFree()
     {
         FlatData flatData = parseFlatData("section default: DelimitedWithHeadings\n" +
-                                                  "{\n" +
-                                                  "  scope.untilEof;\n" +
-                                                  "  recordSeparator : '\\r\\n';\n" +
-                                                  "  delimiter       : ',';\n" +
-                                                  "  escapingChar    : '\\\\';\n" +
-                                                  "  nullString      : 'None';\n" +
-                                                  "\n" +
-                                                  "  Record\n" +
-                                                  "  {\n" +
-                                                  "    NAME          : STRING;\n" +
-                                                  "    FIRM          : STRING;\n" +
-                                                  "    AGE           : INTEGER;\n" +
-                                                  "    MASTER        : BOOLEAN(optional);\n" +
-                                                  "    WEIGHT        : DECIMAL(optional);\n" +
-                                                  "    EMPLOYED_DATE : DATE(format='yyyy-MM-dd');\n" +
-                                                  "    TITLE         : STRING;\n" +
-                                                  "  }\n" +
-                                                  "}\n");
+                "{\n" +
+                "  scope.untilEof;\n" +
+                "  recordSeparator : '\\r\\n';\n" +
+                "  delimiter       : ',';\n" +
+                "  escapingChar    : '\\\\';\n" +
+                "  nullString      : 'None';\n" +
+                "\n" +
+                "  Record\n" +
+                "  {\n" +
+                "    NAME          : STRING;\n" +
+                "    FIRM          : STRING;\n" +
+                "    AGE           : INTEGER;\n" +
+                "    MASTER        : BOOLEAN(optional);\n" +
+                "    WEIGHT        : DECIMAL(optional);\n" +
+                "    EMPLOYED_DATE : DATE(format='yyyy-MM-dd');\n" +
+                "    TITLE         : STRING;\n" +
+                "  }\n" +
+                "}\n");
 
         String data = data("\r\n",
-                           "FIRM,AGE,MASTER,WEIGHT,NAME,EMPLOYED_DATE,TITLE,ANOTHER_DATE",
-                           "'Goldman Sachs',25,true,1.1,Alex,2013-08-13,Other,2013-01-01",
-                           "Google,26,false,1.2,Brad,2003-01-01,Vice President,2003-01-01",
-                           "Facebook,27,true,1.3,Karl,2011-11-26,Managing Director,2011-01-01"
+                "FIRM,AGE,MASTER,WEIGHT,NAME,EMPLOYED_DATE,TITLE,ANOTHER_DATE",
+                "'Goldman Sachs',25,true,1.1,Alex,2013-08-13,Other,2013-01-01",
+                "Google,26,false,1.2,Brad,2003-01-01,Vice President,2003-01-01",
+                "Facebook,27,true,1.3,Karl,2011-11-26,Managing Director,2011-01-01"
         );
 
         List<IChecked<Person>> records = deserialize(Person.class, flatData, data);

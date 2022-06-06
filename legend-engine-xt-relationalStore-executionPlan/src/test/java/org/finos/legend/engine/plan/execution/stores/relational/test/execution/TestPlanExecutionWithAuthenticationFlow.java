@@ -14,8 +14,6 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.test.execution;
 
-import java.sql.Connection;
-
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.engine.authentication.vaults.InMemoryVaultForTesting;
@@ -30,7 +28,13 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecut
 import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
 import org.finos.legend.engine.shared.core.vault.Vault;
 import org.h2.tools.Server;
-import org.junit.*;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Test;
+
+import java.sql.Connection;
 
 import static org.junit.Assert.assertTrue;
 

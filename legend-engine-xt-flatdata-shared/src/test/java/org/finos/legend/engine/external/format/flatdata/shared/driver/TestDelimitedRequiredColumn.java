@@ -28,17 +28,17 @@ public class TestDelimitedRequiredColumn extends AbstractDriverTest
     public void byDefaultOptionalColumnsCanMeMissing()
     {
         FlatData store = parseFlatData("section default: DelimitedWithHeadings\n" +
-                                               "{\n" +
-                                               "  scope.untilEof;\n" +
-                                               "  delimiter       : ',';\n" +
-                                               "  nullString      : '';\n" +
-                                               "\n" +
-                                               "  Record\n" +
-                                               "  {\n" +
-                                               "    NAME          : STRING;\n" +
-                                               "    WEIGHT        : DECIMAL(optional);\n" +
-                                               "  }\n" +
-                                               "}\n"
+                "{\n" +
+                "  scope.untilEof;\n" +
+                "  delimiter       : ',';\n" +
+                "  nullString      : '';\n" +
+                "\n" +
+                "  Record\n" +
+                "  {\n" +
+                "    NAME          : STRING;\n" +
+                "    WEIGHT        : DECIMAL(optional);\n" +
+                "  }\n" +
+                "}\n"
         );
 
         List<IChecked<Person>> records = deserialize(Person.class, store, data("\n", "NAME", "John", "Will"));
@@ -59,18 +59,18 @@ public class TestDelimitedRequiredColumn extends AbstractDriverTest
     public void whenSpecifiedColumnsCanBeRequired()
     {
         FlatData flatData = parseFlatData("section default: DelimitedWithHeadings\n" +
-                                                  "{\n" +
-                                                  "  scope.untilEof;\n" +
-                                                  "  delimiter       : ',';\n" +
-                                                  "  nullString      : '';\n" +
-                                                  "  modelledColumnsMustBePresent;\n" +
-                                                  "\n" +
-                                                  "  Record\n" +
-                                                  "  {\n" +
-                                                  "    NAME   : STRING;\n" +
-                                                  "    WEIGHT : DECIMAL;\n" +
-                                                  "  }\n" +
-                                                  "}\n");
+                "{\n" +
+                "  scope.untilEof;\n" +
+                "  delimiter       : ',';\n" +
+                "  nullString      : '';\n" +
+                "  modelledColumnsMustBePresent;\n" +
+                "\n" +
+                "  Record\n" +
+                "  {\n" +
+                "    NAME   : STRING;\n" +
+                "    WEIGHT : DECIMAL;\n" +
+                "  }\n" +
+                "}\n");
 
         List<IChecked<Person>> records = deserialize(Person.class, flatData, data("\n", "NAME", "John", "Will"));
         assertHasDefect("Critical", "Heading WEIGHT missing for required column", records.get(0));
@@ -82,18 +82,18 @@ public class TestDelimitedRequiredColumn extends AbstractDriverTest
     public void whenPresentRequiredFieldsCanBeOptional()
     {
         FlatData flatData = parseFlatData("section default: DelimitedWithHeadings\n" +
-                                                  "{\n" +
-                                                  "  scope.untilEof;\n" +
-                                                  "  delimiter       : ',';\n" +
-                                                  "  nullString      : '';\n" +
-                                                  "  modelledColumnsMustBePresent;\n" +
-                                                  "\n" +
-                                                  "  Record\n" +
-                                                  "  {\n" +
-                                                  "    NAME   : STRING;\n" +
-                                                  "    WEIGHT : DECIMAL(optional);\n" +
-                                                  "  }\n" +
-                                                  "}\n"
+                "{\n" +
+                "  scope.untilEof;\n" +
+                "  delimiter       : ',';\n" +
+                "  nullString      : '';\n" +
+                "  modelledColumnsMustBePresent;\n" +
+                "\n" +
+                "  Record\n" +
+                "  {\n" +
+                "    NAME   : STRING;\n" +
+                "    WEIGHT : DECIMAL(optional);\n" +
+                "  }\n" +
+                "}\n"
         );
 
         List<IChecked<Person>> records = deserialize(Person.class, flatData, data("\n", "NAME,WEIGHT", "John,75", "Will"));
@@ -113,16 +113,16 @@ public class TestDelimitedRequiredColumn extends AbstractDriverTest
     public void byDefaultUnmodelledColumnsCanBePresent()
     {
         FlatData flatData = parseFlatData("section default: DelimitedWithHeadings\n" +
-                                                  "{\n" +
-                                                  "  scope.untilEof;\n" +
-                                                  "  delimiter       : ',';\n" +
-                                                  "  nullString      : '';\n" +
-                                                  "\n" +
-                                                  "  Record\n" +
-                                                  "  {\n" +
-                                                  "    NAME : STRING;\n" +
-                                                  "  }\n" +
-                                                  "}\n"
+                "{\n" +
+                "  scope.untilEof;\n" +
+                "  delimiter       : ',';\n" +
+                "  nullString      : '';\n" +
+                "\n" +
+                "  Record\n" +
+                "  {\n" +
+                "    NAME : STRING;\n" +
+                "  }\n" +
+                "}\n"
         );
 
         List<IChecked<Person>> records = deserialize(Person.class, flatData, data("\n", "NAME,HOBBY", "John,Reading", "Will,Singing"));
@@ -138,17 +138,17 @@ public class TestDelimitedRequiredColumn extends AbstractDriverTest
     public void byUnmodelledColumnsCanBeProhibited()
     {
         FlatData flatData = parseFlatData("section default: DelimitedWithHeadings\n" +
-                                                  "{\n" +
-                                                  "  scope.untilEof;\n" +
-                                                  "  delimiter       : ',';\n" +
-                                                  "  nullString      : '';\n" +
-                                                  "  onlyModelledColumnsAllowed;\n" +
-                                                  "\n" +
-                                                  "  Record\n" +
-                                                  "  {\n" +
-                                                  "    NAME : STRING;\n" +
-                                                  "  }\n" +
-                                                  "}\n"
+                "{\n" +
+                "  scope.untilEof;\n" +
+                "  delimiter       : ',';\n" +
+                "  nullString      : '';\n" +
+                "  onlyModelledColumnsAllowed;\n" +
+                "\n" +
+                "  Record\n" +
+                "  {\n" +
+                "    NAME : STRING;\n" +
+                "  }\n" +
+                "}\n"
         );
 
         List<IChecked<Person>> records = deserialize(Person.class, flatData, data("\n", "NAME,HOBBY", "John,Reading", "Will,Singing"));

@@ -98,7 +98,7 @@ public class Attribute<C> extends ReadHandler
         Function<XmlReader, String> resolveName = r ->
         {
             String resolved = r.resolveLenientAttributeName(name);
-            return  resolved == null ? name : resolved;
+            return resolved == null ? name : resolved;
         };
         return new Attribute<>(minOccurs, maxOccurs, r -> r.hasAttributeLenient(name), valueProcessor, r -> r.getAttributeValueLenient(name), resolveName);
     }

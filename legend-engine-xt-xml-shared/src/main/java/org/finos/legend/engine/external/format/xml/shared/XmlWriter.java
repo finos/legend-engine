@@ -26,6 +26,7 @@ public class XmlWriter
     private static final XMLOutputFactory XML_OUTPUT_FACTORY = XMLOutputFactory.newFactory();
     private static final int NO_INDENTING = -1;
     private static final char[] SPACES = new char[1000];
+
     static
     {
         Arrays.fill(SPACES, ' ');
@@ -427,7 +428,7 @@ public class XmlWriter
         if (indent != NO_INDENTING)
         {
             writeCharacters("\n");
-            writeCharacters(SPACES, 0, depth*indent);
+            writeCharacters(SPACES, 0, depth * indent);
         }
         lastWasIndent = true;
         depth++;
@@ -441,7 +442,7 @@ public class XmlWriter
             if (!lastWasIndent)
             {
                 writeCharacters("\n");
-                writeCharacters(SPACES, 0, depth*indent);
+                writeCharacters(SPACES, 0, depth * indent);
             }
         }
         lastWasIndent = false;

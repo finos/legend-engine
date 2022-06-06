@@ -1,4 +1,3 @@
-
 // Copyright 2021 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,7 +25,6 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Comp
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -53,7 +51,7 @@ public class ExternalFormatCompilerExtension implements CompilerExtension
     public List<Procedure<Procedure2<String, List<String>>>> getExtraElementForPathToElementRegisters()
     {
         ImmutableList<String> versions = PureClientVersions.versionsSince("v1_21_0");
-        List<String> elements = versions.collect(v -> "meta::protocols::pure::"  + v + "::external::shared::format::serializerExtension_String_1__SerializerExtension_1_").toList();
+        List<String> elements = versions.collect(v -> "meta::protocols::pure::" + v + "::external::shared::format::serializerExtension_String_1__SerializerExtension_1_").toList();
         externalFormatExtensions.values().forEach(x -> elements.addAll(x.getRegisterablePackageableElementNames()));
         return ListIterate.collect(elements, this::registerElement);
     }
@@ -62,7 +60,7 @@ public class ExternalFormatCompilerExtension implements CompilerExtension
     {
         int pos = element.lastIndexOf("::");
         String pkg = element.substring(0, pos);
-        String name = element.substring(pos+2);
+        String name = element.substring(pos + 2);
         return (Procedure2<String, List<String>> registerElementForPathToElement) ->
         {
             registerElementForPathToElement.value(pkg, Lists.mutable.with(name));

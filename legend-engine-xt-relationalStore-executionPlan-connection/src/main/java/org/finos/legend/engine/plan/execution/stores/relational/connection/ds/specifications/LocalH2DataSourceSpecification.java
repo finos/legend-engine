@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications;
 
-import org.finos.legend.engine.plan.execution.stores.relational.connection.RelationalExecutorInfo;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.LocalH2DataSourceSpecificationKey;
@@ -44,7 +43,7 @@ public class LocalH2DataSourceSpecification extends StaticDataSourceSpecificatio
     protected Connection getConnection(IdentityState identityState, Supplier<DataSource> dataSourceBuilder)
     {
         Connection connection = super.getConnection(identityState, dataSourceBuilder);
-        LocalH2DataSourceSpecificationKey _key = (LocalH2DataSourceSpecificationKey)this.datasourceKey;
+        LocalH2DataSourceSpecificationKey _key = (LocalH2DataSourceSpecificationKey) this.datasourceKey;
         if (_key.getTestDataSetupSqls() != null && !_key.getTestDataSetupSqls().isEmpty())
         {
             try

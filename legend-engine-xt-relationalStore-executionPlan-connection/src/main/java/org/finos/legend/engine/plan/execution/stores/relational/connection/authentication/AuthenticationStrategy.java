@@ -14,15 +14,6 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.authentication;
 
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
-import java.sql.Connection;
-import java.util.Properties;
-
-import javax.security.auth.Subject;
-import javax.security.auth.kerberos.KerberosTicket;
-import javax.sql.DataSource;
-
 import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.authentication.credential.CredentialSupplier;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionException;
@@ -33,6 +24,14 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.st
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.slf4j.Logger;
+
+import javax.security.auth.Subject;
+import javax.security.auth.kerberos.KerberosTicket;
+import javax.sql.DataSource;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
+import java.sql.Connection;
+import java.util.Properties;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -85,9 +84,9 @@ public abstract class AuthenticationStrategy
                 KerberosTicket kerberosTicket = subject.getPrivateCredentials(KerberosTicket.class).iterator().next();
                 boolean expired = kerberosTicket == null || !kerberosTicket.isCurrent();
                 boolean started = kerberosTicket.getStartTime() == null || kerberosTicket.getStartTime().getTime() <= System.currentTimeMillis();
-                LOGGER.debug("getConnectionUsingKerberos {}: started {} , ends {} expired {} ", subject.getPrincipals().iterator().next().getName(),started,kerberosTicket.getEndTime(),expired);
+                LOGGER.debug("getConnectionUsingKerberos {}: started {} , ends {} expired {} ", subject.getPrincipals().iterator().next().getName(), started, kerberosTicket.getEndTime(), expired);
             }
-            connection = Subject.doAs(subject, (PrivilegedExceptionAction<Connection>)ds::getConnection);
+            connection = Subject.doAs(subject, (PrivilegedExceptionAction<Connection>) ds::getConnection);
         }
         catch (PrivilegedActionException e)
         {
@@ -133,6 +132,6 @@ public abstract class AuthenticationStrategy
     public Properties getAuthenticationPropertiesForConnection()
     {
         return new Properties();
-    };
+    }
 
 }

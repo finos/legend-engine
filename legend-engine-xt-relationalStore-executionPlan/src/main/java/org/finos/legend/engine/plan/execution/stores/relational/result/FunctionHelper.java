@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.result;
 
-
 import java.util.function.Function;
 
 @FunctionalInterface
@@ -24,7 +23,8 @@ public interface FunctionHelper<T, R, E extends Exception>
 
     static <T, R, E extends Exception> Function<T, R> unchecked(FunctionHelper<T, R, E> f)
     {
-        return (t) -> {
+        return (t) ->
+        {
             try
             {
                 return f.apply(t);

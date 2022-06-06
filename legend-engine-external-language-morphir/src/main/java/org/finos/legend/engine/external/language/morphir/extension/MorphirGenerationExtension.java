@@ -15,8 +15,8 @@
 package org.finos.legend.engine.external.language.morphir.extension;
 
 import org.eclipse.collections.api.RichIterable;
-import org.finos.legend.engine.external.language.morphir.model.MorphirGenerationConfig;
 import org.finos.legend.engine.external.language.morphir.MorphirGenerationService;
+import org.finos.legend.engine.external.language.morphir.model.MorphirGenerationConfig;
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
 import org.finos.legend.engine.external.shared.format.extension.GenerationMode;
 import org.finos.legend.engine.external.shared.format.generations.description.FileGenerationDescription;
@@ -28,7 +28,9 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationSpecification;
-import org.finos.legend.pure.generated.*;
+import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationConfiguration;
+import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationOutput;
+import org.finos.legend.pure.generated.core_external_language_morphir_integration;
 
 import java.util.ArrayList;
 import java.util.List;

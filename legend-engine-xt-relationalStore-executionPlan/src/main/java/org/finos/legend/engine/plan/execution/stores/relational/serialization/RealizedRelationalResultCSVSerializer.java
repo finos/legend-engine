@@ -16,14 +16,13 @@ package org.finos.legend.engine.plan.execution.stores.relational.serialization;
 
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
-import org.finos.legend.engine.plan.execution.stores.relational.result.RealizedRelationalResult;
-
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.plan.execution.result.ResultNormalizer;
 import org.finos.legend.engine.plan.execution.result.serialization.CsvSerializer;
+import org.finos.legend.engine.plan.execution.stores.relational.result.RealizedRelationalResult;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.result.SQLResultColumn;
 
 import java.io.BufferedWriter;

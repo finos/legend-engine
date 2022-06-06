@@ -15,7 +15,13 @@
 package org.finos.legend.engine.external.format.flatdata.shared.driver.bloomberg;
 
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.util.CommonDataHandler;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.*;
+import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.FlatDataDriverDescription;
+import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.FlatDataProcessingContext;
+import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.FlatDataProcessor;
+import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.FlatDataReadDriver;
+import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.FlatDataVariable;
+import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.PropertyDescription;
+import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.RecordTypeMultiplicity;
 import org.finos.legend.engine.external.format.flatdata.shared.model.FlatData;
 import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataSection;
 import org.finos.legend.engine.external.format.flatdata.shared.validation.FlatDataDefect;
@@ -79,7 +85,7 @@ public class BloombergExtendActionDriverDescription implements FlatDataDriverDes
         List<String> skipablePredecessors = Arrays.asList(BloombergMetadataDriverDescription.ID, ID);
         List<FlatDataSection> sections = flatData.getSections();
         FlatDataSection predecessor = null;
-        for (int i = sections.indexOf(section) -1; predecessor == null && i>=0; i--)
+        for (int i = sections.indexOf(section) - 1; predecessor == null && i >= 0; i--)
         {
             if (!skipablePredecessors.contains(sections.get(i).getDriverId()))
             {

@@ -14,15 +14,14 @@
 
 package org.finos.legend.engine.language.pure.dsl.service.execution;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-
-import javax.security.auth.Subject;
-
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
+
+import javax.security.auth.Subject;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 
 /* Work in progress, do not use */
 

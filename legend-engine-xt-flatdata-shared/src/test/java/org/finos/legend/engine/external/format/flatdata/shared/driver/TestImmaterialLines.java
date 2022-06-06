@@ -28,27 +28,27 @@ public class TestImmaterialLines extends AbstractDriverTest
     public void canReadAndSkipImmaterialLines()
     {
         FlatData flatData = parseFlatData("section skipMe: ImmaterialLines\n" +
-                                                  "{\n" +
-                                                  "  scope.forNumberOfLines: 2;\n" +
-                                                  "}\n" +
-                                                  "\n" +
-                                                  "section default: DelimitedWithHeadings\n" +
-                                                  "{\n" +
-                                                  "  scope.untilEof;\n" +
-                                                  "  delimiter       : ',';\n" +
-                                                  "\n" +
-                                                  "  Record\n" +
-                                                  "  {\n" +
-                                                  "    NAME : STRING;\n" +
-                                                  "  }\n" +
-                                                  "}");
+                "{\n" +
+                "  scope.forNumberOfLines: 2;\n" +
+                "}\n" +
+                "\n" +
+                "section default: DelimitedWithHeadings\n" +
+                "{\n" +
+                "  scope.untilEof;\n" +
+                "  delimiter       : ',';\n" +
+                "\n" +
+                "  Record\n" +
+                "  {\n" +
+                "    NAME : STRING;\n" +
+                "  }\n" +
+                "}");
 
         String data = data("\n",
-                          "This line should be ignored",
-                          "So should this one",
-                          "NAME",
-                          "John Doe",
-                          "Jane Doe"
+                "This line should be ignored",
+                "So should this one",
+                "NAME",
+                "John Doe",
+                "Jane Doe"
         );
 
         List<IChecked<Person>> records = deserialize(Person.class, flatData, data);
@@ -64,45 +64,45 @@ public class TestImmaterialLines extends AbstractDriverTest
     public void canReadAndSkipHeaderAndTrailer()
     {
         FlatData flatData = parseFlatData("section skipHeader1: ImmaterialLines\n" +
-                                                  "{\n" +
-                                                  "  scope.forNumberOfLines: 2;\n" +
-                                                  "}\n" +
-                                                  "section skipHeader2: ImmaterialLines\n" +
-                                                  "{\n" +
-                                                  "  scope.forNumberOfLines: 1;\n" +
-                                                  "}\n" +
-                                                  "\n" +
-                                                  "section default: DelimitedWithHeadings\n" +
-                                                  "{\n" +
-                                                  "  scope.default;\n" +
-                                                  "  delimiter       : ',';\n" +
-                                                  "\n" +
-                                                  "  Record\n" +
-                                                  "  {\n" +
-                                                  "    NAME : STRING;\n" +
-                                                  "  }\n" +
-                                                  "}\n" +
-                                                  "\n" +
-                                                  "section skipTrailer1: ImmaterialLines\n" +
-                                                  "{\n" +
-                                                  "  scope.forNumberOfLines: 3;\n" +
-                                                  "}\n" +
-                                                  "section skipTrailer2: ImmaterialLines\n" +
-                                                  "{\n" +
-                                                  "  scope.forNumberOfLines: 1;\n" +
-                                                  "}");
+                "{\n" +
+                "  scope.forNumberOfLines: 2;\n" +
+                "}\n" +
+                "section skipHeader2: ImmaterialLines\n" +
+                "{\n" +
+                "  scope.forNumberOfLines: 1;\n" +
+                "}\n" +
+                "\n" +
+                "section default: DelimitedWithHeadings\n" +
+                "{\n" +
+                "  scope.default;\n" +
+                "  delimiter       : ',';\n" +
+                "\n" +
+                "  Record\n" +
+                "  {\n" +
+                "    NAME : STRING;\n" +
+                "  }\n" +
+                "}\n" +
+                "\n" +
+                "section skipTrailer1: ImmaterialLines\n" +
+                "{\n" +
+                "  scope.forNumberOfLines: 3;\n" +
+                "}\n" +
+                "section skipTrailer2: ImmaterialLines\n" +
+                "{\n" +
+                "  scope.forNumberOfLines: 1;\n" +
+                "}");
 
         String data = data("\n",
-                          "This line should be ignored",
-                          "So should this one",
-                          "hello",
-                          "NAME",
-                          "John Doe",
-                          "Jane Doe",
-                          "Ignore,Ignore",
-                          "This line should be ignored",
-                          "So should this one",
-                          "Another Driver\n"
+                "This line should be ignored",
+                "So should this one",
+                "hello",
+                "NAME",
+                "John Doe",
+                "Jane Doe",
+                "Ignore,Ignore",
+                "This line should be ignored",
+                "So should this one",
+                "Another Driver\n"
         );
 
         List<IChecked<Person>> records = deserialize(Person.class, flatData, data);

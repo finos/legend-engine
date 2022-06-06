@@ -48,19 +48,19 @@ public class TestStreamInput extends AlloyTestServer
         PlanExecutor planExecutor = buildRelationalPlanExecutor();
 
         Map<String, ?> allInputsAsList = Maps.mutable.with("name", Lists.mutable.with("Alice", "Bob", "Curtis"), "id", Lists.mutable.with("A", "B", "C"));
-        RelationalResult resultWithLists = (RelationalResult)planExecutor.execute(plan, allInputsAsList);
+        RelationalResult resultWithLists = (RelationalResult) planExecutor.execute(plan, allInputsAsList);
         Assert.assertEquals("{\"builder\": {\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"name\",\"type\":\"String\",\"relationalType\":\"VARCHAR(1000)\"}]}, \"activities\": [{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".name as \\\"name\\\" from employeeTable as \\\"root\\\" where (\\\"root\\\".name in ('Alice','Bob','Curtis') or (3) = 0)\"}], \"result\" : {\"columns\" : [\"name\"], \"rows\" : [{\"values\": [\"Alice\"]},{\"values\": [\"Bob\"]},{\"values\": [\"Curtis\"]}]}}", resultWithLists.flush(new RelationalResultToJsonDefaultSerializer(resultWithLists)));
 
         Map<String, ?> allInputsAsStream = Maps.mutable.with("name", Lists.mutable.with("Alice", "Bob", "Curtis").stream(), "id", Lists.mutable.with("A", "B", "C").stream());
-        RelationalResult resultWithStreams = (RelationalResult)planExecutor.execute(plan, allInputsAsStream);
+        RelationalResult resultWithStreams = (RelationalResult) planExecutor.execute(plan, allInputsAsStream);
         Assert.assertEquals("{\"builder\": {\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"name\",\"type\":\"String\",\"relationalType\":\"VARCHAR(1000)\"}]}, \"activities\": [{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".name as \\\"name\\\" from employeeTable as \\\"root\\\" where (\\\"root\\\".name in (select \\\"temptableforin_name_0\\\".ColumnForStoringInCollection as ColumnForStoringInCollection from tempTableForIn_name as \\\"temptableforin_name_0\\\") or (3) = 0)\"}], \"result\" : {\"columns\" : [\"name\"], \"rows\" : [{\"values\": [\"Alice\"]},{\"values\": [\"Bob\"]},{\"values\": [\"Curtis\"]}]}}", resultWithStreams.flush(new RelationalResultToJsonDefaultSerializer(resultWithStreams)));
 
         Map<String, ?> inputsAsListAndStream1 = Maps.mutable.with("name", Lists.mutable.with("Alice", "Bob", "Curtis").stream(), "id", Lists.mutable.with("A", "B", "C"));
-        RelationalResult resultWithListAndStream1 = (RelationalResult)planExecutor.execute(plan, inputsAsListAndStream1);
+        RelationalResult resultWithListAndStream1 = (RelationalResult) planExecutor.execute(plan, inputsAsListAndStream1);
         Assert.assertEquals("{\"builder\": {\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"name\",\"type\":\"String\",\"relationalType\":\"VARCHAR(1000)\"}]}, \"activities\": [{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".name as \\\"name\\\" from employeeTable as \\\"root\\\" where (\\\"root\\\".name in (select \\\"temptableforin_name_0\\\".ColumnForStoringInCollection as ColumnForStoringInCollection from tempTableForIn_name as \\\"temptableforin_name_0\\\") or (3) = 0)\"}], \"result\" : {\"columns\" : [\"name\"], \"rows\" : [{\"values\": [\"Alice\"]},{\"values\": [\"Bob\"]},{\"values\": [\"Curtis\"]}]}}", resultWithListAndStream1.flush(new RelationalResultToJsonDefaultSerializer(resultWithListAndStream1)));
 
         Map<String, ?> inputsAsListAndStream2 = Maps.mutable.with("name", Lists.mutable.with("Alice", "Bob", "Curtis"), "id", Lists.mutable.with("A", "B", "C").stream());
-        RelationalResult resultWithListAndStream2 = (RelationalResult)planExecutor.execute(plan, inputsAsListAndStream2);
+        RelationalResult resultWithListAndStream2 = (RelationalResult) planExecutor.execute(plan, inputsAsListAndStream2);
         Assert.assertEquals("{\"builder\": {\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"name\",\"type\":\"String\",\"relationalType\":\"VARCHAR(1000)\"}]}, \"activities\": [{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".name as \\\"name\\\" from employeeTable as \\\"root\\\" where (\\\"root\\\".name in ('Alice','Bob','Curtis') or (3) = 0)\"}], \"result\" : {\"columns\" : [\"name\"], \"rows\" : [{\"values\": [\"Alice\"]},{\"values\": [\"Bob\"]},{\"values\": [\"Curtis\"]}]}}", resultWithListAndStream2.flush(new RelationalResultToJsonDefaultSerializer(resultWithListAndStream2)));
     }
 }

@@ -21,7 +21,7 @@ public class Test_Relational_DbSpecific_Snowflake_UsingPureClientTestSuite
 {
     public static Test suite() throws Exception
     {
-        return createSuite("meta::relational::tests::dbSpecificTests::snowflake","org/finos/legend/engine/server/test/userTestConfig_withSnowflakeTestConnection.json");
+        return createSuite("meta::relational::tests::dbSpecificTests::snowflake", "org/finos/legend/engine/server/test/userTestConfig_withSnowflakeTestConnection.json");
     }
 }
 

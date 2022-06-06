@@ -18,7 +18,8 @@ import org.eclipse.collections.api.factory.Lists;
 
 import java.util.List;
 
-public class DatabaseBuilderConfig {
+public class DatabaseBuilderConfig
+{
     public Integer maxTables;
 
     public boolean enrichTables;
@@ -29,11 +30,13 @@ public class DatabaseBuilderConfig {
 
     public List<DatabasePattern> patterns = Lists.mutable.empty();
 
-    public void setPatterns(List<DatabasePattern> patterns) {
+    public void setPatterns(List<DatabasePattern> patterns)
+    {
         this.patterns = patterns;
     }
 
-    public List<DatabasePattern> getPatterns() {
+    public List<DatabasePattern> getPatterns()
+    {
         return patterns;
     }
 }

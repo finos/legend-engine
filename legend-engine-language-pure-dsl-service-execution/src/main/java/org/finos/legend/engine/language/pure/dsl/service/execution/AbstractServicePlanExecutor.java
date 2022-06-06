@@ -78,7 +78,7 @@ public abstract class AbstractServicePlanExecutor implements ServiceRunner
         this.executor = executor;
     }
 
-    protected AbstractServicePlanExecutor(String servicePath, String executionPlanResource, StoreExecutorConfiguration ...storeExecutorConfigurations)
+    protected AbstractServicePlanExecutor(String servicePath, String executionPlanResource, StoreExecutorConfiguration... storeExecutorConfigurations)
     {
         this.servicePath = servicePath;
         this.plan = readPlanFromResource(getClass().getClassLoader(), executionPlanResource);
@@ -155,7 +155,7 @@ public abstract class AbstractServicePlanExecutor implements ServiceRunner
 
         if (args.size() != variables.size())
         {
-            throw new IllegalArgumentException("Unexpected number of parameters. Expected parameter size: " + variables.size() +  ", Passed parameter size: " + args.size());
+            throw new IllegalArgumentException("Unexpected number of parameters. Expected parameter size: " + variables.size() + ", Passed parameter size: " + args.size());
         }
 
         ExecutionBuilder executionBuilder = newExecutionBuilder(variables.size()).withServiceRunnerInput(serviceRunnerInput).withStreamProvider(streamProvider);
@@ -257,7 +257,7 @@ public abstract class AbstractServicePlanExecutor implements ServiceRunner
         MutableList<CommonProfile> profiles = Lists.mutable.empty();
         PlanExecutionContext planExecutionContext = null;
 
-        if(serviceRunnerInput != null)
+        if (serviceRunnerInput != null)
         {
             Identity identity = serviceRunnerInput.getIdentity();
             if (identity != null)
@@ -385,7 +385,7 @@ public abstract class AbstractServicePlanExecutor implements ServiceRunner
         @Override
         protected void addParameter(String name, Object value)
         {
-            if(value != null)
+            if (value != null)
             {
                 this.parameters = Collections.singletonMap(name, value);
             }
@@ -526,7 +526,10 @@ public abstract class AbstractServicePlanExecutor implements ServiceRunner
         {
             if (this.firstId == null)
             {
-                return streamId -> { throw new IllegalArgumentException("Unknown input stream: " + streamId); };
+                return streamId ->
+                {
+                    throw new IllegalArgumentException("Unknown input stream: " + streamId);
+                };
             }
             if (this.inputStreams == null)
             {

@@ -24,7 +24,6 @@ import org.finos.legend.engine.plan.execution.nodes.helpers.platform.ExecutionNo
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.StoreStreamReadingExecutionNode;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.JsonModelConnection;
 import org.finos.legend.engine.shared.core.url.UrlFactory;
 
 import java.net.MalformedURLException;
@@ -35,6 +34,7 @@ public class StoreStreamReadingExecutionNodeContext extends DefaultExecutionNode
 {
 
     private final ExecutionState state;
+
     public static ExecutionNodeJavaPlatformHelper.ExecutionNodeContextFactory factory(StoreStreamReadingExecutionNode node)
     {
         return (ExecutionState state, Result childResult) -> new StoreStreamReadingExecutionNodeContext(node, state, childResult);
@@ -65,6 +65,6 @@ public class StoreStreamReadingExecutionNodeContext extends DefaultExecutionNode
     @Override
     public URL createUrl(String url) throws MalformedURLException
     {
-        return UrlFactory.create(FreeMarkerExecutor.process(url,this.state));
+        return UrlFactory.create(FreeMarkerExecutor.process(url, this.state));
     }
 }

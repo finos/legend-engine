@@ -14,27 +14,27 @@
 
 package org.finos.legend.engine.external.format.xml.fixtures;
 
+import org.finos.legend.engine.external.format.xml.read.DeserializeContext;
+import org.finos.legend.engine.external.format.xml.read.handlers.AnySurroundingElements;
 import org.finos.legend.engine.external.format.xml.read.handlers.Attribute;
 import org.finos.legend.engine.external.format.xml.read.handlers.Choice;
+import org.finos.legend.engine.external.format.xml.read.handlers.Document;
+import org.finos.legend.engine.external.format.xml.read.handlers.Element;
 import org.finos.legend.engine.external.format.xml.read.handlers.FlexCollectionElement;
+import org.finos.legend.engine.external.format.xml.read.handlers.Sequence;
+import org.finos.legend.engine.external.format.xml.read.handlers.TextContent;
 import org.finos.legend.engine.external.format.xml.read.valueProcessors.AddBooleanToObject;
 import org.finos.legend.engine.external.format.xml.read.valueProcessors.AddDoubleToObject;
 import org.finos.legend.engine.external.format.xml.read.valueProcessors.AddLongToObject;
+import org.finos.legend.engine.external.format.xml.read.valueProcessors.AddObjectToObject;
 import org.finos.legend.engine.external.format.xml.shared.datatypes.BooleanSimpleTypeHandler;
 import org.finos.legend.engine.external.format.xml.shared.datatypes.BuiltInDataTypes;
 import org.finos.legend.engine.external.format.xml.shared.datatypes.DoubleSimpleTypeHandler;
 import org.finos.legend.engine.external.format.xml.shared.datatypes.LongSimpleTypeHandler;
 import org.finos.legend.engine.external.format.xml.shared.datatypes.SimpleTypeHandler;
-import org.finos.legend.engine.external.format.xml.read.DeserializeContext;
-import org.finos.legend.engine.external.format.xml.read.handlers.AnySurroundingElements;
-import org.finos.legend.engine.external.format.xml.read.handlers.Document;
-import org.finos.legend.engine.external.format.xml.read.handlers.Element;
-import org.finos.legend.engine.external.format.xml.read.handlers.Sequence;
-import org.finos.legend.engine.external.format.xml.read.handlers.TextContent;
-import org.finos.legend.engine.external.format.xml.read.valueProcessors.AddObjectToObject;
+import org.finos.legend.engine.external.shared.runtime.dependencies.ExternalDataObjectAdder;
 import org.finos.legend.engine.external.shared.runtime.fixtures.firmModel.Firm;
 import org.finos.legend.engine.external.shared.runtime.fixtures.firmModel.Person;
-import org.finos.legend.engine.external.shared.runtime.dependencies.ExternalDataObjectAdder;
 
 import java.time.temporal.Temporal;
 
@@ -64,11 +64,11 @@ public class ReadFirmWithoutSchema
                 .add(new TextContent<Person>(new AddDoubleToObject<Person>(Person._getAdderForProperty("heightInMeters"), xsDouble)));
 
         Choice personChoice = Choice.of(0, Long.MAX_VALUE)
-                                    .add(firstName)
-                                    .add(lastName)
-                                    .add(dateOfBirth)
-                                    .add(isAlive)
-                                    .add(heightInMeters);
+                .add(firstName)
+                .add(lastName)
+                .add(dateOfBirth)
+                .add(isAlive)
+                .add(heightInMeters);
 
         Element wildcardPersonElement = Element.ofWildcard(0, Long.MAX_VALUE, Person.FACTORY, (ExternalDataObjectAdder) Firm._getAdderForProperty("employees"))
                 .add(Attribute.ofLenient(0, 1, "firstName", new AddObjectToObject<Person, String>(Person._getAdderForProperty("firstName"), xsToken)))
@@ -90,12 +90,12 @@ public class ReadFirmWithoutSchema
                 .add(personChoice);
 
         Element flexManyEmployeesElement = FlexCollectionElement.ofLenient(0, Long.MAX_VALUE, "employees", Person.FACTORY, (ExternalDataObjectAdder) Firm._getAdderForProperty("employees"))
-                                                                .add(Attribute.ofLenient(0, 1, "firstName", new AddObjectToObject<Person, String>(Person._getAdderForProperty("firstName"), xsToken)))
-                                                                .add(Attribute.ofLenient(0, 1, "lastName", new AddObjectToObject<Person, String>(Person._getAdderForProperty("lastName"), xsToken)))
-                                                                .add(Attribute.ofLenient(0, 1, "dateOfBirth", new AddObjectToObject<Person, Temporal>(Person._getAdderForProperty("dateOfBirth"), xsDate)))
-                                                                .add(Attribute.ofLenient(0, 1, "isAlive", new AddBooleanToObject<Person>(Person._getAdderForProperty("isAlive"), xsBoolean)))
-                                                                .add(Attribute.ofLenient(0, 1, "heightInMeters", new AddDoubleToObject<Person>(Person._getAdderForProperty("heightInMeters"), xsDouble)))
-                                                                .add(personChoice);
+                .add(Attribute.ofLenient(0, 1, "firstName", new AddObjectToObject<Person, String>(Person._getAdderForProperty("firstName"), xsToken)))
+                .add(Attribute.ofLenient(0, 1, "lastName", new AddObjectToObject<Person, String>(Person._getAdderForProperty("lastName"), xsToken)))
+                .add(Attribute.ofLenient(0, 1, "dateOfBirth", new AddObjectToObject<Person, Temporal>(Person._getAdderForProperty("dateOfBirth"), xsDate)))
+                .add(Attribute.ofLenient(0, 1, "isAlive", new AddBooleanToObject<Person>(Person._getAdderForProperty("isAlive"), xsBoolean)))
+                .add(Attribute.ofLenient(0, 1, "heightInMeters", new AddDoubleToObject<Person>(Person._getAdderForProperty("heightInMeters"), xsDouble)))
+                .add(personChoice);
 
         Element nameElement = Element.ofLenient(1, 1, "name")
                 .add(new TextContent<Firm>(new AddObjectToObject<Firm, String>(Firm._getAdderForProperty("name"), xsToken)));

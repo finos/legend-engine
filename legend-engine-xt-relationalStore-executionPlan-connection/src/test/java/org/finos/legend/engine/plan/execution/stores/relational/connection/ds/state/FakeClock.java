@@ -19,34 +19,41 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 
-public class FakeClock extends Clock {
+public class FakeClock extends Clock
+{
     private long currentTimeInMillis;
 
-    public FakeClock(long currentTimeInMillis) {
+    public FakeClock(long currentTimeInMillis)
+    {
         this.currentTimeInMillis = currentTimeInMillis;
     }
 
-    public void advance(Duration duration) {
+    public void advance(Duration duration)
+    {
         this.currentTimeInMillis += duration.toMillis();
     }
 
     @Override
-    public ZoneId getZone() {
+    public ZoneId getZone()
+    {
         return null;
     }
 
     @Override
-    public Clock withZone(ZoneId zone) {
+    public Clock withZone(ZoneId zone)
+    {
         return null;
     }
 
     @Override
-    public Instant instant() {
+    public Instant instant()
+    {
         return null;
     }
 
     @Override
-    public long millis() {
+    public long millis()
+    {
         return this.currentTimeInMillis;
     }
 }

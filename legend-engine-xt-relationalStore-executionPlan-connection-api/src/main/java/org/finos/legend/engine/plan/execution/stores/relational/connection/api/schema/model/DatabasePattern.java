@@ -31,7 +31,6 @@ public class DatabasePattern
     private final boolean escapteTablePattern;
 
 
-
     @JsonCreator
     public DatabasePattern(
             @JsonProperty("catalog") String catalog,
@@ -64,23 +63,28 @@ public class DatabasePattern
         this(catalog, null, null, false, false);
     }
 
-    public String getSchemaPattern() {
+    public String getSchemaPattern()
+    {
         return schemaPattern;
     }
 
-    public String getCatalog() {
+    public String getCatalog()
+    {
         return catalog;
     }
 
-    public String getTablePattern() {
+    public String getTablePattern()
+    {
         return tablePattern;
     }
 
-    public boolean isEscapeSchemaPattern() {
+    public boolean isEscapeSchemaPattern()
+    {
         return escapeSchemaPattern;
     }
 
-    public boolean isEscapeTablePattern() {
+    public boolean isEscapeTablePattern()
+    {
         return escapteTablePattern;
     }
 

@@ -18,7 +18,14 @@ import org.finos.legend.engine.external.format.flatdata.shared.driver.core.conne
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.connection.ObjectStreamConnection;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.util.SectionProcessingContext;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.variables.ProcessingVariables;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.*;
+import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.Connection;
+import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.FlatDataDriver;
+import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.FlatDataDriverDescription;
+import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.FlatDataProcessor;
+import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.FlatDataReadDriver;
+import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.FlatDataWriteDriver;
+import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.ObjectToParsedFlatData;
+import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.ParsedFlatDataToObject;
 import org.finos.legend.engine.external.format.flatdata.shared.model.FlatData;
 import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataRecordType;
 import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataSection;
@@ -72,7 +79,7 @@ public class StreamingSequentialSections<T> implements FlatDataProcessor<T>
                 drivers.add(0, drv);
             }
 
-            for (FlatDataReadDriver<T> driver: drivers)
+            for (FlatDataReadDriver<T> driver : drivers)
             {
                 driver.start();
                 while (!driver.isFinished())
@@ -106,7 +113,7 @@ public class StreamingSequentialSections<T> implements FlatDataProcessor<T>
                 drivers.add(0, drv);
             }
 
-            for (FlatDataWriteDriver<T> driver: drivers)
+            for (FlatDataWriteDriver<T> driver : drivers)
             {
                 driver.write(outputStream);
             }

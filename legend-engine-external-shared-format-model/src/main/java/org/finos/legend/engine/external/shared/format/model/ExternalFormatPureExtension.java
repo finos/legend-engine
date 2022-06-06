@@ -20,5 +20,6 @@ import org.finos.legend.pure.m3.execution.ExecutionSupport;
 public interface ExternalFormatPureExtension
 {
     String getContentType();
+
     Root_meta_external_shared_format_ExternalFormatExtension getPureExtension(ExecutionSupport executionSupport);
 }

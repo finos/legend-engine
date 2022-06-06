@@ -40,19 +40,19 @@ public abstract class AbstractValidationTest
         {
             Assert.assertFalse("Result should be invalid", result.isValid());
             result.getDefects().forEach(d ->
-                                        {
-                                            if (!Arrays.asList(expectedErrors).contains(d.toString()))
-                                            {
-                                                Assert.fail("Unexpected defect: " + d);
-                                            }
-                                        });
+            {
+                if (!Arrays.asList(expectedErrors).contains(d.toString()))
+                {
+                    Assert.fail("Unexpected defect: " + d);
+                }
+            });
             Arrays.asList(expectedErrors).forEach(e ->
-                                                  {
-                                                      if (result.getDefects().stream().noneMatch(d -> e.equals(d.toString())))
-                                                      {
-                                                          Assert.fail("Missing defect: " + e);
-                                                      }
-                                                  });
+            {
+                if (result.getDefects().stream().noneMatch(d -> e.equals(d.toString())))
+                {
+                    Assert.fail("Missing defect: " + e);
+                }
+            });
         }
     }
 }

@@ -20,5 +20,7 @@ public interface IFlatDataDeserializeExecutionNodeSpecifics<T>
 {
     FlatDataContext<T> createContext();
 
-    default void setMaximumSchemaObjectSize(long maxSize) {}
+    default void setMaximumSchemaObjectSize(long maxSize)
+    {
+    }
 }

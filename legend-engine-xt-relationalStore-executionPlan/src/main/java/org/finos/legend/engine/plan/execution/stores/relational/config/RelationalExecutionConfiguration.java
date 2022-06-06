@@ -41,20 +41,23 @@ public class RelationalExecutionConfiguration implements StoreExecutorConfigurat
     {
     }
 
-    public  RelationalExecutionConfiguration(String tempPath)
+    public RelationalExecutionConfiguration(String tempPath)
     {
         this.tempPath = tempPath;
     }
 
-    public DatabaseAuthenticationFlowProviderConfiguration getFlowProviderConfiguration() {
+    public DatabaseAuthenticationFlowProviderConfiguration getFlowProviderConfiguration()
+    {
         return flowProviderConfiguration;
     }
 
-    public Class<? extends DatabaseAuthenticationFlowProvider> getFlowProviderClass() {
+    public Class<? extends DatabaseAuthenticationFlowProvider> getFlowProviderClass()
+    {
         return flowProviderClass;
     }
 
-    public TemporaryTestDbConfiguration getTemporaryTestDbConfiguration() {
+    public TemporaryTestDbConfiguration getTemporaryTestDbConfiguration()
+    {
         return temporarytestdb;
     }
 
@@ -97,7 +100,7 @@ public class RelationalExecutionConfiguration implements StoreExecutorConfigurat
             return this;
         }
 
-        public Builder withDatabaseAuthenticationFlowProvider(Class<? extends DatabaseAuthenticationFlowProvider>  flowProviderClass)
+        public Builder withDatabaseAuthenticationFlowProvider(Class<? extends DatabaseAuthenticationFlowProvider> flowProviderClass)
         {
             this.flowProviderClass = flowProviderClass;
             this.flowProviderConfiguration = null;

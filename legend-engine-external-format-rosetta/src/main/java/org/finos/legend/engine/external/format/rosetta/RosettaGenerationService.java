@@ -66,7 +66,7 @@ public class RosettaGenerationService
     @Path("rosetta")
     @ApiOperation(value = "Generates Rosetta classes from PureModel")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
-    public Response generateCdm(RosettaGenerationInput generateCdmInput, @ApiParam(hidden = true)  @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response generateCdm(RosettaGenerationInput generateCdmInput, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         boolean interactive = generateCdmInput.model instanceof PureModelContextData;

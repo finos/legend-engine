@@ -111,8 +111,8 @@ public class DeserializeContext<CLS>
     public void startDataObject(IExternalDataFactory dataFactory, ExternalDataObjectAdder addToParent)
     {
         currentFrame = (addToParent == null)
-                       ? new RecordFrame(currentFrame, dataFactory)
-                       : new ChildObjectFrame(currentFrame, dataFactory, addToParent);
+                ? new RecordFrame(currentFrame, dataFactory)
+                : new ChildObjectFrame(currentFrame, dataFactory, addToParent);
         currentFrame.start();
     }
 
@@ -263,8 +263,8 @@ public class DeserializeContext<CLS>
         String getPath()
         {
             return (parent == null)
-                   ? ""
-                   : parent.getPath() + "/" + XmlUtils.toShortString(name) + "[" + index + "]";
+                    ? ""
+                    : parent.getPath() + "/" + XmlUtils.toShortString(name) + "[" + index + "]";
         }
 
         PathElement getParent()
@@ -489,8 +489,8 @@ public class DeserializeContext<CLS>
         {
             XmlDataRecord source = new XmlDataRecord(recordNumber, reader.endCapture());
             IChecked<CLS> checked = getDefects().stream().anyMatch(d -> d.getEnforcementLevel() == EnforcementLevel.Critical)
-                                    ? (IChecked<CLS>) BasicChecked.newChecked(null, source, getDefects())
-                                    : (IChecked<CLS>) BasicChecked.newChecked(get(), source, getDefects());
+                    ? (IChecked<CLS>) BasicChecked.newChecked(null, source, getDefects())
+                    : (IChecked<CLS>) BasicChecked.newChecked(get(), source, getDefects());
             consumer.accept(checked);
             return parent;
         }

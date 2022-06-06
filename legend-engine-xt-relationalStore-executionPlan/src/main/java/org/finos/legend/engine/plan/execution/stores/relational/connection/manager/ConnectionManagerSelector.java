@@ -131,8 +131,8 @@ public class ConnectionManagerSelector
         db.databaseType = DatabaseType.H2;
         db.type = DatabaseType.H2;
         db.element = originalConnection.element;
-        db.timeZone = originalConnection instanceof DatabaseConnection ? ((DatabaseConnection)originalConnection).timeZone : null;
-        db.quoteIdentifiers = originalConnection instanceof DatabaseConnection ? ((DatabaseConnection)originalConnection).quoteIdentifiers : null;
+        db.timeZone = originalConnection instanceof DatabaseConnection ? ((DatabaseConnection) originalConnection).timeZone : null;
+        db.quoteIdentifiers = originalConnection instanceof DatabaseConnection ? ((DatabaseConnection) originalConnection).quoteIdentifiers : null;
         return db;
     }
 }

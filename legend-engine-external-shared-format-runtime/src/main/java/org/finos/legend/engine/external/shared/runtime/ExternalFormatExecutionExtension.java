@@ -49,20 +49,20 @@ public class ExternalFormatExecutionExtension implements ExecutionExtension
     public List<Function3<ExecutionNode, MutableList<CommonProfile>, ExecutionState, Result>> getExtraNodeExecutors()
     {
         return Collections.singletonList((executionNode, pm, executionState) ->
-                                         {
-                                             if (executionNode instanceof DataQualityExecutionNode)
-                                             {
-                                                 return executeDataQuality((DataQualityExecutionNode) executionNode, pm, executionState);
-                                             }
-                                             else if (executionNode instanceof UrlStreamExecutionNode)
-                                             {
-                                                 return executeUrlStream((UrlStreamExecutionNode) executionNode, pm, executionState);
-                                             }
-                                             else
-                                             {
-                                                 return null;
-                                             }
-                                         });
+        {
+            if (executionNode instanceof DataQualityExecutionNode)
+            {
+                return executeDataQuality((DataQualityExecutionNode) executionNode, pm, executionState);
+            }
+            else if (executionNode instanceof UrlStreamExecutionNode)
+            {
+                return executeUrlStream((UrlStreamExecutionNode) executionNode, pm, executionState);
+            }
+            else
+            {
+                return null;
+            }
+        });
     }
 
     private Result executeUrlStream(UrlStreamExecutionNode node, MutableList<CommonProfile> profiles, ExecutionState executionState)
@@ -86,8 +86,8 @@ public class ExternalFormatExecutionExtension implements ExecutionExtension
 
         Stream<IChecked<?>> checkedStream = (Stream<IChecked<?>>) streamingObjectResult.getObjectStream();
         Stream<IChecked<?>> withConstraints = node.enableConstraints
-                                              ? checkedStream.map(this::applyConstraints)
-                                              : checkedStream;
+                ? checkedStream.map(this::applyConstraints)
+                : checkedStream;
         if (node.checked)
         {
             return new StreamingObjectResult<>(withConstraints, streamingObjectResult.getResultBuilder(), streamingObjectResult);
@@ -116,8 +116,8 @@ public class ExternalFormatExecutionExtension implements ExecutionExtension
             List<IDefect> allDefects = new ArrayList(checked.getDefects());
             allDefects.addAll(constraintFailures);
             return allDefects.stream().anyMatch(d -> d.getEnforcementLevel() == EnforcementLevel.Critical)
-                                    ?  BasicChecked.newChecked(null, checked.getSource(), allDefects)
-                                    :  BasicChecked.newChecked(checked.getValue(), checked.getSource(), allDefects);
+                    ? BasicChecked.newChecked(null, checked.getSource(), allDefects)
+                    : BasicChecked.newChecked(checked.getValue(), checked.getSource(), allDefects);
         }
     }
 

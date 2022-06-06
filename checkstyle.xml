@@ -45,6 +45,7 @@
             <property name="message"
                       value="Consider using special escape sequence instead of octal value or Unicode escaped value."/>
         </module>
+        <module name="AvoidStarImport"/>
         <module name="OneTopLevelClass"/>
         <module name="NoLineWrap"/>
         <module name="EmptyBlock">
@@ -82,7 +83,7 @@
         <module name="OneStatementPerLine"/>
         <module name="MultipleVariableDeclarations"/>
         <module name="ArrayTypeStyle"/>
-        <module name="MissingSwitchDefault"/>
+<!--        <module name="MissingSwitchDefault"/>-->
         <module name="FallThrough"/>
         <module name="UpperEll"/>
         <module name="ModifierOrder"/>
@@ -139,11 +140,11 @@
             <message key="name.invalidPattern"
                      value="Parameter name ''{0}'' must match pattern ''{1}''."/>
         </module>
-        <module name="MethodName">
-            <!--            <property name="format" value="^[a-z][a-z0-9][a-zA-Z0-9_]*$"/>-->
-            <property name="format" value="^[a-zA-Z][a-zA-Z0-9_$]*$"/>
-            <message key="name.invalidPattern" value="Method name ''{0}'' must match pattern ''{1}''."/>
-        </module>
+<!--        <module name="MethodName">-->
+<!--            &lt;!&ndash;            <property name="format" value="^[a-z][a-z0-9][a-zA-Z0-9_]*$"/>&ndash;&gt;-->
+<!--            <property name="format" value="^[a-zA-Z][a-zA-Z0-9_$]*$"/>-->
+<!--            <message key="name.invalidPattern" value="Method name ''{0}'' must match pattern ''{1}''."/>-->
+<!--        </module>-->
         <module name="LambdaParameterName">
             <!--            <property name="format" value="^[a-z]([a-z0-9][a-zA-Z0-9]*)?$"/>-->
             <property name="format" value="^[_a-zA-Z][_a-zA-Z0-9]*?$"/>
@@ -163,24 +164,24 @@
             <message key="name.invalidPattern"
                      value="Local variable name ''{0}'' must match pattern ''{1}''."/>
         </module>
-        <module name="ClassTypeParameterName">
-            <!--            <property name="format" value="(^[A-Z][0-9]?)$|([A-Z][a-zA-Z0-9]*[T]$)"/>-->
-            <property name="format" value="(^[A-Z][0-9]?)$|([A-Z][a-zA-Z0-9]*[T]$)"/>
-            <message key="name.invalidPattern"
-                     value="Class type name ''{0}'' must match pattern ''{1}''."/>
-        </module>
+<!--        <module name="ClassTypeParameterName">-->
+<!--            &lt;!&ndash;            <property name="format" value="(^[A-Z][0-9]?)$|([A-Z][a-zA-Z0-9]*[T]$)"/>&ndash;&gt;-->
+<!--            <property name="format" value="(^[A-Z][0-9]?)$|([A-Z][a-zA-Z0-9]*[T]$)"/>-->
+<!--            <message key="name.invalidPattern"-->
+<!--                     value="Class type name ''{0}'' must match pattern ''{1}''."/>-->
+<!--        </module>-->
         <module name="MethodTypeParameterName">
             <!--            <property name="format" value="(^[A-Z][0-9]?)$|([A-Z][a-zA-Z0-9]*[T]$)"/>-->
             <property name="format" value="(^[A-Z][0-9]?)$|([A-Z][a-zA-Z0-9]*[T]$)"/>
             <message key="name.invalidPattern"
                      value="Method type name ''{0}'' must match pattern ''{1}''."/>
         </module>
-        <module name="InterfaceTypeParameterName">
-            <!--            <property name="format" value="(^[A-Z][0-9]?)$|([A-Z][a-zA-Z0-9]*[T]$)"/>-->
-            <property name="format" value="(^[A-Z][0-9]?)$|([A-Z][a-zA-Z0-9]*[T]$)"/>
-            <message key="name.invalidPattern"
-                     value="Interface type name ''{0}'' must match pattern ''{1}''."/>
-        </module>
+<!--        <module name="InterfaceTypeParameterName">-->
+<!--            &lt;!&ndash;            <property name="format" value="(^[A-Z][0-9]?)$|([A-Z][a-zA-Z0-9]*[T]$)"/>&ndash;&gt;-->
+<!--            <property name="format" value="(^[A-Z][0-9]?)$|([A-Z][a-zA-Z0-9]*[T]$)"/>-->
+<!--            <message key="name.invalidPattern"-->
+<!--                     value="Interface type name ''{0}'' must match pattern ''{1}''."/>-->
+<!--        </module>-->
         <module name="NoFinalizer"/>
         <module name="GenericWhitespace">
             <message key="ws.followed"

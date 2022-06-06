@@ -16,6 +16,8 @@ package org.finos.legend.engine.external.format.flatdata.compile;
 
 import org.eclipse.collections.impl.list.mutable.ListAdapter;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.external.format.flatdata.shared.grammar.FlatDataSchemaParseException;
+import org.finos.legend.engine.external.format.flatdata.shared.grammar.FlatDataSchemaParser;
 import org.finos.legend.engine.external.format.flatdata.shared.model.FlatData;
 import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataBoolean;
 import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataDate;
@@ -27,14 +29,10 @@ import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataRec
 import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataRecordType;
 import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataSection;
 import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataString;
-import org.finos.legend.engine.external.format.flatdata.shared.grammar.FlatDataSchemaParseException;
-import org.finos.legend.engine.external.format.flatdata.shared.grammar.FlatDataSchemaParser;
 import org.finos.legend.engine.external.format.flatdata.shared.validation.FlatDataValidation;
 import org.finos.legend.engine.external.format.flatdata.shared.validation.FlatDataValidationResult;
 import org.finos.legend.engine.external.shared.format.model.ExternalSchemaCompileContext;
 import org.finos.legend.engine.external.shared.format.model.compile.ExternalFormatSchemaException;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
-import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.ExternalFormatSchemaSet;
 import org.finos.legend.pure.generated.Root_meta_external_format_flatdata_metamodel_FlatData;
 import org.finos.legend.pure.generated.Root_meta_external_format_flatdata_metamodel_FlatDataBoolean_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_format_flatdata_metamodel_FlatDataDataType;

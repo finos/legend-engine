@@ -20,7 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class XsdAny extends XsdParticle {
+public class XsdAny extends XsdParticle
+{
     public List<String> namespace = new ArrayList<>();
     public XsdContentProcessing processContents;
 

@@ -15,7 +15,6 @@
 package org.finos.legend.engine.external.format.flatdata.read.fixtures;
 
 import org.finos.legend.engine.external.format.flatdata.FlatDataContext;
-import org.finos.legend.engine.external.format.flatdata.write.IFlatDataSerializeExecutionNodeSpecifics;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.ObjectToParsedFlatData;
 import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.ParsedFlatData;
 import org.finos.legend.engine.external.format.flatdata.shared.model.FlatData;
@@ -26,6 +25,7 @@ import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataRec
 import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataRecordType;
 import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataSection;
 import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataString;
+import org.finos.legend.engine.external.format.flatdata.write.IFlatDataSerializeExecutionNodeSpecifics;
 import org.finos.legend.engine.external.format.test.fixture.app.meta.external.shared.format.executionPlan.testing.model.firm.Person;
 
 import java.math.BigDecimal;

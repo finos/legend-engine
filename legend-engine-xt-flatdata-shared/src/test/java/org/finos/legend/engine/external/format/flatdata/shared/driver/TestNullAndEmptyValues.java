@@ -56,18 +56,18 @@ public class TestNullAndEmptyValues extends AbstractDriverTest
     private void runTest(String expectedField1, String expectedField2, String expectedField3, String rawLine, String nullStringGrammar)
     {
         FlatData flatData = parseFlatData("section default: DelimitedWithHeadings\n" +
-                                                  "{\n" +
-                                                  "  scope.untilEof;\n" +
-                                                  "  delimiter       : ',';\n" +
-                                                  nullStringGrammar + "\n" +
-                                                  "\n" +
-                                                  "  Record\n" +
-                                                  "  {\n" +
-                                                  "    FIELD1 : STRING(optional);\n" +
-                                                  "    FIELD2 : STRING(optional);\n" +
-                                                  "    FIELD3 : STRING(optional);\n" +
-                                                  "  }\n" +
-                                                  "}\n");
+                "{\n" +
+                "  scope.untilEof;\n" +
+                "  delimiter       : ',';\n" +
+                nullStringGrammar + "\n" +
+                "\n" +
+                "  Record\n" +
+                "  {\n" +
+                "    FIELD1 : STRING(optional);\n" +
+                "    FIELD2 : STRING(optional);\n" +
+                "    FIELD3 : STRING(optional);\n" +
+                "  }\n" +
+                "}\n");
 
         List<IChecked<Data>> records = deserialize(Data.class, flatData, data("\n", "FIELD1,FIELD2,FIELD3", rawLine));
         if (expectedField1 == null && expectedField2 == null && expectedField3 == null)

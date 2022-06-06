@@ -133,9 +133,9 @@ public class BindingCompiler
     private ExternalFormatExtension getExtension(Root_meta_external_shared_format_binding_Binding binding, Binding srcBinding)
     {
         return externalFormatExtensions.values().stream()
-                                       .filter(ext -> ext.getContentTypes().contains(binding._contentType()))
-                                       .findFirst()
-                                       .orElseThrow(() -> new EngineException("Unknown contentType '" + binding._contentType() + "'", srcBinding.sourceInformation, EngineErrorType.COMPILATION));
+                .filter(ext -> ext.getContentTypes().contains(binding._contentType()))
+                .findFirst()
+                .orElseThrow(() -> new EngineException("Unknown contentType '" + binding._contentType() + "'", srcBinding.sourceInformation, EngineErrorType.COMPILATION));
     }
 
 }

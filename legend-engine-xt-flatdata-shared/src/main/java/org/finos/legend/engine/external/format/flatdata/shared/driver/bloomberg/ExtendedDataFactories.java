@@ -25,7 +25,11 @@ import org.finos.legend.engine.plan.dependencies.domain.dataQuality.BasicDefect;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IChecked;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IDefect;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 class ExtendedDataFactories<T>
 {

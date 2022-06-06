@@ -66,7 +66,7 @@ public class MorphirGenerationService
     @Path("morphir")
     @ApiOperation(value = "Generates Morphir IR from PureModel")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
-    public Response generateMorphirIR(MorphirGenerationInput generateMorphirIRInput, @ApiParam(hidden = true)  @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response generateMorphirIR(MorphirGenerationInput generateMorphirIRInput, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         boolean interactive = generateMorphirIRInput.model instanceof PureModelContextData;

@@ -92,7 +92,7 @@ public class PureTestHelper
     }
 
     @Ignore
-    public static TestSetup wrapSuite(Function0<Boolean> init, Function0<TestSuite> suiteBuilder, boolean withH2, String serverConfigFilePath )
+    public static TestSetup wrapSuite(Function0<Boolean> init, Function0<TestSuite> suiteBuilder, boolean withH2, String serverConfigFilePath)
     {
         boolean shouldCleanUp = init.value();
         TestSuite suite = suiteBuilder.value();
@@ -103,6 +103,7 @@ public class PureTestHelper
         return new TestSetup(suite)
         {
             boolean shouldCleanUp;
+
             @Override
             protected void setUp() throws Exception
             {
@@ -388,7 +389,7 @@ public class PureTestHelper
     public static CompiledExecutionSupport getClassLoaderExecutionSupport(boolean enableConsole)
     {
         ConsoleCompiled console = new ConsoleCompiled();
-        if ( enableConsole == true )
+        if (enableConsole == true)
         {
             console.enable();
         }
@@ -446,7 +447,7 @@ public class PureTestHelper
                 method.invoke(null, this.executionSupport);
                 System.out.format("DONE (%.6fs)\n", (System.nanoTime() - start) / 1_000_000_000.0);
             }
-	    catch(InvocationTargetException e)
+            catch (InvocationTargetException e)
             {
                 System.out.format("ERROR (%.6fs)\n", (System.nanoTime() - start) / 1_000_000_000.0);
                 throw e.getTargetException();

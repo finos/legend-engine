@@ -658,8 +658,8 @@ public class XsdParser
     {
         String text = xsdToken.parse(reader.getAttributeValueOrDefault("maxOccurs", "1"));
         return (text.equalsIgnoreCase("unbounded"))
-               ? null
-               : xsdNonNegativeInteger.parse(text).longValue();
+                ? null
+                : xsdNonNegativeInteger.parse(text).longValue();
     }
 
     private List<XsdDerivationType> xsdDerivationType(String attributeName, List<XsdDerivationType> all)
@@ -768,15 +768,15 @@ public class XsdParser
                 else
                 {
                     String elementName = childHandlers.keySet().stream()
-                                                      .filter(name -> reader.isStartElement(NAMESPACE, name))
-                                                      .findFirst()
-                                                      .orElseThrow(() -> error("Unknown child of " + parentElementName));
+                            .filter(name -> reader.isStartElement(NAMESPACE, name))
+                            .findFirst()
+                            .orElseThrow(() -> error("Unknown child of " + parentElementName));
                     childHandlers.entrySet().stream()
-                                 .filter(e -> e.getKey().equals(elementName))
-                                 .findFirst()
-                                 .orElseThrow(() -> error("Unknown child of " + parentElementName))
-                                 .getValue()
-                                 .run();
+                            .filter(e -> e.getKey().equals(elementName))
+                            .findFirst()
+                            .orElseThrow(() -> error("Unknown child of " + parentElementName))
+                            .getValue()
+                            .run();
                 }
             }
         }

@@ -50,6 +50,7 @@ public interface ServiceRunner
 
     /**
      * Get the list of variables the service expects
+     *
      * @return service variables
      */
     default List<ServiceVariable> getServiceVariables()
@@ -74,7 +75,7 @@ public interface ServiceRunner
      * Run the service and write the serialized result to the passed output stream
      *
      * @param serviceRunnerInput service runner input wrapping parameters, connection input, identity, operational context etc.
-     * @param outputStream output stream on which serialized result needs to be written
+     * @param outputStream       output stream on which serialized result needs to be written
      */
     void run(ServiceRunnerInput serviceRunnerInput, OutputStream outputStream);
 
