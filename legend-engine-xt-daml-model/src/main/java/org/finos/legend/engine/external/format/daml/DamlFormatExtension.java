@@ -56,7 +56,7 @@ public class DamlFormatExtension implements ExternalFormatExtension<Root_meta_ex
     }
 
     @Override
-    public String metamodelToText(Root_meta_external_language_haskell_binding_toPure_HaskellModuleContainer schemaDetail) {
+    public String metamodelToText(Root_meta_external_language_haskell_binding_toPure_HaskellModuleContainer schemaDetail, PureModel pureModel) {
         return null;
     }
 
