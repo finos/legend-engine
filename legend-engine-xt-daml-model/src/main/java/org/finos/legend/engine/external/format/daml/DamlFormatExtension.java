@@ -1,3 +1,17 @@
+//  Copyright 2022 Goldman Sachs
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+
 package org.finos.legend.engine.external.format.daml;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -10,11 +24,11 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.haskell.metamodel.HaskellModule;
 import org.finos.legend.engine.protocol.haskell.metamodel.Translator;
+import org.finos.legend.pure.generated.Root_meta_external_language_haskell_binding_toPure_HaskellModuleContainer;
+import org.finos.legend.pure.generated.Root_meta_external_language_haskell_binding_toPure_HaskellModuleContainer_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_validation_BindingDetail;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_SchemaSet;
-import org.finos.legend.pure.generated.Root_meta_external_language_haskell_binding_toPure_HaskellModuleContainer;
-import org.finos.legend.pure.generated.Root_meta_external_language_haskell_binding_toPure_HaskellModuleContainer_Impl;
 
 import java.util.Collections;
 import java.util.List;
@@ -23,17 +37,20 @@ public class DamlFormatExtension implements ExternalFormatExtension<Root_meta_ex
 {
 
     @Override
-    public String getFormat() {
+    public String getFormat()
+    {
         return "DAML";
     }
 
     @Override
-    public List<String> getContentTypes() {
+    public List<String> getContentTypes()
+    {
         return Collections.emptyList();
     }
 
     @Override
-    public Root_meta_external_language_haskell_binding_toPure_HaskellModuleContainer compileSchema(ExternalSchemaCompileContext context) {
+    public Root_meta_external_language_haskell_binding_toPure_HaskellModuleContainer compileSchema(ExternalSchemaCompileContext context)
+    {
         try
         {
             return new Root_meta_external_language_haskell_binding_toPure_HaskellModuleContainer_Impl("")
@@ -51,12 +68,14 @@ public class DamlFormatExtension implements ExternalFormatExtension<Root_meta_ex
     }
 
     @Override
-    public Root_meta_external_shared_format_binding_validation_BindingDetail bindDetails(Root_meta_external_shared_format_binding_Binding binding, CompileContext context) {
+    public Root_meta_external_shared_format_binding_validation_BindingDetail bindDetails(Root_meta_external_shared_format_binding_Binding binding, CompileContext context)
+    {
         return null;
     }
 
     @Override
-    public String metamodelToText(Root_meta_external_language_haskell_binding_toPure_HaskellModuleContainer schemaDetail, PureModel pureModel) {
+    public String metamodelToText(Root_meta_external_language_haskell_binding_toPure_HaskellModuleContainer schemaDetail, PureModel pureModel)
+    {
         return null;
     }
 
@@ -67,17 +86,20 @@ public class DamlFormatExtension implements ExternalFormatExtension<Root_meta_ex
     }
 
     @Override
-    public Root_meta_external_shared_format_binding_Binding generateModel(Root_meta_external_shared_format_metamodel_SchemaSet schema, DamlToModelConfiguration damlToModelConfiguration, PureModel pureModel) {
+    public Root_meta_external_shared_format_binding_Binding generateModel(Root_meta_external_shared_format_metamodel_SchemaSet schema, DamlToModelConfiguration damlToModelConfiguration, PureModel pureModel)
+    {
         return null;
     }
 
     @Override
-    public Root_meta_external_shared_format_binding_Binding generateSchema(ModelToSchemaConfiguration modelToSchemaConfiguration, PureModel pureModel) {
+    public Root_meta_external_shared_format_binding_Binding generateSchema(ModelToSchemaConfiguration modelToSchemaConfiguration, PureModel pureModel)
+    {
         return null;
     }
 
     @Override
-    public List<String> getRegisterablePackageableElementNames() {
+    public List<String> getRegisterablePackageableElementNames()
+    {
         return Collections.emptyList();
     }
 }
