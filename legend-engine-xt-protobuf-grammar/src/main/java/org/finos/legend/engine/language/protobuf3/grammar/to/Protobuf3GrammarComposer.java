@@ -120,7 +120,7 @@ public class Protobuf3GrammarComposer
             @Override
             public String visit(OneOf val)
             {
-                return "  oneof " + val.name + "{\n" + ListIterate.collect(val.field, f -> renderField(f, currentPackage)).makeString("\n") + "\n }";
+                return "  oneof " + val.name + " {\n" + ListIterate.collect(val.field, f -> "  " + renderField(f, currentPackage)).makeString("\n") + "\n  }";
             }
 
             @Override
