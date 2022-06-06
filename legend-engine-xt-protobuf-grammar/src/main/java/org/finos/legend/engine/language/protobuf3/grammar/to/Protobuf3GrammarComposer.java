@@ -307,7 +307,7 @@ public class Protobuf3GrammarComposer
 
     public String renderEnumeration(Enumeration enumeration, String currentPackage)
     {
-        return "enum " + enumeration.name + " {\n" + ListIterate.collect(enumeration.values, v -> "  " + v.constant + " = " + enumeration.values.indexOf(v)).makeString(";\n") + ";\n}";
+        return "enum " + enumeration.name + " {\n" + ListIterate.collect(enumeration.values, v -> "  " + v.constant + " = " + v.constantNumber).makeString(";\n") + ";\n}";
     }
 
     public String renderLiteral(Literal literal)
