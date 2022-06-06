@@ -79,11 +79,10 @@ function <<doc.deprecated>> meta::relational::functions::toDDL::createSchemaStat
    meta::relational::functions::toDDL::createSchemaStatement($schema, createDbConfig(DatabaseType.H2));
 }
 
-function meta::relational::functions::toDDL::createSchemaStatement(schema:String[1], dbConfig:DbConfig[1]) : String[1]
+function meta::relational::functions::toDDL::createSchemaStatement(schemaName:String[1], dbConfig:DbConfig[1]) : String[1]
 {
-  assert($dbConfig.dbExtension.ddlCommandsProvider->size()==1, ' No relational commands provider found for given db type : '+ $dbConfig.dbType->toString());
-  assert($dbConfig.dbExtension.ddlCommandsProvider->toOne().createSchema->size()==1, ' No create schema command provider found for given db type : '+ $dbConfig.dbType->toString());
-  $dbConfig.dbExtension.ddlCommandsProvider->toOne().createSchema->toOne()->eval($schema);
+  ^meta::relational::commands::CreateSchemaSQL(schema= ^Schema(name= $schemaName,
+                                                               database=^Database(name='dummy')))->translateCreateSchemaStatement($dbConfig);
 }
 
 function <<doc.deprecated>> meta::relational::functions::toDDL::dropSchemaStatement(schema:String[1]) : String[1]
@@ -91,11 +90,10 @@ function <<doc.deprecated>> meta::relational::functions::toDDL::dropSchemaStatem
    dropSchemaStatement($schema, createDbConfig(DatabaseType.H2));
 }
 
-function meta::relational::functions::toDDL::dropSchemaStatement(schema:String[1], dbConfig:DbConfig[1]) : String[1]
+function meta::relational::functions::toDDL::dropSchemaStatement(schemaName:String[1], dbConfig:DbConfig[1]) : String[1]
 {
-  assert($dbConfig.dbExtension.ddlCommandsProvider->size()==1, ' No relational commands provider found for given db type : '+ $dbConfig.dbType->toString());
-  assert($dbConfig.dbExtension.ddlCommandsProvider->toOne().dropSchema->size()==1, ' No drop Schema command provider found for given db type : '+ $dbConfig.dbType->toString());
-  $dbConfig.dbExtension.ddlCommandsProvider->toOne().dropSchema->toOne()->eval($schema);
+   ^meta::relational::commands::DropSchemaSQL(schema= ^Schema(name= $schemaName,
+                                                               database=^Database(name='dummy')))->translateDropSchemaStatement($dbConfig);
 }
 
 function <<doc.deprecated>> meta::relational::functions::toDDL::dropTableStatement(database:Database[1], tableName: String[1]) : String[1]
@@ -139,11 +137,9 @@ function meta::relational::functions::toDDL::dropTableStatement(database:Databas
    dropTableStatement($t, $dbConfig);
 }
 
-function  meta::relational::functions::toDDL::dropTableStatement(t:Table[1], dbConfig:DbConfig[1]) : String[1]
+function meta::relational::functions::toDDL::dropTableStatement(t:Table[1], dbConfig:DbConfig[1]) : String[1]
 {
-  assert($dbConfig.dbExtension.ddlCommandsProvider->size()==1, ' No relational commands provider found for given db type : '+ $dbConfig.dbType->toString());
-  assert($dbConfig.dbExtension.ddlCommandsProvider->toOne().dropTable->size()==1, ' No drop table command provider found for given db type : '+ $dbConfig.dbType->toString());
-  $dbConfig.dbExtension.ddlCommandsProvider->toOne().dropTable->toOne()->eval($t);
+   ^meta::relational::commands::DropTableSQL(table=$t)->translateDropTableStatement($dbConfig);
 }
 
 function <<doc.deprecated>>  meta::relational::functions::toDDL::createTableStatement(database:Database[1], schema: String[1], tableName: String[1]) : String[1]
@@ -174,11 +170,10 @@ function <<access.private>> meta::relational::functions::toDDL::createTableState
    $t->createTableStatement($applyConstraints, $dbConfig);
 }
 
-function  meta::relational::functions::toDDL::createTableStatement(t:Table[1], applyConstraints:Boolean[1], dbConfig:DbConfig[1]) : String[1]
+function meta::relational::functions::toDDL::createTableStatement(t:Table[1], applyConstraints:Boolean[1], dbConfig:DbConfig[1]) : String[1]
 {
-  assert($dbConfig.dbExtension.ddlCommandsProvider->size()==1, ' No relational commands provider found for given db type : '+ $dbConfig.dbType->toString());
-  assert($dbConfig.dbExtension.ddlCommandsProvider->toOne().createTable->size()==1, ' No create table command provider found for given db type : '+ $dbConfig.dbType->toString());
-  $dbConfig.dbExtension.ddlCommandsProvider->toOne().createTable->toOne()->eval($t,  $applyConstraints , $dbConfig);
+   ^meta::relational::commands::CreateTableSQL(table= $t,
+                                               applyConstraints= $applyConstraints)->translateCreateTableStatement($dbConfig);
 }
 
 //deprecated
