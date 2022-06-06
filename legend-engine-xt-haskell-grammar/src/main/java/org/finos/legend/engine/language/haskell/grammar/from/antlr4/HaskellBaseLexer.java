@@ -1,5 +1,3 @@
-package org.finos.legend.engine.language.haskell.grammar.from.antlr4;
-
 /*
 BSD License
 Copyright (c) 2020, Evgeniy Slobodkin
@@ -28,14 +26,21 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-import org.antlr.v4.runtime.*;
+package org.finos.legend.engine.language.haskell.grammar.from.antlr4;
 
-import java.util.Stack;
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CommonToken;
+import org.antlr.v4.runtime.Lexer;
+import org.antlr.v4.runtime.Token;
+
 import java.util.LinkedList;
+import java.util.Stack;
 
-public abstract class HaskellBaseLexer extends Lexer {
+public abstract class HaskellBaseLexer extends Lexer
+{
 
-    public HaskellBaseLexer(CharStream input) {
+    public HaskellBaseLexer(CharStream input)
+    {
         super(input);
     }
 
@@ -44,23 +49,40 @@ public abstract class HaskellBaseLexer extends Lexer {
         setChannel(HIDDEN);
     }
 
-    public class Pair<L,R> {
+    public class Pair<L, R>
+    {
         private final L left;
         private final R right;
-        public Pair(L left, R right) {
+
+        public Pair(L left, R right)
+        {
             this.left = left;
             this.right = right;
         }
 
-        public L first() { return left; }
-        public R second() { return right; }
+        public L first()
+        {
+            return left;
+        }
+
+        public R second()
+        {
+            return right;
+        }
 
         @Override
-        public int hashCode() { return left.hashCode() ^ right.hashCode(); }
+        public int hashCode()
+        {
+            return left.hashCode() ^ right.hashCode();
+        }
 
         @Override
-        public boolean equals(Object o) {
-            if (!(o instanceof Pair)) return false;
+        public boolean equals(Object o)
+        {
+            if (!(o instanceof Pair))
+            {
+                return false;
+            }
             Pair pairo = (Pair) o;
             return this.left.equals(pairo.first()) &&
                     this.right.equals(pairo.second());
@@ -77,7 +99,7 @@ public abstract class HaskellBaseLexer extends Lexer {
     private Stack<Pair<String, Integer>> indentStack = new Stack<>();
     // Pointer keeps last indent token
     private Token initialIndentToken = null;
-    private String  lastKeyWord = "";
+    private String lastKeyWord = "";
 
     private boolean prevWasEndl = false;
     private boolean prevWasKeyWord = false;
@@ -86,40 +108,53 @@ public abstract class HaskellBaseLexer extends Lexer {
     // Check moment, when you should calculate start indent
     // module ... where {now you should remember start indent}
     private boolean moduleStartIndent = false;
-    private boolean wasModuleExport   = false;
-    private boolean inPragmas         = false;
+    private boolean wasModuleExport = false;
+    private boolean inPragmas = false;
 
     // Haskell saves indent before first() symbol as null indent
     private int startIndent = -1;
     // Count of "active" key words in this moment
     private int nestedLevel = 0;
 
-    protected void processNEWLINEToken() {
-        if (pendingDent) { setChannel(HIDDEN); }
+    protected void processNEWLINEToken()
+    {
+        if (pendingDent)
+        {
+            setChannel(HIDDEN);
+        }
         indentCount = 0;
         initialIndentToken = null;
     }
 
-    protected void processTABToken() {
+    protected void processTABToken()
+    {
         setChannel(HIDDEN);
-        if (pendingDent) {
-            indentCount += 8*getText().length();
+        if (pendingDent)
+        {
+            indentCount += 8 * getText().length();
         }
     }
 
-    protected void processWSToken() {
+    protected void processWSToken()
+    {
         setChannel(HIDDEN);
-        if (pendingDent) {
+        if (pendingDent)
+        {
             indentCount += getText().length();
         }
     }
 
-    private int getSavedIndent() { return indentStack.empty() ? startIndent : indentStack.peek().second(); }
+    private int getSavedIndent()
+    {
+        return indentStack.empty() ? startIndent : indentStack.peek().second();
+    }
 
     private CommonToken
-    createToken(int type, String text, Token next) {
+    createToken(int type, String text, Token next)
+    {
         CommonToken token = new CommonToken(type, text);
-        if (initialIndentToken != null) {
+        if (initialIndentToken != null)
+        {
             token.setStartIndex(initialIndentToken.getStartIndex());
             token.setLine(initialIndentToken.getLine());
             token.setCharPositionInLine(initialIndentToken.getCharPositionInLine());
@@ -128,15 +163,18 @@ public abstract class HaskellBaseLexer extends Lexer {
         return token;
     }
 
-    private void processINToken(Token next) {
-        while (!indentStack.empty() && !indentStack.peek().first().equals("let")) {
+    private void processINToken(Token next)
+    {
+        while (!indentStack.empty() && !indentStack.peek().first().equals("let"))
+        {
             tokenQueue.offer(createToken(HaskellLexer.SEMI, "SEMI", next));
             tokenQueue.offer(createToken(HaskellLexer.VCCURLY, "VCCURLY", next));
             nestedLevel--;
             indentStack.pop();
         }
 
-        if (!indentStack.empty() && indentStack.peek().first().equals("let")) {
+        if (!indentStack.empty() && indentStack.peek().first().equals("let"))
+        {
             tokenQueue.offer(createToken(HaskellLexer.SEMI, "SEMI", next));
             tokenQueue.offer(createToken(HaskellLexer.VCCURLY, "VCCURLY", next));
             nestedLevel--;
@@ -144,22 +182,29 @@ public abstract class HaskellBaseLexer extends Lexer {
         }
     }
 
-    private void processEOFToken(Token next) {
+    private void processEOFToken(Token next)
+    {
         indentCount = startIndent;
-        if (!pendingDent) {
+        if (!pendingDent)
+        {
             initialIndentToken = next;
         }
 
-        while (nestedLevel > indentStack.size()) {
+        while (nestedLevel > indentStack.size())
+        {
             if (nestedLevel > 0)
+            {
                 nestedLevel--;
+            }
 
             tokenQueue.offer(createToken(HaskellLexer.SEMI, "SEMI", next));
             tokenQueue.offer(createToken(HaskellLexer.VCCURLY, "VCCURLY", next));
         }
 
-        while (indentCount < getSavedIndent()) {
-            if (!indentStack.empty() && nestedLevel > 0) {
+        while (indentCount < getSavedIndent())
+        {
+            if (!indentStack.empty() && nestedLevel > 0)
+            {
                 indentStack.pop();
                 nestedLevel--;
             }
@@ -168,11 +213,13 @@ public abstract class HaskellBaseLexer extends Lexer {
             tokenQueue.offer(createToken(HaskellLexer.VCCURLY, "VCCURLY", next));
         }
 
-        if (indentCount == getSavedIndent()) {
+        if (indentCount == getSavedIndent())
+        {
             tokenQueue.offer(createToken(HaskellLexer.SEMI, "SEMI", next));
         }
 
-        if (wasModuleExport) {
+        if (wasModuleExport)
+        {
             tokenQueue.offer(createToken(HaskellLexer.VCCURLY, "VCCURLY", next));
         }
 
@@ -183,29 +230,38 @@ public abstract class HaskellBaseLexer extends Lexer {
     // https://www.haskell.org/onlinereport/haskell2010/haskellch10.html
     // https://en.wikibooks.org/wiki/Haskell/Indentation
     @Override
-    public Token nextToken() {
-        if (!tokenQueue.isEmpty()) {
+    public Token nextToken()
+    {
+        if (!tokenQueue.isEmpty())
+        {
             return tokenQueue.poll();
         }
 
         Token next = super.nextToken();
-        int   type = next.getType();
+        int type = next.getType();
 
-        if (type == HaskellLexer.OpenPragmaBracket) {
+        if (type == HaskellLexer.OpenPragmaBracket)
+        {
             inPragmas = true;
         }
 
         if (startIndent == -1
                 && type != HaskellLexer.NEWLINE
-                && type !=  HaskellLexer.WS
-                && type !=  HaskellLexer.TAB
-                && type != HaskellLexer.OCURLY) {
-            if (type ==  HaskellLexer.MODULE) {
+                && type != HaskellLexer.WS
+                && type != HaskellLexer.TAB
+                && type != HaskellLexer.OCURLY)
+        {
+            if (type == HaskellLexer.MODULE)
+            {
                 moduleStartIndent = true;
                 wasModuleExport = true;
-            } if (type !=  HaskellLexer.MODULE && !moduleStartIndent && !inPragmas) {
+            }
+            if (type != HaskellLexer.MODULE && !moduleStartIndent && !inPragmas)
+            {
                 startIndent = next.getCharPositionInLine();
-            } else if (lastKeyWord.equals("where") && moduleStartIndent) {
+            }
+            else if (lastKeyWord.equals("where") && moduleStartIndent)
+            {
                 lastKeyWord = "";
                 prevWasKeyWord = false;
                 nestedLevel = 0;
@@ -219,17 +275,21 @@ public abstract class HaskellBaseLexer extends Lexer {
             }
         }
 
-        if (type == HaskellLexer.ClosePragmaBracket) {
+        if (type == HaskellLexer.ClosePragmaBracket)
+        {
             inPragmas = false;
         }
 
-        if (type == HaskellLexer.OCURLY) {
-            if (prevWasKeyWord) {
+        if (type == HaskellLexer.OCURLY)
+        {
+            if (prevWasKeyWord)
+            {
                 nestedLevel--;
                 prevWasKeyWord = false;
             }
 
-            if (moduleStartIndent) {
+            if (moduleStartIndent)
+            {
                 moduleStartIndent = false;
                 // because will be  HaskellLexer.CCURLY in the end of file
                 wasModuleExport = false;
@@ -241,10 +301,11 @@ public abstract class HaskellBaseLexer extends Lexer {
 
         if (prevWasKeyWord && !prevWasEndl
                 && !moduleStartIndent
-                && type !=  HaskellLexer.WS
+                && type != HaskellLexer.WS
                 && type != HaskellLexer.NEWLINE
-                && type !=  HaskellLexer.TAB
-                && type != HaskellLexer.OCURLY) {
+                && type != HaskellLexer.TAB
+                && type != HaskellLexer.OCURLY)
+        {
             prevWasKeyWord = false;
             indentStack.push(new Pair<String, Integer>(lastKeyWord, next.getCharPositionInLine()));
             tokenQueue.offer(createToken(HaskellLexer.VOCURLY, "VOCURLY", next));
@@ -252,14 +313,15 @@ public abstract class HaskellBaseLexer extends Lexer {
 
         if (ignoreIndent
                 && (type == HaskellLexer.WHERE
-                ||  type == HaskellLexer.DO
-                ||  type == HaskellLexer.MDO
-                ||  type == HaskellLexer.LET
-                ||  type == HaskellLexer.OF
-                ||  type == HaskellLexer.LCASE
-                ||  type == HaskellLexer.REC
-                ||  type == HaskellLexer.CCURLY)
-        ) {
+                || type == HaskellLexer.DO
+                || type == HaskellLexer.MDO
+                || type == HaskellLexer.LET
+                || type == HaskellLexer.OF
+                || type == HaskellLexer.LCASE
+                || type == HaskellLexer.REC
+                || type == HaskellLexer.CCURLY)
+        )
+        {
             ignoreIndent = false;
         }
 
@@ -268,7 +330,8 @@ public abstract class HaskellBaseLexer extends Lexer {
                 && !ignoreIndent
                 && indentCount <= getSavedIndent()
                 && type != HaskellLexer.NEWLINE
-                && type !=  HaskellLexer.WS) {
+                && type != HaskellLexer.WS)
+        {
 
             tokenQueue.offer(createToken(HaskellLexer.VOCURLY, "VOCURLY", next));
             prevWasKeyWord = false;
@@ -280,27 +343,33 @@ public abstract class HaskellBaseLexer extends Lexer {
                 && !ignoreIndent
                 && indentCount <= getSavedIndent()
                 && type != HaskellLexer.NEWLINE
-                && type !=  HaskellLexer.WS
+                && type != HaskellLexer.WS
                 && type != HaskellLexer.WHERE
-                && type !=  HaskellLexer.IN
+                && type != HaskellLexer.IN
                 && type != HaskellLexer.DO
                 && type != HaskellLexer.MDO
-                && type !=  HaskellLexer.OF
+                && type != HaskellLexer.OF
                 && type != HaskellLexer.LCASE
                 && type != HaskellLexer.REC
-                && type !=  HaskellLexer.CCURLY
-                && type != EOF) {
+                && type != HaskellLexer.CCURLY
+                && type != EOF)
+        {
 
-            while (nestedLevel > indentStack.size()) {
+            while (nestedLevel > indentStack.size())
+            {
                 if (nestedLevel > 0)
+                {
                     nestedLevel--;
+                }
 
                 tokenQueue.offer(createToken(HaskellLexer.SEMI, "SEMI", next));
                 tokenQueue.offer(createToken(HaskellLexer.VCCURLY, "VCCURLY", next));
             }
 
-            while (indentCount < getSavedIndent()) {
-                if (!indentStack.empty() && nestedLevel > 0) {
+            while (indentCount < getSavedIndent())
+            {
+                if (!indentStack.empty() && nestedLevel > 0)
+                {
                     indentStack.pop();
                     nestedLevel--;
                 }
@@ -309,12 +378,14 @@ public abstract class HaskellBaseLexer extends Lexer {
                 tokenQueue.offer(createToken(HaskellLexer.VCCURLY, "VCCURLY", next));
             }
 
-            if (indentCount == getSavedIndent()) {
+            if (indentCount == getSavedIndent())
+            {
                 tokenQueue.offer(createToken(HaskellLexer.SEMI, "SEMI", next));
             }
 
             prevWasEndl = false;
-            if (indentCount == startIndent) {
+            if (indentCount == startIndent)
+            {
                 pendingDent = false;
             }
         }
@@ -325,12 +396,14 @@ public abstract class HaskellBaseLexer extends Lexer {
                 && !ignoreIndent
                 && indentCount > getSavedIndent()
                 && type != HaskellLexer.NEWLINE
-                && type !=  HaskellLexer.WS
-                && type != EOF) {
+                && type != HaskellLexer.WS
+                && type != EOF)
+        {
 
             prevWasKeyWord = false;
 
-            if (prevWasEndl) {
+            if (prevWasEndl)
+            {
                 indentStack.push(new Pair<String, Integer>(lastKeyWord, indentCount));
                 prevWasEndl = false;
             }
@@ -340,31 +413,36 @@ public abstract class HaskellBaseLexer extends Lexer {
 
         if (pendingDent
                 && initialIndentToken == null
-                && HaskellLexer.NEWLINE != type) {
+                && HaskellLexer.NEWLINE != type)
+        {
             initialIndentToken = next;
         }
 
-        if (next != null && type == HaskellLexer.NEWLINE) {
+        if (next != null && type == HaskellLexer.NEWLINE)
+        {
             prevWasEndl = true;
         }
 
-        if (   type == HaskellLexer.WHERE
+        if (type == HaskellLexer.WHERE
                 || type == HaskellLexer.LET
                 || type == HaskellLexer.DO
                 || type == HaskellLexer.MDO
                 || type == HaskellLexer.OF
                 || type == HaskellLexer.LCASE
-                || type == HaskellLexer.REC) {
+                || type == HaskellLexer.REC)
+        {
             // if next will be HaskellLexer.OCURLY need to decrement nestedLevel
             nestedLevel++;
             prevWasKeyWord = true;
             prevWasEndl = false;
             lastKeyWord = next.getText();
 
-            if (type == HaskellLexer.WHERE) {
+            if (type == HaskellLexer.WHERE)
+            {
                 if (!indentStack.empty()
                         && (indentStack.peek().first().equals("do")
-                        || indentStack.peek().first().equals("mdo"))) {
+                        || indentStack.peek().first().equals("mdo")))
+                {
                     tokenQueue.offer(createToken(HaskellLexer.SEMI, "SEMI", next));
                     tokenQueue.offer(createToken(HaskellLexer.VCCURLY, "VCCURLY", next));
                     indentStack.pop();
@@ -373,19 +451,23 @@ public abstract class HaskellBaseLexer extends Lexer {
             }
         }
 
-        if (next != null && type == HaskellLexer.OCURLY) {
+        if (next != null && type == HaskellLexer.OCURLY)
+        {
             prevWasKeyWord = false;
         }
 
-        if (next == null || HIDDEN == next.getChannel() || HaskellLexer.NEWLINE == type) {
+        if (next == null || HIDDEN == next.getChannel() || HaskellLexer.NEWLINE == type)
+        {
             return next;
         }
 
-        if (type ==  HaskellLexer.IN) {
+        if (type == HaskellLexer.IN)
+        {
             processINToken(next);
         }
 
-        if (type == EOF) {
+        if (type == EOF)
+        {
             processEOFToken(next);
         }
 

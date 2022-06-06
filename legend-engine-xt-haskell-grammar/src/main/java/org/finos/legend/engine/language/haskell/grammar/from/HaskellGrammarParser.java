@@ -1,6 +1,28 @@
+//  Copyright 2022 Goldman Sachs
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+
 package org.finos.legend.engine.language.haskell.grammar.from;
 
-import org.antlr.v4.runtime.*;
+import org.antlr.v4.runtime.ANTLRErrorListener;
+import org.antlr.v4.runtime.BaseErrorListener;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.InputMismatchException;
+import org.antlr.v4.runtime.Parser;
+import org.antlr.v4.runtime.RecognitionException;
+import org.antlr.v4.runtime.Recognizer;
+import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.eclipse.collections.api.factory.Lists;
@@ -8,13 +30,24 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.haskell.grammar.from.antlr4.HaskellLexer;
 import org.finos.legend.engine.language.haskell.grammar.from.antlr4.HaskellParser;
-import org.finos.legend.engine.protocol.haskell.metamodel.*;
+import org.finos.legend.engine.protocol.haskell.metamodel.DataType;
+import org.finos.legend.engine.protocol.haskell.metamodel.DataTypeConstructor;
+import org.finos.legend.engine.protocol.haskell.metamodel.Deriving;
+import org.finos.legend.engine.protocol.haskell.metamodel.Field;
+import org.finos.legend.engine.protocol.haskell.metamodel.HaskellModule;
+import org.finos.legend.engine.protocol.haskell.metamodel.HaskellType;
+import org.finos.legend.engine.protocol.haskell.metamodel.ListType;
+import org.finos.legend.engine.protocol.haskell.metamodel.ModuleElement;
+import org.finos.legend.engine.protocol.haskell.metamodel.NamedConstructor;
+import org.finos.legend.engine.protocol.haskell.metamodel.NamedTypeRef;
+import org.finos.legend.engine.protocol.haskell.metamodel.RecordTypeConstructor;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
 import java.util.BitSet;
 import java.util.List;
 
-public class HaskellGrammarParser {
+public class HaskellGrammarParser
+{
 
     protected HaskellGrammarParser()
     {
@@ -25,7 +58,8 @@ public class HaskellGrammarParser {
         return new HaskellGrammarParser();
     }
 
-    public HaskellModule parseModule(String code) {
+    public HaskellModule parseModule(String code)
+    {
         return parse(code);
     }
 
@@ -34,12 +68,12 @@ public class HaskellGrammarParser {
         ANTLRErrorListener errorListener = new BaseErrorListener()
         {
             @Override
-            public void syntaxError(            Recognizer<?, ?> recognizer,
-                                                Object offendingSymbol,
-                                                int line,
-                                                int charPositionInLine,
-                                                String msg,
-                                                RecognitionException e)
+            public void syntaxError(Recognizer<?, ?> recognizer,
+                                    Object offendingSymbol,
+                                    int line,
+                                    int charPositionInLine,
+                                    String msg,
+                                    RecognitionException e)
             {
                 if (e != null && e.getOffendingToken() != null && e instanceof InputMismatchException)
                 {
@@ -58,7 +92,7 @@ public class HaskellGrammarParser {
                         SourceInformation sourceInformation = new SourceInformation(
                                 "",
                                 line,
-                                charPositionInLine + 1 ,
+                                charPositionInLine + 1,
                                 line,
                                 charPositionInLine + 1 + ((Token) offendingSymbol).getStopIndex() - ((Token) offendingSymbol).getStartIndex());
                         // NOTE: for some reason sometimes ANTLR report the end index of the token to be smaller than the start index so we must reprocess it here
@@ -78,7 +112,7 @@ public class HaskellGrammarParser {
                 SourceInformation sourceInformation = new SourceInformation(
                         "",
                         line,
-                        charPositionInLine + 1 ,
+                        charPositionInLine + 1,
                         offendingToken.getLine(),
                         charPositionInLine + offendingToken.getText().length());
                 throw new HaskellParserException(msg, sourceInformation);
@@ -122,9 +156,14 @@ public class HaskellGrammarParser {
     private ModuleElement visitTopDecls(HaskellParser.TopdeclContext topdeclContext)
     {
         if (topdeclContext.ty_decl() != null)
+        {
             return visitTypeDecl(topdeclContext.ty_decl());
+        }
 
-        else throw new RuntimeException("Unsupported declaration");
+        else
+        {
+            throw new RuntimeException("Unsupported declaration");
+        }
     }
 
     private DataType visitTypeDecl(HaskellParser.Ty_declContext ty_declContext)
@@ -141,26 +180,29 @@ public class HaskellGrammarParser {
         throw new RuntimeException("Unsupported declaration");
     }
 
-    private List<NamedConstructor> visitConstrContext(HaskellParser.ConstrContext constrContext) {
+    private List<NamedConstructor> visitConstrContext(HaskellParser.ConstrContext constrContext)
+    {
         return visitConstrTyappsContext(constrContext.constr_stuff().constr_tyapps().constr_tyapp());
     }
 
     private List<NamedConstructor> visitConstrTyappsContext(List<HaskellParser.Constr_tyappContext> constr_tyappsContext)
     {
         MutableList<NamedConstructor> constructors = Lists.mutable.of();
-        for(HaskellParser.Constr_tyappContext constr_tyappContext : constr_tyappsContext)
+        for (HaskellParser.Constr_tyappContext constr_tyappContext : constr_tyappsContext)
         {
-            if(constr_tyappContext.tyapp().atype() != null)
+            if (constr_tyappContext.tyapp().atype() != null)
             {
                 HaskellParser.AtypeContext atypeContext = constr_tyappContext.tyapp().atype();
-                if(atypeContext.fielddecls() != null) {
+                if (atypeContext.fielddecls() != null)
+                {
                     RecordTypeConstructor constructor = new RecordTypeConstructor();
                     constructor.fields = visitFielddeclsContext(atypeContext.fielddecls());
                     NamedConstructor nc = constructors.get(constructors.size() - 1);
                     constructor.name = nc.name;
                     constructors.set(constructors.size() - 1, constructor);
                 }
-                else {
+                else
+                {
                     constructors.add(visitATypeContextAsConstructor(constr_tyappContext.tyapp().atype()));
                 }
             }
@@ -170,7 +212,7 @@ public class HaskellGrammarParser {
 
     private List<Field> visitFielddeclsContext(HaskellParser.FielddeclsContext fielddeclsContext)
     {
-        return ListIterate.collect(fielddeclsContext.fielddecl(),this::visitFieldDeclContext);
+        return ListIterate.collect(fielddeclsContext.fielddecl(), this::visitFieldDeclContext);
     }
 
     private Field visitFieldDeclContext(HaskellParser.FielddeclContext fielddeclContext)
@@ -181,23 +223,33 @@ public class HaskellGrammarParser {
         return field;
     }
 
-    private HaskellType visitATypeContextAsType(HaskellParser.AtypeContext atypeContext) {
-        if (atypeContext.ktype() != null) {
-             List<HaskellType> type = visitKTypeContext(atypeContext.ktype());
+    private HaskellType visitATypeContextAsType(HaskellParser.AtypeContext atypeContext)
+    {
+        if (atypeContext.ktype() != null)
+        {
+            List<HaskellType> type = visitKTypeContext(atypeContext.ktype());
 
             //This is a list type
-            if (atypeContext.OpenSquareBracket() != null) {
+            if (atypeContext.OpenSquareBracket() != null)
+            {
                 ListType listType = new ListType();
-                if (atypeContext.ktype() != null) {
+                if (atypeContext.ktype() != null)
+                {
                     listType.type = type;
                 }
                 return listType;
             }
-            else {
-                if(type.size() != 1) throw new RuntimeException("Unexpected");
+            else
+            {
+                if (type.size() != 1)
+                {
+                    throw new RuntimeException("Unexpected");
+                }
                 return type.get(0);
             }
-        } else {
+        }
+        else
+        {
             NamedConstructor nc = visitATypeContextAsConstructor(atypeContext);
             NamedTypeRef tr = new NamedTypeRef();
             tr.name = nc.name;
@@ -207,13 +259,14 @@ public class HaskellGrammarParser {
 
     private NamedConstructor visitATypeContextAsConstructor(HaskellParser.AtypeContext atypeContext)
     {
-        if( atypeContext.fielddecls() != null)
+        if (atypeContext.fielddecls() != null)
         {
             RecordTypeConstructor constructor = new RecordTypeConstructor();
             constructor.fields = visitFielddeclsContext(atypeContext.fielddecls());
             return constructor;
         }
-        else if (atypeContext.ntgtycon() != null) {
+        else if (atypeContext.ntgtycon() != null)
+        {
             NamedConstructor type = new DataTypeConstructor();
             type.name = visitNtgtyconContext(atypeContext.ntgtycon());
             return type;
@@ -224,7 +277,7 @@ public class HaskellGrammarParser {
 
     private List<HaskellType> visitBTypeContext(HaskellParser.BtypeContext btypeContext)
     {
-        if( btypeContext.tyapps() != null)
+        if (btypeContext.tyapps() != null)
         {
             return ListIterate.collect(btypeContext.tyapps().tyapp(), this::visitTyappContext);
         }
@@ -233,7 +286,7 @@ public class HaskellGrammarParser {
 
     private List<HaskellType> visitCTypeContext(HaskellParser.CtypeContext ctypeContext)
     {
-        if( ctypeContext.type_() != null)
+        if (ctypeContext.type_() != null)
         {
             return visitTypeContext(ctypeContext.type_());
         }
@@ -242,7 +295,7 @@ public class HaskellGrammarParser {
 
     private List<HaskellType> visitKTypeContext(HaskellParser.KtypeContext ktypeContext)
     {
-        if( ktypeContext.ctype() != null)
+        if (ktypeContext.ctype() != null)
         {
             return visitCTypeContext(ktypeContext.ctype());
         }
@@ -251,7 +304,7 @@ public class HaskellGrammarParser {
 
     private String visitNtgtyconContext(HaskellParser.NtgtyconContext ntgtyconContext)
     {
-        if( ntgtyconContext.oqtycon() != null)
+        if (ntgtyconContext.oqtycon() != null)
         {
             return visitOqtyconContext(ntgtyconContext.oqtycon());
         }
@@ -260,7 +313,7 @@ public class HaskellGrammarParser {
 
     private String visitOqtyconContext(HaskellParser.OqtyconContext oqtyconContext)
     {
-        if( oqtyconContext.qtycon() != null)
+        if (oqtyconContext.qtycon() != null)
         {
             return visitQtyconContext(oqtyconContext.qtycon());
         }
@@ -269,7 +322,7 @@ public class HaskellGrammarParser {
 
     private String visitQtyconContext(HaskellParser.QtyconContext qtyconContext)
     {
-        if( qtyconContext.tycon() != null)
+        if (qtyconContext.tycon() != null)
         {
             return visitTyconContext(qtyconContext.tycon());
         }
@@ -278,7 +331,7 @@ public class HaskellGrammarParser {
 
     private HaskellType visitTyappContext(HaskellParser.TyappContext tyappContext)
     {
-        if( tyappContext.atype() != null)
+        if (tyappContext.atype() != null)
         {
             return visitATypeContextAsType(tyappContext.atype());
         }
@@ -287,7 +340,7 @@ public class HaskellGrammarParser {
 
     private String visitTyconContext(HaskellParser.TyconContext tyconContext)
     {
-        if( tyconContext.conid() != null)
+        if (tyconContext.conid() != null)
         {
             return visitConidContext(tyconContext.conid());
         }
@@ -301,7 +354,7 @@ public class HaskellGrammarParser {
 
     private List<HaskellType> visitTypeContext(HaskellParser.Type_Context typeContext)
     {
-        if( typeContext.btype() != null)
+        if (typeContext.btype() != null)
         {
             return visitBTypeContext(typeContext.btype());
         }
@@ -322,7 +375,7 @@ public class HaskellGrammarParser {
 
     private List<HaskellType> visitCtypedocContext(HaskellParser.CtypedocContext ctypedocContext)
     {
-        if( ctypedocContext.typedoc() != null)
+        if (ctypedocContext.typedoc() != null)
         {
             return visitTypedocContext(ctypedocContext.typedoc());
         }
@@ -332,7 +385,7 @@ public class HaskellGrammarParser {
 
     private List<HaskellType> visitTypedocContext(HaskellParser.TypedocContext typedocContext)
     {
-        if( typedocContext.btype() != null)
+        if (typedocContext.btype() != null)
         {
             return visitBTypeContext(typedocContext.btype());
         }
