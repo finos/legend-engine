@@ -64,7 +64,7 @@ function <<test.Test>>  meta::relational::tests::ddl::testSetupDataSqlGeneration
    'Create Table placeOfInterestTable(ID INT NOT NULL,locationID INT NOT NULL,NAME VARCHAR(200) NULL, PRIMARY KEY(ID,locationID));',
    'insert into personTable (ID,FIRSTNAME,LASTNAME,AGE,ADDRESSID,FIRMID,MANAGERID) values (1,\'Peter\',\'Smith\',23,1,1,2);'
    ];
-  assertEquals($sqls,$expectedSqls);
+  assertSameElements($sqls,$expectedSqls);
 }  
 
 
@@ -107,5 +107,5 @@ function <<test.Test>>  meta::relational::tests::ddl::testSetupDataSqlGeneration
    'Create Table placeOfInterestTable(ID INT NOT NULL,locationID INT NOT NULL,NAME VARCHAR(200) NULL, PRIMARY KEY(ID,locationID));',
    'insert into personTable (ID,FIRSTNAME,LASTNAME,AGE,ADDRESSID,FIRMID,MANAGERID) values (1,\'Peter\',\'Smith\',23,1,1,2);'
    ];
-  assertEquals($sqls,$expectedSqls);
+  assertSameElements($sqls,$expectedSqls);
 }  
