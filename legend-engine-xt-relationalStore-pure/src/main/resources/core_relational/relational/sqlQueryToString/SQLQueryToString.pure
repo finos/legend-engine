@@ -147,10 +147,10 @@ Class meta::relational::functions::sqlQueryToString::DbExtension
 
 Class meta::relational::functions::sqlQueryToString::RelationalDDLCommandsTranslator
 {
-  createSchema: meta::pure::metamodel::function::Function<{meta::relational::commands::CreateSchemaSQL[1]->String[1]}>[0..1];
-  dropSchema : meta::pure::metamodel::function::Function<{meta::relational::commands::DropSchemaSQL[1]->String[1]}>[0..1];
-  dropTable : meta::pure::metamodel::function::Function<{meta::relational::commands::DropTableSQL[1] -> String[1]}>[0..1];
-  createTable : meta::pure::metamodel::function::Function<{meta::relational::commands::CreateTableSQL[1], DbConfig[1] -> String[1]}>[0..1];
+  createSchema: meta::pure::metamodel::function::Function<{meta::relational::commands::CreateSchemaSQL[1]->String[*]}>[0..1];
+  dropSchema : meta::pure::metamodel::function::Function<{meta::relational::commands::DropSchemaSQL[1]->String[*]}>[0..1];
+  dropTable : meta::pure::metamodel::function::Function<{meta::relational::commands::DropTableSQL[1] -> String[*]}>[0..1];
+  createTable : meta::pure::metamodel::function::Function<{meta::relational::commands::CreateTableSQL[1], DbConfig[1] -> String[*]}>[0..1];
   loadTable: meta::pure::metamodel::function::Function<{ meta::relational::commands::LoadTableSQL[1], DbConfig[1] ->  String[*]}>[0..1];
 }
 
@@ -3133,28 +3133,28 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::trans
 
 
 
-function meta::relational::functions::toDDL::translateCreateSchemaStatement(createSchemaSQL:meta::relational::commands::CreateSchemaSQL[1], dbConfig:DbConfig[1]) : String[1]
+function meta::relational::functions::toDDL::translateCreateSchemaStatement(createSchemaSQL:meta::relational::commands::CreateSchemaSQL[1], dbConfig:DbConfig[1]) : String[*]
 {
   assert($dbConfig.dbExtension.ddlCommandsTranslator->size()==1, ' No relational commands provider found for given db type : '+ $dbConfig.dbType->toString());
   assert($dbConfig.dbExtension.ddlCommandsTranslator->toOne().createSchema->size()==1, ' No create schema command provider found for given db type : '+ $dbConfig.dbType->toString());
   $dbConfig.dbExtension.ddlCommandsTranslator->toOne().createSchema->toOne()->eval($createSchemaSQL);
 }
 
-function meta::relational::functions::toDDL::translateDropSchemaStatement(dropSchemaSQL:meta::relational::commands::DropSchemaSQL[1], dbConfig:DbConfig[1]) : String[1]
+function meta::relational::functions::toDDL::translateDropSchemaStatement(dropSchemaSQL:meta::relational::commands::DropSchemaSQL[1], dbConfig:DbConfig[1]) : String[*]
 {
   assert($dbConfig.dbExtension.ddlCommandsTranslator->size()==1, ' No relational commands provider found for given db type : '+ $dbConfig.dbType->toString());
   assert($dbConfig.dbExtension.ddlCommandsTranslator->toOne().dropSchema->size()==1, ' No drop Schema command provider found for given db type : '+ $dbConfig.dbType->toString());
   $dbConfig.dbExtension.ddlCommandsTranslator->toOne().dropSchema->toOne()->eval($dropSchemaSQL);
 }
 
-function  meta::relational::functions::toDDL::translateCreateTableStatement(createTableSQL:meta::relational::commands::CreateTableSQL[1], dbConfig:DbConfig[1]) : String[1]
+function  meta::relational::functions::toDDL::translateCreateTableStatement(createTableSQL:meta::relational::commands::CreateTableSQL[1], dbConfig:DbConfig[1]) : String[*]
 {
   assert($dbConfig.dbExtension.ddlCommandsTranslator->size()==1, ' No relational commands provider found for given db type : '+ $dbConfig.dbType->toString());
   assert($dbConfig.dbExtension.ddlCommandsTranslator->toOne().createTable->size()==1, ' No create table command provider found for given db type : '+ $dbConfig.dbType->toString());
   $dbConfig.dbExtension.ddlCommandsTranslator->toOne().createTable->toOne()->eval($createTableSQL, $dbConfig);
 }
 
-function  meta::relational::functions::toDDL::translateDropTableStatement(dropTableSQL:meta::relational::commands::DropTableSQL[1], dbConfig:DbConfig[1]) : String[1]
+function  meta::relational::functions::toDDL::translateDropTableStatement(dropTableSQL:meta::relational::commands::DropTableSQL[1], dbConfig:DbConfig[1]) : String[*]
 {
   assert($dbConfig.dbExtension.ddlCommandsTranslator->size()==1, ' No relational commands provider found for given db type : '+ $dbConfig.dbType->toString());
   assert($dbConfig.dbExtension.ddlCommandsTranslator->toOne().dropTable->size()==1, ' No drop table command provider found for given db type : '+ $dbConfig.dbType->toString());
@@ -3209,10 +3209,10 @@ function <<access.private>>  meta::relational::functions::sqlQueryToString::load
 {
  
     $loadTableSQL.parsedData.values->map(row |  let sql = 'insert into ' + if($loadTableSQL.table.schema.name=='default', |'' ,|$loadTableSQL.table.schema.name + '.') + $loadTableSQL.table.name + ' ('
-            + $loadTableSQL.columns.name->map(colName | $colName->meta::relational::functions::sqlQueryToString::processColumnName($dbConfig))->joinStrings(',')
+            + $loadTableSQL.columnsToLoad.name->map(colName | $colName->meta::relational::functions::sqlQueryToString::processColumnName($dbConfig))->joinStrings(',')
             +') '
             + 'values ('
-            + $row.values->meta::relational::functions::database::testDataSQLgeneration::convertValuesToCsv($loadTableSQL.columns.type)
+            + $row.values->meta::relational::functions::database::testDataSQLgeneration::convertValuesToCsv($loadTableSQL.columnsToLoad.type)
             + ');';
    );
 }

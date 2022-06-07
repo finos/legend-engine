@@ -67,6 +67,6 @@ Class meta::relational::commands::DropTableSQL extends SQLQuery
 Class meta::relational::commands::LoadTableSQL extends SQLQuery
 {
     table: Table[1];
-    columns : Column[*];
+    columnsToLoad : Column[*];
     parsedData : List<List<String>>[0..1];
 }

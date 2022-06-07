@@ -339,7 +339,7 @@ function meta::relational::functions::database::loadValuesToDbTable2(data : List
 
 function meta::relational::functions::database::loadValuesToDbTable2(data : List<List<String>>[1], table:Table[1],columns : Column[*], dbConfig: DbConfig[1]) : String[*]
 {
-    ^meta::relational::commands::LoadTableSQL(table=$table, columns=$columns, parsedData=$data)
+    ^meta::relational::commands::LoadTableSQL(table=$table, columnsToLoad=$columns, parsedData=$data)
                                           ->translateLoadTableStatement($dbConfig);
 }
 
