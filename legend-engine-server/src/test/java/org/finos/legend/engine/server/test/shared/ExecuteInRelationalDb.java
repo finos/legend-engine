@@ -24,13 +24,11 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiParam;
@@ -48,13 +46,12 @@ import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 import org.slf4j.Logger;
-
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
 
 @Api(tags = "Utilities - ExecuteInRelationalDb")
 @Path("pure/v1/utilities/tests")
-@Produces( MediaType.APPLICATION_JSON)
-public class  ExecuteInRelationalDb
+@Produces(MediaType.APPLICATION_JSON)
+public class ExecuteInRelationalDb
 {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
     private static final ObjectMapper objectMapper = PureProtocolObjectMapperFactory.getNewObjectMapper();
@@ -68,39 +65,40 @@ public class  ExecuteInRelationalDb
     @POST
     @Path("/executeInRelationalDb")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
-    public Response executeInRelationalDb( @Context HttpServletRequest request,
-                                       ExecuteInRelationalDbInput input,
-                                       @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response executeInRelationalDb(@Context HttpServletRequest request,
+                                          ExecuteInRelationalDbInput input,
+                                          @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
-        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles( pm );
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
 
         try
         {
-            LOGGER.info( new LogInfo( profiles, LoggingEventType.EXECUTION_PLAN_EXEC_START, "" ).toString() );
+            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_PLAN_EXEC_START, "").toString());
 
-            try{
+            try
+            {
                 Connection jdbcConn =
-                        this.connectionManagerSelector.getDatabaseConnection( (MutableList<CommonProfile>) null,
-                                input.connection );
+                        this.connectionManagerSelector.getDatabaseConnection((MutableList<CommonProfile>) null,
+                                input.connection);
 
                 Statement stmt = jdbcConn.createStatement();
 
-                for(String sql : input.sqls)
+                for (String sql : input.sqls)
                 {
                     stmt.execute(sql);
                 }
 
                 return Response.ok().build();
             }
-            catch( SQLException e )
+            catch (SQLException e)
             {
-                return Response.status( 500 ).type( MediaType.APPLICATION_JSON_TYPE )
-                        .entity( new ResultManager.ErrorMessage( 20, "{\"message\":\"" +e.getMessage()+ "\"}" ) ).build();
+                return Response.status(500).type(MediaType.APPLICATION_JSON_TYPE)
+                        .entity(new ResultManager.ErrorMessage(20, "{\"message\":\"" + e.getMessage() + "\"}")).build();
             }
         }
-        catch ( Exception ex )
+        catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager( ex, LoggingEventType.EXECUTION_PLAN_EXEC_ERROR, profiles );
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTION_PLAN_EXEC_ERROR, profiles);
         }
     }
 }

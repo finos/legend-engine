@@ -90,7 +90,6 @@ import org.finos.legend.server.pac4j.LegendPac4jBundle;
 import org.finos.legend.server.shared.bundles.ChainFixingFilterHandler;
 import org.finos.legend.server.shared.bundles.HostnameHeaderBundle;
 import org.slf4j.Logger;
-
 import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
 import javax.ws.rs.container.DynamicFeature;
@@ -103,14 +102,14 @@ public class Server<T extends ServerConfiguration> extends Application<T>
 {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
 
-    protected RelationalStoreExecutor relationalStoreExecutor ;
+    protected RelationalStoreExecutor relationalStoreExecutor;
 
     private Environment environment;
 
     public static void main(String[] args) throws Exception
     {
         EngineUrlStreamHandlerFactory.initialize();
-        new Server().run(args.length == 0 ? new String[] {"server", "legend-engine-server/src/test/resources/org/finos/legend/engine/server/test/userTestConfig.json"} : args);
+        new Server().run(args.length == 0 ? new String[]{"server", "legend-engine-server/src/test/resources/org/finos/legend/engine/server/test/userTestConfig.json"} : args);
     }
 
     @Override
