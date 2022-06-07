@@ -12,14 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service;
+// ------------------------------------------------------------------------------ DATA -----------------------------------------------
 
-import org.finos.legend.engine.protocol.pure.v1.model.test.AtomicTest;
-
-import java.util.List;
-
-public class ServiceTest extends AtomicTest
+Class meta::relational::metamodel::data::RelationalCSVData extends  meta::pure::data::EmbeddedData
 {
-    public String serializationFormat;
-    public List<ParameterValue> parameters;
+  tables: meta::relational::metamodel::data::RelationalCSVTable[*];
 }
+
+Class meta::relational::metamodel::data::RelationalCSVTable
+{
+  schema: String[1];
+  table: String[1];
+  values: String[1];
+}
+

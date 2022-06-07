@@ -175,6 +175,13 @@ public class ServiceParseTreeWalker
 
         serviceTest.id = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
 
+        // serializationFormat
+        ServiceParserGrammar.ServiceTestSerializationContext serializationFormatContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.serviceTestSerialization(), "serializationFormat", serviceTest.sourceInformation);
+        if (serializationFormatContext != null)
+        {
+            serviceTest.serializationFormat = PureGrammarParserUtility.fromIdentifier(serializationFormatContext.identifier());
+        }
+
         // parameters
         ServiceParserGrammar.ServiceTestParametersContext testParametersContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.serviceTestParameters(), "parameters", serviceTest.sourceInformation);
         if (testParametersContext != null)

@@ -31,6 +31,7 @@ SERVICE_TEST_DATA:                  'data';
 SERVICE_TEST_CONNECTION_DATA:       'connections';
 SERVICE_TEST_TESTS:                 'tests';
 SERVICE_TEST_ASSERTS:               'asserts';
+SERVICE_TEST_SERIALIZATION_FORMAT:  'serializationFormat';
 SERVICE_TEST_PARAMETERS:            'parameters';
 
 PARAM_GROUP:                        'list';

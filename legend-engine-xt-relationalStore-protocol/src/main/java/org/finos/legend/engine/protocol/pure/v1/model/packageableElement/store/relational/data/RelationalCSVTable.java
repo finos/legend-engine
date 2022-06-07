@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.data;
 
-import org.finos.legend.engine.protocol.pure.v1.model.test.AtomicTest;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
-import java.util.List;
-
-public class ServiceTest extends AtomicTest
+public class RelationalCSVTable
 {
-    public String serializationFormat;
-    public List<ParameterValue> parameters;
+    public String schema;
+    public String table;
+    public String values;
+    public SourceInformation sourceInformation;
 }

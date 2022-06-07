@@ -147,7 +147,10 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                 {
                     pureServiceTest._parameters(ListIterate.collect(serviceTest.parameters, param -> HelperServiceBuilder.processServiceTestParameterValue(param, context)));
                 }
-
+                if (serviceTest.serializationFormat != null)
+                {
+                    pureServiceTest._serializationFormat(serviceTest.serializationFormat);
+                }
                 if (serviceTest.assertions == null || serviceTest.assertions.isEmpty())
                 {
                     throw new EngineException("Service Tests should have atleast 1 assert", serviceTest.sourceInformation, EngineErrorType.COMPILATION);

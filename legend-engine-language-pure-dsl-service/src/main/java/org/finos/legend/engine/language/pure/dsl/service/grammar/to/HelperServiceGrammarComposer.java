@@ -162,6 +162,13 @@ public class HelperServiceGrammarComposer
         str.append(getTabString(baseIndentation)).append(test.id).append(":\n");
         str.append(getTabString(baseIndentation)).append("{\n");
 
+        // SerializationFormat
+        if (test.serializationFormat != null)
+        {
+            str.append(getTabString(baseIndentation + 1)).append("serializationFormat: ");
+            str.append(test.serializationFormat + ";\n");
+        }
+
         // Parameters
         if (test.parameters != null && !test.parameters.isEmpty())
         {
