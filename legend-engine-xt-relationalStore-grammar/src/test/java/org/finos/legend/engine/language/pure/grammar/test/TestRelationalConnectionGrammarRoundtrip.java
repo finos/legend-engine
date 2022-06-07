@@ -68,6 +68,23 @@ public class TestRelationalConnectionGrammarRoundtrip extends TestGrammarRoundtr
                 "    passwordVaultReference: 'pwd';\n" +
                 "  };\n" +
                 "}\n");
+        test("###Connection\n" +
+                "RelationalDatabaseConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  store: model::firm::Person;\n" +
+                "  type: Postgres;\n" +
+                "  specification: Static\n" +
+                "  {\n" +
+                "    name: 'myDatabase';\n" +
+                "    host: 'myHost.com';\n" +
+                "    port: 8090;\n" +
+                "  };\n" +
+                "  auth: UserNamePassword\n" +
+                "  {\n" +
+                "    userNameVaultReference: 'user';\n" +
+                "    passwordVaultReference: 'pwd';\n" +
+                "  };\n" +
+                "}\n");
     }
 
     @Test
