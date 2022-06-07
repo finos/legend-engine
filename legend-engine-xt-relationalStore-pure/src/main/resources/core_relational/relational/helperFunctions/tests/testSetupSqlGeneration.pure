@@ -1,0 +1,111 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::tests::ddl::*;
+
+import meta::pure::profiles::*;
+
+import meta::relational::metamodel::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::metamodel::join::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::functions::toDDL::*;
+import meta::relational::mapping::*;
+import meta::relational::runtime::*;
+
+function <<test.Test>>  meta::relational::tests::ddl::testSetupDataSqlGeneration():Boolean[1]
+{
+  let parsedRecords =[ 
+                        list(['default']),
+                        list(['personTable']),
+                        list(['id', 'firstName', 'lastName', 'age', 'addressId', 'firmId', 'managerId']),
+                        list(['1', 'Peter', 'Smith', '23', '1' ,'1', '2']),
+                        list([''])
+                      ];
+                      // this parsed data format should be documented and standardised 
+    
+  let sqls = meta::alloy::service::execution::setUpDataSQLs($parsedRecords, meta::relational::tests::dbInc, meta::relational::functions::sqlQueryToString::createDbConfig(DatabaseType.H2));
+
+  let expectedSqls= [
+   'Drop schema if exists productSchema cascade;',
+   'Create Schema productSchema;',
+   'Drop schema if exists default cascade;',
+   'Create Schema default;',
+   'Drop table if exists productSchema.productTable;',
+   'Create Table productSchema.productTable(ID INT NOT NULL,NAME VARCHAR(200) NULL, PRIMARY KEY(ID));',
+   'Drop table if exists personTable;',
+   'Create Table personTable(ID INT NOT NULL,FIRSTNAME VARCHAR(200) NULL,LASTNAME VARCHAR(200) NULL,AGE INT NULL,ADDRESSID INT NULL,FIRMID INT NULL,MANAGERID INT NULL, PRIMARY KEY(ID));',
+   'Drop table if exists PersonTableExtension;',
+   'Create Table PersonTableExtension(ID INT NOT NULL,FIRSTNAME VARCHAR(200) NULL,LASTNAME VARCHAR(200) NULL,AGE INT NULL,ADDRESSID INT NULL,FIRMID INT NULL,MANAGERID INT NULL,birthDate DATE NULL, PRIMARY KEY(ID));',
+   'Drop table if exists differentPersonTable;',
+   'Create Table differentPersonTable(ID INT NOT NULL,FIRSTNAME VARCHAR(200) NULL,LASTNAME VARCHAR(200) NULL,AGE INT NULL,ADDRESSID INT NULL,FIRMID INT NULL,MANAGERID INT NULL, PRIMARY KEY(ID));',
+   'Drop table if exists firmTable;',
+   'Create Table firmTable(ID INT NOT NULL,LEGALNAME VARCHAR(200) NULL,ADDRESSID INT NULL,CEOID INT NULL, PRIMARY KEY(ID));',
+   'Drop table if exists firmExtensionTable;',
+   'Create Table firmExtensionTable(firmId INT NOT NULL,legalName VARCHAR(200) NULL,establishedDate DATE NULL, PRIMARY KEY(firmId));',
+   'Drop table if exists otherFirmTable;',
+   'Create Table otherFirmTable(ID INT NOT NULL,LEGALNAME VARCHAR(200) NULL,ADDRESSID INT NULL, PRIMARY KEY(ID));',
+   'Drop table if exists addressTable;',
+   'Create Table addressTable(ID INT NOT NULL,TYPE INT NULL,NAME VARCHAR(200) NULL,STREET VARCHAR(100) NULL,COMMENTS VARCHAR(100) NULL, PRIMARY KEY(ID));',
+   'Drop table if exists locationTable;',
+   'Create Table locationTable(ID INT NOT NULL,PERSONID INT NULL,PLACE VARCHAR(200) NULL,date DATE NULL, PRIMARY KEY(ID));',
+   'Drop table if exists placeOfInterestTable;',
+   'Create Table placeOfInterestTable(ID INT NOT NULL,locationID INT NOT NULL,NAME VARCHAR(200) NULL, PRIMARY KEY(ID,locationID));',
+   'insert into personTable (ID,FIRSTNAME,LASTNAME,AGE,ADDRESSID,FIRMID,MANAGERID) values (1,\'Peter\',\'Smith\',23,1,1,2);'
+   ];
+  assertSameElements($sqls,$expectedSqls);
+}  
+
+
+
+//pure based parsing is higly unstable
+function <<test.Test>>  meta::relational::tests::ddl::testSetupDataSqlGenerationWithDataAsString():Boolean[1]
+{
+
+  let records ='default\n'+
+                'personTable\n'+
+                'id, firstName, lastName, age, addressId, firmId, managerId\n'+
+                '1,Peter,Smith,23,1,1,2';
+
+  let sqls = meta::alloy::service::execution::setUpDataSQLs($records, meta::relational::tests::dbInc, meta::relational::functions::sqlQueryToString::createDbConfig(DatabaseType.H2));
+  
+  let expectedSqls= [
+   'Drop schema if exists productSchema cascade;',
+   'Create Schema productSchema;',
+   'Drop schema if exists default cascade;',
+   'Create Schema default;',
+   'Drop table if exists productSchema.productTable;',
+   'Create Table productSchema.productTable(ID INT NOT NULL,NAME VARCHAR(200) NULL, PRIMARY KEY(ID));',
+   'Drop table if exists personTable;',
+   'Create Table personTable(ID INT NOT NULL,FIRSTNAME VARCHAR(200) NULL,LASTNAME VARCHAR(200) NULL,AGE INT NULL,ADDRESSID INT NULL,FIRMID INT NULL,MANAGERID INT NULL, PRIMARY KEY(ID));',
+   'Drop table if exists PersonTableExtension;',
+   'Create Table PersonTableExtension(ID INT NOT NULL,FIRSTNAME VARCHAR(200) NULL,LASTNAME VARCHAR(200) NULL,AGE INT NULL,ADDRESSID INT NULL,FIRMID INT NULL,MANAGERID INT NULL,birthDate DATE NULL, PRIMARY KEY(ID));',
+   'Drop table if exists differentPersonTable;',
+   'Create Table differentPersonTable(ID INT NOT NULL,FIRSTNAME VARCHAR(200) NULL,LASTNAME VARCHAR(200) NULL,AGE INT NULL,ADDRESSID INT NULL,FIRMID INT NULL,MANAGERID INT NULL, PRIMARY KEY(ID));',
+   'Drop table if exists firmTable;',
+   'Create Table firmTable(ID INT NOT NULL,LEGALNAME VARCHAR(200) NULL,ADDRESSID INT NULL,CEOID INT NULL, PRIMARY KEY(ID));',
+   'Drop table if exists firmExtensionTable;',
+   'Create Table firmExtensionTable(firmId INT NOT NULL,legalName VARCHAR(200) NULL,establishedDate DATE NULL, PRIMARY KEY(firmId));',
+   'Drop table if exists otherFirmTable;',
+   'Create Table otherFirmTable(ID INT NOT NULL,LEGALNAME VARCHAR(200) NULL,ADDRESSID INT NULL, PRIMARY KEY(ID));',
+   'Drop table if exists addressTable;',
+   'Create Table addressTable(ID INT NOT NULL,TYPE INT NULL,NAME VARCHAR(200) NULL,STREET VARCHAR(100) NULL,COMMENTS VARCHAR(100) NULL, PRIMARY KEY(ID));',
+   'Drop table if exists locationTable;',
+   'Create Table locationTable(ID INT NOT NULL,PERSONID INT NULL,PLACE VARCHAR(200) NULL,date DATE NULL, PRIMARY KEY(ID));',
+   'Drop table if exists placeOfInterestTable;',
+   'Create Table placeOfInterestTable(ID INT NOT NULL,locationID INT NOT NULL,NAME VARCHAR(200) NULL, PRIMARY KEY(ID,locationID));',
+   'insert into personTable (ID,FIRSTNAME,LASTNAME,AGE,ADDRESSID,FIRMID,MANAGERID) values (1,\'Peter\',\'Smith\',23,1,1,2);'
+   ];
+  assertSameElements($sqls,$expectedSqls);
+}  

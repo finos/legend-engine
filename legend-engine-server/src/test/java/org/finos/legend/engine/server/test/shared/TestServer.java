@@ -15,6 +15,7 @@
 package org.finos.legend.engine.server.test.shared;
 
 import io.dropwizard.setup.Environment;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.DynamicTestConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
@@ -45,6 +46,8 @@ public class TestServer extends Server<TestServerConfiguration>
         super.run(serverConfiguration, environment);
         Vault.INSTANCE.registerImplementation(new EnvironmentVaultImplementation());
         environment.jersey().register(new TestConnectionProviderApi(getTestConnections(serverConfiguration)));
+        ConnectionManagerSelector connectionManager = relationalStoreExecutor.getStoreState().getRelationalExecutor().getConnectionManager();
+        environment.jersey().register(new ExecuteInRelationalDb(connectionManager));
     }
 
     public Map<DatabaseType, RelationalDatabaseConnection> getTestConnections(TestServerConfiguration serverConfiguration)

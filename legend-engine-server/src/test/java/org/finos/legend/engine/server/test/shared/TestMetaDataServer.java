@@ -41,7 +41,6 @@ import org.finos.legend.pure.runtime.java.compiled.execution.ConsoleCompiled;
 import org.finos.legend.pure.runtime.java.compiled.metadata.ClassCache;
 import org.finos.legend.pure.runtime.java.compiled.metadata.FunctionCache;
 import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataLazy;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -232,7 +231,7 @@ public class TestMetaDataServer
         AbstractHandler pureBaseVersionHandler = createPureBaseVersionHandler();
 
         HandlerCollection handlerCollection = new HandlerCollection();
-        handlerCollection.setHandlers(new Handler[] {
+        handlerCollection.setHandlers(new Handler[]{
                 mappingHandle,
                 storeHandle,
                 versionHandler,

@@ -339,13 +339,8 @@ function meta::relational::functions::database::loadValuesToDbTable2(data : List
 
 function meta::relational::functions::database::loadValuesToDbTable2(data : List<List<String>>[1], table:Table[1],columns : Column[*], dbConfig: DbConfig[1]) : String[*]
 {
-   $data.values->map(row |  let sql = 'insert into ' + if($table.schema.name=='default', |'' ,|$table.schema.name + '.') + $table.name + ' ('
-            + $columns.name->map(colName | $colName->meta::relational::functions::sqlQueryToString::processColumnName($dbConfig))->joinStrings(',')
-            +') '
-            + 'values ('
-            + $row.values->meta::relational::functions::database::testDataSQLgeneration::convertValuesToCsv($columns.type)
-            + ');';
-   );
+    ^meta::relational::commands::LoadTableSQL(table=$table, columnsToLoad=$columns, parsedData=$data)
+                                          ->translateLoadTableStatement($dbConfig);
 }
 
 function meta::relational::functions::database::findTablesInDbHierarchy(d:Database[1], targetDBs:Database[*]):Table[*]
