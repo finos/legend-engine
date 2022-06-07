@@ -35,5 +35,6 @@ public interface RelationalDatabaseCommandsVisitor<T>
     T visit(BigQueryCommands bigQueryCommands);
 
     T visit(RedshiftCommands redshiftCommands);
+
     T visit(PostgresCommands postgresCommands);
 }

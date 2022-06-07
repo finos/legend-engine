@@ -44,7 +44,7 @@ public class PostgresCommands extends RelationalDatabaseCommands
     @Override
     public <T> T accept(RelationalDatabaseCommandsVisitor<T> visitor)
     {
-        return ((RelationalDatabaseCommandsVisitor<T>)visitor).visit(this);
+        return ((RelationalDatabaseCommandsVisitor<T>) visitor).visit(this);
     }
 
 }
