@@ -5611,7 +5611,7 @@ function meta::relational::functions::pureToSqlQuery::buildUniqueName(elements:R
 
 function meta::relational::functions::pureToSqlQuery::buildUniqueName(elements:RelationalOperationElement[*], alias:Boolean[1], selectColumns:Boolean[1], extensions:RouterExtension[*]):String[1]
 {
-   $elements->map(e | $e->match($extensions->map(e|$e.moduleExtension('relational')->cast(@RelationalExtension).pureToSQL_buildUniqueName)->map(f | $f->eval($alias, $selectColumns, $extensions))->concatenate(
+   let uniqueName = $elements->map(e | $e->match($extensions->map(e|$e.moduleExtension('relational')->cast(@RelationalExtension).pureToSQL_buildUniqueName)->map(f | $f->eval($alias, $selectColumns, $extensions))->concatenate(
       [
          n:RootJoinTreeNode[1]|$n->getAllNodes()->map(a|$a->match([j:RootJoinTreeNode[1]|if($alias,|$j.alias.name,|$j.alias.relationalElement->buildUniqueName($alias, $selectColumns, $extensions)),j:JoinTreeNode[1]|$j.joinName]))->makeString('_'),
          s:SelectSQLQuery[1]|'s('+if($selectColumns,|$s.columns->buildUniqueName($alias, $selectColumns, $extensions)+',',|'')+$s.data->buildUniqueName($alias, $selectColumns, $extensions)+','+$s.filteringOperation->buildUniqueName($alias, $selectColumns, $extensions)+')',
@@ -5637,6 +5637,9 @@ function meta::relational::functions::pureToSqlQuery::buildUniqueName(elements:R
          v:VarPlaceHolder[1]| $v.name
       ])->toOneMany()
    ))->joinStrings('_');
+   
+   let maxSize = 535;
+   if($uniqueName->length() > $maxSize, |$uniqueName->substring(0, $maxSize - 35) + '___' + $uniqueName->substring($maxSize - 35)->meta::pure::functions::hash::hash(meta::pure::functions::hash::HashType.MD5), |$uniqueName);
 }
 
 function meta::relational::functions::pureToSqlQuery::incrementAliasRecursively(head:Alias[1], tail:Alias[*]):Pair<Alias,Alias>[*]
