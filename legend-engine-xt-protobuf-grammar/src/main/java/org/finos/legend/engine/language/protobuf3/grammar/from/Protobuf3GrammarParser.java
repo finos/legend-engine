@@ -27,6 +27,7 @@ import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.protobuf3.grammar.from.antlr4.Protobuf3Lexer;
 import org.finos.legend.engine.language.protobuf3.grammar.from.antlr4.Protobuf3Parser;
 import org.finos.legend.engine.protocol.protobuf3.metamodel.BlockLiteral;
@@ -52,11 +53,15 @@ import org.finos.legend.engine.protocol.protobuf3.metamodel.Message;
 import org.finos.legend.engine.protocol.protobuf3.metamodel.MessagePtr;
 import org.finos.legend.engine.protocol.protobuf3.metamodel.MessageType;
 import org.finos.legend.engine.protocol.protobuf3.metamodel.Option;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.OneOf;
 import org.finos.legend.engine.protocol.protobuf3.metamodel.ProtoBufType;
 import org.finos.legend.engine.protocol.protobuf3.metamodel.ProtoFile;
 import org.finos.legend.engine.protocol.protobuf3.metamodel.ProtoImport;
 import org.finos.legend.engine.protocol.protobuf3.metamodel.ProtoItemDefinition;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.Range;
 import org.finos.legend.engine.protocol.protobuf3.metamodel.RemoteProcedureCall;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.ReservedFieldNames;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.ReservedFieldRanges;
 import org.finos.legend.engine.protocol.protobuf3.metamodel.SFixed32;
 import org.finos.legend.engine.protocol.protobuf3.metamodel.SFixed64;
 import org.finos.legend.engine.protocol.protobuf3.metamodel.SInt32;
@@ -307,7 +312,7 @@ public class Protobuf3GrammarParser
             {
                 Enum protoEnum = new Enum();
                 protoEnum.constant = enumElement.enumField().ident().getText();
-                protoEnum.constantNumber = Long.parseLong(enumElement.enumField().intLit().getText());
+                protoEnum.constantNumber = visitIntLitContext(enumElement.enumField().intLit());
                 enums.add(protoEnum);
             }
             enumeration.values = enums;
@@ -328,7 +333,7 @@ public class Protobuf3GrammarParser
                 Field field = new Field();
                 field.type = visitProtoType(elementContext.field().type_());
                 field.name = elementContext.field().fieldName().ident().getText();
-                field.number = Long.parseLong(elementContext.field().fieldNumber().intLit().getText());
+                field.number = visitIntLitContext(elementContext.field().fieldNumber().intLit());
                 field.repeated = elementContext.field().REPEATED() != null;
                 content.add(field);
             }
@@ -342,6 +347,26 @@ public class Protobuf3GrammarParser
                 Enumeration enumeration = visitEnumDef(elementContext.enumDef());
                 content.add(enumeration);
             }
+            else if (elementContext.oneof() != null)
+            {
+                OneOf oneOf = visitOneofContext(elementContext.oneof());
+                content.add(oneOf);
+            }
+            else if (elementContext.reserved() != null)
+            {
+                if (elementContext.reserved().reservedFieldNames() != null)
+                {
+                    content.add(visitReservedFieldNamesContext(elementContext.reserved().reservedFieldNames()));
+                }
+                else if (elementContext.reserved().ranges() != null)
+                {
+                    content.add(visitRangesContext(elementContext.reserved().ranges()));
+                }
+                else
+                {
+                    throw new RuntimeException("Unknown message element");
+                }
+            }
             else
             {
                 throw new RuntimeException("Unknown message element");
@@ -350,6 +375,61 @@ public class Protobuf3GrammarParser
         }
         message.content = content;
         return message;
+    }
+
+    private OneOf visitOneofContext(Protobuf3Parser.OneofContext oneofContext)
+    {
+        OneOf oneOf = new OneOf();
+        oneOf.name = oneofContext.oneofName().ident().getText();
+        oneOf.field = ListIterate.collect(oneofContext.oneofField(), this::visitOneofFieldContext);
+        return oneOf;
+    }
+
+    private Field visitOneofFieldContext(Protobuf3Parser.OneofFieldContext oneofFieldContext)
+    {
+        Field field = new Field();
+        field.name = oneofFieldContext.fieldName().ident().getText();
+        field.number = visitIntLitContext(oneofFieldContext.fieldNumber().intLit());
+        field.type = visitProtoType(oneofFieldContext.type_());
+        if (oneofFieldContext.fieldOptions() != null)
+        {
+            field.options = ListIterate.collect(oneofFieldContext.fieldOptions().fieldOption(), this::visitFieldOptionContext);
+        }
+        return field;
+    }
+
+    private Option visitFieldOptionContext(Protobuf3Parser.FieldOptionContext fieldOptionContext)
+    {
+        Option option = new Option();
+        option.name = fieldOptionContext.optionName().getText();
+        option.value = visitConstant(fieldOptionContext.constant());
+        return option;
+    }
+
+    private ReservedFieldNames visitReservedFieldNamesContext(Protobuf3Parser.ReservedFieldNamesContext reservedContext)
+    {
+        ReservedFieldNames names = new ReservedFieldNames();
+        names.names = ListIterate.collect(reservedContext.strLit(), this::visitStringLiteral);
+        return names;
+    }
+
+    private ReservedFieldRanges visitRangesContext(Protobuf3Parser.RangesContext rangesContext)
+    {
+        ReservedFieldRanges ranges = new ReservedFieldRanges();
+        ranges.ranges = ListIterate.collect(rangesContext.range_(), this::visitRangeContext);
+        return ranges;
+    }
+
+    private Range visitRangeContext(Protobuf3Parser.Range_Context rangeContext)
+    {
+        Range range = new Range();
+        List<Long> values = ListIterate.collect(rangeContext.intLit(), this::visitIntLitContext);
+        range.bottom = visitIntLitContext(rangeContext.intLit(0));
+        if (rangeContext.intLit().size() > 1)
+        {
+            range.top = visitIntLitContext(rangeContext.intLit(1));
+        }
+        return range;
     }
 
     private Service visitServiceDef(Protobuf3Parser.ServiceDefContext serviceDefContext)
@@ -516,6 +596,11 @@ public class Protobuf3GrammarParser
 
         messagePtr.name = messageTypeContext.messageName().ident().getText();
         return messagePtr;
+    }
+
+    private Long visitIntLitContext(Protobuf3Parser.IntLitContext intLitContext)
+    {
+        return Long.parseLong(intLitContext.INT_LIT().getText());
     }
 
     private String visitStringLiteral(Protobuf3Parser.StrLitContext strLitContext)

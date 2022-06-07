@@ -15,6 +15,7 @@
 package org.finos.legend.engine.language.protobuf3.grammar.to;
 
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.eclipse.collections.impl.utility.StringIterate;
 import org.finos.legend.engine.protocol.protobuf3.metamodel.BlockLiteral;
 import org.finos.legend.engine.protocol.protobuf3.metamodel.Bool;
 import org.finos.legend.engine.protocol.protobuf3.metamodel.BoolLiteral;
@@ -119,7 +120,7 @@ public class Protobuf3GrammarComposer
             @Override
             public String visit(OneOf val)
             {
-                return "  oneof " + val.name + "{\n" + ListIterate.collect(val.field, f -> renderField(f, currentPackage)).makeString("\n") + "\n }";
+                return "  oneof " + val.name + " {\n" + ListIterate.collect(val.field, f -> "  " + renderField(f, currentPackage)).makeString("\n") + "\n  }";
             }
 
             @Override
@@ -131,13 +132,13 @@ public class Protobuf3GrammarComposer
             @Override
             public String visit(ReservedFieldNames val)
             {
-                throw new RuntimeException("Not supported yet");
+                return "  reserved " + ListIterate.collect(val.names, n -> "\"" + n + "\"").makeString(", ") + ";";
             }
 
             @Override
             public String visit(ReservedFieldRanges val)
             {
-                throw new RuntimeException("Not supported yet");
+                return "  reserved " + ListIterate.collect(val.ranges, r -> r.top != null ? r.bottom + " to " + r.top : r.bottom).makeString(", ") + ";";
             }
         });
     }
@@ -307,7 +308,7 @@ public class Protobuf3GrammarComposer
 
     public String renderEnumeration(Enumeration enumeration, String currentPackage)
     {
-        return "enum " + enumeration.name + " {\n" + ListIterate.collect(enumeration.values, v -> "  " + v.constant + " = " + enumeration.values.indexOf(v)).makeString(";\n") + ";\n}";
+        return "enum " + enumeration.name + " {\n" + ListIterate.collect(enumeration.values, v -> "  " + v.constant + " = " + v.constantNumber).makeString(";\n") + ";\n}";
     }
 
     public String renderLiteral(Literal literal)
