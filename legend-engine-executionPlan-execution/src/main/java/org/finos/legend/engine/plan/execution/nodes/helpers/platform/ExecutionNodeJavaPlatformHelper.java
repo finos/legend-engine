@@ -121,6 +121,10 @@ public class ExecutionNodeJavaPlatformHelper
                 {
                     return toResult(executeStaticJavaMethod(method, context.getChildResult()));
                 }
+                if (parameterTypes.length == 1 && parameterTypes[0].isInstance(executionState.authId) && methodRequiresAuthId(className, methodName))
+                {
+                    return toResult(executeStaticJavaMethod(method, executionState.authId));
+                }
                 if (parameterTypes.length == 2 && parameterTypes[0].isInstance(context.getChildResult()) && parameterTypes[1].isInstance(context))
                 {
                     return toResult(executeStaticJavaMethod(method, context.getChildResult(), context));
@@ -162,6 +166,11 @@ public class ExecutionNodeJavaPlatformHelper
             }
             throw new RuntimeException(cause);
         }
+    }
+
+    private static boolean methodRequiresAuthId(String className, String methodName)
+    {
+        return "org.finos.legend.engine.plan.dependencies.store.platform.PredefinedExpressions".equals(className) && "currentUserId".equals(methodName);
     }
 
     public static <T> T executeStaticJavaMethod(ExecutionNode node, String className, String methodName, List<? extends Class<?>> parameterTypes, List<?> parameters, ExecutionState executionState, MutableList<CommonProfile> pm)

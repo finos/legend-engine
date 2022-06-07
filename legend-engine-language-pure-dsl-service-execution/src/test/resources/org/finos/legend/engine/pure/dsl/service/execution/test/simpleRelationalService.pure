@@ -84,6 +84,12 @@ function test::testMultiExpressionQueryWithMandatoryTemporalDate(businessDate: S
    test::Person.all($asOf)->graphFetch(#{test::Person{firstName,lastName}}#)->serialize(#{test::Person{firstName,lastName}}#);
 }
 
+function test::fetchWithUserId(): String[1]
+{
+   let currentUser = meta::pure::runtime::currentUserId();
+   test::Person.all()->filter(p|$p.firstName->toLower() == $currentUser)->graphFetch(#{test::Person{firstName,lastName}}#)->serialize(#{test::Person{firstName,lastName}}#);
+}
+
 ###Mapping
 Mapping test::Map
 (

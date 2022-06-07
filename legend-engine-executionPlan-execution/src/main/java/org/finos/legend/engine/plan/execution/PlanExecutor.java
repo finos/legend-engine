@@ -34,6 +34,7 @@ import org.finos.legend.engine.plan.execution.stores.StoreType;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
+import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.url.EngineUrlStreamHandlerFactory;
 import org.finos.legend.engine.shared.core.url.InputStreamProvider;
 import org.finos.legend.engine.shared.core.url.StreamProvider;
@@ -201,6 +202,10 @@ public class PlanExecutor
             if (singleExecutionPlan.authDependent)
             {
                 state.setAuthUser((singleExecutionPlan.kerberos == null) ? user : singleExecutionPlan.kerberos);
+            }
+            if (state.authId == null)
+            {
+                state.setAuthUser(IdentityFactoryProvider.getInstance().makeIdentity(profiles).getName(), false);
             }
             singleExecutionPlan.getExecutionStateParams(org.eclipse.collections.api.factory.Maps.mutable.empty()).forEach(state::addParameterValue);
 
