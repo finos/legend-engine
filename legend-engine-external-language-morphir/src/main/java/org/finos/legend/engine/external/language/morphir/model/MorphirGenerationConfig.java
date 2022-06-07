@@ -18,7 +18,9 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.external.shared.format.generations.GenerationConfiguration;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.pure.generated.*;
+import org.finos.legend.pure.generated.Root_meta_external_language_morphir_generation_MorphirConfig;
+import org.finos.legend.pure.generated.core_external_language_morphir_integration;
+import org.finos.legend.pure.generated.core_pure_corefunctions_metaExtension;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 
 import java.util.Collections;

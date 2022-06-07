@@ -4423,7 +4423,7 @@ function meta::relational::functions::pureToSqlQuery::processTdsJoin(f:FunctionE
    let type = $f->instanceValuesAtParameter(2, $vars, $state.inScopeVars)
                ->match([ j: JoinType[1] | $j,
                          a: Any[1] | let jt = $a->cast(@FunctionExpression).parametersValues;
-                                    extractEnumValue($jt->at(0)->cast(@InstanceValue).values->cast(@Enumeration<Any>)->toOne(), $jt->at(1)->cast(@InstanceValue).values->cast(@String)->toOne())->cast(@JoinType);
+                                    extractEnumValue($jt->at(0)->cast(@InstanceValue).values->toOne()->cast(@Enumeration<Any>), $jt->at(1)->cast(@InstanceValue).values->cast(@String)->toOne())->cast(@JoinType);
                         ]);
 
     let joinCondition = $f->instanceValuesAtParameter(3, $vars, $state.inScopeVars);
@@ -4489,7 +4489,7 @@ function meta::relational::functions::pureToSqlQuery::processTdsJoinOnColumns(f:
    let type = $f->instanceValuesAtParameter(2, $vars, $state.inScopeVars)->match([
       j: JoinType[1] | $j,
       a: Any[1] | let jt = $a->cast(@FunctionExpression).parametersValues;
-                  extractEnumValue($jt->at(0)->cast(@InstanceValue).values->cast(@Enumeration<Any>)->toOne(), $jt->at(1)->cast(@InstanceValue).values->cast(@String)->toOne())->cast(@JoinType);
+                  extractEnumValue($jt->at(0)->cast(@InstanceValue).values->toOne()->cast(@Enumeration<Any>), $jt->at(1)->cast(@InstanceValue).values->cast(@String)->toOne())->cast(@JoinType);
    ]);
 
    let tds1Cols = $f->instanceValuesAtParameter(3, $vars, $state.inScopeVars)->cast(@String);

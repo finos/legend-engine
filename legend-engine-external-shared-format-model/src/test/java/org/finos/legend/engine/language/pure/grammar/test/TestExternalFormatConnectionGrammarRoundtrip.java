@@ -22,13 +22,13 @@ public class TestExternalFormatConnectionGrammarRoundtrip extends TestGrammarRou
     public void testUrlStreamExternalConnection()
     {
         test("###Connection\n" +
-                     "ExternalFormatConnection simple::UrlStream\n" +
-                     "{\n" +
-                     "  store: test::SchemaBinding;\n" +
-                     "  source: UrlStream\n" +
-                     "  {\n" +
-                     "    url: 'http://host:9000/path';\n" +
-                     "  };\n" +
-                     "}\n");
+                "ExternalFormatConnection simple::UrlStream\n" +
+                "{\n" +
+                "  store: test::SchemaBinding;\n" +
+                "  source: UrlStream\n" +
+                "  {\n" +
+                "    url: 'http://host:9000/path';\n" +
+                "  };\n" +
+                "}\n");
     }
 }

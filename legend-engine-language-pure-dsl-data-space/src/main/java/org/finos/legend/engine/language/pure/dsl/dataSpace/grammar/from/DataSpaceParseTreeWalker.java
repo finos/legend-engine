@@ -89,8 +89,8 @@ public class DataSpaceParseTreeWalker
         dataSpace.featuredDiagrams = featuredDiagramsContext != null ? ListIterate.collect(featuredDiagramsContext.qualifiedName(), diagramPathContext ->
         {
             PackageableElementPointer pointer = new PackageableElementPointer(
-                PackageableElementType.DIAGRAM,
-                PureGrammarParserUtility.fromQualifiedName(diagramPathContext.packagePath() == null ? Collections.emptyList() : diagramPathContext.packagePath().identifier(), diagramPathContext.identifier())
+                    PackageableElementType.DIAGRAM,
+                    PureGrammarParserUtility.fromQualifiedName(diagramPathContext.packagePath() == null ? Collections.emptyList() : diagramPathContext.packagePath().identifier(), diagramPathContext.identifier())
             );
             pointer.sourceInformation = walkerSourceInformation.getSourceInformation(diagramPathContext);
             return pointer;
@@ -114,15 +114,15 @@ public class DataSpaceParseTreeWalker
         // Mapping
         DataSpaceParserGrammar.MappingContext mappingContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.mapping(), "mapping", dataSpaceSourceInformation);
         executionContext.mapping = new PackageableElementPointer(
-            PackageableElementType.MAPPING,
-            PureGrammarParserUtility.fromQualifiedName(mappingContext.qualifiedName().packagePath() == null ? Collections.emptyList() : mappingContext.qualifiedName().packagePath().identifier(), mappingContext.qualifiedName().identifier())
+                PackageableElementType.MAPPING,
+                PureGrammarParserUtility.fromQualifiedName(mappingContext.qualifiedName().packagePath() == null ? Collections.emptyList() : mappingContext.qualifiedName().packagePath().identifier(), mappingContext.qualifiedName().identifier())
         );
         executionContext.mapping.sourceInformation = walkerSourceInformation.getSourceInformation(mappingContext);
         // Runtime
         DataSpaceParserGrammar.DefaultRuntimeContext defaultRuntimeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.defaultRuntime(), "defaultRuntime", dataSpaceSourceInformation);
         executionContext.defaultRuntime = new PackageableElementPointer(
-            PackageableElementType.RUNTIME,
-            PureGrammarParserUtility.fromQualifiedName(defaultRuntimeContext.qualifiedName().packagePath() == null ? Collections.emptyList() : defaultRuntimeContext.qualifiedName().packagePath().identifier(), defaultRuntimeContext.qualifiedName().identifier())
+                PackageableElementType.RUNTIME,
+                PureGrammarParserUtility.fromQualifiedName(defaultRuntimeContext.qualifiedName().packagePath() == null ? Collections.emptyList() : defaultRuntimeContext.qualifiedName().packagePath().identifier(), defaultRuntimeContext.qualifiedName().identifier())
         );
         executionContext.defaultRuntime.sourceInformation = walkerSourceInformation.getSourceInformation(defaultRuntimeContext);
         return executionContext;

@@ -43,6 +43,7 @@ function meta::external::format::json::binding::validation::bindDetails(binding:
    if($targetPackage->isEmpty(),
       | ^FailedBindingDetail(errorMessages = 'Could not match json schema to any classes in the modelUnit: ' + $classesFromModelUnit.name->joinStrings('(', ',', ')')),
       | let jsonSchemaToPureConfig = ^JsonSchemaToModelConfiguration(
+                                        format = 'JSON',
                                         targetBinding = $updatedBinding->elementToPath(),
                                         sourceSchemaId = $updatedBinding.schemaId,
                                         targetPackage = $targetPackage->toOne()
@@ -105,7 +106,8 @@ function <<access.private>> meta::external::format::json::binding::validation::u
 {
    if($binding.schemaSet->isNotEmpty(),
       | $binding,
-      | let modelToJsonSchemaConfig = ^ModelToJsonSchemaConfiguration(targetBinding   = $binding->elementToPath() + '_Gen',
+      | let modelToJsonSchemaConfig = ^ModelToJsonSchemaConfiguration( format = 'JSON',
+                                                                      targetBinding   = $binding->elementToPath() + '_Gen',
                                                                       targetSchemaSet = $binding->elementToPath() + '_GenSchemaSet',
                                                                       sourceModel     = $binding.modelUnit->resolve().classes);
         pureToJsonSchema($modelToJsonSchemaConfig);

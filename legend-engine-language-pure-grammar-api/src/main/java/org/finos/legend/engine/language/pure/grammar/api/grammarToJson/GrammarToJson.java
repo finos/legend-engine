@@ -1,3 +1,17 @@
+//  Copyright 2022 Goldman Sachs
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+
 package org.finos.legend.engine.language.pure.grammar.api.grammarToJson;
 
 import io.swagger.annotations.Api;
@@ -25,6 +39,7 @@ import javax.ws.rs.core.Response;
 import java.util.Map;
 
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
+
 @Api(tags = "Pure - Grammar")
 @Path("pure/v1/grammar/grammarToJson")
 public class GrammarToJson extends GrammarAPI
@@ -61,7 +76,8 @@ public class GrammarToJson extends GrammarAPI
     }
 
     // Required so that Jackson properly includes _type for the top level element
-    private static class TypedMap extends UnifiedMap<String,Lambda>{
+    private static class TypedMap extends UnifiedMap<String, Lambda>
+    {
         public TypedMap()
         {
         }
@@ -75,7 +91,7 @@ public class GrammarToJson extends GrammarAPI
     public Response lambdaBatch(Map<String, ParserInput> input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         PureGrammarParserExtensions.logExtensionList();
-        return grammarToJsonBatch(input, (a, b, c, d, e)-> PureGrammarParser.newInstance().parseLambda(a, b, c, d, e), new TypedMap(), pm, "Grammar to Json : Lambda Batch");
+        return grammarToJsonBatch(input, (a, b, c, d, e) -> PureGrammarParser.newInstance().parseLambda(a, b, c, d, e), new TypedMap(), pm, "Grammar to Json : Lambda Batch");
     }
 
     @POST
@@ -95,7 +111,8 @@ public class GrammarToJson extends GrammarAPI
     }
 
     // Required so that Jackson properly includes _type for the top level element
-    private static class TypedMapGraph extends UnifiedMap<String, RootGraphFetchTree>{
+    private static class TypedMapGraph extends UnifiedMap<String, RootGraphFetchTree>
+    {
         public TypedMapGraph()
         {
         }
@@ -109,7 +126,7 @@ public class GrammarToJson extends GrammarAPI
     public Response graphFetchBatch(Map<String, ParserInput> input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         PureGrammarParserExtensions.logExtensionList();
-        return grammarToJsonBatch(input, (a, b, c, d, e)-> PureGrammarParser.newInstance().parseGraphFetch(a, b, c, d, e), new TypedMapGraph(), pm, "Grammar to Json : GraphFetch Batch");
+        return grammarToJsonBatch(input, (a, b, c, d, e) -> PureGrammarParser.newInstance().parseGraphFetch(a, b, c, d, e), new TypedMapGraph(), pm, "Grammar to Json : GraphFetch Batch");
     }
 
 
@@ -130,7 +147,8 @@ public class GrammarToJson extends GrammarAPI
     }
 
     // Required so that Jackson properly includes _type for the top level element
-    private static class TypedMapVS extends UnifiedMap<String, ValueSpecification>{
+    private static class TypedMapVS extends UnifiedMap<String, ValueSpecification>
+    {
         public TypedMapVS()
         {
         }
@@ -144,6 +162,6 @@ public class GrammarToJson extends GrammarAPI
     public Response valueSpecificationBatch(Map<String, ParserInput> input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         PureGrammarParserExtensions.logExtensionList();
-        return grammarToJsonBatch(input, (a, b, c, d, e)-> PureGrammarParser.newInstance().parseValueSpecification(a, b, c, d, e), new TypedMapVS(), pm, "Grammar to Json : Value Specification Batch");
+        return grammarToJsonBatch(input, (a, b, c, d, e) -> PureGrammarParser.newInstance().parseValueSpecification(a, b, c, d, e), new TypedMapVS(), pm, "Grammar to Json : Value Specification Batch");
     }
 }

@@ -544,7 +544,8 @@ public class XmlReader
         private List<XMLEvent> captureDeferredWhitespace;
         private boolean capturingText;
 
-        Capture(int capacity) {
+        Capture(int capacity)
+        {
             try
             {
                 captureBytes = new LimitedByteArrayOutputStream(capacity);
@@ -639,7 +640,7 @@ public class XmlReader
 
         boolean hasNext()
         {
-            return eventBuffer.hasEvent(index+1);
+            return eventBuffer.hasEvent(index + 1);
         }
 
         void startCapture()
@@ -659,7 +660,7 @@ public class XmlReader
             }
             String result = capture.finish();
             capture = null;
-            return  result;
+            return result;
         }
     }
 
@@ -724,7 +725,9 @@ public class XmlReader
     public static XmlReader newReader(Reader reader, String id)
     {
         return newReader(reader, id, e ->
-        {throw new RuntimeException(e.getMessage(), e);});
+        {
+            throw new RuntimeException(e.getMessage(), e);
+        });
     }
 
     public static XmlReader newReader(Reader reader, Function<XMLStreamException, ? extends RuntimeException> exceptionHandler)

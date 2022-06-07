@@ -14,10 +14,9 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.result;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.finos.legend.engine.plan.dependencies.domain.date.PureDate;
 
 import java.sql.ResultSet;
@@ -73,7 +72,8 @@ public class ResultColumn
             case Types.DATE:
             {
                 this.transformedValueExtractor = BiFunctionHelper.unchecked(
-                        (resultSet, calendar) -> {
+                        (resultSet, calendar) ->
+                        {
                             java.sql.Date date = resultSet.getDate(this.columnIndex);
                             return date != null ? PureDate.fromSQLDate(date) : null;
                         }
@@ -83,7 +83,8 @@ public class ResultColumn
             case Types.TIMESTAMP:
             {
                 this.transformedValueExtractor = BiFunctionHelper.unchecked(
-                        (resultSet, calendar) -> {
+                        (resultSet, calendar) ->
+                        {
                             java.sql.Timestamp timestamp = resultSet.getTimestamp(this.columnIndex, calendar);
                             return timestamp != null ? PureDate.fromSQLTimestamp(timestamp) : null;
                         }
@@ -96,7 +97,8 @@ public class ResultColumn
             case Types.BIGINT:
             {
                 this.transformedValueExtractor = BiFunctionHelper.unchecked(
-                        (resultSet, calendar) -> {
+                        (resultSet, calendar) ->
+                        {
                             long num = resultSet.getLong(this.columnIndex);
                             return !resultSet.wasNull() ? num : null;
                         }
@@ -108,7 +110,8 @@ public class ResultColumn
             case Types.DOUBLE:
             {
                 this.transformedValueExtractor = BiFunctionHelper.unchecked(
-                        (resultSet, calendar) -> {
+                        (resultSet, calendar) ->
+                        {
                             double num = resultSet.getDouble(this.columnIndex);
                             return !resultSet.wasNull() ? num : null;
                         }
@@ -140,7 +143,8 @@ public class ResultColumn
             case Types.BOOLEAN:
             {
                 this.transformedValueExtractor = BiFunctionHelper.unchecked(
-                        (resultSet, calendar) -> {
+                        (resultSet, calendar) ->
+                        {
                             boolean bool = resultSet.getBoolean(this.columnIndex);
                             return !resultSet.wasNull() ? bool : null;
                         }
@@ -152,7 +156,8 @@ public class ResultColumn
             case Types.LONGVARBINARY:
             {
                 this.transformedValueExtractor = BiFunctionHelper.unchecked(
-                        (resultSet, calendar) -> {
+                        (resultSet, calendar) ->
+                        {
                             byte[] bytes = resultSet.getBytes(this.columnIndex);
                             return bytes != null ? BinaryUtils.encodeHex(bytes) : null;
                         }
@@ -210,14 +215,35 @@ public class ResultColumn
     @JsonIgnore
     public Pair<String, String> labelTypePair()
     {
-        if (this.dataType == null) return Tuples.pair(this.label, "String"); //TODO: This should not be null. Change after all relational types are available
+        if (this.dataType == null)
+        {
+            return Tuples.pair(this.label, "String"); //TODO: This should not be null. Change after all relational types are available
+        }
         String type = this.dataType.toUpperCase();
-        if(type.startsWith("VARCHAR") || type.startsWith("CHAR")) return Tuples.pair(this.label, "String");
-        if(type.startsWith("FLOAT") || type.startsWith("DOUBLE") || type.startsWith("DECIMAL") || type.startsWith("NUMERIC") || type.startsWith("REAL")) return Tuples.pair(this.label, "Float");
-        if(type.startsWith("INTEGER") || type.startsWith("BIGINT") || type.startsWith("SMALLINT") || type.startsWith("TINYINT")) return Tuples.pair(this.label, "Integer");
-        if(type.startsWith("BIT")) return Tuples.pair(this.label, "Boolean");
-        if(type.startsWith("TIMESTAMP")) return Tuples.pair(this.label, "DateTime");
-        if(type.startsWith("DATE")) return Tuples.pair(this.label,"StrictDate");
+        if (type.startsWith("VARCHAR") || type.startsWith("CHAR"))
+        {
+            return Tuples.pair(this.label, "String");
+        }
+        if (type.startsWith("FLOAT") || type.startsWith("DOUBLE") || type.startsWith("DECIMAL") || type.startsWith("NUMERIC") || type.startsWith("REAL"))
+        {
+            return Tuples.pair(this.label, "Float");
+        }
+        if (type.startsWith("INTEGER") || type.startsWith("BIGINT") || type.startsWith("SMALLINT") || type.startsWith("TINYINT"))
+        {
+            return Tuples.pair(this.label, "Integer");
+        }
+        if (type.startsWith("BIT"))
+        {
+            return Tuples.pair(this.label, "Boolean");
+        }
+        if (type.startsWith("TIMESTAMP"))
+        {
+            return Tuples.pair(this.label, "DateTime");
+        }
+        if (type.startsWith("DATE"))
+        {
+            return Tuples.pair(this.label, "StrictDate");
+        }
         return Tuples.pair(this.label, "String"); // Default is String. But shouldn't go here
     }
 }

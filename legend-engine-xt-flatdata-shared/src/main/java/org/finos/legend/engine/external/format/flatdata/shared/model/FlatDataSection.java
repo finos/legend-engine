@@ -52,7 +52,7 @@ public class FlatDataSection
 
     public FlatDataSection setSectionProperties(ArrayList<FlatDataProperty> properties)
     {
-        sectionProperties.clear();;
+        sectionProperties.clear();
         sectionProperties.addAll(properties);
         return this;
     }

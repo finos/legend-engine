@@ -87,15 +87,15 @@ public class TestDelimitedLineEndings extends AbstractDriverTest
     private void processesSmartLineEndings(String eol, boolean addTrailing)
     {
         FlatData flatData = parseFlatData("section default: DelimitedWithHeadings\n" +
-                                                  "{\n" +
-                                                  "  scope.untilEof;\n" +
-                                                  "  delimiter       : ',';\n" +
-                                                  "\n" +
-                                                  "  Record\n" +
-                                                  "  {\n" +
-                                                  "    NAME : STRING;\n" +
-                                                  "  }\n" +
-                                                  "}");
+                "{\n" +
+                "  scope.untilEof;\n" +
+                "  delimiter       : ',';\n" +
+                "\n" +
+                "  Record\n" +
+                "  {\n" +
+                "    NAME : STRING;\n" +
+                "  }\n" +
+                "}");
 
         runTest(flatData, data(eol, addTrailing));
     }
@@ -103,16 +103,16 @@ public class TestDelimitedLineEndings extends AbstractDriverTest
     public void processesSpecifiedLineEndings(String eol, boolean addTrailing)
     {
         FlatData flatData = parseFlatData("section default: DelimitedWithHeadings\n" +
-                                                  "{\n" +
-                                                  "  scope.untilEof;\n" +
-                                                  "  recordSeparator : '" + eol + "';\n" +
-                                                  "  delimiter       : ',';\n" +
-                                                  "\n" +
-                                                  "  Record\n" +
-                                                  "  {\n" +
-                                                  "    NAME : STRING;\n" +
-                                                  "  }\n" +
-                                                  "}");
+                "{\n" +
+                "  scope.untilEof;\n" +
+                "  recordSeparator : '" + eol + "';\n" +
+                "  delimiter       : ',';\n" +
+                "\n" +
+                "  Record\n" +
+                "  {\n" +
+                "    NAME : STRING;\n" +
+                "  }\n" +
+                "}");
 
         runTest(flatData, data(eol, addTrailing));
     }
@@ -120,9 +120,9 @@ public class TestDelimitedLineEndings extends AbstractDriverTest
     private String data(String eol, boolean addTrailing)
     {
         return data(eol, addTrailing,
-                    "NAME",
-                    "John Doe",
-                    "Jane Doe"
+                "NAME",
+                "John Doe",
+                "Jane Doe"
         );
     }
 

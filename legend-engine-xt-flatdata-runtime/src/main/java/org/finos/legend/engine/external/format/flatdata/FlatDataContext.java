@@ -1,3 +1,17 @@
+//  Copyright 2022 Goldman Sachs
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+
 package org.finos.legend.engine.external.format.flatdata;
 
 import org.eclipse.collections.api.factory.Maps;
@@ -45,7 +59,7 @@ public class FlatDataContext<T>
         FlatDataSection firstSection = flatData.getSections().get(0);
         FlatDataProcessor.Builder<T> builder = descriptionFor(firstSection).<T>getProcessorBuilderFactory().apply(flatData).withDefiningPath(definingPath);
 
-        for (FlatDataSection section: flatData.getSections())
+        for (FlatDataSection section : flatData.getSections())
         {
             String sectionName = section.getName();
             if (toObjectFactories.containsKey(sectionName))
@@ -54,7 +68,10 @@ public class FlatDataContext<T>
             }
             else
             {
-                builder.withToObjectFactoryFactory(sectionName, x -> {throw new IllegalStateException("No to object factory provided for section " + sectionName);} );
+                builder.withToObjectFactoryFactory(sectionName, x ->
+                {
+                    throw new IllegalStateException("No to object factory provided for section " + sectionName);
+                });
             }
             if (fromObjectFactories.containsKey(sectionName))
             {
@@ -62,7 +79,10 @@ public class FlatDataContext<T>
             }
             else
             {
-                builder.withFromObjectFactoryFactory(sectionName, x -> {throw new IllegalStateException("No from object factory provided for section " + sectionName);} );
+                builder.withFromObjectFactoryFactory(sectionName, x ->
+                {
+                    throw new IllegalStateException("No from object factory provided for section " + sectionName);
+                });
             }
         }
         return builder.build();

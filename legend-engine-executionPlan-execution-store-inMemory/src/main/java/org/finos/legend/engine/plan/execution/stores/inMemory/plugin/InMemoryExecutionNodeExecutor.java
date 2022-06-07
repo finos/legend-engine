@@ -23,7 +23,11 @@ import org.finos.legend.engine.plan.dependencies.domain.dataQuality.BasicDefect;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IChecked;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IDefect;
 import org.finos.legend.engine.plan.dependencies.domain.graphFetch.IGraphInstance;
-import org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch.*;
+import org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch.IInMemoryCrossStoreGraphFetchExecutionNodeSpecifics;
+import org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch.IInMemoryPropertyGraphFetchExecutionNodeSpecifics;
+import org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch.IInMemoryRootGraphFetchExecutionNodeSpecifics;
+import org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch.IInMemoryRootGraphFetchMergeExecutionNodeSpecifics;
+import org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch.IStoreStreamReadingExecutionNodeSpecifics;
 import org.finos.legend.engine.plan.execution.nodes.ExecutionNodeExecutor;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.ExecutionNodeJavaPlatformHelper;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.JavaHelper;
@@ -35,7 +39,19 @@ import org.finos.legend.engine.plan.execution.result.graphFetch.GraphObjectsBatc
 import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResult;
 import org.finos.legend.engine.plan.execution.stores.inMemory.result.graphFetch.StoreStreamReadingResult;
 import org.finos.legend.engine.plan.execution.stores.inMemory.utils.InMemoryGraphFetchUtils;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.*;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.AggregationAwareExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.AllocationExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ConstantExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ErrorExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNodeVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.FreeMarkerConditionalExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.FunctionParametersValidationNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.GraphFetchM2MExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.JavaPlatformImplementation;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.MultiResultSequenceExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.PureExpressionPlatformExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SequenceExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.GlobalGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.GraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.LocalGraphFetchExecutionNode;
@@ -47,7 +63,15 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.Class
 import org.finos.legend.engine.shared.core.collectionsExtensions.DoubleStrategyHashMap;
 import org.pac4j.core.profile.CommonProfile;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -110,7 +134,8 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
             if ((Arrays.asList(clazz.getInterfaces()).contains(IInMemoryRootGraphFetchMergeExecutionNodeSpecifics.class)))
             {
                 return mergeInMemoryNode(node);
-            } else
+            }
+            else
             {
                 IInMemoryRootGraphFetchExecutionNodeSpecifics nodeSpecifics = ExecutionNodeJavaPlatformHelper.getNodeSpecificsInstance(node, this.executionState, this.pm);
 
@@ -120,11 +145,13 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
                 {
                     StoreStreamReadingResult<?> storeStreamReadingResult = (StoreStreamReadingResult) childResult;
                     sourceObjectsIterator = storeStreamReadingResult.getObjectsIterator();
-                } else if (childResult instanceof StreamingObjectResult)
+                }
+                else if (childResult instanceof StreamingObjectResult)
                 {
                     StreamingObjectResult<?> streamingObjectResult = (StreamingObjectResult) childResult;
                     sourceObjectsIterator = streamingObjectResult.getObjectStream().iterator();
-                } else
+                }
+                else
                 {
                     throw new IllegalStateException("Unsupported result type: " + childResult.getClass().getSimpleName());
                 }
@@ -150,19 +177,22 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
                                 if (value == null)
                                 {
                                     resultObjects.add(newDynamicChecked(Collections.singletonList(BasicDefect.newNoInputDefect(_class)), checkedSource, null));
-                                } else
+                                }
+                                else
                                 {
                                     Object targetObject = nodeSpecifics.transform(value);
                                     if (targetObject != null)
                                     {
                                         if (targetObject instanceof List)
                                         {
-                                            ((List<?>) targetObject).forEach(x -> {
+                                            ((List<?>) targetObject).forEach(x ->
+                                            {
                                                 IGraphInstance<?> target = (IGraphInstance<?>) x;
                                                 inMemoryGraphObjectsBatch.addObjectMemoryUtilization(target.instanceSize());
                                                 resultObjects.add(newDynamicChecked(Collections.emptyList(), checkedSource, target.getValue()));
                                             });
-                                        } else
+                                        }
+                                        else
                                         {
                                             IGraphInstance<?> target = (IGraphInstance<?>) targetObject;
                                             inMemoryGraphObjectsBatch.addObjectMemoryUtilization(target.instanceSize());
@@ -172,9 +202,13 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
                                 }
 
                                 objectCount += 1;
-                                if (objectCount >= batchSize) break;
+                                if (objectCount >= batchSize)
+                                {
+                                    break;
+                                }
                             }
-                        } else
+                        }
+                        else
                         {
                             while (sourceObjectsIterator.hasNext())
                             {
@@ -184,12 +218,14 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
                                 {
                                     if (targetObject instanceof List)
                                     {
-                                        ((List<?>) targetObject).forEach(x -> {
+                                        ((List<?>) targetObject).forEach(x ->
+                                        {
                                             IGraphInstance<?> target = (IGraphInstance<?>) x;
                                             inMemoryGraphObjectsBatch.addObjectMemoryUtilization(target.instanceSize());
                                             resultObjects.add(target.getValue());
                                         });
-                                    } else
+                                    }
+                                    else
                                     {
                                         IGraphInstance<?> target = (IGraphInstance<?>) targetObject;
                                         inMemoryGraphObjectsBatch.addObjectMemoryUtilization(target.instanceSize());
@@ -198,7 +234,10 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
                                 }
 
                                 objectCount += 1;
-                                if (objectCount >= batchSize) break;
+                                if (objectCount >= batchSize)
+                                {
+                                    break;
+                                }
                             }
                         }
 
@@ -219,9 +258,10 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
 
                 Stream<GraphObjectsBatch> graphObjectsBatchStream = StreamSupport.stream(graphObjectsBatchSpliterator, false);
 
-            return new GraphFetchResult(graphObjectsBatchStream, childResult).withGraphFetchSpan(graphFetchSpan);
+                return new GraphFetchResult(graphObjectsBatchStream, childResult).withGraphFetchSpan(graphFetchSpan);
             }
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
             if (childResult != null)
             {
@@ -238,8 +278,14 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
             }
 
             Throwable cause = e.getCause();
-            if (cause instanceof RuntimeException) throw (RuntimeException) cause;
-            if (cause instanceof Error) throw (Error) cause;
+            if (cause instanceof RuntimeException)
+            {
+                throw (RuntimeException) cause;
+            }
+            if (cause instanceof Error)
+            {
+                throw (Error) cause;
+            }
             throw new RuntimeException(cause);
         }
     }
@@ -283,7 +329,7 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
 
                             List<Object> parentsInScope = parentMap.getWithSecondKey(childObject);
 
-                            if(parentsInScope != null)
+                            if (parentsInScope != null)
                             {
                                 for (Object parentObject : parentsInScope)
                                 {
@@ -298,7 +344,8 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
                             }
                         });
                     });
-                } else
+                }
+                else
                 {
                     for (Map.Entry<Object, List<Object>> entry : parentMap.entrySet())
                     {
@@ -317,7 +364,7 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
                                 Object childObject = childGraphInstance.getValue();
 
                                 List<Object> parentsInScope = entry.getValue();
-                                if(parentsInScope != null)
+                                if (parentsInScope != null)
                                 {
                                     for (Object parentObject : parentsInScope)
                                     {
@@ -339,13 +386,16 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
             }
 
             return new ConstantResult(childObjects);
-        } catch (RuntimeException e)
+        }
+        catch (RuntimeException e)
         {
             throw e;
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
             throw new RuntimeException(e);
-        } finally
+        }
+        finally
         {
             if (childResult != null)
             {
@@ -364,7 +414,8 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
         List<?> parentObjects = graphObjectsBatch.getObjectsForNodeIndex(node.parentIndex).stream().map(x -> x instanceof IChecked ? ((IChecked<?>) x).getValue() : x).collect(Collectors.toList());
 
         Stream<IGraphInstance> childGraphInstancesStream = nodeSpecifics.transformProperty(parentObjects);
-        List<Object> childObjects = childGraphInstancesStream.filter(Objects::nonNull).map(graphInstance -> {
+        List<Object> childObjects = childGraphInstancesStream.filter(Objects::nonNull).map(graphInstance ->
+        {
             graphObjectsBatch.addObjectMemoryUtilization(graphInstance.instanceSize());
             return graphInstance.getValue();
         }).collect(Collectors.toList());

@@ -17,6 +17,13 @@ package org.finos.legend.engine.plan.execution.stores.relational;
 import com.google.common.collect.Iterators;
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
+import org.finos.legend.engine.plan.execution.result.ResultNormalizer;
+import org.finos.legend.engine.plan.execution.result.StreamingResult;
+import org.finos.legend.engine.plan.execution.result.builder.tds.TDSBuilder;
+import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResult;
+import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResultCSVSerializer;
+import org.finos.legend.engine.plan.execution.result.serialization.CsvSerializer;
+import org.finos.legend.engine.plan.execution.result.serialization.TemporaryFile;
 import org.finos.legend.engine.plan.execution.stores.relational.config.RelationalExecutionConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.Column;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.IngestionMethod;
@@ -33,13 +40,6 @@ import org.finos.legend.engine.plan.execution.stores.relational.result.TempTable
 import org.finos.legend.engine.plan.execution.stores.relational.serialization.RealizedRelationalResultCSVSerializer;
 import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToCSVSerializer;
 import org.finos.legend.engine.plan.execution.stores.relational.serialization.StreamingTempTableResultCSVSerializer;
-import org.finos.legend.engine.plan.execution.result.ResultNormalizer;
-import org.finos.legend.engine.plan.execution.result.StreamingResult;
-import org.finos.legend.engine.plan.execution.result.builder.tds.TDSBuilder;
-import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResult;
-import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResultCSVSerializer;
-import org.finos.legend.engine.plan.execution.result.serialization.CsvSerializer;
-import org.finos.legend.engine.plan.execution.result.serialization.TemporaryFile;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.slf4j.Logger;
@@ -188,11 +188,12 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
         throw new UnsupportedOperationException("not yet implemented");
     }
 
-        @Override
+    @Override
     public Boolean visit(RedshiftCommands redshiftCommands)
     {
         throw new UnsupportedOperationException("not yet implemented");
     }
+
     private boolean checkedExecute(Statement statement, String sql)
     {
         try (Scope ignored = GlobalTracer.get().buildSpan("temp table sql execution").withTag("sql", sql).startActive(true))
@@ -275,7 +276,8 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
     private void batchInsertRealizedRelationalResultToDB2TempTable(RealizedRelationalResult realizedRelationalResult, Statement statement, String targetTableName, int batchSize) throws SQLException
     {
         final String insertPrefix = "INSERT INTO " + targetTableName + " VALUES  ";
-        final Function<Object, String> normalizer = v -> {
+        final Function<Object, String> normalizer = v ->
+        {
             if (v == null)
             {
                 return "";
@@ -288,11 +290,11 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
         };
 
         Iterator<List<List<Object>>> rowBatchIterator = Iterators.partition(realizedRelationalResult.resultSetRows.iterator(), batchSize);
-        while(rowBatchIterator.hasNext())
+        while (rowBatchIterator.hasNext())
         {
             String insertSql = rowBatchIterator.next()
                     .stream()
-                    .map(row -> row.stream().map(normalizer).collect(Collectors.joining(",","(",")")))
+                    .map(row -> row.stream().map(normalizer).collect(Collectors.joining(",", "(", ")")))
                     .collect(Collectors.joining(",", insertPrefix, ""));
             statement.execute(insertSql);
         }

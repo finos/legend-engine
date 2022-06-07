@@ -67,7 +67,7 @@ abstract class AbstractBloombergDriverDescription extends StreamingDriverDescrip
             defects.add(new FlatDataDefect(flatData, section, "Bloomberg section must not be combined with non-Bloomberg sections"));
         }
 
-        for (String filter: FlatDataUtils.getStrings(section.getSectionProperties(), FILTER_PROPERTY).orElse(Collections.emptyList()))
+        for (String filter : FlatDataUtils.getStrings(section.getSectionProperties(), FILTER_PROPERTY).orElse(Collections.emptyList()))
         {
             if (!filter.matches("[^=]+=[^=]+"))
             {

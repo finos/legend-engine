@@ -1,0 +1,19 @@
+import meta::external::format::protobuf::metamodel::serialization::*;
+import meta::external::format::protobuf::metamodel::*;
+
+function <<test.Test>> meta::external::format::protobuf::metamodel::serialization::tests::testRpcToString():Boolean[1]
+{
+  let rpc = ^RemoteProcedureCall(name='hello', 
+                                 requestType=^MessageType(type=^MessagePtr(package='test',name='Request')),
+                                 returnType=^MessageType(type=^MessagePtr(package='test',name='Response'))
+                                 );
+  assertEquals('  rpc hello(Request) returns (Response) {}',$rpc->toString('test'));
+  let rpcWithOption = ^RemoteProcedureCall(name='hello', 
+                                 requestType=^MessageType(type=^MessagePtr(package='test',name='Request')),
+                                 returnType=^MessageType(type=^MessagePtr(package='test',name='Response')),
+                                 options=[^Option(name='a.b', value=^BlockLiteral(values=[^BlockValue(name='get', value=^StringLiteral(value='a/b'))]))]
+                                 );
+  assertEquals('  rpc hello(Request) returns (Response) {\n' +
+               'option (a.b) = { get: "a/b" };\n' +
+               '}',$rpcWithOption->toString('test'));
+}

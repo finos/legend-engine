@@ -23,18 +23,30 @@ import java.time.LocalDate;
 public interface ParsedFlatData
 {
     boolean hasStringValue(FlatDataRecordField field);
+
     boolean hasBooleanValue(FlatDataRecordField field);
+
     boolean hasLongValue(FlatDataRecordField field);
+
     boolean hasDoubleValue(FlatDataRecordField field);
+
     boolean hasBigDecimalValue(FlatDataRecordField field);
+
     boolean hasLocalDateValue(FlatDataRecordField field);
+
     boolean hasInstantValue(FlatDataRecordField field);
 
     String getString(FlatDataRecordField field);
+
     boolean getBoolean(FlatDataRecordField field);
+
     long getLong(FlatDataRecordField field);
+
     double getDouble(FlatDataRecordField field);
+
     BigDecimal getBigDecimal(FlatDataRecordField field);
+
     LocalDate getLocalDate(FlatDataRecordField field);
+
     Instant getInstant(FlatDataRecordField field);
 }

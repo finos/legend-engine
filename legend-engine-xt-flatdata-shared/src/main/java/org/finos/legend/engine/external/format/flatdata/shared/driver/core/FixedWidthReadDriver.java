@@ -100,8 +100,8 @@ public class FixedWidthReadDriver<T> extends StreamingReadDriver<T>
             for (int i = 0; i < addresses.length; i++)
             {
                 values[i] = ends[i] <= text.length()
-                    ?  text.substring(starts[i], ends[i]).trim()
-                    : "";
+                        ? text.substring(starts[i], ends[i]).trim()
+                        : "";
             }
             RawFlatData rawFlatData = dataFactory.createRawFlatData(++recordNumber, line, values);
             return Optional.of(BasicChecked.newChecked(rawFlatData, null));

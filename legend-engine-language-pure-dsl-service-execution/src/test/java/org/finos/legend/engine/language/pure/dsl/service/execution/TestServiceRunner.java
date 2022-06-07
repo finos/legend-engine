@@ -243,7 +243,7 @@ public class TestServiceRunner
                 .withDatabaseAuthenticationFlowProvider(LegendDefaultDatabaseAuthenticationFlowProvider.class, new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration())
                 .build();
 
-        SimpleRelationalServiceRunner simpleRelationalServiceRunner = (SimpleRelationalServiceRunner)ServiceRunnerBuilder.newInstance()
+        SimpleRelationalServiceRunner simpleRelationalServiceRunner = (SimpleRelationalServiceRunner) ServiceRunnerBuilder.newInstance()
                 .withServiceRunnerClass(SimpleRelationalServiceRunner.class.getCanonicalName())
                 .withAllowJavaCompilation(false)
                 .withStoreExecutorConfigurations(relationalExecutionConfiguration)
@@ -271,7 +271,7 @@ public class TestServiceRunner
                 .withDatabaseAuthenticationFlowProvider(LegendDefaultDatabaseAuthenticationFlowProvider.class, new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration())
                 .build();
 
-        SimpleRelationalServiceRunnerTDS simpleRelationalServiceRunner = (SimpleRelationalServiceRunnerTDS)ServiceRunnerBuilder.newInstance()
+        SimpleRelationalServiceRunnerTDS simpleRelationalServiceRunner = (SimpleRelationalServiceRunnerTDS) ServiceRunnerBuilder.newInstance()
                 .withServiceRunnerClass(SimpleRelationalServiceRunnerTDS.class.getCanonicalName())
                 .withAllowJavaCompilation(false)
                 .withStoreExecutorConfigurations(relationalExecutionConfiguration)
@@ -472,6 +472,7 @@ public class TestServiceRunner
     private static class SimpleOptionalParameterServiceRunner extends AbstractServicePlanExecutor
     {
         private String argName;
+
         SimpleOptionalParameterServiceRunner(String fetchFunction, String argName)
         {
             super("test::Service", buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/simpleRelationalService.pure", fetchFunction), true);
@@ -566,7 +567,7 @@ public class TestServiceRunner
         }
     }
 
-    private static abstract class AbstractXStoreServiceRunner extends AbstractServicePlanExecutor
+    private abstract static class AbstractXStoreServiceRunner extends AbstractServicePlanExecutor
     {
         private final EngineJavaCompiler compiler;
 
@@ -665,7 +666,7 @@ public class TestServiceRunner
         );
     }
 
-    private static void assertCacheStats(ExecutionCache<?,?> cache, int estimatedSize, int requestCount, int hitCount, int missCount)
+    private static void assertCacheStats(ExecutionCache<?, ?> cache, int estimatedSize, int requestCount, int hitCount, int missCount)
     {
         Assert.assertEquals(estimatedSize, cache.estimatedSize());
         Assert.assertEquals(requestCount, cache.stats().requestCount());

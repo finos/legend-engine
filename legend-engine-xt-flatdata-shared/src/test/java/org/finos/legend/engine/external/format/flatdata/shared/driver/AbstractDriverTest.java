@@ -14,7 +14,12 @@
 
 package org.finos.legend.engine.external.format.flatdata.shared.driver;
 
-import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.*;
+import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.FlatDataDriverDescription;
+import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.FlatDataProcessor;
+import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.ParsedFlatData;
+import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.ParsedFlatDataToObject;
+import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.RawFlatData;
+import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.RawFlatDataValue;
 import org.finos.legend.engine.external.format.flatdata.shared.grammar.FlatDataSchemaParser;
 import org.finos.legend.engine.external.format.flatdata.shared.model.FlatData;
 import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataRecordField;
@@ -29,7 +34,13 @@ import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 public class AbstractDriverTest
@@ -77,7 +88,7 @@ public class AbstractDriverTest
 
     protected <T> List<IChecked<T>> deserialize(Class<T> clazz, FlatData flatData, InputStream data)
     {
-        Deserializer<T> deserializer =  new Deserializer<>(flatData, data);
+        Deserializer<T> deserializer = new Deserializer<>(flatData, data);
         flatData.getSections().forEach(s -> deserializer.withSectionDetails(s.getName(), clazz, true));
         return deserializer.deserialize();
     }
@@ -164,7 +175,7 @@ public class AbstractDriverTest
                                     s -> s.replace("_", "").equalsIgnoreCase(field.getName())
                             );
                             FlatDataRecordField fdField = null;
-                            for (Predicate<String> matcher: matchers)
+                            for (Predicate<String> matcher : matchers)
                             {
                                 if (fdField == null)
                                 {
@@ -250,25 +261,25 @@ public class AbstractDriverTest
         Assert.assertEquals("Raw Record", expectedRecord, source.getRecord());
 
         source.getRecordValues().forEach(a ->
-                                         {
-                                             Optional<ExpectedRecordValue> expected = expectedValues.stream().filter(e -> e.address.equals(a.getAddress())).findFirst();
-                                             if (expected.isPresent())
-                                             {
-                                                 Assert.assertEquals("Raw value for " + a.getAddress(), expected.get().value, a.getRawValue());
-                                             }
-                                             else
-                                             {
-                                                 Assert.fail("Unexpected raw value found for " + a.getAddress());
-                                             }
-                                         });
+        {
+            Optional<ExpectedRecordValue> expected = expectedValues.stream().filter(e -> e.address.equals(a.getAddress())).findFirst();
+            if (expected.isPresent())
+            {
+                Assert.assertEquals("Raw value for " + a.getAddress(), expected.get().value, a.getRawValue());
+            }
+            else
+            {
+                Assert.fail("Unexpected raw value found for " + a.getAddress());
+            }
+        });
         expectedValues.forEach(e ->
-                               {
-                                   Optional<RawFlatDataValue> actual = source.getRecordValues().stream().filter(a -> a.getAddress().equals(e.address)).findFirst();
-                                   if (!actual.isPresent())
-                                   {
-                                       Assert.fail("Missing raw value found for " + e.address);
-                                   }
-                               });
+        {
+            Optional<RawFlatDataValue> actual = source.getRecordValues().stream().filter(a -> a.getAddress().equals(e.address)).findFirst();
+            if (!actual.isPresent())
+            {
+                Assert.fail("Missing raw value found for " + e.address);
+            }
+        });
     }
 
     protected static class ExpectedRecordValue

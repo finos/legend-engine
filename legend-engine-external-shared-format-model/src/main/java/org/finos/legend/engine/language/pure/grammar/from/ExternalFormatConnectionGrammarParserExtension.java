@@ -65,17 +65,17 @@ public class ExternalFormatConnectionGrammarParserExtension implements IExternal
     public List<Function<ExternalSourceSpecificationSourceCode, ExternalSource>> getExtraExternalSourceSpecificationParsers()
     {
         return Collections.singletonList(code ->
-                                         {
-                                             ExternalSourceSpecificationParseTreeWalker walker = new ExternalSourceSpecificationParseTreeWalker();
+        {
+            ExternalSourceSpecificationParseTreeWalker walker = new ExternalSourceSpecificationParseTreeWalker();
 
-                                             switch (code.getType())
-                                             {
-                                                 case "UrlStream":
-                                                     return parseDataSourceSpecification(code, p -> walker.visitUrlStreamExternalSourceSpecification(code, p.urlStreamExternalSourceSpecification()));
-                                                 default:
-                                                     return null;
-                                             }
-                                         });
+            switch (code.getType())
+            {
+                case "UrlStream":
+                    return parseDataSourceSpecification(code, p -> walker.visitUrlStreamExternalSourceSpecification(code, p.urlStreamExternalSourceSpecification()));
+                default:
+                    return null;
+            }
+        });
     }
 
     private ExternalSource parseDataSourceSpecification(ExternalSourceSpecificationSourceCode code, Function<ExternalSourceSpecificationParserGrammar, ExternalSource> func)

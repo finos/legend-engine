@@ -29,15 +29,18 @@ public class SnowflakePublicAuthenticationStrategyKey implements AuthenticationS
         this.publicUserName = publicUserName;
     }
 
-    public String getPrivateKeyVaultReference() {
+    public String getPrivateKeyVaultReference()
+    {
         return this.privateKeyVaultReference;
     }
 
-    public String getPassPhraseVaultReference() {
+    public String getPassPhraseVaultReference()
+    {
         return this.passPhraseVaultReference;
     }
 
-    public String getPublicUserName() {
+    public String getPublicUserName()
+    {
         return this.publicUserName;
     }
 

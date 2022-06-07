@@ -28,7 +28,12 @@ import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataRec
 import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataSection;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IChecked;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 public class BloombergActionsReadDriver<T> extends AbstractBloombergReadDriver<T>
 {
@@ -57,13 +62,13 @@ public class BloombergActionsReadDriver<T> extends AbstractBloombergReadDriver<T
     private static final String FIELD_FEED_SOURCE = "FEED_SOURCE";
     private static final String FIELD_N_FIELDS = "N_FIELDS";
 
-    static final String[] UNIVERSAL_FIELDS = new String[]{
+    static final String[] UNIVERSAL_FIELDS = new String[] {
             FIELD_SECURITY,
             FIELD_ID_BB_COMPANY,
             FIELD_ID_BB_SECURITY,
             FIELD_R_CODE
     };
-    private static final String[] CA_FIELDS = new String[]{
+    private static final String[] CA_FIELDS = new String[] {
             FIELD_ID_ACTION,
             FIELD_MNEMONIC,
             FIELD_ACTION_FLAG,

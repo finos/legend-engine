@@ -32,20 +32,24 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Properties;
 
-public class GCPWorkloadIdentityFederationAuthenticationStrategy extends AuthenticationStrategy {
+public class GCPWorkloadIdentityFederationAuthenticationStrategy extends AuthenticationStrategy
+{
     private String serviceAccountEmail;
     private List<String> additionalGcpScopes;
 
-    public GCPWorkloadIdentityFederationAuthenticationStrategy(String serviceAccountEmail, List<String> additionalGcpScopes) {
+    public GCPWorkloadIdentityFederationAuthenticationStrategy(String serviceAccountEmail, List<String> additionalGcpScopes)
+    {
         this.serviceAccountEmail = serviceAccountEmail;
         this.additionalGcpScopes = additionalGcpScopes;
     }
 
-    public String getServiceAccountEmail() {
+    public String getServiceAccountEmail()
+    {
         return serviceAccountEmail;
     }
 
-    public List<String> getAdditionalGcpScopes() {
+    public List<String> getAdditionalGcpScopes()
+    {
         return additionalGcpScopes;
     }
 
@@ -69,7 +73,7 @@ public class GCPWorkloadIdentityFederationAuthenticationStrategy extends Authent
         Properties connectionProperties = new Properties();
         connectionProperties.putAll(properties);
         connectionProperties.put("OAuthAccessToken", oAuthCredential.getAccessToken());
-        connectionProperties.put("OAuthType","2");
+        connectionProperties.put("OAuthType", "2");
         return Tuples.pair(url, connectionProperties);
     }
 

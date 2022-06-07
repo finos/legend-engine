@@ -20,18 +20,15 @@ import org.finos.legend.engine.external.shared.format.model.fromModel.ModelToSch
 import org.finos.legend.engine.external.shared.format.model.toModel.SchemaToModelConfiguration;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.ExternalFormatSchemaSet;
+import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_validation_BindingDetail;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_validation_BindingDetail_Impl;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_Schema;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_SchemaDetail;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_SchemaDetail_Impl;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_SchemaSet;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 public class FixtureExternalFormatExtension implements ExternalFormatExtension<Root_meta_external_shared_format_metamodel_SchemaDetail, SchemaToModelConfiguration, ModelToSchemaConfiguration>
 {
@@ -60,7 +57,7 @@ public class FixtureExternalFormatExtension implements ExternalFormatExtension<R
     }
 
     @Override
-    public String metamodelToText(Root_meta_external_shared_format_metamodel_SchemaDetail schemaDetail)
+    public String metamodelToText(Root_meta_external_shared_format_metamodel_SchemaDetail schemaDetail, PureModel pureModel)
     {
         return "";
     }

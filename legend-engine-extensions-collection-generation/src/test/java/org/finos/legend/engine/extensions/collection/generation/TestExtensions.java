@@ -19,6 +19,7 @@ import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.impl.factory.Sets;
+import org.finos.legend.engine.external.format.protobuf.deprecated.generation.ProtobufGenerationExtension;
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
@@ -55,7 +56,7 @@ public class TestExtensions
 
     // DO NOT DELETE ITEMS FROM THIS LIST (except when replacing them with something equivalent)
     private static final ImmutableList<Class<? extends GenerationExtension>> EXPECTED_GENERATION_EXTENSIONS = Lists.mutable.<Class<? extends GenerationExtension>>empty()
-            .with(org.finos.legend.engine.external.format.protobuf.extension.ProtobufGenerationExtension.class)
+            .with(ProtobufGenerationExtension.class)
             .with(org.finos.legend.engine.external.format.avro.extension.AvroGenerationExtension.class)
             .with(org.finos.legend.engine.external.format.jsonSchema.extension.JSONSchemaGenerationExtension.class)
             .with(org.finos.legend.engine.external.format.rosetta.extension.RosettaGenerationExtension.class)
@@ -79,6 +80,7 @@ public class TestExtensions
             .with(org.finos.legend.engine.external.format.flatdata.FlatDataExternalFormatExtension.class)
             .with(org.finos.legend.engine.external.format.json.JsonExternalFormatExtension.class)
             .with(org.finos.legend.engine.external.format.xsd.XsdExternalFormatExtension.class)
+            .with(org.finos.legend.engine.external.format.protobuf.ProtobufFormatExtension.class)
             .toImmutable();
 
     @Test

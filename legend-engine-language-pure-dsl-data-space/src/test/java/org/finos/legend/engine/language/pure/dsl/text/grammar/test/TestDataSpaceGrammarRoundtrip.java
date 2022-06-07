@@ -23,30 +23,30 @@ public class TestDataSpaceGrammarRoundtrip extends TestGrammarRoundtrip.TestGram
     public void testDataSpace()
     {
         test("###DataSpace\n" +
-            "DataSpace <<meta::pure::profiles::typemodifiers.abstract>> {doc.doc = 'bla'} model::dataSpace\n" +
-            "{\n" +
-            "  groupId: 'test.group';\n" +
-            "  artifactId: 'test-data-space';\n" +
-            "  versionId: '1.0.0';\n" +
-            "  executionContexts:\n" +
-            "  [\n" +
-            "    {\n" +
-            "      name: 'Context 1';\n" +
-            "      description: 'some information about the context';\n" +
-            "      mapping: model::String;\n" +
-            "      defaultRuntime: model::Runtime;\n" +
-            "    }\n" +
-            "  ];\n" +
-            "  defaultExecutionContext: 'Context 1';\n" +
-            "  description: 'some description';\n" +
-            "  featuredDiagrams:\n" +
-            "  [\n" +
-            "    model::Diagram,\n" +
-            "    model::Diagram2\n" +
-            "  ];\n" +
-            "  supportInfo: Email {\n" +
-            "    address: 'someEmail@test.org';\n" +
-            "  };\n" +
-            "}\n");
+                "DataSpace <<meta::pure::profiles::typemodifiers.abstract>> {doc.doc = 'bla'} model::dataSpace\n" +
+                "{\n" +
+                "  groupId: 'test.group';\n" +
+                "  artifactId: 'test-data-space';\n" +
+                "  versionId: '1.0.0';\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      description: 'some information about the context';\n" +
+                "      mapping: model::String;\n" +
+                "      defaultRuntime: model::Runtime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  description: 'some description';\n" +
+                "  featuredDiagrams:\n" +
+                "  [\n" +
+                "    model::Diagram,\n" +
+                "    model::Diagram2\n" +
+                "  ];\n" +
+                "  supportInfo: Email {\n" +
+                "    address: 'someEmail@test.org';\n" +
+                "  };\n" +
+                "}\n");
     }
 }

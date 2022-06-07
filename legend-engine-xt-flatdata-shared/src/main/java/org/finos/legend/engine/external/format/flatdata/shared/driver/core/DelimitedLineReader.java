@@ -1,3 +1,17 @@
+//  Copyright 2022 Goldman Sachs
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+
 package org.finos.legend.engine.external.format.flatdata.shared.driver.core;
 
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.connection.CharCursor;
@@ -42,7 +56,8 @@ public class DelimitedLineReader implements LineReader
         if (eol == null)
         {
             eolTest = parser -> parser.ch == '\n' || parser.ch == '\r';
-            eolConsumer = () -> {
+            eolConsumer = () ->
+            {
                 int ch1 = cursor.advance();
                 if (ch1 == '\r' && cursor.peek(1) == '\n')
                 {
@@ -267,14 +282,15 @@ public class DelimitedLineReader implements LineReader
             private final State returnToState;
             private final State skipState;
 
-            EscapeState(State returnToState, State skipState) {
+            EscapeState(State returnToState, State skipState)
+            {
                 this.returnToState = returnToState;
                 this.skipState = skipState;
             }
 
             State evaluate()
             {
-                if (isEscape() || (delimiter.length() == 1 && ch == delimiter.charAt(0))  || isQuote())
+                if (isEscape() || (delimiter.length() == 1 && ch == delimiter.charAt(0)) || isQuote())
                 {
                     addCharToValue();
                     return returnToState;
@@ -668,7 +684,7 @@ public class DelimitedLineReader implements LineReader
         public void accept(LineParser parser)
         {
             parser.skipChar();
-            for (int i=1; i<chars.length; i++)
+            for (int i = 1; i < chars.length; i++)
             {
                 parser.nextChar();
                 parser.skipChar();

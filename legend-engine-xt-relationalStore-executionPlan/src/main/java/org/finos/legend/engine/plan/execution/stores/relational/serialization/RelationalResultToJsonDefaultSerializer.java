@@ -16,10 +16,6 @@ package org.finos.legend.engine.plan.execution.stores.relational.serialization;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
-import org.finos.legend.engine.plan.execution.stores.relational.activity.AggregationAwareActivity;
-import org.finos.legend.engine.plan.execution.stores.relational.activity.RelationalExecutionActivity;
-import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
-import org.finos.legend.engine.plan.execution.stores.relational.result.ResultInterpreterExtension;
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
 import org.eclipse.collections.api.block.function.Function;
@@ -28,6 +24,10 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.plan.execution.result.serialization.ExecutionResultObjectMapperFactory;
 import org.finos.legend.engine.plan.execution.result.serialization.Serializer;
+import org.finos.legend.engine.plan.execution.stores.relational.activity.AggregationAwareActivity;
+import org.finos.legend.engine.plan.execution.stores.relational.activity.RelationalExecutionActivity;
+import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
+import org.finos.legend.engine.plan.execution.stores.relational.result.ResultInterpreterExtension;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 
 import java.io.IOException;
@@ -57,7 +57,7 @@ public class RelationalResultToJsonDefaultSerializer extends Serializer
         this.relationalResult = relationalResult;
         this.objectMapper.registerSubtypes(new NamedType(AggregationAwareActivity.class, "aggregationAware"));
         this.objectMapper.registerSubtypes(new NamedType(RelationalExecutionActivity.class, "relational"));
-        Iterate.addAllTo(ServiceLoader.load(ResultInterpreterExtension.class), Lists.mutable.empty()).flatCollect(ResultInterpreterExtension::additionalMappers).forEach(e -> this.objectMapper.registerSubtypes(new NamedType(e.getOne(),e.getTwo())));
+        Iterate.addAllTo(ServiceLoader.load(ResultInterpreterExtension.class), Lists.mutable.empty()).flatCollect(ResultInterpreterExtension::additionalMappers).forEach(e -> this.objectMapper.registerSubtypes(new NamedType(e.getOne(), e.getTwo())));
     }
 
     @Override

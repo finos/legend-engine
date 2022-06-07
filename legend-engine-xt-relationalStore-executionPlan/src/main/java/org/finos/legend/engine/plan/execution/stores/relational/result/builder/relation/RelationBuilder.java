@@ -14,8 +14,8 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.result.builder.relation;
 
-import org.finos.legend.engine.plan.execution.stores.relational.result.ExecutionNodeRelationalResultHelper;
 import org.finos.legend.engine.plan.execution.result.builder.Builder;
+import org.finos.legend.engine.plan.execution.stores.relational.result.ExecutionNodeRelationalResultHelper;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.RelationType;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.TablePtr;

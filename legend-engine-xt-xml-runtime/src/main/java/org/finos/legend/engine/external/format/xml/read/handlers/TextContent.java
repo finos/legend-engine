@@ -14,9 +14,9 @@
 
 package org.finos.legend.engine.external.format.xml.read.handlers;
 
+import org.finos.legend.engine.external.format.xml.read.DeserializeContext;
 import org.finos.legend.engine.external.format.xml.read.ReadHandler;
 import org.finos.legend.engine.external.format.xml.read.ValueProcessor;
-import org.finos.legend.engine.external.format.xml.read.DeserializeContext;
 
 public class TextContent<C> extends ReadHandler
 {
@@ -43,7 +43,7 @@ public class TextContent<C> extends ReadHandler
     @Override
     public boolean canConsume(DeserializeContext<?> context)
     {
-        return context.reader.isStartElement() ;
+        return context.reader.isStartElement();
     }
 
     @Override

@@ -1,4 +1,4 @@
-# Copyright 2020 FINOS
+# Copyright 2022 Goldman Sachs
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -54,8 +54,6 @@ jobs:
           git config --global committer.name "FINOS Admin"
           git config --global author.email "${GITHUB_ACTOR}@users.noreply.github.com"
           git config --global author.name "${GITHUB_ACTOR}"
-      - name: Print out mvn version
-        run: mvn -v
       - name: Download deps and plugins
         run: mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies
         env:
@@ -71,7 +69,7 @@ jobs:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
           MAVEN_OPTS: -Xmx4000m
-        run: mvn javadoc:javadoc deploy -Dmaven.test.failure.ignore=true -P sonar,docker-snapshot
+        run: mvn javadoc:javadoc deploy -P sonar,docker-snapshot
       - name: Upload Test Results
         if: always()
         uses: actions/upload-artifact@v3

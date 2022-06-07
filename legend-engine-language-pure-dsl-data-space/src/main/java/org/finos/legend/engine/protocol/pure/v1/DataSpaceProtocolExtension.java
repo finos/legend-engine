@@ -33,11 +33,11 @@ public class DataSpaceProtocolExtension implements PureProtocolExtension
     public List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()
     {
         return Lists.mutable.with(() -> Lists.mutable.with(
-            ProtocolSubTypeInfo.Builder
-                .newInstance(PackageableElement.class)
-                .withSubtypes(FastList.newListWith(
-                    Tuples.pair(DataSpace.class, "dataSpace")
-                )).build()
+                ProtocolSubTypeInfo.Builder
+                        .newInstance(PackageableElement.class)
+                        .withSubtypes(FastList.newListWith(
+                                Tuples.pair(DataSpace.class, "dataSpace")
+                        )).build()
         ));
     }
 

@@ -75,7 +75,7 @@ public class SchemaToModelGenerator extends Generator
             throw new IllegalArgumentException("Unknown schema format: " + schemaSet._format());
         }
 
-        Class<?> configClass = (Class<?>) ((ParameterizedType)schemaExtension.getClass().getGenericInterfaces()[0]).getActualTypeArguments()[1];
+        Class<?> configClass = (Class<?>) ((ParameterizedType) schemaExtension.getClass().getGenericInterfaces()[0]).getActualTypeArguments()[1];
         if (!configClass.isInstance(configuration))
         {
             throw new IllegalArgumentException("Invalid configuration for " + schemaSet._format() + " model generation: " + configuration.getClass().getSimpleName());

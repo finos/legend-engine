@@ -14,9 +14,6 @@
 
 package org.finos.legend.engine.external.shared.runtime.fixtures.firmModel;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import org.finos.legend.engine.external.shared.runtime.dependencies.ExternalDataAdder;
 import org.finos.legend.engine.external.shared.runtime.dependencies.ExternalDataLongAdder;
 import org.finos.legend.engine.external.shared.runtime.dependencies.ExternalDataObjectAdder;
@@ -26,7 +23,12 @@ import org.finos.legend.engine.plan.dependencies.domain.dataQuality.BasicDefect;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IDefect;
 import org.finos.legend.engine.plan.dependencies.store.shared.IReferencedObject;
 
-public class Firm implements IReferencedObject, IExternalData {
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+public class Firm implements IReferencedObject, IExternalData
+{
 
     public static final IExternalDataFactory FACTORY = new IExternalDataFactory()
     {
@@ -34,6 +36,7 @@ public class Firm implements IReferencedObject, IExternalData {
         {
             return new Firm();
         }
+
         public String getPureClassName()
         {
             return "meta::external::shared::testpack::simple::Firm";
@@ -52,11 +55,13 @@ public class Firm implements IReferencedObject, IExternalData {
 
     private List<Person> employees;
 
-    public String getName() {
+    public String getName()
+    {
         return this.nameSize == 0 ? null : this.name;
     }
 
-    public void _nameAdd(String value) {
+    public void _nameAdd(String value)
+    {
         if (this.nameSize == 0)
         {
             this.name = value;
@@ -64,11 +69,13 @@ public class Firm implements IReferencedObject, IExternalData {
         this.nameSize++;
     }
 
-    public Long getRanking() {
+    public Long getRanking()
+    {
         return this.rankingSize == 0 ? null : this.ranking;
     }
 
-    public void _rankingAdd(long value) {
+    public void _rankingAdd(long value)
+    {
         if (this.rankingSize == 0)
         {
             this.ranking = value;
@@ -76,11 +83,13 @@ public class Firm implements IReferencedObject, IExternalData {
         this.rankingSize++;
     }
 
-    public List<AddressUse> getAddresses() {
+    public List<AddressUse> getAddresses()
+    {
         return this.addresses == null ? Collections.<AddressUse>emptyList() : this.addresses;
     }
 
-    public void _addressesAdd(AddressUse value) {
+    public void _addressesAdd(AddressUse value)
+    {
         if (this.addresses == null)
         {
             this.addresses = new ArrayList<AddressUse>();
@@ -88,11 +97,13 @@ public class Firm implements IReferencedObject, IExternalData {
         this.addresses.add(value);
     }
 
-    public List<Person> getEmployees() {
+    public List<Person> getEmployees()
+    {
         return this.employees == null ? Collections.<Person>emptyList() : this.employees;
     }
 
-    void _employeesAddImpl(Person value) {
+    void _employeesAddImpl(Person value)
+    {
         if (this.employees == null)
         {
             this.employees = new ArrayList<Person>();
@@ -100,12 +111,14 @@ public class Firm implements IReferencedObject, IExternalData {
         this.employees.add(value);
     }
 
-    public void _employeesAdd(Person value) {
+    public void _employeesAdd(Person value)
+    {
         this._employeesAddImpl(value);
         value._firmAddImpl(this);
     }
 
-    public List<IDefect> checkMultiplicities() {
+    public List<IDefect> checkMultiplicities()
+    {
         List<IDefect> defects = new ArrayList<IDefect>();
         if (this.nameSize < 1L || this.nameSize > 1L)
         {
@@ -122,7 +135,8 @@ public class Firm implements IReferencedObject, IExternalData {
         return defects;
     }
 
-    public static ExternalDataAdder<Firm> _getAdderForProperty(String propertyName) {
+    public static ExternalDataAdder<Firm> _getAdderForProperty(String propertyName)
+    {
         if (propertyName.equals("name"))
         {
             return new ExternalDataObjectAdder<Firm, String>("name")
@@ -169,7 +183,8 @@ public class Firm implements IReferencedObject, IExternalData {
         }
     }
 
-    public String getAlloyStoreObjectReference$() {
+    public String getAlloyStoreObjectReference$()
+    {
         return null;
     }
 }

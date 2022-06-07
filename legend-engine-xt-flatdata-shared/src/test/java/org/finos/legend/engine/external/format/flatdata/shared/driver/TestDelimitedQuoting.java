@@ -21,19 +21,23 @@ import org.junit.Test;
 
 import java.util.List;
 
-public class TestDelimitedQuoting extends AbstractDriverTest {
+public class TestDelimitedQuoting extends AbstractDriverTest
+{
     @Test
-    public void simpleQuoting() {
+    public void simpleQuoting()
+    {
         runTest("Hello", "The", "World", "'Hello','The','World'");
     }
 
     @Test
-    public void ifQuotesAreUsedThereCanBeWhitespaceAroundDelimiters() {
+    public void ifQuotesAreUsedThereCanBeWhitespaceAroundDelimiters()
+    {
         runTest("Hello", "The", "World", "'Hello'\t , 'The' ,  'World'");
     }
 
     @Test
-    public void ifQuotesAreNotUsedWhitespaceAroundDelimitersIsPartOfValue() {
+    public void ifQuotesAreNotUsedWhitespaceAroundDelimitersIsPartOfValue()
+    {
         runTest("Hello\t", " The ", "  World", "Hello\t, The ,  World");
     }
 
@@ -45,40 +49,47 @@ public class TestDelimitedQuoting extends AbstractDriverTest {
     }
 
     @Test
-    public void quoteInsideValueIsJustAChar() {
+    public void quoteInsideValueIsJustAChar()
+    {
         runTest("Hello 'World'", "and", "Bye", "Hello 'World','and','Bye'");
     }
 
     @Test
-    public void delimiterInQuotesIsPartOfValue() {
+    public void delimiterInQuotesIsPartOfValue()
+    {
         runTest("Hello, World", "and", "Bye", "'Hello, World','and','Bye'");
     }
 
     @Test
-    public void eolInQuotesIsPartOfValue() {
+    public void eolInQuotesIsPartOfValue()
+    {
         runTest("Hello\r\nWorld", "and", "Bye", "'Hello\r\nWorld','and','Bye'");
         runTest("Hello\nWorld", "and", "Bye", "'Hello\nWorld','and','Bye'");
         runTest("Hello\rWorld", "and", "Bye", "'Hello\rWorld','and','Bye'");
     }
 
     @Test
-    public void twoQuotesIsAnEscapedQuote() {
+    public void twoQuotesIsAnEscapedQuote()
+    {
         runTest("'", "X", "Y", "'''','X','Y'");
-        runTest("''", "X", "Y","'''''','X','Y'");
+        runTest("''", "X", "Y", "'''''','X','Y'");
         runTest("Hello, 'World'", "and", "Bye", "'Hello, ''World''','and','Bye'");
     }
 
     @Test
-    public void quotedFieldShouldBeFollowedByDelimiter() {
+    public void quotedFieldShouldBeFollowedByDelimiter()
+    {
         runTestInvalid("Unexpected text after closing quote in value 1 at line 2", "'Hello' World,'Bye'");
     }
 
     @Test
-    public void quotesShouldBeTerminated() {
+    public void quotesShouldBeTerminated()
+    {
         runTestInvalid("Unclosed quotes in value 2 at line 2", "'Hello','W");
     }
 
-    private void runTest(String expectedField1, String expectedField2, String expectedField3, String rawLine) {
+    private void runTest(String expectedField1, String expectedField2, String expectedField3, String rawLine)
+    {
         FlatData flatData = parseFlatData("section default: DelimitedWithHeadings\n" +
                 "{\n" +
                 "  scope.untilEof;\n" +
@@ -104,7 +115,8 @@ public class TestDelimitedQuoting extends AbstractDriverTest {
         Assert.assertEquals(expectedField3, record.getValue().field3);
     }
 
-    private void runTestInvalid(String expectedDefect, String rawLine) {
+    private void runTestInvalid(String expectedDefect, String rawLine)
+    {
         FlatData flatData = parseFlatData("section default: DelimitedWithHeadings\n" +
                 "{\n" +
                 "  scope.untilEof;\n" +
@@ -125,7 +137,8 @@ public class TestDelimitedQuoting extends AbstractDriverTest {
         assertHasDefect("Critical", expectedDefect, records.get(0));
     }
 
-    public static class Data {
+    public static class Data
+    {
         public String field1;
         public String field2;
         public String field3;

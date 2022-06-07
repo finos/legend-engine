@@ -14,18 +14,18 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.test.execution;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.eclipse.collections.api.block.procedure.Procedure;
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.factory.Lists;
+import org.finos.legend.engine.shared.core.ObjectMapperFactory;
+
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Enumeration;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.eclipse.collections.api.block.procedure.Procedure;
-import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.impl.factory.Lists;
-import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 
 public class AbstractTestPlanExecution
 {
@@ -55,7 +55,7 @@ public class AbstractTestPlanExecution
                 {
                     DriverManager.deregisterDriver(c);
                 }
-                catch (Exception ignore)
+                catch (Exception ignored)
                 {
                 }
             });

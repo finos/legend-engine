@@ -354,8 +354,8 @@ public class SimpleTypesContext
         private void checkPattern(String text)
         {
             checkTextValue(t -> patterns == null || patterns.stream()
-                                                            .allMatch(p -> p.matcher(t)
-                                                                            .matches()), text, () -> "does not match expected pattern");
+                    .allMatch(p -> p.matcher(t)
+                            .matches()), text, () -> "does not match expected pattern");
         }
 
         void checkEnumerations(T value)
@@ -363,9 +363,9 @@ public class SimpleTypesContext
             if (enumerations != null)
             {
                 checkParsedValue(v -> enumerations.contains(v), value,
-                                 () -> "expected one of: " + enumerations.stream()
-                                                                         .map(Object::toString)
-                                                                         .collect(Collectors.joining(",")));
+                        () -> "expected one of: " + enumerations.stream()
+                                .map(Object::toString)
+                                .collect(Collectors.joining(",")));
             }
         }
 
@@ -1425,8 +1425,8 @@ public class SimpleTypesContext
         public String toText(Temporal value)
         {
             return value instanceof LocalDate
-                   ? DateTimeFormatter.ISO_DATE.format(value)
-                   : DateTimeFormatter.ISO_OFFSET_DATE.format(value);
+                    ? DateTimeFormatter.ISO_DATE.format(value)
+                    : DateTimeFormatter.ISO_OFFSET_DATE.format(value);
         }
 
         @Override
@@ -1441,11 +1441,11 @@ public class SimpleTypesContext
         private int compare(Temporal left, Temporal right)
         {
             Instant l = left instanceof LocalDate
-                        ? ((LocalDate) left).atStartOfDay(defaultTimezone).toInstant()
-                        : ((ZonedDateTime) left).toInstant();
+                    ? ((LocalDate) left).atStartOfDay(defaultTimezone).toInstant()
+                    : ((ZonedDateTime) left).toInstant();
             Instant r = right instanceof LocalDate
-                        ? ((LocalDate) right).atStartOfDay(defaultTimezone).toInstant()
-                        : ((ZonedDateTime) right).toInstant();
+                    ? ((LocalDate) right).atStartOfDay(defaultTimezone).toInstant()
+                    : ((ZonedDateTime) right).toInstant();
             return l.compareTo(r);
         }
 

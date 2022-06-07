@@ -17,5 +17,6 @@ package org.finos.legend.engine.external.format.xml.shared.datatypes;
 public interface LongSimpleTypeHandler
 {
     long parseLong(String text);
+
     String toText(long value);
 }

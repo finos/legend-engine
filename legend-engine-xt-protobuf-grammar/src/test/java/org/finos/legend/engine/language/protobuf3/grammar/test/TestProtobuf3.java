@@ -14,17 +14,11 @@
 
 package org.finos.legend.engine.language.protobuf3.grammar.test;
 
-import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.protobuf3.grammar.from.Protobuf3GrammarParser;
 import org.finos.legend.engine.language.protobuf3.grammar.to.Protobuf3GrammarComposer;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.protobuf3.metamodel.Message;
 import org.finos.legend.engine.protocol.protobuf3.metamodel.ProtoFile;
 import org.finos.legend.engine.protocol.protobuf3.metamodel.Syntax;
-import org.finos.legend.engine.protocol.protobuf3.metamodel.Translator;
-import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
-import org.finos.legend.pure.generated.Root_meta_external_format_protobuf_metamodel_ProtoFile;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -128,13 +122,8 @@ public class TestProtobuf3
     {
         Protobuf3GrammarParser parser = Protobuf3GrammarParser.newInstance();
         ProtoFile proto = parser.parseProto(value);
-
-        PureModel pureModel = new PureModel(PureModelContextData.newBuilder().build(), Lists.mutable.empty(), DeploymentMode.TEST);
         Protobuf3GrammarComposer composer = Protobuf3GrammarComposer.newInstance();
-
-        Root_meta_external_format_protobuf_metamodel_ProtoFile file = new Translator().translate(proto, pureModel);
-
-        String result = composer.renderProto(file, pureModel.getExecutionSupport());
+        String result = composer.renderProto(proto);
         Assert.assertEquals(value, result);
     }
 }

@@ -31,5 +31,7 @@ public interface ParsedFlatDataToObject<T>
         return true;
     }
 
-    default void finished() {};
+    default void finished()
+    {
+    }
 }

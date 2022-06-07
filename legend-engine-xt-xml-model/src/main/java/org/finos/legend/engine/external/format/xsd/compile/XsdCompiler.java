@@ -174,8 +174,8 @@ public class XsdCompiler
     {
         this.schema = new XsdParser(context.getContent()).parse();
         this.targetNamespace = schema.targetNamespace == null
-                               ? XMLConstants.NULL_NS_URI
-                               : schema.targetNamespace;
+                ? XMLConstants.NULL_NS_URI
+                : schema.targetNamespace;
         this.namespaceToPrefix.put(XMLConstants.W3C_XML_SCHEMA_NS_URI, "xs");
         this.namespaceToPrefix.put(XMLConstants.XML_NS_URI, XMLConstants.XML_NS_PREFIX);
         this.namespaceToPrefix.put(this.targetNamespace, XMLConstants.DEFAULT_NS_PREFIX);
@@ -286,8 +286,8 @@ public class XsdCompiler
                     ._minOccurs(any.minOccurs)
                     ._maxOccurs(any.maxOccurs)
                     ._namespace(any.namespace == null
-                                ? Lists.mutable.empty()
-                                : ListIterate.collect(any.namespace, s -> s))
+                            ? Lists.mutable.empty()
+                            : ListIterate.collect(any.namespace, s -> s))
                     ._processContents(contentProceesing(any.processContents));
             objectConsumer.peek().accept(compiled);
             pushAnnotationConsumer(compiled);
@@ -304,8 +304,8 @@ public class XsdCompiler
         {
             Root_meta_external_format_xml_metamodel_xsd_XsdAnyAttribute compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdAnyAttribute_Impl("")
                     ._namespace(anyAttribute.namespace == null
-                                ? Lists.mutable.empty()
-                                : ListIterate.collect(anyAttribute.namespace, s -> s))
+                            ? Lists.mutable.empty()
+                            : ListIterate.collect(anyAttribute.namespace, s -> s))
                     ._processContents(contentProceesing(anyAttribute.processContents));
             objectConsumer.peek().accept(compiled);
             pushAnnotationConsumer(compiled);
@@ -334,8 +334,8 @@ public class XsdCompiler
                     ._form(form(attribute.form == null ? attributeFormDefault : attribute.form))
                     ._typeName(qName(attribute.typeName)) // TODO Resolve reference
                     ._use(attribute.use == null
-                          ? use("optional")
-                          : use(attribute.use));
+                            ? use("optional")
+                            : use(attribute.use));
             objectConsumer.peek().accept(compiled);
             objectConsumer.push(o -> compiled._type((Root_meta_external_format_xml_metamodel_xsd_XsdSimpleType) o));
             pushAnnotationConsumer(compiled);
@@ -357,16 +357,16 @@ public class XsdCompiler
                     ._ref(qName(attributeGroup.ref)); // TODO Resolve reference
             objectConsumer.peek().accept(compiled);
             objectConsumer.push(o ->
-                                {
-                                    if (o instanceof Root_meta_external_format_xml_metamodel_xsd_XsdAnyAttribute)
-                                    {
-                                        compiled._anyAttribute((Root_meta_external_format_xml_metamodel_xsd_XsdAnyAttribute) o);
-                                    }
-                                    else
-                                    {
-                                        compiled._itemsAdd((Root_meta_external_format_xml_metamodel_xsd_XsdAttributeItem) o);
-                                    }
-                                });
+            {
+                if (o instanceof Root_meta_external_format_xml_metamodel_xsd_XsdAnyAttribute)
+                {
+                    compiled._anyAttribute((Root_meta_external_format_xml_metamodel_xsd_XsdAnyAttribute) o);
+                }
+                else
+                {
+                    compiled._itemsAdd((Root_meta_external_format_xml_metamodel_xsd_XsdAttributeItem) o);
+                }
+            });
             pushAnnotationConsumer(compiled);
         }
 
@@ -424,24 +424,24 @@ public class XsdCompiler
                     ._final(derivationTypes(complexType._final, finalDefault, XsdDerivationType.EXTENSION_RESTRICTION, complexType));
             objectConsumer.peek().accept(compiled);
             objectConsumer.push(o ->
-                                {
-                                    if (o instanceof Root_meta_external_format_xml_metamodel_xsd_XsdAnyAttribute)
-                                    {
-                                        compiled._anyAttribute((Root_meta_external_format_xml_metamodel_xsd_XsdAnyAttribute) o);
-                                    }
-                                    else if (o instanceof Root_meta_external_format_xml_metamodel_xsd_XsdAttributeItem)
-                                    {
-                                        compiled._attributeItemsAdd((Root_meta_external_format_xml_metamodel_xsd_XsdAttributeItem) o);
-                                    }
-                                    else if (o instanceof Root_meta_external_format_xml_metamodel_xsd_XsdParticle)
-                                    {
-                                        compiled._particle((Root_meta_external_format_xml_metamodel_xsd_XsdParticle) o);
-                                    }
-                                    else
-                                    {
-                                        compiled._contentModel((Root_meta_external_format_xml_metamodel_xsd_XsdContentModel) o);
-                                    }
-                                });
+            {
+                if (o instanceof Root_meta_external_format_xml_metamodel_xsd_XsdAnyAttribute)
+                {
+                    compiled._anyAttribute((Root_meta_external_format_xml_metamodel_xsd_XsdAnyAttribute) o);
+                }
+                else if (o instanceof Root_meta_external_format_xml_metamodel_xsd_XsdAttributeItem)
+                {
+                    compiled._attributeItemsAdd((Root_meta_external_format_xml_metamodel_xsd_XsdAttributeItem) o);
+                }
+                else if (o instanceof Root_meta_external_format_xml_metamodel_xsd_XsdParticle)
+                {
+                    compiled._particle((Root_meta_external_format_xml_metamodel_xsd_XsdParticle) o);
+                }
+                else
+                {
+                    compiled._contentModel((Root_meta_external_format_xml_metamodel_xsd_XsdContentModel) o);
+                }
+            });
             pushAnnotationConsumer(compiled);
         }
 
@@ -515,20 +515,20 @@ public class XsdCompiler
                     ._baseTypeName(qName(extension.baseTypeName)); // TODO Resolve reference
             objectConsumer.peek().accept(compiled);
             objectConsumer.push(o ->
-                                {
-                                    if (o instanceof Root_meta_external_format_xml_metamodel_xsd_XsdAnyAttribute)
-                                    {
-                                        compiled._anyAttribute((Root_meta_external_format_xml_metamodel_xsd_XsdAnyAttribute) o);
-                                    }
-                                    else if (o instanceof Root_meta_external_format_xml_metamodel_xsd_XsdAttributeItem)
-                                    {
-                                        compiled._attributeItemsAdd((Root_meta_external_format_xml_metamodel_xsd_XsdAttributeItem) o);
-                                    }
-                                    else
-                                    {
-                                        compiled._particle((Root_meta_external_format_xml_metamodel_xsd_XsdParticle) o);
-                                    }
-                                });
+            {
+                if (o instanceof Root_meta_external_format_xml_metamodel_xsd_XsdAnyAttribute)
+                {
+                    compiled._anyAttribute((Root_meta_external_format_xml_metamodel_xsd_XsdAnyAttribute) o);
+                }
+                else if (o instanceof Root_meta_external_format_xml_metamodel_xsd_XsdAttributeItem)
+                {
+                    compiled._attributeItemsAdd((Root_meta_external_format_xml_metamodel_xsd_XsdAttributeItem) o);
+                }
+                else
+                {
+                    compiled._particle((Root_meta_external_format_xml_metamodel_xsd_XsdParticle) o);
+                }
+            });
             pushAnnotationConsumer(compiled);
         }
 
@@ -605,7 +605,9 @@ public class XsdCompiler
                 including.push(include);
                 included.accept(this);
             }
-            annotationConsumer.push(a -> {});
+            annotationConsumer.push(a ->
+            {
+            });
         }
 
         @Override
@@ -783,28 +785,28 @@ public class XsdCompiler
                     ._baseTypeName(qName(restriction.baseTypeName)); // TODO Resolve reference
             objectConsumer.peek().accept(compiled);
             objectConsumer.push(o ->
-                                {
-                                    if (o instanceof Root_meta_external_format_xml_metamodel_xsd_XsdAnyAttribute)
-                                    {
-                                        compiled._anyAttribute((Root_meta_external_format_xml_metamodel_xsd_XsdAnyAttribute) o);
-                                    }
-                                    else if (o instanceof Root_meta_external_format_xml_metamodel_xsd_XsdAttributeItem)
-                                    {
-                                        compiled._attributeItemsAdd((Root_meta_external_format_xml_metamodel_xsd_XsdAttributeItem) o);
-                                    }
-                                    else if (o instanceof Root_meta_external_format_xml_metamodel_xsd_XsdFacet)
-                                    {
-                                        compiled._facetsAdd((Root_meta_external_format_xml_metamodel_xsd_XsdFacet) o);
-                                    }
-                                    else if (o instanceof Root_meta_external_format_xml_metamodel_xsd_XsdParticle)
-                                    {
-                                        compiled._particle((Root_meta_external_format_xml_metamodel_xsd_XsdParticle) o);
-                                    }
-                                    else
-                                    {
-                                        compiled._baseType((Root_meta_external_format_xml_metamodel_xsd_XsdAnyType) o);
-                                    }
-                                });
+            {
+                if (o instanceof Root_meta_external_format_xml_metamodel_xsd_XsdAnyAttribute)
+                {
+                    compiled._anyAttribute((Root_meta_external_format_xml_metamodel_xsd_XsdAnyAttribute) o);
+                }
+                else if (o instanceof Root_meta_external_format_xml_metamodel_xsd_XsdAttributeItem)
+                {
+                    compiled._attributeItemsAdd((Root_meta_external_format_xml_metamodel_xsd_XsdAttributeItem) o);
+                }
+                else if (o instanceof Root_meta_external_format_xml_metamodel_xsd_XsdFacet)
+                {
+                    compiled._facetsAdd((Root_meta_external_format_xml_metamodel_xsd_XsdFacet) o);
+                }
+                else if (o instanceof Root_meta_external_format_xml_metamodel_xsd_XsdParticle)
+                {
+                    compiled._particle((Root_meta_external_format_xml_metamodel_xsd_XsdParticle) o);
+                }
+                else
+                {
+                    compiled._baseType((Root_meta_external_format_xml_metamodel_xsd_XsdAnyType) o);
+                }
+            });
             pushAnnotationConsumer(compiled);
             // TODO Resolve type from ref/child
         }
@@ -834,16 +836,16 @@ public class XsdCompiler
                         ._finalDefault(derivationTypes(schema.finalDefault, Collections.emptyList(), XsdDerivationType.EXTENSION_RESTRICTION, schema))
                         ._version(schema.version);
                 objectConsumer.push(o ->
-                                    {
-                                        if (o instanceof Root_meta_external_format_xml_metamodel_xsd_XsdExternalSchema)
-                                        {
-                                            compiledSchema._externalsAdd((Root_meta_external_format_xml_metamodel_xsd_XsdExternalSchema) o);
-                                        }
-                                        else
-                                        {
-                                            compiledSchema._itemsAdd(o);
-                                        }
-                                    });
+                {
+                    if (o instanceof Root_meta_external_format_xml_metamodel_xsd_XsdExternalSchema)
+                    {
+                        compiledSchema._externalsAdd((Root_meta_external_format_xml_metamodel_xsd_XsdExternalSchema) o);
+                    }
+                    else
+                    {
+                        compiledSchema._itemsAdd(o);
+                    }
+                });
                 pushAnnotationConsumer(compiledSchema);
             }
         }
@@ -980,38 +982,38 @@ public class XsdCompiler
             else if (XMLConstants.NULL_NS_URI.equals(qName.getNamespaceURI()))
             {
                 return new Root_meta_external_format_xml_metamodel_xml_QName_Impl("")._localPart(qName.getLocalPart())
-                                                                                     ._namespace(targetNamespace)
-                                                                                     ._prefix(prefixFor(targetNamespace, qName.getPrefix()));
+                        ._namespace(targetNamespace)
+                        ._prefix(prefixFor(targetNamespace, qName.getPrefix()));
             }
             else
             {
                 return new Root_meta_external_format_xml_metamodel_xml_QName_Impl("")._localPart(qName.getLocalPart())
-                                                                                     ._namespace(qName.getNamespaceURI())
-                                                                                     ._prefix(prefixFor(qName.getNamespaceURI(), qName.getPrefix()));
+                        ._namespace(qName.getNamespaceURI())
+                        ._prefix(prefixFor(qName.getNamespaceURI(), qName.getPrefix()));
             }
         }
 
         private Root_meta_external_format_xml_metamodel_xml_QName qName(String name)
         {
             return name == null
-                   ? null
-                   : new Root_meta_external_format_xml_metamodel_xml_QName_Impl("")._localPart(name)
-                                                                                   ._namespace(targetNamespace)
-                                                                                   ._prefix(prefixFor(targetNamespace));
+                    ? null
+                    : new Root_meta_external_format_xml_metamodel_xml_QName_Impl("")._localPart(name)
+                    ._namespace(targetNamespace)
+                    ._prefix(prefixFor(targetNamespace));
         }
 
         private Enum contentProceesing(XsdContentProcessing contentProcessing)
         {
             return contentProcessing == null
-                   ? null
-                   : context.getPureModel().getEnumValue(METAMODEL_PACKAGE + "XsdContentProcessing", contentProcessing.toString());
+                    ? null
+                    : context.getPureModel().getEnumValue(METAMODEL_PACKAGE + "XsdContentProcessing", contentProcessing.toString());
         }
 
         private Enum use(XsdUse use)
         {
             return use == null
-                   ? null
-                   : use(use.toString());
+                    ? null
+                    : use(use.toString());
         }
 
         private Enum use(String use)
@@ -1022,8 +1024,8 @@ public class XsdCompiler
         private Enum form(XsdForm form)
         {
             return form == null
-                   ? null
-                   : context.getPureModel().getEnumValue(METAMODEL_PACKAGE + "XsdForm", form.toString());
+                    ? null
+                    : context.getPureModel().getEnumValue(METAMODEL_PACKAGE + "XsdForm", form.toString());
         }
 
         private RichIterable<? extends Enum> derivationTypes(List<XsdDerivationType> derivationTypes, List<XsdDerivationType> dflt, List<XsdDerivationType> allowed, XsdObject object)
@@ -1050,8 +1052,8 @@ public class XsdCompiler
         private Enum derivationType(XsdDerivationType derivationType)
         {
             return derivationType == null
-                   ? null
-                   : context.getPureModel().getEnumValue(METAMODEL_PACKAGE + "XsdDerivationType", derivationType.toString());
+                    ? null
+                    : context.getPureModel().getEnumValue(METAMODEL_PACKAGE + "XsdDerivationType", derivationType.toString());
         }
     }
 }

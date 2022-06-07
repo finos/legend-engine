@@ -49,7 +49,7 @@ public abstract class ExternalFormatReader<T> implements Iterator<IChecked<T>>
         while (queue.isEmpty() && !readingComplete.get())
         {
             checkReader();
-            if (System.currentTimeMillis() -t0 > FIVE_MINUTES)
+            if (System.currentTimeMillis() - t0 > FIVE_MINUTES)
             {
                 throw new IllegalStateException("Data unavailable for more than 5 minutes");
             }
@@ -75,7 +75,7 @@ public abstract class ExternalFormatReader<T> implements Iterator<IChecked<T>>
         while (obj == null && !readingComplete.get())
         {
             checkReader();
-            if (System.currentTimeMillis() -t0 > FIVE_MINUTES)
+            if (System.currentTimeMillis() - t0 > FIVE_MINUTES)
             {
                 throw new IllegalStateException("Data unavailable for more than 5 minutes");
             }
@@ -88,10 +88,10 @@ public abstract class ExternalFormatReader<T> implements Iterator<IChecked<T>>
         return obj;
     }
 
-    public Stream<IChecked<T>>  startStream()
+    public Stream<IChecked<T>> startStream()
     {
         streamProvider = StreamProviderHolder.streamProviderThreadLocal.get();
-        Thread thread = new Thread(this::readData, "ExternalFormatDeserializer-"+(++threadId));
+        Thread thread = new Thread(this::readData, "ExternalFormatDeserializer-" + (++threadId));
         thread.start();
 
         return StreamSupport.stream(Spliterators.spliteratorUnknownSize(this, (Spliterator.ORDERED) | Spliterator.IMMUTABLE | Spliterator.NONNULL), false);
@@ -102,8 +102,8 @@ public abstract class ExternalFormatReader<T> implements Iterator<IChecked<T>>
         if (readException.get() != null)
         {
             throw readException.get() instanceof RuntimeException
-                  ? (RuntimeException) readException.get()
-                  : new RuntimeException(readException.get());
+                    ? (RuntimeException) readException.get()
+                    : new RuntimeException(readException.get());
         }
     }
 

@@ -108,7 +108,7 @@ public class GraphQLFormatExtension implements ExternalFormatExtension<Root_meta
     }
 
     @Override
-    public String metamodelToText(Root_meta_external_query_graphQL_binding_toPure_introspection_GraphQLIntrospectionContainer schemaDetail)
+    public String metamodelToText(Root_meta_external_query_graphQL_binding_toPure_introspection_GraphQLIntrospectionContainer schemaDetail, PureModel pureModel)
     {
         return null;
     }

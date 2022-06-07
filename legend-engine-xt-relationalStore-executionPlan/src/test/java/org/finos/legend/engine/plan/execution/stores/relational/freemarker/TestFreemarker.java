@@ -182,7 +182,7 @@ public class TestFreemarker
     {
         return "<#function renderCollectionWithDefaultValue collection separator prefix suffix defaultValue>" +
                 "<#if collection?size == 0>" +
-                "<#return defaultValue>"+
+                "<#return defaultValue>" +
                 "</#if>" +
                 "<#return prefix + collection?join(suffix + separator + prefix) + suffix>" +
                 "</#function>";

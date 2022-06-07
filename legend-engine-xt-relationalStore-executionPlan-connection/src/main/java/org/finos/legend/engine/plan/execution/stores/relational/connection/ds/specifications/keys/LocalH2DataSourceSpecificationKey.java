@@ -32,7 +32,7 @@ public class LocalH2DataSourceSpecificationKey extends StaticDataSourceSpecifica
     private final Checksum crc32 = new CRC32();
 
 
-    public LocalH2DataSourceSpecificationKey( List<String> testDataSetupSqls)
+    public LocalH2DataSourceSpecificationKey(List<String> testDataSetupSqls)
     {
         super(LOCAL_HOST, H2LocalServer.getInstance().getPort(), LOCAL_H2_DB_NAME);
         this.testDataSetupSqls = testDataSetupSqls;
@@ -66,7 +66,7 @@ public class LocalH2DataSourceSpecificationKey extends StaticDataSourceSpecifica
         {
             return false;
         }
-        LocalH2DataSourceSpecificationKey that = (LocalH2DataSourceSpecificationKey)o;
+        LocalH2DataSourceSpecificationKey that = (LocalH2DataSourceSpecificationKey) o;
         return Objects.equals(testDataSetupSqls, that.testDataSetupSqls)
                 && Objects.equals(port, that.port);
     }

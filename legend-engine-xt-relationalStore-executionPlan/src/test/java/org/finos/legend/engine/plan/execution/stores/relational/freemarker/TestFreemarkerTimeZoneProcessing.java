@@ -41,12 +41,12 @@ public class TestFreemarkerTimeZoneProcessing
         return "<#function UTCtoTZ tz paramDate>" +
                 "    <#return (tz+\" \"+paramDate)?date.@alloyDate>" +
                 "</#function>" +
-                "<#function renderCollectionWithTz collection timeZone separator prefix suffix defaultValue>"+
-                "<#assign result = [] />"+
-                "<#list collection as c>"+
-                "<#assign result = [prefix + (timeZone+\" \"+c)?date.@alloyDate + suffix] + result>"+
-                "</#list>"+
-                "<#return result?reverse?join(separator, defaultValue)>"+
+                "<#function renderCollectionWithTz collection timeZone separator prefix suffix defaultValue>" +
+                "<#assign result = [] />" +
+                "<#list collection as c>" +
+                "<#assign result = [prefix + (timeZone+\" \"+c)?date.@alloyDate + suffix] + result>" +
+                "</#list>" +
+                "<#return result?reverse?join(separator, defaultValue)>" +
                 "</#function>";
     }
 
@@ -139,19 +139,19 @@ public class TestFreemarkerTimeZoneProcessing
 
     private String processDateConstantTimeZoneNoConversion(String tz, MutableMap<String, Object> freeMarkerDateParameters) throws Exception
     {
-        String sql = "${UTCtoTZ( \"["+tz+"]\" dateParam )}";
+        String sql = "${UTCtoTZ( \"[" + tz + "]\" dateParam )}";
         return processTemplate(sql, freeMarkerDateParameters);
     }
 
     private String processDateCollectionWithTimeZone(String tz, MutableMap<String, Object> freeMarkerDateParameters) throws Exception
     {
-        String sql = "${renderCollectionWithTz(dateParam \"["+tz+"]\" \",\" \"convert(DATE, '\" \"', 101)\" \"null\")}";
+        String sql = "${renderCollectionWithTz(dateParam \"[" + tz + "]\" \",\" \"convert(DATE, '\" \"', 101)\" \"null\")}";
         return processTemplate(sql, freeMarkerDateParameters);
     }
 
     private String processDateTimeCollectionWithTimeZone(String tz, MutableMap<String, Object> freeMarkerDateParameters) throws Exception
     {
-        String sql = "${renderCollectionWithTz(dateParam \"["+tz+"]\" \",\" \"convert(DATETIME, '\" \"', 101)\" \"null\")}";
+        String sql = "${renderCollectionWithTz(dateParam \"[" + tz + "]\" \",\" \"convert(DATETIME, '\" \"', 101)\" \"null\")}";
         return processTemplate(sql, freeMarkerDateParameters);
     }
 }

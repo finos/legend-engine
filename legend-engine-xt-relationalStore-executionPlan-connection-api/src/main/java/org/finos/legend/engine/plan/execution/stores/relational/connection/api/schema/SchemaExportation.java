@@ -42,7 +42,11 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.pac4j.core.profile.CommonProfile;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Types;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -92,39 +96,45 @@ public class SchemaExportation
             Tuples.pair(Types.CHAR, size -> createDataType("Char", size,
                     org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Char.class))
     );
-    private static final String[] TABLES_TYPES = new String[]{"TABLE", "VIEW"};
+    private static final String[] TABLES_TYPES = new String[] {"TABLE", "VIEW"};
     private static final String DEFAULT_SCHEMA = "default";
 
 
-    SchemaExportation(DatabaseBuilderInput storeBuilderInput) {
+    SchemaExportation(DatabaseBuilderInput storeBuilderInput)
+    {
         this.databaseBuilderInput = storeBuilderInput;
     }
 
 
-    public static SchemaExportation newBuilder(DatabaseBuilderInput storeBuilderInput) {
+    public static SchemaExportation newBuilder(DatabaseBuilderInput storeBuilderInput)
+    {
         return new SchemaExportation(storeBuilderInput);
     }
 
-    public Database build(ConnectionManagerSelector connectionManager, MutableList<CommonProfile> profiles) throws SQLException {
+    public Database build(ConnectionManagerSelector connectionManager, MutableList<CommonProfile> profiles) throws SQLException
+    {
         List<Predicate<String>> tableNameFilters = FastList.newList();
 
         List<Function<String, String>> tableNameMappers = FastList.newList();
         List<Function<String, String>> schemaNameMappers = FastList.newList();
         List<Function<String, String>> columnNameMappers = FastList.newList();
 
-        try (Connection connection = connectionManager.getDatabaseConnection(profiles, databaseBuilderInput.connection)) {
+        try (Connection connection = connectionManager.getDatabaseConnection(profiles, databaseBuilderInput.connection))
+        {
             DatabaseMetaData metadata = connection.getMetaData();
             DatabaseBuilderConfig config = this.databaseBuilderInput.config;
             Database database = new Database();
             database._package = this.databaseBuilderInput.targetDatabase._package;
             database.name = this.databaseBuilderInput.targetDatabase.name;
-            if (config.patterns == null || config.patterns.isEmpty()) {
+            if (config.patterns == null || config.patterns.isEmpty())
+            {
                 config.setPatterns(FastList.newListWith(new DatabasePattern(null, null)));
             }
             this.preProcessInput(this.databaseBuilderInput);
             database.schemas = FastList.newList();
 
-            for (DatabasePattern pattern : config.patterns) {
+            for (DatabasePattern pattern : config.patterns)
+            {
                 buildDatabaseSchemas(database, metadata, pattern, tableNameFilters);
             }
 
@@ -133,11 +143,14 @@ public class SchemaExportation
             columnNameMappers.add(SchemaExportation::escapeString);
 
             //post process the names.
-            database.schemas.forEach(schema -> {
+            database.schemas.forEach(schema ->
+            {
                 schema.name = applyNameMapper(schemaNameMappers, schema.name);
-                schema.tables.forEach(table -> {
+                schema.tables.forEach(table ->
+                {
                     table.name = applyNameMapper(tableNameMappers, table.name);
-                    table.columns.forEach(column -> {
+                    table.columns.forEach(column ->
+                    {
                         column.name = applyNameMapper(columnNameMappers, column.name);
                     });
                 });
@@ -147,36 +160,43 @@ public class SchemaExportation
         }
     }
 
-    private String applyNameMapper(List<Function<String, String>> mappers, String name) {
+    private String applyNameMapper(List<Function<String, String>> mappers, String name)
+    {
         return mappers.stream().reduce(Function::andThen).orElse(Function.identity()).apply(name);
     }
 
-    private void buildDatabaseSchemas(Database db, DatabaseMetaData metadata, DatabasePattern pattern, List<Predicate<String>> tableNameFilters) throws SQLException {
+    private void buildDatabaseSchemas(Database db, DatabaseMetaData metadata, DatabasePattern pattern, List<Predicate<String>> tableNameFilters) throws SQLException
+    {
         DatabaseBuilderConfig config = this.databaseBuilderInput.config;
         // build schemas
 
         Map<String, List<CatalogTable>> tablesBySchema = this.buildSchemasAndCollectTables(db, metadata, pattern, tableNameFilters);
-        if (config.enrichTables && config.maxTables != null && tablesBySchema.values().stream().mapToLong(List::size).sum() > config.maxTables) {
+        if (config.enrichTables && config.maxTables != null && tablesBySchema.values().stream().mapToLong(List::size).sum() > config.maxTables)
+        {
             throw new IllegalStateException(String.format("Maximum number of tables %d has been reached, " +
                     "please restrict the input you are generating for or set maxTables property. " +
                     "The current input has requested %d tables", config.maxTables, tablesBySchema.values().stream().mapToLong(List::size).sum()));
         }
         tablesBySchema.keySet().forEach(schema -> getOrCreateAndAddSchema(db, schema));
         // build tables
-        if (config.enrichTables) {
+        if (config.enrichTables)
+        {
 
-            for (Map.Entry<String, List<CatalogTable>> entry : tablesBySchema.entrySet()) {
+            for (Map.Entry<String, List<CatalogTable>> entry : tablesBySchema.entrySet())
+            {
                 String catalogTablesSchema = entry.getKey();
                 List<CatalogTable> catalogTables = entry.getValue();
                 Schema schema = getOrCreateAndAddSchema(db, catalogTablesSchema);
-                for (CatalogTable t : catalogTables) {
+                for (CatalogTable t : catalogTables)
+                {
                     buildSchemaTable(t.getCatalog(), schema, t.getTable(), metadata);
                 }
             }
         }
     }
 
-    private Map<String, List<CatalogTable>> buildSchemasAndCollectTables(Database db, DatabaseMetaData metadata, DatabasePattern pattern, List<Predicate<String>> tableNameFilters) throws SQLException {
+    private Map<String, List<CatalogTable>> buildSchemasAndCollectTables(Database db, DatabaseMetaData metadata, DatabasePattern pattern, List<Predicate<String>> tableNameFilters) throws SQLException
+    {
         String escapeStringCharacter = metadata.getSearchStringEscape();
 
         String escapedCatalog = correctCasePattern(pattern.getCatalog(), metadata);
@@ -187,9 +207,11 @@ public class SchemaExportation
 
         String escapedTable = correctCasePattern(escapePattern(pattern.getTablePattern(), pattern.isEscapeTablePattern(), escapeStringCharacter), metadata);
 
-        try (ResultSet tablesRs = metadata.getTables(escapedCatalog, escapedSchema, escapedTable, TABLES_TYPES)) {
+        try (ResultSet tablesRs = metadata.getTables(escapedCatalog, escapedSchema, escapedTable, TABLES_TYPES))
+        {
             MutableMap<String, List<CatalogTable>> tablesBySchema = Maps.mutable.empty();
-            while (tablesRs.next()) {
+            while (tablesRs.next())
+            {
                 String CATALOG_LABEL = "TABLE_CAT";
                 String TABLE_LABEL = "TABLE_NAME";
                 String SCHEMA_LABEL = "TABLE_SCHEM";
@@ -197,7 +219,8 @@ public class SchemaExportation
                 String table = tablesRs.getString(TABLE_LABEL);
                 String schema = tablesRs.getString(SCHEMA_LABEL);
                 schema = schema == null ? DEFAULT_SCHEMA : schema;
-                if (ListIterate.anySatisfy(tableNameFilters, f -> f.test(table))) {
+                if (ListIterate.anySatisfy(tableNameFilters, f -> f.test(table)))
+                {
                     continue;
                 }
                 CatalogTable catalogTable = new CatalogTable(catalog, schema, table);
@@ -207,55 +230,68 @@ public class SchemaExportation
         }
     }
 
-    private String escapePattern(String pattern, boolean doEscape, String escapeStringCharacter) {
+    private String escapePattern(String pattern, boolean doEscape, String escapeStringCharacter)
+    {
         return pattern != null && doEscape
                 ? pattern.replace("_", escapeStringCharacter + "_")
                 .replace("%", escapeStringCharacter + "%")
                 : pattern;
     }
 
-    private String correctCasePattern(String pattern, DatabaseMetaData metaData) throws SQLException {
-        if (pattern == null) {
+    private String correctCasePattern(String pattern, DatabaseMetaData metaData) throws SQLException
+    {
+        if (pattern == null)
+        {
             return null;
         }
-        if (metaData.storesUpperCaseIdentifiers()) {
+        if (metaData.storesUpperCaseIdentifiers())
+        {
             return pattern.toUpperCase();
         }
-        if (metaData.storesLowerCaseIdentifiers()) {
+        if (metaData.storesLowerCaseIdentifiers())
+        {
             return pattern.toLowerCase();
         }
 
         return pattern;
     }
 
-    private void buildSchemaTable(String catalog, Schema schema, String tableName, DatabaseMetaData metaData) throws SQLException {
-        if (ListIterate.noneSatisfy(schema.tables, t -> t.name.equals(tableName))) {
+    private void buildSchemaTable(String catalog, Schema schema, String tableName, DatabaseMetaData metaData) throws SQLException
+    {
+        if (ListIterate.noneSatisfy(schema.tables, t -> t.name.equals(tableName)))
+        {
             Table table = new Table();
             table.name = tableName;
             DatabaseBuilderConfig config = this.databaseBuilderInput.config;
-            if (config.enrichColumns) {
+            if (config.enrichColumns)
+            {
                 buildTableColumns(catalog, schema, table, metaData);
             }
             schema.tables.add(table);
         }
     }
 
-    private void buildTableColumns(String catalog, Schema schema, Table table, DatabaseMetaData metaData) throws SQLException {
-        if (this.databaseBuilderInput.config.enrichPrimaryKeys) {
+    private void buildTableColumns(String catalog, Schema schema, Table table, DatabaseMetaData metaData) throws SQLException
+    {
+        if (this.databaseBuilderInput.config.enrichPrimaryKeys)
+        {
             table.primaryKey = buildPrimaryKeys(catalog, schema, table, metaData);
         }
         table.columns = buildColumns(catalog, schema, table, metaData);
     }
 
-    private List<Column> buildColumns(String catalog, Schema schema, Table table, DatabaseMetaData metaData) throws SQLException {
+    private List<Column> buildColumns(String catalog, Schema schema, Table table, DatabaseMetaData metaData) throws SQLException
+    {
         String searchStringEscape = metaData.getSearchStringEscape();
 
         String escapedSchemaName = escapePattern(schema.name, true, searchStringEscape);
         String escapedTableName = escapePattern(table.name, true, searchStringEscape);
 
-        try (ResultSet columnsRs = metaData.getColumns(catalog, escapedSchemaName, escapedTableName, "%")) {
+        try (ResultSet columnsRs = metaData.getColumns(catalog, escapedSchemaName, escapedTableName, "%"))
+        {
             List<Column> columns = FastList.newList();
-            while (columnsRs.next()) {
+            while (columnsRs.next())
+            {
                 Column column = new Column();
                 column.name = columnsRs.getString("COLUMN_NAME");
                 column.nullable = "YES".equals(columnsRs.getString("IS_NULLABLE"));
@@ -266,23 +302,28 @@ public class SchemaExportation
         }
     }
 
-    private List<String> buildPrimaryKeys(String catalog, Schema schema, Table table, DatabaseMetaData metaData) throws SQLException {
+    private List<String> buildPrimaryKeys(String catalog, Schema schema, Table table, DatabaseMetaData metaData) throws SQLException
+    {
         String searchStringEscape = metaData.getSearchStringEscape();
 
         String escapedSchemaName = escapePattern(schema.name, true, searchStringEscape);
 
-        try (ResultSet primaryKeysRs = metaData.getPrimaryKeys(catalog, escapedSchemaName, table.name)) {
+        try (ResultSet primaryKeysRs = metaData.getPrimaryKeys(catalog, escapedSchemaName, table.name))
+        {
             List<String> primaryKeys = FastList.newList();
-            while (primaryKeysRs.next()) {
+            while (primaryKeysRs.next())
+            {
                 primaryKeys.add(primaryKeysRs.getString("COLUMN_NAME"));
             }
             return primaryKeys;
         }
     }
 
-    private Schema getOrCreateAndAddSchema(Database db, String name) {
+    private Schema getOrCreateAndAddSchema(Database db, String name)
+    {
         Schema schema = ListIterate.select(db.schemas, s -> s.name.equals(name)).getFirst();
-        if (schema == null) {
+        if (schema == null)
+        {
             schema = new Schema();
             schema.name = name;
             schema.tables = FastList.newList();
@@ -291,13 +332,15 @@ public class SchemaExportation
         return schema;
     }
 
-    private DataType buildDataTypeNode(ResultSet columns) throws SQLException {
+    private DataType buildDataTypeNode(ResultSet columns) throws SQLException
+    {
         int type = columns.getInt("DATA_TYPE");
         long size = columns.getInt("COLUMN_SIZE");
 
         Function<Long, DataType> func = TYPE_MAP.get(type);
 
-        if (func == null) {
+        if (func == null)
+        {
             Other o = new Other();
             return o;
         }
@@ -305,54 +348,65 @@ public class SchemaExportation
         return func.apply(size);
     }
 
-    private static DataType createDataType(String type, Long size, Class<? extends DataType> clazz) {
+    private static DataType createDataType(String type, Long size, Class<? extends DataType> clazz)
+    {
         ObjectNode node = JsonNodeFactory.instance.objectNode().put("_type", type);
-        if (size != 0L) {
+        if (size != 0L)
+        {
             node.put("size", size);
         }
-        try {
+        try
+        {
             return objectMapper.treeToValue(node, clazz);
-        } catch (JsonProcessingException e) {
+        }
+        catch (JsonProcessingException e)
+        {
             throw new RuntimeException("Error converting datatype", e);
         }
     }
 
-    private void preProcessInput(DatabaseBuilderInput storeInput) {
-        if (storeInput.connection.datasourceSpecification instanceof SnowflakeDatasourceSpecification) {
+    private void preProcessInput(DatabaseBuilderInput storeInput)
+    {
+        if (storeInput.connection.datasourceSpecification instanceof SnowflakeDatasourceSpecification)
+        {
             SnowflakeDatasourceSpecification snowflakeDatasourceSpecification = (SnowflakeDatasourceSpecification) storeInput.connection.datasourceSpecification;
             storeInput.config.setPatterns(ListIterate.collect(storeInput.config.getPatterns(), p -> p.withNewCatalog(snowflakeDatasourceSpecification.databaseName)));
         }
     }
 
-    public static String escapeString(String s) {
+    public static String escapeString(String s)
+    {
         return StringUtils.containsAny(s, ESCAPE_CHARS) ? "\"" + s + "\"" : s;
     }
 
-    private class CatalogTable {
+    private class CatalogTable
+    {
         private final String catalog;
         private final String schema;
         private final String table;
 
-        public CatalogTable(String catalog, String schema, String table) {
+        public CatalogTable(String catalog, String schema, String table)
+        {
             this.catalog = catalog;
             this.schema = schema;
             this.table = table;
         }
 
-        public String getCatalog() {
+        public String getCatalog()
+        {
             return catalog;
         }
 
-        public String getSchema() {
+        public String getSchema()
+        {
             return schema;
         }
 
-        public String getTable() {
+        public String getTable()
+        {
             return table;
         }
     }
-
-
 
 
 }

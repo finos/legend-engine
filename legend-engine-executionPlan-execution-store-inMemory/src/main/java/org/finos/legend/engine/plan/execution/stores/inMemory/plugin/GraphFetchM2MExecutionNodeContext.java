@@ -46,7 +46,7 @@ public class GraphFetchM2MExecutionNodeContext extends DefaultExecutionNodeConte
     }
 
     @Override
-    public IStoreStreamReader createReader(String s) 
+    public IStoreStreamReader createReader(String s)
     {
         MutableList<StoreStreamReaderBuilder> builders = Lists.mutable.empty();
         for (StoreStreamReaderBuilder desc : ServiceLoader.load(StoreStreamReaderBuilder.class))
@@ -54,8 +54,8 @@ public class GraphFetchM2MExecutionNodeContext extends DefaultExecutionNodeConte
             builders.add(desc);
         }
         return builders.isEmpty()
-               ? null
-               : builders.getFirst().newStoreStreamReader(s, node.store);
+                ? null
+                : builders.getFirst().newStoreStreamReader(s, node.store);
     }
 
     @Override

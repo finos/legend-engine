@@ -54,73 +54,142 @@ import org.finos.legend.engine.external.format.xsd.compile.parseTree.XsdWhiteSpa
 public interface XsdObjectVisitor
 {
     void visitBefore(XsdAll all);
+
     void visitAfter(XsdAll all);
+
     void visitBefore(XsdAnnotation annotation);
+
     void visitAfter(XsdAnnotation annotation);
+
     void visitBefore(XsdAny any);
+
     void visitAfter(XsdAny any);
+
     void visitBefore(XsdAnyAttribute anyAttribute);
+
     void visitAfter(XsdAnyAttribute anyAttribute);
+
     void visit(XsdAppInfo appInfo);
+
     void visitBefore(XsdAttribute attribute);
+
     void visitAfter(XsdAttribute attribute);
+
     void visitBefore(XsdAttributeGroup attributeGroup);
+
     void visitAfter(XsdAttributeGroup attributeGroup);
+
     void visitBefore(XsdChoice choice);
+
     void visitAfter(XsdChoice choice);
+
     void visitBefore(XsdComplexContent complexContent);
+
     void visitAfter(XsdComplexContent complexContent);
+
     void visitBefore(XsdComplexType complexType);
+
     void visitAfter(XsdComplexType complexType);
+
     void visit(XsdDocumentation documentation);
+
     void visitBefore(XsdElement element);
+
     void visitAfter(XsdElement element);
+
     void visitBefore(XsdEnumeration enumeration);
+
     void visitAfter(XsdEnumeration enumeration);
+
     void visitBefore(XsdExtension extension);
+
     void visitAfter(XsdExtension extension);
+
     void visitBefore(XsdFractionDigits fractionDigits);
+
     void visitAfter(XsdFractionDigits fractionDigits);
+
     void visitBefore(XsdGroup group);
+
     void visitAfter(XsdGroup group);
+
     void visitBefore(XsdImport _import);
+
     void visitAfter(XsdImport _import);
+
     void visitBefore(XsdInclude include);
+
     void visitAfter(XsdInclude include);
+
     void visitBefore(XsdLength length);
+
     void visitAfter(XsdLength length);
+
     void visitBefore(XsdList list);
+
     void visitAfter(XsdList list);
+
     void visitBefore(XsdMaxExclusive maxExclusive);
+
     void visitAfter(XsdMaxExclusive maxExclusive);
+
     void visitBefore(XsdMaxInclusive maxInclusive);
+
     void visitAfter(XsdMaxInclusive maxInclusive);
+
     void visitBefore(XsdMaxLength maxLength);
+
     void visitAfter(XsdMaxLength maxLength);
+
     void visitBefore(XsdMinExclusive minExclusive);
+
     void visitAfter(XsdMinExclusive minExclusive);
+
     void visitBefore(XsdMinInclusive minInclusive);
+
     void visitAfter(XsdMinInclusive minInclusive);
+
     void visitBefore(XsdMinLength minLength);
+
     void visitAfter(XsdMinLength minLength);
+
     void visitBefore(XsdPattern pattern);
+
     void visitAfter(XsdPattern pattern);
+
     void visitBefore(XsdRedefine redefine);
+
     void visitAfter(XsdRedefine redefine);
+
     void visitBefore(XsdRestriction restriction);
+
     void visitAfter(XsdRestriction restriction);
+
     void visitBefore(XsdSchema schema);
+
     void visitAfter(XsdSchema schema);
+
     void visitBefore(XsdSequence sequence);
+
     void visitAfter(XsdSequence sequence);
+
     void visitBefore(XsdSimpleContent simpleContent);
+
     void visitAfter(XsdSimpleContent simpleContent);
+
     void visitBefore(XsdSimpleType simpleType);
+
     void visitAfter(XsdSimpleType simpleType);
+
     void visitBefore(XsdTotalDigits totalDigits);
+
     void visitAfter(XsdTotalDigits totalDigits);
+
     void visitBefore(XsdUnion union);
+
     void visitAfter(XsdUnion union);
+
     void visitBefore(XsdWhiteSpace whiteSpace);
+
     void visitAfter(XsdWhiteSpace whiteSpace);
 }

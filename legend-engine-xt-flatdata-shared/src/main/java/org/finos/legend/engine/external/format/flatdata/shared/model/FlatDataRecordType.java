@@ -15,8 +15,6 @@
 package org.finos.legend.engine.external.format.flatdata.shared.model;
 
 import org.eclipse.collections.impl.factory.Lists;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataDataType;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataRecordField;
 
 import java.util.Collections;
 import java.util.List;
@@ -36,7 +34,7 @@ public class FlatDataRecordType
         return withField(new FlatDataRecordField(label, type));
     }
 
-    public FlatDataRecordType withField(String label, FlatDataDataType type,  String address)
+    public FlatDataRecordType withField(String label, FlatDataDataType type, String address)
     {
         return withField(new FlatDataRecordField(label, type, address));
     }

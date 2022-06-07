@@ -26,11 +26,13 @@ public class ComparisonError extends Error
         this._actual = actual;
     }
 
-    public String getActual() {
+    public String getActual()
+    {
         return _actual;
     }
 
-    public String getExpected() {
+    public String getExpected()
+    {
         return _expected;
     }
 }

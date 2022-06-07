@@ -36,7 +36,6 @@ import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 import org.slf4j.Logger;
 
-import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.Consumes;
@@ -45,6 +44,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.List;
 
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
 
@@ -88,7 +88,7 @@ public class JSONSchemaGenerationService
 
     public static List<GenerationOutput> generate(JSONSchemaConfig jsonSchemaConfig, PureModel pureModel)
     {
-        return  core_json_jsonSchema.Root_meta_json_schema_generation_generateJsonSchemaFromPureWithScope_JSONSchemaConfig_1__JSONSchemaOutput_MANY_(jsonSchemaConfig.process(pureModel), pureModel.getExecutionSupport()).collect(v -> new GenerationOutput(v._content(), v._fileName(), v._format())).toList();
+        return core_json_jsonSchema.Root_meta_json_schema_generation_generateJsonSchemaFromPureWithScope_JSONSchemaConfig_1__JSONSchemaOutput_MANY_(jsonSchemaConfig.process(pureModel), pureModel.getExecutionSupport()).collect(v -> new GenerationOutput(v._content(), v._fileName(), v._format())).toList();
     }
 
     private Response exec(JSONSchemaConfig jsonSchemaConfig, Function0<PureModel> pureModelFunc, boolean interactive, MutableList<CommonProfile> profiles)
@@ -99,7 +99,7 @@ public class JSONSchemaGenerationService
             LOGGER.info(new LogInfo(profiles, interactive ? LoggingEventType.GENERATE_JSONSCHEMA_INTERACTIVE_START : LoggingEventType.GENERATE_JSONSCHEMA_START).toString());
             PureModel pureModel = pureModelFunc.value();
             List<GenerationOutput> result = generate(jsonSchemaConfig, pureModel);
-            LOGGER.info(new LogInfo(profiles, interactive ? LoggingEventType.GENERATE_JSONSCHEMA_INTERACTIVE_STOP : LoggingEventType.GENERATE_JSONSCHEMA_START, (double)System.currentTimeMillis() - start).toString());
+            LOGGER.info(new LogInfo(profiles, interactive ? LoggingEventType.GENERATE_JSONSCHEMA_INTERACTIVE_STOP : LoggingEventType.GENERATE_JSONSCHEMA_START, (double) System.currentTimeMillis() - start).toString());
             return ManageConstantResult.manageResult(profiles, result);
         }
         catch (Exception ex)

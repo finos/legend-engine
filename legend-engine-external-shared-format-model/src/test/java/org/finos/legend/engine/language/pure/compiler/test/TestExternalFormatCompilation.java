@@ -49,30 +49,30 @@ public class TestExternalFormatCompilation
     public void testSchemaSetDuplicateIds()
     {
         test("###ExternalFormat\n" +
-                     "SchemaSet meta::firm::SchemaSet\n" +
-                     "{\n" +
-                     "  format: Example;\n" +
-                     "  schemas: [ \n" +
-                     "    { id: s1; location: 'e1.schema'; content: 'example1'; },\n" +
-                     "    { id: s1; location: 'e2.schema'; content: 'example2'; }\n" +
-                     "  ];\n" +
-                     "}\n",
-             "COMPILATION error at [7:5-59]: Schema id 's1' is duplicated");
+                        "SchemaSet meta::firm::SchemaSet\n" +
+                        "{\n" +
+                        "  format: Example;\n" +
+                        "  schemas: [ \n" +
+                        "    { id: s1; location: 'e1.schema'; content: 'example1'; },\n" +
+                        "    { id: s1; location: 'e2.schema'; content: 'example2'; }\n" +
+                        "  ];\n" +
+                        "}\n",
+                "COMPILATION error at [7:5-59]: Schema id 's1' is duplicated");
     }
 
     @Test
     public void testSchemaSetDuplicateLocations()
     {
         test("###ExternalFormat\n" +
-                     "SchemaSet meta::firm::SchemaSet\n" +
-                     "{\n" +
-                     "  format: Example;\n" +
-                     "  schemas: [ \n" +
-                     "    { id: s1; location: 'e1.schema'; content: 'example1'; },\n" +
-                     "    { id: s2; location: 'e1.schema'; content: 'example2'; }\n" +
-                     "  ];\n" +
-                     "}\n",
-             "COMPILATION error at [7:5-59]: Schema location 'e1.schema' is duplicated");
+                        "SchemaSet meta::firm::SchemaSet\n" +
+                        "{\n" +
+                        "  format: Example;\n" +
+                        "  schemas: [ \n" +
+                        "    { id: s1; location: 'e1.schema'; content: 'example1'; },\n" +
+                        "    { id: s2; location: 'e1.schema'; content: 'example2'; }\n" +
+                        "  ];\n" +
+                        "}\n",
+                "COMPILATION error at [7:5-59]: Schema location 'e1.schema' is duplicated");
     }
 
     @Test
@@ -151,21 +151,21 @@ public class TestExternalFormatCompilation
     public void testBindingInvalidSet()
     {
         test("###Pure\n" +
-                     "Class meta::firm::Person\n" +
-                     "{\n" +
-                     "  fullName: String[1];\n" +
-                     "}\n" +
-                     "\n" +
-                     "###ExternalFormat\n" +
-                     "Binding meta::firm::Binding\n" +
-                     "{\n" +
-                     "  schemaSet: meta::firm::Unknown;\n" +
-                     "  contentType: 'text/example';\n" +
-                     "  modelIncludes: [\n" +
-                     "    meta::firm::Person\n" +
-                     "  ];\n" +
-                     "}\n",
-             "COMPILATION error at [8:1-15:1]: Can't find SchemaSet 'meta::firm::Unknown'"
+                        "Class meta::firm::Person\n" +
+                        "{\n" +
+                        "  fullName: String[1];\n" +
+                        "}\n" +
+                        "\n" +
+                        "###ExternalFormat\n" +
+                        "Binding meta::firm::Binding\n" +
+                        "{\n" +
+                        "  schemaSet: meta::firm::Unknown;\n" +
+                        "  contentType: 'text/example';\n" +
+                        "  modelIncludes: [\n" +
+                        "    meta::firm::Person\n" +
+                        "  ];\n" +
+                        "}\n",
+                "COMPILATION error at [8:1-15:1]: Can't find SchemaSet 'meta::firm::Unknown'"
         );
     }
 
@@ -173,20 +173,20 @@ public class TestExternalFormatCompilation
     public void testBindingInvalidContentType()
     {
         test("###Pure\n" +
-                     "Class meta::firm::Person\n" +
-                     "{\n" +
-                     "  fullName: String[1];\n" +
-                     "}\n" +
-                     "\n" +
-                     "###ExternalFormat\n" +
-                     "Binding meta::firm::Binding\n" +
-                     "{\n" +
-                     "  contentType: 'text/unknown';\n" +
-                     "  modelIncludes: [\n" +
-                     "    meta::firm::Person\n" +
-                     "  ];\n" +
-                     "}\n",
-             "COMPILATION error at [8:1-14:1]: Unknown contentType 'text/unknown'"
+                        "Class meta::firm::Person\n" +
+                        "{\n" +
+                        "  fullName: String[1];\n" +
+                        "}\n" +
+                        "\n" +
+                        "###ExternalFormat\n" +
+                        "Binding meta::firm::Binding\n" +
+                        "{\n" +
+                        "  contentType: 'text/unknown';\n" +
+                        "  modelIncludes: [\n" +
+                        "    meta::firm::Person\n" +
+                        "  ];\n" +
+                        "}\n",
+                "COMPILATION error at [8:1-14:1]: Unknown contentType 'text/unknown'"
         );
     }
 
@@ -194,29 +194,29 @@ public class TestExternalFormatCompilation
     public void testBindingInvalidId()
     {
         test("###Pure\n" +
-                     "Class meta::firm::Person\n" +
-                     "{\n" +
-                     "  fullName: String[1];\n" +
-                     "}\n" +
-                     "\n" +
-                     "###ExternalFormat\n" +
-                     "SchemaSet meta::firm::SchemaSet\n" +
-                     "{\n" +
-                     "  format: Example;\n" +
-                     "  schemas: [ \n" +
-                     "    { id: s1; location: 'e1.schema'; content: 'example1'; },\n" +
-                     "    { id: s2; location: 'e2.schema'; content: 'example2'; }\n" +
-                     "  ];\n" +
-                     "}\n" +
-                     "\n" +
-                     "Binding meta::firm::Binding\n" +
-                     "{\n" +
-                     "  schemaSet: meta::firm::SchemaSet;\n" +
-                     "  schemaId: unknown;\n" +
-                     "  contentType: 'text/example';\n" +
-                     "  modelIncludes: [ meta::firm::Person ];\n" +
-                     "}\n",
-             "COMPILATION error at [17:1-23:1]: ID 'unknown' does not exist in SchemaSet 'meta::firm::SchemaSet'"
+                        "Class meta::firm::Person\n" +
+                        "{\n" +
+                        "  fullName: String[1];\n" +
+                        "}\n" +
+                        "\n" +
+                        "###ExternalFormat\n" +
+                        "SchemaSet meta::firm::SchemaSet\n" +
+                        "{\n" +
+                        "  format: Example;\n" +
+                        "  schemas: [ \n" +
+                        "    { id: s1; location: 'e1.schema'; content: 'example1'; },\n" +
+                        "    { id: s2; location: 'e2.schema'; content: 'example2'; }\n" +
+                        "  ];\n" +
+                        "}\n" +
+                        "\n" +
+                        "Binding meta::firm::Binding\n" +
+                        "{\n" +
+                        "  schemaSet: meta::firm::SchemaSet;\n" +
+                        "  schemaId: unknown;\n" +
+                        "  contentType: 'text/example';\n" +
+                        "  modelIncludes: [ meta::firm::Person ];\n" +
+                        "}\n",
+                "COMPILATION error at [17:1-23:1]: ID 'unknown' does not exist in SchemaSet 'meta::firm::SchemaSet'"
         );
     }
 
@@ -224,29 +224,29 @@ public class TestExternalFormatCompilation
     public void testBindingInvalidIncludeClass()
     {
         test("###Pure\n" +
-                     "Class meta::firm::Person\n" +
-                     "{\n" +
-                     "  fullName: String[1];\n" +
-                     "}\n" +
-                     "\n" +
-                     "###ExternalFormat\n" +
-                     "SchemaSet meta::firm::SchemaSet\n" +
-                     "{\n" +
-                     "  format: Example;\n" +
-                     "  schemas: [ \n" +
-                     "    { id: s1; location: 'e1.schema'; content: 'example1'; },\n" +
-                     "    { id: s2; location: 'e2.schema'; content: 'example2'; }\n" +
-                     "  ];\n" +
-                     "}\n" +
-                     "\n" +
-                     "Binding meta::firm::Binding\n" +
-                     "{\n" +
-                     "  schemaSet: meta::firm::SchemaSet;\n" +
-                     "  schemaId: s1;\n" +
-                     "  contentType: 'text/example';\n" +
-                     "  modelIncludes: [ meta::firm::Unknown ];\n" +
-                     "}\n",
-             "COMPILATION error at [17:1-23:1]: Can't find the packageable element 'meta::firm::Unknown'"
+                        "Class meta::firm::Person\n" +
+                        "{\n" +
+                        "  fullName: String[1];\n" +
+                        "}\n" +
+                        "\n" +
+                        "###ExternalFormat\n" +
+                        "SchemaSet meta::firm::SchemaSet\n" +
+                        "{\n" +
+                        "  format: Example;\n" +
+                        "  schemas: [ \n" +
+                        "    { id: s1; location: 'e1.schema'; content: 'example1'; },\n" +
+                        "    { id: s2; location: 'e2.schema'; content: 'example2'; }\n" +
+                        "  ];\n" +
+                        "}\n" +
+                        "\n" +
+                        "Binding meta::firm::Binding\n" +
+                        "{\n" +
+                        "  schemaSet: meta::firm::SchemaSet;\n" +
+                        "  schemaId: s1;\n" +
+                        "  contentType: 'text/example';\n" +
+                        "  modelIncludes: [ meta::firm::Unknown ];\n" +
+                        "}\n",
+                "COMPILATION error at [17:1-23:1]: Can't find the packageable element 'meta::firm::Unknown'"
         );
     }
 
@@ -254,30 +254,30 @@ public class TestExternalFormatCompilation
     public void testBindingInvalidExcludeClass()
     {
         test("###Pure\n" +
-                     "Class meta::firm::Person\n" +
-                     "{\n" +
-                     "  fullName: String[1];\n" +
-                     "}\n" +
-                     "\n" +
-                     "###ExternalFormat\n" +
-                     "SchemaSet meta::firm::SchemaSet\n" +
-                     "{\n" +
-                     "  format: Example;\n" +
-                     "  schemas: [ \n" +
-                     "    { id: s1; location: 'e1.schema'; content: 'example1'; },\n" +
-                     "    { id: s2; location: 'e2.schema'; content: 'example2'; }\n" +
-                     "  ];\n" +
-                     "}\n" +
-                     "\n" +
-                     "Binding meta::firm::Binding\n" +
-                     "{\n" +
-                     "  schemaSet: meta::firm::SchemaSet;\n" +
-                     "  schemaId: s1;\n" +
-                     "  contentType: 'text/example';\n" +
-                     "  modelIncludes: [ meta::firm ];\n" +
-                     "  modelExcludes: [ meta::firm::Unknown ];\n" +
-                     "}\n",
-             "COMPILATION error at [17:1-24:1]: Can't find the packageable element 'meta::firm::Unknown'"
+                        "Class meta::firm::Person\n" +
+                        "{\n" +
+                        "  fullName: String[1];\n" +
+                        "}\n" +
+                        "\n" +
+                        "###ExternalFormat\n" +
+                        "SchemaSet meta::firm::SchemaSet\n" +
+                        "{\n" +
+                        "  format: Example;\n" +
+                        "  schemas: [ \n" +
+                        "    { id: s1; location: 'e1.schema'; content: 'example1'; },\n" +
+                        "    { id: s2; location: 'e2.schema'; content: 'example2'; }\n" +
+                        "  ];\n" +
+                        "}\n" +
+                        "\n" +
+                        "Binding meta::firm::Binding\n" +
+                        "{\n" +
+                        "  schemaSet: meta::firm::SchemaSet;\n" +
+                        "  schemaId: s1;\n" +
+                        "  contentType: 'text/example';\n" +
+                        "  modelIncludes: [ meta::firm ];\n" +
+                        "  modelExcludes: [ meta::firm::Unknown ];\n" +
+                        "}\n",
+                "COMPILATION error at [17:1-24:1]: Can't find the packageable element 'meta::firm::Unknown'"
         );
     }
 }

@@ -23,7 +23,6 @@ import org.finos.legend.engine.external.shared.runtime.test.TestExternalFormatQu
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -45,11 +44,11 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
 
         String grammar = firmSelfMapping() + urlStreamRuntime("test::firm::mapping::SelfMapping", "test::gen::TestBinding");
         String result = runTest(generated,
-                                grammar,
-                                "|test::firm::model::Person.all()->graphFetchChecked(" + personTree() + ")->serialize(" + personTree() + ")",
-                                "test::firm::mapping::SelfMapping",
-                                "test::runtime",
-                                resource("queries/peopleWithExactHeadings.csv"));
+                grammar,
+                "|test::firm::model::Person.all()->graphFetchChecked(" + personTree() + ")->serialize(" + personTree() + ")",
+                "test::firm::mapping::SelfMapping",
+                "test::runtime",
+                resource("queries/peopleWithExactHeadings.csv"));
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/peopleCheckedResult.json")));
     }
@@ -62,11 +61,11 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
 
         String grammar = firmSelfMapping() + urlStreamRuntime("test::firm::mapping::SelfMapping", "test::gen::TestBinding");
         String result = runTest(generated,
-                                grammar,
-                                "|test::firm::model::Person.all()->graphFetchChecked(" + personTree() + ")->serialize(" + personTree() + ")",
-                                "test::firm::mapping::SelfMapping",
-                                "test::runtime",
-                                resource("queries/people.csv"));
+                grammar,
+                "|test::firm::model::Person.all()->graphFetchChecked(" + personTree() + ")->serialize(" + personTree() + ")",
+                "test::firm::mapping::SelfMapping",
+                "test::runtime",
+                resource("queries/people.csv"));
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/peopleBadHeadingsResult.json")));
     }
@@ -79,11 +78,11 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
 
         String grammar = firmSelfMapping() + urlStreamRuntime("test::firm::mapping::SelfMapping", "test::gen::TestBinding");
         String result = runTest(generated,
-                                grammar,
-                                "|test::firm::model::Person.all()->graphFetchChecked(" + personTree() + ")->externalize(test::gen::TestBinding)",
-                                "test::firm::mapping::SelfMapping",
-                                "test::runtime",
-                                resource("queries/peopleWithExactHeadings.csv"));
+                grammar,
+                "|test::firm::model::Person.all()->graphFetchChecked(" + personTree() + ")->externalize(test::gen::TestBinding)",
+                "test::firm::mapping::SelfMapping",
+                "test::runtime",
+                resource("queries/peopleWithExactHeadings.csv"));
 
         Assert.assertEquals(resourceAsString("queries/peopleWithExactHeadings.csv"), result);
     }
@@ -96,11 +95,11 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
 
         String grammar = firmSelfMapping() + urlStreamRuntime("test::firm::mapping::SelfMapping", "test::gen::TestBinding");
         String result = runTest(generated,
-                                grammar,
-                                "|test::firm::model::Person.all()->graphFetch(" + personTree() + ")->externalize(test::gen::TestBinding)",
-                                "test::firm::mapping::SelfMapping",
-                                "test::runtime",
-                                resource("queries/peopleWithExactHeadings.csv"));
+                grammar,
+                "|test::firm::model::Person.all()->graphFetch(" + personTree() + ")->externalize(test::gen::TestBinding)",
+                "test::firm::mapping::SelfMapping",
+                "test::runtime",
+                resource("queries/peopleWithExactHeadings.csv"));
 
         Assert.assertEquals(resourceAsString("queries/peopleWithExactHeadings.csv"), result);
     }
@@ -120,23 +119,23 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
                 "}\n";
         PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, toFlatDataConfig("test::Person"));
 
-        String selfMapping =  "###Mapping\n" +
-                    "Mapping test::SelfMapping\n" +
-                    "(\n" +
-                    "   test::Person: Pure\n" +
-                    "   {\n" +
-                    "      ~src test::Person\n" +
-                    "   }\n" +
-                    ")\n";
+        String selfMapping = "###Mapping\n" +
+                "Mapping test::SelfMapping\n" +
+                "(\n" +
+                "   test::Person: Pure\n" +
+                "   {\n" +
+                "      ~src test::Person\n" +
+                "   }\n" +
+                ")\n";
 
         String grammar = selfMapping + urlStreamRuntime("test::SelfMapping", "test::gen::TestBinding");
         String personTree = "#{test::Person {name,gender}}#";
         String result = runTest(generated,
-                                grammar,
-                                "|test::Person.all()->graphFetchChecked(" + personTree + ")->serialize(" + personTree + ")",
-                                "test::SelfMapping",
-                                "test::runtime",
-                                "name,gender\nJohn Doe,Male");
+                grammar,
+                "|test::Person.all()->graphFetchChecked(" + personTree + ")->serialize(" + personTree + ")",
+                "test::SelfMapping",
+                "test::runtime",
+                "name,gender\nJohn Doe,Male");
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/deserializeCsvWithEnumResult.json")));
     }
@@ -156,7 +155,7 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
                 "}\n";
         PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, toFlatDataConfig("test::Person"));
 
-        String selfMapping =  "###Mapping\n" +
+        String selfMapping = "###Mapping\n" +
                 "Mapping test::SelfMapping\n" +
                 "(\n" +
                 "   test::Person: Pure\n" +
@@ -168,11 +167,11 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
         String grammar = selfMapping + urlStreamRuntime("test::SelfMapping", "test::gen::TestBinding");
         String personTree = "#{test::Person {name,gender}}#";
         String result = runTest(generated,
-                                grammar,
-                                "|test::Person.all()->graphFetchChecked(" + personTree + ")->serialize(" + personTree + ")",
-                                "test::SelfMapping",
-                                "test::runtime",
-                                "name,gender\nJohn Doe,Neuter");
+                grammar,
+                "|test::Person.all()->graphFetchChecked(" + personTree + ")->serialize(" + personTree + ")",
+                "test::SelfMapping",
+                "test::runtime",
+                "name,gender\nJohn Doe,Neuter");
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/deserializeCsvWithEnumBadValueResult.json")));
     }
@@ -186,16 +185,16 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
         String grammar = schemaCode + tradeSelfMapping() + urlStreamRuntime("test::trade::SelfMapping", "test::gen::TestBinding");
         String tradeTree = "#{test::gen::TradeRecord {product,quantity,tradeTime,price,priceCcy,settlementCcy,settlementRate,settlementDate,confirmedAt,expiryDate,executions}}#";
 
-        String tradeData ="Product,Quantity,Trade Time,Price,Price Ccy,Settlement Ccy,Settlement Rate,Settlement Date,Confirmed At,Expiry Date,Executions\n" +
+        String tradeData = "Product,Quantity,Trade Time,Price,Price Ccy,Settlement Ccy,Settlement Rate,Settlement Date,Confirmed At,Expiry Date,Executions\n" +
                 "P1,10,2021-06-04T15:04:21.232Z,12.32,USD,EUR,2.4,2021-06-09,2021-06-04T15:12:31.000Z,2022-06-04,5\n" +
                 "P2,20,2021-06-04T15:04:21.999Z,34.7,EUR,,,2021-06-09,,,";
 
         String result = runTest(generated,
-                                grammar,
-                                "|test::gen::TradeRecord.all()->graphFetchChecked("+tradeTree+")->externalize(test::gen::TestBinding)",
-                                "test::trade::SelfMapping",
-                                "test::runtime",
-                                tradeData);
+                grammar,
+                "|test::gen::TradeRecord.all()->graphFetchChecked(" + tradeTree + ")->externalize(test::gen::TestBinding)",
+                "test::trade::SelfMapping",
+                "test::runtime",
+                tradeData);
 
         Assert.assertEquals(tradeData, result);
     }
@@ -209,16 +208,16 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
         String grammar = schemaCode + tradeSelfMapping() + urlStreamRuntime("test::trade::SelfMapping", "test::gen::TestBinding");
         String tradeTree = "#{test::gen::TradeRecord {product,quantity,tradeTime,price,priceCcy,settlementCcy,settlementRate,settlementDate,confirmedAt,expiryDate,executions}}#";
 
-        String tradeData ="Product,Quantity,Trade Time,Price,Price Ccy,Settlement Ccy,Settlement Rate,Settlement Date,Confirmed At,Expiry Date,Executions\n" +
+        String tradeData = "Product,Quantity,Trade Time,Price,Price Ccy,Settlement Ccy,Settlement Rate,Settlement Date,Confirmed At,Expiry Date,Executions\n" +
                 ",10,2021-06-04T15:04:21.232Z,12.32,USD,EUR,2.4,2021-06-09,2021-06-04T15:12:31.000Z,2022-06-04,5\n" +
                 "P2,20,2021-06-04T15:04:21.999Z,34.7,EUR,,,2021-06-09,,,";
 
         String result = runTest(generated,
-                                grammar,
-                                "|test::gen::TradeRecord.all()->graphFetchChecked("+tradeTree+")->serialize("+tradeTree+")",
-                                "test::trade::SelfMapping",
-                                "test::runtime",
-                                tradeData);
+                grammar,
+                "|test::gen::TradeRecord.all()->graphFetchChecked(" + tradeTree + ")->serialize(" + tradeTree + ")",
+                "test::trade::SelfMapping",
+                "test::runtime",
+                tradeData);
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/deserializeCsvWithGeneratedModelCheckedForMissingDataResult.json")));
     }
@@ -232,16 +231,16 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
         String grammar = schemaCode + tradeSelfMapping() + urlStreamRuntime("test::trade::SelfMapping", "test::gen::TestBinding");
         String tradeTree = "#{test::gen::TradeRecord {product,quantity,tradeTime,price,priceCcy,settlementCcy,settlementRate,settlementDate,confirmedAt,expiryDate,executions}}#";
 
-        String tradeData ="Product,Quantity,Trade Time,Price,Price Ccy,Settlement Ccy,Settlement Rate,Settlement Date,Confirmed At,Expiry Date,Executions\n" +
+        String tradeData = "Product,Quantity,Trade Time,Price,Price Ccy,Settlement Ccy,Settlement Rate,Settlement Date,Confirmed At,Expiry Date,Executions\n" +
                 "P1,XX,2021-06-04T15:04:21.232Z,12.32,USD,EUR,2.4,2021-06-09,2021-06-04T15:12:31.000Z,2022-06-04,5\n" +
                 "P2,20,2021-06-04T15:04:21.999Z,34.7,EUR,,,2021-06-09,,,";
 
         String result = runTest(generated,
-                                grammar,
-                                "|test::gen::TradeRecord.all()->graphFetchChecked("+tradeTree+")->serialize("+tradeTree+")",
-                                "test::trade::SelfMapping",
-                                "test::runtime",
-                                tradeData);
+                grammar,
+                "|test::gen::TradeRecord.all()->graphFetchChecked(" + tradeTree + ")->serialize(" + tradeTree + ")",
+                "test::trade::SelfMapping",
+                "test::runtime",
+                tradeData);
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/deserializeCsvWithGeneratedModelCheckedForBadDataResult.json")));
     }
@@ -264,30 +263,30 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
 
         String schemaCode = newExternalSchemaSetGrammarBuilder("test::WholeLoanPriceFileSchema", "FlatData")
                 .withSchemaText("section header: DelimitedWithoutHeadings\n" +
-                                        "{\n" +
-                                        "  delimiter: ' ';\n" +
-                                        "  scope.forNumberOfLines: 1;\n" +
-                                        "\n" +
-                                        "  Record\n" +
-                                        "  {\n" +
-                                        "    closeOfBusiness {3}: DATE(format='yyyyMMdd');\n" +
-                                        "  }\n" +
-                                        "}\n" +
-                                        "\n" +
-                                        "section prices: DelimitedWithoutHeadings\n" +
-                                        "{\n" +
-                                        "  scope.untilEof;\n" +
-                                        "  delimiter: '~';\n" +
-                                        "\n" +
-                                        "  Record\n" +
-                                        "  {\n" +
-                                        "    Account_ID   {1}: INTEGER;\n" +
-                                        "    Synonym_Type {2}: STRING;\n" +
-                                        "    Synonym      {3}: STRING;\n" +
-                                        "    Currency     {4}: STRING;\n" +
-                                        "    Close_Price  {9}: DECIMAL;\n" +
-                                        "  }\n" +
-                                        "}\n")
+                        "{\n" +
+                        "  delimiter: ' ';\n" +
+                        "  scope.forNumberOfLines: 1;\n" +
+                        "\n" +
+                        "  Record\n" +
+                        "  {\n" +
+                        "    closeOfBusiness {3}: DATE(format='yyyyMMdd');\n" +
+                        "  }\n" +
+                        "}\n" +
+                        "\n" +
+                        "section prices: DelimitedWithoutHeadings\n" +
+                        "{\n" +
+                        "  scope.untilEof;\n" +
+                        "  delimiter: '~';\n" +
+                        "\n" +
+                        "  Record\n" +
+                        "  {\n" +
+                        "    Account_ID   {1}: INTEGER;\n" +
+                        "    Synonym_Type {2}: STRING;\n" +
+                        "    Synonym      {3}: STRING;\n" +
+                        "    Currency     {4}: STRING;\n" +
+                        "    Close_Price  {9}: DECIMAL;\n" +
+                        "  }\n" +
+                        "}\n")
                 .build();
 
         PureModelContextData generated = SchemaToModelGenerationTest.generateModel(schemaCode, fromFlatDataConfig("test::WholeLoanPriceFileSchema", "PriceFile"));
@@ -311,11 +310,11 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
         String tree = "#{test::LoanPrice{accountNo,productIdType,productId,eventDate,currency,closePrice}}#";
 
         String result = runTest(generated,
-                                grammar,
-                                "|test::LoanPrice.all()->graphFetchChecked("+tree+")->serialize("+tree+")",
-                                "test::PriceRowToLoanPrice",
-                                "test::runtime",
-                                resourceAsString("queries/prices.csv"));
+                grammar,
+                "|test::LoanPrice.all()->graphFetchChecked(" + tree + ")->serialize(" + tree + ")",
+                "test::PriceRowToLoanPrice",
+                "test::runtime",
+                resourceAsString("queries/prices.csv"));
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/deserializeAndMapMultiSectionCsvResult.json")));
     }
@@ -391,7 +390,7 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
 
         String result = runTest(generated,
                 grammar,
-                "|test::LoanPrice.all()->graphFetchChecked("+tree+")->serialize("+tree+")",
+                "|test::LoanPrice.all()->graphFetchChecked(" + tree + ")->serialize(" + tree + ")",
                 "test::PriceRowToLoanPrice",
                 "test::runtime",
                 resourceAsString("queries/prices_with_footer.csv"));
@@ -416,26 +415,26 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
     {
         return newExternalSchemaSetGrammarBuilder("test::tradeSchema", "FlatData")
                 .withSchemaText("section trade: DelimitedWithHeadings\n" +
-                                        "{\n" +
-                                        "  scope.untilEof;\n" +
-                                        "  delimiter: ',';\n" +
-                                        "  nullString: '';\n" +
-                                        "\n" +
-                                        "  Record\n" +
-                                        "  {\n" +
-                                        "    Product           : STRING;\n" +
-                                        "    Quantity          : INTEGER;\n" +
-                                        "    'Trade Time'      : DATETIME;\n" +
-                                        "    Price             : DECIMAL;\n" +
-                                        "    'Price Ccy'       : STRING;\n" +
-                                        "    'Settlement Ccy'  : STRING(optional);\n" +
-                                        "    'Settlement Rate' : DECIMAL(optional);\n" +
-                                        "    'Settlement Date' : DATE;\n" +
-                                        "    'Confirmed At'    : DATETIME(optional);\n" +
-                                        "    'Expiry Date'     : DATE(optional);\n" +
-                                        "    'Executions'      : INTEGER(optional);\n" +
-                                        "  }\n" +
-                                        "}")
+                        "{\n" +
+                        "  scope.untilEof;\n" +
+                        "  delimiter: ',';\n" +
+                        "  nullString: '';\n" +
+                        "\n" +
+                        "  Record\n" +
+                        "  {\n" +
+                        "    Product           : STRING;\n" +
+                        "    Quantity          : INTEGER;\n" +
+                        "    'Trade Time'      : DATETIME;\n" +
+                        "    Price             : DECIMAL;\n" +
+                        "    'Price Ccy'       : STRING;\n" +
+                        "    'Settlement Ccy'  : STRING(optional);\n" +
+                        "    'Settlement Rate' : DECIMAL(optional);\n" +
+                        "    'Settlement Date' : DATE;\n" +
+                        "    'Confirmed At'    : DATETIME(optional);\n" +
+                        "    'Expiry Date'     : DATE(optional);\n" +
+                        "    'Executions'      : INTEGER(optional);\n" +
+                        "  }\n" +
+                        "}")
                 .build();
     }
 

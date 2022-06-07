@@ -44,12 +44,12 @@ public class TestExternalFormatGrammarParser extends TestGrammarParser.TestGramm
     public void testUnknownFormat()
     {
         test("###ExternalFormat\n" +
-                     "SchemaSet test::Example\n" +
-                     "{\n" +
-                     "  format: NOTHING;\n" +
-                     "  schemas: [ { content: 'Schema Description'; } ];\n" +
-                     "}\n",
-             "PARSER error at [4:3-18]: Unknown schema format: NOTHING"
+                        "SchemaSet test::Example\n" +
+                        "{\n" +
+                        "  format: NOTHING;\n" +
+                        "  schemas: [ { content: 'Schema Description'; } ];\n" +
+                        "}\n",
+                "PARSER error at [4:3-18]: Unknown schema format: NOTHING"
         );
     }
 
@@ -57,12 +57,12 @@ public class TestExternalFormatGrammarParser extends TestGrammarParser.TestGramm
     public void testAtLeastOneSchema()
     {
         test("###ExternalFormat\n" +
-                     "SchemaSet test::Example\n" +
-                     "{\n" +
-                     "  format: NOTHING;\n" +
-                     "  schemas: [];\n" +
-                     "}\n",
-             "PARSER error at [5:13]: Unexpected token"
+                        "SchemaSet test::Example\n" +
+                        "{\n" +
+                        "  format: NOTHING;\n" +
+                        "  schemas: [];\n" +
+                        "}\n",
+                "PARSER error at [5:13]: Unexpected token"
         );
     }
 }

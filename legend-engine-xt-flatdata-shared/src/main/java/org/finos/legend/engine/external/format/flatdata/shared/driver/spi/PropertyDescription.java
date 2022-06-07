@@ -1,3 +1,17 @@
+//  Copyright 2022 Goldman Sachs
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+
 package org.finos.legend.engine.external.format.flatdata.shared.driver.spi;
 
 import java.util.ArrayList;
@@ -13,21 +27,21 @@ import java.util.function.Consumer;
  * * <b>String</b> allows a string value to be defined
  *
  * * <b>Integer</b> allows an integer value to be defined.  Integer here indicates a PURE integer
- *   thus a long value in Java.
+ * thus a long value in Java.
  *
- *   <b>Boolean</b> allows a boolean value to be defined.  A boolean property is either set on a section
- *   (true) or absent (false).
+ * <b>Boolean</b> allows a boolean value to be defined.  A boolean property is either set on a section
+ * (true) or absent (false).
  *
- *   <b>Group</b> defines a set of properties (its children).
+ * <b>Group</b> defines a set of properties (its children).
  *
- *   <b>ExclusiveGroup</b> defines a set of properties (its children) of which at most one may be
- *   selected.
+ * <b>ExclusiveGroup</b> defines a set of properties (its children) of which at most one may be
+ * selected.
  *
- *   Note that names in <tt>PropertyDescription</tt>s are contextual to their parents whereas in sections of
- *   a <tt>FlatData</tt> store they are qualified.  That is say we define the following:
- *   the following properties:
+ * Note that names in <tt>PropertyDescription</tt>s are contextual to their parents whereas in sections of
+ * a <tt>FlatData</tt> store they are qualified.  That is say we define the following:
+ * the following properties:
  *
- *   <pre>
+ * <pre>
  *       new PropertyDescription.Builder()
  *               .requiredPropertyGroup("range", b->b.
  *                       .requiredIntegerProperty("start")
@@ -36,9 +50,9 @@ import java.util.function.Consumer;
  *               .build();
  *   </pre>
  *
- *   The properties defined in the <tt>FlatData</tt> section will be:
+ * The properties defined in the <tt>FlatData</tt> section will be:
  *
- *   <pre>
+ * <pre>
  *       FlatData test::fd
  *       {
  *           section default: DriverId

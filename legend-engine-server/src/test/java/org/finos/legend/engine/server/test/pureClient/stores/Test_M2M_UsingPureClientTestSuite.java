@@ -21,7 +21,6 @@ import org.finos.legend.pure.m3.execution.test.TestCollection;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 
 import static org.finos.legend.engine.server.test.shared.PureTestHelper.getClassLoaderExecutionSupport;
-import static org.finos.legend.engine.server.test.shared.PureTestHelper.initClientVersionIfNotAlreadySet;
 import static org.finos.legend.engine.server.test.shared.PureTestHelper.satisfiesConditions;
 import static org.finos.legend.engine.server.test.shared.PureTestHelper.wrapSuite;
 
@@ -31,7 +30,8 @@ public class Test_M2M_UsingPureClientTestSuite extends TestSuite
     {
         return wrapSuite(
                 () -> PureTestHelper.initClientVersionIfNotAlreadySet("vX_X_X"),
-                () -> {
+                () ->
+                {
                     CompiledExecutionSupport executionSupport = getClassLoaderExecutionSupport();
                     TestSuite suite = new TestSuite();
                     suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::pure::mapping::modelToModel::test::alloy::constraints", executionSupport.getProcessorSupport(), ci -> satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));

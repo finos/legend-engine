@@ -28,7 +28,7 @@ public class DatabricksDataSourceSpecificationTest extends DatabricksDataSourceS
     public DatabricksDataSourceSpecificationTest()
     {
         super(new DatabricksDataSourceSpecificationKey(
-                "dummy",
+                        "dummy",
                         "dummy",
                         "dummy",
                         "dummy"

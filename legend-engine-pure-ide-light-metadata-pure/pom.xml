@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>3.2.2-SNAPSHOT</version>
+        <version>3.3.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -85,7 +85,8 @@
                             <goal>build-pure-compiled-jar</goal>
                         </goals>
                         <configuration>
-                            <generateSources>false</generateSources>
+                            <generateSources>true</generateSources>
+                            <preventJavaCompilation>true</preventJavaCompilation>
                             <generationType>modular</generationType>
                             <useSingleDir>true</useSingleDir>
                             <repositories>
@@ -122,6 +123,23 @@
                     </dependency>
                 </dependencies>
             </plugin>
+<!--            <plugin>-->
+<!--                <groupId>org.apache.maven.plugins</groupId>-->
+<!--                <artifactId>maven-dependency-plugin</artifactId>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <id>dependency-analyze</id>-->
+<!--                        <configuration>-->
+<!--                            &lt;!&ndash; The dependency plugin analyzer raises these as false positives &ndash;&gt;-->
+<!--                            <ignoredUnusedDeclaredDependencies>-->
+<!--                                <dependency>org.finos.legend.pure:legend-pure-runtime-java-extension-store-relational</dependency>-->
+<!--                                <dependency>org.finos.legend.pure:legend-pure-m2-store-relational</dependency>-->
+<!--                                <dependency>org.finos.legend.pure:legend-pure-runtime-java-extension-external-json</dependency>-->
+<!--                            </ignoredUnusedDeclaredDependencies>-->
+<!--                        </configuration>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--            </plugin>-->
         </plugins>
     </build>
 
@@ -138,26 +156,22 @@
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m3-platform</artifactId>
         </dependency>
-
-
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-code-compiled-platform-java</artifactId>
-            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-code-compiled-core</artifactId>
-            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-pure</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-code-compiled-platform-java</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
@@ -186,7 +200,6 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
@@ -200,17 +213,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-m2-dsl-mapping</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m2-dsl-diagram</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-m2-store-relational</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

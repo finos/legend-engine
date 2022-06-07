@@ -14,10 +14,10 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.serialization;
 
-import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.TDSColumn;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.list.MutableList;
+import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.TDSColumn;
 
 import java.io.IOException;
 import java.io.OutputStream;

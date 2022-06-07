@@ -59,7 +59,8 @@ public class OperationalContext
                         .stream()
                         .collect(Collectors.groupingBy(Map.Entry::getValue, Collectors.mapping(Map.Entry::getKey, Collectors.toList())));
 
-        reverseCacheMap.forEach((c, keys) -> {
+        reverseCacheMap.forEach((c, keys) ->
+        {
             GraphFetchCrossAssociationKeys first = keys.get(0);
             for (GraphFetchCrossAssociationKeys key : keys)
             {
