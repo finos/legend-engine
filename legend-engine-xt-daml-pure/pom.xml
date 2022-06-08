@@ -46,14 +46,14 @@
                         <version>${legend.pure.version}</version>
                     </dependency>
                     <dependency>
-                        <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-code-compiled-core</artifactId>
-                        <version>${legend.pure.version}</version>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-code-compiled-core</artifactId>
+                        <version>${project.version}</version>
                     </dependency>
                     <dependency>
-                        <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-code-compiled-core-external-shared</artifactId>
-                        <version>${legend.pure.version}</version>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-code-compiled-core-external-shared</artifactId>
+                        <version>${project.version}</version>
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
@@ -88,14 +88,14 @@
                         <version>${legend.pure.version}</version>
                     </dependency>
                     <dependency>
-                        <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-code-compiled-core</artifactId>
-                        <version>${legend.pure.version}</version>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-code-compiled-core</artifactId>
+                        <version>${project.version}</version>
                     </dependency>
                     <dependency>
-                        <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-code-compiled-core-external-shared</artifactId>
-                        <version>${legend.pure.version}</version>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-code-compiled-core-external-shared</artifactId>
+                        <version>${project.version}</version>
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
