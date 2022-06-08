@@ -18,6 +18,7 @@ public enum SerializationFormat
 {
     DEFAULT,
     CSV,
+    @Deprecated CSV_LEGACY,
     PURE_TDSOBJECT,
     PURE,
     RAW;

@@ -39,6 +39,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.result.RealizedR
 import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
 import org.finos.legend.engine.plan.execution.stores.relational.result.TempTableStreamingResult;
 import org.finos.legend.engine.plan.execution.stores.relational.serialization.RealizedRelationalResultCSVSerializer;
+import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToCSVLegacySerializer;
 import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToCSVSerializer;
 import org.finos.legend.engine.plan.execution.stores.relational.serialization.StreamingTempTableResultCSVSerializer;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
@@ -110,7 +111,7 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
                 CsvSerializer csvSerializer;
                 if (result instanceof RelationalResult)
                 {
-                    csvSerializer = new RelationalResultToCSVSerializer((RelationalResult) result, true);
+                    csvSerializer = new RelationalResultToCSVLegacySerializer((RelationalResult) result, true);
                     tempFile.writeFile(csvSerializer);
                     try (Statement statement = connection.createStatement())
                     {

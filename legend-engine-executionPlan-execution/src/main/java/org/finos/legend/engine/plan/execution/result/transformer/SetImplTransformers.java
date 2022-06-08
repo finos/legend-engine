@@ -48,14 +48,24 @@ public class SetImplTransformers
 
     public MutableList<Function<Object, Object>> transformers;
 
+    public SetImplTransformers()
+    {
+        transformers = Lists.mutable.empty();
+    }
+
     public <T> SetImplTransformers(List<TransformerInput<T>> transformerInputs)
     {
         transformers = ListIterate.collect(transformerInputs, this::buildTransformer);
     }
 
-    public SetImplTransformers()
+    /**
+     * This is added to help users to migrate to standard format and will be removed in upcoming releases.
+     * TODO: Remove this.
+     */
+    @Deprecated
+    public <T> SetImplTransformers(List<TransformerInput<T>> transformerInputs, boolean useDateTransformations)
     {
-        transformers = Lists.mutable.empty();
+        transformers = ListIterate.collect(transformerInputs, useDateTransformations ? this::buildTransformer : this::buildTransformerWithoutDateTransformations);
     }
 
     private Boolean toBoolean(Object o)
@@ -102,4 +112,24 @@ public class SetImplTransformers
         }
     }
 
+    /**
+     * This is added to help users to migrate to standard format and will be removed in upcoming releases.
+     * TODO: Remove this.
+     */
+    @Deprecated
+    private <T> Function<Object, Object> buildTransformerWithoutDateTransformations(TransformerInput<T> transformerInput)
+    {
+        if (transformerInput.type != null && transformerInput.test.valueOf(transformerInput.identifier))
+        {
+            return transformerInput.transformer.valueOf(transformerInput.identifier);
+        }
+        else if (transformerInput.type != null && transformerInput.type.equals("Boolean"))
+        {
+            return o -> toBoolean(o);
+        }
+        else
+        {
+            return o -> o;
+        }
+    }
 }

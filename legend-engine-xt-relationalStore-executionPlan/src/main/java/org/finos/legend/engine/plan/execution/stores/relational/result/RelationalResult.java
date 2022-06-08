@@ -44,6 +44,7 @@ import org.finos.legend.engine.plan.execution.result.transformer.TransformerInpu
 import org.finos.legend.engine.plan.execution.stores.relational.activity.RelationalExecutionActivity;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.result.builder.relation.RelationBuilder;
+import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToCSVLegacySerializer;
 import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToCSVSerializer;
 import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToJsonDefaultSerializer;
 import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToPureTDSSerializer;
@@ -97,6 +98,13 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
     private final SQLResultDBColumnsMetaData resultDBColumnsMetaData;
 
     public MutableList<SetImplTransformers> setTransformers = Lists.mutable.empty();
+
+    /**
+     * This is added to help users to migrate to standard format and will be removed in upcoming releases.
+     * TODO: Remove this.
+     */
+    @Deprecated
+    private MutableList<SetImplTransformers> setTransformersLegacy = Lists.mutable.empty();
 
     public Builder builder;
 
@@ -226,6 +234,8 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
                 );
             }
             setTransformers.add(new SetImplTransformers(transformerInputs));
+            setTransformersLegacy.add(new SetImplTransformers(transformerInputs, false));
+
             this.builder = new TDSBuilder(node, this.sqlColumns, isDatabaseIdentifiersCaseSensitive);
             this.columnListForSerializer = ListIterate.collect(((TDSBuilder) this.builder).columns, col -> col.name);
         }
@@ -267,6 +277,7 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
                     );
                 }
                 setTransformers.add(new SetImplTransformers(transformerInputs));
+                setTransformersLegacy.add(new SetImplTransformers(transformerInputs, false));
 
                 if (ExecutionNodePartialClassResultHelper.isPartialClassResult(node))
                 {
@@ -281,21 +292,31 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
         else if (ExecutionNodeRelationalResultHelper.isRelationResult(node))
         {
             SetImplTransformers setImpl = new SetImplTransformers();
+            SetImplTransformers setImplLegacy = new SetImplTransformers();
+
             for (int columnIndex = 1; columnIndex <= this.columnCount; columnIndex++)
             {
                 setImpl.transformers.add(SetImplTransformers.TEMPORARY_DATATYPE_TRANSFORMER);
+                setImplLegacy.transformers.add(o -> o);
             }
             setTransformers.add(setImpl);
+            setTransformersLegacy.add(setImplLegacy);
+
             this.builder = new RelationBuilder(node);
         }
         else
         {
             SetImplTransformers setImpl = new SetImplTransformers();
+            SetImplTransformers setImplLegacy = new SetImplTransformers();
+
             for (int i = 1; i <= this.columnCount; i++)
             {
                 setImpl.transformers.add(SetImplTransformers.TEMPORARY_DATATYPE_TRANSFORMER);
+                setImplLegacy.transformers.add(o -> o);
             }
             setTransformers.add(setImpl);
+            setTransformersLegacy.add(setImplLegacy);
+
             this.builder = new DataTypeBuilder(node);
         }
     }
@@ -393,6 +414,16 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
     public MutableList<Function<Object, Object>> getTransformers() throws SQLException
     {
         return this.setTransformers.size() == 1 ? this.setTransformers.get(0).transformers : this.setTransformers.get(this.resultSet.getInt("u_type")).transformers;
+    }
+
+    /**
+     * This is added to help users to migrate to standard format and will be removed in upcoming releases.
+     * TODO: Remove this.
+     */
+    @Deprecated
+    public MutableList<Function<Object, Object>> getTransformersWithoutDateTransformations() throws SQLException
+    {
+        return this.setTransformersLegacy.size() == 1 ? this.setTransformersLegacy.get(0).transformers : this.setTransformersLegacy.get(this.resultSet.getInt("u_type")).transformers;
     }
 
     public Object getValue(int columnIndex) throws SQLException
@@ -562,6 +593,8 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
                 return new RelationalResultToPureTDSToObjectSerializer(this);
             case CSV:
                 return new RelationalResultToCSVSerializer(this, true);
+            case CSV_LEGACY:
+                return new RelationalResultToCSVLegacySerializer(this, true);
             case DEFAULT:
                 return new RelationalResultToJsonDefaultSerializer(this);
             default:

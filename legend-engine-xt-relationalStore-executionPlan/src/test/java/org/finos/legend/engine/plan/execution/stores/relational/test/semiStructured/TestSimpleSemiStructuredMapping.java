@@ -331,13 +331,13 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
         Assert.assertEquals(snowflakeExpected, snowflakePlan);
 
         String h2Result = this.executeFunction("simple::semiStructuredDifferentDataTypePropertyAccess", h2Mapping, h2Runtime);
-        Assert.assertEquals("Peter,Firm X,4,true,2010-03-04,2022-01-16 01:00:00.0,S1,Organization\n" +
-                "John,Firm X,4,true,2010-03-04,2022-01-16 01:00:00.0,S1,Organization\n" +
-                "John,Firm X,4,true,2010-03-04,2022-01-16 01:00:00.0,S1,Organization\n" +
-                "Anthony,Firm X,4,true,2010-03-04,2022-01-16 01:00:00.0,S1,Organization\n" +
-                "Fabrice,Firm A,1,false,2012-11-13,2022-02-14 03:00:00.0,,\n" +
-                "Oliver,Firm B,2,true,2017-07-07,2022-09-01 06:00:00.0,S2,Company\n" +
-                "David,Firm B,2,true,2017-07-07,2022-09-01 06:00:00.0,,Company\n", h2Result.replace("\r\n", "\n"));
+        Assert.assertEquals("Peter,Firm X,4,true,2010-03-04,2022-01-16T01:00:00.000000000+0000,S1,Organization\n" +
+                "John,Firm X,4,true,2010-03-04,2022-01-16 01:00:00.000000000+0000,S1,Organization\n" +
+                "John,Firm X,4,true,2010-03-04,2022-01-16 01:00:00.000000000+0000,S1,Organization\n" +
+                "Anthony,Firm X,4,true,2010-03-04,2022-01-16 01:00:00.000000000+0000,S1,Organization\n" +
+                "Fabrice,Firm A,1,false,2012-11-13,2022-02-14 03:00:00.000000000+0000,,\n" +
+                "Oliver,Firm B,2,true,2017-07-07,2022-09-01 06:00:00.000000000+0000,S2,Company\n" +
+                "David,Firm B,2,true,2017-07-07,2022-09-01 06:00:00.000000000+0000,,Company\n", h2Result.replace("\r\n", "\n"));
     }
 
     @Test
