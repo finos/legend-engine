@@ -58,12 +58,15 @@ jobs:
         run: mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies
         env:
           MAVEN_OPTS: -Xmx4000m
-      - name: Build + Test
-        if: (github.repository != 'finos/legend-engine') || (github.ref != 'refs/heads/master')
-        run: mvn install javadoc:javadoc -Dmaven.test.failure.ignore=true
+      - name: Build
+        run: mvn install javadoc:javadoc -DskipTests
         env:
           MAVEN_OPTS: -Xmx4000m
-      - name: Build + Test + Maven Deploy + Sonar + Docker Snapshot
+      - name: Test
+        run: mvn test -Dmaven.test.failure.ignore=true
+        env:
+          MAVEN_OPTS: -Xmx4000m
+      - name: Maven Deploy + Sonar + Docker Snapshot
         if: (github.repository == 'finos/legend-engine') && (github.ref == 'refs/heads/master')
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
