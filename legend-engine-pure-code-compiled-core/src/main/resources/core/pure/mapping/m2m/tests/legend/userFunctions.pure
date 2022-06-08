@@ -1,0 +1,156 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::executionPlan::engine::java::roadmap::*;
+import meta::json::*;
+import meta::pure::executionPlan::profiles::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::lineage::scanProperties::*;
+import meta::pure::mapping::modelToModel::test::alloy::simple::userFunction::*;
+import meta::pure::mapping::modelToModel::test::alloy::utils::*;
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.ToFix, meta::pure::profiles::test.AlloyOnly, feature.M2MBasics>>
+{  serverVersion.start='v1_19_0',
+   doc.doc='Given: a mapping that uses a user-defined function.',
+   doc.doc='When:  a mapping is executed using graphFetchChecked.',
+   doc.doc='Then:  the mapping produces the expected result'
+}
+meta::pure::mapping::modelToModel::test::alloy::simple::canEvaluateAMappingWithAUserDefinedFunctionProperty() : Boolean[1]
+{
+   let tree = #{FirstEmployee {name} }#;
+
+   let result = execute(
+      |FirstEmployee.all()->graphFetchChecked($tree)->serialize($tree),
+      m1,
+      testJsonRuntime(Firm, '{"name": "firm1", "employees": [{"firstName": "Dave", "lastName": "Miles"}]}'),
+      []
+   );
+
+   let json = $result.values->toOne();
+   let expected= 
+   '{'+
+   '  "defects":[],'+
+   '  "value":{"name":"Dave Miles"},'+
+   '  "source":{'+
+   '    "defects":[],'+
+   '    "value":{"employees": [{"firstName": "Dave","lastName": "Miles"}]},'+
+   '    "source": {"number":1, "record":"{\\"name\\":\\"firm1\\",\\"employees\\":[{\\"firstName\\":\\"Dave\\",\\"lastName\\":\\"Miles\\"}]}"}'+
+   '  }'+
+   '}';
+   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));   
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.ToFix, meta::pure::profiles::test.AlloyOnly, feature.M2MBasics>>
+{  serverVersion.start='v1_19_0',
+   doc.doc='Given: a mapping that uses a user-defined function.',
+   doc.doc='When:  a mapping is executed using graphFetchChecked.',
+   doc.doc='Then:  the mapping produces the expected result'
+}
+meta::pure::mapping::modelToModel::test::alloy::simple::canEvaluateAConstraintWithAUserDefinedFunctionProperty() : Boolean[1]
+{
+   let tree = #{FirstEmployeeConstrained {name} }#;
+
+   let result = execute(
+      |FirstEmployeeConstrained.all()->graphFetchChecked($tree)->serialize($tree),
+      m2,
+      testJsonRuntime(Firm, '{"name": "firm1", "employees": [{"firstName": "Dave", "lastName": "Miles"}]}'),
+      []
+   );
+
+   let json = $result.values->toOne();
+   let expected= 
+   '{'+
+   '  "defects":['+
+   '    {'+
+   '      "id"               : "twoPartName",'+
+   '      "externalId"       : null,'+
+   '      "message"          : "Expected name to have 2 parts but got 1",'+
+   '      "enforcementLevel" : "Error",'+
+   '      "ruleType"         : "ClassConstraint",'+
+   '      "ruleDefinerPath"  : "meta::pure::mapping::modelToModel::test::alloy::simple::userFunction::FirstEmployeeConstrained",' +
+   '      "path"             : []' +
+   '    }'+
+   '  ],'+
+   '  "value":{"name":"Miles"},'+
+   '  "source":{'+
+   '    "defects":[],'+
+   '    "value":{"employees": [{"lastName": "Miles"}]},'+
+   '    "source": {"number":1, "record":"{\\"name\\":\\"firm1\\",\\"employees\\":[{\\"firstName\\":\\"Dave\\",\\"lastName\\":\\"Miles\\"}]}"}'+
+   '  }'+
+   '}';
+   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));   
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::simple::userFunction::Firm
+{
+   employees: Person[*];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::simple::userFunction::Person
+{
+   firstName: String[1];
+   lastName: String[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::simple::userFunction::FirstEmployee
+{
+   name: String[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::simple::userFunction::FirstEmployeeConstrained
+[
+   twoPartName(
+      ~function : $this->countNameParts() == 2
+      ~message  : 'Expected name to have 2 parts but got '+$this->countNameParts()->toString()
+   )
+]
+{
+   name: String[1];
+}
+
+function meta::pure::mapping::modelToModel::test::alloy::simple::userFunction::fullName(employee:Person[1]):String[1]
+{
+   fullName($employee.firstName, $employee.lastName);
+}
+
+function meta::pure::mapping::modelToModel::test::alloy::simple::userFunction::fullName(first:String[1], last:String[1]):String[1]
+{
+   $first+' '+$last;
+}
+
+function meta::pure::mapping::modelToModel::test::alloy::simple::userFunction::countNameParts(emp:FirstEmployeeConstrained[1]):Integer[1]
+{
+   $emp.name->split(' ')->size();
+}
+
+###Mapping
+import meta::pure::mapping::modelToModel::test::alloy::simple::userFunction::*;
+   
+Mapping meta::pure::mapping::modelToModel::test::alloy::simple::userFunction::m1
+(
+  *FirstEmployee[test_FirstEmployee]: Pure
+  {
+    ~src Firm
+    name: fullName($src.employees->at(0))
+  }
+)
+   
+Mapping meta::pure::mapping::modelToModel::test::alloy::simple::userFunction::m2
+(
+  *FirstEmployeeConstrained[test_FirstEmployee]: Pure
+  {
+    ~src Firm
+    name: $src.employees->at(0).lastName
+  }
+)

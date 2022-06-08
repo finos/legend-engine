@@ -1,0 +1,83 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::executionPlan::engine::java::roadmap::*;
+import meta::json::*;
+import meta::pure::executionPlan::profiles::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::mapping::modelToModel::*;
+import meta::pure::mapping::modelToModel::test::alloy::simple::sourceAssociationRequiredByMapping::mapping::*;
+import meta::pure::mapping::modelToModel::test::alloy::simple::sourceAssociationRequiredByMapping::model::*;
+import meta::pure::runtime::*;
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.M2MBasics>> 
+{  serverVersion.start='v1_19_0',
+   doc.doc='Given: a mapping that navigates an association on the source',
+   doc.doc='When:  a mapping is executed using graphFetch and serialize.',
+   doc.doc='Then:  the data is correctly transformed.'
+} 
+meta::pure::mapping::modelToModel::test::alloy::simple::canNavigateSourceAssociationToClassNotSeparatelyMapped() : Boolean[1]
+{
+   let tree = #{NameList {names} }#;
+
+   let result = execute(
+      |NameList.all()->graphFetch($tree)->serialize($tree),
+      employeeNames,
+      ^Runtime(connections = ^JsonModelConnection(
+                                element=^ModelStore(), 
+                                class=Firm, 
+                                url='data:application/json,{"name":"Metallurgy Inc.", "employees":[{"firstName":"Pierre","lastName":"Doe"}, {"firstName":"Dave","lastName":"Miles"}]}'
+                             )
+      ),[]
+   );
+
+   assert(jsonEquivalent('{"names":"Pierre,Dave"}'->parseJSON(), $result.values->toOne()->parseJSON()));
+}
+
+###Pure
+import meta::pure::mapping::modelToModel::test::alloy::simple::sourceAssociationRequiredByMapping::model::*;
+
+Class meta::pure::mapping::modelToModel::test::alloy::simple::sourceAssociationRequiredByMapping::model::Firm
+{
+   name      : String[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::simple::sourceAssociationRequiredByMapping::model::Person
+{
+   firstName : String[1];
+   lastName  : String[1];
+}
+
+Association meta::pure::mapping::modelToModel::test::alloy::simple::sourceAssociationRequiredByMapping::model::FirmPerson
+{
+   firm      : Firm[1];        
+   employees : Person[*];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::simple::sourceAssociationRequiredByMapping::model::NameList
+{
+   names: String[1];
+}
+
+###Mapping
+import meta::pure::mapping::modelToModel::test::alloy::simple::sourceAssociationRequiredByMapping::model::*;
+
+Mapping meta::pure::mapping::modelToModel::test::alloy::simple::sourceAssociationRequiredByMapping::mapping::employeeNames
+(
+   NameList : Pure
+            {
+               ~src Firm
+               names  : $src.employees.firstName->joinStrings(',')
+            }
+)

@@ -1,0 +1,45 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Created as of PURE Model trunk version 41018 on 2019-01-15T07:48:27.576+0000
+
+Class meta::external::format::avro::generation::tests::model::latest::A
+{
+  b : meta::external::format::avro::generation::tests::model::latest::B[0..1];
+  e : meta::external::format::avro::generation::tests::model::latest::E[*];
+}
+
+Class meta::external::format::avro::generation::tests::model::latest::B
+{
+  i : Integer[1];
+  c : meta::external::format::avro::generation::tests::model::latest::C[1];
+}
+
+Class meta::external::format::avro::generation::tests::model::latest::C
+{
+  s : String[1];
+}
+
+Class meta::external::format::avro::generation::tests::model::latest::RootClasses
+{
+}
+
+Enum meta::external::format::avro::generation::tests::model::latest::E
+{
+  E1,
+  E2}
+
+
+// meta::external::format::avro::generation::tests::buildVersion('lastest') at T2;
+// lastest -> 2_0_0

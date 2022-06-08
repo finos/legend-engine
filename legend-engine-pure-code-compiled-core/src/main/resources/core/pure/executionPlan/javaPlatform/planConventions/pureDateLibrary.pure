@@ -1,0 +1,91 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::factory::*;
+import meta::external::language::java::metamodel::project::*;
+import meta::external::language::java::serialization::*;
+import meta::external::language::java::transform::*;
+import meta::pure::executionPlan::engine::*;
+
+function meta::pure::executionPlan::engine::java::registerPureDateLibrary(conventions: Conventions[1]): Conventions[1]
+{
+   let pureDate = $conventions->className(PureDate);
+   let library  = $conventions->className(Library);
+
+   let lib = newConventionsLibrary()
+      ->usesJavaClass($conventions->className(DayOfWeek))
+      ->usesJavaClass($conventions->className(DurationUnit))
+      ->usesJavaClass($conventions->className(Library))
+      ->usesJavaClass($pureDate->typeToString())
+      ->usesStrictDate($pureDate, {d:StrictDate[1] | $pureDate->j_invoke('parsePureDate', j_string($d->toString()), $pureDate)})
+      ->usesDateTime(  $pureDate, {d:DateTime[1]   | $pureDate->j_invoke('parsePureDate', j_string($d->toString()), $pureDate)})
+      ->usesDate(      $pureDate, {d:Date[1]       | $pureDate->j_invoke('parsePureDate', j_string($d->toString()), $pureDate)})
+      ->addFunctionCoders([
+         fc0(now__DateTime_1_,                                                                       {ctx                                    | $ctx.conventions->className(PureDate)->j_invoke('fromDate', javaDate()->j_new([]), $ctx.conventions->className(PureDate))}),
+         fc0(today__StrictDate_1_,                                                                   {ctx                                    | $library->j_invoke('today', [], $ctx.conventions->className(PureDate))}),
+         fc3(adjust_Date_1__Integer_1__DurationUnit_1__Date_1_,                                      {ctx,dt,qty,unit                        | $library->j_invoke('adjustDate', [$dt, $qty, $unit], $ctx.conventions->className(PureDate))}),
+         fc2(mostRecentDayOfWeek_Date_1__DayOfWeek_1__Date_1_,                                       {ctx,dt,day                             | $library->j_invoke('mostRecentDayOfWeek', [$dt, $day], $ctx.conventions->className(PureDate))}),
+         fc1(mostRecentDayOfWeek_DayOfWeek_1__Date_1_,                                               {ctx,day                                | $library->j_invoke('mostRecentDayOfWeek', [$day], $ctx.conventions->className(PureDate))}),
+         fc2(previousDayOfWeek_Date_1__DayOfWeek_1__Date_1_,                                         {ctx,dt,day                             | $library->j_invoke('previousDayOfWeek', [$dt, $day], $ctx.conventions->className(PureDate))}),
+         fc1(previousDayOfWeek_DayOfWeek_1__Date_1_,                                                 {ctx,day                                | $library->j_invoke('previousDayOfWeek', [$day], $ctx.conventions->className(PureDate))}),
+         fc1(parseDate_String_1__Date_1_,                                                            {ctx,str                                | $pureDate->j_invoke('parsePureDate', [$str], $ctx.conventions->className(PureDate))}),
+         fc3(dateDiff_Date_1__Date_1__DurationUnit_1__Integer_1_,                                    {ctx,dt1,dt2,unit                       | $library->j_invoke('dateDiff', [$dt1, $dt2, $unit], javaLong())}),
+         fc1(datePart_Date_1__Date_1_,                                                               {ctx,dt                                 | $library->j_invoke('datePart', [$dt], $pureDate)}),
+         fc1(dayOfMonth_Date_1__Integer_1_,                                                          {ctx,dt                                 | $library->j_invoke('dayOfMonth', [$dt], javaLong())}),
+         fc1(dayOfWeekNumber_Date_1__Integer_1_,                                                     {ctx,dt                                 | $library->j_invoke('dayOfWeekNumber', [$dt], javaLong())}),
+         fc1(weekOfYear_Date_1__Integer_1_,                                                          {ctx,dt                                 | $library->j_invoke('weekOfYear', [$dt], javaLong())}),
+         fc1(firstDayOfWeek_Date_1__Date_1_,                                                         {ctx,dt                                 | $library->j_invoke('firstDayOfWeek', [$dt], $ctx.conventions->className(PureDate))}),
+         fc1(firstDayOfMonth_Date_1__Date_1_,                                                        {ctx,dt                                 | $library->j_invoke('firstDayOfMonth', [$dt], $ctx.conventions->className(PureDate))}),
+         fc1(firstDayOfQuarter_Date_1__StrictDate_1_,                                                {ctx,dt                                 | $library->j_invoke('firstDayOfQuarter', [$dt], $ctx.conventions->className(PureDate))}),
+         fc1(firstDayOfYear_Date_1__Date_1_,                                                         {ctx,dt                                 | $library->j_invoke('firstDayOfYear', [$dt], $ctx.conventions->className(PureDate))}),
+         fc0(firstDayOfThisMonth__Date_1_,                                                           {ctx                                    | $library->j_invoke('firstDayOfThisMonth', [], $ctx.conventions->className(PureDate))}),
+         fc0(firstDayOfThisQuarter__StrictDate_1_,                                                   {ctx                                    | $library->j_invoke('firstDayOfThisQuarter', [], $ctx.conventions->className(PureDate))}),
+         fc0(firstDayOfThisYear__Date_1_,                                                            {ctx                                    | $library->j_invoke('firstDayOfThisYear', [], $ctx.conventions->className(PureDate))}),
+         fc1(second_Date_1__Integer_1_,                                                              {ctx,dt                                 | $dt->j_invoke('getSecond', [], javaInt())}),
+         fc1(minute_Date_1__Integer_1_,                                                              {ctx,dt                                 | $dt->j_invoke('getMinute', [], javaInt())}),
+         fc1(hour_Date_1__Integer_1_,                                                                {ctx,dt                                 | $dt->j_invoke('getHour', [], javaInt())}),
+         fc1(monthNumber_Date_1__Integer_1_,                                                         {ctx,dt                                 | $dt->j_invoke('getMonth', [], javaInt())}),
+         fc1(quarterNumber_Date_1__Integer_1_,                                                       {ctx,dt                                 | $dt->j_invoke('getQuarter', [], javaInt())}),
+         fc1(year_Date_1__Integer_1_,                                                                {ctx,dt                                 | $dt->j_invoke('getYear', [], javaInt())}),
+         fc2(greaterThan_Date_1__Date_1__Boolean_1_,                                                 {ctx,dt1,dt2                            | $library->j_invoke('greaterThan', [$dt1, $dt2], javaBoolean())}),
+         fc2(greaterThanEqual_Date_1__Date_1__Boolean_1_,                                            {ctx,dt1,dt2                            | $library->j_invoke('greaterThanEqual', [$dt1, $dt2], javaBoolean())}),
+         fc2(greaterThanEqual_Date_$0_1$__Date_1__Boolean_1_,                                        {ctx,dt1,dt2                            | $library->j_invoke('greaterThanEqual', [$dt1->j_cast($pureDate), $dt2], javaBoolean())}),
+         fc2(greaterThanEqual_Date_1__Date_$0_1$__Boolean_1_,                                        {ctx,dt1,dt2                            | $library->j_invoke('greaterThanEqual', [$dt1, $dt2->j_cast($pureDate)], javaBoolean())}),
+         fc2(greaterThanEqual_Date_$0_1$__Date_$0_1$__Boolean_1_,                                    {ctx,dt1,dt2                            | $library->j_invoke('greaterThanEqual', [$dt1->j_cast($pureDate), $dt2->j_cast($pureDate)], javaBoolean())}),
+         fc2(lessThan_Date_1__Date_1__Boolean_1_,                                                    {ctx,dt1,dt2                            | $library->j_invoke('lessThan', [$dt1, $dt2], javaBoolean())}),
+         fc2(lessThanEqual_Date_1__Date_1__Boolean_1_,                                               {ctx,dt1,dt2                            | $library->j_invoke('lessThanEqual', [$dt1, $dt2], javaBoolean())}),
+         fc2(lessThanEqual_Date_$0_1$__Date_1__Boolean_1_,                                           {ctx,dt1,dt2                            | $library->j_invoke('lessThanEqual', [$dt1->j_cast($pureDate), $dt2], javaBoolean())}),
+         fc2(lessThanEqual_Date_1__Date_$0_1$__Boolean_1_,                                           {ctx,dt1,dt2                            | $library->j_invoke('lessThanEqual', [$dt1, $dt2->j_cast($pureDate)], javaBoolean())}),
+         fc2(lessThanEqual_Date_$0_1$__Date_$0_1$__Boolean_1_,                                       {ctx,dt1,dt2                            | $library->j_invoke('lessThanEqual', [$dt1->j_cast($pureDate), $dt2->j_cast($pureDate)], javaBoolean())}),
+         fc1(hasYear_Date_1__Boolean_1_,                                                             {ctx,date                               | $date->j_invoke('hasYear', [], javaBoolean())}),
+         fc1(hasMonth_Date_1__Boolean_1_,                                                            {ctx,date                               | $date->j_invoke('hasMonth', [], javaBoolean())}),
+         fc1(hasDay_Date_1__Boolean_1_,                                                              {ctx,date                               | $date->j_invoke('hasDay', [], javaBoolean())}),
+         fc1(hasHour_Date_1__Boolean_1_,                                                             {ctx,date                               | $date->j_invoke('hasHour', [], javaBoolean())}),
+         fc1(hasMinute_Date_1__Boolean_1_,                                                           {ctx,date                               | $date->j_invoke('hasMinute', [], javaBoolean())}),
+         fc1(hasSecond_Date_1__Boolean_1_,                                                           {ctx,date                               | $date->j_invoke('hasSecond', [], javaBoolean())}),
+         fc1(hasSubsecond_Date_1__Boolean_1_,                                                        {ctx,date                               | $date->j_invoke('hasSubsecond', [], javaBoolean())}),
+         fc2(hasSubsecondWithAtLeastPrecision_Date_1__Integer_1__Boolean_1_,                         {ctx,date,precision                     | $date->j_invoke('hasSubsecond', [], javaBoolean())->j_and($date->j_invoke('getSubsecond', [], javaString())->j_invoke('length', [])->j_ge($precision))}),
+         fc1(date_Integer_1__Date_1_,                                                                {ctx,year                               | $ctx.conventions->className(PureDate)->j_invoke('newPureDate', [$year->j_cast(javaInt())], $ctx.conventions->className(PureDate))}),
+         fc2(date_Integer_1__Integer_1__Date_1_,                                                     {ctx,year,month                         | $ctx.conventions->className(PureDate)->j_invoke('newPureDate', [$year->j_cast(javaInt()),$month->j_cast(javaInt())], $ctx.conventions->className(PureDate))}),
+         fc3(date_Integer_1__Integer_1__Integer_1__StrictDate_1_,                                    {ctx,year,month,day                     | $ctx.conventions->className(PureDate)->j_invoke('newPureDate', [$year->j_cast(javaInt()),$month->j_cast(javaInt()),$day->j_cast(javaInt())], $ctx.conventions->className(PureDate))}),
+         fc4(date_Integer_1__Integer_1__Integer_1__Integer_1__DateTime_1_,                           {ctx,year,month,day,hour                | $ctx.conventions->className(PureDate)->j_invoke('newPureDate', [$year->j_cast(javaInt()),$month->j_cast(javaInt()),$day->j_cast(javaInt()),$hour->j_cast(javaInt())], $ctx.conventions->className(PureDate))}),
+         fc5(date_Integer_1__Integer_1__Integer_1__Integer_1__Integer_1__DateTime_1_,                {ctx,year,month,day,hour,minute         | $ctx.conventions->className(PureDate)->j_invoke('newPureDate', [$year->j_cast(javaInt()),$month->j_cast(javaInt()),$day->j_cast(javaInt()),$hour->j_cast(javaInt()),$minute->j_cast(javaInt())], $ctx.conventions->className(PureDate))}),
+         fc6(date_Integer_1__Integer_1__Integer_1__Integer_1__Integer_1__Number_1__DateTime_1_,      {ctx,year,month,day,hour,minute,second  | $ctx.conventions->className(PureDate)->j_invoke('newPureDate', [$year->j_cast(javaInt()),$month->j_cast(javaInt()),$day->j_cast(javaInt()),$hour->j_cast(javaInt()),$minute->j_cast(javaInt()),$second->j_cast(javaNumber())], $ctx.conventions->className(PureDate))})
+   ]);
+   
+   $conventions->registerLibrary($lib);
+}
+
+
+

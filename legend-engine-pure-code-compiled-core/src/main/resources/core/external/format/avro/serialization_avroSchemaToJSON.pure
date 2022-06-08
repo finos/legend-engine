@@ -1,0 +1,99 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::json::*;
+import meta::external::format::avro::generation::*;
+import meta::external::format::avro::metamodel::*;
+import meta::external::format::avro::serialization::*;
+
+function  meta::external::format::avro::serialization::avroSchemaToJSON(schema: AvroSchema[1]): JSONElement[1]
+{
+   let schemaInJson = $schema->match([
+      null:AvroNullSchema[1]| ^JSONString(value='null'),
+      boolean:AvroBooleanSchema[1]| ^JSONString(value='boolean'),
+      int:AvroIntSchema[1]| ^JSONString(value='int'),
+      long:AvroLongSchema[1]| ^JSONString(value='long'),
+      float:AvroFloatSchema[1]| ^JSONString(value='float'),
+      double:AvroDoubleSchema[1]| ^JSONString(value='double'),
+      string:AvroStringSchema[1]| ^JSONString(value='string'),
+      enum: AvroEnumSchema[1]| $enum->enumTypeToJSON(),
+      array: AvroArraySchema[1]| $array->arrayTypeToJSON(),
+      union: AvroUnionSchema[1]| $union->unionTypeToJSON(),
+      record: AvroRecordSchema[1]| $record->recordSchemaToJSON()
+   ]);
+   if($schema.logicalType->isEmpty(), |$schemaInJson, |addLogicalType($schemaInJson, $schema.logicalType->toOne().name));
+}
+
+function <<access.private>> meta::external::format::avro::serialization::addLogicalType(schemaInJson: JSONElement[1], logicalType: String[1]): JSONElement[1]
+{
+   let logicalTypeInJson = newJSONKeyValue('logicalType', ^JSONString(value=$logicalType));
+   if($schemaInJson->instanceOf(JSONObject), |
+      let schemaInJsonObject = $schemaInJson->cast(@JSONObject);
+      ^$schemaInJsonObject(keyValuePairs=$schemaInJsonObject.keyValuePairs->concatenate($logicalTypeInJson));, |
+      newJSONObject([newJSONKeyValue('type', $schemaInJson), $logicalTypeInJson]);
+   );
+}
+
+function <<access.private>> meta::external::format::avro::serialization::enumTypeToJSON(enum: AvroEnumSchema[1]): JSONElement[1]
+{
+   if($enum.symbols->isEmpty(), |
+      ^JSONString(value=$enum.name.name()), |
+      let type = newJSONKeyValue('type', ^JSONString(value='enum'));
+      let name = newJSONKeyValue('name', ^JSONString(value=$enum.name.name->toOne()));
+      let typeAndName = [$type, $name];
+      let withNamespace = if($enum.name.space->isEmpty(), |$typeAndName, |$typeAndName->concatenate(newJSONKeyValue('namespace', ^JSONString(value=$enum.name.space->toOne()))));
+      let withDoc = if($enum.doc->isEmpty(), |$withNamespace, |$withNamespace->concatenate(newJSONKeyValue('doc', ^JSONString(value=$enum.doc->toOne()))));
+      let withSymbols = $withDoc->concatenate(newJSONKeyValue('symbols', ^JSONArray(values=$enum.symbols->map(s|^JSONString(value=$s)))));
+      let withProps = if($enum.props->isEmpty(), |$withSymbols, |$withSymbols->concatenate($enum.props));
+      newJSONObject($withProps););
+}
+
+function <<access.private>> meta::external::format::avro::serialization::arrayTypeToJSON(array: AvroArraySchema[1]): JSONElement[1]
+{
+   let type = newJSONKeyValue('type', ^JSONString(value='array'));
+   let items = newJSONKeyValue('items', $array.elementType->avroSchemaToJSON());
+   newJSONObject([$type, $items]);
+}
+
+function <<access.private>> meta::external::format::avro::serialization::unionTypeToJSON(union: AvroUnionSchema[1]): JSONElement[1]
+{
+   ^JSONArray(values=$union.types->map(t|$t->avroSchemaToJSON()));
+}
+
+function <<access.private>> meta::external::format::avro::serialization::recordSchemaToJSON(record: AvroRecordSchema[1]): JSONElement[1]
+{
+   if($record.fields->isEmpty(), |
+      ^JSONString(value=$record.name.name()) , |
+      let type = newJSONKeyValue('type', ^JSONString(value='record'));
+      let name = newJSONKeyValue('name', ^JSONString(value=$record.name.name->toOne()));
+      let typeAndName = [$type, $name];
+      let withNamespace = if($record.name.space->isEmpty(), |$typeAndName, |$typeAndName->concatenate(newJSONKeyValue('namespace', ^JSONString(value=$record.name.space->toOne()))));
+      let withDoc = if($record.doc->isEmpty(), |$withNamespace, |$withNamespace->concatenate(newJSONKeyValue('doc', ^JSONString(value=$record.doc->toOne()))));
+      let withFields = $withDoc->concatenate(newJSONKeyValue('fields', ^JSONArray(values=$record.fields->map(f|$f->fieldToJSON()))));
+      let withProps = if($record.props->isEmpty(), |$withFields, |$withFields->concatenate($record.props));
+      newJSONObject($withProps););
+}
+
+function <<access.private>> meta::external::format::avro::serialization::fieldToJSON(field: AvroSchemaField[1]): JSONElement[1]
+{
+   let name = newJSONKeyValue('name', ^JSONString(value=$field.name));
+   let type = newJSONKeyValue('type', $field.schema->avroSchemaToJSON());
+   let nameAndType = [$name, $type];
+   let withDefault = if($field.default->isEmpty(), | $nameAndType, |
+      let default = ^JSONKeyValue(key=^JSONString(value='default'), value=$field.default->toOne());
+      $nameAndType->concatenate($default););
+   let withProps = if($field.props->isEmpty(), |$withDefault, |$withDefault->concatenate($field.props));
+   let object =newJSONObject($withProps);
+  if($field.logicalType->isEmpty(), |$object, |addLogicalType($object, $field.logicalType->toOne().name));
+}

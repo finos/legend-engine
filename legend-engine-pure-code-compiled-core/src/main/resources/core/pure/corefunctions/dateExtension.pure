@@ -1,0 +1,403 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+function meta::pure::functions::date::daysOfMonth(date:Date[1]):Integer[*]
+{
+   if ($date->hasDay(),
+       | $date->dayOfMonth(),
+       | if ($date->hasMonth(), | range(1, date($date->year(), $date->monthNumber(), 1)->adjust(1, DurationUnit.MONTHS)->adjust(-1, DurationUnit.DAYS)->dayOfMonth() + 1),
+                                 | fail('Not supported for dates with only a year'); 0;))
+}
+
+function meta::pure::functions::date::firstDayOfThisQuarter():StrictDate[1]
+{
+   today()->firstDayOfQuarter();
+}
+
+function meta::pure::functions::date::firstDayOfQuarter(date:Date[1]):StrictDate[1]
+{
+   date($date->year(), ($date->quarterNumber() * 3) - 2, 1);
+}
+
+function meta::pure::functions::date::firstDayOfThisWeek():Date[1]
+{
+   today()->firstDayOfWeek();
+}
+
+function meta::pure::functions::date::firstDayOfWeek(date:Date[1]):Date[1]
+{
+   $date->mostRecentDayOfWeek(DayOfWeek.Monday);
+}
+
+function meta::pure::functions::date::datePart(d:Date[0..1]):Date[0..1]
+{
+    $d->toOne()->datePart();
+}
+
+function meta::pure::functions::date::max(dates:Date[*]):Date[0..1]
+{
+    $dates->fold({n, m | max($n, $m->toOne())}, $dates->first())
+}
+
+function meta::pure::functions::date::max(dates:StrictDate[*]):StrictDate[0..1]
+{
+    $dates->fold({n, m | max($n, $m->toOne())}, $dates->first())
+}
+
+function meta::pure::functions::date::max(dates:DateTime[*]):DateTime[0..1]
+{
+    $dates->fold({n, m | max($n, $m->toOne())}, $dates->first())
+}
+
+function meta::pure::functions::date::max(left:Date[1], right:Date[1]):Date[1]
+{
+    if($left < $right, | $right, | $left)
+}
+
+function meta::pure::functions::date::max(left:StrictDate[1], right:StrictDate[1]):StrictDate[1]
+{
+    if($left < $right, | $right, | $left)
+}
+
+function meta::pure::functions::date::max(left:DateTime[1], right:DateTime[1]):DateTime[1]
+{
+    if($left < $right, | $right, | $left)
+}
+
+function meta::pure::functions::date::min(dates:Date[*]):Date[0..1]
+{
+    $dates->fold({n, m | min($n, $m->toOne())}, $dates->first())
+}
+
+function meta::pure::functions::date::min(dates:StrictDate[*]):StrictDate[0..1]
+{
+    $dates->fold({n, m | min($n, $m->toOne())}, $dates->first())
+}
+
+function meta::pure::functions::date::min(dates:DateTime[*]):DateTime[0..1]
+{
+    $dates->fold({n, m | min($n, $m->toOne())}, $dates->first())
+}
+
+function meta::pure::functions::date::min(left:Date[1], right:Date[1]):Date[1]
+{
+    if($right < $left, | $right, | $left)
+}
+
+function meta::pure::functions::date::min(left:StrictDate[1], right:StrictDate[1]):StrictDate[1]
+{
+    if($right < $left, | $right, | $left)
+}
+
+function meta::pure::functions::date::min(left:DateTime[1], right:DateTime[1]):DateTime[1]
+{
+    if($right < $left, | $right, | $left)
+}
+
+function meta::pure::functions::date::weekOfYear(d:Date[0..1]):Integer[0..1]
+{
+   $d->toOne()->weekOfYear();
+}
+
+function meta::pure::functions::date::monthNumber(d:Date[0..1]):Integer[0..1]
+{
+   $d->toOne()->monthNumber();
+}
+
+function meta::pure::functions::date::year(d:Date[0..1]):Integer[0..1]
+{
+   $d->toOne()->year();
+}
+
+//TODO: the challenge here is that
+//      - the return type is Integer, hence the Date may not be returned if null
+//      - if [] is returned as part of an if stm then this requires a change in SQLQueryToString since the number of arguments is different
+//      - returning a default Integer is also not correct
+function meta::pure::functions::date::dateDiff(d1:Date[0..1], d2:Date[0..1], du:DurationUnit[1]):Integer[0..1]
+{
+   $d1->toOne()->dateDiff($d2->toOne(), $du);
+   //if($d1->isEmpty(),|[], | if ($d2->isEmpty(),|[], |$d1->toOne()->dateDiff($d2->toOne(), $du)));
+}
+
+function meta::pure::functions::date::isOnDay(d1:Date[1], d2:Date[1]):Boolean[1]
+{
+   ($d1 >= $d2->datePart()) && ($d1 < $d2->datePart()->adjust(1, DurationUnit.DAYS))
+}
+
+function meta::pure::functions::date::isOnDay(d1:Date[0..1], d2:Date[0..1]):Boolean[1]
+{
+   $d1->isNotEmpty() && $d2->isNotEmpty() && $d1->toOne()->isOnDay($d2->toOne())
+}
+
+function meta::pure::functions::date::isOnDay(d1:Date[1], d2:Date[0..1]):Boolean[1]
+{
+   $d2->isNotEmpty() && $d1->isOnDay($d2->toOne())
+}
+
+function meta::pure::functions::date::isOnDay(d1:Date[0..1], d2:Date[1]):Boolean[1]
+{
+   $d1->isNotEmpty() && $d1->toOne()->isOnDay($d2)
+}
+
+function meta::pure::functions::date::isOnOrAfterDay(d1:Date[1], d2:Date[1]):Boolean[1]
+{
+   $d1 > $d2 || $d1->isOnDay($d2)
+}
+
+function meta::pure::functions::date::isOnOrAfterDay(d1:Date[0..1], d2:Date[0..1]):Boolean[1]
+{
+   $d1->isNotEmpty() && $d2->isNotEmpty() && $d1->toOne()->isOnOrAfterDay($d2->toOne())
+}
+
+function meta::pure::functions::date::isOnOrAfterDay(d1:Date[1], d2:Date[0..1]):Boolean[1]
+{
+   $d2->isNotEmpty() && $d1->isOnOrAfterDay($d2->toOne())
+}
+
+function meta::pure::functions::date::isOnOrAfterDay(d1:Date[0..1], d2:Date[1]):Boolean[1]
+{
+   $d1->isNotEmpty() && $d1->toOne()->isOnOrAfterDay($d2)
+}
+
+function meta::pure::functions::date::isAfterDay(d1:Date[1], d2:Date[1]):Boolean[1]
+{
+   $d1 >= $d2->datePart()->adjust(1, DurationUnit.DAYS)
+}
+
+function meta::pure::functions::date::isAfterDay(d1:Date[0..1], d2:Date[0..1]):Boolean[1]
+{
+   $d1->isNotEmpty() && $d2->isNotEmpty() && $d1->toOne()->isAfterDay($d2->toOne())
+}
+
+function meta::pure::functions::date::isAfterDay(d1:Date[1], d2:Date[0..1]):Boolean[1]
+{
+   $d2->isNotEmpty() && $d1->isAfterDay($d2->toOne())
+}
+
+function meta::pure::functions::date::isAfterDay(d1:Date[0..1], d2:Date[1]):Boolean[1]
+{
+   $d1->isNotEmpty() && $d1->toOne()->isAfterDay($d2)
+}
+
+function meta::pure::functions::date::isOnOrBeforeDay(d1:Date[1], d2:Date[1]):Boolean[1]
+{
+   $d1 < $d2 || $d1->isOnDay($d2)
+}
+
+function meta::pure::functions::date::isOnOrBeforeDay(d1:Date[0..1], d2:Date[0..1]):Boolean[1]
+{
+   $d1->isNotEmpty() && $d2->isNotEmpty() && $d1->toOne()->isOnOrBeforeDay($d2->toOne())
+}
+
+function meta::pure::functions::date::isOnOrBeforeDay(d1:Date[1], d2:Date[0..1]):Boolean[1]
+{
+   $d2->isNotEmpty() && $d1->isOnOrBeforeDay($d2->toOne())
+}
+
+function meta::pure::functions::date::isOnOrBeforeDay(d1:Date[0..1], d2:Date[1]):Boolean[1]
+{
+   $d1->isNotEmpty() && $d1->toOne()->isOnOrBeforeDay($d2)
+}
+
+function meta::pure::functions::date::isBeforeDay(d1:Date[1], d2:Date[1]):Boolean[1]
+{
+   $d1 < $d2->datePart()
+}
+
+function meta::pure::functions::date::isBeforeDay(d1:Date[0..1], d2:Date[0..1]):Boolean[1]
+{
+   $d1->isNotEmpty() && $d2->isNotEmpty() && $d1->toOne()->isBeforeDay($d2->toOne())
+}
+
+function meta::pure::functions::date::isBeforeDay(d1:Date[1], d2:Date[0..1]):Boolean[1]
+{
+   $d2->isNotEmpty() && $d1->isBeforeDay($d2->toOne())
+}
+
+function meta::pure::functions::date::isBeforeDay(d1:Date[0..1], d2:Date[1]):Boolean[1]
+{
+   $d1->isNotEmpty() && $d1->toOne()->isBeforeDay($d2)
+}
+
+function meta::pure::functions::date::ISO8601DateTimeFormat():String[1]
+{
+   '%t{yyyy-MM-dd"T"HH:mm:ss.SSSSSSSSSZ}';
+}
+
+function meta::pure::functions::date::SimpleDateTimeFormat():String[1]
+{
+   '%t{yyyy-MM-dd HH:mm:ss}';
+}
+
+function meta::pure::functions::date::ISO8601DateFormat():String[1]
+{
+   '%t{yyyy-MM-dd}';
+}
+
+function meta::pure::functions::date::inSeconds(time:Time[1]):Integer[1]
+{
+   ((($time.hours * 60) + $time.minutes) * 60) + $time.seconds
+}
+
+function meta::pure::functions::date::timeFromSeconds(seconds:Integer[1]):Time[1]
+{
+   ^Time(hours=$seconds->divide(3600)->floor(),minutes=$seconds->mod(3600)->divide(60)->floor(),seconds=$seconds->mod(60))
+}
+
+function meta::pure::functions::date::average(times:Time[1..*]):Time[1]
+{
+   $times->map(t | $t->inSeconds())->average()->round()->timeFromSeconds();
+}
+
+function meta::pure::functions::date::systemDefaultTimeZones():String[*]
+{
+  ['GMT', 'UTC']
+}   
+
+function meta::pure::functions::date::hasYear(d:Date[1]):Boolean[1]
+{
+    true;
+}
+
+function meta::pure::functions::date::dayOfWeek(d:Date[1]):DayOfWeek[1]
+{
+    $d->dayOfWeekNumber()->dayOfWeek()
+}
+
+function meta::pure::functions::date::month(d:Date[1]):Month[1]
+{
+    $d->monthNumber()->month()
+}
+
+function meta::pure::functions::date::quarterNumber(d:Date[1]):Integer[1]
+{
+    let monthNumber = $d->monthNumber();
+    if ($monthNumber <= 3,
+        | 1,
+        | if ($monthNumber <= 6,
+              | 2,
+              | if ($monthNumber <= 9,
+                    | 3,
+                    | 4)));
+}
+
+function meta::pure::functions::date::quarter(d:Date[1]):Quarter[1]
+{
+    $d->quarterNumber()->quarter()
+}
+
+function {doc.doc = 'Returns the most recent instance of the given day of the week that is no later than the given date.'} meta::pure::functions::date::mostRecentDayOfWeek(date:Date[1], day:DayOfWeek[1]):Date[1]
+{
+    $date->datePart()->adjust(if(($day->dayOfWeekNumber() - $date->dayOfWeekNumber()) > 0, |($day->dayOfWeekNumber() - $date->dayOfWeekNumber()) - 7, |($day->dayOfWeekNumber() - $date->dayOfWeekNumber())), DurationUnit.DAYS);
+}
+
+function {doc.doc = 'Returns the most recent instance of the given day of the week that is no later than today.'} meta::pure::functions::date::mostRecentDayOfWeek(day:DayOfWeek[1]):Date[1]
+{
+    today()->mostRecentDayOfWeek($day)
+}
+
+function {doc.doc = 'Returns the most recent instance of the given day of the week that is strictly before the given date.'} meta::pure::functions::date::previousDayOfWeek(date:Date[1], day:DayOfWeek[1]):Date[1]
+{
+    $date->datePart()->adjust(if(($day->dayOfWeekNumber() - $date->dayOfWeekNumber()) >= 0, |($day->dayOfWeekNumber() - $date->dayOfWeekNumber()) - 7, |($day->dayOfWeekNumber() - $date->dayOfWeekNumber())), DurationUnit.DAYS);
+}
+
+function {doc.doc = 'Returns the most recent instance of the given day of the week that is strictly before today.'} meta::pure::functions::date::previousDayOfWeek(day:DayOfWeek[1]):Date[1]
+{
+    today()->previousDayOfWeek($day)
+}
+
+function meta::pure::functions::date::firstDayOfMonth(date:Date[1]):Date[1]
+{
+    date($date->year(), $date->monthNumber(), 1)
+}
+
+function meta::pure::functions::date::firstDayOfThisMonth():Date[1]
+{
+    today()->firstDayOfMonth()
+}
+
+function meta::pure::functions::date::firstDayOfYear(date:Date[1]):Date[1]
+{
+    date($date->year(), 1, 1)
+}
+
+function meta::pure::functions::date::firstDayOfThisYear():Date[1]
+{
+    today()->firstDayOfYear()
+}
+
+function meta::pure::functions::date::quarterNumber(quarter:Quarter[1]):Integer[1]
+{
+    Quarter->enumValues()->indexOf($quarter) + 1
+}
+
+function meta::pure::functions::date::quarter(number:Integer[1]):Quarter[1]
+{
+    Quarter->enumValues()->at($number - 1)
+}
+
+function meta::pure::functions::date::monthNumber(month:Month[1]):Integer[1]
+{
+    Month->enumValues()->indexOf($month) + 1
+}
+
+function meta::pure::functions::date::month(number:Integer[1]):Month[1]
+{
+    Month->enumValues()->at($number - 1)
+}
+
+function meta::pure::functions::date::dayOfWeekNumber(day:DayOfWeek[1]):Integer[1]
+{
+    DayOfWeek->enumValues()->indexOf($day) + 1
+}
+
+function meta::pure::functions::date::dayOfWeek(number:Integer[1]):DayOfWeek[1]
+{
+    DayOfWeek->enumValues()->at($number - 1)
+}
+
+function meta::pure::functions::date::add(date:Date[1], duration:Duration[1]):Date[1]
+{
+   $date->adjust($duration.number, $duration.unit)
+}
+
+function meta::pure::functions::date::add(date:StrictDate[1], duration:Duration[1]):StrictDate[1]
+{
+   $date->adjust($duration.number, $duration.unit)->cast(@StrictDate)
+}
+
+function meta::pure::functions::date::add(date:DateTime[1], duration:Duration[1]):DateTime[1]
+{
+   $date->adjust($duration.number, $duration.unit)->cast(@DateTime)
+}
+
+function meta::pure::functions::date::subtract(date:Date[1], duration:Duration[1]):Date[1]
+{
+   $date->adjust(-$duration.number, $duration.unit)
+}
+
+function meta::pure::functions::date::subtract(date:StrictDate[1], duration:Duration[1]):StrictDate[1]
+{
+   $date->adjust(-$duration.number, $duration.unit)->cast(@StrictDate)
+}
+
+function meta::pure::functions::date::subtract(date:DateTime[1], duration:Duration[1]):DateTime[1]
+{
+   $date->adjust(-$duration.number, $duration.unit)->cast(@DateTime)
+}
+
+function meta::pure::functions::date::isLeap(year:Integer[1]):Boolean[1]
+{
+   (date($year, 3, 1)->adjust(-1, DurationUnit.DAYS)->dayOfMonth())==29
+}

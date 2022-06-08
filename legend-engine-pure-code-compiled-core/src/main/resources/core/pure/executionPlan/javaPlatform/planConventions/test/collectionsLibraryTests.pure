@@ -1,0 +1,280 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::factory::*;
+import meta::pure::executionPlan::engine::java::*;
+import meta::pure::executionPlan::engine::java::tests::*;
+import meta::pure::functions::tests::model::*;
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::engine::java::tests::testCollectionCreations() : Boolean[1]
+{
+   javaExpressionTests(engineConventions([]))
+      ->addTest('Add to list', {|['A', 'B']->add('C')}, 'java.util.stream.Stream.concat(java.util.Arrays.asList("A", "B").stream(), java.util.Optional.ofNullable("C").map(java.util.stream.Stream::of).orElseGet(java.util.stream.Stream::empty)).collect(java.util.stream.Collectors.toList())', javaList(javaString()))
+         ->assert('%s.contains("A")')
+         ->assert('%s.contains("B")')
+         ->assert('%s.contains("C")')
+         ->assert('%s.size() == 3')
+      ->addTest('Add to singleton', {|'A'->add('B')}, 'java.util.stream.Stream.concat(java.util.Optional.ofNullable("A").map(java.util.stream.Stream::of).orElseGet(java.util.stream.Stream::empty), java.util.Optional.ofNullable("B").map(java.util.stream.Stream::of).orElseGet(java.util.stream.Stream::empty)).collect(java.util.stream.Collectors.toList())', javaList(javaString()))
+         ->assert('%s.contains("A")')
+         ->assert('%s.contains("B")')
+         ->assert('%s.size() == 2')
+      ->addTest('Add to empty', {|[]->add('A')}, 'java.util.stream.Stream.concat(java.util.Collections.emptyList().stream(), java.util.Optional.ofNullable("A").map(java.util.stream.Stream::of).orElseGet(java.util.stream.Stream::empty)).collect(java.util.stream.Collectors.toList())', javaList(javaString()))
+         ->assert('%s.contains("A")')
+         ->assert('%s.size() == 1')
+      ->addTest('Concat singletons', {|[concatenate(1,2)]}, 'java.util.stream.Stream.concat(java.util.stream.Stream.<Long>of(1L), java.util.stream.Stream.<Long>of(2L)).collect(java.util.stream.Collectors.toList())', javaList(javaLong()))
+         ->assert('%s.contains(1L)')
+         ->assert('%s.contains(2L)')
+         ->assert('%s.size() == 2')
+      ->addTest('Concat list and singleton', {|[1,2]->concatenate(3)}, 'java.util.stream.Stream.concat(java.util.Arrays.asList(1L, 2L).stream(), java.util.stream.Stream.<Long>of(3L)).collect(java.util.stream.Collectors.toList())', javaList(javaLong()))
+         ->assert('%s.contains(1L)')
+         ->assert('%s.contains(2L)')
+         ->assert('%s.contains(3L)')
+         ->assert('%s.size() == 3')
+      ->addTest('union non-empty', {|[4,5,6]->union([1,2,3])}, 'java.util.stream.Stream.concat(java.util.Arrays.asList(4L, 5L, 6L).stream(), java.util.Arrays.asList(1L, 2L, 3L).stream()).distinct().collect(java.util.stream.Collectors.toList())', javaLong()->javaList())
+         ->assert('%s.size() == 6')
+         ->assert('%s.contains(1L)')
+         ->assert('%s.contains(2L)')
+         ->assert('%s.contains(3L)')
+         ->assert('%s.contains(4L)')
+         ->assert('%s.contains(5L)')
+         ->assert('%s.contains(6L)')
+      ->addTest('union empty', {|[4,5,6]->union([])}, 'java.util.stream.Stream.concat(java.util.Arrays.asList(4L, 5L, 6L).stream(), java.util.Collections.emptyList().stream()).distinct().collect(java.util.stream.Collectors.toList())', javaLong()->javaList())
+         ->assert('%s.size() == 3')
+         ->assert('%s.contains(4L)')
+         ->assert('%s.contains(5L)')
+         ->assert('%s.contains(6L)')
+      ->runTests();
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::engine::java::tests::testCollectionRestrictions() : Boolean[1]
+{
+   javaExpressionTests(engineConventions([]))
+      ->addTest('distinct singletons', {|[1]->distinct()}, 'java.util.stream.Stream.<Long>of(1L).distinct().collect(java.util.stream.Collectors.toList())', javaList(javaLong()))
+         ->assert('%s.contains(1L)')
+         ->assert('%s.size() == 1')
+      ->addTest('distinct singletons', {|[1,1,2,3]->distinct()}, 'java.util.Arrays.asList(1L, 1L, 2L, 3L).stream().distinct().collect(java.util.stream.Collectors.toList())', javaList(javaLong()))
+         ->assert('%s.contains(1L)')
+         ->assert('%s.contains(2L)')
+         ->assert('%s.contains(3L)')
+         ->assert('%s.size() == 3')
+      ->addTest('filter singleton in', {|1->filter(n|$n < 4)}, 'java.util.stream.Stream.<Long>of(1L).filter((Long n) -> n < 4L).collect(java.util.stream.Collectors.toList())', javaList(javaLong()))
+         ->assert('%s.contains(1L)')
+         ->assert('%s.size() == 1')
+      ->addTest('filter singleton out', {|[5]->filter(n|$n < 4)}, 'java.util.stream.Stream.<Long>of(5L).filter((Long n) -> n < 4L).collect(java.util.stream.Collectors.toList())', javaList(javaLong()))
+         ->assert('%s.isEmpty()')
+      ->addTest('filter many', {|[1,3,5,7]->filter(n|$n < 4)}, 'java.util.Arrays.asList(1L, 3L, 5L, 7L).stream().filter((Long n) -> n < 4L).collect(java.util.stream.Collectors.toList())', javaList(javaLong()))
+         ->assert('%s.contains(1L)')
+         ->assert('%s.contains(3L)')
+         ->assert('%s.size() == 2')
+      ->addTest('filter empty', {|[]->cast(@Integer)->filter(n|$n < 4)}, 'java.util.Optional.ofNullable((Long) null).map(java.util.stream.Stream::of).orElseGet(java.util.stream.Stream::empty).filter((Long n) -> n < 4L).collect(java.util.stream.Collectors.toList())', javaList(javaLong()))
+         ->assert('%s.isEmpty()')
+      ->runTests(debug());
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::engine::java::tests::testBooleanCombinators() : Boolean[1]
+{
+   javaExpressionTests(engineConventions([]))
+      ->addTest('And true', {|[true,true]->and()}, 'java.util.Arrays.asList(true, true).stream().reduce(true, (Boolean x, Boolean y) -> x && y)', javaBoolean())
+         ->assert('%s == true')
+      ->addTest('And false', {|[true,false]->and()}, 'java.util.Arrays.asList(true, false).stream().reduce(true, (Boolean x, Boolean y) -> x && y)', javaBoolean())
+         ->assert('%s == false')
+      ->addTest('And false2', {|[false,false]->and()}, 'java.util.Arrays.asList(false, false).stream().reduce(true, (Boolean x, Boolean y) -> x && y)', javaBoolean())
+         ->assert('%s == false')
+      ->addTest('And empty', {|[]->and()}, 'java.util.Collections.emptyList().stream().map(Boolean.class::cast).reduce(true, (Boolean x, Boolean y) -> x && y)', javaBoolean())
+         ->assert('%s == true')
+      ->addTest('Or true (t, t)', {|[true,true]->or()}, 'java.util.Arrays.asList(true, true).stream().reduce(false, (Boolean x, Boolean y) -> x || y)', javaBoolean())
+         ->assert('%s == true')
+      ->addTest('Or true (t, f)', {|[true,false]->or()}, 'java.util.Arrays.asList(true, false).stream().reduce(false, (Boolean x, Boolean y) -> x || y)', javaBoolean())
+         ->assert('%s == true')
+      ->addTest('Or false (f, f)', {|[false,false]->or()}, 'java.util.Arrays.asList(false, false).stream().reduce(false, (Boolean x, Boolean y) -> x || y)', javaBoolean())
+         ->assert('%s == false')
+      ->runTests();
+}
+
+// We need broader support before being able to test the other map signatures
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::engine::java::tests::testMap() : Boolean[1]
+{
+   javaExpressionTests(engineConventions([]))
+      ->addTest('map over multiple', {|[1, 2, 3]->map(n|$n+1)}, 'java.util.Arrays.asList(1L, 2L, 3L).stream().map((Long n) -> java.util.Arrays.<Long>asList(n, 1L).stream().reduce(0L, org.finos.legend.engine.plan.dependencies.util.Library::integerPlus).longValue()).collect(java.util.stream.Collectors.toList())', javaList(javaLong()))
+         ->assert('%s.contains(2L)')
+         ->assert('%s.contains(3L)')
+         ->assert('%s.contains(4L)')
+         ->assert('%s.size() == 3')
+      ->runTests();
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::engine::java::tests::testCollectionQueries() : Boolean[1]
+{
+   javaExpressionTests(engineConventions([]))
+      ->addTest('size of none', {|[1,2]->filter(n|false)->size()}, 'java.util.Arrays.asList(1L, 2L).stream().filter((Long n) -> false).count()', javaLong())
+         ->assert('%s == 0')
+      ->addTest('size of one', {|1->size()}, 'java.util.stream.Stream.<Long>of(1L).count()', javaLong())
+         ->assert('%s == 1')
+      ->addTest('size of empty', {|[]->size()}, 'java.util.Collections.emptyList().stream().count()', javaLong())
+         ->assert('%s == 0')
+      ->addTest('size of many', {|[1,2]->size()}, 'java.util.Arrays.asList(1L, 2L).stream().count()', javaLong())
+         ->assert('%s == 2')
+      ->addTest('count singletons', {|[1]->count()}, 'java.util.stream.Stream.<Long>of(1L).count()', javaLong())
+         ->assert('%s == 1L')
+      ->addTest('count list', {|[1,1,2,3]->count()}, 'java.util.Arrays.asList(1L, 1L, 2L, 3L).stream().count()', javaLong())
+         ->assert('%s == 4L')
+      ->addTest('count list', {|[]->count()}, 'java.util.Collections.emptyList().stream().count()', javaLong())
+         ->assert('%s == 0L')
+      ->addTest('exists singletons', {|[1]->exists(x:Integer[1] | $x == 1)}, 'java.util.stream.Stream.<Long>of(1L).anyMatch((Long x) -> x == 1L)', javaBoolean())
+         ->assert('%s == true')
+      ->addTest('exists list', {|[1,2,3,1]->exists(x:Integer[1] | $x == 1)}, 'java.util.Arrays.asList(1L, 2L, 3L, 1L).stream().anyMatch((Long x) -> x == 1L)', javaBoolean())
+         ->assert('%s == true')
+      ->addTest('exists empty', {|[]->exists(x:Integer[1] | $x == 1)}, 'java.util.Collections.emptyList().stream().map(Long.class::cast).anyMatch((Long x) -> x == 1L)', javaBoolean()) // this is almost like doing a preeval....
+         ->assert('%s == false')
+      ->addTest('forAll singletons', {|[1]->forAll(x:Integer[1] | $x == 1)}, 'java.util.stream.Stream.<Long>of(1L).allMatch((Long x) -> x == 1L)', javaBoolean())
+         ->assert('%s == true')
+      ->addTest('forAll list', {|[1,2,3,1]->forAll(x:Integer[1] | $x == 1)}, 'java.util.Arrays.asList(1L, 2L, 3L, 1L).stream().allMatch((Long x) -> x == 1L)', javaBoolean())
+         ->assert('%s == false')
+      ->addTest('forAll list', {|[3,3,3,3]->forAll(x:Integer[1] | $x == 3)}, 'java.util.Arrays.asList(3L, 3L, 3L, 3L).stream().allMatch((Long x) -> x == 3L)', javaBoolean())
+         ->assert('%s == true')
+      ->addTest('forAll empty', {|[]->forAll(x:Integer[1] | $x == 1)}, 'java.util.Collections.emptyList().stream().map(Long.class::cast).allMatch((Long x) -> x == 1L)', javaBoolean())
+         ->assert('%s == true')
+      ->runTests();
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::engine::java::tests::testSortBy() : Boolean[1]
+{
+      javaExpressionTests(engineConventions([]))
+      ->addTest('Test sortBy()',
+                {|['Kevin', 'Neema', 'Pierre']->sortBy(p| $p->substring(4, 5))},
+                'org.finos.legend.engine.plan.dependencies.util.Library.<String>sort(java.util.Arrays.asList("Kevin", "Neema", "Pierre"), java.util.Comparator.comparing((String p) -> p.substring((int) 4L, (int) 5L)))',
+                javaList(javaString())
+        )
+         ->assert('(%s).size() == 3')
+         ->assert('(%s).get(0).equals("Neema")')
+         ->assert('(%s).get(1).equals("Kevin")')
+         ->assert('(%s).get(2).equals("Pierre")')
+      ->runTests();
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::engine::java::tests::testPartsOfCollections() : Boolean[1]
+{
+   let conventions = engineConventions([]);
+   
+   javaExpressionTests($conventions)
+      ->addTest('at from many', {|[1,2]->at(1)}, 'org.finos.legend.engine.plan.dependencies.util.Library.at(java.util.Arrays.asList(1L, 2L), 1L).longValue()', javaLong())
+         ->assert('%s == 2L')
+      ->addTest('at from single', {|8->at(0)}, 'org.finos.legend.engine.plan.dependencies.util.Library.at(8L, 0L)', javaLong())
+         ->assert('%s == 8L')
+      ->addTest('find first', {|[1,2,3]->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.first(java.util.Arrays.asList(1L, 2L, 3L))', javaLong()->toBoxed())
+         ->assert('%s == 1L')
+      ->addTest('find first', {|1->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.first(1L)', javaLong()->toBoxed())
+         ->assert('%s == 1L')
+      ->addTest('find first', {|[]->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.first(java.util.Collections.emptyList())', javaWildcard())
+         ->assert('%s == null')
+      ->addTest('take non-empty', {| [1,2,3]->take(1)}, 'java.util.Arrays.asList(1L, 2L, 3L).stream().limit(1L).collect(java.util.stream.Collectors.toList())', javaList(javaLong()))
+         ->assert('%s.contains(1L)')
+         ->assert('!%s.contains(2L)')
+         ->assert('!%s.contains(3L)')
+      ->addTest('take empty', {| []->take(1)}, 'java.util.Collections.emptyList().stream().limit(1L).collect(java.util.stream.Collectors.toList())', javaList(javaWildcard()))
+         ->assert('%s.isEmpty()')
+      ->addTest('limit non-empty', {| [1,2,3]->limit(1)}, 'java.util.Arrays.asList(1L, 2L, 3L).stream().limit(1L).collect(java.util.stream.Collectors.toList())', javaList(javaLong()))
+         ->assert('%s.contains(1L)')
+         ->assert('!%s.contains(2L)')
+         ->assert('!%s.contains(3L)')
+      ->addTest('limit empty', {| []->limit(1)}, 'java.util.Collections.emptyList().stream().limit(1L).collect(java.util.stream.Collectors.toList())', javaList(javaWildcard()))
+         ->assert('%s.isEmpty()')
+      ->addTest('slice non-empty', {| [1,2,3]->slice(1,2)}, 'java.util.Arrays.asList(1L, 2L, 3L).stream().skip(1L < 0L ? 0L : 1L).limit(2L - (1L < 0L ? 0L : 1L)).collect(java.util.stream.Collectors.toList())', javaList(javaLong()))
+         ->assert('!%s.contains(1L)')
+         ->assert('%s.contains(2L)')
+         ->assert('!%s.contains(3L)')
+      ->addTest('slice negative', {| [1,2,3]->slice(-1,2)}, 'java.util.Arrays.asList(1L, 2L, 3L).stream().skip(-1L < 0L ? 0L : -1L).limit(2L - (-1L < 0L ? 0L : -1L)).collect(java.util.stream.Collectors.toList())', javaList(javaLong()))
+         ->assert('%s.contains(1L)')
+         ->assert('%s.contains(2L)')
+         ->assert('!%s.contains(3L)')
+      ->addTest('slice empty', {| []->slice(0,0)}, 'java.util.Collections.emptyList().stream().skip(0L < 0L ? 0L : 0L).limit(0L - (0L < 0L ? 0L : 0L)).collect(java.util.stream.Collectors.toList())', javaList(javaWildcard()))
+         ->assert('%s.isEmpty()')
+      ->addTest('drop non-empty', {|[1,2,3]->drop(1)}, 'java.util.Arrays.asList(1L, 2L, 3L).stream().skip(1L < 0L ? 0L : 1L).collect(java.util.stream.Collectors.toList())', javaList(javaLong()))
+         ->assert('!%s.contains(1L)')
+         ->assert('%s.contains(2L)')
+         ->assert('%s.contains(3L)')
+      ->addTest('drop empty', {|[]->drop(1)}, 'java.util.Collections.emptyList().stream().skip(1L < 0L ? 0L : 1L).collect(java.util.stream.Collectors.toList())', javaList(javaWildcard()))
+         ->assert('%s.isEmpty()')
+      ->addTest('drop negative', {|[1,2,3]->drop(-1)}, 'java.util.Arrays.asList(1L, 2L, 3L).stream().skip(-1L < 0L ? 0L : -1L).collect(java.util.stream.Collectors.toList())',  javaList(javaLong()))
+         ->assert('%s.contains(1L)')
+         ->assert('%s.contains(2L)')
+         ->assert('%s.contains(3L)')
+      ->addTest('contains test true', {|[1,2,3]->contains(3)}, 'java.util.Arrays.asList(1L, 2L, 3L).contains(3L)', javaBoolean())
+         ->assert('%s == true')
+      ->addTest('contains test false', {|[1,2,3]->contains(5)}, 'java.util.Arrays.asList(1L, 2L, 3L).contains(5L)', javaBoolean())
+         ->assert('%s == false')
+      ->addTest('contains singleton test true', {|1->contains(1)}, 'java.util.Objects.equals(1L, 1L)', javaBoolean())
+         ->assert('%s == true')
+      ->addTest('contains singleton test false', {|1->contains(5)}, 'java.util.Objects.equals(1L, 5L)', javaBoolean())
+         ->assert('%s == false')
+      ->addTest('in test true', {|3->in([1,2,3])}, 'java.util.Arrays.asList(1L, 2L, 3L).contains(3L)', javaBoolean())
+         ->assert('%s == true')
+      ->addTest('in test false', {|5->in([1,2,3])}, 'java.util.Arrays.asList(1L, 2L, 3L).contains(5L)', javaBoolean())
+         ->assert('%s == false')
+      ->addTest('in singleton test true', {|1->in(1)}, 'java.util.Objects.equals(1L, 1L)', javaBoolean())
+         ->assert('%s == true')
+      ->addTest('in singleton test false', {|5->in(1)}, 'java.util.Objects.equals(1L, 5L)', javaBoolean())
+         ->assert('%s == false')
+      ->addTest('in empty param', {|[]->in([1,2])}, 'java.util.Arrays.asList(1L, 2L).contains(java.util.Collections.emptyList())', javaBoolean())
+         ->assert('%s == false')
+      ->addTest('isEmpty non-empty', {|[1,2,3]->isEmpty()}, 'java.util.Arrays.asList(1L, 2L, 3L).isEmpty()', javaBoolean())
+         ->assert('%s == false')
+      ->addTest('isEmpty empty', {|[1,2,3]->filter(f| false)->isEmpty()}, 'java.util.Arrays.asList(1L, 2L, 3L).stream().filter((Long f) -> false).collect(java.util.stream.Collectors.toList()).isEmpty()', javaBoolean())
+         ->assert('%s == true')
+      ->addTest('isEmpty non-empty', {|[1,2,3]->isNotEmpty()}, '!java.util.Arrays.asList(1L, 2L, 3L).isEmpty()', javaBoolean())
+         ->assert('%s == true')
+      ->addTest('isEmpty empty', {|[1,2,3]->filter(f| false)->isNotEmpty()}, '!java.util.Arrays.asList(1L, 2L, 3L).stream().filter((Long f) -> false).collect(java.util.stream.Collectors.toList()).isEmpty()', javaBoolean())
+         ->assert('%s == false')
+      ->runTests();
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::engine::java::tests::testCollectionsPureTests() : Boolean[1]
+{
+   javaPureTests(engineConventions([]), [
+      meta::pure::functions::collection::tests::removeDuplicates::testRemoveDuplicatesPrimitiveNonStandardFunction__Boolean_1_,
+      meta::pure::functions::collection::tests::removeDuplicates::testRemoveDuplicatesEmptyList__Boolean_1_,
+      meta::pure::functions::collection::tests::removeDuplicates::testRemoveDuplicatesByPrimitive__Boolean_1_
+   ])
+      ->generate(GeographicEntityType)
+      ->addTestsWithin(meta::pure::functions::collection::tests::init)
+      ->addTestsWithin(meta::pure::functions::collection::tests::tail)
+      ->addTestsWithin(meta::pure::functions::collection::tests::last)
+      ->addTestsWithin(meta::pure::functions::collection::tests::at)
+      ->addTestsWithin(meta::pure::functions::collection::tests::sort)
+      ->addTestsWithin(meta::pure::functions::collection::tests::indexof)
+      ->addTestsWithin(meta::pure::functions::collection::tests::range)   
+         ->excludeTest(meta::pure::functions::collection::tests::sort::testSimpleSortWithFunctionVariables__Boolean_1_) // uses a lambda variable
+         ->excludeTest(meta::pure::functions::collection::tests::sort::testSortBy__Boolean_1_) // new
+      ->addTestsWithin(meta::pure::functions::collection::tests::fold)
+         ->excludeTest(meta::pure::functions::collection::tests::fold::testFold__Boolean_1_) // new
+         ->excludeTest(meta::pure::functions::collection::tests::fold::testFoldToMany__Boolean_1_) // new
+         ->excludeTest(meta::pure::functions::collection::tests::fold::testFoldFiltering__Boolean_1_) // new
+      ->runTests();
+}

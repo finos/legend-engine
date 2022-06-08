@@ -1,0 +1,52 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::profiles::*;
+import meta::pure::functions::tests::model::*;
+
+function <<test.Test>> meta::pure::functions::collection::tests::in::testInPrimitive():Boolean[1]
+{
+    let col = [1, 2, 5, 2, 'a', true, %2014-02-01, 'c'];
+    assert(1->in($col));
+    assert(2->in($col));
+    assert(5->in($col));
+    assert('a'->in($col));
+    assert(true->in($col));
+    assert(%2014-02-01->in($col));
+    assert('c'->in($col));
+
+    assertFalse(minus(5)->in($col));
+    assertFalse(%2014-02-02->in($col));
+    assertFalse('the quick brown fox'->in($col));
+    assertFalse(false->in($col));
+}
+
+function <<test.Test>> meta::pure::functions::collection::tests::in::testInNonPrimitive():Boolean[1]
+{
+    let f1 = ^Firm(legalName='f1');
+    let f2 = ^Firm(legalName='f2');
+    let col = [$f1, $f2];
+    assert($f1->in($col));
+    assert(^Firm(legalName='f1')->in($col));
+    assert($f2->in($col));
+    assert(^Firm(legalName='f2')->in($col));
+
+    assertFalse(3->in($col));
+    assertFalse(^Firm(legalName='f3')->in($col));
+}
+
+function <<test.Test>> meta::pure::functions::collection::tests::in::testInIsEmpty():Boolean[1]
+{
+   assertFalse([]->in(['a', 'b']));
+}

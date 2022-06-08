@@ -1,0 +1,155 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::factory::*;
+import meta::external::language::java::metamodel::*;
+import meta::external::language::java::metamodel::project::*;
+import meta::external::language::java::serialization::*;
+import meta::external::language::java::transform::*;
+import meta::pure::executionPlan::engine::*;
+import meta::pure::executionPlan::engine::java::*;
+
+function meta::pure::executionPlan::engine::java::registerStringLibrary(conventions: Conventions[1]): Conventions[1]
+{   
+   let library  = $conventions->className(Library);
+   
+   let lib = newConventionsLibrary()
+      ->usesString(javaString(), javaString(), {s:String[1] | j_string($s)})
+      ->addFunctionCoders([
+         fc2(contains_String_1__String_1__Boolean_1_,                            {ctx,s,toFind                | $s->j_invoke('contains', [$toFind])}),
+         fc2(endsWith_String_1__String_1__Boolean_1_,                            {ctx,s,toFind                | $s->j_invoke('endsWith', [$toFind])}),
+         fc2(startsWith_String_1__String_1__Boolean_1_,                          {ctx,s,toFind                | $s->j_invoke('startsWith', [$toFind])}),
+
+         fc2(greaterThan_String_1__String_1__Boolean_1_,                         {ctx,s,other                 | $s->j_invoke('compareTo', [$other])->j_gt(j_int(0))}),
+         fc2(greaterThan_String_$0_1$__String_$0_1$__Boolean_1_,                 {ctx,s,other                 | $library->j_invoke('safeCompare', [$s, $other], javaInt())->j_gt(j_int(0))}),
+         fc (greaterThan_String_$0_1$__String_1__Boolean_1_,                     fcAlias(                       greaterThan_String_$0_1$__String_$0_1$__Boolean_1_)),
+         fc (greaterThan_String_1__String_$0_1$__Boolean_1_,                     fcAlias(                       greaterThan_String_$0_1$__String_$0_1$__Boolean_1_)),
+         fc2(greaterThanEqual_String_1__String_1__Boolean_1_,                    {ctx,s,other                 | $s->j_invoke('compareTo', [$other])->j_ge(j_int(0))}),
+         fc2(greaterThanEqual_String_$0_1$__String_$0_1$__Boolean_1_,            {ctx,s,other                 | $library->j_invoke('safeCompare', [$s, $other], javaInt())->j_ge(j_int(0))}),
+         fc (greaterThanEqual_String_$0_1$__String_1__Boolean_1_,                fcAlias(                       greaterThanEqual_String_$0_1$__String_$0_1$__Boolean_1_)),
+         fc (greaterThanEqual_String_1__String_$0_1$__Boolean_1_,                fcAlias(                       greaterThanEqual_String_$0_1$__String_$0_1$__Boolean_1_)),
+         fc2(lessThan_String_1__String_1__Boolean_1_,                            {ctx,s,other                 | $s->j_invoke('compareTo', [$other])->j_lt(j_int(0))}),
+         fc2(lessThan_String_$0_1$__String_$0_1$__Boolean_1_,                    {ctx,s,other                 | $library->j_invoke('safeCompare', [$s, $other], javaInt())->j_lt(j_int(0))}),
+         fc (lessThan_String_$0_1$__String_1__Boolean_1_,                        fcAlias(                       lessThan_String_$0_1$__String_$0_1$__Boolean_1_)),
+         fc (lessThan_String_1__String_$0_1$__Boolean_1_,                        fcAlias(                       lessThan_String_$0_1$__String_$0_1$__Boolean_1_)),
+         fc2(lessThanEqual_String_1__String_1__Boolean_1_,                       {ctx,s,other                 | $s->j_invoke('compareTo', [$other])->j_le(j_int(0))}),
+         fc2(lessThanEqual_String_$0_1$__String_$0_1$__Boolean_1_,               {ctx,s,other                 | $library->j_invoke('safeCompare', [$s, $other], javaInt())->j_le(j_int(0))}),
+         fc (lessThanEqual_String_$0_1$__String_1__Boolean_1_,                   fcAlias(                       lessThanEqual_String_$0_1$__String_$0_1$__Boolean_1_)),
+         fc (lessThanEqual_String_1__String_$0_1$__Boolean_1_,                   fcAlias(                       lessThanEqual_String_$0_1$__String_$0_1$__Boolean_1_)),
+
+         fc2(indexOf_String_1__String_1__Integer_1_,                             {ctx,s,toFind                | $s->j_invoke('indexOf', [$toFind])}),
+         fc3(indexOf_String_1__String_1__Integer_1__Integer_1_,                  {ctx,s,toFind,fromIndex      | $s->j_invoke('indexOf', [$toFind, $fromIndex->j_cast(javaInt())])}),
+         fc1(length_String_1__Integer_1_,                                        {ctx,s                       | $s->j_invoke('length', [])}),
+
+         fc1(joinStrings_String_MANY__String_1_,                                 {ctx,strs                    | $strs->j_streamOf()->js_joining()}),
+         fc2(joinStrings_String_MANY__String_1__String_1_,                       {ctx,strs,sep                | $strs->j_streamOf()->js_joining($sep)}),
+         fc4(joinStrings_String_MANY__String_1__String_1__String_1__String_1_,   {ctx,strs,pre,sep,post       | $pre->j_plus($strs->j_streamOf()->js_joining($sep))->j_plus($post)}),
+         fc (plus_String_MANY__String_1_,                                        fcAlias(                       joinStrings_String_MANY__String_1_)),
+
+         fc1(parseBoolean_String_1__Boolean_1_,                                  {ctx,s                       | $ctx.conventions->codeParseBoolean($s)}),
+         fc1(parseFloat_String_1__Float_1_,                                      {ctx,s                       | $ctx.conventions->codeParseFloat($s)}),
+         fc1(parseInteger_String_1__Integer_1_,                                  {ctx,s                       | $ctx.conventions->codeParseInteger($s)}),
+         fc1(parseDecimal_String_1__Decimal_1_,                                  {ctx,s                       | $ctx.conventions->codeParseDecimal($s)}),
+
+         fc2(chunk_String_1__Integer_1__String_MANY_,                            {ctx,s,val                   | $library->j_invoke('chunk', [$s, $val->j_cast(javaInt())], javaList(javaString()))}),
+         fc3(replace_String_1__String_1__String_1__String_1_,                    {ctx,s,toReplace,replacement | $s->j_invoke('replace', [$toReplace, $replacement])}),
+         fc2(split_String_1__String_1__String_MANY_,                             {ctx,s,token                 | $library->j_invoke('split', [$s, $token], javaList(javaString()))}),
+         fc2(substring_String_1__Integer_1__String_1_,                           {ctx,s,from                  | $s->j_invoke('substring', [$from->j_cast(javaInt())])}),
+         fc3(substring_String_1__Integer_1__Integer_1__String_1_,                {ctx,s,from,to               | $s->j_invoke('substring', [$from->j_cast(javaInt()), $to->j_cast(javaInt())])}),
+                          
+         fc1(toLower_String_1__String_1_,                                        {ctx,s                       | $s->j_invoke('toLowerCase', [])}),
+         fc1(toUpper_String_1__String_1_,                                        {ctx,s                       | $s->j_invoke('toUpperCase', [])}),
+         fc1(toUpperFirstCharacter_String_MANY__String_MANY_,                    {ctx,strs                    | $strs->j_streamOf()->js_map($library->j_methodReference('toUpperFirstCharacter', javaFunctionType(javaString(), javaString())->nonNull()))}),
+         fc1(trim_String_1__String_1_,                                           {ctx,s                       | $s->j_invoke('trim', [])}),
+   
+         fc1(toString_Any_1__String_1_,                                          {ctx,a                       | $library->j_invoke('pureToString', [$a], javaString())}),
+         fc1(toRepresentation_Any_1__String_1_,                                  {ctx,a                       | $library->j_invoke('toRepresentation', [$a], javaString())}),
+         fc2(format_String_1__Any_MANY__String_1_,                               {ctx,format,args             | $library->j_invoke('format', [$format, $args->j_listOf(javaList(javaObject()))], javaString())}),
+         fc2(matches_String_1__String_1__Boolean_1_,                             {ctx,s,regex                 | $s->j_invoke('matches', [$regex])})
+
+      ]);
+
+   $conventions->registerLibrary($lib);
+}
+
+
+function <<access.private>> meta::pure::executionPlan::engine::java::addPureToStringMethod(class:meta::external::language::java::metamodel::Class[1], conventions:Conventions[1]): meta::external::language::java::metamodel::Class[1]
+{
+   let any           = j_parameter(javaObject(), 'any');
+   let dateClasses = [Date, StrictDate, DateTime]->map(t| $conventions->pureTypeToJavaType($t, PureOne))->cast(@meta::external::language::java::metamodel::Class)->removeDuplicates();
+   let isDateClass = $dateClasses->tail()->fold({cl, test| j_or($test, $any->j_instanceof($cl))}, $any->j_instanceof($dateClasses->at(0)));
+   
+   $class->addMethod(javaMethod(['public', 'static'], javaString(), 'pureToString', $any->cast(@meta::external::language::java::metamodel::Parameter),
+      [
+         j_if($isDateClass,
+            $conventions->codeDateToString($any)->j_return(),
+         j_if(j_or($any->j_instanceof(javaDoubleBoxed()), $any->j_instanceof(javaFloatBoxed())),
+            {|
+               let format = j_variable(javaDecimalFormat(), 'format');
+               
+               j_if($any->j_cast(javaDouble())->j_eq(j_double(0.0)),
+                    j_string('0.0')->j_return(),
+                    [
+                       $format->j_declare(javaDecimalFormat()->j_new([j_string('0.0'), javaDecimalFormatSymbols()->j_invoke('getInstance', javaLocale()->j_field('ENGLISH', javaLocale()), javaDecimalFormatSymbols())])),
+                       $format->j_invoke('setMaximumFractionDigits', j_int(340), javaVoid()), 
+                       $format->j_invoke('format', $any->j_cast(javaDouble()), javaString())->j_return()                       
+                    ]
+               );               
+            }->eval(),
+            $any->j_toString()->j_return()
+         ))
+      ]
+   )->nonNull());
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::addToRepresentationMethod(class:meta::external::language::java::metamodel::Class[1], conventions:Conventions[1]): meta::external::language::java::metamodel::Class[1]
+{
+   let any         = j_parameter(javaObject(), 'any');
+   let dateClasses = [Date, StrictDate, DateTime]->map(t| $conventions->pureTypeToJavaType($t, PureOne))->cast(@meta::external::language::java::metamodel::Class)->removeDuplicates();
+   let isDateClass = $dateClasses->tail()->fold({cl, test| j_or($test, $any->j_instanceof($cl))}, $any->j_instanceof($dateClasses->at(0)));
+   
+   $class->addMethod(javaMethod(['public', 'static'], javaString(), 'toRepresentation', $any->cast(@meta::external::language::java::metamodel::Parameter),
+      [
+         j_if(
+            $any->j_instanceof(javaString()),
+            j_string('\'')->j_plus($any->j_toString()->j_invoke('replace', [j_string('\''), j_string('\\\'')]))->j_plus(j_string('\''))->j_return(),
+         j_if(
+            $isDateClass,
+            j_string('%')->j_plus($class->j_invoke('pureToString', $any, javaString()))->j_return(),
+         j_if(
+            $any->j_instanceof(javaBigDecimal()),
+            $any->j_toString()->j_plus(j_string('D'))->j_return(),
+            $class->j_invoke('pureToString', $any, javaString())->j_return()
+         )))
+      ]
+   ));   
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::codeDateToString(conventions: Conventions[1], date:Code[1]): Code[1]
+{
+   let pureDate = $conventions->className(PureDate);
+   if($conventions->dateType() == $pureDate,
+      |$date->j_toString()->j_plus(j_conditional($date->j_cast($pureDate)->j_invoke('hasMinute', [], javaBoolean()), j_string('+0000'), j_string(''))),
+      |$date->j_toString()
+   );
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::codeDateFormat(conventions: Conventions[1], date:Code[1], formatString:Code[1]): Code[1]
+{
+   let pureDate = $conventions->className(PureDate);
+   if($conventions->dateType() == $pureDate,
+      |$date->j_cast($pureDate)->j_invoke('format', $formatString, javaString()),
+      |fail('TODO'); $date;
+   );
+}

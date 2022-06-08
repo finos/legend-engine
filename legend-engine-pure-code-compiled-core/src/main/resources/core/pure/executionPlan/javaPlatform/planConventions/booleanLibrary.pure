@@ -1,0 +1,69 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::factory::*;
+import meta::external::language::java::metamodel::*;
+import meta::external::language::java::metamodel::project::*;
+import meta::external::language::java::transform::*;
+import meta::pure::executionPlan::engine::*;
+import meta::pure::executionPlan::engine::java::*;
+
+function meta::pure::executionPlan::engine::java::registerBooleanLibrary(conventions: Conventions[1]): Conventions[1]
+{
+   let library  = $conventions->className(Library);
+
+   let lib = newConventionsLibrary()
+      ->addFunctionCoders([
+         fc2(is_Any_1__Any_1__Boolean_1_,                                 {ctx,left,right | $left->j_eq($right)}),
+         
+         fc2(equal_Any_MANY__Any_MANY__Boolean_1_,                        equalTo_FuncCoderContext_1__Code_1__Code_1__Code_1_),
+         fc (eq_Any_1__Any_1__Boolean_1_,                                 fcAlias(          equal_Any_MANY__Any_MANY__Boolean_1_)),
+         
+         fc2(greaterThan_Boolean_$0_1$__Boolean_$0_1$__Boolean_1_,        {ctx,left,right | $library->j_invoke('greaterThan', [$left->j_cast(javaBooleanBoxed()), $right->j_cast(javaBooleanBoxed())], javaBoolean())}),
+         fc (greaterThan_Boolean_$0_1$__Boolean_1__Boolean_1_,            fcAlias(          greaterThan_Boolean_$0_1$__Boolean_$0_1$__Boolean_1_)),
+         fc (greaterThan_Boolean_1__Boolean_$0_1$__Boolean_1_,            fcAlias(          greaterThan_Boolean_$0_1$__Boolean_$0_1$__Boolean_1_)),
+
+         fc2(greaterThanEqual_Boolean_$0_1$__Boolean_$0_1$__Boolean_1_,   {ctx,left,right | $library->j_invoke('greaterThanEqual', [$left->j_cast(javaBooleanBoxed()), $right->j_cast(javaBooleanBoxed())], javaBoolean())}),
+         fc (greaterThanEqual_Boolean_$0_1$__Boolean_1__Boolean_1_,       fcAlias(          greaterThanEqual_Boolean_$0_1$__Boolean_$0_1$__Boolean_1_)),
+         fc (greaterThanEqual_Boolean_1__Boolean_$0_1$__Boolean_1_,       fcAlias(          greaterThanEqual_Boolean_$0_1$__Boolean_$0_1$__Boolean_1_)),
+         
+         fc2(lessThan_Boolean_$0_1$__Boolean_$0_1$__Boolean_1_,           {ctx,left,right | $library->j_invoke('greaterThan', [$right->j_cast(javaBooleanBoxed()), $left->j_cast(javaBooleanBoxed())], javaBoolean())}),
+         fc (lessThan_Boolean_$0_1$__Boolean_1__Boolean_1_,               fcAlias(          lessThan_Boolean_$0_1$__Boolean_$0_1$__Boolean_1_)),
+         fc (lessThan_Boolean_1__Boolean_$0_1$__Boolean_1_,               fcAlias(          lessThan_Boolean_$0_1$__Boolean_$0_1$__Boolean_1_)),
+
+         fc2(lessThanEqual_Boolean_$0_1$__Boolean_$0_1$__Boolean_1_,      {ctx,left,right | $library->j_invoke('greaterThanEqual', [$right->j_cast(javaBooleanBoxed()), $left->j_cast(javaBooleanBoxed())], javaBoolean())}),
+         fc (lessThanEqual_Boolean_$0_1$__Boolean_1__Boolean_1_,          fcAlias(          lessThanEqual_Boolean_$0_1$__Boolean_$0_1$__Boolean_1_)),
+         fc (lessThanEqual_Boolean_1__Boolean_$0_1$__Boolean_1_,          fcAlias(          lessThanEqual_Boolean_$0_1$__Boolean_$0_1$__Boolean_1_))
+      ]);
+
+   $conventions->registerLibrary($lib);
+}
+
+function meta::pure::executionPlan::engine::java::equalTo(ctx:FuncCoderContext[1], left:Code[1], right:Code[1]): Code[1]
+{
+   let eq = if ($left.type->isPrimitive() && $right.type->isPrimitive(),
+      | $left->j_eq($right),
+      |
+   if (($left.type == javaLong() || $left.type == javaLongBoxed()) && ($right.type == javaLong() || $right.type == javaLongBoxed()),
+      | $left->j_eq($right),
+      |
+   if (($left.type == javaDouble() || $left.type == javaDoubleBoxed()) && ($right.type == javaDouble() || $right.type == javaDoubleBoxed()),
+      | $left->j_eq($right),
+      |
+   if ($left.type->isPrimitive(),
+      | $right->j_invoke('equals', $left),
+      | $left->j_invoke('equals', $right)
+   ))));
+}
+

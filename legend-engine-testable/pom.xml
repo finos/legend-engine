@@ -28,9 +28,9 @@
     <dependencies>
 
         <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-code-compiled-core</artifactId>
-            <version>${legend.pure.version}</version>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-code-compiled-core</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <!-- ENGINE -->

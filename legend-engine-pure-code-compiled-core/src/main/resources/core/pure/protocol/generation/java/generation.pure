@@ -1,0 +1,350 @@
+import meta::external::language::java::factory::*;
+import meta::external::language::java::factory::project::*;
+import meta::external::language::java::metamodel::*;
+import meta::external::language::java::metamodel::project::*;
+import meta::external::language::java::transform::*;
+import meta::protocols::generation::java::*;
+import meta::protocols::generation::java::translation::*;
+import meta::pure::executionPlan::engine::java::*;
+
+function meta::protocols::generation::java::translation::generateTranslation(purePackage:String[1], javaPackage:String[1]):Project[1]
+{
+  let pack = $purePackage->pathToElement()->cast(@Package);
+  let basePackageStr = $pack->elementToPath('.');
+  let conventions = conventions($purePackage, $javaPackage, $basePackageStr);
+  let taxonomies = $pack->findTaxonomies();
+  let package = javaPackage($javaPackage);
+
+  let translatorClass = javaClass(['public'], $package, 'Translator');
+  newProject()->addClass(
+    $translatorClass->addMethods(generateTranslationMethods($pack, $translatorClass, $taxonomies, $conventions)->sortBy({a|$a.returnType->cast(@meta::external::language::java::metamodel::Class).simpleName}))
+  );
+}
+
+
+function meta::protocols::generation::java::generateProtocolClasses(purePackage:String[1], javaPackage:String[1]):Project[1]
+{
+  let pack = $purePackage->pathToElement()->cast(@Package);
+  let basePackageStr = $pack->elementToPath('.');
+  let conventions = conventions($purePackage, $javaPackage, $basePackageStr);
+  let taxonomies = $pack->findTaxonomies();
+  let package = javaPackage($javaPackage);
+
+  let visitorByTaxonomy = newMap($taxonomies->map(t|pair($t, $t->generateVisitor($package, $conventions))));
+
+  let context = ^Context(conventions=$conventions,
+                         rootPackage=$package,
+                         taxonomies = $taxonomies,
+                         visitorByTaxonomy=$visitorByTaxonomy);
+
+  let javaClasses = $pack.children->map(c|generateProtocolClasses($c, $context));
+
+  newProject()
+     ->addClasses($javaClasses)
+     ->addClasses($visitorByTaxonomy->values());
+}
+
+
+function meta::protocols::generation::java::conventions(purePackage:String[1], javaPackage:String[1], basePackageStr:String[1]):Conventions[1]
+{
+  engineConventions([])
+  ->setBasePackageName($javaPackage)
+  ->setTypeAndPackageNameStrategy(
+      {t,c|
+        let x = $t->cast(@PackageableElement);
+        let packageStr = $x.package->toOne()->elementToPath('.');
+        let package = $c.basePackageName + if ($packageStr->startsWith($basePackageStr),
+                                                  | if ($packageStr->length() == $basePackageStr->length(), |'', |'.' + $packageStr->substring($basePackageStr->length()+1)),
+                                                  | '.' + $packageStr;
+                                           );
+        pair(
+          $package->sanitizeIdentifier(),
+          $x.name->toOne()->sanitizeIdentifier()->toUpperFirstCharacter()->toOne()
+        );}
+  );
+}
+
+function <<access.private>> meta::protocols::generation::java::translation::generateTranslationMethods(
+                                      elem:PackageableElement[1],
+                                      translatorClass:meta::external::language::java::metamodel::Class[1],
+                                      taxonomies: Taxonomy[*],
+                                      conventions: Conventions[1]
+                            ):Method[*]
+{
+  $elem->match(
+    [
+      p: Package[1] | $p.children->map(c|generateTranslationMethods($c, $translatorClass, $taxonomies,$conventions)),
+      c: meta::pure::metamodel::type::Class<Any>[1] | meta::protocols::generation::java::translation::generateTranslationForClass($c, $translatorClass, $taxonomies, $conventions),
+      e: meta::pure::metamodel::type::Enumeration<Any>[1] | meta::protocols::generation::java::translation::generateTranslationForEnumeration($e, $translatorClass, $taxonomies, $conventions),
+      s: Any[1] | []
+    ]
+  )
+}
+
+function <<access.private>> meta::protocols::generation::java::translation::shouldTranslateReturn(property : AbstractProperty<Any>[1]) : Boolean[1]
+{
+   $property.genericType.rawType->toOne()->match([
+      pt:meta::pure::metamodel::type::PrimitiveType[1]    | false, 
+      et:meta::pure::metamodel::type::Enumeration<Any>[1] | true, 
+      a:meta::pure::metamodel::type::Class<Any>[1]        | true
+   ]);
+}
+
+function <<access.private>> meta::protocols::generation::java::translation::generateTranslationForClass(
+                                      c:meta::pure::metamodel::type::Class<Any>[1],
+                                      translatorClass:meta::external::language::java::metamodel::Class[1],
+                                      taxonomies: Taxonomy[*],
+                                      conventions: Conventions[1]
+                            ):Method[1]
+{
+  let returnType = javaClass('public', javaPackage('org.finos.legend.pure.generated'), 'Root_'+$c.package->toOne()->elementToPath('_')+'_'+$c.name->toOne());
+
+  let parameters = [
+      j_parameter(pureTypeToJavaType($conventions, $c, PureOne), $c.name->toOne()->toLower()->sanitizeJavaKeywords()),
+      j_parameter(javaClass('public', javaPackage('org.finos.legend.engine.language.pure.compiler.toPureGraph'), 'PureModel'), 'pureModel')
+  ];
+
+
+  let returnInstance = j_return
+  (
+    j_conditional(
+            j_eq($parameters->at(0), j_null()),
+            j_null(),
+                $c->hierarchicalProperties()->fold(
+                  {a,b | if(!$a->meta::protocols::generation::java::translation::shouldTranslateReturn(),
+                            |let propertyAccess = j_field($parameters->at(0), $a.name->toOne()->sanitizeJavaKeywords(), javaObject());
+                            let processedPropertyAccess = if($a.multiplicity->isToMany(),
+                                                              |let listsClass = javaClass('public', javaPackage('org.eclipse.collections.impl.factory'), 'Lists');
+                                                              j_invoke(j_field($listsClass, 'mutable', javaObject()), 'withAll', $propertyAccess, javaObject());,
+                                                              |$propertyAccess
+                                                          );
+                            j_invoke($b, '_'+$a.name->toOne(), $processedPropertyAccess, $returnType);,
+                            |if($a.multiplicity->isToMany(),
+                                |let xParam = j_parameter(pureTypeToJavaType($conventions, $a.genericType.rawType->toOne(), PureOne), 'x');
+                                j_invoke($b, '_'+$a.name->toOne(), j_invoke(javaClass('public', javaPackage('org.eclipse.collections.impl.utility'), 'ListIterate'), 'collect', [checkNullToEmptyList($xParam.type, j_field($parameters->at(0), $a.name->toOne()->sanitizeJavaKeywords(), javaList($xParam.type))), j_lambda($xParam, j_invoke(j_this($translatorClass),'translate',[$xParam, $parameters->at(1)], javaObject()))], javaObject()), $returnType);,
+                                |j_invoke($b, '_'+$a.name->toOne(), j_invoke(j_this($translatorClass), 'translate', [j_field($parameters->at(0), $a.name->toOne()->sanitizeJavaKeywords(), javaObject()), $parameters->at(1)], javaObject()), $returnType)
+                            )
+                        )
+                  },
+                  j_new(javaClass('public', javaPackage('org.finos.legend.pure.generated'), 'Root_'+$c.package->toOne()->elementToPath('_')+'_'+$c.name->toOne()+'_Impl'), j_string(''))
+                )
+          )
+  );
+
+  let buildInstanceOrRoute = if ($c.specializations->size() > 0,
+    | let taxonomy = $c->findTaxonomy($taxonomies)->toOne();
+      let visitorMethods = $taxonomy.children
+          ->sortBy(a|$a.name->toOne())
+          ->map(cl|
+                  let param = j_parameter(pureTypeToJavaType($conventions, $cl, PureOne), 'val');
+                  j_method(
+                    ['public'],
+                    $returnType,
+                    'visit',
+                    $param,
+                    if ($cl == $c,
+                      |$returnInstance,
+                      |if ($cl->_subTypeOf($c),
+                        |j_return(j_invoke(j_this($translatorClass),'translate',[$param, $parameters->at(1)], javaObject())),
+                        |j_return(j_null())
+                      )
+                    )
+                  );
+            );
+      let visitorClass = meta::protocols::generation::java::buildVisitorClass($taxonomy, javaTypeVar('T'), $conventions);
+      let boundVisitor = javaParameterizedType($visitorClass, $returnType);
+      j_return(
+          j_conditional(
+            j_eq($parameters->at(0), j_null()),
+            j_null(),
+            j_invoke($parameters->at(0), 'accept', j_newAnon($boundVisitor, [], $visitorMethods->cast(@Code)), javaObject())
+          )
+      );,
+    | $returnInstance  
+  );
+ 
+  javaMethod('public', $returnType, 'translate', $parameters, $buildInstanceOrRoute);
+}
+
+function <<access.private>> meta::protocols::generation::java::translation::checkNullToEmptyList(t:meta::external::language::java::metamodel::Type[1], val:Code[1]):Code[1]
+{
+  j_conditional(j_eq($val, j_null()), j_emptyList(javaList($t)), $val)
+}
+
+function <<access.private>> meta::protocols::generation::java::translation::generateTranslationForEnumeration(
+                                      e:meta::pure::metamodel::type::Enumeration<Any>[1],
+                                      translatorClass:meta::external::language::java::metamodel::Class[1],
+                                      taxonomies: Taxonomy[*],
+                                      conventions: Conventions[1]
+                            ):Method[1]
+{
+  let returnType = javaClass('public', javaPackage('org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type'), 'Enum');
+
+  let parameters = [
+      j_parameter(pureTypeToJavaType($conventions, $e, PureOne), $e->enumName()->toOne()->toLower()->sanitizeJavaKeywords()),
+      j_parameter(javaClass('public', javaPackage('org.finos.legend.engine.language.pure.compiler.toPureGraph'), 'PureModel'), 'pureModel')
+  ];
+
+  javaMethod('public', $returnType, 'translate', $parameters,
+             j_return(
+                j_conditional(j_eq($parameters->at(0), j_null()), 
+                              j_null(),
+                              j_invoke($parameters->at(1), 'getEnumValue', [j_string($e->elementToPath()), j_invoke($parameters->at(0), 'name', [], javaString())], $returnType)
+                )
+             )
+  );
+}
+
+
+
+
+Class meta::protocols::generation::java::Context
+{
+  rootPackage: meta::external::language::java::metamodel::Package[1];
+  taxonomies: Taxonomy[*];
+  visitorByTaxonomy : Map<Taxonomy, meta::external::language::java::metamodel::Class>[0..1];
+  conventions: Conventions[1];
+}
+
+function <<access.private>> meta::protocols::generation::java::generateProtocolClasses(
+                                      elem:PackageableElement[1],
+                                      context : Context[1]
+                            ):meta::external::language::java::metamodel::Class[*]
+{
+  $elem->match(
+    [
+      p: Package[1]                                       | $p.children->map(c|generateProtocolClasses($c, $context)),
+      c: meta::pure::metamodel::type::Class<Any>[1]       | meta::protocols::generation::java::generateClass($c, $context),
+      e: meta::pure::metamodel::type::Enumeration<Any>[1] | meta::protocols::generation::java::generateEnumeration($e, $context),
+      s: Any[1]                                           | []
+    ]
+  )
+}
+
+function <<access.private>> meta::protocols::generation::java::generateEnumeration(enum:meta::pure::metamodel::type::Enumeration<Any>[1], context : Context[1]):meta::external::language::java::metamodel::Class[1]
+{
+  let typeAndPackages = $context.conventions.typeAndPackageNameStrategy->toOne()->eval($enum, $context.conventions);
+  javaEnum('public', $typeAndPackages.first->javaPackage(), $typeAndPackages.second)
+    ->addEntries($enum->cast(@meta::pure::metamodel::type::Enumeration<Any>)->enumValues()->map(e| javaEnumEntry($context.conventions->identifier($e->cast(@Enum).name))));
+}
+
+function <<access.private>> meta::protocols::generation::java::generateClass(c:meta::pure::metamodel::type::Class<Any>[1], context : Context[1]):meta::external::language::java::metamodel::Class[1]
+{
+  let typeAndPackages = $context.conventions.typeAndPackageNameStrategy->toOne()->eval($c, $context.conventions);
+
+  let taxonomy = $c->findTaxonomy($context.taxonomies);
+  let isAbstract = !$taxonomy->isEmpty() && !$c.specializations->isEmpty();
+
+  let pbase = javaClass(['public']->concatenate(if($isAbstract,|'abstract',|[])), $typeAndPackages.first->javaPackage(), $typeAndPackages.second)
+            ->addFields(
+                $c.properties->map(p|
+                      let javaType = pureTypeToJavaType($context.conventions, $p);
+                      let javaName = $p.name->toOne()->sanitizeJavaKeywords();
+                      if ($javaType->isJavaList(),
+                        |javaField('public', $javaType, $javaName, j_emptyList($javaType)),
+                        |javaField('public', $javaType, $javaName)
+                      );
+                    )
+              );
+
+  let base = if (!$taxonomy->isEmpty() && $taxonomy.topClass == $c,
+    | $pbase->annotate(^meta::external::language::java::metamodel::annotations::json::JsonTypeInfo(
+                    use = ^meta::external::language::java::metamodel::annotations::json::EnumValue(value='JsonTypeInfo.Id.NAME'),
+                    property = '_type'
+                )
+            )
+            ->annotate(^meta::external::language::java::metamodel::annotations::json::JsonSubTypes(
+                          subTypes=[
+                                $taxonomy.children->map(c|
+                                  let javaType = pureTypeToJavaType($context.conventions, $c, PureOne);
+                                  ^meta::external::language::java::metamodel::annotations::json::JsonSubType(
+                                      value=$javaType->cast(@meta::external::language::java::metamodel::Class)->meta::external::language::java::serialization::qualifiedClassName(),
+                                      name=$c.name->meta::pure::functions::string::toLowerFirstCharacter()->toOne());
+                                )
+                              ]
+                           )
+                     );,
+    | $pbase
+  );
+
+  let superType = $c.generalizations->map(g|$g.general.rawType);
+  assert($superType->size() <= 1, |'More than one super type is not currently supported in this flow ['+$superType->map(c|$c.name)->joinStrings(',')+']');
+  let withExtends = if ($superType == Any,
+    |$base,
+    |$base->jextends(pureTypeToJavaType($context.conventions, $superType->toOne(), PureOne))
+  );
+
+  if ($taxonomy->isEmpty(),
+    |$withExtends,
+    |$withExtends->addMethod(buildAccept($base, $isAbstract, $c, $taxonomy->toOne(), $context));
+  );
+}
+
+
+function meta::protocols::generation::java::buildAccept(base:meta::external::language::java::metamodel::Class[1], abstract:Boolean[1], c:meta::pure::metamodel::type::Class<Any>[1], taxonomy:Taxonomy[1], context:Context[1]):Method[1]
+{
+  let typeParam = javaTypeVar('T');
+  let boundType = javaParameterizedType($context.visitorByTaxonomy->toOne()->get($taxonomy->toOne())->toOne(), $typeParam);
+  let visitor   = j_parameter($boundType, 'visitor');
+  if ($abstract,
+    | javaMethod(['public', 'abstract'], $typeParam, $typeParam, 'accept', $visitor),
+    | javaMethod(['public'], $typeParam, $typeParam, 'accept', $visitor, j_return(j_invoke($visitor, 'visit', [j_this($base)], $typeParam)))
+    );
+}
+
+function meta::protocols::generation::java::buildVisitorClass(taxonomy : Taxonomy[1], typeVariable:TypeVariable[1], conventions:Conventions[1]):meta::external::language::java::metamodel::Class[1]
+{
+  javaClass(['public', 'interface'], $typeVariable, $conventions.typeAndPackageNameStrategy->toOne()->eval($taxonomy.topClass, $conventions).first->javaPackage(), $taxonomy.topClass.name->toOne()+'Visitor')
+}
+
+function <<access.private>> meta::protocols::generation::java::generateVisitor(taxonomy : Taxonomy[1], rootPack:meta::external::language::java::metamodel::Package[1], conventions:Conventions[1]):meta::external::language::java::metamodel::Class[1]
+{
+  let typeParam = javaTypeVar('T');
+  buildVisitorClass($taxonomy, $typeParam, $conventions)
+      ->addMethods($taxonomy.children
+                                  ->sortBy(a|$a.name->toOne())
+                                  ->map(c| javaMethod($typeParam, 'visit', j_parameter(pureTypeToJavaType($conventions, $c, PureOne), 'val')))
+  );
+}
+
+function <<access.private>> meta::protocols::generation::java::collectClasses(p:Package[1]):meta::pure::metamodel::type::Class<Any>[*]
+{
+  $p.children->map(
+    child | $child->match([
+        c : meta::pure::metamodel::type::Class<Any>[1]|$c,
+        p : Package[1]|$p->collectClasses(),
+        d : Any[1]|[]
+      ])
+  );
+}
+
+function meta::protocols::generation::java::findChildren(p:meta::pure::metamodel::type::Class<Any>[1]):meta::pure::metamodel::type::Class<Any>[*]
+{
+  let children = $p.specializations.specific->cast(@meta::pure::metamodel::type::Class<Any>);
+  $children->concatenate($children->map(c|$c->findChildren()));
+}
+
+Class meta::protocols::generation::java::Taxonomy
+{
+  topClass : meta::pure::metamodel::type::Class<Any>[1];
+  children : meta::pure::metamodel::type::Class<Any>[*];
+}
+
+function meta::protocols::generation::java::findTaxonomies(p:Package[1]):Taxonomy[*]
+{
+  let topClasses = meta::protocols::generation::java::collectClasses($p)->filter(c|
+      let rawType = $c.generalizations.general.rawType;
+      $rawType->size() == 1 && $rawType == Any && $c.specializations->isNotEmpty();
+    );
+  $topClasses->map(tc|
+    ^Taxonomy(
+      topClass = $tc,
+      children = $tc->findChildren()
+    )
+  );
+}
+
+function meta::protocols::generation::java::findTaxonomy(c:meta::pure::metamodel::type::Class<Any>[1], src:Taxonomy[*]):Taxonomy[0..1]
+{
+  $src->filter(t|$t.topClass == $c || $t.children->contains($c))->first();
+}

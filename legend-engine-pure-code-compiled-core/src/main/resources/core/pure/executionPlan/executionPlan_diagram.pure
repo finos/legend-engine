@@ -1,0 +1,503 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Diagram
+Diagram meta::pure::executionPlan::diagram::ExecutionPlanDiagram(width=0.0, height=0.0)
+{
+    TypeView cview_2(
+        type=meta::pure::executionPlan::ExecutionNode,
+        position=(295.19464, 334.06593),
+        width=264.52238,
+        height=156.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_1(
+        type=meta::pure::executionPlan::ExecutionPlan,
+        position=(260.00000, 82.00000),
+        width=335.94030,
+        height=142.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_3(
+        type=meta::pure::executionPlan::PlatformImplementation,
+        position=(762.97015, 237.53297),
+        width=157.32835,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_4(
+        type=meta::pure::executionPlan::JavaPlatformImplementation,
+        position=(735.97015, 358.53297),
+        width=216.23881,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_5(
+        type=meta::pure::executionPlan::JavaClass,
+        position=(1041.97015, 351.53297),
+        width=136.13433,
+        height=86.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    GeneralizationView gview_0(
+        source=cview_4,
+        target=cview_3,
+        points=[(844.08956,394.53297),(841.63433,252.53297)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_0(
+        property=meta::pure::executionPlan::ExecutionPlan.rootExecutionNode,
+        source=cview_1,
+        target=cview_2
+,        points=[(427.97015,153.00000),(427.45583,412.06593)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_1(
+        property=meta::pure::executionPlan::ExecutionNode.implementation,
+        source=cview_2,
+        target=cview_3
+,        points=[(427.45583,412.06593),(691.97015,253.53297),(841.63433,252.53297)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_2(
+        property=meta::pure::executionPlan::ExecutionPlan.globalImplementationSupport,
+        source=cview_1,
+        target=cview_3
+,        points=[(427.97015,153.00000),(840.97015,152.53297),(841.63433,252.53297)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_3(
+        property=meta::pure::executionPlan::JavaPlatformImplementation.classes,
+        source=cview_4,
+        target=cview_5
+,        points=[(844.08956,394.53297),(1110.03732,394.53297)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+}
+
+###Diagram
+Diagram meta::pure::executionPlan::diagram::ResultTypeDiagram(width=0.0, height=0.0)
+{
+    TypeView cview_1(
+        type=meta::pure::executionPlan::ResultType,
+        position=(663.00000, 119.00000),
+        width=184.05970,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_3(
+        type=meta::pure::executionPlan::VoidResultType,
+        position=(453.00000, 404.00000),
+        width=108.88060,
+        height=44.50000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_6(
+        type=meta::pure::executionPlan::ClassResultType,
+        position=(972.00000, 406.00000),
+        width=241.85075,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_5(
+        type=meta::pure::executionPlan::PartialClassResultType,
+        position=(940.00000, 512.00000),
+        width=306.52238,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_7(
+        type=meta::pure::executionPlan::DataTypeResultType,
+        position=(599.00000, 405.00000),
+        width=136.89552,
+        height=44.50000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_2(
+        type=meta::pure::executionPlan::TDSResultType,
+        position=(771.00000, 406.00000),
+        width=166.64179,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    GeneralizationView gview_0(
+        source=cview_2,
+        target=cview_1,
+        points=[(854.32089,428.00000),(850.26119,317.50000),(783.76119,235.50000),(783.76119,170.50000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_1(
+        source=cview_3,
+        target=cview_1,
+        points=[(507.44030,426.25000),(506.76119,328.50000),(676.00000,241.00000),(675.00000,175.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_2(
+        source=cview_6,
+        target=cview_1,
+        points=[(1092.92537,428.00000),(1092.76119,320.50000),(835.00000,238.00000),(833.00000,171.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_3(
+        source=cview_5,
+        target=cview_6,
+        points=[(1093.26119,534.00000),(1092.92537,428.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_4(
+        source=cview_7,
+        target=cview_1,
+        points=[(667.44776,427.25000),(666.26119,323.50000),(728.76119,236.50000),(727.76119,172.50000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+}
+
+###Diagram
+Diagram meta::pure::executionPlan::diagram::ExecutionNodeDiagram(width=0.0, height=0.0)
+{
+    TypeView cview_2(
+        type=meta::pure::executionPlan::AllocationExecutionNode,
+        position=(247.00000, 420.00000),
+        width=165.31343,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_1(
+        type=meta::pure::executionPlan::ExecutionNode,
+        position=(647.00000, 61.00000),
+        width=325.00000,
+        height=170.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_4(
+        type=meta::pure::executionPlan::ErrorExecutionNode,
+        position=(472.00000, 420.00000),
+        width=136.67164,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_5(
+        type=meta::pure::executionPlan::FreeMarkerConditionalExecutionNode,
+        position=(536.00000, 481.00000),
+        width=238.00000,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_3(
+        type=meta::pure::executionPlan::ConstantExecutionNode,
+        position=(360.00000, 482.00000),
+        width=159.32835,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_6(
+        type=meta::pure::executionPlan::FunctionParametersValidationNode,
+        position=(669.00000, 420.00000),
+        width=243.71642,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_8(
+        type=meta::pure::executionPlan::PureExpressionPlatformExecutionNode,
+        position=(785.07656, 482.95694),
+        width=247.34328,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_10(
+        type=meta::pure::graphFetch::executionPlan::GlobalGraphFetchExecutionNode,
+        position=(773.88995, 594.74641),
+        width=379.37313,
+        height=156.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_12(
+        type=meta::pure::executionPlan::SequenceExecutionNode,
+        position=(1200.19350, 428.99491),
+        width=164.00000,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_11(
+        type=meta::pure::graphFetch::executionPlan::LocalGraphFetchExecutionNode,
+        position=(1066.04554, 482.74937),
+        width=246.76119,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_13(
+        type=meta::pure::executionPlan::MultiResultSequenceExecutionNode,
+        position=(1323.59541, 483.54036),
+        width=228.65672,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    GeneralizationView gview_0(
+        source=cview_2,
+        target=cview_1,
+        points=[(329.65672,442.00000),(328.00000,371.00000),(666.12607,258.87320),(666.00000,226.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_1(
+        source=cview_3,
+        target=cview_1,
+        points=[(439.66418,504.00000),(439.00000,370.00000),(702.12607,257.87320),(701.00000,225.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_2(
+        source=cview_4,
+        target=cview_1,
+        points=[(540.33582,442.00000),(541.00000,365.00000),(732.12607,257.87320),(731.00000,228.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_3(
+        source=cview_5,
+        target=cview_1,
+        points=[(648.00000,492.00000),(646.00000,364.00000),(761.12607,257.87320),(760.00000,230.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_4(
+        source=cview_6,
+        target=cview_1,
+        points=[(794.00000,440.00000),(792.00000,223.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_5(
+        source=cview_8,
+        target=cview_1,
+        points=[(928.07656,492.95694),(929.38010,353.39682),(822.20307,258.65998),(823.00000,223.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_6(
+        source=cview_10,
+        target=cview_1,
+        points=[(1048.04039,617.51165),(1045.16957,355.31070),(852.99017,257.43333),(853.78201,225.16716)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_7(
+        source=cview_11,
+        target=cview_1,
+        points=[(1187.75331,500.76524),(1184.88249,349.56907),(888.58339,258.28078),(889.18871,218.46859)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_8(
+        source=cview_12,
+        target=cview_1,
+        points=[(1282.19350,443.99491),(1279.61933,355.31070),(917.89685,256.74610),(916.93991,230.90878)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_9(
+        source=cview_13,
+        target=cview_1,
+        points=[(1381.96862,505.54993),(1378.18393,360.09539),(951.38967,255.78917),(950.43273,226.12409)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_0(
+        property=meta::pure::graphFetch::executionPlan::GlobalGraphFetchExecutionNode.localGraphFetchExecutionNode,
+        source=cview_10,
+        target=cview_11
+,        points=[(963.57652,672.74641),(1267.17914,669.18629),(1266.22221,535.21500)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+}

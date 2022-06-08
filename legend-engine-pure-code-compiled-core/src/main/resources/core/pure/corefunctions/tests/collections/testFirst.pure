@@ -1,0 +1,43 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::functions::tests::model::*;
+import meta::pure::profiles::*;
+
+function <<test.Test>> meta::pure::functions::collection::tests::first::testFirstSimple():Boolean[1]
+{
+    assertEquals('a', ['a','b']->first());
+}
+
+function <<test.Test>> meta::pure::functions::collection::tests::first::testFirstOnOneElement():Boolean[1]
+{
+    assertEquals('a', 'a'->first());
+}
+
+function <<test.Test>> meta::pure::functions::collection::tests::first::testFirstOnEmptySet():Boolean[1]
+{
+    assertEmpty([]->first());
+}
+
+function <<test.Test>> meta::pure::functions::collection::tests::first::testFirstComplex():Boolean[1]
+{
+    let smith = ^Person(firstName='Fabrice', lastName='Smith');
+    let roe = ^Person(firstName='David', lastName='Roe');
+    let doe = ^Person(firstName='Pierre', lastName='Doe');
+    let firm1 = ^Firm(legalName='Firm1', employees=[$smith]);
+    let firm2 = ^Firm(legalName='Firm2', employees=[$doe, $roe]);
+    let set = [$firm1, $firm2];
+    assertEquals($firm1, $set->first());
+    assertEquals($doe, $set->at(1).employees->first());
+}

@@ -1,0 +1,228 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::mapping::*;
+import meta::pure::mapping::xStore::*;
+import meta::pure::mapping::xStore::projection::arguments::*;
+import meta::pure::mapping::xStore::projection::arguments::*;
+import meta::pure::router::clustering::*;
+import meta::pure::router::execution::*;
+import meta::pure::router::printer::*;
+import meta::pure::router::systemMapping::*;
+import meta::pure::runtime::*;
+
+function meta::pure::mapping::xStore::crossGetterOverrideToMany(o:Any[1], property:Property<Nil,Any|*>[1]):Any[*]
+{
+   crossGetterOverride($o, $property, false);
+}
+
+function meta::pure::mapping::xStore::crossGetterOverrideToOne(o:Any[1], property:Property<Nil,Any|0..1>[1]):Any[0..1]
+{
+   // Add Multiplicity test. Converge One & Many
+   crossGetterOverride($o, $property, true)->first();
+}
+
+function meta::pure::mapping::xStore::crossGetterOverride(o:Any[1], property:Property<Nil,Any|*>[1], toOne:Boolean[1]):Any[*]
+{
+   let dataPayload = $o->getHiddenPayload()->cast(@MappingInstanceData);
+   let source = $dataPayload.static.setImplementation;
+   if ($source->isEmpty(),
+       | $dataPayload.static.systemMapping.localGetterOverrideNonMapped->eval($o, $property),
+       | let sourceSys = $source->toOne()->systemForSetImplementation($dataPayload.static.extensions);
+         let propertyMappings = $source->toOne()->match([e:EmbeddedSetImplementation[1]|$e->meta::pure::mapping::propertyMappingsByPropertyName($property.name->toOne()),
+                                                         s:PropertyMappingsImplementation[1]|$s.propertyMappingsByPropertyName($property.name->toOne())
+                                                        ]);
+         if ($propertyMappings->isEmpty(),
+             | if($sourceSys.localGetterOverrideNonMappedAsString=='',
+                  |fail('The property '+$property.owner->elementToPath()+'.'+$property.name->toOne()+' is not mapped in the mapping '+$dataPayload.static.mapping.name->toOne()),
+                  |$sourceSys.localGetterOverrideNonMapped->eval($o, $property);
+               );,
+             | $propertyMappings->map(
+                                       p|let target = $dataPayload.static.mapping.classMappingById($p.targetSetImplementationId);
+                                         let targetSys = $target->toOne()->systemForSetImplementation($dataPayload.static.extensions);
+                                         if ($sourceSys.supportsFunctionAsString == $targetSys.supportsFunctionAsString,
+                                             |$targetSys.localGetterOverrideMapped->eval($o, $p),
+                                             |performXStoreQuery($o, $p, $dataPayload.static.extensions)
+                                         );
+                                  );
+         );
+   );
+}
+
+function meta::pure::mapping::xStore::performXStoreQuery(o:Any[1], p:PropertyMapping[1], extensions:meta::pure::router::extension::RouterExtension[*]):Any[*]
+{
+   let objectInfo = $o->getHiddenPayload()->cast(@MappingInstanceData);
+   let debug = $objectInfo.static.debug;
+   
+   print(if(!$debug.debug, |'',
+            | $debug.space+'\nBuilding XStore query for property:\''+$p.property.name->toOne()+'\' ['+$p.sourceSetImplementationId+'->'+$p.targetSetImplementationId+']\n'));
+   
+   let sourceSetImpl = $objectInfo.static.mapping.classMappingById($p.sourceSetImplementationId)->cast(@InstanceSetImplementation);
+   let targetSetImpl = $objectInfo.static.mapping.classMappingById($p.targetSetImplementationId)->cast(@InstanceSetImplementation);
+   let sourceType = ^GenericType(rawType=if($sourceSetImpl.mappingClass->isEmpty(),|$sourceSetImpl.class, |$sourceSetImpl.mappingClass->toOne()));
+   let returnType = ^GenericType(rawType=if($targetSetImpl.mappingClass->isEmpty(),|$targetSetImpl.class, |$targetSetImpl.mappingClass->toOne()));
+   let returnMultiplicity = $p.property.classifierGenericType.multiplicityArguments->at(0);
+   let newExpr = ^ExtendedRoutedValueSpecification
+   (
+      genericType = $returnType,
+      multiplicity = $returnMultiplicity,
+      id = '1',
+      runtime = $objectInfo.static.runtime,
+      mapping = $objectInfo.static.mapping,
+      executionContext = $objectInfo.static.exeCtx,
+      sets = $objectInfo.static.mapping.classMappingById($p.targetSetImplementationId),
+      value = ^SimpleFunctionExpression
+              (
+                 func = filter_T_MANY__Function_1__T_MANY_,
+                 functionName = 'filter',
+                 importGroup = system.children->at(0)->cast(@Package).children->at(0)->cast(@ImportGroup),
+                 genericType = $returnType,
+                 multiplicity = ZeroMany, 
+                 parametersValues = [
+                                       ^ExtendedRoutedValueSpecification
+                                       (
+                                          genericType= $returnType,
+                                          id = '1',
+                                          multiplicity = ZeroMany,
+                                          runtime = $objectInfo.static.runtime,
+                                          mapping = $objectInfo.static.mapping,
+                                          executionContext = $objectInfo.static.exeCtx,
+                                          sets = $objectInfo.static.mapping.classMappingById($p.targetSetImplementationId),
+                                          value = ^SimpleFunctionExpression
+                                                  (
+                                                     func = getAll_Class_1__T_MANY_,
+                                                     functionName = 'getAll',
+                                                     importGroup = system.children->at(0)->cast(@Package).children->at(0)->cast(@ImportGroup),
+                                                     genericType = $returnType,
+                                                     multiplicity = ZeroMany,
+                                                     parametersValues = ^ExtendedRoutedValueSpecification
+                                                                        (
+                                                                           genericType = ^GenericType(rawType=Class, typeArguments=$sourceType),
+                                                                           id = '1',
+                                                                           multiplicity = PureOne,
+                                                                           runtime = $objectInfo.static.runtime,
+                                                                           mapping = $objectInfo.static.mapping,
+                                                                           executionContext = $objectInfo.static.exeCtx,
+                                                                           sets = $objectInfo.static.mapping.classMappingById($p.targetSetImplementationId),
+                                                                           value = ^InstanceValue
+                                                                                   (
+                                                                                       genericType = ^GenericType(rawType=Class, typeArguments=$sourceType),
+                                                                                       multiplicity = PureOne,
+                                                                                       values = $returnType.rawType
+                                                                                   )
+                                                                        )
+                                                  )
+                                       ),
+                                       ^FunctionRoutedValueSpecification
+                                       (
+                                          genericType = ^GenericType(rawType=LambdaFunction, typeArguments=^GenericType(rawType=^FunctionType(parameters=^VariableExpression(name='that', genericType=$returnType, multiplicity=PureOne), returnMultiplicity=PureOne, returnType=^GenericType(rawType=Boolean)))),
+                                          multiplicity = PureOne,
+                                          originalFunction = $p->cast(@XStorePropertyMapping).crossExpression,
+                                          value=^InstanceValue
+                                                (
+                                                   genericType = ^GenericType(rawType=LambdaFunction, typeArguments=^GenericType(rawType=^FunctionType(parameters=^VariableExpression(name='that', genericType=$returnType, multiplicity=PureOne), returnMultiplicity=PureOne, returnType=^GenericType(rawType=Boolean)))),
+                                                   multiplicity = PureOne,
+                                                   values=$p->cast(@XStorePropertyMapping).crossExpression->reprocessLambda($sourceType, $returnType, $o, $objectInfo)
+                                                )
+                                       )
+                                    ]
+              )
+      
+   )->evaluateAndDeactivate();
+   
+   print(if(!$debug.debug, |'',
+            | $debug.space+'  New routed query expression built: '+$newExpr->asString()+'\n'));
+   
+   let clustered = list($newExpr)->doCluster(^LambdaFunction<{->Any[1]}>(expressionSequence=^InstanceValue(values='', genericType=^GenericType(rawType=String), multiplicity=PureOne)),
+                                             $objectInfo.static.mapping,
+                                             $objectInfo.static.runtime,
+                                             $objectInfo.static.exeCtx,
+                                             $extensions,
+                                             noDebug());
+   
+   print(if(!$debug.debug, |'',
+            | $debug.space+'  New routed query clustered: '+$clustered->at(0)->asString()+'\n'));
+
+   let cluster = $clustered->at(0).expressionSequence->evaluateAndDeactivate()->cast(@ClusteredValueSpecification);
+   
+   let res = $cluster->executeExpression($cluster.openVars->toOne(), [], [], [], $objectInfo.static.exeCtx, false, $extensions, $debug);
+
+   $extensions.logActivities->map(e|$e->eval($res.activities));
+
+   print(if(!$debug.debug, |'',
+            | $debug.space+'XStore getter done\n'));
+
+   $res.values;
+}
+
+function meta::pure::mapping::xStore::reprocessLambda(l:LambdaFunction<Any>[1], sourceType:GenericType[1], returnType:GenericType[1], o:Any[1], extra:MappingInstanceData[1]):LambdaFunction<Any>[1]
+{
+    ^$l
+    (
+       classifierGenericType = ^GenericType
+                               (
+                                  rawType = LambdaFunction,
+                                  typeArguments = ^GenericType
+                                                 (
+                                                    rawType=^FunctionType
+                                                            (
+                                                               parameters=^VariableExpression(name='that', genericType=$returnType, multiplicity=PureOne),
+                                                               returnMultiplicity = PureOne,
+                                                               returnType = ^GenericType
+                                                                            (
+                                                                                rawType=Boolean
+                                                                            )
+                                                            )
+                                                 )
+                               ),
+       expressionSequence = $l.expressionSequence->at(0)->evaluateAndDeactivate()->reprocessElement($sourceType.rawType->cast(@Class<Any>)->toOne(), $o, $extra).second->cast(@ValueSpecification)
+    );   
+}
+
+function meta::pure::mapping::xStore::reprocessElement(vs:Any[1], sourceType:Class<Any>[1], o:Any[1], extra:MappingInstanceData[1]):Pair<Boolean, Any>[1]
+{
+   $vs->match(
+      [
+         f:FunctionExpression[1]|if ($f.propertyName->isEmpty(),
+                                        |let params = $f.parametersValues->map(p|$p->reprocessElement($sourceType, $o, $extra));
+                                         if($params->forAll(p|$p.first),  
+                                            | pair(true, ^InstanceValue(values=^$f(parametersValues=$params.second->cast(@ValueSpecification))->reactivate(), genericType = $f.func->functionReturnType(), multiplicity=$f.func->functionReturnMultiplicity())), | pair(false, ^$f(parametersValues=$params.second->cast(@ValueSpecification))->cast(@ValueSpecification)));,
+                                        |if($sourceType == $f.parametersValues->at(0).genericType.rawType, 
+                                            |let owner = $f.func->cast(@Property<Nil,Any|*>).owner;
+                                             if ($owner->isEmpty() || $owner->toOne()->instanceOf(MappingClass),
+                                                 |pair(true, ^InstanceValue(
+                                                    values=$extra.mappingPropertyValues->filter(k|$k.key == $f.func.name).value,
+                                                    genericType=$f.genericType,
+                                                    multiplicity=$f.multiplicity
+                                                  )),
+                                                 |let result = $f.func->evaluate(list($o))->toOne();
+                                                  $result->match([
+                                                     vs: ValueSpecification[1] | pair(false, $result),
+                                                     a: Any[1] | pair(true, ^InstanceValue(
+                                                                    values=$result,
+                                                                    genericType=$f.func->cast(@Property<Nil,Any|*>).genericType,
+                                                                    multiplicity=$f.func->cast(@Property<Nil,Any|*>).multiplicity))
+                                                  ]);
+                                             );,
+                                            |pair(false, $f)
+                                         );
+                                 ),
+         v:VariableExpression[1]|if($v.name == 'this', | pair(true, ^InstanceValue(values=$o, genericType=$v.genericType, multiplicity=$v.multiplicity)), | pair(false, $v));,
+         i:InstanceValue[1]|$i.values->match([
+                              l : LambdaFunction<Any>[1] | pair(false, ^$i(values = if(!$l->functionType().parameters->evaluateAndDeactivate().name->contains('this'), | ^$l(expressionSequence = $l.expressionSequence->evaluateAndDeactivate()->map(x | $x->reprocessElement($sourceType, $o, $extra)).second->cast(@ValueSpecification)), | $l)));,
+                              a : Any[*] | pair(true, $i)
+                            ])
+      ]
+   );
+}

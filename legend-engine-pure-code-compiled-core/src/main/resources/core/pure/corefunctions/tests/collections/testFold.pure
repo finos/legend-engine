@@ -1,0 +1,90 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::profiles::*;
+import meta::pure::functions::tests::model::*;
+
+function <<test.Test>> meta::pure::functions::collection::tests::fold::testIntegerSum():Boolean[1]
+{
+    assertEq(10, [1, 2, 3, 4]->fold({x, y | $x + $y}, 0));
+    assertEq(17, [1, 2, 3, 4]->fold({x, y | $x + $y}, 7));
+    assertEq(25, [1, 2, 3, 4]->fold({x, y | $x + $y + 2}, 7));
+}
+
+function <<test.Test>> meta::pure::functions::collection::tests::fold::testStringSum():Boolean[1]
+{
+    assertEq('abcd', ['a', 'b', 'c', 'd']->fold({x, y | $y + $x}, ''));
+    assertEq('zabcd', ['a', 'b', 'c', 'd']->fold({x, y | $y + $x}, 'z'));
+    assertEq('z a b c d', ['a', 'b', 'c', 'd']->fold({x, y | $y + ' ' + $x}, 'z'));
+}
+
+function <<test.Test>> meta::pure::functions::collection::tests::fold::testFold():Boolean[1]
+{
+    let people = [^Person(firstName='Fabrice', lastName='Smith'), ^Person(firstName='Pierre', lastName='Doe'), ^Person(firstName='Justin', lastName='Branche')];
+    let person = $people->fold({p1, p2 | ^$p2(lastName = ($p2.lastName->toOne() + ' ' + $p1.lastName->toOne()))}, ^Person(firstName='', lastName='init:'));
+    assertEquals('init: Smith Doe Branche', $person.lastName);
+}
+
+function <<test.Test>> meta::pure::functions::collection::tests::fold::testFoldToMany():Boolean[1]
+{
+    let people = [^Person(firstName='Fabrice', lastName='Smith'), ^Person(firstName='Pierre', lastName='Doe'), ^Person(firstName='Justin', lastName='Branche')];
+    let person = $people->fold({p1, p2 | ^$p2(otherNames += $p1.lastName)}, ^Person(firstName='John', lastName='Roe'));
+    assertEquals('Roe', $person.lastName);
+    assertEquals(['Smith', 'Doe', 'Branche'], $person.otherNames);
+}
+
+function <<test.Test>> meta::pure::functions::collection::tests::fold::testFoldFiltering():Boolean[1]
+{
+    let people = [^Person(firstName='Fabrice', lastName='Smith'), ^Person(firstName='Pierre', lastName='Doe'), ^Person(firstName='Justin', lastName='Branche')];
+    let person = $people->fold({p1, p2 | if($p1.lastName != 'Smith', |^$p2(otherNames += $p1.lastName), |$p2)}, ^Person(firstName='John', lastName='Roe'));
+    assertEquals('Roe', $person.lastName);
+    assertEquals(['Doe', 'Branche'], $person.otherNames);
+}
+
+function <<test.Test>> meta::pure::functions::collection::tests::fold::testFoldCollectionAccumulator():Boolean[1]
+{
+    assertEquals([-1, 0, 1, 2, 3, 4], [1, 2, 3, 4]->fold({x, y | $y->add($x)}, [-1, 0]));
+    assertEquals([2, 3, 4], [1, 2, 3, 4]->fold({x:Integer[1], y:Integer[1..3] | if($y->size() < 3, |$y->add($x), |$y->add($x)->tail())}, [-1, 0]));
+}
+
+function <<test.Test>> meta::pure::functions::collection::tests::fold::testFoldWithSingleValue():Boolean[1]
+{
+    assertEquals(1, fold(1, {val, acc| add($acc, $val)}, []));
+}
+
+function <<test.Test>> meta::pure::functions::collection::tests::fold::testFoldWithEmptyAccumulator():Boolean[1]
+{
+    assertEquals([1, 2, 3], fold([1, 2, 3], {val, acc| add($acc, $val)}, []));
+}
+
+function <<test.Test>> 
+{meta::pure::profiles::test.excludePlatform = 'Java compiled'}
+meta::pure::functions::collection::tests::fold::testFoldEmptyListAndEmptyIdentity():Boolean[1]
+{
+    assertEquals([], fold([]->cast(@Integer), {val, acc| add($acc, $val)}, []->cast(@Any)));
+}
+
+function <<test.Test>> 
+{meta::pure::profiles::test.excludePlatform = 'Java compiled'}
+meta::pure::functions::collection::tests::fold::testFoldEmptyListAndNonEmptyIdentity():Boolean[1]
+{
+    assertEquals(1, fold([]->cast(@Integer), {val, acc| $acc + $val}, 1));
+}
+
+function <<test.Test>> 
+{meta::pure::profiles::test.excludePlatform = 'Java compiled'}
+meta::pure::functions::collection::tests::fold::testFoldMixedAccumulatorTypes():Boolean[1]
+{
+    assertEquals(7, fold(['one', 'two'], {val, acc| $acc + $val->length()}, 1));
+}

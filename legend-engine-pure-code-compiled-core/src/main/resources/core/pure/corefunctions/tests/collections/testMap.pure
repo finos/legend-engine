@@ -1,0 +1,96 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::functions::tests::model::*;
+import meta::pure::profiles::*;
+import meta::pure::metamodel::path::*;
+import meta::pure::functions::collection::tests::map::*;
+
+function <<test.Test>> meta::pure::functions::collection::tests::map::testMapInstance():Boolean[1]
+{
+    let people = [^Person(firstName='Fabrice', lastName='Smith'), ^Person(firstName='Pierre', lastName='Doe'), ^Person(firstName='Justin', lastName='Branche')];
+    assertEquals(['Smith', 'Doe', 'Branche'], $people->map(p | $p.lastName));
+}
+
+function <<test.Test>> meta::pure::functions::collection::tests::map::testMapRelationshipFromOneToOne():Boolean[1]
+{
+    let address = ^Address(name='Paris, FR', type=GeographicEntityType.CITY);
+    assertIs($address, ^Person(firstName='Fabrice', lastName='Smith', address=$address).address->toOne());
+}
+
+function <<test.Test>> meta::pure::functions::collection::tests::map::testMapRelationshipFromManyToOne():Boolean[1]
+{
+    let addressParis = ^Address(name='Paris, FR', type=GeographicEntityType.CITY);
+    let addressHoboken = ^Address(name='Hoboken, NJ, US', type=GeographicEntityType.CITY);
+    let smith = ^Person(firstName='Fabrice', lastName='Smith', address=$addressParis);
+    let roe = ^Person(firstName='David', lastName='Roe', address=$addressHoboken);
+    assertEquals([$addressParis, $addressHoboken], [$smith, $roe].address);
+    assertEquals(['Paris, FR', 'Hoboken, NJ, US'], [$smith, $roe].address.name);
+}
+
+function <<test.Test>> meta::pure::functions::collection::tests::map::testMapRelationshipFromManyToMany():Boolean[1]
+{
+    let locationParis = ^Location(place='Paris', type=GeographicEntityType.CITY);
+    let locationSF = ^Location(place='San Franciso', type=GeographicEntityType.CITY);
+    let locationHoboken = ^Location(place='Hoboken', type=GeographicEntityType.CITY);
+    let smith = ^Person(firstName='Fabrice', lastName='Smith', locations=[$locationParis, $locationSF]);
+    let roe = ^Person(firstName='David', lastName='Roe', locations=$locationHoboken);
+    assertEquals([$locationParis, $locationSF, $locationHoboken], [$smith, $roe].locations);
+}
+
+function <<test.Test>> meta::pure::functions::collection::tests::map::testMapWithFunctionAsVariable():Boolean[1]
+{
+    let f = [^Person(firstName='a', lastName='a'), ^Person(firstName='b', lastName='b'), ^Person(firstName='c', lastName='c')];
+    let lambda = {p:Person[1]|$p.lastName};
+    assertEquals(['a','b','c'], $f->map($lambda));
+}
+
+function <<test.Test>> {test.excludePlatform = 'Java compiled'} meta::pure::functions::collection::tests::map::testMapWithPropertyAsVariable():Boolean[1]
+{
+    let f = [^Person(firstName='a', lastName='a'), ^Person(firstName='b', lastName='b'), ^Person(firstName='c', lastName='c')];
+    let property = Person->classPropertyByName('lastName')->toOne();
+    assertEquals(['a','b','c'], $f->map($property));
+}
+
+function <<test.Test>> meta::pure::functions::collection::tests::map::testMapWithFunctionToOne():Boolean[1]
+{
+    let f = [^Person(firstName='a', lastName='a'), ^Person(firstName='b', lastName='b'), ^Person(firstName='c', lastName='c')]->map(p | $p.lastName)->deactivate()->cast(@FunctionExpression);
+    assertSameElements(['a', 'b', 'c'], $f.func->evaluate($f.parametersValues->map(p | ^List<Any>(values=$p->reactivate()))));
+}
+
+function <<test.Test>> meta::pure::functions::collection::tests::map::testMapWithFunctionToMany():Boolean[1]
+{
+    let f = [
+                ^Person(firstName='Fabrice', lastName='Smith', locations=[^Location(place='Paris', type=GeographicEntityType.CITY), ^Location(place='San Francisco', type=GeographicEntityType.CITY)]),
+                ^Person(firstName='David', lastName='Roe', locations=^Location(place='Hoboken', type=GeographicEntityType.CITY))
+            ]
+            ->map(p | $p.locations.place)->deactivate()->cast(@FunctionExpression);
+    assertSameElements(['Paris', 'Hoboken', 'San Francisco'], $f.func->evaluate($f.parametersValues->map(v | ^List<Any>(values=$v->reactivate()))));
+}
+
+function <<test.Test>> meta::pure::functions::collection::tests::map::testMapWithPathInFunction():Boolean[1]
+{
+   assertEquals('George', ^Person(firstName='George', lastName='Orwell')->doStuff(#/Person/firstName#));
+}
+
+function <<test.Test>>   meta::pure::functions::collection::tests::map::testMapWithPathInFunctionReflective():Boolean[1]
+{
+   let fn = {| ^Person(firstName='George', lastName = 'Orwell')->doStuff(#/Person/firstName#)};
+   assertEquals('George', $fn->evaluate([]));
+}
+
+function meta::pure::functions::collection::tests::map::doStuff<T>(a:T[*], path:Path<T,String|1>[1]): String[1]
+{
+   $a->map($path)->toOne();
+}

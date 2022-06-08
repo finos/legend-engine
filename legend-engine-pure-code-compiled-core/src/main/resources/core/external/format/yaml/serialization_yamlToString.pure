@@ -1,0 +1,91 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::format::yaml::serialization::*;
+import meta::external::format::yaml::metamodel::*;
+
+Enum meta::external::format::yaml::serialization::FlowScalarStyle
+{
+   DOUBLE_QUOTE,
+   PLAIN
+   
+}
+
+function meta::external::format::yaml::serialization::toYAMLString(json:YAMLElement[1]):String[1]
+{
+   $json->toYAMLString('',[],FlowScalarStyle.DOUBLE_QUOTE);
+}
+
+
+function meta::external::format::yaml::serialization::toYAMLString(json:YAMLElement[1],style:FlowScalarStyle[1]):String[1]
+{
+   $json->toYAMLString('',[],$style);
+}
+
+function <<access.private>> meta::external::format::yaml::serialization::toYAMLString(json:YAMLElement[1], offset:String[1],parentElement:YAMLElement[0..1],style:FlowScalarStyle[1]):String[1]
+{
+    let tab ='  ';
+    let arrayChild = $parentElement->isNotEmpty() && $parentElement->toOne()->instanceOf(YAMLArray);
+    let indent = $offset+$tab;
+    $json->match([
+                  b:YAMLBoolean[1] | $b.value->toString(),
+                  s:YAMLString[1] | $s.value->toString()->stringToYAML($style),
+                  n:YAMLNumber[1] | $n.value->toString(),
+                  n:YAMLNull[1] | 'null',
+                  a:YAMLArray[1] | '\n'+$a.values->map(v |if(!$v->instanceOf(YAMLObject),|$offset + '- ',|'')+ $v->toYAMLString($offset,$a,$style))->joinStrings( '\n' ),
+                  o:YAMLObject[1] | let init = $o.keyValuePairs->first();
+                                    if($init->isNotEmpty(),
+                                       |let firstElement = if($arrayChild,|$offset+'- ',|$offset) + $init->toOne().key.value->toString() + ': ' +  $init->toOne().value->toYAMLString($indent,$o,$style);
+                                         $firstElement->concatenate(
+                                       $o.keyValuePairs->tail()->map(kv |if($arrayChild,|$offset+'  ',|$offset) + $kv.key.value->toString() + ': ' + $kv.value->toYAMLString($indent,$o,$style)))
+                                                               ->joinStrings(if($arrayChild || $parentElement->isEmpty()  ,|'',|'\n'),'\n' ,'' );,
+                                       |'');
+                 ]);
+}
+
+function <<access.private>> meta::external::format::yaml::serialization::stringToYAML(string:String[1],style:FlowScalarStyle[1]):String[1]
+{
+   //The yaml string is included inside a json document that represents the generated YAML result. We escape the string with the json escaper so that the result is properly parsed by consuming applications. 
+   //We do this so that whitespace characters inside the string are not in conflict with the whitespace characters we use to generate the overall document 
+     if($style==FlowScalarStyle.DOUBLE_QUOTE,  // slash and quote must be escaped 
+     |$string->stringToYAMLDoubleQuote(),
+      |   $string->stringToYAMLPlain())  
+
+
+}     
+function <<access.private>> meta::external::format::yaml::serialization::stringToYAMLPlain(string:String[1]):String[1]
+{
+ //Plain style can be used as long as string is valid for plain style and does not contain any  escapable characters
+
+   if($string->contains(': ') || $string->contains(' #'),
+     |$string->stringToYAMLDoubleQuote();, //use double quotes if we have an invalid yaml string
+     |let possibleYaml = $string->meta::json::escape()// ensures that white space indicators print as text 
+             ->replace('\\"','"') //removes the double quote, forward slash and back slash escapes
+             ->replace('\\/','/')
+             ->replace('\\\\','\\'); 
+      if($possibleYaml !=$string, // if we escaped anything then use the double quote flow 
+           |$string->stringToYAMLDoubleQuote(),
+           |$possibleYaml
+         );
+   )
+  
+}
+
+
+function <<access.private>> meta::external::format::yaml::serialization::stringToYAMLDoubleQuote(string:String[1]):String[1]
+{
+'"' + $string ->meta::json::escape()
+             ->replace('\\/','/') //undo the forward slash escape since we don't need it for YAML
+              + '"'; 
+}

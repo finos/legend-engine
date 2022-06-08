@@ -1,0 +1,70 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::format::avro::generation::*;
+import meta::pure::generation::metamodel::*;
+
+Class meta::external::format::avro::generation::AvroConfig extends GenerationConfiguration
+{
+   {doc.doc = 'Adds namespace derived from package to Avro schema.'}
+   includeNamespace: Boolean[0..1];
+   includeNamespace() {if($this.includeNamespace->isEmpty(), |true, |$this.includeNamespace->toOne());} :Boolean[1];
+
+   {doc.doc = 'Includes properties from super types.'}
+   includeSuperTypes: Boolean[0..1];
+   includeSuperTypes() {if($this.includeSuperTypes->isEmpty(), |true, |$this.includeSuperTypes->toOne());} :Boolean[1];
+
+   {doc.doc = 'Includes properties from associations.'}
+   includeAssociations: Boolean[0..1];
+   includeAssociations() {if($this.includeAssociations->isEmpty(), |true, |$this.includeAssociations->toOne());} :Boolean[1];
+
+   {doc.doc = 'Includes generated milestoning properties.'}
+   includeGeneratedMilestoning: Boolean[0..1];
+   includeGeneratedMilestoning() {if($this.includeGeneratedMilestoning->isEmpty(), |false, |$this.includeGeneratedMilestoning->toOne());} :Boolean[1];
+
+   {doc.doc = 'Timestamp logical type. Default is timestamp-micros. Possible values: timestamp-millis, timestamp-micros, or any other registered types.'}
+   timestampLogicalType: String[0..1];
+   timestampLogicalType() {if($this.timestampLogicalType->isEmpty(), |'timestamp-micros', |$this.timestampLogicalType->toOne());} :String[1];
+
+   {doc.doc = 'Generates properties from specified profile tags.'}
+   propertyProfile: Profile[*];
+   propertyProfile(){if($this.propertyProfile->isEmpty(), |[], |$this.propertyProfile;)} :Profile[*];
+
+   {doc.doc = 'Override namespace in generated schema.'}
+   namespaceOverride: Map<String, String>[0..1];
+   namespaceOverride(){if($this.namespaceOverride->isEmpty(), |^Map<String,String>(), |$this.namespaceOverride->toOne();)}:Map<String,String>[1];
+
+   {doc.doc = 'Generate Logical Type property for all Pure Classes'}
+   generateLogicalTypes: Boolean[0..1];
+   generateLogicalTypes(){if($this.generateLogicalTypes->isEmpty(), |false, |$this.generateLogicalTypes->toOne();)}:Boolean[1];
+}
+
+
+Class meta::external::format::avro::generation::AvroOutput extends GenerationOutput
+{
+}
+
+function  meta::external::format::avro::generation::defaultConfig():AvroConfig[1]
+{
+   ^AvroConfig(includeNamespace=true,includeSuperTypes=true,includeAssociations=true,
+               includeGeneratedMilestoning=false,timestampLogicalType='timestamp-micros',propertyProfile=[],
+               namespaceOverride=^Map<String,String>(),
+               generateLogicalTypes = false
+               );
+}
+
+function <<access.private, Generation.Configuration>>  meta::external::format::avro::generation::describeConfiguration():GenerationParameter[*]
+{
+  meta::pure::generation::describeConfiguration(AvroConfig,meta::external::format::avro::generation::defaultConfig__AvroConfig_1_,[]);
+}

@@ -1,0 +1,152 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::executionPlan::engine::java::roadmap::*;
+import meta::pure::mapping::modelToModel::test::alloy::units::*;
+import meta::json::*;
+import meta::pure::mapping::modelToModel::*;
+import meta::pure::runtime::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::mapping::modelToModel::test::units::src::*;
+import meta::pure::unit::*;
+import meta::pure::mapping::modelToModel::test::units::dest::*;
+import meta::pure::mapping::modelToModel::test::*;
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_19_0' }
+meta::pure::mapping::modelToModel::test::alloy::units::testUnitToUnitIdentityMapping():Any[*]
+{
+   let tree = #{HealthProfile {fullName, weight} }#;
+
+   let result = execute(
+      |HealthProfile.all()->graphFetch($tree)->serialize($tree),
+      instanceIdentityMapping,
+      ^Runtime(connections = ^JsonModelConnection(
+                                element=^ModelStore(),
+                                class=_HealthProfile,
+                                url='data:application/json,{"fullName":"Teddy Dean","weight":{"unit":[{"unitId":"meta::pure::unit::Mass~Kilogram","exponentValue":1}],"value":5.5}}'
+                             )
+      ),[]
+   );
+
+   assert(jsonEquivalent('{"fullName":"Teddy Dean","weight":{"unit":[{"unitId":"meta::pure::unit::Mass~Kilogram","exponentValue":1}],"value":5.5}}'->parseJSON(), $result.values->toOne()->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_19_0' }
+meta::pure::mapping::modelToModel::test::alloy::units::testModelToModelMappingOfUnitToUnitTypeAndValue():Any[*]
+{
+   let tree = #{DecomposedHealthProfile {fullName, weightUnit, weightValue} }#;
+
+   let result = execute(
+      |DecomposedHealthProfile.all()->graphFetch($tree)->serialize($tree),
+      unitDecomposeMapping,
+      ^Runtime(connections = ^JsonModelConnection(
+                                element=^ModelStore(),
+                                class=_HealthProfile,
+                                url='data:application/json,{"fullName":"Teddy Dean","weight":{"unit":[{"unitId":"meta::pure::unit::Mass~Kilogram","exponentValue":1}],"value":5.5}}'
+                             )
+      ),[]
+   );
+
+   assert(jsonEquivalent('{"fullName":"Teddy Dean","weightValue":5.5,"weightUnit":"meta::pure::unit::Mass~Kilogram"}'->parseJSON(), $result.values->toOne()->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_19_0' }
+meta::pure::mapping::modelToModel::test::alloy::units::testModelToModelMappingOfUnitTypeAndValueToUnit():Any[*]
+{
+   let tree = #{HealthProfile {fullName, weight} }#;
+
+   let result = execute(
+      |HealthProfile.all()->graphFetch($tree)->serialize($tree),
+      unitComposeMapping,
+      ^Runtime(connections = ^JsonModelConnection(
+                                element=^ModelStore(),
+                                class=_DecomposedHealthProfile,
+                                url='data:application/json,{"fullName":"Teddy Dean","weightUnit":"meta::pure::unit::Mass~Kilogram","weightValue":5.5}'
+                             )
+      ),[]
+   );
+
+   assert(jsonEquivalent('{"fullName":"Teddy Dean","weight":{"unit":[{"unitId":"meta::pure::unit::Mass~Kilogram","exponentValue":1}],"value":5.5}}'->parseJSON(), $result.values->toOne()->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_19_0' }
+meta::pure::mapping::modelToModel::test::alloy::units::testModelToModelMappingOfUnitToUnitInSameMeasure():Any[*]
+{
+   let tree = #{ClassWithPound {weight} }#;
+
+   let result = execute(
+      |ClassWithPound.all()->graphFetch($tree)->serialize($tree),
+      unitConvertMapping,
+      ^Runtime(connections = ^JsonModelConnection(
+                                element=^ModelStore(),
+                                class=_ClassWithKilogram,
+                                url='data:application/json,{"weight":{"unit":[{"unitId":"meta::pure::unit::Mass~Kilogram","exponentValue":1}],"value":5.5}}'
+                             )
+      ),[]
+   );
+
+   assert(jsonEquivalent('{"weight":{"unit":[{"unitId":"meta::pure::unit::Mass~Pound", "exponentValue":1}],"value":12.12548777530369}}'->parseJSON(), $result.values->toOne()->parseJSON()));
+}
+
+###Mapping
+import meta::pure::mapping::modelToModel::test::units::src::*;
+import meta::pure::executionPlan::engine::java::*;
+import meta::pure::unit::*;
+import meta::pure::unit::mass::*;
+import meta::pure::mapping::modelToModel::test::units::dest::*;
+import meta::pure::mapping::modelToModel::test::*;
+
+Mapping meta::pure::mapping::modelToModel::test::alloy::units::instanceIdentityMapping
+(
+   HealthProfile : Pure
+            {
+               ~src _HealthProfile
+               fullName : $src.fullName,
+               weight : $src.weight
+            }
+)
+
+Mapping meta::pure::mapping::modelToModel::test::alloy::units::unitDecomposeMapping
+(
+   DecomposedHealthProfile : Pure
+            {
+               ~src _HealthProfile
+               fullName : $src.fullName,
+               weightUnit : $src.weight->unitType(),
+               weightValue : $src.weight->unitValue()
+            }
+)
+
+Mapping meta::pure::mapping::modelToModel::test::alloy::units::unitComposeMapping
+(
+   HealthProfile : Pure
+            {
+               ~src _DecomposedHealthProfile
+               fullName : $src.fullName,
+               weight : newUnit(Mass~Kilogram, $src.weightValue)->cast(@Mass~Kilogram)
+            }
+)
+
+Mapping meta::pure::mapping::modelToModel::test::alloy::units::unitConvertMapping
+(
+   ClassWithPound : Pure
+            {
+               ~src _ClassWithKilogram
+               weight : $src.weight->convert(Mass~Pound)->cast(@Mass~Pound)
+            }
+)

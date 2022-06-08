@@ -1,0 +1,50 @@
+import meta::protocols::generation::builder::tests::*;
+import meta::protocols::generation::builder::*;
+
+Enum meta::protocols::generation::builder::tests::MyEnum
+{
+  on, off
+}
+
+Class meta::protocols::generation::builder::tests::B
+{
+  val : String[0..1];
+  o : String[0..1];
+  v : Boolean[*];
+  en : MyEnum[1];
+}
+
+Class meta::protocols::generation::builder::tests::C extends meta::protocols::generation::builder::tests::B
+{
+  x : Integer[1];
+}
+
+Class meta::protocols::generation::builder::tests::A
+{
+  b : B[*];
+  z : Float[1];
+  ks : K[*];
+}
+
+Class meta::protocols::generation::builder::tests::K
+{
+  o : Integer[0..1];
+}
+
+function <<test.Test>> meta::protocols::generation::builder::tests::testBuilderGeneration():Boolean[1]
+{
+  let res = ^A(b=^C(en = MyEnum.on, val='ok',x=1, v = [true, false, false]),z=2.3, ks=[^K(o=1), ^K()])->builderGeneration();
+  assertEquals(
+  '^meta::protocols::generation::builder::tests::A (\n'+
+  '  b = ^meta::protocols::generation::builder::tests::C (\n'+
+  '    en = meta::protocols::generation::builder::tests::MyEnum.on,\n'+
+  '    v = [true, false, false],\n'+
+  '    val = \'ok\',\n'+
+  '    x = 1\n'+
+  '  ),\n'+
+  '  ks = [^meta::protocols::generation::builder::tests::K (\n'+
+  '    o = 1\n'+
+  '  ), ^meta::protocols::generation::builder::tests::K ()],\n'+
+  '  z = 2.3\n'+
+  ')', $res);
+}

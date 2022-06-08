@@ -1,0 +1,55 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::profiles::*;
+
+function <<test.Test>> meta::pure::functions::string::tests::makestring::testMakeString():Boolean[1]
+{
+    assertEq('a,b,c', makeString(['a', 'b', 'c'], ','));
+}
+
+function <<test.Test>> meta::pure::functions::string::tests::makestring::testMakeStringUsingGenericArrow():Boolean[1]
+{
+    assertEq('a,b,c', ['a', 'b', 'c']->makeString(','));
+}
+
+function <<test.Test>> meta::pure::functions::string::tests::makestring::testMakeStringsSingleString():Boolean[1]
+{
+    assertEq('a', makeString(['a'], ','));
+    assertEq('[a]', makeString(['a'], '[', ',', ']'));
+}
+
+function <<test.Test>> meta::pure::functions::string::tests::makestring::testMakeStringNoStrings():Boolean[1]
+{
+    assertEq('', makeString(['a']->tail(), ','));
+    assertEq('[]', makeString(['a']->tail(), '[', ',', ']'));
+}
+
+function <<test.Test>> meta::pure::functions::string::tests::makestring::testMakeStringIntegers():Boolean[1]
+{
+    assertEq('1, 2, 3', makeString([1, 2, 3], ', '));
+    assertEq('{1, 2, 3}', makeString([1, 2, 3], '{', ', ', '}'));
+}
+
+function <<test.Test>> meta::pure::functions::string::tests::makestring::testMakeStringInstances():Boolean[1]
+{
+    assertEq('[1, 2, 3], [4, 5, 6]', makeString([^List<Integer>(values=[1, 2, 3]), ^List<Integer>(values=[4, 5, 6])], ', '));
+    assertEq('{[1, 2, 3], [4, 5, 6]}', makeString([^List<Integer>(values=[1, 2, 3]), ^List<Integer>(values=[4, 5, 6])], '{', ', ', '}'));
+}
+
+function <<test.Test>> meta::pure::functions::string::tests::makestring::testMakeStringMixedTypes():Boolean[1]
+{
+    assertEq('a, 2, [1, 2, 3]', makeString(['a', 2, ^List<Integer>(values=[1, 2, 3])], ', '));
+    assertEq('{a, 2, [1, 2, 3]}', makeString(['a', 2, ^List<Integer>(values=[1, 2, 3])], '{', ', ', '}'));
+}

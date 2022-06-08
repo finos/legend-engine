@@ -1,0 +1,360 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+function meta::pure::functions::math::stdDevSample(numbers:Number[*]):Number[1]
+{
+    meta::pure::functions::math::stdDev($numbers->toOneMany(), true);
+}
+
+function meta::pure::functions::math::stdDevPopulation(numbers:Number[*]):Number[1]
+{
+    meta::pure::functions::math::stdDev($numbers->toOneMany(), false);
+}
+
+function meta::pure::functions::math::pi():Float[1]
+{
+   3.141592653589793;
+}
+
+function {doc.doc = 'Earth radius in km'} meta::pure::functions::math::earthRadius():Float[1]
+{
+   6371.0;
+}
+
+function meta::pure::functions::math::toRadians(degrees:Number[1]):Float[1]
+{
+   $degrees * pi() / 180;
+}
+
+function meta::pure::functions::math::toDegrees(radians:Number[1]):Float[1]
+{
+   $radians * 180 / pi();
+}
+
+function meta::pure::functions::math::distanceHaversineDegrees(lat1Degrees:Number[1],lon1Degrees:Number[1],lat2Degrees:Number[1],lon2Degrees:Number[1]):Number[1]
+{
+   distanceHaversineRadians(toRadians($lat1Degrees),toRadians($lon1Degrees),toRadians($lat2Degrees),toRadians($lon2Degrees));
+}
+
+function meta::pure::functions::math::distanceHaversineRadians(lat1Radians:Number[1],lon1Radians:Number[1],lat2Radians:Number[1],lon2Radians:Number[1]):Number[1]
+{
+   earthRadius() * angularDistanceInRadians(squareOfHalfTheChord($lat1Radians, $lon1Radians, $lat2Radians, $lon2Radians));
+}
+
+function <<access.private>> meta::pure::functions::math::squareOfHalfTheChord(lat1Radians:Number[1],lon1Radians:Number[1],lat2Radians:Number[1],lon2Radians:Number[1]):Number[1]
+{
+   pow((sin(($lat2Radians - $lat1Radians) / 2)), 2) + (cos($lat1Radians) * cos($lat2Radians) * pow(sin(($lon2Radians - $lon1Radians) / 2), 2));
+}
+
+function <<access.private>> meta::pure::functions::math::angularDistanceInRadians(a:Number[1]):Float[1]
+{
+   2.0 * atan2(sqrt($a), sqrt(1 - $a));
+}
+
+function meta::pure::functions::math::distanceSphericalLawOfCosinesDegrees(lat1Degrees:Number[1],lon1Degrees:Number[1],lat2Degrees:Number[1],lon2Degrees:Number[1]):Number[1]
+{
+   distanceSphericalLawOfCosinesRadians(toRadians($lat1Degrees), toRadians($lon1Degrees), toRadians($lat2Degrees), toRadians($lon2Degrees));
+}
+
+function meta::pure::functions::math::distanceSphericalLawOfCosinesRadians(lat1Radians:Number[1],lon1Radians:Number[1],lat2Radians:Number[1],lon2Radians:Number[1]):Number[1]
+{
+   earthRadius() * acos((sin($lat1Radians) * sin($lat2Radians)) + (cos($lat1Radians) * cos($lat2Radians) * cos($lon2Radians - $lon1Radians)));
+}
+
+function meta::pure::functions::math::olap::rank(values:Any[*]):Map<Any,Integer>[1]
+{
+    fail('not implemented');
+   ^Map<Any, Integer>();
+}
+
+function meta::pure::functions::math::olap::averageRank(values:Any[*]):Map<Any,Integer>[1]
+{
+    fail('not implemented');
+   ^Map<Any, Integer>();
+}
+
+function meta::pure::functions::math::olap::denseRank(values:Any[*]):Map<Any,Integer>[1]
+{
+    fail('not implemented');
+   ^Map<Any, Integer>();
+}
+
+function meta::pure::functions::math::olap::rowNumber(values:Any[*]):Map<Any,Integer>[1]
+{
+    fail('not implemented');
+   ^Map<Any, Integer>();
+}
+
+function meta::pure::functions::math::stdDevSample(numbers:Number[1..*]):Number[1]
+{
+    meta::pure::functions::math::stdDev($numbers, true);
+}
+
+function meta::pure::functions::math::stdDevPopulation(numbers:Number[1..*]):Number[1]
+{
+    meta::pure::functions::math::stdDev($numbers, false);
+}
+
+function meta::pure::functions::math::max(left:Integer[1], right:Integer[1]):Integer[1]
+{
+    if($left < $right, | $right, | $left)
+}
+
+function meta::pure::functions::math::max(left:Float[1], right:Float[1]):Float[1]
+{
+    if($left < $right, | $right, | $left)
+}
+
+function meta::pure::functions::math::max(left:Number[1], right:Number[1]):Number[1]
+{
+    if($left < $right, | $right, | $left)
+}
+
+function meta::pure::functions::math::min(left:Integer[1], right:Integer[1]):Integer[1]
+{
+    if($right < $left, | $right, | $left)
+}
+
+function meta::pure::functions::math::min(left:Float[1], right:Float[1]):Float[1]
+{
+    if($right < $left, | $right, | $left)
+}
+
+function meta::pure::functions::math::min(left:Number[1], right:Number[1]):Number[1]
+{
+    if($right < $left, | $right, | $left)
+}
+
+function meta::pure::functions::math::max(ints:Integer[*]):Integer[0..1]
+{
+    $ints->fold({i, m | max($i, $m->toOne())}, $ints->first())
+}
+
+function meta::pure::functions::math::max(ints:Integer[1..*]):Integer[1]
+{
+    $ints->fold({i, m | max($i, $m)}, $ints->at(0))
+}
+
+function meta::pure::functions::math::max(ints:Float[*]):Float[0..1]
+{
+    $ints->fold({i, m | max($i, $m->toOne())}, $ints->first())
+}
+
+function meta::pure::functions::math::max(ints:Float[1..*]):Float[1]
+{
+    $ints->fold({i, m | max($i, $m)}, $ints->at(0))
+}
+
+function meta::pure::functions::math::max(numbers:Number[*]):Number[0..1]
+{
+    $numbers->fold({n, m | max($n, $m->toOne())}, $numbers->first())
+}
+
+function meta::pure::functions::math::max(numbers:Number[1..*]):Number[1]
+{
+    $numbers->fold({n, m | max($n, $m)}, $numbers->at(0))
+}
+
+function meta::pure::functions::math::min(ints:Integer[1..*]):Integer[1]
+{
+    $ints->fold({i, m | min($i, $m)}, $ints->at(0))
+}
+
+function meta::pure::functions::math::min(ints:Integer[*]):Integer[0..1]
+{
+    $ints->fold({i, m | min($i, $m->toOne())}, $ints->first())
+}
+
+function meta::pure::functions::math::min(ints:Float[1..*]):Float[1]
+{
+    $ints->fold({i, m | min($i, $m)}, $ints->at(0))
+}
+
+function meta::pure::functions::math::min(ints:Float[*]):Float[0..1]
+{
+    $ints->fold({i, m | min($i, $m->toOne())}, $ints->first())
+}
+
+function meta::pure::functions::math::min(numbers:Number[1..*]):Number[1]
+{
+    $numbers->fold({n, m | min($n, $m)}, $numbers->at(0))
+}
+
+function meta::pure::functions::math::min(numbers:Number[*]):Number[0..1]
+{
+    $numbers->fold({n, m | min($n, $m->toOne())}, $numbers->first())
+}
+
+function meta::pure::functions::math::sum(numbers:Number[*]):Number[1]
+{
+    $numbers->plus();
+}
+
+function meta::pure::functions::math::sum(numbers:Integer[*]):Integer[1]
+{
+    $numbers->plus();
+}
+
+function meta::pure::functions::math::sum(numbers:Float[*]):Float[1]
+{
+    $numbers->plus();
+}
+
+function meta::pure::functions::math::average(numbers:Number[*]):Float[1]
+{
+    $numbers->mean();
+}
+
+function meta::pure::functions::math::average(numbers:Integer[*]):Float[1]
+{
+    $numbers->mean();
+}
+
+function meta::pure::functions::math::average(numbers:Float[*]):Float[1]
+{
+    $numbers->mean();
+}
+
+function meta::pure::functions::math::mean(numbers:Number[*]):Float[1]
+{
+    if($numbers->isEmpty(),|fail('Error: Mean of an empty set.');0.0;,|$numbers->sum() / $numbers->size())
+}
+
+function meta::pure::functions::math::mean(numbers:Integer[*]):Float[1]
+{
+    if($numbers->isEmpty(),|fail('Error: Mean of an empty set.');0.0;,|$numbers->sum() / $numbers->size())
+}
+
+function meta::pure::functions::math::mean(numbers:Float[*]):Float[1]
+{
+    if($numbers->isEmpty(),|fail('Error: Mean of an empty set.');0.0;,|$numbers->sum() / $numbers->size())
+}
+
+function meta::pure::functions::math::percentile(numbers: Number[*], percentile: Float[1]): Number[0..1]
+[
+  ($percentile >= 0) && ($percentile <= 1)
+]
+{
+   percentile($numbers, $percentile, true, true)
+}
+
+function meta::pure::functions::math::percentile(numbers: Number[*], percentile: Float[1], ascending: Boolean[1], continuous: Boolean[1]): Number[0..1]
+[
+  ($percentile >= 0) && ($percentile <= 1)
+]
+{
+   fail('Only supported in store execution flow!');
+   0;
+}
+
+
+
+function meta::pure::functions::math::calculateInverseFunction(f:FunctionDefinition<Any>[1]):FunctionDefinition<Any>[1]
+{
+   if ($f.expressionSequence->toOne()->instanceOf(SimpleFunctionExpression),
+       |let expression = $f.expressionSequence->cast(@SimpleFunctionExpression)->toOne();
+       let functionName = $expression.functionName->toOne();
+       let variable = $f->findVariableExpression();
+       let paramValues = $expression.parametersValues;
+       let inverseParamValues = if ($paramValues->size() == 1 && $paramValues->toOne()->instanceOf(InstanceValue),
+                                    |$paramValues
+                                    ->cast(@InstanceValue).values
+                                    ->map(value | $value->cast(@ValueSpecification)->flipParametersValues($functionName)),
+                                    |$paramValues
+                                    ->map(param | $param->cast(@ValueSpecification)->flipParametersValues($functionName)));
+       let castParams = if ($paramValues->size() == 1 && $paramValues->toOne()->instanceOf(InstanceValue),
+                            | let cast = $expression.parametersValues->cast(@InstanceValue)->toOne();
+                            ^$cast(values=$inverseParamValues);,
+                            |$inverseParamValues);
+       let inverseExpressionSeq = ^$expression(parametersValues=$castParams->cast(@ValueSpecification));
+       let reversePrecedenceExpressionSeq = $inverseExpressionSeq->reverseFunctionPrecedence($variable);
+       let functionType = $f.classifierGenericType.typeArguments->toOne().rawType->cast(@FunctionType)->toOne();
+       let newFunc = meta::pure::functions::meta::newLambdaFunction($functionType);
+       ^$newFunc(expressionSequence=$reversePrecedenceExpressionSeq);,
+       |$f;);
+}
+
+function meta::pure::functions::math::reverseFunctionPrecedence(sfe:SimpleFunctionExpression[1], calculatedValue:ValueSpecification[1]):SimpleFunctionExpression[1]
+{
+   let isNotLeafExpression = if ($sfe.parametersValues->size() == 1,
+                                 |$sfe.parametersValues->cast(@InstanceValue).values->exists(p|$p->instanceOf(SimpleFunctionExpression));,
+                                 |$sfe.parametersValues->exists(p|$p->instanceOf(SimpleFunctionExpression)));
+   let functionName = $sfe.functionName->toOne();
+   let result = if ($isNotLeafExpression,
+                    |let rawParamValues = $sfe.parametersValues->cast(@InstanceValue).values;
+                    let paramValues = $rawParamValues->filter(p|$p->instanceOf(InstanceValue));
+                    let expressionToExtract = $rawParamValues->filter(p|$p->instanceOf(SimpleFunctionExpression) && $p->cast(@SimpleFunctionExpression)->containsVariableExpression())
+                    ->cast(@SimpleFunctionExpression)->toOne();
+                    let validOtherOperand = $rawParamValues->filter(p|$p->instanceOf(InstanceValue)
+                                                                    || ($p->instanceOf(SimpleFunctionExpression) && !$p->cast(@SimpleFunctionExpression)->containsVariableExpression()));
+                    let paramsToPut = [$calculatedValue]->concatenate($validOtherOperand)->cast(@ValueSpecification);
+                    let newCurrentExpression = $paramsToPut->handlesParamReconstructionForDivision($sfe, $functionName);
+                    let finalResult = reverseFunctionPrecedence($expressionToExtract, $newCurrentExpression);,
+
+                    |let expressionToExtractIv = if ($sfe.parametersValues->size()==1 && $sfe.parametersValues->toOne()->instanceOf(InstanceValue),
+                                                     |$sfe.parametersValues->cast(@InstanceValue).values->filter(p|$p->instanceOf(InstanceValue)),
+                                                     |$sfe.parametersValues->filter(p|$p->instanceOf(InstanceValue)));
+                    let paramsToPut = [$calculatedValue]->concatenate($expressionToExtractIv)->cast(@ValueSpecification);
+                    $paramsToPut->handlesParamReconstructionForDivision($sfe, $functionName););
+}
+
+function <<access.private>> meta::pure::functions::math::flipParametersValues(value:ValueSpecification[1], funcName:String[1]):ValueSpecification[*]
+{
+   if ($value->instanceOf(InstanceValue),
+       | let inverseParameterValue = if ($funcName == 'times' || $funcName == 'divide',
+                                         |let innerValues = $value->cast(@InstanceValue).values;
+                                         if ($innerValues->size() == 1,
+                                             |1 / ($value->cast(@InstanceValue).values->toOne()->cast(@Number)),
+                                             |$innerValues->map(i|$i->cast(@ValueSpecification)->flipParametersValues($funcName)));,
+                                         | if ($funcName == 'plus' || $funcName == 'minus',
+                                               |let innerValues = $value->cast(@InstanceValue).values;
+                                               if ($innerValues->size() == 1,
+                                                   |0 - ($value->cast(@InstanceValue).values->toOne()->cast(@Number)),
+                                                   |$innerValues->map(i|$i->cast(@ValueSpecification)->flipParametersValues($funcName)));,
+                                               |fail('Inverse calculation is not supported for this function.');));
+       let ret = $value->cast(@InstanceValue);
+       ^$ret(values=$inverseParameterValue);,
+       | if ($value->instanceOf(SimpleFunctionExpression),
+             |let expression = $value->cast(@SimpleFunctionExpression);
+             let innerFuncName = $expression.functionName->toOne();
+             let innerParams = $expression.parametersValues;
+             let flippedParams = $innerParams->map(param | $param->cast(@ValueSpecification)->flipParametersValues($innerFuncName));
+             let ret = $value->cast(@SimpleFunctionExpression);
+             ^$ret(parametersValues=$flippedParams);,
+             |$value;));
+}
+
+function <<access.private>> meta::pure::functions::math::findVariableExpression(f:FunctionDefinition<Any>[1]):VariableExpression[1]
+{
+   let v = $f.classifierGenericType.typeArguments.rawType->cast(@FunctionType).parameters->toOne();
+}
+
+function <<access.private>> meta::pure::functions::math::containsVariableExpression(sfe:SimpleFunctionExpression[1]):Boolean[1]
+{
+   if ($sfe.parametersValues->size() == 1,
+       |$sfe.parametersValues->toOne()->instanceOf(VariableExpression) || $sfe.parametersValues->cast(@InstanceValue).values->exists(p|$p->instanceOf(VariableExpression)),
+       |true);
+}
+
+function <<access.private>> meta::pure::functions::math::handlesParamReconstructionForDivision(vs:ValueSpecification[*], sfe: SimpleFunctionExpression[1], functionName: String[1]):SimpleFunctionExpression[1]
+{
+   if ($functionName == 'divide',
+       |^$sfe(parametersValues=$vs->map(p|$p->wrapInsideNumberInstanceValue())->cast(@ValueSpecification)),
+       |^$sfe(parametersValues=^InstanceValue(genericType=^GenericType(rawType=Number), values=$vs, multiplicity=OneMany)));
+}
+
+function <<access.private>> meta::pure::functions::math::wrapInsideNumberInstanceValue(vs:ValueSpecification[1]):InstanceValue[1]
+{
+   ^InstanceValue(genericType=^GenericType(rawType=Number), values=$vs, multiplicity=OneMany);
+}

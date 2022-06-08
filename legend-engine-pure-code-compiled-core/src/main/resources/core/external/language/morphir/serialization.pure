@@ -1,0 +1,261 @@
+import meta::json::*;
+import meta::external::language::morphir::metamodel::Distribution::*;
+import meta::external::language::morphir::metamodel::FQName::*;
+import meta::external::language::morphir::transform::*;
+import meta::external::language::morphir::metamodel::Value::*;
+import meta::external::language::morphir::metamodel::Type::*;
+import meta::external::language::morphir::metamodel::Literal::*;
+import meta::external::language::morphir::metamodel::Package::*;
+import meta::external::language::morphir::metamodel::Path::*;
+import meta::external::language::morphir::metamodel::Name::*;
+import meta::external::language::morphir::metamodel::AccessControlled::*;
+import meta::external::language::morphir::serialization::*;
+
+function meta::external::language::morphir::serialization::morphirModelToJson(ir:meta::external::language::morphir::metamodel::Distribution::IR[1]):JSONElement[1]
+{
+   let formatVersion = newJSONKeyValue('formatVersion', ^JSONNumber(value=$ir.formatVersion));
+   let distribution = newJSONKeyValue('distribution', $ir.distribution->morphirDistributionToJson());
+
+   let pairs = [$formatVersion, $distribution];
+   newJSONObject($pairs);
+}
+
+function <<access.private>> meta::external::language::morphir::serialization::morphirDistributionToJson(distribution:meta::external::language::morphir::metamodel::Distribution::Distribution[1]):JSONElement[1]
+{
+   assert($distribution->instanceOf(meta::external::language::morphir::metamodel::Distribution::Library));
+   let library = $distribution->cast(@meta::external::language::morphir::metamodel::Distribution::Library);
+
+   ^JSONArray(values=[^JSONString(value='library'),
+                      $library.packageName->toOne()->morphirPackageNameToJson(),
+                      ^JSONArray(values=$library.dependencies->map(dependency| $dependency->morphirEmptyPackageDependencyToJson())),
+                      $library.packageDef->toOne()->morphirPackageDefinitionToJson()]);
+}
+
+function <<access.private>> meta::external::language::morphir::serialization::morphirPackageDefinitionToJson(packageDef:meta::external::language::morphir::metamodel::Package::Definition[1]):JSONElement[1]
+{
+   let pairs = [newJSONKeyValue('modules',
+                                ^JSONArray(values=[$packageDef.modules->map(module| $module->morphirDefinitionModuleToJson())]))];
+   newJSONObject($pairs);
+}
+
+function <<access.private>> meta::external::language::morphir::serialization::morphirDefinitionModuleToJson(module:meta::external::language::morphir::metamodel::Package::DefinitionModule[1]):JSONElement[1]
+{
+   let moduleName = newJSONKeyValue('name', $module.moduleName->toOne()->morphirModuleNameToJson());
+   let moduleDef = newJSONKeyValue('def', $module.accessControlled->toOne()->morphirAccessControlledToJson());
+   let pairs = [$moduleName, $moduleDef];
+   newJSONObject($pairs);
+}
+
+function <<access.private>> meta::external::language::morphir::serialization::morphirAccessControlledToJson(accessControlled:meta::external::language::morphir::metamodel::AccessControlled::AccessControlled[1]):JSONElement[1]
+{
+   ^JSONArray(values=[$accessControlled.access->toOne()->morphirAccessToJson(),
+                      $accessControlled.value->toOne()->morphirAccessControlledValueToJson()]);
+}
+
+function <<access.private>> meta::external::language::morphir::serialization::morphirAccessToJson(access:meta::external::language::morphir::metamodel::AccessControlled::Access[1]):JSONElement[1]
+{
+   assert($access->instanceOf(Public) || $access->instanceOf(Private));
+
+   ^JSONString(value=if($access->instanceOf(Public), |'public', |'private'));
+}
+
+function <<access.private>> meta::external::language::morphir::serialization::morphirAccessControlledValueToJson(accessControlledValue:meta::external::language::morphir::metamodel::AccessControlled::AccessControlledValue[1]):JSONElement[1]
+{
+   let pairs = $accessControlledValue->match([
+                                                macv:meta::external::language::morphir::metamodel::Module::Definition[1] |
+                                                   let types = newJSONKeyValue('types', ^JSONArray(values=[$macv.types->map(type| $type->morphirModuleDefinitionTypeToJson())]));
+                                                   let values = newJSONKeyValue('values', ^JSONArray(values=[$macv.values->map(value| $value->morphirModuleDefinitionValueToJson())]));
+                                                   let defContent = [$types, $values];
+                                                   newJSONObject($defContent);,
+                                                vacv:meta::external::language::morphir::metamodel::Value::Definition[1] |
+                                                   let inputTypes = newJSONKeyValue('inputTypes', ^JSONArray(values=$vacv.inputTypes->map(type| $type->morphirDefinitionInputTypeToJson())));
+                                                   let outputType = newJSONKeyValue('outputType', $vacv.outputType->toOne()->morphirTypeToJson());
+                                                   let body = newJSONKeyValue('body', $vacv.body->toOne()->morphirValueToJson());
+                                                   let defContent = [$inputTypes, $outputType, $body];
+                                                   newJSONObject($defContent);
+                                             ]);
+}
+
+function <<access.private>> meta::external::language::morphir::serialization::morphirModuleNameToJson(moduleName:meta::external::language::morphir::metamodel::Module::ModuleName[1]):JSONElement[1]
+{
+   $moduleName.path->toOne()->morphirPathToJson();
+}
+
+function <<access.private>> meta::external::language::morphir::serialization::morphirPackageNameToJson(packageName:meta::external::language::morphir::metamodel::Package::PackageName[1]):JSONElement[1]
+{
+   $packageName.path->toOne()->morphirPathToJson();
+}
+
+function <<access.private>> meta::external::language::morphir::serialization::morphirFunctionsToJson(values:meta::external::language::morphir::metamodel::Value::Value[*]):JSONElement[*]
+{
+   $values->map(v | $v->morphirFunctionToJson());
+}
+
+function <<access.private>> meta::external::language::morphir::serialization::morphirFunctionToJson(value:meta::external::language::morphir::metamodel::Value::Value[1]):JSONElement[1]
+{
+   let funcBodyValues = $value->morphirValueToJson();
+   let body = newJSONKeyValue('body', $funcBodyValues);
+   let pairs = [$body];
+
+   newJSONObject($pairs);
+}
+
+function <<access.private>> meta::external::language::morphir::serialization::morphirValueToJson(value:meta::external::language::morphir::metamodel::Value::Value[1]):JSONArray[1]
+{
+   let funcBodyValues = $value->match(
+                                 [ite: meta::external::language::morphir::metamodel::Value::IfThenElse[1] |
+                                    [^JSONString(value='if_then_else'),
+                                     $ite.valueParameter->morphirTypeToJson(),
+                                     $ite.condition->toOne()->morphirValueToJson(),
+                                     $ite.thenBranch->toOne()->morphirValueToJson(),
+                                     $ite.elseBranch->toOne()->morphirValueToJson()];,
+                                  apply: meta::external::language::morphir::metamodel::Value::Apply[1] |
+                                    [^JSONString(value='apply'),
+                                     $apply.valueParameter->morphirTypeToJson(),
+                                     $apply.targetFunction->toOne()->morphirValueToJson(),
+                                     $apply.argument->toOne()->morphirValueToJson()];,
+                                  var: meta::external::language::morphir::metamodel::Value::Variable[1] |
+                                    [^JSONString(value='variable'),
+                                     $var.valueParameter->morphirTypeToJson(),
+                                     $var.name->toOne()->morphirNameToJson()];,
+                                  ref: meta::external::language::morphir::metamodel::Value::Reference[1] |
+                                    [^JSONString(value='reference'),
+                                     $ref.valueParameter->morphirTypeToJson(),
+                                     $ref.fQName->toOne()->morphirFQNameToJson()];,
+                                  lit: meta::external::language::morphir::metamodel::Value::Literal[1] |
+                                    [^JSONString(value='literal'),
+                                     $lit.valueParameter->morphirTypeToJson(),
+                                     $lit.literal->toOne()->morphirLiteralToJson()];,
+                                  let: meta::external::language::morphir::metamodel::Value::LetDefinition[1] |
+                                    [^JSONString(value='let_definition'),
+                                     $let.valueParameter->morphirTypeToJson(),
+                                     $let.name->toOne()->morphirNameToJson(),
+                                     $let.definition->toOne()->morphirAccessControlledValueToJson(),
+                                     $let.value->toOne()->morphirValueToJson()]
+                                 ]);
+
+   ^JSONArray(values=$funcBodyValues);
+}
+
+function <<access.private>> meta::external::language::morphir::serialization::morphirTypeToJson(type:meta::external::language::morphir::metamodel::Type::Type[0..1]):JSONElement[1]
+{
+   let sourceInformation = $type.sourceInformation->morphirSourceInformationToJson();
+
+   if ($type->isEmpty(),
+        | ^JSONObject(),
+        | $type->match([
+                        ref: meta::external::language::morphir::metamodel::Type::Reference[1] |
+                           let content = [^JSONString(value='reference'),
+                                          $ref.typeParameter->morphirTypeToJson(),
+                                          $ref.fQName->toOne()->morphirFQNameToJson(),
+                                          ^JSONArray(values=$ref.types->map(type| $type->morphirTypeToJson())),
+                                          $sourceInformation];
+                           ^JSONArray(values=$content);,
+                        func: meta::external::language::morphir::metamodel::Type::Function[1] |
+                           let content = [^JSONString(value='function'),
+                                          $func.typeParameter->morphirTypeToJson(),
+                                          $func.argumentType->morphirTypeToJson(),
+                                          $func.returnType->morphirTypeToJson(),
+                                          $sourceInformation];
+                           ^JSONArray(values=$content);
+                       ]);
+      );
+}
+
+function <<access.private>> meta::external::language::morphir::serialization::morphirFQNameToJson(fQName:meta::external::language::morphir::metamodel::FQName::FQName[1]):JSONArray[1]
+{
+   let packagePathJson = $fQName.packagePath->toOne()->morphirPathToJson();
+   let modulePathJson = $fQName.modulePath->toOne()->morphirPathToJson();
+   let nameJson = $fQName.name->toOne()->morphirNameToJson();
+
+   ^JSONArray(values=[$packagePathJson, $modulePathJson, $nameJson]);
+}
+
+function <<access.private>> meta::external::language::morphir::serialization::morphirPathToJson(path:meta::external::language::morphir::metamodel::Path::Path[1]):JSONArray[1]
+{
+   ^JSONArray(values=$path.names->map(name | $name->morphirNameToJson()));
+}
+
+function <<access.private>> meta::external::language::morphir::serialization::morphirNameToJson(name:Name[1]):JSONArray[1]
+{
+   let processedWords = $name.words->map(word| $word->processWord());
+   ^JSONArray(values=$processedWords->map(word | ^JSONString(value=$word)));
+}
+
+function <<access.private>> meta::external::language::morphir::serialization::morphirEmptyPackageDependencyToJson(dependency:meta::external::language::morphir::metamodel::Distribution::Dependency[1]):JSONElement[1]
+{
+   if ($dependency->isEmpty(), | ^JSONObject(), | ^JSONObject());
+}
+
+function <<access.private>> meta::external::language::morphir::serialization::morphirModuleDefinitionValueToJson(value:meta::external::language::morphir::metamodel::Module::DefinitionValue[1]):JSONElement[1]
+{
+   if ($value->isEmpty(),
+       | ^JSONArray(values=[]),
+       | ^JSONArray(values=[^Name(words=[getDefaultPackageValueName()])->morphirNameToJson(),
+                            $value.accessControlled->toOne()->morphirAccessControlledToJson()]);
+      );
+}
+
+function <<access.private>> meta::external::language::morphir::serialization::morphirDefinitionInputTypeToJson(inputType:meta::external::language::morphir::metamodel::Value::DefinitionInputType[0..1]):JSONElement[1]
+{
+   if ($inputType->isEmpty(),
+       | ^JSONArray(values=[]),
+       | ^JSONArray(values=[$inputType.name->toOne()->morphirNameToJson(),
+                            $inputType.value->toOne()->morphirTypeToJson(),
+                            $inputType.type->toOne()->morphirTypeToJson()]);
+      );
+}
+
+function <<access.private>> meta::external::language::morphir::serialization::morphirModuleDefinitionTypeToJson(type:meta::external::language::morphir::metamodel::Module::DefinitionType[1]):JSONElement[1]
+{
+   if ($type->isEmpty(), | ^JSONObject(), | ^JSONObject());
+}
+
+function <<access.private>> meta::external::language::morphir::serialization::morphirLiteralToJson(literal:meta::external::language::morphir::metamodel::Literal::Literal[1]):JSONElement[1]
+{
+   $literal->match([
+                    intLiteral:IntLiteral[1] | ^JSONArray(values=[^JSONString(value='int_literal'), ^JSONNumber(value=$intLiteral.value->toOne())]),
+                    floatLiteral:FloatLiteral[1] | ^JSONArray(values=[^JSONString(value='float_literal'), ^JSONNumber(value=$floatLiteral.value->toOne())]),
+                    boolLiteral:BoolLiteral[1] | ^JSONArray(values=[^JSONString(value='bool_literal'), ^JSONBoolean(value=$boolLiteral.value->toOne())]),
+                    stringLiteral:StringLiteral[1] | ^JSONArray(values=[^JSONString(value='string_literal'), ^JSONString(value=$stringLiteral.value->toOne())])
+                   ]);
+}
+
+function <<access.private>> meta::external::language::morphir::serialization::morphirSourceInformationToJson(sourceInfo:meta::external::language::morphir::metamodel::Type::SourceInformation[0..1]):JSONArray[1]
+{
+   if ($sourceInfo->isEmpty(),
+       | ^JSONArray(values=[]),
+       | let sourceInfoToOne = $sourceInfo->toOne();
+         let content = [^JSONString(value='sourceInformation'),
+                        ^JSONArray(values=[^JSONString(value='source'),
+                                           ^JSONString(value=$sourceInfoToOne.source)]),
+                        ^JSONArray(values=[^JSONString(value='startLine'),
+                                           ^JSONNumber(value=$sourceInfoToOne.startLine)]),
+                        ^JSONArray(values=[^JSONString(value='startColumn'),
+                                           ^JSONNumber(value=$sourceInfoToOne.startColumn)]),
+                        ^JSONArray(values=[^JSONString(value='endLine'),
+                                           ^JSONNumber(value=$sourceInfoToOne.endLine)]),
+                        ^JSONArray(values=[^JSONString(value='endColumn'),
+                                           ^JSONNumber(value=$sourceInfoToOne.endColumn)])];
+         ^JSONArray(values=$content);
+      );
+}
+
+
+function <<access.private>> meta::external::language::morphir::serialization::processWord(word:String[1]): String[*]
+{
+   $word->map(s| $s->splitOnCamelCase())->map(result| $result->decomposeSpecialWord())->map(s| $s->toLower());
+}
+
+function <<access.private>> meta::external::language::morphir::serialization::decomposeSpecialWord(word:String[1]): String[*]
+{
+   let specialWords = ['SDK'];
+   let res = if ($specialWords->contains($word),
+       | range($word->length())->map(i| $word->substring($i, $i + 1)->toLower()),
+       | $word);
+}
+
+function <<access.private>> meta::external::language::morphir::serialization::getDefaultPackageValueName(): String[1]
+{
+   'main'
+}

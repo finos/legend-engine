@@ -1,0 +1,298 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+function {doc.doc = 'Returns true if the two strings are equal, ignoring case.'}
+meta::pure::functions::string::equalIgnoreCase(string1:String[1], string2:String[1]):Boolean[1]
+{
+    eq($string1->length(), $string2->length()) && eq($string1->toUpper(), $string2->toUpper())
+}
+
+function meta::pure::functions::string::contains(source:String[0..1], val:String[1]):Boolean[1]
+{
+    $source->isNotEmpty() && $source->toOne()->contains($val)
+}
+
+function meta::pure::functions::string::startsWith(source:String[0..1], val:String[1]):Boolean[1]
+{
+    $source->isNotEmpty() && $source->toOne()->startsWith($val)
+}
+
+function meta::pure::functions::string::endsWith(source:String[0..1], val:String[1]):Boolean[1]
+{
+    $source->isNotEmpty() && $source->toOne()->endsWith($val)
+}
+
+function {doc.doc = 'Upper cases the first charater of the provided string'} meta::pure::functions::string::toUpperFirstCharacter(values : String[*]) : String[*] {
+      $values->map({s|
+         if($s->length() == 0, 
+            |$s, 
+            |$s->substring(0, 1)->toUpper() + $s->substring(1)
+            )
+         })
+}
+
+function {doc.doc = 'Lower cases the first charater of the provided string'} meta::pure::functions::string::toLowerFirstCharacter(values : String[*]) : String[*] {
+      $values->map({s|
+         if($s->length() == 0, 
+            |$s, 
+            |$s->substring(0, 1)->toLower() + $s->substring(1)
+            )
+         })
+}
+
+function meta::pure::functions::string::lastIndexOf(str:String[1], value : String[1]):Integer[1] {
+   let i = $str->indexOf($value);
+   if ($i < 0, 
+      | $i, 
+      {| 
+         let remainder = $str->substring($i + $value->length());
+         let subIndex = $remainder->lastIndexOf($value);
+
+         if ($subIndex < 0, 
+            | $i, 
+            | $i +  $value->length() + $subIndex
+            );
+      });
+}
+
+function {doc.doc = 'Returns true if the string is upper case'}
+meta::pure::functions::string::isUpperCase(source:String[1]):Boolean[1]
+{
+   $source->meta::pure::functions::string::toUpper()->meta::pure::functions::boolean::equal($source);
+}
+
+function  {doc.doc = 'Returns true if the string is lower case'}
+meta::pure::functions::string::isLowerCase(source:String[1]):Boolean[1]
+{
+   $source->meta::pure::functions::string::toLower()->meta::pure::functions::boolean::equal($source);
+}
+
+function {doc.doc = 'Return whether string non-empty and composed entirely of digits.'}
+meta::pure::functions::string::isDigit(string:String[1]):Boolean[1]
+{
+   $string->isDigit(0, $string->length());
+}
+
+function {doc.doc = 'Return whether the range [start, end) of string is non-empty and composed entirely of digits.'}
+meta::pure::functions::string::isDigit(string:String[1], start:Integer[1], end:Integer[1]):Boolean[1]
+{
+   let realStart = max($start, 0);
+   let realEnd = min($end, $string->length());
+   ($realStart < $realEnd) && range($realStart, $realEnd)->forAll(i | $string->substring($i, $i + 1)->inRange('0', '9'));
+}
+
+function {doc.doc = 'Return whether string non-empty and composed entirely of letters.'}
+meta::pure::functions::string::isLetter(string:String[1]):Boolean[1]
+{
+   $string->isLetter(0, $string->length());
+}
+
+function {doc.doc = 'Return whether the range [start, end) of string is non-empty and composed entirely of letters.'}
+meta::pure::functions::string::isLetter(string:String[1], start:Integer[1], end:Integer[1]):Boolean[1]
+{
+   let realStart = max($start, 0);
+   let realEnd = min($end, $string->length());
+   ($realStart < $realEnd) && !range($realStart, $realEnd)->exists(i | let c = $string->substring($i, $i+1); !$c->inRange('a', 'z') && !$c->inRange('A', 'Z'););
+}
+
+function {doc.doc = 'Return whether string non-empty and composed entirely of digits or letters.'}
+meta::pure::functions::string::isAlphaNumeric(string:String[1]):Boolean[1]
+{
+   ($string->length() > 0) && !range($string->length())->exists(i| let c = $string->substring($i, $i+1); !$c->isDigit() && !$c->isLetter(););
+}
+
+function {doc.doc = 'Returns a string representing a collection of pairs'}
+meta::pure::functions::string::makeString<K,V>(collection : Pair<K,V>[*]) : String[1]
+{
+   '('+ $collection->map(p| $p.toString())->joinStrings(',')+ ')';
+}
+
+
+function  {doc.doc = 'Returns part of the string before the specified sequence, or the complete string if not present'}
+meta::pure::functions::string::substringBefore(source:String[1], toFind : String[1]):String[1]
+{
+   let index = $source->indexOf($toFind);
+   
+   let end = if ($index >= 0, 
+      | $index, 
+      | $source->length()
+      );
+   
+   $source->substring(0, $end);
+}
+
+
+function  {doc.doc = 'Returns part of the string after the specified sequence, blank string if not present'}
+meta::pure::functions::string::substringAfter(source:String[1], toFind : String[1]):String[1]
+{
+   let index = $source->indexOf($toFind);
+   
+   let start = if ($index >= 0, 
+          | $source->indexOf($toFind) + $toFind->length(), 
+          | $source->length()
+          );
+   
+   $source->substring($start);
+}
+
+function {doc.doc = 'Un-camel case / humanize the provided string using provided TLA / acronym overrides'} 
+   meta::pure::functions::string::humanize(str:String[1]):String[1] {   
+   
+   let input = if ($str->contains('_') && $str->toUpper() == $str, 
+      | $str->toLower(), 
+      | $str);
+   
+   $input
+      ->split('_')
+      ->map(s | $s->splitOnCamelCase())
+      ->map(s | $s->trim())
+      ->filter(s | $s->length() != 0)
+      ->toUpperFirstCharacter()
+      ->joinStrings(' ');
+}
+
+function {doc.doc = 'Split the proivded string on camel case'} 
+   meta::pure::functions::string::splitOnCamelCase(str:String[1]):String[*] 
+{
+   let chunks = $str->chunk(1);
+   let lastPosition = $str->length() - 1;
+   
+   $chunks->fold({a,b |
+      let type = $a->getCharType();
+      
+      let isLast = $b.position == $lastPosition;
+      let length = $b.str->fold({a,b | $b + $a->length()}, 0);
+      
+      let p = if ($isLast,
+         | 
+            ^CamelSplit(str = $b.str->add($str->substring($length, $str->length())), position = $b.position + 1, type = $type);,
+         | 
+            let nextType = getCharType($chunks->at($b.position + 1));
+            let isCapitalToSmall = ($type == CharType.Upper && $nextType == CharType.Lower);
+            if (
+                  ($nextType != $type && $nextType == CharType.Upper) || 
+                  $isCapitalToSmall || 
+                  ($type != CharType.Other && $nextType == CharType.Other) ||
+                  ($type == CharType.Other && $nextType != CharType.Other),
+               | 
+                  let position = if ($isCapitalToSmall, | $b.position, | $b.position + 1);
+                  ^CamelSplit(str = $b.str->add($str->substring($length, $position)), position = $b.position + 1, type = $type);,
+               | ^$b(position = $b.position + 1));
+      );
+      
+   }, ^CamelSplit(position = 0)).str->filter(s | $s->length() > 0);
+}
+
+Class <<access.private>> meta::pure::functions::string::CamelSplit
+{
+   str:String[*];
+   position:Integer[1];
+   type:CharType[0..1];
+}
+
+Enum meta::pure::functions::string::CharType
+{
+   Upper, 
+   Lower, 
+   Other
+}
+
+function <<access.private>> {doc.doc = 'Checks if the provided string is between the given charaters'} 
+    meta::pure::functions::string::inRange(str : String[1], lower : String[1], upper : String[1]) : Boolean[1] 
+{
+   ($str->compare($lower) >= 0) && ($str->compare($upper) <= 0)
+}
+
+function <<access.private>> meta::pure::functions::string::getCharType(s:String[1]):CharType[1]
+{
+   if ($s->inRange('a', 'z'),
+      | CharType.Lower,
+      | if ($s->inRange('A', 'Z'),
+         | CharType.Upper,
+         | CharType.Other))
+}
+
+function <<access.public>> meta::pure::functions::string::makeCamelCase(input : String[1]) : String[1]
+{
+   $input->makeCamelCase(false);
+}
+
+function <<access.public>> meta::pure::functions::string::makeCamelCase(input : String[1], upperCaseFirstLetter : Boolean[1]) : String[1]
+{
+   let parts = $input->split('_')->map(p|$p->split(' '));
+   
+   
+   $parts->size()->range()->fold({index, r|
+      let p = $parts->at($index);
+      
+      let firstLetter = $p->substring(0,1);
+      let remainder = $p->substring(1);
+      
+      $r + if ($upperCaseFirstLetter || ($index > 0), 
+          |$firstLetter->toUpper() + if($remainder == $remainder->toUpper(), | $remainder->toLower(), | $remainder), 
+          |$firstLetter->toLower() + if($remainder == $remainder->toUpper(), | $remainder->toLower(), | $remainder)
+          );
+      }
+      , '');
+}
+
+
+function {doc.doc='checks if string is inclusivly no longer than a length'}  meta::pure::functions::string::isNoLongerThan(input:String[0..1], length:Integer[1]) : Boolean[1]
+{
+   assert($length>=0,'Length must be non negative' );
+    if($input->isNotEmpty(),
+       | $input->toOne()->length()<=$length,
+       |true  
+     );
+  
+}
+
+function {doc.doc='checks if string is inclusivly no shorter than a length'}  meta::pure::functions::string::isNoShorterThan(input:String[0..1], length:Integer[1]) : Boolean[1]
+{
+  assert($length>=0,'Length must be non negative' );
+  if($input->isEmpty(),
+      | $length == 0,
+      | $input->toOne()->length()>=$length
+   );
+}
+
+function {doc.doc='Matches string with optional Any input'}  meta::pure::functions::string::makeStringMatch(input:Any[0..1], pattern:String[1]) : Boolean[1]
+{
+    $input->makeString()->matches($pattern);
+}
+
+function meta::pure::functions::string::joinStrings(strings:String[*]):String[1]
+{
+    $strings->joinStrings('', '', '')
+}
+
+function meta::pure::functions::string::makeString(any:Any[*]):String[1]
+{
+    $any->makeString('', '', '')
+}
+
+function meta::pure::functions::string::makeString(any:Any[*], separator:String[1]):String[1]
+{
+    $any->makeString('', $separator, '')
+}
+
+function meta::pure::functions::string::makeString(any:Any[*], prefix:String[1], separator:String[1], suffix:String[1]):String[1]
+{
+    $any->map(x | $x->toString())->joinStrings($prefix, $separator, $suffix)
+}
+
+function {doc.doc ='Validates a string is a UUID as per RFC4122'}  meta::pure::functions::string::isUUID(value:String[0..1]):Boolean[1]
+{
+   $value->makeString()->matches('^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$');
+}

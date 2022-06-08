@@ -1,0 +1,79 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::executionPlan::engine::java::roadmap::*;
+import meta::json::*;
+import meta::pure::executionPlan::profiles::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::mapping::modelToModel::test::alloy::simple::function::*;
+import meta::pure::mapping::modelToModel::test::alloy::utils::*;
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.DataQuality>>
+{  serverVersion.start='v1_19_0',
+   doc.doc='Given: a mapping that calls a function: at(0).',
+   doc.doc='When:  the mapping is executed using graphFetchChecked.',
+   doc.doc='Then:  the mapping completes without error and no defects are reported'
+}
+meta::pure::mapping::modelToModel::test::alloy::simple::canUseFunctionsInAMapping() : Boolean[1]
+{
+   let tree = #{FirstEmployee {name} }#;
+
+   let result = execute(
+      |FirstEmployee.all()->graphFetchChecked($tree)->serialize($tree),
+      meta::pure::mapping::modelToModel::test::alloy::simple::function::m1,
+      testJsonRuntime(Firm, '{"name": "firm1", "employees": [{"firstName": "Dave", "lastName": "Miles"}]}'),
+      []
+   );
+
+   let json = $result.values->toOne();
+   let expected= 
+   '{'+
+   '  "defects":[],'+
+   '  "value":{"name":"Miles"},'+
+   '  "source":{'+
+   '    "defects":[],'+
+   '    "value":{"employees": [{"lastName": "Miles"}]},'+
+   '    "source": {"number":1, "record":"{\\"name\\":\\"firm1\\",\\"employees\\":[{\\"firstName\\":\\"Dave\\",\\"lastName\\":\\"Miles\\"}]}"}'+
+   '  }'+
+   '}';
+   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));   
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::simple::function::Firm
+{
+  name: String[1];
+  employees: Person[*];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::simple::function::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::simple::function::FirstEmployee
+{
+  name: String[1];
+}
+
+###Mapping
+   
+Mapping meta::pure::mapping::modelToModel::test::alloy::simple::function::m1
+(
+  *meta::pure::mapping::modelToModel::test::alloy::simple::function::FirstEmployee[test_FirstEmployee]: Pure
+  {
+    ~src meta::pure::mapping::modelToModel::test::alloy::simple::function::Firm
+    name: $src.employees->at(0).lastName
+  }
+)

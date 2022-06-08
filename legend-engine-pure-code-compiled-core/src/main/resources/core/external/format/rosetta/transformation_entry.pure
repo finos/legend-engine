@@ -1,0 +1,46 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::generation::metamodel::*;
+import meta::pure::generation::*;
+import meta::external::format::rosetta::generation::*;
+
+Profile meta::external::format::rosetta::generation::metadata
+{
+  stereotypes: [key, reference, scheme, id, template];
+}
+
+function <<access.private, Generation.Transformation>> meta::external::format::rosetta::generation::internal_generateRosetta(rosettaConfig:RosettaConfig[1]):GenerationOutput[*]
+{
+   let classesOutput = $rosettaConfig.classes->map(c|$c->meta::external::format::rosetta::generation::classToRosettaString());
+   let enumsOutput = $rosettaConfig.enums->map(e|$e->meta::external::format::rosetta::generation::enumToRosettaEnum());
+   ^GenerationOutput(content=$classesOutput->concatenate($enumsOutput)->joinStrings('\n'), fileName='rosettaTypes.txt');
+}
+
+function meta::external::format::rosetta::generation::generateRosettaFromPureWithScope(rosettaConfig:RosettaConfig[1]):GenerationOutput[*]
+{
+   $rosettaConfig.scopeElements->filter(e| !$e->instanceOf(Package))->map(e|assert($e->instanceOf(Type),' Rosetta generation of ' + $e->type().name->toOne()+ ' is not currently supported. Tried to generate Rosetta for '+ $e->elementToPath()) ;);
+   let scopeElements = $rosettaConfig.allPackageScopeElements()->filter(p|$p->instanceOf(Type))->cast(@Type);
+   let content = $scopeElements->map(c| $rosettaConfig->meta::external::format::rosetta::generation::generateRosettaFromPure($c))->joinStrings('\n\n');
+   ^GenerationOutput(content=$content, fileName='rosettaTypes.txt', format = 'rosetta');
+}
+
+function meta::external::format::rosetta::generation::generateRosettaFromPure(config:RosettaConfig[1], element: Type[1]) : String[*]
+{
+   $element->match([
+      class: Class<Any>[1]|$class->meta::external::format::rosetta::generation::classToRosettaString();,
+      enumeration: Enumeration<Any>[1]|$enumeration->meta::external::format::rosetta::generation::enumToRosettaEnum();,
+      type: Type[1]| fail($element->type()->elementToPath() + ' not supported for rosetta transform'); '';
+   ]);
+}

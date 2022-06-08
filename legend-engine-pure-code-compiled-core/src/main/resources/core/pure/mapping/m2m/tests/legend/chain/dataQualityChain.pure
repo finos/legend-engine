@@ -1,0 +1,413 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::executionPlan::engine::java::roadmap::*;
+import meta::json::*;
+import meta::pure::executionPlan::profiles::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::mapping::modelToModel::*;
+import meta::pure::mapping::modelToModel::test::alloy::chain::dataQuality::*;
+import meta::pure::mapping::modelToModel::test::alloy::chain::dataQuality::src::*;
+import meta::pure::mapping::modelToModel::test::alloy::chain::dataQuality::bridge::*;
+import meta::pure::mapping::modelToModel::test::alloy::chain::dataQuality::dest::*;
+import meta::pure::runtime::*;
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> {serverVersion.start='v1_19_0'}
+meta::pure::mapping::modelToModel::test::alloy::chain::dataQuality::constraintFailureAtRootChain(): Boolean[1]
+{
+   let tree = #{
+      Firm {
+         name
+      }
+   }#;
+
+   let sourceFirms = '[{"name":"Firm1"},{"name":"Firm2"},{"name":"Firm3"},{"name":"Firm4"}]';
+   
+   let result = execute(
+      {|Firm.all()->graphFetchChecked($tree)->serialize($tree)},
+      BridgeToDestMapping,
+      ^Runtime(
+         connections = [
+            ^ModelChainConnection(element = ^ModelStore(), mappings = [SrcToBridgeMapping]),
+            ^JsonModelConnection(element = ^ModelStore(), class = __Firm, url = 'data:application/json,' + $sourceFirms)
+         ]
+      ),
+      []
+   );
+
+   let expected =
+   '[' +
+   '  {' +
+   '    "defects": [' +
+   '    ],' +
+   '    "source":     {' +
+   '      "defects": [' +
+   '      ],' +
+   '      "source":       {' +
+   '        "defects": [' +
+   '        ],' +
+   '        "source":         {' +
+   '          "number": 1,' +
+   '          "record": "{\\"name\\":\\"Firm1\\"}"' +
+   '        },' +
+   '        "value":         {' +
+   '          "name": "Firm1"' +
+   '        }' +
+   '      },' +
+   '      "value":       {' +
+   '        "name": "$Firm1$"' +
+   '      }' +
+   '    },' +
+   '    "value":     {' +
+   '      "name": "|$Firm1$|"' +
+   '    }' +
+   '  },' +
+   '  {' +
+   '    "defects": [' +
+   '    ],' +
+   '    "source":     {' +
+   '      "defects": [' +
+   '      ],' +
+   '      "source":       {' +
+   '        "defects": [' +
+   '          {' +
+   '            "path": [' +
+   '            ],' +
+   '            "enforcementLevel": "Error",' +
+   '            "ruleType": "ClassConstraint",' +
+   '            "externalId": null,' +
+   '            "id": "__Firm_Constraint",' +
+   '            "ruleDefinerPath": "meta::pure::mapping::modelToModel::test::alloy::chain::dataQuality::src::__Firm",' +
+   '            "message": "Constraint :[__Firm_Constraint] violated in the Class __Firm"' +
+   '          }' +
+   '        ],' +
+   '        "source":         {' +
+   '          "number": 2,' +
+   '          "record": "{\\"name\\":\\"Firm2\\"}"' +
+   '        },' +
+   '        "value":         {' +
+   '          "name": "Firm2"' +
+   '        }' +
+   '      },' +
+   '      "value":       {' +
+   '        "name": "$Firm2$"' +
+   '      }' +
+   '    },' +
+   '    "value":     {' +
+   '      "name": "|$Firm2$|"' +
+   '    }' +
+   '  },' +
+   '  {' +
+   '    "defects": [' +
+   '    ],' +
+   '    "source":     {' +
+   '      "defects": [' +
+   '        {' +
+   '          "path": [' +
+   '          ],' +
+   '          "enforcementLevel": "Error",' +
+   '          "ruleType": "ClassConstraint",' +
+   '          "externalId": null,' +
+   '          "id": "_Firm_Constraint",' +
+   '          "ruleDefinerPath": "meta::pure::mapping::modelToModel::test::alloy::chain::dataQuality::bridge::_Firm",' +
+   '          "message": "Constraint :[_Firm_Constraint] violated in the Class _Firm"' +
+   '        }' +
+   '      ],' +
+   '      "source":       {' +
+   '        "defects": [' +
+   '          {' +
+   '            "path": [' +
+   '            ],' +
+   '            "enforcementLevel": "Error",' +
+   '            "ruleType": "ClassConstraint",' +
+   '            "externalId": null,' +
+   '            "id": "__Firm_Constraint",' +
+   '            "ruleDefinerPath": "meta::pure::mapping::modelToModel::test::alloy::chain::dataQuality::src::__Firm",' +
+   '            "message": "Constraint :[__Firm_Constraint] violated in the Class __Firm"' +
+   '          }' +
+   '        ],' +
+   '        "source":         {' +
+   '          "number": 3,' +
+   '          "record": "{\\"name\\":\\"Firm3\\"}"' +
+   '        },' +
+   '        "value":         {' +
+   '          "name": "Firm3"' +
+   '        }' +
+   '      },' +
+   '      "value":       {' +
+   '        "name": "$Firm3$"' +
+   '      }' +
+   '    },' +
+   '    "value":     {' +
+   '      "name": "|$Firm3$|"' +
+   '    }' +
+   '  },' +
+   '  {' +
+   '    "defects": [' +
+   '      {' +
+   '        "path": [' +
+   '        ],' +
+   '        "enforcementLevel": "Error",' +
+   '        "ruleType": "ClassConstraint",' +
+   '        "externalId": null,' +
+   '        "id": "Firm_Constraint",' +
+   '        "ruleDefinerPath": "meta::pure::mapping::modelToModel::test::alloy::chain::dataQuality::dest::Firm",' +
+   '        "message": "Constraint :[Firm_Constraint] violated in the Class Firm"' +
+   '      }' +
+   '    ],' +
+   '    "source":     {' +
+   '      "defects": [' +
+   '        {' +
+   '          "path": [' +
+   '          ],' +
+   '          "enforcementLevel": "Error",' +
+   '          "ruleType": "ClassConstraint",' +
+   '          "externalId": null,' +
+   '          "id": "_Firm_Constraint",' +
+   '          "ruleDefinerPath": "meta::pure::mapping::modelToModel::test::alloy::chain::dataQuality::bridge::_Firm",' +
+   '          "message": "Constraint :[_Firm_Constraint] violated in the Class _Firm"' +
+   '        }' +
+   '      ],' +
+   '      "source":       {' +
+   '        "defects": [' +
+   '          {' +
+   '            "path": [' +
+   '            ],' +
+   '            "enforcementLevel": "Error",' +
+   '            "ruleType": "ClassConstraint",' +
+   '            "externalId": null,' +
+   '            "id": "__Firm_Constraint",' +
+   '            "ruleDefinerPath": "meta::pure::mapping::modelToModel::test::alloy::chain::dataQuality::src::__Firm",' +
+   '            "message": "Constraint :[__Firm_Constraint] violated in the Class __Firm"' +
+   '          }' +
+   '        ],' +
+   '        "source":         {' +
+   '          "number": 4,' +
+   '          "record": "{\\"name\\":\\"Firm4\\"}"' +
+   '        },' +
+   '        "value":         {' +
+   '          "name": "Firm4"' +
+   '        }' +
+   '      },' +
+   '      "value":       {' +
+   '        "name": "$Firm4$"' +
+   '      }' +
+   '    },' +
+   '    "value":     {' +
+   '      "name": "|$Firm4$|"' +
+   '    }' +
+   '  }' +
+   ']';
+   assert(jsonEquivalent($expected->parseJSON(), $result.values->toOne()->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> {serverVersion.start='v1_19_0'}
+meta::pure::mapping::modelToModel::test::alloy::chain::dataQuality::constraintFailureAtNestedPropertyChain(): Boolean[1]
+{
+   let tree = #{
+      Firm {
+         name,
+         employees {
+            fullName
+         }
+      }
+   }#;
+
+   let sourceFirms = '{"name":"Firm1", "employees": [{"fullName": "Person1"}, {"fullName": "Person2"}, {"fullName": "Person3"}]}';
+   
+   let result = execute(
+      {|Firm.all()->graphFetchChecked($tree)->serialize($tree)},
+      BridgeToDestMapping,
+      ^Runtime(
+         connections = [
+            ^ModelChainConnection(element = ^ModelStore(), mappings = [SrcToBridgeMapping]),
+            ^JsonModelConnection(element = ^ModelStore(), class = __Firm, url = 'data:application/json,' + $sourceFirms)
+         ]
+      ),
+      []
+   );
+
+   let expected =
+   '{' +
+   '  "defects": [' +
+   '  ],' +
+   '  "source":   {' +
+   '    "defects": [' +
+   '      {' +
+   '        "path": [' +
+   '          {' +
+   '            "propertyName": "employees",' +
+   '            "index": 2' +
+   '          }' +
+   '        ],' +
+   '        "enforcementLevel": "Error",' +
+   '        "ruleType": "ClassConstraint",' +
+   '        "externalId": null,' +
+   '        "id": "_Person_Constraint",' +
+   '        "ruleDefinerPath": "meta::pure::mapping::modelToModel::test::alloy::chain::dataQuality::bridge::_Person",' +
+   '        "message": "Constraint :[_Person_Constraint] violated in the Class _Person"' +
+   '      }' +
+   '    ],' +
+   '    "source":     {' +
+   '      "defects": [' +
+   '      ],' +
+   '      "source":       {' +
+   '        "number": 1,' +
+   '        "record": "{\\"name\\":\\"Firm1\\",\\"employees\\":[{\\"fullName\\":\\"Person1\\"},{\\"fullName\\":\\"Person2\\"},{\\"fullName\\":\\"Person3\\"}]}"' +
+   '      },' +
+   '      "value":       {' +
+   '        "name": "Firm1",' +
+   '        "employees": [' +
+   '          {' +
+   '            "fullName": "Person1"' +
+   '          },' +
+   '          {' +
+   '            "fullName": "Person2"' +
+   '          },' +
+   '          {' +
+   '            "fullName": "Person3"' +
+   '          }' +
+   '        ]' +
+   '      }' +
+   '    },' +
+   '    "value":     {' +
+   '      "name": "$Firm1$",' +
+   '      "employees": [' +
+   '        {' +
+   '          "fullName": "$Person1$"' +
+   '        },' +
+   '        {' +
+   '          "fullName": "$Person2$"' +
+   '        },' +
+   '        {' +
+   '          "fullName": "$Person3$"' +
+   '        }' +
+   '      ]' +
+   '    }' +
+   '  },' +
+   '  "value":   {' +
+   '    "name": "|$Firm1$|",' +
+   '    "employees": [' +
+   '      {' +
+   '        "fullName": "|$Person1$|"' +
+   '      },' +
+   '      {' +
+   '        "fullName": "|$Person2$|"' +
+   '      },' +
+   '      {' +
+   '        "fullName": "|$Person3$|"' +
+   '      }' +
+   '    ]' +
+   '  }' +
+   '}';
+   assert(jsonEquivalent($expected->parseJSON(), $result.values->toOne()->parseJSON()));
+}
+
+###Pure
+import meta::pure::mapping::modelToModel::test::alloy::chain::dataQuality::src::*;
+import meta::pure::mapping::modelToModel::test::alloy::chain::dataQuality::bridge::*;
+import meta::pure::mapping::modelToModel::test::alloy::chain::dataQuality::dest::*;
+
+Class meta::pure::mapping::modelToModel::test::alloy::chain::dataQuality::src::__Firm
+[
+   __Firm_Constraint: $this.name->endsWith('1')
+]
+{
+   name      : String[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::chain::dataQuality::src::__Person
+{
+   fullName  : String[1];
+}
+
+Association meta::pure::mapping::modelToModel::test::alloy::chain::dataQuality::src::__Firm___Person
+{
+   firm      : __Firm[1];        
+   employees : __Person[*];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::chain::dataQuality::bridge::_Firm
+[
+   _Firm_Constraint: $this.name->endsWith('1$') || $this.name->endsWith('2$')
+]
+{
+   name      : String[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::chain::dataQuality::bridge::_Person
+[
+   _Person_Constraint: $this.fullName->endsWith('1$') || $this.fullName->endsWith('2$')
+]
+{
+   fullName  : String[1];
+}
+
+Association meta::pure::mapping::modelToModel::test::alloy::chain::dataQuality::bridge::_Firm__Person
+{
+   firm      : _Firm[1];        
+   employees : _Person[*];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::chain::dataQuality::dest::Firm
+[
+   Firm_Constraint: $this.name->endsWith('1$|') || $this.name->endsWith('2$|') || $this.name->endsWith('3$|')
+]
+{
+   name      : String[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::chain::dataQuality::dest::Person
+{
+   fullName  : String[1];
+}
+
+Association meta::pure::mapping::modelToModel::test::alloy::chain::dataQuality::dest::Firm_Person
+{
+   firm      : Firm[1];        
+   employees : Person[*];
+}
+
+###Mapping
+import meta::pure::mapping::modelToModel::test::alloy::chain::dataQuality::src::*;
+import meta::pure::mapping::modelToModel::test::alloy::chain::dataQuality::bridge::*;
+import meta::pure::mapping::modelToModel::test::alloy::chain::dataQuality::dest::*;
+
+Mapping meta::pure::mapping::modelToModel::test::alloy::chain::dataQuality::BridgeToDestMapping
+(
+   Firm: Pure {
+      ~src _Firm
+      name      : '|' + $src.name + '|',
+      employees : $src.employees
+   }
+   
+   Person: Pure {
+      ~src _Person
+      fullName : '|' + $src.fullName + '|'
+   }
+)
+
+Mapping meta::pure::mapping::modelToModel::test::alloy::chain::dataQuality::SrcToBridgeMapping
+(
+   _Firm: Pure {
+      ~src __Firm
+      name      : '$' + $src.name + '$',
+      employees : $src.employees
+   }
+   
+   _Person: Pure {
+      ~src __Person
+      fullName : '$' + $src.fullName + '$'
+   }
+)

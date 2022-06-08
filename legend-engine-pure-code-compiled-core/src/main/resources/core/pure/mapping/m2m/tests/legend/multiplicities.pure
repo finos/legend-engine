@@ -1,0 +1,176 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::executionPlan::engine::java::roadmap::*;
+import meta::json::*;
+import meta::pure::executionPlan::profiles::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::mapping::modelToModel::*;
+import meta::pure::mapping::modelToModel::test::alloy::simple::multiplicities::*;
+import meta::pure::mapping::modelToModel::test::alloy::simple::multiplicities::objects::dest::*;
+import meta::pure::mapping::modelToModel::test::alloy::simple::multiplicities::objects::src::*;
+import meta::pure::runtime::*;
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.M2MBasics>> 
+{  serverVersion.start='v1_19_0',
+   doc.doc='Given: an M2M mapping that uses toOne() from multiplicities of [0..1], [1], [*] to a target multiplicity of [1]',
+   doc.doc='When:  the mapping is executed using graphFetch and serialize.',
+   doc.doc='Then:  the mapping is applied and the result of the mapping is serialized.'
+}
+meta::pure::mapping::modelToModel::test::alloy::simple::multiplicities::multiplicityOneIsSupportedForOneValue() : Boolean[1]
+{
+   let tree = #{TargetOnes {s1, s2, s3} }#;
+
+   let result = execute(
+      |TargetOnes.all()->graphFetch($tree)->serialize($tree),
+      mapToOneTargetOnes,
+      ^Runtime(connections = ^JsonModelConnection(
+                                element=^ModelStore(), 
+                                class=SourceData,
+                                url='data:application/json,{"sOne": "A", "sZeroOne": "B", "sMany": "C"}'
+                             )
+      ),
+      []
+   );
+
+   assert(jsonEquivalent('{"s1": "A", "s2": "B", "s3": "C"}'->parseJSON(), $result.values->toOne()->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.M2MBasics>> 
+{  serverVersion.start='v1_19_0',
+   doc.doc='Given: an M2M mapping that uses toOne() from multiplicities of [0..1], [1], [*] to a target multiplicity of [0..1]',
+   doc.doc='When:  the mapping is executed using graphFetch and serialize.',
+   doc.doc='Then:  the mapping is applied and the result of the mapping is serialized.'
+} 
+meta::pure::mapping::modelToModel::test::alloy::simple::multiplicities::multiplicityZeroOneIsSupportedForOneValue() : Boolean[1]
+{
+   let tree = #{TargetZeroOnes {s1, s2, s3} }#;
+
+   let result = execute(
+      |TargetZeroOnes.all()->graphFetch($tree)->serialize($tree),
+      mapToOneTargetZeroOnes,
+      ^Runtime(connections = ^JsonModelConnection(
+                                element=^ModelStore(), 
+                                class=SourceData,
+                                url='data:application/json,{"sOne": "A", "sZeroOne": "B", "sMany": "C"}'
+                             )
+      ),
+      []
+   );
+
+   assert(jsonEquivalent('{"s1": "A", "s2": "B", "s3": "C"}'->parseJSON(), $result.values->toOne()->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.M2MBasics>> 
+{  serverVersion.start='v1_19_0',
+   doc.doc='Given: an M2M mapping that uses toOne() from multiplicities of [0..1], [1], [*] to a target multiplicity of [*]',
+   doc.doc='When:  the mapping is executed using graphFetch and serialize.',
+   doc.doc='Then:  the mapping is applied and the result of the mapping is serialized.'
+} 
+meta::pure::mapping::modelToModel::test::alloy::simple::multiplicities::multiplicityManyIsSupportedForOneValue() : Boolean[1]
+{
+   let tree = #{TargetOneManys {s1, s2, s3} }#;
+
+   let result = execute(
+      |TargetOneManys.all()->graphFetch($tree)->serialize($tree),
+      mapToOneTargetOneManys,
+      ^Runtime(connections = ^JsonModelConnection(
+                                element=^ModelStore(), 
+                                class=SourceData,
+                                url='data:application/json,{"sOne": "A", "sZeroOne": "B", "sMany": "C"}'
+                             )
+      ),
+      []
+   );
+
+   assert(jsonEquivalent('{"s1": ["A"], "s2": ["B"], "s3": ["C"]}'->parseJSON(), $result.values->toOne()->parseJSON()));
+}
+
+
+###Pure
+import meta::pure::mapping::modelToModel::test::alloy::simple::multiplicities::objects::src::*;
+import meta::pure::mapping::modelToModel::test::alloy::simple::multiplicities::objects::dest::*;
+
+Class meta::pure::mapping::modelToModel::test::alloy::simple::multiplicities::objects::src::SourceData
+{
+   sOne     : String[1];
+   sZeroOne : String[0..1];
+   sMany    : String[*];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::simple::multiplicities::objects::dest::TargetOnes
+{
+   s1 : String[1];
+   s2 : String[1];
+   s3 : String[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::simple::multiplicities::objects::dest::TargetZeroOnes
+{
+   s1 : String[0..1];
+   s2 : String[0..1];
+   s3 : String[0..1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::simple::multiplicities::objects::dest::TargetOneManys
+{
+   s1 : String[1..*];
+   s2 : String[1..*];
+   s3 : String[1..*];
+}
+
+###Mapping
+import meta::pure::mapping::modelToModel::test::alloy::simple::multiplicities::objects::src::*;
+import meta::pure::mapping::modelToModel::test::alloy::simple::multiplicities::objects::dest::*;
+
+Mapping meta::pure::mapping::modelToModel::test::alloy::simple::multiplicities::mapToOneTargetOnes
+(
+   TargetOnes : Pure
+            {
+               ~src SourceData
+               s1  : $src.sOne->toOne(),
+               s2  : $src.sZeroOne->toOne(),
+               s3  : $src.sMany->toOne()
+            }
+)
+
+###Mapping
+import meta::pure::mapping::modelToModel::test::alloy::simple::multiplicities::objects::src::*;
+import meta::pure::mapping::modelToModel::test::alloy::simple::multiplicities::objects::dest::*;
+
+Mapping meta::pure::mapping::modelToModel::test::alloy::simple::multiplicities::mapToOneTargetZeroOnes
+(
+   TargetZeroOnes : Pure
+            {
+               ~src SourceData
+               s1  : $src.sOne->toOne(),
+               s2  : $src.sZeroOne->toOne(),
+               s3  : $src.sMany->toOne()
+            }
+)
+
+###Mapping
+import meta::pure::mapping::modelToModel::test::alloy::simple::multiplicities::objects::src::*;
+import meta::pure::mapping::modelToModel::test::alloy::simple::multiplicities::objects::dest::*;
+
+Mapping meta::pure::mapping::modelToModel::test::alloy::simple::multiplicities::mapToOneTargetOneManys
+(
+   TargetOneManys : Pure
+            {
+               ~src SourceData
+               s1  : $src.sOne->toOne(),
+               s2  : $src.sZeroOne->toOne(),
+               s3  : $src.sMany->toOne()
+            }
+)

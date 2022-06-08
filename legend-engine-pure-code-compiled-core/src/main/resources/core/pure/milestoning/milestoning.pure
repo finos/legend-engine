@@ -1,0 +1,113 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::milestoning::*;
+import meta::pure::mapping::modelToModel::*;
+import meta::pure::mapping::*;
+
+function meta::pure::milestoning::isMilestonedGeneratedDateProperty(f:FunctionExpression[1]):Boolean[1]
+{
+    $f.func->match([
+                    p:Property<Nil,Date|1>[1] | $p.name->in(['businessDate','processingDate']) && $p->hasGeneratedMilestoningPropertyStereotype(),
+                    a:Any[1] | false
+                   ])
+}
+
+function meta::pure::milestoning::isMilestonedGeneratedDateProperty(f:FunctionExpression[1], t:SingleDateTemporalStrategy[1]):Boolean[1]
+{
+    $f.func->match([
+                    p:Property<Nil,Date|1>[1] | $p.name == $t->temporalStrategyToPropertyName() && $p->hasGeneratedMilestoningPropertyStereotype(),
+                    a:Any[1] | false
+                   ])
+}
+
+function meta::pure::milestoning::temporalStrategyToPropertyName(t:SingleDateTemporalStrategy[1]):String[1]
+{
+   $t->match([ p:ProcessingTemporal[1]| 'processingDate',
+               b:BusinessTemporal[1]| 'businessDate']);
+}
+
+
+function meta::pure::milestoning::reverseMilestoningTransforms(p:AbstractProperty<Any>[*]):AbstractProperty<Any>[*]
+{
+   $p->map(p|$p->reverseMilestoningTransforms());
+}
+
+function meta::pure::milestoning::reverseMilestoningTransforms(p:AbstractProperty<Any>[1]):AbstractProperty<Any>[0..1]
+{
+   if($p->meta::pure::milestoning::isEdgePointProperty(),| let originalPropertyName = $p->meta::pure::milestoning::originalPropertyNameForEdgePointProperty();
+                                                           let originalMilestonedProperties = $p.owner->match([c:Class<Any>[1]| $c.originalMilestonedProperties, 
+                                                                                                               a:Association[1]|$a.originalMilestonedProperties]);
+                                                           let milestonedProperties = $originalMilestonedProperties->filter(mp|$mp.name == $originalPropertyName);
+                                                           if($milestonedProperties->size() > 1,
+                                                              | let owningTypeClass = $p.classifierGenericType.typeArguments->at(1).rawType.name;
+                                                                $milestonedProperties->filter(mp | $mp.genericType.rawType.name == $owningTypeClass)->at(0);,
+                                                              | $milestonedProperties->at(0));
+                                                        ,| if($p->meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype(),|[],|$p));
+}
+
+function meta::pure::milestoning::reverseMilestoningTransforms(f:FunctionExpression[1]): FunctionExpression[1]
+{
+    if(!$f.originalMilestonedPropertyParametersValues->isEmpty(),| ^$f(parametersValues = $f.originalMilestonedPropertyParametersValues, originalMilestonedPropertyParametersValues = [], originalMilestonedProperty = []);
+                                                                 ,| $f);
+}
+
+function meta::pure::milestoning::excludeRangeMilestoningPropertyMapping(p:PropertyMapping[*]):PropertyMapping[*]
+{
+   $p->filter(p|!$p.property->isRangeMilestoningProperty());
+}
+
+function meta::pure::milestoning::excludeRangeMilestoningProperty(a:Any[*]):Any[*]
+{
+   $a->map(x|$x->match([p : AbstractProperty<Any>[1] | if ($p->isRangeMilestoningProperty(),| [],| $p),
+                        a : Any[1]                   | $a]));
+}
+
+function meta::pure::milestoning::excludeRangeMilestoningProperty(p:AbstractProperty<Any>[*]):AbstractProperty<Any>[*]
+{
+   $p->filter(p|!$p->isRangeMilestoningProperty());
+}
+
+function meta::pure::milestoning::isRangeMilestoningProperty(p:AbstractProperty<Any>[1]):Boolean[1]
+{
+   $p->hasGeneratedMilestoningPropertyStereotype() && ($p.name == 'milestoning' || $p.name->toOne()->endsWith('AllVersionsInRange'));
+}
+
+function meta::pure::milestoning::getSourceMilestonedProperty(targetProperty: QualifiedProperty<Any>[1], set:PureInstanceSetImplementation[1]): QualifiedProperty<Any>[1]
+{
+   let targetEdgeProperty = $set.class->meta::pure::functions::meta::propertyByName($targetProperty->edgePointPropertyName()->toOne())->toOne();
+   let propertyMapping = $set.propertyMappings->filter(pm|$pm.property == $targetEdgeProperty)->cast(@PurePropertyMapping);
+   assert($propertyMapping->isNotEmpty(),|'No mapping found for property \'' + $targetProperty.name->toOne() + '\'');
+   assert($propertyMapping.transform.expressionSequence->toOne()->instanceOf(SimpleFunctionExpression) && $propertyMapping.transform.expressionSequence->toOne()->cast(@SimpleFunctionExpression)->evaluateAndDeactivate().func->instanceOf(AbstractProperty),
+          'Target milestoned property should be mapped directly to source milestoned property');
+   let sourceEdgeProperty = $propertyMapping.transform.expressionSequence->cast(@SimpleFunctionExpression)->evaluateAndDeactivate().func->cast(@AbstractProperty<Any>);
+   assert($sourceEdgeProperty->size() == 1, 'Expected 1 source property for target property : ' + $targetProperty.name->toOne() + ', Found : ' + $sourceEdgeProperty->size()->toString());
+   $sourceEdgeProperty->toOne()->getMilestonedGeneratedQualifiedPropertiesForEdgePointProperty()->at(0);
+}
+
+
+function meta::pure::milestoning::isProcessingTemporal(type:Type[1]):Boolean[1]
+{
+   ['processingtemporal','bitemporal']->exists(s| $type->hasStereotype($s, temporal))
+}
+
+function meta::pure::milestoning::isBusinessTemporal(type:Type[1]):Boolean[1]
+{
+   ['businesstemporal','bitemporal']->exists(s| $type->hasStereotype($s, temporal))
+}
+
+function meta::pure::milestoning::isBiTemporal(type:Type[1]):Boolean[1]
+{
+   ['bitemporal']->exists(s| $type->hasStereotype($s, temporal))
+}

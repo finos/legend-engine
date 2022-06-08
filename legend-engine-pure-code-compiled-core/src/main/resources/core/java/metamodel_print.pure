@@ -1,0 +1,48 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::metamodel::project::*;
+import meta::external::language::java::serialization::*;
+
+function meta::external::language::java::serialization::printProject(project: Project[1]):Any[*]
+{
+   let sfer = newStringifier($project);
+   $project->allDirectories()->map(d|$sfer->printDirectory($d));
+}
+
+function <<access.private>> meta::external::language::java::serialization::printDirectory(sfer:Stringifier[1], dir: ProjectDirectory[1]): Any[*]
+{
+   println('==== ' + $dir.fullPath());
+   $dir.classes->map(c|$sfer->printClass($c, $dir.fullPath()));
+   $dir.files->map(c|$c->printFile($dir.fullPath()));
+}
+
+function <<access.private>> meta::external::language::java::serialization::printClass(sfer:Stringifier[1], class: meta::external::language::java::metamodel::Class[1], pathTo: String[1]): Any[*]
+{
+   println('---- ' + $pathTo + '/' + $class.simpleName + '.java');
+   $sfer->ofClass($class)->printLines();
+}
+
+function <<access.private>> meta::external::language::java::serialization::printFile(file: meta::external::language::java::metamodel::project::File[1], pathTo: String[1]): Any[*]
+{
+   println('---- ' + $pathTo + '/' + $file.name);
+   $file->match([
+      tf:TextFile[1] | $tf.content->printLines();
+   ]);
+}
+
+function <<access.private>> meta::external::language::java::serialization::printLines(text: String[1]): Any[*]
+{
+   $text->replace('\n\n', '\n<<EMPTY>>\n')->split('\n')->fold({l,n|format('%04d %s', [$n, if($l == '<<EMPTY>>', |'', |$l)])->println(); $n+1;}, 1);
+}

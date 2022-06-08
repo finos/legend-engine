@@ -1,0 +1,526 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/*
+ * Generated main configuration: see org.finos.legend.engine.plan.compilation.GeneratePureConfig
+ */
+
+import meta::pure::executionPlan::engine::*;
+import meta::external::language::java::factory::*;
+import meta::external::language::java::transform::*;
+
+Class meta::pure::executionPlan::engine::IConstantResult {}
+Class meta::pure::executionPlan::engine::EngineIResult {}
+Class meta::pure::executionPlan::engine::IExecutionNodeContext {}
+Class meta::pure::executionPlan::engine::IGraphFetchM2MExecutionNodeContext {}
+Class meta::pure::executionPlan::engine::StoreStreamReader {}
+Class meta::pure::executionPlan::engine::DataParsingException {}
+Class meta::pure::executionPlan::engine::PredefinedExpressions {}
+Class meta::pure::executionPlan::engine::Library {}
+Class meta::pure::executionPlan::engine::GraphInstance {}
+Class meta::pure::executionPlan::engine::RelationalRootGraphNodeExecutor {}
+Class meta::pure::executionPlan::engine::RelationalCrossRootGraphNodeExecutor {}
+Class meta::pure::executionPlan::engine::RelationalChildGraphNodeExecutor {}
+Class meta::pure::executionPlan::engine::RelationalClassInstantiationNodeExecutor {}
+Class meta::pure::executionPlan::engine::PureDate {}
+Class meta::pure::executionPlan::engine::DataQualityBasicDefectClass {}
+Class meta::pure::executionPlan::engine::DataQualityBasicRelativePathNodeClass {}
+Class meta::pure::executionPlan::engine::DataQualityGraphContextClass {}
+Class meta::pure::executionPlan::engine::DataQualityConstrainedInterface {}
+Class meta::pure::executionPlan::engine::IReferencedObject {}
+Class meta::pure::executionPlan::engine::IRelationalCreateAndPopulateTempTableExecutionNodeSpecifics {}
+Class meta::pure::executionPlan::engine::IPlatformPureExpressionExecutionNodeSerializeSpecifics {}
+Class meta::pure::executionPlan::engine::IPlatformPureExpressionExecutionNodeGraphFetchUnionSpecifics {}
+Class meta::pure::executionPlan::engine::IPlatformPureExpressionExecutionNodeGraphFetchMergeSpecifics {}
+Class meta::pure::executionPlan::engine::ISerializationWriter {}
+Class meta::pure::executionPlan::engine::IGraphSerializer {}
+Class meta::pure::executionPlan::engine::IStoreStreamReadingExecutionNodeSpecifics {}
+Class meta::pure::executionPlan::engine::IStoreStreamReadingExecutionNodeContext {}
+Class meta::pure::executionPlan::engine::IInMemoryRootGraphFetchExecutionNodeSpecifics {}
+Class meta::pure::executionPlan::engine::IInMemoryRootGraphFetchMergeExecutionNodeSpecifics {}
+
+Class meta::pure::executionPlan::engine::IInMemoryPropertyGraphFetchExecutionNodeSpecifics {}
+Class meta::pure::executionPlan::engine::IRelationalRootQueryTempTableGraphFetchExecutionNodeSpecifics {}
+Class meta::pure::executionPlan::engine::IRelationalCrossRootQueryTempTableGraphFetchExecutionNodeSpecifics {}
+Class meta::pure::executionPlan::engine::IInMemoryCrossStoreGraphFetchExecutionNodeSpecifics {}
+Class meta::pure::executionPlan::engine::IRelationalClassQueryTempTableGraphFetchExecutionNodeSpecifics {}
+Class meta::pure::executionPlan::engine::IRelationalPrimitiveQueryGraphFetchExecutionNodeSpecifics {}
+Class meta::pure::executionPlan::engine::IServiceParametersResolutionExecutionNodeSpecifics {}
+
+function meta::pure::executionPlan::engine::applyJavaEngineDependencies(conventions:Conventions[1], extensions:meta::pure::router::extension::RouterExtension[*]):Conventions[1]
+{
+
+   let jIConstantResult = javaClass('public', 'org.finos.legend.engine.plan.dependencies.store.shared.IConstantResult')
+      ->addMethod(javaMethod('public', javaObject(), 'getValue', []));
+
+   let jIResult = javaClass('public', 'org.finos.legend.engine.plan.dependencies.store.shared.IResult')
+      ->addMethod(javaMethod('public', javaVoid(), 'close', []));
+
+   let jIExecutionNodeContext = javaClass('public', 'org.finos.legend.engine.plan.dependencies.store.shared.IExecutionNodeContext')
+      ->addMethod(javaMethod('public', $jIResult, 'getResult', [javaParam(javaString(), 'p0')]))
+      ->addMethod(javaMethod('public', javaTypeVar('T'), 'getResult', [javaParam(javaString(), 'p0'), javaParam(javaReflectType(), 'p1')]))
+      ->addMethod(javaMethod('public', javaReflectType(), 'listType', [javaParam(javaReflectType(), 'p0')]))
+      ->addMethod(javaMethod('public', javaReflectType(), 'streamType', [javaParam(javaReflectType(), 'p0')]));
+
+   let jDataParsingException = javaClass('public', 'org.finos.legend.engine.plan.dependencies.store.inMemory.DataParsingException');
+
+   let jPredefinedExpressions = javaClass('public', 'org.finos.legend.engine.plan.dependencies.store.platform.PredefinedExpressions')
+      ->addMethod(javaMethod('public', javaString(), 'currentUserId', [javaParam(javaString(), 'p0')]))
+      ->addMethod(javaMethod('public', javaObject(), 'now', []));
+
+   let jIGraphInstance = javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.graphFetch.IGraphInstance')
+      ->addMethod(javaMethod('public', javaTypeVar('T'), 'getValue', []))
+      ->addMethod(javaMethod('public', javaLong(), 'instanceSize', []));
+
+   let jIRelationalRootGraphNodeExecutor = javaClass('public', 'org.finos.legend.engine.plan.dependencies.store.relational.graphFetch.IRelationalRootGraphNodeExecutor');
+
+   let jIRelationalCrossRootGraphNodeExecutor = javaClass('public', 'org.finos.legend.engine.plan.dependencies.store.relational.graphFetch.IRelationalCrossRootGraphNodeExecutor')
+      ->addMethod(javaMethod('public', javaList(javaReflectMethod()), 'parentCrossKeyGetters', []));
+
+   let jIRelationalChildGraphNodeExecutor = javaClass('public', 'org.finos.legend.engine.plan.dependencies.store.relational.graphFetch.IRelationalChildGraphNodeExecutor')
+      ->addMethod(javaMethod('public', javaVoid(), 'addChildToParent', [javaParam(javaObject(), 'p0'), javaParam(javaObject(), 'p1'), javaParam($jIExecutionNodeContext, 'p2')]))
+      ->addMethod(javaMethod('public', javaList(javaString()), 'parentSQLColumnsInResultSet', [javaParam(javaList(javaString()), 'p0')]));
+
+   let jIRelationalClassInstantiationNodeExecutor = javaClass('public', 'org.finos.legend.engine.plan.dependencies.store.relational.classResult.IRelationalClassInstantiationNodeExecutor')
+      ->addMethod(javaMethod('public', javaObject(), 'getObjectFromResultSet', [javaParam(javaResultSet(), 'p0'), javaParam(javaString(), 'p1'), javaParam(javaString(), 'p2')]));
+
+   let jPureDate = javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.date.PureDate')
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.date.PureDate'), 'addDays', [javaParam(javaInt(), 'p0')]))
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.date.PureDate'), 'addHours', [javaParam(javaInt(), 'p0')]))
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.date.PureDate'), 'addMicroseconds', [javaParam(javaInt(), 'p0')]))
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.date.PureDate'), 'addMilliseconds', [javaParam(javaInt(), 'p0')]))
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.date.PureDate'), 'addMinutes', [javaParam(javaInt(), 'p0')]))
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.date.PureDate'), 'addMonths', [javaParam(javaInt(), 'p0')]))
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.date.PureDate'), 'addNanoseconds', [javaParam(javaLong(), 'p0')]))
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.date.PureDate'), 'addSeconds', [javaParam(javaInt(), 'p0')]))
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.date.PureDate'), 'addSubseconds', [javaParam(javaString(), 'p0')]))
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.date.PureDate'), 'addWeeks', [javaParam(javaInt(), 'p0')]))
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.date.PureDate'), 'addYears', [javaParam(javaInt(), 'p0')]))
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.date.PureDate'), 'adjustSubseconds', [javaParam(javaString(), 'p0'), javaParam(javaBoolean(), 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'appendTwoDigitInt', [javaParam(javaAppendable(), 'p0'), javaParam(javaInt(), 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'appendZeroPaddedInt', [javaParam(javaAppendable(), 'p0'), javaParam(javaInt(), 'p1'), javaParam(javaInt(), 'p2')]))
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.date.PureDate'), 'clone', []))
+      ->addMethod(javaMethod('public', javaInt(), 'compareTo', [javaParam(javaClass('org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate'), 'p0')]))
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.date.PureDate'), 'copyValues', [javaParam(javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.date.PureDate'), 'p0')]))
+      ->addMethod(javaMethod('public', javaLong(), 'dateDifference', [javaParam(javaClass('org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate'), 'p0'), javaParam(javaString(), 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'decrementSubsecond', [javaParam(javaString(), 'p0'), javaParam(javaInt(), 'p1'), javaParam(javaInt(), 'p2')]))
+      ->addMethod(javaMethod('public', javaBoolean(), 'equals', [javaParam(javaObject(), 'p0')]))
+      ->addMethod(javaMethod('public', javaInt(), 'findNonDigit', [javaParam(javaString(), 'p0'), javaParam(javaInt(), 'p1'), javaParam(javaInt(), 'p2')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'format', [javaParam(javaAppendable(), 'p0'), javaParam(javaString(), 'p1')]))
+      ->addMethod(javaMethod('public', javaString(), 'format', [javaParam(javaString(), 'p0')]))
+      ->addMethod(javaMethod('public', javaString(), 'formatDate', [javaParam(javaDate(), 'p0')]))
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.date.PureDate'), 'fromCalendar', [javaParam(javaGregorianCalendar(), 'p0')]))
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.date.PureDate'), 'fromCalendar', [javaParam(javaGregorianCalendar(), 'p0'), javaParam(javaInt(), 'p1')]))
+      ->addMethod(javaMethod('public', javaTypeVar('T'), 'fromCalendar', [javaParam(javaGregorianCalendar(), 'p0'), javaParam(javaInt(), 'p1'), javaParam(javaTypeVar('T'), 'p2')]))
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.date.PureDate'), 'fromDate', [javaParam(javaDate(), 'p0')]))
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.date.PureDate'), 'fromSQLDate', [javaParam(javaSqlDate(), 'p0')]))
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.date.PureDate'), 'fromSQLTimestamp', [javaParam(javaSqlTimestamp(), 'p0')]))
+      ->addMethod(javaMethod('public', javaGregorianCalendar(), 'getCalendar', []))
+      ->addMethod(javaMethod('public', javaInt(), 'getCharCountFrom', [javaParam(javaChar(), 'p0'), javaParam(javaString(), 'p1'), javaParam(javaInt(), 'p2')]))
+      ->addMethod(javaMethod('public', javaInt(), 'getDay', []))
+      ->addMethod(javaMethod('public', javaInt(), 'getHour', []))
+      ->addMethod(javaMethod('public', javaInt(), 'getMaxDayOfMonth', [javaParam(javaInt(), 'p0'), javaParam(javaInt(), 'p1')]))
+      ->addMethod(javaMethod('public', javaInt(), 'getMinute', []))
+      ->addMethod(javaMethod('public', javaInt(), 'getMonth', []))
+      ->addMethod(javaMethod('public', javaInt(), 'getQuarter', []))
+      ->addMethod(javaMethod('public', javaInt(), 'getSecond', []))
+      ->addMethod(javaMethod('public', javaString(), 'getSubsecond', []))
+      ->addMethod(javaMethod('public', javaInt(), 'getYear', []))
+      ->addMethod(javaMethod('public', javaInt(), 'getYearDays', [javaParam(javaInt(), 'p0')]))
+      ->addMethod(javaMethod('public', javaBoolean(), 'hasDay', []))
+      ->addMethod(javaMethod('public', javaBoolean(), 'hasHour', []))
+      ->addMethod(javaMethod('public', javaBoolean(), 'hasMinute', []))
+      ->addMethod(javaMethod('public', javaBoolean(), 'hasMonth', []))
+      ->addMethod(javaMethod('public', javaBoolean(), 'hasSecond', []))
+      ->addMethod(javaMethod('public', javaBoolean(), 'hasSubsecond', []))
+      ->addMethod(javaMethod('public', javaInt(), 'hashCode', []))
+      ->addMethod(javaMethod('public', javaVoid(), 'incrementDay', [javaParam(javaInt(), 'p0')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'incrementHour', [javaParam(javaInt(), 'p0')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'incrementMinute', [javaParam(javaInt(), 'p0')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'incrementMonth', [javaParam(javaInt(), 'p0')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'incrementSecond', [javaParam(javaInt(), 'p0')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'incrementSubsecond', [javaParam(javaString(), 'p0'), javaParam(javaInt(), 'p1'), javaParam(javaInt(), 'p2')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'incrementYear', [javaParam(javaInt(), 'p0')]))
+      ->addMethod(javaMethod('public', javaBoolean(), 'isDigit', [javaParam(javaChar(), 'p0')]))
+      ->addMethod(javaMethod('public', javaBoolean(), 'isLeapYear', []))
+      ->addMethod(javaMethod('public', javaBoolean(), 'isLeapYear', [javaParam(javaInt(), 'p0')]))
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.date.PureDate'), 'newPureDate', [javaParam(javaInt(), 'p0')]))
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.date.PureDate'), 'newPureDate', [javaParam(javaInt(), 'p0'), javaParam(javaInt(), 'p1')]))
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.date.PureDate'), 'newPureDate', [javaParam(javaInt(), 'p0'), javaParam(javaInt(), 'p1'), javaParam(javaInt(), 'p2')]))
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.date.PureDate'), 'newPureDate', [javaParam(javaInt(), 'p0'), javaParam(javaInt(), 'p1'), javaParam(javaInt(), 'p2'), javaParam(javaInt(), 'p3')]))
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.date.PureDate'), 'newPureDate', [javaParam(javaInt(), 'p0'), javaParam(javaInt(), 'p1'), javaParam(javaInt(), 'p2'), javaParam(javaInt(), 'p3'), javaParam(javaInt(), 'p4')]))
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.date.PureDate'), 'newPureDate', [javaParam(javaInt(), 'p0'), javaParam(javaInt(), 'p1'), javaParam(javaInt(), 'p2'), javaParam(javaInt(), 'p3'), javaParam(javaInt(), 'p4'), javaParam(javaInt(), 'p5')]))
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.date.PureDate'), 'newPureDate', [javaParam(javaInt(), 'p0'), javaParam(javaInt(), 'p1'), javaParam(javaInt(), 'p2'), javaParam(javaInt(), 'p3'), javaParam(javaInt(), 'p4'), javaParam(javaInt(), 'p5'), javaParam(javaString(), 'p6')]))
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.date.PureDate'), 'newPureDate', [javaParam(javaInt(), 'p0'), javaParam(javaInt(), 'p1'), javaParam(javaInt(), 'p2'), javaParam(javaInt(), 'p3'), javaParam(javaInt(), 'p4'), javaParam(javaNumber(), 'p5')]))
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.date.PureDate'), 'parsePureDate', [javaParam(javaString(), 'p0')]))
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.date.PureDate'), 'parsePureDate', [javaParam(javaString(), 'p0'), javaParam(javaInt(), 'p1'), javaParam(javaInt(), 'p2')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'setDay', [javaParam(javaInt(), 'p0')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'setHour', [javaParam(javaInt(), 'p0')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'setMinute', [javaParam(javaInt(), 'p0')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'setMonth', [javaParam(javaInt(), 'p0')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'setSecond', [javaParam(javaInt(), 'p0')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'setSubsecond', [javaParam(javaString(), 'p0'), javaParam(javaInt(), 'p1'), javaParam(javaInt(), 'p2')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'setTimeZone', [javaParam(javaString(), 'p0'), javaParam(javaInt(), 'p1'), javaParam(javaInt(), 'p2')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'setYear', [javaParam(javaInt(), 'p0')]))
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.date.PureDate'), 'subtractSubseconds', [javaParam(javaString(), 'p0')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'throwInvalidDateString', [javaParam(javaString(), 'p0')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'throwInvalidDateString', [javaParam(javaString(), 'p0'), javaParam(javaInt(), 'p1'), javaParam(javaInt(), 'p2')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'throwInvalidDateString', [javaParam(javaString(), 'p0'), javaParam(javaString(), 'p1'), javaParam(javaInt(), 'p2'), javaParam(javaInt(), 'p3')]))
+      ->addMethod(javaMethod('public', javaString(), 'toString', []))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeString', [javaParam(javaAppendable(), 'p0')]));
+
+   let jDurationUnit = javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.date.DurationUnit')
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.date.DurationUnit'), 'valueOf', [javaParam(javaString(), 'p0')]))
+      ->addMethod(javaMethod('public', javaArray(javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.date.DurationUnit')), 'values', []));
+
+   let jDayOfWeek = javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.date.DayOfWeek')
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.date.DayOfWeek'), 'valueOf', [javaParam(javaString(), 'p0')]))
+      ->addMethod(javaMethod('public', javaArray(javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.date.DayOfWeek')), 'values', []));
+
+   let jLibrary = javaClass('public', 'org.finos.legend.engine.plan.dependencies.util.Library')
+      ->addMethod(javaMethod('public', javaNumber(), 'abs', [javaParam(javaNumber(), 'p0')]))
+      ->addMethod(javaMethod('public', javaBiFunction(javaTypeVar('U'), javaWildcardType([javaTypeVar('T')], [javaTypeVar('T')]), javaTypeVar('U')), 'adaptPureAccumulator', [javaParam(javaBiFunction(javaWildcardType([javaTypeVar('T')], [javaTypeVar('T')]), javaTypeVar('U'), javaTypeVar('U')), 'p0')]))
+      ->addMethod(javaMethod('public', javaComparator(javaTypeVar('T')), 'adaptPureComparator', [javaParam(javaBiFunction(javaTypeVar('T'), javaTypeVar('T'), javaLongBoxed()), 'p0')]))
+      ->addMethod(javaMethod('public', $jPureDate, 'adjustDate', [javaParam($jPureDate, 'p0'), javaParam(javaLong(), 'p1'), javaParam($jDurationUnit, 'p2')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'appendFloatString', [javaParam(javaStringBuilder(), 'p0'), javaParam(javaString(), 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'appendFloatString', [javaParam(javaStringBuilder(), 'p0'), javaParam(javaString(), 'p1'), javaParam(javaInt(), 'p2')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'appendIntegerString', [javaParam(javaStringBuilder(), 'p0'), javaParam(javaString(), 'p1'), javaParam(javaInt(), 'p2')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'appendZeros', [javaParam(javaStringBuilder(), 'p0'), javaParam(javaInt(), 'p1')]))
+      ->addMethod(javaMethod('public', javaDouble(), 'average', [javaParam(javaList(javaNumber()), 'p0')]))
+      ->addMethod(javaMethod('public', javaLong(), 'ceiling', [javaParam(javaNumber(), 'p0')]))
+      ->addMethod(javaMethod('public', javaList(javaString()), 'chunk', [javaParam(javaString(), 'p0'), javaParam(javaInt(), 'p1')]))
+      ->addMethod(javaMethod('public', javaInt(), 'compareInt', [javaParam(javaTypeVar('T'), 'p0'), javaParam(javaTypeVar('T'), 'p1')]))
+      ->addMethod(javaMethod('public', javaInt(), 'compareUnmatchedNumbers', [javaParam(javaNumber(), 'p0'), javaParam(javaNumber(), 'p1')]))
+      ->addMethod(javaMethod('public', javaLong(), 'dateDiff', [javaParam($jPureDate, 'p0'), javaParam($jPureDate, 'p1'), javaParam($jDurationUnit, 'p2')]))
+      ->addMethod(javaMethod('public', $jPureDate, 'datePart', [javaParam($jPureDate, 'p0')]))
+      ->addMethod(javaMethod('public', javaLong(), 'dayOfMonth', [javaParam($jPureDate, 'p0')]))
+      ->addMethod(javaMethod('public', javaLong(), 'dayOfWeekNumber', [javaParam($jPureDate, 'p0')]))
+      ->addMethod(javaMethod('public', javaBigDecimal(), 'decimalMultiply', [javaParam(javaBigDecimal(), 'p0'), javaParam(javaBigDecimal(), 'p1')]))
+      ->addMethod(javaMethod('public', javaBigDecimal(), 'decimalPlus', [javaParam(javaBigDecimal(), 'p0'), javaParam(javaBigDecimal(), 'p1')]))
+      ->addMethod(javaMethod('public', javaPredicate(javaTypeVar('V')), 'distinctByEql', [javaParam(javaBiPredicate(javaTypeVar('V'), javaTypeVar('V')), 'p0')]))
+      ->addMethod(javaMethod('public', javaPredicate(javaTypeVar('T')), 'distinctByKey', [javaParam(javaFunction(javaTypeVar('T'), javaWildcard()), 'p0')]))
+      ->addMethod(javaMethod('public', javaDouble(), 'divide', [javaParam(javaNumber(), 'p0'), javaParam(javaNumber(), 'p1')]))
+      ->addMethod(javaMethod('public', javaInt(), 'findEndOfDateFormatString', [javaParam(javaString(), 'p0'), javaParam(javaInt(), 'p1')]))
+      ->addMethod(javaMethod('public', javaTypeVar('T'), 'first', [javaParam(javaList(javaTypeVar('T')), 'p0')]))
+      ->addMethod(javaMethod('public', javaTypeVar('T'), 'first', [javaParam(javaTypeVar('T'), 'p0')]))
+      ->addMethod(javaMethod('public', $jPureDate, 'firstDayOfMonth', [javaParam($jPureDate, 'p0')]))
+      ->addMethod(javaMethod('public', $jPureDate, 'firstDayOfQuarter', [javaParam($jPureDate, 'p0')]))
+      ->addMethod(javaMethod('public', $jPureDate, 'firstDayOfThisMonth', []))
+      ->addMethod(javaMethod('public', $jPureDate, 'firstDayOfThisQuarter', []))
+      ->addMethod(javaMethod('public', $jPureDate, 'firstDayOfThisYear', []))
+      ->addMethod(javaMethod('public', $jPureDate, 'firstDayOfWeek', [javaParam($jPureDate, 'p0')]))
+      ->addMethod(javaMethod('public', $jPureDate, 'firstDayOfYear', [javaParam($jPureDate, 'p0')]))
+      ->addMethod(javaMethod('public', javaDouble(), 'floatMultiply', [javaParam(javaDouble(), 'p0'), javaParam(javaDouble(), 'p1')]))
+      ->addMethod(javaMethod('public', javaDouble(), 'floatPlus', [javaParam(javaDouble(), 'p0'), javaParam(javaDouble(), 'p1')]))
+      ->addMethod(javaMethod('public', javaLong(), 'floor', [javaParam(javaNumber(), 'p0')]))
+      ->addMethod(javaMethod('public', javaTypeVar('U'), 'fold', [javaParam(javaList(javaTypeVar('T')), 'p0'), javaParam(javaBiFunction(javaWildcardType([javaTypeVar('T')], [javaTypeVar('T')]), javaTypeVar('U'), javaTypeVar('U')), 'p1'), javaParam(javaTypeVar('U'), 'p2')]))
+      ->addMethod(javaMethod('public', javaString(), 'format', [javaParam(javaString(), 'p0'), javaParam(javaList(javaObject()), 'p1')]))
+      ->addMethod(javaMethod('public', javaInt(), 'getSignCount', [javaParam(javaString(), 'p0')]))
+      ->addMethod(javaMethod('public', javaInt(), 'getZeroCountFrom', [javaParam(javaString(), 'p0'), javaParam(javaInt(), 'p1')]))
+      ->addMethod(javaMethod('public', javaBoolean(), 'greaterThan', [javaParam($jPureDate, 'p0'), javaParam($jPureDate, 'p1')]))
+      ->addMethod(javaMethod('public', javaBoolean(), 'greaterThan', [javaParam(javaBooleanBoxed(), 'p0'), javaParam(javaBooleanBoxed(), 'p1')]))
+      ->addMethod(javaMethod('public', javaBoolean(), 'greaterThanEqual', [javaParam($jPureDate, 'p0'), javaParam($jPureDate, 'p1')]))
+      ->addMethod(javaMethod('public', javaBoolean(), 'greaterThanEqual', [javaParam(javaBooleanBoxed(), 'p0'), javaParam(javaBooleanBoxed(), 'p1')]))
+      ->addMethod(javaMethod('public', javaList(javaTypeVar('T')), 'init', [javaParam(javaList(javaTypeVar('T')), 'p0')]))
+      ->addMethod(javaMethod('public', javaLong(), 'integerMultiply', [javaParam(javaLong(), 'p0'), javaParam(javaLong(), 'p1')]))
+      ->addMethod(javaMethod('public', javaLong(), 'integerPlus', [javaParam(javaLong(), 'p0'), javaParam(javaLong(), 'p1')]))
+      ->addMethod(javaMethod('public', javaBoolean(), 'isSign', [javaParam(javaChar(), 'p0')]))
+      ->addMethod(javaMethod('public', javaBoolean(), 'isSigned', [javaParam(javaString(), 'p0')]))
+      ->addMethod(javaMethod('public', javaBoolean(), 'isSpecialNumber', [javaParam(javaNumber(), 'p0')]))
+      ->addMethod(javaMethod('public', javaBoolean(), 'lessThan', [javaParam($jPureDate, 'p0'), javaParam($jPureDate, 'p1')]))
+      ->addMethod(javaMethod('public', javaBoolean(), 'lessThanEqual', [javaParam($jPureDate, 'p0'), javaParam($jPureDate, 'p1')]))
+      ->addMethod(javaMethod('public', javaTypeVar('R'), 'match', [javaParam(javaObject(), 'p0'), javaParam(javaList(javaPredicate(javaObject())), 'p1'), javaParam(javaList(javaFunction(javaObject(), javaTypeVar('R'))), 'p2')]))
+      ->addMethod(javaMethod('public', javaNumber(), 'max', [javaParam(javaNumber(), 'p0'), javaParam(javaNumber(), 'p1')]))
+      ->addMethod(javaMethod('public', javaNumber(), 'min', [javaParam(javaNumber(), 'p0'), javaParam(javaNumber(), 'p1')]))
+      ->addMethod(javaMethod('public', javaNumber(), 'minus', [javaParam(javaList(javaNumber()), 'p0')]))
+      ->addMethod(javaMethod('public', javaNumber(), 'minus', [javaParam(javaNumber(), 'p0')]))
+      ->addMethod(javaMethod('public', javaNumber(), 'minus', [javaParam(javaNumber(), 'p0'), javaParam(javaNumber(), 'p1')]))
+      ->addMethod(javaMethod('public', $jPureDate, 'mostRecentDayOfWeek', [javaParam($jDayOfWeek, 'p0')]))
+      ->addMethod(javaMethod('public', $jPureDate, 'mostRecentDayOfWeek', [javaParam($jPureDate, 'p0'), javaParam($jDayOfWeek, 'p1')]))
+      ->addMethod(javaMethod('public', javaNumber(), 'numberMultiply', [javaParam(javaNumber(), 'p0'), javaParam(javaNumber(), 'p1')]))
+      ->addMethod(javaMethod('public', javaNumber(), 'numberPlus', [javaParam(javaNumber(), 'p0'), javaParam(javaNumber(), 'p1')]))
+      ->addMethod(javaMethod('public', $jPureDate, 'previousDayOfWeek', [javaParam($jDayOfWeek, 'p0')]))
+      ->addMethod(javaMethod('public', $jPureDate, 'previousDayOfWeek', [javaParam($jPureDate, 'p0'), javaParam($jDayOfWeek, 'p1')]))
+      ->addMethod(javaMethod('public', javaBoolean(), 'pureAssert', [javaParam(javaBoolean(), 'p0'), javaParam(javaSupplier(javaString()), 'p1')]))
+      ->addMethod(javaMethod('public', javaString(), 'pureToString', [javaParam(javaObject(), 'p0')]))
+      ->addMethod(javaMethod('public', javaStream(javaLongBoxed()), 'range', [javaParam(javaLong(), 'p0'), javaParam(javaLong(), 'p1'), javaParam(javaLong(), 'p2')]))
+      ->addMethod(javaMethod('public', javaNumber(), 'rem', [javaParam(javaNumber(), 'p0'), javaParam(javaNumber(), 'p1')]))
+      ->addMethod(javaMethod('public', javaList(javaTypeVar('T')), 'removeDuplicates', [javaParam(javaList(javaTypeVar('T')), 'p0'), javaParam(javaFunction(javaTypeVar('T'), javaTypeVar('V')), 'p1'), javaParam(javaBiPredicate(javaTypeVar('V'), javaTypeVar('V')), 'p2')]))
+      ->addMethod(javaMethod('public', javaBigDecimal(), 'round', [javaParam(javaBigDecimal(), 'p0'), javaParam(javaLong(), 'p1')]))
+      ->addMethod(javaMethod('public', javaDoubleBoxed(), 'round', [javaParam(javaDoubleBoxed(), 'p0'), javaParam(javaLong(), 'p1')]))
+      ->addMethod(javaMethod('public', javaLong(), 'round', [javaParam(javaNumber(), 'p0')]))
+      ->addMethod(javaMethod('public', javaNumber(), 'round', [javaParam(javaNumber(), 'p0'), javaParam(javaLong(), 'p1')]))
+      ->addMethod(javaMethod('public', javaInt(), 'safeCompare', [javaParam(javaString(), 'p0'), javaParam(javaString(), 'p1')]))
+      ->addMethod(javaMethod('public', javaInt(), 'safeCompareNumbers', [javaParam(javaNumber(), 'p0'), javaParam(javaNumber(), 'p1')]))
+      ->addMethod(javaMethod('public', javaList(javaTypeVar('T')), 'sort', [javaParam(javaList(javaTypeVar('T')), 'p0')]))
+      ->addMethod(javaMethod('public', javaList(javaTypeVar('T')), 'sort', [javaParam(javaList(javaTypeVar('T')), 'p0'), javaParam(javaComparator(javaWildcardType([javaTypeVar('T')], [javaTypeVar('T')])), 'p1')]))
+      ->addMethod(javaMethod('public', javaList(javaString()), 'split', [javaParam(javaString(), 'p0'), javaParam(javaString(), 'p1')]))
+      ->addMethod(javaMethod('public', javaBigDecimal(), 'toBigDecimal', [javaParam(javaNumber(), 'p0')]))
+      ->addMethod(javaMethod('public', javaTypeVar('T'), 'toOne', [javaParam(javaList(javaTypeVar('T')), 'p0')]))
+      ->addMethod(javaMethod('public', javaTypeVar('T'), 'toOne', [javaParam(javaTypeVar('T'), 'p0')]))
+      ->addMethod(javaMethod('public', javaList(javaTypeVar('T')), 'toOneMany', [javaParam(javaList(javaTypeVar('T')), 'p0')]))
+      ->addMethod(javaMethod('public', javaList(javaTypeVar('T')), 'toOneMany', [javaParam(javaTypeVar('T'), 'p0')]))
+      ->addMethod(javaMethod('public', javaString(), 'toRepresentation', [javaParam(javaObject(), 'p0')]))
+      ->addMethod(javaMethod('public', javaString(), 'toUpperFirstCharacter', [javaParam(javaString(), 'p0')]))
+      ->addMethod(javaMethod('public', $jPureDate, 'today', []))
+      ->addMethod(javaMethod('public', javaLong(), 'weekOfYear', [javaParam($jPureDate, 'p0')]));
+
+   let jMonth = javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.date.Month')
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.date.Month'), 'valueOf', [javaParam(javaString(), 'p0')]))
+      ->addMethod(javaMethod('public', javaArray(javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.date.Month')), 'values', []));
+
+   let jQuarter = javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.date.Quarter')
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.date.Quarter'), 'valueOf', [javaParam(javaString(), 'p0')]))
+      ->addMethod(javaMethod('public', javaArray(javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.date.Quarter')), 'values', []));
+
+   let jGraphContext = javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.dataQuality.GraphContext');
+
+   let jEnforcementLevel = javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.dataQuality.EnforcementLevel')
+      ->addMethod(javaMethod('public', javaString(), 'getName', []))
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.dataQuality.EnforcementLevel'), 'valueOf', [javaParam(javaString(), 'p0')]))
+      ->addMethod(javaMethod('public', javaArray(javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.dataQuality.EnforcementLevel')), 'values', []));
+
+   let jRuleType = javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.dataQuality.RuleType')
+      ->addMethod(javaMethod('public', javaString(), 'getName', []))
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.dataQuality.RuleType'), 'valueOf', [javaParam(javaString(), 'p0')]))
+      ->addMethod(javaMethod('public', javaArray(javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.dataQuality.RuleType')), 'values', []));
+
+   let jRelativePathNode = javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.dataQuality.RelativePathNode')
+      ->addMethod(javaMethod('public', javaLongBoxed(), 'getIndex', []))
+      ->addMethod(javaMethod('public', javaString(), 'getPropertyName', []));
+
+   let jBasicRelativePathNode = javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.dataQuality.BasicRelativePathNode')
+      ->addMethod(javaMethod('public', javaLongBoxed(), 'getIndex', []))
+      ->addMethod(javaMethod('public', javaString(), 'getPropertyName', []))
+      ->addMethod(javaMethod('public', $jRelativePathNode, 'newRelativePathNode', [javaParam(javaString(), 'p0')]))
+      ->addMethod(javaMethod('public', $jRelativePathNode, 'newRelativePathNode', [javaParam(javaString(), 'p0'), javaParam(javaLong(), 'p1')]));
+
+   let jIDefect = javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.dataQuality.IDefect')
+      ->addMethod(javaMethod('public', $jEnforcementLevel, 'getEnforcementLevel', []))
+      ->addMethod(javaMethod('public', javaString(), 'getExternalId', []))
+      ->addMethod(javaMethod('public', javaString(), 'getId', []))
+      ->addMethod(javaMethod('public', javaString(), 'getMessage', []))
+      ->addMethod(javaMethod('public', javaList($jRelativePathNode), 'getPath', []))
+      ->addMethod(javaMethod('public', javaString(), 'getRuleDefinerPath', []))
+      ->addMethod(javaMethod('public', $jRuleType, 'getRuleType', []));
+
+   let jBasicDefect = javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.dataQuality.BasicDefect')
+      ->addMethod(javaMethod('public', $jEnforcementLevel, 'getEnforcementLevel', []))
+      ->addMethod(javaMethod('public', javaString(), 'getExternalId', []))
+      ->addMethod(javaMethod('public', javaString(), 'getId', []))
+      ->addMethod(javaMethod('public', javaString(), 'getMessage', []))
+      ->addMethod(javaMethod('public', javaList($jRelativePathNode), 'getPath', []))
+      ->addMethod(javaMethod('public', javaString(), 'getRuleDefinerPath', []))
+      ->addMethod(javaMethod('public', $jRuleType, 'getRuleType', []))
+      ->addMethod(javaMethod('public', $jIDefect, 'newClassStructureDefect', [javaParam(javaString(), 'p0'), javaParam(javaString(), 'p1')]))
+      ->addMethod(javaMethod('public', $jIDefect, 'newConstraintDefect', [javaParam(javaString(), 'p0'), javaParam(javaString(), 'p1'), javaParam(javaString(), 'p2'), javaParam($jEnforcementLevel, 'p3'), javaParam(javaString(), 'p4')]))
+      ->addMethod(javaMethod('public', $jIDefect, 'newDefect', [javaParam(javaString(), 'p0'), javaParam(javaString(), 'p1'), javaParam(javaString(), 'p2'), javaParam($jEnforcementLevel, 'p3'), javaParam(javaString(), 'p4'), javaParam($jRuleType, 'p5'), javaParam(javaList($jRelativePathNode), 'p6')]))
+      ->addMethod(javaMethod('public', $jIDefect, 'newInvalidInputCriticalDefect', [javaParam(javaString(), 'p0'), javaParam(javaString(), 'p1')]))
+      ->addMethod(javaMethod('public', $jIDefect, 'newInvalidInputErrorDefect', [javaParam(javaString(), 'p0'), javaParam(javaString(), 'p1')]))
+      ->addMethod(javaMethod('public', $jIDefect, 'newInvalidInputWarningDefect', [javaParam(javaString(), 'p0'), javaParam(javaString(), 'p1')]))
+      ->addMethod(javaMethod('public', $jIDefect, 'newMappingDefinitionDefect', [javaParam(javaString(), 'p0'), javaParam(javaString(), 'p1')]))
+      ->addMethod(javaMethod('public', $jIDefect, 'newNoInputDefect', [javaParam(javaString(), 'p0')]))
+      ->addMethod(javaMethod('public', $jIDefect, 'newStoreDefinitionDefect', [javaParam(javaString(), 'p0'), javaParam(javaString(), 'p1')]))
+      ->addMethod(javaMethod('public', $jIDefect, 'prefixPath', [javaParam($jIDefect, 'p0'), javaParam($jRelativePathNode, 'p1')]))
+      ->addMethod(javaMethod('public', $jIDefect, 'prefixPath', [javaParam($jIDefect, 'p0'), javaParam(javaList($jRelativePathNode), 'p1')]))
+      ->addMethod(javaMethod('public', javaString(), 'toString', []));
+
+   let jIChecked = javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.dataQuality.IChecked')
+      ->addMethod(javaMethod('public', javaList($jIDefect), 'getDefects', []))
+      ->addMethod(javaMethod('public', javaObject(), 'getSource', []))
+      ->addMethod(javaMethod('public', javaTypeVar('T'), 'getValue', []));
+
+   let jIStoreStreamReader = javaClass('public', 'org.finos.legend.engine.plan.dependencies.store.inMemory.IStoreStreamReader')
+      ->addMethod(javaMethod('public', javaVoid(), 'destroyReading', []))
+      ->addMethod(javaMethod('public', javaVoid(), 'initReading', []))
+      ->addMethod(javaMethod('public', javaBoolean(), 'isFinished', []))
+      ->addMethod(javaMethod('public', javaCollection(javaParameterizedType($jIChecked, [javaTypeVar('T')])), 'readCheckedObjects', []));
+
+   let jIGraphFetchM2MExecutionNodeContext = javaClass('public', 'org.finos.legend.engine.plan.dependencies.store.inMemory.IGraphFetchM2MExecutionNodeContext')
+      ->addMethod(javaMethod('public', $jIStoreStreamReader, 'createReader', [javaParam(javaString(), 'p0')]))
+      ->addMethod(javaMethod('public', javaURL(), 'createUrl', [javaParam(javaString(), 'p0')]));
+
+   let jConstrained = javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.dataQuality.Constrained')
+      ->addMethod(javaMethod('public', javaList($jIDefect), 'allConstraints', []))
+      ->addMethod(javaMethod('public', javaList($jIDefect), 'allConstraints', [javaParam($jGraphContext, 'p0')]))
+      ->addMethod(javaMethod('public', javaParameterizedType($jIChecked, [javaTypeVar('T')]), 'toChecked', []))
+      ->addMethod(javaMethod('public', javaParameterizedType($jIChecked, [javaTypeVar('T')]), 'toChecked', [javaParam(javaBoolean(), 'p0')]))
+      ->addMethod(javaMethod('public', javaParameterizedType($jIChecked, [javaTypeVar('T')]), 'toChecked', [javaParam(javaObject(), 'p0')]))
+      ->addMethod(javaMethod('public', javaParameterizedType($jIChecked, [javaTypeVar('T')]), 'toChecked', [javaParam(javaObject(), 'p0'), javaParam(javaBoolean(), 'p1')]))
+      ->addMethod(javaMethod('public', javaTypeVar('T'), 'withConstraintsApplied', []));
+
+   let jIReferencedObject = javaClass('public', 'org.finos.legend.engine.plan.dependencies.store.shared.IReferencedObject')
+      ->addMethod(javaMethod('public', javaString(), 'getAlloyStoreObjectReference$', []));
+
+   let jIRelationalCreateAndPopulateTempTableExecutionNodeSpecifics = javaClass('public', 'org.finos.legend.engine.plan.dependencies.store.relational.IRelationalCreateAndPopulateTempTableExecutionNodeSpecifics')
+      ->addMethod(javaMethod('public', javaString(), 'getGetterNameForProperty', [javaParam(javaString(), 'p0')]));
+
+   let jIPlatformPureExpressionExecutionNodeGraphFetchUnionSpecifics = javaClass('public', 'org.finos.legend.engine.plan.dependencies.store.platform.IPlatformPureExpressionExecutionNodeGraphFetchUnionSpecifics');
+   let jIPlatformPureExpressionExecutionNodeGraphFetchMergeSpecifics = javaClass('public', 'org.finos.legend.engine.plan.dependencies.store.platform.IPlatformPureExpressionExecutionNodeGraphFetchMergeSpecifics');
+
+   let jISerializationWriter = javaClass('public', 'org.finos.legend.engine.plan.dependencies.store.platform.ISerializationWriter')
+      ->addMethod(javaMethod('public', javaVoid(), 'endObject', []))
+      ->addMethod(javaMethod('public', javaVoid(), 'startObject', [javaParam(javaString(), 'p0')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'startObject', [javaParam(javaString(), 'p0'), javaParam(javaString(), 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeBooleanProperty', [javaParam(javaString(), 'p0'), javaParam(javaBoolean(), 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeBooleanProperty', [javaParam(javaString(), 'p0'), javaParam(javaBooleanBoxed(), 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeBooleanProperty', [javaParam(javaString(), 'p0'), javaParam(javaList(javaBooleanBoxed()), 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeComplexProperty', [javaParam(javaString(), 'p0'), javaParam(javaList(javaTypeVar('T')), 'p1'), javaParam(javaConsumer(javaTypeVar('T')), 'p2')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeComplexProperty', [javaParam(javaString(), 'p0'), javaParam(javaTypeVar('T'), 'p1'), javaParam(javaConsumer(javaTypeVar('T')), 'p2')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeDateProperty', [javaParam(javaString(), 'p0'), javaParam($jPureDate, 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeDateProperty', [javaParam(javaString(), 'p0'), javaParam(javaList($jPureDate), 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeDateTimeProperty', [javaParam(javaString(), 'p0'), javaParam($jPureDate, 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeDateTimeProperty', [javaParam(javaString(), 'p0'), javaParam(javaList($jPureDate), 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeDecimalProperty', [javaParam(javaString(), 'p0'), javaParam(javaBigDecimal(), 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeDecimalProperty', [javaParam(javaString(), 'p0'), javaParam(javaList(javaBigDecimal()), 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeEnumProperty', [javaParam(javaString(), 'p0'), javaParam(javaString(), 'p1'), javaParam(javaList(javaString()), 'p2')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeEnumProperty', [javaParam(javaString(), 'p0'), javaParam(javaString(), 'p1'), javaParam(javaString(), 'p2')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeFloatProperty', [javaParam(javaString(), 'p0'), javaParam(javaDouble(), 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeFloatProperty', [javaParam(javaString(), 'p0'), javaParam(javaDoubleBoxed(), 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeFloatProperty', [javaParam(javaString(), 'p0'), javaParam(javaList(javaDoubleBoxed()), 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeIntegerProperty', [javaParam(javaString(), 'p0'), javaParam(javaList(javaLongBoxed()), 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeIntegerProperty', [javaParam(javaString(), 'p0'), javaParam(javaLong(), 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeIntegerProperty', [javaParam(javaString(), 'p0'), javaParam(javaLongBoxed(), 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeNumberProperty', [javaParam(javaString(), 'p0'), javaParam(javaList(javaNumber()), 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeNumberProperty', [javaParam(javaString(), 'p0'), javaParam(javaNumber(), 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeStrictDateProperty', [javaParam(javaString(), 'p0'), javaParam($jPureDate, 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeStrictDateProperty', [javaParam(javaString(), 'p0'), javaParam(javaList($jPureDate), 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeStringProperty', [javaParam(javaString(), 'p0'), javaParam(javaList(javaString()), 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeStringProperty', [javaParam(javaString(), 'p0'), javaParam(javaString(), 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeUnitProperty', [javaParam(javaString(), 'p0'), javaParam(javaString(), 'p1'), javaParam(javaList(javaNumber()), 'p2')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeUnitProperty', [javaParam(javaString(), 'p0'), javaParam(javaString(), 'p1'), javaParam(javaNumber(), 'p2')]));
+
+   let jIGraphSerializer = javaClass('public', 'org.finos.legend.engine.plan.dependencies.store.platform.IGraphSerializer')
+      ->addMethod(javaMethod('public', javaVoid(), 'serialize', [javaParam(javaTypeVar('T'), 'p0')]));
+
+   let jIPlatformPureExpressionExecutionNodeSerializeSpecifics = javaClass('public', 'org.finos.legend.engine.plan.dependencies.store.platform.IPlatformPureExpressionExecutionNodeSerializeSpecifics')
+      ->addMethod(javaMethod('public', javaParameterizedType($jIGraphSerializer, [javaWildcard()]), 'serializer', [javaParam($jISerializationWriter, 'p0'), javaParam($jIExecutionNodeContext, 'p1')]));
+
+   let jIStoreStreamReadingExecutionNodeContext = javaClass('public', 'org.finos.legend.engine.plan.dependencies.store.inMemory.IStoreStreamReadingExecutionNodeContext')
+      ->addMethod(javaMethod('public', $jIStoreStreamReader, 'createReader', [javaParam(javaString(), 'p0')]))
+      ->addMethod(javaMethod('public', javaURL(), 'createUrl', [javaParam(javaString(), 'p0')]));
+
+   let jIStoreStreamReadingExecutionNodeSpecifics = javaClass('public', 'org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch.IStoreStreamReadingExecutionNodeSpecifics')
+      ->addMethod(javaMethod('public', $jIStoreStreamReader, 'streamReader', [javaParam($jIStoreStreamReadingExecutionNodeContext, 'p0')]));
+
+   let jIInMemoryRootGraphFetchExecutionNodeSpecifics = javaClass('public', 'org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch.IInMemoryRootGraphFetchExecutionNodeSpecifics')
+      ->addMethod(javaMethod('public', javaObject(), 'transform', [javaParam(javaObject(), 'p0')]));
+
+   let jIInMemoryRootGraphFetchMergeExecutionNodeSpecifics = javaClass('public', 'org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch.IInMemoryRootGraphFetchMergeExecutionNodeSpecifics')
+      ->addMethod(javaMethod('public', javaObject(), 'transform', [javaParam(javaObject(), 'p0')]));
+
+
+   let jIInMemoryPropertyGraphFetchExecutionNodeSpecifics = javaClass('public', 'org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch.IInMemoryPropertyGraphFetchExecutionNodeSpecifics')
+      ->addMethod(javaMethod('public', javaStream($jIGraphInstance), 'transformProperty', [javaParam(javaList(javaWildcard()), 'p0')]));
+
+   let jIRelationalRootQueryTempTableGraphFetchExecutionNodeSpecifics = javaClass('public', 'org.finos.legend.engine.plan.dependencies.store.relational.graphFetch.IRelationalRootQueryTempTableGraphFetchExecutionNodeSpecifics')
+      ->addMethod(javaMethod('public', javaList(javaParameterizedType(javaClass('org.eclipse.collections.api.tuple.Pair'), [javaString(), javaString()])), 'allInstanceSetImplementations', []))
+      ->addMethod(javaMethod('public', javaObject(), 'deepCopy', [javaParam(javaObject(), 'p0')]))
+      ->addMethod(javaMethod('public', javaParameterizedType($jIGraphInstance, [javaWildcard()]), 'nextGraphInstance', []))
+      ->addMethod(javaMethod('public', javaVoid(), 'prepare', [javaParam(javaResultSet(), 'p0'), javaParam(javaString(), 'p1'), javaParam(javaString(), 'p2')]))
+      ->addMethod(javaMethod('public', javaList(javaString()), 'primaryKeyColumns', [javaParam(javaInt(), 'p0')]))
+      ->addMethod(javaMethod('public', javaList(javaReflectMethod()), 'primaryKeyGetters', []))
+      ->addMethod(javaMethod('public', javaBoolean(), 'supportsCaching', []));
+
+   let jIRelationalCrossRootQueryTempTableGraphFetchExecutionNodeSpecifics = javaClass('public', 'org.finos.legend.engine.plan.dependencies.store.relational.graphFetch.IRelationalCrossRootQueryTempTableGraphFetchExecutionNodeSpecifics')
+      ->addMethod(javaMethod('public', javaVoid(), 'addChildToParent', [javaParam(javaObject(), 'p0'), javaParam(javaObject(), 'p1'), javaParam($jIExecutionNodeContext, 'p2')]))
+      ->addMethod(javaMethod('public', javaObject(), 'deepCopy', [javaParam(javaObject(), 'p0')]))
+      ->addMethod(javaMethod('public', javaString(), 'mappingId', []))
+      ->addMethod(javaMethod('public', javaParameterizedType($jIGraphInstance, [javaWildcard()]), 'nextGraphInstance', []))
+      ->addMethod(javaMethod('public', javaList(javaString()), 'parentCrossKeyColumns', [javaParam(javaList(javaString()), 'p0')]))
+      ->addMethod(javaMethod('public', javaList(javaReflectMethod()), 'parentCrossKeyGetters', []))
+      ->addMethod(javaMethod('public', javaList(javaReflectMethod()), 'parentCrossKeyGettersOrderedByTargetProperties', []))
+      ->addMethod(javaMethod('public', javaVoid(), 'prepare', [javaParam(javaResultSet(), 'p0'), javaParam(javaString(), 'p1'), javaParam(javaString(), 'p2')]))
+      ->addMethod(javaMethod('public', javaList(javaReflectMethod()), 'primaryKeyGetters', []))
+      ->addMethod(javaMethod('public', javaString(), 'sourceInstanceSetId', []))
+      ->addMethod(javaMethod('public', javaBoolean(), 'supportsCrossCaching', []))
+      ->addMethod(javaMethod('public', javaString(), 'targetInstanceSetId', []))
+      ->addMethod(javaMethod('public', javaList(javaString()), 'targetPropertiesOrdered', []));
+
+   let jIInMemoryCrossStoreGraphFetchExecutionNodeSpecifics = javaClass('public', 'org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch.IInMemoryCrossStoreGraphFetchExecutionNodeSpecifics')
+      ->addMethod(javaMethod('public', javaBoolean(), 'attemptAddingChildToParent', [javaParam(javaObject(), 'p0'), javaParam(javaObject(), 'p1')]))
+      ->addMethod(javaMethod('public', javaParameterizedType(javaClass('java.util.Map'), [javaString(), javaObject()]), 'getCrossStoreKeysValueForChildren', [javaParam(javaObject(), 'p0')]))
+      ->addMethod(javaMethod('public', javaParameterizedType(javaClass('java.util.Map'), [javaString(), javaObject()]), 'getCrossStoreKeysValueFromChild', [javaParam(javaObject(), 'p0')]))
+      ->addMethod(javaMethod('public', javaParameterizedType($jIGraphInstance, [javaWildcard()]), 'wrapChildInGraphInstance', [javaParam(javaObject(), 'p0')]));
+
+   let jIRelationalClassQueryTempTableGraphFetchExecutionNodeSpecifics = javaClass('public', 'org.finos.legend.engine.plan.dependencies.store.relational.graphFetch.IRelationalClassQueryTempTableGraphFetchExecutionNodeSpecifics')
+      ->addMethod(javaMethod('public', javaVoid(), 'addChildToParent', [javaParam(javaObject(), 'p0'), javaParam(javaObject(), 'p1'), javaParam($jIExecutionNodeContext, 'p2')]))
+      ->addMethod(javaMethod('public', javaList(javaParameterizedType(javaClass('org.eclipse.collections.api.tuple.Pair'), [javaString(), javaString()])), 'allInstanceSetImplementations', []))
+      ->addMethod(javaMethod('public', javaObject(), 'deepCopy', [javaParam(javaObject(), 'p0')]))
+      ->addMethod(javaMethod('public', javaParameterizedType($jIGraphInstance, [javaWildcard()]), 'nextGraphInstance', []))
+      ->addMethod(javaMethod('public', javaList(javaString()), 'parentPrimaryKeyColumns', [javaParam(javaList(javaString()), 'p0')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'prepare', [javaParam(javaResultSet(), 'p0'), javaParam(javaString(), 'p1'), javaParam(javaString(), 'p2')]))
+      ->addMethod(javaMethod('public', javaList(javaString()), 'primaryKeyColumns', [javaParam(javaInt(), 'p0')]))
+      ->addMethod(javaMethod('public', javaList(javaReflectMethod()), 'primaryKeyGetters', []))
+      ->addMethod(javaMethod('public', javaBoolean(), 'supportsCaching', []));
+
+   let jIRelationalPrimitiveQueryGraphFetchExecutionNodeSpecifics = javaClass('public', 'org.finos.legend.engine.plan.dependencies.store.relational.graphFetch.IRelationalPrimitiveQueryGraphFetchExecutionNodeSpecifics')
+      ->addMethod(javaMethod('public', javaVoid(), 'addChildToParent', [javaParam(javaObject(), 'p0'), javaParam(javaObject(), 'p1'), javaParam($jIExecutionNodeContext, 'p2')]))
+      ->addMethod(javaMethod('public', javaParameterizedType($jIGraphInstance, [javaWildcard()]), 'nextGraphInstance', []))
+      ->addMethod(javaMethod('public', javaList(javaString()), 'parentPrimaryKeyColumns', [javaParam(javaList(javaString()), 'p0')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'prepare', [javaParam(javaResultSet(), 'p0'), javaParam(javaString(), 'p1'), javaParam(javaString(), 'p2')]));
+
+   let jIServiceParametersResolutionExecutionNodeSpecifics = javaClass('public', 'org.finos.legend.engine.plan.dependencies.store.serviceStore.IServiceParametersResolutionExecutionNodeSpecifics')
+      ->addMethod(javaMethod('public', javaParameterizedType(javaClass('java.util.Map'), [javaString(), javaObject()]), 'resolveServiceParameters', [javaParam(javaParameterizedType(javaClass('java.util.Map'), [javaString(), javaObject()]), 'p0')]));
+
+   let res = $conventions
+      ->addProvidedType(meta::pure::executionPlan::engine::IConstantResult, $jIConstantResult)
+      ->addProvidedType(meta::pure::executionPlan::engine::EngineIResult, $jIResult)
+      ->addProvidedType(meta::pure::executionPlan::engine::IExecutionNodeContext, $jIExecutionNodeContext)
+      ->addProvidedType(meta::pure::executionPlan::engine::IGraphFetchM2MExecutionNodeContext, $jIGraphFetchM2MExecutionNodeContext)
+      ->addProvidedType(meta::pure::executionPlan::engine::StoreStreamReader, $jIStoreStreamReader)
+      ->addProvidedType(meta::pure::executionPlan::engine::DataParsingException, $jDataParsingException)
+      ->addProvidedType(meta::pure::executionPlan::engine::PredefinedExpressions, $jPredefinedExpressions)
+      ->addProvidedType(meta::pure::executionPlan::engine::Library, $jLibrary)
+      ->addProvidedType(meta::pure::executionPlan::engine::GraphInstance, $jIGraphInstance)
+      ->addProvidedType(meta::pure::executionPlan::engine::RelationalRootGraphNodeExecutor, $jIRelationalRootGraphNodeExecutor)
+      ->addProvidedType(meta::pure::executionPlan::engine::RelationalCrossRootGraphNodeExecutor, $jIRelationalCrossRootGraphNodeExecutor)
+      ->addProvidedType(meta::pure::executionPlan::engine::RelationalChildGraphNodeExecutor, $jIRelationalChildGraphNodeExecutor)
+      ->addProvidedType(meta::pure::executionPlan::engine::RelationalClassInstantiationNodeExecutor, $jIRelationalClassInstantiationNodeExecutor)
+      ->addProvidedType(meta::pure::executionPlan::engine::PureDate, $jPureDate)
+      ->addProvidedType(meta::pure::functions::date::DurationUnit, $jDurationUnit)
+      ->addProvidedType(meta::pure::functions::date::DayOfWeek, $jDayOfWeek)
+      ->addProvidedType(meta::pure::functions::date::Month, $jMonth)
+      ->addProvidedType(meta::pure::functions::date::Quarter, $jQuarter)
+      ->addProvidedType(meta::pure::executionPlan::engine::DataQualityBasicDefectClass, $jBasicDefect)
+      ->addProvidedType(meta::pure::executionPlan::engine::DataQualityBasicRelativePathNodeClass, $jBasicRelativePathNode)
+      ->addProvidedType(meta::pure::executionPlan::engine::DataQualityGraphContextClass, $jGraphContext)
+      ->addProvidedType(meta::pure::executionPlan::engine::DataQualityConstrainedInterface, $jConstrained)
+      ->addProvidedType(meta::pure::dataQuality::Checked, $jIChecked)
+      ->addProvidedType(meta::pure::dataQuality::Defect, $jIDefect)
+      ->addProvidedType(meta::pure::dataQuality::EnforcementLevel, $jEnforcementLevel)
+      ->addProvidedType(meta::pure::dataQuality::RuleType, $jRuleType)
+      ->addProvidedType(meta::pure::dataQuality::RelativePathNode, $jRelativePathNode)
+      ->addProvidedType(meta::pure::executionPlan::engine::IReferencedObject, $jIReferencedObject)
+      ->addProvidedType(meta::pure::executionPlan::engine::IRelationalCreateAndPopulateTempTableExecutionNodeSpecifics, $jIRelationalCreateAndPopulateTempTableExecutionNodeSpecifics)
+      ->addProvidedType(meta::pure::executionPlan::engine::IPlatformPureExpressionExecutionNodeSerializeSpecifics, $jIPlatformPureExpressionExecutionNodeSerializeSpecifics)
+      ->addProvidedType(meta::pure::executionPlan::engine::IPlatformPureExpressionExecutionNodeGraphFetchUnionSpecifics, $jIPlatformPureExpressionExecutionNodeGraphFetchUnionSpecifics)
+      ->addProvidedType(meta::pure::executionPlan::engine::IPlatformPureExpressionExecutionNodeGraphFetchMergeSpecifics, $jIPlatformPureExpressionExecutionNodeGraphFetchMergeSpecifics)
+
+      ->addProvidedType(meta::pure::executionPlan::engine::ISerializationWriter, $jISerializationWriter)
+      ->addProvidedType(meta::pure::executionPlan::engine::IGraphSerializer, $jIGraphSerializer)
+      ->addProvidedType(meta::pure::executionPlan::engine::IStoreStreamReadingExecutionNodeSpecifics, $jIStoreStreamReadingExecutionNodeSpecifics)
+      ->addProvidedType(meta::pure::executionPlan::engine::IStoreStreamReadingExecutionNodeContext, $jIStoreStreamReadingExecutionNodeContext)
+      ->addProvidedType(meta::pure::executionPlan::engine::IInMemoryRootGraphFetchExecutionNodeSpecifics, $jIInMemoryRootGraphFetchExecutionNodeSpecifics)
+      ->addProvidedType(meta::pure::executionPlan::engine::IInMemoryRootGraphFetchMergeExecutionNodeSpecifics, $jIInMemoryRootGraphFetchMergeExecutionNodeSpecifics)
+      ->addProvidedType(meta::pure::executionPlan::engine::IInMemoryPropertyGraphFetchExecutionNodeSpecifics, $jIInMemoryPropertyGraphFetchExecutionNodeSpecifics)
+      ->addProvidedType(meta::pure::executionPlan::engine::IRelationalRootQueryTempTableGraphFetchExecutionNodeSpecifics, $jIRelationalRootQueryTempTableGraphFetchExecutionNodeSpecifics)
+      ->addProvidedType(meta::pure::executionPlan::engine::IRelationalCrossRootQueryTempTableGraphFetchExecutionNodeSpecifics, $jIRelationalCrossRootQueryTempTableGraphFetchExecutionNodeSpecifics)
+      ->addProvidedType(meta::pure::executionPlan::engine::IInMemoryCrossStoreGraphFetchExecutionNodeSpecifics, $jIInMemoryCrossStoreGraphFetchExecutionNodeSpecifics)
+      ->addProvidedType(meta::pure::executionPlan::engine::IRelationalClassQueryTempTableGraphFetchExecutionNodeSpecifics, $jIRelationalClassQueryTempTableGraphFetchExecutionNodeSpecifics)
+      ->addProvidedType(meta::pure::executionPlan::engine::IRelationalPrimitiveQueryGraphFetchExecutionNodeSpecifics, $jIRelationalPrimitiveQueryGraphFetchExecutionNodeSpecifics)
+      ->addProvidedType(meta::pure::executionPlan::engine::IServiceParametersResolutionExecutionNodeSpecifics, $jIServiceParametersResolutionExecutionNodeSpecifics);
+
+   $extensions.plan_javaRuntime_enginePlatformDependencies_conventions->fold({e,b|$e->eval($b)}, $res);
+}

@@ -1,0 +1,637 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::routing::*;
+import meta::pure::lineage::scanProperties::*;
+import meta::pure::lineage::scanProperties::propertyTree::*;
+import meta::pure::mapping::*;
+import meta::pure::mapping::modelToModel::*;
+import meta::pure::mapping::modelToModel::inMemory::*;
+import meta::pure::metamodel::constraint::*;
+import meta::pure::metamodel::serialization::grammar::*;
+import meta::pure::milestoning::*;
+
+
+Class meta::pure::graphFetch::ExtendedRootGraphFetchTree<T> extends RootGraphFetchTree<T>
+{
+   requiredQualifiedProperties: QualifiedProperty<Any>[*];
+}
+
+Class meta::pure::graphFetch::ExtendedPropertyGraphFetchTree extends PropertyGraphFetchTree
+{
+   requiredQualifiedProperties: QualifiedProperty<Any>[*];
+}
+
+function meta::pure::graphFetch::switchToMilestoneProperties(tree:GraphFetchTree[1], parameters:ValueSpecification[*]): GraphFetchTree[1]
+{
+   if($tree->instanceOf(PropertyGraphFetchTree) && $tree->cast(@PropertyGraphFetchTree).property->hasGeneratedMilestoningPropertyStereotype() && !$tree->cast(@PropertyGraphFetchTree).property->instanceOf(QualifiedProperty),
+      {| 
+         let pgft = $tree->cast(@PropertyGraphFetchTree);
+         ^$pgft(
+            property   = $pgft.property->getMilestonedGeneratedQualifiedPropertiesForEdgePointProperty()->at(0),
+            parameters = $parameters,
+            subTrees   = $tree.subTrees->map(gft| $gft->switchToMilestoneProperties($parameters))
+         );
+      },
+      | ^$tree(subTrees = $tree.subTrees->map(gft| $gft->switchToMilestoneProperties($parameters)))
+   );
+}
+
+
+
+function <<access.private>> meta::pure::graphFetch::addSubTrees(onto:GraphFetchTree[1], subTrees:PropertyGraphFetchTree[*]): GraphFetchTree[1]
+{
+   $subTrees->fold({st, node|$node->addSubTree($st)}, $onto);
+}
+
+function <<access.private>> meta::pure::graphFetch::addSubTree(onto:GraphFetchTree[1], subTree:PropertyGraphFetchTree[1]): GraphFetchTree[1]
+{
+   let existingSubTrees = $onto.subTrees->filter(st|$st->cast(@PropertyGraphFetchTree).property == $subTree.property && $st->cast(@PropertyGraphFetchTree).subType == $subTree.subType);
+   assert($existingSubTrees->size() < 2, 'Too many existing');
+   $existingSubTrees->match([
+      stree0: PropertyGraphFetchTree[0] | ^$onto(subTrees=$onto.subTrees->concatenate($subTree)),
+      stree : PropertyGraphFetchTree[1] | ^$onto(subTrees=$onto.subTrees->cast(@PropertyGraphFetchTree)->filter(st|!$st->forSameProperty($stree))->concatenate($stree->addSubTrees($subTree.subTrees->cast(@PropertyGraphFetchTree))))
+   ]);
+}
+
+function <<access.private>> meta::pure::graphFetch::forSameProperty(t1:PropertyGraphFetchTree[1], t2:PropertyGraphFetchTree[1]): Boolean[1]
+{
+   $t1.property == $t2.property && $t1.parameters == $t2.parameters && $t1.alias == $t2.alias && $t1.subType == $t2.subType;
+}
+
+
+function meta::pure::graphFetch::addXStoreProperties(node:RoutedRootGraphFetchTree<Any>[1], extensions:meta::pure::router::extension::RouterExtension[*]): RoutedRootGraphFetchTree<Any>[1]
+{
+   $node->addXStorePropertiesInternal($extensions)->cast(@RoutedRootGraphFetchTree<Any>);
+}
+
+function <<access.private>> meta::pure::graphFetch::addXStorePropertiesInternal(node:RoutedGraphFetchTree[1], extensions:meta::pure::router::extension::RouterExtension[*]): RoutedGraphFetchTree[1]
+{
+   let currentSubTreeProperties                    = $node.subTrees->cast(@RoutedPropertyGraphFetchTree).property;
+   let srcClass                                    = $node->typeFromGraphFetchTree()->cast(@Class<Any>)->toOne();
+   let extraPropertiesFromThisLevelCrossExpression = $node->xstoreProperties($currentSubTreeProperties, $srcClass);
+   let extraPropertiesFromChildCrossExpressions    = $node.subTrees->xstoreProperties($currentSubTreeProperties, $srcClass);
+
+   let setImpls = $node.sets->map(s|$s->match([
+      o:OperationSetImplementation[1] | $o->meta::pure::router::clustering::resolveInstanceSetImplementations($extensions),
+      i:InstanceSetImplementation[1]  | $i
+   ]));
+   
+   let xstoreTrees = $extraPropertiesFromThisLevelCrossExpression->concatenate($extraPropertiesFromChildCrossExpressions)
+                        ->filter(x | $setImpls->map(setImpl| $setImpl->meta::pure::mapping::propertyMappingsByPropertyName($x.name->toOne());)->isNotEmpty())
+                        ->map(x | ^RoutedPropertyGraphFetchTree(
+                                     propertyMapping = $setImpls->map(setImpl| $setImpl->meta::pure::mapping::propertyMappingsByPropertyName($x.name->toOne());),
+                                     property = $x)
+                        );
+
+   let subTrees = $node.subTrees->concatenate($xstoreTrees);
+
+   ^$node(subTrees=$subTrees->cast(@RoutedPropertyGraphFetchTree)->map({st| 
+      if(!$st.isPrimitive() && !$st->isUnitFunctionReturnType(),
+         | $st->addXStorePropertiesInternal($extensions),
+         | $st
+      );
+   }));
+}
+
+function <<access.private>> meta::pure::graphFetch::xstoreProperties(nodes:GraphFetchTree[*], currentSubTreeProperties:AbstractProperty<Any>[*], srcClass:Class<Any>[1]): AbstractProperty<Any>[*]
+{
+   $nodes
+      ->filter(n| $n->instanceOf(RoutedPropertyGraphFetchTree))
+      ->cast(@RoutedPropertyGraphFetchTree)
+      .propertyMapping
+      ->filter(x | $x->instanceOf(meta::pure::mapping::xStore::XStorePropertyMapping))
+      ->cast(@meta::pure::mapping::xStore::XStorePropertyMapping)
+      ->map({xpm |
+         let allProperties = $xpm.crossExpression.expressionSequence->evaluateAndDeactivate()->toOne()->findPropertiesInValueSpecification();
+         let srcProperties = $allProperties->filter(x | $x.owner->cast(@Class<Any>)->_subTypeOf($srcClass) || $srcClass->_subTypeOf($x.owner->cast(@Class<Any>)));
+         $srcProperties->filter(x | !$currentSubTreeProperties->contains($x));
+      });
+}
+
+function meta::pure::graphFetch::allClasses(root:GraphFetchTree[1]): Class<Any>[*]
+{
+   $root->extractClasses()->removeDuplicates();
+}
+
+function <<access.private>> meta::pure::graphFetch::extractClasses(tree:GraphFetchTree[1]): Class<Any>[*]
+{
+   let class = $tree->match([
+      r: RootGraphFetchTree<Any>[1] | $r.class,
+      a: Any[1]                     | []->cast(@Class<Any>)
+   ]);
+   
+   let propertyClasses = $tree.subTrees->cast(@PropertyGraphFetchTree)
+      ->map(pgft| $pgft.property.genericType.rawType)
+      ->filter(t | $t->instanceOf(Class))
+      ->cast(@Class<Any>);
+   
+   $class->concatenate($propertyClasses)->concatenate($tree.subTrees->map(st| $st->extractClasses()));
+}
+
+function meta::pure::graphFetch::printTree(root:GraphFetchTree[1]): Any[*]
+{
+   $root->treeToString()->println();
+}
+
+function meta::pure::graphFetch::treeToString(root:GraphFetchTree[1]): String[1]
+{
+   $root->nodeToString('');
+}
+
+function meta::pure::graphFetch::treeToString(root:GraphFetchTree[1], debug:DebugContext[1]): String[1]
+{
+   $root->nodeToString(if($debug.debug,|$debug.space, |''));
+}
+
+function <<access.private>> meta::pure::graphFetch::nodeToString(node:GraphFetchTree[1], indent: String[1]): String[1]
+{
+   let requiredQP = $node->match([
+      r: ExtendedRootGraphFetchTree<Any>[1] | $r.requiredQualifiedProperties,
+      p: ExtendedPropertyGraphFetchTree[1]  | $p.requiredQualifiedProperties,
+      r: RoutedRootGraphFetchTree<Any>[1]   | $r.requiredQualifiedProperties,
+      p: RoutedPropertyGraphFetchTree[1]    | $p.requiredQualifiedProperties,
+      a: GraphFetchTree[1]                  | []
+   ]);
+
+   let requiredQPText = if($requiredQP->isEmpty(), |'', |' [requires: '+$requiredQP.name->joinStrings(',')+ ']');
+
+   let nodeText = $node->match([
+      rr: RoutedRootGraphFetchTree<Any>[1] | $indent + $rr.class.name->toOne() + $rr.sets.id->map(id|$id->toString())->joinStrings('[',',',']'),
+      rp: RoutedPropertyGraphFetchTree[1]  | $indent + $rp.property.name->toOne()+if($rp.property->instanceOf(QualifiedProperty), |'('+$rp.parameters->map(p|$p->printValueSpecification(''))->joinStrings(', ')+')', |'') + $rp.sets.id->map(id|$id->toString())->joinStrings(' sets: [',',',']') + $rp.propertyMapping->map(pm|$pm.targetSetImplementationId)->joinStrings(' targetSets: [',',',']'),
+      r: RootGraphFetchTree<Any>[1]        | $indent + $r.class.name->toOne(),
+      p: PropertyGraphFetchTree[1]         | $indent + $p.property.name->toOne()+if($p.property->instanceOf(QualifiedProperty), |'('+$p.parameters->map(p|$p->printValueSpecification(''))->joinStrings(', ')+')', |'')+if($p.subType->isNotEmpty(),| '->subType(' + $p.subType->toOne().name->toOne() + ')', | '') 
+   ]) +  $requiredQPText;
+   
+   $nodeText + if($node.subTrees->isEmpty(),
+                  |'',
+                  {|
+                     let newIndent = $indent + '  ';
+                     '\n' + $indent + '(' + $node.subTrees->map(st|$st->nodeToString($newIndent))->joinStrings('\n', '\n', '\n') + $indent + ')';
+                  }
+               );
+}
+
+function meta::pure::graphFetch::getNodesOrdered(tree: GraphFetchTree[1]):GraphFetchTree[*]
+{
+   $tree->match([
+      cls : ClusteredGraphFetchTree[1] | $cls.tree->getNodesOrdered(),
+      g   : GraphFetchTree[1]          | $tree->concatenate($tree.subTrees->map(x | $x->getNodesOrdered()))
+   ])
+}
+
+function meta::pure::graphFetch::getPathsOrdered(tree:GraphFetchTree[1]):String[*]
+{
+   $tree->match([
+      cls : ClusteredGraphFetchTree[1] | $cls.tree->getPathsOrdered(),
+      {g : GraphFetchTree[1]| 
+         let name = $g->nodePathName();
+         $name->concatenate($tree.subTrees->map(x | $x->getPathsOrdered())->map(subPath| $name+'.'+$subPath));
+      }
+   ])
+}
+
+function meta::pure::graphFetch::getPathTo(tree:GraphFetchTree[1], node:GraphFetchTree[1]):String[0..1]
+{
+   if($tree == $node,
+      | [],
+      | $tree->match([
+           cls : ClusteredGraphFetchTree[1] | $cls.tree->getPathTo($node),
+           g   : GraphFetchTree[1]          | $g.subTrees->map(x | getPathTo($g->nodePathName(), $x, $node));
+        ])->first()
+   );
+}
+
+function <<access.private>> meta::pure::graphFetch::getPathTo(path:String[1], tree:GraphFetchTree[1], node:GraphFetchTree[1]):String[0..1]
+{
+   if($tree == $node,
+      | $path,
+      | $tree->match([
+           cls : ClusteredGraphFetchTree[1] | getPathTo($path, $cls.tree, $node),
+           g   : GraphFetchTree[1]          | $g.subTrees->map(x | getPathTo($path+'.'+$g->nodePathName(), $x, $node));
+        ])->first()
+   );
+}
+
+function meta::pure::graphFetch::nodePathName(tree:GraphFetchTree[1]): String[1]
+{      
+   $tree->match([
+      r:RootGraphFetchTree<Any>[1] | 'root',
+      p:PropertyGraphFetchTree[1]  | if($p.alias->isEmpty(), |$p.property.name->toOne() + if($p.property->instanceOf(QualifiedProperty), | $p.parameters->evaluateAndDeactivate()->map(x | $x->meta::pure::router::printer::asString())->joinStrings('(', ', ', ')'), | ''), |$p.alias)->toOne();
+   ])
+}
+
+
+function meta::pure::graphFetch::typeFromGraphFetchTree(g: GraphFetchTree[1]):Type[1]
+{
+   $g->match([
+      r : RootGraphFetchTree<Any>[1] | $r.class,
+      p : PropertyGraphFetchTree[1]  | if($p.subType->isNotEmpty(), | $p.subType->toOne(), | $p.property->functionReturnType().rawType->toOne())
+   ])
+}
+
+
+
+
+function <<access.private>> meta::pure::graphFetch::isUnitFunctionReturnType(tree:PropertyGraphFetchTree[1]): Boolean[1]
+{
+   $tree.property->functionReturnType().rawType->toOne()->instanceOf(Unit)
+}
+
+
+function meta::pure::graphFetch::sortTree(tree:GraphFetchTree[1]): GraphFetchTree[1]
+{
+   ^$tree
+   (
+      subTrees=$tree.subTrees->cast(@PropertyGraphFetchTree)
+                             ->sortBy(pgft| $pgft->getSubTreeName())
+                             ->map(pgft| $pgft->sortTree())
+   );
+}
+
+
+ 
+function meta::pure::graphFetch::getSubTreeName(tree:PropertyGraphFetchTree[1]): String[1]
+{
+   let subTypeName = if($tree.subType->isEmpty(),|'',|$tree.subType->toOne().name->toOne());
+   $tree.property.name->toOne() + $subTypeName;
+}
+
+
+function meta::pure::graphFetch::pathsForConstraintFunctions(class:Class<Any>[1], functions:FunctionDefinition<Any>[*]): List<PropertyPathNode>[*]
+{
+   let generalizations = $class->getAllTypeGeneralisations();
+   let functionsPaths  = $functions->map(c| $c.expressionSequence->at(0)->evaluateAndDeactivate()->scanProperties());
+   $functionsPaths.result->filter(path| $path.values->isNotEmpty() && $path.values->at(0).class->in($generalizations));
+}
+
+function meta::pure::graphFetch::ensureConstraintsRequirements(treeRoot:RootGraphFetchTree<Any>[1]): RootGraphFetchTree<Any>[1]
+{
+   let constraintsForClass = {c:Class<Any>[1] |
+      let allConstraints = $c->getAllTypeGeneralisations()->filter(x| $x->instanceOf(ElementWithConstraints))->cast(@ElementWithConstraints).constraints;
+      $allConstraints.functionDefinition->concatenate($allConstraints.messageFunction);
+   };
+   ensureFunctionRequirements($treeRoot, $treeRoot.class, $constraintsForClass, [], true)->cast(@RootGraphFetchTree<Any>);
+}
+
+function meta::pure::graphFetch::ensureFunctionRequirements(node:GraphFetchTree[1], class:Class<Any>[1], f:Function<{Class<Any>[1]->FunctionDefinition<Any>[*]}>[1], processed:Class<Any>[*], ensureConstraintsForSubTrees:Boolean[1]): GraphFetchTree[1]
+{
+   let constraintResult          = pathsForConstraintFunctions($class, $f->eval($class));
+   let qualifiedPropertyPaths    = $constraintResult->filter(path| $path.values->exists(x| $x.property->instanceOf(QualifiedProperty)));
+   let inlinedPropertyTree       = $constraintResult->buildPropertyTree()->inlineQualifiedPropertyNodes();
+   let inlinedGraphTree          = $inlinedPropertyTree->propertyTreeToGraphFetchTree($class);
+   let inlinedPropertyGraphTrees = $inlinedGraphTree.subTrees->cast(@PropertyGraphFetchTree);
+   let withFoundProperties       = $node->addSubTrees($inlinedPropertyGraphTrees);
+   let updatedForClass           = $qualifiedPropertyPaths->fold({path, gt| $gt->recordQualifiedProperties($path)}, $withFoundProperties);
+      
+   if($ensureConstraintsForSubTrees,
+      {| 
+         let newSubTrees = $updatedForClass.subTrees->map({st| 
+            let returns = $st->cast(@PropertyGraphFetchTree).property->functionReturnType().rawType->toOne();
+            if($returns->instanceOf(Class) && !$processed->contains($returns),
+               | $st->ensureFunctionRequirements($returns->cast(@Class<Any>), $f, $processed->concatenate($class), $ensureConstraintsForSubTrees),
+               | $st
+            );
+         });
+         ^$updatedForClass(subTrees=$newSubTrees);
+      },
+      | $updatedForClass
+   );
+}
+
+function meta::pure::graphFetch::calculateSourceTree(tree:RootGraphFetchTree<Any>[1], mapping: Mapping[1], extensions:meta::pure::router::extension::RouterExtension[*]): RootGraphFetchTree<Any>[1]
+{
+   let replaced = $tree->replaceQualifiedPropertiesWithRequiredProperties();
+   
+   let rootSetImplementation = $tree->match([r:RoutedRootGraphFetchTree<Any>[1]|$r.sets->toOne(),
+                                             r:RootGraphFetchTree<Any>[1]|$mapping.rootClassMappingByClass($replaced.class)]);
+                                  
+   assert($rootSetImplementation->isNotEmpty(), |'Mapping ' + $mapping->elementToPath() + ' does not map class from tree: ' + $replaced.class->elementToPath());
+   
+   $rootSetImplementation->toOne()->match($extensions.graphExtension_calculateSourceTree->map(ext | $ext->eval($replaced))->concatenate([
+      {pisi: PureInstanceSetImplementation[1]  | 
+         assert($pisi.srcClass->isNotEmpty() && $pisi.srcClass->toOne()->instanceOf(Class), 'Pure mapping does not have a class as ~src for root of tree');
+         let srcClass     = $pisi.srcClass->toOne()->cast(@Class<Any>);
+         let root         = ^RootGraphFetchTree<Any>(class=$srcClass);
+         let withChildren = $root->enrichSourceTreeNode($pisi, $replaced, $extensions)->mergeSubTrees()->sortTree()->cast(@RootGraphFetchTree<Any>);
+      }
+   ])->toOneMany());
+}
+
+
+function meta::pure::graphFetch::mergeSubTrees(tree:GraphFetchTree[1]): GraphFetchTree[1]
+{
+   ^$tree(subTrees = $tree.subTrees->cast(@PropertyGraphFetchTree)->mergeSubTreesRecur());
+}
+
+function meta::pure::graphFetch::mergeSubTreesRecur(subTrees:PropertyGraphFetchTree[*]): PropertyGraphFetchTree[*]
+{
+   let subTreesGroupedByProperty = $subTrees->groupBy(c|$c->cast(@PropertyGraphFetchTree).property);
+   let updatedSubTrees = $subTreesGroupedByProperty->keyValues()->map(p|mergePropertiesFromBaseSubTreeToSubTypedSubTree($p.second.values->cast(@PropertyGraphFetchTree)));
+}
+
+function <<access.private>> meta::pure::graphFetch::mergePropertiesFromBaseSubTreeToSubTypedSubTree(subTrees:PropertyGraphFetchTree[*]): PropertyGraphFetchTree[*]
+{
+   let subTreeWithBaseClass = $subTrees->filter(st|$st->cast(@PropertyGraphFetchTree).subType->isEmpty())->cast(@PropertyGraphFetchTree);
+   let subTreesWithSubTypes = $subTrees->removeAll($subTreeWithBaseClass);
+   let updatedSubTreeWithBaseClass = $subTreeWithBaseClass->first()->map(st| ^$st(subTrees = $subTreeWithBaseClass->first().subTrees->concatenate($subTreeWithBaseClass->tail().subTrees)->cast(@PropertyGraphFetchTree)->mergeSubTreesRecur()));
+   $updatedSubTreeWithBaseClass->concatenate($subTreesWithSubTypes->map(st|^$st(subTrees = $st.subTrees->concatenate($subTreeWithBaseClass->cast(@PropertyGraphFetchTree).subTrees)->cast(@PropertyGraphFetchTree)->mergeSubTreesRecur())));
+}
+
+
+function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForProperty(srcNode:GraphFetchTree[1], setImplementation: PureInstanceSetImplementation[1], tgtPgft:PropertyGraphFetchTree[1], extensions:meta::pure::router::extension::RouterExtension[*]): GraphFetchTree[1]
+{
+   let owner = $srcNode->match([
+      r:RootGraphFetchTree<Any>[1] | $r.class,
+      p:PropertyGraphFetchTree[1]  | if ($p.subType->isNotEmpty(), |$p.subType->toOne(), | $p.property->functionReturnType().rawType->cast(@Class<Any>)->toOne())
+   ]);
+
+   let isPropertyTemporalMilestoned = $tgtPgft.property->hasGeneratedMilestoningPropertyStereotype();
+
+   let requiredProperty = if($isPropertyTemporalMilestoned, |$setImplementation.class->propertyByName($tgtPgft.property->edgePointPropertyName()->toOne()), |$tgtPgft.property);
+   let propertyMappings = $setImplementation.propertyMappings->filter(pm|$pm.property == $requiredProperty)->cast(@PurePropertyMapping);
+   
+   assert($propertyMappings->isNotEmpty() || ($requiredProperty->isNotEmpty() && ($setImplementation->isNoMappingPassThru($requiredProperty->toOne()) || $setImplementation->isNoMappingDefaultToEmpty($requiredProperty->toOne()) || $setImplementation->isPartOfMerge())),|'No mapping found for property \'' + $tgtPgft.property.name->toOne() + '\'');
+
+   let returnType   = $tgtPgft.property->functionReturnType().rawType->toOne();
+                  
+   let childSetImpls = $returnType->match([
+      {c:Class<Any>[1]|
+         let childSIs = $tgtPgft->match([
+            r:RoutedPropertyGraphFetchTree[1] | $r.sets,
+            r:PropertyGraphFetchTree[1]       | $setImplementation.parent.rootClassMappingByClass($c)
+         ]);
+               
+         let childSIsResolved = $childSIs->map(childSI|
+            $childSI->match([
+               {o:OperationSetImplementation[1] | 
+                  assert($o.parameters.setImplementation->forAll(s|$s->instanceOf(PureInstanceSetImplementation)), |'Unsupported types: ' + $o.parameters.setImplementation->filter(i|!$i->instanceOf(PureInstanceSetImplementation))->type()->elementToPath());
+                  $o->meta::pure::router::clustering::resolveInstanceSetImplementations($extensions);
+               },
+               {e:EmbeddedSetImplementation[1] |
+                  [];
+               },
+               {i:InstanceSetImplementation[1] |
+                  assert($i->instanceOf(PureInstanceSetImplementation), 'Unsupported type: ' + $childSI->type()->elementToPath());
+                  $i;
+               }
+            ])->cast(@PureInstanceSetImplementation)
+         );
+               
+         assert($propertyMappings->isEmpty() || $childSIsResolved->isNotEmpty(), |'Mapping ' + $setImplementation.parent->elementToPath() + ' does not map class from tree: ' + $c->elementToPath());
+         $childSIsResolved;
+      },
+      {a:Any[1]| []}
+   ]);
+
+   let propertyPaths = $propertyMappings->match([
+      {none:PurePropertyMapping[0] |
+         if($setImplementation->isNoMappingPassThru($requiredProperty->toOne()),
+            {| 
+               let path = ^PropertyPathNode(
+                  class    = $setImplementation.srcClass->toOne()->cast(@Class<Any>),
+                  property = $setImplementation->noMappingPassThruSourceProperty($requiredProperty->toOne())->toOne()
+               );
+               ^Res(current=list($path), result=list($path));
+            },
+            {| 
+              assert($setImplementation->isNoMappingDefaultToEmpty($requiredProperty->toOne()) || $setImplementation->isPartOfMerge(), |'No mapping found for property \'' + $tgtPgft.property.name->toOne() + '\''); 
+              [];
+            }
+         );
+      },
+      {pms:PurePropertyMapping[*] |
+         $pms->map(pm| $pm.transform.expressionSequence->at(0)->evaluateAndDeactivate()->scanProperties(^List<PropertyPathNode>(), [], []));
+      }
+   ]);
+
+   let inlinedPropertyTree = $propertyPaths.result->buildPropertyTree()->inlineQualifiedPropertyNodes();
+
+   let setClasses = $childSetImpls->map(s | $s.srcClass);
+
+   let inlinedGraphTree          = $inlinedPropertyTree->propertyTreeToGraphFetchTree($owner);
+   let inlinedPropertyGraphTrees = $inlinedGraphTree.subTrees->cast(@PropertyGraphFetchTree);
+
+   let withSubTypes        = $inlinedPropertyGraphTrees->concatenate($inlinedPropertyGraphTrees->map(pgft | let appendAtPath = $propertyPaths.current->filter(path| $path.values->size() > 1);
+                                                                                                            if($appendAtPath->isEmpty(),
+                                                                                                               | $setClasses->map(sc | if($sc->getAllTypeGeneralisationsExcluded()->contains($pgft.property.genericType.rawType->toOne()), | ^$pgft(subType=$sc->cast(@Class<Any>)), | [])),
+                                                                                                               | $pgft->getSubTreeNodesAtPath(list($appendAtPath.values->tail()), $setClasses->cast(@Class<Any>), $extensions)
+                                                                                                            );
+                                                                                                     ));
+
+   let srcNodeProperties   = $withSubTypes->filter(p | $owner->getAllTypeGeneralisations()->contains($p.property->meta::pure::functions::meta::ownerClass()));
+   let withFoundProperties = $srcNode->addSubTrees($srcNodeProperties);
+   
+
+   let withNextSetImpl     = $childSetImpls->fold(
+                                {setImpl, tree |
+                                   let appendAtPaths = $propertyPaths.current->filter(path| $path.values->isNotEmpty());
+                                   if($appendAtPaths->isEmpty(),
+                                      | $tree->enrichSourceTreeNode($setImpl, $tgtPgft, $extensions),
+                                      | $appendAtPaths->fold({path,tree | $tree->enrichSourceTreeNodeAtPath($path, $setImpl, $tgtPgft, $extensions)}, $tree)
+                                   );
+                                },
+                                $withFoundProperties
+                             );
+
+
+   let withQPsRecorded     = $propertyPaths.result->filter(path| $path.values->exists(x| $x.property->instanceOf(QualifiedProperty)))
+                                                  ->fold({path, gt| $gt->recordQualifiedProperties($path)}, $withNextSetImpl);
+
+   if($isPropertyTemporalMilestoned,
+      | ^$withQPsRecorded(subTrees=$withQPsRecorded.subTrees->map(st| $st->switchToMilestoneProperties($tgtPgft.parameters->evaluateAndDeactivate()))),
+      | $withQPsRecorded
+   );
+}
+
+function <<access.private>> meta::pure::graphFetch::getSubTreeNodesAtPath(srcNode:PropertyGraphFetchTree[1], path:List<PropertyPathNode>[1], setClasses: Class<Any>[*], extensions:meta::pure::router::extension::RouterExtension[*]): PropertyGraphFetchTree[*]
+{
+   let head = $path.values->at(0);
+   let tail = $path.values->tail();
+
+   let requiredSubTree = $srcNode.subTrees->cast(@PropertyGraphFetchTree)->filter(st|$st.property == $head.property);
+   if($tail->isEmpty(),
+      | let updatedSubTrees = $requiredSubTree->map(rst | $setClasses->map(sc | if($sc->getAllTypeGeneralisationsExcluded()->contains($rst.property.genericType.rawType->toOne()), | ^$rst(subType=$sc->cast(@Class<Any>)), | [])));
+        $updatedSubTrees->map(ust | ^$srcNode(subTrees=$srcNode.subTrees->cast(@PropertyGraphFetchTree)->map(st|if($st.property == $head.property, |$ust, |$st))));,
+      | let updatedSubTrees = $requiredSubTree->map(rst | $rst->getSubTreeNodesAtPath(list($tail), $setClasses, $extensions));
+        $updatedSubTrees->map(ust | ^$srcNode(subTrees=$srcNode.subTrees->cast(@PropertyGraphFetchTree)->map(st|if($st.property == $head.property, |$ust, |$st))));
+   );
+}
+
+function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForExpression(srcNode:GraphFetchTree[1], exprThisClass:Class<Any>[1], expression:ValueSpecification[1]): GraphFetchTree[1]
+{
+   let propertyPath = $expression->evaluateAndDeactivate()->scanProperties(^List<PropertyPathNode>(), [], []);
+   $srcNode->enrichSourceTreeNodeForPropertyPath($exprThisClass, $propertyPath);
+}
+
+function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForPropertyPath(srcNode:GraphFetchTree[1], baseClass:Class<Any>[1], propertyPath:Res[0..1]): GraphFetchTree[1]
+{
+   let inlinedPropertyTree        = $propertyPath.result->buildPropertyTree()->inlineQualifiedPropertyNodes();
+   let inlinedPropertyGraphTrees  = $inlinedPropertyTree->propertyTreeToGraphFetchTree($baseClass).subTrees->cast(@PropertyGraphFetchTree);
+   let srcNodeProperties          = $inlinedPropertyGraphTrees->filter(p | $baseClass->getAllTypeGeneralisations()->contains($p.property->meta::pure::functions::meta::ownerClass()));
+   let withFoundProperties        = $srcNode->addSubTrees($srcNodeProperties);
+   let withQPsRecorded            = $propertyPath.result->filter(path| $path.values->exists(x| $x.property->instanceOf(QualifiedProperty)))
+                                                 ->fold({path, gt| $gt->recordQualifiedProperties($path)}, $withFoundProperties);
+}
+
+function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNode(srcNode:GraphFetchTree[1], setImplementation: PureInstanceSetImplementation[1], tgtNode:GraphFetchTree[1], extensions:meta::pure::router::extension::RouterExtension[*]): GraphFetchTree[1]
+{
+   let setContainsExplodeProperty = $setImplementation.propertyMappings->filter(pm|if($pm->instanceOf(PurePropertyMapping),| $pm->cast(@PurePropertyMapping).explodeProperty->isTrue(), |false))->isNotEmpty();
+   let subTreeProperties          = $tgtNode.subTrees->cast(@PropertyGraphFetchTree).property.name;
+   let requiredTgtSubTrees        = $tgtNode.subTrees->cast(@PropertyGraphFetchTree)->concatenate(if($setContainsExplodeProperty, 
+                                                                                                     |$setImplementation.propertyMappings->filter(pm | $pm->instanceOf(PurePropertyMapping)).property->map(p | if(!$p.name->in($subTreeProperties),
+                                                                                                                                                                                                                  |^PropertyGraphFetchTree(property = $p),
+                                                                                                                                                                                                                  |[])),
+                                                                                                     |[]));
+   let subTrees = $requiredTgtSubTrees->fold({st,n | $n->enrichSourceTreeNodeForProperty($setImplementation, $st, $extensions)}, $srcNode);
+   if($setImplementation.filter->isNotEmpty(),
+      {| 
+         let srcClass = $setImplementation.srcClass->toOne()->cast(@Class<Any>);
+         $subTrees->enrichSourceTreeNodeForExpression($srcClass, $setImplementation.filter.expressionSequence->at(0));
+      },
+      | $subTrees
+   );
+}
+
+function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeAtPath(srcNode:GraphFetchTree[1], path:List<PropertyPathNode>[1], setImplementation: PureInstanceSetImplementation[1], tgtPgft:PropertyGraphFetchTree[1], extensions:meta::pure::router::extension::RouterExtension[*]): GraphFetchTree[1]
+{
+   let head = $path.values->at(0);
+   let tail = $path.values->tail();
+   
+   if($tail->isEmpty(),
+      | ^$srcNode(subTrees=$srcNode.subTrees->cast(@PropertyGraphFetchTree)->map(st|if($st.property == $head.property, |$st->enrichSourceTreeNode($setImplementation, $tgtPgft, $extensions), |$st))),
+      | ^$srcNode(subTrees=$srcNode.subTrees->cast(@PropertyGraphFetchTree)->map(st|if($st.property == $head.property, |$st->enrichSourceTreeNodeAtPath(list($tail), $setImplementation, $tgtPgft, $extensions), |$st)))
+   );
+}
+
+function meta::pure::graphFetch::propertyTreeToGraphFetchTree(pTree:PropertyPathTree[1], ownerClass:Class<Any>[1]): RootGraphFetchTree<Any>[1]
+{
+   let root = ^RootGraphFetchTree<Any>(class = $ownerClass);
+   $root->addPropertyGraphFetchTrees($pTree, $ownerClass)->cast(@RootGraphFetchTree<Any>);
+}
+
+function <<access.private>> meta::pure::graphFetch::addPropertyGraphFetchTrees(onto:GraphFetchTree[1], pTree:PropertyPathTree[1], ownerClass:Class<Any>[1]): GraphFetchTree[1]
+{
+   $pTree.value->match([
+      node: PropertyPathNode[1] | if($ownerClass == $node.class, 
+                                     | $onto->addPropertyGraphFetchTrees($pTree, $ownerClass, $node),
+                                     | $onto
+                                  ),
+      clz: Class<Any>[1]        | $pTree.children->fold({child, gft| $gft->addPropertyGraphFetchTrees($child, $clz)       }, $onto),
+      any: Any[1]               | $pTree.children->fold({child, gft| $gft->addPropertyGraphFetchTrees($child, $ownerClass)}, $onto)
+   ]);
+}
+
+function <<access.private>> meta::pure::graphFetch::addPropertyGraphFetchTrees(onto:GraphFetchTree[1], pTree:PropertyPathTree[1], ownerClass:Class<Any>[1], node: PropertyPathNode[1]): GraphFetchTree[1]
+{
+   let pgft = ^PropertyGraphFetchTree(property = $node.property);
+
+   if($pTree.children->size() == 0,
+      | $onto->addSubTree($pgft),
+      {|
+         let rtnClass        = $node.property.genericType.rawType->cast(@Class<Any>)->toOne();
+         let childrenByClass = $pTree.children->groupBy(c|$c.value->cast(@PropertyPathNode).class);         
+         $childrenByClass->keyValues()->fold(
+            {kv, gft| 
+               let childrenOwner = $kv.first;
+               let children      = $kv.second.values;
+               
+               if($childrenOwner == $rtnClass || $childrenOwner->_subTypeOf($rtnClass),
+                  {|
+                     let withSubtype  = if($childrenOwner == $rtnClass,
+                                           | $pgft,
+                                           | ^$pgft(subType = $childrenOwner)
+                                        );
+                     let withChildren = $children->fold({child, gft2| $gft2->addPropertyGraphFetchTrees($child, $childrenOwner)->cast(@PropertyGraphFetchTree)}, $withSubtype);
+                     $gft->addSubTree($withChildren);
+                  },
+                  | $gft
+               );
+            }, 
+            $onto
+         );
+      }
+   );
+}
+
+function <<access.private>> meta::pure::graphFetch::replaceQualifiedPropertiesWithRequiredProperties(pgft:PropertyGraphFetchTree[1], class:Class<Any>[1]):GraphFetchTree[*]
+{
+   let copy = ^$pgft(subTrees=[]);
+   
+   if($pgft.property->hasGeneratedMilestoningPropertyStereotype(),
+   |
+      let rtns = $pgft.property->functionReturnType().rawType->toOne();
+      let subTrees = $pgft.subTrees->cast(@PropertyGraphFetchTree)->map(st| $st->replaceQualifiedPropertiesWithRequiredProperties($rtns->cast(@Class<Any>)))->cast(@PropertyGraphFetchTree);
+      $copy->addSubTrees($subTrees);,
+   |
+      $pgft.property->match([
+         {p:Property<Nil, Any|*>[1]|
+            let rtns = $p->functionReturnType().rawType->toOne();
+            let subTrees = if($rtns->instanceOf(Class),
+                              |$pgft.subTrees->cast(@PropertyGraphFetchTree)->map(st| $st->replaceQualifiedPropertiesWithRequiredProperties($rtns->cast(@Class<Any>))),
+                              |[]
+                           )->cast(@PropertyGraphFetchTree);
+            $copy->addSubTrees($subTrees);
+         },
+         {qp:QualifiedProperty<Any>[1]|
+            let propertyPaths       = $qp.expressionSequence->evaluateAndDeactivate()->map(e| $e->scanProperties());
+            let inlinedPropertyTree = $propertyPaths.result->buildPropertyTree()->inlineQualifiedPropertyNodes();
+            $inlinedPropertyTree->propertyTreeToGraphFetchTree($class).subTrees;
+         }
+      ]);
+   );
+}
+
+function <<access.private>> meta::pure::graphFetch::replaceQualifiedPropertiesWithRequiredProperties(rgft:RootGraphFetchTree<Any>[1]):RootGraphFetchTree<Any>[1]
+{
+   let copy = ^$rgft(subTrees=[]);
+   let subTrees = $rgft.subTrees->cast(@PropertyGraphFetchTree)->map(st| $st->replaceQualifiedPropertiesWithRequiredProperties($rgft.class))->cast(@PropertyGraphFetchTree);
+   $copy->addSubTrees($subTrees)->cast(@RootGraphFetchTree<Any>);
+}
+
+function <<access.private>> meta::pure::graphFetch::recordQualifiedProperties(tree:GraphFetchTree[1], path:List<PropertyPathNode>[1]): GraphFetchTree[1]
+{
+   if($path.values->isEmpty(),
+      | $tree,
+      {|
+         let head         = $path.values->at(0);
+         let tail         = if($head.property->instanceOf(QualifiedProperty),
+                               | list($head.nestedQualifierReturn.values->tail()->concatenate($path.values->tail())),
+                               | list($path.values->tail())
+                            );         
+         let nextProperty = if($head.property->instanceOf(QualifiedProperty),
+                               | $head.nestedQualifierReturn.values->first().property,
+                               | $head.property
+                            );         
+         let withQp       = if($head.property->instanceOf(QualifiedProperty),
+                               {|
+                                  let qp = $head.property->cast(@QualifiedProperty<Any>);
+                                  $tree->match([
+                                     ergft: ExtendedRootGraphFetchTree<Any>[1] | ^$ergft(requiredQualifiedProperties=$ergft.requiredQualifiedProperties->concatenate($qp)->removeDuplicates()),
+                                     epgft: ExtendedPropertyGraphFetchTree[1]  | ^$epgft(requiredQualifiedProperties=$epgft.requiredQualifiedProperties->concatenate($qp)->removeDuplicates()),
+                                     rgft : RootGraphFetchTree<Any>[1]         | ^ExtendedRootGraphFetchTree<Any>(requiredQualifiedProperties=$qp, class=$rgft.class, subTrees=$rgft.subTrees),
+                                     pgft : PropertyGraphFetchTree[1]          | ^ExtendedPropertyGraphFetchTree(requiredQualifiedProperties=$qp, property=$pgft.property, subTrees=$pgft.subTrees)
+                                  ]);
+                               },
+                               | $tree;
+                            );
+         
+         ^$withQp(subTrees=$tree.subTrees->cast(@PropertyGraphFetchTree)->map(st|if($st.property == $nextProperty, |$st->recordQualifiedProperties($tail), |$st)));
+      }
+   );
+}
+
+
+

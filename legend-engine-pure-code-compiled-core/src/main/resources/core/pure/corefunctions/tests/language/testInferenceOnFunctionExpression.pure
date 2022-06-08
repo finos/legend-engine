@@ -1,0 +1,44 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::profiles::*;
+import meta::pure::tests::model::simple::*;
+import meta::pure::metamodel::tests::inference::*;
+
+Class meta::pure::metamodel::tests::inference::A<U|m>
+{
+   val : U[m];
+}
+
+function <<test.Test>> meta::pure::metamodel::tests::inference::testInferedTypesAndMulsOnFunctionExpression():Boolean[1]
+{
+   let firstFuncExpression = meta::pure::metamodel::tests::inference::caller__Any_MANY_.expressionSequence->evaluateAndDeactivate()->at(0)->cast(@FunctionExpression);
+   let secondFuncExpression = meta::pure::metamodel::tests::inference::caller__Any_MANY_.expressionSequence->evaluateAndDeactivate()->at(1)->cast(@FunctionExpression);
+   assertEquals(PureOne, $firstFuncExpression.resolvedMultiplicityParameters);
+   assertEquals(String, $firstFuncExpression.resolvedTypeParameters.rawType);
+   assertEquals(2, $secondFuncExpression.resolvedMultiplicityParameters->toOne()->getLowerBound());
+   assertEquals(2, $secondFuncExpression.resolvedMultiplicityParameters->toOne()->getUpperBound());
+   assertEquals(String, $secondFuncExpression.resolvedTypeParameters.rawType);
+}
+
+function meta::pure::metamodel::tests::inference::caller():Any[*]
+{
+   funcWithTypeAndMulToInfer('a');
+   funcWithTypeAndMulToInfer(['a','b']);
+}
+
+function meta::pure::metamodel::tests::inference::funcWithTypeAndMulToInfer<U|m>(a:U[m]):A<U|m>[1]
+{
+   ^A<U|m>();
+}

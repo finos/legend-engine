@@ -1,0 +1,64 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::profiles::*;
+
+function <<test.Test>> meta::pure::functions::math::tests::divide::testSimpleDivide():Boolean[1]
+{
+    assertEq(2.0, 4 / 2);
+    assertEq(2.0, divide(4, 2));
+    assertEq(1.5, 3 / 2);
+    assertEq(1.5, divide(3, 2));
+    assertEq(0.8, 4 / 5);
+    assertEq(0.8, divide(4, 5));
+}
+
+function <<test.Test>> meta::pure::functions::math::tests::divide::testComplexDivide():Boolean[1]
+{
+    assertEq(3.0, 9 / (18 / 6));
+    assertEq(3.0, divide(9, divide(18, 6)));
+    assertEq(3.75, 3 / (4 / 5));
+    assertEq(3.75, divide(3, divide(4, 5)));
+}
+
+function <<test.Test>>  meta::pure::functions::math::tests::divide::testDivideWithNonTerminatingExpansion():Boolean[1]
+{
+    assertEq(0.01041666666666666666666666666666667, 1 / 96);
+}
+
+function <<test.Test>> meta::pure::functions::math::tests::divide::testNegativeDivide():Boolean[1]
+{
+    assertEq(-2.0, 4 / -2);
+    assertEq(-1.5, 3 / -2);
+}
+
+function <<test.Test>> meta::pure::functions::math::tests::divide::testFloatDivide():Boolean[1]
+{
+    assertEq(3.5, 1.75 / 0.5);
+}
+
+function <<test.Test>> meta::pure::functions::math::tests::divide::testNumberDivide():Boolean[1]
+{
+    let f = {a:Number[1], b:Number[1] | $a / $b};
+    assertEq(1.75, $f->eval(3.5, 2));
+}
+
+function <<test.Test>> meta::pure::functions::math::tests::divide::testDecimalDivide():Boolean[1]
+{
+    assertEq(0.5, 1.0d/2.0);
+    assertEq(-2.0, -4.0d/2.0/1);
+    assertEq(-0.5, -4.0d/8/1.0);
+    assertEq(1.0, 16d/8/2.0);
+    assertEq(-31.42d, -3.1415d->divide(0.1d, 2));
+}

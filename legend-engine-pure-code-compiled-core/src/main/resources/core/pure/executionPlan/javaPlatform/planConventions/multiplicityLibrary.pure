@@ -1,0 +1,67 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::factory::*;
+import meta::external::language::java::metamodel::*;
+import meta::external::language::java::metamodel::project::*;
+import meta::external::language::java::transform::*;
+import meta::pure::executionPlan::engine::*;
+import meta::pure::executionPlan::engine::java::*;
+
+function meta::pure::executionPlan::engine::java::registerMultiplicityLibrary(conventions: Conventions[1]): Conventions[1]
+{
+   let lib = newConventionsLibrary()
+      ->usesJavaPackage('java.util')
+      ->usesJavaPackage('java.util.stream')
+      ->addFunctionCoder(
+         toOne_T_MANY__T_1_,
+         toOne_FunctionExpression_1__Conventions_1__DebugContext_1__Code_1_
+      )
+      ->addFunctionCoder(
+         toOneMany_T_MANY__T_$1_MANY$_,
+         toOneMany_FunctionExpression_1__Conventions_1__DebugContext_1__Code_1_
+      );
+
+   $conventions->registerLibrary($lib);
+}
+
+function meta::pure::executionPlan::engine::java::toOne(fe:FunctionExpression[1], conventions:Conventions[1], debug:DebugContext[1]): Code[1]
+{
+   let params = $fe.parametersValues->evaluateAndDeactivate();
+
+   print(if($debug.debug,|$debug.space+'- collection - param(0)\n',|''));
+   let collection =  $params->at(0)->generateJava($conventions, $debug->indent());
+
+   let oneType = if(isJavaList($collection.type),
+                    |$collection.type->elementTypeOfJavaList(),
+                    |$collection.type
+                 )->toUnboxed();
+
+   $conventions->className(Library)->j_invoke('toOne', $collection, $oneType);
+}
+
+function meta::pure::executionPlan::engine::java::toOneMany(fe:FunctionExpression[1], conventions:Conventions[1], debug:DebugContext[1]): Code[1]
+{
+   let params = $fe.parametersValues->evaluateAndDeactivate();
+
+   print(if($debug.debug,|$debug.space+'- collection - param(0)\n',|''));
+   let collection =  $params->at(0)->generateJava($conventions, $debug->indent());
+
+   let listType = if(isJavaList($collection.type),
+                    |$collection.type,
+                    |$collection.type->javaList()
+                 );
+
+   $conventions->className(Library)->j_invoke('toOneMany', $collection, $listType);
+}

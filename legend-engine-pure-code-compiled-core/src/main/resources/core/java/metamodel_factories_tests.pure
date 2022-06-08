@@ -1,0 +1,632 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::factory::*;
+import meta::external::language::java::factory::tests::*;
+import meta::external::language::java::metamodel::*;
+import meta::external::language::java::serialization::*;
+
+function <<test.Test>> meta::external::language::java::factory::tests::sameLiteral():Boolean[1]
+{
+   assert(j_string('literal')->isSameLiteral(j_string('literal')));
+   assertFalse(j_string('literal1')->isSameLiteral(j_string('literal2')));
+   assertFalse(j_string('l')->isSameLiteral(j_char('l')));  
+}
+
+function <<test.Test>> meta::external::language::java::factory::tests::equalityOfSameTypes():Boolean[1]
+{
+   let i = j_variable(javaIntBoxed(), 'i');
+   let l = j_variable(javaLongBoxed(), 'l');
+   let f = j_variable(javaFloatBoxed(), 'f');
+   let d = j_variable(javaDoubleBoxed(), 'd');
+   let b = j_variable(javaBooleanBoxed(), 'b');
+   
+   assertCode('1 == 1',        javaBoolean(), j_int(1)->j_eq(j_int(1)));
+   assertCode('1L == 1L',      javaBoolean(), j_long(1)->j_eq(j_long(1)));
+   assertCode('1.0F == 1.0F',  javaBoolean(), j_float(1)->j_eq(j_float(1)));
+   assertCode('1.0 == 1.0',    javaBoolean(), j_double(1)->j_eq(j_double(1)));
+   assertCode('true == false', javaBoolean(), j_true()->j_eq(j_false()));
+   assertCode('i == i',        javaBoolean(), $i->j_eq($i));
+   assertCode('l == l',        javaBoolean(), $l->j_eq($l));
+   assertCode('f == f',        javaBoolean(), $f->j_eq($f));
+   assertCode('d == d',        javaBoolean(), $d->j_eq($d));
+   assertCode('b == b',        javaBoolean(), $b->j_eq($b));
+}
+
+function <<test.Test>> meta::external::language::java::factory::tests::inequalityOfSameTypes():Boolean[1]
+{
+   let i = j_variable(javaIntBoxed(), 'i');
+   let l = j_variable(javaLongBoxed(), 'l');
+   let f = j_variable(javaFloatBoxed(), 'f');
+   let d = j_variable(javaDoubleBoxed(), 'd');
+   let b = j_variable(javaBooleanBoxed(), 'b');
+   
+   assertCode('1 != 1',        javaBoolean(), j_int(1)->j_ne(j_int(1)));
+   assertCode('1L != 1L',      javaBoolean(), j_long(1)->j_ne(j_long(1)));
+   assertCode('1.0F != 1.0F',  javaBoolean(), j_float(1)->j_ne(j_float(1)));
+   assertCode('1.0 != 1.0',    javaBoolean(), j_double(1)->j_ne(j_double(1)));
+   assertCode('true != false', javaBoolean(), j_true()->j_ne(j_false()));
+   assertCode('i != i',        javaBoolean(), $i->j_ne($i));
+   assertCode('l != l',        javaBoolean(), $l->j_ne($l));
+   assertCode('f != f',        javaBoolean(), $f->j_ne($f));
+   assertCode('d != d',        javaBoolean(), $d->j_ne($d));
+   assertCode('b != b',        javaBoolean(), $b->j_ne($b));
+}
+
+function <<test.Test>> meta::external::language::java::factory::tests::equalityOfCompatibleTypes():Boolean[1]
+{
+   let i = j_variable(javaIntBoxed(), 'i');
+   let l = j_variable(javaLongBoxed(), 'l');
+   let f = j_variable(javaFloatBoxed(), 'f');
+   let d = j_variable(javaDoubleBoxed(), 'd');
+   let n = j_variable(javaNumber(), 'n');
+   let b = j_variable(javaBooleanBoxed(), 'b');
+   let o = j_variable(javaObject(), 'o');
+
+   assertCode('1 == 1L',       javaBoolean(), j_int(1)->j_eq(j_long(1)));
+   assertCode('1 == 1.0F',     javaBoolean(), j_int(1)->j_eq(j_float(1)));
+   assertCode('1 == 1.0',      javaBoolean(), j_int(1)->j_eq(j_double(1)));
+   assertCode('1 == i',        javaBoolean(), j_int(1)->j_eq($i));
+   assertCode('1 == l',        javaBoolean(), j_int(1)->j_eq($l));
+   assertCode('1 == f',        javaBoolean(), j_int(1)->j_eq($f));
+   assertCode('1 == d',        javaBoolean(), j_int(1)->j_eq($d));
+   assertCode('1 == n',        javaBoolean(), j_int(1)->j_eq($n));
+   assertCode('1 == o',        javaBoolean(), j_int(1)->j_eq($o));
+
+   assertCode('1L == 1',       javaBoolean(), j_long(1)->j_eq(j_int(1)));
+   assertCode('1L == 1.0F',    javaBoolean(), j_long(1)->j_eq(j_float(1)));
+   assertCode('1L == 1.0',     javaBoolean(), j_long(1)->j_eq(j_double(1)));
+   assertCode('1L == i',       javaBoolean(), j_long(1)->j_eq($i));
+   assertCode('1L == l',       javaBoolean(), j_long(1)->j_eq($l));
+   assertCode('1L == f',       javaBoolean(), j_long(1)->j_eq($f));
+   assertCode('1L == d',       javaBoolean(), j_long(1)->j_eq($d));   
+   assertCode('1L == n',       javaBoolean(), j_long(1)->j_eq($n));
+   assertCode('1L == o',       javaBoolean(), j_long(1)->j_eq($o));   
+   
+   assertCode('1.0F == 1',     javaBoolean(), j_float(1)->j_eq(j_int(1)));
+   assertCode('1.0F == 1L',    javaBoolean(), j_float(1)->j_eq(j_long(1)));
+   assertCode('1.0F == 1.0',   javaBoolean(), j_float(1)->j_eq(j_double(1)));
+   assertCode('1.0F == i',     javaBoolean(), j_float(1)->j_eq($i));
+   assertCode('1.0F == l',     javaBoolean(), j_float(1)->j_eq($l));
+   assertCode('1.0F == f',     javaBoolean(), j_float(1)->j_eq($f));
+   assertCode('1.0F == d',     javaBoolean(), j_float(1)->j_eq($d));   
+   assertCode('1.0F == n',     javaBoolean(), j_float(1)->j_eq($n));
+   assertCode('1.0F == o',     javaBoolean(), j_float(1)->j_eq($o));   
+   
+   assertCode('1.0 == 1',      javaBoolean(), j_double(1)->j_eq(j_int(1)));
+   assertCode('1.0 == 1L',     javaBoolean(), j_double(1)->j_eq(j_long(1)));
+   assertCode('1.0 == 1.0F',   javaBoolean(), j_double(1)->j_eq(j_float(1)));
+   assertCode('1.0 == i',      javaBoolean(), j_double(1)->j_eq($i));
+   assertCode('1.0 == l',      javaBoolean(), j_double(1)->j_eq($l));
+   assertCode('1.0 == f',      javaBoolean(), j_double(1)->j_eq($f));
+   assertCode('1.0 == d',      javaBoolean(), j_double(1)->j_eq($d));   
+   assertCode('1.0 == n',      javaBoolean(), j_double(1)->j_eq($n));
+   assertCode('1.0 == o',      javaBoolean(), j_double(1)->j_eq($o));   
+
+   assertCode('i == 1',        javaBoolean(), $i->j_eq(j_int(1)));
+   assertCode('i == 1L',       javaBoolean(), $i->j_eq(j_long(1)));
+   assertCode('i == 1.0F',     javaBoolean(), $i->j_eq(j_float(1)));
+   assertCode('i == 1.0',      javaBoolean(), $i->j_eq(j_double(1)));
+   assertCode('i == l',        javaBoolean(), $i->j_eq($l));
+   assertCode('i == f',        javaBoolean(), $i->j_eq($f));
+   assertCode('i == d',        javaBoolean(), $i->j_eq($d));
+   assertCode('i == n',        javaBoolean(), $i->j_eq($n));
+   assertCode('i == o',        javaBoolean(), $i->j_eq($o));
+
+   assertCode('l == 1',        javaBoolean(), $l->j_eq(j_int(1)));
+   assertCode('l == 1L',       javaBoolean(), $l->j_eq(j_long(1)));
+   assertCode('l == 1.0F',     javaBoolean(), $l->j_eq(j_float(1)));
+   assertCode('l == 1.0',      javaBoolean(), $l->j_eq(j_double(1)));
+   assertCode('l == i',        javaBoolean(), $l->j_eq($i));
+   assertCode('l == f',        javaBoolean(), $l->j_eq($f));
+   assertCode('l == d',        javaBoolean(), $l->j_eq($d));
+   assertCode('l == n',        javaBoolean(), $l->j_eq($n));
+   assertCode('l == o',        javaBoolean(), $l->j_eq($o));
+   
+   assertCode('f == 1',        javaBoolean(), $f->j_eq(j_int(1)));
+   assertCode('f == 1L',       javaBoolean(), $f->j_eq(j_long(1)));
+   assertCode('f == 1.0F',     javaBoolean(), $f->j_eq(j_float(1)));
+   assertCode('f == 1.0',      javaBoolean(), $f->j_eq(j_double(1)));
+   assertCode('f == i',        javaBoolean(), $f->j_eq($i));
+   assertCode('f == l',        javaBoolean(), $f->j_eq($l));
+   assertCode('f == d',        javaBoolean(), $f->j_eq($d));
+   assertCode('f == n',        javaBoolean(), $f->j_eq($n));
+   assertCode('f == o',        javaBoolean(), $f->j_eq($o));
+   
+   assertCode('d == 1',        javaBoolean(), $d->j_eq(j_int(1)));
+   assertCode('d == 1L',       javaBoolean(), $d->j_eq(j_long(1)));
+   assertCode('d == 1.0F',     javaBoolean(), $d->j_eq(j_float(1)));
+   assertCode('d == 1.0',      javaBoolean(), $d->j_eq(j_double(1)));
+   assertCode('d == i',        javaBoolean(), $d->j_eq($i));
+   assertCode('d == l',        javaBoolean(), $d->j_eq($l));
+   assertCode('d == f',        javaBoolean(), $d->j_eq($f));
+   assertCode('d == n',        javaBoolean(), $d->j_eq($n));
+   assertCode('d == o',        javaBoolean(), $d->j_eq($o));
+   
+   assertCode('n == 1',        javaBoolean(), $n->j_eq(j_int(1)));
+   assertCode('n == 1L',       javaBoolean(), $n->j_eq(j_long(1)));
+   assertCode('n == 1.0F',     javaBoolean(), $n->j_eq(j_float(1)));
+   assertCode('n == 1.0',      javaBoolean(), $n->j_eq(j_double(1)));
+   assertCode('n == i',        javaBoolean(), $n->j_eq($i));
+   assertCode('n == l',        javaBoolean(), $n->j_eq($l));
+   assertCode('n == f',        javaBoolean(), $n->j_eq($f));
+   assertCode('n == d',        javaBoolean(), $n->j_eq($d));
+   assertCode('n == o',        javaBoolean(), $n->j_eq($o));
+   
+   assertCode('true == b',     javaBoolean(), j_true()->j_eq($b));
+   assertCode('true == o',     javaBoolean(), j_true()->j_eq($o));
+   assertCode('b == false',    javaBoolean(), $b->j_eq(j_false()));
+   assertCode('b == o',        javaBoolean(), $b->j_eq($o));
+   
+   let clA = javaClass('my.A');
+   let ifI = javaClass(['interface'], 'my.I');
+   let clB = javaClass('my.B')->jextends($clA);
+
+   let oA = j_variable($clA, 'a');
+   let oB = j_variable($clB, 'b');
+
+   assertCode('a == b',     javaBoolean(), $oA->j_eq($oB));
+   assertCode('b == a',     javaBoolean(), $oB->j_eq($oA));
+   assertCode('a == o',     javaBoolean(), $oA->j_eq($o));
+}
+
+function <<test.Test>> meta::external::language::java::factory::tests::inequalityOfCompatibleTypes():Boolean[1]
+{
+   let i = j_variable(javaIntBoxed(), 'i');
+   let l = j_variable(javaLongBoxed(), 'l');
+   let f = j_variable(javaFloatBoxed(), 'f');
+   let d = j_variable(javaDoubleBoxed(), 'd');
+   let n = j_variable(javaNumber(), 'n');
+   let b = j_variable(javaBooleanBoxed(), 'b');
+   let o = j_variable(javaObject(), 'o');
+
+   assertCode('1 != 1L',       javaBoolean(), j_int(1)->j_ne(j_long(1)));
+   assertCode('1 != 1.0F',     javaBoolean(), j_int(1)->j_ne(j_float(1)));
+   assertCode('1 != 1.0',      javaBoolean(), j_int(1)->j_ne(j_double(1)));
+   assertCode('1 != i',        javaBoolean(), j_int(1)->j_ne($i));
+   assertCode('1 != l',        javaBoolean(), j_int(1)->j_ne($l));
+   assertCode('1 != f',        javaBoolean(), j_int(1)->j_ne($f));
+   assertCode('1 != d',        javaBoolean(), j_int(1)->j_ne($d));
+   assertCode('1 != n',        javaBoolean(), j_int(1)->j_ne($n));
+   assertCode('1 != o',        javaBoolean(), j_int(1)->j_ne($o));
+
+   assertCode('1L != 1',       javaBoolean(), j_long(1)->j_ne(j_int(1)));
+   assertCode('1L != 1.0F',    javaBoolean(), j_long(1)->j_ne(j_float(1)));
+   assertCode('1L != 1.0',     javaBoolean(), j_long(1)->j_ne(j_double(1)));
+   assertCode('1L != i',       javaBoolean(), j_long(1)->j_ne($i));
+   assertCode('1L != l',       javaBoolean(), j_long(1)->j_ne($l));
+   assertCode('1L != f',       javaBoolean(), j_long(1)->j_ne($f));
+   assertCode('1L != d',       javaBoolean(), j_long(1)->j_ne($d));   
+   assertCode('1L != n',       javaBoolean(), j_long(1)->j_ne($n));
+   assertCode('1L != o',       javaBoolean(), j_long(1)->j_ne($o));   
+   
+   assertCode('1.0F != 1',     javaBoolean(), j_float(1)->j_ne(j_int(1)));
+   assertCode('1.0F != 1L',    javaBoolean(), j_float(1)->j_ne(j_long(1)));
+   assertCode('1.0F != 1.0',   javaBoolean(), j_float(1)->j_ne(j_double(1)));
+   assertCode('1.0F != i',     javaBoolean(), j_float(1)->j_ne($i));
+   assertCode('1.0F != l',     javaBoolean(), j_float(1)->j_ne($l));
+   assertCode('1.0F != f',     javaBoolean(), j_float(1)->j_ne($f));
+   assertCode('1.0F != d',     javaBoolean(), j_float(1)->j_ne($d));   
+   assertCode('1.0F != n',     javaBoolean(), j_float(1)->j_ne($n));
+   assertCode('1.0F != o',     javaBoolean(), j_float(1)->j_ne($o));   
+   
+   assertCode('1.0 != 1',      javaBoolean(), j_double(1)->j_ne(j_int(1)));
+   assertCode('1.0 != 1L',     javaBoolean(), j_double(1)->j_ne(j_long(1)));
+   assertCode('1.0 != 1.0F',   javaBoolean(), j_double(1)->j_ne(j_float(1)));
+   assertCode('1.0 != i',      javaBoolean(), j_double(1)->j_ne($i));
+   assertCode('1.0 != l',      javaBoolean(), j_double(1)->j_ne($l));
+   assertCode('1.0 != f',      javaBoolean(), j_double(1)->j_ne($f));
+   assertCode('1.0 != d',      javaBoolean(), j_double(1)->j_ne($d));   
+   assertCode('1.0 != n',      javaBoolean(), j_double(1)->j_ne($n));
+   assertCode('1.0 != o',      javaBoolean(), j_double(1)->j_ne($o));   
+
+   assertCode('i != 1',        javaBoolean(), $i->j_ne(j_int(1)));
+   assertCode('i != 1L',       javaBoolean(), $i->j_ne(j_long(1)));
+   assertCode('i != 1.0F',     javaBoolean(), $i->j_ne(j_float(1)));
+   assertCode('i != 1.0',      javaBoolean(), $i->j_ne(j_double(1)));
+   assertCode('i != l',        javaBoolean(), $i->j_ne($l));
+   assertCode('i != f',        javaBoolean(), $i->j_ne($f));
+   assertCode('i != d',        javaBoolean(), $i->j_ne($d));
+   assertCode('i != n',        javaBoolean(), $i->j_ne($n));
+   assertCode('i != o',        javaBoolean(), $i->j_ne($o));
+
+   assertCode('l != 1',        javaBoolean(), $l->j_ne(j_int(1)));
+   assertCode('l != 1L',       javaBoolean(), $l->j_ne(j_long(1)));
+   assertCode('l != 1.0F',     javaBoolean(), $l->j_ne(j_float(1)));
+   assertCode('l != 1.0',      javaBoolean(), $l->j_ne(j_double(1)));
+   assertCode('l != i',        javaBoolean(), $l->j_ne($i));
+   assertCode('l != f',        javaBoolean(), $l->j_ne($f));
+   assertCode('l != d',        javaBoolean(), $l->j_ne($d));
+   assertCode('l != n',        javaBoolean(), $l->j_ne($n));
+   assertCode('l != o',        javaBoolean(), $l->j_ne($o));
+   
+   assertCode('f != 1',        javaBoolean(), $f->j_ne(j_int(1)));
+   assertCode('f != 1L',       javaBoolean(), $f->j_ne(j_long(1)));
+   assertCode('f != 1.0F',     javaBoolean(), $f->j_ne(j_float(1)));
+   assertCode('f != 1.0',      javaBoolean(), $f->j_ne(j_double(1)));
+   assertCode('f != i',        javaBoolean(), $f->j_ne($i));
+   assertCode('f != l',        javaBoolean(), $f->j_ne($l));
+   assertCode('f != d',        javaBoolean(), $f->j_ne($d));
+   assertCode('f != n',        javaBoolean(), $f->j_ne($n));
+   assertCode('f != o',        javaBoolean(), $f->j_ne($o));
+   
+   assertCode('d != 1',        javaBoolean(), $d->j_ne(j_int(1)));
+   assertCode('d != 1L',       javaBoolean(), $d->j_ne(j_long(1)));
+   assertCode('d != 1.0F',     javaBoolean(), $d->j_ne(j_float(1)));
+   assertCode('d != 1.0',      javaBoolean(), $d->j_ne(j_double(1)));
+   assertCode('d != i',        javaBoolean(), $d->j_ne($i));
+   assertCode('d != l',        javaBoolean(), $d->j_ne($l));
+   assertCode('d != f',        javaBoolean(), $d->j_ne($f));
+   assertCode('d != n',        javaBoolean(), $d->j_ne($n));
+   assertCode('d != o',        javaBoolean(), $d->j_ne($o));
+   
+   assertCode('n != 1',        javaBoolean(), $n->j_ne(j_int(1)));
+   assertCode('n != 1L',       javaBoolean(), $n->j_ne(j_long(1)));
+   assertCode('n != 1.0F',     javaBoolean(), $n->j_ne(j_float(1)));
+   assertCode('n != 1.0',      javaBoolean(), $n->j_ne(j_double(1)));
+   assertCode('n != i',        javaBoolean(), $n->j_ne($i));
+   assertCode('n != l',        javaBoolean(), $n->j_ne($l));
+   assertCode('n != f',        javaBoolean(), $n->j_ne($f));
+   assertCode('n != d',        javaBoolean(), $n->j_ne($d));
+   assertCode('n != o',        javaBoolean(), $n->j_ne($o));
+   
+   assertCode('true != b',     javaBoolean(), j_true()->j_ne($b));
+   assertCode('true != o',     javaBoolean(), j_true()->j_ne($o));
+   assertCode('b != false',    javaBoolean(), $b->j_ne(j_false()));
+   assertCode('b != o',        javaBoolean(), $b->j_ne($o));
+   
+   let clA = javaClass('my.A');
+   let ifI = javaClass(['interface'], 'my.I');
+   let clB = javaClass('my.B')->jextends($clA);
+
+   let oA = j_variable($clA, 'a');
+   let oB = j_variable($clB, 'b');
+
+   assertCode('a != b',     javaBoolean(), $oA->j_ne($oB));
+   assertCode('b != a',     javaBoolean(), $oB->j_ne($oA));
+   assertCode('a != o',     javaBoolean(), $oA->j_ne($o));
+}
+
+function <<test.Test>> meta::external::language::java::factory::tests::equalityOfIncompatibleTypes():Boolean[1]
+{
+   let i = j_variable(javaIntBoxed(), 'i');
+   let l = j_variable(javaLongBoxed(), 'l');
+   let f = j_variable(javaFloatBoxed(), 'f');
+   let d = j_variable(javaDoubleBoxed(), 'd');
+   let n = j_variable(javaNumber(), 'n');
+   let b = j_variable(javaBooleanBoxed(), 'b');
+   let o = j_variable(javaObject(), 'o');
+
+   assertCode('false',         javaBoolean(), j_int(1)->j_eq(j_true()));
+   assertCode('false',         javaBoolean(), j_long(1)->j_eq(j_true()));
+   assertCode('false',         javaBoolean(), j_float(1)->j_eq(j_true()));
+   assertCode('false',         javaBoolean(), j_double(1)->j_eq(j_true()));
+   assertCode('false',         javaBoolean(), j_true()->j_eq(j_int(1)));
+   assertCode('false',         javaBoolean(), j_true()->j_eq(j_long(1)));
+   assertCode('false',         javaBoolean(), j_true()->j_eq(j_float(1)));
+   assertCode('false',         javaBoolean(), j_true()->j_eq(j_double(1)));
+   assertCode('false',         javaBoolean(), j_true()->j_eq($i));
+   assertCode('false',         javaBoolean(), j_true()->j_eq($l));
+   assertCode('false',         javaBoolean(), j_true()->j_eq($f));
+   assertCode('false',         javaBoolean(), j_true()->j_eq($d));
+   assertCode('false',         javaBoolean(), j_true()->j_eq($n));
+   
+   let clA = javaClass('my.A');
+   let clB = javaClass('my.B');
+
+   let oA = j_variable($clA, 'a');
+   let oB = j_variable($clB, 'b');
+
+   assertCode('(Object) a == b', javaBoolean(), $oA->j_eq($oB));
+}
+
+function <<test.Test>> meta::external::language::java::factory::tests::inequalityOfIncompatibleTypes():Boolean[1]
+{
+   let i = j_variable(javaIntBoxed(), 'i');
+   let l = j_variable(javaLongBoxed(), 'l');
+   let f = j_variable(javaFloatBoxed(), 'f');
+   let d = j_variable(javaDoubleBoxed(), 'd');
+   let n = j_variable(javaNumber(), 'n');
+   let b = j_variable(javaBooleanBoxed(), 'b');
+   let o = j_variable(javaObject(), 'o');
+
+   assertCode('true',         javaBoolean(), j_int(1)->j_ne(j_true()));
+   assertCode('true',         javaBoolean(), j_long(1)->j_ne(j_true()));
+   assertCode('true',         javaBoolean(), j_float(1)->j_ne(j_true()));
+   assertCode('true',         javaBoolean(), j_double(1)->j_ne(j_true()));
+   assertCode('true',         javaBoolean(), j_true()->j_ne(j_int(1)));
+   assertCode('true',         javaBoolean(), j_true()->j_ne(j_long(1)));
+   assertCode('true',         javaBoolean(), j_true()->j_ne(j_float(1)));
+   assertCode('true',         javaBoolean(), j_true()->j_ne(j_double(1)));
+   assertCode('true',         javaBoolean(), j_true()->j_ne($i));
+   assertCode('true',         javaBoolean(), j_true()->j_ne($l));
+   assertCode('true',         javaBoolean(), j_true()->j_ne($f));
+   assertCode('true',         javaBoolean(), j_true()->j_ne($d));
+   assertCode('true',         javaBoolean(), j_true()->j_ne($n));
+   
+   let clA = javaClass('my.A');
+   let clB = javaClass('my.B');
+
+   let oA = j_variable($clA, 'a');
+   let oB = j_variable($clB, 'b');
+
+   assertCode('(Object) a != b', javaBoolean(), $oA->j_ne($oB));
+}
+
+function <<test.Test>> meta::external::language::java::factory::tests::j_conditional():Boolean[1]
+{
+   // compare two nulls
+   assertCode('0', javaInt(), j_conditional(j_null()->j_eq(j_null()), j_int(0), j_int(1)));
+   assertCode('1', javaInt(), j_conditional(j_null()->j_ne(j_null()), j_int(0), j_int(1)));
+   // compare two literals of the same type
+   assertCode('0', javaInt(), j_conditional(j_string('literal')->j_eq(j_string('literal')), j_int(0), j_int(1)));
+   assertCode('1', javaInt(), j_conditional(j_string('literal')->j_ne(j_string('literal')), j_int(0), j_int(1)));
+   // compare different things
+   assertCode('"literal1" == "literal2" ? 0 : 1', javaInt(), j_conditional(j_string('literal1')->j_eq(j_string('literal2')), j_int(0), j_int(1)));
+   assertCode('null != "literal" ? 0 : 1', javaInt(), j_conditional(j_null()->j_ne(j_string('literal')), j_int(0), j_int(1)));
+}
+
+function <<test.Test>> meta::external::language::java::factory::tests::notInstanceOf():Boolean[1]
+{
+   assertCode('!("Hello" instanceof String)', javaBoolean(), j_not(j_string('Hello')->j_instanceof(javaString())));
+}
+
+function <<test.Test>> meta::external::language::java::factory::tests::listOfAtomic():Boolean[1]
+{
+   let list = j_variable(javaString(), 'var')->j_listOf(javaList(javaString()));
+   assertCode('java.util.Optional.ofNullable(var)\n' + 
+              '                  .map(java.util.Collections::singletonList)\n' + 
+              '                  .orElseGet(java.util.Collections::emptyList)', javaList(javaString()), $list);
+}
+
+function <<test.Test>> meta::external::language::java::factory::tests::listOfAtomicCasted():Boolean[1]
+{
+   let list = j_variable(javaString(), 'var')->j_listOf(javaList(javaObject()));
+   assertCode('java.util.Optional.ofNullable((Object) var)\n' +
+              '                  .map(java.util.Collections::singletonList)\n' +
+              '                  .orElseGet(java.util.Collections::emptyList)', javaList(javaObject()), $list);
+}
+
+function <<test.Test>> meta::external::language::java::factory::tests::listOfList():Boolean[1]
+{
+   let list = j_variable(javaList(javaString()), 'var')->j_listOf(javaList(javaString()));
+   assertCode('var', javaList(javaString()), $list);
+}
+
+function <<test.Test>> meta::external::language::java::factory::tests::listOfListRequiringCasted():Boolean[1]
+{
+   let list = j_variable(javaList(javaString()), 'var')->j_listOf(javaList(javaObject()));
+   assertCode('var.stream().map(Object.class::cast).collect(java.util.stream.Collectors.toList())', javaList(javaObject()), $list);
+}
+
+function <<test.Test>> meta::external::language::java::factory::tests::listOfEmptyList():Boolean[1]
+{
+   let list = j_emptyList(javaList(javaWildcard()))->j_listOf(javaList(javaString()));
+   assertCode('java.util.Collections.<String>emptyList()', javaList(javaString()), $list);
+}
+
+function <<test.Test>> meta::external::language::java::factory::tests::streamOfList():Boolean[1]
+{
+   let stream = j_variable(javaList(javaString()), 'var')->j_streamOf();
+   assertCode('var.stream()', javaStream(javaString()), $stream);
+}
+
+function <<test.Test>> meta::external::language::java::factory::tests::mapToAtoms():Boolean[1]
+{
+   let x      = j_parameter(javaString(), 'x');
+   let stream = j_variable(javaList(javaString()), 'var')->j_streamOf()->js_map(j_lambda($x, $x));
+   assertCode('var.stream().map((String x) -> x).filter((String x) -> x != null)', javaStream(javaString()), $stream);
+}
+
+function <<test.Test>> meta::external::language::java::factory::tests::mapToLists():Boolean[1]
+{
+   let x      = j_parameter(javaString(), 'x');
+   let stream = j_variable(javaList(javaString()), 'var')->j_streamOf()->js_map(j_lambda($x, javaCollections()->j_invoke('singletonList', $x, javaList(javaString()))));
+   assertCode('var.stream()\n'+ 
+              '   .map((String x) -> java.util.Collections.singletonList(x))\n'+
+              '   .flatMap(java.util.Collection::stream)', javaStream(javaString()), $stream);
+}
+
+function <<test.Test>> meta::external::language::java::factory::tests::streamOfAtomic():Boolean[1]
+{
+   let stream = j_variable(javaString(), 'var')->j_streamOf();
+   assertCode('java.util.Optional.ofNullable(var)\n' + 
+              '                  .map(java.util.stream.Stream::of)\n' + 
+              '                  .orElseGet(java.util.stream.Stream::empty)', javaStream(javaString()), $stream);
+}
+
+function <<test.Test>> meta::external::language::java::factory::tests::resolveStreamToList():Boolean[1]
+{
+   let resolved = j_variable(javaList(javaString()), 'var')->j_streamOf()->js_resolve(javaList(javaString()));
+   assertCode('var.stream().collect(java.util.stream.Collectors.toList())', javaList(javaString()), $resolved);
+}
+
+function <<test.Test>> meta::external::language::java::factory::tests::resolveStreamToAtomic():Boolean[1]
+{
+   let resolved = j_variable(javaList(javaString()), 'var')->j_streamOf()->js_resolve(javaString());
+   assertCode('var.stream().findFirst().orElse(null)', javaString(), $resolved);
+}
+
+function <<test.Test>> meta::external::language::java::factory::tests::streamOfResolvedStreamToListIsOptimized():Boolean[1]
+{
+   let x       = j_parameter(javaString(), 'x');
+   let id      = j_lambda($x, $x);
+   let complex = j_variable(javaList(javaString()), 'var')->j_streamOf()->js_map($id)->js_resolve(javaList(javaString()))->j_streamOf()->js_map($id)->js_resolve(javaList(javaString()));
+   assertCode('var.stream()\n' +
+              '   .map((String x) -> x)\n' +
+              '   .filter((String x) -> x != null)\n' +
+              '   .map((String x) -> x)\n' + 
+              '   .filter((String x) -> x != null)\n' +
+              '   .collect(java.util.stream.Collectors.toList())', javaList(javaString()), $complex);
+}
+
+function <<test.Test>> meta::external::language::java::factory::tests::streamOfResolvedStreamToAtomicIsOptimized():Boolean[1]
+{
+   let x       = j_parameter(javaString(), 'x');
+   let id      = j_lambda($x, $x);
+   let complex = j_variable(javaString(), 'var')->j_streamOf()->js_map($id)->js_resolve(javaString())->j_streamOf()->js_map($id)->js_resolve(javaString());
+   assertCode('java.util.Optional.ofNullable(var)\n' + 
+              '                  .map(java.util.stream.Stream::of)\n' + 
+              '                  .orElseGet(java.util.stream.Stream::empty)\n' + 
+              '                  .map((String x) -> x)\n' +
+              '                  .filter((String x) -> x != null)\n' + 
+              '                  .map((String x) -> x)\n' + 
+              '                  .filter((String x) -> x != null)\n' + 
+              '                  .findFirst()\n' +
+              '                  .orElse(null)', javaString(), $complex);
+}
+
+function <<test.Test>> meta::external::language::java::factory::tests::castEmptyListIsNull():Boolean[1]
+{
+   assertCode('(String) null', javaString(), j_emptyList(javaList(javaWildcard()))->j_cast(javaString()));
+}
+
+function <<test.Test>> meta::external::language::java::factory::tests::castToExistingTypeIsANoOp():Boolean[1]
+{
+   assertCode('"Hello"', javaString(), j_string('Hello')->j_cast(javaString()));
+}
+
+function <<test.Test>> meta::external::language::java::factory::tests::castToDifferentType():Boolean[1]
+{
+   assertCode('(CharSequence) "Hello"', javaCharSequence(), j_string('Hello')->j_cast(javaCharSequence()));
+}
+
+function <<test.Test>> meta::external::language::java::factory::tests::castUnboxedToBoxed():Boolean[1]
+{
+   assertCode('4',    javaIntBoxed(),    j_int(4)     ->j_cast(javaIntBoxed()));
+   assertCode('4L',   javaLongBoxed(),   j_long(4)    ->j_cast(javaLongBoxed()));
+   assertCode('1.5F', javaFloatBoxed(),  j_float(1.5) ->j_cast(javaFloatBoxed()));
+   assertCode('1.5',  javaDoubleBoxed(), j_double(1.5)->j_cast(javaDoubleBoxed()));
+
+   assertCode('(Number) new Integer(4)',  javaNumber(),      j_int(4)     ->j_cast(javaNumber()));
+   assertCode('(Number) new Long(4L)',    javaNumber(),      j_long(4)    ->j_cast(javaNumber()));
+   assertCode('(Number) new Float(1.5F)', javaNumber(),      j_float(1.5) ->j_cast(javaNumber()));
+   assertCode('(Number) new Double(1.5)', javaNumber(),      j_double(1.5)->j_cast(javaNumber()));
+
+   assertCode('(Object) new Integer(4)',  javaObject(),      j_int(4)     ->j_cast(javaObject()));
+   assertCode('(Object) new Long(4L)',    javaObject(),      j_long(4)    ->j_cast(javaObject()));
+   assertCode('(Object) new Float(1.5F)', javaObject(),      j_float(1.5) ->j_cast(javaObject()));
+   assertCode('(Object) new Double(1.5)', javaObject(),      j_double(1.5)->j_cast(javaObject()));
+}
+
+function <<test.Test>> meta::external::language::java::factory::tests::castBoxedToUnboxedUsesValueMethods():Boolean[1]
+{
+   let n = j_variable(javaNumber(), 'n');
+
+   assertCode('new Integer(4).intValue()',  javaInt(), j_int(4)     ->j_box()->j_cast(javaInt()));
+   assertCode('new Long(4L).intValue()',    javaInt(), j_long(4)    ->j_box()->j_cast(javaInt()));
+   assertCode('new Float(1.5F).intValue()', javaInt(), j_float(1.5) ->j_box()->j_cast(javaInt()));
+   assertCode('new Double(1.5).intValue()', javaInt(), j_double(1.5)->j_box()->j_cast(javaInt()));
+   assertCode('n.intValue()',               javaInt(), $n->j_cast(javaInt()));
+
+   assertCode('new Integer(4).longValue()',  javaLong(), j_int(4)     ->j_box()->j_cast(javaLong()));
+   assertCode('new Long(4L).longValue()',    javaLong(), j_long(4)    ->j_box()->j_cast(javaLong()));
+   assertCode('new Float(1.5F).longValue()', javaLong(), j_float(1.5) ->j_box()->j_cast(javaLong()));
+   assertCode('new Double(1.5).longValue()', javaLong(), j_double(1.5)->j_box()->j_cast(javaLong()));
+   assertCode('n.longValue()',               javaLong(), $n->j_cast(javaLong()));
+
+   assertCode('new Integer(4).shortValue()',  javaShort(), j_int(4)     ->j_box()->j_cast(javaShort()));
+   assertCode('new Long(4L).shortValue()',    javaShort(), j_long(4)    ->j_box()->j_cast(javaShort()));
+   assertCode('new Float(1.5F).shortValue()', javaShort(), j_float(1.5) ->j_box()->j_cast(javaShort()));
+   assertCode('new Double(1.5).shortValue()', javaShort(), j_double(1.5)->j_box()->j_cast(javaShort()));
+   assertCode('n.shortValue()',               javaShort(), $n->j_cast(javaShort()));
+
+   assertCode('new Integer(4).byteValue()',  javaByte(), j_int(4)     ->j_box()->j_cast(javaByte()));
+   assertCode('new Long(4L).byteValue()',    javaByte(), j_long(4)    ->j_box()->j_cast(javaByte()));
+   assertCode('new Float(1.5F).byteValue()', javaByte(), j_float(1.5) ->j_box()->j_cast(javaByte()));
+   assertCode('new Double(1.5).byteValue()', javaByte(), j_double(1.5)->j_box()->j_cast(javaByte()));
+   assertCode('n.byteValue()',               javaByte(), $n->j_cast(javaByte()));
+
+   assertCode('new Integer(4).floatValue()',  javaFloat(), j_int(4)     ->j_box()->j_cast(javaFloat()));
+   assertCode('new Long(4L).floatValue()',    javaFloat(), j_long(4)    ->j_box()->j_cast(javaFloat()));
+   assertCode('new Float(1.5F).floatValue()', javaFloat(), j_float(1.5) ->j_box()->j_cast(javaFloat()));
+   assertCode('new Double(1.5).floatValue()', javaFloat(), j_double(1.5)->j_box()->j_cast(javaFloat()));
+   assertCode('n.floatValue()',               javaFloat(), $n->j_cast(javaFloat()));
+   
+   assertCode('new Integer(4).doubleValue()',  javaDouble(), j_int(4)     ->j_box()->j_cast(javaDouble()));
+   assertCode('new Long(4L).doubleValue()',    javaDouble(), j_long(4)    ->j_box()->j_cast(javaDouble()));
+   assertCode('new Float(1.5F).doubleValue()', javaDouble(), j_float(1.5) ->j_box()->j_cast(javaDouble()));
+   assertCode('new Double(1.5).doubleValue()', javaDouble(), j_double(1.5)->j_box()->j_cast(javaDouble()));
+   assertCode('n.doubleValue()',               javaDouble(), $n->j_cast(javaDouble()));
+}
+
+function <<test.Test>> meta::external::language::java::factory::tests::doubleCastingRecastsTheOriginal():Boolean[1]
+{
+   assertCode('new Integer(4).intValue()',      javaInt(),          j_int(4)->j_box()->j_cast(javaDouble())->j_cast(javaInt()));
+   assertCode('new Integer(4)',                 javaIntBoxed(),     j_int(4)->j_box()->j_cast(javaDouble())->j_cast(javaIntBoxed()));
+   assertCode('(java.io.Serializable) "Hello"', javaSerializable(), j_string('Hello')->j_cast(javaCharSequence())->j_cast(javaSerializable()));
+}
+
+function <<test.Test>> meta::external::language::java::factory::tests::primitiveCastsPreseveredByBoxingIfDoubleCast():Boolean[1]
+{
+   let i = j_variable(javaInt(), 'i');
+   
+   assertCode('(Object) new Long((long) i)', javaObject(), $i->j_cast(javaLong())->j_cast(javaObject()));
+   assertCode('(Number) new Long((long) i)', javaNumber(), $i->j_cast(javaLong())->j_cast(javaNumber()));
+}
+
+function <<test.Test>> meta::external::language::java::factory::tests::inferredImports():Boolean[1]
+{
+   let cls = javaClass('test.pkg.TestClass')
+                ->addField(javaField('private', javaString(), 'aString'))
+                ->addField(javaField('private', javaList(javaString()), 'aList'))
+                ->addField(javaField('private', javaClass('test.pkg.TestOther'), 'samePackage'))
+                ->addField(javaField('private', javaClass('test.pkg..other.TestOther'), 'sameNameAsClassInPackage'))
+                ->inferImports();
+   
+   assertEquals(['java.util.List'], $cls.additionalImports);
+}
+
+function <<test.Test>> meta::external::language::java::factory::tests::inferredImportsOnEnum():Boolean[1]
+{
+   let cls = javaEnum('public', 'org.finos.Things')
+      ->addEntries([
+           javaEnumEntry('Alpha')->annotate(^meta::external::language::java::metamodel::annotations::generated::Generated(value='a', comments='In the beginning'))->javaDoc('The first one')
+        ])
+      ->inferImports();
+   
+   assertEquals(['javax.annotation.Generated'], $cls.additionalImports);
+}
+
+function <<test.Test>> meta::external::language::java::factory::tests::inferredImportsEnum():Boolean[1]
+{
+   let cls = javaClass('test.pkg.TestClass')
+                ->addField(javaField('private', javaString(), 'aString'))
+                ->addField(javaField('private', javaList(javaString()), 'aList'))
+                ->addField(javaField('private', javaClass('test.pkg.TestOther'), 'samePackage'))
+                ->addField(javaField('private', javaClass('test.pkg..other.TestOther'), 'sameNameAsClassInPackage'))
+                ->meta::external::language::java::factory::annotate(^meta::external::language::java::metamodel::annotations::json::JsonTypeInfo(
+                      use = ^meta::external::language::java::metamodel::annotations::json::EnumValue(value='JsonTypeInfo.Id.NAME'),
+                      property = '_type'
+                    )
+                )
+                ->meta::external::language::java::factory::annotate(^meta::external::language::java::metamodel::annotations::json::JsonSubTypes(
+                          subTypes=[
+                                  ^meta::external::language::java::metamodel::annotations::json::JsonSubType(
+                                      value='test.pkg.TestClassOther',
+                                      name='test'
+                                  )
+                              ]
+                           )
+                     )
+                ->inferImports();
+   
+   assertEquals(['com.fasterxml.jackson.annotation.JsonSubTypes', 'com.fasterxml.jackson.annotation.JsonTypeInfo', 'java.util.List'], $cls.additionalImports);
+}
+
+function meta::external::language::java::factory::tests::assertCode(expectedCode:String[1], expectedType:meta::external::language::java::metamodel::Type[1], code:Code[1]):Boolean[1]
+{
+   assertEquals($expectedCode, $code->codeToString());
+   assertEquals($expectedType->meta::external::language::java::serialization::typeToString(), $code.type->meta::external::language::java::serialization::typeToString());
+}

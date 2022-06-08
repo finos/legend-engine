@@ -1,0 +1,68 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+function meta::pure::metamodel::tests::namespace::testFunctionEval(x:Function<{->String[1]}>[1]):Any[1]
+{
+    $x->eval();
+}
+
+function <<test.Test>> meta::pure::metamodel::tests::namespace::testFunctionVariableNameSpacesWithDifferentVariableNames():Boolean[1]
+{
+    let x = 'the quick brown fox jumps over the lazy dog';
+    let y = $x;
+    assertIs($x, meta::pure::metamodel::tests::namespace::testFunctionEval(| $y));
+}
+
+function <<test.Test>> meta::pure::metamodel::tests::namespace::testFunctionVariableNameSpacesWithSameVariableName():Boolean[1]
+{
+    let x = 'the quick brown fox jumps over the lazy dog';
+    let y = $x;
+    assertIs($x, meta::pure::metamodel::tests::namespace::testFunctionEval(| $x));
+}
+
+function <<test.Test>> meta::pure::metamodel::tests::namespace::testCurryFunction():Boolean[1]
+{
+    let f = {x:Integer[1] | {y:Integer[1] | $x + $y}};
+    let g = $f->eval(5);
+    let h = $f->eval(2);
+    assertEq(17, $g->eval(6) + $h->eval(4));
+}
+
+function <<test.Test>> meta::pure::metamodel::tests::namespace::testAdvancedScoping():Boolean[1]
+{
+    assertEquals('12345_5', meta::pure::metamodel::tests::namespace::testComplexScopingSupport('5')->eval('3'));
+}
+
+function meta::pure::metamodel::tests::namespace::testComplexScopingSupport(var:String[1]):Function<{String[1]->String[1]}>[1]
+{
+   let l = '4';
+   {
+    a:String[1]|
+        let v = '2';
+        let res = '1'+$v+$a+$l+$var;
+        if(true,|$res+'_'+$var,|$v);
+   };
+}
+
+function <<test.Test>> meta::pure::metamodel::tests::namespace::testVariableScope():Boolean[1]
+{
+    let a = 5;
+    let c = 6;
+    let d = 9;
+    assertEq(23, [1, 2]->fold({a, b | let d = 4; $a + $b + $c + $d;}, 0));
+    assertEq(5, $a);
+    assertEq(6, $c);
+    assertEq(9, $d);
+}
+

@@ -1,0 +1,253 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::factory::*;
+import meta::pure::executionPlan::engine::java::*;
+import meta::pure::executionPlan::engine::java::tests::*;
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::engine::java::tests::testCast() : Boolean[1]
+{
+   javaExpressionTests(engineConventions([]))
+      ->addTest('cast one', {|5->cast(@Number)}, '(Number) new Long(5L)', javaNumber())
+         ->assert('(%s) instanceof Number')
+         ->assert('(%s).intValue() == 5')
+      ->addTest('cast empty', {|[]->cast(@Integer)}, '(Long) null', javaLong()->toBoxed())
+         ->assert('(%s) == null')
+      ->runTests();
+}
+
+Class meta::pure::executionPlan::engine::java::tests::A 
+{
+   <<equality.Key>> id: Integer[1];
+}
+Class meta::pure::executionPlan::engine::java::tests::B extends A {}
+Class meta::pure::executionPlan::engine::java::tests::C extends A {}
+Class meta::pure::executionPlan::engine::java::tests::D extends A {}
+
+function meta::pure::executionPlan::engine::java::tests::doTestWhenSubType() : Boolean[1]
+{
+  let objects = [ ^A(id=1), ^B(id=2), ^C(id=3) ];
+  assertEquals(2, $objects->whenSubType(@B).id);
+  assertEquals(3, $objects->whenSubType(@C).id);
+  assertEquals([1, 2, 3], $objects->whenSubType(@A).id);
+  assertEquals([], $objects->whenSubType(@D).id);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='vX_X_X' }
+meta::pure::executionPlan::engine::java::tests::testSubType() : Boolean[1]
+{
+   javaPureTests(engineConventions([]), [
+      doTestWhenSubType__Boolean_1_
+   ])
+      ->generate(A)
+      ->generate(B)
+      ->generate(C)
+      ->generate(D)
+      ->runTests();
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::engine::java::tests::testNot() : Boolean[1]
+{
+   javaExpressionTests(engineConventions([]))
+      ->addTest('not', {|!true}, '!true', javaBoolean())
+         ->assert('%s == false')
+      ->runTests();
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::engine::java::tests::testAnd() : Boolean[1]
+{
+   javaExpressionTests(engineConventions([]))
+      ->addTest('and', {|true && true}, 'true && true', javaBoolean())
+         ->assert('%s == true')
+      ->runTests();
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::engine::java::tests::testIf() : Boolean[1]
+{
+   javaExpressionTests(engineConventions([]))
+      ->addTest('if then', {|if(true, |1, |2)}, 'true ? ((java.util.function.Supplier<Long>) () -> 1L).get() : ((java.util.function.Supplier<Long>) () -> 2L).get()', javaLong())
+         ->assert('(%s) == 1L')
+      ->addTest('if else', {|if(false, |1, |2)}, 'false ? ((java.util.function.Supplier<Long>) () -> 1L).get() : ((java.util.function.Supplier<Long>) () -> 2L).get()', javaLong())
+         ->assert('(%s) == 2L')
+      ->addTest('if gives empty vs 1', {|if(false, |'A', |[])}, 'false ? ((java.util.function.Supplier<String>) () -> "A").get() : ((java.util.function.Supplier<String>) () -> null).get()', javaString())
+         ->assert('(%s) == null')
+      ->addTest('if gives empty vs Many', {|if(false, |['A', 'B'], |[])}, 'false ? ((java.util.function.Supplier<java.util.List<String>>) () -> java.util.Arrays.asList("A", "B")).get() : ((java.util.function.Supplier<java.util.List<String>>) () -> java.util.Collections.emptyList()).get()', javaList(javaString()))
+         ->assert('(%s).isEmpty()')
+      ->runTests();
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::engine::java::tests::testOr() : Boolean[1]
+{
+   javaExpressionTests(engineConventions([]))
+      ->addTest('or', {|false || true}, 'false || true', javaBoolean())
+         ->assert('%s == true')
+      ->runTests();
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::engine::java::tests::testGreaterThan() : Boolean[1]
+{
+   javaExpressionTests(engineConventions([]))
+      ->addTest('Number greaterThan', {|1 > 2}, '1L > 2L', javaBoolean())->assert('%s == false')
+      ->addTest('Number greaterThan', {|2 > 1}, '2L > 1L', javaBoolean())->assert('%s == true')
+      ->runTests();
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::engine::java::tests::testGreaterThanEqual() : Boolean[1]
+{
+   javaExpressionTests(engineConventions([]))
+      ->addTest('Number greaterThanEqual', {|1 >= 2}, '1L >= 2L', javaBoolean())->assert('%s == false')
+      ->addTest('Number greaterThanEqual', {|2 >= 1}, '2L >= 1L', javaBoolean())->assert('%s == true')
+      ->runTests();
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::engine::java::tests::testLessThan() : Boolean[1]
+{
+   javaExpressionTests(engineConventions([]))
+      ->addTest('Number lessThan', {|1 < 2}, '1L < 2L', javaBoolean())->assert('%s == true')
+      ->addTest('Number lessThan', {|2 < 1}, '2L < 1L', javaBoolean())->assert('%s == false')      
+      ->runTests();
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::engine::java::tests::testLessThanEqual() : Boolean[1]
+{
+   javaExpressionTests(engineConventions([]))
+      ->addTest('Number lessThanEqual', {|1 < 2}, '1L < 2L', javaBoolean())->assert('%s == true')
+      ->addTest('Number lessThanEqual', {|2 <= 2}, '2L <= 2L', javaBoolean())->assert('%s == true')
+      ->addTest('Number lessThanEqual', {|2 < 1}, '2L < 1L', javaBoolean())->assert('%s == false')
+      ->addTest('Number lessThanEqual', {|2 <= 1}, '2L <= 1L', javaBoolean())->assert('%s == false')
+      ->runTests();
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::engine::java::tests::testIsEmpty() : Boolean[1]
+{
+   javaExpressionTests(engineConventions([]))
+      ->addTest('isEmpty false', {|'A'->isEmpty()}, '"A" == null', javaBoolean())
+         ->assert('(%s) == false')
+      ->addTest('isEmpty false', {|1->isEmpty()}, 'new Long(1L) == null', javaBoolean())
+         ->assert('(%s) == false')
+      ->addTest('isEmpty true', {|[]->isEmpty()}, 'true', javaBoolean())
+         ->assert('(%s) == true')
+      ->runTests();
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::engine::java::tests::testIsNotEmpty() : Boolean[1]
+{
+   javaExpressionTests(engineConventions([]))
+      ->addTest('isNotEmpty false', {|'A'->isNotEmpty()}, '"A" != null', javaBoolean())
+         ->assert('(%s) == true')
+      ->addTest('isNotEmpty false', {|1->isNotEmpty()}, 'new Long(1L) != null', javaBoolean())
+         ->assert('(%s) == true')
+      ->addTest('isNotEmpty true', {|[]->isNotEmpty()}, 'false', javaBoolean())
+         ->assert('(%s) == false')
+      ->runTests();
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::engine::java::tests::testLet() : Boolean[1]
+{
+   let expectedForLambda = 
+      'java.util.Arrays.asList("a", "aa", "aaa").stream().map((String s) -> { long l = (long) s.length(); return java.util.Arrays.asList(s, org.finos.legend.engine.plan.dependencies.util.Library.pureToString(l)).stream().collect(java.util.stream.Collectors.joining("")); }).filter((String x) -> x != null).collect(java.util.stream.Collectors.toList())';
+
+   let expectedForLambdaWithLastLineAsLet = 
+      'java.util.Arrays.asList("a", "aa", "aaa").stream().map((String s) -> { long l = (long) s.length(); String x = java.util.Arrays.asList(s, org.finos.legend.engine.plan.dependencies.util.Library.pureToString(l)).stream().collect(java.util.stream.Collectors.joining("")); return x; }).filter((String x) -> x != null).collect(java.util.stream.Collectors.toList())';
+
+   javaExpressionTests(engineConventions([]))
+      ->addTest('let as expression', {|let x = 1;}, '1L', javaLong())
+         ->assert('%s == 1L')
+      ->addTest('let in lambda', {|['a', 'aa', 'aaa']->map(s|let l = $s->length(); $s+$l->toString();)}, $expectedForLambda, javaList(javaString()))
+         ->assert('%s.contains("a1")')
+         ->assert('%s.contains("aa2")')
+         ->assert('%s.contains("aaa3")')
+         ->assert('%s.size() == 3')
+      ->addTest('let in lambda with last line as let', {|['a', 'aa', 'aaa']->map(s|let l = $s->length(); let x = $s+$l->toString();)}, $expectedForLambdaWithLastLineAsLet, javaList(javaString()))
+         ->assert('%s.contains("a1")')
+         ->assert('%s.contains("aa2")')
+         ->assert('%s.contains("aaa3")')
+         ->assert('%s.size() == 3')
+      ->addTest('let in functions', {|['a', 'aa', 'aaa']->oddLengths()}, '_pure.functions.Functions__meta_pure_executionPlan_engine_java_tests.oddLengths_String_MANY__String_MANY_(java.util.Arrays.asList("a", "aa", "aaa"))', javaList(javaString()))
+         ->assert('%s.contains("a1")')
+         ->assert('%s.contains("aaa3")')
+         ->assert('%s.size() == 2')         
+      ->runTests();
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::engine::java::tests::testCompare() : Boolean[1]
+{
+   javaExpressionTests(engineConventions([]))
+      ->addTest('Compare Strings',  {|'abc'->compare('abc')}, '(long) org.finos.legend.engine.plan.dependencies.util.Library.compareInt("abc", "abc")', javaLong())->assert('%s == 0')
+      ->addTest('Compare Numbers',  {|1->compare(2)}, '(long) org.finos.legend.engine.plan.dependencies.util.Library.compareInt(1L, 2L)', javaLong())->assert('%s < 0')
+      ->addTest('Compare Decimals', {|3.1415->compare(3.14)}, '(long) org.finos.legend.engine.plan.dependencies.util.Library.compareInt(3.1415, 3.14)', javaLong())->assert('%s > 0')
+      ->addTest('Compare Mixed Numbers', {|3->compare(3.14)}, '(long) org.finos.legend.engine.plan.dependencies.util.Library.compareInt(3L, 3.14)', javaLong())->assert('%s < 0')
+      ->runTests();
+}
+
+
+function meta::pure::executionPlan::engine::java::tests::oddLengths(strings:String[*]): String[*]
+{
+   let oddLengthStrings = $strings->filter(s| $s->length()->rem(2) != 0);
+   $oddLengthStrings->map(s| $s->appendLength());
+}
+
+function meta::pure::executionPlan::engine::java::tests::appendLength(s:String[1]): String[1]
+{
+   let l = $s->length(); 
+   $s+$l->toString();
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::engine::java::tests::testLangPureTests() : Boolean[1]
+{
+   javaPureTests(meta::pure::executionPlan::engine::java::engineConventions([]), [
+      meta::pure::functions::lang::tests::match::testMatchOneWithZeroOne__Boolean_1_,
+      meta::pure::functions::lang::tests::match::testMatchOneWith__Boolean_1_,
+      meta::pure::functions::lang::tests::match::testMatchOneWithMany__Boolean_1_,
+      meta::pure::functions::lang::tests::match::testMatchZeroWithZero__Boolean_1_,
+      meta::pure::functions::lang::tests::match::testMatchZeroWithMany__Boolean_1_,
+      meta::pure::functions::lang::tests::match::testMatchManyWithMany__Boolean_1_,
+      meta::pure::functions::lang::tests::match::testMatchWithFunctions__Boolean_1_,
+      meta::pure::functions::lang::tests::match::testMatchWithFunctionsManyMatch__Boolean_1_,
+      meta::pure::functions::lang::tests::orElse::testOrElse__Boolean_1_
+   ])
+      ->addTestsWithin(meta::pure::functions::lang::tests::compare)
+
+   ->runTests();
+}
+

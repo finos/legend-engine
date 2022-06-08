@@ -1,0 +1,55 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::profiles::*;
+
+function <<test.Test>> meta::pure::functions::math::tests::ceiling::testPositiveIntegerCeiling():Boolean[1]
+{
+    assertEq(17, ceiling(17));
+}
+
+function <<test.Test>> meta::pure::functions::math::tests::ceiling::testNegativeIntegerCeiling():Boolean[1]
+{
+    assertEq(-17, ceiling(-17));
+}
+
+function <<test.Test>> meta::pure::functions::math::tests::ceiling::testPositiveFloatCeiling():Boolean[1]
+{
+    assertEq(18, ceiling(17.9));
+    assertEq(18, ceiling(17.5));
+    assertEq(18, ceiling(17.01));
+}
+
+function <<test.Test>> meta::pure::functions::math::tests::ceiling::testPositiveFloatWithZeroDecimalCeiling():Boolean[1]
+{
+    assertEq(17, ceiling(17.0));
+}
+
+function <<test.Test>> meta::pure::functions::math::tests::ceiling::testNegativeFloatCeiling():Boolean[1]
+{
+    assertEq(-17, ceiling(-17.9));
+    assertEq(-17, ceiling(-17.5));
+    assertEq(-17, ceiling(-17.01));
+}
+
+function <<test.Test>> meta::pure::functions::math::tests::ceiling::testNegativeFloatWithZeroDecimalCeiling():Boolean[1]
+{
+    assertEq(-17, ceiling(-17.0));
+}
+
+function <<test.Test>> meta::pure::functions::math::tests::ceiling::testDecimalCeiling():Boolean[1]
+{
+    assertEq(4, 3.14d->ceiling());
+    assertEq(-3, ceiling(-3.14d));
+}

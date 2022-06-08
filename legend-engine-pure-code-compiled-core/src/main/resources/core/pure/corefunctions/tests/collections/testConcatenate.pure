@@ -1,0 +1,39 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::profiles::*;
+import meta::pure::functions::tests::model::*;
+
+function <<test.Test>> meta::pure::functions::collection::tests::concatenate::testConcatenateSimple():Boolean[1]
+{
+    assertEquals([1, 2, 3, 4, 5], concatenate([1, 2, 3], [4, 5]));
+}
+
+function <<test.Test>> meta::pure::functions::collection::tests::concatenate::testConcatenateMixedType():Boolean[1]
+{
+    assertEquals([1, 2, 3, 'a', 'b'], concatenate([1, 2, 3], ['a', 'b']));
+}
+
+function <<test.Test>> {test.excludePlatform = 'Java compiled'} meta::pure::functions::collection::tests::concatenate::testConcatenateTypeInference():Boolean[1]
+{
+    let a = concatenate([1, 2, 3], [4, 5]);
+    assertIs(Integer, $a->type()->toOne());
+
+    let b = concatenate([1, 2, 3], ['a', 'b']);
+    assertIs(Any, $b->type()->toOne());
+
+    let c = concatenate([^Address(name='Hoboken', type=GeographicEntityType.CITY), ^Address(name='Jersey City', type=GeographicEntityType.CITY)],
+                        [^Location(place='Hoboken, NJ', type=GeographicEntityType.CITY), ^Location(place='Jersey City, NJ', type=GeographicEntityType.CITY)]);
+    assertIs(GeographicEntity, $c->type()->toOne());
+}

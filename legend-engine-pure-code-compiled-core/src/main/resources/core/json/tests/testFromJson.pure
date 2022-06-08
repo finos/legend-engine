@@ -1,0 +1,555 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::json::*;
+import meta::json::tests::*;
+
+Enum meta::json::tests::MyEnum
+{
+   Value1, Value2,Value_3,VALUE__4
+}
+
+Class <<access.private>> meta::json::tests::A
+{
+   a:String[1];
+}
+
+Class <<access.private>> meta::json::tests::B extends A
+{
+   b:Integer[1];
+}
+
+Class <<access.private>> meta::json::tests::C
+{
+   b:B[1];
+}
+
+Class <<access.private>> meta::json::tests::D
+{
+   d1:String[1];
+   d2:String[0..1];
+}
+
+Class <<access.private>> meta::json::tests::E
+{
+   e:String[*];
+}
+
+Class <<access.private>> meta::json::tests::F
+{
+   f:C[*];
+}
+
+Class <<access.private>> meta::json::tests::G extends A
+{
+   c:String[1];
+}
+
+Class <<access.private>> meta::json::tests::H
+{
+   a:A[1];
+}
+
+Class <<access.private>> meta::json::tests::I extends A
+{
+   c:Number[1];
+}
+
+Class <<access.private>> meta::json::tests::J
+{
+   j:Date[1];
+}
+
+Class <<access.private>> meta::json::tests::K
+{
+   k:MyEnum[1];
+}
+
+Class <<access.private>> meta::json::tests::L<T>
+{
+   l:T[1];
+}
+
+Class <<access.private>> meta::json::tests::M
+{
+   m:L<String>[1];
+}
+
+Class <<access.private>> meta::json::tests::N<Z,R>
+{
+   n1:Z[1];
+   n2:R[1];
+}
+
+Class <<access.private>> meta::json::tests::O<Z>
+{
+   o:N<String, Z>[1];
+}
+
+Class <<access.private>> meta::json::tests::P
+{
+   p:L<A>[1];
+}
+
+Class <<access.private>> meta::json::tests::Q<T>
+{
+   q:O<T>[1];
+}
+
+Class <<access.private>> meta::json::tests::R
+{
+   r:Any[1];
+}
+
+Class <<access.private>> meta::json::tests::S {}
+
+Class <<access.private>> meta::json::tests::SS extends S
+{
+   s:String[1];
+}
+
+Class <<access.private>> meta::json::tests::SSS extends S
+{
+   s:String[*];
+}
+
+Class <<access.private>> meta::json::tests::T
+{
+   t:String[1..3];
+}
+
+Class <<access.private>> meta::json::tests::U
+{
+   v : V[2];
+}
+
+Class <<access.private>> meta::json::tests::V
+{
+   s : String[1];
+}
+
+Class <<access.private>> meta::json::tests::W
+{
+   s : String[1];
+}
+
+Association meta::json::tests::V_W
+{
+   v : V[0..1];
+   w : W[1];
+}
+
+Class <<access.private>> meta::json::tests::VV
+{
+   s : String[1];
+}
+
+Class <<access.private>> meta::json::tests::WW
+{
+   s : String[1];
+}
+
+Association meta::json::tests::VV_WW
+{
+   vv : VV[1];
+   ww : WW[1];
+}
+
+Class <<access.private>> meta::json::tests::VVV extends VV
+{
+   s2: String[1];
+}
+
+Class <<access.private>> meta::json::tests::X {}
+
+Class <<access.private>> meta::json::tests::X1 extends X
+{
+   x : String[1];
+}
+
+Class <<access.private>> meta::json::tests::X2 extends X
+{
+   x : String[1];
+}
+
+Class <<access.private>> meta::json::tests::Y
+{
+   y : Decimal[1];
+}
+
+function meta::json::tests::convert<T>(a:Any[1], testClass:TypeReference<T>[1]):Boolean[1]
+{
+   let class = $a->toJSONElement();
+   let typeArgument = $testClass.classifierGenericType.typeArguments->toOne();
+   let base = $typeArgument.rawType->toOne();
+   let newClass = $class->fromJSON($testClass);
+   assert($newClass->first()->toOne()->instanceOf($base));
+   assertLogicallyEqual($a, $newClass); 
+}
+
+function meta::json::tests::convert<T>(a:Any[*], testClass:TypeReference<T>[1]):Boolean[1]
+{
+   let class = $a->toJSONElement()->cast(@JSONArray);
+   let typeArgument = $testClass.classifierGenericType.typeArguments->toOne();
+   let base = $typeArgument.rawType->toOne();
+   let newClass = $class->fromJSON($testClass);
+   assert($newClass->first()->toOne()->instanceOf($base));
+   assertLogicallyEqual($a, $newClass); 
+}
+
+function meta::json::tests::convert(a:Any[*], testClass:Type[1]):Boolean[1]
+{
+   let class = $a->toJSONElement();
+   let newClass = $class->fromJSON($testClass)->toOne();
+   assert($newClass->instanceOf($testClass));
+   assertLogicallyEqual($a, $newClass);   
+}
+
+function <<test.Test>> meta::json::tests::simpleStringTest():Boolean[1]
+{   
+   assertEquals('hello', ^JSONString(value='hello')->fromJSON(String))
+}
+
+function <<test.Test>> meta::json::tests::simpleNumberTest():Boolean[1]
+{   
+   assertEquals(1, ^JSONNumber(value=1)->fromJSON());
+   assertEquals(1.2, ^JSONNumber(value=1.2)->fromJSON());
+   assertEquals(1.2, ^JSONNumber(value=1.2)->fromJSON());
+   assertEquals(1.2d, ^JSONNumber(value=1.2d)->fromJSON());
+}
+
+function <<test.Test>> meta::json::tests::simpleDateTest():Boolean[1]
+{   
+   assertEquals(%2015-01-01, ^JSONString(value='2015-01-01')->fromJSON(Date));
+}
+
+function <<test.Test>> meta::json::tests::simpleEnumTest():Boolean[1]
+{   
+   assertEquals(MyEnum.Value1, ^JSONString(value='meta::json::tests::MyEnum.Value1')->fromJSON(MyEnum));
+}
+
+function <<test.Test>> meta::json::tests::simpleBooleanTest():Boolean[1]
+{   
+   assertEquals(true, ^JSONBoolean(value=true)->fromJSON());
+   assertEquals(false, ^JSONBoolean(value=false)->fromJSON());
+}
+
+function <<test.Test>> meta::json::tests::simpleNullTest():Boolean[1]
+{   
+   assertEquals([], ^JSONNull()->fromJSON(Nil));
+}
+
+function <<test.Test>> meta::json::tests::simpleArrayTest():Boolean[1]
+{   
+   assertEquals(['a','b'], 
+      ^JSONArray(values=[^JSONString(value='a'),^JSONString(value='b')])->fromJSON(String));
+}
+
+function <<test.Test>> meta::json::tests::multipleTypeArrayTest():Boolean[1]
+{  
+   let json = ^JSONArray(values=[^JSONBoolean(value=true), ^JSONNumber(value=16.5442), ^JSONString(value='the quick brown fox'), ^JSONNull()]);
+   assertEquals([true, 16.5442, 'the quick brown fox'], $json->fromJSON());
+}
+
+function <<test.Test>> meta::json::tests::multipleTypeArrayTestWithNullReplacement():Boolean[1]
+{  
+   let json = ^JSONArray(values=[^JSONBoolean(value=true), ^JSONNumber(value=16.5442), ^JSONString(value='the quick brown fox'), ^JSONNull()]);
+   assertEquals([true, 16.5442, 'the quick brown fox', meta::pure::tds::TDSNull], $json->fromJSON(^ExtendedJSONDeserializationConfig(nullReplacementInArray = TDSNull, typeKeyName='__TYPE', failOnUnknownProperties=true)));
+}
+
+function <<test.Test>> meta::json::tests::primitiveClassTest():Boolean[1]
+{   
+   ^A(a='hello')->convert(A);
+}
+
+function <<test.Test>> meta::json::tests::simpleAnyProperty():Boolean[1]
+{   
+   ^R(r='hello')->convert(R);
+   ^R(r=123)->convert(R);
+   ^R(r=false)->convert(R);
+}
+
+function <<test.Test>> meta::json::tests::simpleDateFieldTest():Boolean[1]
+{   
+   ^J(j=%1989-12-10)->convert(J);
+}
+
+function <<test.Test>> meta::json::tests::simpleDecimalFieldTest():Boolean[1]
+{
+   ^Y(y=3.14d)->convert(Y);
+}
+
+function <<test.Test>> meta::json::tests::simpleMapTest():Boolean[1]
+{   
+   newMap([
+      pair('k1', 1),
+      pair('k2', 2)
+   ])->convert(Map);
+}
+
+function <<test.Test>> meta::json::tests::enumFieldTest():Boolean[1]
+{
+   ^K(k=MyEnum.Value1)->convert(K);
+}
+
+function <<test.Test>> meta::json::tests::simpleInheritanceTest():Boolean[1]
+{  
+   ^B(a='a', b=1)->convert(B);
+}   
+   
+function <<test.Test>> meta::json::tests::simpleCompositionTest():Boolean[1]
+{  
+   ^C(b=^B(a='a', b=1))->convert(C);
+}   
+
+function <<test.Test>> meta::json::tests::genericTest():Boolean[1]
+{  
+   ^L<String>(l='hello')->convert(^TypeReference<L<String>>());
+}  
+
+function <<test.Test>> {test.excludePlatform = 'Interpreted'} meta::json::tests::genericArrayTest():Boolean[1]
+{  
+   [^L<String>(l='hello'), ^L<String>(l='bye')]->convert(^TypeReference<L<String>>());
+}  
+
+function <<test.Test>> meta::json::tests::genericObjectTest():Boolean[1]
+{  
+   ^L<A>(l=^A(a='hello'))->convert(^TypeReference<L<A>>());
+} 
+
+function <<test.Test>> meta::json::tests::genericObjectPrimitiveTest():Boolean[1]
+{  
+   ^M(m=^L<String>(l='hello'))->convert(M);
+}
+
+function <<test.Test>> meta::json::tests::genericObjectNonPrimitiveTest():Boolean[1]
+{  
+   ^P(p=^L<A>(l=^A(a='hello')))->convert(P);
+}
+
+function <<test.Test>> meta::json::tests::genericObjectFixedAndGenericTest():Boolean[1]
+{  
+   ^O<Number>(o=^N<String, Number>(n1='hello', n2=123))->convert(^TypeReference<O<Number>>());
+}
+
+function <<test.Test>> meta::json::tests::genericObjectFixedAndGeneric2Test():Boolean[1]
+{  
+   ^O<A>(o=^N<String, A>(n1='hello', n2=^A(a='hello')))->convert(^TypeReference<O<A>>());
+}
+
+function <<test.Test>> meta::json::tests::deepNestedGeneric():Boolean[1]
+{  
+   ^Q<A>(q=^O<A>(o=^N<String, A>(n1='hello', n2=^A(a='hello'))))->convert(^TypeReference<Q<A>>());
+}
+
+function <<test.Test>> meta::json::tests::multipleGenericObjectTest():Boolean[1]
+{  
+   ^N<Number, String>(n1=123, n2='hello')->convert(^TypeReference<N<Number,String>>());
+}
+
+function <<test.Test>> meta::json::tests::nonRequiredPropertyTest():Boolean[1]
+{  
+   ^D(d1='d1')->convert(D);
+}  
+   
+function <<test.Test>> meta::json::tests::arrayPropertyTest():Boolean[1]
+{  
+   ^E(e=['hello', 'bonjour'])->convert(E);
+} 
+
+function <<test.Test>> meta::json::tests::arrayPropertySubclass():Boolean[1]
+{  
+   ^SS(s='a')->convert(S);
+}
+
+function <<test.Test>> meta::json::tests::arrayPropertySubclass2():Boolean[1]
+{  
+   ^SSS(s=['a'])->convert(S);
+}
+
+function <<test.Test>> meta::json::tests::arrayPropertySubclass3():Boolean[1]
+{  
+   ^SSS(s=['a','b'])->convert(S);
+}
+
+function <<test.Test>> meta::json::tests::arrayPropertyFailOnMultiplicityError():Boolean[1]
+{  
+   let classes = '{"t":["a", "b", "c", "d"]}'->findClasses(T);
+   assert($classes->isEmpty());   
+}
+   
+function <<test.Test>> meta::json::tests::compositionArrayTest():Boolean[1]
+{  
+   ^F(f=[^C(b=^B(a='a', b=1)), ^C(b=^B(a='aa', b=2))])->convert(F);
+}
+
+function <<test.Test>> meta::json::tests::multipleInheritanceTest():Boolean[1]
+{  
+   ^H(a=^G(a='a',c='b'))->convert(H);
+}
+
+function <<test.Test>> meta::json::tests::multipleInheritanceDifferentTypeTest():Boolean[1]
+{  
+   ^H(a=^I(a='a',c=123))->convert(H);
+}
+
+function <<test.Test>> meta::json::tests::resolvingCorrectTypeFromSuperClassTest():Boolean[1]
+{  
+   ^I(a='a',c=123)->convert(A);
+}
+
+function <<test.Test>> meta::json::tests::findClassWithExtraAttributeTest():Boolean[1]
+{
+   let classes = '{"a":"value", "b":"value2"}'->findClasses(A);
+   assert($classes->isEmpty());
+}
+
+function <<test.Test>> meta::json::tests::findClassWithIncorrectTypeAttributeTest():Boolean[1]
+{
+   let classes = '{"a":1}'->findClasses(A);
+   assert($classes->isEmpty());
+}
+
+function <<test.Test>> meta::json::tests::findClassWithMissingAttributeTest():Boolean[1]
+{
+   let classes = '{"a":"value"}'->findClasses(B);
+   assert($classes->isEmpty()); 
+}
+
+function <<test.Test>> meta::json::tests::testFromJSONwithAssociations():Boolean[1]
+{
+   let jsonString = '{"s":"I am v","w":{"s":"I am w"}}';
+   let actual = $jsonString->parseJSON()->fromJSON(V);
+   let expected = ^V(s = 'I am v', w = ^W(s = 'I am w'));
+   assertLogicallyEqual($expected, $actual);
+}
+
+function <<test.Test>> meta::json::tests::testFromJSONwithAssociationsMandatoryMultiplicity():Boolean[1]
+{
+   let jsonString = '{"s":"I am vv","ww":{"s":"I am ww"}}';
+   let actual = $jsonString->parseJSON()->fromJSON(VV);
+   let expected = ^VV(s = 'I am vv', ww = ^WW(s = 'I am ww'));
+   assertLogicallyEqual($expected, $actual);
+}
+
+function <<test.Test>> meta::json::tests::testFromJSONwithInheritedAssociationsMandatoryMultiplicity():Boolean[1]
+{
+   let jsonString = '{"s":"I am vvv","s2":"vvv","ww":{"s":"I am ww"}}';
+   let actual = $jsonString->parseJSON()->fromJSON(VVV);
+   let expected = ^VVV(s = 'I am vvv', s2 = 'vvv', ww = ^WW(s = 'I am ww'));
+   assertLogicallyEqual($expected, $actual);
+}
+
+function <<test.Test>> meta::json::tests::testFromJSONwithMultiplicityContraints():Boolean[1]
+{
+   let w1 = ^W(s = 'I am w1');
+   let w2 = ^W(s = 'I am w2');
+   let u = ^U(v = [^V(s= 'I am v1', w = $w1), ^V(s = 'I am v2', w = $w2)]);
+   let jsonString = '{"v":[{"s":"I am v1","w":{"s":"I am w1"}}, {"s":"I am v2","w":{"s":"I am w2"}}]}';
+   let actual = $jsonString->parseJSON()->fromJSON(U);
+   let expected = $u;
+   assertLogicallyEqual($expected, $actual);
+}
+
+function <<test.Test>> meta::json::tests::testUsesDefaultHintToPickClassUsingShortName():Boolean[1]
+{
+   let jsonString = '{"x":"Ambiguity resolved by __TYPE", "__TYPE":"X1"}';
+   let actual = $jsonString->parseJSON()->fromJSON(X);
+   let expected = ^X1(x = 'Ambiguity resolved by __TYPE');
+   assertLogicallyEqual($expected, $actual);
+}
+
+function <<test.Test>> meta::json::tests::testUsesCustomHintToPickClassUsingQualifiedName():Boolean[1]
+{
+   let jsonString = '{"x":"Ambiguity resolved by @type", "@type":"meta::json::tests::X2"}';
+   let config = ^JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=true);
+   let actual = $jsonString->parseJSON()->fromJSON(X, $config);
+   let expected = ^X2(x = 'Ambiguity resolved by @type');
+   assertLogicallyEqual($expected, $actual);
+}
+
+
+function <<test.Test>> meta::json::tests::testUsesTypePropertyForAnyProperties():Boolean[1]
+{
+   let expected = ^meta::json::tests::R(r = ^meta::json::tests::R(r='hello'));
+   
+   let jsonString = $expected->toJSON(50000, true);
+   
+   let actual = $jsonString->parseJSON()->fromJSON();
+   
+   assertLogicallyEqual($expected, $actual);
+}
+
+function <<test.Test>> meta::json::tests::findClassFailsIfNoHintsGiven():Boolean[1]
+{
+   let classes = '{"x":"Ambiguity abounds"}'->findClasses(X);
+   assertEquals(2, $classes->size());
+}
+
+function <<test.Test>> meta::json::tests::findClassFailsIfAdditionaFieldsDisallowed():Boolean[1]
+{
+   let classes = '{"a":"value", "z":3}'->findClasses(A);
+   assertEquals(0, $classes->size());
+}
+
+function <<test.Test>> meta::json::tests::canIgnoreAdditionalFieldsIfAllowed():Boolean[1]
+{
+   let config = ^JSONDeserializationConfig(typeKeyName='__TYPE', failOnUnknownProperties=false);
+   let actual = '{"a":"value", "z":3}'->parseJSON()->fromJSON(A, $config);
+   let expected = ^A(a='value');
+   assertLogicallyEqual($expected, $actual);
+}
+
+function <<access.private>> meta::json::tests::assertLogicallyEqual(e : Any[*], a : Any[*]):Boolean[1]
+{  
+   assertEquals($e->toJSON(10), $a->toJSON(10));
+   /* this would be ideal to have in, this stringifies the instantiation of the class and compares
+      assertEquals($e->apps::global::dsb::sandbox::queryBuild::stringify::stringifyValue(),
+      $a->apps::global::dsb::sandbox::queryBuild::stringify::stringifyValue());*/
+}
+
+function <<access.private>> meta::json::tests::findClasses(json:String[1], class:Class<Any>[1]):Class<Any>[*]
+{  
+   $json->findClasses($class, defaultDeserializationConfig());
+}
+
+function <<access.private>> meta::json::tests::findClasses(json:String[1], class:Class<Any>[1], config:JSONDeserializationConfig[1]):Class<Any>[*]
+{  
+   $json->parseJSON()->cast(@JSONObject)->findClasses($class, $config);
+}
+
+function <<test.Test>> meta::json::tests::testFromJSONWithEnumCleanUp():Boolean[1]
+{
+   let jsonString = '{"k":"Value, 4"}';
+   let actual = $jsonString->parseJSON()->fromJSON(K,^ExtendedJSONDeserializationConfig(typeKeyName='__TYPE', failOnUnknownProperties=true,replaceInvalidEnumValueCharacters=true, forceEnumValuesToUpperCase=true) );
+   let expected = ^K(k = MyEnum.VALUE__4);
+   assertLogicallyEqual($expected, $actual);
+
+   let jsonString2 = '{"k":"Value 3"}';
+   let actual2 = $jsonString2->parseJSON()->fromJSON(K,^ExtendedJSONDeserializationConfig(typeKeyName='__TYPE', failOnUnknownProperties=true,replaceInvalidEnumValueCharacters=true));
+   let expected2 = ^K(k = MyEnum.Value_3);
+   
+   assertLogicallyEqual($expected2, $actual2);
+
+}
+
+function <<test.Test>> meta::json::tests::testFromJSONWithTypeLookup():Boolean[1]
+{
+   let jsonString = '{"a":{"a":"val_a", "c":"val_c","_type":"G"}}';
+   
+   let config = ^meta::json::JSONDeserializationConfig(failOnUnknownProperties=false, typeKeyName='_type', typeLookup = [pair('G', 'meta::json::tests::G')]);
+   let actual = $jsonString->parseJSON()->fromJSON(H, $config);
+   let expected = ^H(a = ^G(a='val_a', c='val_c') );
+   assertLogicallyEqual($expected, $actual);
+}

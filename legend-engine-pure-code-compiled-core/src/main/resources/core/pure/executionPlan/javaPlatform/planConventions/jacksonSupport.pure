@@ -1,0 +1,367 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::factory::*;
+import meta::external::language::java::metamodel::*;
+import meta::external::language::java::metamodel::project::*;
+import meta::external::language::java::serialization::*;
+import meta::external::language::java::transform::*;
+import meta::pure::executionPlan::engine::*;
+import meta::pure::executionPlan::engine::java::*;
+import meta::pure::graphFetch::execution::*;
+
+function meta::pure::executionPlan::engine::java::addJacksonSupport(conventions:Conventions[1]):Conventions[1]
+{
+   // For now ensure conventions agree with expected types here.  If in future we need to support other choices
+   // we would extend conventions here to be adaptive.
+   assert($conventions->pureTypeToJavaType(String,  PureOne) == javaString(),     |'Expected PURE String to be represented by '  + javaString()->typeToString());
+   assert($conventions->pureTypeToJavaType(Boolean, PureOne) == javaBoolean(),    |'Expected PURE Boolean to be represented by ' + javaBoolean()->typeToString());
+   assert($conventions->pureTypeToJavaType(Integer, PureOne) == javaLong(),       |'Expected PURE Integer to be represented by ' + javaLong()->typeToString());
+   assert($conventions->pureTypeToJavaType(Float,   PureOne) == javaDouble(),     |'Expected PURE Float to be represented by '   + javaDouble()->typeToString());
+   assert($conventions->pureTypeToJavaType(Decimal, PureOne) == javaBigDecimal(), |'Expected PURE Decimal to be represented by ' + javaBigDecimal()->typeToString());
+   assert($conventions->pureTypeToJavaType(Number,  PureOne) == javaNumber(),     |'Expected PURE Number to be represented by ' + javaNumber()->typeToString());
+
+   // TODO Use Java 8 types (LocalDate/Instant)
+   let pureDate = $conventions->className(PureDate);
+   assert($conventions->pureTypeToJavaType(StrictDate,  PureOne) == $pureDate, |'Expected PURE StrictDate to be represented by ' + $pureDate->typeToString());
+   assert($conventions->pureTypeToJavaType(DateTime,    PureOne) == $pureDate, |'Expected PURE DateTime to be represented by ' + $pureDate->typeToString());
+   assert($conventions->pureTypeToJavaType(Date,        PureOne) == $pureDate, |'Expected PURE Date to be represented by ' + $pureDate->typeToString());
+   
+   let lib = newConventionsLibrary('jackson');
+   $conventions->registerLibrary($lib);
+}
+
+function meta::pure::executionPlan::engine::java::jacksonParserGetter(conventions:Conventions[1], parser:String[1], type:meta::pure::metamodel::type::Type[1]): String[1]
+{
+   let pureDate = $conventions->className(PureDate);
+
+   if($type == String, 
+      | $parser+'.getText()', 
+      | 
+   if($type == Boolean,
+      | $parser+'.getBooleanValue()', 
+      | 
+   if($type == Integer,
+      | $parser+'.getLongValue()', 
+      | 
+   if($type == Float,
+      | $parser+'.getDoubleValue()', 
+      | 
+   if($type == Decimal,
+      | '('+$parser+'.getCurrentToken() == '+$conventions->tokenType('VALUE_STRING')+' ? new '+$conventions->codeType(javaClass('java.math.BigDecimal'))->codeToString()+'('+$parser+'.getText()) : '+$parser+'.getDecimalValue())',
+      | 
+   if($type == Number,
+      | '('+$parser+'.getCurrentToken() == '+$conventions->tokenType('VALUE_STRING')+' ? new '+$conventions->codeType(javaClass('java.math.BigDecimal'))->codeToString()+'('+$parser+'.getText()) : ('+$parser+'.getCurrentToken() == '+$conventions->tokenType('VALUE_NUMBER_INT')+' ? '+$parser+'.getLongValue() : '+$parser+'.getDoubleValue()))',
+      | 
+   if($type == StrictDate,
+      | $conventions->codeType($pureDate)->codeToString()+'.parsePureDate('+$parser+'.getText())',
+      | 
+   if($type == DateTime,
+      | $conventions->codeType($pureDate)->codeToString()+'.parsePureDate('+$parser+'.getText())',
+      | 
+   if($type == Date,
+      | $conventions->codeType($pureDate)->codeToString()+'.parsePureDate('+$parser+'.getText())',
+      | 
+   if($type->instanceOf(meta::pure::metamodel::type::Enumeration),
+      | $conventions->codeType($conventions->pureTypeToJavaType($type, PureOne))->codeToString()+'.valueOf('+$parser+'.getText())',
+      |
+   if($type->instanceOf(Unit) || $type->instanceOf(Measure),
+      | $conventions->codeType($conventions->pureTypeToJavaType($type, PureOne))->codeToString()+'.valueOf('+$parser+'.getText())',
+      | fail('Unsupported type: ' + $type.name->toOne());
+        '';
+   )))))))))));
+}
+
+function meta::pure::executionPlan::engine::java::jsonNodeGetter(conventions:Conventions[1], node:Code[1], type:meta::pure::metamodel::type::Type[1]): Code[1]
+{
+   let pureDate = $conventions->className(PureDate);
+
+   if($type == String, 
+      | $node->j_invoke('textValue', [], javaString()), 
+      | 
+   if($type == Boolean,
+      | $node->j_invoke('booleanValue', [], javaBoolean()),
+      | 
+   if($type == Integer,
+      | $node->j_invoke('longValue', [], javaLong()),
+      | 
+   if($type == Float,
+      | $node->j_invoke('doubleValue', [], javaDouble()),
+      | 
+   if($type == Decimal,
+      | j_conditional($node->j_invoke('getNodeType', [], jsonNodeType())->j_invoke('equals', jsonNodeType()->j_field('STRING', jsonNodeType())), javaBigDecimal()->j_new($node->j_invoke('textValue', [], javaString())), $node->j_invoke('decimalValue', [], javaBigDecimal())),
+      | 
+   if($type == Number,
+      | j_conditional($node->j_invoke('getNodeType', [], jsonNodeType())->j_invoke('equals', jsonNodeType()->j_field('STRING', jsonNodeType())), javaBigDecimal()->j_new($node->j_invoke('textValue', [], javaString()))->j_cast(javaNumber()), j_conditional($node->j_invoke('isDouble', [], javaBoolean())->j_eq(j_true()), $node->j_invoke('doubleValue', [], javaNumber()), $node->j_invoke('longValue', [], javaNumber()))),
+      | 
+   if($type == StrictDate,
+      | $conventions->codeType($pureDate)->j_invoke('parsePureDate', $node->j_invoke('textValue', [], javaString()), $pureDate),
+      | 
+   if($type == DateTime,
+      | $conventions->codeType($pureDate)->j_invoke('parsePureDate', $node->j_invoke('textValue', [], javaString()), $pureDate),
+      | 
+   if($type == Date,
+      | $conventions->codeType($pureDate)->j_invoke('parsePureDate', $node->j_invoke('textValue', [], javaString()), $pureDate),
+      | 
+   if($type->instanceOf(meta::pure::metamodel::type::Enumeration),
+      | $conventions->codeType($conventions->pureTypeToJavaType($type, PureOne))->j_invoke('valueOf', $node->j_invoke('textValue', [], javaString()), $conventions->pureTypeToJavaType($type, PureOne)), 
+      |
+   if($type->instanceOf(Unit) || $type->instanceOf(Measure),
+      | $conventions->codeType($conventions->pureTypeToJavaType($type, PureOne))->j_invoke('valueOf', $node->j_invoke('textValue', [], javaString()), $conventions->pureTypeToJavaType($type, PureOne)),
+      | fail('Unsupported type: ' + $type.name->toOne());
+        j_null();
+   )))))))))));
+}
+
+
+function meta::pure::executionPlan::engine::java::jacksonXmlParserGetter(conventions:Conventions[1], parser:String[1], type:meta::pure::metamodel::type::Type[1]): String[1]
+{
+   let pureDate = $conventions->className(PureDate);
+
+   if($type == String, 
+      | $parser+'.getText()', 
+      | 
+   if($type == Boolean,
+      | $conventions->codeType(javaClass('java.lang.Boolean'))->codeToString()+'.valueOf('+$parser+'.getText())',
+      | 
+   if($type == Integer,
+      | $conventions->codeType(javaClass('java.lang.Integer'))->codeToString()+'.valueOf('+$parser+'.getText())',
+      | 
+   if($type == Float,
+      | $conventions->codeType(javaClass('java.lang.Float'))->codeToString()+'.valueOf('+$parser+'.getText())',
+      | 
+   if($type == Decimal,
+      | 'new '+$conventions->codeType(javaClass('java.math.BigDecimal'))->codeToString()+'('+$parser+'.getText())',
+      | 
+   if($type == Number,
+      | ' new '+$conventions->codeType(javaClass('java.math.BigDecimal'))->codeToString()+'('+$parser+'.getText())',
+      | 
+   if($type == StrictDate,
+      | $conventions->codeType($pureDate)->codeToString()+'.parsePureDate('+$parser+'.getText())',
+      | 
+   if($type == DateTime,
+      | $conventions->codeType($pureDate)->codeToString()+'.parsePureDate('+$parser+'.getText())',
+      | 
+   if($type == Date,
+      | $conventions->codeType($pureDate)->codeToString()+'.parsePureDate('+$parser+'.getText())',
+      | 
+   if($type->instanceOf(meta::pure::metamodel::type::Enumeration),
+      | $conventions->codeType($conventions->pureTypeToJavaType($type, PureOne))->codeToString()+'.valueOf('+$parser+'.getText())',
+      |
+   if($type->instanceOf(Unit) || $type->instanceOf(Measure),
+      | $conventions->codeType($conventions->pureTypeToJavaType($type, PureOne))->codeToString()+'.valueOf('+$parser+'.getText())',
+      | fail('Unsupported type: ' + $type.name->toOne());
+        '';
+   )))))))))));
+}
+
+function meta::pure::executionPlan::engine::java::jacksonXmlParserGetter(conventions:Conventions[1], parser:Code[1], type:meta::pure::metamodel::type::Type[1]): Code[1]
+{
+  let pureDate = $conventions->className(PureDate);
+  let text     = $parser->j_invoke('getText', [], javaString());
+
+  if($type == String,
+    | $text,
+    |
+  if($type == Boolean,
+    | javaBooleanBoxed()->j_invoke('valueOf', $text, javaBoolean()),
+    |
+  if($type == Integer,
+    | javaLongBoxed()->j_invoke('valueOf', $text, javaLong()),
+    |
+  if($type == Float,
+    | javaDoubleBoxed()->j_invoke('valueOf', $text, javaDouble()),
+    |
+  if($type == Decimal,
+    | j_new(javaBigDecimal(), $text),
+    |
+  if($type == Number,
+    | j_new(javaBigDecimal(), $text),
+    |
+  if($type == StrictDate,
+    | $pureDate->j_invoke('parsePureDate', $text, $pureDate),
+    |
+  if($type == DateTime,
+    | $pureDate->j_invoke('parsePureDate', $text, $pureDate),
+    |
+  if($type == Date,
+    | $pureDate->j_invoke('parsePureDate', $text, $pureDate),
+    |
+  if($type->instanceOf(meta::pure::metamodel::type::Enumeration),
+    | $conventions->pureTypeToJavaType($type, PureOne)->j_invoke('valueOf', $text),
+    |
+  if($type->instanceOf(Unit) || $type->instanceOf(Measure),
+    | $conventions->pureTypeToJavaType($type, PureOne)->j_invoke('valueOf', $text),
+    | fail('Unsupported type: ' + $type.name->toOne());
+      j_null();
+   )))))))))));
+}
+
+function meta::pure::executionPlan::engine::java::jacksonGeneratorWrite(conventions:Conventions[1], generator:Code[1], data:Code[1], type:meta::pure::metamodel::type::Type[1], config: AlloySerializationConfig[0..1]): Code[1]
+{
+   if($type == String,
+      | $generator->j_invoke('writeString', $data, javaVoid()),
+      |
+   if($type == Boolean,
+      | $generator->j_invoke('writeBoolean', $data, javaVoid()),
+      |
+   if($type == Integer,
+      | $generator->j_invoke('writeNumber', $data, javaVoid()),
+      |
+   if($type == Float,
+      | $generator->j_invoke('writeNumber', $data, javaVoid()),
+      |
+   if($type == Decimal,
+      | $generator->j_invoke('writeString', $data->j_invoke('toPlainString', []), javaVoid()),
+      |
+   if($type == Number,
+      | j_if($data->j_instanceof(javaBigDecimal()),
+           $generator->j_invoke('writeString', $data->j_cast(javaBigDecimal())->j_invoke('toPlainString', [])),
+           $generator->j_invoke('writeNumber', $data->j_invoke('doubleValue', []))
+        ),
+      |
+   if($type == StrictDate,
+      | $generator->j_invoke('writeString', $data->j_toString(), javaVoid()),
+      |
+   if($type == DateTime,
+      | $generator->j_invoke('writeString', $data->j_toString(), javaVoid()),
+      |
+   if($type == Date,
+      | $generator->j_invoke('writeString', $data->j_toString(), javaVoid()),
+      |
+   if($type->instanceOf(Unit) || $type->instanceOf(Measure),
+      | $generator->j_invoke('writeObject', $data->j_invoke('createJsonObject', [], jsonNode()), javaVoid()),
+      |
+   if(($type->instanceOf(meta::pure::metamodel::type::Enumeration) && !$config->isEmpty() && $config.includeEnumType->isTrue()),
+      | fullyQualifiedEnumName($generator, $data, $type),
+      |
+   if($type->instanceOf(meta::pure::metamodel::type::Enumeration),
+      | $generator->j_invoke('writeString', $data->j_toString(), javaVoid()),
+      | fail('Unsupported type: ' + $type->elementToPath());
+        j_null();
+   ))))))))))));
+}
+
+function meta::pure::executionPlan::engine::java::fullyQualifiedEnumName(generator:Code[1], data:Code[1], type:meta::pure::metamodel::type::Type[1]): Code[1]
+{
+   $generator->j_invoke('writeString', j_string('')
+                ->j_invoke('concat', j_string($type->elementToPath()), javaString())
+                ->j_invoke('concat', j_string('.'), javaString())
+                ->j_invoke('concat', [$data->j_invoke('name', [], javaString())], javaString()))
+}
+
+function meta::pure::executionPlan::engine::java::jacksonTokenTypesFor(conventions:Conventions[1], type:meta::pure::metamodel::type::Type[1]): String[*]
+{
+   if($type == String, 
+      | $conventions->tokenType('VALUE_STRING'), 
+      | 
+   if($type == Boolean,
+      | [ $conventions->tokenType('VALUE_TRUE'), $conventions->tokenType('VALUE_FALSE') ], 
+      | 
+   if($type == Integer,
+      | $conventions->tokenType('VALUE_NUMBER_INT'), 
+      | 
+   if($type == Float,
+      | $conventions->tokenType('VALUE_NUMBER_FLOAT'), 
+      | 
+   if($type == Decimal || $type == Number,
+      | [ $conventions->tokenType('VALUE_STRING'), $conventions->tokenType('VALUE_NUMBER_FLOAT'), $conventions->tokenType('VALUE_NUMBER_INT') ],
+      | 
+   if($type == StrictDate,
+      | $conventions->tokenType('VALUE_STRING'), 
+      | 
+   if($type == DateTime,
+      | $conventions->tokenType('VALUE_STRING'), 
+      | 
+   if($type == Date,
+      | $conventions->tokenType('VALUE_STRING'), 
+      | 
+   if($type->instanceOf(meta::pure::metamodel::type::Enumeration),
+      | $conventions->tokenType('VALUE_STRING'),
+      |
+   if($type->instanceOf(Unit) || $type->instanceOf(Measure),
+      | $conventions->tokenType('VALUE_STRING'),
+      | fail('Unsupported type: ' + $type.name->toOne());
+        '';
+   ))))))))));
+}
+
+function meta::pure::executionPlan::engine::java::jsonNodeTypesFor(conventions:Conventions[1], type:meta::pure::metamodel::type::Type[1]): Code[*]
+{
+   if($type == String, 
+      | $conventions->nodeType('STRING'), 
+      | 
+   if($type == Boolean,
+      | $conventions->nodeType('BOOLEAN'), 
+      | 
+   if($type == Integer || $type == Float,
+      | $conventions->nodeType('NUMBER'), 
+      | 
+   if($type == Decimal || $type == Number,
+      | [ $conventions->nodeType('STRING'), $conventions->nodeType('NUMBER')],
+      | 
+   if($type == StrictDate,
+      | $conventions->nodeType('STRING'), 
+      | 
+   if($type == DateTime,
+      | $conventions->nodeType('STRING'), 
+      | 
+   if($type == Date,
+      | $conventions->nodeType('STRING'), 
+      | 
+   if($type->instanceOf(meta::pure::metamodel::type::Enumeration),
+      | $conventions->nodeType('STRING'),
+      |
+   if($type->instanceOf(Unit) || $type->instanceOf(Measure),
+      | $conventions->nodeType('STRING'),
+      | fail('Unsupported type: ' + $type.name->toOne());
+        j_null();
+   )))))))));
+}
+
+
+
+function meta::pure::executionPlan::engine::java::jsonGenerator(): meta::external::language::java::metamodel::Class[1]
+{
+   javaClass('com.fasterxml.jackson.core.JsonGenerator')
+      ->addMethod(javaMethod(javaVoid(), 'writeStartArray',  []))
+      ->addMethod(javaMethod(javaVoid(), 'writeEndArray',    []))
+      ->addMethod(javaMethod(javaVoid(), 'writeStartObject', []))
+      ->addMethod(javaMethod(javaVoid(), 'writeEndObject',   []))
+      ->addMethod(javaMethod(javaVoid(), 'writeFieldName',   javaParam(javaString(), 'x')))
+      ->addMethod(javaMethod(javaVoid(), 'writeNull',        []))
+      ->addMethod(javaMethod(javaVoid(), 'writeString',      javaParam(javaString(), 'x')))
+      ->addMethod(javaMethod(javaVoid(), 'writeNumber',      javaParam(javaLong(), 'x')));
+}
+
+function meta::pure::executionPlan::engine::java::jsonFactory():                               meta::external::language::java::metamodel::Class[1] { javaClass('com.fasterxml.jackson.core.JsonFactory'); }
+function meta::pure::executionPlan::engine::java::jsonParser():                                meta::external::language::java::metamodel::Class[1] { javaClass('com.fasterxml.jackson.core.JsonParser'); }
+function meta::pure::executionPlan::engine::java::jsonPointerBasedFilter():                    meta::external::language::java::metamodel::Class[1] { javaClass('com.fasterxml.jackson.core.filter.JsonPointerBasedFilter'); }
+function meta::pure::executionPlan::engine::java::jsonFilteringParserDelegate():               meta::external::language::java::metamodel::Class[1] { javaClass('com.fasterxml.jackson.core.filter.FilteringParserDelegate'); }
+function meta::pure::executionPlan::engine::java::jsonToken():                                 meta::external::language::java::metamodel::Class[1] { javaClass('com.fasterxml.jackson.core.JsonToken'); }
+function meta::pure::executionPlan::engine::java::objectMapper():                              meta::external::language::java::metamodel::Class[1] { javaClass('com.fasterxml.jackson.databind.ObjectMapper'); }
+function meta::pure::executionPlan::engine::java::jsonNode():                                  meta::external::language::java::metamodel::Class[1] { javaClass('com.fasterxml.jackson.databind.JsonNode'); }
+function meta::pure::executionPlan::engine::java::jsonNodeType():                              meta::external::language::java::metamodel::Class[1] { javaClass('com.fasterxml.jackson.databind.node.JsonNodeType'); }
+function meta::pure::executionPlan::engine::java::deserializationFeatureBigDecimalForFloats(): meta::external::language::java::metamodel::Class[1] { javaClass('com.fasterxml.jackson.databind.DeserializationFeature'); }
+
+function <<access.private>> meta::pure::executionPlan::engine::java::tokenType(conventions:Conventions[1], name:String[1]): String[1]
+{
+   let tokenClass = javaClass('com.fasterxml.jackson.core.JsonToken');
+   $conventions->codeType($tokenClass)->codeToString()+'.'+$name;
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::nodeType(conventions:Conventions[1], name:String[1]): Code[1]
+{
+   jsonNodeType()->j_invoke('valueOf', j_string($name), jsonNodeType());   
+}

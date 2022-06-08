@@ -1,0 +1,45 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+function <<test.Test>> meta::pure::functions::date::tests::testMonthNumberForMonth():Boolean[1]
+{
+    assertEq(1, Month.January->monthNumber());
+    assertEq(2, Month.February->monthNumber());
+    assertEq(3, Month.March->monthNumber());
+    assertEq(4, Month.April->monthNumber());
+    assertEq(5, Month.May->monthNumber());
+    assertEq(6, Month.June->monthNumber());
+    assertEq(7, Month.July->monthNumber());
+    assertEq(8, Month.August->monthNumber());
+    assertEq(9, Month.September->monthNumber());
+    assertEq(10, Month.October->monthNumber());
+    assertEq(11, Month.November->monthNumber());
+    assertEq(12, Month.December->monthNumber());
+}
+
+function <<test.Test>> meta::pure::functions::date::tests::testMonthForNumber():Boolean[1]
+{
+    assertEq(Month.January, 1->month());
+    assertEq(Month.February, 2->month());
+    assertEq(Month.March, 3->month());
+    assertEq(Month.April, 4->month());
+    assertEq(Month.May, 5->month());
+    assertEq(Month.June, 6->month());
+    assertEq(Month.July, 7->month());
+    assertEq(Month.August, 8->month());
+    assertEq(Month.September, 9->month());
+    assertEq(Month.October, 10->month());
+    assertEq(Month.November, 11->month());
+    assertEq(Month.December, 12->month());
+}

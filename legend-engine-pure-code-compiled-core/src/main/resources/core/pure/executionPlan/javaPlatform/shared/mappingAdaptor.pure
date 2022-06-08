@@ -1,0 +1,756 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::factory::*;
+import meta::external::language::java::factory::project::*;
+import meta::external::language::java::metamodel::*;
+import meta::external::language::java::metamodel::project::*;
+import meta::external::language::java::serialization::*;
+import meta::external::language::java::transform::*;
+import meta::pure::dataQuality::*;
+import meta::pure::executionPlan::*;
+import meta::pure::executionPlan::engine::java::*;
+import meta::pure::executionPlan::engine::java::graphFetch::common::*;
+import meta::pure::executionPlan::engine::java::naming::*;
+import meta::pure::executionPlan::engine::java::platform::*;
+import meta::pure::executionPlan::engine::java::typeInfo::*;
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::graphFetch::executionPlan::*;
+import meta::pure::graphFetch::routing::*;
+import meta::pure::mapping::*;
+import meta::pure::mapping::modelToModel::*;
+import meta::pure::mapping::modelToModel::inMemory::*;
+import meta::pure::metamodel::constraint::*;
+import meta::pure::milestoning::*;
+
+// TODO Merge with below
+function <<access.private>> meta::pure::executionPlan::engine::java::generateMappingApplication(tree:RoutedRootGraphFetchTree<Any>[1], context:GenerationContext[1], createConstraintChecking: Boolean[1], extensions : meta::pure::router::extension::RouterExtension[*], debug: DebugContext[1]): Project[1]
+{
+   print(if($debug.debug,|$debug.space+'generateMappingApplication\n', |''));
+   $tree->generateMappingClasses($context, $createConstraintChecking, $extensions, $debug->indent());
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::generateMappingClasses(tree:RoutedGraphFetchTree[1], context:GenerationContext[1], createConstraintChecking: Boolean[1], extensions : meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]): Project[1]
+{
+   print(if($debug.debug,|$debug.space+'generateMappingClasses\n', |''));
+
+   let mappers     = $tree.sets->cast(@InstanceSetImplementation)->map(pisi| $pisi->generateMapperClass($context, $extensions, $debug->indent()));
+   let adaptors    = $tree->map(s|$s->generateMappingAdaptor($context, $createConstraintChecking, $extensions, $debug->indent()));
+   let forSubTrees = $tree.subTrees
+       ->cast(@RoutedPropertyGraphFetchTree)
+       ->filter(st| $st.property.genericType.rawType->toOne()->instanceOf(meta::pure::metamodel::type::Class))
+       ->map(st|$st->generateMappingClasses($context, $createConstraintChecking, $extensions, $debug->indent()));
+
+   $mappers->concatenate($adaptors)->concatenate($forSubTrees)->match([
+      p0: Project[0]    | newProject(),
+      p : Project[1]    | $p,
+      ps: Project[1..*] | mergeProjects($ps)
+   ]);
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::generateMapperClass(setImplementation:InstanceSetImplementation[1], context:GenerationContext[1], extensions : meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]): Project[1]
+{
+   let conventions       = $context.conventions;
+
+   let sourceOne         = $conventions->pureTypeToJavaType(sourceClass($setImplementation, $extensions), PureOne)->cast(@meta::external::language::java::metamodel::Class);
+   let sourceMany        = $conventions->pureTypeToJavaType(sourceClass($setImplementation, $extensions), ZeroMany);
+
+   let targetOne         = $conventions->pureTypeToJavaType($setImplementation.class->toOne(), PureOne)->cast(@meta::external::language::java::metamodel::Class);
+   let targetMany        = $conventions->pureTypeToJavaType($setImplementation.class->toOne(), ZeroMany);
+   let allProperties     = $context.typeInfos->allProperties($setImplementation.class);
+   let assocProperties   = $allProperties->filter(p |$p.owner->instanceOf(Association));
+
+   let adaptorClass = $conventions->mappingAdaptorClassName($setImplementation);
+   let class = $conventions->mapperClassName($setImplementation, $extensions)
+      ->addModifiers('public')
+      ->imports(javaPackage('java.util'))
+      ->imports(javaPackage('java.util.stream'))
+      ->imports($sourceOne->cast(@meta::external::language::java::metamodel::Importable))
+      ->imports($targetOne->cast(@meta::external::language::java::metamodel::Importable))
+      ->imports($adaptorClass);
+
+   if(containsExplodeProperty($setImplementation),
+      | generateExplodeMapperClass($setImplementation, $assocProperties, $class, $conventions, $adaptorClass, $targetOne, $targetMany, $sourceOne, $sourceMany, $extensions, $debug),
+      | generateMapperClass($setImplementation, $assocProperties, $class, $conventions, $adaptorClass, $targetOne, $targetMany, $sourceOne, $sourceMany, $extensions, $debug)
+   );
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::generateMapperClass(setImplementation:InstanceSetImplementation[1],
+                                                                            assocProperties:Property<Nil, Any|*>[*],
+                                                                            class:meta::external::language::java::metamodel::Class[1],
+                                                                            conventions:Conventions[1],
+                                                                            adaptorClass:meta::external::language::java::metamodel::Class[1],
+                                                                            targetOne:meta::external::language::java::metamodel::Class[1],
+                                                                            targetMany:meta::external::language::java::metamodel::Type[1],
+                                                                            sourceOne:meta::external::language::java::metamodel::Class[1],
+                                                                            sourceMany:meta::external::language::java::metamodel::Type[1],
+                                                                            extensions : meta::pure::router::extension::RouterExtension[*],
+                                                                            debug:DebugContext[1]
+                                                                           ):Project[1]
+{
+    $assocProperties->fold(
+            {prop, proj | mergeProjects([$proj, $proj->getClass($class)->toOne()
+                                      ->addMapMethods($prop, $conventions, $setImplementation, $adaptorClass, $targetOne, $targetMany, $sourceOne, $sourceMany, $extensions, $debug)
+                                       ])},
+            $class->addMapMethods([], $conventions, $setImplementation, $adaptorClass, $targetOne, $targetMany, $sourceOne, $sourceMany, $extensions, $debug)
+
+   );
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::addMapMethods(class:meta::external::language::java::metamodel::Class[1],
+                                                                      assocProperty:Property<Nil, Any|*>[0..1],
+                                                                      conventions:Conventions[1],
+                                                                      setImplementation:InstanceSetImplementation[1],
+                                                                      adaptorClass:meta::external::language::java::metamodel::Class[1],
+                                                                      targetOne:meta::external::language::java::metamodel::Class[1],
+                                                                      targetMany:meta::external::language::java::metamodel::Type[1],
+                                                                      sourceOne:meta::external::language::java::metamodel::Class[1],
+                                                                      sourceMany:meta::external::language::java::metamodel::Type[1],
+                                                                      extensions : meta::pure::router::extension::RouterExtension[*],
+                                                                      debug:DebugContext[1]
+                                                                      ):meta::external::language::java::metamodel::project::Project[1]
+{
+   let p1 = $class->addMapOneMethod($assocProperty, $conventions, $setImplementation, $adaptorClass, $targetOne, $targetMany, $sourceOne, $sourceMany, $extensions, $debug);
+   let p2 = $class->addMapManyMethod($assocProperty, $conventions, $targetOne, $targetMany, $sourceOne, $sourceMany);
+   
+   mergeProjects([$p1,$p2]);
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::addMapOneMethod(class:meta::external::language::java::metamodel::Class[1],
+                                                                        assocProperty:Property<Nil, Any|*>[0..1],
+                                                                        conventions:Conventions[1],
+                                                                        setImplementation:InstanceSetImplementation[1],
+                                                                        adaptorClass:meta::external::language::java::metamodel::Class[1],
+                                                                        targetOne:meta::external::language::java::metamodel::Class[1],
+                                                                        targetMany:meta::external::language::java::metamodel::Type[1],
+                                                                        sourceOne:meta::external::language::java::metamodel::Class[1],
+                                                                        sourceMany:meta::external::language::java::metamodel::Type[1],
+                                                                        extensions : meta::pure::router::extension::RouterExtension[*],
+                                                                        debug:DebugContext[1]
+                                                                        ):meta::external::language::java::metamodel::project::Project[1]
+{
+   let inOne  = j_parameter($sourceOne, $setImplementation->variableName($extensions));
+   let x      = j_parameter($sourceOne, 'x');
+   let parent = $assocProperty->map(p|j_parameter($conventions->className($p->functionReturnType().rawType->toOne()), 'parent'));
+   let newOne = $adaptorClass->j_new($inOne->concatenate($parent));
+
+
+   let methodBody = $setImplementation->match(
+                           $extensions.plan_javaRuntime_mappingAdaptor_addMapOneMethod->map(x|$x->eval($inOne, $newOne, $conventions, $debug))->concatenate(
+                              [
+                              {pisi: PureInstanceSetImplementation[1] | 
+                                 if($pisi.filter->isEmpty(),
+                                    | j_return($newOne),
+                                    {|
+                                       print(if($debug.debug,|$debug.space+'filter generation\n', |''));
+                                       let filterExpr = $pisi.filter.expressionSequence->at(0)->evaluateAndDeactivate()->generateJava($conventions, $debug->indent());
+                                       j_return(
+                                          j_conditional($filterExpr,
+                                             $newOne,
+                                             j_null()
+                                          )
+                                       );
+                                    }
+                                 );                  
+                              },
+                              {a: Any[*] | 
+                                 j_return($newOne);
+                              }               
+                           ])->toOneMany()
+         );
+
+   let final = $class->addMethod(
+      javaMethod(['public', 'static'], $targetOne, 'mapOne', $inOne->concatenate($parent)->cast(@meta::external::language::java::metamodel::Parameter),
+         $methodBody->codeToString($class)
+      )
+   );
+
+   mergeProjects(
+      newProject()->addClass($final)
+         ->concatenate($methodBody->dependencies()->resolveAndGetProjects())
+         ->toOneMany()    
+   );
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::addMapManyMethod(class:meta::external::language::java::metamodel::Class[1],
+                                                                         assocProperty:Property<Nil, Any|*>[0..1],
+                                                                         conventions:Conventions[1],
+                                                                         targetOne:meta::external::language::java::metamodel::Class[1],
+                                                                         targetMany:meta::external::language::java::metamodel::Type[1],
+                                                                         sourceOne:meta::external::language::java::metamodel::Class[1],
+                                                                         sourceMany:meta::external::language::java::metamodel::Type[1]
+                                                                         ):meta::external::language::java::metamodel::project::Project[1]
+{
+   let inMany = j_parameter($sourceMany, 'in');
+   let x      = j_parameter($sourceOne, 'x');
+   let parent = $assocProperty->map(p|j_parameter($conventions->className($p->functionReturnType().rawType->toOne()), 'parent'));
+   
+   
+   
+   let methodBody = j_conditional($inMany->j_eq(j_null()),
+                      javaCollections()->j_invoke($targetOne, 'emptyList', [], $targetMany),
+                      $inMany->j_streamOf()->js_map(j_lambda($x, $class->j_invoke('mapOne', $x->concatenate($parent), $targetOne)))->js_resolve($targetMany)
+                    )->j_return();  
+   
+   
+                       
+   let final = $class->addMethod(
+                          javaMethod(['public', 'static'], $targetMany, 'mapMany', $inMany->concatenate($parent)->cast(@meta::external::language::java::metamodel::Parameter),
+                                     $methodBody->codeToString($class)));
+  
+   mergeProjects(
+      newProject()->addClass($final)
+         ->concatenate($methodBody->dependencies()->resolveAndGetProjects())
+         ->toOneMany()    
+   );
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::variableName(setImplementation:InstanceSetImplementation[1], extensions : meta::pure::router::extension::RouterExtension[*]): String[1]
+{
+   $setImplementation->toOne()->match(
+            $extensions.java_mappingAdaptor->concatenate([
+                  a:Any[*] | 'src'
+               ])->toOneMany()
+   );
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::generateMappingAdaptor(tree:RoutedGraphFetchTree[1], context:GenerationContext[1], createConstraintChecking: Boolean[1], extensions : meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]): Project[1]
+{
+   print(if($debug.debug,|$debug.space+'generateMappingAdaptor: '+$tree.sets.id->joinStrings()+'\n', |''));
+   let conventions             = $context.conventions;
+   let setImplementations      = $tree.sets->cast(@InstanceSetImplementation);
+   let class                   = $setImplementations->at(0).class;
+   let iface                   = $conventions->className($class);
+   let allProperties           = $context.typeInfos->allProperties($class);
+   let allQualifiedProperties  = $context.typeInfos->allQualifiedProperties($class);
+   let milestonedProperties    = $allQualifiedProperties->filter(qp | $qp->meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype());
+   let nonMilestonedProperties = $allQualifiedProperties->filter(qp | !$qp->meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype());
+   let assocProperties         = $allProperties->filter(p |$p.owner->instanceOf(Association));
+   let propertyClasses         = $allProperties->map(p |$p->functionReturnType().rawType)->filter(t|$t->instanceOf(meta::pure::metamodel::type::Class))->cast(@meta::pure::metamodel::type::Class<Any>)->map(c| $conventions->className($c));
+
+   
+   let subMappers = $tree.subTrees->cast(@RoutedGraphFetchTree).sets->map(s|$s->match([i:InstanceSetImplementation[1] | $conventions->mapperClassName($i, $extensions)->concatenate($conventions->className($i.class)),
+                                                                                       o:OperationSetImplementation[1]| $conventions->mapperClassName($o, $extensions)->concatenate($conventions->className($o.class))]));
+
+   let allAdaptorClasses = $setImplementations->map(setImplementation|
+                                                   let adapted    = $conventions->className(sourceClass($setImplementation, $extensions));
+                                                   print(if($debug.debug,|$debug.space+'adapting '+$adapted->typeToString()+' to '+$iface->typeToString()+'\n', |''));                                                   
+   
+                                                   let varName = $setImplementation->toOne()->variableName($extensions);
+                                                   let constrainedVarName = 'constrainedSrc';
+
+                                                   let class = $conventions->mappingAdaptorClassName($setImplementation)
+                                                      ->addModifiers('public')
+                                                      ->implements($iface)
+
+                                                      ->usingKnownPackages($conventions->knownPackages())
+                                                      ->imports($conventions->standardImports())
+                                                      ->imports($conventions->constrainedImports())
+                                                      ->imports($iface)
+                                                      ->imports($adapted)
+                                                      ->imports($subMappers)
+                                                      ->imports($propertyClasses)
+                                                      ->addField(javaField('private', $adapted, $varName));
+                                                    
+                                                   if (containsExplodeProperty($setImplementation),
+                                                      |generateExplodeMappingAdaptor($setImplementation, $tree, $class, $assocProperties, $conventions, $adapted, $varName, $allProperties, $milestonedProperties, $nonMilestonedProperties, $context, $extensions, $debug),
+                                                      |let withAssocs      = $assocProperties->fold(
+                                                          {p, c|
+                                                             let pType        = $p->functionReturnType().rawType->toOne();
+                                                             let pJavaType    = $conventions->pureTypeToJavaType($p);
+                                                             let pElementType = if(isJavaList($pJavaType), |elementTypeOfJavaList($pJavaType), |$pJavaType);
+                                                             let pName        = $p.name->toOne();
+
+
+                                                             $c ->addField(
+                                                                   javaField('private', $pJavaType, '_'+$p.name->toOne())
+                                                                )
+                                                                ->addField(
+                                                                   javaField('private', javaBoolean(), '_use_'+$p.name->toOne(), 'false')
+                                                                )
+                                                                ->addConstructor(
+                                                                   javaConstructor('public', [ javaParam($adapted, $varName), javaParam($pElementType, $pName->toOne())],
+                                                                       'this.'+$varName+' = '+$varName+';\n' +
+                                                                       'this._'+$pName+' = '+if(isJavaList($pJavaType), |$conventions->codeType(javaType('java.util.Collections'))->codeToString($c)+'.singletonList('+$pName+')', |$pName)+';\n' +
+                                                                       'this._use_'+$pName+' = true;'
+                                                                   )
+                                                                );
+                                                          },
+                                                          $class
+                                                       );
+
+                                                   let methods = $allProperties->map(p| $p->generateMappingAdaptorPropertyGetter($setImplementation, $tree, $class, $conventions, $extensions, $debug->indent()));
+                                                   let methodsForMilestonedProperties = if($setImplementation->instanceOf(PureInstanceSetImplementation),
+                                                                                           | $withAssocs->createGeneratedMilestonedPropertiesForClass($milestonedProperties, $varName, $setImplementation->cast(@PureInstanceSetImplementation), $context, $extensions, $debug->indent()),
+                                                                                           | []);
+                                                    
+                                                    let alloyStoreObjectReferenceMethods = $withAssocs->createAlloyStoreObjectReferenceMethodsForClass($context, $debug->indent());
+
+                                                       let common = newProject()->addClass(
+                                                          $withAssocs
+                                                             ->addConstructor(
+                                                                javaConstructor('public', javaParam($adapted, $varName),
+                                                                   'this.'+$varName+' = '+$varName+';'
+                                                                )
+                                                             )
+                                                       );
+
+                                                       mergeProjects(
+                                                          $common
+                                                             ->concatenate($methods)
+                                                             ->concatenate(if($createConstraintChecking,|$withAssocs->createConstraintCheckingForClass($setImplementation.class, $context, $debug),|[]))
+                                                             ->concatenate($withAssocs->createQualifiedPropertiesForClass($nonMilestonedProperties, $context, $debug))
+                                                             ->concatenate($methodsForMilestonedProperties)
+                                                             ->concatenate($alloyStoreObjectReferenceMethods)
+                                                             ->toOneMany()
+                                                       );
+                                                   );
+   )->toOneMany()->mergeProjects();
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::generateMappingAdaptorPropertyGetter(p:AbstractProperty<Any>[1], setImplementation:InstanceSetImplementation[1], tree:RoutedGraphFetchTree[1], class:meta::external::language::java::metamodel::Class[1], conventions:Conventions[1], extensions : meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]): Project[1]
+{
+   print(if($debug.debug,|$debug.space+'generateMappingAdaptorPropertyGetter: \''+$p.name->toOne()+'\'\n', |''));
+
+   assert($setImplementation->match([pisi:PureInstanceSetImplementation[1] | $pisi.srcClass->isNotEmpty() && $pisi.srcClass->toOne()->instanceOf(meta::pure::metamodel::type::Class), a:Any[1]|true]), 'Pure mapping does not have a class as ~src for root of tree');
+   
+   let unmilestoned  = if($p->isEdgePointProperty(), |$p->undoMilestoningTransform(), |[]);
+   let subTrees      = $tree.subTrees->cast(@RoutedPropertyGraphFetchTree)->filter(pgft| $pgft.property == $p || ($pgft.property.name == $unmilestoned.name && $pgft.property->hasGeneratedMilestoningPropertyStereotype()));
+   let setIds   = $subTrees.sets.id;
+
+   let pms = $setImplementation.propertyMappings->filter(pm|$pm.property == $p);
+   let propertyMappings = $pms->map(pm|let resolvedSetIds = $setImplementation.parent.classMappingById($pm.targetSetImplementationId)->meta::pure::router::routing::resolveOperation($setImplementation.parent).id;
+                                       if($resolvedSetIds->size() > 1,
+                                          |$resolvedSetIds->map(rsi | ^$pm(targetSetImplementationId = $rsi)),
+                                          |$pm);)->filter(pm|($pm.targetSetImplementationId == '' || $pm.targetSetImplementationId->in($setIds)));
+
+   let jThis         = j_this($class);
+   let returnType    = $conventions->pureTypeToJavaType($p);
+
+   let assocCheck = if($p.owner->instanceOf(Association),
+                       {|
+                          let pName = $p.name->toOne();
+                          let use   = $jThis->j_field('_use_'+$pName, javaBoolean());
+                          let value = $jThis->j_field('_'+$pName, $returnType);
+                          j_if($use,
+                             $value->j_return()
+                          );
+                       },
+                       | []
+                    );
+   let implicitMultiplicityCheckRequired = $p->functionReturnType().rawType->toOne()->instanceOf(meta::pure::metamodel::type::Class);
+   let propertyMultiplicity              = $p.multiplicity;
+
+   let body = $assocCheck->concatenate(      
+      if($propertyMappings->isEmpty() && $p.owner->instanceOf(meta::pure::metamodel::type::Class) && $setImplementation->isNoMappingPassThru($p),
+         {| 
+            let sourceProperty = $setImplementation->cast(@PureInstanceSetImplementation)->noMappingPassThruSourceProperty($p)->toOne();
+            let sourceType     = $conventions->pureTypeToJavaType($sourceProperty);
+            let callGetter     = $jThis->j_field('src')->j_invoke($conventions->getterName($sourceProperty), [], $sourceType);
+         
+            if($returnType == $sourceType,
+               | $callGetter,
+               |
+            if(isJavaList($returnType),
+               | $callGetter->j_listOf($returnType),
+               | $callGetter->j_cast($returnType)
+            ))->j_return();
+         },
+         | 
+      if($propertyMappings->isEmpty() && $p.owner->instanceOf(meta::pure::metamodel::type::Class) && $setImplementation->isNoMappingDefaultToEmpty($p),
+         {| 
+            if(isJavaList($returnType),
+               | javaCollections()->j_invoke($returnType->elementType(), 'emptyList', [], $returnType),
+               | j_null($returnType)
+            )->j_return();
+         },
+         | 
+      if($propertyMappings->isEmpty(),
+         | javaUnsupportedOperationException()->j_new(j_string('No mapping for property \'' + $p.name->toOne() +'\''))->j_throw(),
+         | 
+      if($subTrees->isEmpty(),
+         | javaUnsupportedOperationException()->j_new(j_string('Unimplemented as not requested \'' + $p.name->toOne() +'\''))->j_throw(),
+         | 
+      if($propertyMappings->size() == 1,
+         {|
+            let code        = $propertyMappings->at(0)->generatePropertyMapping($setImplementation, $tree, $class, $conventions, $extensions, $debug->indent());
+            let updatedCode = if($returnType == $code.type,
+                                 |$code,
+                                 |
+                              if(isJavaList($returnType) && ($returnType->elementTypeOfJavaList() == $code.type->toBoxed()),
+                                 |$code->j_listOf($returnType),
+                                 |
+                              if(isJavaList($returnType),
+                                 |$code->j_listOf($returnType),
+                                 |$code->j_cast($returnType)
+                              )));
+            
+            let codeWithMultiplicityCast = if($implicitMultiplicityCheckRequired,
+                                              |if($propertyMultiplicity->isToOne(),
+                                                  | $conventions->className(meta::pure::executionPlan::engine::Library)->j_invoke('toOne', $updatedCode, $returnType),
+                                                  |
+                                                  if($propertyMultiplicity->isZeroOne(),
+                                                     | $conventions->className(meta::pure::executionPlan::engine::Library)->j_invoke('first', $updatedCode, $returnType),
+                                                     | $updatedCode)),
+                                              |$updatedCode);
+            $codeWithMultiplicityCast->j_return();
+         },
+         {| // Union
+            let mappings            = $propertyMappings->map(propertyMapping| $propertyMapping->generatePropertyMapping($setImplementation, $tree, $class, $conventions, $extensions, $debug->indent()));
+            let streamType          = if($returnType->isJavaList(), |javaStream($returnType->elementTypeOfJavaList()), |javaStream($returnType));                                                                                        
+            let indexedMethodBodies = $mappings->size()->range()->zip($mappings);
+            let declaresAndStreams  = $indexedMethodBodies->map(
+               {p| 
+                  let sVar    = j_variable($p.second.type, 'u'+$p.first->toString());
+                  pair(
+                     $sVar->j_declare($p.second),
+                     $sVar->j_streamOf()->j_cast($streamType)
+                  );
+               }
+            );
+            let mergedResult              = javaStream()->j_invoke('of', $declaresAndStreams.second, javaStream($streamType))
+                                                        ->js_flatMap(j_identity($streamType))
+                                                        ->js_resolve($returnType);
+            let codeWithMultiplicityCast  = if($implicitMultiplicityCheckRequired,
+                                               |if($propertyMultiplicity->isToOne(),
+                                                   | $conventions->className(meta::pure::executionPlan::engine::Library)->j_invoke('toOne', $mergedResult, $returnType),
+                                                   |
+                                                   if($propertyMultiplicity->isZeroOne(),
+                                                      | $conventions->className(meta::pure::executionPlan::engine::Library)->j_invoke('first', $mergedResult, $returnType),
+                                                      | $mergedResult)),
+                                               |$mergedResult);
+            let returnStatement           = $codeWithMultiplicityCast->j_return();
+            [$declaresAndStreams.first->concatenate($returnStatement)];
+         }
+      )))))
+   );
+
+   let method = javaMethod('public', $returnType, $conventions->getterName($p), $body)->annotate(^meta::external::language::java::metamodel::annotations::override::Override());
+
+   mergeProjects(
+      newProject()->addClass(^$class(methods=$method))
+         ->concatenate($body->dependencies()->resolveAndGetProjects())
+         ->toOneMany()
+   );
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::generatePropertyMapping(propertyMapping:PropertyMapping[1], setImplementation:InstanceSetImplementation[1], tree:RoutedGraphFetchTree[1], class:meta::external::language::java::metamodel::Class[1], conventions:Conventions[1], extensions : meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]): Code[1]
+{
+   print(if($debug.debug,|$debug.space+'generatePropertyMapping: \''+$propertyMapping.property.name->toOne()+'\'\n', |''));
+
+   let jThis = j_this($class);
+
+   if($propertyMapping->isExplodePropertyMapping(),
+      |$jThis->j_field($propertyMapping.property.name->toOne() +'List')->j_invoke('get', $jThis->j_field('index', javaInt())),
+      {|
+         let expression = $propertyMapping->match($extensions.plan_javaRuntime_mappingAdaptor_generatePropertyMapping1->map(e|$e->eval($conventions, $debug))->concatenate([
+            ppm  : PurePropertyMapping[1]                       | $ppm.transform.expressionSequence->at(0)->evaluateAndDeactivate()->generateJava($conventions, $debug->indent())
+         ])->toOneMany());
+
+         let transformer = $propertyMapping->map(pm| $pm->match($extensions.plan_javaRuntime_mappingAdaptor_generatePropertyMapping2->concatenate([
+                                                                     ppm : PurePropertyMapping[1]     | $ppm.transformer,
+                                                                     fdpm: Any[1]                     | []
+                                                                  ])->toOneMany()
+                                                               )
+                                             );
+         assert($transformer->size() <= 1, |'Not handling multiple transforms at present');
+
+         let targetSetId = $propertyMapping.targetSetImplementationId->filter(id|$id != '');
+         let subTreeTargetSet = $tree.subTrees->cast(@RoutedGraphFetchTree)->map(s|$s.sets)->filter(s|$s.id == $targetSetId);
+
+         let transformed = if($transformer->isEmpty(),
+                              |$expression,
+                              |$expression->applyTransformer($transformer->toOne(), $setImplementation, $conventions, $extensions, $debug->indent())
+                           );
+         
+         if($subTreeTargetSet->isEmpty(),
+            |$transformed,
+            {|
+               let pisi          = $subTreeTargetSet->cast(@InstanceSetImplementation)->toOne();
+               let mapperClass   = $conventions->mapperClassName($pisi, $extensions);
+               let isAssociation = $propertyMapping.property.owner->instanceOf(Association);
+               let mapperArgs    = $transformed->concatenate(if($isAssociation, |$jThis, |[]));
+               let resultOne     = $conventions->pureTypeToJavaType($subTreeTargetSet.class->toOne(), PureOne)->cast(@meta::external::language::java::metamodel::Class);
+               let resultMany    = $conventions->pureTypeToJavaType($subTreeTargetSet.class->toOne(), ZeroMany);
+            
+               if(isJavaList($transformed.type),
+                  | $mapperClass->j_invoke('mapMany', $mapperArgs, $resultMany),
+                  |
+               if(containsExplodeProperty($pisi),
+                  | j_conditional($transformed->j_eq(j_null()), javaCollections()->j_invoke($resultOne, 'emptyList', [], $resultMany), $mapperClass->j_invoke('mapOne', $mapperArgs, $resultMany)),
+                  | j_conditional($transformed->j_eq(j_null()), j_null(), $mapperClass->j_invoke('mapOne', $mapperArgs, $resultOne))
+               ));
+            }
+         );
+      }
+   );
+
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::applyTransformer(expression:Code[1], transformer:ValueTransformer<Any>[1], setImplementation:InstanceSetImplementation[1], conventions:Conventions[1], extensions : meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]):Code[1]
+{
+   print(if($debug.debug,|$debug.space+'applyTransformer\n', |''));
+
+   let transformerClass = $transformer->generateTransformer($setImplementation, $conventions, $extensions, $debug->indent());
+
+   if($expression.type->isJavaList(),
+      | $expression->j_streamOf()->js_map($transformerClass->j_methodReference('toDomainValue'))->js_resolve(javaList($conventions->enumType($transformer))),
+      | $transformerClass->j_invoke('toDomainValue', $expression)
+   )
+      ->dependsOn(newDependency($transformerClass->typeToString(), $transformerClass));
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::generateTransformer(transformer: ValueTransformer<Any>[1], setImplementation:SetImplementation[1], conventions:Conventions[1], extensions : meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]): meta::external::language::java::metamodel::Class[1]
+{
+   let em = $transformer->cast(@EnumerationMapping<Any>);
+   print(if($debug.debug,|$debug.space+'generateTransformer: \''+$em.name->toOne()+'\'\n', |''));
+
+   assert($transformer->instanceOf(EnumerationMapping), |'Unsupported transformer type: ' + $transformer->type()->elementToPath());
+
+   let enumType     = $conventions->enumType($transformer);
+   let mapType      = javaMap(javaObject(), $enumType);
+
+   let class     = $conventions->enumerationMapperClassName($setImplementation, $em, $extensions);
+   let fValues   = javaField(['private', 'static', 'final'], $mapType, 'values', 'initValues()');
+
+   let values    = j_variable($mapType, 'values');
+   let addValues = $em.enumValueMappings->map(
+                      {evm|
+                         let codes = $evm.sourceValues->map(sv|^InstanceValue(genericType=^GenericType(rawType=$sv->type()), multiplicity=PureOne, values=$sv)->evaluateAndDeactivate()->generateJava($conventions, $debug->indent()));
+                         $codes->map(sv|$values->j_invoke('put', [$sv, $enumType->j_field($evm.enum.name)]));
+                      }
+                   );
+   let initCode  = j_block($values->j_declare(javaTreeMap(javaObject(), $enumType)->j_new([]))->concatenate($addValues)->concatenate($values->j_return()));
+
+
+   let in                = j_parameter(javaObject(), 'in');
+   let toDomainValueCode = j_if($in->j_eq(j_null()),
+                              j_null()->j_return(),
+                           j_if($class->j_field($fValues)->j_invoke('containsKey', $in),
+                              $class->j_field($fValues)->j_invoke('get', $in)->j_return(),
+                              javaIllegalArgumentException()->j_new(j_string('Unmapped value: ')->j_plus($in))->j_throw()
+                           ));
+                              
+   javaClass('public', $class, $fValues, 
+             [
+                pair(javaMethod(['private', 'static'], $mapType, 'initValues', []),     $initCode),
+                pair(javaMethod(['public', 'static'],  $enumType,'toDomainValue', $in), $toDomainValueCode)
+             ]);
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::enumType(conventions:Conventions[1], transformer: ValueTransformer<Any>[1]): meta::external::language::java::metamodel::Class[1]
+{
+   $conventions->className($transformer->cast(@EnumerationMapping<Any>).enumeration);
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::isExplodePropertyMapping(propertyMapping:PropertyMapping[1]): Boolean[1]
+{
+   if($propertyMapping->toOne()->instanceOf(PurePropertyMapping),
+      |let pm = $propertyMapping->cast(@PurePropertyMapping); $pm.explodeProperty->isTrue();,
+      |false);
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::getExplodeProperties(setImplementation:InstanceSetImplementation[1]): Property<Nil, Any|*>[*]
+{
+   $setImplementation.propertyMappings->filter(pm|$pm->isExplodePropertyMapping())->map(m|$m.property);
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::containsExplodeProperty(setImplementation:InstanceSetImplementation[1]): Boolean[1]
+{
+   getExplodeProperties($setImplementation)->size() > 0;
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::addExplodeTargetField(class:meta::external::language::java::metamodel::Class[1], setImplementation:InstanceSetImplementation[1], conventions:Conventions[1]): meta::external::language::java::metamodel::Class[1]
+{
+   let fieldsToAdd = getExplodeProperties($setImplementation)->map(property|javaField('private', pureTypeToJavaType($conventions, $property.genericType, ZeroMany), $property.name->toOne() + 'List'););
+   $class->addFields($fieldsToAdd)
+         ->addField(javaField('private', javaInt(), 'index'));
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::explodedPropertyParameters(setImplementation:InstanceSetImplementation[1]): String[1]
+{
+   getExplodeProperties($setImplementation)->map(property|'this.'+$property.name->toOne()+'List = '+$property.name->toOne() +'List;')->joinStrings('\n');
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::generateExplodePropertyParams(setImplementation:InstanceSetImplementation[1], conventions:Conventions[1]): meta::external::language::java::metamodel::Parameter[*]
+{
+   getExplodeProperties($setImplementation)->map(property|javaParam(pureTypeToJavaType($conventions, $property.genericType.rawType->toOne(), ZeroMany), $property.name->toOne() + 'List'))
+                                           ->concatenate([javaParam(javaInt(), 'index')]);
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::generateExplodeMapperClass(setImplementation:InstanceSetImplementation[1],
+                                                                                   assocProperties:Property<Nil, Any|*>[*],
+                                                                                   class:meta::external::language::java::metamodel::Class[1],
+                                                                                   conventions:Conventions[1],
+                                                                                   adaptorClass:meta::external::language::java::metamodel::Class[1],
+                                                                                   targetOne:meta::external::language::java::metamodel::Class[1],
+                                                                                   targetMany:meta::external::language::java::metamodel::Type[1],
+                                                                                   sourceOne:meta::external::language::java::metamodel::Class[1],
+                                                                                   sourceMany:meta::external::language::java::metamodel::Type[1],
+                                                                                   extensions : meta::pure::router::extension::RouterExtension[*],
+                                                                                   debug:DebugContext[1]):Project[1]
+{
+   let srcOneVar  = javaParam($sourceOne, $setImplementation->variableName($extensions));
+   let srcManyVar = javaParam($sourceMany, 'in');
+
+   newProject()->addClass($class
+                          ->addMethods(
+                             [
+                                javaMethod(['public', 'static'], $targetMany, 'mapOne', [ $srcOneVar ],
+                                           generateExplodeMapOne($setImplementation, $adaptorClass, $srcOneVar, [], $conventions, $class, $debug)),
+                                javaMethod(['public', 'static'], $targetMany, 'mapMany', [ $srcManyVar ],
+                                           j_conditional(j_parameter($srcManyVar)->j_eq(j_null()),
+                                                        javaCollections()->j_invoke($targetOne, 'emptyList', [], $targetMany),
+                                                        j_parameter($srcManyVar)->j_streamOf()->js_map($class->j_methodReference('mapOne', javaFunctionType($sourceOne, $targetMany)))
+                                                                                 ->j_invoke('collect', j_invoke(javaCollectors(), 'toList', [], javaCollector()), $targetMany))->j_return()->codeToString($class))
+                             ]
+                          )
+                          ->addMethods(
+                             $assocProperties->map(
+                                {p|
+                                   let parentJavaVar = javaParam($conventions->className($p->functionReturnType().rawType->toOne()), 'parent');
+                                   let lambdaParam = j_parameter(javaParam($sourceOne, 'x'));
+                                   [
+                                      javaMethod(['public', 'static'], $targetOne, 'mapOne', [ $srcOneVar, $parentJavaVar ],
+                                                 generateExplodeMapOne($setImplementation, $adaptorClass, $srcOneVar, $parentJavaVar, $conventions, $class, $debug)),
+                                      javaMethod(['public', 'static'], $targetMany, 'mapMany', [ $srcManyVar, $parentJavaVar ],
+                                                 j_conditional(j_parameter($srcManyVar)->j_eq(j_null()),
+                                                        javaCollections()->j_invoke($targetOne, 'emptyList', [], $targetMany),
+                                                        j_parameter($srcManyVar)->j_streamOf()->js_map(j_lambda($lambdaParam, $class->j_invoke('mapOne', [$lambdaParam, j_parameter($parentJavaVar)], $targetMany)))
+                                                                                 ->j_invoke('collect', j_invoke(javaCollectors(), 'toList', [], javaCollector()), $targetMany))->j_return()->codeToString($class))
+                                   ];
+                                }
+                             )
+                          )
+   );
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::generateExplodeMappingAdaptor(setImplementation:InstanceSetImplementation[1],
+                                                                                      tree:RoutedGraphFetchTree[1],
+                                                                                      preImportClass:meta::external::language::java::metamodel::Class[1],
+                                                                                      assocProperties:Property<Nil, Any|*>[*],
+                                                                                      conventions:Conventions[1],
+                                                                                      adapted:meta::external::language::java::metamodel::Class[1],
+                                                                                      varName:String[1],
+                                                                                      allProperties:Property<Nil, Any|*>[*],
+                                                                                      milestonedProperties:QualifiedProperty<Any>[*],
+                                                                                      nonMilestonedProperties:QualifiedProperty<Any>[*],
+                                                                                      context:GenerationContext[1],
+                                                                                      extensions : meta::pure::router::extension::RouterExtension[*],
+                                                                                      debug:DebugContext[1]):Project[1]
+{
+   let class = $preImportClass->addExplodeTargetField($setImplementation, $conventions);
+   let classConventions = $conventions;
+
+   let withAssocs      = $assocProperties->fold(
+      {p, c|
+         let pType        = $p->functionReturnType().rawType->toOne();
+         let pJavaType    = $conventions->pureTypeToJavaType($p);
+         let pElementType = if(isJavaList($pJavaType), |elementTypeOfJavaList($pJavaType), |$pJavaType);
+         let pName        = $p.name->toOne();
+
+
+         $c ->addField(
+            javaField('private', $pJavaType, '_'+$p.name->toOne())
+         )
+         ->addField(
+            javaField('private', javaBoolean(), '_use_'+$p.name->toOne(), 'false')
+         )
+         ->addConstructor(
+            javaConstructor('public', [ javaParam($adapted, $varName), javaParam($pElementType, $pName->toOne())]->concatenate(generateExplodePropertyParams($setImplementation, $conventions)),
+                            'this.'+$varName+' = '+$varName+';\n' +
+                            'this._'+$pName+' = '+if(isJavaList($pJavaType), |$classConventions->codeType(javaType('java.util.Collections'))->codeToString($c)+'.singletonList('+$pName+')', |$pName)+';\n' +
+                            'this._use_'+$pName+' = true;' +
+                            $setImplementation->explodedPropertyParameters() +
+                            'this.index = index;'
+                )
+         );
+      },
+      $class
+   );
+
+   let methods = $allProperties->map(p| $p->generateMappingAdaptorPropertyGetter($setImplementation, $tree, $class, $classConventions, $extensions, $debug->indent()));
+   let methodsForMilestonedProperties = if($setImplementation->instanceOf(PureInstanceSetImplementation),
+                                           | $withAssocs->createGeneratedMilestonedPropertiesForClass($milestonedProperties, $varName, $setImplementation->cast(@PureInstanceSetImplementation), $context, $extensions, $debug),
+                                           | []);
+   let alloyStoreObjectReferenceMethods = $withAssocs->createAlloyStoreObjectReferenceMethodsForClass($context, $debug->indent());
+
+   let common = newProject()->addClass(
+      $withAssocs
+      ->addConstructor(
+         javaConstructor('public', [javaParam($adapted, $varName)]->concatenate(generateExplodePropertyParams($setImplementation, $conventions)),
+         'this.'+$varName+' = '+$varName+';\n' +
+         $setImplementation->explodedPropertyParameters() +
+         'this.index = index;'
+         )
+      )
+   );
+
+   mergeProjects(
+      $common
+      ->concatenate($methods)
+      ->concatenate($withAssocs->createConstraintCheckingForClass($setImplementation.class, $context, $debug))
+      ->concatenate($withAssocs->createQualifiedPropertiesForClass($nonMilestonedProperties, $context, $debug))
+      ->concatenate($methodsForMilestonedProperties)
+      ->concatenate($alloyStoreObjectReferenceMethods)
+      ->toOneMany()
+   );
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::generateExplodeMapOne(setImplementation:InstanceSetImplementation[1], adaptorClass:meta::external::language::java::metamodel::Class[1], srcVar:meta::external::language::java::metamodel::Parameter[1], parentVar:meta::external::language::java::metamodel::Parameter[0..1], conventions:Conventions[1], srcClass:meta::external::language::java::metamodel::Class[1], debug:DebugContext[1]): Code[*]
+{
+   let explosionPropertyMappings = $setImplementation.propertyMappings->filter(pm|$pm->instanceOf(PurePropertyMapping))->cast(@PurePropertyMapping)->filter(pm| $pm.explodeProperty->isTrue());
+   let explosionPropertyVarDeclaration = $explosionPropertyMappings->map(pm|
+                                let property = $pm.property;
+                                let propertyVariable = j_variable(javaList($conventions->pureTypeToJavaType($property)), $property.name->toOne() + '_list');
+                                let updatedConventions = $conventions->updateConventionsForExplosion();
+                                $propertyVariable->j_declare($pm.transform.expressionSequence->at(0)->evaluateAndDeactivate()->generateJava($updatedConventions, $debug->indent())););
+
+   let lengthVariable = j_variable(javaInt(), 'length');
+   let lengthVarDeclaration = $lengthVariable->j_declare(j_variable(javaList($conventions->pureTypeToJavaType($explosionPropertyMappings->at(0).property)), $explosionPropertyMappings->at(0).property.name->toOne() + '_list')->j_invoke('size',[],javaInt()));
+
+   let errorHandlingCodeBlock = $explosionPropertyMappings->tail()->map(pm|
+                                                        j_if(j_variable(javaList($conventions->pureTypeToJavaType($pm.property)), $pm.property.name->toOne() + '_list')->j_invoke('size',[],javaInt())->j_ne($lengthVariable),
+                                                        javaIllegalArgumentException()->j_new(j_string('Explode properties do not have the same size. Failure in class ' + $srcClass.simpleName + '. Mismatch between properties - ' + $pm.property.name->toOne() + ' and ' + $explosionPropertyMappings->at(0).property.name->toOne()))->j_throw()
+                                                      ));
+
+   let indexStreamVar = j_variable(javaClass('java.util.stream.IntStream'), 'indexStream');
+   let indexStreamDeclaration = $indexStreamVar->j_declare(javaClass('java.util.stream.IntStream')->j_invoke('range', [j_int(0), $lengthVariable], javaClass('java.util.stream.IntStream')));
+
+   let lambdaParam = j_parameter(javaInt(), 'index');
+   let returnStatement = $indexStreamVar->j_invoke('mapToObj', j_lambda($lambdaParam, $adaptorClass->j_new(j_parameter($srcVar)
+                                                                                                          ->concatenate($parentVar->map(p | j_parameter($p)))
+                                                                                                          ->concatenate($explosionPropertyMappings->map(pm|j_variable(javaList($conventions->pureTypeToJavaType($pm.property)), $pm.property.name->toOne() + '_list')))
+                                                                                                          ->concatenate($lambdaParam))), javaStream($adaptorClass))
+                                        ->j_invoke('collect', j_invoke(javaCollectors(), 'toList', [], javaCollector()), javaList($adaptorClass))
+                                        ->j_return();
+
+   $explosionPropertyVarDeclaration->concatenate($lengthVarDeclaration)
+                                   ->concatenate($errorHandlingCodeBlock)
+                                   ->concatenate($indexStreamDeclaration)
+                                   ->concatenate($returnStatement);
+}
+
+function meta::pure::executionPlan::engine::java::updateConventionsForExplosion(conventions:Conventions[1]):Conventions[1]
+{
+  let libToBeReplaced = $conventions.libraries->filter(l|$l.functionCoders->get('map_T_MANY__Function_1__V_MANY_')->isNotEmpty())->toOne();
+  let funcCodersToBeAdded = [fc2(map_T_MANY__Function_1__V_MANY_,                                    {ctx,collection,func          | $collection->j_streamOf()->js_mapAllowingNullValues($func)}),
+                              fc (map_T_m__Function_1__V_m_,                                          fcAlias(                        map_T_MANY__Function_1__V_MANY_)),
+                              fc (map_T_$0_1$__Function_1__V_$0_1$_,                                  fcAlias(                        map_T_MANY__Function_1__V_MANY_))];
+
+  let updatedLibrary = ^$libToBeReplaced(functionCoders = $libToBeReplaced.functionCoders->putAll($funcCodersToBeAdded->map(fc| pair($fc.pureFunction, $fc.coder))));
+
+  ^$conventions(libraries = $conventions.libraries->filter(c | $c != $libToBeReplaced)->concatenate($updatedLibrary));
+}

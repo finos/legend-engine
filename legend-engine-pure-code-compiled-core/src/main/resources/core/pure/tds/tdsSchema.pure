@@ -1,0 +1,311 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::tds::schema::*;
+
+function meta::pure::tds::schema::resolveSchema(f : FunctionDefinition<{->TabularDataSet[1]}>[1], extensions:meta::pure::router::extension::RouterExtension[*]) : TDSColumn[*]
+{
+   let es = $f->evaluateAndDeactivate().expressionSequence;
+   assertEquals(1, $es->size());
+
+   resolveSchema($es->toOne(), $f->openVariableValues(), $extensions);
+}
+
+function meta::pure::tds::schema::resolveSchema(vs : ValueSpecification[1], openVars : Map<String, List<Any>>[1], extensions:meta::pure::router::extension::RouterExtension[*]) : TDSColumn[*]
+{
+   resolveSchemaImpl($vs, $openVars, $extensions).columns;
+}
+
+function meta::pure::tds::schema::createSchemaState(cols : TDSColumn[*]) : SchemaState[1]
+{
+   createSchemaState($cols->toOneMany());
+}
+
+function meta::pure::tds::schema::createSchemaState(cols : TDSColumn[1..*]) : SchemaState[1]
+{
+   ^meta::pure::tds::schema::SchemaState(columns = $cols->resetColumnOffsets());
+}
+
+Class meta::pure::tds::schema::SchemaState[
+   noDuplicateColumnNames : $this.columns.name->removeDuplicates() == $this.columns.name
+]
+{
+   columns : TDSColumn[1..*];
+
+   restrict(colNamesToRestrict : String[1..*])
+   {
+      assertEmpty($colNamesToRestrict->removeAll($this.columns.name), | 'Columns ' + $colNamesToRestrict->joinStrings('[', ',', ']') + ' must in in existing schema ' + $this.columns.name->joinStrings('[', ',', ']'));
+      assertNotEmpty($colNamesToRestrict);
+
+      ^$this(columns = $this.columns->filter(c|$c.name->in($colNamesToRestrict))->toOneMany()->resetColumnOffsets());
+   } : SchemaState[1];
+
+   extend(additionalColumns : TDSColumn[1..*])
+   {
+      assertEquals($additionalColumns, $additionalColumns->removeAll($this.columns.name));
+
+      ^$this(columns = $this.columns->concatenate($additionalColumns)->toOneMany()->resetColumnOffsets());
+   } : SchemaState[1];
+
+   groupBy(colNamesToGroupBy : String[*], aggColumns : TDSColumn[*])
+   {
+      if($colNamesToGroupBy->isEmpty(),
+         | assertNotEmpty($aggColumns);
+           createSchemaState($aggColumns);
+         ,
+         |
+            $this.restrict($colNamesToGroupBy->toOneMany())
+               ->map(s| if($aggColumns->isEmpty(), | $s, | $s.extend($aggColumns->toOneMany())))
+         );
+   } : SchemaState[1];
+
+   columnValueDifference( otherSchema : SchemaState[1], leftJoinColumns : String[1..*], rightJoinColumns : String[1..*], columnValueDifferenceColumns : String[*])
+   {
+       assertNotEmpty($leftJoinColumns);
+       assertNotEmpty($rightJoinColumns);
+       assertNotEmpty($this.columns.name->containsAll($leftJoinColumns));
+       assertNotEmpty($otherSchema.columns.name->containsAll($rightJoinColumns));
+       assertNotEmpty($this.columns.name->containsAll($columnValueDifferenceColumns));
+       assertNotEmpty($otherSchema.columns.name->containsAll($columnValueDifferenceColumns));
+
+       $this
+         .restrict($this.columns.name->removeAll($columnValueDifferenceColumns)->toOneMany())
+         .join($otherSchema.restrict($otherSchema.columns.name->removeAll($columnValueDifferenceColumns)->toOneMany()))
+         .extend(
+                   $columnValueDifferenceColumns->map(colName|
+                     [($colName + '_1'), ($colName+ '_2'), ($colName+ '_valueDifference')]
+                        ->map(colName|^TDSColumn(name = $colName, type = Float))
+                     )->toOneMany()
+                  )
+          .restrict(
+             $leftJoinColumns->concatenate($rightJoinColumns)->removeDuplicates()
+             ->concatenate($this.columns.name->removeAll( $leftJoinColumns->removeDuplicates())->removeAll($columnValueDifferenceColumns))
+             ->concatenate($otherSchema.columns.name->removeAll( $rightJoinColumns->removeDuplicates())->removeAll($columnValueDifferenceColumns))
+             ->concatenate($columnValueDifferenceColumns->map(colName|[($colName+ '_1'), ($colName+ '_2'), ($colName+ '_valueDifference')]))
+             ->toOneMany()
+             );
+   } : SchemaState[1];
+
+   rename(mappings : Pair<String,String>[1..*])
+   {
+      if($mappings->isEmpty(),
+         | $this,
+         |
+            assertEmpty($mappings.first->removeAll($this.columns.name));
+
+            let renameMapping = $mappings->newMap();
+
+            let cols = $this.columns->map(col|
+                let newColName = $renameMapping->get($col.name);
+
+                if($newColName->isEmpty(),
+                   | $col,
+                   | ^$col(name = $newColName->toOne())
+                   );
+            );
+
+            assertEquals($cols.name, $cols.name->removeDuplicates());
+
+            ^$this(columns = $cols->resetColumnOffsets());
+         );
+   } : SchemaState[1];
+
+   join( otherSchema : SchemaState[1])
+   {
+      let invalidColumns = $this.columns->map(col|
+            let otherCol = $otherSchema.getColumn($col.name);
+            if($otherCol->isEmpty() || $otherCol.type == $col.type,
+                | [],
+                | $col
+                );
+            );
+      assertEmpty($invalidColumns, | 'Conflicting / duplicte column names in schemas:' + $invalidColumns.name->joinStrings('[', ',', ']'));
+
+      let nonJoinCols = $otherSchema.columns.name->removeAll($this.columns.name);
+
+      if($nonJoinCols->isEmpty(),
+         | $this,
+         | $this.extend($otherSchema.restrict($nonJoinCols->toOneMany()).columns)
+         );
+   } : SchemaState[1];
+
+   join( otherCols : TDSColumn[1..*])
+   {
+      $this.join(createSchemaState($otherCols));
+   } : SchemaState[1];
+
+   getColumn(columnName : String[1])
+   {
+      $this.columns->filter(c|$c.name == $columnName)->first();
+   } : TDSColumn[0..1];
+
+   columnNames()
+   {
+      $this.columns.name;
+   } : String[1..*];
+
+   olap( otherCol : TDSColumn[1])
+   {
+      $this.extend($otherCol);
+   } : SchemaState[1];
+}
+
+function meta::pure::tds::schema::resolveSchemaImpl(vs : ValueSpecification[1], openVars : Map<String, List<Any>>[1], extensions:meta::pure::router::extension::RouterExtension[*]) : SchemaState[1]
+{
+   $vs->match([
+      iv:InstanceValue[1]|$iv.values->match([
+            t:TabularDataSet[1]|createSchemaState($t.columns);
+            ]),
+      v:VariableExpression[1]|$openVars->get($v.name).values->evaluateAndDeactivate()->match([
+            t:TabularDataSet[1]|createSchemaState($t.columns),
+            vs2:ValueSpecification[1]|resolveSchemaImpl($vs2, $openVars, $extensions)
+            ]),
+      fe:FunctionExpression[1]|resolveSchemaImpl($fe, $openVars, $extensions);
+      ]);
+}
+
+
+function <<access.private>> meta::pure::tds::schema::resolveSchemaImpl(fe : FunctionExpression[1], openVars : Map<String, List<Any>>[1], extensions:meta::pure::router::extension::RouterExtension[*]) : SchemaState[1]
+{
+   let handlers = [
+         drop_TabularDataSet_1__Integer_1__TabularDataSet_1_,
+         slice_TabularDataSet_1__Integer_1__Integer_1__TabularDataSet_1_,
+         take_TabularDataSet_1__Integer_1__TabularDataSet_1_,
+         distinct_TabularDataSet_1__TabularDataSet_1_,
+         filter_TabularDataSet_1__Function_1__TabularDataSet_1_,
+         limit_TabularDataSet_1__Integer_1__TabularDataSet_1_,
+         sort_TabularDataSet_1__SortInformation_MANY__TabularDataSet_1_,
+         sort_TabularDataSet_1__String_1__SortDirection_1__TabularDataSet_1_,
+         concatenate_TabularDataSet_1__TabularDataSet_1__TabularDataSet_1_,
+         meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_,
+         meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__ExecutionContext_1__TabularDataSet_1_
+      ]->map(x| pair($x->cast(@Function<Any>), {|
+         resolveSchemaImpl($fe.parametersValues->at(0), $openVars, $extensions)
+         }))
+      ->concatenate([
+         pair(project_T_MANY__ColumnSpecification_MANY__TabularDataSet_1_->cast(@Function<Any>), {|
+            $fe.parametersValues->at(1)->reactivate($openVars)->cast(@ColumnSpecification<Any>)
+               ->resolveProject($openVars);
+         }),
+         pair(projectWithColumnSubset_T_MANY__ColumnSpecification_MANY__String_MANY__TabularDataSet_1_->cast(@Function<Any>), {|
+            let requiredCols = $fe.parametersValues->at(2)->reactivate($openVars)->cast(@String)->toOneMany();
+
+            $fe.parametersValues->at(1)->reactivate($openVars)->cast(@ColumnSpecification<Any>)
+               ->resolveProject($openVars).restrict($requiredCols);
+         }),
+         pair(project_K_MANY__Function_MANY__String_MANY__TabularDataSet_1_->cast(@Function<Any>), {|
+            let colFuncs = $fe.parametersValues->at(1)->reactivate($openVars)->cast(@Function<Any>);
+            let colNames = $fe.parametersValues->at(2)->reactivate($openVars)->cast(@String);
+
+            let cols = $colFuncs->zip($colNames)->map(p|
+               ^TDSColumn(name = $p.second, type = $p.first->functionReturnType().rawType->toOne()->cast(@DataType))
+               );
+            createSchemaState($cols);
+         }),
+         pair(restrict_TabularDataSet_1__String_MANY__TabularDataSet_1_->cast(@Function<Any>), {|
+            let tdsSchema = resolveSchemaImpl($fe.parametersValues->at(0), $openVars, $extensions);
+            let colNamesToRestrict = $fe.parametersValues->at(1)->reactivate($openVars)->cast(@String)->toOneMany();
+            $tdsSchema.restrict($colNamesToRestrict);
+         }),
+         pair(extend_TabularDataSet_1__BasicColumnSpecification_MANY__TabularDataSet_1_->cast(@Function<Any>), {|
+            let tdsSchema = resolveSchemaImpl($fe.parametersValues->at(0), $openVars, $extensions);
+            let extraCols =  $fe.parametersValues->at(1)->reactivate($openVars)->cast(@ColumnSpecification<Any>)
+               ->resolveProject($openVars);
+
+            $tdsSchema.extend($extraCols.columns);
+         }),
+         pair(groupBy_K_MANY__Function_MANY__AggregateValue_MANY__String_MANY__TabularDataSet_1_->cast(@Function<Any>), {|
+            let groupByColLambdas = $fe.parametersValues->at(1)->reactivate($openVars)->cast(@Function<Any>);
+            let aggColLambdas = $fe.parametersValues->at(2)->reactivate($openVars)->cast(@meta::pure::functions::collection::AggregateValue<Any,Any,Any>);
+            let colNames = $fe.parametersValues->at(3)->reactivate($openVars)->cast(@String);
+
+            let cols = $groupByColLambdas->concatenate($aggColLambdas.aggregateFn)->zip($colNames)->map(p|
+                  ^TDSColumn(name=$p.second, type=$p.first->functionReturnType().rawType->toOne()->cast(@DataType));
+               );
+
+            createSchemaState($cols);
+         }),
+         pair(groupBy_TabularDataSet_1__String_MANY__AggregateValue_MANY__TabularDataSet_1_->cast(@Function<Any>), {|
+            let tdsSchema = resolveSchemaImpl($fe.parametersValues->at(0), $openVars, $extensions);
+            let colNamesToGroupBy = $fe.parametersValues->at(1)->reactivate($openVars)->cast(@String);
+
+
+            let aggSpecifications = $fe.parametersValues->at(2)->reactivate($openVars)->cast(@meta::pure::tds::AggregateValue<Any,Any>)->toOneMany();
+
+            let aggColumns = $aggSpecifications->map(aggSpecification|
+               ^TDSColumn(name=$aggSpecification.name, type=$aggSpecification.aggregateFn->functionReturnType().rawType->toOne()->cast(@DataType));
+               );
+
+            $tdsSchema.groupBy($colNamesToGroupBy, $aggColumns);
+
+         }),
+         pair(renameColumns_TabularDataSet_1__Pair_MANY__TabularDataSet_1_->cast(@Function<Any>), {|
+            let tdsSchema = resolveSchemaImpl($fe.parametersValues->at(0), $openVars, $extensions);
+            let renameMapping = $fe.parametersValues->at(1)->reactivate($openVars)->cast(@Pair<String,String>);
+
+            if($renameMapping->isEmpty(),
+               | $tdsSchema,
+               | $tdsSchema.rename($renameMapping->toOneMany())
+               );
+
+         })
+      ])
+      ->concatenate($extensions.tdsSchema_resolveSchemaImpl->map(e|$e->eval($fe, $openVars, $extensions)))
+      ->concatenate([
+         olapGroupBy_TabularDataSet_1__String_MANY__SortInformation_$0_1$__OlapOperation_1__String_1__TabularDataSet_1_,
+         olapGroupBy_TabularDataSet_1__String_MANY__SortInformation_$0_1$__FunctionDefinition_1__String_1__TabularDataSet_1_
+      ]->map(f|
+         pair($f->cast(@Function<Any>), {|
+            let tdsSchema = resolveSchemaImpl($fe.parametersValues->at(0), $openVars, $extensions);
+
+            let x = $fe.parametersValues->at(3)->reactivate($openVars);
+            let fType = $x->match([
+               oo:meta::pure::tds::OlapOperation<Any>[1]|
+                  let operation = $x->cast(@meta::pure::tds::OlapOperation<Any>)->toOne();
+                  $operation->match([
+                     oa:meta::pure::tds::TdsOlapAggregation<Any>[1]|$oa.func->functionReturnType(),
+                     or:meta::pure::tds::TdsOlapRank<Any>[1]|$or.func->functionReturnType().typeArguments->at(1)
+                     ]);
+               ,
+               lf:LambdaFunction<Any>[1]|$lf->functionReturnType().typeArguments->at(1)
+            ]);
+
+            let colType = $fType.rawType->toOne()->cast(@DataType);
+            let colName = $fe.parametersValues->at(4)->reactivate($openVars)->cast(@String)->toOne();
+
+            $tdsSchema.olap(^TDSColumn(name=$colName, type=$colType));
+         })
+      ));
+
+   let handlerMatches = $handlers->filter(p|$p.first == $fe.func).second;
+   assertNotEmpty($handlerMatches, 'Failed to find handler for function ' + $fe.func->elementToPath());
+   assertEquals(1, $handlerMatches->size());
+
+   $handlerMatches->toOne()->eval();
+}
+
+function meta::pure::tds::schema::resolveProject(colSpecs : ColumnSpecification<Any>[*], openVars : Map<String, List<Any>>[1]) : SchemaState[1]
+{
+   let cols = $colSpecs->map(colSpec|
+               $colSpec->match([
+                  bcs : BasicColumnSpecification<Any>[1]|^TDSColumn(name = $bcs.name, type = $bcs.func->functionReturnType().rawType->toOne()->cast(@DataType))
+                  ])
+               );
+   createSchemaState($cols);
+}
+
+function  <<access.private>> meta::pure::tds::schema::resetColumnOffsets( columns : TDSColumn[1..*]) : TDSColumn[1..*]
+{
+   range($columns->size())->zip($columns)->toOneMany()->map(p|let col = $p.second; if($col.offset == $p.first, |$col, | ^$col(offset = $p.first)););
+}

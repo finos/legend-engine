@@ -1,0 +1,101 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::executionPlan::engine::java::roadmap::*;
+import meta::json::*;
+import meta::pure::executionPlan::profiles::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::mapping::modelToModel::*;
+import meta::pure::mapping::modelToModel::test::alloy::utils::*;
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.M2MBasics>> 
+{  serverVersion.start='v1_19_0',
+   doc.doc='Given: a source class',
+   doc.doc='Given: a target class of the same name in a different package',
+   doc.doc='When:  a mapping is executed using graphFetch and serialize.',
+   doc.doc='Then:  the mapping conversion should succeed.'
+} 
+meta::pure::mapping::modelToModel::test::alloy::simple::canMapBetweenClassesWithTheSameName() : Boolean[1]
+{
+   let tree = #{meta::pure::mapping::modelToModel::test::alloy::simple::toFromSameName::dest::domain::Person {newFirstName, newLastName, age}}#;
+
+   let result = execute(
+      |meta::pure::mapping::modelToModel::test::alloy::simple::toFromSameName::dest::domain::Person.all()->graphFetch($tree)->serialize($tree),
+      meta::pure::mapping::modelToModel::test::alloy::simple::toFromSameName::personMapping,
+      testJsonRuntime(meta::pure::mapping::modelToModel::test::alloy::simple::toFromSameName::src::domain::Person, '{"firstName":"Dave", "lastName":"Miles"}'),
+      []
+   );
+   let json = $result.values->toOne();
+
+   assert(jsonEquivalent('{"newFirstName":"Dave", "newLastName":"Miles", "age":25}'->parseJSON(), $json->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.M2MBasics>> 
+{  serverVersion.start='v1_19_0',
+   doc.doc='Given: a source class',
+   doc.doc='Given: a target class of the same name in a different package',
+   doc.doc='When:  a mapping is executed using graphFetchChecked and serialize.',
+   doc.doc='Then:  the mapping conversion should succeed.'
+} 
+meta::pure::mapping::modelToModel::test::alloy::simple::canMapBetweenClassesWithTheSameNameChecked() : Boolean[1]
+{
+   let tree = #{meta::pure::mapping::modelToModel::test::alloy::simple::toFromSameName::dest::domain::Person {newFirstName, newLastName, age}}#;
+
+   let result = execute(
+      |meta::pure::mapping::modelToModel::test::alloy::simple::toFromSameName::dest::domain::Person.all()->graphFetchChecked($tree)->serialize($tree),
+      meta::pure::mapping::modelToModel::test::alloy::simple::toFromSameName::personMapping,
+      testJsonRuntime(meta::pure::mapping::modelToModel::test::alloy::simple::toFromSameName::src::domain::Person, '{"firstName":"Dave", "lastName":"Miles"}'),
+      []
+   );
+
+   let json = $result.values->toOne();
+   let expected= 
+   '{'+
+   '  "defects":[],'+
+   '  "value":{"newFirstName":"Dave", "newLastName":"Miles", "age":25},'+
+   '  "source":{'+
+   '    "defects":[],'+
+   '    "value":{"firstName":"Dave", "lastName":"Miles"},'+
+   '    "source":{"number":1, "record":"{\\"firstName\\":\\"Dave\\",\\"lastName\\":\\"Miles\\"}"}'+
+   '  }'+
+   '}';
+   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+###Pure
+Class meta::pure::mapping::modelToModel::test::alloy::simple::toFromSameName::src::domain::Person
+{
+   firstName : String[1];
+   lastName  : String[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::simple::toFromSameName::dest::domain::Person
+{
+   newFirstName : String[1];
+   newLastName  : String[1];
+   age          : Integer[1];
+}
+
+###Mapping
+
+Mapping meta::pure::mapping::modelToModel::test::alloy::simple::toFromSameName::personMapping
+(
+   *meta::pure::mapping::modelToModel::test::alloy::simple::toFromSameName::dest::domain::Person[dest_Person] : Pure
+      {
+         ~src meta::pure::mapping::modelToModel::test::alloy::simple::toFromSameName::src::domain::Person
+         newFirstName : $src.firstName,
+         newLastName  : $src.lastName,
+         age          : 25
+      }
+)

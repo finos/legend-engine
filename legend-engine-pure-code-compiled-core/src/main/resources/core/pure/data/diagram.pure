@@ -1,0 +1,116 @@
+###Diagram
+Diagram meta::pure::data::MetaModelDiagram(width=665.86211, height=239.00000)
+{
+    TypeView DataElement_$_0(
+        type=meta::pure::data::DataElement,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0,
+        position=(1019.00000, 239.00000),
+        width=92.69141,
+        height=36.00000)
+
+    TypeView DataElementReference_$_1(
+        type=meta::pure::data::DataElementReference,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0,
+        position=(990.00000, 418.00000),
+        width=150.72266,
+        height=36.00000)
+
+    TypeView EmbeddedData_$_2(
+        type=meta::pure::data::EmbeddedData,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0,
+        position=(716.00000, 239.00000),
+        width=107.35156,
+        height=36.00000)
+
+    TypeView ModelStoreData_$_3(
+        type=meta::pure::data::ModelStoreData,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0,
+        position=(713.86211, 418.00000),
+        width=111.34766,
+        height=36.00000)
+
+    TypeView ExternalFormatData_$_4(
+        type=meta::external::shared::format::metamodel::data::ExternalFormatData,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0,
+        position=(476.86211, 418.00000),
+        width=134.03516,
+        height=60.00000)
+
+
+
+    PropertyView pview_5(property=meta::pure::data::DataElement.data,
+        stereotypesVisible=true,
+        nameVisible=true,
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE,
+        points=[(1065.34570,257.00000),(769.67578,257.00000)],
+        label='',
+        source=DataElement_$_0,
+        target=EmbeddedData_$_2,
+        propertyPosition=(589.48945, 123.00000),
+        multiplicityPosition=(589.48945, 144.00000))
+
+    PropertyView pview_6(property=meta::pure::data::DataElementReference.dataElement,
+        stereotypesVisible=true,
+        nameVisible=true,
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE,
+        points=[(1065.36133,436.00000),(1065.34570,257.00000)],
+        label='',
+        source=DataElementReference_$_1,
+        target=DataElement_$_0,
+        propertyPosition=(744.10821, 157.00000),
+        multiplicityPosition=(831.48516, 157.00000))
+
+   GeneralizationView gview_7(color=#000000,
+       lineWidth=-1.0,
+       lineStyle=SIMPLE,
+       points=[(769.67578,257.00000),(1065.36133,436.00000)],
+       label='',
+       source=DataElementReference_$_1,
+       target=EmbeddedData_$_2)
+
+   GeneralizationView gview_8(color=#000000,
+       lineWidth=-1.0,
+       lineStyle=SIMPLE,
+       points=[(769.67578,257.00000),(769.53594,436.00000)],
+       label='',
+       source=ModelStoreData_$_3,
+       target=EmbeddedData_$_2)
+
+   GeneralizationView gview_9(color=#000000,
+       lineWidth=-1.0,
+       lineStyle=SIMPLE,
+       points=[(769.67578,257.00000),(543.87969,448.00000)],
+       label='',
+       source=ExternalFormatData_$_4,
+       target=EmbeddedData_$_2)
+
+}

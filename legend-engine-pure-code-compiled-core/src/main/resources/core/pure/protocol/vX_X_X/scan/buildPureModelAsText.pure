@@ -1,0 +1,206 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::functions::string::*;
+import meta::pure::router::extension::*;
+import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::*;
+import meta::pure::mapping::*;
+import meta::pure::functions::io::*;
+import meta::protocols::pure::vX_X_X::metamodel::valueSpecification::application::*;
+
+Class <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::CodeSection {
+   name: String[1];
+   startLine: Integer[1];
+   noOfLines: Integer[1];
+   imports: String[*];
+}
+
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::buildPureModelContextTextFromMapping(mapping: Mapping[*], extensions:meta::pure::router::extension::RouterExtension[*]): meta::protocols::pure::vX_X_X::metamodel::PureModelContextText[1]
+{
+   ^meta::protocols::pure::vX_X_X::metamodel::PureModelContextText
+   (
+      _type = 'text',
+      code =  $mapping->getAllElementsFromMapping($extensions)->map(e|$e->getCorrectedElementSourceInformation($extensions)->getSourceTextForElement())->makeString('\n'),
+      serializer = ^meta::protocols::Protocol(name='pure', version='vX_X_X')
+   );
+}
+
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::buildPureModelContextTextFromMappingAndQuery<T|m>(mapping: Mapping[*], query: FunctionDefinition<{->T[m]}>[1], extensions:meta::pure::router::extension::RouterExtension[*]): meta::protocols::pure::vX_X_X::metamodel::PureModelContextText[1]
+{
+   ^meta::protocols::pure::vX_X_X::metamodel::PureModelContextText
+   (
+      _type = 'text',
+      code =  $mapping->getAllElementsFromMappingAndQuery($query, $extensions)->map(e|$e->getCorrectedElementSourceInformation($extensions)->getSourceTextForElement())->makeString('\n'),
+      serializer = ^meta::protocols::Protocol(name='pure', version='vX_X_X')
+   );
+}
+
+Class meta::protocols::pure::vX_X_X::transformation::fromPureGraph::SplitCodeResult {
+   codeLines: String[*];
+   index: Integer[1];
+}
+
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::splitCodeIntoLines(code: String[1]):String[*]
+{
+    let result = range(0, $code->length(), 1)->fold({i, c |
+       if($i < $c.index || ($c.index > $code->length() - 1), | $c, |
+           let endColumn = if($code->indexOf('\n', $c.index) < 0, | $code->length(), | $code->indexOf('\n', $c.index));
+           let line = $code->substring(max($c.index - 1, 0), $endColumn->toOne())->replace('\n', '');
+           ^SplitCodeResult(codeLines=$c.codeLines->add($line), index=$endColumn->toOne() + 1););
+    }, ^SplitCodeResult(codeLines=[], index=0));
+
+    $result.codeLines;
+}
+
+function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::getSourceTextForElement(sourceInformation: meta::pure::functions::meta::SourceInformation[1]): String[1]
+{
+   let content = $sourceInformation.source->readFile()->toOne();
+   let lines = $content->splitCodeIntoLines();
+   let count = 0;
+   let sections = $lines->size()->range()->zip($lines)->fold({pair, _sections |
+     if ($pair.second->trim()->startsWith('###'),
+         |$_sections->concatenate(^CodeSection(name = $pair.second, startLine = $pair.first + 1, noOfLines = 1, imports = [])),
+         |$_sections->slice(0, $_sections->size() - 1)->concatenate(^CodeSection(name = $_sections->last()->toOne().name, noOfLines = $_sections->last()->toOne().noOfLines + 1, startLine = $_sections->last()->toOne().startLine, imports = $_sections->last()->toOne().imports->concatenate(if($pair.second->trim()->startsWith('import '), |$pair.second, |[]))))
+     );
+   }, [^CodeSection(name='###Pure', startLine = 0, noOfLines = 0, imports = [])]);
+   let section = $sections->filter(section|$section.startLine <= max($sourceInformation.startLine - 1, 0))->last();
+   let startLine = $lines->at(max($sourceInformation.startLine - 1, 0));
+   let endLine = $lines->at(max($sourceInformation.endLine - 1, 0));
+   let sourceLines = if(max($sourceInformation.endLine, 0) > $sourceInformation.startLine, |
+                           $startLine->substring(max($sourceInformation.startColumn -1, 0), $startLine->length())
+                              ->concatenate($lines->slice($sourceInformation.startLine, max($sourceInformation.endLine - 1, 0)))
+                              ->concatenate($endLine->substring(0, $sourceInformation.endColumn)),
+                           |  $startLine->substring(max($sourceInformation.startColumn -1, 0), $sourceInformation.endColumn));
+
+   $section.name
+     ->concatenate($section.imports)
+     ->concatenate($sourceLines)
+     ->makeString('\n');
+}
+
+function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::getSourceTextForElement(sourceInformation: meta::pure::functions::meta::SourceInformation[0..1]): String[1]
+{
+   if($sourceInformation->isEmpty(), |'', |$sourceInformation->toOne()->getSourceTextForElement());
+}
+
+function <<access.protected>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::getAllElementsFromMapping(gm:Mapping[*], extensions:meta::pure::router::extension::RouterExtension[*]): meta::pure::metamodel::PackageableElement[*]
+{
+   // Mapping includes
+   let allMappings = $gm->map(x | $x->findAllMappingIncludes())->removeDuplicates();
+
+   // Stores
+   let classMappingStores = $allMappings->map(m|$m.classMappings->map(s|$s->extractStores($m, $extensions)));
+
+   let associationStores = $allMappings->map(m|$m.associationMappings).stores;
+
+   let storesFromInclude = $allMappings->map(m|let i = $m.includes.storeSubstitutions; $i->map(k|[$k.original, $k.substitute]););
+
+   let baseStores = $classMappingStores
+                ->concatenate($associationStores)
+                ->concatenate($storesFromInclude);
+ 
+   let stores = $extensions->map(e|$e.serializerExtension('vX_X_X')->cast(@meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X).scan_buildPureModelAsText_getAllElementsFromMapping->map(z|$z->eval($baseStores)))
+                ->map(s|$s->findAllStoreIncludes())
+                ->removeDuplicatesBy(a|$a->elementToPath());
+
+   // Domain
+   let foundClasses = $gm->fold({x, y | let alltype = $x->findAllTypesFromMapping($extensions);
+                                        ^$y(classes = $y.classes->concatenate($alltype.classes)->removeDuplicates(),
+                                           enumerations = $y.enumerations->concatenate($alltype.enumerations)->removeDuplicates());}, ^AllTypes());
+   let associations = $foundClasses.classes->findAllAssociations();
+   let found = ^$foundClasses(classes = $foundClasses.classes->concatenate($associations.properties.genericType.rawType)->removeDuplicates()->cast(@Class<Any>));
+   let profiles = $found.classes->map(c|$c.stereotypes.profile->concatenate($c.taggedValues.tag.profile)->concatenate(
+                                        $c.properties->map(p|$p.stereotypes.profile->concatenate($p.taggedValues.tag.profile)))->concatenate(
+                                        $c.qualifiedProperties->map(p|$p.stereotypes.profile->concatenate($p.taggedValues.tag.profile)))
+                                 )
+                  ->concatenate($found.enumerations->cast(@AnnotatedElement)->map(e|$e.stereotypes.profile->concatenate($e.taggedValues.tag.profile)))
+                  ->concatenate($associations->map(a|$a.stereotypes.profile->concatenate($a.taggedValues.tag.profile)->concatenate(
+                                           $a.properties->map(p|$p.stereotypes.profile->concatenate($p.taggedValues.tag.profile)))->concatenate(
+                                           $a.qualifiedProperties->map(p|$p.stereotypes.profile->concatenate($p.taggedValues.tag.profile)))
+                                    )
+                  )->removeDuplicates()->filter(p|!$p->elementToPath()->startsWith('meta'));
+
+   // User defined functions
+   let userDefinedFunctions = $found->fold({x, y | let expr = $x.classes->map(c | $c.qualifiedProperties->map(q | $q.expressionSequence));
+                                                        let func = $expr->filter(e | $e->instanceOf(SimpleFunctionExpression))->map(s| $s->cast(@SimpleFunctionExpression)->evaluateAndDeactivate().func);
+                                                        $y->concatenate($func->filter(f | $f->instanceOf(ConcreteFunctionDefinition))->filter(f | !$f->elementToPath()->startsWith('meta::pure::functions::')));
+                                                }, [])->removeDuplicatesBy(a|$a->elementToPath());
+
+   // TODO? check have we included the measures mentioned in the mappings
+
+   $allMappings
+      ->concatenate($stores)
+      ->concatenate($extensions->map(e|$e.serializerExtension('vX_X_X')->cast(@meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X).scan_buildPureModelAsText_getAllElementsFromMapping2->map(z|$z->eval($stores))))
+      ->concatenate($profiles)
+      ->concatenate($userDefinedFunctions)
+      ->concatenate($found.classes)
+      ->concatenate($found.enumerations)
+      ->concatenate($found.measures)
+      ->concatenate($associations);
+}
+
+function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::getCorrectedElementSourceInformation(el: meta::pure::metamodel::PackageableElement[1], extensions:meta::pure::router::extension::RouterExtension[*]): meta::pure::functions::meta::SourceInformation[0..1]
+{
+  let srcInfo = $extensions->map(e|$e.serializerExtension('vX_X_X')->cast(@meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X).scan_buildPureModelAsText_getCorrectedElementSourceInformation->map(z|$z->eval($el)));
+  if ($srcInfo->isEmpty(),
+    |$el->sourceInformation(),
+    |$srcInfo->first();
+  );
+}
+
+function <<access.protected>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::getAllElementsFromMappingAndQuery<T|m>(gm:Mapping[*], query: FunctionDefinition<{->T[m]}>[1], extensions:meta::pure::router::extension::RouterExtension[*]): meta::pure::metamodel::PackageableElement[*]
+{
+  // Stores
+  let queryDbs = meta::protocols::pure::vX_X_X::transformation::fromPureGraph::extractStoresFromTableReference($query);
+  let queryDbsFromInclude = $queryDbs->map(m|$m.includes);
+
+
+  let allElementsFromMapping = meta::protocols::pure::vX_X_X::transformation::fromPureGraph::getAllElementsFromMapping($gm, $extensions);
+
+  let allElements = $queryDbs
+    ->concatenate($queryDbsFromInclude)
+    ->concatenate($allElementsFromMapping)
+    ->removeDuplicatesBy(a|$a->elementToPath())
+    ->filter(a|!$a->isEmpty());
+
+  $allElements;  
+}
+
+function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::extractStoresFromTableReference<T|m>(query: FunctionDefinition<{->T[m]}>[1]): meta::relational::metamodel::Database[*]
+{
+  let search = 'tableReference_Database_1__String_1__String_1__Table_1_';
+  let expressions = $query.expressionSequence->evaluateAndDeactivate();
+  let tableReference = $expressions->map(e| if($e->toOne()->meta::pure::functions::meta::instanceOf(SimpleFunctionExpression), 
+  | $e->toOne()->cast(@SimpleFunctionExpression)
+        ->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::searchQueryGraph($search),
+  | []));
+
+  $tableReference->map(ref| $ref->cast(@SimpleFunctionExpression).parametersValues->at(0)->cast(@InstanceValue).values->toOne()->cast(@meta::relational::metamodel::Database));
+}
+
+function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::searchQueryGraph(func: SimpleFunctionExpression[1], text: String[1]): SimpleFunctionExpression[*]
+{
+  $func.parametersValues->map(x| $x->toOne()->match(
+      [
+         f:SimpleFunctionExpression[1]| if($f.func.name->toOne() == $text, | $f, | $f->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::searchQueryGraph($text)),
+         a:Any[1]|[]
+      ])
+  );
+}
+
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::tests::tst():Boolean[1]
+{
+  true;
+}

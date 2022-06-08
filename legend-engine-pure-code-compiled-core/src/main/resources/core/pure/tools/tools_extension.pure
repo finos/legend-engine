@@ -1,0 +1,94 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::tools::*;
+import meta::pure::metamodel::path::*;
+import meta::pure::router::printer::*;
+
+function meta::pure::tools::debug():DebugContext[1]
+{
+   ^DebugContext(debug=true, space='');
+}
+
+function meta::pure::tools::noDebug():DebugContext[1]
+{
+   ^DebugContext(debug=false, space='');
+}
+
+function meta::pure::tools::indent(d:DebugContext[1]):DebugContext[1]
+{
+   ^$d(space = $d.space+'   ');
+}
+
+function meta::pure::router::printer::space(size:Integer[1]):String[1]
+{
+   [0:$size]->fold({a,b|$b+' '},'');
+}
+
+function meta::pure::router::debug(s:String[1], start:String[1]):String[1]
+{
+   $start+$s->replace('\n','\n'+space($start->length()))+'\n';
+}
+
+function meta::pure::router::byPassRouterInfo(source:ValueSpecification[1]):ValueSpecification[1]
+{
+   $source->match([r:ExtendedRoutedValueSpecification[1]|$r.value->byPassRouterInfo(), n:NoSetRoutedValueSpecification[1]|$n.value, f:FunctionRoutedValueSpecification[1]|$f.value->byPassRouterInfo();, v:ValueSpecification[1]|$v]);
+}
+
+
+function meta::pure::router::byPassRouterInfoKeepFunctionRouted(source:ValueSpecification[1]):ValueSpecification[1]
+{
+   $source->match([r:ExtendedRoutedValueSpecification[1]|$r.value->byPassRouterInfoKeepFunctionRouted(), n:NoSetRoutedValueSpecification[1]|$n.value, f:FunctionRoutedValueSpecification[1]|^$f(value = $f.value->byPassRouterInfoKeepFunctionRouted());, v:ValueSpecification[1]|$v]);
+}
+
+function meta::pure::router::isOneFunction(k:ValueSpecification[1]):Boolean[1]
+{
+   let i = $k->byPassRouterInfo();
+   $i->instanceOf(InstanceValue) && $i->cast(@InstanceValue).values->size() == 1 && $i->cast(@InstanceValue).values->at(0)->instanceOf(Function);
+}
+
+function meta::pure::router::isFunction(k:ValueSpecification[1]):Boolean[1]
+{
+   let i = $k->byPassRouterInfo();
+   $i->instanceOf(InstanceValue) && !$i->cast(@InstanceValue).values->isEmpty() && $i->cast(@InstanceValue).values->fold({v,a|$a && $v->instanceOf(Function)}, true);
+}
+
+function meta::pure::router::isPath(k:ValueSpecification[1]):Boolean[1]
+{
+   let i = $k->byPassRouterInfo();
+   $i->instanceOf(InstanceValue) && !$i->cast(@InstanceValue).values->isEmpty() && $i->cast(@InstanceValue).values->fold({v,a|$a && $v->instanceOf(Path)}, true);
+}
+
+function meta::pure::router::isOneClass(i:InstanceValue[1]):Boolean[1]
+{
+   $i.values->size() == 1 && $i.values->at(0)->instanceOf(Class);
+}
+
+
+function meta::pure::router::isOnePathFunction(k:ValueSpecification[1]):Boolean[1]
+{
+   let i = $k->byPassRouterInfo();
+   $i->instanceOf(InstanceValue) && $i->cast(@InstanceValue).values->size() == 1 && $i->cast(@InstanceValue).values->at(0)->instanceOf(Path);
+}
+
+function meta::pure::router::isOneFunctionDefinition(k:ValueSpecification[1]):Boolean[1]
+{
+   let i = $k->byPassRouterInfo();
+   $i->instanceOf(InstanceValue) && $i->cast(@InstanceValue).values->size() == 1 && $i->cast(@InstanceValue).values->at(0)->instanceOf(FunctionDefinition);
+}
+
+function meta::pure::router::isOneProperty(i:InstanceValue[1]):Boolean[1]
+{
+   $i.values->size() == 1 && $i.values->at(0)->instanceOf(Property);
+}

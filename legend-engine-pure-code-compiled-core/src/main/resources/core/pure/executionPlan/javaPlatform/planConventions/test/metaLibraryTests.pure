@@ -1,0 +1,44 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::executionPlan::engine::java::*;
+import meta::pure::executionPlan::engine::java::tests::*;
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_20_0' }
+meta::pure::executionPlan::engine::java::tests::pureMetaTests() : Boolean[1]
+{
+   javaPureTests(engineConventions([]), [
+      // instanceOf
+      meta::pure::functions::meta::tests::instanceOf::testInstanceOfPrimitive__Boolean_1_,
+      //meta::pure::functions::meta::tests::instanceOf::testInstanceOfPrimitiveType__Boolean_1_, // TODO Requires metadata
+      meta::pure::functions::meta::tests::instanceOf::testInstanceOfDate__Boolean_1_,
+      // meta::pure::functions::meta::tests::instanceOf::testInstanceOfInstance__Boolean_1_, // TODO Requires New
+      // meta::pure::functions::meta::tests::instanceOf::testInstanceOfClass__Boolean_1_, // TODO Requires metadata
+      // meta::pure::functions::meta::tests::instanceOf::testInstanceOfEnum__Boolean_1_, // TODO Requires enum generation
+      // meta::pure::functions::meta::tests::instanceOf::testInstanceOfFromEnumVal__Boolean_1_, // TODO Requires enum generation
+      
+      // extractEnumValue
+      meta::pure::functions::meta::tests::extractEnumValue::testExtractEnumValue__Boolean_1_,
+      //meta::pure::functions::meta::tests::extractEnumValue::testExtractEnumValueReflectively__Boolean_1_, // TODO Requires evaluate
+      
+      // enumValues
+      meta::pure::functions::meta::tests::enumValues::testEnumValues__Boolean_1_,
+      //meta::pure::functions::meta::tests::enumValues::testEnumValuesUsingVar__Boolean_1_  // TODO Need to find a Java variable type that represents an enumeration class
+      // id
+      meta::pure::functions::meta::tests::id::testPrimitives__Boolean_1_
+   ])
+      ->generate(meta::pure::functions::tests::model::GeographicEntityType)
+      ->runTests();
+}

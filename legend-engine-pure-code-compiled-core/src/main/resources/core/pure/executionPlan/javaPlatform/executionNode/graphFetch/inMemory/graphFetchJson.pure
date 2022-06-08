@@ -1,0 +1,601 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::factory::*;
+import meta::external::language::java::factory::project::*;
+import meta::external::language::java::metamodel::*;
+import meta::external::language::java::metamodel::project::*;
+import meta::external::language::java::serialization::*;
+import meta::external::language::java::transform::*;
+import meta::json::*;
+import meta::pure::dataQuality::*;
+import meta::pure::executionPlan::engine::*;
+import meta::pure::executionPlan::engine::java::*;
+import meta::pure::executionPlan::engine::java::graphFetch::json::*;
+import meta::pure::executionPlan::engine::java::graphFetch::storeStreamReading::*;
+import meta::pure::executionPlan::engine::java::naming::*;
+import meta::pure::executionPlan::engine::java::typeInfo::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::mapping::modelToModel::*;
+import meta::pure::metamodel::serialization::grammar::*;
+
+function meta::pure::executionPlan::engine::java::graphFetch::json::jsonReaderClass(conventions:Conventions[1], path:String[1], srcTreeClass:meta::pure::metamodel::type::Class<Any>[1]): meta::external::language::java::metamodel::Class[1]
+{
+   $conventions->planNodeClass('public', $path, 'JsonDataReader_' + $conventions->identifier($srcTreeClass->elementToPath('_')));
+}
+
+function meta::pure::executionPlan::engine::java::graphFetch::json::createJsonReading(pureClass:meta::pure::metamodel::type::Class<Any>[1], javaInterface:meta::external::language::java::metamodel::Class[1], path:String[1], readableClasses:meta::pure::metamodel::type::Class<Any>[*], readableEnums:meta::pure::metamodel::type::Enumeration<Any>[*], context:GenerationContext[1], debug:DebugContext[1]): Project[1]
+{
+   createJsonReading($pureClass, $javaInterface, $path, [], $readableClasses, $readableEnums, $context, $debug);
+}
+
+function meta::pure::executionPlan::engine::java::graphFetch::json::createJsonReading(pureClass:meta::pure::metamodel::type::Class<Any>[1], javaInterface:meta::external::language::java::metamodel::Class[1], path:String[1], pathOffset:String[0..1], readableClasses:meta::pure::metamodel::type::Class<Any>[*], readableEnums:meta::pure::metamodel::type::Enumeration<Any>[*], context:GenerationContext[1], debug:DebugContext[1]): Project[1]
+{
+   newProject()
+      ->addClasses(createJsonReadingClass($pureClass, $javaInterface, $path, $pathOffset, $readableClasses, $readableEnums, $context, $debug))
+      ->addMavenDependency('com.fasterxml.jackson.core', 'jackson-core', '2.10.3');
+}
+
+function meta::pure::executionPlan::engine::java::graphFetch::json::hasDecimal(typeInfos:TypeInfoSet[1]):Boolean[1]
+{
+  $typeInfos.typeInfos->filter(ti | $ti->instanceOf(ClassTypeInfo))->cast(@ClassTypeInfo)->exists(cti| $cti.properties->exists(p | $p.genericType.rawType == Decimal));
+}
+
+function meta::pure::executionPlan::engine::java::graphFetch::json::createJsonReadingClass(pureClass:meta::pure::metamodel::type::Class<Any>[1], javaInterface:meta::external::language::java::metamodel::Class[1], path:String[1], pathOffset:String[0..1], readableClasses:meta::pure::metamodel::type::Class<Any>[*], readableEnums:meta::pure::metamodel::type::Enumeration<Any>[*], context:GenerationContext[1], debug:DebugContext[1]): meta::external::language::java::metamodel::Class[1]
+{
+   let proto = $context.conventions->jsonReaderClass($path, $pureClass)
+      ->implements($context.conventions->className(StoreStreamReader))
+      ->usingKnownPackages($context.conventions->knownPackages())
+      ->imports($context.conventions->constrainedImports())
+      ->imports($context.conventions->standardImports())
+      ->imports($context.conventions->defectClass())
+      ->imports($readableClasses->map(c| $context.conventions->className($c)))
+      ->imports($readableEnums->map(c| $context.conventions->className($c)))
+      ->imports($context.conventions->className(Checked))
+      ->imports($context->unitImplementationClasses())
+      ->imports(javaPackage('java.io'))
+      ->imports(javaPackage('java.net'))
+      ->imports(jsonFactory())
+      ->imports(jsonParser())
+      ->imports(jsonNode())
+      ->imports(jsonNodeType())
+      ->imports(jsonToken())
+      ->imports(objectMapper())
+      ->imports(javaReflectMethod())
+      ->imports(javaInvocationTargetException());
+
+   let conventions = $context.conventions;
+   let jsonToken   = javaClass('com.fasterxml.jackson.core.JsonToken')->typeToString($proto);
+   let baos        = javaClass('java.io.ByteArrayOutputStream');
+   let recordType  = $context.conventions->className(JsonDataRecord);
+   let unitTypes   = $context.typeInfos->allUnitInfos()->map(uti | $uti.unit());
+
+   $proto
+      ->addField(javaField('private', javaBoolean(), 'finishedReading', 'false'))
+      ->addField(javaField('private', javaStack(javaObject()), 'stack', javaStack(javaObject())->j_new([])->codeToString($proto)))
+      ->addField(javaField('private', jsonParser(), 'parser'))
+      ->addField(javaField('private', objectMapper(), 'objectMapper'))
+      ->addField(javaField('private', javaBoolean(), 'inArray', 'false'))
+      ->addField(javaField('private', javaLong(), 'recordCount', '0'))
+      ->addField(javaField('private', javaInputStream(), 'in'))
+      ->addConstructor()
+      ->addInitReading($context.typeInfos->hasDecimal(), $pathOffset)
+      ->addMethodExist()
+      ->addMethodInvoke()
+      ->addMethod(
+         javaMethod(['public'], javaVoid(), 'destroyReading', [],
+             'if (this.parser.isClosed())\n' +
+             '{\n' +
+             '   return;\n' +
+             '}\n' +
+             'try\n' +
+             '{\n' +
+             '    this.parser.close();\n' +
+             '}\n' +
+             'catch (IOException e)\n' +
+             '{\n' +
+             '    throw new RuntimeException(e);\n' +
+             '}'
+         )
+      )
+      ->addMethod(
+         javaMethod(['public'], javaBoolean(), 'isFinished',
+                    [],
+             'nextToken();\n' +
+             'if (!this.finishedReading && getCurrentToken() == ' +$jsonToken+'.START_ARRAY && !inArray)\n' +
+             '{\n' +
+             '    nextToken();\n' +
+             '    inArray = true;\n'+
+             '}\n' +
+             'if (!this.finishedReading && getCurrentToken() == '+$jsonToken+'.END_ARRAY && inArray)\n' +
+             '{\n' +
+             '    nextToken();\n' +
+             '    inArray = false;\n' +
+             '    this.finishedReading = true;\n' +
+             '}\n' +
+             'this.finishedReading |= getCurrentToken() == null;\n' +
+
+             'return this.finishedReading ;'
+         )
+      )
+      ->addMethod(
+         javaMethod(['public'], javaVoid(), 'nextToken', [],
+             '    try\n' +
+             '    {\n' +
+             '        this.parser.nextToken();\n' +
+             '    }\n' +
+             '    catch (IOException e)\n' +
+             '    {\n' +
+             '        throw new RuntimeException(e);\n' +
+             '    }'
+         )
+      )
+      ->addMethods($readableClasses->map(c|$c->createClassReadMethod($proto, $path, ^$context(conventions=$conventions), $readableClasses)))
+      ->addMethods($unitTypes->map(t|$t->createUnitAcceptMethod($conventions)))
+      ->addMethods($readableEnums->map(c|$c->createEnumReadMethod(^$context(conventions=$conventions))))
+      ->addMethod(createAcceptMethod(String, $proto, $conventions))
+      ->addMethod(createAcceptMethod(Boolean, $proto, $conventions))
+      ->addMethod(createAcceptMethod(Integer, $proto, $conventions))
+      ->addMethod(createAcceptMethod(Float, $proto, $conventions))
+      ->addMethod(createAcceptMethod(Decimal, $proto, $conventions))
+      ->addMethod(createAcceptMethod(Number, $proto, $conventions))
+      ->addMethod(createAcceptMethod(StrictDate, $proto, $conventions))
+      ->addMethod(createAcceptMethod(DateTime, $proto, $conventions))
+      ->addMethod(createAcceptMethod(Date, $proto, $conventions))
+      ->addMethod(acceptManyMethod($conventions))
+      ->addMethod(
+         javaMethod('private', javaClass('com.fasterxml.jackson.core.JsonToken'), 'getCurrentToken', [],
+             'return parser.getCurrentToken();'
+         )
+      )
+
+      ->addMethod(
+         javaMethod('private', javaVoid(), 'check', [javaParam(jsonNodeType(), 'expectedNode'), javaParam(jsonNodeType(), 'currentNode')],
+             'check(expectedNode, currentNode, "Failed to parse JSON, expected \'" + expectedNode + "\', Found " + currentNode);'
+         )
+      )
+      ->addMethod(
+         javaMethod('private', javaVoid(), 'check',
+                    [
+                       javaParam(jsonNodeType(), 'expectedNode'),
+                       javaParam(jsonNodeType(), 'currentNode'),
+                       javaParam(javaString(), 'errorMessage')
+                    ],
+             'check(Collections.singletonList(expectedNode), currentNode, errorMessage);'
+         )
+      )
+      ->addMethod(
+         javaMethod('private', javaVoid(), 'check',
+                    [
+                       javaParam(javaList(jsonNodeType()), 'expectedNodes'),
+                       javaParam(jsonNodeType(), 'currentNode'),
+                       javaParam(javaString(), 'errorMessage')
+                    ],
+             'if (!expectedNodes.contains(currentNode))\n' +
+             '{\n' +
+             '    throw new '+$conventions->codeType($conventions->className(meta::pure::executionPlan::engine::DataParsingException))->codeToString($proto)+'(errorMessage);\n' +
+             '}'
+         )
+      )
+      ->addReadCheckedObjects($pureClass, $javaInterface, $path, $context);
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::json::acceptManyMethod(conventions:Conventions[1]): meta::external::language::java::metamodel::Method[1]
+{
+   let jsonNode = j_parameter(jsonNode(), 'node');
+   let result   = j_variable(javaList(javaTypeVar('T')), 'result');
+   let itrNode  = j_parameter(jsonNode(), 'n');
+
+   let acceptor       = j_parameter(javaFunction(jsonNode(), javaTypeVar('T')), 'acceptor');
+   let defectRecorder = j_parameter(javaConsumer(javaString()), 'defectRecorder');
+   let exception      = j_parameter($conventions->className(meta::pure::executionPlan::engine::DataParsingException), 'ex');
+
+
+   javaMethod('private', javaTypeVar('T'), javaList(javaTypeVar('T')), 'acceptMany',
+              [$jsonNode, $acceptor, $defectRecorder],
+              [
+                 $result->j_declare(javaArrayList(javaTypeVar('T'))->j_new([])),
+
+                 j_if ($jsonNode->j_invoke('isNull', [], javaBoolean()), $result->j_return()),
+                 j_if ($jsonNode->j_invoke('isArray', [], javaBoolean()),
+                         j_for($itrNode, $jsonNode,
+                                 $result->j_invoke('add', $acceptor->j_invoke('apply', $itrNode, javaTypeVar('T')), javaList(javaTypeVar('T')))->j_try(j_catch($exception, $defectRecorder->j_invoke('accept', $exception->j_invoke('getMessage', [], javaString()), javaVoid())))
+                              ),
+                         [
+                         $result->j_invoke('add', $acceptor->j_invoke('apply', $jsonNode, javaTypeVar('T')), javaList(javaTypeVar('T')))->j_try(j_catch($exception, $defectRecorder->j_invoke('accept', $exception->j_invoke('getMessage', [], javaString()), javaVoid())))
+                         ]
+                       ),
+                $result->j_return()
+              ]
+            );
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::json::createClassReadMethod(class:meta::pure::metamodel::type::Class<Any>[1], proto:meta::external::language::java::metamodel::Class[1], path:String[1], context:GenerationContext[1], readableClasses:meta::pure::metamodel::type::Class<Any>[*]): meta::external::language::java::metamodel::Method[1]
+{
+   let conventions   = $context.conventions;
+   let javaClass     = $conventions->className($class);
+   let properties    = $context.typeInfos->valueProperties($class);
+   let checked       = $conventions->className(Checked);
+   let checkedResult = javaParameterizedType($checked, $javaClass);
+
+   let jsonToken   = $conventions->codeType(javaClass('com.fasterxml.jackson.core.JsonToken'))->codeToString($proto);
+
+   let specializations = $class->meta::pure::functions::meta::findAllSpecializations()->filter(x|$x->in($readableClasses));
+   let nodeValueVariable = j_variable(javaString(), 'nodeValue');
+   let defectsVariable = j_variable(javaList($conventions->defectClass()), 'defects');
+   let specializationByName = $specializations->groupBy(x| $x.name->toOne());
+   let specializationsCode = if($specializations->isEmpty(), |'', |$specializationByName->keys()->toOneMany()->map(className|pair(
+                                   $className->j_string()->j_invoke('equals', $nodeValueVariable),
+                                   $specializationByName->get($className).values->match([
+                                       { specializationClass: meta::pure::metamodel::type::Class<Any>[1] |$nodeValueVariable->j_assign(j_string($specializationClass->elementToPath('::'))) },
+                                       { specializationClasses: meta::pure::metamodel::type::Class<Any>[*] |
+                                           let defectMsg = j_string('multiple class matches [' + $specializationClasses->map(c|$c->elementToPath('::'))->sort()->joinStrings(', ') + '] for ' + $className);
+                                           $defectsVariable->j_invoke('add', j_invoke($conventions->className(DataQualityBasicDefectClass), 'newInvalidInputCriticalDefect', [$defectMsg, j_string($class->elementToPath())]));
+                                       }
+                                   ])
+                                ))->list()->j_if()->codeToString($proto));
+
+   javaMethod(['public'], $checkedResult, $class->readMethodName($conventions), [j_parameter(jsonNode(), 'node')],
+
+      $conventions->codeType(javaList($conventions->defectClass()))->codeToString($proto)+' defects = new '+$conventions->codeType(javaType('java.util.ArrayList'))->codeToString($proto)+'<>();\n' +
+      '\n' +
+      'if (!node.path("'+defaultAlloyConfig().typeKeyName+'").getNodeType().equals(JsonNodeType.MISSING)){\n' +
+      ' String nodeValue = node.path("'+defaultAlloyConfig().typeKeyName+'").textValue();\n' +
+      $specializationsCode + '\n' +
+      ' if (!nodeValue.equals("' +$class->elementToPath()+'")) {\n' +
+      '   String methodName = "read_" + nodeValue.replace("::", "_");\n' +
+      '   if (readMethodExists(methodName)){\n' +
+      '      return (IChecked) readMethodInvoke(methodName, node);\n' +
+      '   }\n' +
+      '}}\n'+
+      defineClassPreParseVariables($class, $proto, $context)+
+      '\n'+
+      createObject($class, $proto, $path, $context)+
+      '\n'+
+      acceptProperties($class, $proto, $context)+
+      '\n'+
+      validateMultiplicities($class, $context)+
+      '\n'+
+      returnCheckedObject($class, $proto, $path, $context)
+   );
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::json::defineClassPreParseVariables(class:meta::pure::metamodel::type::Class<Any>[1], proto:meta::external::language::java::metamodel::Class[1], context:GenerationContext[1]): String[1]
+{
+   let conventions = $context.conventions;
+   $context.typeInfos->allProperties($class)->map({p|
+      let javaType = $conventions->pureTypeToJavaType($p);
+      let listType = if(isJavaList($javaType), |$javaType, |javaList($javaType));
+      let variable = '_'+$conventions->fieldName($p);
+
+      let declare = $conventions->codeType($listType)->codeToString($proto)+' '+$variable+' = new '+$conventions->codeType(javaClass('java.util.ArrayList'))->codeToString($proto)+'<>();\n';
+      if($p.owner->instanceOf(Association),
+         {|
+            let elementType = $conventions->codeType($listType->cast(@meta::external::language::java::metamodel::ParameterizedType).typeArguments->at(0))->codeToString($proto);
+            $declare+
+            'if (!this.stack.empty() && this.stack.peek() instanceof '+$elementType+')\n' +
+            '{\n' +
+            '    '+$variable+'.add(('+$elementType+') this.stack.peek());\n' +
+            '}\n';
+         },
+         | $declare
+      );
+   })->joinStrings('');
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::json::acceptProperties(class:meta::pure::metamodel::type::Class<Any>[1], proto:meta::external::language::java::metamodel::Class[1], context:GenerationContext[1]): String[1]
+{
+   let conventions     = $context.conventions;
+   let jsonToken       = $conventions->codeType(javaClass('com.fasterxml.jackson.core.JsonToken'))->codeToString($proto);
+
+   let propertyClauses   = $context.typeInfos->allProperties($class)->map({p|
+      let variable       = '_'+$conventions->fieldName($p);
+      let javaType       = $conventions->pureTypeToJavaType($p);
+      let propertyType   = $p.genericType.rawType->toOne();
+      let defectRecorder = 'm -> defects.add('+$conventions->codeType($conventions->className(DataQualityBasicDefectClass))->codeToString($proto)+'.newInvalidInputErrorDefect('+escapedString($p.name->toOne())+'+": "+m,'+escapedString($class->elementToPath())+'))';
+
+      'if (node.path('+escapedString($p.name->toOne())+').getNodeType() != JsonNodeType.MISSING){\n' +
+      $propertyType->match([
+         {c: meta::pure::metamodel::type::Class<Any>[1] |
+            let checked     = $conventions->className(Checked);
+            let elementType = if(isJavaList($javaType), |elementTypeOfJavaList($javaType), |$javaType);
+            let checkedType = javaParameterizedType($checked, $elementType);
+
+            $conventions->codeType(javaList($checkedType))->codeToString($proto)+' checked = acceptMany(node.path('+escapedString($p.name->toOne())+'), this::'+$c->readMethodName($conventions)+','+$defectRecorder+');\n' +
+            '        for (int i=0; i<checked.size(); i++)\n' +
+            '        {\n' +
+            '            '+$conventions->codeType(javaList($conventions->defectClass()))->codeToString($proto)+' propertyDefects = '++$conventions->accessCheckedDefects('checked.get(i)')+';\n' +
+            if($p.multiplicity->isToOne() || $p.multiplicity->isZeroOne(),
+               {|
+                  '            '+$conventions->codeType($conventions->relativePathNodeClass())->codeToString($proto)+' pathNode = i == 0\n'+
+                  '                    ? '+$conventions->codeType($conventions->className(DataQualityBasicRelativePathNodeClass))->codeToString($proto)+'.newRelativePathNode('+escapedString($p.name->toOne())+')\n' +
+                  '                    : '+$conventions->codeType($conventions->className(DataQualityBasicRelativePathNodeClass))->codeToString($proto)+'.newRelativePathNode('+escapedString($p.name->toOne())+', i);\n'
+               },
+               {|
+                  '            '+$conventions->codeType($conventions->relativePathNodeClass())->codeToString($proto)+' pathNode = '+$conventions->codeType($conventions->className(DataQualityBasicRelativePathNodeClass))->codeToString($proto)+'.newRelativePathNode('+escapedString($p.name->toOne())+', i);\n'
+               }
+            )+
+            '            defects.addAll(propertyDefects.stream().map(d -> '+$conventions->codeType($conventions->className(DataQualityBasicDefectClass))->codeToString($proto)+'.prefixPath(d, pathNode)).collect('+$conventions->codeType(javaClass('java.util.stream.Collectors'))->codeToString($proto)+'.toList()));\n' +
+            '        }\n' +
+            $variable+' = checked.stream().map(c -> '+$conventions->accessCheckedValue('c')+').filter(v -> v != null).collect('+$conventions->codeType(javaType('java.util.stream.Collectors'))->codeToString($proto)+'.toList());\n';
+         },
+         {e: meta::pure::metamodel::type::Enumeration<Any>[1] |
+            $variable+' = acceptMany(node.path('+escapedString($p.name->toOne())+'), this::'+$e->readMethodName($conventions)+','+$defectRecorder+');\n';
+         },
+         {u: Unit[1] |
+            $variable+' = acceptMany(node.path('+escapedString($p.name->toOne())+'), this::accept'+$propertyType.name->toOne()->sanitizeIdentifier()+','+$defectRecorder+');\n';
+         },
+         {a: Any[1] |
+            $variable+' = acceptMany(node.path('+escapedString($p.name->toOne())+'), this::accept'+$propertyType.name->toOne()+','+$defectRecorder+');\n';
+         }
+      ]) + '}';
+
+   });
+
+   $propertyClauses->joinStrings('\n');
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::json::validateMultiplicities(class:meta::pure::metamodel::type::Class<Any>[1], context:GenerationContext[1]): String[1]
+{
+   $context.typeInfos->allProperties($class)->map({p|
+      let variable = '_'+$context.conventions->fieldName($p);
+      let expected = $p.multiplicity->printMultiplicity();
+
+      if($p.multiplicity->isToOne(),
+         {|
+            'if ('+$variable+'.size() != 1)\n'+
+            '{\n'+
+            '  defects.add('+$context.conventions->newClassStructureDefect('"Invalid multiplicity for '+$p.name->toOne()+': expected ['+$expected+'] found [" + '+$variable+'.size() + "]"', escapedString($class->elementToPath()))+');\n' +
+            '}\n'
+         },
+         |
+      if($p.multiplicity->hasLowerBound() && $p.multiplicity->hasUpperBound(),
+         {|
+            'if ('+$variable+'.size() < '+$p.multiplicity->getLowerBound()->toString()+' || '+$variable+'.size() > '+$p.multiplicity->getUpperBound()->toString()+')\n'+
+            '{\n'+
+            '  defects.add('+$context.conventions->newClassStructureDefect('"Invalid multiplicity for '+$p.name->toOne()+': expected ['+$expected+'] found [" + '+$variable+'.size() + "]"', escapedString($class->elementToPath()))+');\n' +
+            '}\n'
+         },
+         |
+      if($p.multiplicity->hasLowerBound(),
+         {|
+            'if ('+$variable+'.size() < '+$p.multiplicity->getLowerBound()->toString()+')\n'+
+            '{\n'+
+            '  defects.add('+$context.conventions->newClassStructureDefect('"Invalid multiplicity for '+$p.name->toOne()+': expected ['+$expected+'] found [" + '+$variable+'.size() + "]"', escapedString($class->elementToPath()))+');\n' +
+            '}\n'
+         },
+         |
+      if($p.multiplicity->hasUpperBound(),
+         {|
+            'if ('+$variable+'.size() > '+$p.multiplicity->getUpperBound()->toString()+')\n'+
+            '{\n'+
+            '  defects.add('+$context.conventions->newClassStructureDefect('"Invalid multiplicity for '+$p.name->toOne()+': expected ['+$expected+'] found [" + '+$variable+'.size() + "]"', escapedString($class->elementToPath()))+');\n' +
+            '}\n'
+         },
+         {|
+            ''
+         }
+      ))));
+   })->joinStrings('');
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::json::createObject(class:meta::pure::metamodel::type::Class<Any>[1], proto:meta::external::language::java::metamodel::Class[1], path:String[1], context:GenerationContext[1]): String[1]
+{
+   'this.stack.push(new '+$context.conventions->codeType($class->streamReadingDataClass($path, $context.conventions))->codeToString($proto)+'());\n'
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::json::returnCheckedObject(class:meta::pure::metamodel::type::Class<Any>[1], proto:meta::external::language::java::metamodel::Class[1], path:String[1], context:GenerationContext[1]): String[1]
+{
+   let conventions            = $context.conventions;
+   let dataClass              = $class->streamReadingDataClass($path, $conventions);
+   let objectAccess           = '(('+$conventions->codeType($dataClass)->codeToString($proto)+') this.stack.peek())';
+   let javaClass              = $conventions->className($class);
+   let checked                = $conventions->className(Checked);
+   let checkedResult          = javaParameterizedType($checked, $javaClass);
+
+   let declaresAndGetters = $context.typeInfos->allProperties($class)->map({p|
+      let variable = $conventions->fieldName($p);
+      let value    = if($p.multiplicity->isToOne(),
+                        | '_'+$variable+'.get(0)',
+                        |
+                     if($p.multiplicity->isZeroOne(),
+                        | '_'+$variable+'.isEmpty() ? null : _'+$variable+'.get(0)',
+                        | $conventions->codeType(javaType('java.util.Collections'))->codeToString($proto)+'.unmodifiableList(_'+$variable+')'
+                     ));
+
+         $objectAccess+'.'+$variable+' = '+$value+';\n';
+   })->joinStrings('');
+
+   'if (defects.stream().anyMatch(d -> '+$conventions->accessDefectEnforcementLevel('d')+' == '+$conventions->elCritical()->codeToString($proto)+'))\n'+
+   '{\n'+
+   '    return '+$conventions->dynamicChecked($javaClass, 'defects', 'null', 'null')+';\n'+
+   '}\n'+
+   'else\n'+
+   '{\n'+
+   $declaresAndGetters+
+   '    '+$conventions->codeType($javaClass)->codeToString($proto)+' value = ('+$conventions->codeType($javaClass)->codeToString($proto)+') this.stack.pop();\n' +
+   '    return '+$conventions->dynamicChecked($javaClass, 'defects', 'null', 'value')+';\n'+
+   '}';
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::json::createAcceptMethod(type:meta::pure::metamodel::type::Type[1], proto:meta::external::language::java::metamodel::Class[1], conventions:Conventions[1]): meta::external::language::java::metamodel::Method[1]
+{
+   let javaType         = $conventions->pureTypeToJavaType($type, PureOne);
+   let acceptableNodes  = $conventions->jsonNodeTypesFor($type);
+   let errorMessage     = j_variable(javaString(), 'errorMessage');
+   let nodeParameter    = j_parameter(jsonNode(), 'node');
+   let jThis            = j_this($proto);
+   let exception        = j_parameter(javaIllegalArgumentException(), 'ex');
+
+   javaMethod('private', $javaType, 'accept'+$type.name->toOne(), $nodeParameter,
+      [
+        $errorMessage->j_declare(j_string('Unexpected node type:')->j_plus($nodeParameter->j_invoke('getNodeType', [], jsonNodeType())->j_plus(j_string(' for PURE ' + $type.name->toOne())))),
+        $jThis->j_invoke('check', [javaArrays()->j_invoke('asList', $acceptableNodes, javaList(jsonNodeType())), $nodeParameter->j_invoke('getNodeType', [], jsonNodeType()), $errorMessage], javaVoid()),
+
+        j_return($conventions->jsonNodeGetter($nodeParameter, $type))
+      ]->j_try(j_catch($exception, $conventions->className(meta::pure::executionPlan::engine::DataParsingException)->j_new($exception->j_invoke('getMessage', [], javaString()))->j_throw()))
+   );
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::json::createEnumReadMethod(enum:meta::pure::metamodel::type::Enumeration<Any>[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Method[1]
+{
+   let conventions    = $context.conventions;
+   let javaClass      = $conventions->className($enum);
+   let qualifier      = $enum->elementToPath()+'.';
+   let nodeParameter  = j_parameter(jsonNode(), 'node');
+
+   javaMethod(['public'], $javaClass, $enum->readMethodName($conventions), $nodeParameter,
+      $conventions->codeType(javaString())->codeToString()+' text  = acceptString(node);\n' +
+      $conventions->codeType(javaString())->codeToString()+' value = text.startsWith('+escapedString($qualifier)+') ? text.substring('+$qualifier->length()->toString()+') : text;\n' +
+      'return '+$conventions->codeType($javaClass)->codeToString()+'.valueOf(value);'
+   );
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::json::createUnitAcceptMethod(type:meta::pure::metamodel::type::Type[1], conventions:Conventions[1]): meta::external::language::java::metamodel::Method[1]
+{
+    let javaType                = $conventions->pureTypeToJavaType($type, PureOne);
+    let simpleJavaName          = $type.name->toOne()->sanitizeIdentifier();
+    let fullJavaName            = $javaType->meta::external::language::java::serialization::typeToString()->sanitizeIdentifier();
+    let acceptibleTokens        = $conventions->jacksonTokenTypesFor($type);
+    let getCurrentTokenErrorMsg = '"Unexpected " + parser.getCurrentToken() + " for PURE '+ $type.name->toOne()+'"';
+    let getNextTokenErrorMsg    = '"Unexpected " + parser.nextToken() + " for PURE '+ $type.name->toOne()+'"';
+    let appendToRecord          = '    this.appendToRecord();\n';
+    let nodeParameter           = j_parameter(jsonNode(), 'node');
+
+    javaMethod('private', $javaType, 'accept' + $simpleJavaName, $nodeParameter,
+       '    check(JsonNodeType.OBJECT, node.getNodeType(), "Unexpected " + node.getNodeType() + " for PURE '+ $type.name->toOne()+'");\n' +
+       '    check(JsonNodeType.ARRAY, node.path("unit").getNodeType(), "Unexpected unit" + node.path("unit").getNodeType() + " for PURE '+ $type.name->toOne()+'");\n' +
+       '    check(JsonNodeType.STRING, node.path("unit").path(0).path("unitId").getNodeType(), "Unexpected unitId" + node.path("unit").path(0).path("unitId").getNodeType() + " for PURE '+ $type.name->toOne()+'");\n' +
+       '    check(JsonNodeType.NUMBER, node.path("unit").path(0).path("exponentValue").getNodeType(), "Unexpected exponentValue" + node.path("unit").path(0).path("exponentValue").getNodeType() + " for PURE '+ $type.name->toOne()+'");\n' +
+
+
+       '    check(JsonNodeType.NUMBER, node.path("value").getNodeType(), "Unexpected value" + node.path("value").getNodeType() + " for PURE '+ $type.name->toOne()+'");\n' +
+       '    Double unitValue = node.path("value").doubleValue();\n' +
+       '    ' +$fullJavaName+' value = new ' + $simpleJavaName +'_Impl(unitValue);\n' +
+
+       '    return value;\n'
+    );
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::json::addReadCheckedObjects(proto:meta::external::language::java::metamodel::Class[1], pureClass:meta::pure::metamodel::type::Class<Any>[1], javaInterface:meta::external::language::java::metamodel::Class[1], path:String[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Class[1]
+{
+   let conv            = $context.conventions;
+   let checkedClass    = $context.baseProject->toOne()->resolve($conv->className(Checked));
+   let checkedSource   = javaParameterizedType($checkedClass, $javaInterface);
+   let checked         = j_variable($checkedSource, 'object');
+   let sourceRead      = $pureClass->readMethodName($conv);
+   let ioEx            = j_parameter(javaIOException(), 'e');
+   let jThis           = j_this($proto);
+   let recordType      = $conv->className(JsonDataRecord);
+   let json            = j_variable(javaString(), 'json');
+   let recordNumber    = j_variable(javaLong(), 'recordNumber');
+   let source          = j_variable($recordType, 'source');
+   let node            = j_variable(jsonNode(), 'node');
+
+   $proto->addMethod(
+      javaMethod('public', javaCollection($checkedSource), 'readCheckedObjects', [],
+         [
+            $jThis->j_field('recordCount')->j_inc(),
+
+            $node->j_declare($jThis->j_field('objectMapper', objectMapper())->j_invoke('readValue', [$jThis->j_field('parser', jsonParser()), jsonNode()->j_field('class', javaClassType())], jsonNode())),
+            $checked->j_declare($jThis->j_invoke($sourceRead, [$node], $checkedSource)),
+
+            $recordNumber->j_declare($jThis->j_field('recordCount')),
+            $json->j_declare($node->j_invoke('toString', [])),
+
+            $source->j_declare($recordType->j_newAnon([], [
+               j_method('public', javaLong(), $conv->getterName('number'), [], $recordNumber->j_return()),
+               j_method('public', javaString(), $conv->getterName('record'), [], $json->j_return())
+            ])),
+
+            javaCollections()->j_invoke('singleton', $conv->dynamicChecked($conv->checkedGetDefects($checked), $source, $conv->checkedGetValue($checked)), javaCollection($checkedSource))->j_return()
+         ]->j_ioExTryCatch()
+      )
+   );
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::json::addConstructor(class:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
+{
+   let in = j_parameter(javaInputStream(),'in');
+
+   $class->addConstructor(
+      javaConstructor([], [$in]->cast(@meta::external::language::java::metamodel::Parameter),
+         [
+            j_this($class)->j_field('in')->j_assign($in)
+         ]
+      )
+   );
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::json::addInitReading(class:meta::external::language::java::metamodel::Class[1], useBigDecimalForFloats:Boolean[0..1], pathOffset:String[0..1]): meta::external::language::java::metamodel::Class[1]
+{
+   let jThis  = j_this($class);
+   let parser = $jThis->j_field('parser');
+   let objectMapper = $jThis->j_field('objectMapper');
+   let objectMapperInstantiation = if($useBigDecimalForFloats->isTrue(),
+                                      | $objectMapper->j_assign(objectMapper()->j_new([])->j_invoke('configure', [deserializationFeatureBigDecimalForFloats()->j_field('USE_BIG_DECIMAL_FOR_FLOATS', deserializationFeatureBigDecimalForFloats()), j_true()] , objectMapper())),
+                                      | $objectMapper->j_assign(objectMapper()->j_new([]))
+                                    );
+
+   $class->imports(javaClass('com.fasterxml.jackson.core.filter.FilteringParserDelegate'))
+         ->imports(javaClass('com.fasterxml.jackson.core.filter.JsonPointerBasedFilter'))
+         ->addMethod(javaMethod('public', javaVoid(), 'initReading', [],
+                     if($pathOffset->isEmpty(),
+                       |[
+                           $parser->j_assign(jsonFactory()->j_new([])->j_invoke('createParser', $jThis->j_field('in'), jsonParser())),
+                           $objectMapperInstantiation
+                        ],
+                       |let baseParserVar = j_variable(jsonParser(), 'baseParser');
+                        [
+                           $baseParserVar->j_declare(jsonFactory()->j_new([])->j_invoke('createParser', $jThis->j_field('in'), jsonParser())),
+                           $parser->j_assign(jsonFilteringParserDelegate()->j_new([$baseParserVar, jsonPointerBasedFilter()->j_new(j_string($pathOffset->toOne())), j_boolean(false), j_boolean(false)])),
+                           $objectMapperInstantiation
+                        ];
+                     )->j_ioExTryCatch()
+           ));
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::json::addMethodExist(class:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
+{
+   let methodName = j_parameter(javaString(), 'name');
+   
+   $class->addMethod(javaMethod('private', javaBoolean(), 'readMethodExists', $methodName,
+                                    
+      'Method[] methods = this.getClass().getDeclaredMethods();\n' +
+      'for (int i = 0; i < methods.length; i++) {\n' +
+      '   if (methods[i].getName().equals(name)) return true;\n' +
+      '};\n' +
+      'return false;'                                
+   ));
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::json::addMethodInvoke(class:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
+{
+   let methodName = j_parameter(javaString(), 'name');
+   let jsonNode   = j_parameter(jsonNode(), 'node');
+   
+   $class->addMethod(javaMethod('private', javaObject(), 'readMethodInvoke', [$methodName, $jsonNode],
+      'Method m = null;\n' +
+      'try{\n' +
+      '   m = this.getClass().getMethod(name, JsonNode.class);\n' +
+      '}\n' +
+      'catch (NoSuchMethodException e){throw new RuntimeException(e.getMessage());}\n' +
+      'try{\n' +         
+      '   return m.invoke(this, node);\n' +
+      '}\n' +
+      'catch (IllegalAccessException e){throw new RuntimeException(e.getMessage());}catch (InvocationTargetException e){throw new RuntimeException(e.getMessage());}' 
+   ));
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::json::nextToken(parser:Code[1]): Code[1] { $parser->j_invoke('nextToken', [], jsonToken()); }

@@ -1,0 +1,321 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::factory::*;
+import meta::external::language::java::serialization::*;
+import meta::pure::executionPlan::engine::java::*;
+import meta::pure::executionPlan::engine::java::tests::*;
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.ToFix>> meta::pure::executionPlan::engine::java::tests::testNumberLiterals() : Boolean[1]
+{
+   javaExpressionTests(engineConventions([]))
+      ->addTest('Number literal', {|5.2->cast(@Number)}, 'new java.math.BigDecimal("5.2")', javaNumber())
+         ->assert('%s.equals(new java.math.BigDecimal("5.2"))')
+      ->addTest('Decimal literal', {|5.2D}, 'new java.math.BigDecimal("5.2")', javaBigDecimal())
+         ->assert('%s.equals(new java.math.BigDecimal("5.2"))')
+      ->addTest('Integer literal', {|5}, '5L', javaLong())
+         ->assert('%s == 5L')
+      ->addTest('Float literal', {|5.2}, '5.2', javaDouble())
+         ->assert('%s == 5.2')
+      ->runTests()
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::engine::java::tests::testBasicOperators() : Boolean[1]
+{
+   javaExpressionTests(engineConventions([]))
+      // Number
+      ->addTest('Number Plus', {|[1.0,3]->plus()}, '(Number) java.util.Arrays.<Number>asList(1.0, 3L).stream().reduce(0L, org.finos.legend.engine.plan.dependencies.util.Library::numberPlus)', javaNumber())
+         ->assert('(%s).doubleValue() == 4.0')
+      ->addTest('Number Minus', {| [10.0,1]->minus()}, 'org.finos.legend.engine.plan.dependencies.util.Library.minus(java.util.Arrays.<Number>asList(10.0, 1L))', javaNumber())
+         ->assert('(%s).doubleValue() == 9.0')
+      ->addTest('Number Minus singleton', {| [10.0, 1]->filter(n | $n==1)->minus()}, 'org.finos.legend.engine.plan.dependencies.util.Library.minus(java.util.Arrays.<Number>asList(10.0, 1L).stream().filter((Number n) -> n.equals(1L)).collect(java.util.stream.Collectors.toList()))', javaNumber())
+         ->assert('(%s).doubleValue() == -1.0')
+      ->addTest('Number Times', {|[1.0, 3]->times()}, '(Number) java.util.Arrays.<Number>asList(1.0, 3L).stream().reduce(1L, org.finos.legend.engine.plan.dependencies.util.Library::numberMultiply)', javaNumber())
+         ->assert('(%s).doubleValue() == 3.0')
+      ->addTest('Number Divide', {|3 / 1.0}, 'org.finos.legend.engine.plan.dependencies.util.Library.divide(3L, 1.0)', javaDouble())
+         ->assert('%s == 3.0')
+      ->addTest('Number Rem', {|rem(12,5)}, 'org.finos.legend.engine.plan.dependencies.util.Library.rem(12L, 5L)', javaNumber())
+         ->assert('(%s).doubleValue() == 2.0')
+      // Decimal
+      ->addTest('Decimal Unary minus', {|-5.4D}, 'new java.math.BigDecimal("5.4").negate()', javaBigDecimal())
+         ->assert('(%s).equals(new java.math.BigDecimal("-5.4"))')
+      ->addTest('Decimal Binary minus', {|7.3D - 5.8D}, '(java.math.BigDecimal) org.finos.legend.engine.plan.dependencies.util.Library.minus(java.util.Arrays.asList(new java.math.BigDecimal("7.3"), new java.math.BigDecimal("5.8")))', javaBigDecimal())
+         ->assert('(%s).equals(new java.math.BigDecimal("1.5"))')
+      ->addTest('Decimal n\'ary minus', {|[6.9D, 2.6D, 5.8D]->minus()}, '(java.math.BigDecimal) org.finos.legend.engine.plan.dependencies.util.Library.minus(java.util.Arrays.asList(new java.math.BigDecimal("6.9"), new java.math.BigDecimal("2.6"), new java.math.BigDecimal("5.8")))', javaBigDecimal())
+         ->assert('(%s).equals(new java.math.BigDecimal("-1.5"))')
+      ->addTest('Decimal Unary plus', {|+5.4D}, 'new java.math.BigDecimal("5.4")', javaBigDecimal())
+         ->assert('(%s).equals(new java.math.BigDecimal("5.4"))')
+      ->addTest('Decimal Binary plus', {|7.3D + 5.8D}, 'java.util.Arrays.asList(new java.math.BigDecimal("7.3"), new java.math.BigDecimal("5.8")).stream().reduce(java.math.BigDecimal.ZERO, org.finos.legend.engine.plan.dependencies.util.Library::decimalPlus)', javaBigDecimal())
+         ->assert('(%s).equals(new java.math.BigDecimal("13.1"))')
+      ->addTest('Decimal n\'ary plus', {|[6.9D, 2.6D, 5.8D]->plus()}, 'java.util.Arrays.asList(new java.math.BigDecimal("6.9"), new java.math.BigDecimal("2.6"), new java.math.BigDecimal("5.8")).stream().reduce(java.math.BigDecimal.ZERO, org.finos.legend.engine.plan.dependencies.util.Library::decimalPlus)', javaBigDecimal())
+         ->assert('(%s).equals(new java.math.BigDecimal("15.3"))')
+      ->addTest('Decimal Divide', {|10.10D->divide(2.1D, 1)}, 'new java.math.BigDecimal("10.10").divide(new java.math.BigDecimal("2.1"), new Long(1L).intValue(), java.math.RoundingMode.HALF_UP)', javaBigDecimal())
+         ->assert('(%s).equals(new java.math.BigDecimal("4.8"))')
+      //Integer
+      ->addTest('Integer Unary minus', {|-5}, '-5L', javaLong())
+         ->assert('(%s) == -5L')
+      ->addTest('Integer Binary minus', {|7-5}, 'org.finos.legend.engine.plan.dependencies.util.Library.minus(java.util.Arrays.asList(7L, 5L)).longValue()', javaLong())
+         ->assert('(%s) == 2L')
+      ->addTest('Integer n\'ary minus', {|[6, 7, 5]->minus()}, 'org.finos.legend.engine.plan.dependencies.util.Library.minus(java.util.Arrays.asList(6L, 7L, 5L)).longValue()', javaLong())
+         ->assert('(%s) == -6L')
+      ->addTest('Integer Unary plus', {|+5}, '5L', javaLong())
+         ->assert('%s == 5L')
+      ->addTest('Integer Binary plus', {|7+5}, 'java.util.Arrays.asList(7L, 5L).stream().reduce(0L, org.finos.legend.engine.plan.dependencies.util.Library::integerPlus).longValue()', javaLong())
+         ->assert('%s == 12L')
+      ->addTest('Integer n\'ary plus', {|[6, 7, 5]->plus()}, 'java.util.Arrays.asList(6L, 7L, 5L).stream().reduce(0L, org.finos.legend.engine.plan.dependencies.util.Library::integerPlus).longValue()', javaLong())
+         ->assert('%s == 18L')
+      ->addTest('Integer Binary times', {|7*5}, 'java.util.Arrays.asList(7L, 5L).stream().reduce(1L, org.finos.legend.engine.plan.dependencies.util.Library::integerMultiply).longValue()', javaLong())
+         ->assert('%s == 35L')
+      ->addTest('Integer n\'ary times', {|[6, 7, 5]->times()}, 'java.util.Arrays.asList(6L, 7L, 5L).stream().reduce(1L, org.finos.legend.engine.plan.dependencies.util.Library::integerMultiply).longValue()', javaLong())
+         ->assert('%s == 210L')
+      // Float
+      ->addTest('Float plus', {|5.2 + 1.0}, 'java.util.Arrays.asList(5.2, 1.0).stream().reduce(0.0, org.finos.legend.engine.plan.dependencies.util.Library::floatPlus).doubleValue()', javaDouble())
+         ->assert('%s == 6.2')
+      ->addTest('Float Unary minus', {|-5.0}, '-5.0', javaDouble())
+         ->assert('%s == -5.0')
+      ->addTest('Float Binary minus', {|7.0-5.0}, 'org.finos.legend.engine.plan.dependencies.util.Library.minus(java.util.Arrays.asList(7.0, 5.0)).doubleValue()', javaDouble())
+         ->assert('%s == 2.0')
+      ->addTest('Float n\'ary minus', {|[6.0, 7.0, 5.0]->minus()}, 'org.finos.legend.engine.plan.dependencies.util.Library.minus(java.util.Arrays.asList(6.0, 7.0, 5.0)).doubleValue()', javaDouble())
+         ->assert('%s == -6.0')
+      ->addTest('Float Binary times', {|7.0*5.0}, 'java.util.Arrays.asList(7.0, 5.0).stream().reduce(1.0, org.finos.legend.engine.plan.dependencies.util.Library::floatMultiply).doubleValue()', javaDouble())
+         ->assert('%s == 35.0')
+      ->addTest('Float n\'ary times', {|[6.0, 7.0, 5.0]->times()}, 'java.util.Arrays.asList(6.0, 7.0, 5.0).stream().reduce(1.0, org.finos.legend.engine.plan.dependencies.util.Library::floatMultiply).doubleValue()', javaDouble())
+         ->assert('%s == 210.0')
+      // go
+      ->runTests();
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::engine::java::tests::testPow() : Boolean[1]
+{
+   javaExpressionTests(engineConventions([]))
+      ->addTest('Number Pow (double numbers)', {|pow(5.0, 2.0)}, '(Number) new Double(StrictMath.pow(new Double(5.0).doubleValue(), new Double(2.0).doubleValue()))', javaNumber())
+         ->assert('(%s).doubleValue() == 25.0')
+      ->addTest('Number Pow (integer numbers)', {|pow(4, 3)}, '(Number) new Double(StrictMath.pow(new Long(4L).doubleValue(), new Long(3L).doubleValue()))', javaNumber())
+         ->assert('(%s).doubleValue() == 64.0')
+      ->runTests();
+}
+
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::engine::java::tests::testAverage() : Boolean[1]
+{
+   javaExpressionTests(engineConventions([]))
+      ->addTest('Number Average', {| average([5.0,1,2.0,8,3])}, 'org.finos.legend.engine.plan.dependencies.util.Library.average(java.util.Arrays.<Number>asList(5.0, 1L, 2.0, 8L, 3L))', javaDouble())
+         ->assert('%s == 3.8')
+      ->addTest('Integer Average', {|[1,2,3]->average()}, 'org.finos.legend.engine.plan.dependencies.util.Library.average(java.util.Arrays.asList(1L, 2L, 3L))', javaDouble())
+         ->assert('%s == 2.0')
+      ->addTest('Float Average', {| [1.0,2.0,3.0]->average()}, 'org.finos.legend.engine.plan.dependencies.util.Library.average(java.util.Arrays.asList(1.0, 2.0, 3.0))', javaDouble())
+         ->assert('%s == 2.0')
+      ->runTests();
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::engine::java::tests::testRound() : Boolean[1]
+{
+   javaExpressionTests(engineConventions([]))
+      ->addTest('Number Round 1', {| round(2.5)}, 'org.finos.legend.engine.plan.dependencies.util.Library.round(2.5)', javaLong())
+         ->assert('%s == 2L')
+      ->addTest('Number Round 2', {| round(3.5)}, 'org.finos.legend.engine.plan.dependencies.util.Library.round(3.5)', javaLong())
+         ->assert('%s == 4L')
+      ->addTest('Number Round scale', {|round(3.14159d, 2)}, 'org.finos.legend.engine.plan.dependencies.util.Library.round(new java.math.BigDecimal("3.14159"), 2L)', javaBigDecimal())
+         ->assert('%s.equals(new java.math.BigDecimal("3.14"))')
+      ->runTests();
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::engine::java::tests::testLimitations() : Boolean[1]
+{
+   javaExpressionTests(meta::pure::executionPlan::engine::java::engineConventions([]))
+      // Number
+      ->addTest('Number Max', {| [10.0,1,-2]->max()}, 'java.util.Arrays.<Number>asList(10.0, 1L, -2L).stream().reduce(org.finos.legend.engine.plan.dependencies.util.Library::max).orElse(null)', javaNumber())
+         ->assert('%s.doubleValue() == 10.0')
+      ->addTest('Number Max Empty', {| [5, 1.0]->filter(n| $n==10)->max()}, 'java.util.Arrays.<Number>asList(5L, 1.0).stream().filter((Number n) -> n.equals(10L)).reduce(org.finos.legend.engine.plan.dependencies.util.Library::max).orElse(null)', javaNumber())
+         ->assert('%s == null')
+      ->addTest('Number Max binary op', {| max(10,1.0)}, 'org.finos.legend.engine.plan.dependencies.util.Library.max(10L, 1.0)', javaNumber())
+         ->assert('%s.doubleValue() == 10.0')
+      ->addTest('Number Min', {| [10.0,1,-2]->min()}, 'java.util.Arrays.<Number>asList(10.0, 1L, -2L).stream().reduce(org.finos.legend.engine.plan.dependencies.util.Library::min).orElse(null)', javaNumber())
+         ->assert('%s.doubleValue() == -2.0')
+      ->addTest('Number Min Empty', {| [5, 1.0]->filter(n| $n==10)->min()}, 'java.util.Arrays.<Number>asList(5L, 1.0).stream().filter((Number n) -> n.equals(10L)).reduce(org.finos.legend.engine.plan.dependencies.util.Library::min).orElse(null)', javaNumber())
+         ->assert('%s == null')
+      ->addTest('Number Min binary op', {| min(10,1.0)}, 'org.finos.legend.engine.plan.dependencies.util.Library.min(10L, 1.0)', javaNumber())
+         ->assert('%s.doubleValue() == 1.0')
+      ->addTest('Number Floor 1', {| floor(2.6)}, 'org.finos.legend.engine.plan.dependencies.util.Library.floor(2.6)', javaLong())
+         ->assert('%s == 2L')
+      ->addTest('Number Floor 2', {| floor(-3.9)}, 'org.finos.legend.engine.plan.dependencies.util.Library.floor(-3.9)', javaLong())
+         ->assert('%s == -4L')
+      ->addTest('Number Floor 3', {| floor(3.14159d)}, 'org.finos.legend.engine.plan.dependencies.util.Library.floor(new java.math.BigDecimal("3.14159"))', javaLong())
+         ->assert('%s == 3L')
+      ->addTest('Number Ceiling 1', {| ceiling(2.6)}, 'org.finos.legend.engine.plan.dependencies.util.Library.ceiling(2.6)', javaLong())
+         ->assert('%s == 3L')
+      ->addTest('Number Ceiling 2', {| ceiling(-3.9)}, 'org.finos.legend.engine.plan.dependencies.util.Library.ceiling(-3.9)', javaLong())
+         ->assert('%s == -3L')
+      ->addTest('Number Ceiling 3', {| ceiling(3.14159d)}, 'org.finos.legend.engine.plan.dependencies.util.Library.ceiling(new java.math.BigDecimal("3.14159"))', javaLong())
+         ->assert('%s == 4L')
+      // Integer
+      ->addTest('Integer Abs positive', {|abs(7)}, 'Math.abs(7L)', javaLong())
+         ->assert('%s == 7L')
+      ->addTest('Integer Abs negative', {|abs(-7)}, 'Math.abs(-7L)', javaLong())
+         ->assert('%s == 7L')
+      ->addTest('Integer Max List', {| [1,2,3]->max()}, 'java.util.Arrays.asList(1L, 2L, 3L).stream().reduce(Long::max).orElse(null).longValue()', javaLong())
+         ->assert('%s == 3.0')
+      ->addTest('Integer Max List Empty', {| [1,2,3]->filter(f|false)->max()}, 'java.util.Arrays.asList(1L, 2L, 3L).stream().filter((Long f) -> false).reduce(Long::max).orElse(null)',  javaLongBoxed())
+         ->assert('%s == null')
+      ->addTest('Integer Min List', {| [1,2,3]->min()}, 'java.util.Arrays.asList(1L, 2L, 3L).stream().reduce(Long::min).orElse(null).longValue()', javaLong())
+         ->assert('%s == 1.0')
+      ->addTest('Integer Min List Empty', {| [1,2,3]->filter(f|false)->min()}, 'java.util.Arrays.asList(1L, 2L, 3L).stream().filter((Long f) -> false).reduce(Long::min).orElse(null)',  javaLongBoxed())
+         ->assert('%s == null')
+      // Float
+      ->addTest('Float Max List', {| [1.0,2.0,3.0]->max()}, 'java.util.Arrays.asList(1.0, 2.0, 3.0).stream().reduce(Double::max).orElse(null).doubleValue()', javaDouble())
+         ->assert('%s == 3.0')
+      ->addTest('Float Max List Empty', {| [1.0,2.0,3.0]->filter(f|false)->max()}, 'java.util.Arrays.asList(1.0, 2.0, 3.0).stream().filter((Double f) -> false).reduce(Double::max).orElse(null)',  javaDoubleBoxed())
+         ->assert('%s == null')
+      ->addTest('Float Min List', {| [1.0,2.0,3.0]->min()}, 'java.util.Arrays.asList(1.0, 2.0, 3.0).stream().reduce(Double::min).orElse(null).doubleValue()', javaDouble())
+         ->assert('%s == 1.0')
+      ->addTest('Float Min List Empty', {| [1.0,2.0,3.0]->filter(f|false)->min()}, 'java.util.Arrays.asList(1.0, 2.0, 3.0).stream().filter((Double f) -> false).reduce(Double::min).orElse(null)',  javaDoubleBoxed())
+         ->assert('%s == null')
+      // go
+      ->runTests();
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::engine::java::tests::testTrigs() : Boolean[1]
+{
+   javaExpressionTests(engineConventions([]))
+      ->addTest('Number Sin 1', {| sin(0)}, 'Math.sin(new Long(0L).doubleValue())', javaDouble())
+         ->assert('%s == 0.0d')
+      ->addTest('Number Sin 2', {| sin(1.57079d)}, 'Math.sin(new java.math.BigDecimal("1.57079").doubleValue())', javaDouble())
+         ->assert('%s < 1.0d')
+         ->assert('%s > 0.99999d')
+      ->addTest('Number Sin 3', {| sin(-3.14159d)}, 'Math.sin(new java.math.BigDecimal("3.14159").negate().doubleValue())', javaDouble())
+         ->assert('%s > -0.00001d')
+         ->assert('%s <  0.00001d')
+      ->addTest('Number Cos 1', {| cos(0)}, 'Math.cos(new Long(0L).doubleValue())', javaDouble())
+         ->assert('%s == 1.0d')
+      ->addTest('Number Cos 2', {| cos(1.57079d)}, 'Math.cos(new java.math.BigDecimal("1.57079").doubleValue())', javaDouble())
+         ->assert('%s < 0.00001d')
+         ->assert('%s > 0.0d')
+      ->addTest('Number Cos 3', {| cos(-3.14159d)}, 'Math.cos(new java.math.BigDecimal("3.14159").negate().doubleValue())', javaDouble())
+         ->assert('%s > -1.0d')
+         ->assert('%s < -0.99999d')
+      ->runTests();
+}
+
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::engine::java::tests::testInequalities() : Boolean[1]
+{
+   javaExpressionTests(meta::pure::executionPlan::engine::java::engineConventions([]))
+      // >
+      ->addTest('Number : [1]   ,[1]    : 1 > 1',          {|1 > 1}, '1L > 1L', javaBoolean())->assert('(%s)==false')
+      ->addTest('Number : [1]   ,[1]    : 1 > 2',          {|1 > 2}, '1L > 2L', javaBoolean())->assert('(%s)==false')
+      ->addTest('Number : [1]   ,[1]    : 2 > 1',          {|2 > 1}, '2L > 1L', javaBoolean())->assert('(%s)==true')
+      ->addTest('Number : [0..1],[1]    : empty > 1',      {|[]->cast(@Number)->first() > 1}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(org.finos.legend.engine.plan.dependencies.util.Library.first((Number) null), 1L) > 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('Number : [0..1],[1]    : 1 > 1',          {|[1]->first() > 1}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(org.finos.legend.engine.plan.dependencies.util.Library.first(1L), 1L) > 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('Number : [0..1],[1]    : 1 > 2',          {|[1]->first() > 2}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(org.finos.legend.engine.plan.dependencies.util.Library.first(1L), 2L) > 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('Number : [0..1],[1]    : 2 > 1',          {|[2]->first() > 1}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(org.finos.legend.engine.plan.dependencies.util.Library.first(2L), 1L) > 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('Number : [1]   ,[0..1] : 1 > empty',      {|1 > []->cast(@Number)->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(1L, org.finos.legend.engine.plan.dependencies.util.Library.first((Number) null)) > 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('Number : [1]   ,[0..1] : 1 > 1',          {|1 > [1]->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(1L, org.finos.legend.engine.plan.dependencies.util.Library.first(1L)) > 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('Number : [1]   ,[0..1] : 1 > 2',          {|1 > [2]->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(1L, org.finos.legend.engine.plan.dependencies.util.Library.first(2L)) > 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('Number : [1]   ,[0..1] : 2 > 1',          {|2 > [1]->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(2L, org.finos.legend.engine.plan.dependencies.util.Library.first(1L)) > 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('Number : [0..1],[0..1] : empty > empty',  {|[]->cast(@Number)->first() > []->cast(@Number)->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(org.finos.legend.engine.plan.dependencies.util.Library.first((Number) null), org.finos.legend.engine.plan.dependencies.util.Library.first((Number) null)) > 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('Number : [0..1],[0..1] : 1 > empty',      {|[1]->first() > []->cast(@Number)->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(org.finos.legend.engine.plan.dependencies.util.Library.first(1L), org.finos.legend.engine.plan.dependencies.util.Library.first((Number) null)) > 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('Number : [0..1],[0..1] : empty > 1',      {|[]->cast(@Number)->first() > [1]->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(org.finos.legend.engine.plan.dependencies.util.Library.first((Number) null), org.finos.legend.engine.plan.dependencies.util.Library.first(1L)) > 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('Number : [0..1],[0..1] : 1 > 1',          {|[1]->first() > [1]->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(org.finos.legend.engine.plan.dependencies.util.Library.first(1L), org.finos.legend.engine.plan.dependencies.util.Library.first(1L)) > 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('Number : [0..1],[0..1] : 1 > 2',          {|[1]->first() > [2]->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(org.finos.legend.engine.plan.dependencies.util.Library.first(1L), org.finos.legend.engine.plan.dependencies.util.Library.first(2L)) > 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('Number : [0..1],[0..1] : 2 > 1',          {|[2]->first() > [1]->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(org.finos.legend.engine.plan.dependencies.util.Library.first(2L), org.finos.legend.engine.plan.dependencies.util.Library.first(1L)) > 0', javaBoolean())->assert('(%s)==true')
+      // >=
+      ->addTest('Number : [1]   ,[1]    : 1 >= 1',         {|1 >= 1}, '1L >= 1L', javaBoolean())->assert('(%s)==true')
+      ->addTest('Number : [1]   ,[1]    : 1 >= 2',         {|1 >= 2}, '1L >= 2L', javaBoolean())->assert('(%s)==false')
+      ->addTest('Number : [1]   ,[1]    : 2 >= 1',         {|2 >= 1}, '2L >= 1L', javaBoolean())->assert('(%s)==true')
+      ->addTest('Number : [0..1],[1]    : empty >= 1',     {|[]->cast(@Number)->first() >= 1}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(org.finos.legend.engine.plan.dependencies.util.Library.first((Number) null), 1L) >= 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('Number : [0..1],[1]    : 1 >= 1',         {|[1]->first() >= 1}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(org.finos.legend.engine.plan.dependencies.util.Library.first(1L), 1L) >= 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('Number : [0..1],[1]    : 1 >= 2',         {|[1]->first() >= 2}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(org.finos.legend.engine.plan.dependencies.util.Library.first(1L), 2L) >= 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('Number : [0..1],[1]    : 1 >= 1',         {|[2]->first() >= 1}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(org.finos.legend.engine.plan.dependencies.util.Library.first(2L), 1L) >= 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('Number : [1]   ,[0..1] : 1 >= empty',     {|1 >= []->cast(@Number)->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(1L, org.finos.legend.engine.plan.dependencies.util.Library.first((Number) null)) >= 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('Number : [1]   ,[0..1] : 1 >= 1',         {|1 >= [1]->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(1L, org.finos.legend.engine.plan.dependencies.util.Library.first(1L)) >= 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('Number : [1]   ,[0..1] : 1 >= 2',         {|1 >= [2]->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(1L, org.finos.legend.engine.plan.dependencies.util.Library.first(2L)) >= 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('Number : [1]   ,[0..1] : 2 >= 1',         {|2 >= [1]->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(2L, org.finos.legend.engine.plan.dependencies.util.Library.first(1L)) >= 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('Number : [0..1],[0..1] : empty >= empty', {|[]->cast(@Number)->first() >= []->cast(@Number)->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(org.finos.legend.engine.plan.dependencies.util.Library.first((Number) null), org.finos.legend.engine.plan.dependencies.util.Library.first((Number) null)) >= 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('Number : [0..1],[0..1] : 1 >= empty',     {|[1]->first() >= []->cast(@Number)->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(org.finos.legend.engine.plan.dependencies.util.Library.first(1L), org.finos.legend.engine.plan.dependencies.util.Library.first((Number) null)) >= 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('Number : [0..1],[0..1] : empty >= 1',     {|[]->cast(@Number)->first() >= [1]->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(org.finos.legend.engine.plan.dependencies.util.Library.first((Number) null), org.finos.legend.engine.plan.dependencies.util.Library.first(1L)) >= 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('Number : [0..1],[0..1] : 1 >= 1',         {|[1]->first() >= [1]->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(org.finos.legend.engine.plan.dependencies.util.Library.first(1L), org.finos.legend.engine.plan.dependencies.util.Library.first(1L)) >= 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('Number : [0..1],[0..1] : 1 >= 2',         {|[1]->first() >= [2]->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(org.finos.legend.engine.plan.dependencies.util.Library.first(1L), org.finos.legend.engine.plan.dependencies.util.Library.first(2L)) >= 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('Number : [0..1],[0..1] : 2 >= 1',         {|[2]->first() >= [1]->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(org.finos.legend.engine.plan.dependencies.util.Library.first(2L), org.finos.legend.engine.plan.dependencies.util.Library.first(1L)) >= 0', javaBoolean())->assert('(%s)==true')
+      // <
+      ->addTest('Number : [1]   ,[1]    : 1 < 1',          {|1 < 1}, '1L < 1L', javaBoolean())->assert('(%s)==false')
+      ->addTest('Number : [1]   ,[1]    : 1 < 2',          {|1 < 2}, '1L < 2L', javaBoolean())->assert('(%s)==true')
+      ->addTest('Number : [1]   ,[1]    : 2 < 1',          {|2 < 1}, '2L < 1L', javaBoolean())->assert('(%s)==false')
+      ->addTest('Number : [0..1],[1]    : empty < 1',      {|[]->cast(@Number)->first() < 1}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(org.finos.legend.engine.plan.dependencies.util.Library.first((Number) null), 1L) < 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('Number : [0..1],[1]    : 1 < 1',          {|[1]->first() < 1}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(org.finos.legend.engine.plan.dependencies.util.Library.first(1L), 1L) < 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('Number : [0..1],[1]    : 1 < 2',          {|[1]->first() < 2}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(org.finos.legend.engine.plan.dependencies.util.Library.first(1L), 2L) < 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('Number : [0..1],[1]    : 2 < 1',          {|[2]->first() < 1}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(org.finos.legend.engine.plan.dependencies.util.Library.first(2L), 1L) < 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('Number : [1]   ,[0..1] : 1 < empty',      {|1 < []->cast(@Number)->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(1L, org.finos.legend.engine.plan.dependencies.util.Library.first((Number) null)) < 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('Number : [1]   ,[0..1] : 1 < 1',          {|1 < [1]->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(1L, org.finos.legend.engine.plan.dependencies.util.Library.first(1L)) < 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('Number : [1]   ,[0..1] : 1 < 2',          {|1 < [2]->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(1L, org.finos.legend.engine.plan.dependencies.util.Library.first(2L)) < 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('Number : [1]   ,[0..1] : 2 < 1',          {|2 < [1]->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(2L, org.finos.legend.engine.plan.dependencies.util.Library.first(1L)) < 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('Number : [0..1],[0..1] : empty < empty',  {|[]->cast(@Number)->first() < []->cast(@Number)->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(org.finos.legend.engine.plan.dependencies.util.Library.first((Number) null), org.finos.legend.engine.plan.dependencies.util.Library.first((Number) null)) < 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('Number : [0..1],[0..1] : 1 < empty',      {|[1]->first() < []->cast(@Number)->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(org.finos.legend.engine.plan.dependencies.util.Library.first(1L), org.finos.legend.engine.plan.dependencies.util.Library.first((Number) null)) < 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('Number : [0..1],[0..1] : empty < 1',      {|[]->cast(@Number)->first() < [1]->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(org.finos.legend.engine.plan.dependencies.util.Library.first((Number) null), org.finos.legend.engine.plan.dependencies.util.Library.first(1L)) < 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('Number : [0..1],[0..1] : 1 < 1',          {|[1]->first() < [1]->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(org.finos.legend.engine.plan.dependencies.util.Library.first(1L), org.finos.legend.engine.plan.dependencies.util.Library.first(1L)) < 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('Number : [0..1],[0..1] : 1 < 2',          {|[1]->first() < [2]->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(org.finos.legend.engine.plan.dependencies.util.Library.first(1L), org.finos.legend.engine.plan.dependencies.util.Library.first(2L)) < 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('Number : [0..1],[0..1] : 2 < 1',          {|[2]->first() < [1]->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(org.finos.legend.engine.plan.dependencies.util.Library.first(2L), org.finos.legend.engine.plan.dependencies.util.Library.first(1L)) < 0', javaBoolean())->assert('(%s)==false')
+      // <=
+      ->addTest('Number : [1]   ,[1]    : 1 <= 1',         {|1 <= 1}, '1L <= 1L', javaBoolean())->assert('(%s)==true')
+      ->addTest('Number : [1]   ,[1]    : 1 <= 2',         {|1 <= 2}, '1L <= 2L', javaBoolean())->assert('(%s)==true')
+      ->addTest('Number : [1]   ,[1]    : 2 <= 1',         {|2 <= 1}, '2L <= 1L', javaBoolean())->assert('(%s)==false')
+      ->addTest('Number : [0..1],[1]    : empty <= 1',     {|[]->cast(@Number)->first() <= 1}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(org.finos.legend.engine.plan.dependencies.util.Library.first((Number) null), 1L) <= 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('Number : [0..1],[1]    : 1 <= 1',         {|[1]->first() <= 1}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(org.finos.legend.engine.plan.dependencies.util.Library.first(1L), 1L) <= 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('Number : [0..1],[1]    : 1 <= 2',         {|[1]->first() <= 2}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(org.finos.legend.engine.plan.dependencies.util.Library.first(1L), 2L) <= 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('Number : [0..1],[1]    : 2 <= 1',         {|[2]->first() <= 1}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(org.finos.legend.engine.plan.dependencies.util.Library.first(2L), 1L) <= 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('Number : [1]   ,[0..1] : 1 <= empty',     {|1 <= []->cast(@Number)->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(1L, org.finos.legend.engine.plan.dependencies.util.Library.first((Number) null)) <= 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('Number : [1]   ,[0..1] : 1 <= 1',         {|1 <= [1]->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(1L, org.finos.legend.engine.plan.dependencies.util.Library.first(1L)) <= 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('Number : [1]   ,[0..1] : 1 <= 2',         {|1 <= [2]->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(1L, org.finos.legend.engine.plan.dependencies.util.Library.first(2L)) <= 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('Number : [1]   ,[0..1] : 2 <= 1',         {|2 <= [1]->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(2L, org.finos.legend.engine.plan.dependencies.util.Library.first(1L)) <= 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('Number : [0..1],[0..1] : empty <= empty', {|[]->cast(@Number)->first() <= []->cast(@Number)->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(org.finos.legend.engine.plan.dependencies.util.Library.first((Number) null), org.finos.legend.engine.plan.dependencies.util.Library.first((Number) null)) <= 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('Number : [0..1],[0..1] : 1 <= empty',     {|[1]->first() <= []->cast(@Number)->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(org.finos.legend.engine.plan.dependencies.util.Library.first(1L), org.finos.legend.engine.plan.dependencies.util.Library.first((Number) null)) <= 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('Number : [0..1],[0..1] : empty <= 1',     {|[]->cast(@Number)->first() <= [1]->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(org.finos.legend.engine.plan.dependencies.util.Library.first((Number) null), org.finos.legend.engine.plan.dependencies.util.Library.first(1L)) <= 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('Number : [0..1],[0..1] : 1 <= 1',         {|[1]->first() <= [1]->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(org.finos.legend.engine.plan.dependencies.util.Library.first(1L), org.finos.legend.engine.plan.dependencies.util.Library.first(1L)) <= 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('Number : [0..1],[0..1] : 1 <= 2',         {|[1]->first() <= [2]->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(org.finos.legend.engine.plan.dependencies.util.Library.first(1L), org.finos.legend.engine.plan.dependencies.util.Library.first(2L)) <= 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('Number : [0..1],[0..1] : 2 <= 1',         {|[2]->first() <= [1]->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompareNumbers(org.finos.legend.engine.plan.dependencies.util.Library.first(2L), org.finos.legend.engine.plan.dependencies.util.Library.first(1L)) <= 0', javaBoolean())->assert('(%s)==false')
+      ->runTests();
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::engine::java::tests::testMathsPureTests() : Boolean[1]
+{
+   javaPureTests(meta::pure::executionPlan::engine::java::engineConventions([]), [
+      meta::pure::functions::lang::tests::greaterThan::testGreaterThan_Number__Boolean_1_,
+      meta::pure::functions::lang::tests::greaterThanEqual::testGreaterThanEqual_Number__Boolean_1_,
+      meta::pure::functions::lang::tests::lessThan::testLessThan_Number__Boolean_1_,
+      meta::pure::functions::lang::tests::lessThanEqual::testLessThanEqual_Number__Boolean_1_
+   ])
+      ->addTestsWithin(meta::pure::functions::math::tests::abs)
+      ->addTestsWithin(meta::pure::functions::math::tests::times)
+      ->addTestsWithin(meta::pure::functions::math::tests::toDecimal)
+      ->addTestsWithin(meta::pure::functions::math::tests::toFloat)
+      ->excludeTest(meta::pure::functions::math::tests::abs::testReflectiveExecution__Boolean_1_) //eval base tests
+      ->excludeTest(meta::pure::functions::math::tests::times::testLargeTimes__Boolean_1_) // too large long
+   ->runTests();
+}
+
