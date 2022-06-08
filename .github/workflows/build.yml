@@ -67,7 +67,7 @@ jobs:
         env:
           MAVEN_OPTS: -Xmx4000m
       - name: Test
-        run: mvn test -Dmaven.test.failure.ignore=true
+        run: mvn test
         env:
           MAVEN_OPTS: -Xmx4000m
       - name: Maven Deploy + Sonar + Docker Snapshot
