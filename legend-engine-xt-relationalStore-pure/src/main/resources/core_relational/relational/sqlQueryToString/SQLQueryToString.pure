@@ -460,9 +460,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::proce
         |')') ;
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::literalTransform(t: meta::pure::metamodel::function::Function<{Nil[1] -> String[1]}>[1]): meta::pure::metamodel::function::Function<{Nil[1], String[0..1] -> String[1]}>[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::literalTransform<K>(t: meta::pure::metamodel::function::Function<{K[1] -> String[1]}>[1]): meta::pure::metamodel::function::Function<{K[1], String[0..1] -> String[1]}>[1]
 {
-  {x:Nil[1], dbTimeZone:String[0..1]| $t->eval($x)};
+  {x:K[1], dbTimeZone:String[0..1]| $t->eval($x)};
 }
 
 Class <<access.private>> meta::relational::functions::sqlQueryToString::LiteralProcessor
@@ -476,7 +476,7 @@ Class <<access.private>> meta::relational::functions::sqlQueryToString::LiteralP
    }:String[1];
 
    transformValue(value:Any[1], dbTimeZone:String[0..1]) {
-      $this.transform->eval($value, $dbTimeZone)
+      $this.transform->eval($value, $dbTimeZone);
    }:String[1];
 }
 
