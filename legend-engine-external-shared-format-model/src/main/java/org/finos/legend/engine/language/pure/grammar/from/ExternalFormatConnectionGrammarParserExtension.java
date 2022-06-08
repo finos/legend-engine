@@ -68,13 +68,11 @@ public class ExternalFormatConnectionGrammarParserExtension implements IExternal
         {
             ExternalSourceSpecificationParseTreeWalker walker = new ExternalSourceSpecificationParseTreeWalker();
 
-            switch (code.getType())
+            if ("UrlStream".equals(code.getType()))
             {
-                case "UrlStream":
-                    return parseDataSourceSpecification(code, p -> walker.visitUrlStreamExternalSourceSpecification(code, p.urlStreamExternalSourceSpecification()));
-                default:
-                    return null;
+                return parseDataSourceSpecification(code, p -> walker.visitUrlStreamExternalSourceSpecification(code, p.urlStreamExternalSourceSpecification()));
             }
+            return null;
         });
     }
 

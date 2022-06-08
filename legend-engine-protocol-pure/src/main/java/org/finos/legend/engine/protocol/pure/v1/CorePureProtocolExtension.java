@@ -17,8 +17,6 @@ package org.finos.legend.engine.protocol.pure.v1;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
-import org.eclipse.collections.impl.list.mutable.FastList;
-import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
@@ -54,47 +52,35 @@ public class CorePureProtocolExtension implements PureProtocolExtension
     @Override
     public List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()
     {
-        return Lists.mutable.with(() -> Lists.mutable.with(
-                ProtocolSubTypeInfo.Builder
-                        .newInstance(PackageableElement.class)
-                        .withSubtypes(FastList.newListWith(
-                                Tuples.pair(SectionIndex.class, "sectionIndex"),
-                                // Domain
-                                Tuples.pair(Profile.class, "profile"),
-                                Tuples.pair(Enumeration.class, "Enumeration"),
-                                Tuples.pair(Class.class, "class"),
-                                Tuples.pair(Association.class, "association"),
-                                Tuples.pair(Function.class, "function"),
-                                Tuples.pair(Measure.class, "measure"),
-                                Tuples.pair(Unit.class, "unit")
-                        ))
+        return Lists.fixedSize.with(() -> Lists.fixedSize.with(
+                ProtocolSubTypeInfo.newBuilder(PackageableElement.class)
+                        .withSubtype(SectionIndex.class, "sectionIndex")
+                        // Domain
+                        .withSubtype(Profile.class, "profile")
+                        .withSubtype(Enumeration.class, "Enumeration")
+                        .withSubtype(Class.class, "class")
+                        .withSubtype(Association.class, "association")
+                        .withSubtype(Function.class, "function")
+                        .withSubtype(Measure.class, "measure")
+                        .withSubtype(Unit.class, "unit")
                         .build(),
                 // Runtime
-                ProtocolSubTypeInfo.Builder
-                        .newInstance(Runtime.class)
+                ProtocolSubTypeInfo.newBuilder(Runtime.class)
                         .withDefaultSubType(LegacyRuntime.class)
-                        .withSubtypes(FastList.newListWith(
-                                Tuples.pair(LegacyRuntime.class, "legacyRuntime"),
-                                Tuples.pair(EngineRuntime.class, "engineRuntime"),
-                                Tuples.pair(RuntimePointer.class, "runtimePointer")
-                        ))
+                        .withSubtype(LegacyRuntime.class, "legacyRuntime")
+                        .withSubtype(EngineRuntime.class, "engineRuntime")
+                        .withSubtype(RuntimePointer.class, "runtimePointer")
                         .build(),
                 // Embedded Data
-                ProtocolSubTypeInfo.Builder
-                        .newInstance(EmbeddedData.class)
-                        .withSubtypes(FastList.newListWith(
-                                Tuples.pair(ExternalFormatData.class, "externalFormat"),
-                                Tuples.pair(ModelStoreData.class, "modelStore"),
-                                Tuples.pair(DataElementReference.class, "reference")
-                        ))
+                ProtocolSubTypeInfo.newBuilder(EmbeddedData.class)
+                        .withSubtype(ExternalFormatData.class, "externalFormat")
+                        .withSubtype(ModelStoreData.class, "modelStore")
+                        .withSubtype(DataElementReference.class, "reference")
                         .build(),
                 // Test Assertion
-                ProtocolSubTypeInfo.Builder
-                        .newInstance(TestAssertion.class)
-                        .withSubtypes(FastList.newListWith(
-                                Tuples.pair(EqualTo.class, "equalTo"),
-                                Tuples.pair(EqualToJson.class, "equalToJson")
-                        ))
+                ProtocolSubTypeInfo.newBuilder(TestAssertion.class)
+                        .withSubtype(EqualTo.class, "equalTo")
+                        .withSubtype(EqualToJson.class, "equalToJson")
                         .build()
         ));
     }
@@ -102,7 +88,7 @@ public class CorePureProtocolExtension implements PureProtocolExtension
     @Override
     public Map<java.lang.Class<? extends PackageableElement>, String> getExtraProtocolToClassifierPathMap()
     {
-        return Maps.mutable.<java.lang.Class<? extends PackageableElement>, String>ofInitialCapacity(11)
+        return Maps.mutable.<java.lang.Class<? extends PackageableElement>, String>ofInitialCapacity(12)
                 .withKeyValue(Association.class, "meta::pure::metamodel::relationship::Association")
                 .withKeyValue(Class.class, "meta::pure::metamodel::type::Class")
                 .withKeyValue(Enumeration.class, "meta::pure::metamodel::type::Enumeration")
@@ -114,7 +100,6 @@ public class CorePureProtocolExtension implements PureProtocolExtension
                 .withKeyValue(Profile.class, "meta::pure::metamodel::extension::Profile")
                 .withKeyValue(SectionIndex.class, "meta::pure::metamodel::section::SectionIndex")
                 .withKeyValue(Unit.class, "meta::pure::metamodel::type::Unit")
-                .withKeyValue(DataElement.class, "meta::testable::DataElement");
+                .withKeyValue(DataElement.class, "meta::pure::data::DataElement");
     }
-
 }

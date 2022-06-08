@@ -17,7 +17,7 @@ package org.finos.legend.engine.language.pure.dsl.diagram.compiler.toPureGraph;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.diagram.Diagram;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_PackageableElement_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_diagram_Diagram_Impl;
 
 import java.util.Collections;
 
@@ -26,11 +26,7 @@ public class DiagramCompilerExtension implements CompilerExtension
     @Override
     public Iterable<? extends Processor<?>> getExtraProcessors()
     {
-        return Collections.singletonList(Processor.newProcessor(Diagram.class, (diagram, context) ->
-                {
-                    // NOTE: we stub out since this element doesn't have an equivalent packageable element form in PURE metamodel
-                    return new Root_meta_pure_metamodel_PackageableElement_Impl("");
-                },
+        return Collections.singletonList(Processor.newProcessor(Diagram.class, (diagram, context) -> new Root_meta_pure_metamodel_diagram_Diagram_Impl(""),
                 (diagram, context) ->
                 {
                     diagram.classViews.forEach(view -> HelperDiagramBuilder.processClassView(view, context));
