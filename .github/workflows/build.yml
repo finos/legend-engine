@@ -58,6 +58,10 @@ jobs:
         run: mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies
         env:
           MAVEN_OPTS: -Xmx4000m
+      - name: CodeStyle Checks
+        run: mvn checkstyle:check@verify-checkstyle
+        env:
+          MAVEN_OPTS: -Xmx4000m
       - name: Build
         run: mvn install javadoc:javadoc -DskipTests
         env:

@@ -522,7 +522,7 @@
                 </dependencies>
                 <executions>
                     <execution>
-                        <id>verify</id>
+                        <id>verify-checkstyle</id>
                         <phase>verify</phase>
                         <configuration>
                             <configLocation>checkstyle.xml</configLocation>
