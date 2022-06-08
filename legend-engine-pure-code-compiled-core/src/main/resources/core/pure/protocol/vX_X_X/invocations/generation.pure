@@ -1,0 +1,59 @@
+###Pure
+
+import meta::pure::generation::metamodel::*;
+import meta::json::*;
+import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::*;
+import meta::alloy::metadataServer::*;
+import meta::json::schema::generation::*;
+import meta::pure::functions::io::http::*;
+
+function  <<access.private>>  meta::protocols::pure::vX_X_X::invocation::generation::json::legendGenerateJson(input:JSONSchemaConfig[1], host:String[1], port:Integer[1]):JSONSchemaOutput[*]
+{
+   meta::protocols::pure::vX_X_X::invocation::generation::json::legendGenerateJson($input, $host, $port, 'v1');
+}
+
+function meta::protocols::pure::vX_X_X::invocation::generation::json::legendGenerateJson(jsonConfig:JSONSchemaConfig[1], host:String[1], port:Integer[1], version:String[1]):JSONSchemaOutput[*]
+{
+   let resp = executeHTTPRaw(^URL(host = $host , port=$port, path = '/api/pure/'+$version+'/schemaGeneration/jsonSchema'),
+                                 HTTPMethod.POST,
+                                 'application/json',
+                                 '{ "clientVersion":"vX_X_X",'+
+                                 '  "config":'+$jsonConfig->meta::protocols::pure::vX_X_X::invocation::generation::json::transformJSONSchemaConfig()->alloyToJSON()+','+
+                                 '  "model":'+if ($jsonConfig.package->isEmpty(),
+                                                  |$jsonConfig.class->toOne()->pathToElement()->toOne()->cast(@Type)->buildPureModelFromType(meta::pure::router::extension::defaultExtensions())->alloyToJSON(),
+                                                  |$jsonConfig.package->toOne()->pathToElement()->toOne()->cast(@Package)->buildPureModelFromPackage(meta::pure::router::extension::defaultExtensions())->alloyToJSON())+
+                                 '}'
+                                );
+   assertEq(200, $resp.statusCode, | $resp.entity);
+   $resp.entity->parseJSON()->fromJSON(JSONSchemaOutput, ^ExtendedJSONDeserializationConfig(nullReplacementInArray = ^TDSNull(), typeKeyName='__TYPE', failOnUnknownProperties=true))->cast(@JSONSchemaOutput);
+}
+
+###Pure
+
+import meta::pure::generation::metamodel::*;
+import meta::external::format::avro::generation::*;
+import meta::json::*;
+import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::*;
+import meta::alloy::metadataServer::*;
+import meta::pure::functions::io::http::*;
+
+function <<access.private>> meta::protocols::pure::vX_X_X::invocation::generation::avro::legendGenerateAvro(input:AvroConfig[1], host:String[1], port:Integer[1]):AvroOutput[*]
+{
+   meta::protocols::pure::vX_X_X::invocation::generation::avro::legendGenerateAvro($input, $host, $port, 'v1');
+}
+
+function meta::protocols::pure::vX_X_X::invocation::generation::avro::legendGenerateAvro(avroConfig:AvroConfig[1], host:String[1], port:Integer[1], version:String[1]):AvroOutput[*]
+{
+   let resp = executeHTTPRaw(^URL(host = $host , port=$port, path = '/api/pure/'+$version+'/schemaGeneration/avro'),
+                                 HTTPMethod.POST,
+                                 'application/json',
+                                 '{ "clientVersion":"vX_X_X",'+
+                                 '  "config":'+$avroConfig->meta::protocols::pure::vX_X_X::invocation::generation::avro::transformAvroGenerationConfig()->alloyToJSON()+','+
+                                 '  "model":'+if ($avroConfig.package->isEmpty(),
+                                                  |$avroConfig.class->toOne()->pathToElement()->toOne()->cast(@Type)->buildPureModelFromType(meta::pure::router::extension::defaultExtensions())->alloyToJSON(),
+                                                  |$avroConfig.package->toOne()->pathToElement()->toOne()->cast(@Package)->buildPureModelFromPackage(meta::pure::router::extension::defaultExtensions())->alloyToJSON())+
+                                 '}'
+                                );
+   assertEq(200, $resp.statusCode, | $resp.entity);
+   $resp.entity->parseJSON()->fromJSON(AvroOutput, ^ExtendedJSONDeserializationConfig(nullReplacementInArray = ^TDSNull(), typeKeyName='__TYPE', failOnUnknownProperties=true))->cast(@AvroOutput);
+}

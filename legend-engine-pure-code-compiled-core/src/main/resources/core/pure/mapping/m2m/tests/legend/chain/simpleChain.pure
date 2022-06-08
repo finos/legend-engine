@@ -1,0 +1,509 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::executionPlan::engine::java::roadmap::*;
+import meta::json::*;
+import meta::pure::executionPlan::profiles::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::mapping::modelToModel::*;
+import meta::pure::mapping::modelToModel::test::alloy::chain::simple::*;
+import meta::pure::mapping::modelToModel::test::alloy::chain::simple::src::*;
+import meta::pure::mapping::modelToModel::test::alloy::chain::simple::bridge::*;
+import meta::pure::mapping::modelToModel::test::alloy::chain::simple::dest::*;
+import meta::pure::runtime::*;
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> {serverVersion.start='v1_19_0'}
+meta::pure::mapping::modelToModel::test::alloy::chain::simple::simpleChainSerializeFlat(): Boolean[1]
+{
+   let tree = #{
+      Firm {
+         name
+      }
+   }#;
+
+   let sourceFirms = '{"name":"Firm1"}';
+   
+   let result = execute(
+      {|Firm.all()->graphFetch($tree)->serialize($tree)},
+      BridgeToDestMapping,
+      ^Runtime(
+         connections = [
+            ^ModelChainConnection(element = ^ModelStore(), mappings = [SrcToBridgeMapping]),
+            ^JsonModelConnection(element = ^ModelStore(), class = __Firm, url = 'data:application/json,' + $sourceFirms)
+         ]
+      ),
+      []
+   );
+
+   let expected = '{"name":"|$Firm1$|"}';
+   assert(jsonEquivalent($expected->parseJSON(), $result.values->toOne()->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> {serverVersion.start='v1_19_0'}
+meta::pure::mapping::modelToModel::test::alloy::chain::simple::simpleChainSerializeFlatChecked(): Boolean[1]
+{
+   let tree = #{
+      Firm {
+         name
+      }
+   }#;
+
+   let sourceFirms = '{"name":"Firm1"}';
+   
+   let result = execute(
+      {|Firm.all()->graphFetchChecked($tree)->serialize($tree)},
+      BridgeToDestMapping,
+      ^Runtime(
+         connections = [
+            ^ModelChainConnection(element = ^ModelStore(), mappings = [SrcToBridgeMapping]),
+            ^JsonModelConnection(element = ^ModelStore(), class = __Firm, url = 'data:application/json,' + $sourceFirms)
+         ]
+      ),
+      []
+   );
+
+   let expected = 
+   '{' +
+   '  "defects": [' +
+   '  ],' +
+   '  "source": {' +
+   '    "defects": [' +
+   '    ],' +
+   '    "source": {' +
+   '      "defects": [' +
+   '      ],' +
+   '      "source": {' +
+   '        "number": 1,' +
+   '        "record": "{\\"name\\":\\"Firm1\\"}"' +
+   '      },' +
+   '      "value": {' +
+   '        "name": "Firm1"' +
+   '      }' +
+   '    },' +
+   '    "value": {' +
+   '      "name": "$Firm1$"' +
+   '    }' +
+   '  },' +
+   '  "value": {' +
+   '    "name": "|$Firm1$|"' +
+   '  }' +
+   '}';
+   assert(jsonEquivalent($expected->parseJSON(), $result.values->toOne()->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> {serverVersion.start='v1_19_0'}
+meta::pure::mapping::modelToModel::test::alloy::chain::simple::simpleChainSerializeNested(): Boolean[1]
+{
+   let tree = #{
+      Firm {
+         name,
+         employees {
+            fullName
+         }
+      }
+   }#;
+
+   let sourceFirms = '{"name":"Firm1", "employees":[{"fullName":"Person1"}, {"fullName":"Person2"}]}';
+   
+   let result = execute(
+      {|Firm.all()->graphFetch($tree)->serialize($tree)},
+      BridgeToDestMapping,
+      ^Runtime(
+         connections = [
+            ^ModelChainConnection(element = ^ModelStore(), mappings = [SrcToBridgeMapping]),
+            ^JsonModelConnection(element = ^ModelStore(), class = __Firm, url = 'data:application/json,' + $sourceFirms)
+         ]
+      ),
+      []
+   );
+
+   let expected = '{"name":"|$Firm1$|","employees":[{"fullName":"|$Person1$|"},{"fullName":"|$Person2$|"}]}';
+   assert(jsonEquivalent($expected->parseJSON(), $result.values->toOne()->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> {serverVersion.start='v1_19_0'}
+meta::pure::mapping::modelToModel::test::alloy::chain::simple::simpleChainSerializeNestedChecked(): Boolean[1]
+{
+   let tree = #{
+      Firm {
+         name,
+         employees {
+            fullName
+         }
+      }
+   }#;
+
+   let sourceFirms = '{"name":"Firm1", "employees":[{"fullName":"Person1"}, {"fullName":"Person2"}]}';
+   
+   let result = execute(
+      {|Firm.all()->graphFetchChecked($tree)->serialize($tree)},
+      BridgeToDestMapping,
+      ^Runtime(
+         connections = [
+            ^ModelChainConnection(element = ^ModelStore(), mappings = [SrcToBridgeMapping]),
+            ^JsonModelConnection(element = ^ModelStore(), class = __Firm, url = 'data:application/json,' + $sourceFirms)
+         ]
+      ),
+      []
+   );
+
+   let expected =
+   '{' +
+   '  "defects": [' +
+   '  ],' +
+   '  "source":   {' +
+   '    "defects": [' +
+   '    ],' +
+   '    "source":     {' +
+   '      "defects": [' +
+   '      ],' +
+   '      "source":       {' +
+   '        "number": 1,' +
+   '        "record": "{\\"name\\":\\"Firm1\\",\\"employees\\":[{\\"fullName\\":\\"Person1\\"},{\\"fullName\\":\\"Person2\\"}]}"' +
+   '      },' +
+   '      "value":       {' +
+   '        "name": "Firm1",' +
+   '        "employees": [' +
+   '          {' +
+   '            "fullName": "Person1"' +
+   '          },' +
+   '          {' +
+   '            "fullName": "Person2"' +
+   '          }' +
+   '        ]' +
+   '      }' +
+   '    },' +
+   '    "value":     {' +
+   '      "name": "$Firm1$",' +
+   '      "employees": [' +
+   '        {' +
+   '          "fullName": "$Person1$"' +
+   '        },' +
+   '        {' +
+   '          "fullName": "$Person2$"' +
+   '        }' +
+   '      ]' +
+   '    }' +
+   '  },' +
+   '  "value":   {' +
+   '    "name": "|$Firm1$|",' +
+   '    "employees": [' +
+   '      {' +
+   '        "fullName": "|$Person1$|"' +
+   '      },' +
+   '      {' +
+   '        "fullName": "|$Person2$|"' +
+   '      }' +
+   '    ]' +
+   '  }' +
+   '}';
+   assert(jsonEquivalent($expected->parseJSON(), $result.values->toOne()->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> {serverVersion.start='v1_19_0'}
+meta::pure::mapping::modelToModel::test::alloy::chain::simple::simpleChainSerializeNestedMultiObject(): Boolean[1]
+{
+   let tree = #{
+      Firm {
+         name,
+         employees {
+            fullName
+         }
+      }
+   }#;
+
+   let sourceFirms = '[{"name":"Firm1", "employees":[{"fullName":"Person1"}, {"fullName":"Person2"}]},{"name":"Firm2", "employees":[{"fullName":"Person3"}]}]';
+   
+   let result = execute(
+      {|Firm.all()->graphFetch($tree)->serialize($tree)},
+      BridgeToDestMapping,
+      ^Runtime(
+         connections = [
+            ^ModelChainConnection(element = ^ModelStore(), mappings = [SrcToBridgeMapping]),
+            ^JsonModelConnection(element = ^ModelStore(), class = __Firm, url = 'data:application/json,' + $sourceFirms)
+         ]
+      ),
+      []
+   );
+
+   let expected =
+   '[' +
+   '  {' +
+   '    "name": "|$Firm1$|",' +
+   '    "employees": [' +
+   '      {' +
+   '        "fullName": "|$Person1$|"' +
+   '      },' +
+   '      {' +
+   '        "fullName": "|$Person2$|"' +
+   '      }' +
+   '    ]' +
+   '  },' +
+   '  {' +
+   '    "name": "|$Firm2$|",' +
+   '    "employees": [' +
+   '      {' +
+   '        "fullName": "|$Person3$|"' +
+   '      }' +
+   '    ]' +
+   '  }' +
+   ']';
+   assert(jsonEquivalent($expected->parseJSON(), $result.values->toOne()->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> {serverVersion.start='v1_19_0'}
+meta::pure::mapping::modelToModel::test::alloy::chain::simple::simpleChainSerializeNestedCheckedMultiObject(): Boolean[1]
+{
+   let tree = #{
+      Firm {
+         name,
+         employees {
+            fullName
+         }
+      }
+   }#;
+
+   let sourceFirms = '[{"name":"Firm1", "employees":[{"fullName":"Person1"}, {"fullName":"Person2"}]},{"name":"Firm2", "employees":[{"fullName":"Person3"}]}]';
+   
+   let result = execute(
+      {|Firm.all()->graphFetchChecked($tree)->serialize($tree)},
+      BridgeToDestMapping,
+      ^Runtime(
+         connections = [
+            ^ModelChainConnection(element = ^ModelStore(), mappings = [SrcToBridgeMapping]),
+            ^JsonModelConnection(element = ^ModelStore(), class = __Firm, url = 'data:application/json,' + $sourceFirms)
+         ]
+      ),
+      []
+   );
+
+   let expected =
+   '[' +
+   '  {' +
+   '    "defects": [' +
+   '    ],' +
+   '    "source":     {' +
+   '      "defects": [' +
+   '      ],' +
+   '      "source":       {' +
+   '        "defects": [' +
+   '        ],' +
+   '        "source":         {' +
+   '          "number": 1,' +
+   '          "record": "{\\"name\\":\\"Firm1\\",\\"employees\\":[{\\"fullName\\":\\"Person1\\"},{\\"fullName\\":\\"Person2\\"}]}"' +
+   '        },' +
+   '        "value":         {' +
+   '          "name": "Firm1",' +
+   '          "employees": [' +
+   '            {' +
+   '              "fullName": "Person1"' +
+   '            },' +
+   '            {' +
+   '              "fullName": "Person2"' +
+   '            }' +
+   '          ]' +
+   '        }' +
+   '      },' +
+   '      "value":       {' +
+   '        "name": "$Firm1$",' +
+   '        "employees": [' +
+   '          {' +
+   '            "fullName": "$Person1$"' +
+   '          },' +
+   '          {' +
+   '            "fullName": "$Person2$"' +
+   '          }' +
+   '        ]' +
+   '      }' +
+   '    },' +
+   '    "value":     {' +
+   '      "name": "|$Firm1$|",' +
+   '      "employees": [' +
+   '        {' +
+   '          "fullName": "|$Person1$|"' +
+   '        },' +
+   '        {' +
+   '          "fullName": "|$Person2$|"' +
+   '        }' +
+   '      ]' +
+   '    }' +
+   '  },' +
+   '  {' +
+   '    "defects": [' +
+   '    ],' +
+   '    "source":     {' +
+   '      "defects": [' +
+   '      ],' +
+   '      "source":       {' +
+   '        "defects": [' +
+   '        ],' +
+   '        "source":         {' +
+   '          "number": 2,' +
+   '          "record": "{\\"name\\":\\"Firm2\\",\\"employees\\":[{\\"fullName\\":\\"Person3\\"}]}"' +
+   '        },' +
+   '        "value":         {' +
+   '          "name": "Firm2",' +
+   '          "employees": [' +
+   '            {' +
+   '              "fullName": "Person3"' +
+   '            }' +
+   '          ]' +
+   '        }' +
+   '      },' +
+   '      "value":       {' +
+   '        "name": "$Firm2$",' +
+   '        "employees": [' +
+   '          {' +
+   '            "fullName": "$Person3$"' +
+   '          }' +
+   '        ]' +
+   '      }' +
+   '    },' +
+   '    "value":     {' +
+   '      "name": "|$Firm2$|",' +
+   '      "employees": [' +
+   '        {' +
+   '          "fullName": "|$Person3$|"' +
+   '        }' +
+   '      ]' +
+   '    }' +
+   '  }' +
+   ']';
+   assert(jsonEquivalent($expected->parseJSON(), $result.values->toOne()->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> {serverVersion.start='v1_19_0'}
+meta::pure::mapping::modelToModel::test::alloy::chain::simple::testJsonModelConnectionPriorityOverModelChainConnection(): Boolean[1]
+{
+   let tree1 = #{
+      Firm {
+         name
+      }
+   }#;
+
+   let tree2 = #{
+         _Firm {
+            name
+         }
+      }#;
+
+   let chainedQuery = {|Firm.all()->graphFetch($tree1)->serialize($tree1)};
+   let simpleQuery = {|_Firm.all()->graphFetch($tree2)->serialize($tree2)};
+
+   let sourceFirms = '{"name":"Firm1"}';
+   let runtime = ^Runtime(
+                          connections = [
+                             ^ModelChainConnection(element = ^ModelStore(), mappings = [SrcToBridgeMapping]),
+                             ^JsonModelConnection(element = ^ModelStore(), class = __Firm, url = 'data:application/json,' + $sourceFirms)
+                          ]
+                       );
+
+   let simpleQueryResult = execute($simpleQuery, SrcToBridgeMapping, $runtime, []).values;
+   assertJsonStringsEqual(
+         '{"name":"$Firm1$"}',
+         $simpleQueryResult
+      );
+
+   let chainedQueryResult = execute($chainedQuery, BridgeToDestMapping, $runtime, []).values;
+   assertJsonStringsEqual(
+      '{"name":"|$Firm1$|"}',
+      $chainedQueryResult
+   );
+}
+
+###Pure
+import meta::pure::mapping::modelToModel::test::alloy::chain::simple::src::*;
+import meta::pure::mapping::modelToModel::test::alloy::chain::simple::bridge::*;
+import meta::pure::mapping::modelToModel::test::alloy::chain::simple::dest::*;
+
+Class meta::pure::mapping::modelToModel::test::alloy::chain::simple::src::__Firm
+{
+   name      : String[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::chain::simple::src::__Person
+{
+   fullName  : String[1];
+}
+
+Association meta::pure::mapping::modelToModel::test::alloy::chain::simple::src::__Firm___Person
+{
+   firm      : __Firm[1];        
+   employees : __Person[*];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::chain::simple::bridge::_Firm
+{
+   name      : String[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::chain::simple::bridge::_Person
+{
+   fullName  : String[1];
+}
+
+Association meta::pure::mapping::modelToModel::test::alloy::chain::simple::bridge::_Firm__Person
+{
+   firm      : _Firm[1];        
+   employees : _Person[*];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::chain::simple::dest::Firm
+{
+   name      : String[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::chain::simple::dest::Person
+{
+   fullName  : String[1];
+}
+
+Association meta::pure::mapping::modelToModel::test::alloy::chain::simple::dest::Firm_Person
+{
+   firm      : Firm[1];        
+   employees : Person[*];
+}
+
+###Mapping
+import meta::pure::mapping::modelToModel::test::alloy::chain::simple::src::*;
+import meta::pure::mapping::modelToModel::test::alloy::chain::simple::bridge::*;
+import meta::pure::mapping::modelToModel::test::alloy::chain::simple::dest::*;
+
+Mapping meta::pure::mapping::modelToModel::test::alloy::chain::simple::BridgeToDestMapping
+(
+   Firm: Pure {
+      ~src _Firm
+      name      : '|' + $src.name + '|',
+      employees : $src.employees
+   }
+   
+   Person: Pure {
+      ~src _Person
+      fullName : '|' + $src.fullName + '|'
+   }
+)
+
+Mapping meta::pure::mapping::modelToModel::test::alloy::chain::simple::SrcToBridgeMapping
+(
+   _Firm: Pure {
+      ~src __Firm
+      name      : '$' + $src.name + '$',
+      employees : $src.employees
+   }
+   
+   _Person: Pure {
+      ~src __Person
+      fullName : '$' + $src.fullName + '$'
+   }
+)

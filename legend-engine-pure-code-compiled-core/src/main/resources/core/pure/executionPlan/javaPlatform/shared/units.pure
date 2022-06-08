@@ -1,0 +1,138 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::factory::*;
+import meta::external::language::java::factory::project::*;
+import meta::external::language::java::metamodel::*;
+import meta::external::language::java::metamodel::project::*;
+import meta::external::language::java::serialization::*;
+import meta::external::language::java::transform::*;
+import meta::pure::dataQuality::*;
+import meta::pure::executionPlan::*;
+import meta::pure::executionPlan::engine::java::*;
+import meta::pure::executionPlan::engine::java::graphFetch::common::*;
+import meta::pure::executionPlan::engine::java::naming::*;
+import meta::pure::executionPlan::engine::java::platform::*;
+import meta::pure::executionPlan::engine::java::typeInfo::*;
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::graphFetch::executionPlan::*;
+import meta::pure::graphFetch::routing::*;
+import meta::pure::mapping::*;
+import meta::pure::mapping::modelToModel::*;
+import meta::pure::mapping::modelToModel::inMemory::*;
+import meta::pure::metamodel::constraint::*;
+import meta::pure::milestoning::*;
+
+function <<access.private>> meta::pure::executionPlan::engine::java::generateInterfaceForUnit(typeInfo:UnitTypeInfo[1], unitIface:meta::external::language::java::metamodel::Class[1],conventions:Conventions[1], debug:DebugContext[1]): meta::external::language::java::metamodel::Class[*]
+{
+   print(if($debug.debug,|$debug.space+'generateInterfaceForUnit: \''+$typeInfo.type.name->toOne()+'\'\n', |''));
+   let measure = $typeInfo.unit().measure->toOne();
+   let measureInterface = generateInterfaceForMeasure($measure, $conventions, $debug);
+   $conventions->className($typeInfo.type)->addModifiers(['public', 'interface'])->implements([$unitIface, $measureInterface])
+      ->concatenate($measureInterface);
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::generateInterfaceForMeasure(measure: meta::pure::metamodel::type::Type[1], conventions: Conventions[1], debug: DebugContext[1]): meta::external::language::java::metamodel::Class[1]
+{
+   let result = $conventions->className($measure)->addModifiers(['public', 'interface']);
+}
+
+function meta::pure::executionPlan::engine::java::unitImplementationClasses(context:GenerationContext[1]): meta::external::language::java::metamodel::Class[*]
+{
+
+   $context.typeInfos->allUnitInfos()
+      ->map(uti | $uti.unit())
+      ->map(u| $context.conventions->implClassName($u))
+      ->map(uc| $context.baseProject->match([p0:Project[0]|$uc, p:Project[1]|$p->resolve($uc)]));
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::createUnitClasses(context:GenerationContext[1], debug:DebugContext[1]): Project[1]
+{
+    let conventions = $context.conventions;
+    let unitTypesInMapping = $context.typeInfos->allUnitInfos()->map(uti | $uti.unit());
+    let unitClassesUsed = $unitTypesInMapping->map(u| let conversionFunction = $u->cast(@Unit).conversionFunction->evaluateAndDeactivate()->toOne();
+                                                      let inverseFunction = meta::pure::functions::math::calculateInverseFunction($conversionFunction)->evaluateAndDeactivate()->toOne();
+                                                      let generatedConversionFunction = $conversionFunction.expressionSequence->toOne()->cast(@ValueSpecification)->generateJava($conventions, $debug);
+                                                      let generatedInverseFunction = $inverseFunction.expressionSequence->toOne()->cast(@ValueSpecification)->generateJava($conventions, $debug);
+                                                      let variableName = $conversionFunction->getUnitConversionFunctionVariableName($conventions, $debug);
+
+                                                      $conventions->implClassName($u)
+                                                               ->addModifiers('public')
+                                                               ->implements($conventions->className($u))
+                                                               ->imports(javaClass('com.fasterxml.jackson.databind.node.ObjectNode'))
+                                                               ->imports(javaClass('com.fasterxml.jackson.databind.JsonNode'))
+                                                               ->imports(javaClass('com.fasterxml.jackson.databind.ObjectMapper'))
+                                                               ->imports(javaClass('java.util.ArrayList'))
+                                                               ->imports(javaClass('com.fasterxml.jackson.databind.node.ArrayNode'))
+                                                               ->addField(javaField('private', javaString(), 'unitType'))
+                                                               ->addField(javaField('private', javaNumber(), 'unitValue'))
+                                                               ->addConstructor(
+                                                                  javaConstructor('public', [javaParam(javaNumber(), 'unitValue')],
+                                                                     '    this.unitType = "' + $u->elementToPath() + '";\n' +
+                                                                     '    this.unitValue = unitValue;'
+                                                                  )
+                                                               )
+                                                               ->addMethod(^meta::external::language::java::metamodel::Method(
+                                                                                                     modifiers   = [meta::external::language::java::metamodel::Modifier.Public],
+                                                                                                     name        = 'createJsonObject',
+                                                                                                     returnType  = javaClass('com.fasterxml.jackson.databind.JsonNode'),
+                                                                                                     body        = 'ObjectMapper mapper = new ObjectMapper();\n' +
+                                                                                                                   'JsonNode rootNode = mapper.createObjectNode();\n' +
+
+                                                                                                                   'JsonNode innerNode = mapper.createObjectNode();\n' +
+                                                                                                                   '((ObjectNode) innerNode).put("unitId", this.unitType);\n' +
+                                                                                                                   'JsonNode innerNode2 = mapper.createObjectNode();\n' +
+                                                                                                                   '((ObjectNode) innerNode).put("exponentValue", 1);\n' +
+
+                                                                                                                   'ArrayNode array = mapper.createArrayNode();\n' +
+                                                                                                                   '((ArrayNode) array).add(innerNode);\n' +
+                                                                                                                   'JsonNode unitNode = mapper.createObjectNode();\n' +
+                                                                                                                   '((ObjectNode) rootNode).putArray("unit").addAll(array);\n' +
+
+                                                                                                                   '((ObjectNode) rootNode).put("value", (double)this.unitValue);\n' +
+
+                                                                                                                    'return rootNode;'
+                                                                                                  ))
+                                                               ->addMethod(cls| javaMethod('public', javaString(), 'getUnitType', [], j_return(j_this($cls)->j_field('unitType'))))
+                                                               ->addMethod(cls| javaMethod('public', javaNumber(), 'getUnitValue', [], j_return(j_this($cls)->j_field('unitValue'))))
+                                                               ->addMethod({cls|
+                                                                  let var = j_variable(javaNumber(), $variableName);
+                                                                  javaMethod('public', javaNumber(), 'convertToCanonical', [],
+                                                                             [
+                                                                                $var->j_declare(j_this($cls)->j_field('unitValue')),
+                                                                                j_return($generatedConversionFunction)
+                                                                             ]);
+                                                                 })
+                                                               ->addMethod(javaMethod(['public', 'static'], javaNumber(), 'inverse', j_parameter(javaNumber(), $variableName), j_return($generatedInverseFunction)));
+                                               );
+
+   mergeProjects(
+      newProject()->addClasses($unitClassesUsed)
+         ->concatenate(createUnitDependencies($context, $debug)->dependencies()->resolveAndGetProjects())
+         ->toOneMany()
+   );
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::createUnitDependencies(context:GenerationContext[1], debug:DebugContext[1]): Code[1]
+{
+   let conventions = $context.conventions;
+   let unitTypesInMapping = $context.typeInfos->allUnitInfos()->map(uti | $uti.unit());
+   if ($unitTypesInMapping->size() > 0,
+       | let u = $unitTypesInMapping->first();
+         let conversionFunction = $u->cast(@Unit).conversionFunction->evaluateAndDeactivate()->toOne();
+         let generatedConversionFunctionCode = $conversionFunction.expressionSequence->toOne()->cast(@ValueSpecification)->generateJava($conventions, $debug);
+         let conversionFunctionCodeWithDependency = $generatedConversionFunctionCode;,
+       | ^Code(type=^meta::external::language::java::metamodel::Type()));
+}

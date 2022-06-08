@@ -1,0 +1,61 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::profiles::*;
+
+function <<test.Test>> meta::pure::functions::lang::tests::lessThanEqual::testLessThanEqual_Number():Boolean[1]
+{
+    assert(3 <= 4);
+    assert(lessThanEqual(3, 4));
+    assert(3 <= 3);
+    assert(lessThanEqual(3, 3));
+
+    assertFalse(4 <= 3);
+    assertFalse(lessThanEqual(4, 3));
+}
+
+function <<test.Test>> meta::pure::functions::lang::tests::lessThanEqual::testLessThanEqual_Date():Boolean[1]
+{
+   assert(%2012-10-01 <= %2012-10-02);
+   assert(lessThanEqual(%2012-10-01, %2012-10-02));
+   assert(%2012-10-02 <= %2012-10-02);
+   assert(lessThanEqual(%2012-10-02, %2012-10-02));
+
+   assertFalse(%2012-10-03 <= %2012-10-02);
+   assertFalse(lessThanEqual(%2012-10-03, %2012-10-02));
+}
+
+function <<test.Test>> meta::pure::functions::lang::tests::lessThanEqual::testLessThanEqual_String():Boolean[1]
+{
+    assert('a' <= 'b');
+    assert(lessThanEqual('a', 'b'));
+    assert('a' <= 'a');
+    assert(lessThanEqual('a', 'a'));
+
+    assertFalse('b' <= 'a');
+    assertFalse(lessThanEqual('b', 'a'));
+}
+
+function <<test.Test>> meta::pure::functions::lang::tests::lessThanEqual::testLessThanEqual_Boolean():Boolean[1]
+{
+    assert(false <= true);
+    assert(lessThanEqual(false, true));
+    assert(false <= false);
+    assert(lessThanEqual(false, false));
+    assert(true <= true);
+    assert(lessThanEqual(true, true));
+
+    assertFalse(true <= false);
+    assertFalse(lessThanEqual(true, false));
+}

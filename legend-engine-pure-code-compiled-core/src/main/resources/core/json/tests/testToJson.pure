@@ -1,0 +1,454 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::json::*;
+import meta::json::tests::*;
+import meta::pure::profiles::*;
+
+
+Class meta::json::tests::GeographicEntity
+{
+    type : GeographicEntityType[1];
+}
+
+
+Enum meta::json::tests::GeographicEntityType
+{
+    {doc.doc = 'A city, town, village, or other urban area.'} CITY,
+    <<doc.deprecated>> COUNTRY,
+    {doc.doc = 'Any geographic entity other than a city or country.'} REGION
+}
+
+
+Class meta::json::tests::TestJSONType
+{
+   a : String[1];
+   b : Integer[0..1];
+   c : Float[1..3];
+   d : Date[*];
+}
+
+Class meta::json::tests::TestEmptyClass
+{
+}
+
+Class meta::json::tests::ClassWithFunctionTypes
+{
+   supports:Function<{FunctionExpression[1]->Boolean[1]}>[1];
+   execute:Function<{FunctionExpression[1], Map<String,List<Any>>[1] -> Boolean[1]}>[1];
+}
+
+Enum meta::json::tests::TestEnum
+{
+   VALUE1,
+   VALUE2
+}
+
+Class meta::json::tests::TestClass
+{
+   text:String[1];
+
+   {doc.doc = 'a magic number'}
+   number:Integer[1];
+
+}
+
+Association meta::json::tests::TestAssociation
+{
+   parent: TestClass[1];
+   children: TestClass[*];
+}
+
+Class meta::json::tests::TestGenericsPair<U,V>
+{
+   <<equality.Key>> first : U[1];
+   <<equality.Key>> second : V[1];
+   toString()
+   {
+        format('<%s, %s>', [$this.first, $this.second])
+   }:String[1];
+}
+
+Class meta::json::tests::TestClassWithCipher
+{
+   <<cipher.Cipher>>
+   a: String[1];
+   <<cipher.Cipher>>
+   b: Integer[1];
+   <<cipher.Cipher>>
+   c: Boolean[1];
+}
+
+Class meta::json::tests::TestClassWithDecipher
+{
+   <<cipher.Decipher>>
+   a: String[1];
+   b: String[1];
+}
+
+Class <<temporal.businesstemporal>> meta::json::tests::TestClass1WithMilestoning
+{
+   a : Integer[1];
+}
+
+Class <<temporal.businesstemporal>> meta::json::tests::TestClass2WithMilestoning
+{
+   a : Integer[1];
+}
+
+Association meta::json::tests::TestAssociationWithMilestoning
+{
+   class1 : TestClass1WithMilestoning[*];
+   class2 : TestClass2WithMilestoning[*];
+}
+
+function <<test.Test>> meta::json::tests::testToJsonForMilestonedClass():Boolean[1]
+{
+    assertEquals('{"package":"meta::json::tests","name":"TestClass1WithMilestoning","sourceInformation":{"source":"\\/core\\/json\\/tests\\/testToJson.pure","line":100,"column":56,"startLine":100,"startColumn":1,"endLine":103,"endColumn":1},"typeParameters":[],"generalizations":[{"rawType":"meta::pure::metamodel::type::Any","typeArguments":[]}],"properties":[{"name":"a","aggregation":"None","multiplicity":"1","genericType":{"rawType":"Integer","typeArguments":[]},"stereotypes":[],"taggedValues":[]},{"name":"businessDate","aggregation":"None","multiplicity":"1","genericType":{"rawType":"Date","typeArguments":[]},"stereotypes":[{"profile":"meta::pure::profiles::milestoning","value":"generatedmilestoningdateproperty"}],"taggedValues":[]}],"qualifiedProperties":[],"stereotypes":[{"profile":"meta::pure::profiles::temporal","value":"businesstemporal"}],"taggedValues":[]}', TestClass1WithMilestoning->toJSON());
+    let allProperties = TestClass1WithMilestoning.properties->concatenate(TestClass1WithMilestoning.propertiesFromAssociations)->concatenate(TestClass1WithMilestoning.qualifiedProperties)->concatenate(TestClass1WithMilestoning.qualifiedPropertiesFromAssociations)->concatenate(TestClass1WithMilestoning.originalMilestonedProperties)->distinct();
+    assertEquals('[{"name":"a","aggregation":"None","multiplicity":"1","genericType":{"rawType":"Integer","typeArguments":[]},"stereotypes":[],"taggedValues":[]},{"name":"businessDate","aggregation":"None","multiplicity":"1","genericType":{"rawType":"Date","typeArguments":[]},"stereotypes":[{"profile":"meta::pure::profiles::milestoning","value":"generatedmilestoningdateproperty"}],"taggedValues":[]},{"name":"class2AllVersions","aggregation":"None","multiplicity":"*","genericType":{"rawType":"meta::json::tests::TestClass2WithMilestoning","typeArguments":[]},"stereotypes":[{"profile":"meta::pure::profiles::milestoning","value":"generatedmilestoningproperty"}],"taggedValues":[]},{"name":"class2","multiplicity":"*","parameters":[],"genericType":{"rawType":"meta::json::tests::TestClass2WithMilestoning","typeArguments":[]},"stereotypes":[{"profile":"meta::pure::profiles::milestoning","value":"generatedmilestoningproperty"}],"taggedValues":[]},{"name":"class2","multiplicity":"*","parameters":[{"name":"td","genericType":{"rawType":"Date","typeArguments":[]},"multiplicity":"1"}],"genericType":{"rawType":"meta::json::tests::TestClass2WithMilestoning","typeArguments":[]},"stereotypes":[{"profile":"meta::pure::profiles::milestoning","value":"generatedmilestoningproperty"}],"taggedValues":[]}]', $allProperties->toJSON());
+}
+
+function <<test.Test>> meta::json::tests::testToJsonForMilestonedAssociation():Boolean[1]
+{
+    assertEquals('{"package":"meta::json::tests","name":"TestAssociationWithMilestoning","sourceInformation":{"source":"\\/core\\/json\\/tests\\/testToJson.pure","line":110,"column":32,"startLine":110,"startColumn":1,"endLine":114,"endColumn":1},"properties":[{"name":"class1AllVersions","aggregation":"None","multiplicity":"*","genericType":{"rawType":"meta::json::tests::TestClass1WithMilestoning","typeArguments":[]},"stereotypes":[{"profile":"meta::pure::profiles::milestoning","value":"generatedmilestoningproperty"}],"taggedValues":[]},{"name":"class2AllVersions","aggregation":"None","multiplicity":"*","genericType":{"rawType":"meta::json::tests::TestClass2WithMilestoning","typeArguments":[]},"stereotypes":[{"profile":"meta::pure::profiles::milestoning","value":"generatedmilestoningproperty"}],"taggedValues":[]}],"qualifiedProperties":[{"name":"class1","multiplicity":"*","parameters":[],"genericType":{"rawType":"meta::json::tests::TestClass1WithMilestoning","typeArguments":[]},"stereotypes":[{"profile":"meta::pure::profiles::milestoning","value":"generatedmilestoningproperty"}],"taggedValues":[]},{"name":"class1","multiplicity":"*","parameters":[{"name":"td","genericType":{"rawType":"Date","typeArguments":[]},"multiplicity":"1"}],"genericType":{"rawType":"meta::json::tests::TestClass1WithMilestoning","typeArguments":[]},"stereotypes":[{"profile":"meta::pure::profiles::milestoning","value":"generatedmilestoningproperty"}],"taggedValues":[]},{"name":"class2","multiplicity":"*","parameters":[],"genericType":{"rawType":"meta::json::tests::TestClass2WithMilestoning","typeArguments":[]},"stereotypes":[{"profile":"meta::pure::profiles::milestoning","value":"generatedmilestoningproperty"}],"taggedValues":[]},{"name":"class2","multiplicity":"*","parameters":[{"name":"td","genericType":{"rawType":"Date","typeArguments":[]},"multiplicity":"1"}],"genericType":{"rawType":"meta::json::tests::TestClass2WithMilestoning","typeArguments":[]},"stereotypes":[{"profile":"meta::pure::profiles::milestoning","value":"generatedmilestoningproperty"}],"taggedValues":[]}],"stereotypes":[],"taggedValues":[]}', TestAssociationWithMilestoning->toJSON());
+    let allProperties = TestAssociationWithMilestoning.properties->concatenate(TestAssociationWithMilestoning.qualifiedProperties)->concatenate(TestAssociationWithMilestoning.originalMilestonedProperties)->distinct();
+    assertEquals('[{"name":"class1AllVersions","aggregation":"None","multiplicity":"*","genericType":{"rawType":"meta::json::tests::TestClass1WithMilestoning","typeArguments":[]},"stereotypes":[{"profile":"meta::pure::profiles::milestoning","value":"generatedmilestoningproperty"}],"taggedValues":[]},{"name":"class2AllVersions","aggregation":"None","multiplicity":"*","genericType":{"rawType":"meta::json::tests::TestClass2WithMilestoning","typeArguments":[]},"stereotypes":[{"profile":"meta::pure::profiles::milestoning","value":"generatedmilestoningproperty"}],"taggedValues":[]},{"name":"class1","multiplicity":"*","parameters":[],"genericType":{"rawType":"meta::json::tests::TestClass1WithMilestoning","typeArguments":[]},"stereotypes":[{"profile":"meta::pure::profiles::milestoning","value":"generatedmilestoningproperty"}],"taggedValues":[]},{"name":"class1","multiplicity":"*","parameters":[{"name":"td","genericType":{"rawType":"Date","typeArguments":[]},"multiplicity":"1"}],"genericType":{"rawType":"meta::json::tests::TestClass1WithMilestoning","typeArguments":[]},"stereotypes":[{"profile":"meta::pure::profiles::milestoning","value":"generatedmilestoningproperty"}],"taggedValues":[]},{"name":"class2","multiplicity":"*","parameters":[],"genericType":{"rawType":"meta::json::tests::TestClass2WithMilestoning","typeArguments":[]},"stereotypes":[{"profile":"meta::pure::profiles::milestoning","value":"generatedmilestoningproperty"}],"taggedValues":[]},{"name":"class2","multiplicity":"*","parameters":[{"name":"td","genericType":{"rawType":"Date","typeArguments":[]},"multiplicity":"1"}],"genericType":{"rawType":"meta::json::tests::TestClass2WithMilestoning","typeArguments":[]},"stereotypes":[{"profile":"meta::pure::profiles::milestoning","value":"generatedmilestoningproperty"}],"taggedValues":[]},{"name":"class1","aggregation":"None","multiplicity":"*","genericType":{"rawType":"meta::json::tests::TestClass1WithMilestoning","typeArguments":[]},"stereotypes":[],"taggedValues":[]},{"name":"class2","aggregation":"None","multiplicity":"*","genericType":{"rawType":"meta::json::tests::TestClass2WithMilestoning","typeArguments":[]},"stereotypes":[],"taggedValues":[]}]', $allProperties->toJSON());
+}
+
+function <<test.Test>> meta::json::tests::testToJsonForMilestonedClassInstance():Boolean[1]
+{
+    let class2Instance = ^TestClass2WithMilestoning(a = 2, businessDate = %20181-2-2);
+    let class1Instance = ^TestClass1WithMilestoning(a = 1, businessDate = %20181-1-1, class2AllVersions = $class2Instance);
+    assertEquals('{"a":1,"businessDate":"20181-01-01","class2AllVersions":[{"a":2,"businessDate":"20181-02-02","class1AllVersions":[{"a":1,"businessDate":"20181-01-01","class2AllVersions":[{"a":2,"businessDate":"20181-02-02","class1AllVersions":[{"a":1,"businessDate":"20181-01-01","class2AllVersions":[{}]}]}]}]}]}', $class1Instance->toJSON());
+}
+
+function <<test.Test>> meta::json::tests::testToJsonHandlesStrings():Boolean[1]
+{
+    assertEquals('{"value":"Unicorns and Narwhals"}', ^ValueHolder<String>(value='Unicorns and Narwhals')->toJSON());
+}
+
+function <<test.Test>> meta::json::tests::testToJsonHandlesStringsAndEscapesDoubleQuotes():Boolean[1]
+{
+    assertEquals('{"value":"Quoth the raven, \\"Nevermore.\\""}', ^ValueHolder<String>(value='Quoth the raven, "Nevermore."')->toJSON());
+}
+
+function <<test.Test>> meta::json::tests::testToJsonHandlesIntegers():Boolean[1]
+{
+    assertEquals('{"value":1}', ^ValueHolder<Integer>(value=1)->toJSON());
+}
+
+function <<test.Test>> meta::json::tests::testToJsonHandlesDecimals():Boolean[1]
+{
+    assertEquals('{"value":1.2}', ^ValueHolder<Decimal>(value=1.2d)->toJSON());
+}
+
+function <<test.Test>> meta::json::tests::testToJsonHandlesDatesPrecision():Boolean[1]
+{
+    assertEquals('{"value":"2014-01-01T01:00:00.000+0000"}', ^ValueHolder<Date>(value=%2014-01-01T01:00:00.000-0000)->toJSON());
+}
+
+function <<test.Test>> meta::json::tests::testToJsonHandlesDates():Boolean[1]
+{
+    assertEquals('{"value":"2014-01-01T01:00:00.0+0000"}', ^ValueHolder<Date>(value=%2014-01-01T01:00:00.0-0000)->toJSON());
+}
+
+function <<test.Test>> meta::json::tests::testToJsonHandlesBooleans():Boolean[1]
+{
+    assertEquals('{"value":true}', ^ValueHolder<Boolean>(value=true)->toJSON());
+}
+
+function <<test.Test>> meta::json::tests::testToJsonHandlesMaps():Boolean[1]
+{
+    let res = newMap([pair(1,2), pair(3,4)])->toJSON();
+    assert('{"1":2,"3":4}' == $res || '{"3":4,"1":2}' == $res);
+}
+
+function <<test.Test>> meta::json::tests::testToJsonIncludeType():Boolean[1]
+{
+    let a = ^TestJSONType(a='abcd', b=5, c=[2.718, 3.14159]);
+    assertEquals('{"a":"abcd","b":5,"c":[2.718,3.14159],"d":[]}', $a->toJSON());
+    assertEquals('{"__TYPE":"meta::json::tests::TestJSONType","a":"abcd","b":5,"c":[2.718,3.14159],"d":[]}', $a->toJSON(2,true));
+    assertEquals('{"a":"abcd","b":5,"c":[2.718,3.14159],"d":[]}', $a->toJSON(2,false));
+
+    let b = ^TestJSONType(a='efgh', c=[3.14159]);
+    assertEquals('{"a":"efgh","b":null,"c":[3.14159],"d":[]}', $b->toJSON());
+    assertEquals('{"__TYPE":"meta::json::tests::TestJSONType","a":"efgh","b":null,"c":[3.14159],"d":[]}', $b->toJSON(2,true));
+    assertEquals('{"a":"efgh","b":null,"c":[3.14159],"d":[]}', $b->toJSON(2,false));
+}
+
+function <<test.Test>> meta::json::tests::testToJsonEmptyClass():Boolean[1]
+{
+    let a = ^TestEmptyClass();
+    assertEquals('{}', $a->toJSON());
+    assertEquals('{"__TYPE":"meta::json::tests::TestEmptyClass"}', $a->toJSON(5,true));
+}
+
+function <<test.Test>> meta::json::tests::testToJsonClass():Boolean[1]
+{
+    assertEquals('{"package":"meta::json::tests","name":"TestClass","sourceInformation":{"source":"\\/core\\/json\\/tests\\/testToJson.pure","line":58,"column":26,"startLine":58,"startColumn":1,"endLine":65,"endColumn":1},"typeParameters":[],"generalizations":[{"rawType":"meta::pure::metamodel::type::Any","typeArguments":[]}],"properties":[{"name":"text","aggregation":"None","multiplicity":"1","genericType":{"rawType":"String","typeArguments":[]},"stereotypes":[],"taggedValues":[]},{"name":"number","aggregation":"None","multiplicity":"1","genericType":{"rawType":"Integer","typeArguments":[]},"stereotypes":[],"taggedValues":[{"tag":{"profile":"meta::pure::profiles::doc","value":"doc"},"value":"a magic number"}]}],"qualifiedProperties":[],"stereotypes":[],"taggedValues":[]}', TestClass->toJSON([], false));
+    assertEquals('{"package":"meta::json::tests","name":"TestGenericsPair","sourceInformation":{"source":"\\/core\\/json\\/tests\\/testToJson.pure","line":73,"column":26,"startLine":73,"startColumn":1,"endLine":81,"endColumn":1},"typeParameters":["U","V"],"generalizations":[{"rawType":"meta::pure::metamodel::type::Any","typeArguments":[]}],"properties":[{"name":"first","aggregation":"None","multiplicity":"1","genericType":{"typeParameter":"U","typeArguments":[]},"stereotypes":[{"profile":"meta::pure::profiles::equality","value":"Key"}],"taggedValues":[]},{"name":"second","aggregation":"None","multiplicity":"1","genericType":{"typeParameter":"V","typeArguments":[]},"stereotypes":[{"profile":"meta::pure::profiles::equality","value":"Key"}],"taggedValues":[]}],"qualifiedProperties":[{"name":"toString","multiplicity":"1","parameters":[],"genericType":{"rawType":"String","typeArguments":[]},"stereotypes":[],"taggedValues":[]}],"stereotypes":[],"taggedValues":[]}', TestGenericsPair->toJSON([],false));
+}
+
+function <<test.Test>> meta::json::tests::testToJsonEnumeration():Boolean[1]
+{
+    assertEquals('{"package":"meta::json::tests","name":"TestEnum","sourceInformation":{"source":"\\/core\\/json\\/tests\\/testToJson.pure","line":52,"column":25,"startLine":52,"startColumn":1,"endLine":56,"endColumn":1},"enumValues":["VALUE1","VALUE2"]}', TestEnum->toJSON([], false));
+}
+
+function <<test.Test>> meta::json::tests::testToJsonClassWithFunctionType():Boolean[1]
+{
+    assertEquals('{"package":"meta::json::tests","name":"ClassWithFunctionTypes","sourceInformation":{"source":"\\/core\\/json\\/tests\\/testToJson.pure","line":46,"column":26,"startLine":46,"startColumn":1,"endLine":50,"endColumn":1},"typeParameters":[],"generalizations":[{"rawType":"meta::pure::metamodel::type::Any","typeArguments":[]}],"properties":[{"name":"supports","aggregation":"None","multiplicity":"1","genericType":{"rawType":"meta::pure::metamodel::function::Function","typeArguments":[]},"stereotypes":[],"taggedValues":[]},{"name":"execute","aggregation":"None","multiplicity":"1","genericType":{"rawType":"meta::pure::metamodel::function::Function","typeArguments":[]},"stereotypes":[],"taggedValues":[]}],"qualifiedProperties":[],"stereotypes":[],"taggedValues":[]}', meta::json::tests::ClassWithFunctionTypes->toJSON([], false))
+}
+
+function <<test.Test>> meta::json::tests::testToJsonWithCustomizedTypeString():Boolean[1]
+{
+    assertEquals('{"myType":"TestJSONType","a":"String","b":null,"c":[1.5,2.5],"d":[]}',^TestJSONType(a = 'String', c = [1.5, 2.5])->toJSON(true, 'myType'));
+}
+
+function <<test.Test>> {test.excludePlatform = 'Interpreted'} meta::json::tests::testPureModelsConvertToJsonWithoutError():Boolean[1]
+{
+    //Make sure no Exception is thrown when this is called
+    assertNotEquals('', getAll(meta::pure::metamodel::type::Class)->toJSON([], false));
+    assertNotEquals('', getAll(meta::pure::metamodel::type::Enumeration)->toJSON([], false));
+}
+
+function <<test.Test>> meta::json::tests::testAssociation():Boolean[1]
+{
+   assertEquals('{"package":"meta::json::tests","name":"TestAssociation","sourceInformation":{"source":"\\/core\\/json\\/tests\\/testToJson.pure","line":67,"column":32,"startLine":67,"startColumn":1,"endLine":71,"endColumn":1},"properties":[{"name":"parent","aggregation":"None","multiplicity":"1","genericType":{"rawType":"meta::json::tests::TestClass","typeArguments":[]},"stereotypes":[],"taggedValues":[]},{"name":"children","aggregation":"None","multiplicity":"*","genericType":{"rawType":"meta::json::tests::TestClass","typeArguments":[]},"stereotypes":[],"taggedValues":[]}],"qualifiedProperties":[],"stereotypes":[],"taggedValues":[]}', TestAssociation->toJSON([],false));
+}
+
+function <<test.Test>> meta::json::tests::testListToJson():Boolean[1]
+{
+   assertEquals('[]', ^List<Any>()->toJSON());
+   assertEquals('[1,2,3]', ^List<Integer>(values=[1, 2, 3])->toJSON());
+   assertEquals('[1]', ^List<Integer>(values=1)->toJSON());
+   assertEquals('[1,[2,3],[],4,[5]]', ^List<Any>(values=[1, ^List<Integer>(values=[2, 3]), ^List<Any>(), 4, ^List<Any>(values=5)])->toJSON());
+   assertEquals('[{"a":"abcd","b":5,"c":[2.718,3.14159],"d":[]}]', ^List<Any>(values=[^TestJSONType(a='abcd', b=5, c=[2.718, 3.14159])])->toJSON());
+   assertEquals('[{"a":"abcd","b":5,"c":[2.718,3.14159],"d":[]},"the quick brown fox",{"a":"efgh","b":null,"c":[3.14159],"d":[]}]', ^List<Any>(values=[^TestJSONType(a='abcd', b=5, c=[2.718, 3.14159]), 'the quick brown fox', ^TestJSONType(a='efgh', c=[3.14159])])->toJSON());
+}
+
+function <<test.Test>> meta::json::tests::testTDSToJson():Boolean[1]
+{
+   let tds = ^TabularDataSet(columns=[^TDSColumn(name='id', type=String),^TDSColumn(name='name'),^TDSColumn(name='value'),^TDSColumn(name='date'),^TDSColumn(name='Location', type=GeographicEntityType)],
+                   rows=[^TDSRow(values=[1, 'Hello', 2.2, %2015-04-15, GeographicEntityType.CITY]),
+                         ^TDSRow(values=[2, 'Geoff', 3.2, %2015-02-15, GeographicEntityType.CITY])]);
+
+   assertEquals('{"columns":[{"name":"id","type":"String","metaType":"PrimitiveType"},{"name":"name","type":"","metaType":""},{"name":"value","type":"","metaType":""},{"name":"date","type":"","metaType":""},{"name":"Location","type":"meta::json::tests::GeographicEntityType","metaType":"Enumeration"}],"rows":[{"values":[1,"Hello",2.2,"2015-04-15","CITY"]},{"values":[2,"Geoff",3.2,"2015-02-15","CITY"]}]}', $tds->toJSON([],true));
+}
+
+function <<test.Test>> meta::json::tests::testTDSToJsonStream():Boolean[1]
+{
+   let tds = ^TabularDataSet(columns=[^TDSColumn(name='id', type=String),^TDSColumn(name='name'),^TDSColumn(name='value'),^TDSColumn(name='date'),^TDSColumn(name='Location', type=GeographicEntityType)],
+                   rows=[^TDSRow(values=[1, 'Hello', 2.2, %2015-04-15, GeographicEntityType.CITY]),
+                         ^TDSRow(values=[2, 'Geoff', 3.2, %2015-02-15, GeographicEntityType.CITY])]);
+
+   assertEquals('{"columns":[{"name":"id","type":"String","metaType":"PrimitiveType"},{"name":"name","type":"","metaType":""},{"name":"value","type":"","metaType":""},{"name":"date","type":"","metaType":""},{"name":"Location","type":"meta::json::tests::GeographicEntityType","metaType":"Enumeration"}],"rows":[{"values":[1,"Hello",2.2,"2015-04-15","CITY"]},{"values":[2,"Geoff",3.2,"2015-02-15","CITY"]}]}', $tds->toJSONStringStream([],true)->makeString());
+}
+
+function <<test.Test>> meta::json::tests::testTDSToJsonKeyValueObjectStream():Boolean[1]
+{
+   let tds = ^TabularDataSet(columns=[^TDSColumn(name='id', type=String, offset=0),^TDSColumn(name='name', offset=1),^TDSColumn(name='value', offset=2),^TDSColumn(name='date', offset=3),^TDSColumn(name='Location', type=GeographicEntityType, offset=4)],
+                   rows=[^TDSRow(values=[1, 'Hello', 2.2, %2015-04-15, GeographicEntityType.CITY]),
+                         ^TDSRow(values=[2, 'Geoff', 3.2, %2015-02-15, GeographicEntityType.CITY])]);
+
+   $tds.rows->map(r|$r->mutateAdd('parent',$tds));
+   assertEquals('[{"id":1,"name":"Hello","value":2.2,"date":"2015-04-15","Location":"CITY"},{"id":2,"name":"Geoff","value":3.2,"date":"2015-02-15","Location":"CITY"}]', $tds->tdsToJSONKeyValueObjectString()->makeString());
+}
+
+function <<test.Test>> meta::json::tests::testEmptyTDSToJsonKeyValueObjectStream():Boolean[1]
+{
+   let tds = ^TabularDataSet(columns=[^TDSColumn(name='id', type=String, offset=0),^TDSColumn(name='name', offset=1),^TDSColumn(name='value', offset=2),^TDSColumn(name='date', offset=3),^TDSColumn(name='Location', type=GeographicEntityType, offset=4)],
+                   rows=[]);
+
+   assertEquals('[]', $tds->tdsToJSONKeyValueObjectString()->makeString());
+}
+
+function meta::json::tests::tdsFunction():TabularDataSet[1]
+{
+   ^TabularDataSet(columns=[^TDSColumn(name='id', type=String),^TDSColumn(name='name'),^TDSColumn(name='value'),^TDSColumn(name='date'),^TDSColumn(name='Location', type=GeographicEntityType)],
+                   rows=[^TDSRow(values=[1, 'Hello', 2.2, %2015-04-15, GeographicEntityType.CITY]),
+                         ^TDSRow(values=[2, 'Geoff', 3.2, %2015-02-15, GeographicEntityType.CITY])]);
+}
+
+function meta::json::tests::tdsFunctionWithInputs(name:String[1]):TabularDataSet[1]
+{
+   ^TabularDataSet(columns=[^TDSColumn(name='id', type=String),^TDSColumn(name=$name),^TDSColumn(name='value'),^TDSColumn(name='date'),^TDSColumn(name='Location', type=GeographicEntityType)],
+                   rows=[^TDSRow(values=[1, 'Hello', 2.2, %2015-04-15, GeographicEntityType.CITY]),
+                         ^TDSRow(values=[2, 'Geoff', 3.2, %2015-02-15, GeographicEntityType.CITY])]);
+}
+
+Class <<access.private>> meta::json::tests::TestNested
+{
+   prop : OtherNested[*];
+}
+
+Class <<access.private>> meta::json::tests::OtherNested
+{
+   name : String[1];
+}
+
+function <<test.Test>> meta::json::tests::testToJsonExtraSerializer():Boolean[1]
+{
+   let v = ^TestNested(prop = [^OtherNested(name = 'ok'),^OtherNested(name = 'ok2')]);
+   assertEquals('{"prop":[{"name":"ok"},{"name":"ok2"}]}', $v->toJSON());
+   assertEquals('{"prop":["taken","taken"]}', $v->toJSON({a:OtherNested[1],v:JSONState[1]|^JSONString(value='taken')}));
+}
+
+function <<test.Test>> meta::json::tests::testSimpleParseJsonIntCollection():Boolean[1]
+{
+   assertEquals('[1,2,3,4]', '[1,2,3,4]'->parseJSON()->toCompactJSONString());
+}
+
+function <<test.Test>> meta::json::tests::testSimpleParseJsonObject():Boolean[1]
+{
+   assertEquals('{"yo":10,"ok":"super"}', '{"yo":10,"ok":"super"}'->parseJSON()->toCompactJSONString());
+}
+
+function <<test.Test>> meta::json::tests::testToJsonWithEncryption(): Boolean[1]
+{
+   // Base64 encoded 128 bit key
+   let key = 'LRGfO/McfKxaOfQJJT4NLw==';
+
+   let instance = ^TestClassWithCipher(a='a', b=1, c=true);
+   let encryptedJson = $instance->toJSON(5, defaultConfigWithCipher($key));
+   let plainJson = $instance->toJSON(5, defaultConfig());
+   assertNotEmpty($encryptedJson);
+   assertNotEq($encryptedJson, $plainJson);
+}
+
+function <<test.Test>> meta::json::tests::testToJsonWithDecryption(): Boolean[1]
+{
+   // Base64 encoded 128 bit key
+   let key = 'LRGfO/McfKxaOfQJJT4NLw==';
+
+   let instance = ^TestClassWithDecipher(a = meta::pure::functions::cipher::encrypt('a', $key), b = 'b');
+   let plainJson = $instance->toJSON(5, defaultConfigWithDecipher($key));
+
+   let expected = '{"a":"a","b":"b"}';
+   assertEq($expected, $plainJson);
+
+   let plainJsonByDecipherSelector = $instance->toJSON(5, defaultConfigWithDecipher($key, meta::pure::profiles::cipher.p_stereotypes->filter(s|$s.value=='Decipher')));
+   assertEq($expected, $plainJsonByDecipherSelector);
+}
+
+function <<test.Test>> meta::json::tests::testJSONSort():Boolean[1]
+{
+
+   let jsonInput = ^JSONArray(values=[^JSONBoolean(value=true), ^JSONNumber(value=16.5442), ^JSONString(value='the quick brown fox'), ^JSONNull()]);
+
+   assertEquals('[true,16.5442,"the quick brown fox",null]',$jsonInput->meta::json::sort()->toCompactJSONString());
+
+   let jsonInput1 = ^JSONArray(values=[^JSONString(value='the quick brown fox'), ^JSONString(value='AA the quick brown fox')]);
+
+   assertEquals('["the quick brown fox","AA the quick brown fox"]',$jsonInput1->meta::json::sort()->toCompactJSONString());
+
+   let jsonInput2= newJSONObject([newJSONKeyValue('value', ^JSONNumber(value=-17.344)), newJSONKeyValue('otherValue', ^JSONString(value='the quick brown fox'))]);
+
+   assertEquals('{"otherValue":"the quick brown fox","value":-17.344}',$jsonInput2->meta::json::sort()->toCompactJSONString());
+
+
+}
+
+
+Class meta::json::tests::TestLevel1
+{
+   a: String[1];
+}
+
+Class meta::json::tests::TestLevel2
+{
+   b: String[1];
+}
+
+Class meta::json::tests::TestLevel2_A extends TestLevel2
+{
+   ba: String[1];
+}
+
+Class meta::json::tests::TestLevel2_B extends TestLevel2
+{
+   bb: String[1];
+}
+
+Class meta::json::tests::TestLevel3_A
+{
+   ca: String[1];
+}
+
+Class meta::json::tests::TestLevel3_B
+{
+   cb: String[1];
+}
+
+Association meta::json::tests::Level1_2
+{
+   l1: TestLevel1[1];
+   l2: TestLevel2[*];
+}
+
+Association meta::json::tests::Level2_3_A
+{
+   l2a: TestLevel2_A[1];
+   l3a: TestLevel3_A[*];
+}
+
+Association meta::json::tests::Level2_3_B
+{
+   l2b: TestLevel2_B[1];
+   l3b: TestLevel3_B[*];
+}
+
+function <<test.Test>> meta::json::tests::testSerializeWithTree():Boolean[1]
+{
+   let instance = ^TestLevel1(a='A', l2=[^TestLevel2_A(b='BA', ba='BA', l3a=^TestLevel3_A(ca='CA')), ^TestLevel2_B(b='BB', bb='BB', l3b=^TestLevel3_B(cb='CB'))]);
+   
+   let tree1 = 
+   #{TestLevel1 
+      {
+         l2->subType(@TestLevel2_A) {l3a},
+         l2->subType(@TestLevel2_B) {l3b}
+      }
+   }#;
+
+   let plainJson1 = $instance->toJSON($tree1);
+   let expected1 = '{"a":"A","l2":[{"ba":"BA","b":"BA","l3a":[{"ca":"CA"}]},{"bb":"BB","b":"BB","l3b":[{"cb":"CB"}]}]}';
+   assertEq($expected1, $plainJson1);
+   
+
+   let tree2 = 
+   #{TestLevel1 
+      {
+         l2->subType(@TestLevel2_A) {l3a}
+      }
+   }#;
+   let plainJson2 = $instance->toJSON($tree2);
+   let expected2 = '{"a":"A","l2":[{"ba":"BA","b":"BA","l3a":[{"ca":"CA"}]}]}';
+   assertEq($expected2, $plainJson2);
+}
+
+function <<test.Test>> meta::json::tests::testSerializeWithTreeAndConfig():Boolean[1]
+{
+   let config   = config(true, true, false, false, '@type', true);   
+   let instance = ^TestLevel1(a='A', l2=[^TestLevel2_A(b='BA', ba='BA', l3a=^TestLevel3_A(ca='CA')), ^TestLevel2_B(b='BB', bb='BB', l3b=^TestLevel3_B(cb='CB'))]);
+
+   let tree = 
+   #{TestLevel1 
+      {
+         l2->subType(@TestLevel2_A) {l3a}
+      }
+   }#;
+   let plainJson = $instance->toJSON($tree, $config);
+   let expected = '{"@type":"meta::json::tests::TestLevel1","a":"A","l2":[{"@type":"meta::json::tests::TestLevel2_A","ba":"BA","b":"BA","l3a":[{"@type":"meta::json::tests::TestLevel3_A","ca":"CA"}]}]}';
+   assertEq($expected, $plainJson);
+}

@@ -1,0 +1,152 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::profiles::*;
+import meta::pure::functions::tests::model::*;
+
+function <<test.Test>> meta::pure::functions::string::tests::toRepresentation::testIntegerToRepresentation():Boolean[1]
+{
+    assertEq('1', 1->toRepresentation());
+    assertEq('-1', toRepresentation(-1));
+
+    assertEq(-17, -17->toRepresentation()->parseInteger());
+}
+
+function <<test.Test>> meta::pure::functions::string::tests::toRepresentation::testFloatToRepresentation():Boolean[1]
+{
+    assertEq('3.14', 3.14->toRepresentation());
+    assertEq('3.14159', 3.14159->toRepresentation());
+
+    assertEq(-3.14159, -3.14159->toRepresentation()->parseFloat());
+}
+
+function <<test.Test>> meta::pure::functions::string::tests::toRepresentation::testFloatToRepresentationWithExcessTrailingZeros():Boolean[1]
+{
+    assertEq('17.0', 17.0->toRepresentation());
+    assertEq('17.0', 17.000->toRepresentation());
+
+    assertEq(17.000, 17.000->toRepresentation()->parseFloat());
+}
+
+function <<test.Test>> meta::pure::functions::string::tests::toRepresentation::testFloatToRepresentationWithNoLeadingZero():Boolean[1]
+{
+    assertEq('0.01', 0.01->toRepresentation());
+    assertEq('0.01', .01->toRepresentation());
+
+    assertEq(.01, .01->toRepresentation()->parseFloat());
+}
+
+function <<test.Test>> meta::pure::functions::string::tests::toRepresentation::testFloatToRepresentationWithPositiveExponent():Boolean[1]
+{
+    assertEq('134210000.0', 134.21e6->toRepresentation());
+    assertEq('134210000.0', 1.3421e8->toRepresentation());
+    assertEq('134210000.0', 0.13421e9->toRepresentation());
+    assertEq('134210000.0', 134210000.0->toRepresentation());
+
+    assertEq(134.21e6, 134.21e6->toRepresentation()->parseFloat());
+}
+
+function <<test.Test>> meta::pure::functions::string::tests::toRepresentation::testFloatToRepresentationWithNegativeExponent():Boolean[1]
+{
+    assertEq('0.000000013421', 134.21e-10->toRepresentation());
+    assertEq('0.000000013421', 1.3421e-8->toRepresentation());
+    assertEq('0.000000013421', 0.13421e-7->toRepresentation());
+    assertEq('0.000000013421', 0.000000013421->toRepresentation());
+
+    assertEq(134.21e-10, 134.21e-10->toRepresentation()->parseFloat());
+}
+
+function <<test.Test>> meta::pure::functions::string::tests::toRepresentation::testBooleanToRepresentation():Boolean[1]
+{
+    assertEq('true', true->toRepresentation());
+    assertEq('false', false->toRepresentation());
+
+    assertEq(true, true->toRepresentation()->parseBoolean());
+    assertEq(false, false->toRepresentation()->parseBoolean());
+}
+
+function <<test.Test>> meta::pure::functions::string::tests::toRepresentation::testStringToRepresentation():Boolean[1]
+{
+    assertEq('\'the quick brown fox jumps over the lazy dog\'', 'the quick brown fox jumps over the lazy dog'->toRepresentation());
+    assertEq('\'\'', ''->toRepresentation());
+    assertEq('\'the quick brown fox jumps over the lazy \\ \\\'dog\\\'\'', 'the quick brown fox jumps over the lazy \\ \'dog\''->toRepresentation());
+}
+
+function <<test.Test>> meta::pure::functions::string::tests::toRepresentation::testSimpleDateToRepresentation():Boolean[1]
+{
+    assertEq('%2014-01-02T01:54:27.352+0000', %2014-01-01T20:54:27.352-0500->toRepresentation());
+
+    assertEq(%2014-01-01T20:54:27.352-0500, %2014-01-01T20:54:27.352-0500->toRepresentation()->parseDate());
+}
+
+function <<test.Test>>  meta::pure::functions::string::tests::toRepresentation::testDateTimeWithTimezoneToRepresentation():Boolean[1]
+{
+    assertEq('%2014-01-01T00:00:00.0000+0000', %2014-01-01T00:00:00.0000+0000->toRepresentation());
+    assertEq('%2014-01-01T00:00:00.0000+0000', %2014-01-01T00:00:00.0000-0000->toRepresentation());
+
+    assertEq('%2014-01-01T00:00:00.000+0000', %2014-01-01T00:00:00.000+0000->toRepresentation());
+    assertEq('%2014-01-01T00:00:00.000+0000', %2014-01-01T00:00:00.000-0000->toRepresentation());
+
+    assertEq('%2014-01-01T00:00:00.0+0000', %2014-1-1T0:00:00.0+0000->toRepresentation());
+    assertEq('%2014-01-01T00:00:00.0+0000', %2014-1-1T0:00:00.0-0000->toRepresentation());
+
+    assertEq('%2014-01-01T00:00+0000', %2014-1-1T0:00+0000->toRepresentation());
+    assertEq('%2014-01-01T00:00+0000', %2014-1-1T0:00-0000->toRepresentation());
+
+    assertEq(%2014-01-01T00:00-0000, %2014-1-1T0:00-0000->toRepresentation()->parseDate());
+}
+
+function <<test.Test>>  meta::pure::functions::string::tests::toRepresentation::testDateTimeToRepresentation():Boolean[1]
+{
+    assertEq('%2014-01-01T00:00:00.000+0000', %2014-01-01T00:00:00.000->toRepresentation());
+    assertEq('%2014-01-01T00:00:00.00+0000', %2014-01-01T00:00:00.00->toRepresentation());
+    assertEq('%2014-01-01T00:00:00.0+0000', %2014-1-1T0:00:00.0->toRepresentation());
+    assertEq('%2014-01-01T00:00:00+0000', %2014-1-1T0:00:00->toRepresentation());
+
+    assertEq(%2014-01-01T00:00:00, %2014-1-1T0:00:00->toRepresentation()->parseDate());
+}
+
+function <<test.Test>>  meta::pure::functions::string::tests::toRepresentation::testDateToRepresentation():Boolean[1]
+{
+    assertEq('%2014-01-01', %2014-01-01->toRepresentation());
+    assertEq('%2014-01-01', %2014-1-1->toRepresentation());
+
+    assertEq('%2014-01', %2014-01->toRepresentation());
+    assertEq('%2014-01', %2014-1->toRepresentation());
+
+    assertEq('%2014', %2014->toRepresentation());
+
+    assertEq(%2014, %2014->toRepresentation()->parseDate());
+}
+
+function <<test.Test>> meta::pure::functions::string::tests::toRepresentation::testClassInstanceToRepresentation():Boolean[1]
+{
+    let listRepr = ^List<String>(values=['a', 'b', 'c'])->toRepresentation();
+    assert($listRepr->startsWith('<Anonymous_') || $listRepr->startsWith('<@_'), 'Expected %r to start with \'<Anonymous_\'', $listRepr);
+    assert($listRepr->endsWith('instanceOf meta::pure::functions::collection::List>'), 'Expected %r to end with \'instanceOf meta::pure::functions::collection::List>\'', $listRepr);
+
+    let personRepr = ^Person(firstName='Pierre', lastName='Doe')->toRepresentation();
+    assert($personRepr->startsWith('<Anonymous_') || $personRepr->startsWith('<@_'), 'Expected %r to start with \'<Anonymous_\'', $personRepr);
+    assert($personRepr->endsWith('instanceOf meta::pure::functions::tests::model::Person>'), 'Expected %r to end with \'instanceOf meta::pure::functions::tests::model::Person>\'', $personRepr);
+}
+
+function <<test.Test>> meta::pure::functions::string::tests::toRepresentation::testClassToRepresentation():Boolean[1]
+{
+    assertEq('meta::pure::functions::tests::model::Person', Person->toRepresentation());
+}
+
+function <<test.Test>> meta::pure::functions::string::tests::toRepresentation::testFunctionToRepresentation():Boolean[1]
+{
+    assertEq('meta::pure::functions::string::toRepresentation_Any_1__String_1_', meta::pure::functions::string::toRepresentation_Any_1__String_1_->toRepresentation());
+}

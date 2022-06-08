@@ -1,0 +1,820 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::metamodel::path::*;
+import meta::pure::tds::extensions::*;
+
+Class meta::pure::tds::TabularDataSet
+{
+   columns : TDSColumn[*];
+   columnByName(s:String[1]){$this.columns->filter(c|$c.name == $s)->first()}:TDSColumn[0..1];
+   rows : TDSRow[*];
+}
+
+Class meta::pure::tds::TDSColumn
+{
+   <<equality.Key>>
+   offset : Integer[0..1];
+   
+   <<equality.Key>>
+   name : String[1];
+   
+   <<equality.Key>>
+   type : DataType[0..1];
+   
+   <<equality.Key>>
+   enumMappingId : String[0..1];
+   
+   <<equality.Key>>
+   documentation : String[0..1];
+   
+   <<equality.Key>>
+   sourceDataType: Any[0..1];
+   
+   toString(){
+      'meta::pure::tds::TDSColumn('
+            + 'name=' + $this.name 
+            + if($this.type->isNotEmpty(), 
+               | ', ' + 'type=' + $this.type->makeString(), 
+               | ''
+               )
+            + if($this.offset->isNotEmpty(), 
+               | ', ' + 'offset=' + $this.offset->makeString(), 
+               | ''
+               )
+            + if($this.documentation->isNotEmpty(), 
+               | ', ' + 'documentation=' + $this.documentation->makeString(), 
+               | ''
+               )
+            + if($this.enumMappingId->isNotEmpty(), 
+               | ', ' + 'enumMappingId=' + $this.enumMappingId->makeString(), 
+               | ''
+               )
+            + if($this.sourceDataType->isNotEmpty(), 
+               | ', ' + 'sourceDataType=' + $this.sourceDataType->makeString(), 
+               | ''
+               )
+            + ')';
+   }:String[1];   
+
+}
+
+Class meta::pure::tds::TDSRow
+{
+   parent : TabularDataSet[0..1];
+   values : Any[*];
+
+   getString(colName:String[1]){$this.get($colName)->cast(@String)}:String[1];
+   getNumber(colName:String[1]){$this.get($colName)->cast(@Number)}:Number[1];
+   getInteger(colName:String[1]){$this.get($colName)->cast(@Integer)}:Integer[1];
+   getFloat(colName:String[1]){$this.get($colName)->cast(@Number)->toFloat()}:Float[1];
+   getDecimal(colName:String[1]){$this.get($colName)->cast(@Number)->toDecimal()}:Decimal[1];
+   getDate(colName:String[1]){$this.get($colName)->cast(@Date)}:Date[1];
+   getDateTime(colName:String[1]){$this.get($colName)->cast(@DateTime)}:DateTime[1];
+   getStrictDate(colName:String[1]){$this.get($colName)->cast(@StrictDate)}:StrictDate[1];
+   getBoolean(colName:String[1]){$this.get($colName)->cast(@Boolean)}:Boolean[1];
+   getEnum(colName:String[1]){$this.get($colName)->cast(@Enum)}:Enum[1];
+   isNotNull(colName:String[1]){!$this.isNull($colName)}:Boolean[1];
+
+   get(colName:String[1])
+   {
+      let parent = $this.parent;
+      assertNotEmpty($parent, {| 'Unable to find index for the column:' +$colName+'. The TDS row has no parent, make sure the row has a parent.'});
+      let col = $this.parent->toOne().columnByName($colName);
+      assertNotEmpty($col, {| $colName+' is unknown (columns=['+$parent.columns.name->makeString(',')+'])!'});
+      $this.get($col->toOne());
+   }:Any[1];
+   isNull(colName:String[1]){
+      let parent = $this.parent;
+      assertNotEmpty($parent, {| 'Unable to find index for the column:' +$colName+'. The TDS row has no parent, make sure the row has a parent.'});
+      let col = $this.parent->toOne().columnByName($colName);
+      assertNotEmpty($col, {| $colName+' is unknown (columns=['+$parent.columns.name->makeString(',')+'])!'});
+      $this.isNull($col->toOne());
+   }:Boolean[1];
+
+
+   getString(col:TDSColumn[1]){$this.get($col)->cast(@String)}:String[1];
+   getNullableString(col:TDSColumn[1]){ if($this.isNull($col), | [] , | $this.getString($col))}:String[0..1];
+   getNumber(col:TDSColumn[1]){$this.get($col)->cast(@Number)}:Number[1];
+   getInteger(col:TDSColumn[1]){$this.get($col)->cast(@Integer)}:Integer[1];
+   getFloat(col:TDSColumn[1]){$this.get($col)->cast(@Float)}:Float[1];
+
+   isNull(col:TDSColumn[1]){$this.get($col) == ^TDSNull()}: Boolean[1];
+   isNotNull(col:TDSColumn[1]){!$this.isNull($col)}: Boolean[1];
+
+   get(col: TDSColumn[1]){
+   assertNotEmpty($col.offset, {| 'No index for the column:' +$col.name+'.'});
+      $this.values->at($col.offset->toOne())->toOne();
+   } : Any[1];
+
+}
+
+Class meta::pure::tds::TDSNull
+{
+   //Used to make sure  that two TDSNull instances are equal
+   <<equality.Key>> key:Nil[0];
+   toString(){
+      'TDSNull'
+   }:String[1];
+}
+
+
+Class meta::pure::tds::AggregateValue<T,U>
+{
+   name : String[1];
+   mapFn : FunctionDefinition<{TDSRow[1]->T[1]}>[1];
+   aggregateFn : FunctionDefinition<{T[*]->U[1]}>[1];
+}
+
+Class meta::pure::tds::ColumnSpecification<T>
+{
+   name : String[1];
+   documentation : String[0..1];
+}
+
+Class  {doc.doc = 'Normal Project column, also used for extending a TDS'}
+meta::pure::tds::BasicColumnSpecification<T> extends meta::pure::tds::ColumnSpecification<T>
+{
+   func : Function<{T[1]->Any[*]}>[1];
+}
+
+Enum meta::pure::tds::SortDirection
+{
+    ASC, DESC
+}
+
+Class meta::pure::tds::SortInformation
+{
+   column : String[1];
+   direction : SortDirection[1];
+}
+
+Class meta::pure::tds::ColumnSort<T>
+{
+   column:Function<{T[1]->Any[1]}>[1];
+   direction:SortDirection[1];
+}
+
+Class meta::pure::tds::Window<T>
+{
+   partition:Function<{T[1]->Any[1]}>[*];
+}
+
+Class meta::pure::tds::OlapOperation<T>
+{
+  //superclass for all operations
+}
+
+Class meta::pure::tds::OlapAggregation<T> extends OlapOperation<T>
+{
+   mapFn : FunctionDefinition<{T[1]->Number[1]}>[1];
+   aggregateFn : FunctionDefinition<{Number[*]->Number[0..1]}>[1];
+}
+
+Class meta::pure::tds::OlapRank<T> extends OlapOperation<T>
+{
+   rankFn: FunctionDefinition<{T[*]->Map<Any,Integer>[1]}>[1];
+}
+
+Class meta::pure::tds::WindowColumnSpecification<T> extends ColumnSpecification<T>
+{
+   window:Window<T>[0..1];
+   sortInfo: ColumnSort<T>[0..1];
+   func: meta::pure::tds::OlapOperation<T>[1];
+}
+
+
+
+function 
+   {doc.doc = 'Helper function to create / define an aggreagation value (combination of column name and aggregation function)'}
+   meta::pure::tds::agg<T,U>(name:String[1], mapFn:FunctionDefinition<{TDSRow[1]->T[0..1]}>[1], aggregateFn:FunctionDefinition<{T[*]->U[1]}>[1]):meta::pure::tds::AggregateValue<T,U>[1]
+{
+   ^meta::pure::tds::AggregateValue<T,U>(name = $name, mapFn=$mapFn, aggregateFn=$aggregateFn);
+}
+
+function meta::pure::tds::col<T>(window: Window<T>[1], func:FunctionDefinition<{T[*]->Map<Any,Integer>[1]}>[1], name: String[1]):WindowColumnSpecification<T>[1]
+{
+   let rank = ^OlapRank<T>(rankFn = $func);
+   ^WindowColumnSpecification<T>
+   (
+      window = $window,
+      name = $name,
+      func = $rank
+   );
+}
+
+function meta::pure::tds::col<T>(window: Window<T>[1], sortInfo:ColumnSort<T>[1], func:FunctionDefinition<{T[*]->Map<Any,Integer>[1]}>[1], name: String[1]):WindowColumnSpecification<T>[1]
+{
+   let rank = ^OlapRank<T>(rankFn = $func);
+   ^WindowColumnSpecification<T>
+   (
+      window = $window,
+      sortInfo = $sortInfo,
+      name = $name,
+      func = $rank
+   );
+}
+
+function meta::pure::tds::col<T>(window: Window<T>[1], func: meta::pure::tds::OlapAggregation<T>[1], name: String[1]):WindowColumnSpecification<T>[1]
+{
+   ^WindowColumnSpecification<T>
+   (
+      window = $window,
+      name = $name,
+      func = $func
+   )
+}
+
+function meta::pure::tds::col<T>(window: Window<T>[1],sortInfo:ColumnSort<T>[1], func: meta::pure::tds::OlapAggregation<T>[1], name: String[1]):WindowColumnSpecification<T>[1]
+{
+   ^WindowColumnSpecification<T>
+   (
+      window = $window,
+      sortInfo = $sortInfo,
+      name = $name,
+      func = $func
+   )
+}
+
+function meta::pure::tds::col<T>(sortInfo:ColumnSort<T>[1], func: meta::pure::tds::OlapAggregation<T>[1], name: String[1]):WindowColumnSpecification<T>[1]
+{
+   ^WindowColumnSpecification<T>
+   (
+      sortInfo = $sortInfo,
+      name = $name,
+      func = $func
+
+   );
+}
+
+function meta::pure::tds::col<T>(sortInfo:ColumnSort<T>[1], func:FunctionDefinition<{T[*]->Map<Any,Integer>[1]}>[1], name: String[1]):WindowColumnSpecification<T>[1]
+{
+   let rank = ^OlapRank<T>(rankFn = $func);
+   ^WindowColumnSpecification<T>
+   (
+      sortInfo = $sortInfo,
+      name = $name,
+      func = $rank
+
+   );
+}
+
+function
+   {doc.doc = 'Helper function to create a column specificantion based on the specified value function and column name'}
+   meta::pure::tds::col<T>(func : Function<{T[1]->Any[*]}>[1], name : String[1]):meta::pure::tds::BasicColumnSpecification<T>[1]
+{
+   ^BasicColumnSpecification<T>
+   (
+      func = $func,
+      name = $name
+   )
+}
+
+function 
+   {doc.doc = 'Helper function to create a column specificantion based on the specified value function, column name and documentation for the column'}
+   meta::pure::tds::col<T>(func : Function<{T[1]->Any[*]}>[1], name : String[1], documentation : String[1]):meta::pure::tds::BasicColumnSpecification<T>[1]
+{
+   ^BasicColumnSpecification<T>
+   (
+      func = $func,
+      name = $name,
+      documentation = $documentation
+   )
+}
+
+
+function meta::pure::tds::tdsRows(tds:TabularDataSet[1]):TDSRow[*]
+{
+   $tds.rows
+}
+
+function meta::pure::tds::projectWithColumnSubset<T>(set:T[*], columnSpecifications:ColumnSpecification<T>[*], columnList:String[*]):TabularDataSet[1]
+{  
+   $columnList->map( i| assert($columnSpecifications.name->contains($i) , 'SubSetColumnList should be in project List '  ) );
+   $set->project($columnSpecifications->filter(c|$c.name->in($columnList)));
+}
+
+function meta::pure::tds::projectWithColumnSubset<T>(set:T[*], functions:Function<{T[1]->Any[*]}>[*], ids:String[*], columnList:String[*]):TabularDataSet[1]
+{  
+   $columnList->map( i| assert($ids->contains($i) , 'SubSetColumnList should be in project List '  ) );
+   $set->project( $functions->zip($ids)->filter(p:Pair<Function<{T[1]->Any[*]}>,String>[1] |$p.second->in($columnList))->map(p|^BasicColumnSpecification<Nil>(func = $p.first->cast(@Function<{Nil[1]->Any[*]}>), name = $p.second)));
+}
+
+function 
+   {doc.doc = 'Project the values from the columns specifications provided to create a new TDS'}
+   meta::pure::tds::project<T>(set:T[*], columnSpecifications:ColumnSpecification<T>[*]):TabularDataSet[1]
+{
+   let simpleCols = $columnSpecifications->filter(c|$c->instanceOf(BasicColumnSpecification))->cast(@BasicColumnSpecification<T>);
+   let functions = $simpleCols.func;
+   let res = ^TabularDataSet(
+               columns = $simpleCols->map(cs|let offset = $columnSpecifications->indexOf($cs);
+                                                       ^TDSColumn(offset = $offset,
+                                                                  name = $cs.name,
+                                                                  type = $cs.func->functionReturnType().rawType->toOne()->cast(@DataType),
+                                                                  documentation = $cs.documentation);
+                                                ));
+
+   let newRows = $set->map(value|
+                         $functions->tail()->fold(
+                               {
+                                  path, list | let res = $path->eval($value);
+                                               let updated = if ($res->size() == 0,|^TDSNull(),|$res);
+                                               ^List<TDSRow>(values = $updated->map(navValue|$list.values->map(row|^$row(values+=$navValue))));
+                               },
+                               ^List<TDSRow>(values = $functions->at(0)->eval($value)->map(navValue|^TDSRow(values=$navValue, parent=$res)))
+                         ).values;
+                      );
+   $res->mutateAdd('rows',$newRows);
+   $res;
+}
+
+
+function 
+   {doc.doc = 'Project the values from the lambda functions specified to create a new TDS'}
+   meta::pure::tds::project<K>(set:K[*], functions:Function<{K[1]->Any[*]}>[*], ids:String[*]):TabularDataSet[1]
+{
+   $set->project($functions->zip($ids)->map(p|^BasicColumnSpecification<Nil>(func = $p.first->cast(@Function<{Nil[1]->Any[*]}>), name = $p.second)));
+}
+
+function 
+   {doc.doc = 'Project the values from the property paths specified to create a new TDS'}
+   meta::pure::tds::project<T>(set:T[*], paths:Path<T,Any|*>[*]):TabularDataSet[1]
+{
+   $paths->validatePaths();
+   project($set, $paths, $paths->map(p|$p->buildColumnNameOutOfPath()));
+}
+
+function 
+   {doc.doc = 'Sort the provided TDS based on the specified information (sorting is based on order of the sort information)'}
+   meta::pure::tds::sort(tds:TabularDataSet[1], sortInfo:SortInformation[*]):TabularDataSet[1]
+{
+   ^$tds(rows = $tds.rows->sort({a,b|$a->multipleColumnComp($b, $sortInfo)}));
+}
+
+function 
+   {doc.doc = 'Sort the provided TDS based on the specified column & direction'}
+   meta::pure::tds::sort(tds:TabularDataSet[1], column:String[1], direction:SortDirection[1]):TabularDataSet[1]
+{
+   $tds->sort(^SortInformation(column=$column, direction=$direction));
+}
+
+function 
+   {doc.doc = 'Sort the provided TDS based on the specified column (with ascending direction)'}
+   meta::pure::tds::sort(tds:TabularDataSet[1], columns:String[*]):TabularDataSet[1]
+{
+   $tds->sort($columns->map(c | ^SortInformation(column=$c, direction=SortDirection.ASC)));
+}
+
+function 
+   {doc.doc = 'Reduce the number of rows in the provided TDS, taking the first set of rows based on the specified size'}
+   meta::pure::tds::limit(tds:TabularDataSet[1], size:Integer[1]):TabularDataSet[1]
+{
+   let newTds = ^TabularDataSet(columns=$tds.columns);
+   $newTds->mutateAdd('rows', $tds.rows->limit($size)->map(r|^TDSRow(parent=$newTds,values=$r.values)));
+}
+
+
+function 
+   {doc.doc = 'Reduce the number of rows in the provided TDS if a size is specified (otherwise returns original rows), taking the first set of rows based on the specified size'}
+   meta::pure::tds::limit(tds:TabularDataSet[1], size:Integer[0..1]):TabularDataSet[1]
+{
+   if($size->isEmpty(), 
+      | $tds, 
+      | $tds->limit($size->toOne())
+      )
+}
+
+function 
+   {doc.doc = 'Reduce the number of rows in the provided TDS, taking the first set of rows based on the specified size'}
+   meta::pure::tds::take(tds:TabularDataSet[1], size:Integer[1]):TabularDataSet[1]
+{
+   let newTds = ^TabularDataSet(columns=$tds.columns);
+   $newTds->mutateAdd('rows', $tds.rows->take($size)->map(r|^TDSRow(parent=$newTds,values=$r.values)));
+}
+
+function
+   {doc.doc = 'Reduce the number of rows in the provided TDS, dropping the first set of rows based on the specified size'}
+   meta::pure::tds::drop(tds:TabularDataSet[1], size:Integer[1]):TabularDataSet[1]
+{
+   let newTds = ^TabularDataSet(columns=$tds.columns);
+   $newTds->mutateAdd('rows', $tds.rows->drop($size)->map(r|^TDSRow(parent=$newTds,values=$r.values)));
+}
+
+function 
+   {doc.doc = 'Reduce the number of rows in the provided TDS, selecting the set of rows in the specified range between start and stop'}
+   meta::pure::tds::slice(tds:TabularDataSet[1], start:Integer[1], stop:Integer[1]):TabularDataSet[1]
+{
+   let newTds = ^TabularDataSet(columns=$tds.columns);
+   $newTds->mutateAdd('rows', $tds.rows->slice($start, $stop)->map(r|^TDSRow(parent=$newTds,values=$r.values)));
+}
+
+function
+   {doc.doc = 'Reduce the number of rows in the provided TDS, selecting the set of rows that match the provided filter function'}
+   meta::pure::tds::filter(tds:TabularDataSet[1], f:Function<{TDSRow[1]->Boolean[1]}>[1]):TabularDataSet[1]
+{
+   let newTds = ^TabularDataSet(columns=$tds.columns);
+   $newTds->mutateAdd('rows', $tds.rows->filter($f)->map(r|^TDSRow(parent=$newTds,values=$r.values)));
+}
+
+function <<access.private>> meta::pure::tds::multipleColumnComp(row:TDSRow[1], other:TDSRow[1], sortInfo:SortInformation[*]):Integer[1]
+{
+   if ($sortInfo->isEmpty(),
+         | 0,
+         | let s = $sortInfo->head();
+           let res = $row.get($s.column->toOne())->compare($other.get($s.column->toOne()));
+           if ($res == 0, |$row->multipleColumnComp($other, $sortInfo->tail()), |if ($s.direction == SortDirection.ASC, |$res,|-$res));
+   );
+}
+
+
+
+function 
+   {doc.doc = 'Remove duplicate rows from the priovded TDS'}
+   meta::pure::tds::distinct(tds:TabularDataSet[1]):TabularDataSet[1]
+{
+   fail('Not implemented yet!');
+   $tds;
+}
+
+function 
+   {doc.doc = 'Append the rows from the second TDS to the rows in the first TDS.  N.B. The column must be the same for the two input TDSs'}
+   meta::pure::tds::concatenate(tds1:TabularDataSet[1], tds2:TabularDataSet[1]):TabularDataSet[1]
+{
+   assert($tds1.columns->size() == $tds2.columns->size(), | 'Number of columns must match to concatenate, got ' + $tds1.columns.name->joinStrings('[', ',', ']') + ' and ' +  $tds2.columns.name->joinStrings('[', ',', ']') );
+   assertEquals($tds1.columns.name, $tds2.columns.name, | 'Columns names must match to concatenate, got ' + $tds1.columns.name->joinStrings('[', ',', ']') + ' and ' +  $tds2.columns.name->joinStrings('[', ',', ']') );
+   assert(zip($tds1.columns, $tds2.columns)->forAll(pair | 
+               assertEquals($pair.first.name, $pair.second.name); 
+               assertEquals($pair.first.type, $pair.second.type, | 'Column types must match to concatenate, mismatched for column ' + $pair.first.name + ' (' + $pair.first.type->makeString() + ' vs ' + $pair.second.type->makeString() + ')');
+            ));
+
+   let tds = ^TabularDataSet(columns=$tds1.columns->map(col|^TDSColumn(offset=$col.offset, name=$col.name, type=$col.type)));
+
+   let newRows = $tds1.rows->concatenate($tds2.rows)->map(r|^TDSRow(parent=$tds,values=$r.values));
+   $tds->mutateAdd('rows', $newRows);
+   $tds;
+}
+
+function meta::pure::tds::validatePaths(paths:Path<Nil,Any|*>[*]):Boolean[1]
+{
+   let names = $paths->map(p|
+                             let lastElement = $p.path->last()->cast(@PropertyPathElement)->toOne();
+                             assert($lastElement.property->functionReturnType().rawType->toOne()->instanceOf(DataType), 'All the paths provided to project need to end with a DataType');
+                             if($p.name == '',|$lastElement.property.name;,|$p.name);
+                          );
+   assertEquals($names->size(), $names->removeDuplicates()->size(), 'The list of Paths provided to project can\'t contain duplicate names. Please use ! to provide an alias. Example:#/Person/lastName!newAlias#');
+}
+
+function    
+   {doc.doc = 'Select the value for the specified column (based on its name) from each of the rows in the TDS provided'}
+   meta::pure::tds::columnValues(tds:TabularDataSet[1], pathAsString:String[1]):Any[*]
+{
+    columnValues($tds, $tds.columns->map(c | $c.name)->indexOf($pathAsString));
+}
+
+function 
+   {doc.doc = 'Select the value for the specified column (based on its index) from each of the rows in the TDS provided'}
+   meta::pure::tds::columnValues(tds:TabularDataSet[1], columnIndex:Integer[1]):Any[*]
+{
+    $tds.rows->map(row | $row.values->at($columnIndex));
+}
+
+function 
+   {doc.doc = 'Rename the specified column in the provided TDS to a new name'}
+   meta::pure::tds::renameColumn(tds:TabularDataSet[1], oldColumnName:String[1], newColumnName:String[1]):TabularDataSet[1]
+{
+   $tds->renameColumns(pair($oldColumnName, $newColumnName));
+}
+
+function
+   {doc.doc = 'Rename the specified columns in the provided TDS to a new name'}
+   meta::pure::tds::renameColumns(tds:TabularDataSet[1], columnMappings : Pair<String,String>[*]):TabularDataSet[1]
+{
+   let columnMappingsMap = $columnMappings->newMap();
+
+   let newTds = ^TabularDataSet(columns=$tds.columns->map(c |
+         let newName = $columnMappingsMap->get($c.name);
+         if($newName->isNotEmpty(), | ^$c(name=$newName->toOne()), | $c);
+      ));
+   $newTds->mutateAdd('rows', $tds.rows->map(r | ^TDSRow(parent=$newTds,values=$r.values)));
+   $newTds;
+}
+
+
+function 
+   {doc.doc = 'Add additional new calculated columns to the provided TDS'}
+   meta::pure::tds::extend(tds:TabularDataSet[1], newColumnFunctions:BasicColumnSpecification<TDSRow >[*]):TabularDataSet[1]
+{
+   let newTds = ^TabularDataSet(
+      columns=$tds.columns->concatenate($newColumnFunctions->size()->range()->map(index |
+                                                let col = $newColumnFunctions->at($index);
+                                                ^TDSColumn(offset=$tds.columns->size() + $index, name=$col.name, type=$col.func->functionReturnType().rawType->toOne()->cast(@DataType));
+                                                )));
+
+   //todo: remove this by making parent an association
+   $newTds->mutateAdd('rows', $tds.rows->map(r | ^TDSRow(parent=$newTds,
+                                                         values=$r.values->concatenate($newColumnFunctions.func->map(f | $f->evaluate(^List<TDSRow>(values=[$r])))))));
+
+   $newTds;
+}
+
+function 
+   {doc.doc = 'Project the specified calculated columns from the provided TDS.  This is similar to extend, but rather than adding the columns it replaces all of the existing ones '}
+   meta::pure::tds::project(tds:TabularDataSet[1], columnFunctions:ColumnSpecification<TDSRow>[*]):TabularDataSet[1]
+{
+   let newColumnFunctions = $columnFunctions->filter(c|$c->instanceOf(BasicColumnSpecification))->cast(@BasicColumnSpecification<TDSRow >);
+   let newTds = ^TabularDataSet(
+      columns=$newColumnFunctions->size()->range()->map(index |
+                                                let col = $newColumnFunctions->at($index);
+                                                ^TDSColumn(offset=$index, name=$col.name, type=$col.func->functionReturnType().rawType->toOne()->cast(@DataType));
+                                                ));
+
+   //todo: remove this by making parent an association
+   $newTds->mutateAdd('rows', $tds.rows->map(r | ^TDSRow(parent=$newTds,
+                                                         values=$newColumnFunctions.func->map(f | $f->evaluate(^List<TDSRow>(values=[$r]))))));
+
+   $newTds;
+}
+
+
+function 
+   {doc.doc = 'Restrict / reduce the columns from within the provided TDS'}
+   meta::pure::tds::restrict(tds:TabularDataSet[1], columnNames : String[*]):TabularDataSet[1]
+{
+   assertEmpty($columnNames->removeAll($tds.columns.name), | 'Columns not found in input TDS: ' + $columnNames->removeAll($tds.columns.name)->joinStrings('[', ',', ']'));
+
+   let origCols = $columnNames->map(columnName|$tds.columns->filter(c|$c.name == $columnName)->toOne());
+   let newCols = $origCols->size()->range()->map(index |let origCol = $origCols->at($index); ^$origCol(offset=$index););
+
+
+   let newTds = ^TabularDataSet(
+      columns=$newCols
+   );
+   let restrictedRows = $tds.rows->map(r | ^TDSRow(values = $origCols.offset->map(offset|$r.values->at($offset)), parent=$newTds));
+
+   //todo: remove this by making parent an association
+   $newTds->mutateAdd('rows',$restrictedRows);
+   $newTds;
+}
+
+
+function 
+   {doc.doc = 'Aggregate the data within the provided TDS using the specified groupings and aggregation functions'}
+   meta::pure::tds::groupBy<T,U>(tds:TabularDataSet[1], columns:String[*], aggValues:meta::pure::tds::AggregateValue<T,U>[*]):TabularDataSet[1]
+{
+   let groupByOutputCols = range($columns->size())->map(index|
+                                          let name = $columns->at($index);
+                                          let colType = $tds.columnByName($name)->toOne().type;
+
+                                           ^TDSColumn(offset = $index,
+                                                      type = $colType,
+                                                      name = $name
+                                                     );
+                                    );
+   let aggOutputCols = range($aggValues->size())->map(index|
+         let name = $aggValues->at($index).name;
+         let colType = $aggValues->at($index).aggregateFn->functionReturnType().rawType->toOne()->cast(@DataType);
+
+         ^TDSColumn(offset = $index + $columns->size(),
+                     type = $colType,
+                     name = $name
+                     );
+         );
+
+   let outputCols = $groupByOutputCols->concatenate($aggOutputCols);
+
+   let newTds = ^TabularDataSet(
+               columns = $outputCols);
+
+   let outputRows = $tds.rows->aggRows($columns,
+      $columns->map(name|agg($name, row|$row.get($name), values|$values->at(0)))->concatenate($aggValues),
+         $newTds
+         );
+
+   $newTds->mutateAdd('rows', $outputRows);
+   $newTds;
+}
+
+
+function <<access.private>> meta::pure::tds::aggRows<X,Y>(rows : TDSRow[*], columnNames : String[*], aggValues:meta::pure::tds::AggregateValue<X,Y>[*], parent:TabularDataSet[1]) : TDSRow[*]
+{
+   if ($columnNames->isEmpty(), {|
+         let values = $aggValues->map(aggValue|
+               let rowMapValues = $rows->map(row|$aggValue.mapFn->eval($row));
+               let value = $aggValue.aggregateFn->eval($rowMapValues);
+               $value;
+               );
+         ^TDSRow(values = $values, parent=$parent);
+      }, {|
+         let col = $columnNames->at(0);
+
+         let distinctColValues = $rows->map(row|$row.get($col))->distinct();
+
+         $distinctColValues->map(colValue|
+            $rows->filter(row|$row.get($col) == $colValue)->aggRows($columnNames->tail(), $aggValues, $parent)
+            );
+      });
+}
+
+
+function 
+   {doc.doc = 'Helper function to create a default column name for the specified path'}
+   meta::pure::tds::buildColumnNameOutOfPath(p:Path<Nil,Any|*>[1]):String[1]
+{
+    if($p.name=='',|$p.path->last()->cast(@PropertyPathElement).property.name->toOne(),|$p.name)->toOne()
+}
+
+function 
+   {doc.doc = 'Helper function to create sort information with the specified column in descending order'}
+   meta::pure::tds::desc(column:String[1]):SortInformation[1]
+{
+   ^SortInformation(column=$column, direction=SortDirection.DESC)
+}
+
+function 
+   {doc.doc = 'Helper function to create sort information with the specified column in ascending order'}
+   meta::pure::tds::asc(column:String[1]):SortInformation[1]
+{
+   ^SortInformation(column=$column, direction=SortDirection.ASC)
+}
+
+
+function meta::pure::tds::sortAsc<T>(column:Function<{T[1]->Any[1]}>[1]): ColumnSort<T>[1]
+{
+   ^ColumnSort<T>
+   (
+      column=$column,
+      direction= SortDirection.ASC
+   )
+}
+
+function meta::pure::tds::window<T>(functions:Function<{T[1]->Any[1]}>[*]):Window<T>[1]
+{
+   ^Window<T>
+   (
+      partition=$functions
+   )
+}
+
+function meta::pure::tds::sortDesc<T>(column:Function<{T[1]->Any[1]}>[1]): ColumnSort<T>[1]
+{
+   ^ColumnSort<T>
+   (
+     column=$column,
+     direction= SortDirection.DESC
+   )
+}
+
+function meta::pure::tds::func<T>(map:FunctionDefinition<{T[1]->Any[1]}>[1], agg:FunctionDefinition<{Number[*]->Number[0..1]}>[1]):OlapAggregation<T>[1]
+{
+   ^OlapAggregation<T>
+   (
+      mapFn= $map,
+      aggregateFn= $agg
+   )
+}
+
+function meta::pure::tds::extractOperation(o:OlapOperation<Any>[1]): FunctionDefinition<Any>[1]
+{
+   $o->match([
+     a:OlapAggregation<Any>[1]| $a.aggregateFn,
+     r: OlapRank<Any>[1]| $r.rankFn,
+     t: TdsOlapAggregation<Any>[1]| $t.func,
+     tr: TdsOlapRank<Any>[1]| $tr.func
+   ]
+   )
+}
+
+/*OLAP TDS protocol*/
+function meta::pure::tds::olapGroupBy<T>(tds:TabularDataSet[1], columns:String[*], sortBy:SortInformation[0..1],operation:meta::pure::tds::OlapOperation<T>[1],columnName:String[1]):TabularDataSet[1]
+{
+   fail('This Function is not meant for use outside the context of an execute()');
+   $tds;
+}
+
+function meta::pure::tds::olapGroupBy<T>(tds:TabularDataSet[1], columns:String[*], operation:meta::pure::tds::OlapOperation<T>[1],columnName:String[1]):TabularDataSet[1]
+{
+   fail('This Function is not meant for use outside the context of an execute()');
+   $tds;
+}
+
+function meta::pure::tds::olapGroupBy<T>(tds:TabularDataSet[1], operation:meta::pure::tds::OlapOperation<T>[1],columnName:String[1]):TabularDataSet[1]
+{
+   fail('This Function is not meant for use outside the context of an execute()');
+   $tds;
+}
+
+function meta::pure::tds::olapGroupBy<T>(tds:TabularDataSet[1], sort:SortInformation[0..1], operation:meta::pure::tds::OlapOperation<T>[1],columnName:String[1]):TabularDataSet[1]
+{
+   fail('This Function is not meant for use outside the context of an execute()');
+   $tds;
+}
+
+function meta::pure::tds::olapGroupBy<T>(tds:TabularDataSet[1], columns:String[*], sortBy:SortInformation[0..1],operation:FunctionDefinition<{TDSRow[*]->Map<Any,Integer>[1]}>[1],columnName:String[1]):TabularDataSet[1]
+{
+   olapGroupBy($tds,$columns,$sortBy,func($operation),$columnName);
+}
+
+function meta::pure::tds::olapGroupBy<T>(tds:TabularDataSet[1], columns:String[*], operation:FunctionDefinition<{TDSRow[*]->Map<Any,Integer>[1]}>[1],columnName:String[1]):TabularDataSet[1]
+{
+   olapGroupBy($tds,$columns,func($operation),$columnName);
+}
+
+function meta::pure::tds::olapGroupBy<T>(tds:TabularDataSet[1], operation:FunctionDefinition<{TDSRow[*]->Map<Any,Integer>[1]}>[1],columnName:String[1]):TabularDataSet[1]
+{
+   olapGroupBy($tds,func($operation),$columnName);
+}
+
+function meta::pure::tds::olapGroupBy<T,U>(tds:TabularDataSet[1], sortBy:SortInformation[0..1], operation:FunctionDefinition<{TDSRow[*]->Map<Any,Integer>[1]}>[1],columnName:String[1]):TabularDataSet[1]
+{
+   olapGroupBy($tds,$sortBy,func($operation),$columnName);
+}
+
+function meta::pure::tds::func(col:String[1], f: FunctionDefinition<{Number[*]->Number[0..1]}>[1]): TdsOlapAggregation<TDSRow>[1]
+{
+   ^TdsOlapAggregation<TDSRow>(colName = $col, func = $f);
+}
+
+function meta::pure::tds::func(f: FunctionDefinition<{TDSRow[*]->Map<Any,Integer>[1]}>[1]): TdsOlapRank<TDSRow>[1]
+{
+   ^TdsOlapRank<TDSRow>(func = $f);
+}
+
+Class meta::pure::tds::TdsOlapAggregation<T> extends meta::pure::tds::OlapOperation<T>
+{
+   colName : String[1] ;
+   func: FunctionDefinition<{Number[*]->Number[0..1]}>[1];
+}
+
+Class meta::pure::tds::TdsOlapRank<T> extends meta::pure::tds::OlapOperation<T>
+{
+   func:FunctionDefinition<{T[*]->Map<Any,Integer>[1]}>[1];
+}
+
+
+// Multi In
+function meta::pure::tds::tdsContains<T>(object: T[1], functions: Function<{T[1]->Any[0..1]}>[*], tds: TabularDataSet[1]):Boolean[1]
+{
+   assert($functions->isNotEmpty(), 'Functions cannot be empty');
+   assert($tds.columns->size() == $functions->size(), | 'Number of functions doesn\'t match TDS columns, Functions number: ' + $functions->size()->toString() + ', TDSColumns number: ' + $tds.columns->size()->toString());
+   $tds.rows->exists(r | $r.values == $functions->map(k | $k->eval($object)));
+}
+
+function meta::pure::tds::tdsContains<T>(object: T[1], functions: Function<{T[1]->Any[0..1]}>[*], ids:String[*], tds: TabularDataSet[1], crossOperation: Function<{TDSRow[1],TDSRow[1]->Boolean[1]}>[1]):Boolean[1]
+{
+   assert($functions->isNotEmpty(), 'Functions cannot be empty');
+   assert($tds.columns->size() == $functions->size(), | 'Number of functions doesn\'t match TDS columns, Functions number: ' + $functions->size()->toString() + ', TDSColumns number: ' + $tds.columns->size()->toString());
+   let projected = $object->project($functions, $ids);
+   ($projected.rows->size() != 0) && $tds.rows->exists(r | $crossOperation->eval($projected.rows->at(0), $r));
+}
+
+function meta::pure::tds::groupBy<K,V,U>(set:K[*], functions:meta::pure::metamodel::function::Function<{K[1]->Any[*]}>[*], aggValues:meta::pure::functions::collection::AggregateValue<K,V,U>[*], ids:String[*]):TabularDataSet[1]
+{
+   let grouped = $set->fold({value,map|let key = ^List<Any>(values=$functions->map(f | let val = $f->eval($value);
+                                                                                       if($val->isEmpty(), | ^TDSNull(), | $val);
+                                                                                ));
+                         let currentList = $map->get($key);
+                         $map->put($key, ^List<Any>(values=if($currentList->isEmpty(), |$value, |$currentList->toOne().values->concatenate($value))));
+              },^Map<List<Any>,List<K>>());
+
+   let columnInfo = $ids->zip($functions->concatenate($aggValues.aggregateFn));
+
+   let columns = $columnInfo->map(info | ^TDSColumn(
+      name = $info.first,
+      offset = $columnInfo->indexOf($info),
+      type = $info.second->functionReturnType().rawType->toOne()->cast(@DataType)));
+
+   let tds = ^TabularDataSet(columns=$columns);
+
+   let rows = $grouped->keys()->map({key |  let listObjs = $grouped->get($key);
+                                   let aggResults = $aggValues->map(a | let vals = $listObjs.values->map(o | $a.mapFn->eval($o));
+                                                                        if ($vals->isEmpty(), | ^TDSNull(), | $a.aggregateFn->eval($vals)->cast(@Any));
+                                                                    );
+                                   ^TDSRow(values=$key.values->concatenate($aggResults), parent=$tds);
+                        });
+   $tds->mutateAdd('rows', $rows);
+   $tds;
+}
+
+function meta::pure::tds::groupByWithWindowSubset<K,V,U>(set:K[*], functions:meta::pure::metamodel::function::Function<{K[1]->Any[*]}>[*], aggValues:meta::pure::functions::collection::AggregateValue<K,V,U>[*], ids:String[*] , subSelectIds:String[*] , subAggIds:String[*] ):TabularDataSet[1]
+{
+
+   let newAggValues = $aggValues->filter( g| $subAggIds->map(i |$ids->indexOf($i))->contains($aggValues->indexOf($g) + $functions->size() ))->sort({a1, a2 | compare($subAggIds->indexOf($ids->at($aggValues->indexOf($a1) + $functions->size()))  , $subAggIds->indexOf($ids->at($aggValues->indexOf($a2) + $functions->size()))) });
+
+   let newIds = $subSelectIds->concatenate($subAggIds);
+
+   let subSetfunctions = $functions->filter(f | $subSelectIds->map(i | $ids->indexOf($i))->contains($functions->indexOf($f)) )->sort({a1, a2 | compare($ids->indexOf($ids->at($functions->indexOf($a1)))  , $ids->indexOf($ids->at($functions->indexOf($a2)))) });
+
+   meta::pure::tds::groupBy( $set, $subSetfunctions ,$newAggValues , $newIds  );
+
+}

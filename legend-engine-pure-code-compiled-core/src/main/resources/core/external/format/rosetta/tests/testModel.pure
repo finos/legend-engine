@@ -1,0 +1,121 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::profiles::*;
+import meta::external::format::rosetta::generation::tests::*;
+
+Class meta::external::format::rosetta::generation::tests::TestClassNoDocs {
+   docLessProperty: String[1];
+   multipleProperty: Float[*];
+   pointerProperty: Date[0..1];
+   manyProperty: Float[0..*];
+   numberToManyProperty: Float[2..*];
+}
+
+Class meta::external::format::rosetta::generation::tests::SimpleClass {
+   prop: Boolean[1];
+}
+
+Class {doc.doc='class level doc'} meta::external::format::rosetta::generation::tests::ChildClassWithDocs extends TestClassNoDocs {
+   {doc.doc='a sample test string to work as a doc'} docProperty: Date[1];
+   classProperty: SimpleClass[*];
+}
+
+Class <<meta::external::format::rosetta::generation::metadata.key>> meta::external::format::rosetta::generation::tests::ClassWithStereotype
+{
+   accountNumber: String[1];
+   accountName: String[0..1];
+}
+
+Class <<meta::external::format::rosetta::generation::metadata.key>> {meta::pure::profiles::doc.doc = 'A class level doc'} meta::external::format::rosetta::generation::tests::ClassWithStereotypeAndDoc
+{
+   accountNumber: String[1];
+   accountName: String[0..1];
+}
+
+Class meta::external::format::rosetta::generation::tests::ClassWithPropStereotype
+{
+   <<meta::external::format::rosetta::generation::metadata.scheme>> accountNumber: String[1];
+   <<meta::external::format::rosetta::generation::metadata.reference>> accountName: String[0..1];
+}
+
+Class meta::external::format::rosetta::generation::tests::ClassWithPropStereotypeAndPropDocs
+{
+   <<meta::external::format::rosetta::generation::metadata.scheme>> {meta::pure::profiles::doc.doc = 'Prop doc 1'} accountNumber: String[1];
+   <<meta::external::format::rosetta::generation::metadata.reference>> {meta::pure::profiles::doc.doc = 'Prop doc 2'} accountName: String[0..1];
+}
+
+
+Class <<meta::external::format::rosetta::generation::metadata.key>> {meta::pure::profiles::doc.doc = 'A class level doc'} meta::external::format::rosetta::generation::tests::ClassWithFullStereotypesAndDocs
+{
+   <<meta::external::format::rosetta::generation::metadata.scheme>> {meta::pure::profiles::doc.doc = 'Prop doc 1'} accountNumber: String[1];
+   <<meta::external::format::rosetta::generation::metadata.reference>> {meta::pure::profiles::doc.doc = 'Prop doc 2'} accountName: String[0..1];
+}
+
+Enum meta::external::format::rosetta::generation::tests::TestEnum{
+   enumProp1,
+   enumProp2
+}
+
+Enum {doc.doc='enum doc'} meta::external::format::rosetta::generation::tests::TestEnumWithDocs {
+   {doc.doc='enum prop doc'} enumPropWithDoc
+}
+
+
+
+function <<test.Test>> meta::external::format::rosetta::generation::tests::testClassTranslation():Boolean[1]
+{
+   assertEquals(meta::external::format::rosetta::generation::classToRosettaString(TestClassNoDocs), 'type TestClassNoDocs:\n   docLessProperty string (1..1)\n   multipleProperty number (0..*)\n   pointerProperty date (0..1)\n   manyProperty number (0..*)\n   numberToManyProperty number (2..*)\n');
+}
+
+function <<test.Test>> meta::external::format::rosetta::generation::tests::testChildClassTranslation():Boolean[1]
+{
+   assertEquals(meta::external::format::rosetta::generation::classToRosettaString(ChildClassWithDocs), 'type ChildClassWithDocs extends TestClassNoDocs: <"class level doc">\n   docProperty date (1..1) <"a sample test string to work as a doc">\n   classProperty SimpleClass (0..*)\n');
+}
+
+function <<test.Test>> meta::external::format::rosetta::generation::tests::testEnumTranslation():Boolean[1]
+{
+   assertEquals(meta::external::format::rosetta::generation::enumToRosettaEnum(TestEnum), 'enum TestEnum:\n   enumProp1\n   enumProp2\n');
+}
+
+function <<test.Test>> meta::external::format::rosetta::generation::tests::testEnumTranslationWithDocs():Boolean[1]
+{
+   assertEquals(meta::external::format::rosetta::generation::enumToRosettaEnum(TestEnumWithDocs), 'enum TestEnumWithDocs: <"enum doc">\n   enumPropWithDoc <"enum prop doc">\n');
+}
+
+function <<test.Test>> meta::external::format::rosetta::generation::tests::testClassWithtStereotype():Boolean[1]
+{
+   assertEquals(meta::external::format::rosetta::generation::classToRosettaString(ClassWithStereotype), 'type ClassWithStereotype:\n   [metadata key]\n   accountNumber string (1..1)\n   accountName string (0..1)\n');
+}
+
+function <<test.Test>> meta::external::format::rosetta::generation::tests::testClassWithStereotypeAndDoc():Boolean[1]
+{
+   assertEquals(meta::external::format::rosetta::generation::classToRosettaString(ClassWithStereotypeAndDoc), 'type ClassWithStereotypeAndDoc: <"A class level doc">\n   [metadata key]\n   accountNumber string (1..1)\n   accountName string (0..1)\n');
+}
+
+
+function <<test.Test>> meta::external::format::rosetta::generation::tests::testClassWithPropStereotype():Boolean[1]
+{
+   assertEquals(meta::external::format::rosetta::generation::classToRosettaString(ClassWithPropStereotype), 'type ClassWithPropStereotype:\n   accountNumber string (1..1)\n   [metadata scheme]\n   accountName string (0..1)\n   [metadata reference]\n');
+}
+
+function <<test.Test>> meta::external::format::rosetta::generation::tests::testClassWithPropStereotypeAndPropDocs():Boolean[1]
+{
+   assertEquals(meta::external::format::rosetta::generation::classToRosettaString(ClassWithPropStereotypeAndPropDocs), 'type ClassWithPropStereotypeAndPropDocs:\n   accountNumber string (1..1) <"Prop doc 1">\n   [metadata scheme]\n   accountName string (0..1) <"Prop doc 2">\n   [metadata reference]\n');
+}
+
+function <<test.Test>> meta::external::format::rosetta::generation::tests::testClassWithFullStereotypesAndDocs():Boolean[1]
+{
+   assertEquals(meta::external::format::rosetta::generation::classToRosettaString(ClassWithFullStereotypesAndDocs), 'type ClassWithFullStereotypesAndDocs: <"A class level doc">\n   [metadata key]\n   accountNumber string (1..1) <"Prop doc 1">\n   [metadata scheme]\n   accountName string (0..1) <"Prop doc 2">\n   [metadata reference]\n')
+}

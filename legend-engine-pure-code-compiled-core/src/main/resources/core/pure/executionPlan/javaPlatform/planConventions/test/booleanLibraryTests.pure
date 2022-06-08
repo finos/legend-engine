@@ -1,0 +1,88 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::factory::*;
+import meta::pure::executionPlan::engine::java::*;
+import meta::pure::executionPlan::engine::java::tests::*;
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0', doc.todo='empty equalities' }
+meta::pure::executionPlan::engine::java::tests::testEquals() : Boolean[1]
+{
+   javaExpressionTests(engineConventions([]))
+      ->addTest('equalities on one primitive true', {|5 == 5}, '5L == 5L', javaBoolean())
+         ->assert('%s == true')
+      ->addTest('equalities on one primitive false', {|4 == 5}, '4L == 5L', javaBoolean())
+         ->assert('%s == false')
+      ->addTest('equalities on one object true', {|'Hello' == 'Hello'}, '"Hello".equals("Hello")', javaBoolean())
+         ->assert('%s == true')
+      ->addTest('equalities on one object false', {|'Hello' == 'Goodbye'}, '"Hello".equals("Goodbye")', javaBoolean())
+         ->assert('%s == false')
+      ->addTest('equalities on many primitives true', {|[1,2] == [1,2]}, 'java.util.Arrays.asList(1L, 2L).equals(java.util.Arrays.asList(1L, 2L))', javaBoolean())
+         ->assert('%s == true')
+      ->addTest('equalities on many primitives false', {|[1,2] == [1,2,3]}, 'java.util.Arrays.asList(1L, 2L).equals(java.util.Arrays.asList(1L, 2L, 3L))', javaBoolean())
+         ->assert('%s == false')
+      ->addTest('equalities on many objects true', {|['Hello', 'World'] == ['Hello', 'World']}, 'java.util.Arrays.asList("Hello", "World").equals(java.util.Arrays.asList("Hello", "World"))', javaBoolean())
+         ->assert('%s == true')
+      ->addTest('equalities on many objects true', {|['Hello', 'World'] == ['Goodbye', 'World']}, 'java.util.Arrays.asList("Hello", "World").equals(java.util.Arrays.asList("Goodbye", "World"))', javaBoolean())
+         ->assert('%s == false')
+      ->addTest('equalities on left object and right primitive false', {|'Hello' == 5}, '"Hello".equals(5L)', javaBoolean())
+         ->assert('%s == false')
+      ->addTest('equalities on left primitive and right object false', {|5 == 'Hello'}, '"Hello".equals(5L)', javaBoolean())
+         ->assert('%s == false')
+//       ->addTest('nothing is nothing', {|[] == []}, '((java.util.List<String>) java.util.Arrays.asList("Hello", "World")).equals(((java.util.List<String>) java.util.Arrays.asList("Goodbye", "World")))', javaBoolean())
+//          ->assert('%s == true')
+//       ->addTest('something is not nothing', {|1 == []}, '((java.util.List<String>) java.util.Arrays.asList("Hello", "World")).equals(((java.util.List<String>) java.util.Arrays.asList("Goodbye", "World")))', javaBoolean())
+//          ->assert('%s == false')
+      ->runTests();
+}
+
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::engine::java::tests::testBooleanInQualities() : Boolean[1]
+{
+   javaExpressionTests(engineConventions([]))
+      ->addTest('true > null', {|true > []}, 'org.finos.legend.engine.plan.dependencies.util.Library.greaterThan(true, (Boolean) null)', javaBoolean())
+         ->assert('%s == false')
+      ->addTest('true < null', {|true < []}, 'org.finos.legend.engine.plan.dependencies.util.Library.greaterThan((Boolean) null, true)', javaBoolean())
+         ->assert('%s == false')
+      ->addTest('false >= null', {|false >= []}, 'org.finos.legend.engine.plan.dependencies.util.Library.greaterThanEqual(false, (Boolean) null)', javaBoolean())
+         ->assert('%s == false')
+      ->addTest('false <= null', {|false <= []}, 'org.finos.legend.engine.plan.dependencies.util.Library.greaterThanEqual((Boolean) null, false)', javaBoolean())
+         ->assert('%s == false')
+      ->addTest('true >= null', {| true >= []}, 'org.finos.legend.engine.plan.dependencies.util.Library.greaterThanEqual(true, (Boolean) null)', javaBoolean())
+         ->assert('%s == false')
+      ->addTest('null > null', {|[]->cast(@Boolean) > []}, 'org.finos.legend.engine.plan.dependencies.util.Library.greaterThan((Boolean) null, (Boolean) null)', javaBoolean())
+         ->assert('%s == false')
+      ->addTest('null >= null', {|[]->cast(@Boolean) >= []}, 'org.finos.legend.engine.plan.dependencies.util.Library.greaterThanEqual((Boolean) null, (Boolean) null)', javaBoolean())
+         ->assert('%s == false')
+      ->runTests();
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_20_0' }
+meta::pure::executionPlan::engine::java::tests::pureBooleanTests() : Boolean[1]
+{
+   javaPureTests(engineConventions([]), [
+      meta::pure::functions::boolean::tests::testIsPrimitive__Boolean_1_,
+      meta::pure::functions::boolean::tests::testIsEnum__Boolean_1_
+      //meta::pure::functions::boolean::tests::testIsNonPrimitive__Boolean_1_, // TODO Requires New
+      //meta::pure::functions::boolean::tests::testIsNativeFunctions__Boolean_1_, // TODO Requires Metadata
+      //meta::pure::functions::boolean::tests::testIsConcreteFunctionDefinitions, // TODO Requires Metadata
+   ])
+      ->generate(meta::pure::functions::boolean::tests::equalitymodel::TestEnum1)
+      ->generate(meta::pure::functions::boolean::tests::equalitymodel::TestEnum2)
+      ->runTests();
+}

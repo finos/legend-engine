@@ -1,0 +1,34 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+function <<meta::pure::profiles::test.Test>> meta::pure::executionPlan::tests::testAllNodesForGraphNode() : Boolean[1]
+{
+   let sysMapping = ^meta::pure::router::systemMapping::SystemMapping(
+      executeFunctionAsString='',
+      supportsFunctionAsString='',
+      planExecutionAsString='',
+      localGetterOverrideMappedAsString='',
+      localGetterOverrideNonMappedAsString=''
+   );
+   
+   let tree = ^meta::pure::graphFetch::GraphFetchTree();
+   let routedTree = ^meta::pure::graphFetch::routing::RoutedGraphFetchTree();
+   let clusteredTree = ^meta::pure::graphFetch::routing::ClusteredGraphFetchTree(openVars = []->cast(@Pair<String, List<Any>>)->newMap(), s = $sysMapping, tree = $routedTree, store = ^meta::pure::store::Store());
+
+   let voidResultType = ^meta::pure::executionPlan::VoidResultType(type = Any);
+   let localGraphNode = ^meta::pure::graphFetch::executionPlan::LocalGraphFetchExecutionNode(graphFetchTree = $routedTree, resultType = $voidResultType, nodeIndex = 0);
+   let globalGraphNode =  ^meta::pure::graphFetch::executionPlan::GlobalGraphFetchExecutionNode(store = ^meta::pure::store::Store(), localGraphFetchExecutionNode = $localGraphNode, graphFetchTree = $clusteredTree, resultType = $voidResultType);
+
+   assertEquals(2, $globalGraphNode->meta::pure::executionPlan::allNodes([])->size());
+}

@@ -1,0 +1,320 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::mapping::*;
+import meta::pure::router::operations::*;
+import meta::pure::router::routing::*;
+import meta::pure::mapping::aggregationAware::*;
+import meta::pure::mapping::modelToModel::*;
+import meta::pure::router::clustering::*;
+import meta::pure::router::systemMapping::*;
+import meta::pure::runtime::*;
+import meta::pure::store::*;
+
+Class meta::pure::mapping::StaticMappingInstanceData
+{
+   mapping : Mapping[1];
+   runtime : Runtime[1];
+   systemMapping : SystemMapping[1];
+   setImplementation : InstanceSetImplementation[0..1];
+   exeCtx:ExecutionContext[1];
+   debug :DebugContext[1];
+   extensions : meta::pure::router::extension::RouterExtension[*];
+}
+
+Class meta::pure::mapping::MappingInstanceData
+{
+   static : StaticMappingInstanceData[1];
+   mappingPropertyValues : KeyValue[*];
+}
+
+Class meta::pure::mapping::StoreQuery
+{
+    fe : FunctionExpression[1];
+    inScopeVars : Map<String, List<Any>>[1];
+    advancedRouting : Boolean[0..1];
+    store : Store[1];
+    //sets : Pair<String, List<Any>>[*]; //inputs to either cross store ( query | deepFetch)
+}
+
+Class meta::pure::mapping::TabularDataSetImplementation extends TabularDataSet
+{
+  store : 	meta::pure::store::Store[1];
+}
+
+function meta::pure::mapping::sourceClass(setImplementation:SetImplementation[1], extensions:meta::pure::router::extension::RouterExtension[*]): Class<Any>[1]
+{
+   $setImplementation->match([
+      pure: PureInstanceSetImplementation[1]             | $pure.srcClass->cast(@Class<Any>)->toOne()
+   ]->concatenate($extensions.mapping_sourceClass)->toOneMany());
+}
+
+function meta::pure::mapping::classMappingByClass(mapping:Mapping[1], class:Class<Any>[1]):SetImplementation[*]
+{
+   let rootClassMappings = $mapping.rootClassMappingByClass($class);
+
+   let embeddedSets = $mapping.classMappings()->map(cm | $cm->match([
+         p:PropertyMappingsImplementation[1] |$p.allPropertyMappings()->map(p | $p->findEmbeddedMappingsByClass($class)),
+         a:SetImplementation[1]| []
+         ]));
+
+   $rootClassMappings->concatenate($embeddedSets);
+}
+
+function meta::pure::mapping::buildClassMappingsByClassMap(mapping:Mapping[1]):Map<Class<Any>,List<SetImplementation>>[1]
+{
+   let allClassMappings = $mapping.classMappings();
+
+   let mappingsInScope = $allClassMappings->filter(s|$s.root == true || $s->instanceOf(EmbeddedSetImplementation))
+                           ->concatenate($allClassMappings->map(x | $x->match([
+                              a : meta::pure::mapping::aggregationAware::AggregationAwareSetImplementation[1] | $a.aggregateSetImplementations.setImplementation->map(y | ^$y(class = $y.mappingClass->toOne())),
+                              s : SetImplementation[1] | []
+                           ])));
+
+   $mappingsInScope->meta::pure::router::routing::potentiallyResolveOperation($mapping, $allClassMappings)->groupBy(i | $i.class);
+}
+
+function meta::pure::mapping::mergeMappings(mappings: Mapping[1..*]):Mapping[1]
+{
+   if($mappings->distinct()->size()==1,
+   |$mappings->at(0),
+   |let initialMapping = meta::pure::mapping::MergedMapping;
+    let updatedMappings = $mappings->map(map | $map->updateImplementationIDForMapping('_'+$map->elementToPath()->toOne())
+                                         );
+  let setImplementationsInAUnion = $updatedMappings.classMappings->filter(c|$c->instanceOf(OperationSetImplementation))->cast(@OperationSetImplementation).parameters.setImplementation;
+  let groupedClasses = $updatedMappings.classMappings->filter(c|$c->instanceOf(SetImplementation))->filter(c|!$c.id->in($setImplementationsInAUnion.id))->cast(@SetImplementation)->groupBy({r|$r.class});
+  let newClasssMappings = $groupedClasses->keys()->map(c|
+                                                          let setImplementations = $groupedClasses->get($c).values;
+                                                          if( $setImplementations->size() >1,
+                                                            | let noRootSets = $setImplementations ->map(s| ^$s(root=false)) ;
+                                                              ^OperationSetImplementation( class = $c,
+                                                                                            id=  $c->elementToPath()->replace('::','_'),  //Need version that has underscores
+                                                                                            operation=   meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_ ,
+                                                                                            parameters = $noRootSets->map(s | ^SetImplementationContainer(id = $s.id,
+                                                                                                                                                          setImplementation = $s)),
+                                                                                            parent = $initialMapping,
+                                                                                            root = true
+                                                                                     )->concatenate($noRootSets);,
+                                                             |   $setImplementations->at(0) ;
+                                                           );
+                                                       )->concatenate($setImplementationsInAUnion);
+
+   ^$initialMapping( includes =   $mappings.includes->removeDuplicates(),
+                     classMappings = $newClasssMappings,
+                     enumerationMappings = $updatedMappings.enumerationMappings,
+                     associationMappings = $updatedMappings.associationMappings
+                 );
+  );
+}
+
+function meta::pure::mapping::propertyMappingsByPropertyName(i:InstanceSetImplementation[1], propertyName:String[1]):meta::pure::mapping::PropertyMapping[*]
+{
+   $i->match([ e:EmbeddedSetImplementation[1]| $e->propertyMappingsByPropertyName($propertyName),
+               a:InstanceSetImplementation[1]| $i.propertyMappingsByPropertyName($propertyName)
+             ]);
+}
+
+function meta::pure::mapping::propertyMappingByPropertyNameAndTargetIdWithInlineResolution(i:InstanceSetImplementation[1], s:String[1], targetId:String[1]):meta::pure::mapping::PropertyMapping[0..1]
+{
+   //In the case of ->subType() routing will identify the root class mapping for the target type, in this instance the property mapping needs to be resolved by the inlineSetImplementationId
+   let resolvedPropertyMappings = $i.allPropertyMappings()->fold({pm, a| let matchByTargetId = if($pm.property.name == $s && $pm.targetSetImplementationId == $targetId,|list($pm->concatenate($a.first.values)),|$a.first);
+
+                                                                         let matchByInlineId = $pm->match([i:InlineEmbeddedSetImplementation[1] | if($i.property.name == $s && $targetId == $i.inlineSetImplementationId,|list($i->concatenate($a.second.values)),|$a.second),
+                                                                                                                           p:PropertyMapping[1] | $a.second]);
+
+                                                                         pair($matchByTargetId, $matchByInlineId);
+                                                                 }, pair(list([]),list([]))->cast(@Pair<List<PropertyMapping>,List<PropertyMapping>>));
+   $resolvedPropertyMappings.first.values->first()->concatenate($resolvedPropertyMappings.second.values->first())->first();
+}
+
+function <<access.private>> meta::pure::mapping::findEmbeddedMappingsByClass(propertyMapping: PropertyMapping[1], class:Class<Any>[1]):SetImplementation[*]
+{
+
+   $propertyMapping->match([
+      s:InstanceSetImplementation[1] | let nested = $s.allPropertyMappings()->map(p | $p->findEmbeddedMappingsByClass($class));
+                               if ($s.class == $class, | [$s]->concatenate($nested); , | $nested);,
+      a:PropertyMapping[1] | []
+   ]);
+}
+
+function <<access.private>> meta::pure::mapping::updateImplementationIDForMapping(mapping:Mapping[1], suffix:String[1]):Mapping[1]
+{
+   let toUpdateClassMappingIds = $mapping.classMappings.id;
+   ^$mapping(classMappings = $mapping.classMappings->map(c|$c->updateImplementationID($suffix, $toUpdateClassMappingIds)->cast(@SetImplementation)),
+             enumerationMappings = $mapping.enumerationMappings, //TODO: no IDs so we have possible conflict if we had two mappings with same enumeration name in each one
+             associationMappings = $mapping.associationMappings->map(a|$a->updateImplementationID($suffix, $toUpdateClassMappingIds)->cast(@AssociationImplementation))
+             );
+}
+
+
+function <<access.private>> meta::pure::mapping::updateImplementationID(owner:PropertyOwnerImplementation[1],id:String[1], inScopeUpdatedClassMappingIds:String[*]):PropertyOwnerImplementation[1]
+{
+  $owner->match( [p:PropertyMappingsImplementation[1]|^$p(id = $p.id + $id,propertyMappings = $p.propertyMappings->map(p|$p->updatePropertyMappingIDWithSuffix($id, $inScopeUpdatedClassMappingIds))),
+                  o:OperationSetImplementation[1] | ^$o(parameters = $o.parameters->map(p |^$p(id = $p.id + $id, setImplementation = $p.setImplementation->updateImplementationID($id, $inScopeUpdatedClassMappingIds)->cast(@SetImplementation)))),
+                  s:SetImplementation[1]  |^$s(id= $s.id + $id)
+                 ]);
+}
+
+function <<access.private>> meta::pure::mapping::updatePropertyMappingIDWithSuffix(p:meta::pure::mapping::PropertyMapping[1], id:String[1], inScopeUpdatedClassMappingIds:String[*]):meta::pure::mapping::PropertyMapping[1]
+{
+  ^$p( sourceSetImplementationId = if($p.sourceSetImplementationId->isEmpty() || !$inScopeUpdatedClassMappingIds->contains($p.sourceSetImplementationId),|$p.sourceSetImplementationId ,| $p.sourceSetImplementationId + $id),
+       targetSetImplementationId = if($p.targetSetImplementationId->isEmpty() || !$inScopeUpdatedClassMappingIds->contains($p.targetSetImplementationId),|$p.targetSetImplementationId ,| $p.targetSetImplementationId + $id)
+     );
+}
+
+
+
+
+
+
+
+
+
+
+
+
+function meta::pure::router::clustering::resolveInstanceSetImplementations(o:OperationSetImplementation[1], extensions:meta::pure::router::extension::RouterExtension[*]):InstanceSetImplementation[*]
+{
+   let sets = $o.operation->eval($o);
+   $sets->map(s | $s->match([
+                              o:OperationSetImplementation[1] | $o->resolveInstanceSetImplementations($extensions),
+                              e:EmbeddedSetImplementation[1] | $e->resolveRootFromEmbedded($extensions),
+                              p:PureInstanceSetImplementation[1] | $p
+                            ]->concatenate($extensions.cluster_resolveInstanceSetImplementations->map(e|$e->eval($extensions)))->toOneMany()));
+}
+
+function <<access.private>> meta::pure::router::clustering::resolveRootFromEmbedded(o:EmbeddedSetImplementation[1], extensions:meta::pure::router::extension::RouterExtension[*]):InstanceSetImplementation[*]
+{
+   $o.owner->match([
+                     e:EmbeddedSetImplementation[1]|$e->resolveRootFromEmbedded($extensions)
+                  ]->concatenate($extensions.cluster_resolveRootFromEmbedded)->toOneMany());
+}
+
+function <<access.private>> meta::pure::graphFetch::routing::getStoreFromSet(s: SetImplementation[1], mapping: Mapping[1], extensions:meta::pure::router::extension::RouterExtension[*]):Store[1]
+{
+   $s->match([
+      pure : meta::pure::mapping::modelToModel::PureInstanceSetImplementation[1]   | ^meta::pure::mapping::modelToModel::ModelStore(name='MODEL', package=::),
+      rsi  : meta::pure::mapping::EmbeddedSetImplementation[1] | ^meta::pure::router::store::embedded::EmbeddedStore(package=::),
+      o    : meta::pure::mapping::OperationSetImplementation[1] | let roots = $o->resolveInstanceSetImplementations($extensions);
+                                                                  $roots->match([
+                                                                     p : meta::pure::mapping::modelToModel::PureInstanceSetImplementation[*] | ^meta::pure::mapping::modelToModel::ModelStore(name='MODEL', package=::)
+                                                                  ]->concatenate($extensions.graphFetch_getStoreFromSet_Operation->map(e|$e->eval($mapping)))->toOneMany());
+   ]->concatenate($extensions.graphFetch_getStoreFromSet->map(e|$e->eval($mapping)))->toOneMany())
+}
+
+function meta::pure::router::analytics::getStoreFromSetImpl(set: SetImplementation[1], mapping:Mapping[1], extensions:meta::pure::router::extension::RouterExtension[*]):meta::pure::store::Store[1]
+{
+   $set->match([
+      e   : EmbeddedSetImplementation[1] | ^meta::pure::router::store::embedded::EmbeddedStore(name='EMBEDDED', package=::),
+      agg  : AggregationAwareSetImplementation[1] | ^AggregationAwareStore(name='AGGREGATION_AWARE', package=::),
+      pure : PureInstanceSetImplementation[1]  | ^ModelStore(name='MODEL', package=::),
+      o    : OperationSetImplementation[1] | let roots = $o->resolveOperation($mapping);
+              $roots->match([p : PureInstanceSetImplementation[*] | ^ModelStore(name='MODEL', package=::)]
+                            ->concatenate($extensions.analytics_getStoreFromSetImpl_Operation->map(e|$e->eval($mapping)))->toOneMany()
+                      );
+           ]
+           ->concatenate($extensions.analytics_getStoreFromSetImpl->map(m|$m->eval($mapping)))->toOneMany()
+        )
+}
+
+
+
+function meta::pure::router::routing::findMappingsFromProperty(p:AbstractProperty<Any>[1], mapping:Mapping[1], sourceMappings:SetImplementation[*], state:RoutingState[1], extensions:meta::pure::router::extension::RouterExtension[*]):SetImplementation[*]
+{
+   let c = $p->functionReturnType().rawType->toOne();
+   if ($c->instanceOf(DataType),
+      |[],
+      |// Get potential embedded mappings (only for concrete SetImplementation). Operations are still possible in the old flow
+       let embeddedMappings = if($sourceMappings->isEmpty(),
+                                 |[],
+                                 |$sourceMappings->filter(s|$s->instanceOf(PropertyMappingsImplementation))->cast(@PropertyMappingsImplementation)->map(s|$s.propertyMappingsByPropertyName($p.name->toOne())->map(pm | $pm->reprocessAggregationAwarePropertyMapping())->filter(p|$p->instanceOf(EmbeddedSetImplementation)))->cast(@SetImplementation)
+                              );
+
+      let embeddedExistsInOperation = !$sourceMappings->resolveOperation($mapping)->cast(@PropertyMappingsImplementation)->map(s|$s.propertyMappingsByPropertyName($p.name->toOne())->map(pm | $pm->reprocessAggregationAwarePropertyMapping())->filter(p|$p->instanceOf(EmbeddedSetImplementation)))->isEmpty();
+
+      let classMapping = if($embeddedMappings->isEmpty(),
+                                   |  if ($embeddedExistsInOperation,
+                                          | let embeddedMappings = $sourceMappings->resolveOperation($mapping)->cast(@PropertyMappingsImplementation)->map(s|$s.propertyMappingsByPropertyName($p.name->toOne())->map(pm | $pm->reprocessAggregationAwarePropertyMapping())->filter(p|$p->instanceOf(EmbeddedSetImplementation)))->cast(@EmbeddedSetImplementation);
+                                            let containers = $embeddedMappings->map(e | ^SetImplementationContainer(id=$e.id, setImplementation=$e));
+                                            ^OperationSetImplementation(id='embedded_operation', root=true, class=$c->cast(@Class<Any>), parent=$mapping, parameters=$containers, operation=$sourceMappings->at(0)->cast(@OperationSetImplementation).operation);,
+                                          | let targetSetIds = $sourceMappings->resolveOperation($mapping)->cast(@PropertyMappingsImplementation)->map(s|$s.propertyMappingsByPropertyName($p.name->toOne())).targetSetImplementationId;
+                                            if(!$targetSetIds->isEmpty(),
+                                               | let classMappingsById = $mapping._classMappingByIdRecursive($targetSetIds)->map(x | $mapping.classMappingById($x.id));
+                                                 if($classMappingsById->isEmpty(),
+                                                    |$mapping.rootClassMappingByClass($c->cast(@Class<Any>))->potentiallyResolveOperation($mapping),
+                                                    |$classMappingsById
+                                                 );,
+                                               | let otherwiseTargetIds = $sourceMappings->filter(s|$s->instanceOf(OtherwiseEmbeddedSetImplementation))->cast(@OtherwiseEmbeddedSetImplementation).otherwisePropertyMapping.targetSetImplementationId;
+                                                 let classMappingsById = if ($otherwiseTargetIds->isEmpty(),|[],|findMappingsFromProperty($p, $mapping, $mapping._classMappingByIdRecursive($otherwiseTargetIds), $state, $extensions));
+                                                 if($classMappingsById->isEmpty(),
+                                                    |$mapping.rootClassMappingByClass($c->cast(@Class<Any>))->potentiallyResolveOperation($mapping),
+                                                    |$classMappingsById
+                                                 );
+                                            );
+                                     ),
+                                   | if($embeddedMappings->at(0)->instanceOf(InlineEmbeddedSetImplementation),
+                                          |$embeddedMappings->at(0)->cast(@InlineEmbeddedSetImplementation)->inlineEmbeddedMapping($mapping),
+                                          |$embeddedMappings
+                                     )
+
+                          );
+
+       // We don't find anything in the old flow (if the source is an operation and the target type is not directly mapped...
+       if ($classMapping->isEmpty(),
+          |let mappings = $state.classMappingsForClass($p->functionReturnType().rawType->toOne()->cast(@Class<Any>));
+           if ($mappings->isEmpty() || $state.isDeepFetchRouting,
+               |^EmbeddedSetImplementation(id='embdedded_todo', root=true, class=$p->functionReturnType().rawType->toOne()->cast(@Class<Any>), parent = $mapping, property=$p->cast(@Property<Nil,Any|*>), targetSetImplementationId='todo', sourceSetImplementationId='todo'),
+               |$mappings
+           );,
+          |$classMapping
+       );
+   );
+}
+
+
+
+function meta::pure::router::operations::getMappedLeafClasses(class:Class<Any>[1], mapping:Mapping[1], state: RoutingState[1]):Type[*]
+{
+    let thisMapping = $state.classMappingsForClass($class);
+    let subTypes = $class.specializations.specific->cast(@Class<Any>)->map(c | $c->getMappedLeafClasses_recursive([], $mapping, $state));
+    if($subTypes->isEmpty(), | if($thisMapping->isEmpty(), | [], |$class), | $subTypes);
+}
+
+function <<access.private>> meta::pure::router::operations::getMappedLeafClasses_recursive(class:Class<Any>[1], leafMostMappedClass:Class<Any>[0..1], mapping:Mapping[1], state: RoutingState[1]):Class<Any>[*]
+{
+    let specs = $class.specializations.specific->cast(@Class<Any>);
+    let foundClassMapping = $state.classMappingsForClass($class);
+    let mappedClass = if($foundClassMapping->isEmpty(), | $leafMostMappedClass, | $class);
+    if($specs->isEmpty(), | $mappedClass, | $specs->map(s | $s->getMappedLeafClasses_recursive($mappedClass, $mapping, $state)));
+}
+
+function  meta::pure::mapping::from<T|m>(t:T[m], m:meta::pure::mapping::Mapping[1], runtime:Runtime[1]):T[m]
+{
+   $t
+}
+
+function  meta::pure::mapping::from(tds:TabularDataSet[1], mapping:Mapping[1], runtime:Runtime[1]):TabularDataSet[1]
+{
+   $tds;
+}
+
+function  meta::pure::mapping::from(tds:TabularDataSet[1], mapping:Mapping[1], runtime:Runtime[1], executionContext:ExecutionContext[1]):TabularDataSet[1]
+{
+   $tds;
+}
+
+
+###Mapping
+Mapping meta::pure::mapping::MergedMapping
+()

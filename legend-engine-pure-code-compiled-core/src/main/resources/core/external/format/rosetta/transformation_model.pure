@@ -1,0 +1,111 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::format::rosetta::generation::*;
+
+function meta::external::format::rosetta::generation::enumToRosettaEnum(enum:Enumeration<Any>[1]):String[1]
+{
+   'enum'
+   +' '+$enum->enumName()->toOne() + ':'
+   + $enum->cast(@AnnotatedElement).taggedValues->cast(@TaggedValue)->processTaggedValues()
+   +$enum->enumValues()->processEnumValues('   ')
+}
+
+function meta::external::format::rosetta::generation::processEnumValues(values: Any[*], space:String[1]):String[1]
+{
+   $values->map(e| $space+$e->id()+ $e->cast(@AnnotatedElement).taggedValues->processTaggedValues()+ '')->joinStrings('','','')
+}
+
+function meta::external::format::rosetta::generation::classToRosettaString(class: Class<Any>[1]):String[1]
+{   
+    if($class->isAbstract(),| 'abstract ',|'') 
+   +'type '+ $class.name->toOne() 
+   + $class.generalizations->processGeneralizations() 
+   + $class.taggedValues->processTaggedValues() 
+   + $class.stereotypes->processStereotypes()
+   + $class.properties->processProperties('   ') + if($class.constraints->isEmpty(),|'',|($class->meta::external::format::rosetta::generation::translateConstraints()->joinStrings('\n','\n','')));
+}
+
+function meta::external::format::rosetta::generation::processStereotypes(stereotypes: Stereotype[*]):String[1]
+{
+   $stereotypes->map (s | '   [' +$s.profile.name->toOne() + ' '  + $s.value->toOne() + ']\n')->joinStrings();
+
+}
+
+function meta::external::format::rosetta::generation::processProperties(properties:Property<Any,Any|*>[*], space:String[1]):String[1]
+{
+   $properties->map(p|
+                    $space+ $p.name->toOne()+
+                    + $p.genericType.rawType->toOne()->processType()+
+                    + processMultiplicity($p.multiplicity)+
+                    + processTaggedValues($p.taggedValues)+ ''
+                    + $p.stereotypes->processStereotypes()
+                )->joinStrings()
+}
+
+function meta::external::format::rosetta::generation::processMultiplicity(m:Multiplicity[1]): String[1]
+{
+   if(multiplicityRepository()->get($m)->isEmpty(),
+      |' ('+ $m.lowerBound.value->toOne()->toString()+'..'+if($m.upperBound.value->isNotEmpty(),|$m.upperBound.value->toOne()->toString(),|'*')+')',
+      |multiplicityRepository()->get($m)->toOne()
+   );
+}
+
+function meta::external::format::rosetta::generation::processType(type:Type[1]):String[1]
+{
+   if(typeRepository()->get($type)->isNotEmpty(),
+      |typeRepository()->get($type)->toOne(),
+      |' '+$type->toString()->toOne();
+      );
+}
+
+function meta::external::format::rosetta::generation::processTaggedValues(t:TaggedValue[*]):String[1]
+{
+   let tag = doc->tag('doc');
+   let values =  $t->filter(t | $t.tag == $tag)->map(t | $t.value);
+   if($values->isNotEmpty(),|$values->joinStrings(' <"',',','">\n'),|'\n');
+}
+
+function meta::external::format::rosetta::generation::processGeneralizations(gen:Generalization[*]):String[1]
+{
+   let generalizations =  $gen->filter(g|$g.general.rawType->toOne()!=Any)->map(g|$g.general.rawType->cast(@Class<Any>).name);
+   if($generalizations->isNotEmpty(),| $generalizations->joinStrings(' extends ',',', ':'),|':');
+}
+
+function meta::external::format::rosetta::generation::isAbstract(class:PackageableElement[*]):Boolean[1]
+{
+    ($class.stereotypes.profile->cast(@Profile)->containsAny([meta::pure::profiles::typemodifiers]));
+}
+
+function meta::external::format::rosetta::generation::typeRepository():Map<Type,String>[1]
+{
+   [
+      pair(String, ' string'),
+      pair(Float, ' number'),
+      pair(Boolean,' boolean'),
+      pair(Date, ' date'),
+      pair(Integer, ' int'),
+      pair(DateTime, ' time')
+   ]->newMap();
+}
+
+function meta::external::format::rosetta::generation::multiplicityRepository():Map<Multiplicity,String>[1]
+{
+   [
+      pair(ZeroMany, ' (0..*)'),
+      pair(PureOne, ' (1..1)'),
+      pair(OneMany , ' (1..*)')
+  
+   ]->newMap();
+}

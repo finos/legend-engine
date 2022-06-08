@@ -1,0 +1,46 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::metamodel::tests::functionmatching::*;
+
+
+function <<test.Test>> meta::pure::metamodel::tests::functionmatching::testMultiplicityConstraintOnSimpleParameterMany():Boolean[1]
+{   
+   assertEquals('b', testMany());   
+}
+
+function <<test.Test>> meta::pure::metamodel::tests::functionmatching::testMultiplicityConstraintOnSimpleParameterOne():Boolean[1]
+{   
+   assertEquals('a', testMany2());   
+}
+
+function meta::pure::metamodel::tests::functionmatching::test1(var:String[*]):String[1]
+{
+   $var->at(1);
+}
+
+function meta::pure::metamodel::tests::functionmatching::testMany():String[1]
+{
+   test1(['a', 'b']);
+}
+
+function meta::pure::metamodel::tests::functionmatching::test2(var:String[1]):String[1]
+{
+   $var;
+}
+
+function meta::pure::metamodel::tests::functionmatching::testMany2():String[1]
+{
+   test2('a');
+}

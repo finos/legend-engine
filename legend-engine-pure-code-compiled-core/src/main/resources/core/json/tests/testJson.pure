@@ -1,0 +1,150 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::json::*;
+import meta::pure::profiles::*;
+
+function <<test.Test>> meta::json::tests::testJSONBooleanEquality():Boolean[1]
+{
+    assertEquals(^JSONBoolean(value=true), ^JSONBoolean(value=true));
+    assertEquals(^JSONBoolean(value=false), ^JSONBoolean(value=false));
+
+    assertNotEquals(^JSONBoolean(value=true), ^JSONBoolean(value=false));
+    assertNotEquals(^JSONBoolean(value=false), ^JSONBoolean(value=true));
+
+    assertNotEquals(^JSONBoolean(value=true), ^JSONString(value='true'));
+    assertNotEquals(^JSONBoolean(value=true), ^JSONNumber(value=3));
+    assertNotEquals(^JSONBoolean(value=true), ^JSONNull());
+    assertNotEquals(^JSONBoolean(value=true), ^JSONArray(values=^JSONBoolean(value=true)));
+}
+
+function <<test.Test>> meta::json::tests::testJSONStringEquality():Boolean[1]
+{
+    assertEquals(^JSONString(value='the quick brown fox'), ^JSONString(value='the quick brown fox'));
+    assertEquals(^JSONString(value='jumped over the lazy dog'), ^JSONString(value='jumped over the lazy dog'));
+    assertEquals(^JSONString(value=''), ^JSONString(value=''));
+
+    assertNotEquals(^JSONString(value='the quick brown fox jumped over the lazy dog'), ^JSONString(value='the lazy dog jumped over the quick brown fox'));
+    assertNotEquals(^JSONString(value='the quick brown fox'), ^JSONString(value=''));
+
+    assertNotEquals(^JSONString(value='true'), ^JSONBoolean(value=true));
+    assertNotEquals(^JSONString(value='3'), ^JSONNumber(value=3));
+    assertNotEquals(^JSONString(value='null'), ^JSONNull());
+    assertNotEquals(^JSONString(value='string'), ^JSONArray(values=^JSONString(value='string')));
+}
+
+function <<test.Test>> meta::json::tests::testJSONNumberEquality():Boolean[1]
+{
+    assertEquals(^JSONNumber(value=3), ^JSONNumber(value=3));
+    assertEquals(^JSONNumber(value=-17), ^JSONNumber(value=-17));
+    assertEquals(^JSONNumber(value=16.5442), ^JSONNumber(value=16.5442));
+
+    assertNotEquals(^JSONNumber(value=3), ^JSONNumber(value=-3));
+    assertNotEquals(^JSONNumber(value=3), ^JSONNumber(value=7.222));
+    assertNotEquals(^JSONNumber(value=16.5442), ^JSONNumber(value=0.003));
+
+    assertNotEquals(^JSONNumber(value=16.5442), ^JSONBoolean(value=false));
+    assertNotEquals(^JSONNumber(value=16.5442), ^JSONString(value='16.5442'));
+    assertNotEquals(^JSONNumber(value=16.5442), ^JSONNull());
+    assertNotEquals(^JSONNumber(value=16.5442), ^JSONArray(values=^JSONNumber(value=16.5442)));
+}
+
+function <<test.Test>> meta::json::tests::testJSONNullEquality():Boolean[1]
+{
+    assertEquals(^JSONNull(), ^JSONNull());
+
+    assertNotEquals(^JSONNull(), ^JSONBoolean(value=false));
+    assertNotEquals(^JSONNull(), ^JSONString(value='16.5442'));
+    assertNotEquals(^JSONNull(), ^JSONNumber(value=16.5442));
+    assertNotEquals(^JSONNull(), ^JSONArray(values=^JSONNull()));
+}
+
+function <<test.Test>> meta::json::tests::testJSONArrayEquality():Boolean[1]
+{
+    assertEquals(^JSONArray(values=[]), ^JSONArray(values=[]));
+    assertEquals(^JSONArray(values=[^JSONBoolean(value=true), ^JSONNumber(value=16.5442), ^JSONString(value='the quick brown fox'), ^JSONNull()]),
+                 ^JSONArray(values=[^JSONBoolean(value=true), ^JSONNumber(value=16.5442), ^JSONString(value='the quick brown fox'), ^JSONNull()]));
+    assertEquals(^JSONArray(values=[^JSONBoolean(value=false), ^JSONArray(values=[^JSONNumber(value=16.5442), ^JSONNull()])]),
+                 ^JSONArray(values=[^JSONBoolean(value=false), ^JSONArray(values=[^JSONNumber(value=16.5442), ^JSONNull()])]));
+
+    assertNotEquals(^JSONArray(values=[]), ^JSONArray(values=[^JSONNull()]));
+    assertNotEquals(^JSONArray(values=[^JSONBoolean(value=true), ^JSONString(value='the quick brown fox'), ^JSONNumber(value=16.5442), ^JSONNull()]),
+                    ^JSONArray(values=[^JSONBoolean(value=true), ^JSONNumber(value=16.5442), ^JSONString(value='the quick brown fox'), ^JSONNull()]));
+    assertNotEquals(^JSONArray(values=[^JSONBoolean(value=false), ^JSONArray(values=[^JSONNumber(value=16.5442), ^JSONNull()])]),
+                    ^JSONArray(values=[^JSONBoolean(value=false), ^JSONArray(values=[^JSONNumber(value=16.5442)])]));
+}
+
+function <<test.Test>> meta::json::tests::testJSONObjectEquality():Boolean[1]
+{
+    assertEquals(^JSONObject(), ^JSONObject());
+    assertEquals(^JSONObject(keyValuePairs=[newJSONKeyValue('value', ^JSONNumber(value=-17.344)), newJSONKeyValue('otherValue', ^JSONString(value='the quick brown fox'))]),
+                 ^JSONObject(keyValuePairs=[newJSONKeyValue('value', ^JSONNumber(value=-17.344)), newJSONKeyValue('otherValue', ^JSONString(value='the quick brown fox'))]));
+
+    assertNotEquals(^JSONObject(),
+                    ^JSONObject(keyValuePairs=[newJSONKeyValue('value', ^JSONNumber(value=-17.344)), newJSONKeyValue('otherValue', ^JSONString(value='the quick brown fox'))]));
+    assertNotEquals(^JSONObject(keyValuePairs=[newJSONKeyValue('value', ^JSONNumber(value=-17.344)), newJSONKeyValue('otherValue', ^JSONString(value='the quick brown fox'))]),
+                    ^JSONObject(keyValuePairs=[newJSONKeyValue('value', ^JSONNumber(value=0.92)), newJSONKeyValue('otherValue', ^JSONString(value='the quick brown fox'))]));
+}
+
+function <<test.Test>> meta::json::tests::testNewJSONKeyValue():Boolean[1]
+{
+    assertEquals(^JSONKeyValue(key=^JSONString(value='magnitude'), value=^JSONNumber(value=-17.333)), newJSONKeyValue('magnitude', ^JSONNumber(value=-17.333)));
+    assertEquals(^JSONKeyValue(key=^JSONString(value='values'), value=^JSONNull()), newJSONKeyValue('values', ^JSONNull()));
+    assertEquals(^JSONKeyValue(key=^JSONString(value='package'), value=^JSONString(value='meta::json')), newJSONKeyValue('package', ^JSONString(value='meta::json')));
+    assertEquals(^JSONKeyValue(key=^JSONString(value='values'), value=^JSONArray(values=[^JSONNull(), ^JSONBoolean(value=true)])), newJSONKeyValue('values', ^JSONArray(values=[^JSONNull(), ^JSONBoolean(value=true)])));
+}
+
+function <<test.Test>>   meta::json::tests::testNewJSONObject():Boolean[1]
+{
+    assertEquals(^JSONObject(), newJSONObject([]));
+    assertEquals(^JSONObject(keyValuePairs=[newJSONKeyValue('value', ^JSONNumber(value=-17.344)), newJSONKeyValue('otherValue', ^JSONString(value='the quick brown fox'))]),
+                 newJSONObject([newJSONKeyValue('value', ^JSONNumber(value=-17.344)), newJSONKeyValue('otherValue', ^JSONString(value='the quick brown fox'))]));
+}
+
+
+function <<test.Test>> meta::json::tests::testJSONEquivalent():Boolean[1]
+{
+    assert(jsonEquivalent(^JSONBoolean(value=true), ^JSONBoolean(value=true)));
+    assert(jsonEquivalent(^JSONString(value='the quick brown fox'), ^JSONString(value='the quick brown fox')));
+    assert(jsonEquivalent(^JSONNumber(value=14), ^JSONNumber(value=14)));
+    assert(jsonEquivalent(^JSONNull(), ^JSONNull()));
+
+    assert(jsonEquivalent(^JSONArray(values=[]), ^JSONArray(values=[])));
+    assert(jsonEquivalent(^JSONArray(values=[^JSONBoolean(value=false), ^JSONArray(values=[^JSONNumber(value=16.5442), ^JSONNull()])]),
+                          ^JSONArray(values=[^JSONBoolean(value=false), ^JSONArray(values=[^JSONNumber(value=16.5442), ^JSONNull()])])));
+
+    assert(jsonEquivalent(newJSONObject([]), newJSONObject([])));
+    assert(jsonEquivalent(newJSONObject([newJSONKeyValue('value', ^JSONNumber(value=-17.344)), newJSONKeyValue('otherValue', ^JSONString(value='the quick brown fox'))]),
+                          newJSONObject([newJSONKeyValue('otherValue', ^JSONString(value='the quick brown fox')), newJSONKeyValue('value', ^JSONNumber(value=-17.344))])));
+
+    assert(jsonEquivalent(^JSONArray(values=[^JSONBoolean(value=false),
+                                             ^JSONArray(values=[^JSONNumber(value=16.5442),
+                                             newJSONObject([newJSONKeyValue('value', ^JSONNumber(value=-17.344)),
+                                                            newJSONKeyValue('otherValue', ^JSONString(value='the quick brown fox'))])])]),
+                          ^JSONArray(values=[^JSONBoolean(value=false),
+                                             ^JSONArray(values=[^JSONNumber(value=16.5442),
+                                             newJSONObject([newJSONKeyValue('otherValue', ^JSONString(value='the quick brown fox')),
+                                                            newJSONKeyValue('value', ^JSONNumber(value=-17.344))])])])));
+
+    assertFalse(jsonEquivalent(^JSONBoolean(value=true), ^JSONBoolean(value=false)));
+    assertFalse(jsonEquivalent(^JSONString(value='one string'), ^JSONString(value='another string')));
+    assertFalse(jsonEquivalent(^JSONNumber(value=5), ^JSONNumber(value=-13.2)));
+    assertFalse(jsonEquivalent(^JSONArray(values=[^JSONNumber(value=5)]), ^JSONArray(values=[^JSONNumber(value=-13.2)])));
+    assertFalse(jsonEquivalent(^JSONArray(values=[^JSONNumber(value=5)]), ^JSONArray(values=[^JSONNumber(value=5), ^JSONNumber(value=5)])));
+    assertFalse(jsonEquivalent(newJSONObject([newJSONKeyValue('value', ^JSONNumber(value=-17.344)), newJSONKeyValue('otherValue', ^JSONString(value='the quick brown fox'))]),
+                               newJSONObject([newJSONKeyValue('value', ^JSONNumber(value=-17.344)), newJSONKeyValue('otherValue', ^JSONString(value='the quick brown fox jumps over the lazy dog'))])));
+    assertFalse(jsonEquivalent(newJSONObject([newJSONKeyValue('value', ^JSONNumber(value=-17.344)), newJSONKeyValue('otherValue', ^JSONString(value='the quick brown fox'))]),
+                               newJSONObject([newJSONKeyValue('value', ^JSONNumber(value=-17.344)), newJSONKeyValue('otherValue', ^JSONString(value='the quick brown fox')), newJSONKeyValue('thirdValue', ^JSONBoolean(value=true))])));
+
+}

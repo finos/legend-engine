@@ -1,0 +1,288 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Enum meta::pure::graphFetch::tests::XStore::inMemory::SynonymType
+{
+  CUSIP,
+  ISIN
+}
+
+Class meta::pure::graphFetch::tests::XStore::inMemory::Product
+{
+  productId: String[1];
+  productName: String[1];
+  description: String[1];
+}
+
+Class meta::pure::graphFetch::tests::XStore::inMemory::Synonym
+{
+  name: String[1];
+  type: meta::pure::graphFetch::tests::XStore::inMemory::SynonymType[1];
+}
+
+Class meta::pure::graphFetch::tests::XStore::inMemory::Trade
+{
+  tradeId: Integer[1];
+  traderKerb: String[0..1];
+  quantity: Integer[1];
+  productName() {$this.product.productName}: String[0..1];
+  justProduct() {$this.product}: meta::pure::graphFetch::tests::XStore::inMemory::Product[0..1];
+}
+
+Class meta::pure::graphFetch::tests::XStore::inMemory::TradeEvent
+{
+  eventId: String[1];
+  description: String[1];
+  timestamp: DateTime[1];
+}
+
+Class meta::pure::graphFetch::tests::XStore::inMemory::Trader
+{
+  kerberos: String[1];
+  firstName: String[1];
+  lastName: String[1];
+}
+
+Class meta::pure::graphFetch::tests::XStore::inMemory::S_Trade
+{
+  s_tradeId: Integer[1];
+  s_traderDetails: String[1];
+  s_tradeDetails: String[1];
+}
+
+Class meta::pure::graphFetch::tests::XStore::inMemory::S_Product
+{
+  s_productId: String[1];
+  s_productName: String[1];
+  s_description: String[1];
+  s_synonyms: meta::pure::graphFetch::tests::XStore::inMemory::S_Synonym[*];
+}
+
+Class meta::pure::graphFetch::tests::XStore::inMemory::S_Synonym
+{
+  s_name: String[1];
+  s_type: String[1];
+}
+
+Association meta::pure::graphFetch::tests::XStore::inMemory::Product_Synonym
+{
+  product: meta::pure::graphFetch::tests::XStore::inMemory::Product[1];
+  synonyms: meta::pure::graphFetch::tests::XStore::inMemory::Synonym[*];
+}
+
+Association meta::pure::graphFetch::tests::XStore::inMemory::Trade_Product
+{
+  product: meta::pure::graphFetch::tests::XStore::inMemory::Product[1];
+  trades: meta::pure::graphFetch::tests::XStore::inMemory::Trade[*];
+}
+
+Association meta::pure::graphFetch::tests::XStore::inMemory::Trade_TradeEvent
+{
+  tradeEvents: meta::pure::graphFetch::tests::XStore::inMemory::TradeEvent[*];
+  trade: meta::pure::graphFetch::tests::XStore::inMemory::Trade[1];
+}
+
+Association meta::pure::graphFetch::tests::XStore::inMemory::Trade_Trader
+{
+  trader: meta::pure::graphFetch::tests::XStore::inMemory::Trader[1];
+  trades: meta::pure::graphFetch::tests::XStore::inMemory::Trade[*];
+}
+
+
+###Mapping
+
+Mapping meta::pure::graphFetch::tests::XStore::inMemory::JsonCrossStoreMapping
+(
+  meta::pure::graphFetch::tests::XStore::inMemory::Trade[trade_set]: Pure
+  {
+    ~src meta::pure::graphFetch::tests::XStore::inMemory::S_Trade
+    tradeId: $src.s_tradeId,
+    +prodId: String[1]: $src.s_tradeDetails->split(':')->at(0),
+    quantity: $src.s_tradeDetails->split(':')->at(1)->parseInteger(),
+    trader[trader_set]: $src
+  }
+  meta::pure::graphFetch::tests::XStore::inMemory::Trader[trader_set]: Pure
+  {
+    ~src meta::pure::graphFetch::tests::XStore::inMemory::S_Trade
+    kerberos: $src.s_traderDetails->split(':')->at(0),
+    firstName: $src.s_traderDetails->split(':')->at(1),
+    lastName: $src.s_traderDetails->split(':')->at(2)
+  }
+  meta::pure::graphFetch::tests::XStore::inMemory::Product[prod_set]: Pure
+  {
+    ~src meta::pure::graphFetch::tests::XStore::inMemory::S_Product
+    productId: $src.s_productId,
+    productName: $src.s_productName,
+    description: $src.s_description,
+    synonyms[synonym_set]: $src.s_synonyms
+  }
+  meta::pure::graphFetch::tests::XStore::inMemory::Synonym[synonym_set]: Pure
+  {
+    ~src meta::pure::graphFetch::tests::XStore::inMemory::S_Synonym
+    name: $src.s_name,
+    type: EnumerationMapping SynonymTypeMapping: $src.s_type
+  }
+
+  meta::pure::graphFetch::tests::XStore::inMemory::Trade_Product: XStore
+  {
+    product[trade_set, prod_set]: $this.prodId == $that.productId,
+    trades[prod_set, trade_set]: $this.productId == $that.prodId
+  }
+
+  meta::pure::graphFetch::tests::XStore::inMemory::SynonymType: EnumerationMapping SynonymTypeMapping
+  {
+    CUSIP: ['cusip', 'CUSIP'],
+    ISIN: ['isin', 'ISIN']
+  }
+)
+
+###Pure
+import meta::pure::mapping::modelToModel::*;
+import meta::pure::runtime::*;
+
+function meta::pure::graphFetch::tests::XStore::inMemory::jsonConnectionTrade():JsonModelConnection[1]
+{
+   ^JsonModelConnection(element = ^ModelStore(),
+                        class = meta::pure::graphFetch::tests::XStore::inMemory::S_Trade,
+                        url = 'data:application/json,\n{"s_tradeId": 1, "s_tradeDetails": "30:100", "s_traderDetails": "abc:F_Name_1:L_Name_1"}\n{"s_tradeId": 2, "s_tradeDetails": "31:200", "s_traderDetails": "abc:F_Name_1:L_Name_1"}\n{"s_tradeId": 3, "s_tradeDetails": "30:300", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}\n{"s_tradeId": 4, "s_tradeDetails": "31:400", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}\n')
+}
+
+function meta::pure::graphFetch::tests::XStore::inMemory::jsonConnectionProduct():JsonModelConnection[1]
+{
+   ^JsonModelConnection(element = ^ModelStore(),
+                        class = meta::pure::graphFetch::tests::XStore::inMemory::S_Product,
+                        url = 'data:application/json,\n{"s_productId": "30", "s_productName": "Product 30", "s_description": "Product 30 description", "s_synonyms": [{"s_name":"product 30 synonym 1", "s_type":"isin"}, {"s_name":"product 30 synonym 2", "s_type":"cusip"}]}\n{"s_productId": "31", "s_productName": "Product 31", "s_description": "Product 31 description", "s_synonyms": [{"s_name":"product 31 synonym 1", "s_type":"isin"}, {"s_name":"product 31 synonym 2", "s_type":"cusip"}]}\n')
+}
+
+function meta::pure::graphFetch::tests::XStore::inMemory::JsonCrossStoreRuntime():Runtime[1]
+{
+   ^Runtime(connections = [meta::pure::graphFetch::tests::XStore::inMemory::jsonConnectionTrade(), meta::pure::graphFetch::tests::XStore::inMemory::jsonConnectionProduct()]);
+}
+
+
+// Tests
+
+###Pure
+import meta::pure::graphFetch::execution::*;
+import meta::pure::router::extension::*;
+import meta::pure::graphFetch::tests::XStore::inMemory::*;
+
+function meta::pure::graphFetch::tests::XStore::inMemory::inMemory::InMemoryCrossStoreServiceTestSimple():Any[*]
+{
+   let tree = #{
+      Trade{
+         tradeId,
+         trader{
+            kerberos,
+            firstName,
+            lastName},
+         product{
+            productId,
+            productName,
+            description,
+            synonyms{
+               name,
+               type
+            }
+         }
+      }
+   }#;
+   
+   let query   = {|Trade.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::pure::graphFetch::tests::XStore::inMemory::JsonCrossStoreMapping;
+   let runtime = meta::pure::graphFetch::tests::XStore::inMemory::JsonCrossStoreRuntime();
+   
+   let result = execute($query, $mapping, $runtime, defaultExtensions()).values;
+   
+   assertJsonStringsEqual(
+      '[' +
+         '{' +
+           '"product":{"productId":"30","synonyms":[{"name":"product 30 synonym 1","type":"ISIN"},{"name":"product 30 synonym 2","type":"CUSIP"}],"description":"Product 30 description","productName":"Product 30"},' +
+           '"trader":{"firstName":"F_Name_1","lastName":"L_Name_1","kerberos":"abc"},' +
+           '"tradeId":1' +
+         '},' +
+         '{' +
+           '"product":{"productId":"31","synonyms":[{"name":"product 31 synonym 1","type":"ISIN"},{"name":"product 31 synonym 2","type":"CUSIP"}],"description":"Product 31 description","productName":"Product 31"},' +
+           '"trader":{"firstName":"F_Name_1","lastName":"L_Name_1","kerberos":"abc"},' +
+           '"tradeId":2' +
+         '},' +
+         '{' +
+           '"product":{"productId":"30","synonyms":[{"name":"product 30 synonym 1","type":"ISIN"},{"name":"product 30 synonym 2","type":"CUSIP"}],"description":"Product 30 description","productName":"Product 30"},' +
+           '"trader":{"firstName":"F_Name_2","lastName":"L_Name_2","kerberos":"xyz"},' +
+           '"tradeId":3' +
+         '},' +
+         '{' +
+           '"product":{"productId":"31","synonyms":[{"name":"product 31 synonym 1","type":"ISIN"},{"name":"product 31 synonym 2","type":"CUSIP"}],"description":"Product 31 description","productName":"Product 31"},' +
+           '"trader":{"firstName":"F_Name_2","lastName":"L_Name_2","kerberos":"xyz"},' +
+           '"tradeId":4' +
+         '}' +
+       ']',
+      $result
+   );
+}
+
+function meta::pure::graphFetch::tests::XStore::inMemory::inMemory::InMemoryCrossStoreServiceTestSimpleChecked():Any[*]
+{
+   let tree = #{
+      Trade{
+         tradeId,
+         trader{
+            kerberos,
+            firstName,
+            lastName},
+         product{
+            productId,
+            productName,
+            description,
+            synonyms{
+               name,
+               type
+            }
+         }
+      }
+   }#;
+   
+   let query   = {|Trade.all()->graphFetchChecked($tree)->serialize($tree)};
+   let mapping = meta::pure::graphFetch::tests::XStore::inMemory::JsonCrossStoreMapping;
+   let runtime = meta::pure::graphFetch::tests::XStore::inMemory::JsonCrossStoreRuntime();
+   
+   let result = execute($query, $mapping, $runtime, defaultExtensions()).values;
+   
+   assertJsonStringsEqual(
+      '[' +
+         '{' +
+           '"product":{"productId":"30","synonyms":[{"name":"product 30 synonym 1","type":"ISIN"},{"name":"product 30 synonym 2","type":"CUSIP"}],"description":"Product 30 description","productName":"Product 30"},' +
+           '"trader":{"firstName":"F_Name_1","lastName":"L_Name_1","kerberos":"abc"},' +
+           '"tradeId":1' +
+         '},' +
+         '{' +
+           '"product":{"productId":"31","synonyms":[{"name":"product 31 synonym 1","type":"ISIN"},{"name":"product 31 synonym 2","type":"CUSIP"}],"description":"Product 31 description","productName":"Product 31"},' +
+           '"trader":{"firstName":"F_Name_1","lastName":"L_Name_1","kerberos":"abc"},' +
+           '"tradeId":2' +
+         '},' +
+         '{' +
+           '"product":{"productId":"30","synonyms":[{"name":"product 30 synonym 1","type":"ISIN"},{"name":"product 30 synonym 2","type":"CUSIP"}],"description":"Product 30 description","productName":"Product 30"},' +
+           '"trader":{"firstName":"F_Name_2","lastName":"L_Name_2","kerberos":"xyz"},' +
+           '"tradeId":3' +
+         '},' +
+         '{' +
+           '"product":{"productId":"31","synonyms":[{"name":"product 31 synonym 1","type":"ISIN"},{"name":"product 31 synonym 2","type":"CUSIP"}],"description":"Product 31 description","productName":"Product 31"},' +
+           '"trader":{"firstName":"F_Name_2","lastName":"L_Name_2","kerberos":"xyz"},' +
+           '"tradeId":4' +
+         '}' +
+       ']',
+      $result
+   );
+}

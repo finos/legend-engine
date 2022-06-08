@@ -1,0 +1,326 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::json::tests::fromJson::*;
+import meta::json::*;
+
+function <<access.private>> meta::json::tests::fromJson::assertLogicallyEqual(e : Any[*], a : Any[*]):Boolean[1]
+{  
+   assertEquals($e->toJSON(10), $a->toJSON(10));
+}
+
+Class meta::json::tests::fromJson::SimpleString
+{
+   string : String[1];   
+}
+
+function <<test.Test>> meta::json::tests::fromJson::simpleStringTests():Boolean[1]
+{
+   let example = ^SimpleString(string='foo');
+   let exampleJson = '{"string":"foo"}';
+   assertLogicallyEqual($example, $exampleJson -> fromJson(SimpleString));
+}
+
+Class meta::json::tests::fromJson::SimpleInteger
+{
+   integer : Integer[1];   
+}
+
+function <<test.Test>> meta::json::tests::fromJson::simpleIntegerTests():Boolean[1]
+{
+   let example = ^SimpleInteger(integer=3);
+   let exampleJson = '{"integer":3}';
+   assertLogicallyEqual($example, $exampleJson -> fromJson(SimpleInteger));
+}
+
+Class meta::json::tests::fromJson::SimpleFloat
+{
+   float : Float[1];   
+}
+
+function <<test.Test>> meta::json::tests::fromJson::simpleFloatTests():Boolean[1]
+{
+   let example = ^SimpleFloat(float=3.14);
+   let exampleJson = '{"float":3.14}';
+   assertLogicallyEqual($example, $exampleJson -> fromJson(SimpleFloat));
+}
+
+Class meta::json::tests::fromJson::SimpleBoolean
+{
+   boolean : Boolean[1];   
+}
+
+function <<test.Test>> meta::json::tests::fromJson::simpleBooleanTests():Boolean[1]
+{
+   let trueExample = ^SimpleBoolean(boolean=true);
+   let trueExampleJson = '{"boolean":true}';
+   assertLogicallyEqual($trueExample, $trueExampleJson -> fromJson(SimpleBoolean));
+   
+   let falseExample = ^SimpleBoolean(boolean=false);
+   let falseExampleJson = '{"boolean":false}';
+   assertLogicallyEqual($falseExample, $falseExampleJson -> fromJson(SimpleBoolean));
+}
+
+Class meta::json::tests::fromJson::SimpleNull
+{
+   null : Number[0];   
+}
+
+function <<test.Test>> meta::json::tests::fromJson::simpleNullTests():Boolean[1]
+{
+   let example = ^SimpleNull(null=[]);
+   let exampleJson = '{"null":null}';
+   assertLogicallyEqual($example, $exampleJson -> fromJson(SimpleNull));
+}
+
+Class meta::json::tests::fromJson::SimpleArray
+{
+   array : String[2];   
+}
+
+function <<test.Test>> meta::json::tests::fromJson::simpleArrayTests():Boolean[1]
+{
+   let example = ^SimpleArray(array=['1','2']);
+   let exampleJson = '{"array":["1","2"]}';
+   assertLogicallyEqual($example, $exampleJson -> fromJson(SimpleArray));
+}
+
+Enum meta::json::tests::fromJson::TestingEnum
+{
+   Value1, Value2
+}
+
+Class meta::json::tests::fromJson::SimpleEnum
+{
+   enum : TestingEnum[1];   
+}
+
+function <<test.Test>> meta::json::tests::fromJson::simpleEnumTests():Boolean[1]
+{
+   let example = ^SimpleEnum(enum=TestingEnum.Value1);
+   let exampleJson = '{"enum":"meta::json::tests::fromJson::TestingEnum.Value1"}';
+   assertLogicallyEqual($example, $exampleJson -> fromJson(SimpleEnum));
+}
+
+Class meta::json::tests::fromJson::OptionalField
+{
+   field : String[0..1];   
+}
+
+function <<test.Test>> meta::json::tests::fromJson::optionalFieldTest_Without():Boolean[1]
+{
+   let example = ^OptionalField();
+   let exampleJson = '{}';
+   assertLogicallyEqual($example, $exampleJson -> fromJson(OptionalField));
+}
+
+function <<test.Test>> meta::json::tests::fromJson::optionalFieldTest_With():Boolean[1]
+{
+   let example = ^OptionalField(field='with');
+   let exampleJson = '{"field":"with"}';
+   assertLogicallyEqual($example, $exampleJson -> fromJson(OptionalField));
+}
+
+Class meta::json::tests::fromJson::ExactlyTwo
+{
+   field : String[2];   
+}
+
+function <<test.Test>> meta::json::tests::fromJson::exactlyTwoTest():Boolean[1]
+{
+   let example = ^ExactlyTwo(field=['one','two']);
+   let exampleJson = '{"field":["one","two"]}';
+   assertLogicallyEqual($example, $exampleJson -> fromJson(ExactlyTwo));
+}
+
+Class meta::json::tests::fromJson::Many
+{
+   field : String[*];   
+}
+
+function <<test.Test>> meta::json::tests::fromJson::manyTest():Boolean[1]
+{
+   let example = ^Many(field=['one','two','more']);
+   let exampleJson = '{"field":["one","two","more"]}';
+   assertLogicallyEqual($example, $exampleJson -> fromJson(Many));
+}
+
+Class <<access.private>> meta::json::tests::fromJson::Child
+{
+   a:String[1];
+}
+
+Class <<access.private>> meta::json::tests::fromJson::ExtendedChild extends Child
+{
+   b:Integer[1];
+}
+
+function <<test.Test>> meta::json::tests::fromJson::simpleInheritenceTest():Boolean[1]
+{  
+   let example = ^ExtendedChild(a='a', b=1);
+   let exampleJson = '{"a" : "a", "b" : 1}';
+   assertLogicallyEqual($example, $exampleJson -> fromJson(ExtendedChild));
+}   
+
+Class <<access.private>> meta::json::tests::fromJson::Parent
+{
+   b:Child[1];
+}
+
+function <<test.Test>> meta::json::tests::fromJson::simpleCompositionTest():Boolean[1]
+{  
+   let example = ^Parent(b=^Child(a='a'));
+   let exampleJson = '{"b":{"a":"a"}}';
+   assertLogicallyEqual($example, $exampleJson -> fromJson(Parent));
+}
+
+Class <<access.private>> meta::json::tests::fromJson::EmptyParent {}
+
+Class <<access.private>> meta::json::tests::fromJson::SS extends EmptyParent
+{
+   s:String[1];
+}
+
+Class <<access.private>> meta::json::tests::fromJson::SSS extends EmptyParent
+{
+   s:String[*];
+}
+
+function <<test.Test>> meta::json::tests::fromJson::arrayPropertySubclass():Boolean[1]
+{  
+   let example = ^SS(s='a');
+   let exampleJson = '{"s":"a"}';
+   assertLogicallyEqual($example, $exampleJson -> fromJson(SS));
+}
+
+function <<test.Test>> meta::json::tests::fromJson::arrayPropertySubclass2():Boolean[1]
+{  
+   let example = ^SSS(s=['a']);
+   let exampleJson = '{"s":["a"]}';
+   assertLogicallyEqual($example, $exampleJson -> fromJson(SSS));
+}
+
+function <<test.Test>> meta::json::tests::fromJson::arrayPropertySubclass3():Boolean[1]
+{  
+   let example = ^SSS(s=['a','b']);
+   let exampleJson = '{"s":["a","b"]}';
+   assertLogicallyEqual($example, $exampleJson -> fromJson(SSS));
+}
+
+Class <<access.private>> meta::json::tests::fromJson::OwnerOfAmbigousChildren
+{
+   a:ParentOfAmbigousChildren[1];
+}
+
+Class <<access.private>> meta::json::tests::fromJson::ParentOfAmbigousChildren
+{
+}
+
+Class <<access.private>> meta::json::tests::fromJson::AmbigousChild1 extends ParentOfAmbigousChildren
+{
+   b:Integer[1];
+}
+
+Class <<access.private>> meta::json::tests::fromJson::AmbigousChild2 extends ParentOfAmbigousChildren
+{
+   b:Integer[1];
+}
+
+function <<test.Test>> meta::json::tests::fromJson::ambiguityResolvedByHint():Boolean[1]
+{  
+   let config = ^JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=true);
+   let example = ^OwnerOfAmbigousChildren(a=^AmbigousChild1(b=10));
+   let exampleJson = '{"a" : { "@type": "AmbigousChild1", "b" : 10 } }';
+   assertLogicallyEqual($example, $exampleJson -> fromJson(OwnerOfAmbigousChildren, $config));
+}   
+
+function <<test.Test>> meta::json::tests::fromJson::notStrictJson():Boolean[1]
+{  
+   let config = ^JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false);
+   let example = ^OwnerOfAmbigousChildren(a=^AmbigousChild1(b=10));
+   let exampleJson = '{"a" : { "@type": "AmbigousChild1", "b" : 10 }, "c" : 42 }';
+   assertLogicallyEqual($example, $exampleJson -> fromJson(OwnerOfAmbigousChildren, $config));
+}  
+
+Class <<access.private>> meta::json::tests::fromJson::Assoc_class1
+{
+   a:Integer[1];
+}
+
+Class <<access.private>> meta::json::tests::fromJson::Assoc_class2
+{
+   b:Integer[1];
+}
+
+Association meta::json::tests::fromJson::Assoc1
+{
+   ASSOC1 : Assoc_class1[1];
+   ASSOC2 : Assoc_class2[1];
+}
+
+function <<test.Test>> meta::json::tests::fromJson::associationOneToOne():Any[1]
+{
+   let exampleJson = '{"a":3,"ASSOC2":{"b":2,"ASSOC1":{"a":3}}}' -> fromJson(Assoc_class1);   
+}
+
+Class <<access.private>> meta::json::tests::fromJson::HasAssocProp
+{
+   c : Assoc_class1[1];
+}
+
+function <<test.Test>> {test.excludePlatform = 'Interpreted'} meta::json::tests::fromJson::associationHasAssocProperty():Any[1]
+{
+   let exampleJson = '{"c": {"a":3,"ASSOC2":{"b":2,"ASSOC1":{"a":3}}}}' -> fromJson(HasAssocProp);
+}
+
+Class <<access.private>> meta::json::tests::fromJson::Assoc_class3 {}
+Class <<access.private>> meta::json::tests::fromJson::Assoc_class4 {}
+Association meta::json::tests::fromJson::Assoc2
+{
+   ASSOC3 : Assoc_class3[1];
+   ASSOC4 : Assoc_class4[0..1];
+}
+
+function <<test.Test>> meta::json::tests::fromJson::associationOptional():Any[1]
+{
+   let exampleJson = '{}' -> fromJson(Assoc_class3);   
+}
+
+Class <<access.private>> meta::json::tests::fromJson::Assoc_class5 {}
+Class <<access.private>> meta::json::tests::fromJson::Assoc_class6 {}
+Association meta::json::tests::fromJson::Assoc3
+{
+   ASSOC5 : Assoc_class5[1];
+   ASSOC6 : Assoc_class6[*];
+}
+
+function <<test.Test>> meta::json::tests::fromJson::associationOneToMany():Any[1]
+{
+   '{}' -> fromJson(Assoc_class5);
+   '{"ASSOC6":{"ASSOC5":{}}}' -> fromJson(Assoc_class5);
+}
+
+Class <<access.private>> meta::json::tests::fromJson::Assoc_class7 {}
+Class <<access.private>> meta::json::tests::fromJson::Assoc_class8 {}
+Association meta::json::tests::fromJson::Assoc4
+{
+   ASSOC7 : Assoc_class7[1];
+   ASSOC8 : Assoc_class8[3];
+}
+
+function <<test.Test>> meta::json::tests::fromJson::associationOneToThreeExactly():Any[1]
+{
+   '{"ASSOC8":[{"ASSOC7":{}},{"ASSOC7":{}},{"ASSOC7":{}}]}' -> fromJson(Assoc_class7);
+}
+

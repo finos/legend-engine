@@ -1,0 +1,102 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::factory::*;
+import meta::external::language::java::factory::project::*;
+import meta::external::language::java::metamodel::*;
+import meta::external::language::java::metamodel::project::*;
+import meta::external::language::java::serialization::*;
+import meta::external::language::java::transform::*;
+import meta::pure::dataQuality::*;
+import meta::pure::executionPlan::engine::*;
+import meta::pure::executionPlan::engine::java::*;
+import meta::pure::executionPlan::engine::java::graphFetch::stream::*;
+import meta::pure::executionPlan::engine::java::naming::*;
+
+// TODO This depends on meta::pure::executionPlan::engine::java::generateResultBasedConstructor being used for this specific purpose.  The approach should be generalized and the specifics moved to this package
+
+function meta::pure::executionPlan::engine::java::graphFetch::stream::createStreamReading(pureClass:meta::pure::metamodel::type::Class<Any>[1], javaInterface:meta::external::language::java::metamodel::Class[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]): Project[1]
+{
+   newProject()->addClasses(createStreamReadingClass($pureClass, $javaInterface, $path, $context, $debug));
+}
+
+function meta::pure::executionPlan::engine::java::graphFetch::stream::streamReaderClass(conventions:Conventions[1], path:String[1]): meta::external::language::java::metamodel::Class[1]
+{
+   $conventions->planNodeClass('public', $path, 'StreamReader');
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::stream::createStreamReadingClass(pureClass:meta::pure::metamodel::type::Class<Any>[1], javaInterface:meta::external::language::java::metamodel::Class[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]): meta::external::language::java::metamodel::Class[1]
+{
+   let itr  = javaField('private', javaIterator($javaInterface), 'itr');
+
+   $context.conventions->streamReaderClass($path)
+      ->implements($context.conventions->className(StoreStreamReader))
+      ->addField(javaField('private', javaStream($javaInterface), 'stream'))
+      ->addField($itr)
+      ->addConstructor($javaInterface)
+      ->addMethod(javaMethod('public', javaVoid(), 'initReading',    [], '// No Op'))
+      ->addMethod(javaMethod('public', javaVoid(), 'destroyReading', [], '// No Op'))
+      ->addIsFinished($itr)
+      ->addReadCheckedObjects($pureClass, $javaInterface, $path, $context, $itr);
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::stream::addConstructor(class:meta::external::language::java::metamodel::Class[1], sourceClass:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
+{
+   let in    = j_parameter(javaStream($sourceClass),'in');
+   let jThis = j_this($class);
+
+   $class->addConstructor(javaConstructor([], [$in]->cast(@meta::external::language::java::metamodel::Parameter),
+      [
+         $jThis->j_field('stream')->j_assign($in),
+         $jThis->j_field('itr')->j_assign($jThis->j_field('stream')->j_invoke('iterator', []))
+      ]
+   ));
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::stream::addIsFinished(class:meta::external::language::java::metamodel::Class[1], itr:meta::external::language::java::metamodel::Field[1]): meta::external::language::java::metamodel::Class[1]
+{
+   $class->addMethod(javaMethod(['public'], javaBoolean(), 'isFinished', [],
+      [
+         j_not(j_this($class)->j_field($itr)->j_invoke('hasNext', []))->j_return()
+      ]
+   ));
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::stream::addReadCheckedObjects(class:meta::external::language::java::metamodel::Class[1], pureClass:meta::pure::metamodel::type::Class<Any>[1], javaInterface:meta::external::language::java::metamodel::Class[1], path:String[1], context:GenerationContext[1], itr:meta::external::language::java::metamodel::Field[1]): meta::external::language::java::metamodel::Class[1]
+{
+   let checkedClass  = $context.baseProject->toOne()->resolve($context.conventions->className(Checked));
+   let checkedSource = javaParameterizedType($checkedClass, $javaInterface);
+
+   let object        = j_variable($javaInterface, 'object');
+   let checked       = j_variable($checkedSource, 'checked');
+   let iter          = j_this($class)->j_field($itr);
+
+   $class->addMethod(javaMethod('public', javaCollection($checkedSource), 'readCheckedObjects', [],
+      [
+         j_if($iter->j_invoke('hasNext', []),
+            [
+               $object->j_declare($iter->j_invoke('next', [])),
+               $checked->j_declare($context.conventions->dynamicChecked(
+                  javaCollections()->j_invoke('emptyList', [], javaCollection($checkedSource)),
+                  j_null(),
+                  $object
+               )),
+               javaCollections()->j_invoke('singleton', $checked, javaCollection($checkedSource))->j_return()
+            ]->j_block(),
+            javaCollections()->j_invoke('emptyList', [], javaCollection($checkedSource))->j_return()
+        )
+      ]
+   ));
+}
+

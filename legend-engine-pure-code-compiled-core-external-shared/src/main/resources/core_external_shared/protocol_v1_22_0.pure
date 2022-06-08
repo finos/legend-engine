@@ -1,0 +1,105 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::protocols::pure::v1_22_0::metamodel::executionPlan::*;
+import meta::protocols::pure::v1_22_0::transformation::fromPureGraph::external::shared::format::*;
+import meta::pure::mapping::*;
+import meta::pure::router::extension::*;
+
+function meta::protocols::pure::v1_22_0::external::shared::format::serializerExtension(type:String[1]): meta::pure::router::extension::SerializerExtension[1]
+{
+   ^meta::protocols::pure::v1_22_0::extension::SerializerExtension_v1_22_0(
+      transfers_store_transformConnection = 
+         [
+            extConnection:meta::external::shared::format::executionPlan::ExternalFormatConnection[1] | $extConnection->transformExternalFormatConnection()
+         ],
+      transfers_executionPlan_transformNode = 
+         {mapping:Mapping[1], extensions:RouterExtension[*] |
+            [
+               d:meta::external::shared::format::executionPlan::DataQualityExecutionNode[1] | transformDataQualityNode($d, $mapping, $extensions),
+               u:meta::external::shared::format::executionPlan::UrlStreamExecutionNode[1]   | transformUrlStreamNode($u, $mapping, $extensions)
+            ]
+         }   
+   );
+}
+
+Class meta::protocols::pure::v1_22_0::metamodel::external::shared::format::executionPlan::ExternalFormatConnection extends meta::protocols::pure::v1_22_0::metamodel::runtime::Connection
+{
+   externalSource : meta::protocols::pure::v1_22_0::metamodel::external::shared::format::executionPlan::ExternalSource[1];
+}
+
+Class meta::protocols::pure::v1_22_0::metamodel::external::shared::format::executionPlan::ExternalSource
+{
+   _type: String[1];
+}
+
+Class meta::protocols::pure::v1_22_0::metamodel::external::shared::format::executionPlan::UrlStreamExternalSource extends meta::protocols::pure::v1_22_0::metamodel::external::shared::format::executionPlan::ExternalSource
+{
+   url : String[1];
+}
+
+function meta::protocols::pure::v1_22_0::transformation::fromPureGraph::external::shared::format::transformExternalFormatConnection(extConnection:meta::external::shared::format::executionPlan::ExternalFormatConnection[1]): meta::protocols::pure::v1_22_0::metamodel::external::shared::format::executionPlan::ExternalFormatConnection[1]
+{
+   let source = $extConnection.externalSource->match([
+      u:meta::external::shared::format::executionPlan::UrlStreamExternalSource[1] | ^meta::protocols::pure::v1_22_0::metamodel::external::shared::format::executionPlan::UrlStreamExternalSource(
+                                                                         _type = 'urlStream',
+                                                                         url   = $u.url
+                                                                      )
+   ]);
+   
+   ^meta::protocols::pure::v1_22_0::metamodel::external::shared::format::executionPlan::ExternalFormatConnection(
+      element        = 'ModelStore',
+      _type          = 'ExternalFormatConnection',
+      externalSource = $source
+   );
+}
+
+Class meta::protocols::pure::v1_22_0::metamodel::external::shared::format::executionPlan::DataQualityExecutionNode extends ExecutionNode
+{
+   enableConstraints : Boolean[1];
+   checked           : Boolean[1];
+}
+
+Class meta::protocols::pure::v1_22_0::metamodel::external::shared::format::executionPlan::UrlStreamExecutionNode extends ExecutionNode
+{
+   url : String[1];
+}
+
+function meta::protocols::pure::v1_22_0::transformation::fromPureGraph::external::shared::format::transformDataQualityNode(node:meta::external::shared::format::executionPlan::DataQualityExecutionNode[1], mapping:meta::pure::mapping::Mapping[1], extensions:RouterExtension[*]): ExecutionNode[1]
+{
+   ^meta::protocols::pure::v1_22_0::metamodel::external::shared::format::executionPlan::DataQualityExecutionNode(
+      _type             = 'dataQuality',
+      resultType        = $node.resultType->meta::protocols::pure::v1_22_0::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
+      resultSizeRange   = $node.resultSizeRange->map(s| $s->meta::protocols::pure::v1_22_0::transformation::fromPureGraph::domain::transformMultiplicity()),
+      enableConstraints = $node.enableConstraints,
+      checked           = $node.checked
+   );
+}
+
+function meta::protocols::pure::v1_22_0::transformation::fromPureGraph::external::shared::format::transformUrlStreamNode(node:meta::external::shared::format::executionPlan::UrlStreamExecutionNode[1], mapping:meta::pure::mapping::Mapping[1], extensions:RouterExtension[*]): ExecutionNode[1]
+{
+   ^meta::protocols::pure::v1_22_0::metamodel::external::shared::format::executionPlan::UrlStreamExecutionNode(
+      _type      = 'urlStream',
+      resultType = $node.resultType->meta::protocols::pure::v1_22_0::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
+      url        = $node.url
+   );
+}
+
+
+Class meta::protocols::pure::v1_22_0::metamodel::external::shared::format::executionPlan::ExternalFormatSerializeExecutionNode extends ExecutionNode
+{
+   checked : Boolean[1];      
+   binding : String[1];   
+}
+

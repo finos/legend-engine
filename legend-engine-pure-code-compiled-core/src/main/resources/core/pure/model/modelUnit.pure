@@ -1,0 +1,82 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::model::unit::*;
+
+Class meta::pure::model::unit::ModelUnit
+{
+   packageableElementIncludes : PackageableElement[*];
+   packageableElementExcludes : PackageableElement[*];
+
+   includesByClassifier(classifier:Class<Any>[1]) { $this.packageableElementIncludes->filter(pe| $pe->instanceOf($classifier)) }: PackageableElement[*];
+   excludesByClassifier(classifier:Class<Any>[1]) { $this.packageableElementExcludes->filter(pe| $pe->instanceOf($classifier)) }: PackageableElement[*];
+
+   packageIncludes()     { $this.includesByClassifier(Package)->cast(@Package)                                            }: Package[*];
+   packageExcludes()     { $this.excludesByClassifier(Package)->cast(@Package)                                            }: Package[*];
+   nonPackageIncludes()  { $this.packageableElementIncludes->filter(pe| !$pe->instanceOf(Package))                        }: PackageableElement[*];
+   nonPackageExcludes()  { $this.packageableElementExcludes->filter(pe| !$pe->instanceOf(Package))                        }: PackageableElement[*];
+   classIncludes()       { $this.includesByClassifier(Class)->cast(@Class<Any>)                                           }: Class<Any>[*];
+   classExcludes()       { $this.excludesByClassifier(Class)->cast(@Class<Any>)                                           }: Class<Any>[*];
+   enumerationIncludes() { $this.includesByClassifier(Enumeration)->cast(@Enumeration<Enum>)                              }: Enumeration<Enum>[*];
+   enumerationExcludes() { $this.excludesByClassifier(Enumeration)->cast(@Enumeration<Enum>)                              }: Enumeration<Enum>[*];
+   associationIncludes() { $this.includesByClassifier(Association)->cast(@Association)                                    }: Association[*];
+   associationExcludes() { $this.excludesByClassifier(Association)->cast(@Association)                                    }: Association[*];
+   functionIncludes()    { $this.includesByClassifier(ConcreteFunctionDefinition)->cast(@ConcreteFunctionDefinition<Any>) }: ConcreteFunctionDefinition<Any>[*];
+   functionExcludes()    { $this.excludesByClassifier(ConcreteFunctionDefinition)->cast(@ConcreteFunctionDefinition<Any>) }: ConcreteFunctionDefinition<Any>[*];
+   profileIncludes()     { $this.includesByClassifier(Profile)->cast(@Profile)                                            }: Profile[*];
+   profileExcludes()     { $this.excludesByClassifier(Profile)->cast(@Profile)                                            }: Profile[*];
+}
+
+Class meta::pure::model::unit::ResolvedModelUnit
+{
+   packageableElements : PackageableElement[*];
+   
+   elementsByClassifier(classifier:Class<Any>[1]) { $this.packageableElements->filter(pe| $pe->instanceOf($classifier)) }: PackageableElement[*];
+
+   classes()      { $this.elementsByClassifier(Class)->cast(@Class<Any>)                                           }: Class<Any>[*];
+   enumerations() { $this.elementsByClassifier(Enumeration)->cast(@Enumeration<Enum>)                              }: Enumeration<Enum>[*];
+   associations() { $this.elementsByClassifier(Association)->cast(@Association)                                    }: Association[*];
+   functions()    { $this.elementsByClassifier(ConcreteFunctionDefinition)->cast(@ConcreteFunctionDefinition<Any>) }: ConcreteFunctionDefinition<Any>[*];
+   profiles()     { $this.elementsByClassifier(Profile)->cast(@Profile)                                            }: Profile[*];
+}
+
+function meta::pure::model::unit::newModelUnit(): ModelUnit[1]
+{
+   ^ModelUnit();
+}
+
+function meta::pure::model::unit::include(unit:ModelUnit[1], elements:PackageableElement[*]): ModelUnit[1]
+{
+   ^$unit(packageableElementIncludes=$unit.packageableElementIncludes->concatenate($elements));
+}
+
+function meta::pure::model::unit::exclude(unit:ModelUnit[1], elements:PackageableElement[*]): ModelUnit[1]
+{
+   ^$unit(packageableElementExcludes=$unit.packageableElementExcludes->concatenate($elements));
+}
+
+function meta::pure::model::unit::resolve(unit:ModelUnit[1]): ResolvedModelUnit[1]
+{
+   let excludedByPackage = $unit.packageExcludes->map(p| $p->getAllPackageElements(true));
+   
+   ^ResolvedModelUnit(
+      packageableElements = $unit.packageIncludes
+                               ->map(p| $p->getAllPackageElements(true))
+                               ->filter(e| $e->instanceOf(Class) || $e->instanceOf(Association) || $e->instanceOf(Enumeration) || $e->instanceOf(ConcreteFunctionDefinition) || $e->instanceOf(Profile))
+                               ->concatenate($unit.nonPackageIncludes)
+                               ->filter(e| !$excludedByPackage->contains($e))
+                               ->filter(e| !$unit.nonPackageExcludes->contains($e))
+                               ->removeDuplicates()
+   );
+}

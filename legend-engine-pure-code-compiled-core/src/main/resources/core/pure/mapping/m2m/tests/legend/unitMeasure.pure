@@ -1,0 +1,51 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::unit::*;
+
+Class meta::pure::mapping::modelToModel::test::units::dest::HealthProfile
+{
+   fullName: String[1];
+   weight: Mass~Kilogram[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::units::dest::DecomposedHealthProfile
+{
+   fullName: String[1];
+   weightUnit: String[1];
+   weightValue: Number[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::units::dest::ClassWithPound
+{
+   weight: Mass~Pound[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::units::src::_HealthProfile
+{
+   fullName: String[1];
+   weight: Mass~Kilogram[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::units::src::_DecomposedHealthProfile
+{
+   fullName: String[1];
+   weightUnit: String[1];
+   weightValue: Number[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::units::src::_ClassWithKilogram
+{
+   weight: Mass~Kilogram[1];
+}

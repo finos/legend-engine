@@ -1,0 +1,47 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::shared::format::binding::*;
+import meta::external::shared::format::metamodel::*;
+import meta::pure::metamodel::serialization::grammar::*;
+import meta::pure::model::unit::*;
+
+Class meta::external::shared::format::binding::Binding extends meta::pure::mapping::modelToModel::ModelStore
+{
+   schemaSet    : SchemaSet[0..1];
+   schemaId     : String[0..1];
+   contentType  : String[1];
+   modelUnit    : ModelUnit[1];
+}
+
+function meta::external::shared::format::binding::toString::bindingToString(binding:Binding[1]): String[1]
+{
+   'Binding ' + printStereotypes($binding) + printTaggedValues($binding) + if($binding.name->isEmpty(), |'', |' ' + elementToPath($binding)) + '\n' +
+   '{\n' +
+   if($binding.schemaSet->isEmpty(), |'', |'  schemaSet : ' + $binding.schemaSet->toOne()->elementToPath() + ';\n') +
+   if($binding.schemaId->isEmpty(),  |'', |'  schemaId : ' + $binding.schemaId->toOne() + ';\n') +
+   '  contentType : ' + $binding.contentType + ';\n' +
+   '  model : [\n' + 
+   $binding.modelUnit->resolve().packageableElements->map(pe |'    ' + $pe->elementToPath())->joinStrings('', ',\n', '\n') +
+   '  ]\n' +
+   '}';
+}
+
+function meta::external::shared::format::binding::toString::modelToString(binding:Binding[1]): String[1]
+{
+   $binding.modelUnit->resolve().packageableElements->map(pe| $pe->match([
+      t:Type[1]        | $t->printType(),
+      a:Association[1] | $a->printAssociation();
+   ]))->joinStrings('\n\n');
+}

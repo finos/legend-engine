@@ -1,0 +1,74 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::functions::date::*;
+
+function <<test.Test>> meta::pure::functions::date::tests::testIsOnDay():Boolean[1]
+{
+   assert(%2015-01-01->isOnDay(%2015-01-01));
+   assert(%2015-01-01T00:00:01->isOnDay(%2015-01-01));
+   assert(%2015-01-01T23:59:59.999->isOnDay(%2015-01-01));
+   assertFalse(%2015-01-01T23:59:59.999->isOnDay(%2015-01-02));
+   assertFalse(%2014-12-31T23:59:59.999->isOnDay(%2015-01-01));
+   assertFalse(%2015-01-02->isOnDay(%2015-01-01));
+   assertFalse([]->isOnDay([]));
+   assertFalse([]->isOnDay(%2015-01-01));
+   assertFalse(%2015-01-01->isOnDay([]));
+}
+
+function <<test.Test>> meta::pure::functions::date::tests::testIsOnOrBeforeDay():Boolean[1]
+{
+   assert(%2015-01-01->isOnOrBeforeDay(%2015-01-01));
+   assert(%2015-01-01T00:00:01->isOnOrBeforeDay(%2015-01-01));
+   assert(%2015-01-01T23:59:59.999->isOnOrBeforeDay(%2015-01-01));
+   assert(%2014-12-31T23:59:59.999->isOnOrBeforeDay(%2015-01-01));
+   assertFalse(%2015-01-02->isOnOrBeforeDay(%2015-01-01));
+   assertFalse(%2015-01-02T00:00:01->isOnOrBeforeDay(%2015-01-01));
+   assertFalse([]->isOnOrBeforeDay([]));
+   assertFalse([]->isOnOrBeforeDay(%2015-01-01));
+   assertFalse(%2015-01-01->isOnOrBeforeDay([]));   
+}
+
+function <<test.Test>> meta::pure::functions::date::tests::testIsBeforeDay():Boolean[1]
+{
+   assert(%2014-12-31T23:59:59.999->isBeforeDay(%2015-01-01));
+   assertFalse(%2015-01-01->isBeforeDay(%2015-01-01));
+   assertFalse(%2015-01-01T00:00:01->isBeforeDay(%2015-01-01));
+   assertFalse([]->isBeforeDay([]));
+   assertFalse([]->isBeforeDay(%2015-01-01));
+   assertFalse(%2015-01-01->isBeforeDay([]));     
+}
+
+function <<test.Test>> meta::pure::functions::date::tests::testIsAfterDay():Boolean[1]
+{
+   assert(%2015-01-02->isAfterDay(%2015-01-01));
+   assert(%2015-01-02T00:00:01->isAfterDay(%2015-01-01));
+   assertFalse(%2015-01-01->isAfterDay(%2015-01-01));
+   assertFalse(%2015-01-01T23:59:59.999->isAfterDay(%2015-01-01));
+   assertFalse([]->isAfterDay([]));
+   assertFalse([]->isAfterDay(%2015-01-01));
+   assertFalse(%2015-01-01->isAfterDay([]));       
+}
+
+function <<test.Test>> meta::pure::functions::date::tests::testIsOnOrAfterDay():Boolean[1]
+{
+   assert(%2015-01-01->isOnOrAfterDay(%2015-01-01));
+   assert(%2015-01-01T00:00:01->isOnOrAfterDay(%2015-01-01));
+   assert(%2015-01-02->isOnOrAfterDay(%2015-01-01));
+   assertFalse(%2014-12-31->isOnOrAfterDay(%2015-01-01));
+   assertFalse(%2014-12-31T23:59:59.999->isOnOrAfterDay(%2015-01-01));
+   assertFalse([]->isOnOrAfterDay([]));
+   assertFalse([]->isOnOrAfterDay(%2015-01-01));
+   assertFalse(%2015-01-01->isOnOrAfterDay([]));       
+}

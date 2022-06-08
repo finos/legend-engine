@@ -1,0 +1,310 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::executionPlan::profiles::*;
+import meta::pure::mapping::modelToModel::*;
+import meta::pure::runtime::*;
+import meta::json::*;
+import meta::pure::mapping::modelToModel::test::alloy::utils::*;
+import meta::pure::graphFetch::execution::*;
+Class meta::pure::mapping::modelToModel::test::alloy::merge::SourcePersonWithFirstName
+{
+   id:Integer[1];
+   sourceFirstName:String[1];
+   nickName:String[*];
+   sourceAddress: meta::pure::mapping::modelToModel::test::alloy::merge::SourceAddress[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::merge::SourcePersonWithLastName
+{
+   id:Integer[1];
+   sourceLastName:String[0..1];
+   sourceAddress: meta::pure::mapping::modelToModel::test::alloy::merge::SourceAddressWithPostCode[0..1];
+
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::merge::SourcePersonWithAge
+{
+   id:Integer[1];
+   sourceAge:Integer[1];
+}
+
+
+Class meta::pure::mapping::modelToModel::test::alloy::merge::SourceAddress
+{
+   id:Integer[1];
+   sourceStreet:String[0..1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::merge::SourceAddressWithPostCode
+{
+   id:Integer[1];
+   sourcePostCode:String[0..1];
+}
+
+
+
+Class meta::pure::mapping::modelToModel::test::alloy::merge::Address
+{
+   street:String[0..1];
+   postCode:String[0..1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::merge::Firm
+{
+   ceo : meta::pure::mapping::modelToModel::test::alloy::merge::Person[1];
+   address: meta::pure::mapping::modelToModel::test::alloy::merge::Address[0..1];
+}
+
+
+Class meta::pure::mapping::modelToModel::test::alloy::merge::PersonCombined
+{
+   fullName : String[0..1];
+}
+
+
+Class meta::pure::mapping::modelToModel::test::alloy::merge::Person
+{
+   firstName : String[1];
+   lastName : String[0..1];
+   age:Integer[1]; 
+   address:meta::pure::mapping::modelToModel::test::alloy::merge::Address[0..1]; 
+   nickName:String[*];
+}
+
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> {serverVersion.start='vX_X_X'}
+meta::pure::mapping::modelToModel::test::alloy::merge::testSimplemerge():Any[*]
+{
+   let tree = #{meta::pure::mapping::modelToModel::test::alloy::merge::Person {firstName,lastName,address{street},age}}#;
+
+   let result = execute(
+      |meta::pure::mapping::modelToModel::test::alloy::merge::Person.all()->graphFetch($tree)->serialize($tree),
+      meta::pure::mapping::modelToModel::test::alloy::merge::SimpleMergeModelMapping,
+         ^Runtime(
+               connections =[ ^JsonModelConnection(
+                  element=^ModelStore(),
+                  class = meta::pure::mapping::modelToModel::test::alloy::merge::SourcePersonWithFirstName,
+                  url = 'data:application/json,{"id":1,"sourceFirstName":"John","nickName":["Jo","Johnny"],"sourceAddress":{"id":1, "sourceStreet":"Main st"}}'
+                                 ),
+                        ^JsonModelConnection(
+                     element=^ModelStore(),
+                     class = meta::pure::mapping::modelToModel::test::alloy::merge::SourcePersonWithLastName,
+                     url = 'data:application/json,{"id":1,"sourceLastName":"Smith"}'
+                  ),
+                 ^JsonModelConnection(
+                     element=^ModelStore(),
+                     class = meta::pure::mapping::modelToModel::test::alloy::merge::SourcePersonWithAge,
+                     url = 'data:application/json,{"id":1,"sourceAge":10}'
+                  )
+
+   ]
+               ),
+      
+      []);
+
+   let json = $result.values->toOne();
+   let expected = '{"firstName":"John","lastName":"Smith","address":{"street":"Main st"},"age":10}';
+   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> {serverVersion.start='vX_X_X'}
+meta::pure::mapping::modelToModel::test::alloy::merge::testMergeNonRoot():Any[*]
+{
+   let tree = #{meta::pure::mapping::modelToModel::test::alloy::merge::Firm {ceo{firstName,lastName,address{street,postCode}}}}#; 
+
+   let result = execute(
+      |meta::pure::mapping::modelToModel::test::alloy::merge::Firm.all()->graphFetch($tree)->serialize($tree),
+      meta::pure::mapping::modelToModel::test::alloy::merge::SimpleMergeModelMappingNonRoot,
+         ^Runtime(
+               connections =[ ^JsonModelConnection(
+                  element=^ModelStore(),
+                  class = meta::pure::mapping::modelToModel::test::alloy::merge::SourcePersonWithFirstName,
+                  url = 'data:application/json,{"id":1,"sourceFirstName":"John","sourceAddress":{"id":1, "sourceStreet":"Main st"}}'
+                                 ),
+                        ^JsonModelConnection(
+                     element=^ModelStore(),
+                     class = meta::pure::mapping::modelToModel::test::alloy::merge::SourcePersonWithLastName,
+                     url = 'data:application/json,{"id":1,"sourceLastName":"Smith","sourceAddress":{"id":1, "sourcePostCode":"ABCD"}}'
+                  ),
+                 ^JsonModelConnection(
+                     element=^ModelStore(),
+                     class = meta::pure::mapping::modelToModel::test::alloy::merge::SourcePersonWithAge,
+                     url = 'data:application/json,{"id":1,"sourceAge":10}'
+                  )
+
+   ]
+               ),
+      
+      []
+   );
+
+   let json = $result.values->toOne();
+   let expected = '{"ceo":{"firstName":"John","lastName":"Smith","address":{"street":"Main st","postCode":"ABCD"}}}';
+   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> { serverVersion.start='vX_X_X'}
+meta::pure::mapping::modelToModel::test::alloy::merge::mergeObjectsModelChainMapping():Any[*]
+{
+   let tree = #{meta::pure::mapping::modelToModel::test::alloy::merge::PersonCombined {fullName}}#;
+
+   let result = execute(
+      |meta::pure::mapping::modelToModel::test::alloy::merge::PersonCombined.all()->graphFetch($tree)->serialize($tree),
+      meta::pure::mapping::modelToModel::test::alloy::merge::MergeObjectsModelMappingChain,
+         ^Runtime(
+               connections =[ 
+               ^ModelChainConnection(element = ^ModelStore(), mappings = [meta::pure::mapping::modelToModel::test::alloy::merge::SimpleMergeModelMappingNonRoot]),
+
+                   ^JsonModelConnection(
+                  element=^ModelStore(),
+                  class = meta::pure::mapping::modelToModel::test::alloy::merge::SourcePersonWithFirstName,
+                  url = 'data:application/json,{"id":1,"sourceFirstName":"John","sourceAddress":{"id":1, "sourceStreet":"Main st"}}'
+                                 ),
+                        ^JsonModelConnection(
+                     element=^ModelStore(),
+                     class = meta::pure::mapping::modelToModel::test::alloy::merge::SourcePersonWithLastName,
+                     url = 'data:application/json,{"id":1,"sourceLastName":"Smith","sourceAddress":{"id":1, "sourcePostCode":"ABCD"}}'
+                  ),
+                 ^JsonModelConnection(
+                     element=^ModelStore(),
+                     class = meta::pure::mapping::modelToModel::test::alloy::merge::SourcePersonWithAge,
+                     url = 'data:application/json,{"id":1,"sourceAge":10}'
+                  )
+      ]
+      
+   ),[]);
+
+   let json = $result.values->toOne();
+   let expected = '{"fullName":"John Smith"}';
+   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+
+###Mapping
+Mapping meta::pure::mapping::modelToModel::test::alloy::merge::SimpleMergeModelMapping
+(
+   *meta::pure::mapping::modelToModel::test::alloy::merge::Person : Operation
+           {
+                          meta::pure::router::operations::merge_OperationSetImplementation_1__SetImplementation_MANY_([p1,p2,p3],{s1:meta::pure::mapping::modelToModel::test::alloy::merge::SourcePersonWithFirstName[1],
+                                                                                                                                  s2:meta::pure::mapping::modelToModel::test::alloy::merge::SourcePersonWithLastName[1],
+                                                                                                                                  s3:meta::pure::mapping::modelToModel::test::alloy::merge::SourcePersonWithAge[1]| $s1.id ==  $s2.id  &&  $s1.id == $s3.id   
+                                                                                                                                 })
+           }
+
+   meta::pure::mapping::modelToModel::test::alloy::merge::Person[p1] : Pure
+            {
+               ~src 	meta::pure::mapping::modelToModel::test::alloy::merge::SourcePersonWithFirstName
+               firstName : $src.sourceFirstName,
+               address : $src.sourceAddress,
+               nickName: $src.nickName
+           }
+
+   meta::pure::mapping::modelToModel::test::alloy::merge::Person[p2] : Pure
+            {
+               ~src 	meta::pure::mapping::modelToModel::test::alloy::merge::SourcePersonWithLastName
+               lastName :  $src.sourceLastName
+            }
+   
+      meta::pure::mapping::modelToModel::test::alloy::merge::Person[p3] : Pure
+            {
+               ~src 	meta::pure::mapping::modelToModel::test::alloy::merge::SourcePersonWithAge
+               age :  $src.sourceAge
+
+            }
+       meta::pure::mapping::modelToModel::test::alloy::merge::Address : Pure
+            {
+               ~src 	meta::pure::mapping::modelToModel::test::alloy::merge::SourceAddress
+               street :  $src.sourceStreet
+            }
+   
+)
+
+
+
+###Mapping
+Mapping meta::pure::mapping::modelToModel::test::alloy::merge::SimpleMergeModelMappingNonRoot
+(
+   *meta::pure::mapping::modelToModel::test::alloy::merge::Firm : Operation
+           {
+            meta::pure::router::operations::merge_OperationSetImplementation_1__SetImplementation_MANY_([f1,f2],{s1:meta::pure::mapping::modelToModel::test::alloy::merge::SourcePersonWithFirstName[1],
+                                                                                                                 s2:meta::pure::mapping::modelToModel::test::alloy::merge::SourcePersonWithLastName[1]| $s1.id ==  $s2.id }) 
+           }
+   *meta::pure::mapping::modelToModel::test::alloy::merge::Person : Operation
+           {
+            meta::pure::router::operations::merge_OperationSetImplementation_1__SetImplementation_MANY_([p1,p2],{s1:meta::pure::mapping::modelToModel::test::alloy::merge::SourcePersonWithFirstName[1],
+                                                                                                                 s2:meta::pure::mapping::modelToModel::test::alloy::merge::SourcePersonWithLastName[1]| $s1.id ==  $s2.id }) 
+           }
+   
+              
+   *meta::pure::mapping::modelToModel::test::alloy::merge::Address : Operation
+           {
+            meta::pure::router::operations::merge_OperationSetImplementation_1__SetImplementation_MANY_([a1,a2],{s1:meta::pure::mapping::modelToModel::test::alloy::merge::SourceAddress[1],
+                                                                                                                 s2:meta::pure::mapping::modelToModel::test::alloy::merge::SourceAddressWithPostCode[1]| $s1.id ==  $s2.id }) 
+           }
+   
+
+    meta::pure::mapping::modelToModel::test::alloy::merge::Firm[f1] : Pure
+   {
+      ~src meta::pure::mapping::modelToModel::test::alloy::merge::SourcePersonWithFirstName
+       ceo[p1]:$src
+      
+   }  
+   meta::pure::mapping::modelToModel::test::alloy::merge::Person[p1] : Pure
+            {
+               ~src 	meta::pure::mapping::modelToModel::test::alloy::merge::SourcePersonWithFirstName
+               firstName : $src.sourceFirstName,
+               address[a1] : $src.sourceAddress
+            }
+
+  
+       meta::pure::mapping::modelToModel::test::alloy::merge::Address[a1] : Pure
+            {
+               ~src 	meta::pure::mapping::modelToModel::test::alloy::merge::SourceAddress
+               street :  $src.sourceStreet
+            }
+
+      meta::pure::mapping::modelToModel::test::alloy::merge::Firm[f2] : Pure
+   {
+      ~src meta::pure::mapping::modelToModel::test::alloy::merge::SourcePersonWithLastName
+       ceo[p2]:$src
+      
+   }
+    meta::pure::mapping::modelToModel::test::alloy::merge::Person[p2] : Pure
+            {
+               ~src 	meta::pure::mapping::modelToModel::test::alloy::merge::SourcePersonWithLastName
+               lastName :  $src.sourceLastName,
+               address[a2] : $src.sourceAddress
+
+            }
+
+     meta::pure::mapping::modelToModel::test::alloy::merge::Address[a2] : Pure
+            {
+               ~src 	meta::pure::mapping::modelToModel::test::alloy::merge::SourceAddressWithPostCode
+               postCode :  $src.sourcePostCode
+            }
+)
+
+
+###Mapping
+Mapping meta::pure::mapping::modelToModel::test::alloy::merge::MergeObjectsModelMappingChain
+(
+   meta::pure::mapping::modelToModel::test::alloy::merge::PersonCombined : Pure
+            {
+               ~src 	meta::pure::mapping::modelToModel::test::alloy::merge::Person
+               fullName : $src.firstName->toOne() + ' ' + $src.lastName->toOne()
+            }
+
+)
+

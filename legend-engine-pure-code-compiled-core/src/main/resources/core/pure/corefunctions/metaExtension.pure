@@ -1,0 +1,729 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::metamodel::path::*;
+function meta::pure::functions::meta::forgivingPathToElement(path:String[1]):PackageableElement[0..1]
+{
+    if($path == '::',
+      | ::,
+      | $path->split('::')->fold({str:String[1], pkg:PackageableElement[1] | let c = if ($pkg->isEmpty() || not($pkg->instanceOf(Package)), | [], | $pkg->cast(@Package).children->filter(c | $c.name == $str)); if($c->isEmpty(), | [], | $c->toOne());}, ::)
+      )
+}
+
+function meta::pure::functions::meta::instanceValuesAtParameter(expression : FunctionExpression[1], index : Integer[1], inScopeVars:Map<String, List<Any>>[0..1]) : Any[*]
+{
+    instanceValuesAtParameter($expression,$index, newMap([]->cast(@Pair<VariableExpression, ValueSpecification>), VariableExpression->classPropertyByName('name')->cast(@Property<VariableExpression,String|1>)),$inScopeVars);
+}
+
+function meta::pure::functions::meta::instanceValuesAtParameter(expression : FunctionExpression[1], index : Integer[1], vars:Map<VariableExpression, ValueSpecification>[0..1], inScopeVars:Map<String, List<Any>>[0..1]) : Any[*]
+{
+    $expression.parametersValues->at($index)->resolveInstanceValuesAtParameter($expression.func, $vars, $inScopeVars);
+}
+
+function meta::pure::functions::meta::resolveInstanceValuesAtParameter(expression : ValueSpecification[1], parentFunc:Function<Any>[1], vars:Map<VariableExpression, ValueSpecification>[0..1], inScopeVars:Map<String, List<Any>>[0..1]) : Any[*]
+{
+   $expression->match([
+                        r:meta::pure::router::RoutedValueSpecification[1]|$r.value->resolveInstanceValuesAtParameter($parentFunc, $vars, $inScopeVars),
+                        s:SimpleFunctionExpression[1]|$s,
+                        i:InstanceValue[1]|$i.values->map(v|$v->match([vs:ValueSpecification[1]|$vs->resolveInstanceValuesAtParameter($parentFunc, $vars, $inScopeVars), a:Any[1]|$a])),
+                        v:VariableExpression[1]|let i = $v->resolve($vars->toOne(), $inScopeVars->toOne())->match([r:RoutedValueSpecification[1]|$r.value, v:ValueSpecification[1]|$v, a:Any[0]|[]])->cast(@InstanceValue);
+                                                if(!$i->isEmpty(), | $i.values, | fail('Unable to resolve the variable \'' + $v.name + '\' in expression ' + $parentFunc->toString()); [];);
+                      ]);
+}
+
+function meta::pure::functions::meta::packageClassesRecursive(packages : Package[*]):Class<Any>[*]
+{
+   $packages->removeDuplicates()->map(p | $p->packageClassesRecursive());
+}
+
+
+function meta::pure::functions::meta::packageFunctionsRecursive(package : Package[1]):FunctionDefinition<Any>[*]
+{
+   let res = $package->getAllPackageElements(true)->filter(c | $c->instanceOf(FunctionDefinition))->cast(@FunctionDefinition<Any>);
+}
+
+function meta::pure::functions::meta::packageFunctionsRecursive(packages : Package[*]):FunctionDefinition<Any>[*]
+{
+   $packages->removeDuplicates()->map(p | $p->packageFunctionsRecursive());
+}
+
+function meta::pure::functions::meta::getAllConcreteFunctionDefinitionsInPackage(pkg:Package[1], recursive:Boolean[1]):ConcreteFunctionDefinition<Any>[*]
+{
+    $pkg->getAllPackageElements($recursive)->filter(e | $e->instanceOf(ConcreteFunctionDefinition))->cast(@ConcreteFunctionDefinition<Any>)
+}
+
+function meta::pure::functions::meta::packageClassesRecursive(package : Package[1]):Class<Any>[*]
+{
+   let res = $package->getAllPackageElements(true)->filter(c | $c->instanceOf(Class))->cast(@Class<Any>);
+}
+
+function meta::pure::functions::meta::getLeafTypes(type:Type[1]):Type[1..*]
+{
+   $type->getLeafTypes_recursive()->removeDuplicates()->toOneMany();
+}
+
+function <<access.private>> meta::pure::functions::meta::getLeafTypes_recursive(type:Type[1]):Type[1..*]
+{
+   let specs = $type.specializations->map(s | $s.specific);
+   if($specs->isEmpty(), |$type, |$specs->map(s | $s->getLeafTypes_recursive()))->toOneMany();
+}
+
+function
+   {doc.doc = 'Returns the owning class of a property (navigating the association if needed)'}
+   meta::pure::functions::meta::ownerClass(property : AbstractProperty<Any>[1]) : Class<Any>[1]
+{
+   $property.owner->match([
+      c : Class<Any>[1] | $c,
+      a : Association[1] | let classes = $a.properties.genericType.rawType->removeDuplicates()->cast(@Class<Any>);
+                           if ($classes->size() == 1, | $classes->toOne(), | $classes->filter(c | $c != $property.genericType.rawType->toOne())->toOne());
+
+   ]);
+}
+
+function {doc.doc = 'Get all properties on the provided type / class'}
+   meta::pure::functions::meta::allProperties(class : Class<Any>[1]) : AbstractProperty<Any>[*]
+{
+  []
+     ->concatenate($class.properties)
+     ->concatenate($class.propertiesFromAssociations)
+     ->concatenate($class.qualifiedProperties)
+     ->concatenate($class.qualifiedPropertiesFromAssociations)
+}
+
+function {doc.doc = 'Get defined and inheritied properties on the provided class'}
+   meta::pure::functions::meta::hierarchicalProperties(class:Class<Any>[1]):Property<Nil,Any|*>[*]
+{
+   if($class==Any,
+      | [],
+      | $class.properties->concatenate($class.generalizations->map(g| hierarchicalProperties($g.general.rawType->cast(@Class<Any>)->toOne())))->removeDuplicates()
+   );
+}
+
+function {doc.doc = 'Get defined and inheritied properties via associations on the provided class'}
+   meta::pure::functions::meta::hierarchicalPropertiesFromAssociations(class:Class<Any>[1]):Property<Nil,Any|*>[*]
+{
+   if($class==Any,
+      | [],
+      | $class.propertiesFromAssociations->concatenate($class.generalizations->map(g| hierarchicalPropertiesFromAssociations($g.general.rawType->cast(@Class<Any>)->toOne())))->removeDuplicates()
+   );
+}
+
+function {doc.doc = 'Get defined and inheritied qualified properties on the provided class'}
+   meta::pure::functions::meta::hierarchicalQualifiedProperties(class:Class<Any>[1]):AbstractProperty<Any>[*]
+{
+   if($class==Any,
+      | [],
+      | $class.qualifiedProperties->concatenate($class.generalizations->map(g| hierarchicalQualifiedProperties($g.general.rawType->cast(@Class<Any>)->toOne())))->removeDuplicates()
+   );
+}
+
+function
+   {doc.doc = 'Returns the named property from the provided class'}
+   meta::pure::functions::meta::propertyByName(class : Class<Any>[1], name : String[1]) : AbstractProperty<Any>[0..1]
+{
+   $class->allProperties()->filter(p|$p.name == $name)->first();
+}
+
+function
+   {doc.doc = 'Returns the named property from the provided association'}
+   meta::pure::functions::meta::propertyByName(assoc : Association[1], name : String[1]) : AbstractProperty<Any>[0..1]
+{
+   $assoc.properties->filter(p|$p.name == $name)->first();
+}
+
+function
+   {doc.doc = 'Returns the named property from the provided class'}
+   meta::pure::functions::meta::propertyByNameIncludingMilestonedProperties(class : Class<Any>[1], name : String[1]) : AbstractProperty<Any>[*]
+{
+   $class->allProperties()->filter(p|$p.name == $name);
+}
+
+function
+   {doc.doc = 'Returns the named property from the provided class'}
+   meta::pure::functions::meta::propertyByNameExcludeMilestonedProperties(class : Class<Any>[1], name : String[1]) : AbstractProperty<Any>[0..1]
+{
+   let p = $class->propertyByNameIncludingMilestonedProperties($name)->filter(p | !$p->meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype());
+   if ($p->isEmpty(), | [], | $p->toOne());
+}
+
+function meta::pure::functions::meta::isDataTypeProperty(p: Property<Nil,Any|*>[1]): Boolean[1]
+{
+   !$p.genericType.rawType->isEmpty() && $p.genericType.rawType->toOne()->instanceOf(DataType)
+}
+
+function {doc.doc = 'Checks if the value of a property is a primitive (string/int/enum/etc.)'} 
+meta::pure::functions::meta::isPrimitiveValueProperty(property : AbstractProperty<Any>[1]) : Boolean[1]
+{
+   $property.genericType.rawType->toOne()->match([
+      pt:PrimitiveType[1]    | true, 
+      et:Enumeration<Any>[1] | true, 
+      a:Class<Any>[1]        | false,
+      u: Unit[1]             | true,
+      m: Measure[1]          | true
+   ]);
+}
+
+function {doc.doc = 'Returns recursively all types that are specialisation of a given class'}
+meta::pure::functions::meta::findAllSpecializations(c : Class<Any>[1]) : Class<Any>[*]
+{
+      let scs = $c.specializations.specific
+         ->map(s|$s->match([x:Class<Any>[1] | $x,
+                            a: Any[1]|[]]));
+
+      $scs->cast(@Class<Any>)
+         ->concatenate($scs->map(s |$s->meta::pure::functions::meta::findAllSpecializations()))
+         ->removeDuplicates();
+}
+
+function meta::pure::functions::meta::pathToPackage(path:String[1]):Package[1]
+{
+   pathToPackage($path, false);
+}
+
+function meta::pure::functions::meta::pathToPackage(path:String[1], createMissing : Boolean[1]):Package[1]
+{
+    $path->split('::')->fold({str:String[1], pkg:Package[1] | 
+       let p = $pkg->cast(@Package).children->filter(c | $c.name == $str);
+       if ($p->isNotEmpty(), 
+           | $p->cast(@Package)->toOne(), 
+           | if(!$createMissing, 
+                | fail(| $path + ' is not a valid Package. Package \'' + $str + '\' not found in ' + $pkg->elementToPath()); []->cast(@Package)->toOne();,
+                | ^Package(name = $str, package = $pkg);
+                );
+           );
+       }, ::)
+}
+
+function {doc.doc = 'Returns package name from its root package'}
+meta::pure::functions::meta::fullPackageName(p:PackageableElement[1],sep:String[1]):String[1]
+{
+    if($p->isEmpty() || $p.name=='Root',
+       | '',
+       | let element = $p->toOne();
+         $element->match([prp:AbstractProperty<Any>[1] | fullPackageName($prp.owner,$sep) +  '.' + $prp.name->toOne(),
+                          a: PackageableElement[1]     | if(!$a.package->isEmpty() && ! $p.package.name =='Root' ,
+                                                             | fullPackageName($a.package->toOne(), $sep) + $sep + $a.name->toOne(),
+                                                             | $a.name->toOne());
+
+                          ]);
+       )
+}
+
+function meta::pure::functions::meta::isWithinPackage(element:Type[1],package:Package[1]):Boolean[1]
+{
+    $element->cast(@PackageableElement)->isWithinPackage($package);
+}
+
+function {doc.doc = 'Returns true if the element is in the specified package or a sub package of it'}
+meta::pure::functions::meta::isWithinPackage(element:PackageableElement[1],package:Package[1]):Boolean[1]
+{
+   if($element.package->size() == 0,
+           | false,
+           | let elementPackage = $element.package->toOne();
+             if ($package == :: || $elementPackage == $package,
+                 | true,
+                 | $elementPackage->isWithinPackage($package);
+                 );
+           );
+}
+
+function {doc.doc = 'Find packable elements contained in given file'}
+meta::pure::functions::meta::getPackageableElements(source:SourceInformation[*]):PackageableElement[*]
+{
+  [::]->map(p|$p->getAllPackageElements(true))
+      ->filter(pe|let si = $pe->meta::pure::functions::meta::sourceInformation();
+                  if($si->isEmpty(),| false ,| $source.source->contains($si.source->toOne()) && !$pe->instanceOf(ImportGroup));
+               )
+      ->distinct();
+
+}
+
+function meta::pure::functions::meta::findPackagableElement(fe : ValueSpecification[1]) : PackageableElement[1]
+{
+      assert($fe.usageContext->isNotEmpty(), |'Usage context is empty for ' + $fe->makeString());
+
+      $fe.usageContext->match([
+                        e:ExpressionSequenceValueSpecificationContext[1] | let funcDef = $e.functionDefinition;
+                                                                           $funcDef->match([
+                                                                              l : LambdaFunction<Any>[1] | $l.referenceUsages.owner
+                                                                                       ->filter(r|$r->instanceOf(ValueSpecification))
+                                                                                       ->cast(@ValueSpecification)->toOne()
+                                                                                       ->findPackagableElement(),
+                                                                              p : PackageableElement[1] | $funcDef
+                                                                           ]);,
+                        i:ClassConstraintValueSpecificationContext[1] | $i.class,
+                        i:InstanceValueSpecificationContext[1] | $i.instanceValue->meta::pure::functions::meta::findPackagableElement(),
+                        p:ParameterValueSpecificationContext[1] | $p.functionExpression->meta::pure::functions::meta::findPackagableElement(),
+                        k:KeyValueValueSpecificationContext[1] | $k.functionExpression->meta::pure::functions::meta::findPackagableElement()
+                ]);
+}
+
+function meta::pure::functions::meta::findPackagableElement(obj : Any[1]) : PackageableElement[1]
+{
+     let pe = $obj->match([ vs : ValueSpecification[1] | $vs->meta::pure::functions::meta::findPackagableElement(),
+                            pe : PackageableElement[1] | $pe, 
+                            po : meta::pure::mapping::PropertyOwnerImplementation[1]|$po.parent->meta::pure::functions::meta::findPackagableElement()
+                          ])
+                  ->match([p:AbstractProperty<Any>[1] | $p.owner,
+                           pe: PackageableElement[1]  | $pe ]);
+}
+
+function meta::pure::functions::meta::functionReturnMultiplicity(f:Function<Any>[1]):Multiplicity[1]
+{  
+   $f->match(
+               [
+                  p:AbstractProperty<Any>[1] | $p.multiplicity,
+                  p:Path<Nil,Any|*>[1] | $p.classifierGenericType->toOne().multiplicityArguments->at(0),
+                  f:NativeFunction<Any>[1] | $f->genericType().typeArguments->at(0).rawType->toOne()->cast(@FunctionType).returnMultiplicity,
+                  f:FunctionDefinition<Any>[1] | $f->genericType().typeArguments->at(0).rawType->toOne()->cast(@FunctionType).returnMultiplicity,
+                  a:Any[1] | fail('functionReturnMultiplicity not supported yet for the type '+$a->type()->id());PureOne;
+               ]
+            );
+}
+
+function meta::pure::functions::meta::isConcrete(genericType:GenericType[1]):Boolean[1]
+{
+   $genericType.rawType->isNotEmpty()
+}
+
+function meta::pure::functions::meta::containsElement(p1:Package[1], p2:PackageableElement[1]):Boolean[1]
+{
+   $p2->elementToPath()->startsWith($p1->elementToPath());
+}
+
+function meta::pure::functions::meta::reverseProperties(class:Class<Any>[1]):Property<Nil,Any|*>[*]
+{
+   let genericTypes = $class.referenceUsages.owner->filter(t|$t->instanceOf(GenericType))->cast(@GenericType);
+   let t = $genericTypes.referenceUsages->filter(r|$r.offset == 1).owner->cast(@GenericType).referenceUsages.owner;
+   $t->evaluateAndDeactivate()->filter(p|$p->genericType().rawType == Property)->cast(@Property<Nil,Any|*>);
+}
+
+function meta::pure::functions::meta::findExpressionsForFunctionInValueSpecification(vs:ValueSpecification[1], funcs:Function<Any>[*]):FunctionExpression[*]
+{
+   findExpressionsForFunctionInValueSpecification($vs, $funcs, f|!$f->isWithinPackage(meta::pure), []);
+}
+
+function meta::pure::functions::meta::findExpressionsForFunctionInValueSpecification(vs:ValueSpecification[1], funcs:Function<Any>[*], shouldRecurse:Function<{FunctionDefinition<Any>[1]->Boolean[1]}>[1]):FunctionExpression[*]
+{
+   findExpressionsForFunctionInValueSpecification($vs, $funcs, $shouldRecurse, []);
+}
+
+function <<access.private>> meta::pure::functions::meta::findExpressionsForFunctionInValueSpecification(vs:ValueSpecification[1], funcs:Function<Any>[*], shouldRecurse:Function<{FunctionDefinition<Any>[1]->Boolean[1]}>[1], visitedFuncs:FunctionDefinition<Any>[*]):FunctionExpression[*]
+{
+   $vs->match([fe:FunctionExpression[1] | 
+                                            let res = $fe.parametersValues->map(v | $v->findExpressionsForFunctionInValueSpecification($funcs, $shouldRecurse, $visitedFuncs));
+                                            if ( !($fe.func->instanceOf(Property) || $fe.func->instanceOf(QualifiedProperty)) && ($funcs->isEmpty() || $fe.func->in($funcs)), 
+                                            | [$fe]->concatenate($res), 
+                                            | $fe.func->match([
+                                                                fd:ConcreteFunctionDefinition<Any>[1] |
+                                                                  if(!($fd->in($visitedFuncs)) && $shouldRecurse->eval($fd), 
+                                                                  |$fd->findExpressionsForFunctionInFunctionDefinition($funcs, $shouldRecurse, $visitedFuncs)->concatenate($res), 
+                                                                  |$res);,
+                                                                a:Any[1] | $res
+                                                            ]););,
+               i:InstanceValue[1] | $i.values->map( v |
+                                                         $v->match([a: ValueSpecification[1] | $a->findExpressionsForFunctionInValueSpecification($funcs, $shouldRecurse, $visitedFuncs);,
+                                                         k : KeyExpression[1] | $k.expression->findExpressionsForFunctionInValueSpecification($funcs, $shouldRecurse, $visitedFuncs);,
+                                                         l : LambdaFunction<Any>[1] | $l.expressionSequence->map(e | $e->findExpressionsForFunctionInValueSpecification($funcs, $shouldRecurse, $visitedFuncs));,
+                                                         a:Any[1] | []]););,
+               ve:VariableExpression[1] | []]
+          );
+
+}
+
+function meta::pure::functions::meta::findExpressionsForFunctionInFunctionDefinition(func:FunctionDefinition<Any>[1], funcs:Function<Any>[*]):FunctionExpression[*]
+{
+   findExpressionsForFunctionInFunctionDefinition($func, $funcs, f|!$f->isWithinPackage(meta::pure));
+}
+
+function meta::pure::functions::meta::findExpressionsForFunctionInFunctionDefinition(func:FunctionDefinition<Any>[1], funcs:Function<Any>[*], shouldRecurse:Function<{FunctionDefinition<Any>[1]->Boolean[1]}>[1]):FunctionExpression[*]
+{
+   findExpressionsForFunctionInFunctionDefinition($func, $funcs, $shouldRecurse, []);
+}
+
+function <<access.private>> meta::pure::functions::meta::findExpressionsForFunctionInFunctionDefinition(func:FunctionDefinition<Any>[1], funcs:Function<Any>[*], shouldRecurse:Function<{FunctionDefinition<Any>[1]->Boolean[1]}>[1], visitedFuncs:FunctionDefinition<Any>[*]):FunctionExpression[*]
+{
+   $func.expressionSequence->evaluateAndDeactivate()->map(vs | $vs->findExpressionsForFunctionInValueSpecification($funcs, $shouldRecurse, $visitedFuncs->add($func->cast(@FunctionDefinition<Any>))));
+}
+
+function meta::pure::functions::meta::findPropertiesInValueSpecification(vs:ValueSpecification[1]):AbstractProperty<Any>[*]
+{
+   $vs->match([fe:FunctionExpression[1] | let res = $fe.parametersValues->map(v | $v->findPropertiesInValueSpecification());
+                                          if ( $fe.func->instanceOf(AbstractProperty), | [$fe.func->cast(@AbstractProperty<Any>)]->concatenate($res), | $res);,
+               i:InstanceValue[1] | $i.values->map( v |
+                                                         $v->match([a: ValueSpecification[1] | $a->findPropertiesInValueSpecification();,
+                                                         k : KeyExpression[1] | $k.expression->findPropertiesInValueSpecification();,
+                                                         l : LambdaFunction<Any>[1] | $l.expressionSequence->map(e | $e->findPropertiesInValueSpecification());,
+                                                         t : Type[1] | [];,
+                                                         a:Any[1] | [];]););,
+               ve:VariableExpression[1] | [];
+             ]
+          );
+
+}
+
+function meta::pure::functions::meta::findVariableExpressionsInValueSpecification(vs:ValueSpecification[1]):VariableExpression[*]
+{
+   $vs->match([fe:FunctionExpression[1] | let res = $fe.parametersValues->map(v | $v->findVariableExpressionsInValueSpecification()),
+               i:InstanceValue[1] | $i.values->map( v |
+                                                         $v->match([a: ValueSpecification[1] | $a->findVariableExpressionsInValueSpecification();,
+                                                         k : KeyExpression[1] | $k.expression->findVariableExpressionsInValueSpecification();,
+                                                         l : LambdaFunction<Any>[1] | $l.expressionSequence->map(e | $e->findVariableExpressionsInValueSpecification());,
+                                                         t : Type[1] | [];,
+                                                         a:Any[1] | [];]););,
+               ve:VariableExpression[1] | $ve,
+               r:meta::pure::router::RoutedValueSpecification[1]| $r.value->findVariableExpressionsInValueSpecification();
+             ]
+          );
+}
+
+function meta::pure::functions::meta::findPropertyPathsInFunctionDefinition(func:FunctionDefinition<Any>[1]):Path<Nil,Any|*>[*]
+{
+   $func.expressionSequence->evaluateAndDeactivate()->map(vs | $vs->collectPropertyPathsInValueSpecification([]));
+}
+
+function meta::pure::functions::meta::collectPropertyPathsInValueSpecification(vs:ValueSpecification[1],propertiesInCurrentPath:AbstractProperty<Any>[*]):Path<Nil,Any|*>[*]
+{
+   $vs->match([fe:FunctionExpression[1] | let newPropertiesInCurrentPath = if ($fe.func->instanceOf(AbstractProperty), | $fe.func->cast(@AbstractProperty<Any>)->concatenate($propertiesInCurrentPath);,
+                                                                                                                       | [];);
+                                          let res = $fe.parametersValues->map(v | $v->collectPropertyPathsInValueSpecification($newPropertiesInCurrentPath));
+
+
+                                          if ($newPropertiesInCurrentPath->isEmpty() || (($fe.parametersValues->size() == 1) && ($fe.parametersValues->at(0)->instanceOf(SimpleFunctionExpression)) && ($fe.parametersValues->at(0)->cast(@SimpleFunctionExpression).func->instanceOf(AbstractProperty))),
+                                                 | $res;,
+                                                 | let propPaths = $newPropertiesInCurrentPath->map(p | ^PropertyPathElement(property=$p));
+                                                   $res->concatenate(^Path<Nil,Any|*>(path=$propPaths->toOneMany(), start=$fe.parametersValues->toOne().genericType));
+                                              );,
+               i:InstanceValue[1] | $i.values->map( v |
+                                                         $v->match([a: ValueSpecification[1] | $a->collectPropertyPathsInValueSpecification($propertiesInCurrentPath);,
+                                                         k : KeyExpression[1] | $k.expression->collectPropertyPathsInValueSpecification($propertiesInCurrentPath);,
+                                                         l : LambdaFunction<Any>[1] | $l.expressionSequence->map(e | $e->collectPropertyPathsInValueSpecification($propertiesInCurrentPath));,
+                                                         t : Type[1] | [];,
+                                                         a:Any[1] | [];]););,
+               ve:VariableExpression[1] | [];
+             ]
+          );
+
+}
+
+function meta::pure::functions::meta::reprocessLambdaWithInScopeVars(fd:FunctionDefinition<Any>[1], inScopeVars: Map<String, List<Any>>[1]):FunctionDefinition<Any>[1]
+{
+  ^$fd(expressionSequence = $fd.expressionSequence->evaluateAndDeactivate()->map(e|$e->reprocessVSWithInScopeVars($inScopeVars)) );
+}
+
+function meta::pure::functions::meta::reprocessVSWithInScopeVars(v:ValueSpecification[1],  inScopeVars: Map<String, List<Any>>[1]):ValueSpecification[1]
+{
+   $v->match([
+      fe:FunctionExpression[1] | ^$fe
+                                  (
+                                     func=$fe.func->match([
+                                        fd:QualifiedProperty<Any>[1]|$fd->reprocessLambdaWithInScopeVars(^Map<String, List<Any>>()), 
+                                        v: Function<Any>[1]|$v
+                                     ]),
+                                     parametersValues=$fe.parametersValues->map(v|$v->reprocessVSWithInScopeVars($inScopeVars))
+                                  ),
+      i:InstanceValue[1] | ^$i
+                            (
+                               values = $i.values->evaluateAndDeactivate()->map(v|$v->match([
+                                  e:ValueSpecification[1]|$e->reprocessVSWithInScopeVars($inScopeVars),
+                                  f:FunctionDefinition<Any>[1]|$f->reprocessLambdaWithInScopeVars($inScopeVars),
+                                  a:Any[1]|$a
+                               ]))
+                            ),
+      v: VariableExpression[1]|$inScopeVars->keys()->contains($v.name)->if(|^InstanceValue(genericType=$v.genericType, multiplicity=PureOne, values=$inScopeVars->get($v.name).values)->evaluateAndDeactivate(),|$v)
+   ])
+}
+
+function meta::pure::functions::meta::reprocessVariableExpressionsNameInLambda(fd:FunctionDefinition<Any>[1], nameMap: Map<String, String>[1]):FunctionDefinition<Any>[1]
+{
+  ^$fd(expressionSequence = $fd.expressionSequence->evaluateAndDeactivate()->map(e|$e->reprocessVariableExpressionsName($nameMap)) );
+}
+
+function meta::pure::functions::meta::reprocessVariableExpressionsName(v:ValueSpecification[1], nameMap: Map<String, String>[1]):ValueSpecification[1]
+{
+   $v->match([
+      fe:FunctionExpression[1] | ^$fe
+                                  (
+                                     func=$fe.func->match([
+                                        fd:QualifiedProperty<Any>[1]|$fd->reprocessVariableExpressionsNameInLambda($nameMap), 
+                                        v: Function<Any>[1]|$v
+                                     ]),
+                                     parametersValues=$fe.parametersValues->map(v|$v->reprocessVariableExpressionsName($nameMap))
+                                  ),
+      i:InstanceValue[1] | ^$i
+                            (
+                               values = $i.values->evaluateAndDeactivate()->map(v|$v->match([
+                                  e:ValueSpecification[1]|$e->reprocessVariableExpressionsName($nameMap),
+                                  f:FunctionDefinition<Any>[1]|$f->reprocessVariableExpressionsNameInLambda($nameMap),
+                                  a:Any[1]|$a
+                               ]))
+                            ),
+      v: VariableExpression[1]| ^$v(name = if($nameMap->get($v.name)->isNotEmpty(), | $nameMap->get($v.name)->toOne(), | $v.name))
+   ])
+}
+
+function {doc.doc = 'Get all generalisations of a type'}
+ meta::pure::functions::meta::getAllTypeGeneralisations(class:Type[1]):Type[*]
+{
+   let generalisations = $class.generalizations->map(g | $g.general->cast(@GenericType).rawType->toOne()->getAllTypeGeneralisations());
+   $class->concatenate($generalisations);
+}
+
+function {doc.doc = 'Get all generalisations of a type'}
+ meta::pure::functions::meta::getAllTypeGeneralisationsExcluded(class:Type[1]):Type[*]
+{
+   $class.generalizations->map(g | $g.general->cast(@GenericType).rawType->toOne()->getAllTypeGeneralisations()) 
+}
+
+function meta::pure::functions::meta::_subTypeOf(subType:Type[1], superType:Type[1]):Boolean[1]
+{
+    if($subType == Nil,|true, |$subType->getAllTypeGeneralisations()->contains($superType));  
+}
+
+function meta::pure::functions::meta::simpleToString(obj : Any[1]) : String[1]
+{
+   let type = $obj->type();
+   if($type->instanceOf(Class), 
+      {| 
+         let theClass = $type->cast(@Class<Any>);
+   
+         let theProperties = $theClass->getAllTypeGeneralisations()->remove(Any)->map(t|$t->match([c:Class<Any>[1]|$c, a:Any[*]|[]])).properties->removeAll(Class.properties);
+   
+         let p = $theProperties->sortBy(p|$p.name->toOne())->map(p|
+               let val = $p->eval($obj);
+               if($val->size() == 1, 
+                     | '%s=%s%s%s'->format([$p.name->toOne(), if($val->toOne()->instanceOf(String), |'\'', |''), $val->makeString(), if($val->toOne()->instanceOf(String), |'\'', |'')]), 
+                     | '%s=%s'->format([$p.name->toOne(), $val->map(v|if($v->instanceOf(String), |'\'', |'') + $v->makeString() + if($v->instanceOf(String), |'\'', |''))->joinStrings('[',', ', ']')])
+                     );
+            );
+     
+         '%s(%s)'->format($theClass->elementToPath()->concatenate($p->joinStrings(', ')));
+      }, 
+      | $obj->makeString()
+      );
+}
+
+function meta::pure::functions::meta::stringToDataType(dt : String[1]) : DataType[1]
+{
+   let prim = newMap(
+      [
+         pair('Boolean',Boolean),
+         pair('StrictDate',StrictDate),
+         pair('Number',Number),
+         pair('String',String),
+         pair('LatestDate',LatestDate),
+         pair('Float',Float),
+         pair('DateTime',DateTime),
+         pair('Date',Date),
+         pair('Integer',Integer),
+         pair('Decimal', Decimal)
+      ]
+   )->get($dt);
+   if ($prim->isEmpty(),|$dt->pathToElement()->cast(@Enumeration<Any>),|$prim->toOne());
+}
+
+function meta::pure::functions::meta::multiplicitySubsumes(subsuming:Multiplicity[1], subsumed:Multiplicity[1]) :Boolean[1]
+{
+  
+     let lower1 = if($subsuming->hasLowerBound(),|$subsuming->getLowerBound(),|-1);
+     let upper1 = if($subsuming->hasUpperBound(),|$subsuming->getUpperBound(),|-1);
+     let lower2 = if($subsumed->hasLowerBound(),|$subsumed->getLowerBound(),|-1);
+     let upper2 = if($subsumed->hasUpperBound(),|$subsumed->getUpperBound(),|-1);
+
+   if ($lower2 < $lower1,
+      |false;,
+      | if( $upper1 < 0 , // no upper bound ==*
+           |true,
+           |(0 <= $upper2) && ($upper2 <= $upper1)
+      ));
+}
+
+function meta::pure::functions::meta::value4Tag(f:Type[1], tagName:String[1], profile:Profile[1]):TaggedValue[*]
+{
+    $f->cast(@ElementWithTaggedValues)->value4Tag($tagName, $profile);
+}
+
+function meta::pure::functions::meta::value4Tag(f:ElementWithTaggedValues[1], tagName:String[1], profile:Profile[1]):TaggedValue[*]
+{
+    let tag = $profile->tag($tagName);
+    $f.taggedValues->filter(t | $t.tag == $tag);
+}
+
+function meta::pure::functions::meta::hasStereotype(f:ElementWithStereotypes[1], stereotype:String[1], profile:Profile[1]):Boolean[1]
+{
+    let st = $profile->stereotype($stereotype);
+    $f.stereotypes->exists(s | $s == $st);
+}
+
+function meta::pure::functions::meta::hasStereotype(f:Type[1], stereotype:String[1], profile:Profile[1]):Boolean[1]
+{
+    $f->cast(@ElementWithStereotypes)->meta::pure::functions::meta::hasStereotype($stereotype, $profile);
+}
+
+function meta::pure::functions::meta::functionType(f:Function<Any>[1]):FunctionType[1]
+{
+   assert($f->instanceOf(FunctionDefinition) || $f->instanceOf(NativeFunction), | 'functionType is not supported yet for this subtype of function '+$f->type()->id());
+   $f.classifierGenericType->toOne().typeArguments->at(0).rawType->toOne()->cast(@FunctionType);
+}
+
+function meta::pure::functions::meta::class<T>(any:T[*]):Class<T>[1]
+{
+    $any->genericType()->genericTypeClass()->cast(@Class<T>);
+}
+
+function meta::pure::functions::meta::reactivate(vs:ValueSpecification[1]):Any[*]
+{
+   meta::pure::functions::meta::reactivate($vs, ^Map<String, List<Any>>());
+}
+
+function meta::pure::functions::meta::pathToElement(path:String[1]):PackageableElement[1]
+{
+    $path->pathToElement('::')
+}
+
+function meta::pure::functions::meta::pathToElement(path:String[1], separator:String[1]):PackageableElement[1]
+{
+    $path->split($separator)->fold({str:String[1], pkg:PackageableElement[1] | let p = $pkg->cast(@Package).children->filter(c | $c.name == $str);
+                                                                               if ($p->isEmpty(), | fail(| $path + ' is not a valid PackageableElement. Package \'' + $str + '\' not found'); $p->toOne();, | $p->toOne());
+                                   }, ::)
+}
+
+function meta::pure::functions::meta::mapVariables(pa : PropertyPathElement[1]):Map<VariableExpression, ValueSpecification>[1]
+{
+   let parameters = $pa.property->genericType().typeArguments.rawType->cast(@FunctionType).parameters->tail();
+   newMap($parameters->zip($pa.parameters), VariableExpression->classPropertyByName('name')->cast(@Property<VariableExpression,String|1>));
+}
+
+function meta::pure::functions::meta::mapVariables(fe : FunctionExpression[1], vars:Map<VariableExpression, ValueSpecification>[1], openVars:Map<String, List<Any>>[1]):Map<VariableExpression, ValueSpecification>[1]
+{
+  let parameters = $fe.func->genericType().typeArguments.rawType->cast(@FunctionType).parameters;
+  let filteredParameters = $fe.func->match([q:QualifiedProperty<Any>[1]|$parameters->tail(),a:Any[1]|$parameters]);
+  let values = $fe.parametersValues->map(v|$v->match([v:meta::pure::router::RoutedValueSpecification[1]|$v.value,a:Any[1]|$a])->match([v:VariableExpression[1]|let r = $v->resolve($vars, $openVars); if($r->isEmpty(), |$v, |$r);, a:Any[1]|$v]));
+  let filteredValues = $fe.func->match([q:QualifiedProperty<Any>[1]|$values->tail(),a:Any[1]|$values]);
+  newMap($filteredParameters->zip($filteredValues), VariableExpression->classPropertyByName('name')->cast(@Property<VariableExpression,String|1>));
+}
+
+function meta::pure::functions::meta::resolve(v:VariableExpression[1], vars:Map<VariableExpression, ValueSpecification>[1], openVars:Map<String, List<Any>>[1]):ValueSpecification[0..1]
+{
+   let val = $vars->get($v);
+   if($val->isEmpty(),
+         | let open = $openVars->get($v.name);
+           if ($open->isEmpty(),
+                 |[];,
+                 |let res = $open.values;
+                  if($res->isEmpty(),
+                    |let multVal = ^MultiplicityValue(value=0);
+                     ^InstanceValue(multiplicity=PureZero, genericType=^GenericType(rawType=Nil), values=[])->evaluateAndDeactivate();,
+                    |let size = $res->size();
+                     let mult = if($size == 1,
+                                  |PureOne,
+                                  |let multVal = ^MultiplicityValue(value=$size);
+                                   ^Multiplicity(lowerBound=$multVal, upperBound=$multVal);
+                                );
+                     ^InstanceValue(multiplicity=$mult, genericType=$res->genericType(), values=$res)->evaluateAndDeactivate();
+                  );
+           );,
+         | $val->toOne()
+   );
+}
+
+function
+   {doc.doc = 'Get the property with the given name from the given class. Note that this searches only properties defined directly on the class, not those inherited from super-classes or those which come from associations.'}
+   meta::pure::functions::meta::classPropertyByName(class:Class<Any>[1], name:String[1]):Property<Nil,Any|*>[0..1]
+{
+    $class.properties->filter(p | $p.name == $name)->first()
+}
+
+function meta::pure::functions::meta::getHiddenPayload(o:Any[1]):Any[1]
+{
+   $o.elementOverride->toOne()->cast(@GetterOverride).hiddenPayload->toOne();
+}
+
+function meta::pure::functions::meta::properties(genericType:GenericType[1]):Property<Nil,Any|*>[*]
+{
+    // TODO use this once problems with compiled execution are fixed
+//    $genericType.rawType->toOne()->generalizations()->map(cls | $cls->cast(@Class<Any>).properties->concatenate($cls->cast(@Class<Any>).propertiesFromAssociations))
+
+    let theClass = $genericType.rawType->toOne()->cast(@Class<Any>);
+    let result = ^List<Property<Nil,Any|*>>(values = $theClass.properties);
+    let resultWithAssoProps = ^$result(values += $theClass.propertiesFromAssociations);
+    ^$resultWithAssoProps(values += $theClass.generalizations->map(generalization | properties($generalization.general))).values;
+}
+
+
+function {doc.doc = 'Get all the elements of a package.  If recursive is true, then elements belonging to sub-packages are also returned; otherwise, only elements from the package itself are returned.  The package itself is never returned.'}
+         meta::pure::functions::meta::getAllPackageElements(pkg:Package[1], recursive:Boolean[1]):PackageableElement[*]
+{
+    if($recursive, |$pkg->getAllPackageElements_Recursive(), |$pkg.children)
+}
+
+function <<access.private>> meta::pure::functions::meta::getAllPackageElements_Recursive(pkg:Package[1]):PackageableElement[*]
+{
+    // HACK children of a package should be PackageableElements, but sometimes they are not.
+    $pkg.children->map(child:Any[1] | $child->match([
+                                              p:Package[1] | $p->getAllPackageElements_Recursive()->add($p),
+                                              p:PackageableElement[1] | $p,
+                                              a:Any[1] | []
+                                             ]))
+}
+
+function {doc.doc = 'Get all generalisations of a class'}
+meta::pure::functions::meta::getAllClassGeneralisations(class:Class<Any>[1]):Class<Any>[*]
+{
+   let generalisations = $class.generalizations->map(g | $g.general->cast(@GenericType).rawType->toOne()->cast(@Class<Any>)->getAllClassGeneralisations());
+   $class->concatenate($generalisations);
+}
+
+function meta::pure::functions::meta::allSpecializations( class:Class<Any>[1] ) : Class<Any>[*]
+{
+   if( $class->isAnyClass(),
+      | [],
+      |
+         let mySpecializationClasses =
+               $class.specializations->map( s |
+
+                  let rawType = $s.specific;
+
+                  if( $rawType->isEmpty() || $rawType->isAnyClass(),
+                     | [],
+                     | $rawType->cast( @Class<Any> )->toOne()
+                  );
+               );
+
+         let furtherGeneralizations = $mySpecializationClasses->map( c | $c->allSpecializations() );
+
+         meta::pure::functions::collection::removeDuplicates(
+                     if( $class->isAbstract(),
+                        | [],
+                        | [ $class ] )
+                     ->concatenate($furtherGeneralizations)
+         );
+   );
+}
+
+function meta::pure::functions::meta::isAnyClass( rawType:Type[*] ) : Boolean[1]
+{
+   let type = $rawType->toOne();
+   $type->match([
+      p:PrimitiveType[1]    | true,
+      e:Enumeration<Any>[1] | false,
+      c:Class<Any>[1]       | $type->cast(@Class<Any>) == meta::pure::metamodel::type::Any
+   ]);
+}
+
+function meta::pure::functions::meta::isAbstract(class:Type[1]) : Boolean[1]
+{
+  $class->cast(@ElementWithStereotypes)->hasStereotype('abstract', meta::pure::profiles::typemodifiers);
+}
+

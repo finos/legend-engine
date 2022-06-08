@@ -1,0 +1,181 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::factory::*;
+import meta::external::language::java::metamodel::*;
+import meta::external::language::java::metamodel::project::*;
+import meta::external::language::java::transform::*;
+import meta::external::language::java::serialization::*;
+import meta::pure::executionPlan::engine::*;
+import meta::pure::executionPlan::engine::java::*;
+
+function meta::pure::executionPlan::engine::java::registerMathsLibrary(conventions: Conventions[1]): Conventions[1]
+{
+   let library  = $conventions->className(Library);
+
+   let lib = newConventionsLibrary()
+      ->usesNumber( javaNumber(),     javaNumber(),      {n:Number[1]  | javaBigDecimal()->j_new(j_string($n->toString()))})
+      ->usesDecimal(javaBigDecimal(), javaBigDecimal(),  {d:Number[1]  | javaBigDecimal()->j_new(j_string($d->toString()))})
+      ->usesInteger(javaLong(),       javaLongBoxed(),   {i:Integer[1] | j_long($i)})
+      ->usesFloat(  javaDouble(),     javaDoubleBoxed(), {f:Float[1]   | j_double($f)})
+      ->usesJavaPackage('java.math')
+      ->addFunctionCoders([
+         fc1(plus_Decimal_MANY__Decimal_1_,                            {ctx,collection | maybeReduce($ctx, $collection, bigDecimalZero(), $library->j_methodReference('decimalPlus', reduceFT(javaBigDecimal())))}),
+         fc1(plus_Integer_MANY__Integer_1_,                            {ctx,collection | maybeReduce($ctx, $collection, j_long(0),        $library->j_methodReference('integerPlus', reduceFT(javaLong())))}),
+         fc1(plus_Float_MANY__Float_1_,                                {ctx,collection | maybeReduce($ctx, $collection, j_double(0),      $library->j_methodReference('floatPlus',   reduceFT(javaDouble())))}),
+         fc1(plus_Number_MANY__Number_1_,                              {ctx,collection | maybeReduce($ctx, $collection, j_long(0),        $library->j_methodReference('numberPlus',  reduceFT(javaNumber())))}),
+             
+         fc1(minus_Number_MANY__Number_1_,                             {ctx,collection | $library->j_invoke('minus', $collection, javaNumber())}),
+         fc1(minus_Decimal_MANY__Decimal_1_,                           {ctx,collection | if($ctx.params->at(0).multiplicity == PureOne, |$collection->j_invoke('negate', []), |$library->j_invoke('minus', $collection, javaNumber()))}),
+         fc1(minus_Integer_MANY__Integer_1_,                           {ctx,collection | if($ctx.params->at(0).multiplicity == PureOne, |$collection->j_minus(), |$library->j_invoke('minus', $collection, javaNumber()))}),
+         fc1(minus_Float_MANY__Float_1_,                               {ctx,collection | if($ctx.params->at(0).multiplicity == PureOne, |$collection->j_minus(), |$library->j_invoke('minus', $collection, javaNumber()))}),
+             
+         fc1(times_Integer_MANY__Integer_1_,                           {ctx,collection | maybeReduce($ctx, $collection, j_long(1),       $library->j_methodReference('integerMultiply', reduceFT(javaLong())))}),
+         fc1(times_Float_MANY__Float_1_,                               {ctx,collection | maybeReduce($ctx, $collection, j_double(1),     $library->j_methodReference('floatMultiply',   reduceFT(javaDouble())))}),
+         fc1(times_Number_MANY__Number_1_,                             {ctx,collection | maybeReduce($ctx, $collection, j_long(1),       $library->j_methodReference('numberMultiply',  reduceFT(javaNumber())))}),
+         fc1(times_Decimal_MANY__Decimal_1_,                           {ctx,collection | maybeReduce($ctx, $collection, bigDecimalOne(), $library->j_methodReference('decimalMultiply', reduceFT(javaBigDecimal())))}),
+             
+         fc2(divide_Number_1__Number_1__Float_1_,                      {ctx,num1,num2  | $library->j_invoke('divide', [$num1, $num2], javaDouble())}),
+         fc3(divide_Decimal_1__Decimal_1__Integer_1__Decimal_1_,       {ctx,num1,num2,num3 | $num1->j_invoke('divide', [$num2, $num3->j_box()->j_invoke('intValue', []), javaRoundingMode()->j_field('HALF_UP')], javaBigDecimal())}),         
+         fc2(rem_Number_1__Number_1__Number_1_,                        {ctx,num1,num2  | $library->j_invoke('rem', [$num1, $num2], javaNumber())}),
+         fc1(average_Number_MANY__Float_1_,                            {ctx,collection | $library->j_invoke('average', $collection, javaDouble())}),
+         fc( average_Integer_MANY__Float_1_,                           fcAlias(          average_Number_MANY__Float_1_)),
+         fc( average_Float_MANY__Float_1_,                             fcAlias(          average_Number_MANY__Float_1_)),
+
+         fc1(round_Number_1__Integer_1_,                               {ctx,num        | $library->j_invoke('round', $num, javaLong())}),
+         fc2(round_Decimal_1__Integer_1__Decimal_1_,                   {ctx,num,scale  | $library->j_invoke('round', [$num, $scale], javaBigDecimal())}),
+         fc1(ceiling_Number_1__Integer_1_,                             {ctx,num        | $library->j_invoke('ceiling', $num, javaLong())}),
+         fc1(floor_Number_1__Integer_1_,                               {ctx,num        | $library->j_invoke('floor', $num, javaLong())}),
+                          
+         fc1(toDecimal_Number_1__Decimal_1_,                           {ctx,num        | javaBigDecimal()->j_new($num->j_cast(javaNumber())->j_invoke('toString', []))}), 
+         fc1(toFloat_Number_1__Float_1_,                               {ctx,num        | $num->j_cast(javaNumber())->j_invoke('doubleValue', [])}),
+             
+         fc2(greaterThan_Number_1__Number_1__Boolean_1_,               {ctx,num1,num2  | codeCompare($ctx, $num1, $num2, {l,r| $l->j_gt($r)}, $library)}),
+         fc2(greaterThan_Number_$0_1$__Number_$0_1$__Boolean_1_,       {ctx,n,other    | $library->j_invoke('safeCompareNumbers', [$n, $other], javaInt())->j_gt(j_int(0))}),
+         fc (greaterThan_Number_$0_1$__Number_1__Boolean_1_,           fcAlias(          greaterThan_Number_$0_1$__Number_$0_1$__Boolean_1_)),
+         fc (greaterThan_Number_1__Number_$0_1$__Boolean_1_,           fcAlias(          greaterThan_Number_$0_1$__Number_$0_1$__Boolean_1_)),
+         fc2(greaterThanEqual_Number_1__Number_1__Boolean_1_,          {ctx,num1,num2  | codeCompare($ctx, $num1, $num2, {l,r| $l->j_ge($r)}, $library)}),
+         fc2(greaterThanEqual_Number_$0_1$__Number_$0_1$__Boolean_1_,  {ctx,n,other    | $library->j_invoke('safeCompareNumbers', [$n, $other], javaInt())->j_ge(j_int(0))}),
+         fc (greaterThanEqual_Number_$0_1$__Number_1__Boolean_1_,      fcAlias(          greaterThanEqual_Number_$0_1$__Number_$0_1$__Boolean_1_)),
+         fc (greaterThanEqual_Number_1__Number_$0_1$__Boolean_1_,      fcAlias(          greaterThanEqual_Number_$0_1$__Number_$0_1$__Boolean_1_)),
+         fc2(lessThan_Number_1__Number_1__Boolean_1_,                  {ctx,num1,num2  | codeCompare($ctx, $num1, $num2, {l,r| $l->j_lt($r)}, $library)}),
+         fc2(lessThan_Number_$0_1$__Number_$0_1$__Boolean_1_,          {ctx,n,other    | $library->j_invoke('safeCompareNumbers', [$n, $other], javaInt())->j_lt(j_int(0))}),
+         fc (lessThan_Number_$0_1$__Number_1__Boolean_1_,              fcAlias(          lessThan_Number_$0_1$__Number_$0_1$__Boolean_1_)),
+         fc (lessThan_Number_1__Number_$0_1$__Boolean_1_,              fcAlias(          lessThan_Number_$0_1$__Number_$0_1$__Boolean_1_)),
+         fc2(lessThanEqual_Number_1__Number_1__Boolean_1_,             {ctx,num1,num2  | codeCompare($ctx, $num1, $num2, {l,r| $l->j_le($r)}, $library)}),
+         fc2(lessThanEqual_Number_$0_1$__Number_$0_1$__Boolean_1_,     {ctx,n,other    | $library->j_invoke('safeCompareNumbers', [$n, $other], javaInt())->j_le(j_int(0))}),
+         fc (lessThanEqual_Number_$0_1$__Number_1__Boolean_1_,         fcAlias(          lessThanEqual_Number_$0_1$__Number_$0_1$__Boolean_1_)),
+         fc (lessThanEqual_Number_1__Number_$0_1$__Boolean_1_,         fcAlias(          lessThanEqual_Number_$0_1$__Number_$0_1$__Boolean_1_)),
+
+         fc1(abs_Integer_1__Integer_1_,                                {ctx,num        | javaMath()->j_invoke('abs', $num, javaLong())}),
+         fc1(abs_Float_1__Float_1_,                                    {ctx,num        | javaMath()->j_invoke('abs', $num, javaDouble())}),
+         fc1(abs_Decimal_1__Decimal_1_,                                {ctx,num        | $num->j_invoke('abs', [], javaBigDecimal())}),
+         fc1(abs_Number_1__Number_1_,                                  {ctx,num        | $library->j_invoke('abs', [$num], javaNumber())}),
+         fc1(max_Number_MANY__Number_$0_1$_,                           {ctx,nums       | $nums->j_streamOf()->js_reduce($library->j_methodReference('max', reduceFT(javaNumber())))}),
+         fc (max_Number_$1_MANY$__Number_1_,                           fcAlias(          max_Number_MANY__Number_$0_1$_)),
+         fc1(max_Integer_MANY__Integer_$0_1$_,                         {ctx,nums       | $nums->j_streamOf()->js_reduce(javaLongBoxed()->j_methodReference('max'))}),
+         fc (max_Integer_$1_MANY$__Integer_1_,                         fcAlias(          max_Integer_MANY__Integer_$0_1$_)),
+         fc1(max_Float_MANY__Float_$0_1$_,                             {ctx,nums       | $nums->j_streamOf()->js_reduce(javaDoubleBoxed()->j_methodReference('max'))}),
+         fc (max_Float_$1_MANY$__Float_1_,                             fcAlias(          max_Float_MANY__Float_$0_1$_)),
+         fc2(max_Number_1__Number_1__Number_1_,                        {ctx,num1,num2  | $library->j_invoke('max', [$num1, $num2], javaNumber())}),
+         fc1(min_Number_MANY__Number_$0_1$_,                           {ctx,nums       | $nums->j_streamOf()->js_reduce($library->j_methodReference('min', reduceFT(javaNumber())))}),
+         fc (min_Number_$1_MANY$__Number_1_,                           fcAlias(          min_Number_MANY__Number_$0_1$_)),
+         fc2(min_Number_1__Number_1__Number_1_,                        {ctx,num1,num2  | $library->j_invoke('min', [$num1, $num2], javaNumber())}),
+         fc1(min_Integer_MANY__Integer_$0_1$_,                         {ctx,nums       | $nums->j_streamOf()->js_reduce(javaLongBoxed()->j_methodReference('min'))}),
+         fc (min_Integer_$1_MANY$__Integer_1_,                         fcAlias(          min_Integer_MANY__Integer_$0_1$_)),
+         fc1(min_Float_MANY__Float_$0_1$_,                             {ctx,nums       | $nums->j_streamOf()->js_reduce(javaDoubleBoxed()->j_methodReference('min'))}),
+         fc (min_Float_$1_MANY$__Float_1_,                             fcAlias(          min_Float_MANY__Float_$0_1$_)),
+
+         fc1(cos_Number_1__Float_1_,                                   {ctx,num        | javaMath()->j_invoke('cos', $num->j_box()->j_invoke('doubleValue', []), javaDouble())}),
+         fc1(sin_Number_1__Float_1_,                                   {ctx,num        | javaMath()->j_invoke('sin', $num->j_box()->j_invoke('doubleValue', []), javaDouble())}),
+         fc2(pow_Number_1__Number_1__Number_1_,                        {ctx,num1,num2  | javaStrictMath()->j_invoke('pow', [$num1->j_box()->j_invoke('doubleValue', []), $num2->j_box()->j_invoke('doubleValue', [])], javaDouble())})         
+      ]);
+
+   $conventions->registerLibrary($lib);
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::reduceFT(type:meta::external::language::java::metamodel::Type[1]): meta::external::language::java::metamodel::Type[1]
+{
+   javaFunctionType([$type, $type], $type);
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::maybeReduce(ctx:FuncCoderContext[1], collection:Code[1], zero:Code[1], accumulator:Code[1]) : Code[1]
+{
+   if($collection.type->isJavaList(),
+      | $collection->j_streamOf()->js_reduce($zero, $accumulator),
+      | $collection
+   );
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::codeCompare(ctx:FuncCoderContext[1], left:Code[1], right:Code[1], apply:Function<{Code[1],Code[1]->Code[1]}>[1], library:meta::external::language::java::metamodel::Class[1]) : Code[1]
+{
+   if(($left.type == javaLong() || $left.type == javaLongBoxed()) && ($right.type == javaLong() || $right.type == javaLongBoxed()),
+      | $apply->eval($left, $right),
+      |
+   if(($left.type == javaDouble() || $left.type == javaDoubleBoxed()) && ($right.type == javaDouble() || $right.type == javaDoubleBoxed()),
+      | $apply->eval($left, $right),
+      | $apply->eval($library->j_invoke('compareInt', [$left, $right], javaInt()), j_int(0))
+   ));
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::byTypes(typeSpecs:Pair<Pair<meta::external::language::java::metamodel::Class,meta::external::language::java::metamodel::Class>,Code>[*], default:Code[1]): Code[1]
+{
+   let left   = j_parameter(javaNumber(), 'left');
+   let right  = j_parameter(javaNumber(), 'right');
+
+   $typeSpecs->reverse()->fold(
+      {typeSpec, else|
+         let t1   = $typeSpec.first.first;
+         let t2   = $typeSpec.first.second;
+         let then = $typeSpec.second->j_return();
+         j_if(j_and($left->j_instanceof($t1), $right->j_instanceof($t2)), $then, $else);
+      },
+      $default->j_return()
+   );
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::valueAsDouble(of:Code[1]) : Code[1]
+{
+   j_conditional($of->j_instanceof(javaLongBoxed()), longValue($of), doubleValue($of), javaDouble());
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::longValue(of:Code[1]) : Code[1]
+{
+   $of->j_invoke('longValue', []);
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::doubleValue(of:Code[1]) : Code[1]
+{
+   $of->j_invoke('doubleValue', []);
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::bigDecimal(of:Code[1]) : Code[1]
+{
+   $of->j_cast(javaBigDecimal());
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::bigDecimalZero() : Code[1]
+{
+   javaBigDecimal()->j_field('ZERO', javaBigDecimal());
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::bigDecimalOne() : Code[1]
+{
+   javaBigDecimal()->j_field('ONE', javaBigDecimal());
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::bigDecimalValue(of:Code[1]) : Code[1]
+{
+   javaBigDecimal()->j_invoke('valueOf', $of);
+}

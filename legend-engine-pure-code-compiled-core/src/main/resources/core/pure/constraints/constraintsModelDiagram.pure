@@ -1,0 +1,213 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Diagram
+Diagram meta::pure::metamodel::constraint::ConstraintModelDiagram(width=875.26901, height=450.00000)
+{
+    TypeView Class_$_0(
+        type=meta::pure::metamodel::type::Class,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0,
+        position=(1186.00000, 502.00000),
+        width=52.02148,
+        height=36.00000)
+
+    TypeView ElementWithConstraints_$_1(
+        type=meta::pure::metamodel::extension::ElementWithConstraints,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0,
+        position=(952.00000, 370.00000),
+        width=159.23633,
+        height=36.00000)
+
+    TypeView Constraint_$_2(
+        type=meta::pure::metamodel::constraint::Constraint,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0,
+        position=(760.00000, 370.00000),
+        width=80.00000,
+        height=36.00000)
+
+    TypeView PackageableElement_$_3(
+        type=meta::pure::metamodel::PackageableElement,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0,
+        position=(1115.00000, 190.00000),
+        width=139.39648,
+        height=36.00000)
+
+    TypeView Type_$_4(
+        type=meta::pure::metamodel::type::Type,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0,
+        position=(1346.00000, 367.00000),
+        width=47.11719,
+        height=36.00000)
+
+    TypeView ModelElement_$_5(
+        type=meta::pure::metamodel::ModelElement,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0,
+        position=(1127.00000, 88.00000),
+        width=112.93604,
+        height=48.00000)
+
+    TypeView ValidationResult_$_6(
+        type=meta::pure::metamodel::constraint::ValidationResult,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0,
+        position=(536.00000, 361.00000),
+        width=124.55908,
+        height=48.00000)
+
+    TypeView ValidatedInstance_$_7(
+        type=meta::pure::metamodel::constraint::ValidatedInstance,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0,
+        position=(538.00000, 214.00000),
+        width=121.37305,
+        height=36.00000)
+
+    TypeView Any_$_8(
+        type=meta::pure::metamodel::type::Any,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0,
+        position=(749.28571, 215.00000),
+        width=42.66992,
+        height=36.00000)
+
+    AssociationView aview_9(association=meta::pure::metamodel::constraint::ValidatedInstance_ValidationResult,
+        stereotypesVisible=true,
+        nameVisible=false,
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE,
+        points=[(598.68652,232.00000),(598.27954,385.00000)],
+        label='ValidatedInstance_ValidationResult',
+        source=ValidatedInstance_$_7,
+        target=ValidationResult_$_6,
+        sourcePropertyPosition=(866.60538, 483.10000),
+        sourceMultiplicityPosition=(831.92940, 483.10000),
+        targetPropertyPosition=(794.27466, 606.60000),
+        targetMultiplicityPosition=(866.22154, 606.60000))
+
+    PropertyView pview_10(property=meta::pure::metamodel::extension::ElementWithConstraints.constraints,
+        stereotypesVisible=true,
+        nameVisible=true,
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE,
+        points=[(1031.61816,388.00000),(800.00000,388.00000)],
+        label='',
+        source=ElementWithConstraints_$_1,
+        target=Constraint_$_2,
+        propertyPosition=(1180.37515, 641.70000),
+        multiplicityPosition=(1180.37515, 669.00000))
+
+    PropertyView pview_11(property=meta::pure::metamodel::constraint::ValidationResult.constraint,
+        stereotypesVisible=true,
+        nameVisible=true,
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE,
+        points=[(598.27954,385.00000),(800.00000,388.00000)],
+        label='',
+        source=ValidationResult_$_6,
+        target=Constraint_$_2,
+        propertyPosition=(982.74214, 661.72665),
+        multiplicityPosition=(1041.69917, 634.42665))
+
+    PropertyView pview_12(property=meta::pure::metamodel::constraint::ValidatedInstance.instance,
+        stereotypesVisible=true,
+        nameVisible=true,
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE,
+        points=[(598.68652,232.00000),(770.62068,233.00000)],
+        label='',
+        source=ValidatedInstance_$_7,
+        target=Any_$_8,
+        propertyPosition=(978.34266, 460.83869),
+        multiplicityPosition=(1027.77059, 433.53869))
+
+   GeneralizationView gview_13(color=#000000,
+       lineWidth=-1.0,
+       lineStyle=SIMPLE,
+       points=[(1031.61816,388.00000),(1212.01074,520.00000)],
+       label='',
+       source=Class_$_0,
+       target=ElementWithConstraints_$_1)
+
+   GeneralizationView gview_14(color=#000000,
+       lineWidth=-1.0,
+       lineStyle=SIMPLE,
+       points=[(1369.55859,385.00000),(1212.01074,520.00000)],
+       label='',
+       source=Class_$_0,
+       target=Type_$_4)
+
+
+   GeneralizationView gview_16(color=#000000,
+       lineWidth=-1.0,
+       lineStyle=SIMPLE,
+       points=[(1184.69824,208.00000),(800.00000,388.00000)],
+       label='',
+       source=Constraint_$_2,
+       target=PackageableElement_$_3)
+
+   GeneralizationView gview_17(color=#000000,
+       lineWidth=-1.0,
+       lineStyle=SIMPLE,
+       points=[(1183.46802,112.00000),(1184.69824,208.00000)],
+       label='',
+       source=PackageableElement_$_3,
+       target=ModelElement_$_5)
+
+}

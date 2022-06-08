@@ -1,0 +1,474 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::json::*;
+import meta::pure::functions::meta::*;
+
+Class meta::json::TypeReference<T>{}
+
+// Public API
+
+function meta::json::fromJSON<T>(string:String[1], clazz:Class<T>[1]):T[1]
+{
+   $string->fromJSON($clazz, defaultDeserializationConfig());
+}
+
+function meta::json::fromJSON<T>(string:String[1], clazz:Class<T>[1], config:JSONDeserializationConfig[1]):T[1]
+{
+   $string->parseJSON()->fromJSON($clazz, $config)->toOne()->cast(@T);
+}
+
+function meta::json::fromJSON(json:JSONArray[1]):Any[*]
+{
+   $json->fromJSON(defaultDeserializationConfig());
+}
+
+function meta::json::fromJSON(json:JSONArray[1], config:JSONDeserializationConfig[1]):Any[*]
+{
+   $json->fromJSON([], $config);
+}
+
+function meta::json::fromJSON(json:JSONElement[1]):Any[1]
+{
+   $json->fromJSON(defaultDeserializationConfig());
+}
+
+function meta::json::fromJSON(json:JSONElement[1], config:JSONDeserializationConfig[1]):Any[1]
+{
+   $json->fromJSON([], $config)->toOne();
+}
+
+function meta::json::fromJSON(json:JSONArray[1], typeReference:TypeReference<Any>[1]):Any[*]
+{
+   $json->fromJSON($typeReference, defaultDeserializationConfig());
+}
+
+function meta::json::fromJSON(json:JSONArray[1], typeReference:TypeReference<Any>[1], config:JSONDeserializationConfig[1]):Any[*]
+{
+   $json->fromJSONTypeReference($typeReference, $config);   
+}
+
+function meta::json::fromJSON(json:JSONElement[1], typeReference:TypeReference<Any>[1]):Any[1]
+{
+   $json->fromJSON($typeReference, defaultDeserializationConfig())->toOne();
+}
+
+function meta::json::fromJSON(json:JSONElement[1], typeReference:TypeReference<Any>[1], config:JSONDeserializationConfig[1]):Any[1]
+{
+   $json->fromJSONTypeReference($typeReference, $config)->toOne();   
+}
+
+function meta::json::fromJSON(json:JSONElement[1], type:Type[0..1]):Any[*]
+{
+   $json->fromJSON($type, defaultDeserializationConfig());
+}
+
+function meta::json::fromJSON(json:JSONElement[1], type:Type[0..1], config:JSONDeserializationConfig[1]):Any[*]
+{
+   $json->fromJSON($type, [], $config);
+}
+
+function meta::json::defaultDeserializationConfig():JSONDeserializationConfig[1]
+{
+   ^JSONDeserializationConfig(typeKeyName='__TYPE', failOnUnknownProperties=true);
+}
+
+// Private Implementation
+
+function <<access.private>> meta::json::fromJSONTypeReference(json:JSONElement[1], typeReference:TypeReference<Any>[1], config:JSONDeserializationConfig[1]):Any[*]
+{
+   let typeArgument = $typeReference.classifierGenericType.typeArguments->toOne();
+   let base = $typeArgument.rawType->toOne();
+   let typeNames = $base.classifierGenericType.typeArguments.typeArguments.typeParameter.name;
+    
+   let generics = $typeArgument.typeArguments->mapGenerics($typeNames, []);
+
+   $json->fromJSON($base, $generics, $config);
+}
+
+function <<access.private>> meta::json::fromJSON(json:JSONElement[1], type:Type[0..1], generics:Pair<String, Type>[*], config:JSONDeserializationConfig[1]):Any[*]
+{
+   $json->createValue($type, [], $generics, false, $config);
+}
+
+function <<access.private>> meta::json::createValue(jsonElement:JSONElement[1], type:Type[0..1], property:Property<Nil, Any|*>[0..1], generics:Pair<String, Type>[*], inArray:Boolean[1], config:JSONDeserializationConfig[1]):Any[*]
+{
+   let value = $jsonElement->match([
+      n:JSONNull[1]    | if($inArray && $config->instanceOf(ExtendedJSONDeserializationConfig) && !$config->cast(@ExtendedJSONDeserializationConfig).nullReplacementInArray->isEmpty(),
+                            |$config->cast(@ExtendedJSONDeserializationConfig)->toOne().nullReplacementInArray,
+                            |[]
+                         ),
+      n:JSONNumber[1]  | createValueFromNumber($n, $type),
+      s:JSONString[1]  | createValueFromString($s, $type,$config),
+      b:JSONBoolean[1] | $b.value,
+      a:JSONArray[1]   | $a.values->map(v | $v->createValue($type, $property, $generics, true, $config));,
+      o:JSONObject[1]  | createValueFromObject($o, $type, $property, $generics, $config)
+	]);
+}
+
+function <<access.private>> meta::json::createValueFromNumber(json:JSONNumber[1], type:Type[0..1]):Any[*]
+{
+   if ($type == Integer,
+       | $json.value->toString()->parseInteger(),
+       | 
+   if ($type == Float,
+       |$json.value->toString()->parseFloat(),
+       | 
+   if ($type == Decimal,
+       |$json.value->toString()->parseDecimal(),
+       |    
+        $json.value
+   )));     
+}
+
+function <<access.private>> meta::json::createValueFromString(json:JSONString[1], type:Type[0..1],config:JSONDeserializationConfig[1]):Any[*]
+{
+   $type->match([
+      p:PrimitiveType[1] | 
+         if ($p == Date || $p->subTypeOf(Date),
+             | $json.value->parseDate(),
+             | $json.value),
+      e:Enumeration<Any>[1] |
+         let enumParts = $json.value->split('.');
+         let enumType = if ($enumParts->size() > 1, 
+                            | $enumParts->at(0)->pathToElement()->cast(@Enumeration<Any>);,
+                            | $type->toOne()->cast(@Enumeration<Any>));
+         let initialVal = $enumParts->last()->toOne();
+         let processedVal = if($config->instanceOf(ExtendedJSONDeserializationConfig),
+                              | let enumValidChar = if( !$config->cast(@ExtendedJSONDeserializationConfig).replaceInvalidEnumValueCharacters->isEmpty() 
+                                                      ,| if($config->cast(@ExtendedJSONDeserializationConfig).replaceInvalidEnumValueCharacters->toOne()
+                                                           ,| $initialVal->replace(' ','_')->replace(',','_')
+                                                           ,|$initialVal );
+                                                      ,|$initialVal );
+                               
+                                if( !$config->cast(@ExtendedJSONDeserializationConfig).forceEnumValuesToUpperCase->isEmpty() 
+                                                ,| if($config->cast(@ExtendedJSONDeserializationConfig).forceEnumValuesToUpperCase->toOne()
+                                                    ,| $enumValidChar->toUpper()
+                                                    ,|$enumValidChar );
+                                                 ,|$enumValidChar );  ,
+                               |$initialVal);
+         let val = $enumType->extractEnumValue($processedVal);
+         assertNotEmpty($val);
+         $val;,
+      a:Any[0..1] | 
+         $json.value
+   ])
+}
+
+function <<access.private>> meta::json::createValueFromObject(json:JSONObject[1], type:Type[0..1], property:Property<Nil, Any|*>[0..1], generics:Pair<String, Type>[*], config:JSONDeserializationConfig[1]):Any[*]
+{
+   if ($type == Map,
+       | $json.keyValuePairs
+            ->map( kv | let val = $kv.value->match([
+                           o: JSONObject[1] | $o->createObjectValue($property.genericType.typeArguments->at(1).rawType->toOne()->cast(@Class<Any>), $generics, $config),
+                           a: JSONArray[1]  | list($a.values->map(e | $e->createValue($property.genericType.typeArguments->at(1).rawType->toOne()->cast(@Class<Any>), $property, $generics, true, $config))),
+                           n: JSONElement[1] | $n->createValue([], $property, $generics, false, $config)
+                        ]);
+                        if ($val->isEmpty(), | [], | pair($kv.key.value, $val->toOne()));
+               )
+            ->newMap();,
+       | 
+
+         let class = if($type->isEmpty() && $json->getValue($config.typeKeyName)->isNotEmpty(), 
+               | let typeName = $json->getValue($config.typeKeyName)->toOne()->cast(@JSONString).value;
+                 $typeName->pathToElement();
+               ,
+               | $type
+               )->toOne()->cast(@Class<Any>);
+
+         let newGenerics = if ($property->isEmpty(),
+                               | $generics,
+                               | $property->toOne()->mapGenerics($class, $generics);
+                           );
+         $json->createObjectValue($class, $newGenerics, $config);
+   )
+}
+
+function <<access.private>> meta::json::createObjectValue<T>(json:JSONObject[1], class:Class<T>[1], generics:Pair<String, Type>[*], config:JSONDeserializationConfig[1]):Any[*]
+{
+   let canBeMissing = $class->cast(@Class<Any>)->classAssociationProperties();
+
+   if ($json.keyValuePairs->isEmpty(), | [], |
+      let jsonProperties = $json.keyValuePairs->filter(kv | !$kv.key.value->equal('__Type'));
+      let actualClass = $json->findClass($class, $generics, $config, $canBeMissing);
+      let classProperties = $actualClass->classProperties();
+   
+      let properties = $jsonProperties
+         ->filter(p | $p.key.value != $config.typeKeyName)
+         ->filter(p | $classProperties.name->contains($p.key->extractSupportedPropertyName()))
+         ->map(p | let propertyNameFromKey = $p.key->extractSupportedPropertyName();
+                   let classProperty = $classProperties->filter(cp | $cp.name == $propertyNameFromKey);
+                   assert($classProperty->size() == 1, | 'property not found: ' + $propertyNameFromKey);
+                   let value = $p.value->createValue($classProperty->toOne()->getPropertyType($generics), $classProperty->toOne(), $generics, false, $config);
+
+                   ^KeyValue(key=$propertyNameFromKey, value=$value);
+              );
+
+      let typeArguments = $generics->map(g | ^GenericType(rawType=$g.second));
+
+      let genericType = ^KeyValue(key='classifierGenericType', value=^GenericType(rawType=$actualClass, typeArguments=$typeArguments));
+
+       
+      if ($config.constraintsHandler->isEmpty()
+          ,|$actualClass->dynamicNew($properties->add($genericType));
+          ,|$actualClass->dynamicNew($properties->add($genericType),[],[],[], $config.constraintsHandler->toOne().constraintsManager);
+         );
+   );
+}
+
+function <<access.protected>> meta::json::findClasses(json:JSONObject[1], class:Class<Any>[1], config:JSONDeserializationConfig[1]):Class<Any>[*]
+{
+   $json->findClasses($class, [], $config)->removeDuplicates();
+}
+
+
+function <<access.protected>> meta::json::findClasses(json:JSONObject[1], class:Class<Any>[1], generics:Pair<String, Type>[*], config:JSONDeserializationConfig[1]):Class<Any>[*]
+{
+   $json->findClasses($class, $generics, $config, []);
+}
+
+function <<access.protected>> meta::json::findClasses(json:JSONObject[1], class:Class<Any>[1], generics:Pair<String, Type>[*], config:JSONDeserializationConfig[1], ignorable:AbstractProperty<Any>[*]):Class<Any>[*]
+{
+   let jsonProperties = $json.keyValuePairs;
+   
+   let expectedTypeName = $json.keyValuePairs
+            ->filter(kv | $kv.key.value->equal($config.typeKeyName))
+            ->map(kv | $kv.value->cast(@JSONString).value);
+
+   let classes = $expectedTypeName->match([
+      none:String[0] | $class->getSubclasses(),
+      name:String[1] | let actualClassname = if ($config.typeLookup->isEmpty() || $config.typeLookup->filter(t | $t.first == $name)->size() != 1, | $name, | $config.typeLookup->filter(t | $t.first == $name)->toOne().second);
+                       if($class == Any, 
+                          |  $actualClassname->forgivingPathToElement()->cast(@Class<Any>),
+                          | 
+                             let nameParts = $actualClassname->split('::');
+                             let className = $nameParts->last()->toOne();
+                             let packageName = $nameParts->limit($nameParts->size()-1)->joinStrings('::');
+                             let package = if ($packageName->isEmpty(), |[], |forgivingPathToElement($packageName));
+      
+                             $class->getSubclasses()
+                                ->filter(c | $className == $c.name)
+                                ->filter(c | $packageName->length() == 0 || $package == $c.package);
+                           );
+   ]);
+   
+   let jsonPropertyNames =  if($config.retainTypeField->isNotEmpty() && $config.retainTypeField->toOne()==true  ,
+                     | $jsonProperties,
+                     | $jsonProperties->filter(kv | !$kv.key.value->equal($config.typeKeyName)))
+      ->map(kv | $kv.key->extractSupportedPropertyName());
+
+   let foundClasses = $classes->filter(c |
+
+      let classProperties = $c->classProperties();
+      let classRequiredProperties = $classProperties
+                                       ->filter(p | $p.multiplicity->hasLowerBound() && $p.multiplicity->getLowerBound() == 1)
+                                       ->filter(p | !$p->in($ignorable));
+
+      let allRequiredArePresent = $jsonPropertyNames->containsAll($classRequiredProperties.name);
+      let allSuppliedAreNeeded = $classProperties->map(p | $p.name)->containsAll($jsonPropertyNames);
+
+      $allRequiredArePresent && (!$config.failOnUnknownProperties || $allSuppliedAreNeeded);                                       
+   );
+
+   $foundClasses->filter(c | $json->hasValidProperties($c, $generics, $config))->removeDuplicates();
+}
+
+function <<access.protected>> meta::json::extractSupportedPropertyName(key:JSONString[1]):String[1]
+{
+   let val = $key.value;
+   if ($val->startsWith('$'), | $val->substring(1, $val->length()), | $val);
+}
+
+function <<access.private>> meta::json::findClass(json:JSONObject[1], class:Class<Any>[1], generics:Pair<String, Type>[*], config:JSONDeserializationConfig[1], ignorable: AbstractProperty<Any>[*]):Class<Any>[1]
+{
+   let foundClass = $json->findClasses($class, $generics, $config, $ignorable);
+   assert($foundClass->size() != 0, | $class->elementToPath() + ' class not found or not compatible with ' + $json->toPrettyJSONString());
+   assert($foundClass->size() == 1, | 'multiple class matches [' + $foundClass.name->makeString(',') + '] for ' + $json->toPrettyJSONString());
+   $foundClass->at(0);
+}
+
+function <<access.private>> meta::json::getPropertyType(property:Property<Nil, Any|*>[1], generics:Pair<String, Type>[*]):Type[1]
+{
+   let classPropertyRawType = $property.genericType.rawType;
+   if ($classPropertyRawType->isEmpty(),
+         | let propertyGenericName = $property.genericType.typeParameter.name;
+           $generics->filter(g | $g.first == $propertyGenericName)->toOne().second;,
+         | $classPropertyRawType->toOne());
+}
+
+/*
+   this function considers each of the jsonProperties and checks they are the correct type for the given class.
+   will return true if all property types match the expected types.
+*/
+function <<access.private>> meta::json::hasValidProperties(json:JSONObject[1], class:Class<Any>[1], generics:Pair<String, Type>[*], config:JSONDeserializationConfig[1]):Boolean[1]
+{
+   let classProperties = $class->classProperties();
+   let jsonProperties = $json.keyValuePairs
+      ->filter(kv | !$kv.key.value->equal($config.typeKeyName))
+      ->filter(kv | $classProperties.name->contains($kv.key->extractSupportedPropertyName()))
+      //get rid of empty properties, we cant test types on these
+      ->filter(kv | !$kv.value->instanceOf(JSONNull));
+
+   let canBeMissingInChildren = $class->classReverseAssociationProperties();
+
+   let invalidProperties = $jsonProperties->filter(kv |
+      let classProperty = $classProperties->filter(p | $p.name == $kv.key->extractSupportedPropertyName())->toOne();
+      let classPropertyType = $classProperty->getPropertyType($generics);
+
+      let jsonPropertyType = $kv.value->getType($classProperty, $classPropertyType, $generics, $config, $canBeMissingInChildren);
+
+      let jsonPropertyMultiplicity = $kv.value->match([
+         a:JSONArray[1]   | $a.values->size(),
+         n:JSONNull[1]    | 0,
+         e:JSONElement[1] | 1
+      ]);
+
+      let isArray                = $kv.value->instanceOf(JSONArray);
+      let propertyMultiplicity   = $classProperty.multiplicity;
+      let multiplicityBoundCheck = ($jsonPropertyMultiplicity >= $propertyMultiplicity->getLowerBound())
+                                && (!$propertyMultiplicity->hasUpperBound() || ($jsonPropertyMultiplicity <= $propertyMultiplicity->getUpperBound()));
+      let isSingleMultiplicity   = $propertyMultiplicity->hasUpperBound() && ($propertyMultiplicity->getUpperBound() <= 1);
+      let multiplicityCheck      = $multiplicityBoundCheck && $isArray != $isSingleMultiplicity;
+
+      let valueCheck = $classPropertyType->match([
+         d:PrimitiveType[1]    | $d->isValidPrimitive($kv.value, $jsonPropertyType),
+         e:Enumeration<Any>[1] | $e->isValidEnumerations($kv.value, $jsonPropertyType),
+         a:Any[1]              | $classPropertyType == Any || $jsonPropertyType->in(simpleType($classPropertyType)->cast(@Class<Any>)->getSubclasses());
+      ]);
+
+      let isEmptyArray = $isArray && $kv.value->cast(@JSONArray).values->size() == 0;
+
+      !($multiplicityCheck && ($valueCheck || $isEmptyArray));
+   );
+
+
+   $invalidProperties->isEmpty();
+}
+
+function <<access.private>> meta::json::isValidPrimitive(classPropertyType:PrimitiveType[1], value:JSONElement[1], jsonPropertyType:Type[1]):Boolean[1]
+{
+   if (($classPropertyType == Date || $classPropertyType->subTypeOf(Date)) && $jsonPropertyType == String,
+       | 
+         let rawType = $value->cast(@JSONString).value->parseDate()->genericType().rawType->toOne();
+         ($rawType == $classPropertyType || $rawType->subTypeOf($classPropertyType));,
+       | 
+         simpleType($classPropertyType) == $jsonPropertyType
+   )
+}
+
+function <<access.private>> meta::json::isValidEnumerations(classPropertyType:Enumeration<Any>[1], value:JSONElement[1], jsonPropertyType:Type[1]):Boolean[1]
+{ 
+   let valueCheck = if($value->instanceOf(JSONArray),
+                       | $value->cast(@meta::json::JSONArray).values->map(o | $classPropertyType->isValidEnumeration($o, $jsonPropertyType)),
+                       | $classPropertyType->isValidEnumeration($value, $jsonPropertyType)
+                    );
+
+   !(false->in($valueCheck));
+}
+   
+function <<access.private>> meta::json::isValidEnumeration(classPropertyType:Enumeration<Any>[1], value:JSONElement[1], jsonPropertyType:Type[1]):Boolean[1]
+{
+   let vals = $value->cast(@JSONString).value->split('.');
+   let val = $vals->at(0);
+   let element = $val->forgivingPathToElement();
+   ($element == $classPropertyType || ($element->isEmpty() && ($vals->size() == 1)));
+   //TODO - check enum values && $classPropertyType.name->toOne()->toUpper()));
+}
+
+function <<access.private>> meta::json::simpleType(type:Type[1]):Type[1]
+{
+   if ($type == Float || $type == Integer || $type == Decimal, |Number, |$type);
+}
+
+/*
+   this function will return the equivalent pure type for the given JSONElement, JSONObjects will be resolved to
+   their relavant class based on the type they are supposed to be according to the passed in property
+*/
+function <<access.private>> meta::json::getType(json:JSONElement[1], property:Property<Nil, Any|*>[1], type:Type[1], generics:Pair<String, Type>[*], config:JSONDeserializationConfig[1], ignorable:AbstractProperty<Any>[*]):Type[1]
+{
+	$json->match([
+        n:JSONNull[1] | Nil,
+		n:JSONNumber[1] | Number,
+		s:JSONString[1] | String,
+		b:JSONBoolean[1] | Boolean,
+        a:JSONArray[1] |
+           if($a.values->size() == 0,
+              | Nil,
+              | $a.values->at(0)->getType($property, $type, $generics, $config, $ignorable)),
+		o:JSONObject[1] |
+           //needed to stop subclasses with different property types failing the parse
+            if ($type->instanceOf(PrimitiveType),
+               | Nil,
+               | if ($type == Map, | $type, |
+                     let class = $type->cast(@Class<Any>);
+                    let newGenerics = $property->mapGenerics($class, $generics);
+                    $o->findClass($class, $newGenerics, $config, $ignorable);))
+	]);
+}
+
+/*
+   this function will map generics to the new class. This is required for passing generics between classes
+   and mapping types correctly and with the correct name.
+*/
+function <<access.private>> meta::json::mapGenerics(typeArguments:GenericType[*], typeNames:String[*], generics:Pair<String, Type>[*]):Pair<String, Type>[*]
+{
+   $typeArguments->map(t |
+      let argumentName = $typeNames->at($typeArguments->indexOf($t));
+      if ($t.rawType->isEmpty(),
+         | let argumentType = $generics->filter(g | $g.first == $t.typeParameter.name)->toOne();
+            pair($argumentName, $argumentType.second);,
+         | pair($argumentName, $t.rawType->toOne()));
+   );
+}
+
+function <<access.private>> meta::json::mapGenerics(property:Property<Nil, Any|*>[1], class:Class<Any>[1], generics:Pair<String, Type>[*]):Pair<String, Type>[*]
+{
+   let typeNames = $class.typeParameters.name;
+   let typeArguments = $property.genericType.typeArguments;
+   $typeArguments->mapGenerics($typeNames, $generics);
+}
+
+
+function <<access.private>> meta::json::classProperties(class:Class<Any>[1]):Property<Nil, Any|*>[*]
+{
+   $class->generalizations()->init()->cast(@Class<Any>)->map(c | $c.properties->concatenate($c.propertiesFromAssociations));
+}
+
+function <<access.private>> meta::json::classAssociationProperties(class:Class<Any>[1]):Property<Nil, Any|*>[*]
+{
+   $class->generalizations()->init()->cast(@Class<Any>)->map(c | $c.propertiesFromAssociations);
+}
+
+function <<access.private>> meta::json::classReverseAssociationProperties(class:Class<Any>[1]):Property<Nil, Any|*>[*]
+{
+   $class->classAssociationProperties()->map(p| $p.owner->cast(@Association).properties->filter(x| $x != $p));
+}
+
+function <<access.private>> meta::json::getSubclasses(class:Class<Any>[1]):Class<Any>[*]
+{
+   let specs = $class.specializations;
+   if ($specs->size() == 0,
+      | $class;,
+      | [$class]->concatenate($specs
+         ->map(s | $s.specific->cast(@Class<Any>))
+         ->map(c |$c->getSubclasses())));
+}
+
+Class meta::json::ExtendedJSONDeserializationConfig extends meta::json::JSONDeserializationConfig
+{
+   nullReplacementInArray : Any[0..1];
+   replaceInvalidEnumValueCharacters:Boolean[0..1];
+   forceEnumValuesToUpperCase:Boolean[0..1];
+
+}

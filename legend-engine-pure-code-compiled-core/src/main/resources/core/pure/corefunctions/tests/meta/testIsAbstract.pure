@@ -1,0 +1,73 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::functions::meta::tests::isAbstract::*;
+
+Class <<typemodifiers.abstract>> 
+{doc.doc = 'The Being Class'}
+meta::pure::functions::meta::tests::isAbstract::Being
+{
+   omg:String[1];
+}
+
+Class 
+{doc.doc = 'The Foo Class'}
+meta::pure::functions::meta::tests::isAbstract::Foo
+{
+
+   beings:Being[2];
+}
+
+
+Class 
+{doc.doc = 'The Animal Class'}
+meta::pure::functions::meta::tests::isAbstract::Animal extends Being
+{
+
+   name:String[1];
+   age:Integer[1];
+   type:AnimalType[0..1];
+   aliases:String[*];
+   extra:OtherInfo[4]; 
+}
+
+Class 
+{doc.doc = 'The Cat Class'}
+meta::pure::functions::meta::tests::isAbstract::Cat extends Animal
+{
+   {doc.doc = 'Is the animal a vegetarian?'}
+   vegetarian:Boolean[1];
+}
+
+Class 
+{doc.doc = 'The OtherInfo Class'}
+meta::pure::functions::meta::tests::isAbstract::OtherInfo
+{
+   info:String[1];
+}
+
+Enum 
+{doc.doc = 'The AnimalType Enum'}
+meta::pure::functions::meta::tests::isAbstract::AnimalType
+{
+     CAT, DOG, BIRD, FISH, HUMAN
+}
+
+function <<test.Test>> meta::pure::functions::meta::tests::isAbstract::isAbstractTest():Boolean[1]
+{
+   assert( Being->isAbstract() );
+   assertFalse( Animal->isAbstract() );
+   assertFalse( Cat->isAbstract() );
+   assertFalse( OtherInfo->isAbstract() );
+}

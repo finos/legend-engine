@@ -1,0 +1,99 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::profiles::*;
+import meta::pure::functions::tests::model::*;
+
+function <<test.Test>> meta::pure::functions::lang::tests::compare::testStringCompare():Boolean[1]
+{
+    assert(compare('a', 'b') < 0);
+    assert(compare('aaa', 'aaa') == 0);
+    assert(compare('baa', 'aaa') > 0);
+    assert(compare('aa', 'aaa') < 0);
+}
+
+function <<test.Test>> meta::pure::functions::lang::tests::compare::testIntegerCompare():Boolean[1]
+{
+    assert(compare(1, 2) < 0);
+    assert(compare(2, 2) == 0);
+    assert(compare(2, 1) > 0);
+
+    assert(compare(171, 2) > 0);
+    assert(compare(2, 171) < 0);
+}
+
+function <<test.Test>> meta::pure::functions::lang::tests::compare::testFloatCompare():Boolean[1]
+{
+    assert(compare(1.3, 2.1) < 0);
+    assert(compare(2.2, 2.2) == 0);
+    assert(compare(2.1, 1.0) > 0);
+
+    assert(compare(171.332, 2.5) > 0);
+    assert(compare(2.7, 171.212) < 0);
+}
+
+function <<test.Test>>   meta::pure::functions::lang::tests::compare::testNumberCompare():Boolean[1]
+{
+    assert(compare(1, 2.2) < 0);
+    assert(compare(2, 1.5) > 0);
+
+    assert(compare(171.52, 2) > 0);
+    assert(compare(2, 171.999) < 0);
+}
+
+function <<test.Test>> meta::pure::functions::lang::tests::compare::testDateCompare():Boolean[1]
+{
+    assert(compare(%2001, %2014) < 0);
+    assert(compare(%2014, %2014) == 0);
+    assert(compare(%2014, %2001) > 0);
+
+    assert(compare(%2001, %10999) < 0);
+    assert(compare(%2001-02-13, %2002) < 0);
+    assert(compare(%2014-02-16, %2014-02-15T13:15:19) > 0);
+    assert(compare(%2014-02-13T13:15:19.14231, %2014-02-13T13:15:19.14231555) < 0);
+    assert(compare(%2014-02-13T13:15:19.14231555, %2014-02-13T13:15:19.14231) > 0);
+}
+
+function <<test.Test>> meta::pure::functions::lang::tests::compare::testBooleanCompare():Boolean[1]
+{
+    assert(compare(true, false) > 0);
+    assert(compare(true, true) == 0);
+    assert(compare(false, true) < 0);
+}
+
+function <<test.Test>>   meta::pure::functions::lang::tests::compare::testCompareMixedTypes():Boolean[1]
+{
+    assert(compare(5, '5') != 0);
+    assert(if(compare(5, '5') < 0, |compare('5', 5) > 0, |compare('5', 5) < 0));
+
+    assert(compare(true, 'true') != 0);
+    assert(if(compare(true, 'true') < 0, |compare('true', true) > 0, |compare('true', true) < 0));
+
+    assert(compare('2014', %2014) != 0);
+    assert(if(compare('2014', %2014) < 0, |compare(%2014, '2014') > 0, |compare(%2014, '2014') < 0));
+
+    assert(compare(2014, %2014) != 0);
+    assert(if(compare(2014, %2014) < 0, |compare(%2014, 2014) > 0, |compare(%2014, 2014) < 0));
+
+    assert(compare(2014.0, %2014) != 0);
+    assert(if(compare(2014.0, %2014) < 0, |compare(%2014, 2014.0) > 0, |compare(%2014, 2014.0) < 0));
+   
+}
+
+function <<test.Test>>   meta::pure::functions::lang::tests::compare::testCompareDecimalAndLongTypes():Boolean[1]
+{
+     assert(compare(9999999999999992d, 9999999999999992) == 0);
+     assert(compare(9999999999999992d, 9999999999999991) > 0);
+     assert(compare(9999999999999992d, 9999999999999993) < 0);
+}

@@ -1,0 +1,327 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+
+###Pure
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::routing::*;
+import meta::pure::graphFetch::tests::propertyTreeConversion::*;
+import meta::pure::lineage::scanProperties::*;
+import meta::pure::lineage::scanProperties::propertyTree::*;
+
+function <<meta::pure::profiles::test.Test>> meta::pure::graphFetch::tests::propertyTreeConversion::testPropertyTreeConversion():Boolean[1]
+{
+   let propertyTree = ^PropertyPathTree(
+      display  = 'root',
+      value    = 'root',
+      children = [
+         ^PropertyPathTree(
+            display  = 'A', 
+            value    = A, 
+            children = [
+               ^PropertyPathTree(
+                  display  = 'myB',
+                  value    = ^PropertyPathNode(class=A, property=A->propertyByName('myB')->toOne()),
+                  children = [
+                     ^PropertyPathTree(
+                        display  = 's1',
+                        value    = ^PropertyPathNode(class=B, property=B->propertyByName('s1')->toOne()),
+                        children = []
+                     )
+                  ]
+               ),
+               ^PropertyPathTree(
+                  display  = 'myB',
+                  value    = ^PropertyPathNode(class=A, property=A->propertyByName('myB')->toOne()),
+                  children = [
+                     ^PropertyPathTree(
+                        display  = 's2',
+                        value    = ^PropertyPathNode(class=B, property=B->propertyByName('s2')->toOne()),
+                        children = []
+                     )
+                  ]
+               ),
+               ^PropertyPathTree(
+                  display  = 'myB',
+                  value    = ^PropertyPathNode(class=A, property=A->propertyByName('myB')->toOne()),
+                  children = [
+                     ^PropertyPathTree(
+                        display  = 'i1',
+                        value    = ^PropertyPathNode(class=BPlus, property=BPlus->propertyByName('i1')->toOne()),
+                        children = []
+                     )
+                  ]
+               ),
+               ^PropertyPathTree( // Spurious property will be ignored
+                  display  = 'd1',
+                  value    = ^PropertyPathNode(class=Z, property=Z->propertyByName('d1')->toOne()),
+                  children = []
+               )
+            ]
+         )
+      ]
+   );
+
+   let actual = $propertyTree->propertyTreeToGraphFetchTree(A);
+
+   let expected = #{ A {
+      myB {s1, s2},
+      myB->subType(@BPlus) {i1}
+   }}#;
+
+   assertEquals($expected->asString(true), $actual->asString(true));
+}
+
+Class meta::pure::graphFetch::tests::propertyTreeConversion::A
+{
+   myB: B[1];
+}
+
+Class meta::pure::graphFetch::tests::propertyTreeConversion::B
+{
+   s1 : String[1];
+   s2 : String[1];
+}
+
+Class meta::pure::graphFetch::tests::propertyTreeConversion::BPlus extends B
+{
+   i1 : Integer[1];   
+}
+
+Class meta::pure::graphFetch::tests::propertyTreeConversion::Z
+{
+   d1 : StrictDate[1];
+}
+
+// 'root
+//  c_ComplexMatchRequest
+//   p_ComplexMatchRequest.currentCollection
+//    p_MarketListing.marketListingIdentifier
+//     p_MarketListingIdentifier.identifier
+//     p_MarketListingIdentifier.identifierType
+//     p_MilestonedData.FROM_Z
+//     p_MilestonedData.THRU_Z
+//   p_ComplexMatchRequest.currentCollection
+//    p_MarketListing.marketMic
+//    p_MarketListing.tradingCurrencyCode
+//    p_MarketListing.tradingParameters
+//     p_TradingParameters.countryOfRegisterCode
+//   p_ComplexMatchRequest.currentCollection
+//    p_MarketListing.marketMic
+//    p_MarketListing.tradingCurrencyCode
+//   p_ComplexMatchRequest.currentCollection
+//    p_MarketListing.marketListingId
+//    p_MarketListing.marketMic
+//    p_MarketListing.mtfPrimaryMarketMic
+//    p_MarketListing.tradingCurrencyCode
+//   p_ComplexMatchRequest.currentCollection
+//    p_MarketListing.marketListingIdentifier
+//     p_MarketListingIdentifier.identifier
+//     p_MarketListingIdentifier.identifierType
+//     p_MilestonedData.FROM_Z
+//     p_MilestonedData.THRU_Z
+//    p_MarketListing.marketMic
+//   p_ComplexMatchRequest.currentCollection
+//    p_MarketListing.marketListingIdentifier
+//     p_MarketListingIdentifier.identifier
+//     p_MarketListingIdentifier.identifierType
+//     p_MilestonedData.FROM_Z
+//     p_MilestonedData.THRU_Z
+//   p_ComplexMatchRequest.currentCollection
+//    p_MarketListing.marketListingIdentifier
+//     p_MarketListingIdentifier.identifier
+//     p_MarketListingIdentifier.identifierType
+//     p_MilestonedData.FROM_Z
+//     p_MilestonedData.THRU_Z
+//    p_MarketListing.marketMic
+//   p_ComplexMatchRequest.currentCollection
+//    p_MarketListing.marketListingIdentifier
+//     p_MarketListingIdentifier.identifier
+//     p_MarketListingIdentifier.identifierType
+//     p_MilestonedData.FROM_Z
+//     p_MilestonedData.THRU_Z
+//   p_ComplexMatchRequest.currentCollection
+//    p_MarketListing.marketListingIdentifier
+//     p_MarketListingIdentifier.identifier
+//     p_MarketListingIdentifier.identifierType
+//     p_MilestonedData.FROM_Z
+//     p_MilestonedData.THRU_Z
+//    p_MarketListing.marketMic
+//   p_ComplexMatchRequest.currentCollection
+//    p_MarketListing.marketMic
+//    p_MarketListing.mtfPrimaryMarketMic
+//    p_MarketListing.tradingCurrencyCode
+//   p_ComplexMatchRequest.currentCollection
+//    p_MarketListing.marketListingIdentifier
+//     p_MarketListingIdentifier.identifier
+//     p_MarketListingIdentifier.identifierType
+//     p_MilestonedData.FROM_Z
+//     p_MilestonedData.THRU_Z
+//   p_ComplexMatchRequest.currentCollection
+//    p_MarketListing.marketListingIdentifier
+//     p_MarketListingIdentifier.identifier
+//     p_MarketListingIdentifier.identifierType
+//     p_MilestonedData.FROM_Z
+//     p_MilestonedData.THRU_Z
+//    p_MarketListing.marketMic
+//   p_ComplexMatchRequest.effectiveDate
+//   p_ComplexMatchRequest.effectiveDate
+//   p_ComplexMatchRequest.effectiveDate
+//   p_ComplexMatchRequest.effectiveDate
+//   p_ComplexMatchRequest.effectiveDate
+//   p_ComplexMatchRequest.effectiveDate
+//   p_ComplexMatchRequest.effectiveDate
+//   p_ComplexMatchRequest.effectiveDate
+//   p_ComplexMatchRequest.effectiveDate
+//   p_ComplexMatchRequest.effectiveDate
+//   p_ComplexMatchRequest.effectiveDate
+//   p_ComplexMatchRequest.effectiveDate
+//   p_ComplexMatchRequest.effectiveDate
+//   p_ComplexMatchRequest.effectiveDate
+//   p_ComplexMatchRequest.effectiveDate
+//   p_ComplexMatchRequest.effectiveDate
+//   p_ComplexMatchRequest.effectiveDate
+//   p_ComplexMatchRequest.effectiveDate
+//   p_ComplexMatchRequest.effectiveDate
+//   p_ComplexMatchRequest.effectiveDate
+//   p_ComplexMatchRequest.effectiveDate
+//   p_ComplexMatchRequest.effectiveDate
+//   p_ComplexMatchRequest.effectiveDate
+//   p_ComplexMatchRequest.effectiveDate
+//   p_ComplexMatchRequest.proposedItem
+//    p_MarketListing.marketListingIdentifier
+//     p_MarketListingIdentifier.identifier
+//     p_MarketListingIdentifier.identifierType
+//     p_MilestonedData.FROM_Z
+//     p_MilestonedData.THRU_Z
+//   p_ComplexMatchRequest.proposedItem
+//    p_MarketListing.marketListingIdentifier
+//     p_MarketListingIdentifier.identifier
+//     p_MarketListingIdentifier.identifierType
+//     p_MilestonedData.FROM_Z
+//     p_MilestonedData.THRU_Z
+//   p_ComplexMatchRequest.proposedItem
+//    p_MarketListing.marketMic
+//    p_MarketListing.mtfPrimaryMarketMic
+//    p_MarketListing.tradingCurrencyCode
+//    p_MarketListing.tradingParameters
+//     p_TradingParameters.countryOfRegisterCode
+//   p_ComplexMatchRequest.proposedItem
+//    p_MarketListing.marketMic
+//    p_MarketListing.mtfPrimaryMarketMic
+//    p_MarketListing.tradingCurrencyCode
+//    p_MarketListing.tradingParameters
+//     p_TradingParameters.countryOfRegisterCode
+//   p_ComplexMatchRequest.proposedItem
+//    p_MarketListing.marketMic
+//    p_MarketListing.mtfPrimaryMarketMic
+//    p_MarketListing.tradingCurrencyCode
+//   p_ComplexMatchRequest.proposedItem
+//    p_MarketListing.marketMic
+//    p_MarketListing.mtfPrimaryMarketMic
+//    p_MarketListing.tradingCurrencyCode
+//   p_ComplexMatchRequest.proposedItem
+//    p_MarketListing.marketMic
+//   p_ComplexMatchRequest.proposedItem
+//    p_MarketListing.marketListingIdentifier
+//     p_MarketListingIdentifier.identifier
+//     p_MarketListingIdentifier.identifierType
+//     p_MilestonedData.FROM_Z
+//     p_MilestonedData.THRU_Z
+//   p_ComplexMatchRequest.proposedItem
+//    p_MarketListing.marketListingIdentifier
+//     p_MarketListingIdentifier.identifier
+//     p_MarketListingIdentifier.identifierType
+//     p_MilestonedData.FROM_Z
+//     p_MilestonedData.THRU_Z
+//   p_ComplexMatchRequest.proposedItem
+//    p_MarketListing.marketListingIdentifier
+//     p_MarketListingIdentifier.identifier
+//     p_MarketListingIdentifier.identifierType
+//     p_MilestonedData.FROM_Z
+//     p_MilestonedData.THRU_Z
+//   p_ComplexMatchRequest.proposedItem
+//    p_MarketListing.marketListingIdentifier
+//     p_MarketListingIdentifier.identifier
+//     p_MarketListingIdentifier.identifierType
+//     p_MilestonedData.FROM_Z
+//     p_MilestonedData.THRU_Z
+//   p_ComplexMatchRequest.proposedItem
+//    p_MarketListing.marketMic
+//   p_ComplexMatchRequest.proposedItem
+//    p_MarketListing.marketListingIdentifier
+//     p_MarketListingIdentifier.identifier
+//     p_MarketListingIdentifier.identifierType
+//     p_MilestonedData.FROM_Z
+//     p_MilestonedData.THRU_Z
+//   p_ComplexMatchRequest.proposedItem
+//    p_MarketListing.marketListingIdentifier
+//     p_MarketListingIdentifier.identifier
+//     p_MarketListingIdentifier.identifierType
+//     p_MilestonedData.FROM_Z
+//     p_MilestonedData.THRU_Z
+//   p_ComplexMatchRequest.proposedItem
+//    p_MarketListing.marketListingIdentifier
+//     p_MarketListingIdentifier.identifier
+//     p_MarketListingIdentifier.identifierType
+//     p_MilestonedData.FROM_Z
+//     p_MilestonedData.THRU_Z
+//   p_ComplexMatchRequest.proposedItem
+//    p_MarketListing.marketListingIdentifier
+//     p_MarketListingIdentifier.identifier
+//     p_MarketListingIdentifier.identifierType
+//     p_MilestonedData.FROM_Z
+//     p_MilestonedData.THRU_Z
+//   p_ComplexMatchRequest.proposedItem
+//    p_MarketListing.marketListingIdentifier
+//     p_MarketListingIdentifier.identifier
+//     p_MarketListingIdentifier.identifierType
+//     p_MilestonedData.FROM_Z
+//     p_MilestonedData.THRU_Z
+//   p_ComplexMatchRequest.proposedItem
+//    p_MarketListing.marketListingIdentifier
+//     p_MarketListingIdentifier.identifier
+//     p_MarketListingIdentifier.identifierType
+//     p_MilestonedData.FROM_Z
+//     p_MilestonedData.THRU_Z
+//   p_ComplexMatchRequest.proposedItem
+//    p_MarketListing.marketListingIdentifier
+//     p_MarketListingIdentifier.identifier
+//     p_MarketListingIdentifier.identifierType
+//     p_MilestonedData.FROM_Z
+//     p_MilestonedData.THRU_Z
+//   p_ComplexMatchRequest.proposedItem
+//    p_MarketListing.marketListingIdentifier
+//     p_MarketListingIdentifier.identifier
+//     p_MarketListingIdentifier.identifierType
+//     p_MilestonedData.FROM_Z
+//     p_MilestonedData.THRU_Z
+//   p_ComplexMatchRequest.proposedItem
+//    p_MarketListing.marketMic
+//   p_ComplexMatchRequest.proposedItem
+//    p_MarketListing.marketListingIdentifier
+//     p_MarketListingIdentifier.identifier
+//     p_MarketListingIdentifier.identifierType
+//     p_MilestonedData.FROM_Z
+//     p_MilestonedData.THRU_Z
+//   p_ComplexMatchRequest.proposedItem
+//    p_MarketListing.marketListingIdentifier
+//     p_MarketListingIdentifier.identifier
+//     p_MarketListingIdentifier.identifierType
+//     p_MilestonedData.FROM_Z
+//     p_MilestonedData.THRU_Z
+//  c_StaticMarket
+//   p_StaticMarket.mic
+//   p_StaticMarket.micType
+//   p_StaticMarket.operatingMic

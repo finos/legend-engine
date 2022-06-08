@@ -1,0 +1,41 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::profiles::*;
+
+function <<test.Test>> meta::pure::functions::math::tests::min::testBinaryMin():Boolean[1]
+{
+    assertEq(2, min(3, 2));
+    assertEq(2, min(2, 3));
+    assertEq(3, min(3, 3));
+}
+
+function <<test.Test>> meta::pure::functions::math::tests::min::testManyValuedMin():Boolean[1]
+{
+    assertEq(0, min([3, 2, 1, 0]));
+    assertEq(1, min([2, 3, 1, 1, 2]));
+    assertEq(3, min([3, 3]));
+}
+
+function <<test.Test>>  meta::pure::functions::math::tests::min::testSingleValuedMin():Boolean[1]
+{
+    assertEq(3, min([3]));
+}
+
+function <<test.Test>>  meta::pure::functions::math::tests::min::testDecimalMin():Boolean[1]
+{
+    assertEq(2.1234d, min(3.14d, 2.1234d));
+    assertEq(2.1234, min(3.14d, 2.1234));
+    assertEq(2.1234d, min(3, 2.1234d));
+}

@@ -1,0 +1,156 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::metamodel::constraint::*;
+import meta::external::format::rosetta::generation::*;
+import meta::pure::functions::collection::*;
+import meta::pure::functions::lang::*;
+
+Class meta::external::format::rosetta::generation::State
+{
+   processingNot :Boolean[0..1];
+   processingIf :Boolean[0..1];
+   processingMap: Boolean[0..1];
+}
+
+function meta::external::format::rosetta::generation::translateConstraints(clazz:Class<Any>[1]):String[*]
+{
+   $clazz.constraints->map(c|$c->translateConstraint('   '));
+}
+
+function meta::external::format::rosetta::generation::translateConstraint(constraint:Constraint[1], indent:String[1]):String[1]
+{
+   if($constraint.name!='one_of_constraint',
+   |$indent+'condition '+$constraint.name->toOne()+':\n'
+      + $indent+ $indent + $constraint.functionDefinition->generateFunction(^State())->replace(' ->  -> ',' -> ')->replace(' ->  ',' ');, //ToDO romve this hack
+   |$indent+'condition: one-of');
+}
+
+function meta::external::format::rosetta::generation::generateFunction(f:FunctionDefinition<Any>[1],  state: State[1]):String[1]
+{
+   functionDispatch()->get($f.expressionSequence->cast(@FunctionExpression)->evaluateAndDeactivate().functionName->toOne())
+                     ->toOne()->eval($f.expressionSequence->cast(@FunctionExpression)->evaluateAndDeactivate()->toOne(), $state);
+}
+
+function meta::external::format::rosetta::generation::functionDispatch():Map<String, meta::pure::metamodel::function::LambdaFunction<{meta::pure::metamodel::valuespecification::FunctionExpression[1], State[1]->String[1]}>>[1]
+{
+   [
+      pair('size',{f:FunctionExpression[1], state:State[1]|$f.parametersValues->at(0)->asString($state)+ ' count'}),
+      pair('equal', {f:FunctionExpression[1], state:State[1]|$f.parametersValues->at(0)->asString($state)->removeTrailingArrows($state)+ if($state.processingNot->isNotEmpty() && $state.processingNot->toOne(),|' <> ',|' = ') + $f.parametersValues->at(1)->asString($state)->removeTrailingArrows($state); }),
+      pair('notEqual', {f:FunctionExpression[1], state:State[1]|$f.parametersValues->at(0)->asString($state)+' != '+$f.parametersValues->at(1)->asString($state);}),
+      pair('extractEnumValue',{ f:FunctionExpression[1], state:State[1]|[$f.parametersValues->at(0)->cast(@InstanceValue).values->at(0)->cast(@Enumeration<Any>)->enumName()->cast(@String),
+                                                       ' -> ',
+                                                        $f.parametersValues->at(1)->cast(@InstanceValue).values->at(0)->cast(@String)
+                                                        ]->joinStrings()}),
+      pair( 'isNotEmpty', {f:FunctionExpression[1], state:State[1]| $f.parametersValues->at(0)->asString($state)+ ' exists'}),
+      pair( 'map', {f:FunctionExpression[1], state:State[1]|let x = $f.parametersValues->at(0)->asString(^$state(processingMap=true));
+                                                            let y = $f.parametersValues->at(1)->asString(^$state(processingMap=true));
+                                                            [$f.parametersValues->at(0)->asString(^$state(processingMap=true)),
+                                                            $f.parametersValues->at(1)->asString(^$state(processingMap=true))]->joinStrings('')->removeTrailingArrows($state);}),
+      pair( 'toOne', {f:FunctionExpression[1], state:State[1]|$f.parametersValues->at(0)->asString($state)->removeTrailingArrows($state)}),
+      pair('contains', twoParamFunction(' contains ')),
+      pair( 'and', twoParamFunction(' and ')),
+      pair( 'or', twoParamFunction(' or ')),
+      pair('isEmpty', {f:FunctionExpression[1], state:State[1]|$f.parametersValues->at(0)->asString($state)+ ' is absent';}),
+      pair('greaterThanEqual', twoParamFunction(' >= ')),
+      pair('lessThanEqual', twoParamFunction(' <= ')),
+      pair('lessThan', twoParamFunction(' < ')),
+      pair('greaterThan', twoParamFunction(' > ')),
+      pair('not', {f:FunctionExpression[1], state:State[1]|if($f.parametersValues->at(0)->instanceOf(SimpleFunctionExpression),
+                                                              | if($f.parametersValues->at(0)->cast(@SimpleFunctionExpression).functionName ->isNotEmpty() && $f.parametersValues->at(0)->cast(@SimpleFunctionExpression).functionName->toOne()->in(['equal','in','contains']),
+                                                                   | $f.parametersValues->at(0)->asString(^$state(processingNot = true)),
+                                                                   | $f.parametersValues->at(0)->asString(^$state(processingNot=true)) + ' = false'),
+                                                              |assert(false, 'unsupported operation');' ';);}),
+      pair('if', {f:FunctionExpression[1], state:State[1]| ['if ',
+                                             $f.parametersValues->at(0)->asString(^$state(processingIf = true)),
+                                            '\n      then ',
+                                            $f.parametersValues->at(1)->asString(^$state(processingIf = true)),
+                                             '\n      else ',
+                                            $f.parametersValues->at(2)->asString(^$state(processingIf = true))
+                                          ]->joinStrings();}),
+      pair('in', {f:FunctionExpression[1], state:State[1]|
+                                                           let func = functionDispatch()->get('equal')->toOne();
+                                                            if($f.parametersValues->at(1)->instanceOf(InstanceValue),
+                                                               | let values = $f.parametersValues->at(1)->cast(@InstanceValue).values;
+                                                                 $values->map(v|$func->eval(^FunctionExpression(func = equal_Any_MANY__Any_MANY__Boolean_1_,
+                                                                                                                importGroup = ^ImportGroup(),
+                                                                                                                genericType=^GenericType(rawType=String),
+                                                                                                                multiplicity = ZeroMany,
+                                                                                                                parametersValues = [$f.parametersValues->at(0),^InstanceValue(multiplicity = ZeroMany, genericType=^GenericType(rawType = Nil), values=[$v])])->evaluateAndDeactivate(), $state))->joinStrings('(',') or (',')');,
+                                                               |assert(false,'unsupported operation'); ' ';
+                                                               );
+                                                            })
+
+
+   ]->newMap();
+
+}
+
+function meta::external::format::rosetta::generation::removeTrailingArrows(value:String[1], state:State[1]):String[1]
+{
+   if( $state.processingMap->isEmpty() || ($state.processingMap->isNotEmpty() && $state.processingMap->toOne()==false),
+      |if($value->trim()->endsWith('->'),|$value->trim()->substring(0,$value->trim()->length()-2),|$value),
+      |$value);
+}
+
+function meta::external::format::rosetta::generation::twoParamFunction(operator:String[1]):LambdaFunction<{FunctionExpression[1], State[1]->String[1]}>[1]
+{
+  { f:FunctionExpression[1], state:State[1]|let leftside = $f.parametersValues->at(0)->asString($state)->removeTrailingArrows($state)->possiblyAddParenthesis();
+                                            let rightSide = $f.parametersValues->at(1)->asString($state)->removeTrailingArrows($state)->possiblyAddParenthesis();
+                                            [$leftside]->concatenate(if($rightSide->in(['true', 'false']),|[],|[$operator, $rightSide]))->joinStrings()->removeTrailingArrows($state);}
+}
+
+
+
+function meta::external::format::rosetta::generation::possiblyAddParenthesis(value:String[1] ): String[1]
+{
+   if($value->contains(' and ') || $value->contains(' or ')  ,| ['( ', $value, ' )']->joinStrings(),| $value);
+}
+
+function meta::external::format::rosetta::generation::asString(f:ValueSpecification[1], state:State[1]):String[1]
+{
+   $f->match(
+               [
+                   i:InstanceValue[1] | if($i.values->size() < 2,|'',|'[')+
+                                          $i.values->map(v|$v->match([
+                                                                     l:LambdaFunction<Any>[1] |$l.expressionSequence->at(0)->asString($state);,
+                                                                     s:String[1] | '\''+$s+'\'',
+                                                                     s:Integer[1] | $s->toString(),
+                                                                     s:Boolean[1] | $s->toString(),
+                                                                     s:Date[1] | $s->toString(),
+                                                                     s:Float[1] | $s->toString(),
+                                                                     p:Property<Nil,Any|1>[1]|$p.owner.name->toOne()+'~'+$p.name->toOne(),
+                                                                     q:QualifiedProperty<Any>[1]|'(Qualified)'+$q.name->toOne(),
+                                                                     a:ValueSpecification[1]|$a->asString($state),
+                                                                     a:Any[1]|$a->genericType().rawType.name->toOne()+' '+$a->toString();
+                                                                   ]))->joinStrings(', ')+if($i.values->size() < 2,|'',|']');,
+                   v:VariableExpression[1] |if(($v.name=='this' ||$v.name=='v_automap') ||($state.processingMap->isNotEmpty() && $state.processingMap->toOne()),|'',|'$'+$v.name+ '->'),
+                   s:SimpleFunctionExpression[1] |if($s.func->instanceOf(Property),
+                                                     |let value = $s.parametersValues->at(0)->asString($state); //println($value);
+                                                      let functionName = $s.func.name->toOne();
+                                                        if($value=='',
+//                                                            |if(($state.processingMap->isNotEmpty() && $state.processingMap->toOne()),
+                                                               |$functionName+' -> ',
+//                                                                |$functionName),
+                                                           | $value +if(($state.processingMap->isNotEmpty() && $state.processingMap->toOne()),|'',|' -> ')+ $functionName)+' -> ';,
+                                                     | functionDispatch()->get($s.functionName->toOne())->toOne()->eval($s, $state););
+               ]
+            );
+}
+
+
+
+
+
+

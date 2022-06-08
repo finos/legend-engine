@@ -1,0 +1,214 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::functions::string::tests::*;
+function <<test.Test>> meta::pure::functions::string::tests::testSubstringBefore():Boolean[1]
+{
+   assertEquals('hello', 'hello world'->substringBefore(' '));
+   assertEquals('hel', 'hello world'->substringBefore('lo worl'));
+   assertEquals('hello world', 'hello world'->substringBefore('bye'));
+}
+
+function <<test.Test>> meta::pure::functions::string::tests::testSubstringAfter():Boolean[1]
+{
+   assertEquals('world', 'hello world'->substringAfter(' '));
+   assertEquals('d', 'hello world'->substringAfter('lo worl'));
+   assertEquals('', 'hello world'->substringAfter('bye'));
+}
+
+function <<test.Test>> meta::pure::functions::string::tests::testIsDigit():Boolean[1]
+{
+   assert('0'->isDigit());
+   assert('1'->isDigit());
+   assert('2'->isDigit());
+   assert('3'->isDigit());
+   assert('4'->isDigit());
+   assert('5'->isDigit());
+   assert('6'->isDigit());
+   assert('7'->isDigit());
+   assert('8'->isDigit());
+   assert('9'->isDigit());
+
+   assert('1234567890'->isDigit());
+   assert('0123456789'->isDigit());
+   assert('0000000000'->isDigit());
+
+   assertFalse(''->isDigit());
+   assertFalse('a'->isDigit());
+   assertFalse('B'->isDigit());
+   assertFalse('c'->isDigit());
+   assertFalse('Z'->isDigit());
+   assertFalse(' '->isDigit());
+   assertFalse('-'->isDigit());
+   assertFalse('#'->isDigit());
+   assertFalse('%'->isDigit());
+
+   assertFalse('3.14159'->isDigit());
+   assertFalse('-1'->isDigit());
+   assertFalse('+76'->isDigit());
+
+   assert('a312987b'->isDigit(1, 7));
+   assert('a312987b'->isDigit(2, 6));
+   assert('a312987b'->isDigit(3, 5));
+   assertFalse('a312987b'->isDigit(0, 7));
+   assertFalse('a312987b'->isDigit(1, 8));
+   assertFalse('a312987b'->isDigit(0, 8));
+   assertFalse('a312987b'->isDigit(3, 3));
+   assertFalse('a312987b'->isDigit(3, -3));
+}
+
+function <<test.Test>> meta::pure::functions::string::tests::testIsLetter():Boolean[1]
+{
+   assert('a'->isLetter());
+   assert('A'->isLetter());
+   assert('GoldmanSachs'->isLetter());
+   assertFalse('200West'->isLetter());
+   assertFalse('Goldman Sachs'->isLetter());
+   assert('Goldman Sachs'->isLetter(0, 7));
+   assert('Goldman Sachs'->isLetter(8, 13));
+   assertFalse(''->isLetter());
+   assertFalse('-'->isLetter());
+   assertFalse('#'->isLetter());
+   assertFalse('%'->isLetter());
+}
+
+function <<test.Test>> meta::pure::functions::string::tests::testIsAlphaNumeric():Boolean[1]
+{
+   assert('0'->isAlphaNumeric());
+   assert('1234567890'->isAlphaNumeric());
+   assertFalse('-123'->isAlphaNumeric());
+   assertFalse('123e+10'->isAlphaNumeric());
+   assertFalse('+100'->isAlphaNumeric());
+   assert('a'->isAlphaNumeric());
+   assert('GOLDMANSACHS'->isAlphaNumeric());
+   assert('200West'->isAlphaNumeric());
+   assertFalse('GOLDMAN SACHS'->isAlphaNumeric());
+   assertFalse('GOLDMAN+SACHS'->isAlphaNumeric());
+   assertFalse('GOLDMAN&SACHS'->isAlphaNumeric());
+   assertFalse(''->isAlphaNumeric());
+   assertFalse(' '->isAlphaNumeric());
+   assertFalse('-'->isAlphaNumeric());
+   assertFalse('#'->isAlphaNumeric());
+   assertFalse('%'->isAlphaNumeric());
+}
+
+function <<test.Test>> meta::pure::functions::string::tests::testSplitOnCamelCase():Boolean[1]
+{
+   let pairs = [
+      pair('hello', list(['hello'])),
+      pair('hello world', list(['hello', ' ', 'world'])),
+      pair('helloWorld', list(['hello', 'World'])),
+      pair('hello_world', list(['hello', '_', 'world'])),
+      pair('HELLO_WORLD', list(['HELLO', '_', 'WORLD'])),
+      pair('HELLOWorld', list(['HELLO', 'World'])),
+      pair('helloWorld1', list(['hello', 'World', '1'])),
+      pair('hello123World', list(['hello', '123', 'World'])),
+      pair('hello%world', list(['hello', '%', 'world'])),
+      pair('hello%', list(['hello', '%']))
+   ];
+   
+   $pairs->forAll(p|
+      assertEquals($p.second.values, $p.first->splitOnCamelCase());
+   );   
+}
+
+function <<test.Test>> meta::pure::functions::string::tests::testHumanize():Boolean[1]
+{
+   let pairs = [
+      pair('hello', 'Hello'), 
+      pair('Hello', 'Hello'), 
+      pair('hello_world', 'Hello World'), 
+      pair('Hello_World', 'Hello World'), 
+      pair('helloWorld', 'Hello World'),
+      pair('HelloWorld', 'Hello World'), 
+      pair('ABCDEF', 'ABCDEF'), 
+      pair('ABcde', 'A Bcde'), 
+      pair('ABCde', 'AB Cde'),
+      pair('xyzABcde', 'Xyz A Bcde'), 
+      pair('1999xyz', '1999 Xyz'), 
+      pair('1999_xyz', '1999 Xyz'),
+      pair('HELLO_WORLD', 'Hello World'),
+      pair('HELLO_1999', 'Hello 1999'), 
+      pair('businessUnit1', 'Business Unit 1'),
+      pair('businessUnit10', 'Business Unit 10'),
+      pair('businessUnit10world', 'Business Unit 10 World'),
+      pair('yearToDate%', 'Year To Date %'),
+      pair('yearToDate%%', 'Year To Date %%'),
+      pair('UNKNOWNUpperCase', 'UNKNOWN Upper Case'),
+      pair('this is some_text', 'This Is Some Text')
+   ];
+   
+   $pairs->forAll(p|
+      assertEquals($p.second, $p.first->humanize());
+   );
+}
+
+function <<test.Test>> meta::pure::functions::string::tests::testMakeCamelCase():Boolean[1]
+{
+   assertEquals('hello', 'hello'->makeCamelCase(false));
+   assertEquals('Hello', 'Hello'->makeCamelCase(true));
+   
+   assertEquals('helloWorld', 'hello_world'->makeCamelCase(false));
+   assertEquals('HelloWorld', 'hello_world'->makeCamelCase(true));
+   
+   assertEquals('helloWorld', 'helloWorld'->makeCamelCase(false));
+   assertEquals('HelloWorld', 'helloWorld'->makeCamelCase(true));
+   
+   assertEquals('hello', 'HELLO'->makeCamelCase(false));
+   assertEquals('Hello', 'HELLO'->makeCamelCase(true));
+   
+   assertEquals('heLlo', 'heLlo'->makeCamelCase(false));
+   assertEquals('HeLlo', 'heLlo'->makeCamelCase(true));
+   
+   assertEquals('h', 'h'->makeCamelCase(false));
+   assertEquals('H', 'h'->makeCamelCase(true));   
+   
+   assertEquals('h', 'H'->makeCamelCase(false));
+   assertEquals('H', 'H'->makeCamelCase(true));  
+
+   assertEquals('helloWorld', 'hello world'->makeCamelCase(false));
+   assertEquals('HelloWorld', 'hello world'->makeCamelCase(true));   
+}
+
+function <<test.Test>> meta::pure::functions::string::tests::testisNoLongerThan():Boolean[1]
+{
+   assert(  isNoLongerThan('', 0) ); 
+   assert(  isNoLongerThan('1', 1) ); 
+   assert(  isNoLongerThan([],2) ); 
+   assert(  isNoLongerThan([],0) ); 
+   assertFalse(  isNoLongerThan('12', 1) ); 
+   assertFalse(  isNoLongerThan('12', 0) ); 
+
+}
+
+function <<test.Test>> meta::pure::functions::string::tests::testisNoShorterThan():Boolean[1]
+{
+   assert(  isNoShorterThan('1', 0) ); 
+   assert(  isNoShorterThan('', 0) ); 
+   assert(  isNoShorterThan([], 0) ); 
+   assert(  isNoShorterThan('12', 2) ); 
+   assert(  isNoShorterThan('123', 2) ); 
+   assertFalse(  isNoShorterThan([], 1) ); 
+   assertFalse(  isNoShorterThan('', 1) ); 
+   assertFalse(  isNoShorterThan('1', 2) ); 
+}
+
+function <<test.Test>> meta::pure::functions::string::tests::testmakeStringMatch():Boolean[1]
+{
+   assert(  makeStringMatch([], '^$') ); 
+   assert(  makeStringMatch('', '^$') ); 
+   assert(  makeStringMatch(123, '^123$') ); 
+   assert(  makeStringMatch('123', '^123$') ); 
+
+}

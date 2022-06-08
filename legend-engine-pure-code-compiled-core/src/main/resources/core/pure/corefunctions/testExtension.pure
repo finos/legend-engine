@@ -1,0 +1,593 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+//--------
+// assert
+//--------
+
+function meta::pure::functions::asserts::assert(condition:Boolean[1]):Boolean[1]
+{
+    assert($condition, 'Assert failed');
+}
+
+function meta::pure::functions::asserts::assert(condition:Boolean[1], formatString:String[1], formatArgs:Any[*]):Boolean[1]
+{
+    assert($condition, | format($formatString, $formatArgs));
+}
+
+//---------------
+// assertContains
+//---------------
+
+function meta::pure::functions::asserts::assertContains(collection:Any[*], value:Any[1]):Boolean[1]
+{
+    assertContains($collection, $value, | format('%s does not contain %r', [$collection->map(v | $v->toRepresentation())->joinStrings('[', ', ', ']'), $value]));
+}
+
+function meta::pure::functions::asserts::assertContains(collection:Any[*], value:Any[1], message:String[1]):Boolean[1]
+{
+    assert($collection->contains($value), $message);
+}
+
+function meta::pure::functions::asserts::assertContains(collection:Any[*], value:Any[1], formatString:String[1], formatArgs:Any[*]):Boolean[1]
+{
+    assert($collection->contains($value), $formatString, $formatArgs);
+}
+
+function meta::pure::functions::asserts::assertContains(collection:Any[*], value:Any[1], message:Function<{->String[1]}>[1]):Boolean[1]
+{
+    assert($collection->contains($value), $message);
+}
+
+//------------
+// assertEmpty
+//------------
+
+function meta::pure::functions::asserts::assertEmpty(collection:Any[*]):Boolean[1]
+{
+    assertEmpty($collection, '%s is not empty', [^List<Any>(values=$collection)]);
+}
+
+function meta::pure::functions::asserts::assertEmpty(collection:Any[*], message:String[1]):Boolean[1]
+{
+    assert($collection->isEmpty(), $message);
+}
+
+function meta::pure::functions::asserts::assertEmpty(collection:Any[*], formatString:String[1], formatArgs:Any[*]):Boolean[1]
+{
+    assert($collection->isEmpty(), $formatString, $formatArgs);
+}
+
+function meta::pure::functions::asserts::assertEmpty(collection:Any[*], message:Function<{->String[1]}>[1]):Boolean[1]
+{
+    assert($collection->isEmpty(), $message);
+}
+
+//---------
+// assertEq
+//---------
+
+function meta::pure::functions::asserts::assertEq(expected:Any[1], actual:Any[1]):Boolean[1]
+{
+    assertEq($expected, $actual, '\nexpected: %r\nactual:   %r', [$expected, $actual]);
+}
+
+function meta::pure::functions::asserts::assertEq(expected:Any[1], actual:Any[1], message:String[1]):Boolean[1]
+{
+    assert(eq($expected, $actual), $message);
+}
+
+function meta::pure::functions::asserts::assertEq(expected:Any[1], actual:Any[1], formatString:String[1], formatArgs:Any[*]):Boolean[1]
+{
+    assert(eq($expected, $actual), $formatString, $formatArgs);
+}
+
+function meta::pure::functions::asserts::assertEq(expected:Any[1], actual:Any[1], message:Function<{->String[1]}>[1]):Boolean[1]
+{
+    assert(eq($expected, $actual), $message);
+}
+
+//------------------------
+// assertEqWithinTolerance
+//------------------------
+
+function meta::pure::functions::asserts::assertEqWithinTolerance(expected:Number[1], actual:Number[1], delta:Number[1]):Boolean[1]
+{
+    assertEqWithinTolerance($expected, $actual, $delta, '\nexpected: %r\nactual:   %r', [$expected, $actual]);
+}
+
+function meta::pure::functions::asserts::assertEqWithinTolerance(expected:Number[1], actual:Number[1], delta:Number[1], message:String[1]):Boolean[1]
+{
+    assert(abs($expected - $actual) <= abs($delta), $message);
+}
+
+function meta::pure::functions::asserts::assertEqWithinTolerance(expected:Number[1], actual:Number[1], delta:Number[1], formatString:String[1], formatArgs:Any[*]):Boolean[1]
+{
+    assert(abs($expected - $actual) <= abs($delta), $formatString, $formatArgs);
+}
+
+function meta::pure::functions::asserts::assertEqWithinTolerance(expected:Number[1], actual:Number[1], delta:Number[1], message:Function<{->String[1]}>[1]):Boolean[1]
+{
+    assert(abs($expected - $actual) <= abs($delta), $message);
+}
+
+//-------------
+// assertEquals
+//-------------
+
+function meta::pure::functions::asserts::assertEquals(expected:Any[*], actual:Any[*]):Boolean[1]
+{
+    if(eq($expected->size(), 1) && eq($actual->size(), 1),
+       | assertEquals($expected, $actual, '\nexpected: %r\nactual:   %r', [$expected->toOne(), $actual->toOne()]),
+       | assertEquals($expected, $actual, '\nexpected: %s\nactual:   %s', [$expected->map(x | $x->toRepresentation())->joinStrings('[', ', ', ']'), $actual->map(x | $x->toRepresentation())->joinStrings('[', ', ', ']')]));
+}
+
+function meta::pure::functions::asserts::assertEquals(expected:Any[*], actual:Any[*], formatString:String[1], formatArgs:Any[*]):Boolean[1]
+{
+    assert(equal($expected, $actual), $formatString, $formatArgs);
+}
+
+function meta::pure::functions::asserts::assertEquals(expected:Any[*], actual:Any[*], message:Function<{->String[1]}>[1]):Boolean[1]
+{
+    assert(equal($expected, $actual), $message);
+}
+
+//-------------
+// assertFalse
+//-------------
+
+function meta::pure::functions::asserts::assertFalse(condition:Boolean[1]):Boolean[1]
+{
+    assert(!$condition);
+}
+
+function meta::pure::functions::asserts::assertFalse(condition:Boolean[1], message:String[1]):Boolean[1]
+{
+    assert(!$condition, $message);
+}
+
+function meta::pure::functions::asserts::assertFalse(condition:Boolean[1], formatString:String[1], formatArgs:Any[*]):Boolean[1]
+{
+    assert(!$condition, $formatString, $formatArgs);
+}
+
+function meta::pure::functions::asserts::assertFalse(condition:Boolean[1], message:Function<{->String[1]}>[1]):Boolean[1]
+{
+    assert(!$condition, $message);
+}
+
+//-----------------
+// assertInstanceOf
+//-----------------
+
+function meta::pure::functions::asserts::assertInstanceOf(instance:Any[1], type:Type[1]):Boolean[1]
+{
+    assertInstanceOf($instance, $type, | format('expected %r to be an instance of %s, actual: %s', [$instance, $type->elementToPath(), $instance->type()->toOne()->elementToPath()]));
+}
+
+function meta::pure::functions::asserts::assertInstanceOf(instance:Any[1], type:Type[1], message:String[1]):Boolean[1]
+{
+    assert($instance->instanceOf($type), $message);
+}
+
+function meta::pure::functions::asserts::assertInstanceOf(instance:Any[1], type:Type[1], formatString:String[1], formatArgs:Any[*]):Boolean[1]
+{
+    assert($instance->instanceOf($type), $formatString, $formatArgs);
+}
+
+function meta::pure::functions::asserts::assertInstanceOf(instance:Any[1], type:Type[1], message:Function<{->String[1]}>[1]):Boolean[1]
+{
+    assert($instance->instanceOf($type), $message);
+}
+
+//---------
+// assertIs
+//---------
+
+function meta::pure::functions::asserts::assertIs(expected:Any[1], actual:Any[1]):Boolean[1]
+{
+    assertIs($expected, $actual, '\nexpected: %r\nactual:   %r', [$expected, $actual]);
+}
+
+function meta::pure::functions::asserts::assertIs(expected:Any[1], actual:Any[1], message:String[1]):Boolean[1]
+{
+    assert(is($expected, $actual), $message);
+}
+
+function meta::pure::functions::asserts::assertIs(expected:Any[1], actual:Any[1], formatString:String[1], formatArgs:Any[*]):Boolean[1]
+{
+    assert(is($expected, $actual), $formatString, $formatArgs);
+}
+
+function meta::pure::functions::asserts::assertIs(expected:Any[1], actual:Any[1], message:Function<{->String[1]}>[1]):Boolean[1]
+{
+    assert(is($expected, $actual), $message);
+}
+
+//------------
+// assertIsNot
+//------------
+
+function meta::pure::functions::asserts::assertIsNot(notExpected:Any[1], actual:Any[1]):Boolean[1]
+{
+    assertIsNot($notExpected, $actual, 'Should not be identical to: %r', [$actual]);
+}
+
+function meta::pure::functions::asserts::assertIsNot(notExpected:Any[1], actual:Any[1], message:String[1]):Boolean[1]
+{
+    assert(!is($notExpected, $actual), $message);
+}
+
+function meta::pure::functions::asserts::assertIsNot(notExpected:Any[1], actual:Any[1], formatString:String[1], formatArgs:Any[*]):Boolean[1]
+{
+    assert(!is($notExpected, $actual), $formatString, $formatArgs);
+}
+
+function meta::pure::functions::asserts::assertIsNot(notExpected:Any[1], actual:Any[1], message:Function<{->String[1]}>[1]):Boolean[1]
+{
+    assert(!is($notExpected, $actual), $message);
+}
+
+//------------------
+// assertNotContains
+//------------------
+
+function meta::pure::functions::asserts::assertNotContains(collection:Any[*], value:Any[1]):Boolean[1]
+{
+    assertNotContains($collection, $value, | format('%s should not contain %r', [$collection->map(v | $v->toRepresentation())->joinStrings('[', ', ', ']'), $value]));
+}
+
+function meta::pure::functions::asserts::assertNotContains(collection:Any[*], value:Any[1], message:String[1]):Boolean[1]
+{
+    assert(!$collection->contains($value), $message);
+}
+
+function meta::pure::functions::asserts::assertNotContains(collection:Any[*], value:Any[1], formatString:String[1], formatArgs:Any[*]):Boolean[1]
+{
+    assert(!$collection->contains($value), $formatString, $formatArgs);
+}
+
+function meta::pure::functions::asserts::assertNotContains(collection:Any[*], value:Any[1], message:Function<{->String[1]}>[1]):Boolean[1]
+{
+    assert(!$collection->contains($value), $message);
+}
+
+//---------------
+// assertNotEmpty
+//---------------
+
+function meta::pure::functions::asserts::assertNotEmpty(collection:Any[*]):Boolean[1]
+{
+    assertNotEmpty($collection, 'Expected non-empty collection');
+}
+
+function meta::pure::functions::asserts::assertNotEmpty(collection:Any[*], message:String[1]):Boolean[1]
+{
+    assertFalse($collection->isEmpty(), $message);
+}
+
+function meta::pure::functions::asserts::assertNotEmpty(collection:Any[*], formatString:String[1], formatArgs:Any[*]):Boolean[1]
+{
+    assertFalse($collection->isEmpty(), $formatString, $formatArgs);
+}
+
+function meta::pure::functions::asserts::assertNotEmpty(collection:Any[*], message:Function<{->String[1]}>[1]):Boolean[1]
+{
+    assertFalse($collection->isEmpty(), $message);
+}
+
+//------------
+// assertNotEq
+//------------
+
+function meta::pure::functions::asserts::assertNotEq(notExpected:Any[1], actual:Any[1]):Boolean[1]
+{
+    assertNotEq($notExpected, $actual, '%r should not equal %r', [$notExpected, $actual]);
+}
+
+function meta::pure::functions::asserts::assertNotEq(notExpected:Any[1], actual:Any[1], message:String[1]):Boolean[1]
+{
+    assert(!eq($notExpected, $actual), $message);
+}
+
+function meta::pure::functions::asserts::assertNotEq(notExpected:Any[1], actual:Any[1], formatString:String[1], formatArgs:Any[*]):Boolean[1]
+{
+    assert(!eq($notExpected, $actual), $formatString, $formatArgs);
+}
+
+function meta::pure::functions::asserts::assertNotEq(notExpected:Any[1], actual:Any[1], message:Function<{->String[1]}>[1]):Boolean[1]
+{
+    assert(!eq($notExpected, $actual), $message);
+}
+
+//----------------
+// assertNotEquals
+//----------------
+
+function meta::pure::functions::asserts::assertNotEquals(notExpected:Any[*], actual:Any[*]):Boolean[1]
+{
+    if(eq($notExpected->size(), 1) && eq($actual->size(), 1),
+       | assertNotEquals($notExpected, $actual, '%r should not equal %r', [$notExpected->toOne(), $actual->toOne()]),
+       | assertNotEquals($notExpected, $actual, | $notExpected->map(e | $e->toRepresentation())->joinStrings('[', ', ', ']') + ' should not equal ' + $actual->map(a | $a->toRepresentation())->joinStrings('[', ', ', ']')))
+}
+
+function meta::pure::functions::asserts::assertNotEquals(notExpected:Any[*], actual:Any[*], message:String[1]):Boolean[1]
+{
+    assert(!equal($notExpected, $actual), $message);
+}
+
+function meta::pure::functions::asserts::assertNotEquals(notExpected:Any[*], actual:Any[*], formatString:String[1], formatArgs:Any[*]):Boolean[1]
+{
+    assert(!equal($notExpected, $actual), $formatString, $formatArgs);
+}
+
+function meta::pure::functions::asserts::assertNotEquals(notExpected:Any[*], actual:Any[*], message:Function<{->String[1]}>[1]):Boolean[1]
+{
+    assert(!equal($notExpected, $actual), $message);
+}
+
+//--------------
+// assertNotSize
+//--------------
+
+function meta::pure::functions::asserts::assertNotSize(collection:Any[*], size:Integer[1]):Boolean[1]
+{
+    assertNotSize($collection, $size, | format('size should not equal: %s', [$size]));
+}
+
+function meta::pure::functions::asserts::assertNotSize(collection:Any[*], size:Integer[1], message:String[1]):Boolean[1]
+{
+    assertNotEq($size, $collection->size(), $message);
+}
+
+function meta::pure::functions::asserts::assertNotSize(collection:Any[*], size:Integer[1], formatString:String[1], formatArgs:Any[*]):Boolean[1]
+{
+    assertNotEq($size, $collection->size(), $formatString, $formatArgs);
+}
+
+function meta::pure::functions::asserts::assertNotSize(collection:Any[*], size:Integer[1], message:Function<{->String[1]}>[1]):Boolean[1]
+{
+    assertNotEq($size, $collection->size(), $message);
+}
+
+//-------------------
+// assertSameElements
+//-------------------
+
+function meta::pure::functions::asserts::assertSameElements(expected:Any[*], actual:Any[*]):Boolean[1]
+{
+    assertSameElements($expected, $actual, | $expected->sort()->map(e | $e->toRepresentation())->joinStrings('\nexpected: [', ', ', ']') + $actual->sort()->map(a | $a->toRepresentation())->joinStrings('\nactual:   [', ', ', ']'));
+}
+
+function meta::pure::functions::asserts::assertSameElements(expected:Any[*], actual:Any[*], message:String[1]):Boolean[1]
+{
+    assertEquals($expected->sort(), $actual->sort(), $message);
+}
+
+function meta::pure::functions::asserts::assertSameElements(expected:Any[*], actual:Any[*], formatString:String[1], formatArgs:Any[*]):Boolean[1]
+{
+    assertEquals($expected->sort(), $actual->sort(), $formatString, $formatArgs);
+}
+
+function meta::pure::functions::asserts::assertSameElements(expected:Any[*], actual:Any[*], message:Function<{->String[1]}>[1]):Boolean[1]
+{
+    assertEquals($expected->sort(), $actual->sort(), $message);
+}
+
+//-----------
+// assertSize
+//-----------
+
+function meta::pure::functions::asserts::assertSize(collection:Any[*], size:Integer[1]):Boolean[1]
+{
+    assertSize($collection, $size, 'expected size: %s, actual size: %s', [$size, $collection->size()]);
+}
+
+function meta::pure::functions::asserts::assertSize(collection:Any[*], size:Integer[1], message:String[1]):Boolean[1]
+{
+    assertEq($size, $collection->size(), $message);
+}
+
+function meta::pure::functions::asserts::assertSize(collection:Any[*], size:Integer[1], formatString:String[1], formatArgs:Any[*]):Boolean[1]
+{
+    assertEq($size, $collection->size(), $formatString, $formatArgs);
+}
+
+function meta::pure::functions::asserts::assertSize(collection:Any[*], size:Integer[1], message:Function<{->String[1]}>[1]):Boolean[1]
+{
+    assertEq($size, $collection->size(), $message);
+}
+
+//--------------------------------------
+// assert semantically same json strings
+//--------------------------------------
+
+function meta::pure::functions::asserts::assertJsonStringsEqual(expected:String[1], actual:String[1]):Boolean[1]
+{
+    assert(equalJsonStrings($expected,$actual), | 'JSON strings don\'t represent semantically same object \n expected: ' + $expected + '\n actual: ' + $actual);
+}
+
+//------------
+// fail
+//------------
+
+function meta::pure::functions::asserts::fail():Boolean[1]
+{
+    assert(false);
+}
+
+function meta::pure::functions::asserts::fail(formatString:String[1], formatArgs:Any[*]):Boolean[1]
+{
+    assert(false, $formatString, $formatArgs);
+}
+
+function meta::pure::functions::asserts::fail(message:Function<{->String[1]}>[1]):Boolean[1]
+{
+    assert(false, $message);
+}
+
+
+
+
+function meta::pure::functions::asserts::assert<T>(collection : T[*], func:Function<{T[1]->Boolean[1]}>[1]) : Boolean[1]
+{
+    let r = $collection->fold({item, result |
+    if ($result == false,
+    | $result,
+    | assert($func->eval($item))
+    )
+    }, true);
+
+    assert($r);
+}
+
+function meta::pure::functions::test::findTestPackagesFor(elements:PackageableElement[*], extensions:meta::pure::router::extension::RouterExtension[*]): Package[*]
+{
+   $elements->findTestsFor($extensions).package->distinct();
+}
+
+function meta::pure::functions::test::findTestsFor(elements:PackageableElement[*], extensions:meta::pure::router::extension::RouterExtension[*]): Function<Any>[*]
+{
+   findTestsFor($elements, 25, 10000, $extensions);
+}
+
+function meta::pure::functions::test::findTestsFor(elements:PackageableElement[*], maxDepth:Integer[1], maxVisited:Integer[1], extensions:meta::pure::router::extension::RouterExtension[*]): Function<Any>[*]
+{
+   $elements->fold({pe, result| let testedByResult = $pe->testedBy($result, $extensions);
+                                assertFalse($testedByResult.maxDepthExceeded(), 'Exceeded maxDepth %d.', $testedByResult.maxDepth);
+                                assertFalse($testedByResult.maxVisitedExceeded(), 'Exceeded maxVisited %d.', $testedByResult.maxVisited);
+                                $testedByResult;
+                   }, ^TestedByResult(
+                        results = [],
+                        visited = [],
+                        depth = 0,
+                        maxDepth = $maxDepth,
+                        maxVisited = $maxVisited
+                  )).results;
+}
+
+function meta::pure::functions::test::isTestIncludingToFix(element:PackageableElement[1]):Boolean[1]
+{
+    $element->hasStereotype('Test', test) || $element->hasStereotype('ToFix', test);
+}
+
+function meta::pure::functions::test::isBeforePackage(element:PackageableElement[1]):Boolean[1]
+{
+    $element->hasStereotype('BeforePackage', test);
+}
+
+function <<access.private>> meta::pure::functions::test::hasTaggedValue(ae:AnnotatedElement[1], taggedValue:String[1]):Boolean[1]
+{
+   $ae->value4Tag('sensitiveToStereotype', test)->filter(tv:TaggedValue[1]|$tv.value == $taggedValue)->isNotEmpty();
+}
+
+function <<access.private>> meta::pure::functions::test::allPackageableElementsTaggedAsSensitiveToAnyStereotype():PackageableElement[*]
+{
+   test->tag('sensitiveToStereotype').modelElements->map(ae:AnnotatedElement[1]|$ae->match([
+      pe:PackageableElement[1] | $pe,
+      _:AnnotatedElement[1]    | []
+   ]));
+}
+
+function <<access.private>> meta::pure::functions::test::getPackageableElementsSensitiveToStereotype(s:Stereotype[1]):PackageableElement[*]
+{
+   let stereotypeAsTagValue = [$s.profile->elementToPath(), $s.value]->joinStrings('.');
+   allPackageableElementsTaggedAsSensitiveToAnyStereotype()->filter(pe|$pe->hasTaggedValue($stereotypeAsTagValue));
+}
+
+Class meta::pure::functions::test::TestedByResult
+{
+   results: Function<Any>[*];
+   visited: String[*];
+   depth: Integer[1];
+   maxDepth: Integer[1];
+   maxVisited: Integer[1];
+
+   maxDepthExceeded(){
+      $this.depth > $this.maxDepth;
+   }:Boolean[1];
+
+   maxVisitedExceeded(){
+      $this.visited->size() > $this.maxVisited;
+   }:Boolean[1];
+
+   failed(){
+      $this.maxDepthExceeded() || $this.maxVisitedExceeded();
+   }:Boolean[1];
+}
+
+function meta::pure::functions::test::testedBy(pe:PackageableElement[1], soFar:TestedByResult[1], extensions:meta::pure::router::extension::RouterExtension[*]):TestedByResult[1]
+{
+   let epath = $pe->elementPath();
+   let named = $epath->size() > 0 && ($epath->size() > 1 || $epath->at(0).name->size() == 1);
+
+   if (($named && $soFar.visited->contains($pe->elementToPath()) || $soFar.failed()),
+      | $soFar,
+      | let allReferenceUses = $pe.referenceUsages->evaluateAndDeactivate();
+
+        let visit = {soFarr:TestedByResult[1]|if($named, |$pe->visitPackageableElement($soFarr), |$soFarr)};
+        let thisIsATest = {soFarr:TestedByResult[1]| $pe->filter(o|$o->instanceOf(Function))->cast(@Function<Any>)->map(f|if($f->isTest() || $f->isBeforePackage(), |$f->addResult($soFarr), |[]))->defaultIfEmpty($soFarr)->toOne()};
+        let applications = {soFarr:TestedByResult[1]| $pe->filter(o|$o->instanceOf(Function))->cast(@Function<Any>).applications->evaluateAndDeactivate()->fold({vs,tbr|$vs->testedBy($tbr, $extensions)}, $soFarr)};
+        let referenceUsesFromMappingInclude = {soFarr:TestedByResult[1]| $allReferenceUses.owner->filter(o|$o->instanceOf(meta::pure::mapping::MappingInclude))->cast(@meta::pure::mapping::MappingInclude)->fold({mi,tbr|$mi.owner->testedBy($tbr, $extensions)}, $soFarr)};
+        let referenceUses = {soFarr:TestedByResult[1]| $allReferenceUses.owner->filter(o|$o->instanceOf(ValueSpecification))->cast(@ValueSpecification)->fold({vs,tbr|$vs->testedBy($tbr, $extensions)}, $soFarr)};
+        let stereotypeUses = {soFarr:TestedByResult[1]| $pe.stereotypes->filter(s|$s.profile != test)->map(s|$s->getPackageableElementsSensitiveToStereotype())->fold({vs,tbr|$vs->testedBy($tbr, $extensions)}, $soFarr)};
+        let resetDepth = {soFarr:TestedByResult[1]|^$soFarr(depth=$soFar.depth)};
+
+        [$visit, $thisIsATest, $applications, $referenceUsesFromMappingInclude, $referenceUses, $stereotypeUses, $resetDepth]->concatenate($extensions.testExtension_testedBy->map(e|$e->eval($allReferenceUses, $extensions)))->fold({f,tbr|eval($f, $tbr)}, $soFar);
+   );
+}
+
+function <<access.private>> meta::pure::functions::test::visitPackageableElement(pe:PackageableElement[1], soFar:TestedByResult[1]):TestedByResult[1]
+{
+   ^TestedByResult(
+      results=$soFar.results,
+      visited=$soFar.visited->add($pe->elementToPath()),
+      depth=$soFar.depth+1,
+      maxDepth=$soFar.maxDepth,
+      maxVisited=$soFar.maxVisited
+   );
+}
+
+function <<access.private>> meta::pure::functions::test::addResult(f:Function<Any>[1], soFar:TestedByResult[1]):TestedByResult[1]
+{
+   ^TestedByResult(
+      results=$soFar.results->add($f),
+      visited=$soFar.visited,
+      depth=$soFar.depth,
+      maxDepth=$soFar.maxDepth,
+      maxVisited=$soFar.maxVisited
+   );
+}
+
+function <<access.private>> meta::pure::functions::test::testedBy(vs:ValueSpecification[1], soFar:TestedByResult[1], extensions:meta::pure::router::extension::RouterExtension[*]):TestedByResult[1]
+{
+   $vs.usageContext->match([
+      es:ExpressionSequenceValueSpecificationContext[1] | $es.functionDefinition->testedBy($soFar, $extensions),
+      iv:InstanceValueSpecificationContext[1]           | $iv.instanceValue->testedBy($soFar, $extensions),
+      pv:ParameterValueSpecificationContext[1]          | $pv.functionExpression->testedBy($soFar, $extensions),
+      kv:KeyValueValueSpecificationContext[1]           | $kv.functionExpression->testedBy($soFar, $extensions),
+      cc:ClassConstraintValueSpecificationContext[1]    | $cc.class->testedBy($soFar, $extensions),
+      an:Any[*]                                         | $soFar
+   ]);
+}
+
+function {doc.doc = 'Return whether the given function is a test.'} meta::pure::functions::test::isTest(func:Function<Any>[1]):Boolean[1]
+{
+    $func->hasStereotype('Test', test)
+}
+
+function {doc.doc = 'Return whether the given element is some kind of testing element.  This is true if it has any stereotype from the meta::pure::profiles::test profile.'} meta::pure::functions::test::isTestElement(element:AnnotatedElement[1]):Boolean[1]
+{
+    $element.stereotypes->exists(st | $st.profile == test);
+}

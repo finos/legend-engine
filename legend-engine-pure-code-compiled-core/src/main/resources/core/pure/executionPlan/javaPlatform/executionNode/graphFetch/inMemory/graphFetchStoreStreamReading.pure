@@ -1,0 +1,195 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::factory::*;
+import meta::external::language::java::factory::project::*;
+import meta::external::language::java::metamodel::*;
+import meta::external::language::java::metamodel::project::*;
+import meta::external::language::java::serialization::*;
+import meta::external::language::java::transform::*;
+import meta::pure::executionPlan::engine::*;
+import meta::pure::executionPlan::engine::java::*;
+import meta::pure::executionPlan::engine::java::graphFetch::storeStreamReading::*;
+import meta::pure::executionPlan::engine::java::graphFetch::json::*;
+import meta::pure::executionPlan::engine::java::graphFetch::stream::*;
+import meta::pure::executionPlan::engine::java::graphFetch::xml::*;
+import meta::pure::executionPlan::engine::java::naming::*;
+import meta::pure::executionPlan::engine::java::platform::*;
+import meta::pure::executionPlan::engine::java::typeInfo::*;
+import meta::pure::mapping::modelToModel::*;
+import meta::pure::mapping::modelToModel::graphFetch::executionPlan::*;
+import meta::pure::runtime::*;
+
+function meta::pure::executionPlan::engine::java::graphFetch::storeStreamReading::prepareForStoreStreamReading(node: StoreStreamReadingExecutionNode[1], path: String[1], context: GenerationContext[1], extensions:meta::pure::router::extension::RouterExtension[*], debug: DebugContext[1]):GenerationContext[1]
+{
+   print(if($debug.debug,|$debug.space+'('+$path+') prepareStoreStreamReading\n', |''));
+
+   let conventions = $context.conventions;
+   let class       = $node.graphFetchTree.class;
+   let simpleType  = ^SimpleJavaType(pureType = $class, javaType = $conventions->className($class));
+   let returnType  = if($node.checked, | ^CheckedJavaType(checkedOf = $simpleType, source = $node.connection->sourceTypeFromConnection($conventions, $extensions)), | $simpleType);
+   
+   let newTypeInfos = $context.typeInfos
+      ->addForGraphFetchTree($node.graphFetchTree)
+      ->map(ti| if($node.enableConstraints, |$ti->addConstraintsForGraphFetchTree($node.graphFetchTree), |$ti))
+      ->addForClassesWithAllProperties($node.connection->map({c | 
+         $c->match([
+            json : JsonModelConnection[1] | JsonDataRecord,
+            xml  : XmlModelConnection[1]  | XmlDataRecord,
+            a    : Any[1]                 | JsonDataRecord
+         ])
+      })->removeDuplicates());
+   
+   let connectionTree = $node.connection->match($extensions.plan_javaRuntime_graphFetchStream_getConnectionTree->concatenate([ 
+      json : JsonModelConnection[1] | #{JsonDataRecord {number, record}}#,
+      xml  : XmlModelConnection[1]  | #{XmlDataRecord {number, record}}#,
+      a    : Any[1]                 | []
+   ])->toOneMany());
+   
+   let currentNodeInfo = ^NodeInfo(path = $path, returnType = $returnType, graphFetchTrees = [$node.graphFetchTree]->concatenate($connectionTree));
+
+   ^$context(typeInfos = $newTypeInfos, nodeInfos = $context.nodeInfos->concatenate($currentNodeInfo));
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::storeStreamReading::sourceTypeFromConnection(connection: Connection[1], conventions: Conventions[1], extensions:meta::pure::router::extension::RouterExtension[*]): JavaType[1]
+{
+   let dataRecordClass = $connection->match($extensions.plan_javaRuntime_graphFetchStream_sourceTypeFromConnection->concatenate([
+      j : JsonModelConnection[1] | JsonDataRecord,
+      x : XmlModelConnection[1]  | XmlDataRecord,
+      a : Any[1]                 | JsonDataRecord
+   ])->toOneMany());
+   
+   ^SimpleJavaType(pureType = $dataRecordClass, javaType = $conventions->className($dataRecordClass));
+}
+
+function meta::pure::executionPlan::engine::java::graphFetch::storeStreamReading::generateCodeForStoreStreamReadingExecutionNode(node: StoreStreamReadingExecutionNode[1], path: String[1], context: GenerationContext[1], extensions: meta::pure::router::extension::RouterExtension[*], debug: DebugContext[1]):GeneratedCode[1]
+{
+   print(if($debug.debug,|$debug.space+'('+$path+') generateStoreStreamReading\n', |''));
+   
+   let conventions       = $context.conventions;
+   let pureClass         = $node.graphFetchTree.class;
+   let connection        = $node.connection;
+   let genReader         = $connection->match([
+                              json  : JsonModelConnection[1] | true,
+                              xml   : XmlModelConnection[1]  | true,
+                              model : ModelConnection[1]     | true,
+                              other : Any[1]                 | false
+                           ]);
+   let readableClasses   = if($genReader, | $pureClass->concatenate($context.typeInfos->classDependenciesViaPropertiesWithsubTypes($pureClass)), | []);
+   let readableEnums     = if($genReader, | $context.typeInfos->enumDependenciesViaProperties($pureClass), | []);
+   
+   let dataClassesProject = $readableClasses->map(rc | $rc->createStreamReadingDataClass($path, $context, $node.checked || $node.enableConstraints, $debug->indent()));
+
+   let storeReaderProject = $connection->match([
+      json  : JsonModelConnection[1] | createJsonReading($pureClass, $conventions->className($pureClass), $path, $readableClasses, $readableEnums, $context, $debug->indent()),
+      xml   : XmlModelConnection[1]  | createXmlReading($pureClass, $conventions->className($pureClass), $path, $readableClasses, $readableEnums, $context, $debug->indent()),
+      model : ModelConnection[1]     | createStreamReading($pureClass, $conventions->className($pureClass), $path, $context, $debug->indent()),
+      other : Any[1]                 | []
+   ]);
+
+   let storeStreamReadingContext = $conventions->iStoreStreamReadingExecutionNodeContextParam();   
+
+   let streamReaderMethodCodes = $connection->match($extensions.plan_javaRuntime_graphFetchStream_streamReaderMethodCodes->map(f| $f->eval($conventions, $storeStreamReadingContext))->concatenate([
+      {
+         json: JsonModelConnection[1] | 
+            $conventions->jsonReaderClass($path, $pureClass)
+               ->j_new($storeStreamReadingContext->j_invoke('createUrl', j_string($json.url))->j_invoke('openStream', []))
+               ->j_return()
+               ->j_ioExTryCatch()
+      },
+      {
+         xml: XmlModelConnection[1] | 
+            $conventions->xmlReaderClass($path, $pureClass)
+               ->j_new($storeStreamReadingContext->j_invoke('createUrl', j_string($xml.url))->j_invoke('openStream', []))
+               ->j_return()
+               ->j_ioExTryCatch()
+      },
+      {
+         model: ModelConnection[1] | 
+            let varName = $model.instances->values()->at(0)->get(0)->cast(@RoutedVariablePlaceHolder).name;
+            let typeArg = $storeStreamReadingContext->j_invoke('streamType', $conventions->className($pureClass)->j_field('class', javaClassType()), javaReflectType());
+            $conventions->streamReaderClass($path)
+               ->j_new($storeStreamReadingContext->j_invoke('getResult', [j_string($varName), $typeArg], javaStream($conventions->className($pureClass))))->j_return();
+      }
+   ])->toOneMany());
+   
+   let executeClassWithImports = $conventions->planNodeClass('public', $path, 'Execute')
+      ->usingKnownPackages($conventions->knownPackages())
+      ->imports($conventions->standardImports())
+      ->imports([IStoreStreamReadingExecutionNodeSpecifics, StoreStreamReader, IStoreStreamReadingExecutionNodeContext]->map(x | $conventions->className($x)))
+      ->implements($conventions->className(IStoreStreamReadingExecutionNodeSpecifics));
+
+   let executeClass = $executeClassWithImports->addMethod(
+      javaMethod(['public'], $conventions->className(StoreStreamReader), 'streamReader', [$conventions->iStoreStreamReadingExecutionNodeContextParam()], $streamReaderMethodCodes)
+   );
+
+   let executeProject = newProject()->addClasses($executeClass);
+   let allProjects    = $executeProject
+      ->concatenate($dataClassesProject)
+      ->concatenate($storeReaderProject)
+      ->concatenate($streamReaderMethodCodes->dependencies()->resolveAndGetProjects())
+      ->toOneMany();
+   
+   $allProjects->mergeProjects()->generatedCode($executeClass);
+}
+
+function meta::pure::executionPlan::engine::java::graphFetch::storeStreamReading::streamReadingDataClass(class:meta::pure::metamodel::type::Class<Any>[1], path:String[1], conventions:Conventions[1]): meta::external::language::java::metamodel::Class[1]
+{
+   $conventions->planNodeClass([], $path, $conventions->identifier($class->elementToPath('_')) + '_Impl');
+}
+
+function meta::pure::executionPlan::engine::java::graphFetch::storeStreamReading::readMethodName(type:meta::pure::metamodel::type::Type[1], conventions:Conventions[1]): String[1]
+{
+   let javaClass  = $conventions->className($type);
+   'read_'+ $conventions->identifier($type->elementToPath('_'));
+}
+
+function meta::pure::executionPlan::engine::java::graphFetch::storeStreamReading::createStreamReadingDataClass(class:meta::pure::metamodel::type::Class<Any>[1], path:String[1], context:GenerationContext[1], createConstraintChecking:Boolean[1], debug:DebugContext[1]): Project[1]
+{
+   print(if($debug.debug,|$debug.space+'('+$path+') createDataClass for '+$class->elementToPath()+'\n', |''));
+
+   let conventions = $context.conventions;
+
+   let classWithFields = $class->streamReadingDataClass($path, $conventions)
+      ->usingKnownPackages($conventions->knownPackages())
+      ->imports($conventions->standardImports())
+      ->imports(if($createConstraintChecking, | $conventions->constrainedImports(), | []))
+      ->implements($conventions->className($class))
+      ->addConstructor(javaConstructor([], [], ''))
+      ->map({dc | 
+         $context.typeInfos->allProperties($class)->fold({p, c|
+            let variable = $conventions->fieldName($p);
+            let javaType = $conventions->pureTypeToJavaType($p);
+
+            let withField = $c->addField(javaField([], $javaType, $variable));
+            let field     = j_this($withField)->j_field($variable);
+         
+            $withField->addMethod(
+               javaMethod(
+                  'public', $javaType, $conventions->getterName($p), [],
+                  if ($javaType->isJavaList(),
+                      | j_conditional($field->j_eq(j_null()), javaCollections()->j_invoke('emptyList', [], $javaType), $field),
+                      | $field
+                  )->j_return()->codeToString($withField)
+               )
+            );
+         }, $dc)
+      });
+
+   mergeProjects([
+      newProject()->addClass($classWithFields),
+      $classWithFields->createQualifiedPropertiesForClass($context.typeInfos->allQualifiedProperties($class), $context, $debug->indent()),
+      $classWithFields->imports($conventions->className(IReferencedObject))->createAlloyStoreObjectReferenceMethodsForClass($context, $debug->indent())
+   ]->concatenate(if($createConstraintChecking, | $classWithFields->imports($conventions->checkedClass())->createConstraintCheckingForClass($class, $context, $debug->indent()), | []))->toOneMany());
+}

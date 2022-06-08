@@ -1,0 +1,66 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::profiles::*;
+import meta::pure::functions::tests::model::*;
+
+function <<test.Test>> meta::pure::functions::collection::tests::sort::testSimpleSort():Boolean[1]
+{
+    assertEquals(['Branche', 'Doe', 'Smith'], ['Smith', 'Branche', 'Doe']->sort({x, y | $x->compare($y)}));
+    assertEquals([1, 2, 5, 171, 342], [342, 5, 2, 171, 1]->sort({x, y | $x->compare($y)}));
+}
+
+function <<test.Test>> meta::pure::functions::collection::tests::sort::testSimpleSortReversed():Boolean[1]
+{
+    assertEquals(['Smith', 'Doe', 'Branche'], ['Smith', 'Branche', 'Doe']->sort({x, y | $y->compare($x)}));
+    assertEquals([342, 171, 5, 2, 1], [342, 5, 2, 171, 1]->sort({x, y | $y->compare($x)}));
+}
+
+function <<test.Test>> meta::pure::functions::collection::tests::sort::testSimpleSortNoComparator():Boolean[1]
+{
+    assertEquals(['Branche', 'Doe', 'Smith'], ['Smith', 'Doe', 'Branche']->sort());
+    assertEquals([1, 2, 5, 171, 342], [342, 5, 2, 171, 1]->sort());
+}
+
+function <<test.Test>> meta::pure::functions::collection::tests::sort::testMixedSortNoComparator():Boolean[1]
+{
+    assertEquals([-2.0, 1, 5.0, 171, 342], [342, 5.0, -2.0, 171, 1]->sort());
+}
+
+function <<test.Test>> meta::pure::functions::collection::tests::sort::testSimpleSortWithKey():Boolean[1]
+{
+    assertEquals(['Smith', 'Doe', 'Branche'], ['Doe', 'Smith', 'Branche']->sort({s | $s->substring(1, 2)}, {x:String[1], y:String[1] | $x->compare($y)}));
+}
+
+function <<test.Test>> meta::pure::functions::collection::tests::sort::testSimpleSortWithFunctionVariables():Boolean[1]
+{
+    let key = {s:String[1] | $s->substring(1, 2)};
+    let comp = {x:String[1], y:String[1] | $x->compare($y)};
+    assertEquals(['Smith', 'Doe', 'Branche'], ['Doe', 'Smith', 'Branche']->sort($key, $comp));
+}
+
+function <<test.Test>> meta::pure::functions::collection::tests::sort::testSortEmptySet():Boolean[1]
+{
+    assertEquals([], []->sort());
+}
+
+function <<test.Test>> meta::pure::functions::collection::tests::sort::testSortBy():Boolean[1]
+{
+    let pierre = ^Person(firstName='Pierre', lastName='Doe');
+    let bob = ^Person(firstName='Bob', lastName='Roe');
+    let kevin = ^Person(firstName='Kevin', lastName='Adams');
+    let people = [$pierre, $bob, $kevin];
+    assertEquals([$kevin, $pierre, $bob], $people->sortBy({p | $p.fullName(true)}));
+    assertEquals([$bob, $kevin, $pierre], $people->sortBy({p | $p.firstName}));
+}

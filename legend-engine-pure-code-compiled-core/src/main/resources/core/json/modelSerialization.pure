@@ -1,0 +1,187 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::json::*;
+import meta::pure::metamodel::serialization::json::*;
+import meta::pure::metamodel::serialization::grammar::*;
+import meta::pure::milestoning::*;
+
+function meta::pure::metamodel::serialization::json::packageableElementToJSON(class:PackageableElement[1]):JSONElement[1]
+{
+    let pairs = [newJSONKeyValue('name', ^JSONString(value=$class.name->toOne())),
+                 newJSONKeyValue('sourceInformation', $class->sourceInformation()->sourceInformationToJSON()),
+                 newJSONKeyValue('stereotypes', ^JSONArray(values=$class.stereotypes->map(s | $s->stereotypeToJSON()))),
+                 newJSONKeyValue('taggedValues', ^JSONArray(values=$class.taggedValues->map(t | $t->taggedValueToJSON())))
+                ];
+    newJSONObject(if($class.package->isEmpty(), | $pairs, | $pairs->add(0, newJSONKeyValue('package', ^JSONString(value=$class.package->toOne()->elementToPath())))));
+}
+
+function meta::pure::metamodel::serialization::json::classToJSON(class:Class<Any>[1]):JSONElement[1]
+{
+    classToJSON($class, false);
+}
+
+function meta::pure::metamodel::serialization::json::classToJSON(class:Class<Any>[1], undoMilestoningTransforms:Boolean[1]):JSONElement[1]
+{
+    let properties = if($undoMilestoningTransforms,|$class.properties->reverseMilestoningTransforms(),|$class.properties)->cast(@Property<Nil,Any|*>);
+    let qualifiedProperties = if($undoMilestoningTransforms,|$class.qualifiedProperties->reverseMilestoningTransforms(),|$class.qualifiedProperties)->cast(@QualifiedProperty<Any>);
+    
+    let pairs = [newJSONKeyValue('name', ^JSONString(value=$class.name->toOne())),
+                 newJSONKeyValue('sourceInformation', $class->sourceInformation()->sourceInformationToJSON()),
+                 newJSONKeyValue('typeParameters', ^JSONArray(values=$class.typeParameters->map(tp | ^JSONString(value=$tp.name)))),
+                 newJSONKeyValue('generalizations', ^JSONArray(values=$class.generalizations->map(g | $g.general->genericTypeToJSON()))),
+                 newJSONKeyValue('properties', ^JSONArray(values=$properties->meta::pure::milestoning::excludeRangeMilestoningProperty()->cast(@Property<Nil,Any|*>)->map(p | $p->propertyToJSON()))),
+                 newJSONKeyValue('qualifiedProperties', ^JSONArray(values=$qualifiedProperties->meta::pure::milestoning::excludeRangeMilestoningProperty()->cast(@QualifiedProperty<Any>)->map(p | $p->qualifiedPropertyToJSON()))),
+                 newJSONKeyValue('stereotypes', ^JSONArray(values=$class.stereotypes->map(s | $s->stereotypeToJSON()))),
+                 newJSONKeyValue('taggedValues', ^JSONArray(values=$class.taggedValues->map(t | $t->taggedValueToJSON())))
+                ];
+    newJSONObject(if($class.package->isEmpty(), | $pairs, | $pairs->add(0, newJSONKeyValue('package', ^JSONString(value=$class.package->toOne()->elementToPath())))));
+}
+
+function meta::pure::metamodel::serialization::json::isToJSONProperty(property:Property<Nil,Any|*>[1]):Boolean[1]
+{
+    !$property->meta::pure::milestoning::isRangeMilestoningProperty() && !$property.name->toOne()->in(['classifierGenericType', 'referenceUsages', 'applications', 'elementOverride', 'getterOverrideToOne', 'getterOverrideToMany', 'hiddenPayload']);
+}
+
+function meta::pure::metamodel::serialization::json::propertyToJSON(property:Property<Nil,Any|*>[1]):JSONElement[1]
+{
+    newJSONObject([newJSONKeyValue('name', ^JSONString(value=$property.name->toOne())),
+                   newJSONKeyValue('aggregation', ^JSONString(value=$property.aggregation->id())),
+                   newJSONKeyValue('multiplicity', $property.multiplicity->multiplicityToJSON()),
+                   newJSONKeyValue('genericType', $property.genericType->genericTypeToJSON()),
+                   newJSONKeyValue('stereotypes', ^JSONArray(values=$property.stereotypes->map(s | $s->stereotypeToJSON()))),
+                   newJSONKeyValue('taggedValues', ^JSONArray(values=$property.taggedValues->map(t | $t->taggedValueToJSON())))
+                   ])
+}
+
+function meta::pure::metamodel::serialization::json::qualifiedPropertyToJSON(property:QualifiedProperty<Any>[1]):JSONElement[1]
+{
+    newJSONObject([newJSONKeyValue('name', ^JSONString(value=$property.name->toOne())),
+                   newJSONKeyValue('multiplicity', $property.multiplicity->multiplicityToJSON()),
+                   newJSONKeyValue('parameters', ^JSONArray(values=$property->functionType().parameters->evaluateAndDeactivate()->tail()->map(p|$p->parameterToJSON()))),
+                   newJSONKeyValue('genericType', $property.genericType->genericTypeToJSON()),
+                   newJSONKeyValue('stereotypes', ^JSONArray(values=$property.stereotypes->map(s | $s->stereotypeToJSON()))),
+                   newJSONKeyValue('taggedValues', ^JSONArray(values=$property.taggedValues->map(t | $t->taggedValueToJSON())))
+                   ])
+}
+
+function meta::pure::metamodel::serialization::json::parameterToJSON(p:VariableExpression[1]):JSONElement[1]
+{
+    newJSONObject([newJSONKeyValue('name', ^JSONString(value=$p.name)),
+                   newJSONKeyValue('genericType', $p.genericType->genericTypeToJSON()),
+                   newJSONKeyValue('multiplicity', $p.multiplicity->multiplicityToJSON())
+                   ])
+}
+
+
+function meta::pure::metamodel::serialization::json::stereotypeToJSON(stereotype:Stereotype[1]):JSONElement[1]
+{
+    newJSONObject([newJSONKeyValue('profile', ^JSONString(value=$stereotype.profile->elementToPath())),
+                   newJSONKeyValue('value', ^JSONString(value=$stereotype.value))
+                   ])
+}
+
+function meta::pure::metamodel::serialization::json::taggedValueToJSON(taggedValue:TaggedValue[1]):JSONElement[1]
+{
+    newJSONObject([newJSONKeyValue('tag', $taggedValue.tag->tagToJSON()),
+                   newJSONKeyValue('value', ^JSONString(value=$taggedValue.value))
+                   ])
+}
+
+function meta::pure::metamodel::serialization::json::tagToJSON(tag:Tag[1]):JSONElement[1]
+{
+    newJSONObject([newJSONKeyValue('profile', ^JSONString(value=$tag.profile->elementToPath())),
+                   newJSONKeyValue('value', ^JSONString(value=$tag.value))
+                   ])
+}
+
+function meta::pure::metamodel::serialization::json::multiplicityToJSON(multiplicity:Multiplicity[1]):JSONElement[1]
+{
+    ^JSONString(value=$multiplicity->printMultiplicity())
+}
+
+function meta::pure::metamodel::serialization::json::genericTypeToJSON(genericType:GenericType[1]):JSONElement[1]
+{
+   let value = [if($genericType.rawType->isEmpty(),
+       | newJSONKeyValue('typeParameter', ^JSONString(value=$genericType.typeParameter->toOne().name->toOne())),
+       | newJSONKeyValue('rawType', ^JSONString(value=if($genericType.rawType->toOne().name->isEmpty(), | '', | $genericType.rawType->toOne()->elementToPath()))))
+                   ];
+
+   //TODO - Function Types are ignored here, decide how to cope with FunctionTypes
+   newJSONObject(if(!$genericType.typeArguments->isEmpty() && !$genericType.typeArguments->at(0).rawType->isEmpty() && $genericType.typeArguments->at(0).rawType->toOne()->instanceOf(FunctionType),
+                     | [$value, newJSONKeyValue('typeArguments', ^JSONArray())],
+                     | [$value, newJSONKeyValue('typeArguments', ^JSONArray(values=$genericType.typeArguments->map(t | $t->genericTypeToJSON())))]));
+}
+
+function meta::pure::metamodel::serialization::json::enumerationToJSON(enumeration:Enumeration<Any>[1]):JSONElement[1]
+{
+    newJSONObject([newJSONKeyValue('package', ^JSONString(value=$enumeration->cast(@PackageableElement).package->toOne()->elementToPath())),
+                   newJSONKeyValue('name', ^JSONString(value=$enumeration->enumName())),
+                   newJSONKeyValue('sourceInformation', $enumeration->sourceInformation()->sourceInformationToJSON()),
+                   newJSONKeyValue('enumValues', ^JSONArray(values=$enumeration->enumValues()->map(e | ^JSONString(value=$e->id()))))
+                   ])
+}
+
+function meta::pure::metamodel::serialization::json::associationToJSON(association:Association[1]):JSONElement[1]
+{
+    associationToJSON($association, false);
+}
+
+function meta::pure::metamodel::serialization::json::associationToJSON(association:Association[1], undoMilestoningTransforms:Boolean[1]):JSONElement[1]
+{
+    let properties = if($undoMilestoningTransforms,|$association.properties->map(p|$p->reverseMilestoningTransforms()),|$association.properties)->cast(@Property<Nil,Any|*>);
+    let qualifiedProperties = if($undoMilestoningTransforms,|$association.qualifiedProperties->reverseMilestoningTransforms(),|$association.qualifiedProperties)->cast(@QualifiedProperty<Any>);
+    
+    newJSONObject([newJSONKeyValue('package', ^JSONString(value=$association.package->toOne()->elementToPath())),
+                   newJSONKeyValue('name', ^JSONString(value=$association.name->toOne())),
+                   newJSONKeyValue('sourceInformation', $association->sourceInformation()->sourceInformationToJSON()),
+                   newJSONKeyValue('properties', ^JSONArray(values=$properties->meta::pure::milestoning::excludeRangeMilestoningProperty()->cast(@Property<Nil,Any|*>)->map(p | $p->propertyToJSON()))),
+                   newJSONKeyValue('qualifiedProperties', ^JSONArray(values=$qualifiedProperties->meta::pure::milestoning::excludeRangeMilestoningProperty()->cast(@QualifiedProperty<Any>)->map(p | $p->qualifiedPropertyToJSON()))),
+                   newJSONKeyValue('stereotypes', ^JSONArray(values=$association.stereotypes->map(s | $s->stereotypeToJSON()))),
+                   newJSONKeyValue('taggedValues', ^JSONArray(values=$association.taggedValues->map(t | $t->taggedValueToJSON())))
+                  ]);
+}
+
+function meta::pure::metamodel::serialization::json::sourceInformationToJSON(sourceInformation:SourceInformation[0..1]):JSONElement[1]
+{
+   if($sourceInformation->isEmpty(), 
+      | ^JSONNull(), 
+      |
+       newJSONObject([newJSONKeyValue('source', ^JSONString(value=$sourceInformation->toOne().source)),
+                   newJSONKeyValue('line', ^JSONNumber(value=$sourceInformation->toOne().line)),
+                   newJSONKeyValue('column', ^JSONNumber(value=$sourceInformation->toOne().column)),
+                   newJSONKeyValue('startLine', ^JSONNumber(value=$sourceInformation->toOne().startLine)),
+                   newJSONKeyValue('startColumn', ^JSONNumber(value=$sourceInformation->toOne().startColumn)),
+                   newJSONKeyValue('endLine', ^JSONNumber(value=$sourceInformation->toOne().endLine)),
+                   newJSONKeyValue('endColumn', ^JSONNumber(value=$sourceInformation->toOne().endColumn))
+                  ])
+      )
+}
+
+Class meta::pure::metamodel::serialization::json::ShallowPackageableElement<T>
+{
+   package : String[1];
+   name : String[1];
+   sourceInformation : SourceInformation[1];
+}
+
+function meta::pure::metamodel::serialization::json::packageableElementPointer(c:PackageableElement[1]):ShallowPackageableElement<Nil>[1]
+{
+   ^ShallowPackageableElement<Nil>
+   (
+      package = if($c.package->isEmpty(),|'',|$c.package->toOne()->elementToPath()),
+      name = $c.name->toOne(),
+      sourceInformation = $c->sourceInformation()->toOne()
+   )
+}

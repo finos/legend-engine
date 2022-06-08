@@ -1,0 +1,147 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+function <<test.Test>> meta::pure::functions::tests::collection::newMultiValueMapTest() :Boolean[1]
+{
+   let input = [
+      pair('a', 1), 
+      pair('a', 2), 
+      pair('b', 3)
+   ];
+   
+   let result = $input->newMultiValueMap();
+   
+   assertEquals([1, 2], $result->get('a').values->sort());
+   assertEquals([3], $result->get('b').values->sort());
+   assertEquals([], $result->get('c').values->sort());
+}
+
+
+
+function <<test.Test>> meta::pure::functions::tests::collection::newMultiValueMap2Test() :Boolean[1]
+{
+   let input = [
+      pair(list('a'), 1), 
+      pair(list('a'), 2), 
+      pair(list('b'), 3),
+      pair(list('a'), 4) 
+   ];
+   
+   let result = $input->newMultiValueMap();
+   
+   assertEquals([1, 2, 4], $result->get(list('a')).values);
+   assertEquals([3], $result->get(list('b')).values);
+   assertEquals([], $result->get(list('c')).values);
+
+   // Check that the order of the values is consistent with the order of the original input
+   // we do this by reversing the original list
+
+   let result2 = $input->reverse()->newMultiValueMap();
+   
+   assertEquals($result->get(list('a')).values->reverse(), $result2->get(list('a')).values);
+   assertEquals($result->get(list('b')).values->reverse(), $result2->get(list('b')).values);
+   assertEquals($result->get(list('c')).values->reverse(), $result2->get(list('c')).values);
+}
+
+
+
+function <<test.Test>> meta::pure::functions::tests::collection::removeDuplicatesPreservesOrderTest() :Boolean[1]
+{
+   assertEquals([1,2,3,4], [1,2,3,1,4]->removeDuplicates());
+   assertEquals([4,1,3,2], [1,2,3,1,4]->reverse()->removeDuplicates());
+}
+
+function <<test.Test>> meta::pure::functions::tests::collection::testDropAt() :Boolean[1]
+{
+   assertEquals([2,3], [1,2,3]->dropAt(0));
+   assertEquals([1,3], [1,2,3]->dropAt(1));
+   assertEquals([1,2], [1,2,3]->dropAt(2));
+   
+   
+   assertEquals([3], [1,2,3]->dropAt(0, 2));
+   assertEquals([1], [1,2,3]->dropAt(1, 2));
+   assertEquals([1,2], [1,2,3]->dropAt(2, 2));
+   
+}
+
+function <<test.Test>> meta::pure::functions::tests::collection::defaultIfEmpty():Boolean[1]
+{
+   assertEquals(1, 1->defaultIfEmpty(2));
+   assertEquals(2, []->defaultIfEmpty(2));
+   assertEquals([1,2], [1,2]->defaultIfEmpty([3,4]));
+   assertEquals([3,4], []->defaultIfEmpty([3,4]));   
+}
+
+function <<test.Test>> meta::pure::functions::tests::collection::allButOneAreEmpty():Boolean[1]
+{
+   assertEquals(true, [list(1)]->allButOneAreEmpty());
+   assertEquals(true, [list(1), list([]->cast(@Integer))]->allButOneAreEmpty());
+   assertEquals(true, [list([]->cast(@Integer)), list(1), list([]->cast(@Integer))]->allButOneAreEmpty());
+   assertEquals(true, [list([1,2]), list([]->cast(@Integer))]->allButOneAreEmpty());
+   assertEquals(false, [list([]->cast(@Integer))]->allButOneAreEmpty());
+   assertEquals(false, [list([]->cast(@Integer)), list([]->cast(@Integer))]->allButOneAreEmpty());
+}
+
+function <<test.Test>> meta::pure::functions::tests::collection::and():Boolean[1]
+{
+   assertEquals(true, and(true));
+   assertEquals(true, and([true, true]));
+   assertEquals(false, and([true, false]));
+   assertEquals(false, and([true, true, false]));
+}
+
+
+function <<test.Test>> meta::pure::functions::tests::collection::or():Boolean[1]
+{
+   assertEquals(true, or(true));
+   assertEquals(true, or([true, true]));
+   assertEquals(true, or([true, false]));
+   assertEquals(true, or([true, true, false]));
+   assertEquals(false, or(false));
+   assertEquals(false, or([false, false]));
+}
+
+function <<test.Test>> meta::pure::functions::tests::collection::uniqueValueOnly():Boolean[1]
+{
+   assertEquals([], []->uniqueValueOnly());
+   assertEquals([], [true, false]->uniqueValueOnly());
+   assertEquals([true], [true, true]->uniqueValueOnly());
+   assertEquals([true], [true]->uniqueValueOnly());
+   assertEquals([false], [false]->uniqueValueOnly());
+
+   assertEquals([-1], []->uniqueValueOnly(-1));
+   assertEquals([-1], [1, 2]->uniqueValueOnly(-1));
+   assertEquals([1], [1, 1]->uniqueValueOnly(-1));
+   assertEquals([1], [1]->uniqueValueOnly(-1));
+   assertEquals([2], [2]->uniqueValueOnly(-1));
+}
+
+function <<test.Test>> meta::pure::functions::tests::collection::isDistinct():Boolean[1]
+{
+   assertEquals(true, [1,2,3]->isDistinct());
+   assertEquals(false,[1,1,2,3]->isDistinct());
+   assertEquals(true, []->isDistinct());
+}
+
+function <<test.Test>> meta::pure::functions::tests::collection::toIndexed():Boolean[1]
+{
+   assertEquals([pair(0, 'A'), pair(1, 'B')], ['A', 'B']->toIndexed());
+   assertEquals([], []->toIndexed());
+}
+
+function <<test.Test>> meta::pure::functions::tests::collection::toNumbered():Boolean[1]
+{
+   assertEquals([pair(1, 'A'), pair(2, 'B')], ['A', 'B']->toNumbered());
+   assertEquals([], []->toIndexed());
+}

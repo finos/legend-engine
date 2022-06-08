@@ -1,0 +1,60 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::factory::*;
+import meta::external::language::java::serialization::*;
+import meta::pure::executionPlan::engine::java::*;
+import meta::pure::executionPlan::engine::java::tests::*;
+import meta::pure::functions::asserts::*;
+import meta::pure::unit::*;
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_20_0' }
+meta::pure::executionPlan::engine::java::tests::unitPureTests() : Boolean[1]
+{
+   javaPureTests(meta::pure::executionPlan::engine::java::engineConventions([]), [
+      meta::pure::executionPlan::engine::java::tests::testNewUnit__Boolean_1_,
+      meta::pure::executionPlan::engine::java::tests::testUnitType__Boolean_1_,
+      meta::pure::executionPlan::engine::java::tests::testUnitValue__Boolean_1_,
+      meta::pure::executionPlan::engine::java::tests::testUnitConvert__Boolean_1_
+   ])
+      ->generate(Mass~Kilogram)
+      ->generate(Mass~Pound)
+      ->runTests();
+}
+
+// TODO Does not work for literal units is used here
+
+
+function meta::pure::executionPlan::engine::java::tests::testUnitType():Boolean[1]
+{
+   assertEquals('meta::pure::unit::Mass~Kilogram', newUnit(Mass~Kilogram, 5.5)->unitType());
+}
+
+function meta::pure::executionPlan::engine::java::tests::testUnitValue():Boolean[1]
+{
+   assertEquals(5.5, newUnit(Mass~Kilogram, 5.5)->unitValue());
+}
+
+function meta::pure::executionPlan::engine::java::tests::testNewUnit():Boolean[1]
+{
+   assert(newUnit(Mass~Kilogram, 5.5)->instanceOf(Mass~Kilogram));
+}
+
+function meta::pure::executionPlan::engine::java::tests::testUnitConvert():Boolean[1]
+{
+   let pounds = newUnit(Mass~Kilogram, 5.5)->convert(Mass~Pound);
+   assert($pounds->instanceOf(Mass~Pound));
+   assertEquals(12.12548777530369, $pounds->unitValue());
+}

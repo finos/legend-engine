@@ -1,0 +1,94 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::functions::collection::tests::removeAll::*;
+
+function <<test.Test>> meta::pure::functions::collection::tests::removeAll::testRemoveAllPrimitiveStandardFunction():Boolean[1]
+{
+    assertEquals([3, 3, 3], [1, 2, 1, 3, 1, 3, 3, 2]->removeAll([1,2]));
+    assertEquals(['c'], ['a', 'a', 'b', 'b', 'c']->removeAll(['a','b']));
+}
+
+function <<test.Test>> meta::pure::functions::collection::tests::removeAll::testRemoveAllOptimizedPrimitiveStandardFunction():Boolean[1]
+{
+    assertEquals([3, 3, 3], [1, 2, 1, 3, 1, 3, 3, 2]->removeAllOptimized([1,2]));
+    assertEquals(['c'], ['a', 'a', 'b', 'b', 'c']->removeAllOptimized(['a','b']));
+}
+
+function <<test.Test>> meta::pure::functions::collection::tests::removeAll::testRemoveAllPrimitiveCustomFunction():Boolean[1]
+{
+    assertEquals([3, 3, 3], [1, 2, 1, 3, 1, 3, 3, 2]->removeAll([1,2],{a,b|$a == $b}));
+    assertEquals(['c'], ['a', 'a', 'b', 'b', 'c']->removeAll(['a','b'],{a,b|$a == $b}));
+}
+
+Class meta::pure::functions::collection::tests::removeAll::TestClass
+{
+   val : Integer[1];
+}
+
+function meta::pure::functions::collection::tests::removeAll::comparator(a:TestClass[1], b:TestClass[1]):Boolean[1]
+{
+   $a.val == $b.val;
+}
+
+
+function <<test.Test>> meta::pure::functions::collection::tests::removeAll::testRemoveAllClassCustomFunction():Boolean[1]
+{
+   let c1 = ^TestClass(val = 1);
+   let c2 = ^TestClass(val = 2);
+   let c3 = ^TestClass(val = 3);
+
+   let c11 = ^TestClass(val = 1);
+   let c13 = ^TestClass(val = 3);
+
+   let vals = [$c1, $c2, $c3];
+
+   assertEquals([$c2], $vals->removeAll([^TestClass(val = 1), ^TestClass(val = 3)],{a,b|$a.val == $b.val}));
+   assertEquals([$c2], $vals->removeAll([$c1, ^TestClass(val = 3)],{a,b|$a.val == $b.val}));
+   assertEquals([$c2], $vals->removeAll([$c1, ^TestClass(val = 3)],meta::pure::functions::collection::tests::removeAll::comparator_TestClass_1__TestClass_1__Boolean_1_));
+}
+
+Class meta::pure::functions::collection::tests::removeAll::TestClassWithEquality
+{
+   <<equality.Key>> val : Integer[1];
+}
+
+function <<test.Test>> meta::pure::functions::collection::tests::removeAll::testRemoveAllClassKey():Boolean[1]
+{
+   let c1 = ^TestClassWithEquality(val = 1);
+   let c2 = ^TestClassWithEquality(val = 2);
+   let c3 = ^TestClassWithEquality(val = 3);
+
+   let c11 = ^TestClassWithEquality(val = 1);
+   let c13 = ^TestClassWithEquality(val = 3);
+
+   let vals = [$c1, $c2, $c3];
+
+   assertEquals([$c2], $vals->removeAll([^TestClassWithEquality(val = 1), ^TestClassWithEquality(val = 3)]));
+}
+
+function <<test.Test>> meta::pure::functions::collection::tests::removeAll::testRemoveAllOptimizedClassKey():Boolean[1]
+{
+   let c1 = ^TestClassWithEquality(val = 1);
+   let c2 = ^TestClassWithEquality(val = 2);
+   let c3 = ^TestClassWithEquality(val = 3);
+
+   let c11 = ^TestClassWithEquality(val = 1);
+   let c13 = ^TestClassWithEquality(val = 3);
+
+   let vals = [$c1, $c2, $c3];
+
+   assertEquals([$c2], $vals->removeAllOptimized([^TestClassWithEquality(val = 1), ^TestClassWithEquality(val = 3)]));
+}
+

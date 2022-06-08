@@ -1,0 +1,100 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::shared::format::utils::*;
+
+function meta::external::shared::format::utils::log(debug:DebugContext[1], message:Function<{->String[1]}>[1]): Any[*]
+{
+   if($debug.debug,
+      | println($debug.space+$message->eval()),
+      | []
+   );
+}
+
+function meta::external::shared::format::utils::purifyClassName(s:String[1]): String[1]
+{
+   $s->purifyName(false);
+}
+
+function meta::external::shared::format::utils::purifyPropertyName(s:String[1]): String[1]
+{
+   $s->purifyName(true);
+}
+
+function meta::external::shared::format::utils::purifyName(s:String[1], firstLower:Boolean[1]): String[1]
+{
+   let cleaned = $s->splitOnCamelCase()
+      ->map(w| $w->handleNonAlphaNumerics())
+      ->filter(w| $w->length() > 0)
+      ->map(w| $w->substring(0, 1)->toUpper() + $w->substring(1)->toLower())
+      ->joinStrings('');
+
+   if($firstLower, 
+      | $cleaned->substring(0, 1)->toLower() + $cleaned->substring(1),
+      | $cleaned
+   );
+}
+
+function <<access.private>> meta::external::shared::format::utils::handleNonAlphaNumerics(word:String[1]): String[*]
+{
+   $word->chunk(1)
+      ->fold(
+         {ch, l| 
+            if($ch->isAlphaNumeric(), 
+               | list($l.values->init()->add($l.values->last()->toOne() + $ch)), 
+               | list($l.values->add($ch->handleNonAlphaNumeric())->add(''))
+            )
+         },
+         list('')
+      )
+      .values->filter(w| $w->length() > 0);                         
+}
+
+function <<access.private>> meta::external::shared::format::utils::handleNonAlphaNumeric(ch:String[1]): String[1]
+{
+    if($ch=='&', |'and', 
+   |if($ch=='%', |'percent', 
+   |if($ch=='!', |'bang', 
+   |if($ch=='??????', |'gbp', 
+   |if($ch=='$', |'dollar', 
+   |if($ch=='*', |'star', 
+   |if($ch=='@', |'at', 
+   |if($ch=='#', |'number', 
+   |if($ch=='?', |'question', 
+   |              ''
+   )))))))));
+}
+
+// Tests
+
+function <<test.Test>> meta::external::shared::format::tests::utils::testPurifyClassName(): Boolean[1]
+{
+   assertEquals('Name', purifyClassName('name'));
+   assertEquals('Name', purifyClassName('Name'));
+   assertEquals('TwoWords', purifyClassName('two WORDS'));
+}
+
+function <<test.Test>> meta::external::shared::format::tests::utils::testPurifyPropertyName(): Boolean[1]
+{
+   assertEquals('name', purifyPropertyName('name'));
+   assertEquals('name', purifyPropertyName('Name'));
+   assertEquals('twoWords', purifyPropertyName('two WORDS'));
+   assertEquals('oneAndTwo', purifyPropertyName('one & two'));
+   assertEquals('oneAndTwo', purifyPropertyName('one&two'));
+   assertEquals('oneHundredPercent', purifyPropertyName('oneHundred%'));
+   assertEquals('aDollarAndMore', purifyPropertyName('a$&more'));
+   assertEquals('oneTwoThree', purifyPropertyName('one.two.three'));
+   assertEquals('oneTwoThree', purifyPropertyName('one-two-three'));
+   assertEquals('maybeMaybeNot', purifyPropertyName('maybe/maybe not'));
+}

@@ -1,0 +1,55 @@
+import meta::pure::graphFetch::domain::tests::*;
+import meta::pure::graphFetch::domain::*;
+
+Class meta::pure::graphFetch::domain::tests::Firm
+{
+  legalName : String[1];
+  employees : meta::pure::graphFetch::domain::tests::Person[*];
+}
+
+Class meta::pure::graphFetch::domain::tests::Person
+{
+  firstName : String[1];
+  lastName : String[1];
+}
+
+Class meta::pure::graphFetch::domain::tests::Domain
+{
+  val : String[1];
+  firmByLegalName(legalName : String[1]) 
+  {
+    Firm.all()->filter(f|$f.legalName == $legalName)->first()
+  }: Firm[0..1];
+  employeeByLastName(lastName : String[1])
+  {
+    Person.all()->filter(p|$p.lastName == $lastName)->first()
+  }:Person[0..1];
+}
+
+Class meta::pure::graphFetch::domain::tests::SimpleDomain
+{
+  name : String[1];
+  allPersons() {Person.all();}: Person[*];
+}
+
+
+function <<test.Test>> meta::pure::graphFetch::domain::tests::reprocessGraphFetch():Boolean[1]
+{
+  let r = meta::pure::graphFetch::domain::extractDomainTypeClassFromFunction(
+              |Domain.all()->meta::pure::graphFetch::execution::graphFetch(#{Domain{firmByLegalName('ork'){legalName}, employeeByLastName('yro'){firstName}}}#)
+                           ->meta::pure::graphFetch::execution::serialize(#{Domain{firmByLegalName('ork'){legalName}, employeeByLastName('yro'){firstName}}}#)
+          );
+  assertEquals('firmByLegalName', $r->at(0).first);
+  assertEquals(' | Class Firm.all() -> filter(f:meta::pure::graphFetch::domain::tests::Firm[1] | $f.legalName == \'ork\';) -> first() -> graphFetch(#{meta::pure::graphFetch::domain::tests::Firm {legalName}}#) -> serialize(#{meta::pure::graphFetch::domain::tests::Firm {legalName}}#);', $r->at(0).second->meta::pure::router::printer::asString());
+  assertEquals('employeeByLastName', $r->at(1).first);
+  assertEquals(' | Class Person.all() -> filter(p:meta::pure::graphFetch::domain::tests::Person[1] | $p.lastName == \'yro\';) -> first() -> graphFetch(#{meta::pure::graphFetch::domain::tests::Person {firstName}}#) -> serialize(#{meta::pure::graphFetch::domain::tests::Person {firstName}}#);', $r->at(1).second->meta::pure::router::printer::asString());
+}
+
+function <<test.Test>> meta::pure::graphFetch::domain::tests::simple():Boolean[1]
+{
+  let r = meta::pure::graphFetch::domain::extractDomainTypeClassFromFunction(
+              |SimpleDomain.all()->meta::pure::graphFetch::execution::graphFetch(#{SimpleDomain{allPersons}}#)
+          );
+  assertEquals('allPersons', $r->at(0).first);
+  assertEquals(' | Class Person.all() -> graphFetch(#{meta::pure::graphFetch::domain::tests::Person}#) -> serialize(#{meta::pure::graphFetch::domain::tests::Person}#);', $r->at(0).second->meta::pure::router::printer::asString());
+ }
