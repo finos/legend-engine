@@ -22,8 +22,7 @@ public enum FileGenerationType
     protobuf("Protobuf"),
     slang("Slang"),
     rosetta("Rosetta"),
-    morphir("Morphir"),
-    daml("DAML");
+    morphir("Morphir");
     private String label;
 
     private FileGenerationType(final String label)
