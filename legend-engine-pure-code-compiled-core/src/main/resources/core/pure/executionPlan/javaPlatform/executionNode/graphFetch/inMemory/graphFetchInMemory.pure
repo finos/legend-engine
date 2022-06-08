@@ -295,7 +295,9 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
       let pmtType       = $propMappingTransformers->at($pmIndex).type->cast(@meta::external::language::java::metamodel::FunctionType);
       let targetSet     = $graphFetchTree.sets->filter(x | $x.id == $pm.targetSetImplementationId)->toOne()->cast(@InstanceSetImplementation);
       let targetSrc     = j_parameter($conventions->className($targetSet->sourceClass($extensions)), 'targetSrc');
-
+      let propertyConcreteType = $pmtType.returnType->at(0)->match([p:ParameterizedType[1]|$p.typeArguments->at(0),
+                                                                    t:meta::external::language::java::metamodel::Type[1]|$t   ]);
+      let propertyType     = j_parameter($propertyConcreteType, 'propertyType');
       $graphObjects
          ->j_streamOf()
          ->js_filter(j_lambda($graphObject, $graphObject->j_ne(j_null())))
@@ -304,13 +306,14 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
             j_lambda(
                $graphObject,
                $pmTransformer
-                  ->j_invoke('apply', $graphObject->j_invoke($conventions->getterName(inMemorySource()), [], javaObject())->j_cast($pmtType.parameterTypes->at(0)), $pmtType.returnType)
-                  ->j_streamOf()
-                  ->map(x | if($targetSet->hasExplodeProperty(),
+                  ->j_invoke('apply', $graphObject->j_invoke($conventions->getterName(inMemorySource()), [], javaObject())
+                   ->j_cast($pmtType.parameterTypes->at(0)), $pmtType.returnType)
+              ->j_streamOf()->addFilterForSubtype($propertyType,$targetSrc.type,$targetSet,$context,$extensions)
+                 ->map(x | if($targetSet->hasExplodeProperty(),
                                | $x->js_flatMap(j_lambda($targetSrc, $tsTransformer->j_invoke('apply', [$targetSrc] , $currentGraphImpl->javaStream()))),
                                | $x->js_map(j_lambda($targetSrc, $tsTransformer->j_invoke('apply', [$targetSrc] , $currentGraphImpl)))
-                            )
-                  )
+                              )
+                        )
                   ->js_map(
                      j_lambda(
                         $targetGraphObject,
@@ -352,8 +355,23 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
       ->concatenate($targetSetTransformers->dependencies()->resolveAndGetProjects())
       ->concatenate($transformPropertyMethodCodes->dependencies()->resolveAndGetProjects())
       ->toOneMany();
-   
-   $allProjects->mergeProjects();
+
+    $allProjects->mergeProjects();
+}
+function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::inMemory::addFilterForSubtype(input:Code[1],propertyType: Code[1],targetSRCType:meta::external::language::java::metamodel::Type[1], targetSet:InstanceSetImplementation[1],context: GenerationContext[1],extensions: RouterExtension[*]):Code[1]
+{ 
+  //if source is a mappingclass skip the filter
+  let sourceClass = $targetSet->sourceClass($extensions);
+  let sourceClassMappings = $targetSet.parent.classMappingByClass($sourceClass)->filter(i|$i->instanceOf(InstanceSetImplementation))->cast(@InstanceSetImplementation);
+  let targetSrcJType = $context.conventions->className($sourceClass);
+
+  if($targetSet->instanceOf(PureInstanceSetImplementation) && $sourceClassMappings.mappingClass->isEmpty(),
+     |let interParam  = j_parameter(javaClassType(), 'interParam');
+      $input->js_filter(j_lambda($propertyType,  j_streamOf( $propertyType->j_invoke('getClass',[],javaClassType())->j_invoke('getInterfaces',[],javaClassType())) 
+          ->j_invoke('anyMatch', j_lambda($interParam,  $interParam->j_invoke('equals',[$targetSrcJType-> j_field('class'  ,$targetSrcJType)])),javaBoolean())));,
+     |$input
+     );
+  
 }
 
 function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::inMemory::validateXStorePropertyMapping(xStorePropertyMapping: XStorePropertyMapping[1]):Boolean[1]
