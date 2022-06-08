@@ -24,14 +24,11 @@
             <artifactId>jackson-databind</artifactId>
         </dependency>
 
-        <!-- PURE -->
-        <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-code-compiled-core-external-shared</artifactId>
-        </dependency>
-        <!-- PURE -->
-
         <!-- ENGINE -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-code-compiled-core-external-shared</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-language-pure-compiler</artifactId>
