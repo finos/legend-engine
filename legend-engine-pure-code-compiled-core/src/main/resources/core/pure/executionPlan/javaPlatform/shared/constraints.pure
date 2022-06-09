@@ -37,10 +37,20 @@ import meta::pure::milestoning::*;
 
 function meta::pure::executionPlan::engine::java::createConstraintCheckingForClass(jClass: meta::external::language::java::metamodel::Class[1], class:meta::pure::metamodel::type::Class<Any>[1], context:GenerationContext[1], debug:DebugContext[1]) : Project[1]
 {
-   createConstraintCheckingForClass($jClass, $class, $context, true, $debug);
+   createConstraintCheckingForClass($jClass, $class, [], $context, true, $debug);
 }
 
 function meta::pure::executionPlan::engine::java::createConstraintCheckingForClass(jClass: meta::external::language::java::metamodel::Class[1], class:meta::pure::metamodel::type::Class<Any>[1], context:GenerationContext[1], constraintsEnabled:Boolean[1], debug:DebugContext[1]) : Project[1]
+{
+   createConstraintCheckingForClass($jClass, $class, [], $context, $constraintsEnabled, $debug);
+}
+
+function meta::pure::executionPlan::engine::java::createConstraintCheckingForClass(jClass: meta::external::language::java::metamodel::Class[1], class:meta::pure::metamodel::type::Class<Any>[1], constraintsToExclude: String[*], context:GenerationContext[1], debug:DebugContext[1]) : Project[1]
+{
+   createConstraintCheckingForClass($jClass, $class, $constraintsToExclude, $context, true, $debug);
+}
+
+function meta::pure::executionPlan::engine::java::createConstraintCheckingForClass(jClass: meta::external::language::java::metamodel::Class[1], class:meta::pure::metamodel::type::Class<Any>[1], constraintsToExclude: String[*], context:GenerationContext[1], constraintsEnabled:Boolean[1], debug:DebugContext[1]) : Project[1]
 {
    print(if($debug.debug,|$debug.space+'createConstraintCheckingForClass: \''+$class.name->toOne()+'\'\n',|''));
 
@@ -108,7 +118,7 @@ function meta::pure::executionPlan::engine::java::createConstraintCheckingForCla
                        ->concatenate(
                           if($constraintsEnabled,
                              {|
-                                $allConstraints->toNumbered()
+                                $allConstraints->filter(c | $c.constraint.name->in($constraintsToExclude))->toNumbered()
                                   ->map(nc| j_this($cls)->j_invoke(constraintMethodName($nc.second, $nc.first, $class), [], javaOptional($defect))->j_invoke('ifPresent', $result->j_methodReference('add', javaFunctionType($defect, javaVoid())), javaVoid()))
                                   ->concatenate($propertyConstraintCalls->sortBy(pc | $pc->codeToString($cls)))
                              },
@@ -156,8 +166,8 @@ function meta::pure::executionPlan::engine::java::createConstraintCheckingForCla
    mergeProjects(
       newProject()
          ->addClass($constrainedClass)
-         ->concatenate($typeInfo.supertypes->map(super| $context.typeInfos->forClass($super).constraints->generateConstraintMethods($constrainedClass, $super, $conventions, $debug->indent())))
-         ->concatenate($typeInfo.constraints->generateConstraintMethods($constrainedClass, $typeInfo.class, $conventions, $debug->indent()))
+         ->concatenate($typeInfo.supertypes->map(super| $context.typeInfos->forClass($super).constraints->generateConstraintMethods($constrainedClass, $super, $constraintsToExclude, $conventions, $debug->indent())))
+         ->concatenate($typeInfo.constraints->generateConstraintMethods($constrainedClass, $typeInfo.class, $constraintsToExclude, $conventions, $debug->indent()))
          ->toOneMany()
    );
 }
@@ -247,10 +257,10 @@ function <<access.private>> meta::pure::executionPlan::engine::java::generatePro
    ]);
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::generateConstraintMethods(infos:ConstraintInfo[*], javaClass:meta::external::language::java::metamodel::Class[1], class:meta::pure::metamodel::type::Class<Any>[1], conventions:Conventions[1], debug:DebugContext[1]): Project[1]
+function <<access.private>> meta::pure::executionPlan::engine::java::generateConstraintMethods(infos:ConstraintInfo[*], javaClass:meta::external::language::java::metamodel::Class[1], class:meta::pure::metamodel::type::Class<Any>[1], constraintsToExclude: String[*], conventions:Conventions[1], debug:DebugContext[1]): Project[1]
 {
    print(if($debug.debug,|$debug.space+'generateConstraintMethods\n',|''));
-   $infos->toNumbered()->fold(
+   $infos->filter(c | $c.constraint.name->in($constraintsToExclude))->toNumbered()->fold(
       {ni, project|
          let n           = $ni.first;
          let info        = $ni.second;         

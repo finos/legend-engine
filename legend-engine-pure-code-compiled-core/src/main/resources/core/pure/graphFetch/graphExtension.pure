@@ -27,11 +27,17 @@ import meta::pure::milestoning::*;
 Class meta::pure::graphFetch::ExtendedRootGraphFetchTree<T> extends RootGraphFetchTree<T>
 {
    requiredQualifiedProperties: QualifiedProperty<Any>[*];
+   constraintsExclusions: String[*];
 }
 
 Class meta::pure::graphFetch::ExtendedPropertyGraphFetchTree extends PropertyGraphFetchTree
 {
    requiredQualifiedProperties: QualifiedProperty<Any>[*];
+   constraintsExclusions: String[*];
+}
+
+Class {doc.doc = 'Nodes that were added by the system to meet e.g. constraints requirements'} meta::pure::graphFetch::SystemGeneratedPropertyGraphFetchTree extends PropertyGraphFetchTree
+{
 }
 
 function meta::pure::graphFetch::switchToMilestoneProperties(tree:GraphFetchTree[1], parameters:ValueSpecification[*]): GraphFetchTree[1]
@@ -168,12 +174,22 @@ function <<access.private>> meta::pure::graphFetch::nodeToString(node:GraphFetch
 
    let requiredQPText = if($requiredQP->isEmpty(), |'', |' [requires: '+$requiredQP.name->joinStrings(',')+ ']');
 
+   let constraintsExclusions = $node->match([
+      r: ExtendedRootGraphFetchTree<Any>[1] | $r.constraintsExclusions,
+      p: ExtendedPropertyGraphFetchTree[1]  | $p.constraintsExclusions,
+      r: RoutedRootGraphFetchTree<Any>[1]   | $r.constraintsExclusions,
+      p: RoutedPropertyGraphFetchTree[1]    | $p.constraintsExclusions,
+      a: GraphFetchTree[1]                  | []
+   ]);
+
+   let constraintsExclusionsText = if($constraintsExclusions->isEmpty(), |'', |' [exclude constraints: '+ $constraintsExclusions->joinStrings(',')+ ']');
+
    let nodeText = $node->match([
       rr: RoutedRootGraphFetchTree<Any>[1] | $indent + $rr.class.name->toOne() + $rr.sets.id->map(id|$id->toString())->joinStrings('[',',',']'),
       rp: RoutedPropertyGraphFetchTree[1]  | $indent + $rp.property.name->toOne()+if($rp.property->instanceOf(QualifiedProperty), |'('+$rp.parameters->map(p|$p->printValueSpecification(''))->joinStrings(', ')+')', |'') + $rp.sets.id->map(id|$id->toString())->joinStrings(' sets: [',',',']') + $rp.propertyMapping->map(pm|$pm.targetSetImplementationId)->joinStrings(' targetSets: [',',',']'),
       r: RootGraphFetchTree<Any>[1]        | $indent + $r.class.name->toOne(),
       p: PropertyGraphFetchTree[1]         | $indent + $p.property.name->toOne()+if($p.property->instanceOf(QualifiedProperty), |'('+$p.parameters->map(p|$p->printValueSpecification(''))->joinStrings(', ')+')', |'')+if($p.subType->isNotEmpty(),| '->subType(' + $p.subType->toOne().name->toOne() + ')', | '') 
-   ]) +  $requiredQPText;
+   ]) +  $requiredQPText + $constraintsExclusionsText;
    
    $nodeText + if($node.subTrees->isEmpty(),
                   |'',
@@ -536,7 +552,7 @@ function <<access.private>> meta::pure::graphFetch::addPropertyGraphFetchTrees(o
 
 function <<access.private>> meta::pure::graphFetch::addPropertyGraphFetchTrees(onto:GraphFetchTree[1], pTree:PropertyPathTree[1], ownerClass:Class<Any>[1], node: PropertyPathNode[1]): GraphFetchTree[1]
 {
-   let pgft = ^PropertyGraphFetchTree(property = $node.property);
+   let pgft = ^SystemGeneratedPropertyGraphFetchTree(property = $node.property);
 
    if($pTree.children->size() == 0,
       | $onto->addSubTree($pgft),
@@ -554,7 +570,7 @@ function <<access.private>> meta::pure::graphFetch::addPropertyGraphFetchTrees(o
                                            | $pgft,
                                            | ^$pgft(subType = $childrenOwner)
                                         );
-                     let withChildren = $children->fold({child, gft2| $gft2->addPropertyGraphFetchTrees($child, $childrenOwner)->cast(@PropertyGraphFetchTree)}, $withSubtype);
+                     let withChildren = $children->fold({child, gft2| $gft2->addPropertyGraphFetchTrees($child, $childrenOwner)->cast(@PropertyGraphFetchTree)}, $withSubtype->cast(@PropertyGraphFetchTree));
                      $gft->addSubTree($withChildren);
                   },
                   | $gft
