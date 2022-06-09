@@ -1,0 +1,114 @@
+{
+  "origin": {
+    "sdlcInfo": {
+      "baseVersion": "-1",
+      "_type": "pure",
+      "version": "none",
+      "packageableElementPointers": [
+        {
+          "path": "my",
+          "type": "PACKAGE"
+        }
+      ]
+    },
+    "_type": "pointer",
+    "serializer": {
+      "name": "pure",
+      "version": "vX_X_X"
+    }
+  },
+  "elements": [
+    {
+      "superTypes": [
+        "meta::pure::metamodel::type::Any"
+      ],
+      "package": "my",
+      "_type": "class",
+      "name": "TestClass",
+      "constraints": [
+        {
+          "enforcementLevel": "Error",
+          "functionDefinition": {
+            "_type": "lambda",
+            "body": [
+              {
+                "fControl": "eq_Any_1__Any_1__Boolean_1_",
+                "function": "eq",
+                "_type": "func",
+                "parameters": [
+                  {
+                    "fControl": "divide_Number_1__Number_1__Float_1_",
+                    "function": "divide",
+                    "_type": "func",
+                    "parameters": [
+                      {
+                        "_type": "property",
+                        "property": "var2",
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "this"
+                          }
+                        ]
+                      },
+                      {
+                        "_type": "property",
+                        "property": "var1",
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "this"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "multiplicity": {
+                      "upperBound": 1,
+                      "lowerBound": 1
+                    },
+                    "values": [
+                      3
+                    ],
+                    "_type": "integer"
+                  }
+                ]
+              }
+            ],
+            "parameters": [
+              {
+                "_type": "var",
+                "name": "this"
+              }
+            ]
+          },
+          "name": "myConstraint"
+        }
+      ],
+      "properties": [
+        {
+          "multiplicity": {
+            "upperBound": 1,
+            "lowerBound": 1
+          },
+          "name": "var1",
+          "type": "Float"
+        },
+        {
+          "multiplicity": {
+            "upperBound": 1,
+            "lowerBound": 1
+          },
+          "name": "var2",
+          "type": "Float"
+        }
+      ]
+    }
+  ],
+  "_type": "data",
+  "serializer": {
+    "name": "pure",
+    "version": "vX_X_X"
+  }
+}

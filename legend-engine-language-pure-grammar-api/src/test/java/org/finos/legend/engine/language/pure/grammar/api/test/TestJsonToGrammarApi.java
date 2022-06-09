@@ -485,6 +485,97 @@ public class TestJsonToGrammarApi
         testModelFromProtocol(expected, "diagramWithNoGenView.json");
     }
 
+    @Test
+    public void testToGrammarEqualsWithAppliedFunctionAsParameters()
+    {
+        testModelFromProtocol("Class my::TestClass extends meta::pure::metamodel::type::Any\n" +
+                        "[\n" +
+                        "  myConstraint\n" +
+                        "  (\n" +
+                        "    ~function: eq($this.var2 / $this.var1, $this.var4 / $this.var3)\n" +
+                        "    ~enforcementLevel: Error\n" +
+                        "  )\n" +
+                        "]\n" +
+                        "{\n" +
+                        "  var1: Float[1];\n" +
+                        "  var2: Float[1];\n" +
+                        "  var3: Float[1];\n" +
+                        "  var4: Float[1];\n" +
+                        "}\n",
+                "equalsWithAppliedFunctionAsParameters.json");
+    }
+
+    @Test
+    public void testToGrammarEqualsWithAppliedFunctionAndPrimitiveAsParameters()
+    {
+        testModelFromProtocol("Class my::TestClass extends meta::pure::metamodel::type::Any\n" +
+                        "[\n" +
+                        "  myConstraint\n" +
+                        "  (\n" +
+                        "    ~function: eq($this.var2 / $this.var1, 3)\n" +
+                        "    ~enforcementLevel: Error\n" +
+                        "  )\n" +
+                        "]\n" +
+                        "{\n" +
+                        "  var1: Float[1];\n" +
+                        "  var2: Float[1];\n" +
+                        "}\n",
+                "equalsWithAppliedFunctionAndPrimitiveAsParameters.json");
+    }
+
+    @Test
+    public void testToGrammarEqualsWithPrimitiveAndAppliedFunctionAsParameters()
+    {
+        testModelFromProtocol("Class my::TestClass extends meta::pure::metamodel::type::Any\n" +
+                        "[\n" +
+                        "  myConstraint\n" +
+                        "  (\n" +
+                        "    ~function: 3->eq($this.var2 / $this.var1)\n" +
+                        "    ~enforcementLevel: Error\n" +
+                        "  )\n" +
+                        "]\n" +
+                        "{\n" +
+                        "  var1: Float[1];\n" +
+                        "  var2: Float[1];\n" +
+                        "}\n",
+                "equalsWithPrimitiveAndAppliedFunctionAsParameters.json");
+    }
+
+    @Test
+    public void testToGrammarEqualsWithPrimitiveAndPrimitiveAsParameters()
+    {
+        testModelFromProtocol("Class my::TestClass extends meta::pure::metamodel::type::Any\n" +
+                        "[\n" +
+                        "  myConstraint\n" +
+                        "  (\n" +
+                        "    ~function: 3->eq(3) && 3->eq($this.var2 / $this.var1)\n" +
+                        "    ~enforcementLevel: Error\n" +
+                        "  )\n" +
+                        "]\n" +
+                        "{\n" +
+                        "  var1: Float[1];\n" +
+                        "  var2: Float[1];\n" +
+                        "}\n",
+                "equalsWithPrimitiveAndPrimitiveAsParameters.json");
+    }
+
+    @Test
+    public void testToGrammarIsNotEmptyWithAppliedFunctionAsParameter()
+    {
+        testModelFromProtocol("Class my::TestClass extends meta::pure::metamodel::type::Any\n" +
+                        "[\n" +
+                        "  myConstraint\n" +
+                        "  (\n" +
+                        "    ~function: isNotEmpty($this.var1 / 3)\n" +
+                        "    ~enforcementLevel: Error\n" +
+                        "  )\n" +
+                        "]\n" +
+                        "{\n" +
+                        "  var1: Float[1];\n" +
+                        "}\n",
+                "isNotEmptyWithAppliedFunctionAsParameter.json");
+    }
+
     private void testMappingFromProtocol(String expected, String protocolPath)
     {
         try
