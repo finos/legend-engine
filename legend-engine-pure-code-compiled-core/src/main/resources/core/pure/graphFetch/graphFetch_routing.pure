@@ -23,6 +23,7 @@ import meta::pure::graphFetch::routing::*;
 import meta::pure::graphFetch::*;
 import meta::pure::runtime::*;
 import meta::pure::store::*;
+import meta::pure::functions::collection::*;
 
 Class <<access.private>> meta::pure::graphFetch::routing::PropertyMappingInfo
 {
@@ -223,11 +224,12 @@ function meta::pure::graphFetch::routing::routeRootGraphFetchTree(root: RootGrap
 
 function  <<access.private>> meta::pure::graphFetch::routing::ensureConstraintsRequirementsForMappedProperties(treeRoot:RootGraphFetchTree<Any>[1], mapping: Mapping[1]): RootGraphFetchTree<Any>[1]
 {
-   $treeRoot->ensureConstraintsRequirementsForMappedProperties($treeRoot.class, $mapping)->cast(@RootGraphFetchTree<Any>);
+   $treeRoot->ensureConstraintsRequirementsForMappedProperties($treeRoot.class, $mapping, [])->cast(@RootGraphFetchTree<Any>);
 }
 
-function <<access.private>> meta::pure::graphFetch::routing::ensureConstraintsRequirementsForMappedProperties(tree:GraphFetchTree[1], class:Class<Any>[1], mapping: Mapping[1]): GraphFetchTree[1]
+function <<access.private>> meta::pure::graphFetch::routing::ensureConstraintsRequirementsForMappedProperties(tree:GraphFetchTree[1], class:Class<Any>[1], mapping: Mapping[1], cache: Class<Any>[*]): GraphFetchTree[1]
 {
+   let updatedCache = $cache->add($class);
    let constraintsForClass = {c:Class<Any>[1] |
       let allConstraints = $c->getAllTypeGeneralisations()->filter(x| $x->instanceOf(ElementWithConstraints))->cast(@ElementWithConstraints).constraints;
       $allConstraints
@@ -239,12 +241,34 @@ function <<access.private>> meta::pure::graphFetch::routing::ensureConstraintsRe
 
    let newSubTrees = $forThisTree.subTrees->cast(@PropertyGraphFetchTree)->map({st| 
       let returns = $st.property->functionReturnType().rawType->toOne();
-      if($returns->instanceOf(Class),
-         | $st->ensureConstraintsRequirementsForMappedProperties($returns->cast(@Class<Any>), $mapping),
-         | $st
+      if($returns->instanceOf(Class) && !($updatedCache->contains($returns) && $st->instanceOf(SystemGeneratedPropertyGraphFetchTree)),
+         | $st->ensureConstraintsRequirementsForMappedProperties($returns->cast(@Class<Any>), $mapping, $updatedCache),
+         | if($returns->instanceOf(Class) && $updatedCache->contains($returns),
+          | $st->checkForConstraintsExclusion($returns->cast(@Class<Any>), $mapping),
+          | $st)
       );
    });
    ^$forThisTree(subTrees=$newSubTrees);
+}
+function <<access.private>> meta::pure::graphFetch::routing::checkForConstraintsExclusion(tree:PropertyGraphFetchTree[1], class:Class<Any>[1], mapping: Mapping[1]): GraphFetchTree[1]
+{
+  let allConstraints = $class->getAllTypeGeneralisations()->filter(x| $x->instanceOf(ElementWithConstraints))->cast(@ElementWithConstraints).constraints;
+
+  let constraintsToExclude = $allConstraints
+    ->map(c | pair($c.name->toOne(),$c.functionDefinition))
+    ->filter(l | $l.second->requiredPropertiesAreMapped($class, $mapping))
+    ->filter(l | $l.second->excludeIfAbsentInGraph($tree, $class))
+    ->map(c | $c.first);
+
+  ^ExtendedPropertyGraphFetchTree(property=$tree.property, subTrees=$tree.subTrees, constraintsExclusions=$constraintsToExclude);
+}
+
+function <<access.private>> meta::pure::graphFetch::routing::excludeIfAbsentInGraph(f:FunctionDefinition<Any>[1], node:GraphFetchTree[1], class:Class<Any>[1]): Boolean[1]
+{
+  let properties = $node.subTrees->filter(n | $n->instanceOf(PropertyGraphFetchTree))->map(n | $n->cast(@PropertyGraphFetchTree).property);
+  let pathsForConstraint = pathsForConstraintFunctions($class, $f)->removeDuplicates();
+
+  $pathsForConstraint->size() > $properties->size();
 }
 
 function <<access.private>> meta::pure::graphFetch::routing::requiredPropertiesAreMapped(functions:FunctionDefinition<Any>[*], class:Class<Any>[1], mapping: Mapping[1]):Boolean[1]
@@ -301,11 +325,13 @@ function meta::pure::graphFetch::routing::routePropertyGraphFetchTree(prop: Prop
              parameters = $prop.parameters,
              requiredQualifiedProperties = $prop->match([epgft:ExtendedPropertyGraphFetchTree[1]| $epgft.requiredQualifiedProperties, 
                                                          gft  :GraphFetchTree[1]                | []
+                                                        ]),
+             constraintsExclusions = $prop->match([epgft:ExtendedPropertyGraphFetchTree[1]| $epgft.constraintsExclusions,
+                                                         gft  :GraphFetchTree[1]                | []
                                                         ])
           );
      ,|[]);
 }
-
 
 
 
