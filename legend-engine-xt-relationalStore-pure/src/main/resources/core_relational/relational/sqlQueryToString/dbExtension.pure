@@ -1,0 +1,566 @@
+import meta::relational::functions::sqlQueryToString::*;
+import meta::relational::functions::pureToSqlQuery::metamodel::*;
+import meta::relational::runtime::*;
+import meta::relational::metamodel::*;
+import meta::relational::metamodel::datatype::*;
+import meta::relational::metamodel::operation::*;
+import meta::relational::metamodel::relation::*;
+import meta::pure::router::extension::*;
+
+Enum meta::relational::functions::sqlQueryToString::GenerationSide
+{
+   Select,
+   Where
+}
+
+Class meta::relational::functions::sqlQueryToString::GenerationState
+{
+  <<equality.Key>> generationSide : GenerationSide[1];
+  <<equality.Key>> withinWhenClause : Boolean[0..1];
+}
+
+Class meta::relational::functions::sqlQueryToString::Config
+{
+   callingFromFilter : Boolean[0..1];
+   useQuotesForTableAliasColumn : Boolean[0..1];
+   generateJoin:Boolean[0..1];
+   generateJoinTarget : TableAlias[0..1];
+}
+
+Class meta::relational::functions::sqlQueryToString::Format
+{
+   newLine:String[1];
+   indent:String[1];
+
+   indentStack:String[*];
+
+   separator(){
+      $this.newLine + $this.indentStack->makeString();
+   }:String[1];
+}
+
+Class meta::relational::functions::sqlQueryToString::DbConfig
+{
+   dbType:DatabaseType[1];
+   dbTimeZone:String[0..1];
+   quoteIdentifiers:Boolean[1];
+
+   dbExtension: DbExtension[1];
+
+   isDbReservedIdentifier(str:String[1])
+   {
+     $this.dbExtension.isDbReservedIdentifier->eval($str);
+   }: Boolean[1];
+
+   windowColumnProcessor(w:WindowColumn[1], sgc:SqlGenerationContext[1])
+   {
+     assert($this.dbExtension.windowColumnProcessor->isNotEmpty(), 'Window Columns not supported for Database Type: ' + $this.dbType->toString());
+     $this.dbExtension.windowColumnProcessor->toOne()->eval($w, $sgc);
+   }: String[1];
+
+   semiStructuredElementProcessor(s:RelationalOperationElement[1], sgc:SqlGenerationContext[1])
+   {
+     assert($this.dbExtension.semiStructuredElementProcessor->isNotEmpty(), 'Semi structured array element processing not supported for Database Type: ' + $this.dbType->toString());
+     $this.dbExtension.semiStructuredElementProcessor->toOne()->eval($s, $sgc);
+   }: String[1];
+
+   joinStringsProcessor(j:JoinStrings[1], sgc:SqlGenerationContext[1])
+   {
+     assert($this.dbExtension.joinStringsProcessor->isNotEmpty(), 'Join strings operation not supported for Database Type: ' + $this.dbType->toString());
+     $this.dbExtension.joinStringsProcessor->toOne()->eval($j, $sgc);
+   }: String[1];
+
+   selectSQLQueryProcessor(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1])
+   {
+     $this.dbExtension.selectSQLQueryProcessor->eval($s, $sgc, $isSubSelect);
+   }: String[1];
+
+   schemaNameToIdentifier(s:String[1])
+   {
+     if($this.dbExtension.schemaNameToIdentifier->isEmpty(), |$s, |$this.dbExtension.schemaNameToIdentifier->toOne()->eval($s, $this));
+   }: String[1];
+
+   tableNameToIdentifier(s:String[1])
+   {
+     if($this.dbExtension.tableNameToIdentifier->isEmpty(), |$s, |$this.dbExtension.tableNameToIdentifier->toOne()->eval($s, $this));
+   }: String[1];
+
+   columnNameToIdentifier(s:String[1])
+   {
+     if($this.dbExtension.columnNameToIdentifier->isEmpty(), |$s, |$this.dbExtension.columnNameToIdentifier->toOne()->eval($s, $this));
+   }: String[1];
+
+   identifierProcessor(s:String[1])
+   {
+     $this.dbExtension.identifierProcessor->eval($s, $this);
+   }: String[1];
+
+   dynaFuncDispatch(dynaFn:DynaFunction[1], sgc:SqlGenerationContext[1])
+   {
+     $this.dbExtension.dynaFuncDispatch->eval($dynaFn, $sgc);
+   }: DynaFunctionToSql[1];
+}
+
+function meta::relational::functions::sqlQueryToString::createDbConfig(dbType:DatabaseType[1]):DbConfig[1]
+{
+   createDbConfig($dbType, []);
+}
+
+function meta::relational::functions::sqlQueryToString::createDbConfig( dbType:DatabaseType[1], dbTimeZone:String[0..1]):DbConfig[1]
+{
+   createDbConfig($dbType, $dbTimeZone, []);
+}
+
+function meta::relational::functions::sqlQueryToString::createDbConfig( dbType:DatabaseType[1], dbTimeZone:String[0..1], quoteIdentifiers:Boolean[0..1]):DbConfig[1]
+{
+   ^DbConfig(
+      dbType = $dbType,
+      dbTimeZone = $dbTimeZone,
+      quoteIdentifiers = if($quoteIdentifiers->isEmpty(), |false, |$quoteIdentifiers->toOne()),
+      dbExtension = $dbType->loadDbExtension()
+   );
+}
+
+Class meta::relational::functions::sqlQueryToString::DbExtension
+{
+   isBooleanLiteralSupported: Boolean[1];
+   collectionThresholdLimit: Integer[0..1];
+   aliasLimit: Integer[0..1];
+   coreTypeToDbSpecificSqlTranslator: meta::pure::metamodel::function::Function<{CoreDataType[1] -> String[0..1]}>[0..1];
+   isDbReservedIdentifier: meta::pure::metamodel::function::Function<{String[1] -> Boolean[1]}>[1];
+   literalProcessor: meta::pure::metamodel::function::Function<{Type[1] -> LiteralProcessor[1]}>[1];
+   windowColumnProcessor: meta::pure::metamodel::function::Function<{WindowColumn[1], SqlGenerationContext[1] -> String[1]}>[0..1];
+   semiStructuredElementProcessor: meta::pure::metamodel::function::Function<{RelationalOperationElement[1], SqlGenerationContext[1] -> String[1]}>[0..1];
+   joinStringsProcessor: meta::pure::metamodel::function::Function<{JoinStrings[1], SqlGenerationContext[1] -> String[1]}>[0..1];
+   selectSQLQueryProcessor: meta::pure::metamodel::function::Function<{SelectSQLQuery[1], SqlGenerationContext[1], Boolean[1] -> String[1]}>[1];
+   schemaNameToIdentifier: meta::pure::metamodel::function::Function<{String[1], DbConfig[1] -> String[1]}>[0..1];
+   tableNameToIdentifier: meta::pure::metamodel::function::Function<{String[1], DbConfig[1] -> String[1]}>[0..1];
+   columnNameToIdentifier: meta::pure::metamodel::function::Function<{String[1], DbConfig[1] -> String[1]}>[0..1];
+   identifierProcessor: meta::pure::metamodel::function::Function<{String[1], DbConfig[1] -> String[1]}>[1];
+   dynaFuncDispatch: meta::pure::metamodel::function::Function<{DynaFunction[1], SqlGenerationContext[1] -> DynaFunctionToSql[1]}>[1];
+   ddlCommandsTranslator : RelationalDDLCommandsTranslator[0..1];
+}
+
+Class meta::relational::functions::sqlQueryToString::RelationalDDLCommandsTranslator
+{
+  createSchema: meta::pure::metamodel::function::Function<{CreateSchemaSQL[1]->String[*]}>[0..1];
+  dropSchema : meta::pure::metamodel::function::Function<{DropSchemaSQL[1]->String[*]}>[0..1];
+  dropTable : meta::pure::metamodel::function::Function<{DropTableSQL[1] -> String[*]}>[0..1];
+  createTable : meta::pure::metamodel::function::Function<{CreateTableSQL[1], DbConfig[1] -> String[*]}>[0..1];
+  loadTable: meta::pure::metamodel::function::Function<{LoadTableSQL[1], DbConfig[1] ->  String[*]}>[0..1];
+}
+
+Class meta::relational::functions::sqlQueryToString::DbExtensionLoader
+{
+   dbType: DatabaseType[1];
+   loader: meta::pure::metamodel::function::Function<{->DbExtension[1]}>[1];
+}
+
+Class meta::relational::functions::sqlQueryToString::SqlGenerationContext
+{
+   dbConfig: DbConfig[1];
+   format: Format[1];
+   generationState: GenerationState[1];
+   config: Config[1];
+   extensions: RouterExtension[*];
+}
+
+function meta::relational::functions::sqlQueryToString::literalTransform<K>(t: meta::pure::metamodel::function::Function<{K[1] -> String[1]}>[1]): meta::pure::metamodel::function::Function<{K[1], String[0..1] -> String[1]}>[1]
+{
+  {x:K[1], dbTimeZone:String[0..1]| $t->eval($x)};
+}
+
+Class meta::relational::functions::sqlQueryToString::LiteralProcessor
+{
+   types:Type[*];
+   format: String[1];
+   transform: meta::pure::metamodel::function::Function<{Nil[1], String[0..1] -> String[1]}>[1];
+
+   formatValue(value:Any[1], dbTimeZone:String[0..1]) {
+      $this.format->format($this.transformValue($value, $dbTimeZone))
+   }:String[1];
+
+   transformValue(value:Any[1], dbTimeZone:String[0..1]) {
+      $this.transform->eval($value, $dbTimeZone)
+   }:String[1];
+}
+
+Profile meta::relational::functions::sqlQueryToString::db
+{
+   stereotypes: [ExtensionLoader];
+}
+
+function meta::relational::functions::sqlQueryToString::getDatabaseTypes():DatabaseType[*]
+{
+  getDbExtensionLoaders().dbType;
+}
+
+function meta::relational::functions::sqlQueryToString::loadDbExtension(dbType: DatabaseType[1]):DbExtension[1]
+{
+  let loader = getDbExtensionLoaders()->filter(l| $l.dbType == $dbType);
+  assert($loader->size() > 0, 'No extension loaders found for dbType ' + $dbType->toString());
+  assert($loader->size() < 2, 'Multiple extension loaders found for dbType ' + $dbType->toString());
+  $loader->toOne().loader->eval();
+}
+
+function meta::relational::functions::sqlQueryToString::getDbExtensionLoaders():DbExtensionLoader[*]
+{
+  db->stereotype('ExtensionLoader').modelElements->cast(@meta::pure::metamodel::function::Function<{->DbExtensionLoader[1]}>)
+    ->map(f| $f->eval())->sortBy(l| $l.dbType.name);
+}
+
+function meta::relational::functions::sqlQueryToString::sqlQueryToString(sqlQuery:SQLQuery[1], dbType:DatabaseType[1], extensions:RouterExtension[*]):String[1]
+{
+   sqlQueryToString($sqlQuery, $dbType, [], [], $extensions);
+}
+
+function meta::relational::functions::sqlQueryToString::sqlQueryToString(sqlQuery:SQLQuery[1], dbType:DatabaseType[1], dbTimeZone:String[0..1], quoteIdentifiers:Boolean[0..1], extensions:RouterExtension[*]):String[1]
+{
+   sqlQueryToString($sqlQuery, $dbType, $dbTimeZone, $quoteIdentifiers, ^Format(newLine='', indent=''), $extensions);
+}
+
+function meta::relational::functions::sqlQueryToString::sqlQueryToStringPretty(sqlQuery:SQLQuery[1], dbType:DatabaseType[1], dbTimeZone:String[0..1], quoteIdentifiers:Boolean[0..1], extensions:RouterExtension[*]):String[1]
+{
+   sqlQueryToString($sqlQuery, $dbType, $dbTimeZone, $quoteIdentifiers, ^Format(newLine='\n', indent='\t'), $extensions);
+}
+
+function meta::relational::functions::sqlQueryToString::sqlQueryToString(sqlQuery:SQLQuery[1], dbType:DatabaseType[1], dbTimeZone:String[0..1], quoteIdentifiers:Boolean[0..1], format:Format[1], extensions:RouterExtension[*]):String[1]
+{
+   processOperation($sqlQuery, createDbConfig($dbType, $dbTimeZone, $quoteIdentifiers), $format, ^Config(), $extensions);
+}
+
+function meta::relational::functions::sqlQueryToString::processOperation(relationalOperationElement:RelationalOperationElement[1], dbType:DatabaseType[1], extensions:RouterExtension[*]):String[1]
+{
+   processOperation($relationalOperationElement, createDbConfig($dbType, []), ^Format(newLine='', indent=''), ^Config(), $extensions);
+}
+
+function meta::relational::functions::sqlQueryToString::processOperation(relationalOperationElement:RelationalOperationElement[1], dbType:DatabaseType[1], dbTimeZone:String[0..1], quoteIdentifiers:Boolean[0..1], extensions:RouterExtension[*]):String[1]
+{
+   processOperation($relationalOperationElement, createDbConfig($dbType, $dbTimeZone, $quoteIdentifiers), ^Format(newLine='', indent=''), ^Config(), $extensions);
+}
+
+function meta::relational::functions::sqlQueryToString::processOperation(relationalOperationElement:RelationalOperationElement[1], dbType:DatabaseType[1], config:Config[1], extensions:RouterExtension[*]):String[1]
+{
+   processOperation($relationalOperationElement, createDbConfig($dbType, []), ^Format(newLine='', indent=''), $config, $extensions);
+}
+
+function meta::relational::functions::sqlQueryToString::processOperation(relationalOperationElement:RelationalOperationElement[1], dbConfig : DbConfig[1], format:Format[1], extensions:RouterExtension[*]):String[1]
+{
+   processOperation($relationalOperationElement, $dbConfig, $format, ^GenerationState(generationSide = GenerationSide.Where, withinWhenClause = false), ^Config(), $extensions);
+}
+
+function meta::relational::functions::sqlQueryToString::processOperation(relationalOperationElement:RelationalOperationElement[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], extensions:RouterExtension[*]):String[1]
+{
+   processOperation($relationalOperationElement, $dbConfig, $format, ^GenerationState(generationSide = GenerationSide.Where, withinWhenClause = false), $config, $extensions);
+}
+
+function meta::relational::functions::sqlQueryToString::processOperation(relationalOperationElement:RelationalOperationElement[1], dbConfig : DbConfig[1], format:Format[1], generationState:GenerationState[1], extensions:RouterExtension[*]):String[1]
+{
+   processOperation($relationalOperationElement, $dbConfig, $format, $generationState, ^Config(), $extensions);
+}
+
+function meta::relational::functions::sqlQueryToString::processOperation(relationalOperationElement:RelationalOperationElement[1], sgc:SqlGenerationContext[1]):String[1]
+{
+   $relationalOperationElement->processOperation($sgc.dbConfig, $sgc.format, $sgc.generationState, $sgc.config, $sgc.extensions);
+}
+
+function meta::relational::functions::sqlQueryToString::processOperation(relationalOperationElement:RelationalOperationElement[1], dbConfig : DbConfig[1], format:Format[1], generationState:GenerationState[1], config:Config[1], extensions:RouterExtension[*]):String[1]
+{
+   let sgc = ^SqlGenerationContext(dbConfig=$dbConfig, format=$format, generationState=$generationState, config=$config, extensions=$extensions);
+   $relationalOperationElement->match($extensions->map(e|$e.moduleExtension('relational')->cast(@RelationalExtension).sqlQueryToString_processOperation)->map(f | $f->eval($dbConfig, $format, $generationState, $config, $extensions))->concatenate(
+                                       [
+                                          v:VarPlaceHolder[1]| '${'+$v.name+'}',
+                                          v:VarSetPlaceHolder[1]| '${'+$v.varName+'}',
+                                          v:VarCrossSetPlaceHolder[1]| '${'+$v.varName+'}',
+                                          w:WindowColumn[1]|$dbConfig.windowColumnProcessor($w, $sgc),
+                                          s:ViewSelectSQLQuery[1]|'('+$s.selectSQLQuery->processOperation($dbConfig, $format, $generationState, $config, $extensions)+')',
+                                          t:Table[1]|$t->tableToString($dbConfig),
+                                          js:JoinStrings[1] | $dbConfig.joinStringsProcessor($js, ^$sgc(config=^Config())),
+                                          alias:Alias[1]|
+                                                let innerTerm = $alias.relationalElement->match([
+                                                   r : VarSetPlaceHolder[1]|$r->processOperation($dbConfig, $format, $generationState, $config, $extensions),
+                                                   s : SelectSQLQuery[1]|$s->processSelectSQLQuery($sgc, true),
+                                                   r : RelationalOperationElement[1]|$r->processOperation($dbConfig, $format, $generationState, $config, $extensions)
+                                                ]);
+
+                                                let identifier = $dbConfig.identifierProcessor($alias.name);
+                                            
+                                                let sqlOp = $alias.relationalElement->instanceOf(SelectSQLQuery) || $alias.relationalElement->instanceOf(VarCrossSetPlaceHolder);
+
+                                                '%s%s%s as %s'->format([
+                                                      if ($sqlOp,|'(',|''),
+                                                      $innerTerm,
+                                                      if ($sqlOp,|')',|''),
+                                                      $identifier
+                                                      ]);
+                                             ,
+                                          c:TableAliasColumn[1]|let doubleQuote = if($config.useQuotesForTableAliasColumn == false, |'', |'"');
+                                                                if(!$config.generateJoin->isEmpty() && $config.generateJoin->toOne(),|if ($config.generateJoinTarget == $c.alias,
+                                                                                                                                          |'{target}.',
+                                                                                                                                          |let schema = $c.alias.relationalElement->match([t:Table[1]|$t.schema.name, v:View[1]|$v.schema.name]);
+                                                                                                                                           if ($schema == 'default',|'',|$schema+'.');
+                                                                                                                                      )
+                                                                                                                                    ,|''
+                                                                ) + if ($config.generateJoinTarget == $c.alias, |'',|$dbConfig.identifierProcessor($doubleQuote+$c.alias.name->toOne()+$doubleQuote) + '.') + processColumnName($c.column.name->toOne(), $dbConfig);,
+                                          l:Literal[1]| processLiteral($l, $dbConfig),
+                                          ll:LiteralList[1] | $ll.values->map(e | $e->processOperation($dbConfig, $format, $generationState, $config, $extensions))->joinStrings('(', ', ', ')'),
+                                          s:SelectSQLQuery[1]| $s->processSelectSQLQuery($sgc, false),
+                                          u:UnionAll[1]| '('+$u.queries->map(q|$q->processSelectSQLQuery($sgc, false))->makeString(' UNION ALL ')+')',
+                                          u:Union[1]| '('+$u.queries->map(q|$q->processSelectSQLQuery($sgc, false))->makeString(' UNION ')+')',
+                                          f:FreeMarkerOperationHolder[1]|processFreeMarkerOperationHolder($f, $dbConfig, $format, $generationState, $config, false, $extensions),
+                                          d:DynaFunction[1]|processDynaFunction($d, $sgc),
+                                          c:ColumnName[1]|$dbConfig.identifierProcessor($c.name->toOne()),
+                                          s:SemiStructuredObjectNavigation[1]|$dbConfig.semiStructuredElementProcessor($s, $sgc),
+                                          s:SemiStructuredArrayFlatten[1]|$dbConfig.semiStructuredElementProcessor($s, $sgc),
+                                          s:SemiStructuredArrayFlattenOutput[1]|$dbConfig.semiStructuredElementProcessor($s, $sgc),
+                                          {f:meta::relational::metamodel::operation::Function[1]| assert(false, 'Don\'t know how to handle %s', $f->type()); 'TO DO'; }
+                                       ])->toOneMany()
+                                     );
+}
+
+function meta::relational::functions::sqlQueryToString::tableToString(table:Table[1], dbConfig : DbConfig[1]):String[1]
+{
+   let schemaName = $dbConfig.schemaNameToIdentifier($table.schema.name);
+   let tableName = $dbConfig.tableNameToIdentifier($table.name);
+   if($schemaName == 'default', | $dbConfig.identifierProcessor($tableName), | $dbConfig.identifierProcessor($schemaName) + '.' + $dbConfig.identifierProcessor($tableName));
+}
+
+function meta::relational::functions::sqlQueryToString::indent(d:Format[1]):Format[1]
+{
+   ^$d(indentStack += $d.indent);
+}
+
+function meta::relational::functions::sqlQueryToString::processSelectSQLQuery(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
+{
+   if ($s.columns->isEmpty() && !$s.data->isEmpty() && $s.data.alias.relationalElement->toOne()->instanceOf(Union) && $s.data.children->isEmpty(),
+      | $s.data.alias.relationalElement->toOne()->processOperation($sgc.dbConfig, $sgc.format->indent(), $sgc.config, $sgc.extensions),
+      | $sgc.dbConfig.selectSQLQueryProcessor($s, $sgc, $isSubSelect)
+   );
+}
+
+function meta::relational::functions::sqlQueryToString::processColumnName(name:String[1], dbConfig:DbConfig[1]):String[1]
+{
+   $dbConfig.identifierProcessor($dbConfig.columnNameToIdentifier($name));
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processLiteral(literal:Literal[1], dbConfig : DbConfig[1]) : String[1]
+{
+   $literal.value->processLiteralValue($dbConfig);
+}
+
+function meta::relational::functions::sqlQueryToString::processLiteralValue(a:Any[1], dbConfig : DbConfig[1]) : String[1]
+{
+   let processor = getLiteralProcessorForType($a->type(), $dbConfig.dbExtension.literalProcessor);
+   $processor.formatValue($a, $dbConfig.dbTimeZone);
+}
+
+function meta::relational::functions::sqlQueryToString::getLiteralProcessorForType(type:Type[1], literalProcessor: meta::pure::metamodel::function::Function<{Type[1] -> LiteralProcessor[1]}>[1]): LiteralProcessor[1]
+{
+   if($type->equal(VarPlaceHolder),
+      |^LiteralProcessor(format = '%s', transform = {v:VarPlaceHolder[1], dbTimeZone:String[0..1] | convertPlaceHolderToSQLString($v, $literalProcessor, $dbTimeZone)}),
+      |$literalProcessor->eval($type));
+}
+
+function meta::relational::functions::sqlQueryToString::maybeWrapAsBooleanOperation(e:RelationalOperationElement[1], sgc:SqlGenerationContext[1]):RelationalOperationElement[1]
+{
+   if ($sgc.dbConfig.dbExtension.isBooleanLiteralSupported, |$e, |$e->wrapAsBooleanOperation($sgc.extensions));
+}
+
+function meta::relational::functions::sqlQueryToString::wrapAsBooleanOperation(e:RelationalOperationElement[1], extensions:RouterExtension[*]):RelationalOperationElement[1]
+{
+   if ($e->isBooleanOperation($extensions), | $e, | ^DynaFunction(name ='equal', parameters=[$e, ^Literal(value=true)]));
+}
+
+function meta::relational::functions::sqlQueryToString::isBooleanOperation(relationalElement:RelationalOperationElement[1], extensions:RouterExtension[*]):Boolean[1]
+{
+   $relationalElement->match($extensions.moduleExtension('relational')->cast(@RelationalExtension).sqlQueryToString_isBooleanOperation->concatenate([
+      d:DynaFunction[1] | $d.name->in(['or', 'and', 'lessThan', 'lessThanEqual', 'greaterThan', 'greaterThanEqual', 'equal', 'notEqual', 'notEqualAnsi', 'startsWith', 'endsWith', 'contains', 'isEmpty', 'isNotEmpty', 'isNull', 'isNotNull','isAlphaNumeric', 'exists', 'not', 'in', 'isNumeric', 'matches', 'isDistinct'])
+                                       || ($d.name == 'group' && $d.parameters->toOne()->isBooleanOperation($extensions));,
+      f:FreeMarkerOperationHolder[1] | $f.name->in(['optionalVarPlaceHolderOpSelector']);,
+      a:Any[1] | false
+   ])->toOneMany()
+   )
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processDynaFunction(func:DynaFunction[1], sgc:SqlGenerationContext[1]):String[1]
+{
+   if ($func->isEqualsFromFilter($sgc.config),
+      | processEqualFromFilter($func,$sgc),
+      |
+   if ($func.name == 'case',
+      | processCase($func,$sgc),
+      |
+   if ($func.name == 'not',
+      | processNot($func,$sgc),
+      | let result = $sgc.dbConfig.dynaFuncDispatch($func, $sgc);
+
+        let params = if ($func.name->in(['and', 'or']),
+                        | $func.parameters->map(p | $p->maybeWrapAsBooleanOperation($sgc)),
+                        |
+                     if($func.name == 'if',
+                        | $func.parameters->head()->map(p | $p->maybeWrapAsBooleanOperation($sgc))->concatenate($func.parameters->tail()),
+                        | $func.parameters
+                     ));
+        let config = $sgc.config;
+        let generationState = $sgc.generationState;
+        let newSgc = if($func.name->in(['and', 'or']), | $sgc, | ^$sgc(config = ^$config(callingFromFilter = [])));
+        let paramWiseSgcs = if($result.toSql.parametersWithinWhenClause->isEmpty(),|range(0,$params->size(),1)->map(i|$newSgc),|$result.toSql.parametersWithinWhenClause->map(b|^$newSgc(generationState = ^$generationState(withinWhenClause=$b))));
+        $result->toOne().toSql($params, $paramWiseSgcs);
+   )));
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processCase(func:DynaFunction[1], sgc:SqlGenerationContext[1]):String[1]
+{
+   let params = $func.parameters;
+   let size = ($params->size()-1)/2;
+   let range = range(0, $size->floor()*2, 2);
+   let sgcNoConfig = ^$sgc(config=^Config());
+   let generationState = $sgc.generationState;
+   let sgcWithinWhen = ^$sgcNoConfig(generationState=^$generationState(withinWhenClause = true));
+   'case '+ $range->map(o| $sgc.format.separator + 'when '+$params->at($o)->processOperation($sgcWithinWhen)+ ' ' + $sgc.format.separator + 'then '+$params->at($o+1)->processOperation($sgcNoConfig))->makeString(' ')+ ' ' + $sgc.format.separator + 'else '+$params->at($params->size()-1)->processOperation($sgcNoConfig)+' end';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::isEqualsFromFilter(func:DynaFunction[1], config: Config[1]):Boolean[1]
+{
+   $func.name == 'equal' && $config.callingFromFilter == true &&
+      $func.parameters->forAll(p | $p->instanceOf(TableAliasColumn) && $p->cast(@TableAliasColumn).column.nullable != false);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::isAndOr(func:DynaFunction[1]):Boolean[1]
+{
+   $func.name == 'and' || $func.name == 'or';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::isNot(func:DynaFunction[1]):Boolean[1]
+{
+   $func.name == 'not';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processEqualFromFilter(func:DynaFunction[1], sgc:SqlGenerationContext[1]):String[1]
+{
+   let params = $func.parameters->map(p | $p->processOperation($sgc));
+   let left = $params->at(0);
+   let right = $params->at(1);
+   '(' + $left + ' = ' + $right + ' OR (' + $left + ' is null AND ' + $right + ' is null))';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processNot(func:DynaFunction[1], sgc:SqlGenerationContext[1]):String[1]
+{
+   let parameter = $func.parameters->at(0);
+   $parameter->match([
+                       dynaFunction:DynaFunction[1] |  let functionName = $dynaFunction.name;
+                                                       if($functionName == 'equal', | $dynaFunction->processNotEqual($sgc),
+                                                                                    | if($functionName == 'in', | $dynaFunction->processNotIn($sgc),
+                                                                                                                | if($dynaFunction->isAndOr() || $dynaFunction->isNot(), | 'not ('+$dynaFunction->processOperation($sgc) +')';,
+                                                                                                                                                                         | 'not ' + $dynaFunction->maybeWrapAsBooleanOperation($sgc)->processOperation($sgc);
+                                                                                                                     );
+                                                                                         );
+                                                          );,
+                       rOp: RelationalOperationElement[1] | 'not ' + $rOp->maybeWrapAsBooleanOperation($sgc)->processOperation($sgc)
+                    ]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processNotEqual(func:DynaFunction[1], sgc:SqlGenerationContext[1]):String[1]
+{
+   let processedParams = $func.parameters->map(p | $p->processOperation($sgc));
+   let left = $func.parameters->at(0);
+   let right = $func.parameters->at(1);
+   let processedLeft = $processedParams->at(0);
+   let processedRight = $processedParams->at(1);
+   let orNull =   if($left->instanceOf(Literal) && $right->instanceOf(Literal),
+                     | '',
+                     | if(!$left->instanceOf(Literal) && $right->instanceOf(Literal),
+                          |' OR ' + $processedLeft + ' is null',
+                          |if ($left->instanceOf(Literal) && !$right->instanceOf(Literal),
+                               |' OR ' + $processedRight + ' is null',
+                               | ' OR ' + $processedLeft + ' is null' + ' AND ' + $processedRight + ' is not null' + ' OR ' + $processedLeft + ' is not null' + ' AND ' + $processedRight + ' is null'
+                              )
+                         )
+                   );
+   '(' + $processedLeft + ' <> ' + $processedRight + $orNull + ')';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processNotIn(func:DynaFunction[1], sgc:SqlGenerationContext[1]):String[1]
+{
+   let processedParams = $func.parameters->map(p | $p->processOperation($sgc));
+   let processedLeft = $processedParams->at(0);
+   let processedRight = $processedParams->at(1);
+   '(' + $processedLeft + ' not in ' + if($processedRight->startsWith('(') && $processedRight->endsWith(')'), | $processedRight, | '(' + $processedRight + ')') + ' OR ' + $processedLeft + ' is null)';
+}
+
+function meta::relational::functions::sqlQueryToString::sqlNull():SQLNull[1]
+{
+    ^SQLNull();
+}
+
+function meta::relational::functions::sqlQueryToString::sqlTrue():Boolean[1]
+{
+    true;
+}
+
+function meta::relational::functions::sqlQueryToString::sqlFalse():Boolean[1]
+{
+    false;
+}
+
+function meta::relational::functions::sqlQueryToString::allGenerationStates(): GenerationState[*]
+{
+  let selectInsideWhen  = ^GenerationState(generationSide=GenerationSide.Select, withinWhenClause=true);
+  let selectOutsideWhen = ^GenerationState(generationSide=GenerationSide.Select, withinWhenClause=false);
+  let whereInsideWhen   = ^GenerationState(generationSide=GenerationSide.Where,  withinWhenClause=true);
+  let whereOutsideWhen  = ^GenerationState(generationSide=GenerationSide.Where,  withinWhenClause=false);
+  [$selectInsideWhen, $selectOutsideWhen, $whereInsideWhen, $whereOutsideWhen];
+}
+
+function meta::relational::functions::sqlQueryToString::selectOutsideWhenGenerationState(): GenerationState[1]
+{
+  ^GenerationState(generationSide=GenerationSide.Select, withinWhenClause=false);
+}
+
+function meta::relational::functions::sqlQueryToString::notSelectOutsideWhenGenerationStates(): GenerationState[*]
+{
+  let selectInsideWhen  = ^GenerationState(generationSide=GenerationSide.Select, withinWhenClause=true);
+  let whereInsideWhen   = ^GenerationState(generationSide=GenerationSide.Where,  withinWhenClause=true);
+  let whereOutsideWhen  = ^GenerationState(generationSide=GenerationSide.Where,  withinWhenClause=false);
+  [$selectInsideWhen, $whereInsideWhen, $whereOutsideWhen];
+}
+
+function meta::relational::functions::sqlQueryToString::dynaFnToSql(dynafunctionName: String[1], generationStates:GenerationState[*], toSql:ToSql[1]): DynaFunctionToSql[1]
+{
+   ^DynaFunctionToSql(funcName=$dynafunctionName, stateMatch=$generationStates, toSql=$toSql);
+}
+
+function meta::relational::functions::sqlQueryToString::getDynaFunctionDispatcher(dispatch: Map<String, List<DynaFunctionToSql>>[1]): meta::pure::metamodel::function::Function<{DynaFunction[1], SqlGenerationContext[1]->DynaFunctionToSql[1]}>[1]
+{
+   { func:DynaFunction[1], sgc:SqlGenerationContext[1] |
+        let result = $dispatch->get($func.name)->cast(@List<DynaFunctionToSql>).values->filter(d | $d.stateMatch->isEmpty() || $sgc.generationState->in($d.stateMatch));
+        assertSize($result, 1, | 'The function \''+$func.name+'\' (state: ['+$sgc.generationState.generationSide->id()+', '+if($sgc.generationState->isEmpty(),|'empty',|$sgc.generationState.withinWhenClause->toOne()->toString())+']) is not supported yet');
+        assert($result.toSql.parametersWithinWhenClause->isEmpty() || ($result.toSql.parametersWithinWhenClause->size() >= $func.parameters->size()),|'Error generating \''+$func.name+'\' The function takes '+$func.parameters->size()->toString()+' parameters but '+$result.toSql.parametersWithinWhenClause->size()->toString()+' within where clause flag were provided.');
+        $result->toOne();
+   };
+}
+
+Class meta::relational::functions::sqlQueryToString::DynaFunctionToSql
+{
+   funcName:String[1];
+   stateMatch:GenerationState[*];
+   toSql: ToSql[1];
+
+   toSql(parameters:RelationalOperationElement[*], sgcs:SqlGenerationContext[*])
+   {
+      let processedParams = $parameters->zip($sgcs)->map(p | $p.first->processOperation($p.second));
+      let params = if($this.toSql.transform->isEmpty(), | $processedParams, | $this.toSql.transform->toOne()->eval($processedParams));
+
+      format($this.toSql.format, $params);
+   }:String[1];
+}
+
+Class meta::relational::functions::sqlQueryToString::ToSql
+[
+    !$this.format->contains(' when ') || !$this.parametersWithinWhenClause->isEmpty()
+]
+{
+   format:String[1];
+   transform:meta::pure::metamodel::function::Function<{String[*]->String[*]}>[0..1];
+   parametersWithinWhenClause : Boolean[*];
+}

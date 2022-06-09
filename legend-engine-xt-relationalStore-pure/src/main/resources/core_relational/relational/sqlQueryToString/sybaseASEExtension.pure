@@ -1,0 +1,81 @@
+import meta::relational::functions::sqlQueryToString::sybaseASE::*;
+import meta::relational::functions::sqlQueryToString::sybaseIQ::*;
+import meta::relational::functions::sqlQueryToString::default::*;
+import meta::relational::functions::sqlQueryToString::*;
+import meta::relational::metamodel::operation::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::runtime::*;
+import meta::pure::router::extension::*;
+
+function <<db.ExtensionLoader>> meta::relational::functions::sqlQueryToString::sybaseASE::dbExtensionLoaderForSybase():DbExtensionLoader[1]
+{
+  ^DbExtensionLoader(dbType = DatabaseType.Sybase, loader = createDbExtensionForSybase__DbExtension_1_);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseASE::createDbExtensionForSybase():DbExtension[1]
+{
+   let reservedWords = defaultReservedWords();
+   let literalProcessors = getDefaultLiteralProcessors()->putAll(getLiteralProcessorsForSybaseASE());
+   let literalProcessor = {type:Type[1]| $literalProcessors->get(if($type->instanceOf(Enumeration), | Enum, | $type))->toOne()};
+   let dynaFuncDispatch = getDynaFunctionToSqlDefault($literalProcessor)->groupBy(d| $d.funcName)->putAll(
+     getDynaFunctionToSqlForSybaseASE()->groupBy(d| $d.funcName))->getDynaFunctionDispatcher();
+
+   ^DbExtension(
+      isBooleanLiteralSupported = true,
+      isDbReservedIdentifier = {str:String[1]| $str->in($reservedWords)},
+      literalProcessor = $literalProcessor,
+      windowColumnProcessor = processWindowColumn_WindowColumn_1__SqlGenerationContext_1__String_1_,
+      selectSQLQueryProcessor = processSelectSQLQueryForSybase_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
+      columnNameToIdentifier = columnNameToIdentifierDefault_String_1__DbConfig_1__String_1_,
+      identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
+      dynaFuncDispatch = $dynaFuncDispatch
+   );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseASE::getLiteralProcessorsForSybaseASE():Map<Type,LiteralProcessor>[1]
+{
+   newMap([
+      pair(StrictDate,     ^LiteralProcessor(format = 'convert(DATE, \'%s\', 101)',     transform = {d:StrictDate[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(DateTime,       ^LiteralProcessor(format = 'convert(DATETIME, \'%s\', 101)', transform = {d:DateTime[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(Date,           ^LiteralProcessor(format = 'convert(DATETIME, \'%s\', 101)', transform = {d:Date[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)}))
+   ])
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseASE::getDynaFunctionToSqlForSybaseASE(): DynaFunctionToSql[*]
+{
+  let allStates = allGenerationStates();
+
+  [
+    dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='datediff(%s,%s,%s)', transform={p:String[*]|[$p->at(2)->processDateDiffDurationUnitForSybase(),$p->at(0),$p->at(1)]})),
+    dynaFnToSql('datePart',               $allStates,            ^ToSql(format='cast(%s as date)')),
+    dynaFnToSql('isAlphaNumeric',         $allStates,            ^ToSql(format=likePatternWithoutEscape('%%%s%%'), transform={p:String[1]|$p->transformAlphaNumericParamsDefault()})),
+    dynaFnToSql('trim',                   $allStates,            ^ToSql(format='rtrim(ltrim(%s))'))
+  ]->concatenate(getDynaFunctionToSqlCommonToBothSybases());
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseASE::processDateDiffDurationUnitForSybase(durationUnit:String[1]):String[1]
+{
+   let durationEnumNames = [DurationUnit.YEARS,DurationUnit.MONTHS,DurationUnit.WEEKS,DurationUnit.DAYS,DurationUnit.HOURS,DurationUnit.MINUTES,DurationUnit.SECONDS,DurationUnit.MILLISECONDS]->map(e|$e->toString());
+   let durationDbNames = ['yy', 'mm', 'wk', 'dd', 'hh', 'mi', 'ss', 'ms'];
+   $durationEnumNames->zip($durationDbNames)->filter(h | $h.first == $durationUnit).second->toOne();
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseASE::processSelectSQLQueryForSybase(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
+{
+   $s->processSelectSQLQueryForSybase($sgc.dbConfig, $sgc.format, $sgc.config, $isSubSelect, $sgc.extensions);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseASE::processSelectSQLQueryForSybase(s:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:RouterExtension[*]):String[1]
+{
+  let opStr = if($s.filteringOperation->isEmpty(), |'', |$s.filteringOperation->map(s|$s->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+  let havingStr = if($s.havingOperation->isEmpty(), |'', |$s.havingOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+
+  $format.separator + 'select ' + if($s.distinct == true,|'distinct ',|'') + processTop($s, $format) +
+  processSelectColumns($s.columns, $dbConfig, $format->indent(), true, $extensions) +
+  if($s.data == [],|'',| ' ' + $format.separator + 'from ' + $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), [], $extensions)) +
+  if (eq($opStr, ''), |'', | ' ' + $format.separator + 'where ' + $opStr) +
+  if ($s.groupBy->isEmpty(),|'',| ' ' + $format.separator + 'group by '+$s.groupBy->processGroupByColumns($dbConfig, $format->indent(), false, $extensions)->makeString(','))+
+  if (eq($havingStr, ''), |'', | ' ' + $format.separator + 'having ' + $havingStr) +
+  if ($s.orderBy->isEmpty(),|'',| ' ' + $format.separator + 'order by '+ $s.orderBy->processOrderBy($dbConfig, $format->indent(), $config, $extensions)->makeString(','))+
+  + processLimit($s, $format, [], processSliceOrDropDefault_SelectSQLQuery_1__Format_1__Any_1__String_1_);
+}
