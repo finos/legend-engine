@@ -33,6 +33,7 @@ import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
+import org.finos.legend.engine.shared.core.vault.Vault;
 import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationOutput;
 import org.finos.legend.pure.generated.core_persistence_external_format_awspersistence_transformation;
 import org.pac4j.core.profile.CommonProfile;
@@ -40,12 +41,11 @@ import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 import org.slf4j.Logger;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.net.*;
+import java.io.*;
 
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
 
@@ -56,6 +56,8 @@ public class AwsPersistenceGenerationService
 {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
     private final ModelManager modelManager;
+    private static final String awsApiGatewayUrl = Vault.INSTANCE.getValue("apigateway_url");
+    private static final String awsApiGatewayKey = Vault.INSTANCE.getValue("apigateway_key");
 
     public AwsPersistenceGenerationService(ModelManager modelManager)
     {
@@ -100,4 +102,46 @@ public class AwsPersistenceGenerationService
             return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_AWSPERSISTENCE_CODE_INTERACTIVE_ERROR : LoggingEventType.GENERATE_AWSPERSISTENCE_CODE_ERROR, pm);
         }
     }
+
+    @GET
+    @Path("awsPersistence/monitor/{jobName}")
+    @ApiOperation(value = "Monitor AwsPersistence pipeline")
+    public Response getPoolInformation(@PathParam("jobName") String jobName)
+    {
+        try {
+            URL u = new URL(awsApiGatewayUrl + jobName);
+            HttpURLConnection http = (HttpURLConnection) u.openConnection();
+            http.setRequestMethod("GET");
+            http.setDoOutput(true);
+            http.setRequestProperty("x-api-key", awsApiGatewayKey);
+
+            int responseCode = http.getResponseCode();
+
+            if (responseCode == 200) {
+                BufferedReader in = new BufferedReader(new InputStreamReader(http.getInputStream()));
+                String inputLine;
+                StringBuilder response = new StringBuilder();
+                while ((inputLine = in.readLine()) != null) {
+                    response.append(inputLine);
+                }
+                in.close();
+                return Response.status(200).type(MediaType.APPLICATION_JSON).entity(response.toString()).build();
+            }
+            else {
+                return errorResponse(responseCode, http.getResponseMessage());
+            }
+        }
+        catch (Exception ex)
+        {
+            return errorResponse(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), ex.getMessage());
+        }
+    }
+
+    private Response errorResponse(int status, String error)
+    {
+        LOGGER.error(error);
+        String text = "{\"status\":\"error\", \"message\":\"" + error + "\"}";
+        return Response.status(status).type(MediaType.APPLICATION_JSON).entity(text).build();
+    }
+
 }
