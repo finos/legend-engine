@@ -155,7 +155,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::c
       'cast( parseDateTime('+$params->at(0)+','+$dateFormat +') as date)';
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::h2::normalizeH2DateFormat(params:String[1]):String[1]
+function meta::relational::functions::sqlQueryToString::h2::normalizeH2DateFormat(params:String[1]):String[1]
 {
    [pair('YYYY', 'yyyy'), pair('DD', 'dd')]->fold({e, a| $a->replace($e.first,$e.second)}, $params);
 }
