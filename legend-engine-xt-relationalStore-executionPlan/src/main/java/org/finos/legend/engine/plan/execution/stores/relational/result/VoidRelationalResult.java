@@ -14,12 +14,11 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.result;
 
-import org.finos.legend.engine.plan.execution.stores.relational.activity.RelationalExecutionActivity;
-
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.result.ExecutionActivity;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.ResultVisitor;
+import org.finos.legend.engine.plan.execution.stores.relational.activity.RelationalExecutionActivity;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.pac4j.core.profile.CommonProfile;
@@ -48,7 +47,7 @@ public class VoidRelationalResult extends Result
             long start = System.currentTimeMillis();
             LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_START, sql).toString());
             this.statement.execute(sql);
-            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_STOP, (double)System.currentTimeMillis() - start).toString());
+            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_STOP, (double) System.currentTimeMillis() - start).toString());
         }
         catch (SQLException e)
         {
@@ -63,7 +62,7 @@ public class VoidRelationalResult extends Result
     @Override
     public <T> T accept(ResultVisitor<T> resultVisitor)
     {
-        return ((RelationalResultVisitor<T>)resultVisitor).visit(this);
+        return ((RelationalResultVisitor<T>) resultVisitor).visit(this);
     }
 
     @Override
@@ -75,7 +74,7 @@ public class VoidRelationalResult extends Result
             {
                 this.statement.close();
             }
-            catch (Exception e)
+            catch (Exception ignored)
             {
             }
         }
@@ -85,7 +84,7 @@ public class VoidRelationalResult extends Result
             {
                 this.connection.close();
             }
-            catch (Exception e)
+            catch (Exception ignored)
             {
             }
         }

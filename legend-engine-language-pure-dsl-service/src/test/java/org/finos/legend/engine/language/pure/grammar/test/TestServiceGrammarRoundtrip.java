@@ -288,7 +288,7 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "  autoActivateUpdates: true;\n" +
                 "  execution: Single\n" +
                 "  {\n" +
-                "    query: p1: String[1]|service_parameters::_NPerson.all()->graphFetch(#{service_parameters::_NPerson{Age,Name}}#)->serialize(#{service_parameters::_NPerson{Age,Name,f1($p1)}}#);\n"+
+                "    query: p1: String[1]|service_parameters::_NPerson.all()->graphFetch(#{service_parameters::_NPerson{Age,Name}}#)->serialize(#{service_parameters::_NPerson{Age,Name,f1($p1)}}#);\n" +
                 "    mapping: meta::myMapping;\n" +
                 "    runtime: meta::myRuntime;\n" +
                 "  }\n" +
@@ -316,7 +316,7 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "  autoActivateUpdates: true;\n" +
                 "  execution: Single\n" +
                 "  {\n" +
-                "    query: p1: String[1]|service_parameters::_NPerson.all()->graphFetch(#{service_parameters::_NPerson{Age,Name}}#)->serialize(#{service_parameters::_NPerson{Age,Name,f1($p1)}}#);\n"+
+                "    query: p1: String[1]|service_parameters::_NPerson.all()->graphFetch(#{service_parameters::_NPerson{Age,Name}}#)->serialize(#{service_parameters::_NPerson{Age,Name,f1($p1)}}#);\n" +
                 "    mapping: meta::myMapping;\n" +
                 "    runtime: meta::myRuntime;\n" +
                 "  }\n" +
@@ -344,7 +344,7 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "  autoActivateUpdates: true;\n" +
                 "  execution: Single\n" +
                 "  {\n" +
-                "    query: p1: String[1]|service_parameters::_NPerson.all()->graphFetch(#{service_parameters::_NPerson{Age,Name}}#)->serialize(#{service_parameters::_NPerson{Age,Name,f1($p1)}}#);\n"+
+                "    query: p1: String[1]|service_parameters::_NPerson.all()->graphFetch(#{service_parameters::_NPerson{Age,Name}}#)->serialize(#{service_parameters::_NPerson{Age,Name,f1($p1)}}#);\n" +
                 "    mapping: meta::myMapping;\n" +
                 "    runtime: meta::myRuntime;\n" +
                 "  }\n" +
@@ -359,6 +359,38 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "  }\n" +
                 "}\n"
         );
+    }
+
+    @Test
+    public void testList()
+    {
+        test("###Service\n" +
+                "Service test::Service\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners:\n" +
+                "  [\n" +
+                "    'ownerName'\n" +
+                "  ];\n" +
+                "  documentation: 'test';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: src: test::class[1]|$src.prop1;\n" +
+                "    mapping: test::mapping;\n" +
+                "    runtime: test::runtime;\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'test';\n" +
+                "    asserts:\n" +
+                "    [\n" +
+                "      { [list(['param','param2'])], |'testexpression' },\n" +
+                "      { [list([1,2])], |'testexpression2' },\n" +
+                "      { [list([1,2]), 1], |'testexpression3' }\n" +
+                "    ];\n" +
+                "  }\n" +
+                "}\n");
     }
 
     @Test
@@ -388,7 +420,7 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "  ]\n" +
                 "}\n"
         );
-        
+
         //Test Single TestSuite without data
         test("###Service\n" +
                 "Service meta::pure::myServiceSingle\n" +
@@ -434,7 +466,7 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "  ]\n" +
                 "}\n"
         );
-        
+
         //Test Single TestSuite with data
         test("###Service\n" +
                 "Service meta::pure::myServiceSingle\n" +
@@ -635,7 +667,7 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "  ]\n" +
                 "}\n"
         );
-        
+
         //Test Single TestSuite with parameter
         test("###Service\n" +
                 "Service meta::pure::myServiceSingle\n" +

@@ -39,7 +39,9 @@ import org.finos.legend.engine.shared.core.identity.Identity;
 public interface DatabaseAuthenticationFlow<D extends DatasourceSpecification, A extends AuthenticationStrategy>
 {
     Class<D> getDatasourceClass();
+
     Class<A> getAuthenticationStrategyClass();
+
     DatabaseType getDatabaseType();
 
     /*

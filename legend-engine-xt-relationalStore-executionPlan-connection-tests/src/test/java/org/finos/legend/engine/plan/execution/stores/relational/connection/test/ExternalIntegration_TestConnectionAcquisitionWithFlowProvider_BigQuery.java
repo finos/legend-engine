@@ -14,20 +14,17 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.test;
 
-import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
 import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProvider;
+import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProviderConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.bigquery.BigQueryManager;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.BigQueryDatasourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.SnowflakePublicAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPApplicationDefaultCredentialsAuthenticationStrategy;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPWorkloadIdentityFederationAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.BigQueryDatasourceSpecification;
 import org.finos.legend.engine.shared.core.vault.EnvironmentVaultImplementation;
 import org.finos.legend.engine.shared.core.vault.Vault;
 import org.junit.Before;
@@ -47,6 +44,22 @@ import static org.junit.Assert.fail;
 public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_BigQuery extends DbSpecificTests
 {
     public static final String GOOGLE_APPLICATION_CREDENTIALS = "GOOGLE_APPLICATION_CREDENTIALS";
+    public static final String AWS_ACCESS_KEY_ID = "AWS_ACCESS_KEY_ID";
+    public static final String AWS_SECRET_ACCESS_KEY = "AWS_SECRET_ACCESS_KEY";
+
+    private static final LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.AWSConfig awsConfig = new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.AWSConfig(
+            "us-east-1",
+            "564704738649",
+            "integration-wif-role1",
+            "AWS_ACCESS_KEY_ID",
+            "AWS_SECRET_ACCESS_KEY"
+    );
+
+    private static final LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.GCPWorkloadConfig gcpWorkloadConfig = new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.GCPWorkloadConfig(
+            "412074507462",
+            "integration-wif-pool1",
+            "integration-wif-pool1-provider"
+    );
 
     private ConnectionManagerSelector connectionManagerSelector;
 
@@ -56,7 +69,17 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_BigQu
         String googleApplicationCredentials = System.getenv(GOOGLE_APPLICATION_CREDENTIALS);
         if (googleApplicationCredentials == null || googleApplicationCredentials.trim().isEmpty())
         {
-           // fail(String.format("Tests cannot be run. GCP env variable %s has not been set", GOOGLE_APPLICATION_CREDENTIALS));
+            fail(String.format("Tests cannot be run. GCP env variable %s has not been set", GOOGLE_APPLICATION_CREDENTIALS));
+        }
+        String awsAccessKeyId = System.getenv(AWS_ACCESS_KEY_ID);
+        if (awsAccessKeyId == null || awsAccessKeyId.trim().isEmpty())
+        {
+            fail(String.format("Tests cannot be run. AWS env variable %s has not been set", AWS_ACCESS_KEY_ID));
+        }
+        String awsSecretAccessKey = System.getenv(AWS_SECRET_ACCESS_KEY);
+        if (awsSecretAccessKey == null || awsSecretAccessKey.trim().isEmpty())
+        {
+            fail(String.format("Tests cannot be run. AWS env variable %s has not been set", AWS_SECRET_ACCESS_KEY));
         }
     }
 
@@ -76,44 +99,86 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_BigQu
     public void setup()
     {
         LegendDefaultDatabaseAuthenticationFlowProvider flowProvider = new LegendDefaultDatabaseAuthenticationFlowProvider();
-        assertBigQueryFlowIsAvailable(flowProvider);
+        LegendDefaultDatabaseAuthenticationFlowProviderConfiguration flowProviderConfiguration = LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.Builder.newInstance()
+                .withAwsConfig(awsConfig)
+                .withGcpWorkloadConfig(gcpWorkloadConfig)
+                .build();
+        flowProvider.configure(flowProviderConfiguration);
+        assertBigQueryWithGCPADCFlowIsAvailable(flowProvider);
+        assertBigQueryWithGCPWIFFlowIsAvailable(flowProvider);
         this.connectionManagerSelector = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(-1), Collections.emptyList(), Optional.of(flowProvider));
     }
 
-    public void assertBigQueryFlowIsAvailable(LegendDefaultDatabaseAuthenticationFlowProvider flowProvider)
+    public void assertBigQueryWithGCPADCFlowIsAvailable(LegendDefaultDatabaseAuthenticationFlowProvider flowProvider)
     {
         BigQueryDatasourceSpecification datasourceSpecification = new BigQueryDatasourceSpecification();
         GCPApplicationDefaultCredentialsAuthenticationStrategy authenticationStrategy = new GCPApplicationDefaultCredentialsAuthenticationStrategy();
         RelationalDatabaseConnection relationalDatabaseConnection = new RelationalDatabaseConnection(datasourceSpecification, authenticationStrategy, DatabaseType.BigQuery);
         relationalDatabaseConnection.type = DatabaseType.BigQuery;
-
         Optional<DatabaseAuthenticationFlow> flow = flowProvider.lookupFlow(relationalDatabaseConnection);
         assertTrue("bigquery gcp adc flow does not exist ", flow.isPresent());
     }
 
-    
+    public void assertBigQueryWithGCPWIFFlowIsAvailable(LegendDefaultDatabaseAuthenticationFlowProvider flowProvider)
+    {
+        BigQueryDatasourceSpecification datasourceSpecification = new BigQueryDatasourceSpecification();
+        GCPWorkloadIdentityFederationAuthenticationStrategy authenticationStrategy = new GCPWorkloadIdentityFederationAuthenticationStrategy();
+        RelationalDatabaseConnection relationalDatabaseConnection = new RelationalDatabaseConnection(datasourceSpecification, authenticationStrategy, DatabaseType.BigQuery);
+        relationalDatabaseConnection.type = DatabaseType.BigQuery;
+        Optional<DatabaseAuthenticationFlow> flow = flowProvider.lookupFlow(relationalDatabaseConnection);
+        assertTrue("BigQuery Workload Identity Federation Flow does not exist ", flow.isPresent());
+    }
+
     @Test
     public void testBigQueryGCPADCConnection_subject() throws Exception
     {
-        RelationalDatabaseConnection systemUnderTest = this.bigQuerySpec();
-        Connection connection = this.connectionManagerSelector.getDatabaseConnection((MutableList<CommonProfile>)null, systemUnderTest);
-        testConnection(connection, "select * from `legend-integration-testing.legend_testing_dataset.basic_test_table`");
+        RelationalDatabaseConnection systemUnderTest = this.bigQueryWithGCPADCSpec();
+        Connection connection = this.connectionManagerSelector.getDatabaseConnection((Subject) null, systemUnderTest);
+        testConnection(connection, "select * from `legend-integration-testing.integration_dataset1.table1`");
+
+    }
+
+    @Test
+    public void testBigQueryGCPWIFConnection_subject() throws Exception
+    {
+
+        RelationalDatabaseConnection systemUnderTest = this.bigQueryWithGCPWIFSpec();
+        Connection connection = this.connectionManagerSelector.getDatabaseConnection((Subject) null, systemUnderTest);
+        testConnection(connection, "select * from `legend-integration-testing.integration_dataset1.table1`");
     }
 
     @Test
     public void testBigQueryGCPADCConnection_profile() throws Exception
     {
-        RelationalDatabaseConnection systemUnderTest = this.bigQuerySpec();
-        Connection connection = this.connectionManagerSelector.getDatabaseConnection((MutableList<CommonProfile>)null, systemUnderTest);
-        testConnection(connection, "select * from `legend-integration-testing.legend_testing_dataset.basic_test_table`");
+        RelationalDatabaseConnection systemUnderTest = this.bigQueryWithGCPADCSpec();
+        Connection connection = this.connectionManagerSelector.getDatabaseConnection((MutableList<CommonProfile>) null, systemUnderTest);
+        testConnection(connection, "select * from `legend-integration-testing.integration_dataset1.table1`");
     }
 
-    private RelationalDatabaseConnection bigQuerySpec() throws Exception
+    @Test
+    public void testBigQueryGCPWIFConnection_profile() throws Exception
+    {
+        RelationalDatabaseConnection systemUnderTest = this.bigQueryWithGCPWIFSpec();
+        Connection connection = this.connectionManagerSelector.getDatabaseConnection((MutableList<CommonProfile>) null, systemUnderTest);
+        testConnection(connection, "select * from `legend-integration-testing.integration_dataset1.table1`");
+    }
+
+    private RelationalDatabaseConnection bigQueryWithGCPADCSpec() throws Exception
     {
         BigQueryDatasourceSpecification bigQueryDatasourceSpecification = new BigQueryDatasourceSpecification();
         bigQueryDatasourceSpecification.projectId = "legend-integration-testing";
-        bigQueryDatasourceSpecification.defaultDataset = "legend_testing_dataset";
+        bigQueryDatasourceSpecification.defaultDataset = "integration_dataset1";
         GCPApplicationDefaultCredentialsAuthenticationStrategy authSpec = new GCPApplicationDefaultCredentialsAuthenticationStrategy();
+        return new RelationalDatabaseConnection(bigQueryDatasourceSpecification, authSpec, DatabaseType.BigQuery);
+    }
+
+    private RelationalDatabaseConnection bigQueryWithGCPWIFSpec()
+    {
+        BigQueryDatasourceSpecification bigQueryDatasourceSpecification = new BigQueryDatasourceSpecification();
+        bigQueryDatasourceSpecification.projectId = "legend-integration-testing";
+        bigQueryDatasourceSpecification.defaultDataset = "integration_dataset1";
+        GCPWorkloadIdentityFederationAuthenticationStrategy authSpec = new GCPWorkloadIdentityFederationAuthenticationStrategy();
+        authSpec.serviceAccountEmail = "integration-bq-sa1@legend-integration-testing.iam.gserviceaccount.com";
         return new RelationalDatabaseConnection(bigQueryDatasourceSpecification, authSpec, DatabaseType.BigQuery);
     }
 }

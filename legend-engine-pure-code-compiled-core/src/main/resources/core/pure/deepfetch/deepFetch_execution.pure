@@ -1,0 +1,98 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::deepfetch::execution::*;
+import meta::pure::mapping::*;
+import meta::pure::router::clustering::*;
+import meta::pure::router::execution::*;
+import meta::pure::runtime::*;
+import meta::pure::deepfetch::execution::*;
+import meta::pure::deepfetch::builder::*;
+
+Class meta::pure::deepfetch::execution::StoreQuery extends meta::pure::mapping::StoreQuery
+{
+   deepFetchTreeNode : DeepFetchTreeNode[0..1];
+   deepFetchCache : DeepFetchCache[0..1];
+}
+
+
+Class meta::pure::deepfetch::execution::CacheEntry{
+   value : Any[1];
+   isEqual: Function<{Any[1]->Boolean[1]}>[1];
+   toString : Function<{->String[1]}>[1];
+}
+
+Class meta::pure::deepfetch::execution::SrcToTarget
+{ 
+   map : Pair<CacheEntry, List<CacheEntry>>[*];
+   
+   toJSON(){
+      $this.map->map(s| $s.second.values->map(t| '{"S":'+'"'+$s.first->toOne().toString->eval()+'"'+', "T":'+'"'+$t.toString->eval()->makeString('[',',',']')+'"}'))->makeString('[',',',']');
+   }:String[1];
+}
+
+Class meta::pure::deepfetch::execution::DeepFetchNodeIdToSrcToTarget{ 
+   map : Pair<String, SrcToTarget>[*];
+   
+   toJSON(){
+      $this.map->map(p| '{"DFN-Id":'+'"'+$p.first+'"'+', "S->T":'+$p.second.toJSON()+'}')->makeString('[',',',']');
+   }:String[1];
+}
+
+Class meta::pure::deepfetch::execution::PropertyToDeepFetchNodeId{ 
+   map : Pair<Pair<String, Property<Nil, Any|*>>, DeepFetchNodeIdToSrcToTarget>[*];
+
+   toJSON(){
+     '{ "SetProp->DFNs":'+$this.map->map(p| '{"setId": "'+$p.first.first+'", "prop":'+'"'+$p.first.second.name->toOne()+'" ,"DFNs->{S->T}":'+$p.second.toJSON()+'}')->makeString('[',',',']')+'}';
+   }:String[1];
+}
+
+function meta::pure::deepfetch::execution::createDeepFetchCache():DeepFetchCache[1]
+{
+   ^DeepFetchCache(cache=^PropertyToDeepFetchNodeId());
+}
+
+Class meta::pure::deepfetch::execution::DeepFetchCache
+{
+   cache : PropertyToDeepFetchNodeId[1];
+      
+   insert(pdfn : PropertyDeepFetchTreeNode[1], srcImpl: PropertyOwnerImplementation[1], srcToTarget:SrcToTarget[1], debugContext:DebugContext[1]){
+      if(!$debugContext.debug,|[],|println($debugContext.space+'>Deep Fetch Cache Insert: nodeId: ' + $pdfn.id->toOne() + ' #entries: '+ $srcToTarget.map->size()->toString()));
+     
+      let property = $pdfn.property;
+      let setPropertyKey = pair($srcImpl.id, $property);
+      
+      let propToDfnId = $this.cache.map->filter(m|$m.first==$setPropertyKey);
+      if($propToDfnId->isEmpty(),| let newDeepFetchNodeIdToSrcToTarget = ^DeepFetchNodeIdToSrcToTarget(map = pair($pdfn.id->toOne(), $srcToTarget));
+                                   $this.cache->mutateAdd('map', pair($setPropertyKey, $newDeepFetchNodeIdToSrcToTarget));
+                                ,| $propToDfnId.second->toOne()->mutateAdd('map', pair($pdfn.id->toOne(),$srcToTarget));
+                                );       
+   }:Any[0..1];
+
+   get(src : Any[1], property : Property<Nil,Any|*>[1], poi : PropertyOwnerImplementation[1]){
+      let cacheKey = pair($poi.id,$property);
+      let propToDfnId = $this.cache.map->filter(m|$m.first==$cacheKey);
+      if(!$propToDfnId->isEmpty(),|let nodeIdToObjs = $propToDfnId->toOne().second;
+                                   let srcToTarget = $nodeIdToObjs.map.second;
+                                   let cacheObjs = $srcToTarget.map->filter(p|$p.first.isEqual->eval($src););
+                                   if(!$cacheObjs->isEmpty(),| let result = $cacheObjs.second.values->removeDuplicates({a,b|$a.isEqual->eval($b.value)}).value;
+                                                               ^List<Any>(values=$result);
+                                                            ,| []);
+                                 ,|[]);
+   }:List<Any>[0..1];
+
+   toJSON(){
+      $this.cache.toJSON();
+   }:String[1];
+}

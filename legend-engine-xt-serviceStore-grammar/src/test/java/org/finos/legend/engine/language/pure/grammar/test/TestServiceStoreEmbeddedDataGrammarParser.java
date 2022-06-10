@@ -1,3 +1,17 @@
+//  Copyright 2022 Goldman Sachs
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+
 package org.finos.legend.engine.language.pure.grammar.test;
 
 import org.antlr.v4.runtime.Vocabulary;
@@ -41,115 +55,115 @@ public class TestServiceStoreEmbeddedDataGrammarParser extends TestGrammarParser
     public void testMissingFieldsErrorMessages()
     {
         test("###Data\n" +
-                "Data meta::data::MyData\n" +
-                "{\n" +
-                "  ServiceStore\n" +
-                "  #{\n" +
-                "    [\n" +
-                "      {\n" +
-                "        response:\n" +
-                "        {\n" +
-                "          body:\n" +
-                "            ExternalFormat\n" +
-                "            #{\n" +
-                "              contentType: 'application/json';\n" +
-                "              data: '[\\n" +
-                "                       {\\n" +
-                "                           \"firstName\": \"FirstName A\",\\n" +
-                "                           \"lastName\": \"LastName A\",\\n" +
-                "                           \"firmId\": \"A\"\\n" +
-                "                       },\\n" +
-                "                       {\\n" +
-                "                           \"firstName\": \"FirstName B\",\\n" +
-                "                           \"lastName\": \"LastName B\",\\n" +
-                "                           \"firmId\": \"B\"\\n" +
-                "                       }\\n" +
-                "                     ]\\n';\n" +
-                "            }#;\n" +
-                "        };\n" +
-                "      }\n" +
-                "    ]\n" +
-                "  }#\n" +
-                "}\n",
+                        "Data meta::data::MyData\n" +
+                        "{\n" +
+                        "  ServiceStore\n" +
+                        "  #{\n" +
+                        "    [\n" +
+                        "      {\n" +
+                        "        response:\n" +
+                        "        {\n" +
+                        "          body:\n" +
+                        "            ExternalFormat\n" +
+                        "            #{\n" +
+                        "              contentType: 'application/json';\n" +
+                        "              data: '[\\n" +
+                        "                       {\\n" +
+                        "                           \"firstName\": \"FirstName A\",\\n" +
+                        "                           \"lastName\": \"LastName A\",\\n" +
+                        "                           \"firmId\": \"A\"\\n" +
+                        "                       },\\n" +
+                        "                       {\\n" +
+                        "                           \"firstName\": \"FirstName B\",\\n" +
+                        "                           \"lastName\": \"LastName B\",\\n" +
+                        "                           \"firmId\": \"B\"\\n" +
+                        "                       }\\n" +
+                        "                     ]\\n';\n" +
+                        "            }#;\n" +
+                        "        };\n" +
+                        "      }\n" +
+                        "    ]\n" +
+                        "  }#\n" +
+                        "}\n",
                 "PARSER error at [7:7-17:7]: Field 'request' is required"
         );
 
         test("###Data\n" +
-                "Data meta::data::MyData\n" +
-                "{\n" +
-                "  ServiceStore\n" +
-                "  #{\n" +
-                "    [\n" +
-                "      {\n" +
-                "        request:\n" +
-                "        {\n" +
-                "          url: '/employees';\n" +
-                "        };\n" +
-                "        response:\n" +
-                "        {\n" +
-                "          body:\n" +
-                "            ExternalFormat\n" +
-                "            #{\n" +
-                "              contentType: 'application/json';\n" +
-                "              data: '[\\n" +
-                "                       {\\n" +
-                "                           \"firstName\": \"FirstName A\",\\n" +
-                "                           \"lastName\": \"LastName A\",\\n" +
-                "                           \"firmId\": \"A\"\\n" +
-                "                       },\\n" +
-                "                       {\\n" +
-                "                           \"firstName\": \"FirstName B\",\\n" +
-                "                           \"lastName\": \"LastName B\",\\n" +
-                "                           \"firmId\": \"B\"\\n" +
-                "                       }\\n" +
-                "                     ]\\n';\n" +
-                "            }#;\n" +
-                "        };\n" +
-                "      }\n" +
-                "    ]\n" +
-                "  }#\n" +
-                "}\n",
+                        "Data meta::data::MyData\n" +
+                        "{\n" +
+                        "  ServiceStore\n" +
+                        "  #{\n" +
+                        "    [\n" +
+                        "      {\n" +
+                        "        request:\n" +
+                        "        {\n" +
+                        "          url: '/employees';\n" +
+                        "        };\n" +
+                        "        response:\n" +
+                        "        {\n" +
+                        "          body:\n" +
+                        "            ExternalFormat\n" +
+                        "            #{\n" +
+                        "              contentType: 'application/json';\n" +
+                        "              data: '[\\n" +
+                        "                       {\\n" +
+                        "                           \"firstName\": \"FirstName A\",\\n" +
+                        "                           \"lastName\": \"LastName A\",\\n" +
+                        "                           \"firmId\": \"A\"\\n" +
+                        "                       },\\n" +
+                        "                       {\\n" +
+                        "                           \"firstName\": \"FirstName B\",\\n" +
+                        "                           \"lastName\": \"LastName B\",\\n" +
+                        "                           \"firmId\": \"B\"\\n" +
+                        "                       }\\n" +
+                        "                     ]\\n';\n" +
+                        "            }#;\n" +
+                        "        };\n" +
+                        "      }\n" +
+                        "    ]\n" +
+                        "  }#\n" +
+                        "}\n",
                 "PARSER error at [8:9-11:10]: Field 'method' is required"
         );
 
         test("###Data\n" +
-                "Data meta::data::MyData\n" +
-                "{\n" +
-                "  ServiceStore\n" +
-                "  #{\n" +
-                "    [\n" +
-                "      {\n" +
-                "        request:\n" +
-                "        {\n" +
-                "          method: GET;\n" +
-                "          url: '/employees';\n" +
-                "        };\n" +
-                "      }\n" +
-                "    ]\n" +
-                "  }#\n" +
-                "}\n",
+                        "Data meta::data::MyData\n" +
+                        "{\n" +
+                        "  ServiceStore\n" +
+                        "  #{\n" +
+                        "    [\n" +
+                        "      {\n" +
+                        "        request:\n" +
+                        "        {\n" +
+                        "          method: GET;\n" +
+                        "          url: '/employees';\n" +
+                        "        };\n" +
+                        "      }\n" +
+                        "    ]\n" +
+                        "  }#\n" +
+                        "}\n",
                 "PARSER error at [7:7-13:7]: Field 'response' is required"
         );
 
         test("###Data\n" +
-                "Data meta::data::MyData\n" +
-                "{\n" +
-                "  ServiceStore\n" +
-                "  #{\n" +
-                "    [\n" +
-                "      {\n" +
-                "        request:\n" +
-                "        {\n" +
-                "          method: GET;\n" +
-                "          url: '/employees';\n" +
-                "        };\n" +
-                "        response:\n" +
-                "        {\n" +
-                "        };\n" +
-                "      }\n" +
-                "    ]\n" +
-                "  }#\n" +
-                "}\n",
+                        "Data meta::data::MyData\n" +
+                        "{\n" +
+                        "  ServiceStore\n" +
+                        "  #{\n" +
+                        "    [\n" +
+                        "      {\n" +
+                        "        request:\n" +
+                        "        {\n" +
+                        "          method: GET;\n" +
+                        "          url: '/employees';\n" +
+                        "        };\n" +
+                        "        response:\n" +
+                        "        {\n" +
+                        "        };\n" +
+                        "      }\n" +
+                        "    ]\n" +
+                        "  }#\n" +
+                        "}\n",
                 "PARSER error at [13:9-15:10]: Field 'body' is required"
         );
     }
@@ -158,41 +172,41 @@ public class TestServiceStoreEmbeddedDataGrammarParser extends TestGrammarParser
     public void testUnSupportedMethodTypes()
     {
         test("###Data\n" +
-                "Data meta::data::MyData\n" +
-                "{\n" +
-                "  ServiceStore\n" +
-                "  #{\n" +
-                "    [\n" +
-                "      {\n" +
-                "        request:\n" +
-                "        {\n" +
-                "          method: PUT;\n" +
-                "          url: '/employees';\n" +
-                "        };\n" +
-                "        response:\n" +
-                "        {\n" +
-                "          body:\n" +
-                "            ExternalFormat\n" +
-                "            #{\n" +
-                "              contentType: 'application/json';\n" +
-                "              data: '[\\n" +
-                "                       {\\n" +
-                "                           \"firstName\": \"FirstName A\",\\n" +
-                "                           \"lastName\": \"LastName A\",\\n" +
-                "                           \"firmId\": \"A\"\\n" +
-                "                       },\\n" +
-                "                       {\\n" +
-                "                           \"firstName\": \"FirstName B\",\\n" +
-                "                           \"lastName\": \"LastName B\",\\n" +
-                "                           \"firmId\": \"B\"\\n" +
-                "                       }\\n" +
-                "                     ]\\n';\n" +
-                "            }#;\n" +
-                "        };\n" +
-                "      }\n" +
-                "    ]\n" +
-                "  }#\n" +
-                "}\n",
+                        "Data meta::data::MyData\n" +
+                        "{\n" +
+                        "  ServiceStore\n" +
+                        "  #{\n" +
+                        "    [\n" +
+                        "      {\n" +
+                        "        request:\n" +
+                        "        {\n" +
+                        "          method: PUT;\n" +
+                        "          url: '/employees';\n" +
+                        "        };\n" +
+                        "        response:\n" +
+                        "        {\n" +
+                        "          body:\n" +
+                        "            ExternalFormat\n" +
+                        "            #{\n" +
+                        "              contentType: 'application/json';\n" +
+                        "              data: '[\\n" +
+                        "                       {\\n" +
+                        "                           \"firstName\": \"FirstName A\",\\n" +
+                        "                           \"lastName\": \"LastName A\",\\n" +
+                        "                           \"firmId\": \"A\"\\n" +
+                        "                       },\\n" +
+                        "                       {\\n" +
+                        "                           \"firstName\": \"FirstName B\",\\n" +
+                        "                           \"lastName\": \"LastName B\",\\n" +
+                        "                           \"firmId\": \"B\"\\n" +
+                        "                       }\\n" +
+                        "                     ]\\n';\n" +
+                        "            }#;\n" +
+                        "        };\n" +
+                        "      }\n" +
+                        "    ]\n" +
+                        "  }#\n" +
+                        "}\n",
                 "PARSER error at [10:11-22]: Unsupported HTTP Method type - PUT. Supported types are - GET,POST"
         );
     }
@@ -232,44 +246,44 @@ public class TestServiceStoreEmbeddedDataGrammarParser extends TestGrammarParser
     public void testNotSupportedContentPattern()
     {
         test("###Data\n" +
-                "Data meta::data::MyData\n" +
-                "{\n" +
-                "  ServiceStore\n" +
-                "  #{\n" +
-                "    [\n" +
-                "      {\n" +
-                "        request:\n" +
-                "        {\n" +
-                "          method: GET;\n" +
-                "          url: '/employees';\n" +
-                "          queryParameters:\n" +
-                "          {\n" +
-                "            name:\n" +
-                "              Unknown\n" +
-                "              #{\n" +
-                "                expected: 'FirstName A';\n" +
-                "              }#\n" +
-                "          };\n" +
-                "        };\n" +
-                "        response:\n" +
-                "        {\n" +
-                "          body:\n" +
-                "            ExternalFormat\n" +
-                "            #{\n" +
-                "              contentType: 'application/json';\n" +
-                "              data: '[\\n" +
-                "                       {\\n" +
-                "                           \"firstName\": \"FirstName A\",\\n" +
-                "                           \"lastName\": \"LastName A\",\\n" +
-                "                           \"firmId\": \"A\"\\n" +
-                "                       }\\n" +
-                "                     ]\\n';\n" +
-                "            }#;\n" +
-                "        };\n" +
-                "      }\n" +
-                "    ]\n" +
-                "  }#\n" +
-                "}\n",
+                        "Data meta::data::MyData\n" +
+                        "{\n" +
+                        "  ServiceStore\n" +
+                        "  #{\n" +
+                        "    [\n" +
+                        "      {\n" +
+                        "        request:\n" +
+                        "        {\n" +
+                        "          method: GET;\n" +
+                        "          url: '/employees';\n" +
+                        "          queryParameters:\n" +
+                        "          {\n" +
+                        "            name:\n" +
+                        "              Unknown\n" +
+                        "              #{\n" +
+                        "                expected: 'FirstName A';\n" +
+                        "              }#\n" +
+                        "          };\n" +
+                        "        };\n" +
+                        "        response:\n" +
+                        "        {\n" +
+                        "          body:\n" +
+                        "            ExternalFormat\n" +
+                        "            #{\n" +
+                        "              contentType: 'application/json';\n" +
+                        "              data: '[\\n" +
+                        "                       {\\n" +
+                        "                           \"firstName\": \"FirstName A\",\\n" +
+                        "                           \"lastName\": \"LastName A\",\\n" +
+                        "                           \"firmId\": \"A\"\\n" +
+                        "                       }\\n" +
+                        "                     ]\\n';\n" +
+                        "            }#;\n" +
+                        "        };\n" +
+                        "      }\n" +
+                        "    ]\n" +
+                        "  }#\n" +
+                        "}\n",
                 "PARSER error at [15:15-21]: Unknown contentPattern pattern type: Unknown"
         );
     }
@@ -278,96 +292,96 @@ public class TestServiceStoreEmbeddedDataGrammarParser extends TestGrammarParser
     public void testParametersDefinedMultipleTimes()
     {
         test("###Data\n" +
-                "Data meta::data::MyData\n" +
-                "{\n" +
-                "  ServiceStore\n" +
-                "  #{\n" +
-                "    [\n" +
-                "      {\n" +
-                "        request:\n" +
-                "        {\n" +
-                "          method: GET;\n" +
-                "          url: '/employees';\n" +
-                "          queryParameters:\n" +
-                "          {\n" +
-                "            name:\n" +
-                "              EqualTo\n" +
-                "              #{\n" +
-                "                expected: '123';\n" +
-                "              }#,\n" +
-                "            name:\n" +
-                "              EqualTo\n" +
-                "              #{\n" +
-                "                expected: 'FirstName A';\n" +
-                "              }#\n" +
-                "          };\n" +
-                "        };\n" +
-                "        response:\n" +
-                "        {\n" +
-                "          body:\n" +
-                "            ExternalFormat\n" +
-                "            #{\n" +
-                "              contentType: 'application/json';\n" +
-                "              data: '[\\n" +
-                "                       {\\n" +
-                "                           \"firstName\": \"FirstName A\",\\n" +
-                "                           \"lastName\": \"LastName A\",\\n" +
-                "                           \"firmId\": \"A\"\\n" +
-                "                       }\\n" +
-                "                     ]\\n';\n" +
-                "            }#;\n" +
-                "        };\n" +
-                "      }\n" +
-                "    ]\n" +
-                "  }#\n" +
-                "}\n",
+                        "Data meta::data::MyData\n" +
+                        "{\n" +
+                        "  ServiceStore\n" +
+                        "  #{\n" +
+                        "    [\n" +
+                        "      {\n" +
+                        "        request:\n" +
+                        "        {\n" +
+                        "          method: GET;\n" +
+                        "          url: '/employees';\n" +
+                        "          queryParameters:\n" +
+                        "          {\n" +
+                        "            name:\n" +
+                        "              EqualTo\n" +
+                        "              #{\n" +
+                        "                expected: '123';\n" +
+                        "              }#,\n" +
+                        "            name:\n" +
+                        "              EqualTo\n" +
+                        "              #{\n" +
+                        "                expected: 'FirstName A';\n" +
+                        "              }#\n" +
+                        "          };\n" +
+                        "        };\n" +
+                        "        response:\n" +
+                        "        {\n" +
+                        "          body:\n" +
+                        "            ExternalFormat\n" +
+                        "            #{\n" +
+                        "              contentType: 'application/json';\n" +
+                        "              data: '[\\n" +
+                        "                       {\\n" +
+                        "                           \"firstName\": \"FirstName A\",\\n" +
+                        "                           \"lastName\": \"LastName A\",\\n" +
+                        "                           \"firmId\": \"A\"\\n" +
+                        "                       }\\n" +
+                        "                     ]\\n';\n" +
+                        "            }#;\n" +
+                        "        };\n" +
+                        "      }\n" +
+                        "    ]\n" +
+                        "  }#\n" +
+                        "}\n",
                 "PARSER error at [19:13-23:16]: Query Param : 'name' value should be defined only once"
         );
 
         test("###Data\n" +
-                "Data meta::data::MyData\n" +
-                "{\n" +
-                "  ServiceStore\n" +
-                "  #{\n" +
-                "    [\n" +
-                "      {\n" +
-                "        request:\n" +
-                "        {\n" +
-                "          method: GET;\n" +
-                "          url: '/employees';\n" +
-                "          headerParameters:\n" +
-                "          {\n" +
-                "            name:\n" +
-                "              EqualTo\n" +
-                "              #{\n" +
-                "                expected: '123';\n" +
-                "              }#,\n" +
-                "            name:\n" +
-                "              EqualTo\n" +
-                "              #{\n" +
-                "                expected: 'FirstName A';\n" +
-                "              }#\n" +
-                "          };\n" +
-                "        };\n" +
-                "        response:\n" +
-                "        {\n" +
-                "          body:\n" +
-                "            ExternalFormat\n" +
-                "            #{\n" +
-                "              contentType: 'application/json';\n" +
-                "              data: '[\\n" +
-                "                       {\\n" +
-                "                           \"firstName\": \"FirstName A\",\\n" +
-                "                           \"lastName\": \"LastName A\",\\n" +
-                "                           \"firmId\": \"A\"\\n" +
-                "                       }\\n" +
-                "                     ]\\n';\n" +
-                "            }#;\n" +
-                "        };\n" +
-                "      }\n" +
-                "    ]\n" +
-                "  }#\n" +
-                "}\n",
+                        "Data meta::data::MyData\n" +
+                        "{\n" +
+                        "  ServiceStore\n" +
+                        "  #{\n" +
+                        "    [\n" +
+                        "      {\n" +
+                        "        request:\n" +
+                        "        {\n" +
+                        "          method: GET;\n" +
+                        "          url: '/employees';\n" +
+                        "          headerParameters:\n" +
+                        "          {\n" +
+                        "            name:\n" +
+                        "              EqualTo\n" +
+                        "              #{\n" +
+                        "                expected: '123';\n" +
+                        "              }#,\n" +
+                        "            name:\n" +
+                        "              EqualTo\n" +
+                        "              #{\n" +
+                        "                expected: 'FirstName A';\n" +
+                        "              }#\n" +
+                        "          };\n" +
+                        "        };\n" +
+                        "        response:\n" +
+                        "        {\n" +
+                        "          body:\n" +
+                        "            ExternalFormat\n" +
+                        "            #{\n" +
+                        "              contentType: 'application/json';\n" +
+                        "              data: '[\\n" +
+                        "                       {\\n" +
+                        "                           \"firstName\": \"FirstName A\",\\n" +
+                        "                           \"lastName\": \"LastName A\",\\n" +
+                        "                           \"firmId\": \"A\"\\n" +
+                        "                       }\\n" +
+                        "                     ]\\n';\n" +
+                        "            }#;\n" +
+                        "        };\n" +
+                        "      }\n" +
+                        "    ]\n" +
+                        "  }#\n" +
+                        "}\n",
                 "PARSER error at [19:13-23:16]: Header Param : 'name' value should be defined only once"
         );
     }

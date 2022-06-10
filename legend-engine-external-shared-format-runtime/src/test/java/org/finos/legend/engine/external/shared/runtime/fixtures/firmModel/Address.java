@@ -25,7 +25,8 @@ import org.finos.legend.engine.plan.dependencies.store.shared.IReferencedObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Address implements IReferencedObject, IExternalData {
+public class Address implements IReferencedObject, IExternalData
+{
 
     public static final IExternalDataFactory FACTORY = new IExternalDataFactory()
     {
@@ -33,6 +34,7 @@ public class Address implements IReferencedObject, IExternalData {
         {
             return new Address();
         }
+
         public String getPureClassName()
         {
             return "meta::external::shared::testpack::simple::Address";
@@ -59,11 +61,13 @@ public class Address implements IReferencedObject, IExternalData {
 
     private int countrySize;
 
-    public String getFirstLine() {
+    public String getFirstLine()
+    {
         return this.firstLineSize == 0 ? null : this.firstLine;
     }
 
-    public void _firstLineAdd(String value) {
+    public void _firstLineAdd(String value)
+    {
         if (this.firstLineSize == 0)
         {
             this.firstLine = value;
@@ -71,11 +75,13 @@ public class Address implements IReferencedObject, IExternalData {
         this.firstLineSize++;
     }
 
-    public String getSecondLine() {
+    public String getSecondLine()
+    {
         return this.secondLineSize == 0 ? null : this.secondLine;
     }
 
-    public void _secondLineAdd(String value) {
+    public void _secondLineAdd(String value)
+    {
         if (this.secondLineSize == 0)
         {
             this.secondLine = value;
@@ -83,11 +89,13 @@ public class Address implements IReferencedObject, IExternalData {
         this.secondLineSize++;
     }
 
-    public String getCity() {
+    public String getCity()
+    {
         return this.citySize == 0 ? null : this.city;
     }
 
-    public void _cityAdd(String value) {
+    public void _cityAdd(String value)
+    {
         if (this.citySize == 0)
         {
             this.city = value;
@@ -95,11 +103,13 @@ public class Address implements IReferencedObject, IExternalData {
         this.citySize++;
     }
 
-    public String getRegion() {
+    public String getRegion()
+    {
         return this.regionSize == 0 ? null : this.region;
     }
 
-    public void _regionAdd(String value) {
+    public void _regionAdd(String value)
+    {
         if (this.regionSize == 0)
         {
             this.region = value;
@@ -107,11 +117,13 @@ public class Address implements IReferencedObject, IExternalData {
         this.regionSize++;
     }
 
-    public String getCountry() {
+    public String getCountry()
+    {
         return this.countrySize == 0 ? null : this.country;
     }
 
-    public void _countryAdd(String value) {
+    public void _countryAdd(String value)
+    {
         if (this.countrySize == 0)
         {
             this.country = value;
@@ -119,7 +131,8 @@ public class Address implements IReferencedObject, IExternalData {
         this.countrySize++;
     }
 
-    public static ExternalDataAdder<Address> _getAdderForProperty(String propertyName) {
+    public static ExternalDataAdder<Address> _getAdderForProperty(String propertyName)
+    {
         if (propertyName.equals("firstLine"))
         {
             return new ExternalDataObjectAdder<Address, String>("firstLine")
@@ -176,7 +189,8 @@ public class Address implements IReferencedObject, IExternalData {
         }
     }
 
-    public List<IDefect> checkMultiplicities() {
+    public List<IDefect> checkMultiplicities()
+    {
         List<IDefect> defects = new ArrayList<IDefect>();
         if (this.firstLineSize < 1L || this.firstLineSize > 1L)
         {
@@ -188,7 +202,7 @@ public class Address implements IReferencedObject, IExternalData {
         }
         if (this.citySize > 1L)
         {
-        defects.add(BasicDefect.newClassStructureDefect("Invalid multiplicity for city: expected [0..1] found [" + this.citySize + "]", "meta::external::shared::testpack::simple::Address"));
+            defects.add(BasicDefect.newClassStructureDefect("Invalid multiplicity for city: expected [0..1] found [" + this.citySize + "]", "meta::external::shared::testpack::simple::Address"));
         }
         if (this.regionSize > 1L)
         {
@@ -201,7 +215,8 @@ public class Address implements IReferencedObject, IExternalData {
         return defects;
     }
 
-    public String getAlloyStoreObjectReference$() {
+    public String getAlloyStoreObjectReference$()
+    {
         return null;
     }
 }

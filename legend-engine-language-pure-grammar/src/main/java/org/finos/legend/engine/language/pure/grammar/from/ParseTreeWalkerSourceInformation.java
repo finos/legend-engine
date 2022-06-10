@@ -57,26 +57,12 @@ public class ParseTreeWalkerSourceInformation
 
     private final boolean returnSourceInfo;
 
-    private static final ParseTreeWalkerSourceInformation defaultWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder("", 0, 0).withReturnSourceInfo(true).build();
-    
-    private static final ParseTreeWalkerSourceInformation defaultWalkerWithStubSourceInformation = new ParseTreeWalkerSourceInformation.Builder("", 0, 0).withReturnSourceInfo(false).build();
-
     private ParseTreeWalkerSourceInformation(ParseTreeWalkerSourceInformation.Builder builder)
     {
         this.sourceId = builder.sourceId;
         this.lineOffset = builder.lineOffset;
         this.columnOffset = builder.columnOffset;
         this.returnSourceInfo = builder.returnSourceInfo;
-    }
-
-    public static ParseTreeWalkerSourceInformation DEFAULT_WALKER_SOURCE_INFORMATION(boolean returnSourceInfo)
-    {
-        return  returnSourceInfo?  defaultWalkerSourceInformation: defaultWalkerWithStubSourceInformation;
-    }
-
-    public static ParseTreeWalkerSourceInformation DEFAULT_WALKER_SOURCE_INFORMATION()
-    {
-        return  DEFAULT_WALKER_SOURCE_INFORMATION(true);
     }
 
     public String getSourceId()
@@ -101,7 +87,7 @@ public class ParseTreeWalkerSourceInformation
 
     public SourceInformation getSourceInformation(ParserRuleContext parserRuleContext)
     {
-        return  getSourceInformation(this.sourceId, parserRuleContext.getStart(), parserRuleContext.getStop(), this.lineOffset, this.columnOffset);
+        return getSourceInformation(this.sourceId, parserRuleContext.getStart(), parserRuleContext.getStop(), this.lineOffset, this.columnOffset);
     }
 
     public SourceInformation getSourceInformation(Token token)
@@ -114,8 +100,10 @@ public class ParseTreeWalkerSourceInformation
         return getSourceInformation(this.sourceId, startToken, endToken, this.lineOffset, this.columnOffset);
     }
 
-    private SourceInformation getSourceInformation(String sourceId, Token startToken, Token endToken, int lineOffset, int columnOffset) {
-        if (returnSourceInfo) {
+    private SourceInformation getSourceInformation(String sourceId, Token startToken, Token endToken, int lineOffset, int columnOffset)
+    {
+        if (returnSourceInfo)
+        {
             // NOTE: column offset should only apply to the first line (see the example and note in `columnOffset` attribute above)
             int startLine = startToken.getLine() + lineOffset;
             int startColumn = startToken.getCharPositionInLine() + 1 + (startToken.getLine() == 1 ? columnOffset : 0);
@@ -124,6 +112,23 @@ public class ParseTreeWalkerSourceInformation
             return new SourceInformation(sourceId, startLine, startColumn, endLine, endColumn);
         }
         return null;
+    }
+
+    /**
+     * Create a new walker source information offset by the position of the token
+     *
+     * This is useful when we create sub grammars and must pass around walker source-information
+     */
+    public static ParseTreeWalkerSourceInformation offset(ParseTreeWalkerSourceInformation walkerSourceInformation, Token token)
+    {
+        // NOTE: since we could have disabled `returnSourceInformation` in the original walker source information
+        // we must enable that in the cloned on to get a non-nullable source information to create meaningful offset
+        SourceInformation sourceInformation = new Builder(walkerSourceInformation).withReturnSourceInfo(true).build()
+            .getSourceInformation(token);
+        return new Builder(walkerSourceInformation)
+            .withLineOffset(sourceInformation.startLine - 1)
+            .withColumnOffset(sourceInformation.startColumn)
+            .build();
     }
 
     public static class Builder
@@ -167,11 +172,11 @@ public class ParseTreeWalkerSourceInformation
             return this;
         }
 
-      public ParseTreeWalkerSourceInformation.Builder withReturnSourceInfo(boolean returnSourceInfo)
-      {
-        this.returnSourceInfo = returnSourceInfo;
-        return this;
-      }
+        public ParseTreeWalkerSourceInformation.Builder withReturnSourceInfo(boolean returnSourceInfo)
+        {
+            this.returnSourceInfo = returnSourceInfo;
+            return this;
+        }
 
         public ParseTreeWalkerSourceInformation build()
         {

@@ -1,0 +1,106 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::store::*;
+import meta::pure::router::extension::*;
+import meta::pure::deepfetch::builder::*;
+import meta::pure::deepfetch::execution::*;
+import meta::pure::metamodel::serialization::grammar::*;
+import meta::pure::mapping::*;
+import meta::pure::runtime::*;
+import meta::pure::metamodel::path::*;
+import meta::pure::router::printer::*;
+import meta::pure::router::clustering::*;
+import meta::pure::router::execution::*;
+
+function meta::pure::router::execution::executeExpression(clusters:ClusteredValueSpecification[*], inScopeVars:Map<String, List<Any>>[1], activities:Activity[*], deepFetchTreeNode:DeepFetchTreeNode[0..1], deepFetchCache : DeepFetchCache[0..1], exeCtx: ExecutionContext[0..1], advancedRouting:Boolean[1], extensions:RouterExtension[*], debug:DebugContext[1]):Result<Any|*>[1]
+{
+   let current = $clusters->head()->toOne()->evaluateAndDeactivate();
+   print(if($debug.debug,|'\n'+$debug.space+'Start Execution: '+$current.val->asString()+'\n',|''));
+   
+   let fe = $current.val->match([r:ExtendedRoutedValueSpecification[1]|$r.value,t:TDSRoutedValueSpecification[1]|$t.value, a:Any[1]|$a])->cast(@FunctionExpression);
+   if ($fe.func == letFunction_String_1__T_m__T_m_,
+         | let params = $fe.parametersValues->evaluateAndDeactivate();
+           let paramName = $params->at(0)->cast(@InstanceValue).values->at(0)->cast(@String);
+           let paramResult = ^Container(value=$params->at(1))->resolve($inScopeVars, $advancedRouting, $extensions, ^$debug(space = $debug.space+' '));
+           let fullyRes = $paramResult.value->reactivate($inScopeVars)->toOneMany();
+           let newVars = $inScopeVars->put($paramName, ^List<Any>(values=$fullyRes));
+           let allActivities = $activities->concatenate($paramResult.activities);
+           let tail = $clusters->tail();
+           if($tail->isEmpty(), | ^Result<Any|*>(values = $fullyRes, activities=$allActivities), 
+                                |  executeExpression($tail, $newVars, $allActivities, $deepFetchTreeNode, $deepFetchCache, $exeCtx, $advancedRouting, $extensions, ^$debug(space = $debug.space));
+           );,
+                   
+         |
+           let storeQuery = getStoreQuery($current.store, $fe, $inScopeVars, $deepFetchTreeNode, $deepFetchCache, $advancedRouting);//^meta::pure::router::execution::StoreQuery(fe=$fe, inScopeVars=$inScopeVars, deepFetchTreeNode=$deepFetchTreeNode, deepFetchCache=$deepFetchCache);
+           let result = $current.s.executeStoreQuery->eval($storeQuery, $current.val->match([r:RoutedValueSpecification[1]|$r, a:Any[*]|[]])->cast(@RoutedValueSpecification), $current.mapping, $current.runtime, $exeCtx, $extensions, ^$debug(space = $debug.space+' '));
+           let allActivities = $activities->concatenate($result.activities);
+           let tail = $clusters->tail();
+           if($tail->isEmpty(), | ^Result<Any|*>(values=$result.values, activities=$allActivities),
+                                |  executeExpression($tail, $inScopeVars, $allActivities, $deepFetchTreeNode, $deepFetchCache, $exeCtx, $advancedRouting, $extensions, ^$debug(space = $debug.space));
+           );
+   );
+}
+
+function <<access.private>> meta::pure::router::execution::getStoreQuery(store: Store[1], fe : FunctionExpression[1], inScopeVars : Map<String, List<Any>>[1], deepFetchTreeNode : DeepFetchTreeNode[0..1], deepFetchCache : DeepFetchCache[0..1], advancedRouting:Boolean[1]):meta::pure::mapping::StoreQuery[1]
+{
+   if($deepFetchTreeNode->isEmpty(),|^meta::pure::mapping::StoreQuery(store=$store, fe=$fe, inScopeVars=$inScopeVars, advancedRouting = $advancedRouting)
+                                   ,|^meta::pure::deepfetch::execution::StoreQuery(store=$store, fe=$fe, inScopeVars=$inScopeVars, deepFetchTreeNode=$deepFetchTreeNode, deepFetchCache=$deepFetchCache, advancedRouting = $advancedRouting))
+}
+
+function meta::pure::router::execution::resolve(v:Container[1], openVariables:Map<String, List<Any>>[1], advancedRouting:Boolean[1], extensions:RouterExtension[*], debug:DebugContext[1]):Container[1]
+{
+   print(if($debug.debug,|$debug.space+'Resolving  :'+$v.value->evaluateAndDeactivate()->asString()+'\n',|''));
+   $v.value->evaluateAndDeactivate()->match([
+               f:FunctionExpression[1]|let params = $f.parametersValues->evaluateAndDeactivate()->map(pv|^$v(value = $pv)->resolve($openVariables, $advancedRouting, $extensions, ^$debug(space = $debug.space+' ')));
+                                       ^$v(value = ^$f(parametersValues = $params.value), activities += $params.activities);,
+               r:ExtendedRoutedValueSpecification[1]| $v,
+               r:FunctionRoutedValueSpecification[1]| ^$v(value=$r.value)->resolve($openVariables, $advancedRouting, $extensions, ^$debug(space = $debug.space+' ')),
+               i:InstanceValue[1]| let newValues = $i.values->evaluateAndDeactivate()->map(va|$va->match([
+                                                                  vs:ValueSpecification[1]|^$v(value=$vs)->resolve($openVariables, $advancedRouting, $extensions, ^$debug(space = $debug.space+' ')),
+                                                                  a:Any[1]|$a
+                                                              ]));
+                                   ^$v(
+                                         value = ^$i(
+                                                      values = $newValues->map(k|$k->match([r:Container[1]|$r.value->match([i:InstanceValue[1]|$i.values,a:Any[1]|$a]), i:InstanceValue[1]|$i.values, a:Any[1]|$a]))
+                                                 ),
+                                         activities += $newValues->filter(v|$v->instanceOf(Container))->cast(@Container).activities
+
+                                    );
+                                    ,
+               va:VariableExpression[1]| $v;,
+               c:ClusteredValueSpecification[1]|let recurseExec = ^$v(value=$c.val)->resolve($openVariables, $advancedRouting, $extensions, ^$debug(space = $debug.space+' '));
+                                                let res = $recurseExec.value->evaluateAndDeactivate()->match([r:ExtendedRoutedValueSpecification[1]|$r.value, v:ValueSpecification[1]|$v, r:FunctionRoutedValueSpecification[1]|^$v(value=$r.value)->resolve($openVariables, $advancedRouting, $extensions, ^$debug(space = $debug.space+' '))])
+                                                                            ->match(
+                                                               [
+                                                                  fe:FunctionExpression[1]| print(if($debug.debug,|$debug.space+'Store Execution  :'+$v.value->evaluateAndDeactivate()->asString()+'\n',|''));
+                                                                                            let storeQuery = getStoreQuery($c.store, $fe, $openVariables, [], [], $advancedRouting);//^meta::pure::router::execution::StoreQuery(fe=$fe, inScopeVars=$openVariables);
+                                                                                            $c.s.executeStoreQuery->eval($storeQuery, $recurseExec.value->cast(@ExtendedRoutedValueSpecification), $c.mapping, $c.runtime, $c.exeCtx, $extensions, ^$debug(space = $debug.space+' '));,
+                                                                  i:InstanceValue[1] | ^Result<Any|*>(values = if ($i.genericType.rawType->toOne()->_subTypeOf(Function),|$i.values, |$i->reactivate($openVariables)))
+                                                               ]
+                                                          );
+                                                ^$v(value = ^InstanceValue(genericType = $c.genericType,
+                                                                           multiplicity = $c.multiplicity,
+                                                                           values = $res.values)->evaluateAndDeactivate(),
+                                                    activities += $res.activities->concatenate($recurseExec.activities)
+                                                 );,
+              t:TDSRoutedValueSpecification[1]|$v;
+                  ]);
+}
+
+Class meta::pure::router::execution::Container
+{
+   value : ValueSpecification[1];
+   activities:Activity[*];
+}

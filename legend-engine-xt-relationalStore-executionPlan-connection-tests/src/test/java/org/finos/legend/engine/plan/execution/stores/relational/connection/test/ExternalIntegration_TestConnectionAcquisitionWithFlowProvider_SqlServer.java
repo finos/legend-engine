@@ -16,7 +16,7 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.test
 
 import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
 import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProvider;
-import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProviderSelector;
+import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProviderConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
@@ -26,7 +26,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.shared.core.vault.PropertiesVaultImplementation;
 import org.finos.legend.engine.shared.core.vault.Vault;
 import org.finos.legend.engine.shared.core.vault.VaultImplementation;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.testcontainers.containers.MSSQLServerContainer;
 
 import javax.security.auth.Subject;
@@ -58,6 +60,7 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_SqlSe
         startMSSQLServerContainer();
 
         LegendDefaultDatabaseAuthenticationFlowProvider flowProvider = new LegendDefaultDatabaseAuthenticationFlowProvider();
+        flowProvider.configure(new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration());
         assertStaticSQLServerFlowProviderIsAvailable(flowProvider);
 
         this.connectionManagerSelector = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(-1), Collections.emptyList(), Optional.of(flowProvider));
@@ -103,7 +106,7 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_SqlSe
     public void testSqlServerUserNamePasswordConnection() throws Exception
     {
         RelationalDatabaseConnection systemUnderTest = this.sqlServerWithUserNamePassword();
-        Connection connection = this.connectionManagerSelector.getDatabaseConnection((Subject)null, systemUnderTest);
+        Connection connection = this.connectionManagerSelector.getDatabaseConnection((Subject) null, systemUnderTest);
         testConnection(connection, "select db_name() as dbname");
     }
 

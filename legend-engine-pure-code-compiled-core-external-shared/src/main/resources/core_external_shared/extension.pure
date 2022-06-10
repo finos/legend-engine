@@ -1,0 +1,167 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::factory::*;
+import meta::external::language::java::transform::*;
+import meta::external::shared::format::*;
+import meta::external::shared::format::binding::*;
+import meta::external::shared::format::executionPlan::*;
+import meta::external::shared::format::router::extension::*;
+import meta::external::shared::runtime::*;
+import meta::pure::executionPlan::*;
+import meta::pure::executionPlan::engine::java::*;
+import meta::pure::graphFetch::*;
+import meta::pure::mapping::*;
+import meta::pure::metamodel::path::*;
+import meta::pure::model::binding::*;
+import meta::pure::model::unit::*;
+import meta::pure::router::extension::*;
+import meta::pure::runtime::*;
+import meta::pure::store::platform::executionPlan::generation::*;
+import meta::pure::store::platform::router::extension::*;
+
+function meta::external::shared::format::routerExtensions(type:String[1], externalFormatExtensions:ExternalFormatExtension[*]) : RouterExtension[*]
+{
+   let shared = ^RouterExtension(
+      type = $type,
+      plan_javaRuntime_enginePlatformDependencies_conventions = meta::external::shared::format::executionPlan::engine::extendJavaEngineDependencies_Conventions_1__Conventions_1_,
+      serializerExtension      = meta::external::shared::format::serializerExtensionName_String_1__String_1_,
+      routing_extraShouldStop  = serializeFunctions(),
+      executionPlan_generation_isConnectionForClass =
+         {class:Class<Any>[1] |
+            [
+               x:ExternalFormatConnection[1] | $x.element->cast(@Binding).modelUnit->resolve().packageableElements->contains($class)
+            ]
+         },
+      executionPlan_generation_nodeFromConnection = 
+         {tree:RootGraphFetchTree<Any>[0..1], enableConstraints:Boolean[1], checked:Boolean[1] |
+            [
+               {x:ExternalFormatConnection[1] | 
+                  let binding         = $x.element->cast(@Binding);
+                  let formatExtension = $externalFormatExtensions->getExtensionForContentType($binding.contentType);
+                  let sourceNode      = getSourceNodeFromExternalSource($x.externalSource);
+                  let deserializeNode = $formatExtension.generateDeserializeNode->eval($x, $sourceNode, $tree);
+                  generateDataQualityNode($deserializeNode, $enableConstraints, $checked);
+               }
+            ]
+         },
+      executionPlan_generation_nodeFromConnectionWithChildren = 
+         {tree:RootGraphFetchTree<Any>[0..1], children:ExecutionNode[1], enableConstraints:Boolean[1], checked:Boolean[1] |
+            [
+               {x:ExternalFormatConnection[1] | 
+                  let binding         = $x.element->cast(@Binding);
+                  let formatExtension = $externalFormatExtensions->getExtensionForContentType($binding.contentType);
+                  let deserializeNode = $formatExtension.generateDeserializeNode->eval($x, $children, $tree);
+                  generateDataQualityNode($deserializeNode, $enableConstraints, $checked);
+               }
+            ]
+         },
+      executionPlan_print_connectionToString = meta::external::shared::format::executionPlan::printConnection_RouterExtension_MANY__Function_MANY_,
+      executionPlan_print_planNodeToString =
+         {space:String[1], extensions:RouterExtension[*] |
+            printPlanNodeToString($space, $extensions)
+               ->concatenate($externalFormatExtensions.printPlanNodeToString->map(x|$x->eval($space, $extensions)));
+         },
+      plan_javaRuntime_main_prepare2 = 
+         {path:String[1], context:GenerationContext[1], extensions:RouterExtension[*], debug:DebugContext[1] |
+            planPrepareDataQuality($path, $context, $extensions, $debug)
+               ->concatenate($externalFormatExtensions.planJavaPrepare->map(x|$x->eval($path, $context, $extensions, $debug)));
+         },
+      plan_javaRuntime_main_generatePlatformCode1 = 
+         {path:String[1], context:GenerationContext[1], extensions:RouterExtension[*], debug:DebugContext[1] |
+            $externalFormatExtensions.planJavaGenerate->map(x|$x->eval($path, $context, $extensions, $debug));
+         },
+      moduleExtensions = [
+         ^ExternalFormatModuleExtension(
+            module                = 'externalFormat',
+            generatePathReference = {binding:Binding[1], path:Path<Nil,Any|*>[1] |
+                                       let formatExtension = $externalFormatExtensions->getExtensionForContentType($binding.contentType);
+                                       assert($formatExtension.generatePathReference->isNotEmpty(), | 'Path Offset not supported by : ' + $formatExtension.externalFormat + ' external format');
+
+                                       $formatExtension.generatePathReference->toOne()->eval($path);
+                                    },
+            executionPlan_generation_generateSerializeNode = {checked:Boolean[1], binding:Binding[1], children:ExecutionNode[*] |
+                                                                  let formatExtension = $externalFormatExtensions->getExtensionForContentType($binding.contentType);
+                                                                  $formatExtension.generateSerializeNode->eval($checked, $binding, $children);
+                                                             }
+         ),
+       ^PlatformStoreExtension(module = 'platform',
+                               routing_extraIsSerialize = isSerialize_FunctionExpression_1__Boolean_1_,
+                               executionPlan_generation_nodeForFunctionExpression = executionPlan_generation_nodeForPlatformFunctionExpression($externalFormatExtensions)
+                              )
+      ]
+   );
+
+   let perFormat = $externalFormatExtensions->map(formatExt| ^RouterExtension(type                                                    = $type+':'+$formatExt.externalFormat, 
+                                                                              plan_javaRuntime_enginePlatformDependencies_conventions = $formatExt.plan_javaRuntime_enginePlatformDependencies_conventions,
+                                                                              serializerExtension                                     = $formatExt.serializerExtension
+                                                                             ));
+
+   $shared->concatenate($perFormat);
+}
+
+function <<access.private>> meta::external::shared::format::executionPlan_generation_nodeForPlatformFunctionExpression(externalFormatExtensions:ExternalFormatExtension[*]): PureFunctionToProcessFunctionPair[*]
+{
+   let processor = {fe:FunctionExpression[1], runtime:Runtime[0..1], inScopeVars : Map<String, List<Any>>[1], advancedRouting: Boolean[0..1], exeCtx:ExecutionContext[1], extensions : RouterExtension[*], debug:DebugContext[1] |
+                         externalizeFunctionProcessor($fe, $runtime, $inScopeVars, $advancedRouting, $exeCtx, $extensions, $externalFormatExtensions, $debug);};
+   serializeFunctions()->map(func | ^PureFunctionToProcessFunctionPair(first = $func, second = $processor));
+}
+
+function <<access.private>> meta::external::shared::format::externalizeFunctionProcessor(fe:FunctionExpression[1], runtime:Runtime[0..1], inScopeVars : Map<String, List<Any>>[1], advancedRouting: Boolean[0..1], exeCtx:ExecutionContext[1], extensions : RouterExtension[*], externalFormatExtensions:ExternalFormatExtension[*], debug:DebugContext[1]):ExecutionNode[1]
+{
+   let children        = $fe.parametersValues->evaluateAndDeactivate()->at(0)->meta::pure::store::platform::executionPlan::generation::processValueSpecification($runtime, $inScopeVars, $advancedRouting, $exeCtx, $extensions, $debug)->toOneMany();
+
+   let bindingArg      = $fe.parametersValues->at(1);
+   assert($bindingArg->instanceOf(InstanceValue), 'Only literal binding is supported');
+   let checked         = $fe.func == meta::external::shared::format::executionPlan::externalize_Checked_MANY__Binding_1__String_1_;
+   let binding         = $bindingArg->cast(@InstanceValue).values->cast(@Binding)->toOne();
+   let formatExtension = $externalFormatExtensions->getExtensionForContentType($binding.contentType);
+   $formatExtension.generateSerializeNode->eval($checked, $binding, $children);
+}
+
+function <<access.private>> meta::external::shared::format::serializerExtensionName(version:String[1]): String[1]
+{
+   'meta::protocols::pure::' + $version + '::external::shared::format::serializerExtension_String_1__SerializerExtension_1_'
+}
+
+function <<access.private>> meta::external::shared::format::getExtensionForContentType(externalFormatExtensions:ExternalFormatExtension[*], contentType:String[1]): ExternalFormatExtension[1]
+{
+   let formatExtension = $externalFormatExtensions->filter(ext| $ext.contentType == $contentType);
+   assert($formatExtension->size() == 1, | 'Expected to find 1 extension for ' + $contentType + ', found ' + $formatExtension->size()->toString());
+   $formatExtension->toOne();
+}
+
+function <<access.private>> meta::external::shared::format::getExtensionForFormat(externalFormatExtensions:ExternalFormatExtension[*], format:String[1]): ExternalFormatExtension[1]
+{
+   let formatExtension = $externalFormatExtensions->filter(ext| $ext.externalFormat == $format);
+   assert($formatExtension->size() == 1, | 'Expected to find 1 extension for ' + $format + ', found ' + $formatExtension->size()->toString());
+   $formatExtension->toOne();
+}
+
+Class meta::external::shared::format::ExternalFormatExtension
+{
+   contentType             : String[1];
+   externalFormat          : String[1];
+   
+   generateSerializeNode   : Function<{Boolean[1], Binding[1], ExecutionNode[*] -> ExecutionNode[1]}>[1];  
+   generateDeserializeNode : Function<{Connection[1], ExecutionNode[1], RootGraphFetchTree<Any>[0..1] -> ExecutionNode[1]}>[1];
+   generatePathReference   : Function<{Path<Nil,Any|*>[1] -> PathReference[1]}>[0..1];
+   printPlanNodeToString   : Function<{String[1], RouterExtension[*] -> Function<{Nil[1] -> String[1]}>[*]}>[1];
+   
+   planJavaPrepare         : Function<{String[1], GenerationContext[1], RouterExtension[*], DebugContext[1] -> Function<{Nil[1]->GenerationContext[1]}>[*]}>[1];
+   planJavaGenerate        : Function<{String[1], GenerationContext[1], RouterExtension[*], DebugContext[1] -> Function<{Nil[1]->GeneratedCode[1]}>[*]}>[1];
+   plan_javaRuntime_enginePlatformDependencies_conventions : Function<{Conventions[1]->Conventions[1]}>[0..1];
+
+   serializerExtension     : Function<{String[1]->String[1]}>[1];
+}

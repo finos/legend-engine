@@ -25,7 +25,8 @@ import org.finos.legend.engine.plan.dependencies.store.shared.IReferencedObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AddressUse implements IReferencedObject, IExternalData {
+public class AddressUse implements IReferencedObject, IExternalData
+{
 
     public static final IExternalDataFactory FACTORY = new IExternalDataFactory()
     {
@@ -33,6 +34,7 @@ public class AddressUse implements IReferencedObject, IExternalData {
         {
             return new AddressUse();
         }
+
         public String getPureClassName()
         {
             return "meta::external::shared::testpack::simple::AddressUse";
@@ -47,11 +49,13 @@ public class AddressUse implements IReferencedObject, IExternalData {
 
     private int addressSize;
 
-    public AddressType getAddressType() {
+    public AddressType getAddressType()
+    {
         return this.addressTypeSize == 0 ? null : this.addressType;
     }
 
-    public void _addressTypeAdd(AddressType value) {
+    public void _addressTypeAdd(AddressType value)
+    {
         if (this.addressTypeSize == 0)
         {
             this.addressType = value;
@@ -59,11 +63,13 @@ public class AddressUse implements IReferencedObject, IExternalData {
         this.addressTypeSize++;
     }
 
-    public Address getAddress() {
+    public Address getAddress()
+    {
         return this.addressSize == 0 ? null : this.address;
     }
 
-    public void _addressAdd(Address value) {
+    public void _addressAdd(Address value)
+    {
         if (this.addressSize == 0)
         {
             this.address = value;
@@ -71,7 +77,8 @@ public class AddressUse implements IReferencedObject, IExternalData {
         this.addressSize++;
     }
 
-    public List<IDefect> checkMultiplicities() {
+    public List<IDefect> checkMultiplicities()
+    {
         List<IDefect> defects = new ArrayList<IDefect>();
         if (this.addressTypeSize < 1L || this.addressTypeSize > 1L)
         {
@@ -84,7 +91,8 @@ public class AddressUse implements IReferencedObject, IExternalData {
         return defects;
     }
 
-    public static ExternalDataAdder<AddressUse> _getAdderForProperty(String propertyName) {
+    public static ExternalDataAdder<AddressUse> _getAdderForProperty(String propertyName)
+    {
         if (propertyName.equals("addressType"))
         {
             return new ExternalDataObjectAdder<AddressUse, AddressType>("addressType")
@@ -111,7 +119,8 @@ public class AddressUse implements IReferencedObject, IExternalData {
         }
     }
 
-    public String getAlloyStoreObjectReference$() {
+    public String getAlloyStoreObjectReference$()
+    {
         return null;
     }
 }

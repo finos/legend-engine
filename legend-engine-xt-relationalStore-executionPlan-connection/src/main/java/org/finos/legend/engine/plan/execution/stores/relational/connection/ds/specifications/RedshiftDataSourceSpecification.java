@@ -27,7 +27,7 @@ public class RedshiftDataSourceSpecification extends DataSourceSpecification
 
     public RedshiftDataSourceSpecification(RedshiftDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy)
     {
-        this(key, databaseManager, authenticationStrategy,addPropertiesFromDataSource(key));
+        this(key, databaseManager, authenticationStrategy, addPropertiesFromDataSource(key));
     }
 
     private RedshiftDataSourceSpecification(RedshiftDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, Properties extraUserProperties)
@@ -37,9 +37,9 @@ public class RedshiftDataSourceSpecification extends DataSourceSpecification
 
     private static Properties addPropertiesFromDataSource(RedshiftDataSourceSpecificationKey key)
     {
-        java.util.Properties props =  new Properties();
-        props.put(RedshiftManager.CLUSTER_ID,key.getClusterID());
-        props.put(RedshiftManager.REGION,key.getRegion());
+        java.util.Properties props = new Properties();
+        props.put(RedshiftManager.CLUSTER_ID, key.getClusterID());
+        props.put(RedshiftManager.REGION, key.getRegion());
         return props;
     }
 
@@ -48,9 +48,9 @@ public class RedshiftDataSourceSpecification extends DataSourceSpecification
     protected String getJdbcUrl(String host, int port, String databaseName, Properties properties)
     {
         return super.getJdbcUrl(
-                ((RedshiftDataSourceSpecificationKey)this.datasourceKey).getHost(),
-                ((RedshiftDataSourceSpecificationKey)this.datasourceKey).getPort(),
-                ((RedshiftDataSourceSpecificationKey)this.datasourceKey).getDatabaseName(),
+                ((RedshiftDataSourceSpecificationKey) this.datasourceKey).getHost(),
+                ((RedshiftDataSourceSpecificationKey) this.datasourceKey).getPort(),
+                ((RedshiftDataSourceSpecificationKey) this.datasourceKey).getDatabaseName(),
                 properties);
     }
 }

@@ -1,0 +1,40 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+
+
+function <<test.Test>> meta::pure::functions::date::tests::testTimeToAndFromSeconds():Boolean[1]
+{
+   let time = ^Time(hours=9,minutes=30,seconds=0);
+   let transformedTime = $time->inSeconds()->timeFromSeconds();
+   assertEquals($time.hours, $transformedTime.hours);
+   assertEquals($time.minutes, $transformedTime.minutes);
+   assertEquals($time.seconds, $transformedTime.seconds);
+
+}
+
+function <<test.Test>> meta::pure::functions::date::tests::testAverageTime():Boolean[1]
+{
+   let time1 = ^Time(hours=8,minutes=45,seconds=10);
+   let time2 = ^Time(hours=4,minutes=15,seconds=40);
+
+   let expected = ^Time(hours=6,minutes=30,seconds=25);
+   let transformedTime = average([$time1, $time2]);
+   assertEquals($expected.hours, $transformedTime.hours);
+   assertEquals($expected.minutes, $transformedTime.minutes);
+   assertEquals($expected.seconds, $transformedTime.seconds);
+
+   assertEquals($time1->inSeconds() - $expected->inSeconds(), $expected->inSeconds() - $time2->inSeconds());
+
+}

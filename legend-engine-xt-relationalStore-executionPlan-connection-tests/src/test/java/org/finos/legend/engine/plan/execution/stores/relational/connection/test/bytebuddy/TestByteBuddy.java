@@ -14,14 +14,15 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.test.bytebuddy;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.agent.ByteBuddyAgent;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.dynamic.loading.ClassReloadingStrategy;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import static net.bytebuddy.matcher.ElementMatchers.named;
 import static org.junit.Assert.assertEquals;
 

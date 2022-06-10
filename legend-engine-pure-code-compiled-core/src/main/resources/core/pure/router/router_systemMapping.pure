@@ -1,0 +1,117 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::mapping::*;
+import meta::pure::router::systemMapping::tests::*;
+import meta::pure::router::extension::*;
+import meta::pure::mapping::modelToModel::*;
+import meta::pure::router::systemMapping::*;
+import meta::pure::runtime::*;
+
+Class meta::pure::router::systemMapping::SystemMapping
+{
+   supportsFunctionAsString:String[1];
+   supports(){
+       pathToElement($this.supportsFunctionAsString)->cast(@Function<{FunctionExpression[1]->Boolean[1]}>);
+   }:Function<{FunctionExpression[1]->Boolean[1]}>[1];
+   
+   streamSupportedFunctionAsString:String[0..1];
+   supportsStream(){
+       if($this.streamSupportedFunctionAsString->isNotEmpty(), |pathToElement($this.streamSupportedFunctionAsString->toOne())->cast(@Function<{FunctionExpression[1]->Boolean[1]}>), | {f:FunctionExpression[1]|false});
+   }:Function<{FunctionExpression[1]->Boolean[1]}>[1];
+
+   executeFunctionAsString:String[1];
+   executeStoreQuery(){
+       pathToElement($this.executeFunctionAsString)->cast(@Function<{StoreQuery[1], RoutedValueSpecification[0..1], Mapping[1], Runtime[1], ExecutionContext[1], RouterExtension[*], DebugContext[1] -> Result<Any|*>[1]}>);
+   }:Function<{StoreQuery[1], RoutedValueSpecification[0..1], Mapping[1], Runtime[1], ExecutionContext[1], RouterExtension[*], DebugContext[1] -> Result<Any|*>[1]}>[1];
+
+   planExecutionAsString:String[1];
+   planExecution(){
+       pathToElement($this.planExecutionAsString)->cast(@Function<{StoreQuery[1], RoutedValueSpecification[0..1], Mapping[0..1], Runtime[0..1], ExecutionContext[1], RouterExtension[*], DebugContext[1] -> meta::pure::executionPlan::ExecutionNode[1]}>);
+   }:Function<{StoreQuery[1], RoutedValueSpecification[0..1], Mapping[0..1], Runtime[0..1], ExecutionContext[1], RouterExtension[*], DebugContext[1]->meta::pure::executionPlan::ExecutionNode[1]}>[1];
+
+   localGetterOverrideMappedAsString:String[1];
+   localGetterOverrideMapped(){
+       pathToElement($this.localGetterOverrideMappedAsString)->cast(@Function<{Any[1], PropertyMapping[1] -> Any[*]}>);
+   }:Function<{Any[1], PropertyMapping[1] -> Any[*]}>[1];
+
+   localGetterOverrideNonMappedAsString:String[1];
+   localGetterOverrideNonMapped(){
+       pathToElement($this.localGetterOverrideNonMappedAsString)->cast(@Function<{Any[1], Property<Nil,Any|*>[1] -> Any[*]}>);
+   }:Function<{Any[1], Property<Nil,Any|*>[1] -> Any[*]}>[1];
+}
+
+
+function meta::pure::router::systemMapping::purePlatformSystemMapping():SystemMapping[1]
+{
+   ^SystemMapping(
+      executeFunctionAsString='meta::pure::store::platform::execution::execution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__RouterExtension_MANY__DebugContext_1__Result_1_',
+      supportsFunctionAsString='meta::pure::store::platform::supports_FunctionExpression_1__Boolean_1_',
+      planExecutionAsString='meta::pure::store::platform::executionPlan::generation::planExecution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__RouterExtension_MANY__DebugContext_1__ExecutionNode_1_',
+      localGetterOverrideMappedAsString='',
+      localGetterOverrideNonMappedAsString=''
+   )
+}
+
+function meta::pure::router::systemMapping::pureMappingSystemMapping():SystemMapping[1]
+{
+   ^SystemMapping(
+      executeFunctionAsString='meta::pure::mapping::modelToModel::execution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_1__Runtime_1__ExecutionContext_1__RouterExtension_MANY__DebugContext_1__Result_1_',
+      supportsFunctionAsString='meta::pure::mapping::modelToModel::supports_FunctionExpression_1__Boolean_1_',
+      planExecutionAsString='meta::pure::mapping::modelToModel::planExecution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__RouterExtension_MANY__DebugContext_1__ExecutionNode_1_',
+      localGetterOverrideMappedAsString='meta::pure::mapping::modelToModel::inMemory::getterOverrideMapped_Any_1__PropertyMapping_1__Any_MANY_',
+      localGetterOverrideNonMappedAsString='meta::pure::mapping::modelToModel::inMemory::getterOverrideNonMapped_Any_1__Property_1__Any_MANY_'
+   )
+}
+
+function meta::pure::router::systemMapping::aggregationAwareSystemMapping():SystemMapping[1]
+{
+   ^SystemMapping(
+      executeFunctionAsString='meta::pure::mapping::aggregationAware::execution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_1__Runtime_1__ExecutionContext_1__RouterExtension_MANY__DebugContext_1__Result_1_',
+      supportsFunctionAsString='meta::pure::mapping::aggregationAware::supports_FunctionExpression_1__Boolean_1_',
+      planExecutionAsString='meta::pure::mapping::aggregationAware::planExecution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__RouterExtension_MANY__DebugContext_1__ExecutionNode_1_',
+      localGetterOverrideMappedAsString='',
+      localGetterOverrideNonMappedAsString=''
+   )
+}
+
+function meta::pure::router::systemMapping::systemForSetImplementation(s:SetImplementation[1], extensions:meta::pure::router::extension::RouterExtension[*]):SystemMapping[1]
+{
+   $s->match(
+      $extensions.systemMapping_systemForSetImplementation->concatenate([
+         p:PureInstanceSetImplementation[1]|pureMappingSystemMapping(),
+         o:OperationSetImplementation[1]|pureMappingSystemMapping()
+      ])->toOneMany()
+   )
+}
+
+
+function <<meta::pure::profiles::test.Test>> meta::pure::router::systemMapping::tests::testResolveCore():Any[*]
+{
+   [meta::pure::router::systemMapping::purePlatformSystemMapping(),
+    meta::pure::router::systemMapping::pureMappingSystemMapping(),
+    meta::pure::router::systemMapping::aggregationAwareSystemMapping()]->testSystemMappings();
+}
+
+function meta::pure::router::systemMapping::tests::testSystemMappings(s:SystemMapping[*]):Any[*]
+{
+   $s->map(t|
+      if($t.supportsFunctionAsString != '',|$t.supports(),|true);
+      if($t.streamSupportedFunctionAsString != '',|$t.supportsStream(),|true);
+      if($t.executeFunctionAsString != '',|$t.executeStoreQuery(),|true);
+      if($t.planExecutionAsString != '',|$t.planExecution(),|true);
+      if($t.localGetterOverrideMappedAsString != '',|$t.localGetterOverrideMapped(),|true);
+      if($t.localGetterOverrideNonMappedAsString != '',|$t.localGetterOverrideNonMapped(),|true);
+   );
+}

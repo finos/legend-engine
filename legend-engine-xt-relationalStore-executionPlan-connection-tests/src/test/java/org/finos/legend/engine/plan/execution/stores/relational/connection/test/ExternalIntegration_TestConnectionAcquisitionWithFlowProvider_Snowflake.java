@@ -17,6 +17,7 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.test
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
 import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProvider;
+import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProviderConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
@@ -58,6 +59,7 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Snowf
     public void setup()
     {
         LegendDefaultDatabaseAuthenticationFlowProvider flowProvider = new LegendDefaultDatabaseAuthenticationFlowProvider();
+        flowProvider.configure(new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration());
         assertSnowflakeKeyPairFlowIsAvailable(flowProvider);
         this.connectionManagerSelector = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(-1), Collections.emptyList(), Optional.of(flowProvider));
     }
@@ -73,21 +75,20 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Snowf
         assertTrue("snowflake keypair flow does not exist ", flow.isPresent());
     }
 
-    // TODO - Enable tests when we have Snowflake network connectivity
     @Test
     public void testSnowflakePublicConnection_subject() throws Exception
     {
         RelationalDatabaseConnection systemUnderTest = this.snowflakeWithKeyPairSpec();
-        Connection connection = this.connectionManagerSelector.getDatabaseConnection((Subject)null, systemUnderTest);
-        testConnection(connection, "select * from LEGEND_INTEGRATION_DB1.SCHEMA1.TABLE1");
+        Connection connection = this.connectionManagerSelector.getDatabaseConnection((Subject) null, systemUnderTest);
+        testConnection(connection, "select * from INTEGRATION_DB1.INTEGRATION_SCHEMA1.test");
     }
 
     @Test
     public void testSnowflakePublicConnection_profile() throws Exception
     {
         RelationalDatabaseConnection systemUnderTest = this.snowflakeWithKeyPairSpec();
-        Connection connection = this.connectionManagerSelector.getDatabaseConnection((MutableList<CommonProfile>)null, systemUnderTest);
-        testConnection(connection, "select * from LEGEND_INTEGRATION_DB1.SCHEMA1.TABLE1");
+        Connection connection = this.connectionManagerSelector.getDatabaseConnection((MutableList<CommonProfile>) null, systemUnderTest);
+        testConnection(connection, "select * from INTEGRATION_DB1.INTEGRATION_SCHEMA1.test");
     }
 
     private RelationalDatabaseConnection snowflakeWithKeyPairSpec() throws Exception
@@ -95,14 +96,14 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Snowf
         SnowflakeDatasourceSpecification snowflakeDatasourceSpecification = new SnowflakeDatasourceSpecification();
         snowflakeDatasourceSpecification.accountName = "ki79827";
         snowflakeDatasourceSpecification.region = "us-east-2";
-        snowflakeDatasourceSpecification.warehouseName = "LEGEND_INTEGRATION_WH1";
-        snowflakeDatasourceSpecification.databaseName = "LEGEND_INTEGRATION_DB1";
-        snowflakeDatasourceSpecification.role = "LEGEND_INTEGRATION_ROLE1";
+        snowflakeDatasourceSpecification.warehouseName = "INTEGRATION_WH1";
+        snowflakeDatasourceSpecification.databaseName = "INTEGRATION_DB1";
+        snowflakeDatasourceSpecification.role = "INTEGRATION_ROLE1";
         snowflakeDatasourceSpecification.cloudType = "aws";
         SnowflakePublicAuthenticationStrategy authSpec = new SnowflakePublicAuthenticationStrategy();
-        authSpec.publicUserName = "LEGEND_INTEG_RO1";
-        authSpec.passPhraseVaultReference = "SNOWFLAKE_LEGEND_INTEG_RO1_PASSWORD";
-        authSpec.privateKeyVaultReference = "SNOWFLAKE_LEGEND_INTEG_RO1_PRIVATEKEY";
+        authSpec.publicUserName = "INTEGRATION_USER1";
+        authSpec.privateKeyVaultReference = "SNOWFLAKE_INTEGRATION_USER1_PRIVATEKEY";
+        authSpec.passPhraseVaultReference = "SNOWFLAKE_INTEGRATION_USER1_PASSWORD";
         return new RelationalDatabaseConnection(snowflakeDatasourceSpecification, authSpec, DatabaseType.Snowflake);
     }
 }

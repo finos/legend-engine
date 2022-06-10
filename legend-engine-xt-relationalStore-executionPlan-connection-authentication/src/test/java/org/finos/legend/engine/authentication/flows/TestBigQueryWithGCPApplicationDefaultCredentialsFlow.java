@@ -21,6 +21,7 @@ import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.GCPApplicationDefaultCredential;
 import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.junit.Test;
+
 import static org.junit.Assert.assertTrue;
 
 public class TestBigQueryWithGCPApplicationDefaultCredentialsFlow

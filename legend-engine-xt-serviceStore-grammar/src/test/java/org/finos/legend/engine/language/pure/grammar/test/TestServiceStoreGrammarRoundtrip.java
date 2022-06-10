@@ -43,7 +43,7 @@ public class TestServiceStoreGrammarRoundtrip extends TestGrammarRoundtrip.TestG
                 "    );\n" +
                 "    response : ExampleClass <- tests::store::exampleBinding;\n" +
                 "    security : [];\n" +
-                "  )\n"+
+                "  )\n" +
                 ")\n");
 
         test("###ServiceStore\n" +
@@ -59,7 +59,7 @@ public class TestServiceStoreGrammarRoundtrip extends TestGrammarRoundtrip.TestG
                 "    );\n" +
                 "    response : ExampleClass <- tests::store::exampleBinding;\n" +
                 "    security : [];\n" +
-                "  )\n"+
+                "  )\n" +
                 ")\n");
 
         test("###ServiceStore\n" +
@@ -75,7 +75,7 @@ public class TestServiceStoreGrammarRoundtrip extends TestGrammarRoundtrip.TestG
                 "    );\n" +
                 "    response : ExampleClass <- tests::store::exampleBinding;\n" +
                 "    security : [];\n" +
-                "  )\n"+
+                "  )\n" +
                 ")\n");
 
         test("###ServiceStore\n" +
@@ -91,7 +91,7 @@ public class TestServiceStoreGrammarRoundtrip extends TestGrammarRoundtrip.TestG
                 "    );\n" +
                 "    response : ExampleClass <- tests::store::exampleBinding;\n" +
                 "    security : [];\n" +
-                "  )\n"+
+                "  )\n" +
                 ")\n");
 
         test("###ServiceStore\n" +
@@ -107,7 +107,7 @@ public class TestServiceStoreGrammarRoundtrip extends TestGrammarRoundtrip.TestG
                 "    );\n" +
                 "    response : ExampleClass <- tests::store::exampleBinding;\n" +
                 "    security : [];\n" +
-                "  )\n"+
+                "  )\n" +
                 ")\n");
 
         test("###ServiceStore\n" +
@@ -123,7 +123,7 @@ public class TestServiceStoreGrammarRoundtrip extends TestGrammarRoundtrip.TestG
                 "    );\n" +
                 "    response : ExampleClass <- tests::store::exampleBinding;\n" +
                 "    security : [];\n" +
-                "  )\n"+
+                "  )\n" +
                 ")\n");
 
         test("###ServiceStore\n" +
@@ -139,7 +139,7 @@ public class TestServiceStoreGrammarRoundtrip extends TestGrammarRoundtrip.TestG
                 "    );\n" +
                 "    response : ExampleClass <- tests::store::exampleBinding;\n" +
                 "    security : [];\n" +
-                "  )\n"+
+                "  )\n" +
                 ")\n");
 
         test("###ServiceStore\n" +
@@ -155,7 +155,7 @@ public class TestServiceStoreGrammarRoundtrip extends TestGrammarRoundtrip.TestG
                 "    );\n" +
                 "    response : ExampleClass <- tests::store::exampleBinding;\n" +
                 "    security : [];\n" +
-                "  )\n"+
+                "  )\n" +
                 ")\n");
 
         test("###ServiceStore\n" +
@@ -171,7 +171,7 @@ public class TestServiceStoreGrammarRoundtrip extends TestGrammarRoundtrip.TestG
                 "    );\n" +
                 "    response : ExampleClass <- tests::store::exampleBinding;\n" +
                 "    security : [];\n" +
-                "  )\n"+
+                "  )\n" +
                 ")\n");
 
         test("###ServiceStore\n" +
@@ -187,7 +187,7 @@ public class TestServiceStoreGrammarRoundtrip extends TestGrammarRoundtrip.TestG
                 "    );\n" +
                 "    response : ExampleClass <- tests::store::exampleBinding;\n" +
                 "    security : [];\n" +
-                "  )\n"+
+                "  )\n" +
                 ")\n");
 
         test("###ServiceStore\n" +
@@ -203,7 +203,7 @@ public class TestServiceStoreGrammarRoundtrip extends TestGrammarRoundtrip.TestG
                 "    );\n" +
                 "    response : ExampleClass <- tests::store::exampleBinding;\n" +
                 "    security : [];\n" +
-                "  )\n"+
+                "  )\n" +
                 ")\n");
 
         test("###ServiceStore\n" +
@@ -219,7 +219,7 @@ public class TestServiceStoreGrammarRoundtrip extends TestGrammarRoundtrip.TestG
                 "    );\n" +
                 "    response : ExampleClass <- tests::store::exampleBinding;\n" +
                 "    security : [];\n" +
-                "  )\n"+
+                "  )\n" +
                 ")\n");
 
         test("###ServiceStore\n" +
@@ -236,7 +236,7 @@ public class TestServiceStoreGrammarRoundtrip extends TestGrammarRoundtrip.TestG
                 "    );\n" +
                 "    response : ExampleClass <- tests::store::exampleBinding;\n" +
                 "    security : [];\n" +
-                "  )\n"+
+                "  )\n" +
                 ")\n");
 
         test("###ServiceStore\n" +
@@ -254,7 +254,7 @@ public class TestServiceStoreGrammarRoundtrip extends TestGrammarRoundtrip.TestG
                 "    );\n" +
                 "    response : ExampleClass <- tests::store::exampleBinding;\n" +
                 "    security : [];\n" +
-                "  )\n"+
+                "  )\n" +
                 ")\n");
 
         test("###ServiceStore\n" +
@@ -266,7 +266,7 @@ public class TestServiceStoreGrammarRoundtrip extends TestGrammarRoundtrip.TestG
                 "    method : GET;\n" +
                 "    response : ExampleClass <- tests::store::exampleBinding;\n" +
                 "    security : [];\n" +
-                "  )\n"+
+                "  )\n" +
                 ")\n");
     }
 
@@ -289,7 +289,7 @@ public class TestServiceStoreGrammarRoundtrip extends TestGrammarRoundtrip.TestG
                 "      );\n" +
                 "      response : ExampleClass <- tests::store::exampleBinding;\n" +
                 "      security : [];\n" +
-                "    )\n"+
+                "    )\n" +
                 "  )\n" +
                 ")\n");
 
@@ -309,7 +309,7 @@ public class TestServiceStoreGrammarRoundtrip extends TestGrammarRoundtrip.TestG
                 "      );\n" +
                 "      response : ExampleClass <- tests::store::exampleBinding;\n" +
                 "      security : [];\n" +
-                "    )\n"+
+                "    )\n" +
                 "    Service TestService2\n" +
                 "    (\n" +
                 "      path : '/testService';\n" +
@@ -321,7 +321,7 @@ public class TestServiceStoreGrammarRoundtrip extends TestGrammarRoundtrip.TestG
                 "      );\n" +
                 "      response : ExampleClass <- tests::store::exampleBinding;\n" +
                 "      security : [];\n" +
-                "    )\n"+
+                "    )\n" +
                 "  )\n" +
                 ")\n");
     }
@@ -344,7 +344,7 @@ public class TestServiceStoreGrammarRoundtrip extends TestGrammarRoundtrip.TestG
                 "    );\n" +
                 "    response : ExampleClass <- tests::store::exampleBinding;\n" +
                 "    security : [];\n" +
-                "  )\n"+
+                "  )\n" +
                 "  ServiceGroup TestServices\n" +
                 "  (\n" +
                 "    path : '/testServices';\n\n" +
@@ -358,7 +358,7 @@ public class TestServiceStoreGrammarRoundtrip extends TestGrammarRoundtrip.TestG
                 "      );\n" +
                 "      response : ExampleClass <- tests::store::exampleBinding;\n" +
                 "      security : [];\n" +
-                "    )\n"+
+                "    )\n" +
                 "  )\n" +
                 ")\n");
     }
@@ -381,7 +381,7 @@ public class TestServiceStoreGrammarRoundtrip extends TestGrammarRoundtrip.TestG
                 "    );\n" +
                 "    response : ExampleClass <- tests::store::exampleBinding;\n" +
                 "    security : [];\n" +
-                "  )\n"+
+                "  )\n" +
                 "  Service TestService2\n" +
                 "  (\n" +
                 "    path : '/testService';\n" +
@@ -392,7 +392,7 @@ public class TestServiceStoreGrammarRoundtrip extends TestGrammarRoundtrip.TestG
                 "    );\n" +
                 "    response : ExampleClass <- tests::store::exampleBinding;\n" +
                 "    security : [];\n" +
-                "  )\n"+
+                "  )\n" +
                 "  ServiceGroup TestServices3\n" +
                 "  (\n" +
                 "    path : '/testServices1';\n\n" +
@@ -406,7 +406,7 @@ public class TestServiceStoreGrammarRoundtrip extends TestGrammarRoundtrip.TestG
                 "      );\n" +
                 "      response : ExampleClass <- tests::store::exampleBinding;\n" +
                 "      security : [];\n" +
-                "    )\n"+
+                "    )\n" +
                 "  )\n" +
                 "  ServiceGroup TestServices4\n" +
                 "  (\n" +
@@ -424,7 +424,7 @@ public class TestServiceStoreGrammarRoundtrip extends TestGrammarRoundtrip.TestG
                 "        );\n" +
                 "        response : ExampleClass <- tests::store::exampleBinding;\n" +
                 "        security : [];\n" +
-                "      )\n"+
+                "      )\n" +
                 "    )\n" +
                 "  )\n" +
                 "  ServiceGroup TestServices6\n" +
@@ -440,7 +440,7 @@ public class TestServiceStoreGrammarRoundtrip extends TestGrammarRoundtrip.TestG
                 "      );\n" +
                 "      response : ExampleClass <- tests::store::exampleBinding;\n" +
                 "      security : [];\n" +
-                "    )\n"+
+                "    )\n" +
                 "    Service TestService2\n" +
                 "    (\n" +
                 "      path : '/testService';\n" +
@@ -451,7 +451,7 @@ public class TestServiceStoreGrammarRoundtrip extends TestGrammarRoundtrip.TestG
                 "      );\n" +
                 "      response : ExampleClass <- tests::store::exampleBinding;\n" +
                 "      security : [];\n" +
-                "    )\n"+
+                "    )\n" +
                 "  )\n" +
                 ")\n");
     }

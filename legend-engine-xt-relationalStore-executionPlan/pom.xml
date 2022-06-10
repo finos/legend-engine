@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>3.1.1-SNAPSHOT</version>
+        <version>3.4.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -161,13 +161,6 @@
         </dependency>
         <!-- Apache CSV (CSV return generation) -->
 
-        <!-- Required to support Configuration -->
-        <dependency>
-            <groupId>io.dropwizard</groupId>
-            <artifactId>dropwizard-core</artifactId>
-        </dependency>
-        <!-- Required to support Configuration -->
-
         <!-- COMMONS-LANG (ClassUtils)-->
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -248,8 +241,8 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-code-compiled-core</artifactId>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-code-compiled-core</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -258,8 +251,8 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-code-compiled-core-external-shared</artifactId>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-code-compiled-core-external-shared</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

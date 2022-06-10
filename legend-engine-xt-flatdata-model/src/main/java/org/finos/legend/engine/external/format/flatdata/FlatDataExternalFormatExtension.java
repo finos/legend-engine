@@ -19,14 +19,47 @@ import org.eclipse.collections.api.list.ImmutableList;
 import org.finos.legend.engine.external.format.flatdata.compile.FlatDataSchemaCompiler;
 import org.finos.legend.engine.external.format.flatdata.fromModel.ModelToFlatDataConfiguration;
 import org.finos.legend.engine.external.format.flatdata.shared.grammar.FlatDataGrammarHelper;
-import org.finos.legend.engine.external.format.flatdata.shared.model.*;
+import org.finos.legend.engine.external.format.flatdata.shared.model.FlatData;
+import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataBoolean;
+import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataDataType;
+import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataDate;
+import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataDateTime;
+import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataDecimal;
+import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataInteger;
+import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataProperty;
+import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataRecordField;
+import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataRecordType;
+import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataSection;
+import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataString;
+import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataTemporal;
 import org.finos.legend.engine.external.format.flatdata.toModel.FlatDataToModelConfiguration;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
 import org.finos.legend.engine.external.shared.format.model.ExternalSchemaCompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
-import org.finos.legend.pure.generated.*;
+import org.finos.legend.pure.generated.Root_meta_external_format_flatdata_binding_fromPure_ModelToFlatDataConfiguration;
+import org.finos.legend.pure.generated.Root_meta_external_format_flatdata_binding_fromPure_ModelToFlatDataConfiguration_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_format_flatdata_binding_toPure_FlatDataToModelConfiguration;
+import org.finos.legend.pure.generated.Root_meta_external_format_flatdata_binding_toPure_FlatDataToModelConfiguration_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_format_flatdata_metamodel_FlatData;
+import org.finos.legend.pure.generated.Root_meta_external_format_flatdata_metamodel_FlatDataBoolean;
+import org.finos.legend.pure.generated.Root_meta_external_format_flatdata_metamodel_FlatDataDate;
+import org.finos.legend.pure.generated.Root_meta_external_format_flatdata_metamodel_FlatDataDateTime;
+import org.finos.legend.pure.generated.Root_meta_external_format_flatdata_metamodel_FlatDataDecimal;
+import org.finos.legend.pure.generated.Root_meta_external_format_flatdata_metamodel_FlatDataInteger;
+import org.finos.legend.pure.generated.Root_meta_external_format_flatdata_metamodel_FlatDataProperty;
+import org.finos.legend.pure.generated.Root_meta_external_format_flatdata_metamodel_FlatDataRecordField;
+import org.finos.legend.pure.generated.Root_meta_external_format_flatdata_metamodel_FlatDataRecordType;
+import org.finos.legend.pure.generated.Root_meta_external_format_flatdata_metamodel_FlatDataSection;
+import org.finos.legend.pure.generated.Root_meta_external_format_flatdata_metamodel_FlatDataString;
+import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
+import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_validation_BindingDetail;
+import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_SchemaSet;
+import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationParameter;
+import org.finos.legend.pure.generated.core_external_format_flatdata_binding_flatDataToPure;
+import org.finos.legend.pure.generated.core_external_format_flatdata_binding_pureToFlatData;
+import org.finos.legend.pure.generated.core_external_format_flatdata_binding_validation;
 
 import java.lang.management.ManagementFactory;
 import java.util.Collections;
@@ -34,7 +67,7 @@ import java.util.List;
 
 public class FlatDataExternalFormatExtension implements ExternalFormatExtension<Root_meta_external_format_flatdata_metamodel_FlatData, FlatDataToModelConfiguration, ModelToFlatDataConfiguration>
 {
-    private static final String TYPE = "FlatData";
+    public static final String TYPE = "FlatData";
     private static final boolean IN_DEBUG = ManagementFactory.getRuntimeMXBean().getInputArguments().toString().contains(":jdwp");
 
     @Override
@@ -62,7 +95,7 @@ public class FlatDataExternalFormatExtension implements ExternalFormatExtension<
     }
 
     @Override
-    public String metamodelToText(Root_meta_external_format_flatdata_metamodel_FlatData schemaDetail)
+    public String metamodelToText(Root_meta_external_format_flatdata_metamodel_FlatData schemaDetail, PureModel pureModel)
     {
         Root_meta_external_format_flatdata_metamodel_FlatData flatData = schemaDetail;
         return FlatDataGrammarHelper.toGrammar(transformFlatData(flatData));

@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.config;
 
-import io.dropwizard.Configuration;
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProvider;
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProviderConfiguration;
@@ -24,7 +23,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.authe
 
 import java.util.List;
 
-public class RelationalExecutionConfiguration extends Configuration implements StoreExecutorConfiguration
+public class RelationalExecutionConfiguration implements StoreExecutorConfiguration
 {
     public TemporaryTestDbConfiguration temporarytestdb;
     public String tempPath;
@@ -42,20 +41,23 @@ public class RelationalExecutionConfiguration extends Configuration implements S
     {
     }
 
-    public  RelationalExecutionConfiguration(String tempPath)
+    public RelationalExecutionConfiguration(String tempPath)
     {
         this.tempPath = tempPath;
     }
 
-    public DatabaseAuthenticationFlowProviderConfiguration getFlowProviderConfiguration() {
+    public DatabaseAuthenticationFlowProviderConfiguration getFlowProviderConfiguration()
+    {
         return flowProviderConfiguration;
     }
 
-    public Class<? extends DatabaseAuthenticationFlowProvider> getFlowProviderClass() {
+    public Class<? extends DatabaseAuthenticationFlowProvider> getFlowProviderClass()
+    {
         return flowProviderClass;
     }
 
-    public TemporaryTestDbConfiguration getTemporaryTestDbConfiguration() {
+    public TemporaryTestDbConfiguration getTemporaryTestDbConfiguration()
+    {
         return temporarytestdb;
     }
 
@@ -98,7 +100,7 @@ public class RelationalExecutionConfiguration extends Configuration implements S
             return this;
         }
 
-        public Builder withDatabaseAuthenticationFlowProvider(Class<? extends DatabaseAuthenticationFlowProvider>  flowProviderClass)
+        public Builder withDatabaseAuthenticationFlowProvider(Class<? extends DatabaseAuthenticationFlowProvider> flowProviderClass)
         {
             this.flowProviderClass = flowProviderClass;
             this.flowProviderConfiguration = null;

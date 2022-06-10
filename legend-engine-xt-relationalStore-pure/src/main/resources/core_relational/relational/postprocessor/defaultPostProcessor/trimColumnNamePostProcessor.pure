@@ -22,6 +22,7 @@ import meta::relational::postProcessor::reAliasColumnName::*;
 import meta::relational::metamodel::relation::*;
 import meta::relational::metamodel::*;
 import meta::pure::functions::collection::*;
+import meta::relational::functions::sqlQueryToString::*;
 
 function meta::relational::postProcessor::reAliasColumnName::trimColumnName(query:SelectSQLQuery[1],connection:DatabaseConnection[1]):Result<SelectSQLQuery|1>[1]
 {
@@ -49,24 +50,14 @@ function meta::relational::postProcessor::reAliasColumnName::trimColumnName(quer
 function meta::relational::postProcessor::reAliasColumnName::lengthConfig(runtime: Runtime[1]):Integer[1]
 {
   let type =  $runtime.connections->filter(c|$c->instanceOf(DatabaseConnection))->cast(@DatabaseConnection).type;
-  let config = dbAliasLimit();
 
-  let length = $config->get($type->cast(@DatabaseType)->toOne());
+  let length = $type->cast(@DatabaseType)->toOne()->createDbConfig([]).dbExtension.aliasLimit;
   if($length->isEmpty(),
      | fail('Db not configured for column rename');0;,
      | $length
   )->toOne();
 }
 
-function meta::relational::postProcessor::reAliasColumnName::dbAliasLimit():Map<DatabaseType, Integer>[1]
-{
-  newMap([
-    pair(DatabaseType.DB2, 128),
-    pair(DatabaseType.H2, 1000),
-    pair(DatabaseType.SybaseIQ, 255),
-    pair(DatabaseType.Snowflake, 255)
-  ]);
-}
 function  meta::relational::postProcessor::reAliasColumnName::search(q:RelationalOperationElement[*],runtime:Runtime[1] ): Pair<String,String>[*]
 {
    $q->map(r| $r->match([
@@ -78,7 +69,8 @@ function  meta::relational::postProcessor::reAliasColumnName::search(q:Relationa
                      ta:TableAlias[1]| let name = $ta.name; let relElement = $ta.relationalElement;
                                        $relElement->match([t:Table[1]|[],
                                                            u: Union[1]|$u->search($runtime),
-                                                           s: SelectSQLQuery[1]|$s->search($runtime);
+                                                           s: SelectSQLQuery[1]|$s->search($runtime);,
+                                                           s: SemiStructuredArrayFlatten[1]|$s.navigation->search($runtime)
                                                                ]);,
                      tac:TableAliasColumn[1]| $tac.column->search($runtime);,
                      union: Union[1]|$union.queries->search($runtime),
@@ -90,6 +82,10 @@ function  meta::relational::postProcessor::reAliasColumnName::search(q:Relationa
                      js: JoinStrings[1]| $js.strings->search($runtime)->concatenate($js.prefix->search($runtime))->concatenate($js.suffix->search($runtime))->concatenate($js.separator->search($runtime));,
                      c: Column[1]| let maxLength = lengthConfig($runtime);
                                    if( $c.name->length()>=$maxLength,|pair($c.name->replace('"','')->substring(0,$maxLength-10), $c.name),|[]);,
+                     s:SemiStructuredPropertyAccess[1] | $s.operand->concatenate($s.property)->concatenate($s.index)->search($runtime),
+                     s:SemiStructuredArrayElementAccess[1] | $s.operand->concatenate($s.index)->search($runtime),
+                     s:SemiStructuredArrayFlatten[1] | $s.navigation->search($runtime),
+                     s:SemiStructuredArrayFlattenOutput[1] | $s.tableAliasColumn->search($runtime),
                      any:Any[1]| [];
                    ]);
             );
@@ -143,6 +139,10 @@ function meta::relational::postProcessor::reAliasColumnName::replace(r:Relationa
                                          separator=if($j.separator->isEmpty(), | [], | $j.separator->toOne()->replace($m)),
                                          suffix=if($j.suffix->isEmpty(), | [], | $j.suffix->toOne()->replace($m)));,
                 c:Column[1] |let newName = $m->get($c.name); if($newName->isNotEmpty(),|^$c(name = $newName->toOne()),|$c);,
+                s:SemiStructuredPropertyAccess[1] | ^$s(operand = $s.operand->replace($m), property = $s.property->replace($m), index = $s.index->map(i | $i->replace($m))),
+                s:SemiStructuredArrayElementAccess[1] | ^$s(operand = $s.operand->replace($m), index = $s.index->replace($m)),
+                s:SemiStructuredArrayFlatten[1] | ^$s(navigation = $s.navigation->replace($m)),
+                s:SemiStructuredArrayFlattenOutput[1] | ^$s(tableAliasColumn = $s.tableAliasColumn->replace($m)->cast(@TableAliasColumn)),
                 rel: RelationalOperationElement[1] |  $rel;
               ]);
 }

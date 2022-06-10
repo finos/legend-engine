@@ -25,12 +25,14 @@ public class BigQueryDataSourceSpecificationKey implements DataSourceSpecificati
     private String proxyHost;
     private String proxyPort;
 
-    public BigQueryDataSourceSpecificationKey(String projectId, String defaultDataset, String proxyHost, String proxyPort) {
+    public BigQueryDataSourceSpecificationKey(String projectId, String defaultDataset, String proxyHost, String proxyPort)
+    {
         this.projectId = projectId;
         this.defaultDataset = defaultDataset;
         this.proxyHost = proxyHost;
         this.proxyPort = proxyPort;
     }
+
     public String getProjectId()
     {
         return projectId;
@@ -41,11 +43,13 @@ public class BigQueryDataSourceSpecificationKey implements DataSourceSpecificati
         return defaultDataset;
     }
 
-    public String getProxyHost() {
+    public String getProxyHost()
+    {
         return proxyHost;
     }
 
-    public String getProxyPort() {
+    public String getProxyPort()
+    {
         return proxyPort;
     }
 

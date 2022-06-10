@@ -1,0 +1,448 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::json::*;
+import meta::json::schema::*;
+import meta::pure::generation::*;
+import meta::pure::generation::metamodel::*;
+import meta::pure::metamodel::constraint::*;
+import meta::json::schema::constraint::*;
+
+function meta::json::schema::constraint::toJSONSchemaFromConstraint( constraint:Constraint[1],config:JSONSchemaConfigInternal[1] ) : SchemaConstraint[0..1]
+{
+  $constraint.functionDefinition->toJSONSchemaFromFunctionDefinition($config);
+}
+
+
+function meta::json::schema::constraint::jsonSchemaConstraintsWithoutRef( constraint:Constraint[1],config:JSONSchemaConfigInternal[1] ) : SchemaConstraint[0..1]
+{
+   let updatedConfig = ^$config(generateConstraintFunctionSchemas=false);
+   $constraint.functionDefinition->toJSONSchemaFromFunctionDefinition($updatedConfig);
+}
+Class meta::json::schema::constraint::SchemaConstraint
+{
+  property:Property<Nil,Any|*>[0..1];
+  constraint:JSONObject[0..1];
+  generationMessage:GenerationMessage[*];
+}
+
+function meta::json::schema::constraint::constraintHasType( constrantObject:JSONElement[0..1]) : Boolean[1]
+{
+ let res = if($constrantObject->isNotEmpty(),
+             |  $constrantObject->match([a:JSONArray[1]|if($a.values->isEmpty(),|false,| $a.values->map( v |$v-> constraintHasType())->toOneMany()->or());,
+                                         o:JSONObject[1]| $o.keyValuePairs->map( p|if($p.value->instanceOf(JSONObject) || $p.value->instanceOf(JSONArray),
+                                                                                        |$p.value-> constraintHasType(),
+                                                                                        | $p.key.value =='type' || $p.key.value=='$ref' ;
+                                                                                      )
+                                                                      )->toOneMany()->or();,
+                              a:Any[1]|false ])->toOneMany()->or();,
+   | false);
+   $res;
+ }
+
+function meta::json::schema::constraint::constraintHasRef( constrantObject:JSONElement[0..1]) : Boolean[1]
+{
+ let res = if($constrantObject->isNotEmpty(),
+             |  $constrantObject->match([a:JSONArray[1]|$a.values->map( v |$v-> constraintHasRef())->toOneMany()->or(),
+                                         o:JSONObject[1]| $o.keyValuePairs->map( p|if($p.value->instanceOf(JSONObject) || $p.value->instanceOf(JSONArray),
+                                                                                        |$p.value-> constraintHasRef(),
+                                                                                        |  $p.key.value=='$ref' ;
+                                                                                      )
+                                                                      )->toOneMany()->or();,
+                              a:Any[1]|false ])->toOneMany()->or();,
+   | false);
+   $res;
+ }
+
+
+function meta::json::schema::constraint::toJSONSchemaFromFunctionDefinition(def:FunctionDefinition<Any>[1],config:JSONSchemaConfigInternal[1] ) : SchemaConstraint[0..1]
+{
+
+  let updatedConfig = if($config.rootElement->isEmpty() , | ^$config(rootElement=$def),|$config);
+  $def->evaluateAndDeactivate().expressionSequence->at(0)->toJSONSchemaFromValueSpecification($updatedConfig);
+
+
+}
+
+function meta::json::schema::constraint::createType(type:Any[1] ) : JSONKeyValue[0..1]
+{
+   if($type->instanceOf(PrimitiveType),
+    |newJSONKeyStringValue( 'type', $type->cast(@PrimitiveType)->convertPrimitiveType( ) ),
+    |[]);
+}
+
+
+function  meta::json::schema::constraint::toJSONSchemaFromValueSpecification( fn:ValueSpecification[1],config:JSONSchemaConfigInternal[1] ) : SchemaConstraint[0..1]
+{
+  let property = $fn->match([s:SimpleFunctionExpression[1]|$s.parametersValues->at(0)->meta::json::schema::constraint::getSchemaProperty(),
+                             v:ValueSpecification[1] |[]]);
+  let type = if($config.rootElement->isNotEmpty() && $config.rootElement->toOne()->instanceOf(Function) && $config.rootElement->cast(@Function<Any>)->toOne()->evaluateAndDeactivate()->functionType().parameters->isNotEmpty(),
+                  | $config.rootElement->cast(@Function<Any>)->toOne()->evaluateAndDeactivate()->functionType().parameters->at(0).genericType.rawType->toOne()->createType();,
+                 |[]);
+  let schemaConstraint = toJSONSchemaFromValueSpecification_internal($fn,$property,$config);
+  let constraint= $schemaConstraint.constraint;
+  if($constraint->isNotEmpty(),
+      |  let rootConstraint = $schemaConstraint->toOne();
+          let updatedConstraint = $constraint->toOne();
+         let updatedConstraintType = if($type->isNotEmpty(),
+                                  |^$updatedConstraint(keyValuePairs+=$type);,
+                                   |$updatedConstraint
+                                  );
+            let result = if($property->isNotEmpty(),
+                    |^$rootConstraint(property=$property,constraint=$updatedConstraintType),
+                    | ^$rootConstraint(constraint=$updatedConstraintType)
+                  );,
+     |$schemaConstraint);   
+
+}
+
+function <<access.private>> meta::json::schema::constraint::toJSONSchemaFromValueSpecification_internal( fn:ValueSpecification[1],rootProperty:Property<Nil,Any|*>[0..1],config:JSONSchemaConfigInternal[1] ) : SchemaConstraint[0..1]
+{
+
+
+   let FunctionConstraintMap = newMap([pair('meta::pure::functions::string::isNoLongerThan_String_$0_1$__Integer_1__Boolean_1_', meta::json::schema::constraint::buildMaxLength_SimpleFunctionExpression_1__JSONSchemaConfigInternal_1__SchemaConstraint_1_),
+                                       pair('meta::pure::functions::string::isNoShorterThan_String_$0_1$__Integer_1__Boolean_1_', meta::json::schema::constraint::buildMinLength_SimpleFunctionExpression_1__JSONSchemaConfigInternal_1__SchemaConstraint_1_),
+                                       pair('meta::pure::functions::string::matches_String_1__String_1__Boolean_1_', meta::json::schema::constraint::buildPattern_SimpleFunctionExpression_1__JSONSchemaConfigInternal_1__SchemaConstraint_1_),
+                                       pair('meta::pure::functions::boolean::and_Boolean_1__Boolean_1__Boolean_1_', meta::json::schema::constraint::buildAnd_SimpleFunctionExpression_1__JSONSchemaConfigInternal_1__SchemaConstraint_1_),
+                                       pair('meta::pure::functions::boolean::or_Boolean_1__Boolean_1__Boolean_1_', meta::json::schema::constraint::buildOr_SimpleFunctionExpression_1__JSONSchemaConfigInternal_1__SchemaConstraint_1_),
+                                       pair('meta::pure::functions::collection::oneOf_Boolean_MANY__Boolean_1_', meta::json::schema::constraint::buildOneOf_SimpleFunctionExpression_1__JSONSchemaConfigInternal_1__SchemaConstraint_1_),
+                                       pair('meta::pure::functions::meta::instanceOf_Any_1__Type_1__Boolean_1_', meta::json::schema::constraint::buildInstanceOf_SimpleFunctionExpression_1__JSONSchemaConfigInternal_1__SchemaConstraint_1_),
+                                       pair('meta::pure::functions::boolean::equal_Any_MANY__Any_MANY__Boolean_1_', meta::json::schema::constraint::buildEqual_SimpleFunctionExpression_1__JSONSchemaConfigInternal_1__SchemaConstraint_1_),
+                                       pair('meta::pure::functions::boolean::greaterThanEqual_Number_1__Number_1__Boolean_1_', meta::json::schema::constraint::buildMinimum_SimpleFunctionExpression_1__JSONSchemaConfigInternal_1__SchemaConstraint_1_),
+                                       pair('meta::pure::functions::boolean::greaterThan_Number_1__Number_1__Boolean_1_', meta::json::schema::constraint::buildExMinimum_SimpleFunctionExpression_1__JSONSchemaConfigInternal_1__SchemaConstraint_1_),
+                                       pair('meta::pure::functions::boolean::lessThanEqual_Number_1__Number_1__Boolean_1_', meta::json::schema::constraint::buildMaximum_SimpleFunctionExpression_1__JSONSchemaConfigInternal_1__SchemaConstraint_1_),
+                                       pair('meta::pure::functions::boolean::lessThan_Number_1__Number_1__Boolean_1_', meta::json::schema::constraint::buildExMaximum_SimpleFunctionExpression_1__JSONSchemaConfigInternal_1__SchemaConstraint_1_),
+                                       pair('meta::pure::functions::collection::in_Any_1__Any_MANY__Boolean_1_', meta::json::schema::constraint::buildIn_SimpleFunctionExpression_1__JSONSchemaConfigInternal_1__SchemaConstraint_1_),
+                                       pair('meta::pure::functions::collection::forAll_T_MANY__Function_1__Boolean_1_', meta::json::schema::constraint::buildForAll_SimpleFunctionExpression_1__JSONSchemaConfigInternal_1__SchemaConstraint_1_ ),
+                                       pair('meta::pure::functions::collection::isDistinct_T_MANY__Boolean_1_', meta::json::schema::constraint::buildDistinct_SimpleFunctionExpression_1__JSONSchemaConfigInternal_1__SchemaConstraint_1_ ),
+                                       pair('meta::json::schema::discriminateOneOf_Any_1__Any_1__Type_MANY__DiscriminatorMapping_MANY__Boolean_1_',meta::json::schema::constraint::buildSubTypeDiscriminator_SimpleFunctionExpression_1__JSONSchemaConfigInternal_1__SchemaConstraint_1_),
+                                       pair('meta::pure::functions::string::isUUID_String_$0_1$__Boolean_1_',meta::json::schema::constraint::buildUUID_SimpleFunctionExpression_1__JSONSchemaConfigInternal_1__SchemaConstraint_1_),
+                                       pair('meta::pure::functions::collection::or_Boolean_$1_MANY$__Boolean_1_', meta::json::schema::constraint::buildOr_SimpleFunctionExpression_1__JSONSchemaConfigInternal_1__SchemaConstraint_1_),
+                                       pair('meta::pure::functions::math::rem_Number_1__Number_1__Number_1_', meta::json::schema::constraint::builtMultipleOf_SimpleFunctionExpression_1__JSONSchemaConfigInternal_1__SchemaConstraint_1_)
+
+
+   ]);
+   let constraint =  $fn->match([f:SimpleFunctionExpression[1]|  if($f.functionName=='if' || $f.functionName=='meta::pure::functions::lang::if',
+                                                                    |$f->processedIf($rootProperty,$config);,
+                                                                    |let mapGet = $FunctionConstraintMap->get($f.func->elementToPath());
+                                                                       if($mapGet->isNotEmpty() ,
+                                                                            |
+                                                                             $FunctionConstraintMap->get($f.func->elementToPath())->toOne()->eval($f->cast(@SimpleFunctionExpression),$config);,
+                                                                            | if($f.func->functionReturnType().rawType == Boolean && $f.func.classifierGenericType.typeArguments.rawType->cast(@FunctionType).parameters->size()==1 && ( !$f.func->elementToPath()->startsWith('meta')||$f.func->elementToPath()->startsWith('meta::json') )  ,
+                                                                                   |if($config.generateConstraintFunctionSchemas,
+                                                                                        |^SchemaConstraint(constraint=newJSONObject($f.func->cast(@FunctionDefinition<Any>)-> meta::json::schema::newJsonRef($config.rootElement,$config.useDefinitions,$config.rootElement,$config )));,
+                                                                                        |$f.func->cast(@FunctionDefinition<Any>)->toJSONSchemaFromFunctionDefinition($config)
+                                                                                        ),
+                                                                                   | ^SchemaConstraint(generationMessage=addWarning([], 'Unsupported function found : '+$f->buldValueSpecMessage($config)));
+                                                                                 )
+                                                                        ;);
+                                                                     );,
+                               a:ValueSpecification[1] |  ^SchemaConstraint(generationMessage=addWarning([], 'Unsupported function found : '+$a->buldValueSpecMessage($config)));])->toOne();
+
+
+
+let result = if($rootProperty->isNotEmpty(),
+                    |^$constraint(property=$rootProperty),
+                    |$constraint);
+ }
+
+function <<access.private>> meta::json::schema::constraint::buldValueSpecMessage(valueSpec:ValueSpecification[1] ,config:JSONSchemaConfigInternal[1])  : String[1]
+{
+  let prop = if($config.rootElement->isNotEmpty(),
+                  |' at ' + $config.rootElement->toOne()->match([ c:Class<Any>[1]|$c->elementToPath(),
+                                                                 f:ConcreteFunctionDefinition<Any>[1]| $f->elementToPath();,
+                                                                 a:Any[1] |''        ]);
+               
+                  ,
+                     |'');
+   
+   $valueSpec->meta::pure::metamodel::serialization::grammar::printValueSpecification(' ') + $prop;
+}
+
+function <<access.private>> meta::json::schema::constraint::buildSubTypeDiscriminator( fn:SimpleFunctionExpression[1],config:JSONSchemaConfigInternal[1] ) : SchemaConstraint[1]
+{
+
+  let propertyName =newJSONKeyStringValue('propertyName',  $fn.parametersValues->at(1)->cast(@SimpleFunctionExpression).func->cast(@Property<Nil,Any|*>).name->toOne());
+
+  let subTypes =   $fn.parametersValues->at(2)->cast(@InstanceValue).values->map(v|$v->match([i:InstanceValue[1]|$i.values,c:Class<Any>[1]|$c])->cast(@Class<Any>));
+  let oneOf =   newJSONKeyValue('oneOf', ^JSONArray(values =  $subTypes->map(s | newJSONObject($s->newJsonRef($config.rootElement,$config.useDefinitions,$config.rootElement,$config)))));
+  let mapping = $fn.parametersValues->at(3)->match([s:SimpleFunctionExpression[1]|$s,
+                                                   i:InstanceValue[1]|$i.values->cast(@SimpleFunctionExpression)])->map(m|   let pair = $m->evaluateAndDeactivate()->cast(@SimpleFunctionExpression);
+                                                                                                                          let first =$pair.parametersValues->at(0)->match([s:SimpleFunctionExpression[1] |$s.parametersValues->at(1)->cast(@InstanceValue).values,
+                                                                                                                                                                           i:InstanceValue[1]|$i.values])->toOne()->toString();
+                                                                                                                          let second =$pair.parametersValues->at(1)->cast(@InstanceValue).values->toOne()->cast(@Type)->newJsonRef($config.rootElement,$config.useDefinitions,$config.rootElement,$config).value;
+                                                                                                                 let kv =  newJSONKeyValue($first,$second);
+                                                                                                                  );
+
+  let mappingKV =if($mapping->isNotEmpty(),
+       |  newJSONKeyValue('mapping',newJSONObject($mapping)),
+       |  []
+   );
+  let result =newJSONObject(newJSONKeyValue('discriminator', newJSONObject($propertyName->concatenate($mappingKV)))->concatenate($oneOf));
+
+^SchemaConstraint(constraint=$result);
+}
+
+
+function <<access.private>> meta::json::schema::constraint::buildForAll( fn:SimpleFunctionExpression[1],config:JSONSchemaConfigInternal[1] ) : SchemaConstraint[1]
+{
+   $fn.parametersValues->at(1)->cast(@InstanceValue).values->cast(@FunctionDefinition<Any>)->toOne()->toJSONSchemaFromFunctionDefinition($config)->toOne();
+}
+
+function <<access.private>> meta::json::schema::constraint::processAtZeroParameter( fn:SimpleFunctionExpression[1],config:JSONSchemaConfigInternal[1] ) : SchemaConstraint[1]
+{
+    $fn.parametersValues->at(0)->cast(@InstanceValue).values->at(0)->cast(@ValueSpecification)->toJSONSchemaFromValueSpecification_internal([],$config)->toOne();
+}
+
+
+function <<access.private>> meta::json::schema::constraint::processedIf( fn:SimpleFunctionExpression[1],rootProperty:Property<Nil,Any|*>[0..1],config:JSONSchemaConfigInternal[1] ) : SchemaConstraint[1]
+{
+
+ let value = $fn.parametersValues->at(1)->cast(@InstanceValue).values->at(0)->cast(@LambdaFunction<Any>).expressionSequence->at(0)->toJSONSchemaFromValueSpecification_internal($rootProperty,$config)->toOne();
+}
+
+
+function <<access.private>> meta::json::schema::constraint::buildAnd( fn:SimpleFunctionExpression[1],config:JSONSchemaConfigInternal[1] ) : SchemaConstraint[1]
+{
+   let constraints = $fn.parametersValues->map( p | $p-> cast(@SimpleFunctionExpression)->toJSONSchemaFromValueSpecification_internal([],$config));
+      if($constraints->validateConstraint(),
+      | let first = $constraints->at(0);
+       ^$first( constraint = ^JSONObject(keyValuePairs =$constraints->map(c|$c.constraint.keyValuePairs)));,
+      | ^SchemaConstraint()
+    );
+}
+
+
+function <<access.private>> meta::json::schema::constraint::buildEqual( fn:SimpleFunctionExpression[1],config:JSONSchemaConfigInternal[1] ) : SchemaConstraint[1]
+{
+  
+   if( $fn.parametersValues->at(0)->instanceOf(SimpleFunctionExpression) && !$fn.parametersValues->at(0)->cast(@SimpleFunctionExpression).func->instanceOf(Property) ,
+      | $fn.parametersValues->at(0)->toJSONSchemaFromValueSpecification_internal([],$config)->toOne();,
+      |let value = $fn.parametersValues->at(1)->match([i:InstanceValue[1]| let value = $i.values->toOne()->makeString();
+                                                                     ^SchemaConstraint(constraint= ^JSONObject(keyValuePairs= [newJSONKeyValue( 'enum',^JSONArray(values= ^JSONString( value= $value )))]) );,
+                                                   a:Any[1] | ^SchemaConstraint(generationMessage=addError([],'only direct assignment supported e.g. $this.value == 1235' ) ) ]);
+  );
+
+}
+
+function <<access.private>> meta::json::schema::constraint::builtMultipleOf( fn:SimpleFunctionExpression[1],config:JSONSchemaConfigInternal[1] ) : SchemaConstraint[1]
+{
+
+ let value = $fn.parametersValues->at(1)->match([i:InstanceValue[1]| let value = $i.values->toOne();
+                                                                     ^SchemaConstraint(constraint= ^JSONObject(keyValuePairs= [newJSONKeyValue( 'multipleOf',^JSONNumber( value= $value->cast(@Number) ))]) );,
+                                                   a:Any[1] | ^SchemaConstraint(generationMessage=addError([],'Use rem in the following format to specify a multiple rem(value,multiple)==0' ) ) ]);
+
+}
+
+
+
+function <<access.private>> meta::json::schema::constraint::buildOr( fn:SimpleFunctionExpression[1],config:JSONSchemaConfigInternal[1] ) : SchemaConstraint[1]
+{
+
+   $fn->constraintArray('anyOf',$config);
+}
+
+function <<access.private>> meta::json::schema::constraint::buildIn( fn:SimpleFunctionExpression[1],config:JSONSchemaConfigInternal[1] ) : SchemaConstraint[1]
+{
+   let value = $fn.parametersValues->at(1)->match([i:InstanceValue[1]| let value = $i.values->map(v|  if($v->instanceOf(Number),    
+                                                                                                         |^JSONNumber(value=$v->cast(@Number)),
+                                                                                                         |^JSONString(value=$v->makeString()););
+                                                                                                     );
+                                                                                                     
+                                                                       ^SchemaConstraint(constraint= ^JSONObject(keyValuePairs= [newJSONKeyValue( 'enum',^JSONArray(values=  $value ))]) );,
+                                                   a:Any[1] | ^SchemaConstraint(generationMessage=addError([],'only direct assignment supported e.g. $this.value == 1235 or $this.value->in(12345)' ) ) ]);
+}
+
+
+function <<access.private>> meta::json::schema::constraint::buildOneOf( fn:SimpleFunctionExpression[1],config:JSONSchemaConfigInternal[1]) : SchemaConstraint[1]
+{
+   $fn->constraintArray('oneOf',$config);
+}
+
+
+function <<access.private>> meta::json::schema::constraint::constraintArray( fn:SimpleFunctionExpression[1], arrayType:String[1],config:JSONSchemaConfigInternal[1] ) : SchemaConstraint[1]
+{
+   let constraints = $fn.parametersValues->map(p|$p->match([i:InstanceValue[1]| $i.values->map(v|$v->cast(@ValueSpecification)->toJSONSchemaFromValueSpecification_internal([],$config)),
+                                                            s:SimpleFunctionExpression[1] | $s->toJSONSchemaFromValueSpecification_internal([],$config);
+                                                            ]));
+   mergeConstraintArray($constraints,$arrayType,$config);
+}
+
+function <<access.private>> meta::json::schema::constraint::mergeConstraintArray(constraints:SchemaConstraint[*],arrayType:String[1],config:JSONSchemaConfigInternal[1] ) : SchemaConstraint[1]
+{
+        if($constraints->validateConstraint(),
+      |   let first = $constraints->at(0);
+         ^$first(constraint=^JSONObject(keyValuePairs=newJSONKeyValue($arrayType,^JSONArray(values = $constraints.constraint->map(c|$c->getArrayComponents($arrayType)))))); ,
+      | ^SchemaConstraint();
+      );
+
+}
+
+function <<access.private>> meta::json::schema::constraint::getArrayComponents( constraint:JSONObject[1],arrayType:String[1]) : JSONObject[*]
+{
+  let pair = $constraint.keyValuePairs->at(0);
+   if($constraint.keyValuePairs->size()==1 && $pair.value->instanceOf(JSONArray) && $pair.key.value == $arrayType,
+         | $pair.value->cast(@JSONArray).values->map(v |$v->cast(@JSONObject)->getArrayComponents($arrayType)),
+         |$constraint
+    );
+
+}
+
+
+function <<access.private>> meta::json::schema::constraint::validateConstraint( constraints:SchemaConstraint[*]) : Boolean[1]
+{
+  //TODO: should have the same keys
+  let isSame = $constraints.property.name->distinct()->size()==1;
+  //assert($isSame);
+  true;
+ }
+
+function <<access.private>> meta::json::schema::constraint::cleanUpConstraint( constraint:SchemaConstraint[1]) : SchemaConstraint[1]
+{
+   let constraintObject = $constraint.constraint;
+   let message = [];
+   let validationOne = if($constraintObject.keyValuePairs->filter(k|$k.key.value=='type')->distinct()->size()>1,
+                         |$constraint.generationMessage->addError('found conflicting type constrant for property'+ $constraint.property.name->toOne()) ,
+                         | []);
+   let validationTwo = if($constraintObject.keyValuePairs->filter(k|$k.key.value=='type')->isNotEmpty() && $constraint.property.genericType.rawType->toOne() !=Any,
+                         |$validationOne->addError('Instance of validation should only be used on a pure type of Any'+ $constraint.property.name->toOne() ),
+                         | $validationOne);
+  let finalMessage = $validationTwo;
+  if( $finalMessage->isEmpty(),
+         |$constraint,
+         |^$constraint(generationMessage=$finalMessage,
+                       constraint=[])
+   );
+
+}
+
+function <<access.private>> meta::json::schema::constraint::buildDistinct( fn:SimpleFunctionExpression[1],config:JSONSchemaConfigInternal[1] ) : SchemaConstraint[1]
+{
+   $fn->booleanConstraint( 'uniqueItems',true);
+}
+
+function <<access.private>> meta::json::schema::constraint::buildMaxLength( fn:SimpleFunctionExpression[1],config:JSONSchemaConfigInternal[1] ) : SchemaConstraint[1]
+{
+   $fn->oneParameterConstraintNumeric( 'maxLength');
+}
+function <<access.private>> meta::json::schema::constraint::buildMinLength( fn:SimpleFunctionExpression[1],config:JSONSchemaConfigInternal[1] ) : SchemaConstraint[1]
+{
+   $fn->oneParameterConstraintNumeric( 'minLength');
+}
+
+function <<access.private>> meta::json::schema::constraint::buildMinimum( fn:SimpleFunctionExpression[1],config:JSONSchemaConfigInternal[1] ) : SchemaConstraint[1]
+{
+   $fn->oneParameterConstraintNumeric( 'minimum');
+}
+
+function <<access.private>> meta::json::schema::constraint::buildMaximum( fn:SimpleFunctionExpression[1],config:JSONSchemaConfigInternal[1] ) : SchemaConstraint[1]
+{
+   $fn->oneParameterConstraintNumeric( 'maximum');
+}
+
+function <<access.private>> meta::json::schema::constraint::buildExMinimum( fn:SimpleFunctionExpression[1],config:JSONSchemaConfigInternal[1] ) : SchemaConstraint[1]
+{
+   $fn->oneParameterConstraintNumeric( 'exclusiveMinimum');
+}
+
+function <<access.private>> meta::json::schema::constraint::buildExMaximum( fn:SimpleFunctionExpression[1],config:JSONSchemaConfigInternal[1] ) : SchemaConstraint[1]
+{
+   $fn->oneParameterConstraintNumeric( 'exclusiveMaximum');
+}
+
+
+function <<access.private>> meta::json::schema::constraint::buildPattern( fn:SimpleFunctionExpression[1] ,config:JSONSchemaConfigInternal[1]) : SchemaConstraint[1]
+{
+   $fn->oneParameterConstraintString( 'pattern');
+}
+
+function <<access.private>> meta::json::schema::constraint::buildUUID( fn:SimpleFunctionExpression[1] ,config:JSONSchemaConfigInternal[1]) : SchemaConstraint[1]
+{
+ ^SchemaConstraint(constraint=^JSONObject(keyValuePairs=newJSONKeyValue( 'format', ^JSONString( value= 'uuid'))));
+}
+
+function <<access.private>> meta::json::schema::constraint::buildInstanceOf( fn:SimpleFunctionExpression[1],config:JSONSchemaConfigInternal[1] ) : SchemaConstraint[1]
+{
+   let property = $fn.parametersValues->at(0)->meta::json::schema::constraint::getSchemaPropertyName();
+   //Property should be Pure type Any for instanceOf
+   let type = $fn.parametersValues->at(1)->cast(@InstanceValue).values->toOne();
+   if(!$type->instanceOf(PrimitiveType),
+       |  ^SchemaConstraint(constraint=newJSONObject($type->cast(@PackageableElement)-> meta::json::schema::newJsonRef($config.rootElement,$config.useDefinitions,$config.rootElement,$config )));,
+       |   let format =  $type->cast(@PrimitiveType)->meta::json::schema::convertPrimitiveTypeToFormat();
+           let formatKV =if($format->isNotEmpty(),| newJSONKeyValue( 'format', ^JSONString( value= $format->toOne()  )   ),|[]);
+          ^SchemaConstraint(constraint= ^JSONObject(keyValuePairs=newJSONKeyValue( 'type', ^JSONString( value= $type->cast(@PrimitiveType)->meta::json::schema::convertPrimitiveType()) )->concatenate($formatKV)));
+      );
+
+
+}
+
+
+
+
+
+
+
+function <<access.private>> meta::json::schema::constraint::oneParameterConstraintNumeric( fn:SimpleFunctionExpression[1],constraintName:String[1] ) : SchemaConstraint[1]
+{
+   //create schema from function
+   let value = $fn.parametersValues->at(1)->cast(@InstanceValue).values->toOne()->cast(@Number);
+   ^SchemaConstraint(constraint=  ^JSONObject(keyValuePairs=newJSONKeyValue( $constraintName, ^JSONNumber( value= $value ) ) ));
+
+}
+
+function <<access.private>> meta::json::schema::constraint::booleanConstraint( fn:SimpleFunctionExpression[1],constraintName:String[1],value:Boolean[1] ) : SchemaConstraint[1]
+{
+   ^SchemaConstraint(constraint=  ^JSONObject(keyValuePairs=newJSONKeyValue( $constraintName, ^JSONBoolean( value= $value ) ) ));
+
+}
+
+function <<access.private>> meta::json::schema::constraint::oneParameterConstraintString( fn:SimpleFunctionExpression[1],constraintName:String[1] ) : SchemaConstraint[1]
+{
+   //create schema from function
+   let value = $fn.parametersValues->at(1)->match([s:SimpleFunctionExpression[1] | let ex = $s.func->cast(@ConcreteFunctionDefinition<Any>).expressionSequence;
+                                                                                   let message = if($ex->size()==1 && $ex->toOne()->instanceOf(InstanceValue), |addError([], 'only a simple string expression supported with no let. Check: ' + $s.func->elementToPath() ),|[]);
+                                                                                   let constraint = ^JSONObject(keyValuePairs=newJSONKeyValue( $constraintName, ^JSONString( value= $ex->cast(@InstanceValue).values->at(0)->cast(@String))));
+                                                                                    ^SchemaConstraint(constraint= $constraint,
+                                                                                                     generationMessage = $message);,
+                                                  i:InstanceValue[1]|^SchemaConstraint(constraint=^JSONObject(keyValuePairs=newJSONKeyValue( $constraintName, ^JSONString( value= $i.values->toOne()->cast(@String) ) )))
+                                                   ]);
+}
+
+
+function <<access.private>> meta::json::schema::constraint::getSchemaPropertyName( fn:ValueSpecification[1] ) :String[1]
+{
+   // should only  be parameter  or a simple function like cast/toOne/toString
+  let res = $fn->match([s:SimpleFunctionExpression[1]|if($s.func->instanceOf(Property),
+                                                        |$s.func.name,
+                                                        |$s.parametersValues->at(0)->meta::json::schema::constraint::getSchemaPropertyName()
+                                                     ),
+                         v:VariableExpression[1]|$v.name;
+                     ])->toOne();
+   $res;
+
+}
+
+function <<access.private>> meta::json::schema::constraint::getSchemaProperty( fn:ValueSpecification[1] ) :Property<Nil,Any|*>[0..1]
+{
+   // should only  be parameter  or a simple function like cast/toOne/toString
+  let res = $fn->match([s:SimpleFunctionExpression[1]|if($s.func->instanceOf(Property),
+                                                        |$s.func->cast(@Property<Nil,Any|*>);,
+                                                        |$s.parametersValues->at(0)->meta::json::schema::constraint::getSchemaProperty()
+                                                     ),
+                       i:InstanceValue[1]| [],
+                       v:VariableExpression[1]    |[];
+             ]);
+   $res;
+
+}

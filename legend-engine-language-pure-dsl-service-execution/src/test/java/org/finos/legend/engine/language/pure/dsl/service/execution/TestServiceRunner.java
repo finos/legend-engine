@@ -39,6 +39,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
+import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
 import org.finos.legend.engine.shared.javaCompiler.JavaCompileException;
 import org.finos.legend.pure.generated.core_relational_relational_router_router_extension;
@@ -48,14 +49,19 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.internal.matchers.ThrowableMessageMatcher;
 
+import javax.security.auth.Subject;
+import javax.security.auth.kerberos.KerberosPrincipal;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.Date;
 import java.util.stream.Collectors;
 
 public class TestServiceRunner
@@ -203,6 +209,33 @@ public class TestServiceRunner
         Assert.assertEquals("{\"firstName\":\"Peter\",\"lastName\":\"Smith\"}", result);
     }
 
+    private static class SimpleServiceRunnerWithLetVariablePureExpression extends AbstractServicePlanExecutor
+    {
+        SimpleServiceRunnerWithLetVariablePureExpression()
+        {
+            super("test::Service", buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/simpleRelationalService.pure", "test::testMultiExpressionQueryWithMandatoryTemporalDate"), true);
+        }
+
+        @Override
+        public List<ServiceVariable> getServiceVariables()
+        {
+            return Collections.singletonList(new ServiceVariable("businessDate", Date.class, PURE_ONE));
+        }
+    }
+
+    @Test
+    public void testSimpleServiceRunnerWithLetVariablePureExpression()
+    {
+        SimpleServiceRunnerWithLetVariablePureExpression serviceRunnerWithLetVariablePureExpression = new SimpleServiceRunnerWithLetVariablePureExpression();
+        ServiceRunnerInput serviceRunnerInput = ServiceRunnerInput
+                .newInstance()
+                .withArgs(Arrays.asList("1982-01-20"))
+                .withSerializationFormat(SerializationFormat.PURE);
+
+        String result = serviceRunnerWithLetVariablePureExpression.run(serviceRunnerInput);
+        Assert.assertEquals("[{\"firstName\":\"Peter\",\"lastName\":\"Smith\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\"},{\"firstName\":\"Bob\",\"lastName\":\"Stevens\"}]", result);
+    }
+
     @Test
     public void testSimpleRelationalServiceExecution()
     {
@@ -210,7 +243,7 @@ public class TestServiceRunner
                 .withDatabaseAuthenticationFlowProvider(LegendDefaultDatabaseAuthenticationFlowProvider.class, new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration())
                 .build();
 
-        SimpleRelationalServiceRunner simpleRelationalServiceRunner = (SimpleRelationalServiceRunner)ServiceRunnerBuilder.newInstance()
+        SimpleRelationalServiceRunner simpleRelationalServiceRunner = (SimpleRelationalServiceRunner) ServiceRunnerBuilder.newInstance()
                 .withServiceRunnerClass(SimpleRelationalServiceRunner.class.getCanonicalName())
                 .withAllowJavaCompilation(false)
                 .withStoreExecutorConfigurations(relationalExecutionConfiguration)
@@ -238,7 +271,7 @@ public class TestServiceRunner
                 .withDatabaseAuthenticationFlowProvider(LegendDefaultDatabaseAuthenticationFlowProvider.class, new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration())
                 .build();
 
-        SimpleRelationalServiceRunnerTDS simpleRelationalServiceRunner = (SimpleRelationalServiceRunnerTDS)ServiceRunnerBuilder.newInstance()
+        SimpleRelationalServiceRunnerTDS simpleRelationalServiceRunner = (SimpleRelationalServiceRunnerTDS) ServiceRunnerBuilder.newInstance()
                 .withServiceRunnerClass(SimpleRelationalServiceRunnerTDS.class.getCanonicalName())
                 .withAllowJavaCompilation(false)
                 .withStoreExecutorConfigurations(relationalExecutionConfiguration)
@@ -421,9 +454,25 @@ public class TestServiceRunner
         Assert.assertEquals("[{\"firstName\":\"Peter\",\"lastName\":\"Smith\"},{\"firstName\":\"John\",\"lastName\":\"Hill\"}]", simpleM2MServiceRunnerWthGraphFetchBatchSize.run(serviceRunnerInput2));
     }
 
+    @Test
+    public void testSimpleRelationalServiceWithUserId()
+    {
+        SimpleRelationalServiceWithUserRunner simpleRelationalServiceWithUserRunner = new SimpleRelationalServiceWithUserRunner();
+        Set<KerberosPrincipal> principals = new HashSet<>();
+        principals.add(new KerberosPrincipal("peter@test.com"));
+
+        ServiceRunnerInput serviceRunnerInput = ServiceRunnerInput
+                .newInstance()
+                .withIdentity(IdentityFactoryProvider.getInstance().makeIdentity(new Subject(false, principals, Sets.fixedSize.empty(), Sets.fixedSize.empty())))
+                .withSerializationFormat(SerializationFormat.PURE);
+        String result = simpleRelationalServiceWithUserRunner.run(serviceRunnerInput);
+        Assert.assertEquals("{\"firstName\":\"Peter\",\"lastName\":\"Smith\"}", result);
+    }
+
     private static class SimpleOptionalParameterServiceRunner extends AbstractServicePlanExecutor
     {
         private String argName;
+
         SimpleOptionalParameterServiceRunner(String fetchFunction, String argName)
         {
             super("test::Service", buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/simpleRelationalService.pure", fetchFunction), true);
@@ -435,6 +484,22 @@ public class TestServiceRunner
         {
             newExecutionBuilder()
                     .withParameter(this.argName, serviceRunnerInput.getArgs().get(0))
+                    .withServiceRunnerInput(serviceRunnerInput)
+                    .executeToStream(outputStream);
+        }
+    }
+
+    private static class SimpleRelationalServiceWithUserRunner extends AbstractServicePlanExecutor
+    {
+        SimpleRelationalServiceWithUserRunner()
+        {
+            super("test::Service", buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/simpleRelationalService.pure", "test::fetchWithUserId"), true);
+        }
+
+        @Override
+        public void run(ServiceRunnerInput serviceRunnerInput, OutputStream outputStream)
+        {
+            newExecutionBuilder()
                     .withServiceRunnerInput(serviceRunnerInput)
                     .executeToStream(outputStream);
         }
@@ -502,7 +567,7 @@ public class TestServiceRunner
         }
     }
 
-    private static abstract class AbstractXStoreServiceRunner extends AbstractServicePlanExecutor
+    private abstract static class AbstractXStoreServiceRunner extends AbstractServicePlanExecutor
     {
         private final EngineJavaCompiler compiler;
 
@@ -601,7 +666,7 @@ public class TestServiceRunner
         );
     }
 
-    private static void assertCacheStats(ExecutionCache<?,?> cache, int estimatedSize, int requestCount, int hitCount, int missCount)
+    private static void assertCacheStats(ExecutionCache<?, ?> cache, int estimatedSize, int requestCount, int hitCount, int missCount)
     {
         Assert.assertEquals(estimatedSize, cache.estimatedSize());
         Assert.assertEquals(requestCount, cache.stats().requestCount());

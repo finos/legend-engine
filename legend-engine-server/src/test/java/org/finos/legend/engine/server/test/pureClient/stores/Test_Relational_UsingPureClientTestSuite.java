@@ -20,7 +20,9 @@ import org.finos.legend.engine.server.test.shared.PureTestHelper;
 import org.finos.legend.pure.m3.execution.test.TestCollection;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 
-import static org.finos.legend.engine.server.test.shared.PureTestHelper.*;
+import static org.finos.legend.engine.server.test.shared.PureTestHelper.getClassLoaderExecutionSupport;
+import static org.finos.legend.engine.server.test.shared.PureTestHelper.satisfiesConditions;
+import static org.finos.legend.engine.server.test.shared.PureTestHelper.wrapSuite;
 
 public class Test_Relational_UsingPureClientTestSuite extends TestSuite
 {
@@ -28,11 +30,12 @@ public class Test_Relational_UsingPureClientTestSuite extends TestSuite
     {
         return wrapSuite(
                 () -> PureTestHelper.initClientVersionIfNotAlreadySet("vX_X_X"),
-                () -> {
+                () ->
+                {
                     CompiledExecutionSupport executionSupport = getClassLoaderExecutionSupport();
                     TestSuite suite = new TestSuite();
-            //        suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::relational::tests::constraints", executionSupport.getProcessorSupport(), ci -> satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
-            //        suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::relational::testDataGeneration::tests::alloy", executionSupport.getProcessorSupport(), ci -> satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
+                    //        suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::relational::tests::constraints", executionSupport.getProcessorSupport(), ci -> satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
+                    //        suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::relational::testDataGeneration::tests::alloy", executionSupport.getProcessorSupport(), ci -> satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
                     suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::relational::tests::advanced", executionSupport.getProcessorSupport(), ci -> satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
                     suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::relational::tests::groupBy", executionSupport.getProcessorSupport(), ci -> satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
                     suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::relational::tests::injection", executionSupport.getProcessorSupport(), ci -> satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
@@ -70,7 +73,7 @@ public class Test_Relational_UsingPureClientTestSuite extends TestSuite
                     suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::relational::graphFetch::tests::qualifier", executionSupport.getProcessorSupport(), ci -> satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
                     suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::relational::graphFetch::tests::milestoning", executionSupport.getProcessorSupport(), ci -> satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
                     suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::relational::graphFetch::tests::chain", executionSupport.getProcessorSupport(), ci -> satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
-        		    suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::relational::graphFetch::tests::resultSourcing", executionSupport.getProcessorSupport(), ci -> satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
+                    suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::relational::graphFetch::tests::resultSourcing", executionSupport.getProcessorSupport(), ci -> satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
                     suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::relational::tests::aggregationAware", executionSupport.getProcessorSupport(), ci -> satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
                     return suite;
                 });

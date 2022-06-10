@@ -65,13 +65,13 @@ public class TestServicePlanJavaSourceHelper
     private void testJavaExtractionAndRemoval(String... planResourceNames) throws IOException
     {
         List<ExecutionPlan> plans = Arrays.stream(planResourceNames)
-                                          .map(this::loadModelDataFromResource)
-                                          .flatMap(pureModelContextData ->
-                                          {
-                                              PureModel pureModel = new PureModel(pureModelContextData, null, DeploymentMode.TEST);
-                                              return pureModelContextData.getElementsOfType(Service.class).stream().map(s -> ServicePlanGenerator.generateServiceExecutionPlan(s, null, pureModel, "vX_X_X", PlanPlatform.JAVA, Lists.mutable.empty(), LegendPlanTransformers.transformers));
-                                          })
-                                          .collect(Collectors.toList());
+                .map(this::loadModelDataFromResource)
+                .flatMap(pureModelContextData ->
+                {
+                    PureModel pureModel = new PureModel(pureModelContextData, null, DeploymentMode.TEST);
+                    return pureModelContextData.getElementsOfType(Service.class).stream().map(s -> ServicePlanGenerator.generateServiceExecutionPlan(s, null, pureModel, "vX_X_X", PlanPlatform.JAVA, Lists.mutable.empty(), LegendPlanTransformers.transformers));
+                })
+                .collect(Collectors.toList());
         Map<String, String> sources = JavaSourceHelper.getJavaSourceCodeByRelativeFilePath(plans.stream());
         if (plans.stream().anyMatch(this::hasJavaPlatformImplementation))
         {

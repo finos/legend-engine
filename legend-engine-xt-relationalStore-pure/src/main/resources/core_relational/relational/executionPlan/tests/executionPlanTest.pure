@@ -1711,7 +1711,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::letVariableFunctionAdju
    '      0008 \n' +
    '      0009 public class Execute\n' +
    '      0010 {\n' +
-   '      0011     public static Object execute(IExecutionNodeContext context)\n' +
+   '      0011     public static PureDate execute(IExecutionNodeContext context)\n' +
    '      0012     {\n' +
    '      0013         try\n' +
    '      0014         {\n' +
@@ -1813,7 +1813,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::letVariableFunctionAdju
    '      0007 \n' +
    '      0008 public class Execute\n' +
    '      0009 {\n' +
-   '      0010     public static Object execute(IExecutionNodeContext context)\n' +
+   '      0010     public static PureDate execute(IExecutionNodeContext context)\n' +
    '      0011     {\n' +
    '      0012         try\n' +
    '      0013         {\n' +
@@ -1827,6 +1827,86 @@ function <<test.Test>> meta::pure::executionPlan::tests::letVariableFunctionAdju
    '      0021         }\n' +
    '      0022     }\n' +
    '      0023 }\n' +
+   ')\n';
+   assertEquals($expectedJava, $withJava->planToString(true, meta::pure::router::extension::defaultRelationalExtensions()));
+}
+
+function <<test.Test>> meta::pure::executionPlan::tests::javaGenerationLetVariablePureExpression() : Boolean[1]
+{
+   let lambda = {businessDate: StrictDate[0..1], CLSFtype: String[1]| let asOf = if($businessDate->isNotEmpty(), |$businessDate->toOne(), |now());
+                                                                      meta::relational::tests::milestoning::Product.all($asOf)
+                                                                      ->filter(p|$p.classification($asOf).type==$CLSFtype)
+                                                                      ->project([x|$x.classification($asOf).type], ['classificationType'])->distinct();};
+
+   let res = meta::pure::executionPlan::executionPlan($lambda,meta::relational::tests::milestoning::milestoningmap, meta::relational::tests::testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let withJava = $res->generatePlatformCode(^PlatformCodeGenerationConfig(platform=Platform.JAVA), defaultRelationalExtensions());
+
+   let expectedJava =
+   'Sequence\n'+
+   '(\n' +
+   '  type = TDS[(classificationType, String, VARCHAR(200), \"\")]\n' +
+   '  (\n' +
+   '    FunctionParametersValidationNode\n' +
+   '    (\n' +
+   '      functionParameters = [businessDate:StrictDate[0..1], CLSFtype:String[1]]\n' +
+   '    )\n' +
+   '    Allocation\n' +
+   '    (\n' +
+   '      type = Date\n' +
+   '      name = asOf\n' +
+   '      value = \n' +
+   '        (\n' +
+   '          PureExp\n' +
+   '          (\n' +
+   '            type = Date\n' +
+   '            requires = [businessDate(StrictDate[0..1])]\n' +
+   '            expression = $businessDate -> isNotEmpty() -> if([Routed Func: | $businessDate -> toOne();], [Routed Func: | now();])\n' +
+   '            implementation\n' +
+   '            (\n' +
+   '              calls = _pure.plan.root.n2.n1.Execute.execute\n'+
+   '            )\n' +
+   '          )\n' +
+   '        )\n' +
+   '    )\n' +
+   '    Relational\n' +
+   '    (\n' +
+   '      type = TDS[(classificationType, String, VARCHAR(200), \"\")]\n' +
+   '      resultColumns = [(\"classificationType\", VARCHAR(200))]\n' +
+   '      sql = select distinct \"productclassificationtable_0\".type as \"classificationType\" from ProductTable as \"root\" left outer join ProductClassificationTable as \"productclassificationtable_0\" on (\"root\".type = \"productclassificationtable_0\".type and \"productclassificationtable_0\".from_z <= \'${asOf}\' and \"productclassificationtable_0\".thru_z > \'${asOf}\') where \"productclassificationtable_0\".type = \'${CLSFtype}\' and \"root\".from_z <= \'${asOf}\' and \"root\".thru_z > \'${asOf}\'\n' +
+   '      connection = TestDatabaseConnection(type = \"H2\")\n' +
+   '    )\n' +
+   '  )\n' +
+   ')\n' +
+   'globalImplementationSupport\n' +
+   '(\n' +
+   '  classes =\n' +
+   '      _pure.plan.root.n2.n1.Execute\n' +
+   '      0001 package _pure.plan.root.n2.n1;\n' +
+   '      0002 \n' +
+   '      0003 import java.util.Date;\n' +
+   '      0004 import java.util.function.Supplier;\n' +
+   '      0005 import org.finos.legend.engine.plan.dependencies.domain.date.PureDate;\n' +
+   '      0006 import org.finos.legend.engine.plan.dependencies.store.shared.IExecutionNodeContext;\n' +
+   '      0007 import org.finos.legend.engine.plan.dependencies.util.Library;\n' +
+   '      0008 \n' +
+   '      0009 public class Execute\n' +
+   '      0010 {\n' +
+   '      0011     public static PureDate execute(IExecutionNodeContext context)\n' +
+   '      0012     {\n' +
+   '      0013         try\n' +
+   '      0014         {\n' +
+   '      0015             PureDate businessDate = context.getResult(\"businessDate\", PureDate.class);\n' +
+   '      0016             return businessDate != null ? ((Supplier<PureDate>) () -> Library.toOne(businessDate))\n' +
+   '      0017                                                                              .get()\n' +
+   '      0018                                         : ((Supplier<PureDate>) () -> PureDate.fromDate(new Date()))\n' +
+   '      0019                                                                               .get();\n' +
+   '      0020         }\n' +
+   '      0021         catch (Exception e)\n' +
+   '      0022         {\n' +
+   '      0023             throw new RuntimeException(\"Failed in node: root.n2.n1\", e);\n' +
+   '      0024         }\n' +
+   '      0025     }\n' +
+   '      0026 }\n' +
    ')\n';
    assertEquals($expectedJava, $withJava->planToString(true, meta::pure::router::extension::defaultRelationalExtensions()));
 }

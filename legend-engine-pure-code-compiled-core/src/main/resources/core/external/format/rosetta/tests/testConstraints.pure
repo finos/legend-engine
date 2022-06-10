@@ -1,0 +1,85 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::format::rosetta::generation::tests::*;
+import meta::external::format::rosetta::generation::*;
+
+Class meta::external::format::rosetta::generation::tests::ClassWithConstraints
+[
+   containsConstraint: $this.subProp2.prop1->contains( $this.propA),
+   inConstraint: $this.propB->in([$this.subProp.prop3, $this.subProp.prop1->size()]),
+   ifConstraint: if($this.propC->isNotEmpty(),|$this.propB->size()<2,|$this.propB->size() >2),
+   ifConstraint2: if($this.propC->isEmpty(),|$this.propB->isNotEmpty(),|$this.propA->isNotEmpty())
+]
+{
+   subProp: SubClass[1];
+   subProp2: SubClass[*];
+   propA: String[1];
+   propB: Integer[1];
+   propC: Boolean[0..1];
+}
+
+Class meta::external::format::rosetta::generation::tests::SecondClassWithConstraints
+[
+   one_of_constraint: ($this.propC->isEmpty() && $this.propD->isNotEmpty()) || ($this.propC->isNotEmpty() && $this.propD->isEmpty())
+]
+{
+   propC: Boolean[0..1];
+   propD: Boolean[0..1];
+}
+
+Class meta::external::format::rosetta::generation::tests::SubClass
+{
+   prop1: String[1];
+   prop2: Boolean[1];
+   prop3: Integer[1];
+
+}
+
+function <<test.Test>> meta::external::format::rosetta::generation::tests::testOneOfConstraintTranslation():Boolean[1]
+{
+   let actual =  meta::external::format::rosetta::generation::tests::SecondClassWithConstraints->classToRosettaString();
+   let expected = 'type SecondClassWithConstraints:\n'+
+                   '   propC boolean (0..1)\n'+
+                   '   propD boolean (0..1)\n\n'+
+                   '   condition: one-of';
+   assertEquals($expected,$actual);
+
+}
+
+function <<test.Test>> meta::external::format::rosetta::generation::tests::testClassWithConstraint():Boolean[1]
+{
+  let actual=  ClassWithConstraints->classToRosettaString();
+   let expected =
+   'type ClassWithConstraints:\n'+
+   '   subProp SubClass (1..1)\n'+
+   '   subProp2 SubClass (0..*)\n'+
+   '   propA string (1..1)\n'+
+   '   propB int (1..1)\n'+
+   '   propC boolean (0..1)\n\n'+
+
+   '   condition containsConstraint:\n'+
+   '      subProp2 -> prop1  contains propA \n'+
+   '   condition inConstraint:\n'+
+   '      (propB  = subProp -> prop3 ) or (propB  = subProp -> prop1 count)\n'+
+   '   condition ifConstraint:\n'+
+   '      if propC exists\n'+
+   '      then propB count < 2\n'+
+   '      else propB count > 2\n'+
+   '   condition ifConstraint2:\n'+
+   '      if propC is absent\n'+
+   '      then propB exists\n'+
+   '      else propA exists';
+   assertEquals($expected,$actual);
+}

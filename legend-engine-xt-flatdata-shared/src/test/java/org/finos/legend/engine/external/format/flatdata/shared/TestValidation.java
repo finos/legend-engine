@@ -22,22 +22,22 @@ public class TestValidation extends AbstractValidationTest
     public void valid()
     {
         test("section default: DelimitedWithHeadings\n" +
-                     "{\n" +
-                     "  scope.untilEof;\n" +
-                     "  recordSeparator: '\\n';\n" +
-                     "  delimiter: ',';\n" +
-                     "  quoteChar: '\\'';\n" +
-                     "  escapingChar: '\\'';\n" +
-                     "  nullString: ['null', ''];\n" +
-                     "\n" +
-                     "  Record\n" +
-                     "  {\n" +
-                     "    HEADING1: STRING;\n" +
-                     "    HEADING2: INTEGER;\n" +
-                     "    HEADING3: INTEGER(optional);\n" +
-                     "    HEADING4: DATE(format='MM-DD-EE');\n" +
-                     "  }\n" +
-                     "}"
+                "{\n" +
+                "  scope.untilEof;\n" +
+                "  recordSeparator: '\\n';\n" +
+                "  delimiter: ',';\n" +
+                "  quoteChar: '\\'';\n" +
+                "  escapingChar: '\\'';\n" +
+                "  nullString: ['null', ''];\n" +
+                "\n" +
+                "  Record\n" +
+                "  {\n" +
+                "    HEADING1: STRING;\n" +
+                "    HEADING2: INTEGER;\n" +
+                "    HEADING3: INTEGER(optional);\n" +
+                "    HEADING4: DATE(format='MM-DD-EE');\n" +
+                "  }\n" +
+                "}"
         );
     }
 
@@ -45,9 +45,9 @@ public class TestValidation extends AbstractValidationTest
     public void invalidDriverId()
     {
         test("section default: InvalidDriver\n" +
-                     "{\n" +
-                     "}",
-             "Invalid driver ID 'InvalidDriver' specified in section 'default'"
+                        "{\n" +
+                        "}",
+                "Invalid driver ID 'InvalidDriver' specified in section 'default'"
         );
     }
 
@@ -55,34 +55,33 @@ public class TestValidation extends AbstractValidationTest
     public void missingMandatoryProperty()
     {
         test("section default: DelimitedWithHeadings\n" +
-                     "{\n" +
-                     "  delimiter: ',';\n" +
-                     "\n" +
-                     "  Record\n" +
-                     "  {\n" +
-                     "    HEADING1: STRING;\n" +
-                     "    HEADING2: INTEGER;\n" +
-                     "    HEADING3: INTEGER(optional);\n" +
-                     "    HEADING4: DATE(format='MM-DD-EE');\n" +
-                     "  }\n" +
-                     "}",
-             "scope not specified in section 'default'"
+                        "{\n" +
+                        "  delimiter: ',';\n" +
+                        "\n" +
+                        "  Record\n" +
+                        "  {\n" +
+                        "    HEADING1: STRING;\n" +
+                        "    HEADING2: INTEGER;\n" +
+                        "    HEADING3: INTEGER(optional);\n" +
+                        "    HEADING4: DATE(format='MM-DD-EE');\n" +
+                        "  }\n" +
+                        "}",
+                "scope not specified in section 'default'"
         );
 
         test("section default: DelimitedWithHeadings\n" +
-                     "{\n" +
-                     "  scope.untilEof;\n" +
-                     "\n" +
-                     "  Record\n" +
-                     "  {\n" +
-                     "    HEADING1: STRING;\n" +
-                     "    HEADING2: INTEGER;\n" +
-                     "    HEADING3: INTEGER(optional);\n" +
-                     "    HEADING4: DATE(format='MM-DD-EE');\n" +
-                     "  }\n" +
-                     "}\n"
-                ,
-             "delimiter not specified in section 'default'"
+                        "{\n" +
+                        "  scope.untilEof;\n" +
+                        "\n" +
+                        "  Record\n" +
+                        "  {\n" +
+                        "    HEADING1: STRING;\n" +
+                        "    HEADING2: INTEGER;\n" +
+                        "    HEADING3: INTEGER(optional);\n" +
+                        "    HEADING4: DATE(format='MM-DD-EE');\n" +
+                        "  }\n" +
+                        "}\n",
+                "delimiter not specified in section 'default'"
         );
     }
 
@@ -240,37 +239,37 @@ public class TestValidation extends AbstractValidationTest
     public void invalidProperty()
     {
         test("section default: DelimitedWithHeadings\n" +
-                     "{\n" +
-                     "  scope.unknown;\n" +
-                     "  delimiter: ',';\n" +
-                     "\n" +
-                     "  Record\n" +
-                     "  {\n" +
-                     "    HEADING1: STRING;\n" +
-                     "    HEADING2: INTEGER;\n" +
-                     "    HEADING3: INTEGER(optional);\n" +
-                     "    HEADING4: DATE(format='MM-DD-EE');\n" +
-                     "  }\n" +
-                     "}",
-             "Invalid property 'scope.unknown' in section 'default'"
+                        "{\n" +
+                        "  scope.unknown;\n" +
+                        "  delimiter: ',';\n" +
+                        "\n" +
+                        "  Record\n" +
+                        "  {\n" +
+                        "    HEADING1: STRING;\n" +
+                        "    HEADING2: INTEGER;\n" +
+                        "    HEADING3: INTEGER(optional);\n" +
+                        "    HEADING4: DATE(format='MM-DD-EE');\n" +
+                        "  }\n" +
+                        "}",
+                "Invalid property 'scope.unknown' in section 'default'"
         );
 
         test("section s1: DelimitedWithHeadings\n" +
-                     "{\n" +
-                     "  scope.untilEof;\n" +
-                     "  recordSeparator: '\\n';\n" +
-                     "  baloney: 1;\n" +
-                     "  delimiter: ',';\n" +
-                     "\n" +
-                     "  Record\n" +
-                     "  {\n" +
-                     "    HEADING1: STRING;\n" +
-                     "    HEADING2: INTEGER;\n" +
-                     "    HEADING3: INTEGER(optional);\n" +
-                     "    HEADING4: DATE(format='MM-DD-EE');\n" +
-                     "  }\n" +
-                     "}",
-             "Invalid property 'baloney' in section 's1'"
+                        "{\n" +
+                        "  scope.untilEof;\n" +
+                        "  recordSeparator: '\\n';\n" +
+                        "  baloney: 1;\n" +
+                        "  delimiter: ',';\n" +
+                        "\n" +
+                        "  Record\n" +
+                        "  {\n" +
+                        "    HEADING1: STRING;\n" +
+                        "    HEADING2: INTEGER;\n" +
+                        "    HEADING3: INTEGER(optional);\n" +
+                        "    HEADING4: DATE(format='MM-DD-EE');\n" +
+                        "  }\n" +
+                        "}",
+                "Invalid property 'baloney' in section 's1'"
         );
     }
 
@@ -278,25 +277,25 @@ public class TestValidation extends AbstractValidationTest
     public void recordTypesPerSection()
     {
         test("section sectionName: ImmaterialLines\n" +
-                     "{\n" +
-                     "  scope.untilEof;\n" +
-                     "  recordSeparator: ';';\n" +
-                     "\n" +
-                     "  Record\n" +
-                     "  {\n" +
-                     "    A: STRING;\n" +
-                     "  }\n" +
-                     "}",
-             "Must not specify a record type in section 'sectionName'"
+                        "{\n" +
+                        "  scope.untilEof;\n" +
+                        "  recordSeparator: ';';\n" +
+                        "\n" +
+                        "  Record\n" +
+                        "  {\n" +
+                        "    A: STRING;\n" +
+                        "  }\n" +
+                        "}",
+                "Must not specify a record type in section 'sectionName'"
         );
 
         test("section sectionName: DelimitedWithHeadings\n" +
-                     "{\n" +
-                     "  scope.untilEof;\n" +
-                     "  recordSeparator: ';';\n" +
-                     "  delimiter: ',';\n" +
-                     "}",
-             "Must specify a record type in section 'sectionName'"
+                        "{\n" +
+                        "  scope.untilEof;\n" +
+                        "  recordSeparator: ';';\n" +
+                        "  delimiter: ',';\n" +
+                        "}",
+                "Must specify a record type in section 'sectionName'"
         );
     }
 
@@ -304,72 +303,72 @@ public class TestValidation extends AbstractValidationTest
     public void testAddresses()
     {
         test("section sectionName: DelimitedWithHeadings\n" +
-                     "{\n" +
-                     "  scope.untilEof;\n" +
-                     "  recordSeparator: ';';\n" +
-                     "  delimiter: ',';\n" +
-                     "  quoteChar: '\\'';\n" +
-                     "  escapingChar: '\\'';\n" +
-                     "  nullString: 'null';\n" +
-                     "\n" +
-                     "  Record\n" +
-                     "  {\n" +
-                     "    Heading {4}: STRING;\n" +
-                     "  }\n" +
-                     "}",
-             "Address should not be specified for Heading in section 'sectionName'"
-        );
-
-        test("section sectionName: DelimitedWithoutHeadings\n" +
-                     "{\n" +
-                     "  scope.untilEof;\n" +
-                     "  recordSeparator: ';';\n" +
-                     "  delimiter: ',';\n" +
-                     "  quoteChar: '\\'';\n" +
-                     "  escapingChar: '\\'';\n" +
-                     "  nullString: 'null';\n" +
-                     "\n" +
-                     "  Record\n" +
-                     "  {\n" +
-                     "    Heading: STRING;\n" +
-                     "  }\n" +
-                     "}",
-             "Address must be specified for Heading in section 'sectionName'"
-        );
-
-        test("section sectionName: DelimitedWithoutHeadings\n" +
-                     "{\n" +
-                     "  scope.untilEof;\n" +
-                     "  recordSeparator: ';';\n" +
-                     "  delimiter: ',';\n" +
-                     "  quoteChar: '\\'';\n" +
-                     "  escapingChar: '\\'';\n" +
-                     "  nullString: 'null';\n" +
-                     "\n" +
-                     "  Record\n" +
-                     "  {\n" +
-                     "    Heading {X}: STRING;\n" +
-                     "  }\n" +
-                     "}",
-             "Invalid address for 'Heading' (Expected column number) in section 'sectionName'"
-        );
-
-        test("section default: FixedWidth\n" +
                         "{\n" +
                         "  scope.untilEof;\n" +
-                        "  recordSeparator : '\\r\\n';\n" +
+                        "  recordSeparator: ';';\n" +
+                        "  delimiter: ',';\n" +
+                        "  quoteChar: '\\'';\n" +
+                        "  escapingChar: '\\'';\n" +
+                        "  nullString: 'null';\n" +
                         "\n" +
                         "  Record\n" +
                         "  {\n" +
-                        "    FIRM          {1:2}   : STRING;\n" +
-                        "    AGE           {3:4}   : INTEGER;\n" +
-                        "    MASTER        {5:5}   : INTEGER(optional);\n" +
-                        "    WEIGHT        {6:8}   : STRING(optional);\n" +
-                        "    NAME          {9:12}  : STRING;\n" +
-                        "    EMPLOYED_DATE {13:22} : DATE(format='yyyy-MM-dd');\n" +
-                        "    TITLE         {23:24} : STRING;\n" +
+                        "    Heading {4}: STRING;\n" +
                         "  }\n" +
-                        "}"
+                        "}",
+                "Address should not be specified for Heading in section 'sectionName'"
+        );
+
+        test("section sectionName: DelimitedWithoutHeadings\n" +
+                        "{\n" +
+                        "  scope.untilEof;\n" +
+                        "  recordSeparator: ';';\n" +
+                        "  delimiter: ',';\n" +
+                        "  quoteChar: '\\'';\n" +
+                        "  escapingChar: '\\'';\n" +
+                        "  nullString: 'null';\n" +
+                        "\n" +
+                        "  Record\n" +
+                        "  {\n" +
+                        "    Heading: STRING;\n" +
+                        "  }\n" +
+                        "}",
+                "Address must be specified for Heading in section 'sectionName'"
+        );
+
+        test("section sectionName: DelimitedWithoutHeadings\n" +
+                        "{\n" +
+                        "  scope.untilEof;\n" +
+                        "  recordSeparator: ';';\n" +
+                        "  delimiter: ',';\n" +
+                        "  quoteChar: '\\'';\n" +
+                        "  escapingChar: '\\'';\n" +
+                        "  nullString: 'null';\n" +
+                        "\n" +
+                        "  Record\n" +
+                        "  {\n" +
+                        "    Heading {X}: STRING;\n" +
+                        "  }\n" +
+                        "}",
+                "Invalid address for 'Heading' (Expected column number) in section 'sectionName'"
+        );
+
+        test("section default: FixedWidth\n" +
+                "{\n" +
+                "  scope.untilEof;\n" +
+                "  recordSeparator : '\\r\\n';\n" +
+                "\n" +
+                "  Record\n" +
+                "  {\n" +
+                "    FIRM          {1:2}   : STRING;\n" +
+                "    AGE           {3:4}   : INTEGER;\n" +
+                "    MASTER        {5:5}   : INTEGER(optional);\n" +
+                "    WEIGHT        {6:8}   : STRING(optional);\n" +
+                "    NAME          {9:12}  : STRING;\n" +
+                "    EMPLOYED_DATE {13:22} : DATE(format='yyyy-MM-dd');\n" +
+                "    TITLE         {23:24} : STRING;\n" +
+                "  }\n" +
+                "}"
         );
 
         test("section default: FixedWidth\n" +

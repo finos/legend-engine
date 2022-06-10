@@ -144,17 +144,17 @@ public class TestDelimitedBoolean extends AbstractDriverTest
     private FlatData flatData(String properties, String employedGrammar)
     {
         return parseFlatData("section default: DelimitedWithHeadings\n" +
-                                     "{\n" +
-                                     "  scope.untilEof;\n" +
-                                     "  delimiter       : ',';\n" +
-                                     "  " + properties + "\n" +
-                                     "\n" +
-                                     "  Record\n" +
-                                     "  {\n" +
-                                     "    NAME      : STRING;\n" +
-                                     "    EMPLOYED  : " + employedGrammar + ";\n" +
-                                     "  }\n" +
-                                     "}\n");
+                "{\n" +
+                "  scope.untilEof;\n" +
+                "  delimiter       : ',';\n" +
+                "  " + properties + "\n" +
+                "\n" +
+                "  Record\n" +
+                "  {\n" +
+                "    NAME      : STRING;\n" +
+                "    EMPLOYED  : " + employedGrammar + ";\n" +
+                "  }\n" +
+                "}\n");
     }
 
     @SuppressWarnings("WeakerAccess")  // Required for reflective access

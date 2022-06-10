@@ -1,0 +1,152 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::factory::*;
+import meta::external::language::java::factory::project::*;
+import meta::external::language::java::metamodel::*;
+import meta::external::language::java::metamodel::project::*;
+import meta::external::language::java::serialization::*;
+import meta::external::language::java::transform::*;
+import meta::pure::runtime::*;
+import meta::pure::executionPlan::*;
+import meta::pure::executionPlan::engine::*;
+import meta::pure::executionPlan::engine::java::*;
+import meta::pure::executionPlan::engine::java::naming::*;
+import meta::pure::executionPlan::engine::java::platform::*;
+import meta::pure::executionPlan::engine::java::serialize::*;
+import meta::pure::executionPlan::engine::java::typeInfo::*;
+import meta::pure::graphFetch::execution::*;
+
+
+// Prepare
+function <<access.private>> meta::pure::executionPlan::engine::java::prepareForPlatformNode(p:PureExpressionPlatformExecutionNode[1], path:String[1], context:GenerationContext[1], extensions : meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]):GenerationContext[1]
+{
+   if($p.expression->cast(@FunctionExpression)->isSerialize($extensions),
+      | prepareForSerialize($p, $path, $context, $debug),
+      |
+   if($p.expression->cast(@FunctionExpression)->isUnionOnGraphFetch(true),
+      | prepareForUnionOnGraphFetch($p, $path, $context, $extensions, $debug) ,
+      |
+   if($p.expression->cast(@FunctionExpression)->isMergeOnGraphFetch(),
+      | prepareForMergeOnGraphFetch($p, $path, $context, $extensions, $debug),
+      | prepareForExpression($p, $path, $context, $debug)
+   )));
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::prepareForUnionOnGraphFetch(p:PureExpressionPlatformExecutionNode[1], path:String[1], context:GenerationContext[1], extensions : meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]):GenerationContext[1]
+{
+   print(if($debug.debug,|$debug.space+'('+$path+') prepareForUnionOnGraphFetch\n', |''));
+   
+   let childNodeInfos = $context->childNodeInfosForPath($path);
+   ^$context(nodeInfos = $context.nodeInfos->concatenate(^NodeInfo(path = $path, returnType = $childNodeInfos->at(0).returnType, graphFetchTrees = $childNodeInfos.graphFetchTrees->removeDuplicatesBy(x | $x.class))));
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::prepareForMergeOnGraphFetch(p:PureExpressionPlatformExecutionNode[1], path:String[1], context:GenerationContext[1], extensions : meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]):GenerationContext[1]
+{
+   let childNodeInfos = $context->childNodeInfosForPath($path);
+   ^$context(nodeInfos = $context.nodeInfos->concatenate(^NodeInfo(path = $path, returnType = $childNodeInfos->at(0).returnType, graphFetchTrees = $childNodeInfos.graphFetchTrees->removeDuplicatesBy(x | $x.class))));
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::prepareForExpression(p:PureExpressionPlatformExecutionNode[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]):GenerationContext[1]
+{
+   print(if($debug.debug,|$debug.space+'('+$path+') prepareForPureExpression\n', |''));
+
+   let resultType = $p.resultType;
+
+   if($resultType->instanceOf(ClassResultType),
+      |let cls          = $resultType->cast(@ClassResultType).type->cast(@meta::pure::metamodel::type::Class<Any>);
+       let multiplicity = if($p.resultSizeRange->isEmpty(), | ZeroMany, | $p.resultSizeRange->toOne());
+
+       let newInfo      = $context.typeInfos->meta::pure::executionPlan::engine::java::typeInfo::addForClassWithAllProperties($cls)
+                                            ->meta::pure::executionPlan::engine::java::typeInfo::addForClassWithAllPropertiesViaAssociations($cls);
+
+       ^$context(typeInfos=$newInfo, nodeInfos=$context.nodeInfos->concatenate(^NodeInfo(path=$path, returnType=^SimpleJavaType(pureType=$cls, javaType=$context.conventions->pureTypeToJavaType($cls, $multiplicity)))));,
+      |$context);
+}
+
+// Generate
+function <<access.private>> meta::pure::executionPlan::engine::java::generateImplementionForPlatformNode(p:PureExpressionPlatformExecutionNode[1], path:String[1], context:GenerationContext[1], extensions : meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]):GeneratedCode[1]
+{   
+   if($p.expression->cast(@FunctionExpression).func == now__DateTime_1_,
+      | generateImplementionForNow($context.conventions),
+      |
+   if($p.expression->cast(@FunctionExpression).func == currentUserId__String_1_,
+      | generateImplementionForCurrentUserId($context.conventions),
+      |
+   if($p.expression->cast(@FunctionExpression)->isSerialize($extensions),
+      | generateImplementionForSerialize($p, $path, $context, $debug),
+      |
+   if($p.expression->cast(@FunctionExpression)->isParseObjectReferences(),
+      | generateImplementationForParseObjectReferences($p, $path, $context, $extensions, $debug),
+      |
+   if($p.expression->cast(@FunctionExpression)->isUnionOnGraphFetch(true),
+      | generateImplementationForUnionOnGraphFetch($p, $path, $context, $extensions, $debug);,
+      |
+   if($p.expression->cast(@FunctionExpression)->isMergeOnGraphFetch(),
+      | generateImplementationForMergeOnGraphFetch($p, $path, $context, $extensions, $debug);,
+      | generateImplementionForExpression($p, $path, $context, $debug)
+   ))))));
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::generateImplementionForNow(conventions:Conventions[1]):GeneratedCode[1]
+{   
+   ^GeneratedCode(
+      implementation = ^JavaPlatformImplementation
+                       (
+                          executionClassFullName = $conventions->className(PredefinedExpressions)->typeToString(),
+                          executionMethodName    = 'now'
+                       )
+   );   
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::generateImplementionForCurrentUserId(conventions:Conventions[1]):GeneratedCode[1]
+{
+   ^GeneratedCode(
+      implementation = ^JavaPlatformImplementation
+                       (
+                          executionClassFullName = $conventions->className(PredefinedExpressions)->typeToString(),
+                          executionMethodName    = 'currentUserId'
+                       )
+   );
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::generateImplementationForUnionOnGraphFetch(p:PureExpressionPlatformExecutionNode[1], path:String[1], context:GenerationContext[1], extensions : meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]):GeneratedCode[1]
+{
+   let conventions  = $context.conventions;
+   let interface    = $conventions->className(IPlatformPureExpressionExecutionNodeGraphFetchUnionSpecifics);
+   let executeClass = $conventions->planNodeClass('public', $path, 'Execute')->imports($interface)->implements($interface);
+   generatedCode(newProject()->addClasses($executeClass), $executeClass);
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::generateImplementationForMergeOnGraphFetch(p:PureExpressionPlatformExecutionNode[1], path:String[1], context:GenerationContext[1], extensions : meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]):GeneratedCode[1]
+{
+   let conventions  = $context.conventions;
+   let interface    = $conventions->className(IPlatformPureExpressionExecutionNodeGraphFetchMergeSpecifics);
+   let executeClass = $conventions->planNodeClass('public', $path, 'Execute')->imports($interface)->implements($interface);
+   generatedCode(newProject()->addClasses($executeClass), $executeClass);
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::generateImplementionForExpression(p:PureExpressionPlatformExecutionNode[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]):GeneratedCode[1]
+{
+   let oldConventions  = $context.conventions;
+   let newContext      = ^$context(conventions = ^$oldConventions(newFunctionProhibitedList = []));
+
+   let nodeContext     = iExecutionNodeContextParam($newContext.conventions);
+   let requiredVariableInputs = $p.requiredVariableInputs->map(s | j_variable(pureTypeToJavaType($newContext.conventions, $s.type, $s.multiplicity), $s.name)->j_declare($nodeContext->j_invoke('getResult', [j_string($s.name), pureTypeToJavaType($newContext.conventions, $s.type, $s.multiplicity)->j_field('class', javaClassType())], javaObject())));
+   let expressionCode  = $p.expression->generateJava($newContext.conventions, $debug)->j_return();
+
+   let body            = $requiredVariableInputs->concatenate($expressionCode)->j_block();
+   let execClass       = $body->buildExecuteClass($nodeContext, $path, $newContext.conventions);
+   generatedCode(mergeProjects(newProject()->addClass($execClass)->concatenate($body->dependencies()->resolveAndGetProjects())->toOneMany()), $execClass);
+}

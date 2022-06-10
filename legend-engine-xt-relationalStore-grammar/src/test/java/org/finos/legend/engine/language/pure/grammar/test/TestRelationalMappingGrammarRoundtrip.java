@@ -47,41 +47,41 @@ public class TestRelationalMappingGrammarRoundtrip extends TestGrammarRoundtrip.
     {
         // Relational SQL mapping test
         testFormat("###Mapping\n" +
-            "Mapping model::simpleMapping\n" +
-            "(\n" +
-            "  MappingTests\n" +
-            "  [\n" +
-            "    test2\n" +
-            "    (\n" +
-            "      query: |model::domain::Target.all()->graphFetchChecked(#{model::domain::Target{name}}#)->serialize(#{model::domain::Target{name}}#);\n" +
-            "      data:\n" +
-            "      [\n" +
-            "        <Relational, SQL, z::db, \n" +
-            "          'Drop table if exists PersonTable;\\n'+\n" +
-            "          'Create Table PersonTable(id INT, firmId INT, lastName VARCHAR(200));\\n'+\n" +
-            "          'Insert into PersonTable (id, firmId, lastName) values (1, 1, \\'Doe\\;\\');\\n'+\n" +
-            "          'Insert into PersonTable (id, firmId, lastName) values (2, 1, \\'Doe2\\');\\n'\n" +
-            "        >\n" +
-            "      ];\n" +
-            "      assert: '{\"defects\":[],\"value\":{\"name\":\"oneName 99\"},\"source\":{\"defects\":[],\"value\":{\"oneName\":\"oneName 99\"},\"source\":{\"number\":1,\"record\":\"{\\\"oneName\\\":\\\"oneName 99\\\",\\\"anotherName\\\":\\\"anotherName 17\\\",\\\"oneDate\\\":\\\"2020-04-13\\\",\\\"anotherDate\\\":\\\"2020-02-25\\\",\\\"oneNumber\\\":27,\\\"anotherNumber\\\":28}\"}}}';\n" +
-            "    )\n" +
-            "  ]\n" +
-            ")\n", "###Mapping\n" +
-            "Mapping model::simpleMapping\n" +
-            "(\n" +
-            "   MappingTests\n" +
-            "   [\n" +
-            "      test2\n" +
-            "      (\n" +
-            "         query: |model::domain::Target.all()->graphFetchChecked(#{model::domain::Target{name}}#)->serialize(#{model::domain::Target{name}}#);\n" +
-            "         data: [" +
-            "                  <Relational, SQL, z::db, 'Drop table if exists PersonTable;\\r\\nCreate Table PersonTable(\\rid INT, firmId INT, lastName VARCHAR(200));\\r\\nInsert into PersonTable (id, firmId, lastName) values (1, 1, \\'Doe\\;\\');\\nInsert into PersonTable (id, firmId, lastName) values (2, 1, \\'Doe2\\');'>" +
-            "               ];\n" +
-            "         assert: '{\"defects\":[],\"value\":{\"name\":\"oneName 99\"},\"source\":{\"defects\":[],\"value\":{\"oneName\":\"oneName 99\"},\"source\":{\"number\":1,\"record\":\"{\\\"oneName\\\":\\\"oneName 99\\\",\\\"anotherName\\\":\\\"anotherName 17\\\",\\\"oneDate\\\":\\\"2020-04-13\\\",\\\"anotherDate\\\":\\\"2020-02-25\\\",\\\"oneNumber\\\":27,\\\"anotherNumber\\\":28}\"}}}';\n" +
-            "      )\n" +
-            "   ]" +
-            "\n" +
-            ")\n");
+                "Mapping model::simpleMapping\n" +
+                "(\n" +
+                "  MappingTests\n" +
+                "  [\n" +
+                "    test2\n" +
+                "    (\n" +
+                "      query: |model::domain::Target.all()->graphFetchChecked(#{model::domain::Target{name}}#)->serialize(#{model::domain::Target{name}}#);\n" +
+                "      data:\n" +
+                "      [\n" +
+                "        <Relational, SQL, z::db, \n" +
+                "          'Drop table if exists PersonTable;\\n'+\n" +
+                "          'Create Table PersonTable(id INT, firmId INT, lastName VARCHAR(200));\\n'+\n" +
+                "          'Insert into PersonTable (id, firmId, lastName) values (1, 1, \\'Doe\\;\\');\\n'+\n" +
+                "          'Insert into PersonTable (id, firmId, lastName) values (2, 1, \\'Doe2\\');\\n'\n" +
+                "        >\n" +
+                "      ];\n" +
+                "      assert: '{\"defects\":[],\"value\":{\"name\":\"oneName 99\"},\"source\":{\"defects\":[],\"value\":{\"oneName\":\"oneName 99\"},\"source\":{\"number\":1,\"record\":\"{\\\"oneName\\\":\\\"oneName 99\\\",\\\"anotherName\\\":\\\"anotherName 17\\\",\\\"oneDate\\\":\\\"2020-04-13\\\",\\\"anotherDate\\\":\\\"2020-02-25\\\",\\\"oneNumber\\\":27,\\\"anotherNumber\\\":28}\"}}}';\n" +
+                "    )\n" +
+                "  ]\n" +
+                ")\n", "###Mapping\n" +
+                "Mapping model::simpleMapping\n" +
+                "(\n" +
+                "   MappingTests\n" +
+                "   [\n" +
+                "      test2\n" +
+                "      (\n" +
+                "         query: |model::domain::Target.all()->graphFetchChecked(#{model::domain::Target{name}}#)->serialize(#{model::domain::Target{name}}#);\n" +
+                "         data: [" +
+                "                  <Relational, SQL, z::db, 'Drop table if exists PersonTable;\\r\\nCreate Table PersonTable(\\rid INT, firmId INT, lastName VARCHAR(200));\\r\\nInsert into PersonTable (id, firmId, lastName) values (1, 1, \\'Doe\\;\\');\\nInsert into PersonTable (id, firmId, lastName) values (2, 1, \\'Doe2\\');'>" +
+                "               ];\n" +
+                "         assert: '{\"defects\":[],\"value\":{\"name\":\"oneName 99\"},\"source\":{\"defects\":[],\"value\":{\"oneName\":\"oneName 99\"},\"source\":{\"number\":1,\"record\":\"{\\\"oneName\\\":\\\"oneName 99\\\",\\\"anotherName\\\":\\\"anotherName 17\\\",\\\"oneDate\\\":\\\"2020-04-13\\\",\\\"anotherDate\\\":\\\"2020-02-25\\\",\\\"oneNumber\\\":27,\\\"anotherNumber\\\":28}\"}}}';\n" +
+                "      )\n" +
+                "   ]" +
+                "\n" +
+                ")\n");
     }
 
     @Test

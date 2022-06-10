@@ -30,3 +30,9 @@ GCP_APPLICATION_DEFAULT_CREDENTIALS_AUTH:                   'GCPApplicationDefau
 
 API_TOKEN_AUTH:                             'ApiToken';
 API_TOKEN_AUTH_TOKEN:                       'apiToken';
+
+GCP_WORKLOAD_IDENTITY_FEDERATION_AUTH:                      'GCPWorkloadIdentityFederation';
+SERVICE_ACCOUNT_EMAIL:                                      'serviceAccountEmail';
+ADDITIONAL_GCP_SCOPES:                                                  'additionalGcpScopes';
+BRACKET_OPEN:                                               '[';
+BRACKET_CLOSE:                                              ']';

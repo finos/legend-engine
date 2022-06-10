@@ -14,14 +14,13 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications;
 
-import java.util.Optional;
-import java.util.Properties;
-
-import org.finos.legend.engine.plan.execution.stores.relational.connection.RelationalExecutorInfo;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.SnowflakeDataSourceSpecificationKey;
+
+import java.util.Optional;
+import java.util.Properties;
 
 public class SnowflakeDataSourceSpecification extends DataSourceSpecification
 {
@@ -76,7 +75,7 @@ public class SnowflakeDataSourceSpecification extends DataSourceSpecification
         this.extraDatasourceProperties.put(SNOWFLAKE_USE_PROXY, this.extraDatasourceProperties.get(SNOWFLAKE_PROXY_HOST) != null);
     }
 
-    public SnowflakeDataSourceSpecification(SnowflakeDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy )
+    public SnowflakeDataSourceSpecification(SnowflakeDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy)
     {
         this(key, databaseManager, authenticationStrategy, new Properties());
     }
@@ -85,7 +84,6 @@ public class SnowflakeDataSourceSpecification extends DataSourceSpecification
     {
         Optional.ofNullable(propValue).ifPresent(x -> connectionProperties.put(propName, propValue));
     }
-
 
 
     public static String updateSnowflakeIdentifiers(String identifier, boolean quoteIdentifiers)

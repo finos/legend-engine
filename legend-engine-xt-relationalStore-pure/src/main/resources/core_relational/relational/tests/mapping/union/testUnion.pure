@@ -346,6 +346,14 @@ function <<test.Test>> meta::relational::tests::mapping::union::testChainedUnion
    assertSameElements(['New York', 'New York', 'New York', 'New York', 'New York', 'New York', 'Hoboken', 'Hoboken'], $result1.rows->map(r|$r.getString('address_name')));
 }
 
+function <<test.Test>> meta::relational::tests::mapping::union::testPksWithImportDataFlow():Boolean[1]
+{
+   let execCtx = ^RelationalExecutionContext(importDataFlow=true, importDataFlowAddFks=true);
+   let result = execute(|Person.all()->project([p|$p.lastName], ['name']), unionMapping, testRuntime(), $execCtx, meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   assertSameElements(['Anand, 2, 0', 'Roberts, 3, 0', 'Scott, 1, 0', 'Taylor, 0, 1', 'Wright, 0, 2'],
+    $result.rows->map(r|$r.getString('name') + ', ' + $r.getInteger('ID_0')->toString() + ', ' + $r.getInteger('ID_1')->toString()));
+}
+
 function meta::relational::tests::mapping::union::executeInDb2(sql:String[1], databaseConnection:DatabaseConnection[1]):ResultSet[1]
 {
     meta::relational::metamodel::execute::executeInDb($sql, $databaseConnection, 0, 1000);

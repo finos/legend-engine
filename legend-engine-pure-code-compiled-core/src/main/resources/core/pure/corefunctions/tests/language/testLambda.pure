@@ -1,0 +1,153 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::profiles::*;
+import meta::pure::metamodel::tests::lambda::*;
+import meta::pure::metamodel::serialization::grammar::*;
+
+function <<test.Test>> meta::pure::metamodel::tests::lambda::testSimpleLambda():Boolean[1]
+{
+    assertEquals('cool stuff', simple(s:String[1]|$s+' stuff'));
+}
+
+function <<access.private>> meta::pure::metamodel::tests::lambda::simple(func:Function<{String[1]->String[1]}>[1]):String[1]
+{
+     $func->eval('cool');
+}
+
+function <<test.Test>> meta::pure::metamodel::tests::lambda::testLambdaSet():Boolean[1]
+{
+    assertEquals(['cool stuff', 'cool yeah!'], test([s:String[1]|$s+' stuff', a:String[1]|$a+' yeah!']));
+}
+
+function <<access.private>> meta::pure::metamodel::tests::lambda::test(funcs:Function<{String[1]->String[1]}>[*]):String[*]
+{
+   $funcs->map(f:Function<{String[1]->String[1]}>[1]|$f->eval('cool'));
+}
+
+function <<test.Test>> meta::pure::metamodel::tests::lambda::testLambdaSetParamType():Boolean[1]
+{
+   let a = [s:Employee[1]|'a', a:Person[1]|'b'];
+   assertEquals(LambdaFunction, $a->genericType().rawType);
+   assertEquals('{meta::pure::metamodel::tests::lambda::Employee[1]->String[1]}', printFunctionType($a->genericType().typeArguments->at(0).rawType->at(0)->cast(@FunctionType)));
+}
+
+function <<test.Test>>  meta::pure::metamodel::tests::lambda::testLambdaSetReturnType():Boolean[1]
+{
+    let a = [s:C[1]|^Person(), a:C[1]|^Employee()];    
+    assertEquals(LambdaFunction, $a->genericType().rawType);
+    assertEquals(FunctionType, $a->genericType().typeArguments.rawType->type());    
+    assertInstanceOf($a->genericType().typeArguments.rawType->cast(@FunctionType).parameters->toOne(), VariableExpression);    
+    assertEquals(PureOne, $a->genericType().typeArguments.rawType->cast(@FunctionType).parameters->toOne()->deactivate().multiplicity); 
+    assertEquals(1, $a->genericType().typeArguments.rawType->cast(@FunctionType).returnMultiplicity->toOne()->getLowerBound());
+    assertEquals(1, $a->genericType().typeArguments.rawType->cast(@FunctionType).returnMultiplicity->toOne()->getUpperBound());
+    assertEquals(Person, $a->genericType().typeArguments.rawType->cast(@FunctionType).returnType.rawType);
+}
+
+function <<test.Test>> {test.excludePlatform = 'Java compiled'} meta::pure::metamodel::tests::lambda::testLambdaSetWithPropertyType():Boolean[1]
+{
+    let b = Firm.properties->at(0);   
+    let a = [s:String[1]|$s, a:String[1]|$a+' yeah!', $b];
+    assertEquals(Function, $a->genericType().rawType);
+    assertEquals(ZeroMany, $a->genericType().typeArguments.rawType->cast(@FunctionType).parameters->deactivate()->cast(@SimpleFunctionExpression).multiplicity);
+    assertEquals(ZeroMany , $a->genericType().typeArguments.rawType->cast(@FunctionType).parameters->cast(@VariableExpression)->deactivate().multiplicity);
+    assertEquals(ZeroMany , $a->genericType().typeArguments.rawType->cast(@FunctionType).returnMultiplicity);
+    assertEquals(Any , $a->genericType().typeArguments.rawType->cast(@FunctionType).returnType.rawType);
+}
+
+function <<test.Test>> meta::pure::metamodel::tests::lambda::testLambdaParameterInferenceWithTypeParameter():Boolean[1]
+{
+    assertEquals('hjhjheee' , a|$a+'eee';->eval('hjhjh'));
+}
+
+function <<test.Test>> meta::pure::metamodel::tests::lambda::testSimpleLambdaParameterInference():Boolean[1]
+{
+    assertEquals('okeee' , a|$a+'eee';->myFunc());
+}
+
+function <<test.Test>> meta::pure::metamodel::tests::lambda::testLambdaParametersInference():Boolean[1]
+{
+    assertEquals('okeeeokrrrr' , {a,b|$a+if($b,|'eee',|'rrrr')}->cute(true)+{a,b|$a+if($b,|'eee',|'rrrr')}->cute(false));
+}
+
+function <<test.Test>> meta::pure::metamodel::tests::lambda::testLambdaParametersInferenceTypeParameters():Boolean[1]
+{
+    assertEquals('init / a / b / c' , ['a','b','c']->fold({a,b|$b+' / '+$a},'init'));
+}
+
+function <<test.Test>> meta::pure::metamodel::tests::lambda::testIterateThroughLambdaSet():Boolean[1]
+{      
+    assertEquals('oops',cuter());
+}
+
+function <<test.Test>> meta::pure::metamodel::tests::lambda::testLambdaWithSpecificNotationForMultiParameters():Boolean[1]
+{      
+   let m = {a:String[1], b:Integer[1]|$b};
+   assertEq(2, $m->genericType().typeArguments.rawType->cast(@FunctionType).parameters->size());
+   let n = {a:String[1]|$a};
+   assertEq(1, $n->genericType().typeArguments.rawType->cast(@FunctionType).parameters->size());
+   let o = {|'ok'};
+   assertEq(1,{|'ok'}.expressionSequence->size());
+   assertEq(0, $o->genericType().typeArguments.rawType->cast(@FunctionType).parameters->size());
+}
+
+function <<test.Test>>  meta::pure::metamodel::tests::lambda::testPostProcessLambda():Boolean[1]
+{      
+   //TODO INVESTIGATE WHY DO WE HAVE TO CAST TO INSTANCE VALUE ????!!!!! 
+   assertEquals(meta::pure::functions::collection::filter_T_MANY__Function_1__T_MANY_, funk(|Person2.all()->filter(p|$p.name == 'test');->deactivate()->cast(@InstanceValue).values->at(0)->cast(@Function<Any>)));
+}
+
+function <<access.private>> meta::pure::metamodel::tests::lambda::cuter():String[1]
+{
+   let set = [ ^Pair<String,Function<{->String[1]}>>(first='ok',second=|cuter()),
+               ^Pair<String,Function<{->String[1]}>>(first='other',second=|'oops')];   
+    $set->filter(p|$p.first == 'other')->toOne().second->eval();
+}
+
+function <<access.private>> meta::pure::metamodel::tests::lambda::cute(func:Function<{String[1], Boolean[1]->String[1]}>[1], b: Boolean[1]):String[1]
+{
+   $func->eval('ok', $b);
+}
+
+function <<access.private>> meta::pure::metamodel::tests::lambda::funk(func:Function<Any>[1]):Function<Any>[1]
+{
+   $func->cast(@FunctionDefinition<Any>).expressionSequence->at(0)->cast(@FunctionExpression).func;
+}
+
+function <<access.private>> meta::pure::metamodel::tests::lambda::myFunc(func:Function<{String[1]->String[1]}>[1]):String[1]
+{
+   $func->eval('ok');
+}
+
+Class meta::pure::metamodel::tests::lambda::Person
+{
+}
+
+Class meta::pure::metamodel::tests::lambda::Person2
+{
+   name:String[1];
+}
+
+Class meta::pure::metamodel::tests::lambda::Employee extends Person
+{
+}
+
+Class meta::pure::metamodel::tests::lambda::C
+{
+}
+
+Class meta::pure::metamodel::tests::lambda::Firm
+{
+   prop: String[1];
+}

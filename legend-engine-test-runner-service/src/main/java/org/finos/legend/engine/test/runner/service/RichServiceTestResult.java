@@ -32,10 +32,10 @@ public class RichServiceTestResult
     /**
      * @param results A Map keyed by the generated service assert name based on indices;
      *                Values as the boolean assertion result.
-     *                May design as Pair<Result, Boolean>> in the future, now dropping Result due to serialization unsupportness.
+     *                May design as Pair< Result, Boolean > in the future, now dropping Result due to serialization unsupportness.
      */
-    public RichServiceTestResult(String servicePath,Map<String, TestResult> results, Map<String, Exception> assertExceptions, String optionalMultiExecutionKey,
-            ExecutionPlan executionPlan, String javaCodeString)
+    public RichServiceTestResult(String servicePath, Map<String, TestResult> results, Map<String, Exception> assertExceptions, String optionalMultiExecutionKey,
+                                 ExecutionPlan executionPlan, String javaCodeString)
     {
         this.servicePath = servicePath;
         this.optionalMultiExecutionKey = optionalMultiExecutionKey;
@@ -66,15 +66,18 @@ public class RichServiceTestResult
         return this.assertExceptions;
     }
 
-    public String getJavaCodeString() {
+    public String getJavaCodeString()
+    {
         return javaCodeString;
     }
 
-    public ExecutionPlan getExecutionPlan() {
+    public ExecutionPlan getExecutionPlan()
+    {
         return executionPlan;
     }
 
-    public void setOptionalMultiExecutionKey(String optionalMultiExecutionKey) {
+    public void setOptionalMultiExecutionKey(String optionalMultiExecutionKey)
+    {
         this.optionalMultiExecutionKey = optionalMultiExecutionKey;
     }
 

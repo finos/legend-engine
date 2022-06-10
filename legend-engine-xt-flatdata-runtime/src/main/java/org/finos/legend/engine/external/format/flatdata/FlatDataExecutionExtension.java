@@ -28,7 +28,6 @@ import org.finos.legend.engine.plan.execution.nodes.ExecutionNodeExecutor;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.ExecutionNodeJavaPlatformHelper;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.JavaHelper;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
-import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResult;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
@@ -44,26 +43,26 @@ import java.util.stream.Stream;
 
 public class FlatDataExecutionExtension implements ExecutionExtension
 {
-    private static long DEFAULT_MAX_SCHEMA_OBJECT_SIZE = 50 *1024 * 1024;
+    private static long DEFAULT_MAX_SCHEMA_OBJECT_SIZE = 50 * 1024 * 1024;
 
     @Override
     public List<Function3<ExecutionNode, MutableList<CommonProfile>, ExecutionState, Result>> getExtraNodeExecutors()
     {
         return Collections.singletonList((executionNode, pm, executionState) ->
-                                         {
-                                             if (executionNode instanceof FlatDataSerializeExecutionNode)
-                                             {
-                                                 return executeSerialize((FlatDataSerializeExecutionNode) executionNode, pm, executionState);
-                                             }
-                                             else if (executionNode instanceof FlatDataDeserializeExecutionNode)
-                                             {
-                                                 return executeDeserialize((FlatDataDeserializeExecutionNode) executionNode, pm, executionState);
-                                             }
-                                             else
-                                             {
-                                                 return null;
-                                             }
-                                         });
+        {
+            if (executionNode instanceof FlatDataSerializeExecutionNode)
+            {
+                return executeSerialize((FlatDataSerializeExecutionNode) executionNode, pm, executionState);
+            }
+            else if (executionNode instanceof FlatDataDeserializeExecutionNode)
+            {
+                return executeDeserialize((FlatDataDeserializeExecutionNode) executionNode, pm, executionState);
+            }
+            else
+            {
+                return null;
+            }
+        });
     }
 
     private Result executeSerialize(FlatDataSerializeExecutionNode node, MutableList<CommonProfile> profiles, ExecutionState executionState)

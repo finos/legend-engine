@@ -31,11 +31,13 @@ public class ConnectionKey
         this.authenticationStrategyKey = authenticationStrategyKey;
     }
 
-    public DataSourceSpecificationKey getDataSourceSpecificationKey() {
+    public DataSourceSpecificationKey getDataSourceSpecificationKey()
+    {
         return this.dataSourceSpecificationKey;
     }
 
-    public AuthenticationStrategyKey getAuthenticationStrategyKey() {
+    public AuthenticationStrategyKey getAuthenticationStrategyKey()
+    {
         return this.authenticationStrategyKey;
     }
 

@@ -18,6 +18,7 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
 import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProvider;
+import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProviderConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
@@ -49,6 +50,7 @@ public class TestConnectionAcquisitionWithFlowProvider_H2 extends DbSpecificTest
     public void setup()
     {
         LegendDefaultDatabaseAuthenticationFlowProvider flowProvider = new LegendDefaultDatabaseAuthenticationFlowProvider();
+        flowProvider.configure(new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration());
         assertStaticH2FlowIsAvailable(flowProvider);
         this.connectionManagerSelector = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(-1), Collections.emptyList(), Optional.of(flowProvider));
     }
@@ -68,7 +70,7 @@ public class TestConnectionAcquisitionWithFlowProvider_H2 extends DbSpecificTest
     public void testLocalTestConnection_subject() throws Exception
     {
         RelationalDatabaseConnection systemUnderTest = this.localH2WithUserPasswordSpec();
-        Connection connection = this.connectionManagerSelector.getDatabaseConnection((Subject)null, systemUnderTest);
+        Connection connection = this.connectionManagerSelector.getDatabaseConnection((Subject) null, systemUnderTest);
         testConnection(connection, "SELECT * FROM PersonTable");
     }
 
@@ -76,7 +78,7 @@ public class TestConnectionAcquisitionWithFlowProvider_H2 extends DbSpecificTest
     public void testLocalTestConnection_profile() throws Exception
     {
         RelationalDatabaseConnection systemUnderTest = this.localH2WithUserPasswordSpec();
-        Connection connection = this.connectionManagerSelector.getDatabaseConnection((MutableList<CommonProfile>)null, systemUnderTest);
+        Connection connection = this.connectionManagerSelector.getDatabaseConnection((MutableList<CommonProfile>) null, systemUnderTest);
         testConnection(connection, "SELECT * FROM PersonTable");
     }
 

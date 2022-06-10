@@ -41,3 +41,32 @@ Class meta::relational::metamodel::DataRow
 {
    values : Any[*];
 }
+
+Class meta::relational::commands::CreateSchemaSQL extends SQLQuery
+{
+    schema: Schema[1];
+}
+
+Class meta::relational::commands::DropSchemaSQL extends SQLQuery
+{
+    schema: Schema[1];
+}
+
+Class meta::relational::commands::CreateTableSQL extends SQLQuery
+{
+    table: Table[1];
+    applyConstraints :Boolean[0..1];
+    isTempTable : Boolean[0..1];
+}
+
+Class meta::relational::commands::DropTableSQL extends SQLQuery
+{
+    table: Table[1];
+}
+
+Class meta::relational::commands::LoadTableSQL extends SQLQuery
+{
+    table: Table[1];
+    columnsToLoad : Column[*];
+    parsedData : List<List<String>>[0..1];
+}

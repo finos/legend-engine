@@ -19,21 +19,31 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-public class TestDefaultSupportedFlowsCount {
+public class TestDefaultSupportedFlowsCount
+{
     LegendDefaultDatabaseAuthenticationFlowProvider defaultProvider = new LegendDefaultDatabaseAuthenticationFlowProvider();
 
+    @Before
+    public void configureDefaultProvider()
+    {
+        defaultProvider.configure(new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration());
+    }
+
     @Test
-    public void testCount() {
+    public void testCount()
+    {
         assertEquals("mismatch in number of default authentication flows", TestDefaultSupportedFlows.data().size(), defaultProvider.count());
     }
 
     @Test
-    public void h2FlowSupportedOnlyForStaticDatasource() {
+    public void h2FlowSupportedOnlyForStaticDatasource()
+    {
         try
         {
             defaultProvider.registerFlow(new MyH2Flow());
@@ -45,25 +55,30 @@ public class TestDefaultSupportedFlowsCount {
         }
     }
 
-    static class MyH2Flow implements DatabaseAuthenticationFlow<LocalH2DatasourceSpecification, TestDatabaseAuthenticationStrategy> {
+    static class MyH2Flow implements DatabaseAuthenticationFlow<LocalH2DatasourceSpecification, TestDatabaseAuthenticationStrategy>
+    {
 
         @Override
-        public Class<LocalH2DatasourceSpecification> getDatasourceClass() {
+        public Class<LocalH2DatasourceSpecification> getDatasourceClass()
+        {
             return LocalH2DatasourceSpecification.class;
         }
 
         @Override
-        public Class<TestDatabaseAuthenticationStrategy> getAuthenticationStrategyClass() {
+        public Class<TestDatabaseAuthenticationStrategy> getAuthenticationStrategyClass()
+        {
             return TestDatabaseAuthenticationStrategy.class;
         }
 
         @Override
-        public DatabaseType getDatabaseType() {
+        public DatabaseType getDatabaseType()
+        {
             return DatabaseType.H2;
         }
 
         @Override
-        public Credential makeCredential(Identity identity, LocalH2DatasourceSpecification datasourceSpecification, TestDatabaseAuthenticationStrategy authenticationStrategy) throws Exception {
+        public Credential makeCredential(Identity identity, LocalH2DatasourceSpecification datasourceSpecification, TestDatabaseAuthenticationStrategy authenticationStrategy) throws Exception
+        {
             return null;
         }
     }

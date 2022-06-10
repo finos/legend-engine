@@ -14,14 +14,10 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.plugin;
 
-import org.finos.legend.engine.plan.execution.stores.relational.connection.RelationalExecutorInfo;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutorBuilder;
 import org.finos.legend.engine.plan.execution.stores.StoreType;
-
-import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutor;
-import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutorBuilder;
-import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreState;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.RelationalExecutorInfo;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -65,7 +61,7 @@ public class TestRelationalStoreExecutorBuilder
         Assert.assertEquals(1, builders.size());
         StoreExecutorBuilder builder = builders.get(0);
         Assert.assertTrue(builder instanceof RelationalStoreExecutorBuilder);
-        RelationalStoreExecutor executor = ((RelationalStoreExecutorBuilder)builder).build();
+        RelationalStoreExecutor executor = ((RelationalStoreExecutorBuilder) builder).build();
         Assert.assertNotNull(executor);
     }
 }

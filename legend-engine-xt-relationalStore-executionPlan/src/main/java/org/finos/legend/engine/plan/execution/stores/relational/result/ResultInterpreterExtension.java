@@ -25,6 +25,7 @@ import java.util.Map;
 
 public interface ResultInterpreterExtension
 {
-    Function2<ExecutionState, List<Map<String, Object>>,Result> additionalResultBuilder();
+    Function2<ExecutionState, List<Map<String, Object>>, Result> additionalResultBuilder();
+
     MutableList<Pair<Class, String>> additionalMappers();
 }

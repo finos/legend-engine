@@ -14,10 +14,9 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.result.graphFetch;
 
-import org.finos.legend.engine.shared.core.collectionsExtensions.DoubleStrategyHashMap;
-import org.finos.legend.engine.plan.execution.stores.relational.result.SQLExecutionResult;
-
 import org.finos.legend.engine.plan.execution.result.graphFetch.GraphObjectsBatch;
+import org.finos.legend.engine.plan.execution.stores.relational.result.SQLExecutionResult;
+import org.finos.legend.engine.shared.core.collectionsExtensions.DoubleStrategyHashMap;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;

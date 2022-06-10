@@ -19,6 +19,7 @@ public abstract class ReadHandler
     public abstract void process(DeserializeContext<?> context);
 
     public abstract boolean canConsume(DeserializeContext<?> context);
+
     public abstract boolean mustConsume();
 
     protected long requireValidAttributeOccurs(long occurs)

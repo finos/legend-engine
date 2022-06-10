@@ -16,6 +16,8 @@ package org.finos.legend.engine.test.runner.shared;
 
 public enum TestResult
 {
-    SUCCESS, FAILURE, ERROR
+    SUCCESS,
+    FAILURE,
+    ERROR
 }
 

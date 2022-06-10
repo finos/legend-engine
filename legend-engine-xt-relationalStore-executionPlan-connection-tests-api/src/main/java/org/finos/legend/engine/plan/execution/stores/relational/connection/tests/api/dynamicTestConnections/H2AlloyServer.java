@@ -36,7 +36,7 @@ public class H2AlloyServer implements DynamicTestConnection
     public void setup()
     {
         long start = System.currentTimeMillis();
-        System.out.println("Starting setup of connection for database: H2 ");
+        System.out.println("Starting setup of dynamic connection for database: H2 ");
 
         int relationalDBPort = DynamicPortGenerator.generatePort();
         try
@@ -49,7 +49,7 @@ public class H2AlloyServer implements DynamicTestConnection
         }
         long end = System.currentTimeMillis();
 
-        System.out.println("Completed setup of connection for database: H2 on port:" + relationalDBPort + " , time taken(ms):"+ (end-start));
+        System.out.println("Completed setup of dynamic connection for database: H2 on port:" + relationalDBPort + " , time taken(ms):" + (end - start));
     }
 
     @Override
@@ -59,7 +59,7 @@ public class H2AlloyServer implements DynamicTestConnection
         StaticDatasourceSpecification ds = new StaticDatasourceSpecification();
         ds.databaseName = "temp";
         ds.host = "127.0.0.1";
-        ds.port =  h2Server.getPort();
+        ds.port = h2Server.getPort();
         h2Connection.datasourceSpecification = ds;
         h2Connection.databaseType = DatabaseType.H2;
         h2Connection.authenticationStrategy = new DefaultH2AuthenticationStrategy();

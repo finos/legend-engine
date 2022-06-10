@@ -17,7 +17,8 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 
-public class DefaultValue {
+public class DefaultValue
+{
     public ValueSpecification value;
     public SourceInformation sourceInformation;
 }

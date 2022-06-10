@@ -1,0 +1,409 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::json::*;
+import meta::json::tests::toJson::*;
+
+function <<access.private>> meta::json::tests::toJson::deserializeBackAndCompare<T>(json: String[1], clazz: Class<T>[1], originalInstance: Any[1]):Boolean[1]
+{
+   $json->fromJson($clazz)->propertyComparator($originalInstance, []);
+}
+
+
+function <<access.private>> meta::json::tests::toJson::propertyComparator(firstInstance: Any[1], secondInstance: Any[1], visited: Any[*]): Boolean[1]
+{
+   let newVisited = $visited->concatenate([$firstInstance, $secondInstance]);
+   $firstInstance->genericType()->properties()->forAll(p | let firstEval = $p->rawEvalProperty($firstInstance);
+                                                          let secondEval = $p->rawEvalProperty($secondInstance);
+                                                          let rawType = $firstEval->genericType().rawType->toOne();
+                                                          if(!$firstEval->isEmpty() && !$newVisited->containsAny($firstEval->concatenate($secondEval)),
+                                                              | if($rawType->instanceOf(PrimitiveType) || $rawType->instanceOf(Enumeration), 
+                                                                   | comparePrimitives($firstEval->at(0), $secondEval->at(0)), 
+                                                                   //if property is of multiplicity greater than 1 take just first value - good enough for test
+                                                                   | propertyComparator($firstEval->at(0), $secondEval->at(0), $newVisited)),
+                                                              | true;););  
+}
+
+function <<access.private>> meta::json::tests::toJson::comparePrimitives(firstInstance: Any[1], secondInstance: Any[1]): Boolean[1]
+{
+   $firstInstance->match([ n: Number[1] | assertEqWithinTolerance($n, $secondInstance->cast(@Number), 0.000000000000001),
+                          a: Any[1] | assertEquals($a, $secondInstance)]);
+}
+
+Class meta::json::tests::toJson::AllPrimitiveProperties
+{
+    stringType: String[0..1];
+    integerType: Integer[0..1];
+    floatType: Float[0..1];
+    booleanType: Boolean[0..1];
+    dateType: Date[0..1];
+    strictDateType: StrictDate[0..1];
+    dateTimeType: DateTime[0..1];
+}
+
+Class meta::json::tests::toJson::IncludeMapProperty
+{
+    stringType: String[0..1];
+    integerType: Integer[0..1];
+    floatType: Float[0..1];
+    booleanType: Boolean[0..1];
+    dateType: Date[0..1];
+    strictDateType: StrictDate[0..1];
+    dateTimeType: DateTime[0..1];
+    mapType: Map<String,Any>[1];
+}
+
+Class meta::json::tests::toJson::DifferentMultiplicities
+{
+    multiplicityOne: Integer[1];
+    multiplicityOptional: Integer[0..1];
+    multiplicityMany: Integer[*];
+}
+
+
+function <<test.Test>> meta::json::tests::toJson::testSerializePrimitiveTypesProperties(): Boolean[1]
+{
+   let t = ^AllPrimitiveProperties(stringType='Yoda', integerType=42, floatType=3.14159265358979,
+                                   booleanType=false, dateType=date(2018), strictDateType=date(2018,4,12),
+                                   dateTimeType=date(2018,4,12,0,0,1));
+   let expected = '{"stringType":"Yoda","dateTimeType":"2018-04-12T00:00:01+0000","booleanType":false,"strictDateType":"2018-04-12","floatType":3.14159265358979,"dateType":"2018","integerType":42}';
+   let actual = $t->toJsonBeta();
+   assert(meta::json::jsonEquivalent($expected->parseJSON(), $actual->parseJSON()));
+   $t->toJsonBeta()->deserializeBackAndCompare(AllPrimitiveProperties, $t);
+}
+
+function <<test.Test>> meta::json::tests::toJson::testSerializeMapTypes(): Boolean[1]
+{
+   let expected = '{"Ray":34,"LeBron":23}';
+   let actual = ^Map<String, Any>()->put('Ray',34)->put('LeBron',23)->toJsonBeta();
+   assert(meta::json::jsonEquivalent($expected->parseJSON(), $actual->parseJSON()));
+}
+
+function <<test.Test>> meta::json::tests::toJson::testSerializeMapTypesProperty(): Boolean[1]
+{
+   let t = ^IncludeMapProperty(stringType='Yoda', integerType=42, floatType=3.14159265358979,
+                               booleanType=false, dateType=date(2018), strictDateType=date(2018,4,12),
+                               dateTimeType=date(2018,4,12,0,0,1), mapType=^Map<String, Any>()->put('Ray',34));
+   let actual = $t->toJsonBeta();
+   let expected = '{"stringType":"Yoda","dateTimeType":"2018-04-12T00:00:01+0000","booleanType":false,"strictDateType":"2018-04-12","floatType":3.14159265358979,"dateType":"2018","integerType":42, "mapType":{"Ray":34}}';
+   assert(meta::json::jsonEquivalent($expected->parseJSON(), $actual->parseJSON()));
+}
+
+function <<test.Test>> meta::json::tests::toJson::testSerializeCustomDateTimeFormat(): Boolean[1]
+{
+   let t = ^AllPrimitiveProperties(dateTimeType=date(2018,4,12,0,0,1));
+   let configWithCustomDateTimeFormat = ^JSONSerializationConfig(typeKeyName='', includeType=false, fullyQualifiedTypePath=false, serializeQualifiedProperties=false,
+                            serializePackageableElementName=false, removePropertiesWithEmptyValues=true, dateTimeFormat='yy-MM-dd"T"HH:mm:ss."000000"');
+   assertEquals('{"dateTimeType":"18-04-12T00:00:01.000000"}', $t->toJsonBeta($configWithCustomDateTimeFormat));
+}
+
+function <<test.Test, test.ToFix>> meta::json::tests::toJson::testSerializeDifferentMultiplicities(): Boolean[1]
+{
+   let t = ^DifferentMultiplicities(multiplicityOne=42, multiplicityMany=[42,1,7,100]);
+   assertEquals('{"multiplicityMany":[42,1,7,100],"multiplicityOptional":null,"multiplicityOne":42}', $t->toJsonBeta());
+   $t->toJsonBeta()->deserializeBackAndCompare(DifferentMultiplicities, $t);
+}
+
+function <<test.Test, test.ToFix>> meta::json::tests::toJson::testSerializeRootLevelPrimitiveTypes(): Boolean[1]
+{
+   assertEquals('42', 42->toJsonBeta());
+   assertEquals('"Hello"', 'Hello'->toJsonBeta());
+   assertEquals('true', true->toJsonBeta());
+   assertEquals('"2018-04-12T00:00:01+0000"', date(2018,4,12,0,0,1)->toJsonBeta());
+}
+
+function <<test.Test>> meta::json::tests::toJson::testSerializeInstanceOfGenericType(): Boolean[1]
+{
+   assertEquals('{"value":42}', ^ValueHolder<Integer>(value=42)->toJsonBeta());
+}
+
+Class meta::json::tests::toJson::ValueHolderWithParameterisedMultiplicity<T|m>
+{
+   value: T[m];
+}
+
+function <<test.Test>> meta::json::tests::toJson::testSerializeInstanceWithParameterisedMultiplicity(): Boolean[1]
+{
+   assertEquals('{"value":[42]}', ^ValueHolderWithParameterisedMultiplicity<Integer|1>(value=42)->toJsonBeta());
+   assertEquals('{"value":[42,7,1024]}', ^ValueHolderWithParameterisedMultiplicity<Integer|*>(value=[42,7,1024])->toJsonBeta());
+   assertEquals('{"value":[]}', ^ValueHolderWithParameterisedMultiplicity<Integer|0..1>()->toJsonBeta());
+}
+
+Class meta::json::tests::toJson::Atom
+{
+    electrons: Electron[*];
+}
+
+Class meta::json::tests::toJson::AtomicNucleus
+{
+    protons: Proton[1..*];
+    neutrons: Neutron[*];
+}
+
+Association meta::json::tests::toJson::Atom_AtomicNucleus
+{
+   nucleus: AtomicNucleus[1];
+   atom: Atom[1];
+}
+
+Class meta::json::tests::toJson::ElementaryParticle
+{
+    electricCharge: Float[1];
+    chargeType: Charge[1];   
+}
+
+Class meta::json::tests::toJson::Proton extends ElementaryParticle
+{   
+}
+
+Class meta::json::tests::toJson::Electron extends ElementaryParticle
+{   
+}
+
+Class meta::json::tests::toJson::Neutron extends ElementaryParticle
+{   
+}
+
+Enum meta::json::tests::toJson::Charge
+{
+   Positive, Negative, Neutral
+}
+
+function <<access.private>> meta::json::tests::toJson::synthesizeHelium(): Atom[1]
+{
+   //Positive ion of helium isotope He3_2
+   let elementartyElectricCharge = 1.6021766208*pow(10,-19);
+   let p = ^Proton(electricCharge=$elementartyElectricCharge->cast(@Float), chargeType=Charge.Positive);
+   let protons = [$p, ^$p()]->toOneMany();
+   let electron = ^Electron(electricCharge=$elementartyElectricCharge->cast(@Float), chargeType=Charge.Negative);
+   let neutron = ^Neutron(electricCharge=0.0, chargeType=Charge.Neutral);
+   ^Atom(nucleus=^AtomicNucleus(protons=$protons, neutrons=$neutron), electrons=$electron);
+}
+
+function <<access.private>> meta::json::tests::toJson::synthesizeHydrogen(): Atom[1]
+{
+   let elementartyElectricCharge = 1.6021766208*pow(10,-19);
+   ^Atom(nucleus=^AtomicNucleus(protons=[^Proton(electricCharge=$elementartyElectricCharge->cast(@Float), chargeType=Charge.Positive)]));
+}
+
+function <<test.Test>> meta::json::tests::toJson::testSerializeNonPrimitivePropertiesModelWithAssociation(): Boolean[1]
+{
+   let helium = synthesizeHelium();
+   let expected = '{"nucleus":{"neutrons":[{"electricCharge":0.0,"chargeType":"Neutral"}],"protons":[{"electricCharge":1.6021766207999999E-19,"chargeType":"Positive"},{"electricCharge":1.6021766207999999E-19,"chargeType":"Positive"}]},"electrons":[{"electricCharge":1.6021766207999999E-19,"chargeType":"Negative"}]}'; 
+   let actual = $helium->toJsonBeta();
+   assert(meta::json::jsonEquivalent($expected->parseJSON(), $actual->parseJSON()));
+   $helium->toJsonBeta()->deserializeBackAndCompare(Atom, $helium);
+}
+
+function <<test.Test>> meta::json::tests::toJson::testSerializeWithType(): Boolean[1]
+{
+   let hydrogen = synthesizeHydrogen();
+   let serializationConfigWithType = ^JSONSerializationConfig(typeKeyName='__TYPE', includeType=true, fullyQualifiedTypePath=false, serializeQualifiedProperties=false,
+                            serializePackageableElementName=false, removePropertiesWithEmptyValues=false);
+   let expected1 = '{"nucleus":{"neutrons":[],"protons":[{"electricCharge":1.6021766207999999E-19,"chargeType":"Positive"}]},"electrons":[]}';
+   let actual1 = $hydrogen->toJsonBeta();
+   assert(meta::json::jsonEquivalent($expected1->parseJSON(), $actual1->parseJSON()));
+   
+   let expected2 = '{"__TYPE":"meta::json::tests::toJson::Atom","nucleus":{"__TYPE":"meta::json::tests::toJson::AtomicNucleus","neutrons":[],"protons":[{"__TYPE":"meta::json::tests::toJson::Proton","electricCharge":1.6021766207999999E-19,"chargeType":"Positive"}]},"electrons":[]}';
+   let actual2 = $hydrogen->toJsonBeta($serializationConfigWithType);
+   assert(meta::json::jsonEquivalent($expected2->parseJSON(), $actual2->parseJSON()));
+}
+
+function <<test.Test>> meta::json::tests::toJson::testSerializeRemoveEmptyProperties(): Boolean[1]
+{
+   let hydrogen = synthesizeHydrogen();
+   let serializationConfigWithRemoveEmptyProperties = ^JSONSerializationConfig(typeKeyName='', includeType=false, fullyQualifiedTypePath=false, serializeQualifiedProperties=false,
+                            serializePackageableElementName=false, removePropertiesWithEmptyValues=true);
+   let expected = '{"nucleus":{"protons":[{"electricCharge":1.6021766207999999E-19,"chargeType":"Positive"}]}}';
+   let actual = $hydrogen->toJsonBeta($serializationConfigWithRemoveEmptyProperties);
+   assert(meta::json::jsonEquivalent($expected->parseJSON(), $actual->parseJSON()));
+}
+
+function <<test.Test, test.ToFix>> meta::json::tests::toJson::testSerializePackageableElementName(): Boolean[1]
+{
+   let serializationConfigPackageableElementName = ^JSONSerializationConfig(typeKeyName='', includeType=false, fullyQualifiedTypePath=false, serializeQualifiedProperties=false,
+                            serializePackageableElementName=true, removePropertiesWithEmptyValues=true);
+   assertEquals('"meta::json::tests::toJson::Atom"', Atom->toJsonBeta($serializationConfigPackageableElementName));
+}
+
+Class meta::json::tests::toJson::WithQualifiedProperty
+{
+   numericProperty: Integer[1];
+   derived()
+   {
+      $this.numericProperty * pi() / 42;
+   }: Float[1];
+}
+
+function <<test.Test>> meta::json::tests::toJson::testSerializeQualifiedProperty(): Boolean[1]
+{
+   let serializationConfigQualifiedProperties = ^JSONSerializationConfig(typeKeyName='', includeType=false, fullyQualifiedTypePath=false, serializeQualifiedProperties=true,
+                            serializePackageableElementName=true, removePropertiesWithEmptyValues=false);
+   let expected = '{"derived":0.5235987755982988,"numericProperty":7}';
+   let actual = ^WithQualifiedProperty(numericProperty=7)->toJsonBeta($serializationConfigQualifiedProperties);
+   assert(meta::json::jsonEquivalent($expected->parseJSON(), $actual->parseJSON()));
+}
+
+// A --> B --> C
+//    |
+//    |-> D --> C
+
+Class meta::json::tests::toJson::A
+{
+   propertyB: B[1];
+   propertyD: D[1];
+}
+
+Class meta::json::tests::toJson::B
+{
+   propertyCinClassB: C[1];
+}
+
+Class meta::json::tests::toJson::C
+{
+   simpleProperty: Integer[1];
+}
+
+Class meta::json::tests::toJson::D
+{
+   propertyCinClassD: C[1];
+}
+
+function <<test.Test>> meta::json::tests::toJson::testSerializeSameInstanceButNoCycle(): Boolean[1]
+{
+   let c = ^C(simpleProperty=42);
+   let d = ^D(propertyCinClassD=$c);
+   let b = ^B(propertyCinClassB=$c);
+   let a = ^A(propertyB=$b, propertyD=$d);
+   
+   let expected = '{"propertyD":{"propertyCinClassD":{"simpleProperty":42}},"propertyB":{"propertyCinClassB":{"simpleProperty":42}}}';
+   let actual = $a->toJsonBeta();
+   assert(meta::json::jsonEquivalent($expected->parseJSON(), $actual->parseJSON()));
+}
+
+Class meta::json::tests::toJson::SuperClass
+{
+   propertyInSuperClass: Integer[1];
+}
+
+Class meta::json::tests::toJson::SubClass extends meta::json::tests::toJson::SuperClass
+{
+   propertyInSubClass: String[1];
+}
+
+Class meta::json::tests::toJson::MasterClass
+{
+   standardProperty: Boolean[1];
+   propertyOfSuperClassType: SuperClass[1];
+}
+
+function <<test.Test>> meta::json::tests::toJson::testSerializeCorrectSubTypeResolution(): Boolean[1]
+{
+   let superClass = ^SuperClass(propertyInSuperClass=42);
+   let subClass = ^SubClass(propertyInSuperClass=5, propertyInSubClass='Hello from the SubClass');
+   let masterWithSuperClass = ^MasterClass(standardProperty=false, propertyOfSuperClassType=$superClass);
+   assertEquals('{"propertyOfSuperClassType":{"propertyInSuperClass":42},"standardProperty":false}', $masterWithSuperClass->toJsonBeta());
+   let masterWithSubClass = ^MasterClass(standardProperty=false, propertyOfSuperClassType=$subClass);
+   assertEquals('{"propertyOfSuperClassType":{"propertyInSuperClass":5,"propertyInSubClass":"Hello from the SubClass"},"standardProperty":false}', $masterWithSubClass->toJsonBeta());
+}
+
+Class meta::json::tests::toJson::ClassWithPropertyAny
+{
+   value: Any[1];
+}
+
+function <<test.Test>> meta::json::tests::toJson::testSerializeAnyTypeProperty(): Boolean[1]
+{
+   let asPrimitive = ^ClassWithPropertyAny(value='foo');
+   let asEnum = ^ClassWithPropertyAny(value=Charge.Positive);
+   let asClass = ^ClassWithPropertyAny(value=^C(simpleProperty=42));
+   
+   assertEquals('{"value":"foo"}', $asPrimitive->toJsonBeta());
+   assertEquals('{"value":"Positive"}', $asEnum->toJsonBeta());
+   assertEquals('{"value":{"simpleProperty":42}}', $asClass->toJsonBeta());
+}
+
+function <<test.Test>> meta::json::tests::toJson::testSerializeManyInstancesAsJsonArray(): Boolean[1]
+{
+   let manyInstances = [^AllPrimitiveProperties(stringType='Hello from the first instance'),
+                        ^AllPrimitiveProperties(integerType=42),
+                        ^AllPrimitiveProperties(booleanType=true)];
+   assertEquals('[{"stringType":"Hello from the first instance"},{"integerType":42},{"booleanType":true}]', $manyInstances->toJsonBeta(^JSONSerializationConfig(typeKeyName='doesn\' matter', removePropertiesWithEmptyValues=true)));
+   assertEquals('[]', []->toJsonBeta());
+}
+
+function <<test.Test>> meta::json::tests::toJson::testMetamodelSerialization(): Boolean[1]
+{
+   assertEquals('"meta::pure::metamodel::multiplicity::ZeroOne"', ZeroOne->toJsonBeta());
+   let configMultiplicityNumber = ^JSONSerializationConfig(typeKeyName='foo', serializeMultiplicityAsNumber=true);
+   assertEquals('"0..1"', ZeroOne->toJsonBeta($configMultiplicityNumber));
+   
+   let simpleProperty = Atom->propertyByName('electrons');
+   let expectedSimpleProperty = '{"aggregation":"None","taggedValues":[],"stereotypes":[],"name":"electrons","genericType":{"typeArguments":[],"rawType":"meta::json::tests::toJson::Electron"},"multiplicity":"*"}';
+   let actualSimpleProperty = $simpleProperty->toJsonBeta($configMultiplicityNumber);
+   assert(meta::json::jsonEquivalent($expectedSimpleProperty->parseJSON(), $actualSimpleProperty->parseJSON()));
+   
+   let association = Atom->propertyByName('nucleus').owner;
+   let expectedAssociation = '{"taggedValues":[],"stereotypes":[],"name":"Atom_AtomicNucleus","package":"meta::json::tests::toJson","properties":[{"aggregation":"None","taggedValues":[],"stereotypes":[],"name":"nucleus","genericType":{"typeArguments":[],"rawType":"meta::json::tests::toJson::AtomicNucleus"},"multiplicity":"1"},{"aggregation":"None","taggedValues":[],"stereotypes":[],"name":"atom","genericType":{"typeArguments":[],"rawType":"meta::json::tests::toJson::Atom"},"multiplicity":"1"}],"qualifiedProperties":[]}';
+   let actualAssociation = $association->toJsonBeta($configMultiplicityNumber);
+   assert(meta::json::jsonEquivalent($expectedAssociation->parseJSON(), $actualAssociation->parseJSON()));
+   
+   let expected = '{"taggedValues":[],"stereotypes":[],"generalizations":[{"general":{"typeArguments":[],"rawType":"meta::pure::metamodel::type::Any"}}],"typeParameters":[],"name":"Atom","properties":[{"aggregation":"None","taggedValues":[],"stereotypes":[],"name":"electrons","genericType":{"typeArguments":[],"rawType":"meta::json::tests::toJson::Electron"},"multiplicity":"*"}],"qualifiedProperties":[]}';
+   let actual = Atom->toJsonBeta($configMultiplicityNumber);
+   assert(meta::json::jsonEquivalent($expected->parseJSON(), $actual->parseJSON()));
+}
+
+Class meta::json::tests::toJson::ClassWithCipherProperties
+{
+   <<cipher.Cipher>>
+   stringType: String[1];
+   <<cipher.Cipher>>
+   integerType: Integer[1];
+
+   floatType: Float[1];
+   <<cipher.Cipher>>
+   booleanType: Boolean[1];
+}
+
+Class meta::json::tests::toJson::ClassWithDecipherProperties
+{
+   <<cipher.Decipher>>
+   stringType: String[1];
+   anotherStringType: String[1];
+}
+
+function <<test.Test>> meta::json::tests::toJson::testSerializationAndEncryption(): Boolean[1]
+{
+   let c = ^ClassWithCipherProperties(stringType = 'foo', integerType = 42, floatType = 3.14, booleanType = false);
+
+   let key = 'LRGfO/McfKxaOfQJJT4NLw==';
+
+   let encryptionSerializationConfig = ^JSONSerializationConfig(typeKeyName='_TYPE', encryptionKey = $key, encryptionStereotypes= cipher.p_stereotypes->filter(s|$s.value->in('Cipher')));
+   let plainTextJson = $c->toJsonBeta();
+   let encryptedJson = $c->toJsonBeta($encryptionSerializationConfig);
+
+   assertNotEquals($plainTextJson, $encryptedJson);
+}
+
+function <<test.Test>> meta::json::tests::toJson::testSerializationAndDecryption(): Boolean[1]
+{
+   let key = 'LRGfO/McfKxaOfQJJT4NLw==';
+   let c = ^ClassWithDecipherProperties(stringType = meta::pure::functions::cipher::encrypt('foo', $key), anotherStringType = 'bar');
+
+   let decryptionSerializationConfig = ^JSONSerializationConfig(typeKeyName='_TYPE', decryptionKey = $key, decryptionStereotypes = cipher.p_stereotypes->filter(s|$s.value->in('Decipher')));
+   let plainTextJson = $c->toJsonBeta($decryptionSerializationConfig);
+
+   let expected = '{"stringType":"foo","anotherStringType":"bar"}';
+   assertEq($expected, $plainTextJson);
+}

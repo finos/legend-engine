@@ -618,13 +618,14 @@ function <<access.private>> meta::external::format::flatdata::executionPlan::cre
          let schemaVar  = j_variable($conventions->className(_FlatData), 'schema');
          let newContext = j_new($contextType, [$schemaVar, j_string($schemaSet->elementToPath())]);
          let maxSize    = j_this($cls)->j_field($maximumSchemaObjectSize);
+         let sectionsToProcess = $flatData.sections->filter(s | $s.recordType->isNotEmpty());
 
          let body = if($bindingDetail.schemaBindingDetail->isNotEmpty(),
             {|
                let schemaObjectClass = $conventions->dataClass($bindingDetail.schemaBindingDetail.class->toOne(), $path);
                let schemaObject      = j_variable($schemaObjectClass, 'schemaObject');
 
-               let contextWithFactories = $flatData.sections->fold(
+               let contextWithFactories = $sectionsToProcess->fold(
                   {section, code| 
                      let factoryRef = j_this($cls)->j_invoke($section->sectionFactoryMethodName(), $schemaObject);
                      $code->j_invoke('withSectionToObjectFactory', [j_string($section.name), $factoryRef], $contextType);
@@ -643,7 +644,7 @@ function <<access.private>> meta::external::format::flatdata::executionPlan::cre
                ];
             },
             {|
-               let contextWithFactories = $flatData.sections->fold(
+               let contextWithFactories = $sectionsToProcess->fold(
                   {section, code| 
                      let factoryRef = j_this($cls)->j_methodReference($section->sectionFactoryMethodName(), javaFunctionType($conventions->className(_FlatDataRecordType), $conventions->className(_ParsedFlatDataToObject)));
                      $code->j_invoke('withSectionToObjectFactory', [j_string($section.name), $factoryRef], $contextType);

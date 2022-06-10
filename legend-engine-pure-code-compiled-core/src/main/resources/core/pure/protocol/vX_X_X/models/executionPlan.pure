@@ -1,0 +1,300 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::protocols::*;
+import meta::protocols::pure::vX_X_X::metamodel::executionPlan::*;
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::ExecutionPlan
+{
+   serializer : Protocol[1];
+   templateFunctions : String[*];
+   rootExecutionNode : ExecutionNode[1];
+   authDependent: Boolean[1];
+   kerberos: String [0..1];
+   globalImplementationSupport : meta::protocols::pure::vX_X_X::metamodel::executionPlan::PlatformImplementation[0..1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::ExecutionNode
+{
+   _type : String[1];
+   resultType : ResultType[1];
+   resultSizeRange : meta::protocols::pure::vX_X_X::metamodel::domain::Multiplicity[0..1];
+   requiredVariableInputs : meta::protocols::pure::vX_X_X::metamodel::executionPlan::VariableInput[*];
+   executionNodes : ExecutionNode[*];
+   implementation : meta::protocols::pure::vX_X_X::metamodel::executionPlan::PlatformImplementation[0..1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::VariableInput
+{
+   name         : String[1];
+   type         : String[1];
+   multiplicity : meta::protocols::pure::vX_X_X::metamodel::domain::Multiplicity[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::AllocationExecutionNode extends ExecutionNode
+{
+   varName : String[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::PureExpressionPlatformExecutionNode extends ExecutionNode
+{
+   pure : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ValueSpecification[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::FreeMarkerConditionalExecutionNode extends ExecutionNode
+[
+   $this.freeMarkerBooleanExpression->startsWith('${(') && $this.freeMarkerBooleanExpression->endsWith(')?c}')
+]
+{
+   freeMarkerBooleanExpression   : String[1];
+   trueBlock                     : ExecutionNode[1];
+   falseBlock                    : ExecutionNode[0..1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::PlatformImplementation
+{
+   _type : String[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::JavaPlatformImplementation extends meta::protocols::pure::vX_X_X::metamodel::executionPlan::PlatformImplementation
+{
+   classes                : JavaClass[*];
+   executionClassFullName : String[0..1];
+   executionMethodName    : String[0..1];   
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::JavaClass
+{
+   package  : String[1];
+   name     : String[1];
+   source   : String[1];
+   byteCode : String[0..1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::CompiledClass
+{
+   className : String[1];
+   byteCode : String[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::ConstantExecutionNode extends ExecutionNode
+{
+   values : Any[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::SequenceExecutionNode extends ExecutionNode
+{
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::MultiResultSequenceExecutionNode extends ExecutionNode
+{
+}
+
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::AggregationAwareExecutionNode extends ExecutionNode
+{
+   aggregationAwareActivity: String[1];
+}
+
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::ModelToModelExecutionNode extends ExecutionNode
+{
+   func : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1];
+   jsonPropertyPaths : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[*];
+   pathToMapping : String[1];
+   pathToClasses : String[*];
+   connection : meta::protocols::pure::vX_X_X::metamodel::runtime::Connection[1];
+   pureModelContextData : meta::protocols::pure::vX_X_X::metamodel::PureModelContextData[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::FunctionParametersValidationNode extends ExecutionNode
+{
+   functionParameters:meta::protocols::pure::vX_X_X::metamodel::valueSpecification::Variable[*];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::GlobalGraphFetchExecutionNode extends ExecutionNode
+{
+   graphFetchTree : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::GraphFetchTree[1];
+   store : String[1];
+   children : meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::GlobalGraphFetchExecutionNode[*];
+   localGraphFetchExecutionNode : meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::LocalGraphFetchExecutionNode [1];
+   parentIndex : Integer[0..1];
+   xStorePropertyMapping : meta::protocols::pure::vX_X_X::metamodel::mapping::xStore::XStorePropertyMapping[0..1];
+   enableConstraints : Boolean[0..1];
+   checked           : Boolean[0..1];
+   xStorePropertyFetchDetails : meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::XStorePropertyFetchDetails[0..1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::XStorePropertyFetchDetails
+{
+   supportsCaching         : Boolean[1];
+   propertyPath            : String[1];
+   sourceMappingId         : String[1];
+   sourceSetId             : String[1];
+   targetMappingId         : String[1];
+   targetSetId             : String[1];
+   targetPropertiesOrdered : String[*];
+   subTree                 : String[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::LocalGraphFetchExecutionNode extends ExecutionNode
+{
+   nodeIndex : Integer[1];
+   parentIndex : Integer[0..1];
+   graphFetchTree : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::GraphFetchTree[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::store::inMemory::StoreStreamReadingExecutionNode extends meta::protocols::pure::vX_X_X::metamodel::executionPlan::ExecutionNode
+{
+   graphFetchTree    : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::RootGraphFetchTree[1]; 
+   store             : meta::protocols::pure::vX_X_X::metamodel::store::Store[0..1];
+   connection        : meta::protocols::pure::vX_X_X::metamodel::runtime::Connection[1];
+   enableConstraints : Boolean[1];
+   checked           : Boolean[1];
+}
+
+Class <<typemodifiers.abstract>> meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::store::inMemory::InMemoryGraphFetchExecutionNode extends meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::LocalGraphFetchExecutionNode
+{
+   children : meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::store::inMemory::InMemoryGraphFetchExecutionNode[*];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::store::inMemory::InMemoryRootGraphFetchExecutionNode extends meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::store::inMemory::InMemoryGraphFetchExecutionNode
+{
+   batchSize : Integer[0..1];
+   checked : Boolean[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::store::inMemory::InMemoryCrossStoreGraphFetchExecutionNode extends meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::store::inMemory::InMemoryRootGraphFetchExecutionNode
+{
+   supportsBatching      : Boolean[1];
+   xStorePropertyMapping : meta::protocols::pure::vX_X_X::metamodel::mapping::xStore::XStorePropertyMapping[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::store::inMemory::InMemoryPropertyGraphFetchExecutionNode extends meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::store::inMemory::InMemoryGraphFetchExecutionNode
+{
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::ErrorExecutionNode extends ExecutionNode
+{
+   message : String[1];
+}
+
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::ResultType
+{
+   _type : String[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::DataTypeResultType extends ResultType
+{
+   dataType : String[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::VoidResultType extends ResultType
+{
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::ClassResultType extends ResultType
+{
+   class : String[1];
+   setImplementations : SetImplementationInfo[*];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::PartialClassResultType extends ClassResultType
+{
+   propertiesWithParameters : meta::protocols::pure::vX_X_X::metamodel::executionPlan::PropertyWithParameters[*];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::PropertyWithParameters
+{
+   property : String[1];
+   parameters : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ValueSpecification[*];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::SetImplementationInfo
+{
+   class : String[1];
+   mapping : String[1];
+   id : String[1];
+   propertyMappings : meta::protocols::pure::vX_X_X::metamodel::executionPlan::PropertyMapping[*];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::PropertyMapping
+{
+   property : String[1];
+   type : String[1];
+   enumMapping : Map<String, List<String>>[0..1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::TDSResultType extends ResultType
+{
+   tdsColumns : meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::TDSColumn[*];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::PureModelContext
+{
+   _type : String[1];
+   serializer : Protocol[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::PureModelContextPointer extends meta::protocols::pure::vX_X_X::metamodel::PureModelContext
+{
+   sdlcInfo : meta::protocols::pure::vX_X_X::metamodel::SDLC[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::SDLC
+{
+   _type : String[1];
+   version : String[0..1];
+   baseVersion : String[0..1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::PureSDLC extends meta::protocols::pure::vX_X_X::metamodel::SDLC
+{
+   packageableElementPointers : meta::protocols::pure::vX_X_X::metamodel::PackageableElementPointer[*];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::AlloySDLC extends meta::protocols::pure::vX_X_X::metamodel::SDLC
+{
+   project : String[0..1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::PureModelContextData extends meta::protocols::pure::vX_X_X::metamodel::PureModelContext
+{
+   origin : meta::protocols::pure::vX_X_X::metamodel::PureModelContextPointer[0..1];
+   elements : meta::protocols::pure::vX_X_X::metamodel::PackageableElement[*];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::PureModelContextText extends meta::protocols::pure::vX_X_X::metamodel::PureModelContext
+{
+    code: String[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::PureModelContextComposite extends meta::protocols::pure::vX_X_X::metamodel::PureModelContext
+{
+   data : meta::protocols::pure::vX_X_X::metamodel::PureModelContextData[0..1];
+   pointer : meta::protocols::pure::vX_X_X::metamodel::PureModelContextPointer[0..1];
+}
+
+
+Class meta::protocols::pure::vX_X_X::metamodel::QueryExecutionInfo
+{
+   clientVersion : String[1];
+   function : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1];
+   mapping : String[1];
+   runtime : meta::protocols::pure::vX_X_X::metamodel::Runtime[1];
+   context : meta::protocols::pure::vX_X_X::metamodel::ExecutionContext[0..1];
+   model : meta::protocols::pure::vX_X_X::metamodel::PureModelContext[1];
+}

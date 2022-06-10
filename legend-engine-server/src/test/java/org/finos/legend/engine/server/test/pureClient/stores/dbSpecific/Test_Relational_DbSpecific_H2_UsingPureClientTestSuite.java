@@ -16,11 +16,11 @@ package org.finos.legend.engine.server.test.pureClient.stores.dbSpecific;
 
 import junit.framework.Test;
 
-public class Test_Relational_DbSpecific_H2_UsingPureClientTestSuite extends Test_Relational_DbSpecific_UsingPureClientTestSuite
+public class Test_Relational_DbSpecific_H2_UsingPureClientTestSuite extends Relational_DbSpecific_UsingPureClientTestSuite
 {
-    public static Test suite()
+    public static Test suite() throws Exception
     {
-        return createSuite("meta::relational::tests::dbSpecificTests::H2","org/finos/legend/engine/server/test/userTestConfig_withH2TestConnection.json");
+        return createSuite("meta::relational::tests::dbSpecificTests::H2", "org/finos/legend/engine/server/test/userTestConfig_withH2TestConnection.json");
     }
 }
 

@@ -14,11 +14,11 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2;
 
+import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.Column;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.IngestionMethod;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommandsVisitor;
-import org.eclipse.collections.impl.factory.Lists;
 
 import java.util.List;
 import java.util.stream.Collectors;

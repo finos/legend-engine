@@ -68,20 +68,22 @@ public interface IRelationalCompilerExtension extends CompilerExtension
         return process(milestoning, processors, context, columnMap, "Milestoning", milestoning.sourceInformation);
     }
 
-    static <T, U> U process(T item, List<Function2<T, CompileContext, U>> processors, CompileContext context, String type, SourceInformation srcInfo) {
+    static <T, U> U process(T item, List<Function2<T, CompileContext, U>> processors, CompileContext context, String type, SourceInformation srcInfo)
+    {
         return ListIterate
                 .collect(processors, processor -> processor.value(item, context))
                 .select(Objects::nonNull)
                 .getFirstOptional()
-                .orElseThrow(() -> new EngineException("Unsupported " + type + " type '" + item.getClass() + "'" , srcInfo, EngineErrorType.COMPILATION));
+                .orElseThrow(() -> new EngineException("Unsupported " + type + " type '" + item.getClass() + "'", srcInfo, EngineErrorType.COMPILATION));
     }
 
-    static <T, U, V> U process(T item, List<Function3<T, CompileContext, V, U>> processors, CompileContext context, V parameter, String type, SourceInformation srcInfo) {
+    static <T, U, V> U process(T item, List<Function3<T, CompileContext, V, U>> processors, CompileContext context, V parameter, String type, SourceInformation srcInfo)
+    {
         return ListIterate
                 .collect(processors, processor -> processor.value(item, context, parameter))
                 .select(Objects::nonNull)
                 .getFirstOptional()
-                .orElseThrow(() -> new EngineException("Unsupported " + type + " type '" + item.getClass() + "'" , srcInfo, EngineErrorType.COMPILATION));
+                .orElseThrow(() -> new EngineException("Unsupported " + type + " type '" + item.getClass() + "'", srcInfo, EngineErrorType.COMPILATION));
     }
 
     default List<Function2<PostProcessor, CompileContext, Pair<Root_meta_pure_alloy_connections_PostProcessor, PostProcessorWithParameter>>> getExtraConnectionPostProcessor()

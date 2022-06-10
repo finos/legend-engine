@@ -60,7 +60,7 @@ public abstract class GraphQL
     {
         Subject subject = ProfileManagerHelper.extractSubject(profiles);
         return subject == null ?
-                getPureModel(profiles, request, project, branch):
+                getPureModel(profiles, request, project, branch) :
                 Subject.doAs(subject, (PrivilegedExceptionAction<PureModel>) () -> getPureModel(profiles, request, project, branch));
     }
 
@@ -76,7 +76,7 @@ public abstract class GraphQL
             {
                 throw new EngineException("Please specify the metadataserver.sdlc information in the server configuration");
             }
-            HttpGet req = new HttpGet("http://"+metadataserver.getSdlc().host+":"+metadataserver.getSdlc().port+"/api/projects/" + project + "/workspaces/" + branch + "/pureModelContextData");
+            HttpGet req = new HttpGet("http://" + metadataserver.getSdlc().host + ":" + metadataserver.getSdlc().port + "/api/projects/" + project + "/workspaces/" + branch + "/pureModelContextData");
             try (CloseableHttpResponse res = client.execute(req))
             {
                 ObjectMapper mapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();

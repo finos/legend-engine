@@ -201,7 +201,7 @@ public class TestRuntimeGenerationForServiceTests
     public void testRuntimeGenerationForServiceWithRuntimePointer()
     {
         String pureGrammarWithModelChainConnection =
-                        "###Relational\n" +
+                "###Relational\n" +
                         "Database test::relationalDB\n" +
                         "(\n" +
                         "  Table Person\n" +

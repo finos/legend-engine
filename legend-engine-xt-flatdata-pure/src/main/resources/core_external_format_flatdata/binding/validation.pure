@@ -262,7 +262,7 @@ Class <<access.private>> meta::external::format::flatdata::binding::validation::
 function <<access.private>> meta::external::format::flatdata::binding::validation::matchSchemaClass(schema:FlatData[1], class:Class<Any>[1]): SchemaPropertyMatchState[1]
 {
    let initialState = ^SchemaPropertyMatchState(
-      unmatchedSections   = $schema.sections,
+      unmatchedSections   = $schema.sections->filter(s | $s.recordType->isNotEmpty()),
       unmatchedProperties = $class->hierarchicalProperties()->concatenate($class->hierarchicalPropertiesFromAssociations())
    );
    

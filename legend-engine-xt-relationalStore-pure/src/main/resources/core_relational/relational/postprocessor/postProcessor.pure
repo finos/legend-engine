@@ -59,7 +59,7 @@ function meta::relational::mapping::postProcessQuery(exeCtx:ExecutionContext[1],
    let newQuery = if($postProcessors->isEmpty(), | $newQuery1, | $postProcessors->fold({pp,q|$pp->eval($q, $c->cast(@DatabaseConnection)).values->toOne()}, $newQuery1->cast(@SelectSQLQuery)));
    let newQueryAfterTrimColumnNameProcessing = if($runtime.connections->filter(c|$c->instanceOf(DatabaseConnection))->isNotEmpty(),
                                    | let type = $runtime.connections->filter(c|$c->instanceOf(DatabaseConnection))->cast(@DatabaseConnection).type;
-                                     if ($type == DatabaseType.DB2 || $type == DatabaseType.Snowflake || $type == DatabaseType.SybaseIQ,
+                                     if ($type->isNotEmpty() && $type->toOne()->createDbConfig([]).dbExtension.aliasLimit->isNotEmpty() && $type != DatabaseType.H2,
                                           | trimColumnNamePostProcessors()->eval($newQuery->cast(@SelectSQLQuery),$runtime).values->cast(@SelectSQLQuery);,
                                           | $newQuery);,
                                    | $newQuery);

@@ -38,7 +38,12 @@ import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.HashMap;
@@ -59,7 +64,7 @@ public class TransformGrammarToJson
     @Path("transformGrammarToJson")
     @ApiOperation(value = "Generates Pure protocol JSON from Pure language text")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
-    public Response transformGrammarToJson(GrammarToJsonInput grammarInput, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @DefaultValue ("true") @QueryParam("returnSourceInfo") boolean returnSourceInfo)
+    public Response transformGrammarToJson(GrammarToJsonInput grammarInput, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @DefaultValue("true") @QueryParam("returnSourceInfo") boolean returnSourceInfo)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         try (Scope scope = GlobalTracer.get().buildSpan("Service: transformJsonToGrammar").startActive(true))
@@ -72,7 +77,7 @@ public class TransformGrammarToJson
             {
                 try
                 {
-                    Lambda lambda = parser.parseLambda(value, key, returnSourceInfo);
+                    Lambda lambda = parser.parseLambda(value, key, 0, 0, returnSourceInfo);
                     lambdas.put(key, lambda);
                 }
                 catch (Exception e)
@@ -98,7 +103,7 @@ public class TransformGrammarToJson
             {
                 try
                 {
-                    symmetricResult.modelDataContext = parser.parseModel(grammarInput.code, returnSourceInfo);
+                    symmetricResult.modelDataContext = parser.parseModel(grammarInput.code, "", 0, 0, returnSourceInfo);
                 }
                 catch (Exception e)
                 {

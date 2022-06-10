@@ -16,12 +16,22 @@ package org.finos.legend.engine.external.shared.runtime.dependencies;
 
 public class ExternalDataModelProperty<T>
 {
-    public enum Type {String, Boolean, Integer, Float, Decimal, StrictDate, DateTime;}
+    public enum Type
+    {
+        String,
+        Boolean,
+        Integer,
+        Float,
+        Decimal,
+        StrictDate,
+        DateTime;
+    }
 
     private final Type type;
     private final ExternalDataAdder<T> adder;
 
-    ExternalDataModelProperty(Type type, ExternalDataAdder<T> adder) {
+    ExternalDataModelProperty(Type type, ExternalDataAdder<T> adder)
+    {
         this.type = type;
         this.adder = adder;
     }

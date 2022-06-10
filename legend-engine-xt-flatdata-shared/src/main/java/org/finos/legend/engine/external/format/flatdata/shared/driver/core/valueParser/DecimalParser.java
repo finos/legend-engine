@@ -26,8 +26,11 @@ public abstract class DecimalParser implements ValueParser
     private static final Predicate<String> VALID_FORMAT = Pattern.compile("#,#*(#|0+)(\\.0*#*)?(E\\d+)?").asPredicate();
 
     public abstract double parseDouble(String s) throws ParseException;
+
     public abstract BigDecimal parseBigDecimal(String s) throws ParseException;
+
     public abstract String toString(double d);
+
     public abstract String toString(BigDecimal bd);
 
     public static DecimalParser of()
@@ -110,7 +113,7 @@ public abstract class DecimalParser implements ValueParser
             this.formatString = formatString;
             DecimalFormat fmt = format.get();
             isDecimalInteger = fmt.isGroupingUsed()
-                    ? Pattern.compile("[+-]?\\d{1,"+fmt.getGroupingSize()+"}(\\d{"+fmt.getGroupingSize()+"},)*" + (formatString.contains("E") ? "([eE]\\d+)?" : "")).asPredicate()
+                    ? Pattern.compile("[+-]?\\d{1," + fmt.getGroupingSize() + "}(\\d{" + fmt.getGroupingSize() + "},)*" + (formatString.contains("E") ? "([eE]\\d+)?" : "")).asPredicate()
                     : DEFAULT_IS_VALID_DECIMAL;
         }
 

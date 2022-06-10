@@ -43,7 +43,7 @@ public class Info
 
     public Info(DeploymentConfiguration deploymentConfiguration, OpenTracingConfiguration openTracingConfiguration)
     {
-        this(deploymentConfiguration,openTracingConfiguration,null);
+        this(deploymentConfiguration, openTracingConfiguration, null);
     }
 
     public Info(DeploymentConfiguration deploymentConfiguration, OpenTracingConfiguration openTracingConfiguration, Map<String, DeploymentVersionInfo> extraDeploymentInformation)
@@ -53,10 +53,10 @@ public class Info
             ObjectMapper m = new ObjectMapper();
             String hostAddress = InetAddress.getLocalHost().getCanonicalHostName();
             String addedInfo = "";
-            if(extraDeploymentInformation!=null)
+            if (extraDeploymentInformation != null)
             {
                 String extraJson = m.writeValueAsString(extraDeploymentInformation);
-                addedInfo =  ","+ extraJson.substring(1,extraJson.length()-1);
+                addedInfo = "," + extraJson.substring(1, extraJson.length() - 1);
             }
             message = "{" +
                     "\"info\":" +

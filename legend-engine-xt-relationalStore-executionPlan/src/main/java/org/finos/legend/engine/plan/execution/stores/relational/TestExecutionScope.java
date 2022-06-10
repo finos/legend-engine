@@ -14,15 +14,13 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational;
 
-import org.finos.legend.engine.plan.execution.stores.relational.config.RelationalExecutionConfiguration;
-import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
-import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
-
 import io.opentracing.Scope;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.impl.block.procedure.checked.CheckedProcedure;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.plan.execution.stores.relational.config.RelationalExecutionConfiguration;
+import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.IdentifiedConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.LegacyRuntime;
@@ -30,6 +28,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.RuntimePointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.StoreConnections;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.ModelChainConnection;
+import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
 import org.h2.jdbc.JdbcSQLNonTransientConnectionException;
 import org.h2.tools.Server;
 
@@ -61,24 +60,26 @@ public class TestExecutionScope implements Closeable
     {
         this.server.stop();
     }
+
     public static int generatePort()
     {
-       return DynamicPortGenerator.generatePort();
+        return DynamicPortGenerator.generatePort();
     }
+
     public static TestExecutionScope setupTestServer(RichIterable<? extends String> sqls, Scope scope) throws SQLException
     {
         // Start Test Database
         int relationalDBPort = generatePort();
-        RelationalExecutor executor ;
-        Server server ;
+        RelationalExecutor executor;
+        Server server;
         try
         {
-           executor = buildTestExecutor(relationalDBPort);
-           server = AlloyH2Server.startServer(relationalDBPort);
+            executor = buildTestExecutor(relationalDBPort);
+            server = AlloyH2Server.startServer(relationalDBPort);
         }
         catch (JdbcSQLNonTransientConnectionException b)
         {
-            scope.span().log("exception opening port"+ relationalDBPort+". Retrying with another port.");
+            scope.span().log("exception opening port" + relationalDBPort + ". Retrying with another port.");
             relationalDBPort = generatePort();
             executor = buildTestExecutor(relationalDBPort);
             server = AlloyH2Server.startServer(relationalDBPort);
@@ -138,7 +139,8 @@ public class TestExecutionScope implements Closeable
         if (runtime instanceof LegacyRuntime)
         {
             LegacyRuntime newRuntime = new LegacyRuntime();
-            newRuntime.connections = ListIterate.collect(((LegacyRuntime) runtime).connections, connection -> {
+            newRuntime.connections = ListIterate.collect(((LegacyRuntime) runtime).connections, connection ->
+            {
                 if (connection instanceof ModelChainConnection)
                 {
                     return connection;
@@ -150,10 +152,12 @@ public class TestExecutionScope implements Closeable
         else if (runtime instanceof EngineRuntime)
         {
             EngineRuntime newRuntime = new EngineRuntime();
-            newRuntime.connections = ListIterate.collect(((EngineRuntime) runtime).connections, storeConnections -> {
+            newRuntime.connections = ListIterate.collect(((EngineRuntime) runtime).connections, storeConnections ->
+            {
                 StoreConnections newStoreConnections = new StoreConnections();
                 newStoreConnections.store = storeConnections.store;
-                newStoreConnections.storeConnections = ListIterate.collect(storeConnections.storeConnections, identifiedConnection -> {
+                newStoreConnections.storeConnections = ListIterate.collect(storeConnections.storeConnections, identifiedConnection ->
+                {
                     if (identifiedConnection.connection instanceof ModelChainConnection)
                     {
                         return identifiedConnection;

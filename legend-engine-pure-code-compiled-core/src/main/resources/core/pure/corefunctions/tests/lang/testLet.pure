@@ -1,0 +1,71 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::profiles::*;
+import meta::pure::functions::tests::model::*;
+import meta::pure::functions::lang::tests::letFn::*;
+
+function <<test.Test>> meta::pure::functions::lang::tests::letFn::testAssignLiteralToVariable():Boolean[1]
+{
+    let var = 'Hello Variable';
+    assertEq('Hello Variable', $var);
+}
+
+function <<test.Test>> meta::pure::functions::lang::tests::letFn::testAssignNewInstance():Boolean[1]
+{
+    let person = ^Person(firstName='John', lastName='Doe');
+    assertIs(Person, genericType($person).rawType->toOne());
+    assertEquals('John', $person.firstName);
+    assertEquals('Doe', $person.lastName);
+}
+
+function <<test.Test>> meta::pure::functions::lang::tests::letFn::testLetAsLastStatement():Boolean[1]
+{
+    assertEq('last statement string', letAsLastStatement());
+}
+
+function meta::pure::functions::lang::tests::letFn::letAsLastStatement():String[1]
+{
+    let last = 'last statement string';
+}
+
+function <<test.Test>> meta::pure::functions::lang::tests::letFn::testLetInsideIf():Boolean[1]
+{
+   assertEq('true', if(true, | let b = 'true', | 'false'));
+}
+
+function <<test.Test>> meta::pure::functions::lang::tests::letFn::testLetChainedWithAnotherFunction():Boolean[1]
+{
+   assertNotEmpty(TestClass->letChainedWithAnotherFunction());
+}
+
+function <<test.Test>> meta::pure::functions::lang::tests::letFn::testLetWithParam():Boolean[1]
+{
+   assertEq('echo', letWithParam('echo')->toOne());
+}
+
+function meta::pure::functions::lang::tests::letFn::letChainedWithAnotherFunction(elements : ModelElement[*]):ModelElement[*]
+{
+   let classes = $elements->removeDuplicates();
+}
+
+Class meta::pure::functions::lang::tests::letFn::TestClass
+{
+   value:String[1];
+}
+
+function meta::pure::functions::lang::tests::letFn::letWithParam(val:String[1]):Any[*]
+{
+   let a = $val;
+}

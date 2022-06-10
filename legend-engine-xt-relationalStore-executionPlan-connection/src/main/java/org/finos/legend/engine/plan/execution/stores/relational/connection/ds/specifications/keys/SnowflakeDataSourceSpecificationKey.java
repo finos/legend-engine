@@ -178,7 +178,7 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
         {
             return false;
         }
-        SnowflakeDataSourceSpecificationKey that = (SnowflakeDataSourceSpecificationKey)o;
+        SnowflakeDataSourceSpecificationKey that = (SnowflakeDataSourceSpecificationKey) o;
         return Objects.equals(accountName, that.accountName) &&
                 Objects.equals(region, that.region) &&
                 Objects.equals(warehouseName, that.warehouseName) &&
@@ -196,6 +196,6 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
     @Override
     public int hashCode()
     {
-        return Objects.hash(accountName, region, warehouseName, databaseName, cloudType, quoteIdentifiers,proxyHost, proxyPort, nonProxyHosts, accountType, organisation,role);
+        return Objects.hash(accountName, region, warehouseName, databaseName, cloudType, quoteIdentifiers, proxyHost, proxyPort, nonProxyHosts, accountType, organisation, role);
     }
 }

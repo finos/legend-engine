@@ -46,7 +46,8 @@ public class TestJsonStreamingResult
 
     private void doesNotAutocloseJsonArrays(SerializationFormat format) throws Exception
     {
-        JsonStreamingResult result = new JsonStreamingResult(x -> {
+        JsonStreamingResult result = new JsonStreamingResult(x ->
+        {
             try
             {
                 x.writeStartArray();

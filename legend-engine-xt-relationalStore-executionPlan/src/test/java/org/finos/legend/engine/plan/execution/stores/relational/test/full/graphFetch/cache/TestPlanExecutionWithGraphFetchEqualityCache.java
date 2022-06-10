@@ -76,11 +76,11 @@ public class TestPlanExecutionWithGraphFetchEqualityCache extends AlloyTestServe
         PlanExecutionContext planExecutionContext = new PlanExecutionContext(plan, personCache);
         Map<String, ?> params = org.eclipse.collections.api.factory.Maps.mutable.of("count", 1);
 
-        JsonStreamingResult result = (JsonStreamingResult)planExecutor.execute(plan, params, null, planExecutionContext);
+        JsonStreamingResult result = (JsonStreamingResult) planExecutor.execute(plan, params, null, planExecutionContext);
         String res = result.flush(new JsonStreamToJsonDefaultSerializer(result));
         Assert.assertEquals(expectedRes, res);
 
-        result = (JsonStreamingResult)planExecutor.execute(plan, params, null, planExecutionContext);
+        result = (JsonStreamingResult) planExecutor.execute(plan, params, null, planExecutionContext);
         res = result.flush(new JsonStreamToJsonDefaultSerializer(result));
         Assert.assertEquals(expectedRes, res);
 
@@ -90,7 +90,7 @@ public class TestPlanExecutionWithGraphFetchEqualityCache extends AlloyTestServe
 
         Thread.sleep(11000);
 
-        result = (JsonStreamingResult)planExecutor.execute(plan, params, null, planExecutionContext);
+        result = (JsonStreamingResult) planExecutor.execute(plan, params, null, planExecutionContext);
         res = result.flush(new JsonStreamToJsonDefaultSerializer(result));
         Assert.assertEquals(expectedRes, res);
 
@@ -98,7 +98,7 @@ public class TestPlanExecutionWithGraphFetchEqualityCache extends AlloyTestServe
         Assert.assertEquals(1, personCache.getExecutionCache().stats().hitCount());
         Assert.assertEquals(2, personCache.getExecutionCache().stats().missCount());
 
-        result = (JsonStreamingResult)planExecutor.execute(plan, params, null, planExecutionContext);
+        result = (JsonStreamingResult) planExecutor.execute(plan, params, null, planExecutionContext);
         res = result.flush(new JsonStreamToJsonDefaultSerializer(result));
         Assert.assertEquals(expectedRes, res);
 
@@ -176,7 +176,7 @@ public class TestPlanExecutionWithGraphFetchEqualityCache extends AlloyTestServe
 
         PlanExecutionContext planExecutionContext = new PlanExecutionContext(plan, personCache);
 
-        JsonStreamingResult result = (JsonStreamingResult)planExecutor.execute(plan, Collections.emptyMap(), null, planExecutionContext);
+        JsonStreamingResult result = (JsonStreamingResult) planExecutor.execute(plan, Collections.emptyMap(), null, planExecutionContext);
         String res = result.flush(new JsonStreamToJsonDefaultSerializer(result));
         Assert.assertEquals(expectedRes, res);
 
@@ -230,7 +230,7 @@ public class TestPlanExecutionWithGraphFetchEqualityCache extends AlloyTestServe
     {
         PlanExecutionContext planExecutionContext = new PlanExecutionContext(plan, cache);
 
-        JsonStreamingResult result = (JsonStreamingResult)planExecutor.execute(plan, params, null, planExecutionContext);
+        JsonStreamingResult result = (JsonStreamingResult) planExecutor.execute(plan, params, null, planExecutionContext);
         String res = result.flush(new JsonStreamToJsonDefaultSerializer(result));
         Assert.assertEquals(expectedRes, res);
 
@@ -241,7 +241,7 @@ public class TestPlanExecutionWithGraphFetchEqualityCache extends AlloyTestServe
         Assert.assertEquals(0, cache.getExecutionCache().stats().hitCount());
         Assert.assertEquals(objectCount, cache.getExecutionCache().stats().missCount());
 
-        result = (JsonStreamingResult)planExecutor.execute(plan, params, null, planExecutionContext);
+        result = (JsonStreamingResult) planExecutor.execute(plan, params, null, planExecutionContext);
         res = result.flush(new JsonStreamToJsonDefaultSerializer(result));
         Assert.assertEquals(expectedRes, res);
 
@@ -252,7 +252,7 @@ public class TestPlanExecutionWithGraphFetchEqualityCache extends AlloyTestServe
 
         for (int i = 0; i < 100; ++i)
         {
-            result = (JsonStreamingResult)planExecutor.execute(plan, params, null, planExecutionContext);
+            result = (JsonStreamingResult) planExecutor.execute(plan, params, null, planExecutionContext);
             res = result.flush(new JsonStreamToJsonDefaultSerializer(result));
             Assert.assertEquals(expectedRes, res);
         }

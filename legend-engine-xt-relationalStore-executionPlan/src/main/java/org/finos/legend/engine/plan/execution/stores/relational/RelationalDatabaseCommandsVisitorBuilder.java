@@ -14,13 +14,12 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational;
 
-import org.finos.legend.engine.plan.execution.stores.relational.config.RelationalExecutionConfiguration;
-
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommandsVisitor;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.plan.execution.result.StreamingResult;
+import org.finos.legend.engine.plan.execution.stores.relational.config.RelationalExecutionConfiguration;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommandsVisitor;
 
 import java.sql.Connection;
 import java.util.ServiceLoader;

@@ -418,10 +418,7 @@ public class RelationalParseTreeWalker
                 ctx.start.getInputStream().getText(Interval.of(ctx.start.getStartIndex(), ctx.stop.getStopIndex())),
                 ctx.milestoningType().getText(),
                 sourceInformation,
-                new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation)
-                        .withLineOffset(sourceInformation.startLine - 1)
-                        .withColumnOffset(sourceInformation.startColumn)
-                        .build()
+                ParseTreeWalkerSourceInformation.offset(walkerSourceInformation, ctx.getStart())
         );
 
         List<IRelationalGrammarParserExtension> extensions = IRelationalGrammarParserExtension.getExtensions();
@@ -465,7 +462,7 @@ public class RelationalParseTreeWalker
         FilterPointer filterPointer = new FilterPointer();
         filterPointer.name = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
         filterMapping.filter = filterPointer;
-        if(ctx.viewFilterMappingJoin() != null)
+        if (ctx.viewFilterMappingJoin() != null)
         {
             this.visitViewFilterMappingJoin(ctx.viewFilterMappingJoin(), filterMapping, filterPointer);
         }
@@ -479,7 +476,8 @@ public class RelationalParseTreeWalker
     private void visitViewFilterMappingJoin(RelationalParserGrammar.ViewFilterMappingJoinContext ctx, FilterMapping filterMapping, FilterPointer filterPointer)
     {
         String database = this.visitDatabasePointer(ctx.databasePointer(0));
-        if (ctx.joinSequence() != null) {
+        if (ctx.joinSequence() != null)
+        {
             filterMapping.joins = this.visitJoinSequence(ctx.joinSequence(), database, ScopeInfo.Builder.newInstance().withDatabase(database).build());
         }
         filterPointer.db = this.visitDatabasePointer(ctx.databasePointer(1));

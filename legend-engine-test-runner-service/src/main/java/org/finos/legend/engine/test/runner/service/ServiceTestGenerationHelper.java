@@ -16,6 +16,8 @@ package org.finos.legend.engine.test.runner.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import io.opentracing.Scope;
+import io.opentracing.util.GlobalTracer;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.eclipse.collections.api.RichIterable;
@@ -72,6 +74,7 @@ import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.compiled.generation.ProcessorContext;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.valuespecification.ValueSpecificationProcessor;
 
+import javax.ws.rs.core.MediaType;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
@@ -79,7 +82,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.function.Function;
-import javax.ws.rs.core.MediaType;
 
 public class ServiceTestGenerationHelper
 {
@@ -367,12 +369,14 @@ public class ServiceTestGenerationHelper
                 // Ignore and try sql generation with existing logic
             }
         }
-
-        return Lists.mutable.withAll(core_relational_relational_helperFunctions_helperFunctions.Root_meta_relational_functions_database_setUpData_String_1__Mapping_MANY__Runtime_1__String_MANY_(
-                testData,
-                Lists.immutable.with(pureModel.getMapping(mappingPath)),
-                HelperRuntimeBuilder.buildPureRuntime(runtime, pureModel.getContext()),
-                pureModel.getExecutionSupport()));
+        try (Scope scope = GlobalTracer.get().buildSpan("Generate setup data").startActive(true))
+        {
+            return Lists.mutable.withAll(core_relational_relational_helperFunctions_helperFunctions.Root_meta_relational_functions_database_setUpData_String_1__Mapping_MANY__Runtime_1__String_MANY_(
+                    testData,
+                    Lists.immutable.with(pureModel.getMapping(mappingPath)),
+                    HelperRuntimeBuilder.buildPureRuntime(runtime, pureModel.getContext()),
+                    pureModel.getExecutionSupport()));
+        }
     }
 
     private static MutableList<String> getSetupSqlsForCsvDataWithQuotes(Runtime runtime, String mappingPath, String testData, PureModel pureModel)
@@ -383,12 +387,14 @@ public class ServiceTestGenerationHelper
                     csvParser.getRecords(),
                     record -> new Root_meta_pure_functions_collection_List_Impl<String>("")._values(IteratorIterate.collect(record.iterator(), x -> x, FastList.newList()))
             );
-
-            return Lists.mutable.withAll(core_relational_relational_helperFunctions_helperFunctions.Root_meta_relational_functions_database_setUpData_List_MANY__Mapping_MANY__Runtime_1__String_MANY_(
-                    csvRecords,
-                    Lists.immutable.with(pureModel.getMapping(mappingPath)),
-                    HelperRuntimeBuilder.buildPureRuntime(runtime, pureModel.getContext()),
-                    pureModel.getExecutionSupport()));
+            try (Scope scope = GlobalTracer.get().buildSpan("Generate setup data").startActive(true))
+            {
+                return Lists.mutable.withAll(core_relational_relational_helperFunctions_helperFunctions.Root_meta_relational_functions_database_setUpData_List_MANY__Mapping_MANY__Runtime_1__String_MANY_(
+                        csvRecords,
+                        Lists.immutable.with(pureModel.getMapping(mappingPath)),
+                        HelperRuntimeBuilder.buildPureRuntime(runtime, pureModel.getContext()),
+                        pureModel.getExecutionSupport()));
+            }
         }
         catch (Exception e)
         {

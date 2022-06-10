@@ -16,8 +16,7 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.test
 
 import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
 import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProvider;
-import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProvider;
-import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProviderSelector;
+import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProviderConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
@@ -26,7 +25,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatabricksDatasourceSpecification;
 import org.finos.legend.engine.shared.core.vault.EnvironmentVaultImplementation;
 import org.finos.legend.engine.shared.core.vault.Vault;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -63,10 +61,11 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Datab
     public void setup()
     {
         LegendDefaultDatabaseAuthenticationFlowProvider flowProvider = new LegendDefaultDatabaseAuthenticationFlowProvider();
+        flowProvider.configure(new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration());
         assertDatabricksApiTokenFlowIsAvailable(flowProvider);
         this.connectionManagerSelector = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(-1), Collections.emptyList());
     }
-    
+
     public void assertDatabricksApiTokenFlowIsAvailable(LegendDefaultDatabaseAuthenticationFlowProvider flowProvider)
     {
         DatabricksDatasourceSpecification datasourceSpecification = new DatabricksDatasourceSpecification();
@@ -80,7 +79,7 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Datab
     public void testDatabricksConnection_subject() throws Exception
     {
         RelationalDatabaseConnection systemUnderTest = this.databricksSpec();
-        Connection connection = this.connectionManagerSelector.getDatabaseConnection((Subject)null, systemUnderTest);
+        Connection connection = this.connectionManagerSelector.getDatabaseConnection((Subject) null, systemUnderTest);
         testConnection(connection, "SELECT 'supported' AS databricks");
     }
 

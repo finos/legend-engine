@@ -62,7 +62,7 @@ function meta::external::format::json::binding::toPure::jsonSchemaToPure(schemaS
 
 function meta::external::format::json::binding::toPure::defaultConfig(): JsonSchemaToModelConfiguration[1]
 {
-  ^JsonSchemaToModelConfiguration(targetPackage='target::package', targetBinding='target::package::GeneratedBinding');
+  ^JsonSchemaToModelConfiguration(format = 'JSON', targetPackage='target::package', targetBinding='target::package::GeneratedBinding');
 }
 
 function <<Generation.Configuration>>  meta::external::format::json::binding::toPure::describeConfiguration(): GenerationParameter[*]
@@ -129,7 +129,7 @@ function <<access.private>> meta::external::format::json::binding::toPure::schem
 {
    ^SchemaInput(
       fileName   = $schema.location->toOne(),
-      schema     = $schema.detail->cast(@JsonSchema).content,
+      schema     = $schema.detail->toOne()->cast(@JsonSchema).content,
       pathPrefix = $context.package
    )
 }

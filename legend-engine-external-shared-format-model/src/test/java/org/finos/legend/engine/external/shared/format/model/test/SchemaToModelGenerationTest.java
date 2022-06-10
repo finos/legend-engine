@@ -52,7 +52,7 @@ public class SchemaToModelGenerationTest
         }
         catch (Exception e)
         {
-            Assert.fail("The schema code cannot be compiled: " +  e.getMessage());
+            Assert.fail("The schema code cannot be compiled: " + e.getMessage());
         }
 
         PureModelContextData generated = new SchemaToModelGenerator(pureModel, "vX_X_X").generate(config);
@@ -63,7 +63,7 @@ public class SchemaToModelGenerationTest
         }
         catch (Exception e)
         {
-            Assert.fail("The generated model cannot be compiled: " +  e.getMessage());
+            Assert.fail("The generated model cannot be compiled: " + e.getMessage());
         }
         return generated;
     }
@@ -149,13 +149,13 @@ public class SchemaToModelGenerationTest
             builder.append("The following elements were not expected\n");
             actualOnlyPaths.stream().sorted().forEach(p -> builder.append(p).append("\n"));
         }
-        for (String path: commonPaths.stream().sorted().collect(Collectors.toList()))
+        for (String path : commonPaths.stream().sorted().collect(Collectors.toList()))
         {
             if (!expected.getText(path).equals(actual.getText(path)))
             {
                 builder.append("There are differences for ").append(path).append("\n")
-                       .append("Expected:\n").append(expected.getText(path))
-                       .append("Actual:\n").append(actual.getText(path));
+                        .append("Expected:\n").append(expected.getText(path))
+                        .append("Actual:\n").append(actual.getText(path));
             }
         }
         Assert.assertTrue(builder.toString(), builder.length() == 0);

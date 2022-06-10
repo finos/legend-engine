@@ -14,64 +14,65 @@
 
 import meta::relational::metamodel::*;
 import meta::relational::dbTestRunner::*;
+import meta::pure::test::*;
 
-function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::abs::testNegative(config:DbTestConfig[1]):String[0..1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::abs::testNegative(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name='abs', parameters=[^Literal(value=-1)]);
   let expected = ^Literal(value=1);
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }
 
-function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::abs::testZero(config:DbTestConfig[1]):String[0..1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::abs::testZero(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name='abs', parameters=[^Literal(value=0)]);
   let expected = ^Literal(value=0);
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }
   
-function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::abs::testPositive(config:DbTestConfig[1]):String[0..1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::abs::testPositive(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name='abs', parameters=[^Literal(value=1)]);
   let expected = ^Literal(value=1);
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }
 
-function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::abs::testDecimal(config:DbTestConfig[1]):String[0..1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::abs::testDecimal(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name='abs', parameters=[^Literal(value=-1.011)]);
   let expected = ^Literal(value=1.011);
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }
 
-function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::mod::testIntDivisible(config:DbTestConfig[1]):String[0..1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::mod::testIntDivisible(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name='mod', parameters=[^Literal(value=1),^Literal(value=2)]);
   let expected = ^Literal(value=1);
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }
 
-function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::mod::testIntNonDivisible(config:DbTestConfig[1]):String[0..1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::mod::testIntNonDivisible(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name='mod', parameters=[^Literal(value=2),^Literal(value=2)]);
   let expected = ^Literal(value=0);
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }
 
-function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::rem::testIntDivisible(config:DbTestConfig[1]):String[0..1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::rem::testIntDivisible(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name='rem', parameters=[^Literal(value=1),^Literal(value=2)]);
   let expected = ^Literal(value=1);
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }
 
-function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::rem::testIntNonDivisible(config:DbTestConfig[1]):String[0..1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::rem::testIntNonDivisible(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name='rem', parameters=[^Literal(value=2),^Literal(value=2)]);
   let expected = ^Literal(value=0);
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }
 
-function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::pow::testDecimal(config:DbTestConfig[1]):String[0..1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::pow::testDecimal(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name='pow', parameters=[^Literal(value=1.1), ^Literal(value=3) ]);
   let expected = ^Literal(value=1.3310000000000004);
@@ -79,7 +80,7 @@ function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $equalityComparator, $config);
 }
 
-function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::pow::testDecimal1(config:DbTestConfig[1]):String[0..1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::pow::testDecimal1(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name='pow', parameters=[^Literal(value=1.8), ^Literal(value=3)]);
   let expected = ^Literal(value=5.832000000000001);
@@ -87,42 +88,44 @@ function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $equalityComparator, $config);
 }
 
-function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::exp::testDecimal(config:DbTestConfig[1]):String[0..1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::exp::testDecimal(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name='exp', parameters=[^Literal(value=1.1)]);
   let expected = ^Literal(value= 3.0041660239464334);
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }
 
-function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::exp::testDecimal1(config:DbTestConfig[1]):String[0..1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::exp::testDecimal1(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name='exp', parameters=[^Literal(value=1.8)]);
   let expected = ^Literal(value=6.0496474644129465);
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }
 
-function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::log::testDecimal(config:DbTestConfig[1]):String[0..1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::log::testDecimal(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name='log', parameters=[^Literal(value=1.1)]);
   let expected = ^Literal(value=0.09531017980432493);
-  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+  let equalityComparator = floatEqualityComparatorGenerator([0.0001]);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $equalityComparator, $config);
 }
 
-function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::log::testDecimal1(config:DbTestConfig[1]):String[0..1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::log::testDecimal1(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name='log', parameters=[^Literal(value=1.8)]);
   let expected = ^Literal(value= 0.5877866649021191);
-  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+  let equalityComparator = floatEqualityComparatorGenerator([0.0001]);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $equalityComparator, $config);
 }
 
-function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::sqrt::testInt1(config:DbTestConfig[1]):String[0..1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::sqrt::testInt1(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name='sqrt', parameters=[^Literal(value=1)]);
   let expected = ^Literal(value= 1.0 );
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }
 
-function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::sqrt::testInt2(config:DbTestConfig[1]):String[0..1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::sqrt::testInt2(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name='sqrt', parameters=[^Literal(value=2)]);
   let expected = ^Literal(value= 1.4142135623730951);
@@ -130,98 +133,98 @@ function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests
 }
 
 // trigonometric functions   
-function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::sin::testDecimal(config:DbTestConfig[1]):String[0..1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::sin::testDecimal(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name='sin', parameters=[^Literal(value=1.1)]);
   let expected = ^Literal(value=0.8912073600614354);
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }
 
-function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::sin::testDecimal1(config:DbTestConfig[1]):String[0..1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::sin::testDecimal1(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name='sin', parameters=[^Literal(value=1.8)]);
   let expected = ^Literal(value=0.9738476308781951);
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }
 
-function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::cos::testDecimal(config:DbTestConfig[1]):String[0..1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::cos::testDecimal(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name='cos', parameters=[^Literal(value=1.1)]);
   let expected = ^Literal(value=0.4535961214255773);
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }
 
-function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::cos::testDecimal1(config:DbTestConfig[1]):String[0..1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::cos::testDecimal1(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name='cos', parameters=[^Literal(value=1.8)]);
   let expected = ^Literal(value=-0.2272020946930871);
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }
 
-function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::tan::testDecimal(config:DbTestConfig[1]):String[0..1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::tan::testDecimal(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name='tan', parameters=[^Literal(value=1.1)]);
   let expected = ^Literal(value=1.9647596572486523);
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }
 
-function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::tan::testDecimal1(config:DbTestConfig[1]):String[0..1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::tan::testDecimal1(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name='tan', parameters=[^Literal(value=1.8)]);
   let expected = ^Literal(value= -4.286261674628062);
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }
 
-function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::acos::testDecimal(config:DbTestConfig[1]):String[0..1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::acos::testDecimal(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name='acos', parameters=[^Literal(value=0.5)]);
   let expected = ^Literal(value=1.0471975511965979);
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }
 
-function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::acos::testDecimal1(config:DbTestConfig[1]):String[0..1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::acos::testDecimal1(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name='acos', parameters=[^Literal(value=1.0)]);
   let expected = ^Literal(value=0.0);
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }
 
-function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::asin::testDecimal(config:DbTestConfig[1]):String[0..1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::asin::testDecimal(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name='asin', parameters=[^Literal(value=0.5)]);
   let expected = ^Literal(value= 0.5235987755982989);
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }
 
-function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::asin::testDecimal1(config:DbTestConfig[1]):String[0..1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::asin::testDecimal1(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name='asin', parameters=[^Literal(value=1.0)]);
   let expected = ^Literal(value=1.5707963267948966);
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }
 
-function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::atan::testDecimal(config:DbTestConfig[1]):String[0..1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::atan::testDecimal(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name='atan', parameters=[^Literal(value=1.1)]);
   let expected = ^Literal(value= 0.8329812666744317);
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }
 
-function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::atan::testDecimal1(config:DbTestConfig[1]):String[0..1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::atan::testDecimal1(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name='atan', parameters=[^Literal(value=1.8)]);
   let expected = ^Literal(value= 1.0636978224025597);
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }
 
-function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::atan2::testDecimal(config:DbTestConfig[1]):String[0..1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::atan2::testDecimal(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name='atan2', parameters=[^Literal(value=1.1),^Literal(value=1)]);
   let expected = ^Literal(value= 0.8329812666744317);
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }
 
-function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::atan2::testDecimal1(config:DbTestConfig[1]):String[0..1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::atan2::testDecimal1(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name='atan2', parameters=[^Literal(value=1.8),^Literal(value=2)]);
   let expected = ^Literal(value= 0.7328151017865066);
@@ -230,63 +233,63 @@ function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests
 
 
 //round off
-function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::ceiling::testDecimal(config:DbTestConfig[1]):String[0..1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::ceiling::testDecimal(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name='ceiling', parameters=[^Literal(value=1.1)]);
   let expected = ^Literal(value=2.0);   // TODO check 2.0 ?? 
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }
 
-function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::ceiling::testInt(config:DbTestConfig[1]):String[0..1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::ceiling::testInt(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name='ceiling', parameters=[^Literal(value=2)]);
   let expected = ^Literal(value= 2);
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 } 
 
-function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::ceiling::testIntAsFloat(config:DbTestConfig[1]):String[0..1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::ceiling::testIntAsFloat(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name='ceiling', parameters=[^Literal(value=2.0)]);
   let expected = ^Literal(value=2);
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 } 
 
-function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::floor::testDecimal(config:DbTestConfig[1]):String[0..1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::floor::testDecimal(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name='floor', parameters=[^Literal(value=1.1)]);
   let expected = ^Literal(value=1.0);   // TODO check 2.0 ?? 
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }
 
-function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::floor::testInt(config:DbTestConfig[1]):String[0..1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::floor::testInt(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name='floor', parameters=[^Literal(value=2)]);
   let expected = ^Literal(value= 2);
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 } 
 
-function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::floor::testIntAsFloat(config:DbTestConfig[1]):String[0..1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::floor::testIntAsFloat(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name='floor', parameters=[^Literal(value=2.0)]);
   let expected = ^Literal(value= 2.0);
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 } 
 
-function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::round::testDecimalLower(config:DbTestConfig[1]):String[0..1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::round::testDecimalLower(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name='round', parameters=[^Literal(value=1.1)]);
   let expected = ^Literal(value=1.0);   
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }
 
-function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::round::testDecimalUpper(config:DbTestConfig[1]):String[0..1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::round::testDecimalUpper(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name='round', parameters=[^Literal(value=1.8)]);
   let expected = ^Literal(value=2.0);  
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }
 
-function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::round::testInt(config:DbTestConfig[1]):String[0..1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::round::testInt(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name='round', parameters=[^Literal(value=2.0)]);
   let expected = ^Literal(value=2.0);  

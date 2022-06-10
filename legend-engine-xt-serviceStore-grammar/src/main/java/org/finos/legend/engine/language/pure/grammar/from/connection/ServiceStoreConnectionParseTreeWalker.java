@@ -56,7 +56,7 @@ public class ServiceStoreConnectionParseTreeWalker
 
     private void validateUrl(String url, SourceInformation sourceInformation)
     {
-        if(url.endsWith("/"))
+        if (url.endsWith("/"))
         {
             throw new EngineException("baseUrl should not end with '/'", sourceInformation, EngineErrorType.PARSER);
         }

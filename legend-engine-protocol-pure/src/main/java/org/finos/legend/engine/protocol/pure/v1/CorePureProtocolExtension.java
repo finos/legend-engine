@@ -21,15 +21,26 @@ import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
-import org.finos.legend.engine.protocol.pure.v1.model.data.*;
+import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
+import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ExternalFormatData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ModelStoreData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Association;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Enumeration;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Measure;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Profile;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Unit;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.LegacyRuntime;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.RuntimePointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualTo;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToJson;
@@ -91,8 +102,8 @@ public class CorePureProtocolExtension implements PureProtocolExtension
     @Override
     public Map<java.lang.Class<? extends PackageableElement>, String> getExtraProtocolToClassifierPathMap()
     {
-        return  Maps.mutable.<java.lang.Class<? extends PackageableElement>, String>ofInitialCapacity(11)
-                 .withKeyValue(Association.class, "meta::pure::metamodel::relationship::Association")
+        return Maps.mutable.<java.lang.Class<? extends PackageableElement>, String>ofInitialCapacity(11)
+                .withKeyValue(Association.class, "meta::pure::metamodel::relationship::Association")
                 .withKeyValue(Class.class, "meta::pure::metamodel::type::Class")
                 .withKeyValue(Enumeration.class, "meta::pure::metamodel::type::Enumeration")
                 .withKeyValue(Mapping.class, "meta::pure::mapping::Mapping")

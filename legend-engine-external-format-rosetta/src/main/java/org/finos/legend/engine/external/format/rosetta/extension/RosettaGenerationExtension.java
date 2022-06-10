@@ -15,8 +15,8 @@
 package org.finos.legend.engine.external.format.rosetta.extension;
 
 import org.eclipse.collections.api.RichIterable;
-import org.finos.legend.engine.external.format.rosetta.model.RosettaGenerationConfig;
 import org.finos.legend.engine.external.format.rosetta.RosettaGenerationService;
+import org.finos.legend.engine.external.format.rosetta.model.RosettaGenerationConfig;
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
 import org.finos.legend.engine.external.shared.format.extension.GenerationMode;
 import org.finos.legend.engine.external.shared.format.generations.description.FileGenerationDescription;
@@ -96,7 +96,8 @@ public class RosettaGenerationExtension implements GenerationExtension
     @Override
     public List<Root_meta_pure_generation_metamodel_GenerationOutput> generateFromElement(PackageableElement element, CompileContext compileContext)
     {
-        if(element instanceof FileGenerationSpecification) {
+        if (element instanceof FileGenerationSpecification)
+        {
             FileGenerationSpecification specification = (FileGenerationSpecification) element;
             RosettaGenerationConfig rosettaConfig = RosettaGenerationConfigFromFileGenerationSpecificationBuilder.build(specification);
             RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationOutput> output = core_external_format_rosetta_transformation_entry.Root_meta_external_format_rosetta_generation_generateRosettaFromPureWithScope_RosettaConfig_1__GenerationOutput_MANY_(rosettaConfig.process(compileContext.pureModel), compileContext.pureModel.getExecutionSupport());

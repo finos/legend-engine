@@ -711,8 +711,8 @@ public class TestSimpleTypeHandlers
             public String getNamespaceURI(String prefix)
             {
                 return namespaces.containsKey(prefix)
-                       ? namespaces.get(prefix)
-                       : XMLConstants.NULL_NS_URI;
+                        ? namespaces.get(prefix)
+                        : XMLConstants.NULL_NS_URI;
             }
 
             @Override
@@ -720,18 +720,18 @@ public class TestSimpleTypeHandlers
             {
                 Iterator<String> prefixes = getPrefixes(namespaceURI);
                 return prefixes.hasNext()
-                       ? prefixes.next()
-                       : null;
+                        ? prefixes.next()
+                        : null;
             }
 
             @Override
             public Iterator<String> getPrefixes(String namespaceURI)
             {
                 return namespaces.entrySet()
-                                 .stream()
-                                 .filter(e -> namespaceURI.equals(e.getValue()))
-                                 .map(Map.Entry::getKey)
-                                 .iterator();
+                        .stream()
+                        .filter(e -> namespaceURI.equals(e.getValue()))
+                        .map(Map.Entry::getKey)
+                        .iterator();
             }
         };
     }

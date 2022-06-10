@@ -14,10 +14,6 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy;
 
-import java.sql.Connection;
-import java.util.Optional;
-import java.util.Properties;
-
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionException;
@@ -28,6 +24,10 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.st
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.IdentityState;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
+
+import java.sql.Connection;
+import java.util.Optional;
+import java.util.Properties;
 
 public class DelegatedKerberosAuthenticationStrategy extends InteractiveAuthenticationStrategy
 {
@@ -67,7 +67,7 @@ public class DelegatedKerberosAuthenticationStrategy extends InteractiveAuthenti
         IdentityState identityState = ConnectionStateManager.getInstance().getIdentityStateUsing(properties);
         if (identityState.getCredentialSupplier().isPresent())
         {
-            return (LegendKerberosCredential)super.getDatabaseCredential(identityState);
+            return (LegendKerberosCredential) super.getDatabaseCredential(identityState);
         }
         else
         {

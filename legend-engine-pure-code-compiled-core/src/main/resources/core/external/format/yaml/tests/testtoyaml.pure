@@ -1,0 +1,228 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::format::yaml::metamodel::*;
+import meta::external::format::yaml::serialization::*;
+import meta::external::format::yaml::*;
+
+
+function <<test.Test>> meta::external::format::yaml::tests::testArrayOfObject():Boolean[1]
+{
+   
+let object = ^YAMLObject(keyValuePairs = ^YAMLKeyValue(key=^YAMLString( value='array'),value= ^YAMLArray( values=[
+                                                ^YAMLObject(keyValuePairs =[^YAMLKeyValue( key=^YAMLString( value='key1'), value=^YAMLString( value = 'value')),^YAMLKeyValue( key=^YAMLString( value='key2'), value=^YAMLString( value = 'value2')) ]),
+                                                ^YAMLObject(keyValuePairs =[^YAMLKeyValue( key=^YAMLString( value='key3'), value=^YAMLString( value = 'value3')),^YAMLKeyValue( key=^YAMLString( value='key4'), value=^YAMLString( value = 'value4')) ])])));
+let actual = $object->toYAMLString();
+let expected = 'array: \n' +
+               '  - key1: "value"\n' +
+               '    key2: "value2"\n' +
+               '  - key3: "value3"\n' +
+               '    key4: "value4"';
+    assertEquals($expected,$actual);
+  
+}
+
+function <<test.Test>> meta::external::format::yaml::tests::testNestedObject():Boolean[1]
+{
+let object =^YAMLObject(keyValuePairs =	^YAMLKeyValue( key=^YAMLString( value='root'), 
+                                                      value=^YAMLObject(keyValuePairs = [
+                                                             ^YAMLKeyValue( key=^YAMLString( value='item1'), 
+                                                                            value=^YAMLObject(keyValuePairs = [ ^YAMLKeyValue( key=^YAMLString( value='ka'), value=^YAMLString( value = 'value')),
+                                                                                                                ^YAMLKeyValue( key=^YAMLString( value='kb'), value=^YAMLString( value = 'value2'))])),
+                                                             ^YAMLKeyValue( key=^YAMLString( value='item2'), 
+                                                                            value=^YAMLObject(keyValuePairs = [	^YAMLKeyValue( key=^YAMLString( value='k'), value=^YAMLString( value = 'value')),
+                                                                                                               ^YAMLKeyValue( key=^YAMLString( value='k2'), value=^YAMLString( value = 'value2'))]))
+                                                                                       ])));              
+	
+ let actual =   $object->toYAMLString();
+  let expected = 'root: \n' +
+            '  item1: \n' +
+            '    ka: "value"\n' +
+            '    kb: "value2"\n' +
+            '  item2: \n' +
+            '    k: "value"\n' +
+            '    k2: "value2"';
+    assertEquals($expected,$actual);
+
+}
+
+function <<test.Test>> meta::external::format::yaml::tests::testToYamlString():Boolean[1]
+{
+ let object =  ^YAMLObject(keyValuePairs = [
+	^YAMLKeyValue( key=^YAMLString( value='title'), value=^YAMLString( value = 'meta::external::format::yaml::schema::tests::Cat')),
+	^YAMLKeyValue( key=^YAMLString( value='description'), value=^YAMLString( value = 'The Cat Class')),
+	^YAMLKeyValue( key=^YAMLString( value='allOf'), value=^YAMLArray( values=[	^YAMLObject(keyValuePairs = [
+	^YAMLKeyValue( key=^YAMLString( value='$ref'), value=^YAMLString( value = '#/definitions/meta::external::format::yaml::schema::tests::Animal'))])])),
+	^YAMLKeyValue( key=^YAMLString( value='type'), value=^YAMLString( value = 'object')),
+	^YAMLKeyValue( key=^YAMLString( value='properties'), value=^YAMLObject(keyValuePairs = [
+	^YAMLKeyValue( key=^YAMLString( value='vegetarian'), value=^YAMLObject(keyValuePairs = [
+	^YAMLKeyValue( key=^YAMLString( value='type'), value=^YAMLString( value = 'boolean')),
+	^YAMLKeyValue( key=^YAMLString( value='description'), value=^YAMLString( value = 'Is the animal a vegetarian?'))]))])),
+	^YAMLKeyValue( key=^YAMLString( value='required'), value=^YAMLArray( values=[	^YAMLString( value = 'vegetarian')])),
+	^YAMLKeyValue( key=^YAMLString( value='definitions'), value=^YAMLObject(keyValuePairs = [
+
+    ^YAMLKeyValue( key=^YAMLString( value='meta::external::format::yaml::schema::tests::AnimalType'), value=^YAMLObject(keyValuePairs = [
+	^YAMLKeyValue( key=^YAMLString( value='title'), value=^YAMLString( value = 'meta::external::format::yaml::schema::tests::AnimalType')),
+	^YAMLKeyValue( key=^YAMLString( value='description'), value=^YAMLString( value = 'The AnimalType Enum')),
+
+	^YAMLKeyValue( key=^YAMLString( value='enum'), value=^YAMLArray( values=[	^YAMLString( value = 'CAT'),
+	^YAMLString( value = 'DOG'),
+	^YAMLString( value = 'BIRD'),
+	^YAMLString( value = 'FISH'),
+	^YAMLString( value = 'HUMAN')])),
+    ^YAMLKeyValue( key=^YAMLString( value='type'), value=^YAMLString( value = 'string'))])),
+
+
+
+    ^YAMLKeyValue( key=^YAMLString( value='meta::external::format::yaml::schema::tests::Being'), value=^YAMLObject(keyValuePairs = [
+	^YAMLKeyValue( key=^YAMLString( value='title'), value=^YAMLString( value = 'meta::external::format::yaml::schema::tests::Being')),
+	^YAMLKeyValue( key=^YAMLString( value='description'), value=^YAMLString( value = 'The Being Class')),
+	^YAMLKeyValue( key=^YAMLString( value='type'), value=^YAMLString( value = 'object')),
+	^YAMLKeyValue( key=^YAMLString( value='properties'), value=^YAMLObject(keyValuePairs = [
+	^YAMLKeyValue( key=^YAMLString( value='omg'), value=^YAMLObject(keyValuePairs = [
+	^YAMLKeyValue( key=^YAMLString( value='type'), value=^YAMLString( value = 'string'))]))])),
+	^YAMLKeyValue( key=^YAMLString( value='required'), value=^YAMLArray( values=[	^YAMLString( value = 'omg')]))])),
+
+
+    ^YAMLKeyValue( key=^YAMLString( value='meta::external::format::yaml::schema::tests::Animal'), value=^YAMLObject(keyValuePairs = [
+	^YAMLKeyValue( key=^YAMLString( value='title'), value=^YAMLString( value = 'meta::external::format::yaml::schema::tests::Animal')),
+	^YAMLKeyValue( key=^YAMLString( value='description'), value=^YAMLString( value = 'The Animal Class')),
+	^YAMLKeyValue( key=^YAMLString( value='allOf'), value=^YAMLArray( values=[	^YAMLObject(keyValuePairs = [
+	^YAMLKeyValue( key=^YAMLString( value='$ref'), value=^YAMLString( value = '#/definitions/meta::external::format::yaml::schema::tests::Being'))])])),
+	^YAMLKeyValue( key=^YAMLString( value='type'), value=^YAMLString( value = 'object')),
+	^YAMLKeyValue( key=^YAMLString( value='properties'), value=^YAMLObject(keyValuePairs = [
+	^YAMLKeyValue( key=^YAMLString( value='name'), value=^YAMLObject(keyValuePairs = [
+	^YAMLKeyValue( key=^YAMLString( value='type'), value=^YAMLString( value = 'string'))])),
+	^YAMLKeyValue( key=^YAMLString( value='age'), value=^YAMLObject(keyValuePairs = [
+	^YAMLKeyValue( key=^YAMLString( value='type'), value=^YAMLString( value = 'integer'))])),
+	^YAMLKeyValue( key=^YAMLString( value='type'), value=^YAMLObject(keyValuePairs = [
+	^YAMLKeyValue( key=^YAMLString( value='$ref'), value=^YAMLString( value = '#/definitions/meta::external::format::yaml::schema::tests::AnimalType'))])),
+	^YAMLKeyValue( key=^YAMLString( value='aliases'), value=^YAMLObject(keyValuePairs = [
+	^YAMLKeyValue( key=^YAMLString( value='type'), value=^YAMLString( value = 'array')),
+	^YAMLKeyValue( key=^YAMLString( value='items'), value=^YAMLObject(keyValuePairs = [
+	^YAMLKeyValue( key=^YAMLString( value='type'), value=^YAMLString( value = 'string'))]))])),
+	^YAMLKeyValue( key=^YAMLString( value='extra'), value=^YAMLObject(keyValuePairs = [
+	^YAMLKeyValue( key=^YAMLString( value='type'), value=^YAMLString( value = 'array')),
+	^YAMLKeyValue( key=^YAMLString( value='items'), value=^YAMLObject(keyValuePairs = [
+	^YAMLKeyValue( key=^YAMLString( value='$ref'), value=^YAMLString( value = '#/definitions/meta::external::format::yaml::schema::tests::OtherInfo'))])),
+	^YAMLKeyValue( key=^YAMLString( value='minItems'), value=^YAMLNumber( value = 4)),
+	^YAMLKeyValue( key=^YAMLString( value='maxItems'), value=^YAMLNumber( value = 4))]))])),
+	^YAMLKeyValue( key=^YAMLString( value='required'), value=^YAMLArray( values=[	^YAMLString( value = 'name'),
+	^YAMLString( value = 'age'),^YAMLString( value = 'type'),
+	^YAMLString( value = 'extra')]))])),
+
+
+
+    ^YAMLKeyValue( key=^YAMLString( value='meta::external::format::yaml::schema::tests::OtherInfo'), value=^YAMLObject(keyValuePairs = [
+	^YAMLKeyValue( key=^YAMLString( value='title'), value=^YAMLString( value = 'meta::external::format::yaml::schema::tests::OtherInfo')),
+	^YAMLKeyValue( key=^YAMLString( value='description'), value=^YAMLString( value = 'The OtherInfo Class')),
+	^YAMLKeyValue( key=^YAMLString( value='type'), value=^YAMLString( value = 'object')),
+	^YAMLKeyValue( key=^YAMLString( value='properties'), value=^YAMLObject(keyValuePairs = [
+	^YAMLKeyValue( key=^YAMLString( value='info'), value=^YAMLObject(keyValuePairs = [
+	^YAMLKeyValue( key=^YAMLString( value='type'), value=^YAMLString( value = 'string'))]))])),
+	^YAMLKeyValue( key=^YAMLString( value='required'), value=^YAMLArray( values=[	^YAMLString( value = 'info')]))]))]))]);
+
+   let actual = $object->toYAMLString();
+   
+     let expected ='title: "meta::external::format::yaml::schema::tests::Cat"\n' +
+                  'description: "The Cat Class"\n' +
+                  'allOf: \n' +
+                  '  - $ref: "#/definitions/meta::external::format::yaml::schema::tests::Animal"\n' +
+                  'type: "object"\n' +
+                  'properties: \n' +
+                  '  vegetarian: \n' +
+                  '    type: "boolean"\n' +
+                  '    description: "Is the animal a vegetarian?"\n' +
+                  'required: \n' +
+                  '  - "vegetarian"\n' +
+                  'definitions: \n' +
+                  '  meta::external::format::yaml::schema::tests::AnimalType: \n' +
+                  '    title: "meta::external::format::yaml::schema::tests::AnimalType"\n' +
+                  '    description: "The AnimalType Enum"\n' +
+                  '    enum: \n' +
+                  '      - "CAT"\n' +
+                  '      - "DOG"\n' +
+                  '      - "BIRD"\n' +
+                  '      - "FISH"\n' +
+                  '      - "HUMAN"\n' +
+                  '    type: "string"\n' +
+                  '  meta::external::format::yaml::schema::tests::Being: \n' +
+                  '    title: "meta::external::format::yaml::schema::tests::Being"\n' +
+                  '    description: "The Being Class"\n' +
+                  '    type: "object"\n' +
+                  '    properties: \n' +
+                  '      omg: \n' +
+                  '        type: "string"\n' +
+                  '    required: \n' +
+                  '      - "omg"\n' +
+                  '  meta::external::format::yaml::schema::tests::Animal: \n' +
+                  '    title: "meta::external::format::yaml::schema::tests::Animal"\n' +
+                  '    description: "The Animal Class"\n' +
+                  '    allOf: \n' +
+                  '      - $ref: "#/definitions/meta::external::format::yaml::schema::tests::Being"\n' +
+                  '    type: "object"\n' +
+                  '    properties: \n' +
+                  '      name: \n' +
+                  '        type: "string"\n' +
+                  '      age: \n' +
+                  '        type: "integer"\n' +
+                  '      type: \n' +
+                  '        $ref: "#/definitions/meta::external::format::yaml::schema::tests::AnimalType"\n' +
+                  '      aliases: \n' +
+                  '        type: "array"\n' +
+                  '        items: \n' +
+                  '          type: "string"\n' +
+                  '      extra: \n' +
+                  '        type: "array"\n' +
+                  '        items: \n' +
+                  '          $ref: "#/definitions/meta::external::format::yaml::schema::tests::OtherInfo"\n' +
+                  '        minItems: 4\n' +
+                  '        maxItems: 4\n' +
+                  '    required: \n' +
+                  '      - "name"\n' +
+                  '      - "age"\n' +
+                  '      - "type"\n' +
+                  '      - "extra"\n' +
+                  '  meta::external::format::yaml::schema::tests::OtherInfo: \n' +
+                  '    title: "meta::external::format::yaml::schema::tests::OtherInfo"\n' +
+                  '    description: "The OtherInfo Class"\n' +
+                  '    type: "object"\n' +
+                  '    properties: \n' +
+                  '      info: \n' +
+                  '        type: "string"\n' +
+                  '    required: \n' +
+                  '      - "info"';
+   assertEquals($expected,$actual);
+}
+
+function <<test.Test>> meta::external::format::yaml::tests::testEscaping():Boolean[1]
+{
+   
+ let objectwithWhiteSpace  =  ^YAMLObject(keyValuePairs = [^YAMLKeyValue( key=^YAMLString( value='doc'), value=^YAMLString( value = 'A \'doc\' "with" a \twhite \nspaces/'))]);
+   
+  
+ let doubleQuote =  $objectwithWhiteSpace->toYAMLString();
+ let plain =   $objectwithWhiteSpace->toYAMLString(FlowScalarStyle.PLAIN);
+ assertEquals('doc: "A \'doc\' \\"with\\" a \\twhite \\nspaces/"',$doubleQuote);
+ assertEquals('doc: "A \'doc\' \\"with\\" a \\twhite \\nspaces/"',$plain);
+
+ let objectwithBasicString  =  ^YAMLObject(keyValuePairs = [^YAMLKeyValue( key=^YAMLString( value='doc'), value=^YAMLString( value = 'A \'doc\' "with" no \\white spaces/'))]);
+
+ let doubleQuoteNoWhiteSpace =  $objectwithBasicString->toYAMLString();
+ let plainNoWhiteSpace =   $objectwithBasicString->toYAMLString(FlowScalarStyle.PLAIN);
+  assertEquals('doc: "A \'doc\' \\"with\\" no \\\\white spaces/"',$doubleQuoteNoWhiteSpace);
+  assertEquals('doc: A \'doc\' "with" no \\white spaces/',$plainNoWhiteSpace);
+
+   
+}

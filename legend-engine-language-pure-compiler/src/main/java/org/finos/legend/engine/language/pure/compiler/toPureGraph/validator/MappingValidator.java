@@ -29,9 +29,18 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.EnumValueMappingSourceValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.*;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EmbeddedSetImplementation;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.InstanceSetImplementation;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMapping;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementationAccessor;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class MappingValidator
@@ -239,9 +248,9 @@ public class MappingValidator
             if (cm instanceof InstanceSetImplementation)
             {
                 return ((InstanceSetImplementation) cm)._propertyMappings().flatCollect(pm ->
-                                Lists.mutable.withAll(checkId(pureModel, mapping, ids, pm, pm._sourceSetImplementationId()))
-                                        .withAll(checkId(pureModel, mapping, ids, pm, pm._targetSetImplementationId()))
-                        );
+                        Lists.mutable.withAll(checkId(pureModel, mapping, ids, pm, pm._sourceSetImplementationId()))
+                                .withAll(checkId(pureModel, mapping, ids, pm, pm._targetSetImplementationId()))
+                );
             }
             else
             {

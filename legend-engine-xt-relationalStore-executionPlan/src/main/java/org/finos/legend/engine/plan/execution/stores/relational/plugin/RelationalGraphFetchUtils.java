@@ -14,11 +14,10 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.plugin;
 
-import org.finos.legend.engine.plan.execution.stores.relational.result.SQLExecutionResult;
-
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCache;
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCacheByEqualityKeys;
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCacheKey;
+import org.finos.legend.engine.plan.execution.stores.relational.result.SQLExecutionResult;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CBoolean;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDecimal;
@@ -47,16 +46,16 @@ import java.util.stream.Collectors;
 
 class RelationalGraphFetchUtils
 {
-    private final static Function<List<Method>, Function<Object, Integer>> OBJECT_KEYS_HASHING_FUNCTION =
+    private static final Function<List<Method>, Function<Object, Integer>> OBJECT_KEYS_HASHING_FUNCTION =
             (getters) -> (obj) -> hashWithKeys(obj, getters);
 
-    private final static Function<List<Method>, BiFunction<Object, Object, Boolean>> OBJECT_KEYS_EQUALITY_FUNCTION =
+    private static final Function<List<Method>, BiFunction<Object, Object, Boolean>> OBJECT_KEYS_EQUALITY_FUNCTION =
             (getters) -> (obj1, obj2) -> equalsWithKeys(obj1, obj2, getters);
 
-    private final static Function<List<Integer>, Function<SQLExecutionResult, Integer>> SQL_RESULT_INDICES_HASHING_FUNCTION =
+    private static final Function<List<Integer>, Function<SQLExecutionResult, Integer>> SQL_RESULT_INDICES_HASHING_FUNCTION =
             (indices) -> (obj) -> hashSQLResultWithKeyIndices(obj, indices);
 
-    private final static BiFunction<List<Method>, List<Integer>, BiFunction<Object, SQLExecutionResult, Boolean>> OBJECT_SQL_RESULT_HETEROGENEOUS_EQUALS_FUNCTION =
+    private static final BiFunction<List<Method>, List<Integer>, BiFunction<Object, SQLExecutionResult, Boolean>> OBJECT_SQL_RESULT_HETEROGENEOUS_EQUALS_FUNCTION =
             (getters, indices) -> (object, sqlResult) -> heterogeneousEqualsObjectAndSQLResult(object, sqlResult, getters, indices);
 
 

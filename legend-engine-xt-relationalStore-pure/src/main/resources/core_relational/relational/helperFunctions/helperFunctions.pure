@@ -24,6 +24,7 @@ import meta::relational::metamodel::relation::*;
 import meta::relational::metamodel::*;
 import meta::relational::mapping::*;
 import meta::relational::functions::toDDL::*;
+import meta::relational::functions::sqlQueryToString::*;
 
 function meta::relational::mapping::sql(result:Result<Any|*>[1]):String[1]
 {
@@ -148,8 +149,14 @@ function <<access.private>> meta::alloy::service::execution::schemaAndTableSetup
    $schemaSetup->concatenate($tableSetup);
 }
 
-function meta::alloy::service::execution::setUpDataSQLs(data:String[1], db:Database[1]) : String[*]
+function <<doc.deprecated>> meta::alloy::service::execution::setUpDataSQLs(data:String[1], db:Database[1]) : String[*]
 {
+  meta::alloy::service::execution::setUpDataSQLs($data, $db, createDbConfig(DatabaseType.H2));
+}
+
+function meta::alloy::service::execution::setUpDataSQLs(data:String[1], db:Database[1], dbConfig:DbConfig[1]) : String[*]
+{
+
    let schemaAndTableSetup = $db->meta::alloy::service::execution::schemaAndTableSetup();
 
    let formattedData = $data->split('\n')
@@ -159,7 +166,12 @@ function meta::alloy::service::execution::setUpDataSQLs(data:String[1], db:Datab
    $schemaAndTableSetup->concatenate(loadCsvDataToDbTable($formattedData, $db, t:Table[1]|$t));
 }
 
-function meta::alloy::service::execution::setUpDataSQLs(records:List<String>[*], db:Database[1]) : String[*]
+function <<doc.deprecated>> meta::alloy::service::execution::setUpDataSQLs(records:List<String>[*], db:Database[1]) : String[*]
+{
+  meta::alloy::service::execution::setUpDataSQLs($records, $db, createDbConfig(DatabaseType.H2));
+}
+
+function meta::alloy::service::execution::setUpDataSQLs(records:List<String>[*], db:Database[1], dbConfig:DbConfig[1]) : String[*]
 {
    let schemaAndTableSetup = $db->meta::alloy::service::execution::schemaAndTableSetup();
    $schemaAndTableSetup->concatenate(loadCsvDataToDbTable($records, $db, t:Table[1]|$t));

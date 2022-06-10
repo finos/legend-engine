@@ -29,7 +29,8 @@ import org.finos.legend.pure.generated.Root_meta_pure_router_extension_RouterExt
 import java.util.List;
 import java.util.Optional;
 
-public interface ServiceExecutionExtension {
+public interface ServiceExecutionExtension
+{
 
     default Optional<Pair<ExecutionPlan, RichIterable<? extends String>>> tryToBuildTestExecutorContext(Execution execution, String testData, ObjectMapper objectMapper, PureModel pureModel, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, MutableList<PlanTransformer> transformers, String pureVersion)
     {

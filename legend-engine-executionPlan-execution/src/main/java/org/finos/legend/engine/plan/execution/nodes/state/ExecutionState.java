@@ -20,7 +20,6 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
-import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCache;
 import org.finos.legend.engine.plan.execution.extension.ExecutionExtension;
 import org.finos.legend.engine.plan.execution.extension.ExecutionExtensionLoader;
@@ -31,6 +30,7 @@ import org.finos.legend.engine.plan.execution.result.graphFetch.GraphObjectsBatc
 import org.finos.legend.engine.plan.execution.stores.StoreExecutionState;
 import org.finos.legend.engine.plan.execution.stores.StoreType;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
+import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
 import org.pac4j.core.profile.CommonProfile;
 
 import java.util.Collections;
@@ -127,8 +127,13 @@ public class ExecutionState
 
     public ExecutionState setAuthUser(String user)
     {
+        return setAuthUser(user, true);
+    }
+
+    public ExecutionState setAuthUser(String user, boolean setTransformAllocation)
+    {
         this.authId = user;
-        this.transformAllocation = true;
+        this.transformAllocation = setTransformAllocation;
         return this;
     }
 

@@ -1,0 +1,302 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+function <<test.Test>> meta::pure::functions::date::tests::testSecond():Boolean[1]
+{
+    assertEquals(21, %2015-04-15T17:09:21->second());
+    assertEquals(21, %2015-04-15T17:09:21.398->second());
+}
+
+function <<test.Test>> meta::pure::functions::date::tests::testHasSubsecond():Boolean[1]
+{
+    assert(%2015-04-15T17:09:21.398->hasSubsecond());
+    assertFalse(%2015-04-15T17:09:21->hasSubsecond());
+    assertFalse(%2015-04-15T17:09->hasSubsecond());
+    assertFalse(%2015-04-15T17->hasSubsecond());
+    assertFalse(%2015-04-15->hasSubsecond());
+    assertFalse(%2015-04->hasSubsecond());
+    assertFalse(%2015->hasSubsecond());
+}
+
+function <<test.Test>> meta::pure::functions::date::tests::testHasSubsecondWithAtLeastPrecision():Boolean[1]
+{
+    assert(%2015-04-15T17:09:21.398->hasSubsecondWithAtLeastPrecision(1));
+    assert(%2015-04-15T17:09:21.398->hasSubsecondWithAtLeastPrecision(2));
+    assert(%2015-04-15T17:09:21.398->hasSubsecondWithAtLeastPrecision(3));
+    assertFalse(%2015-04-15T17:09:21.398->hasSubsecondWithAtLeastPrecision(4));
+    assertFalse(%2015-04-15T17:09:21.398->hasSubsecondWithAtLeastPrecision(5));
+
+    assertFalse(%2015-04-15T17:09:21->hasSubsecondWithAtLeastPrecision(1));
+    assertFalse(%2015-04-15T17:09->hasSubsecondWithAtLeastPrecision(1));
+    assertFalse(%2015-04-15T17->hasSubsecondWithAtLeastPrecision(1));
+    assertFalse(%2015-04-15->hasSubsecondWithAtLeastPrecision(1));
+    assertFalse(%2015-04->hasSubsecondWithAtLeastPrecision(1));
+    assertFalse(%2015->hasSubsecondWithAtLeastPrecision(1));
+}
+
+function <<test.Test>> meta::pure::functions::date::tests::testHasSecond():Boolean[1]
+{
+    assert(%2015-04-15T17:09:21.398->hasSecond());
+    assert(%2015-04-15T17:09:21->hasSecond());
+    assertFalse(%2015-04-15T17:09->hasSecond());
+    assertFalse(%2015-04-15T17->hasSecond());
+    assertFalse(%2015-04-15->hasSecond());
+    assertFalse(%2015-04->hasSecond());
+    assertFalse(%2015->hasSecond());
+}
+
+function <<test.Test>> meta::pure::functions::date::tests::testMinute():Boolean[1]
+{
+    assertEquals(9, %2015-04-15T17:09->minute());
+    assertEquals(9, %2015-04-15T17:09:21->minute());
+    assertEquals(9, %2015-04-15T17:09:21.398->minute());
+}
+
+function <<test.Test>> meta::pure::functions::date::tests::testHasMinute():Boolean[1]
+{
+    assert(%2015-04-15T17:09:21.398->hasMinute());
+    assert(%2015-04-15T17:09:21->hasMinute());
+    assert(%2015-04-15T17:09->hasMinute());
+    assertFalse(%2015-04-15T17->hasMinute());
+    assertFalse(%2015-04-15->hasMinute());
+    assertFalse(%2015-04->hasMinute());
+    assertFalse(%2015->hasMinute());
+}
+
+function <<test.Test>> meta::pure::functions::date::tests::testHour():Boolean[1]
+{
+    assertEquals(17, %2015-04-15T17->hour());
+    assertEquals(17, %2015-04-15T17:09->hour());
+    assertEquals(17, %2015-04-15T17:09:21->hour());
+    assertEquals(17, %2015-04-15T17:09:21.398->hour());
+}
+
+function <<test.Test>> meta::pure::functions::date::tests::testHasHour():Boolean[1]
+{
+    assert(%2015-04-15T17:09:21.398->hasHour());
+    assert(%2015-04-15T17:09:21->hasHour());
+    assert(%2015-04-15T17:09->hasHour());
+    assert(%2015-04-15T17->hasHour());
+    assertFalse(%2015-04-15->hasHour());
+    assertFalse(%2015-04->hasHour());
+    assertFalse(%2015->hasHour());
+}
+
+function <<test.Test>> meta::pure::functions::date::tests::testDayOfMonth():Boolean[1]
+{
+    assertEquals(15, %2015-04-15->dayOfMonth());
+    assertEquals(15, %2015-04-15T17->dayOfMonth());
+    assertEquals(15, %2015-04-15T17:09->dayOfMonth());
+    assertEquals(15, %2015-04-15T17:09:21->dayOfMonth());
+    assertEquals(15, %2015-04-15T17:09:21.398->dayOfMonth());
+}
+
+function <<test.Test>> meta::pure::functions::date::tests::testDayOfWeekNumber():Boolean[1]
+{
+    assertEquals(3, %2015-04-15->dayOfWeekNumber());
+    assertEquals(3, %2015-04-15T17->dayOfWeekNumber());
+    assertEquals(3, %2015-04-15T17:09->dayOfWeekNumber());
+    assertEquals(3, %2015-04-15T17:09:21->dayOfWeekNumber());
+    assertEquals(3, %2015-04-15T17:09:21.398->dayOfWeekNumber());
+
+    assertEquals(1, %2015-04-13->dayOfWeekNumber());
+    assertEquals(2, %2015-04-14->dayOfWeekNumber());
+    assertEquals(3, %2015-04-15->dayOfWeekNumber());
+    assertEquals(4, %2015-04-16->dayOfWeekNumber());
+    assertEquals(5, %2015-04-17->dayOfWeekNumber());
+    assertEquals(6, %2015-04-18->dayOfWeekNumber());
+    assertEquals(7, %2015-04-19->dayOfWeekNumber());
+}
+
+function <<test.Test>> meta::pure::functions::date::tests::testDayOfWeek():Boolean[1]
+{
+    assertEquals(DayOfWeek.Wednesday, %2015-04-15->dayOfWeek());
+    assertEquals(DayOfWeek.Wednesday, %2015-04-15T17->dayOfWeek());
+    assertEquals(DayOfWeek.Wednesday, %2015-04-15T17:09->dayOfWeek());
+    assertEquals(DayOfWeek.Wednesday, %2015-04-15T17:09:21->dayOfWeek());
+    assertEquals(DayOfWeek.Wednesday, %2015-04-15T17:09:21.398->dayOfWeek());
+
+    assertEquals(DayOfWeek.Monday, %2015-04-13->dayOfWeek());
+    assertEquals(DayOfWeek.Tuesday, %2015-04-14->dayOfWeek());
+    assertEquals(DayOfWeek.Wednesday, %2015-04-15->dayOfWeek());
+    assertEquals(DayOfWeek.Thursday, %2015-04-16->dayOfWeek());
+    assertEquals(DayOfWeek.Friday, %2015-04-17->dayOfWeek());
+    assertEquals(DayOfWeek.Saturday, %2015-04-18->dayOfWeek());
+    assertEquals(DayOfWeek.Sunday, %2015-04-19->dayOfWeek());
+}
+
+function <<test.Test>> meta::pure::functions::date::tests::testHasDay():Boolean[1]
+{
+    assert(%2015-04-15T17:09:21.398->hasDay());
+    assert(%2015-04-15T17:09:21->hasDay());
+    assert(%2015-04-15T17:09->hasDay());
+    assert(%2015-04-15T17->hasDay());
+    assert(%2015-04-15->hasDay());
+    assertFalse(%2015-04->hasDay());
+    assertFalse(%2015->hasDay());
+}
+
+function <<test.Test>> meta::pure::functions::date::tests::testWeekOfYear():Boolean[1]
+{
+    assertEquals(16, %2015-04-15->weekOfYear());
+    assertEquals(16, %2015-04-15T17->weekOfYear());
+    assertEquals(16, %2015-04-15T17:09->weekOfYear());
+    assertEquals(16, %2015-04-15T17:09:21->weekOfYear());
+    assertEquals(16, %2015-04-15T17:09:21.398->weekOfYear());
+}
+
+function <<test.Test>> meta::pure::functions::date::tests::testMonthNumber():Boolean[1]
+{
+    assertEquals(4, %2015-04->monthNumber());
+    assertEquals(4, %2015-04-15->monthNumber());
+    assertEquals(4, %2015-04-15T17->monthNumber());
+    assertEquals(4, %2015-04-15T17:09->monthNumber());
+    assertEquals(4, %2015-04-15T17:09:21->monthNumber());
+    assertEquals(4, %2015-04-15T17:09:21.398->monthNumber());
+
+    assertEquals(1, %2015-01->monthNumber());
+    assertEquals(2, %2015-02->monthNumber());
+    assertEquals(3, %2015-03->monthNumber());
+    assertEquals(4, %2015-04->monthNumber());
+    assertEquals(5, %2015-05->monthNumber());
+    assertEquals(6, %2015-06->monthNumber());
+    assertEquals(7, %2015-07->monthNumber());
+    assertEquals(8, %2015-08->monthNumber());
+    assertEquals(9, %2015-09->monthNumber());
+    assertEquals(10, %2015-10->monthNumber());
+    assertEquals(11, %2015-11->monthNumber());
+    assertEquals(12, %2015-12->monthNumber());
+}
+
+function <<test.Test>> meta::pure::functions::date::tests::testMonth():Boolean[1]
+{
+    assertEquals(Month.April, %2015-04->month());
+    assertEquals(Month.April, %2015-04-15->month());
+    assertEquals(Month.April, %2015-04-15T17->month());
+    assertEquals(Month.April, %2015-04-15T17:09->month());
+    assertEquals(Month.April, %2015-04-15T17:09:21->month());
+    assertEquals(Month.April, %2015-04-15T17:09:21.398->month());
+
+    assertEquals(Month.January, %2015-01->month());
+    assertEquals(Month.February, %2015-02->month());
+    assertEquals(Month.March, %2015-03->month());
+    assertEquals(Month.April, %2015-04->month());
+    assertEquals(Month.May, %2015-05->month());
+    assertEquals(Month.June, %2015-06->month());
+    assertEquals(Month.July, %2015-07->month());
+    assertEquals(Month.August, %2015-08->month());
+    assertEquals(Month.September, %2015-09->month());
+    assertEquals(Month.October, %2015-10->month());
+    assertEquals(Month.November, %2015-11->month());
+    assertEquals(Month.December, %2015-12->month());
+}
+
+function <<test.Test>> meta::pure::functions::date::tests::testHasMonth():Boolean[1]
+{
+    assert(%2015-04-15T17:09:21.398->hasMonth());
+    assert(%2015-04-15T17:09:21->hasMonth());
+    assert(%2015-04-15T17:09->hasMonth());
+    assert(%2015-04-15T17->hasMonth());
+    assert(%2015-04-15->hasMonth());
+    assert(%2015-04->hasMonth());
+    assertFalse(%2015->hasMonth());
+
+    assert(meta::pure::functions::date::hasMonth_Date_1__Boolean_1_->eval(%2015-04));
+}
+
+function <<test.Test>> meta::pure::functions::date::tests::testQuarterNumber():Boolean[1]
+{
+    assertEquals(2, %2015-04->quarterNumber());
+    assertEquals(2, %2015-04-15->quarterNumber());
+    assertEquals(2, %2015-04-15T17->quarterNumber());
+    assertEquals(2, %2015-04-15T17:09->quarterNumber());
+    assertEquals(2, %2015-04-15T17:09:21->quarterNumber());
+    assertEquals(2, %2015-04-15T17:09:21.398->quarterNumber());
+
+    assertEquals(1, %2015-01->quarterNumber());
+    assertEquals(1, %2015-02->quarterNumber());
+    assertEquals(1, %2015-03->quarterNumber());
+    assertEquals(2, %2015-04->quarterNumber());
+    assertEquals(2, %2015-05->quarterNumber());
+    assertEquals(2, %2015-06->quarterNumber());
+    assertEquals(3, %2015-07->quarterNumber());
+    assertEquals(3, %2015-08->quarterNumber());
+    assertEquals(3, %2015-09->quarterNumber());
+    assertEquals(4, %2015-10->quarterNumber());
+    assertEquals(4, %2015-11->quarterNumber());
+    assertEquals(4, %2015-12->quarterNumber());
+
+    assertEquals(4, meta::pure::functions::date::quarterNumber_Date_1__Integer_1_->eval(%2015-12));
+}
+
+function <<test.Test>> meta::pure::functions::date::tests::testQuarter():Boolean[1]
+{
+    assertEquals(Quarter.Q2, %2015-04->quarter());
+    assertEquals(Quarter.Q2, %2015-04-15->quarter());
+    assertEquals(Quarter.Q2, %2015-04-15T17->quarter());
+    assertEquals(Quarter.Q2, %2015-04-15T17:09->quarter());
+    assertEquals(Quarter.Q2, %2015-04-15T17:09:21->quarter());
+    assertEquals(Quarter.Q2, %2015-04-15T17:09:21.398->quarter());
+
+    assertEquals(Quarter.Q1, %2015-01->quarter());
+    assertEquals(Quarter.Q1, %2015-02->quarter());
+    assertEquals(Quarter.Q1, %2015-03->quarter());
+    assertEquals(Quarter.Q2, %2015-04->quarter());
+    assertEquals(Quarter.Q2, %2015-05->quarter());
+    assertEquals(Quarter.Q2, %2015-06->quarter());
+    assertEquals(Quarter.Q3, %2015-07->quarter());
+    assertEquals(Quarter.Q3, %2015-08->quarter());
+    assertEquals(Quarter.Q3, %2015-09->quarter());
+    assertEquals(Quarter.Q4, %2015-10->quarter());
+    assertEquals(Quarter.Q4, %2015-11->quarter());
+    assertEquals(Quarter.Q4, %2015-12->quarter());
+
+
+    assertEquals(Quarter.Q3, meta::pure::functions::date::quarter_Date_1__Quarter_1_->eval(%2015-09));
+    assertEquals(Quarter.Q3, meta::pure::functions::date::quarter_Date_1__Quarter_1_->evaluate(^List<Date>(values=%2015-09)));
+}
+
+function <<test.Test>> meta::pure::functions::date::tests::testYear():Boolean[1]
+{
+    assertEquals(2015, %2015->year());
+    assertEquals(2015, %2015-04->year());
+    assertEquals(2015, %2015-04-15->year());
+    assertEquals(2015, %2015-04-15T17->year());
+    assertEquals(2015, %2015-04-15T17:09->year());
+    assertEquals(2015, %2015-04-15T17:09:21->year());
+    assertEquals(2015, %2015-04-15T17:09:21.398->year());
+
+    assertEquals(2015, meta::pure::functions::date::year_Date_1__Integer_1_->eval(%2015-04-15));
+    //assertEquals(2015, meta::pure::functions::date::year_Date_1__Integer_1_->evaluate(^List<Date>(values=%2015-04-15)));
+}
+
+function <<test.Test>> meta::pure::functions::date::tests::testHasYear():Boolean[1]
+{
+    assert(%2015-04-15T17:09:21.398->hasYear());
+    assert(%2015-04-15T17:09:21->hasYear());
+    assert(%2015-04-15T17:09->hasYear());
+    assert(%2015-04-15T17->hasYear());
+    assert(%2015-04-15->hasYear());
+    assert(%2015-04->hasYear());
+    assert(%2015->hasYear());
+
+    assert(meta::pure::functions::date::hasYear_Date_1__Boolean_1_->eval(%2015));
+    assert(meta::pure::functions::date::hasYear_Date_1__Boolean_1_->evaluate(^List<Date>(values=%2015))->cast(@Boolean)->toOne());
+}
+
+function <<test.Test>> meta::pure::functions::date::tests::testDaysOfMonth():Boolean[1]
+{
+    assertEquals(15, %2015-04-15->daysOfMonth());
+    assertEquals([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30], %2015-04->daysOfMonth());
+}

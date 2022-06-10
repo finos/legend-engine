@@ -29,6 +29,7 @@ import org.eclipse.collections.impl.factory.Sets;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.plan.execution.stores.relational.AlloyH2Server;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
+import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
 import org.finos.legend.pure.configuration.PureRepositoriesExternal;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
 import org.finos.legend.pure.m3.execution.test.TestCollection;
@@ -91,7 +92,7 @@ public class PureTestHelper
     }
 
     @Ignore
-    public static TestSetup wrapSuite(Function0<Boolean> init, Function0<TestSuite> suiteBuilder, boolean withH2, String serverConfigFilePath )
+    public static TestSetup wrapSuite(Function0<Boolean> init, Function0<TestSuite> suiteBuilder, boolean withH2, String serverConfigFilePath)
     {
         boolean shouldCleanUp = init.value();
         TestSuite suite = suiteBuilder.value();
@@ -102,6 +103,7 @@ public class PureTestHelper
         return new TestSetup(suite)
         {
             boolean shouldCleanUp;
+
             @Override
             protected void setUp() throws Exception
             {
@@ -127,9 +129,9 @@ public class PureTestHelper
 
     public static ServersState initEnvironment(boolean withH2, String serverConfigFilePath) throws Exception
     {
-        int engineServerPort = 1100 + (int) (Math.random() * 30000);
-        int metadataServerPort = 1100 + (int) (Math.random() * 30000);
-        int relationalDBPort = 1100 + (int) (Math.random() * 30000);
+        int engineServerPort = DynamicPortGenerator.generatePort();
+        int metadataServerPort = DynamicPortGenerator.generatePort();
+        int relationalDBPort = DynamicPortGenerator.generatePort();
 
         org.h2.tools.Server h2Server = null;
 
@@ -387,7 +389,7 @@ public class PureTestHelper
     public static CompiledExecutionSupport getClassLoaderExecutionSupport(boolean enableConsole)
     {
         ConsoleCompiled console = new ConsoleCompiled();
-        if ( enableConsole == true )
+        if (enableConsole == true)
         {
             console.enable();
         }
@@ -445,7 +447,7 @@ public class PureTestHelper
                 method.invoke(null, this.executionSupport);
                 System.out.format("DONE (%.6fs)\n", (System.nanoTime() - start) / 1_000_000_000.0);
             }
-	    catch(InvocationTargetException e)
+            catch (InvocationTargetException e)
             {
                 System.out.format("ERROR (%.6fs)\n", (System.nanoTime() - start) / 1_000_000_000.0);
                 throw e.getTargetException();

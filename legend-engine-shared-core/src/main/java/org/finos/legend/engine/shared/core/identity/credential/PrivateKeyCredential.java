@@ -14,9 +14,9 @@
 
 package org.finos.legend.engine.shared.core.identity.credential;
 
-import java.security.PrivateKey;
-
 import org.finos.legend.engine.shared.core.identity.Credential;
+
+import java.security.PrivateKey;
 
 public class PrivateKeyCredential implements Credential
 {

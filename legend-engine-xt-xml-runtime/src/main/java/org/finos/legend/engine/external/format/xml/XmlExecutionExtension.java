@@ -43,20 +43,20 @@ public class XmlExecutionExtension implements ExecutionExtension
     public List<Function3<ExecutionNode, MutableList<CommonProfile>, ExecutionState, Result>> getExtraNodeExecutors()
     {
         return Collections.singletonList((executionNode, pm, executionState) ->
-                                         {
-                                             if (executionNode instanceof XmlSerializeExecutionNode)
-                                             {
-                                                 return executeSerialize((XmlSerializeExecutionNode) executionNode, pm, executionState);
-                                             }
-                                             else if (executionNode instanceof XmlDeserializeExecutionNode)
-                                             {
-                                                 return executeDeserialize((XmlDeserializeExecutionNode) executionNode, pm, executionState);
-                                             }
-                                             else
-                                             {
-                                                 return null;
-                                             }
-                                         });
+        {
+            if (executionNode instanceof XmlSerializeExecutionNode)
+            {
+                return executeSerialize((XmlSerializeExecutionNode) executionNode, pm, executionState);
+            }
+            else if (executionNode instanceof XmlDeserializeExecutionNode)
+            {
+                return executeDeserialize((XmlDeserializeExecutionNode) executionNode, pm, executionState);
+            }
+            else
+            {
+                return null;
+            }
+        });
     }
 
     private Result executeSerialize(XmlSerializeExecutionNode node, MutableList<CommonProfile> profiles, ExecutionState executionState)

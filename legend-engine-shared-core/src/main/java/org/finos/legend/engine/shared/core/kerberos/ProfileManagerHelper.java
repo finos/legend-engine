@@ -21,9 +21,9 @@ import org.finos.legend.server.pac4j.kerberos.KerberosProfile;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 
+import javax.security.auth.Subject;
 import java.util.Objects;
 import java.util.Optional;
-import javax.security.auth.Subject;
 
 public class ProfileManagerHelper
 {

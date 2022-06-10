@@ -29,11 +29,11 @@ import java.lang.reflect.Method;
 public class MetricsHandler
 {
     public static final String METRIC_PREFIX = "alloy_";
-    private static final String[] empty  = new String[]{};
+    private static final String[] empty = new String[]{};
     static MutableMap<String, Summary> serviceMetrics = Maps.mutable.empty();
     static MutableMap<String, Gauge> serviceErrors = Maps.mutable.empty();
-    static MutableMap<String , Gauge> gauges = Maps.mutable.empty();
-    static MutableMap<String , Counter> errorCounters = Maps.mutable.empty();
+    static MutableMap<String, Gauge> gauges = Maps.mutable.empty();
+    static MutableMap<String, Counter> errorCounters = Maps.mutable.empty();
     static final Gauge allExecutions = Gauge.build().name("alloy_executions").help("Execution gauge metric ").register();
     static final Gauge allExecutionErrors = Gauge.build().name("alloy_executions_errors").help("Execution error gauge metric ").register();
 
@@ -140,12 +140,12 @@ public class MetricsHandler
             if (m.isAnnotationPresent(Prometheus.class))
             {
                 Prometheus val = m.getAnnotation(Prometheus.class);
-                if (val.type() == Prometheus.Type.SUMMARY && (serviceMetrics.get(val.name()) ==null))
+                if (val.type() == Prometheus.Type.SUMMARY && (serviceMetrics.get(val.name()) == null))
                 {
                     Summary g = Summary.build().name(generateMetricName(val.name(), false))
-                                       .quantile(0.5, 0.05).quantile(0.9, 0.01).quantile(0.99, 0.001)
-                                       .help(val.doc())
-                                       .register();
+                            .quantile(0.5, 0.05).quantile(0.9, 0.01).quantile(0.99, 0.001)
+                            .help(val.doc())
+                            .register();
                     serviceMetrics.put(val.name(), g);
                 }
             }
@@ -170,9 +170,9 @@ public class MetricsHandler
         if (serviceMetrics.get(name) == null)
         {
             Summary g = Summary.build().name(generateMetricName(name, false))
-                               .quantile(0.5, 0.05).quantile(0.9, 0.01).quantile(0.99, 0.001)
-                               .help(name + " duration metrics")
-                               .register();
+                    .quantile(0.5, 0.05).quantile(0.9, 0.01).quantile(0.99, 0.001)
+                    .help(name + " duration metrics")
+                    .register();
             serviceMetrics.put(name, g);
             g.observe((endTime - startTime) / 1000F);
         }
@@ -183,13 +183,15 @@ public class MetricsHandler
     }
 
     @Deprecated
-    public static synchronized void observeCount(String name) {
-        observeCount(name, empty,empty, false);
+    public static synchronized void observeCount(String name)
+    {
+        observeCount(name, empty, empty, false);
     }
 
     @Deprecated
-    public static synchronized void decrementCount(String name) {
-        observeCount(name, empty,empty, true);
+    public static synchronized void decrementCount(String name)
+    {
+        observeCount(name, empty, empty, true);
     }
 
     @Deprecated
@@ -198,39 +200,46 @@ public class MetricsHandler
         Gauge g;
         if (gauges.get(name) == null)
         {
-            g = Gauge.build().name(generateMetricName(name,false))
+            g = Gauge.build().name(generateMetricName(name, false))
                     .help(name + " gauge metric")
                     .labelNames(labelNames).register();
             gauges.put(name, g);
-            if (decrement) {
+            if (decrement)
+            {
                 g.labels(labelValues).dec();
-            } else {
+            }
+            else
+            {
                 g.labels(labelValues).inc();
             }
         }
         else
         {
-           g = gauges.get(name);
-            if (decrement) {
+            g = gauges.get(name);
+            if (decrement)
+            {
                 g.labels(labelValues).dec();
-            } else {
+            }
+            else
+            {
                 g.labels(labelValues).inc();
             }
         }
     }
 
     @Deprecated
-    public static synchronized void observeErrorCount(String name) {
-        observeErrorCount(name, empty,empty);
+    public static synchronized void observeErrorCount(String name)
+    {
+        observeErrorCount(name, empty, empty);
     }
 
     @Deprecated
-    public static synchronized void observeErrorCount(String name,  String[] labelNames, String[] labelValues)
+    public static synchronized void observeErrorCount(String name, String[] labelNames, String[] labelValues)
     {
         if (errorCounters.get(name) == null)
         {
-            Counter c = Counter.build().name(generateMetricName(name,true))
-                    .help(name+" count metric")
+            Counter c = Counter.build().name(generateMetricName(name, true))
+                    .help(name + " count metric")
                     .labelNames(labelNames).register();
             errorCounters.put(name, c);
             c.labels(labelValues).inc();
@@ -246,7 +255,7 @@ public class MetricsHandler
     {
         if (serviceErrors.get(name) == null)
         {
-           Gauge g = Gauge.build().name(generateMetricName(name, true)).help(name + "error gauge").register();
+            Gauge g = Gauge.build().name(generateMetricName(name, true)).help(name + "error gauge").register();
             serviceErrors.put(name, g);
             g.inc();
         }

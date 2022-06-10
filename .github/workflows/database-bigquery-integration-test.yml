@@ -1,4 +1,4 @@
-# Copyright 2020 FINOS
+# Copyright 2022 Goldman Sachs
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,12 +22,15 @@ env:
 
 on:
   schedule:
-    - cron: '0 0 * * 2' # every Tuesday on default/base branch
+    - cron: "0 0 * * 2" # every Tuesday on default/base branch
   push:
     branches:
       - master
 jobs:
   build:
+    # NOTE: we cannot run this action in fork because secrets are not accessible from forks
+    # See https://community.sonarsource.com/t/github-action-ci-build-fail-with-set-the-sonar-token-env-variable/38997
+    if: github.repository == 'finos/legend-engine'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
@@ -52,12 +55,20 @@ jobs:
       - name: Configure GCP credentials With Github Actions
         uses: google-github-actions/auth@v0
         with:
-          credentials_json: ${{ secrets.BIGQUERY_INTEGRATION_TEST_RO1_JSON }}
-      - name: 'Set up Cloud SDK'
-        uses: 'google-github-actions/setup-gcloud@v0'
-      - name: 'Use gcloud CLI'
-        run: 'gcloud info'
-      - name: Build + Run Integration Tests
+          credentials_json: ${{ secrets.BIGQUERY_INTEGRATION_SA1_JSON }}
+      - name: "Set up Cloud SDK"
+        uses: "google-github-actions/setup-gcloud@v0"
+      - name: "Use gcloud CLI"
+        run: "gcloud info"
+      - name: Build
+        env:
+          MAVEN_OPTS: -Xmx4000m
+        run: mvn clean install -DskipTests=true
+      - name: Run Connection Protocol Integration Tests
+        env:
+          MAVEN_OPTS: -Xmx4000m
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_INTEGRATION_USER1_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_INTEGRATION_USER1_SECRET_ACCESS_KEY }}
         run: |
-          mvn clean install -DskipTests=true
           mvn -P run-bigquery-integration -pl legend-engine-xt-relationalStore-executionPlan-connection-tests -Dtest="ExternalIntegration*BigQuery" test
+          mvn -P run-bigquery-integration -pl legend-engine-xt-relationalStore-executionPlan-connection-authentication -Dtest="ExternalIntegration*BigQuery*" test

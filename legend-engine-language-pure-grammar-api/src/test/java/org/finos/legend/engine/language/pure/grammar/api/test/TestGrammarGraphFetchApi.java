@@ -1,5 +1,20 @@
+//  Copyright 2022 Goldman Sachs
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+
 package org.finos.legend.engine.language.pure.grammar.api.test;
 
+import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.language.pure.grammar.api.grammarToJson.GrammarToJson;
@@ -8,7 +23,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.RootGraphFetchTree;
 import org.finos.legend.engine.shared.core.api.TestGrammar;
 import org.finos.legend.engine.shared.core.api.grammar.BatchResult;
+import org.finos.legend.engine.shared.core.api.grammar.GrammarAPI;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
+import org.finos.legend.engine.shared.core.function.Function5;
 import org.junit.Test;
 
 import javax.ws.rs.core.Response;
@@ -34,8 +51,23 @@ public class TestGrammarGraphFetchApi extends TestGrammar<RootGraphFetchTree>
     @Test
     public void testSimpleParsingError()
     {
-        testError( "#{\n" +
-                        "  demo::Query\n" +
+        testError("#{\n" +
+                "  demo::Query\n" +
+                "    firms{\n" +
+                "      legalName,\n" +
+                "      employees{\n" +
+                "        lastName\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}#", "Unexpected token", new SourceInformation("", 3, 5, 3, 9));
+    }
+
+    @Test
+    public void testBatch()
+    {
+        testBatch(createBatchInput(Tuples.pair("1", "#{\n" +
+                        "  demo::Query{\n" +
                         "    firms{\n" +
                         "      legalName,\n" +
                         "      employees{\n" +
@@ -43,58 +75,43 @@ public class TestGrammarGraphFetchApi extends TestGrammar<RootGraphFetchTree>
                         "      }\n" +
                         "    }\n" +
                         "  }\n" +
-                        "}#", "Unexpected token", new SourceInformation("", 3, 5, 3, 9));
-    }
-
-    @Test
-    public void testBatch()
-    {
-        testBatch(with( Tuples.pair("1",  "#{\n" +
-                                                    "  demo::Query{\n" +
-                                                    "    firms{\n" +
-                                                    "      legalName,\n" +
-                                                    "      employees{\n" +
-                                                    "        lastName\n" +
-                                                    "      }\n" +
-                                                    "    }\n" +
-                                                    "  }\n" +
-                                                    "}#"),
-                        Tuples.pair("2",  "#{\n" +
-                                                    "  demo::Query{\n" +
-                                                    "    firms{\n" +
-                                                    "      legalName\n" +
-                                                    "    }\n" +
-                                                    "  }\n" +
-                                                    "}#"))
+                        "}#"),
+                Tuples.pair("2", "#{\n" +
+                        "  demo::Query{\n" +
+                        "    firms{\n" +
+                        "      legalName\n" +
+                        "    }\n" +
+                        "  }\n" +
+                        "}#"))
         );
     }
 
     @Test
     public void testBatchError()
     {
-        testBatchError(with(Tuples.pair("1",  "#{\n" +
-                                                        "  demo::Query{\n" +
-                                                        "    firms{\n" +
-                                                        "      legalName,\n" +
-                                                        "      employees{\n" +
-                                                        "        lastName\n" +
-                                                        "      }\n" +
-                                                        "    }\n" +
-                                                        "  }\n" +
-                                                        "}#"),
-                Tuples.pair("2",  "#{\n" +
-                                            "  demo::Query" +
-                                            "}#")),
-                with(Tuples.pair("1",  "#{\n" +
-                                                "  demo::Query{\n" +
-                                                "    firms{\n" +
-                                                "      legalName,\n" +
-                                                "      employees{\n" +
-                                                "        lastName\n" +
-                                                "      }\n" +
-                                                "    }\n" +
-                                                "  }\n" +
-                                                "}#"),
+        testBatchError(createBatchInput(Tuples.pair("1", "#{\n" +
+                                "  demo::Query{\n" +
+                                "    firms{\n" +
+                                "      legalName,\n" +
+                                "      employees{\n" +
+                                "        lastName\n" +
+                                "      }\n" +
+                                "    }\n" +
+                                "  }\n" +
+                                "}#"),
+                        Tuples.pair("2", "#{\n" +
+                                "  demo::Query" +
+                                "}#")),
+                createExpectedBatchResult(Tuples.pair("1", "#{\n" +
+                                "  demo::Query{\n" +
+                                "    firms{\n" +
+                                "      legalName,\n" +
+                                "      employees{\n" +
+                                "        lastName\n" +
+                                "      }\n" +
+                                "    }\n" +
+                                "  }\n" +
+                                "}#"),
                         Tuples.pair("2", "{\"message\":\"Unexpected token\",\"sourceInformation\":{\"endColumn\":18,\"endLine\":2,\"sourceId\":\"\",\"startColumn\":14,\"startLine\":2}}"))
         );
     }
@@ -109,7 +126,8 @@ public class TestGrammarGraphFetchApi extends TestGrammar<RootGraphFetchTree>
     }
 
     public static class MyClass extends BatchResult<RootGraphFetchTree>
-    {}
+    {
+    }
 
     @Override
     public Class getBatchResultSpecializedClass()
@@ -118,25 +136,25 @@ public class TestGrammarGraphFetchApi extends TestGrammar<RootGraphFetchTree>
     }
 
     @Override
-    public Function2<String, Boolean, Response> grammarToJson()
+    public Function5<String, String, Integer, Integer, Boolean, Response> grammarToJson()
     {
-        return (a, b) -> grammarToJson.graphFetch(a, null, b);
+        return (a, b, c, d, e) -> grammarToJson.graphFetch(a, b, c, d, e, null);
     }
 
     @Override
-    public Function2<RenderStyle, RootGraphFetchTree, Response> jsonToGrammar()
+    public Function2<RootGraphFetchTree, RenderStyle, Response> jsonToGrammar()
     {
         return (a, b) -> jsonToGrammar.graphFetch(a, b, null);
     }
 
     @Override
-    public Function2<Map<String, String>, Boolean, Response> grammarToJsonB()
+    public Function<Map<String, GrammarAPI.ParserInput>, Response> grammarToJsonB()
     {
-        return (a, b) -> grammarToJson.graphFetchBatch(a, null, b);
+        return (a) -> grammarToJson.graphFetchBatch(a, null);
     }
 
     @Override
-    public Function2<RenderStyle, Map<String, RootGraphFetchTree>, Response> jsonToGrammarB()
+    public Function2<Map<String, RootGraphFetchTree>, RenderStyle, Response> jsonToGrammarB()
     {
         return (a, b) -> jsonToGrammar.graphFetchBatch(a, b, null);
     }

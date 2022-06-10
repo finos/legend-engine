@@ -1,0 +1,207 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::factory::*;
+import meta::external::language::java::factory::project::*;
+import meta::external::language::java::metamodel::*;
+import meta::external::language::java::metamodel::project::*;
+import meta::external::language::java::serialization::*;
+import meta::external::language::java::transform::*;
+import meta::pure::executionPlan::*;
+import meta::pure::executionPlan::engine::java::*;
+import meta::pure::executionPlan::engine::java::graphFetch::common::*;
+import meta::pure::executionPlan::engine::java::naming::*;
+import meta::pure::executionPlan::engine::java::platform::*;
+import meta::pure::executionPlan::engine::java::typeInfo::*;
+import meta::pure::functions::hash::*;
+import meta::pure::mapping::*;
+import meta::pure::mapping::modelToModel::inMemory::*;
+import meta::pure::milestoning::*;
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::routing::*;
+import meta::pure::graphFetch::executionPlan::*;
+import meta::pure::router::extension::*;
+
+function meta::pure::executionPlan::engine::java::graphFetch::common::prepareForGlobalGraphFetchNode(node: GlobalGraphFetchExecutionNode[1], path: String[1], context:GenerationContext[1], debug:DebugContext[1]):GenerationContext[1]
+{
+   if ($node.parentIndex->isEmpty(),
+       |
+         let localNodeInfo = $context->nodeInfosForPath($path + localGraphFetchNodePathPrefix())->toOne();
+
+         ^$context
+         (
+            typeInfos = $context.typeInfos
+                           ->addForGraphFetchTree($node.graphFetchTree->byPassClusteringInfo())
+                           ->map(ti| if($node.enableConstraints == true, |$ti->addConstraintsForGraphFetchTree($node.graphFetchTree->byPassClusteringInfoDeep()), |$ti)),
+            nodeInfos = $context.nodeInfos->concatenate(^NodeInfo(path = $path, returnType = $localNodeInfo.returnType, graphFetchTrees = $node.graphFetchTree->byPassClusteringInfoDeep()->cast(@RootGraphFetchTree<Any>)->concatenate($localNodeInfo.graphFetchTrees)))
+         );,
+       | $context
+   )
+}
+
+function meta::pure::executionPlan::engine::java::graphFetch::common::localGraphFetchNodePathPrefix():String[1]
+{
+   '.localGraph'
+}
+
+function meta::pure::executionPlan::engine::java::graphFetch::common::generateCodeForLocalGraphFetchNode(node: LocalGraphFetchExecutionNode[1], path:String[1], context:GenerationContext[1], extensions:RouterExtension[*], debug:DebugContext[1]):GeneratedCode[1]
+{
+   let implProject   = if($node.resultType->instanceOf(ClassResultType)  &&!$node->meta::pure::graphFetch::executionPlan::nodeIsMerged() ,| generateGraphNodeImplementation($node, $context, $path, $extensions, $debug), | []);
+   let globalProject = generateTypes($context, $debug);
+   let storeProject  = $node->match([
+      i : meta::pure::mapping::modelToModel::graphFetch::executionPlan::InMemoryGraphFetchExecutionNode[1] | $i->meta::pure::executionPlan::engine::java::graphFetch::inMemory::generateInMemoryStoreGraphFetchProject($path, $context, $extensions, $debug)
+   ]->concatenate(
+      $extensions.java_graphFetch_graphFetchCommon_generateCodeForLocalGraphFetchNode->map(f|$f->eval($path, $context, $extensions, $debug))
+   )->toOneMany());
+
+   generatedCode(
+      mergeProjects($implProject->concatenate([$globalProject, $storeProject])->toOneMany()),
+      $storeProject->resolve($context.conventions->planNodeClass('public', $path, 'Execute'))
+   );
+}
+
+function meta::pure::executionPlan::engine::java::graphFetch::common::typeFromStoreLocalNode(storeLocalNode: LocalGraphFetchExecutionNode[1]):meta::pure::metamodel::type::Class<Any>[1]
+{
+   if ($storeLocalNode.resultType->cast(@ClassResultType).setImplementations->size() > 1,
+       | $storeLocalNode.resultType->cast(@ClassResultType).type->cast(@meta::pure::metamodel::type::Class<Any>),
+       | let setImpl = $storeLocalNode.resultType->cast(@ClassResultType).setImplementations->toOne()->cast(@InstanceSetImplementation);
+         $setImpl.mappingClass->isNotEmpty()->if(| $setImpl.mappingClass->toOne(), | $setImpl.class);
+   )
+}
+
+function meta::pure::executionPlan::engine::java::graphFetch::common::graphImplClass(storeLocalNode: LocalGraphFetchExecutionNode[1], path: String[1], context: GenerationContext[1]):meta::external::language::java::metamodel::Class[1]
+{
+   graphImplClass($storeLocalNode.nodeIndex, $context.conventions->className($storeLocalNode->typeFromStoreLocalNode()), $path, $context)
+}
+
+function meta::pure::executionPlan::engine::java::graphFetch::common::graphImplClass(nodeIndex: Integer[1], interface: meta::external::language::java::metamodel::Class[1], path: String[1], context: GenerationContext[1]):meta::external::language::java::metamodel::Class[1]
+{
+   $context.conventions
+      ->planNodeClass('public', $path, 'GraphFetch_Node' + $nodeIndex->toString() + '_' + $interface.simpleName + '_Impl')
+      ->usingKnownPackages($context.conventions->knownPackages())
+      ->imports($context.conventions->standardImports())
+      ->implements($interface);
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::common::generateGraphNodeImplementation(node: LocalGraphFetchExecutionNode[1], context: GenerationContext[1], path: String[1], extensions:RouterExtension[*], debug: DebugContext[1]):Project[1]
+{
+   let resultClass       = $node->typeFromStoreLocalNode();
+   let implClass         = graphImplClass($node, $path, $context);
+   let implProject       = newProject()->addClasses($implClass);
+   let propertiesProject = $implClass->updateImplementationClassWithProperties($node, $resultClass, $context);
+   let storeProject      = $implClass->updateImplementationClassWithStoreSpecificFieldsAndMethods($node, $context, $extensions, $debug);
+   let mergedProject     = mergeProjects([$implProject, $propertiesProject, $storeProject]);
+   let withSizeMethods   = $mergedProject->resolve($implClass)->updateImplementationClassWithInstanceSizeMethods($context);
+   let mergedProjectWithSizeMethods = mergeProjects([$mergedProject, $withSizeMethods]);
+   let withSerializableMethods      = $mergedProjectWithSizeMethods->resolve($implClass)->updateImplementationClassWithSerializableMethods($context);
+
+   mergeProjects([$mergedProjectWithSizeMethods, $withSerializableMethods]);
+}
+
+function meta::pure::executionPlan::engine::java::graphFetch::common::createGraphInstance(conventions: Conventions[1], impl: meta::external::language::java::metamodel::Class[1], value: Code[1]): Code[1]
+{
+   j_newAnon(
+      graphInstanceOf($impl, $conventions), [],
+      [
+         j_method(['public'], $impl, 'getValue', [], $value->j_return()),
+         j_method(['public'], javaLong(), 'instanceSize', [], $value->j_invoke($conventions->getterName(instanceSizeIdentifier()), [], javaLong())->j_return())
+      ]
+   )
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::common::updateImplementationClassWithProperties(implClass: meta::external::language::java::metamodel::Class[1], node: LocalGraphFetchExecutionNode[1], nodeType: meta::pure::metamodel::type::Class<Any>[1], context: GenerationContext[1]): Project[1]
+{
+   let conventions   = $context.conventions;
+   let allProperties = $context.typeInfos->allProperties($nodeType);
+   let fetchTree     = $node.graphFetchTree->cast(@RoutedGraphFetchTree);
+   
+     let isMerged = $fetchTree.sets->isNotEmpty() &&  $fetchTree.sets->at(0)->isPartOfMerge() || $node->nodeIsMerged();
+     let withProperties = $allProperties->fold({p, javaClass |
+      let fieldName   = $conventions->fieldName($p);
+      let getterName  = $conventions->getterName($p);
+      let fieldType   = $conventions->pureTypeToJavaType($p);
+      let noMappingDefaultToEmpty = ($fetchTree.sets->size() == 1) && $fetchTree.sets->toOne()->isNoMappingDefaultToEmpty($p);
+      let noMappingPassThru = $p.owner->instanceOf(meta::pure::metamodel::type::Class) && ($fetchTree.sets->size() == 1) && $fetchTree.sets->toOne()->passThruProperty($p);
+      if (  !$isMerged && $p.owner->instanceOf(meta::pure::metamodel::type::Class) && ($fetchTree.sets->size() == 1) && $fetchTree.sets->toOne()->cast(@InstanceSetImplementation).propertyMappingsByPropertyName($p.name->toOne())->isEmpty() && !($p->hasGeneratedMilestoningDatePropertyStereotype()) && !($noMappingDefaultToEmpty || $noMappingPassThru ) ,
+         {|  
+            $javaClass->addMethod(javaMethod(['public'], $fieldType, $getterName, [], j_throw(javaUnsupportedOperationException()->j_new(j_string('No mapping for property \'' + $p.name->toOne() +'\'')))))
+         ;},
+         {|
+            let field  = j_this($javaClass)->j_field($fieldName, $fieldType);
+            let param  = j_parameter($fieldType, $fieldName);
+            let elType = if($fieldType->isJavaList(), | $fieldType->elementTypeOfJavaList(), | $fieldType);
+            let object = j_parameter($elType, 'object');
+
+            let getter = javaMethod(
+               ['public'], $fieldType, $getterName, [],
+               j_return(if($fieldType->isJavaList(),| j_conditional($field->j_eq(j_null()), j_emptyList($fieldType), $field),| $field))
+            );
+            let setter = javaMethod(
+               ['public'], javaVoid(), $conventions->setterName($p), $param, 
+               $field->j_assign($param)
+            );
+            let adder  = javaMethod(
+               ['public'], javaVoid(), 'add' + $fieldName->toUpperFirstCharacter()->toOne(), [$object],
+               if ($fieldType->isJavaList(),
+                   | [
+                        $field->j_eq(j_null())->j_if($field->j_assign(javaArrayList($elType)->j_new([]))),
+                        $field->j_invoke('add', [$object], javaVoid())
+                     ],
+                   | [
+                        j_cast($field, javaObject())->j_ne(j_null())->j_if(javaIllegalStateException()->j_new(j_string('Found multiple objects for property \'' + $p.name->toOne() + '\' of multiplicity with bound 1'))->j_throw()),
+                        $field->j_assign($object)
+                     ]
+               )
+            );
+
+            $javaClass->addField(javaField(['private'], $fieldType, $fieldName))->addMethods([$getter, $setter, $adder]);
+         }
+      );
+   }, $implClass);
+
+   newProject()->addClasses($withProperties);
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::common::updateImplementationClassWithStoreSpecificFieldsAndMethods(implClass: meta::external::language::java::metamodel::Class[1], node: LocalGraphFetchExecutionNode[1], context: GenerationContext[1], extensions: RouterExtension[*], debug: DebugContext[1]): Project[1]
+{
+   $node->match([
+      i : meta::pure::mapping::modelToModel::graphFetch::executionPlan::InMemoryGraphFetchExecutionNode[1] | $implClass->meta::pure::executionPlan::engine::java::graphFetch::inMemory::enrichForInMemoryGraphExecution($i, $context, $extensions, $debug)
+   ]->concatenate($extensions.java_graphFetch_graphFetchCommon_updateImplementationClassWithStoreSpecificFieldsAndMethods->map(f|$f->eval($implClass, $context, $extensions, $debug)))->toOneMany())
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::common::passThruProperty(setImpl:SetImplementation[1], property:AbstractProperty<Any>[1]):Boolean[1]
+{
+   $setImpl->meta::pure::mapping::modelToModel::inMemory::isNoMappingPassThru($property)
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::common::updateImplementationClassWithSerializableMethods(implClass: meta::external::language::java::metamodel::Class[1], context: GenerationContext[1]): Project[1]
+{
+   let codeString  = $implClass->meta::external::language::java::serialization::classToString();
+   let codeHash    = $codeString->hash(HashType.SHA256);
+
+   let charToIntMap = newMap([
+      pair('0', 0), pair('1', 1), pair('2', 2), pair('3', 3),
+      pair('4', 4), pair('5', 5), pair('6', 6), pair('7', 7),
+      pair('8', 8), pair('9', 9), pair('a', 10), pair('b', 11),
+      pair('c', 12), pair('d', 13), pair('e', 14), pair('f', 15)
+   ]);
+   let prime    = floor(pow(2, 31) - 1);
+   let uidValue = $codeHash->toLower()->chunk(1)->fold({c, h | (31 * $h) + $charToIntMap->get($c)->toOne() + 47}, 0)->mod($prime);
+
+   newProject()->addClasses(
+      $implClass
+         ->implements(javaSerializable())
+         ->addField(javaField(['private', 'static', 'final'], javaLong(), 'serialVersionUID', j_long($uidValue)->codeToString()))
+   );
+}

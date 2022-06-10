@@ -1,0 +1,24 @@
+name: '💡 Propose an RFC'
+description: 'To suggest a refactor or a functionality with substantial change'
+title: 'RFC: <title>'
+labels: ['Type: Discussion']
+body:
+  - type: textarea
+    attributes:
+      label: Overview
+      description: |
+        A concise description of what this RFC is trying to achieve: the improvements, the problems it tries to solve, etc.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Implementation plan
+      description: |
+        A detailed description of the solution in terms of user interface, workflow, and code logic.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Additional context
+      description: |
+        Any other things you have considered: alternatives, testing strategy, migration plan, etc.

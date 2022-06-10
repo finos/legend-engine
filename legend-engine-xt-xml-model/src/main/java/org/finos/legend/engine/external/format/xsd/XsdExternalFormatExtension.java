@@ -25,7 +25,14 @@ import org.finos.legend.engine.external.shared.format.model.ExternalSchemaCompil
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
-import org.finos.legend.pure.generated.*;
+import org.finos.legend.pure.generated.Root_meta_external_format_xml_binding_toPure_XsdToModelConfiguration;
+import org.finos.legend.pure.generated.Root_meta_external_format_xml_binding_toPure_XsdToModelConfiguration_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_format_xml_metamodel_xsd_XsdSchema;
+import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
+import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_validation_BindingDetail;
+import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_SchemaSet;
+import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationParameter;
+import org.finos.legend.pure.generated.core_external_format_xml_binding_xsdToPure;
 
 import java.lang.management.ManagementFactory;
 import java.util.Collections;
@@ -33,7 +40,7 @@ import java.util.List;
 
 public class XsdExternalFormatExtension implements ExternalFormatExtension<Root_meta_external_format_xml_metamodel_xsd_XsdSchema, XsdToModelConfiguration, ModelToXsdConfiguration>
 {
-    private static final String TYPE = "XSD";
+    public static final String TYPE = "XSD";
     private static final boolean DEBUG_MODEL_GEN = ManagementFactory.getRuntimeMXBean().getInputArguments().toString().contains(":jdwp");
 
     @Override
@@ -83,8 +90,8 @@ public class XsdExternalFormatExtension implements ExternalFormatExtension<Root_
                 ._inlineCollectionClasses(config.inlineCollectionClasses)
                 ._includeUnreachableClasses(config.includeUnreachableClasses);
         return DEBUG_MODEL_GEN
-            ? core_external_format_xml_binding_xsdToPure.Root_meta_external_format_xml_binding_toPure_xsdToPureWithDebug_SchemaSet_1__XsdToModelConfiguration_1__Binding_1_(schemaSet, configuration, pureModel.getExecutionSupport())
-            : core_external_format_xml_binding_xsdToPure.Root_meta_external_format_xml_binding_toPure_xsdToPure_SchemaSet_1__XsdToModelConfiguration_1__Binding_1_(schemaSet, configuration, pureModel.getExecutionSupport());
+                ? core_external_format_xml_binding_xsdToPure.Root_meta_external_format_xml_binding_toPure_xsdToPureWithDebug_SchemaSet_1__XsdToModelConfiguration_1__Binding_1_(schemaSet, configuration, pureModel.getExecutionSupport())
+                : core_external_format_xml_binding_xsdToPure.Root_meta_external_format_xml_binding_toPure_xsdToPure_SchemaSet_1__XsdToModelConfiguration_1__Binding_1_(schemaSet, configuration, pureModel.getExecutionSupport());
     }
 
     @Override
@@ -95,7 +102,7 @@ public class XsdExternalFormatExtension implements ExternalFormatExtension<Root_
     }
 
     @Override
-    public String metamodelToText(Root_meta_external_format_xml_metamodel_xsd_XsdSchema schemaDetail)
+    public String metamodelToText(Root_meta_external_format_xml_metamodel_xsd_XsdSchema schemaDetail, PureModel pureModel)
     {
         // TODO XSD Model to text
         return null;
@@ -105,6 +112,6 @@ public class XsdExternalFormatExtension implements ExternalFormatExtension<Root_
     public List<String> getRegisterablePackageableElementNames()
     {
         ImmutableList<String> versions = PureClientVersions.versionsSince("v1_21_0");
-        return versions.collect(v -> "meta::protocols::pure::"  + v + "::external::format::xml::serializerExtension_String_1__SerializerExtension_1_").toList();
+        return versions.collect(v -> "meta::protocols::pure::" + v + "::external::format::xml::serializerExtension_String_1__SerializerExtension_1_").toList();
     }
 }

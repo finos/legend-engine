@@ -26,7 +26,11 @@ import org.finos.legend.engine.protocol.pure.v1.model.data.ExternalFormatData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.ModelStoreData;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.*;
+import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_data_ExternalFormatData_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_data_DataElement;
+import org.finos.legend.pure.generated.Root_meta_pure_data_DataElementReference_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_data_EmbeddedData;
+import org.finos.legend.pure.generated.Root_meta_pure_data_ModelStoreData_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
@@ -53,12 +57,12 @@ public class EmbeddedDataCompilerHelper
 
             Map<Class<?>, InstanceValue> typeIndexedInstances = Maps.mutable.empty();
 
-            for(Map.Entry<String, ValueSpecification> entry: modelStoreData.instances.entrySet())
+            for (Map.Entry<String, ValueSpecification> entry : modelStoreData.instances.entrySet())
             {
                 Class<?> c = context.resolveClass(entry.getKey(), entry.getValue().sourceInformation);
                 InstanceValue collection = (InstanceValue) entry.getValue().accept(builder);
 
-                if(!(collection._genericType()._rawType().equals(c) || collection._genericType()._rawType()._generalizations().contains(c)))
+                if (!(collection._genericType()._rawType().equals(c) || collection._genericType()._rawType()._generalizations().contains(c)))
                 {
                     throw new EngineException("Instance types does not align with associated type", entry.getValue().sourceInformation, EngineErrorType.COMPILATION);
                 }

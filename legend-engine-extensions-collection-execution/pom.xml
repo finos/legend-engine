@@ -19,7 +19,7 @@
     <parent>
         <artifactId>legend-engine</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>3.1.1-SNAPSHOT</version>
+        <version>3.4.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -37,7 +37,7 @@
                         <configuration>
                             <rules>
                                 <requireJavaVersion>
-                                    <version>11</version>
+                                    <version>${maven.enforcer.requireJavaVersion}</version>
                                 </requireJavaVersion>
                                 <dependencyConvergence />
                                 <bannedDependencies>
@@ -45,10 +45,11 @@
                                     <excludes>
                                         <exclude>commons-logging</exclude>
                                         <exclude>javax.mail</exclude>
-                                        <exclude>log4j:*:*:*:compile</exclude>
-                                        <exclude>org.slf4j:*:*:*:compile</exclude>
-                                        <exclude>org.finos.legend.pure:*:*:*:compile</exclude>
-                                        <exclude>org.finos.legend.pure:*:*:*:runtime</exclude>
+                                        <exclude>log4j</exclude>
+                                        <exclude>ch.qos.logback</exclude>
+                                        <exclude>org.slf4j</exclude>
+                                        <exclude>org.finos.legend.pure</exclude>
+                                        <exclude>io.dropwizard</exclude>
                                     </excludes>
                                     <includes>
                                         <!--only the specific included logging jars are allowed -->

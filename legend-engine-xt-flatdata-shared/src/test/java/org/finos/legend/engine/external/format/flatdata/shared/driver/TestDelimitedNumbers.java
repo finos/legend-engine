@@ -157,19 +157,19 @@ public class TestDelimitedNumbers extends AbstractDriverTest
     private FlatData flatData(String properties, String ageGrammar)
     {
         return parseFlatData("section default: DelimitedWithHeadings\n" +
-                                     "{\n" +
-                                     "  scope.untilEof;\n" +
-                                     "  delimiter       : '|';\n" +
-                                     "  quoteChar       : '\"';\n" +
-                                     "  nullString      : '';\n" +
-                                     "  " + properties + "\n" +
-                                     "\n" +
-                                     "  Record\n" +
-                                     "  {\n" +
-                                     "    NAME : STRING;\n" +
-                                     "    AGE  : " + ageGrammar + ";\n" +
-                                     "  }\n" +
-                                     "}\n");
+                "{\n" +
+                "  scope.untilEof;\n" +
+                "  delimiter       : '|';\n" +
+                "  quoteChar       : '\"';\n" +
+                "  nullString      : '';\n" +
+                "  " + properties + "\n" +
+                "\n" +
+                "  Record\n" +
+                "  {\n" +
+                "    NAME : STRING;\n" +
+                "    AGE  : " + ageGrammar + ";\n" +
+                "  }\n" +
+                "}\n");
     }
 
     @SuppressWarnings("WeakerAccess")  // Required for reflective access

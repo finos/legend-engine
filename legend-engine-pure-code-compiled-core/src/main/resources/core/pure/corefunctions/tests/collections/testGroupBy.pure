@@ -1,0 +1,110 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::functions::tests::model::*;
+
+function <<test.Test>> meta::pure::functions::collection::tests::groupBy::testGroupBy():Boolean[1]
+{
+   let set = [^Person(firstName='David', lastName='Roe'), ^Person(firstName='John', lastName='Dean'), ^Person(firstName='David', lastName='Miles'), ^Person(firstName='Bob', lastName='Branche')];
+   assertEquals(['Roe', 'Miles'], $set->groupBy(p|$p.firstName)->get('David').values.lastName);
+   assertEquals(['David'], $set->groupBy(p|$p.lastName)->get('Roe').values.firstName);
+}
+
+function <<test.Test>> meta::pure::functions::collection::tests::groupBy::testGroupByObj():Boolean[1]
+{
+   let address = ^Address(name='ok1', type = GeographicEntityType.CITY);
+   let address2 = ^Address(name='ok2', type = GeographicEntityType.CITY);
+   let set = [^Person(firstName='David', lastName='Roe', address = $address), ^Person(firstName='John', lastName='Dean', address = $address2), ^Person(firstName='David', lastName='Miles', address = $address), ^Person(firstName='Bob', lastName='Branche', address = $address2)];
+   assertEquals(['ok1', 'ok2'], $set->groupBy(p|$p.address->toOne())->keys().name->sort());
+}
+
+
+function <<test.Test>> meta::pure::functions::collection::tests::groupBy::testGroupByAggregation():Boolean[1]
+{
+   let set = [^Person(firstName='David', lastName='Roe', age=23),
+      ^Person(firstName='John', lastName='Dean', age=34),
+      ^Person(firstName='David', lastName='Miles', age=26)];
+   
+   let tds = $set->groupBy([p|$p.firstName], [agg(p|$p.age, y | $y->average())]
+                                               , ['name', 'average age'])->sort('name', SortDirection.ASC);
+   
+   assertEquals(['David', 24.5, 'John', 34.0], $tds.rows.values);
+   assertEquals([String, Float], $tds.columns.type);
+   assertEquals(['name', 'average age'], $tds.columns.name);
+   
+}
+
+function <<test.Test>> meta::pure::functions::collection::tests::groupBy::testGroupByAggregationEmptyValues():Boolean[1]
+{
+   let set = [^Person(firstName='David', lastName='Roe', otherNames='Bob', age=23),
+      ^Person(firstName='John', lastName='Dean', otherNames='Steve'),
+      ^Person(firstName='David', lastName='Miles', otherNames='Bob', age=26),
+      ^Person(firstName='David', lastName='Blaine', otherNames='Bob'),
+      ^Person(firstName='David', lastName='Cameron', age=21),
+      ^Person(firstName='Steve', lastName='Cameron')];
+   
+   let tds = $set->groupBy([p|$p.otherNames->first()], [agg(p|$p.age, y | $y->average())]
+                                               , ['name', 'average age'])->sort('name', SortDirection.ASC);
+   assertEquals('Bob,24.5,Steve,TDSNull,TDSNull,21.0', $tds.rows.values->makeString(','));
+   assertEquals([String, Float], $tds.columns.type);
+   assertEquals(['name', 'average age'], $tds.columns.name);
+}
+function <<test.Test>> meta::pure::functions::collection::tests::groupBy::testCase1GroupWithWindowSubset():Boolean[1]
+{
+   let set = [^Person(firstName='David', lastName='Roe', age=23),
+      ^Person(firstName='John', lastName='Dean', age=23),
+      ^Person(firstName='David', lastName='Miles', age=26)];
+   
+   let tds = $set->groupByWithWindowSubset(     [     x | $x.firstName
+                                                     ,x | $x.lastName
+                                                     ,x | $x.age 
+                                                ]
+                                              , [ 
+                                                    agg(  g|$g.firstName, y| $y->count()) 
+                                                    , agg(  g|$g.age, y| $y->count()) 
+                                                ]                                             
+                                              , ['firstName' , 'lastName' , 'age', 'firstNameCount' ,  'ageCount' ]
+                                              , [ 'firstName']
+                                              , ['firstNameCount'] );
+
+    assertEquals( $tds.rows->size() , 2 );
+    let newTds = $tds->filter( x|$x.getString('firstName') == 'David' );
+    assertEquals([ 'David', 2 ], $newTds.rows.values);
+    assertEquals(['firstName', 'firstNameCount' ], $tds.columns.name );
+  
+} 
+
+function <<test.Test>> meta::pure::functions::collection::tests::groupBy::testCase2GroupWithWindowSubset():Boolean[1]
+{
+   let set = [^Person(firstName='David', lastName='Roe', age=26),
+      ^Person(firstName='John', lastName='Dean', age=23),
+      ^Person(firstName='David', lastName='Miles', age=26)];
+   
+  
+    let tds = $set->groupByWithWindowSubset(     [    x | $x.firstName
+                                                     ,x | $x.lastName
+                                                     ,x | $x.age 
+                                                ]
+                                              , [ 
+                                                      agg(  g|$g.firstName, y| $y->count()) 
+                                                    , agg(  g|$g.age, y| $y->average()) 
+                                                ]                                             
+                                              , ['firstName' , 'lastName' , 'age', 'firstNameCount' ,  'ageAverage' ]
+                                              , [ 'age' , 'firstName'  ]
+                                              , [ 'ageAverage' , 'firstNameCount' ] );
+    
+    assertEquals(['age', 'firstName', 'ageAverage', 'firstNameCount'], $tds.columns.name );
+  
+   
+}

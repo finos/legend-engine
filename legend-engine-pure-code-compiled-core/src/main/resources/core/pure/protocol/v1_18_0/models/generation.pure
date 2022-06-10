@@ -1,0 +1,36 @@
+###Pure
+import meta::protocols::pure::v1_18_0::metamodel::invocation::generation::*;
+Class meta::protocols::pure::v1_18_0::metamodel::invocation::generation::GenerationConfiguration
+{
+   class:String[0..1];
+   package: String[0..1];
+}
+
+Class meta::protocols::pure::v1_18_0::metamodel::invocation::generation::GenerationOutput
+{
+   content:String[1];
+   fileName:String[1];
+}
+
+
+###Pure
+Class meta::protocols::pure::v1_18_0::metamodel::invocation::generation::json::JSONSchemaConfig extends meta::protocols::pure::v1_18_0::metamodel::invocation::generation::GenerationConfiguration
+{
+    includeAllRelatedTypes:Boolean[0..1];
+    useConstraints:Boolean[0..1];
+}
+
+
+
+###Pure
+Class meta::protocols::pure::v1_18_0::metamodel::invocation::generation::avro::AvroConfig extends meta::protocols::pure::v1_18_0::metamodel::invocation::generation::GenerationConfiguration
+{
+
+   includeNamespace: Boolean[0..1];
+   includeSuperTypes: Boolean[0..1];
+   includeAssociations: Boolean[0..1];
+   includeGeneratedMilestoning: Boolean[0..1];
+   timestampLogicalType: String[0..1];
+   propertyProfile: Profile[*];
+   namespaceOverride: Map<String, String>[0..1];
+}

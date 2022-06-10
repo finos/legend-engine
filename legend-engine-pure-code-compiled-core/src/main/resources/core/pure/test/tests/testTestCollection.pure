@@ -1,0 +1,60 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::*;
+import meta::pure::test::testTestCollection::*;
+
+function <<paramTest.Test>> meta::pure::test::testTestCollection::test1(param:String[1]): Boolean[1]
+{
+  assertEquals('test1', $param);
+}
+
+function <<paramTest.Test>> meta::pure::test::testTestCollection::test2(param:String[1]): Boolean[1]
+{
+  assertEquals('test2', $param);
+}
+
+function <<paramTest.Test>> meta::pure::test::testTestCollection::test3(param:String[1]): Boolean[1]
+{
+  assertEquals('test3', $param);
+}
+
+function <<paramTest.Test>> meta::pure::test::testTestCollection::nested::test4(param:String[1]): Boolean[1]
+{
+  assertEquals('test1', $param);
+}
+
+// when this test collection is run, (test1, test2, test4) will pass, (test3) will be ignored
+function <<test.TestCollection>> meta::pure::test::testTestCollection::parameterization1TestCollection(): PureTestCollection[1]
+{
+  meta::pure::test::testTestCollection->collectParameterizedTests('parameterization1', 'test1',
+      parameterization1ParamCustomizations_FunctionDefinition_1__String_1__String_1_, parameterization1TestFilter_FunctionDefinition_1__Boolean_1_);
+}
+
+// when this test collection is run, (test1, test2, test4) will pass, (test3) will be ignored
+function <<test.TestCollection>> meta::pure::test::testTestCollection::parameterization2TestCollection(): PureTestCollection[1]
+{
+  meta::pure::test::testTestCollection->collectParameterizedTests('parameterization2', 'test1',
+      parameterization1ParamCustomizations_FunctionDefinition_1__String_1__String_1_, parameterization1TestFilter_FunctionDefinition_1__Boolean_1_);
+}
+
+function meta::pure::test::testTestCollection::parameterization1ParamCustomizations(f:FunctionDefinition<Any>[1], param:String[1]): String[1]
+{
+  if($f == test2_String_1__Boolean_1_, |'test2', |$param);
+}
+
+function meta::pure::test::testTestCollection::parameterization1TestFilter(f:FunctionDefinition<Any>[1]): Boolean[1]
+{
+  $f != test3_String_1__Boolean_1_;
+}

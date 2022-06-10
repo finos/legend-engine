@@ -1,0 +1,267 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::factory::*;
+import meta::external::language::java::factory::project::*;
+import meta::external::language::java::metamodel::*;
+import meta::external::language::java::metamodel::project::*;
+import meta::external::language::java::serialization::*;
+import meta::external::language::java::transform::*;
+import meta::pure::executionPlan::engine::*;
+import meta::pure::executionPlan::engine::java::*;
+
+function meta::pure::executionPlan::engine::java::registerLangLibrary(conventions: Conventions[1]): Conventions[1]
+{
+   let library  = $conventions->className(Library);
+
+   let lib = newConventionsLibrary()
+      ->usesJavaPackage('java.util')
+      ->usesJavaPackage('java.util.stream')
+      ->addFunctionCoders([
+         fc2(and_Boolean_1__Boolean_1__Boolean_1_,             {ctx,left,right                | j_and($left, $right)}),
+         fc2(or_Boolean_1__Boolean_1__Boolean_1_,              {ctx,left,right                | j_or($left, $right)}),
+         fc1(not_Boolean_1__Boolean_1_,                        {ctx,expression                | j_not($expression)}),
+
+         fc1(isEmpty_Any_$0_1$__Boolean_1_,                    {ctx,maybe                     | if($maybe->isCollectionsEmptyList(), |j_true(), |$maybe->j_box()->j_eq(j_null()))}),
+         fc1(isNotEmpty_Any_$0_1$__Boolean_1_,                 {ctx,maybe                     | if($maybe->isCollectionsEmptyList(), |j_false(), |$maybe->j_box()->j_ne(j_null()))}),
+         
+         fc2(match_Any_MANY__Function_$1_MANY$__T_m_,          {ctx,o,lf                      | $library->j_invoke('match', [$o, $ctx->matchPredicates($o), $ctx->adaptLambdas($o)], $ctx.returnType)}),
+
+         fc2(compare_T_1__T_1__Integer_1_,                     {ctx,left,right                | $library->j_invoke('compareInt', [$left, $right], javaInt())}),
+
+         fc2(cast_Any_m__T_1__T_m_,                            castCoder_FuncCoderContext_1__Code_1__Code_1__Code_1_),
+         fc2(whenSubType_Any_1__T_1__T_$0_1$_,                 whenSubTypeCoder_FuncCoderContext_1__Code_1__Code_1__Code_1_),
+         fc2(whenSubType_Any_$0_1$__T_1__T_$0_1$_,             whenSubTypeCoder_FuncCoderContext_1__Code_1__Code_1__Code_1_),
+         fc2(whenSubType_Any_MANY__T_1__T_MANY_,               whenSubTypeCoder_FuncCoderContext_1__Code_1__Code_1__Code_1_),
+         fc3(if_Boolean_1__Function_1__Function_1__T_m_,       ifCoder_FuncCoderContext_1__Code_1__Code_1__Code_1__Code_1_),
+         fc2(letFunction_String_1__T_m__T_m_,                  letCoder_FuncCoderContext_1__Code_1__Code_1__Code_1_),
+         fc(new_Class_1__String_1__KeyExpression_MANY__T_1_,   processNew_FunctionExpression_1__Conventions_1__DebugContext_1__Code_1_),
+
+         fc2(orElse_T_$0_1$__T_1__T_1_,                        {ctx,maybe,dflt                | if($maybe->isCollectionsEmptyList(), |$dflt, |j_conditional($maybe->j_box()->j_ne(j_null()), $maybe, $dflt))})
+      ]);
+
+   $conventions->registerLibrary($lib);
+}
+
+function meta::pure::executionPlan::engine::java::castCoder(ctx:FuncCoderContext[1], collection:Code[1], exmpl:Code[1]) : Code[1]
+{
+   let type   = resolveHackedUnit($ctx, $ctx.params->at(1));
+
+   let castTo = if(isJavaList($collection.type),
+                   | javaList($type),
+                   | $type
+                );
+
+   $collection->j_cast($castTo);
+}
+
+function meta::pure::executionPlan::engine::java::whenSubTypeCoder(ctx:FuncCoderContext[1], collection:Code[1], exmpl:Code[1]) : Code[1]
+{
+   let type   = resolveHackedUnit($ctx, $ctx.params->at(1));
+   
+   let castTo = if(isJavaList($collection.type),
+                   | javaList($type),
+                   | $type
+                );
+   
+   let isInstance = $type->j_field('class', javaClassType())->j_methodReference('isInstance', javaFunctionType(javaObject(), javaBoolean()));
+   $collection->j_streamOf()->js_filter($isInstance);   
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::resolveHackedUnit(ctx:FuncCoderContext[1], exmpl:ValueSpecification[1]) : meta::external::language::java::metamodel::Type[1]
+{
+   let isHackedUnit = $exmpl->type()->instanceOf(Unit);
+
+   if($isHackedUnit,
+      | $exmpl->hackedUnitType($ctx.conventions),
+      | $exmpl->generateJava($ctx.conventions, $ctx.debug->indent()).type->toBoxed()
+  );
+}
+
+function meta::pure::executionPlan::engine::java::matchPredicates(ctx:FuncCoderContext[1], object:Code[1]) : Code[1]
+{
+   assert($ctx.params->at(1)->instanceOf(InstanceValue), 'Only inline lambdas currently supported');
+   let x          = j_parameter(javaObject(), 'x');
+   let m          = j_parameter(javaObject(), 'm');
+   let predicates = $ctx.params->at(1)->cast(@InstanceValue).values->map(v|                                                       
+                                                        let p            = $v->cast(@Function<Any>)->functionType().parameters->evaluateAndDeactivate()->toOne();
+                                                        let type         = $ctx.conventions->pureTypeToJavaType($p.genericType.rawType->toOne(), $p.multiplicity);
+                                                        let elementType  = $ctx.conventions->pureTypeToJavaType($p.genericType, PureOne);
+
+                                                        let xList        = if ($object.type->isJavaList(),| $x->j_cast(javaList(javaObject())), | $x->j_listOf(javaList(javaObject())));                 
+                                                        let matchType    = $xList->j_streamOf()->js_allMatch(j_lambda($m, $m->j_instanceof($elementType->toBoxed())));
+
+                                                                            
+                                                        let lambdaBody   = if ($p.multiplicity->hasLowerBound() && $p.multiplicity->hasUpperBound(), 
+                                                                              | $xList->j_invoke('size', [])->j_ge(j_int($p.multiplicity->getLowerBound()))->j_and($xList->j_invoke('size', [])->j_le(j_int($p.multiplicity->getUpperBound())))->j_and($matchType),|
+                                                                           if ($p.multiplicity->hasLowerBound(),
+                                                                              | $xList->j_invoke('size', [])->j_ge(j_int($p.multiplicity->getLowerBound()))->j_and($matchType), |
+                                                                           if ($p.multiplicity->hasUpperBound(), 
+                                                                              | $xList->j_invoke('size', [])->j_le(j_int($p.multiplicity->getUpperBound()))->j_and($matchType), | $matchType)));
+
+                                                         j_lambda($x, $lambdaBody);
+                                                     );
+
+
+   j_invoke(javaArrays(), javaPredicate(javaObject()), 'asList', $predicates, javaList(javaPredicate(javaObject())));
+
+}
+
+function meta::pure::executionPlan::engine::java::adaptLambdas(ctx:FuncCoderContext[1], object:Code[1]) : Code[1]
+{
+   assert($ctx.params->at(1)->instanceOf(InstanceValue), 'Only inline lambdas currently supported');
+
+   let inputMult = $ctx.params->at(0).multiplicity;
+
+   let o  = j_parameter(javaObject(), 'o');
+   
+   let adapt = $ctx.params->at(1)->cast(@InstanceValue).values->map(v|                                                                                                          
+                                                   let p       = $v->cast(@Function<Any>)->functionType().parameters->evaluateAndDeactivate()->toOne();                                                                    
+                                                   let type    = $ctx.conventions->pureTypeToJavaType($p.genericType.rawType->toOne(), $p.multiplicity);
+                                                   let elementType = $ctx.conventions->pureTypeToJavaType($p.genericType, PureOne);
+                                                                   
+                                                   let adaptInput = if ($type->isJavaList(), 
+                                                                       | if ($object.type->isJavaList(),
+                                                                             | j_lambda($o, $o->j_cast($type));, 
+                                                                             | j_lambda($o, $o->j_cast($elementType)->j_listOf($type)));,
+                                                                       | if ($object.type->isJavaList(),
+                                                                             | j_lambda($o,$o->j_cast(javaList($type))->j_streamOf()->js_findFirst()->jo_orElseNull());,
+                                                                             | j_lambda($o,$o->j_cast($type)));                          
+                                                                       )->j_cast(javaFunction(javaObject(), $type));
+   
+                                                   let main = $v->cast(@LambdaFunction<Any>)->processLambda($ctx.conventions, noDebug()); 
+
+                                                   let mainReturnType = $main.type->cast(@meta::external::language::java::metamodel::FunctionType).returnType;
+                                                 
+                                                   let andMain = $adaptInput->j_invoke('andThen', $main, javaFunction($type, $mainReturnType));
+                                                   let mp = j_parameter($mainReturnType->toBoxed(), 'm');                                           
+         
+                                                   if ($ctx.returnType->isJavaList(),
+                                                           | $andMain->j_invoke('andThen', j_lambda($mp, $mp->j_listOf($ctx.returnType)), javaFunction($mainReturnType, $ctx.returnType));,
+                                                           | assert(!$mainReturnType->isJavaList(), 'None of functions return can have multiplicity multiple if the match one is single');
+                                                             $andMain->j_invoke('andThen', j_lambda($mp, $mp->j_cast($ctx.returnType)), javaFunction($mainReturnType, $ctx.returnType));););
+   
+   j_invoke(javaArrays(), javaFunction(javaObject(), $ctx.returnType), 'asList', $adapt, javaList(javaFunction(javaObject(), $ctx.returnType)));
+
+}
+
+function meta::pure::executionPlan::engine::java::ifCoder(ctx:FuncCoderContext[1], condition:Code[1], then:Code[1], else:Code[1]) : Code[1]
+{
+   let returnType = $ctx.returnType();
+   let supplier   = javaSupplier($returnType); 
+   
+   j_conditional(
+      $condition, 
+      $then->j_cast($supplier)->j_invoke('get', [], $returnType), 
+      $else->j_cast($supplier)->j_invoke('get', [], $returnType)
+   );
+}
+
+function meta::pure::executionPlan::engine::java::letCoder(ctx:FuncCoderContext[1], name:Code[1], expression:Code[1]) : Code[1]
+{
+   let varName = $ctx.params->at(0)->cast(@InstanceValue).values->at(0)->cast(@String); 
+
+   j_variable($ctx.returnType(), $ctx.conventions->identifier($varName))->j_declare($expression);
+}
+
+function meta::pure::executionPlan::engine::java::processNew(fe: FunctionExpression[1], conventions: Conventions[1], debug: meta::pure::tools::DebugContext[1]):Code[1]
+{
+   print(if($debug.debug,|$debug.space+'processNew: \n',|''));
+   let args = $fe.parametersValues->evaluateAndDeactivate();
+
+   let cls = $args->at(0).genericType.typeArguments.rawType->cast(@meta::pure::metamodel::type::Class<Any>)->toOne();
+   assert($conventions.newFunctionProhibitedList->filter(c|$c == $cls)->size()==0, 'Cannot create new instance for class used in mapping: ' + $cls->elementToPath());
+   
+   let kv = $args->at(2)->cast(@InstanceValue).values->cast(@KeyExpression);
+   let processedKV = $kv->map(k|let s = $k.key.values->toOne(); 
+                                let e = $k.expression->generateJava($conventions, $debug);
+                                pair($s,$e););
+         
+   let typeInfo = meta::pure::executionPlan::engine::java::typeInfo::newTypeInfoSet()->meta::pure::executionPlan::engine::java::enrichTypeInfos($cls, []);
+    
+   let props = $typeInfo->meta::pure::executionPlan::engine::java::typeInfo::allProperties($cls);
+   
+   let proto = $conventions->implClassName($cls)->addModifiers(['public']);
+                                      
+   let name = 'new_' + $cls->elementToPath();
+   let dep = newDependency(
+      $name,
+        {state |
+            let clsTypeInfo = $typeInfo.typeInfos->filter(t | $t->instanceOf(meta::pure::executionPlan::engine::java::typeInfo::ClassTypeInfo))
+                                        ->cast(@meta::pure::executionPlan::engine::java::typeInfo::ClassTypeInfo)
+                                        ->filter(c | $c.class() == $cls);
+
+            assert($clsTypeInfo->size() == 1, 'Error: found multiple type infos for class');
+
+            let nestedDeps = meta::pure::executionPlan::engine::java::generateInterfacesAndEnums($conventions, $typeInfo, $debug);
+
+            let interface = $clsTypeInfo->toOne()->meta::pure::executionPlan::engine::java::generateInterfaceForClass($conventions,$debug);
+            let implementationWithProps = $props->fold({p,c| let var = $conventions->fieldName($p);
+                                           let javaType = $conventions->pureTypeToJavaType($p);
+                                           let f = javaField(['private'], $javaType, $var);
+                                           let param = j_parameter($javaType, $var);
+
+                                           $c->addField($f)
+                                             ->addMethod(javaMethod('public', $javaType, $conventions->getterName($p), [], 'return ' + $var+';'))
+                                             ->addMethod(javaMethod('public', $proto, $conventions->setterName($p),  j_parameter($javaType, $var), 
+                                                           j_block([j_this($c)->j_field($f)->j_assign($param),
+                                                                    j_this($c)->j_return()
+                                                                   ])
+                                                        ));
+                                           }, $proto)
+                              ->addConstructor(javaConstructor(['public'], [], ''))
+                              // interface generation adds this method, so we need to add to implementation too - TODO This should not happen
+                              ->addMethod(javaMethod('public', javaString(), $conventions->className(IReferencedObject).methods->toOne().name, [], j_return(j_null())))
+                              ->implements($interface)
+                              ->usingKnownPackages($conventions->knownPackages())
+                              ->imports($conventions->standardImports())
+                              ->imports($interface);  
+
+            let implementationProject = mergeProjects([
+                                                       newProject()->addClass($implementationWithProps),
+                                                       $implementationWithProps-> meta::pure::executionPlan::engine::java::createQualifiedPropertiesForClass($cls.qualifiedProperties, $conventions, $debug)
+                                                    ]);
+
+            let implementation = $implementationProject->getClass($implementationWithProps)->toOne();
+
+            let project = mergeProjects(newProject()->addClass($interface)->concatenate($implementationProject)->concatenate($nestedDeps)->toOneMany());
+            $state->addDependencyProject($name, $project);});
+      
+   let processed_args = $processedKV->map(arg | let prop = $props->filter(p| $p.name == $arg.first)->toOne();
+                                                let propType = $conventions->pureTypeToJavaType($prop);
+                                                let value = if($propType->isJavaList(), | $arg.second->j_listOf($propType), | $arg.second);
+                                                pair($prop, $value););
+                                      
+   let invoke = $processed_args
+                ->fold({p,code |let arg= $p.second; let prop = $p.first;
+                                $code->j_invoke([], $conventions->setterName($prop), $arg, $proto);
+                       }, j_new($proto, []));
+
+   $invoke->dependsOn($dep);
+}
+
+function meta::pure::executionPlan::engine::java::enrichTypeInfos(infos:meta::pure::executionPlan::engine::java::typeInfo::TypeInfoSet[1], for:meta::pure::metamodel::type::Class<Any>[1], seen:meta::pure::metamodel::type::Class<Any>[*]): meta::pure::executionPlan::engine::java::typeInfo::TypeInfoSet[1]
+{
+   if($seen->contains($for),
+      | $infos,
+      {|
+         let withCls = $infos
+            ->meta::pure::executionPlan::engine::java::typeInfo::addForClassWithAllProperties($for)
+            ->meta::pure::executionPlan::engine::java::typeInfo::addForClassWithAllPropertiesViaAssociations($for);
+
+         let nowSeen = $seen->concatenate($for);
+         $withCls->meta::pure::executionPlan::engine::java::typeInfo::forClass($for).supertypes->fold({super, inf| $inf->meta::pure::executionPlan::engine::java::enrichTypeInfos($super, $nowSeen)}, $withCls);
+      }
+   );
+}

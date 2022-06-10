@@ -1,4 +1,4 @@
-# Copyright 2020 FINOS
+# Copyright 2022 Goldman Sachs
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,12 +22,15 @@ env:
 
 on:
   schedule:
-    - cron: '0 0 * * 2' # every Tuesday on default/base branch
+    - cron: "0 0 * * 2" # every Tuesday on default/base branch
   push:
     branches:
       - master
 jobs:
   build:
+    # NOTE: we cannot run this action in fork because secrets are not accessible from forks
+    # See https://community.sonarsource.com/t/github-action-ci-build-fail-with-set-the-sonar-token-env-variable/38997
+    if: github.repository == 'finos/legend-engine'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
@@ -50,11 +53,11 @@ jobs:
       - name: Download deps and plugins
         run: mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies
       - name: Build
+        env:
+          MAVEN_OPTS: -Xmx4000m
         run: |
           mvn clean install -DskipTests=true
-      - name : Run Connection Protocol Integration Tests
-        run :
-          mvn -pl legend-engine-xt-relationalStore-executionPlan-connection-tests  -Dtest="ExternalIntegration*SqlServer*" test
-      - name : Run Sql Generation Tests
-        run :
-          mvn -pl legend-engine-server -Dtest="Test_Relational_DbSpecific_SqlServer_UsingPureClientTestSuite" test
+      - name: Run Connection Protocol Integration Tests
+        env:
+          MAVEN_OPTS: -Xmx4000m
+        run: mvn -pl legend-engine-xt-relationalStore-executionPlan-connection-tests  -Dtest="ExternalIntegration*SqlServer*" test

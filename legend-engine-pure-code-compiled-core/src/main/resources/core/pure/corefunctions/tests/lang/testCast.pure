@@ -1,0 +1,206 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// import meta::pure::profiles::*;
+// import meta::pure::functions::tests::model::*;
+// import meta::pure::functions::lang::tests::cast::*;
+// import meta::pure::metamodel::serialization::grammar::*;
+
+// function <<test.Test>> meta::pure::functions::lang::tests::cast::testPrimitiveCast():Boolean[1]
+// {
+//     assertEquals(Integer, 7->type());
+
+//     assertEquals('Number', 7->cast(@Number)->getType());
+//     assertEquals(7, 7->cast(@Number));
+
+//     assertEquals('Any', 7->cast(@Any)->getType());
+//     assertEquals(7, 7->cast(@Any));
+// }
+
+// function <<test.Test>> meta::pure::functions::lang::tests::cast::testPrimitiveCollectionCast():Boolean[1]
+// {
+//     let ints = [1, 3, 5];
+//     assertEquals(Integer, $ints->type());
+
+//     assertEquals('Number', $ints->cast(@Number)->getType());
+//     assertEquals($ints, $ints->cast(@Number));
+
+//     assertEquals('Any', $ints->cast(@Any)->getType());
+//     assertEquals($ints, $ints->cast(@Any));
+// }
+
+// function <<test.Test>> meta::pure::functions::lang::tests::cast::testUpCast():Boolean[1]
+// {
+//     let loc = ^Location(place='Hoboken', type=GeographicEntityType.CITY);
+//     assertEquals('Location', $loc->getType());
+
+//     assertEquals('GeographicEntity', $loc->cast(@GeographicEntity)->getType());
+//     assertEquals($loc, $loc->cast(@GeographicEntity));
+
+//     assertEquals('Any', $loc->cast(@Any)->getType());
+//     assertEquals($loc, $loc->cast(@Any));
+// }
+
+// function <<test.Test>> meta::pure::functions::lang::tests::cast::testCollectionUpCast():Boolean[1]
+// {
+//     let list = [^Location(place='Hoboken', type=GeographicEntityType.CITY), ^Location(place='NJ', type=GeographicEntityType.REGION)];
+//     assertEquals(Location, $list->type());
+
+//     assertEquals('GeographicEntity', $list->cast(@GeographicEntity)->at(0)->getType());
+//     assertEquals($list, $list->cast(@GeographicEntity));
+
+//     assertEquals('Any', $list->cast(@Any)->at(0)->getType());
+//     assertEquals($list, $list->cast(@Any));
+// }
+
+// function <<test.Test>> meta::pure::functions::lang::tests::cast::testDownCast():Boolean[1]
+// {
+//     let loc = ^Location(place='Hoboken', type=GeographicEntityType.CITY)->cast(@GeographicEntity);
+//     assertEquals('GeographicEntity', $loc->getType());
+//     assertEquals('Location', $loc->cast(@Location)->getType());
+//     assertEquals($loc, $loc->cast(@Location));
+// }
+
+// function <<test.Test>> meta::pure::functions::lang::tests::cast::testCollectionDownCast():Boolean[1]
+// {
+//     let list = [^Location(place='Hoboken', type=GeographicEntityType.CITY), ^Location(place='NJ', type=GeographicEntityType.REGION)]->cast(@GeographicEntity);
+//     assertEquals('GeographicEntity', $list->getType());
+//     assertEquals('Location', $list->cast(@Location)->getType());
+//     assertEquals($list, $list->cast(@Location));
+// }
+
+// function <<test.Test>> meta::pure::functions::lang::tests::cast::testDownCastWithTypeParameters():Boolean[1]
+// {
+//     let list = ^List<Location>(values=^Location(place='Hoboken', type=GeographicEntityType.CITY))->cast(@Any);
+//     assertEquals('Any', $list->getType());
+//     assertEquals(List, $list->cast(@List<Location>)->type());
+//     assertEquals(Location, $list->cast(@List<Location>)->genericType().typeArguments->toOne().rawType);
+// }
+
+// function <<test.Test>> meta::pure::functions::lang::tests::cast::testCollectionDownCastWithTypeParameters():Boolean[1]
+// {
+//     let list = [^List<Location>(values=^Location(place='Hoboken', type=GeographicEntityType.CITY)), ^List<Location>(values=^Location(place='NJ', type=GeographicEntityType.REGION))]->cast(@Any);
+//     assertEquals('Any', $list->getType());
+//     assertEquals(List, $list->cast(@List<Location>)->type());
+//     assertEquals(Location, $list->cast(@List<Location>)->genericType().typeArguments->toOne().rawType);
+// }
+
+// function <<test.Test, temporaryLazyExclusion.exclude>> meta::pure::functions::lang::tests::cast::testCastAndNonExecutableFeature():Boolean[1]
+// {
+//     let list = [^List<Location>(values=^Location(place='Hoboken', type=GeographicEntityType.CITY)), ^List<Location>(values=^Location(place='NJ', type=GeographicEntityType.REGION))]->cast(@Any);
+//     assertEquals('Any', $list->getType());
+//     assertEquals(List, $list->cast(@List<Location>)->type());
+//     assertEquals(Location, $list->cast(@List<Location>)->genericType().typeArguments->toOne().rawType);
+    
+//     let res = compileValueSpecification('meta::pure::functions::lang::tests::cast::EmployeeCT1.all()->filter(t:meta::pure::functions::lang::tests::cast::EmployeeCT1[1]|$t.lastName == 3)');    
+//     let casted = cast($res.result, @FunctionExpression);
+//     assertEquals('filter', $casted.functionName);
+//     assertSize($casted.parametersValues, 2);
+//     assertEquals('{meta::pure::functions::lang::tests::cast::EmployeeCT1[1]->Boolean[1]}',printFunctionType(at($casted.parametersValues,1)->cast(@InstanceValue).values->at(0)->genericType().typeArguments->at(0).rawType->at(0)->cast(@FunctionType)));
+// }
+
+// function <<test.Test>> {test.excludePlatform = 'Java compiled'} meta::pure::functions::lang::tests::cast::testCastFunction():Boolean[1]
+// {
+//    let fn = {s:String[1], n:Number[0..1] | if($n->isEmpty(), |$s, |format('%s%s', [$s, $n->toOne()]))};
+//    assertEquals('eee', $fn->cast(@Function<{String[1], Nil[0]->String[1]}>)->eval('eee', []));
+//    assertEquals('b10', $fn->cast(@Function<{String[1], Integer[1]->String[1]}>)->eval('b', 10));
+//    assertEquals('c8.0', $fn->cast(@Function<{String[1], Number[0..1]->String[1]}>)->eval('c', 8.0));
+// }
+
+// function <<test.Test>> meta::pure::functions::lang::tests::cast::testSimpleCast():Boolean[1]
+// {
+//    assertEquals('extra', func(^EmployeeCT(lastName='Doe', extra='extra')));
+// }
+
+// function <<test.Test>> meta::pure::functions::lang::tests::cast::testCastToMany():Boolean[1]
+// {
+//    let c = ^C(prop = [^B(prop2 = '1'), ^B(prop2 = '2'), ^B(prop2 = '3')]);
+//    assertEquals(['1', '2', '3'], $c.prop->cast(@B).prop2);
+// }
+
+// function <<test.Test, temporaryLazyExclusion.exclude>>   meta::pure::functions::lang::tests::cast::testCastWithGenerics():Boolean[1]
+// {
+//    let res = compileValueSpecification('meta::pure::functions::lang::tests::cast::EmployeeCT1.all()->filter(t:meta::pure::functions::lang::tests::cast::EmployeeCT1[1]|$t.lastName == 3)');
+//    let casted = cast($res.result, @FunctionExpression).func->cast(@NativeFunction<Any>);
+//    assertInstanceOf($casted->toOne(), NativeFunction);
+// }
+
+// function <<access.private>> meta::pure::functions::lang::tests::cast::getType(number:Number[*]):String[1]
+// {
+//    'Number'
+// }
+
+// function <<access.private>> meta::pure::functions::lang::tests::cast::getType(integer:Integer[*]):String[1]
+// {
+//    'Integer'
+// }
+
+// function <<access.private>> meta::pure::functions::lang::tests::cast::getType(location:Location[*]):String[1]
+// {
+//    'Location'
+// }
+
+// function <<access.private>> meta::pure::functions::lang::tests::cast::getType(geographicEntity:GeographicEntity[*]):String[1]
+// {
+//    'GeographicEntity'
+// }
+
+// function <<access.private>> meta::pure::functions::lang::tests::cast::getType(address:Address[*]):String[1]
+// {
+//    'Address'
+// }
+
+// function <<access.private>> meta::pure::functions::lang::tests::cast::getType(any:Any[*]):String[1]
+// {
+//    'Any'
+// }
+
+// Class meta::pure::functions::lang::tests::cast::Employee
+// {
+//    lastName:String[1];
+// }
+ 
+// function <<access.private>> meta::pure::functions::lang::tests::cast::func(person:PersonCT[1]):String[1]
+// {
+//    $person->cast(@EmployeeCT).extra;
+// }
+
+// Class meta::pure::functions::lang::tests::cast::EmployeeCT1
+// {
+//    lastName:String[1];
+// }
+
+// Class meta::pure::functions::lang::tests::cast::A 
+// {
+//    prop3:String[0..1];
+// }
+
+// Class meta::pure::functions::lang::tests::cast::B extends A 
+// {
+//    prop2 : String[1];
+// }
+ 
+// Class meta::pure::functions::lang::tests::cast::C 
+// {
+//    prop:A[*];
+// }
+// Class meta::pure::functions::lang::tests::cast::PersonCT 
+// {
+//    lastName:String[1];
+// }
+
+// Class meta::pure::functions::lang::tests::cast::EmployeeCT extends PersonCT
+// {
+//    extra:String[1];
+// }

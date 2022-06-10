@@ -30,7 +30,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.applica
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedQualifiedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.UnknownAppliedFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.AggregateValue;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.SerializationConfig;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CBoolean;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDecimal;
@@ -54,6 +53,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Pai
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PrimitiveType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PureList;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.RuntimeInstance;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.SerializationConfig;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TDSAggregateValue;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TDSColumnInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TDSSortInformation;
@@ -137,7 +137,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
         return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
                 ._genericType(packageableElement._classifierGenericType())
                 ._multiplicity(this.context.pureModel.getMultiplicity("one"))
-                ._values(FastList.newListWith(packageableElement));
+                ._values(this.processingContext.peek().equals("Applying new") ? FastList.newList() : FastList.newListWith(packageableElement));
     }
 
     @Override
@@ -379,7 +379,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification f = pair.first.accept(new ValueSpecificationBuilder(this.context, Lists.mutable.empty(), processingContext));
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification s = pair.second.accept(new ValueSpecificationBuilder(this.context, Lists.mutable.empty(), processingContext));
         GenericType gt = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(this.context.pureModel.getType("meta::pure::functions::collection::Pair"))
-                                                                                        ._typeArguments(FastList.newListWith(f._genericType(), s._genericType()));
+                ._typeArguments(FastList.newListWith(f._genericType(), s._genericType()));
         return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
                 ._genericType(gt)
                 ._multiplicity(this.context.pureModel.getMultiplicity("one"))
@@ -486,7 +486,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
     public ValueSpecification visit(AppliedFunction appliedFunction)
     {
         processingContext.push("Applying " + appliedFunction.function);
-        MilestoningDatePropagationHelper.isValidSource (appliedFunction, processingContext);
+        MilestoningDatePropagationHelper.isValidSource(appliedFunction, processingContext);
         if (appliedFunction.function.equals("letFunction"))
         {
             MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> vs = ListIterate.collect(appliedFunction.parameters, expression -> expression.accept(new ValueSpecificationBuilder(this.context, openVariables, processingContext)));

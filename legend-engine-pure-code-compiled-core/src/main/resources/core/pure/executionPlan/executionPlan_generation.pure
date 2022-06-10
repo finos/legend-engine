@@ -1,0 +1,301 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::router::extension::*;
+import meta::pure::graphFetch::*;
+import meta::pure::router::clustering::*;
+import meta::pure::runtime::*;
+import meta::pure::mapping::*;
+import meta::pure::executionPlan::*;
+
+function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], extensions:meta::pure::router::extension::RouterExtension[*]):ExecutionPlan[1]
+{
+   $f->executionPlan(^ExecutionContext(), $extensions, noDebug());
+}
+
+function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], context:ExecutionContext[1], extensions:meta::pure::router::extension::RouterExtension[*]):ExecutionPlan[1]
+{
+   $f->executionPlan($context, $extensions, noDebug());
+}
+
+function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], m:Mapping[1], runtime:Runtime[1], extensions:meta::pure::router::extension::RouterExtension[*], debugContext:DebugContext[1]):ExecutionPlan[1]
+{
+   $f->executionPlan($m, $runtime, ^ExecutionContext(), $extensions, $debugContext);
+}
+
+function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], m:Mapping[1], runtime:Runtime[1], extensions:meta::pure::router::extension::RouterExtension[*]):ExecutionPlan[1]
+{
+   $f->executionPlan($m, $runtime, ^ExecutionContext(), $extensions, noDebug());
+}
+
+function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], m:Mapping[1], runtime:Runtime[1], shouldDebug:Boolean[1], extensions:meta::pure::router::extension::RouterExtension[*]):ExecutionPlan[1]
+{
+   $f->executionPlan($m, $runtime, ^ExecutionContext(), $extensions, if($shouldDebug,|debug(),|noDebug()));
+}
+
+function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], m:Mapping[1], runtime:Runtime[1], context:ExecutionContext[1], extensions:meta::pure::router::extension::RouterExtension[*]):ExecutionPlan[1]
+{
+   $f->executionPlan($m, $runtime, $context, $extensions, noDebug());
+}
+
+Class meta::pure::executionPlan::NodeAndVars
+{
+   nodes : ExecutionNode[*];
+   vars : Map<String, List<Any>>[1];
+}
+
+Class meta::pure::executionPlan::ExecutionOption
+{
+}
+
+Class meta::pure::executionPlan::ExecutionOptionContext extends ExecutionContext
+{
+   executionOptions : ExecutionOption[*];
+}
+
+// Move to platform
+
+
+Class meta::pure::executionPlan::PlanVarPlaceHolder extends meta::pure::executionPlan::FunctionParameter
+{
+}
+
+Class meta::pure::executionPlan::PlanSetPlaceHolder
+{
+    name : String[1];
+    tdsColumns: TDSColumn[*];
+}
+
+function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], context:ExecutionContext[1], extensions:meta::pure::router::extension::RouterExtension[*], debugContext:DebugContext[1]):ExecutionPlan[1]
+{
+   let routed = $f->routeFunction($context, $extensions, $debugContext);
+   meta::pure::executionPlan::executionPlan($routed, $f, ^Mapping(package=meta::pure::executionPlan, name='dummy'), ^Runtime(), $context, $extensions, $debugContext);
+}
+
+function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], m:Mapping[1], runtime:Runtime[1], context:ExecutionContext[1], extensions:meta::pure::router::extension::RouterExtension[*], debugContext:DebugContext[1]):ExecutionPlan[1]
+{
+   let routed = $f->routeFunction($m, $runtime, $context, $extensions, $debugContext);
+   meta::pure::executionPlan::executionPlan($routed, $f, $m, $runtime, $context, $extensions, $debugContext);
+}
+
+function meta::pure::executionPlan::executionPlan(routed:RoutingResult[1], f:FunctionDefinition<Any>[1], m:Mapping[1], runtime:Runtime[1], context:ExecutionContext[1], extensions:meta::pure::router::extension::RouterExtension[*], debugContext:DebugContext[1]):ExecutionPlan[1]
+{
+   let routedFunction = $routed.functions->evaluateAndDeactivate()->toOne();
+   let clusters = $routedFunction.expressionSequence->evaluateAndDeactivate()->cast(@ClusteredValueSpecification);
+
+   let functionParameters = $f->stubFuncParameters();
+   let inScopeVars = $functionParameters->map(ep|pair($ep.name, ^List<Any>(values=$ep)))->newMap();
+   
+   meta::pure::executionPlan::executionPlan($clusters, $routed, $routedFunction, $f, $m, $runtime, $context, $inScopeVars, $extensions, $debugContext);
+}
+
+function meta::pure::executionPlan::executionPlan(clusters:ClusteredValueSpecification[*], routed:RoutingResult[1], routedFunction:FunctionDefinition<Any>[1], f:FunctionDefinition<Any>[1], m:Mapping[1], runtime:Runtime[1], context:ExecutionContext[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::router::extension::RouterExtension[*], debugContext:DebugContext[1]):ExecutionPlan[1]
+{
+   let functionParameters = $f->stubFuncParameters();
+   
+   let node = if ($clusters->size() == 1,
+       | $clusters->at(0)->plan($runtime, $inScopeVars, $routed.advancedRouting, $context, $extensions, $debugContext),
+       | let allNodes = $clusters->fold({c,a|let x = $a.vars;
+                                             let node = $c->plan($runtime, $x, $routed.advancedRouting, $context, $extensions, $debugContext);
+                                             let nVars = $node->match([a:AllocationExecutionNode[1]|let varValues = if($a.resultType.type ==TabularDataSet,
+                                                                                                                       |^PlanSetPlaceHolder(name=$a.varName,tdsColumns = $a.resultType->match([x:TDSResultType[1]|$x.tdsColumns, a:Any[1]|[]])),
+                                                                                                                       |^PlanVarPlaceHolder(name=$a.varName,type = $a.resultType.type, multiplicity=$a.resultSizeRange));
+                                                                                                    $x->put($a.varName, ^List<Any>(values=$varValues));,
+                                                                       a:Any[*]|$x]);
+                                             ^$a(nodes+=$node, vars = $nVars);
+                                        }, ^NodeAndVars(vars = $inScopeVars)).nodes;
+         ^SequenceExecutionNode
+         (
+            resultType = $allNodes->last()->toOne().resultType,
+            resultSizeRange = $allNodes->last()->toOne().resultSizeRange,
+            executionNodes = $allNodes
+         );
+   );
+
+   let executionOptionParameters = $context->match([
+                                             p: meta::pure::executionPlan::ExecutionOptionContext[1] | $p->meta::pure::executionPlan::stubExecutionOptionParameters($extensions),
+                                             c: ExecutionContext[1] | [] ]);
+   let updatedNode = addFunctionParametersValidationNode($node, $f, $functionParameters->concatenate($executionOptionParameters)->checkConflictingParameters(), $routedFunction);
+
+   ^ExecutionPlan
+   (
+      func = $f,
+      mapping = $m,
+      runtime = $runtime,
+      rootExecutionNode = $updatedNode,
+      authDependent = false || $updatedNode->allNodes($extensions).authDependent->contains(true),
+      kerberos =  $updatedNode->allNodes($extensions).kerberos->first(),
+      processingTemplateFunctions = $extensions.executionPlan_generation_executionPlan->map(e|$e->eval($updatedNode, $extensions))->concatenate($updatedNode->allNodes($extensions).supportFunctions)->removeDuplicates()
+   );
+}
+
+
+
+
+function meta::pure::executionPlan::generatePlatformCode(plan:ExecutionPlan[1], config:PlatformCodeGenerationConfig[1], extensions:meta::pure::router::extension::RouterExtension[*]):ExecutionPlan[1]
+{
+   meta::pure::executionPlan::generatePlatformCode($plan, $config, $extensions, if(isOptionSet('DebugPlatformCodeGen'), |debug(), |noDebug()));
+}
+
+function meta::pure::executionPlan::generatePlatformCode(plan:ExecutionPlan[1], config:PlatformCodeGenerationConfig[1], extensions:meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]):ExecutionPlan[1]
+{
+   assert($config.platform == Platform.JAVA, 'Platform Not Supported: ' + $config.platform.name);
+   meta::pure::executionPlan::engine::java::generatePlatformCode($plan, $config, $extensions, $debug);
+}
+
+
+
+
+function <<access.private>> meta::pure::executionPlan::addFunctionParametersValidationNode(node:ExecutionNode[1], f:FunctionDefinition<Any>[1], planVarPlaceHolders:PlanVarPlaceHolder[*], routedFunction:FunctionDefinition<Any>[1]):ExecutionNode[1]
+{
+   let paramsSupportedForStreamInput = $routedFunction->findParamsSupportedForStreamInput();
+   if($f->instanceOf(LambdaFunction) && $planVarPlaceHolders->isNotEmpty(),| let functionParameters = $planVarPlaceHolders->map(p|^FunctionParameter(name=$p.name, supportsStream = $p.name->in($paramsSupportedForStreamInput), multiplicity=$p.multiplicity, type=$p.type));
+                                                                             let functionParametersValidationNode = ^FunctionParametersValidationNode(functionParameters = $functionParameters, resultType=^ResultType(type = Boolean));
+                                                                             $node->match([s:SequenceExecutionNode[1]|^$s(executionNodes=$functionParametersValidationNode->concatenate($s.executionNodes)),
+                                                                                           e:ExecutionNode[1]|^SequenceExecutionNode(executionNodes=[$functionParametersValidationNode, $e], resultType=$e.resultType, resultSizeRange=$e.resultSizeRange)]);
+                                                                         ,| $node);
+}
+
+function <<access.private>> meta::pure::executionPlan::findParamsSupportedForStreamInput(routedFunction:FunctionDefinition<Any>[1]):String[*]
+{
+   let vars = $routedFunction.expressionSequence->evaluateAndDeactivate()->cast(@ClusteredValueSpecification)->map(cvs| let clusterVal                     = $cvs.val->deepByPassRouterInfo()->cast(@ValueSpecification);
+                                                                                                                        let varsSupportedForStreamInput    = $clusterVal->findParamsForStreamInput($cvs.store->elementToPath(), $cvs.s.supportsStream, true, false);
+                                                                                                                        let varsNotSupportedForStreamInput = $clusterVal->findParamsForStreamInput($cvs.store->elementToPath(), $cvs.s.supportsStream, false, false);
+                                                                                                                        pair(^List<Pair<String, String>>(values=$varsSupportedForStreamInput), ^List<Pair<String, String>>(values=$varsNotSupportedForStreamInput)););
+   let allVarsSupportedForStreamInput = $vars.first.values;
+   let allVarsNotSupportedForStreamInput = $vars.second.values;
+
+   let supportedVarsUsedWithMultipleStores = $allVarsSupportedForStreamInput->groupBy(x | $x.first)->keyValues()->filter(p | $p.second.values.second->distinct()->size() > 1).first;
+
+   $allVarsSupportedForStreamInput.first->filter(p | !$p->in($allVarsNotSupportedForStreamInput.first) && !$p->in($supportedVarsUsedWithMultipleStores));
+}
+
+function <<access.private>> meta::pure::executionPlan::findParamsForStreamInput(vs:ValueSpecification[1], storePath:String[1], streamSupportedFunction:Function<{FunctionExpression[1]->Boolean[1]}>[1], getSupportedParams:Boolean[1], isSupportedForStream:Boolean[1]):Pair<String, String>[*]
+{
+   $vs->match([fe:FunctionExpression[1] | $fe.parametersValues->map(v | $v->findParamsForStreamInput($storePath, $streamSupportedFunction, $getSupportedParams, $streamSupportedFunction->eval($fe->cast(@FunctionExpression)))),
+               i:InstanceValue[1] | $i.values->map( v |
+                                                         $v->match([a: ValueSpecification[1] | $a->findParamsForStreamInput($storePath, $streamSupportedFunction, $getSupportedParams, $isSupportedForStream);,
+                                                         k : KeyExpression[1] | $k.expression->findParamsForStreamInput($storePath, $streamSupportedFunction, $getSupportedParams, $isSupportedForStream);,
+                                                         l : LambdaFunction<Any>[1] | $l.expressionSequence->map(e | $e->findParamsForStreamInput($storePath, $streamSupportedFunction, $getSupportedParams, $isSupportedForStream));,
+                                                         t : Type[1] | [];,
+                                                         a:Any[1] | [];]););,
+               ve:VariableExpression[1] | if(($isSupportedForStream && $getSupportedParams) || (!$isSupportedForStream && !$getSupportedParams), | pair($ve.name, $storePath), |[]);,
+               cvs:ClusteredValueSpecification[1] | $cvs.val->findParamsForStreamInput($cvs.store->elementToPath(), $cvs.s.supportsStream, $getSupportedParams, false),
+               vs:ValueSpecification[1] | [];
+             ]
+          );
+}
+
+function meta::pure::executionPlan::stubFuncParameters(f:FunctionDefinition<Any>[1]):PlanVarPlaceHolder[*]
+{
+   $f->functionType().parameters->evaluateAndDeactivate()->map(p|^PlanVarPlaceHolder(name=$p.name, type = $p.genericType.rawType->toOne(), multiplicity=$p.multiplicity));
+}
+
+function meta::pure::executionPlan::plan(cluster:ClusteredValueSpecification[1], runtime:Runtime[0..1], inScopeVars:Map<String, List<Any>>[1], advancedRouting:Boolean[0..1], context:ExecutionContext[1], extensions:meta::pure::router::extension::RouterExtension[*], debugContext:DebugContext[1]):ExecutionNode[1]
+{
+    let fe = $cluster.val->match([r:ExtendedRoutedValueSpecification[1]|$r.value,
+                                  t:TDSRoutedValueSpecification[1] | $t.value,
+                                  a:Any[1]|$a])->cast(@FunctionExpression);
+    if ($fe.func == letFunction_String_1__T_m__T_m_,
+          | let extractedFe = $cluster.val->match([e:ExtendedRoutedValueSpecification[1]|$e.value->cast(@SimpleFunctionExpression),s:SimpleFunctionExpression[1]|$s])->cast(@SimpleFunctionExpression);
+            let variables = $extractedFe.parametersValues;
+            let subPlan = $variables->at(1)->match(
+                              [
+                                 c:ClusteredValueSpecification[1]|
+                                    $c->plan($runtime, $inScopeVars, $advancedRouting, if ($c.exeCtx->isEmpty(), | $context, | $c.exeCtx->toOne()), $extensions, $debugContext);,
+                                 i:InstanceValue[1]|^meta::pure::executionPlan::ConstantExecutionNode
+                                                    (
+                                                       resultType = ^ResultType(type = $i.genericType.rawType->toOne()),
+                                                       resultSizeRange = $i.multiplicity,
+                                                       values = $i.values->toOne()
+                                                    );
+                                 ,
+                                 s:SimpleFunctionExpression[1] | let funcParams = $s->findVariableExpressionsInValueSpecification()->map(ve | $ve.name);
+                                                                 let varInput = $inScopeVars->keyValues().second.values->cast(@PlanVarPlaceHolder)->filter(x | $x.name->in($funcParams))->map(v | ^meta::pure::executionPlan::VariableInput(name = $v.name->toOne(), type = $v.type->toOne(), multiplicity = $v.multiplicity->toOne()));  
+                                                                 ^meta::pure::executionPlan::PureExpressionPlatformExecutionNode
+                                                                 (
+                                                                    expression = $s,
+                                                                    requiredVariableInputs = $varInput,
+                                                                    resultType = ^ResultType(type=$s.genericType.rawType->toOne())
+                                                                 );
+                              ]
+                           );
+            ^meta::pure::executionPlan::AllocationExecutionNode
+            (
+               varName = $variables->at(0)->cast(@InstanceValue).values->toOne()->cast(@String),
+               resultType = $subPlan.resultType,
+               resultSizeRange = $subPlan.resultSizeRange,
+               executionNodes = $subPlan
+            );
+          ,|
+
+            //This is required tp populate the setup sql for test connections where csv data has been supplied. It is done here to ensure that the plan generation is always
+            //the only place where sql is generated for this case.
+            let rt = $cluster.runtime->match([
+               r:Runtime[1] | ^$r(connections = $r.connections->map(c | updateConnection($c, $extensions))),
+               r:Runtime[0..1] | $r
+            ]);
+
+            let query = ^meta::pure::mapping::StoreQuery(store=$cluster.store, fe=$fe, inScopeVars=$inScopeVars, advancedRouting=$advancedRouting);
+            let res = $cluster.s.planExecution->eval($query, $cluster.val->match([r:RoutedValueSpecification[1]|$r, a:Any[*]|[]])->cast(@RoutedValueSpecification), $cluster.mapping, $rt, if ($cluster.exeCtx->isEmpty(), | $context, | $cluster.exeCtx->toOne()), $extensions, $debugContext);
+            ^$res(fromCluster=$cluster);
+    );
+}
+
+function meta::pure::executionPlan::nodeFromConnection(c:Connection[1], tree:RootGraphFetchTree<Any>[0..1], enableConstraints:Boolean[1], checked:Boolean[1], extensions:meta::pure::router::extension::RouterExtension[*]):ExecutionNode[1]
+{
+   $c->nodeFromConnection($tree, $enableConstraints, $checked, $extensions, {c:Connection[1] | fail('No node available for connection'); @ExecutionNode;});
+}
+
+function meta::pure::executionPlan::nodeFromConnection(c:Connection[1], tree:RootGraphFetchTree<Any>[0..1], enableConstraints:Boolean[1], checked:Boolean[1], extensions:meta::pure::router::extension::RouterExtension[*], dflt:Function<{Nil[1]->ExecutionNode[1]}>[*]):ExecutionNode[1]
+{
+   $c->match($extensions.executionPlan_generation_nodeFromConnection->map(x| $x->eval($tree, $enableConstraints, $checked))->concatenate($dflt)->toOneMany())->toOne();
+}
+
+function meta::pure::executionPlan::nodeFromConnection(c:Connection[1], tree:RootGraphFetchTree<Any>[0..1], childNode: ExecutionNode[1], enableConstraints:Boolean[1], checked:Boolean[1], extensions:meta::pure::router::extension::RouterExtension[*]):ExecutionNode[1]
+{
+   $c->nodeFromConnection($tree, $childNode, $enableConstraints, $checked, $extensions, {c:Connection[1] | fail('No node available for connection'); @ExecutionNode;});
+}
+
+function meta::pure::executionPlan::nodeFromConnection(c:Connection[1], tree:RootGraphFetchTree<Any>[0..1], childNode: ExecutionNode[1], enableConstraints:Boolean[1], checked:Boolean[1], extensions:meta::pure::router::extension::RouterExtension[*], dflt:Function<{Nil[1]->ExecutionNode[1]}>[*]):ExecutionNode[1]
+{
+   $c->match($extensions.executionPlan_generation_nodeFromConnectionWithChildren->map(x| $x->eval($tree, $childNode, $enableConstraints, $checked))->concatenate($dflt)->toOneMany())->toOne();
+}
+
+function meta::pure::executionPlan::updateConnection(c:Connection[1], extensions:meta::pure::router::extension::RouterExtension[*]):Connection[1]
+{
+   $c->match($extensions.executionPlan_generation_updateConnection->concatenate([
+               c:Connection[1] | $c
+            ])->toOneMany());
+}
+
+function meta::pure::executionPlan::isExecutionOptionPresent(execCtx: ExecutionOptionContext[1], execOption: Class<Any>[1]):Boolean[1]
+{
+   let executionOptionsList = $execCtx.executionOptions->filter(f| $f->instanceOf($execOption));
+   assert($executionOptionsList->size() <= 1, |'Execution Option List provided has two or more instances of the following Execution Options' + $execOption.name->toOne());
+   $executionOptionsList->isNotEmpty();
+}
+
+function meta::pure::executionPlan::stubExecutionOptionParameters(execOptionCtx: ExecutionOptionContext[1], extensions: meta::pure::router::extension::RouterExtension[*]):PlanVarPlaceHolder[*]
+{
+   let planVarPlaceHolders = $execOptionCtx.executionOptions->map(x| $x->match($extensions.executionPlan_generation_executionOptionParameters->toOneMany()));
+   $planVarPlaceHolders->checkConflictingParameters();
+}
+
+function meta::pure::executionPlan::checkConflictingParameters(planVarPlaceHolderList: PlanVarPlaceHolder[*]):PlanVarPlaceHolder[*]
+{
+   let removeDuplicatesFromList  = $planVarPlaceHolderList->removeDuplicatesBy(y|$y.name);
+   assert($removeDuplicatesFromList->size()==$planVarPlaceHolderList->size(), |'Conflicting variable names present in the following list: ' + $planVarPlaceHolderList->map(y|$y.name)->makeString(', '));
+   $planVarPlaceHolderList;
+}

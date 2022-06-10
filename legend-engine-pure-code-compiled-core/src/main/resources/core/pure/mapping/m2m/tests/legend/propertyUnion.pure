@@ -1,0 +1,314 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::json::*;
+import meta::pure::executionPlan::profiles::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::mapping::modelToModel::test::alloy::propertyUnion::*;
+import meta::pure::mapping::modelToModel::test::alloy::propertyUnion::src::*;
+import meta::pure::mapping::modelToModel::test::alloy::propertyUnion::dest::*;
+import meta::pure::mapping::modelToModel::test::alloy::utils::*;
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
+{
+   serverVersion.start='v1_19_0'
+}
+meta::pure::mapping::modelToModel::test::alloy::simple::testSimpleUnionAtProperty():Any[*]
+{
+   let tree = #{TargetRoot {prop, nested {childProp}}}#;
+
+   let result = execute(
+      |TargetRoot.all()->graphFetch($tree)->serialize($tree),
+      simplePropertyUnionMap,
+      testJsonRuntime(Source, '{"prop":"A"}'),
+      []
+   );
+
+   let json = $result.values->toOne();
+   let expected = '{"prop":"A","nested":[{"childProp":"A_s1"},{"childProp":"A_s2"}]}';
+   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
+{
+   serverVersion.start='v1_19_0'
+}
+meta::pure::mapping::modelToModel::test::alloy::simple::testMultiLevelUnion():Any[*]
+{
+   let tree = #{TargetRoot {prop, nested {childProp, nested {deepChildProp}}}}#;
+
+   let result = execute(
+      |TargetRoot.all()->graphFetch($tree)->serialize($tree),
+      multiLevelUnionMapping,
+      testJsonRuntime(Source, '{"prop":"A"}'),
+      []
+   );
+
+   let json = $result.values->toOne();
+   let expected = '{"prop":"A","nested":[{"childProp":"A_s1","nested":[{"deepChildProp":"A_ds1"},{"deepChildProp":"A_ds2"}]},{"childProp":"A_s2","nested":[{"deepChildProp":"A_ds3"}]}]}';
+   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
+{
+   serverVersion.start='v1_19_0'
+}
+meta::pure::mapping::modelToModel::test::alloy::simple::testLargeUnionAtProperty():Any[*]
+{
+   let tree = #{TargetRoot {prop, nested {childProp}}}#;
+
+   let result = execute(
+      |TargetRoot.all()->graphFetch($tree)->serialize($tree),
+      largePropertyUnionMap,
+      testJsonRuntime(Source, '{"prop":"A"}'),
+      []
+   );
+
+   let json = $result.values->toOne();
+   let expected = '{"prop":"A","nested":[{"childProp":"A_s1"},{"childProp":"A_s2"},{"childProp":"A_s3"},{"childProp":"A_s4"},{"childProp":"A_s5"},{"childProp":"A_s6"},{"childProp":"A_s7"},{"childProp":"A_s8"},{"childProp":"A_s9"},{"childProp":"A_s10"},{"childProp":"A_s11"},{"childProp":"A_s12"},{"childProp":"A_s13"},{"childProp":"A_s14"},{"childProp":"A_s15"},{"childProp":"A_s16"},{"childProp":"A_s17"},{"childProp":"A_s18"},{"childProp":"A_s19"},{"childProp":"A_s20"}]}';
+   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
+{
+   serverVersion.start='v1_19_0'
+}
+meta::pure::mapping::modelToModel::test::alloy::simple::testDisjointUnionWithOptionalProperties():Any[*]
+{
+   let tree = #{MainClass {firstName, unionOfInputClass {field1, field2}}}#;
+
+   let result = execute(
+      |MainClass.all()->graphFetch($tree)->serialize($tree),
+      simpleDisjointUnionMap,
+      testJsonRuntime(InputClass, '{"firstName":"Bob", "union1_field" : "A", "union2_field" : "B"}'),
+      []
+   );
+
+   let json = $result.values->toOne();
+   let expected = '{"firstName":"Bob","unionOfInputClass":[{"field1":"A","field2":null},{"field1":"A","field2":"B"}]}';
+   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+###Pure
+import meta::pure::mapping::modelToModel::test::alloy::propertyUnion::src::*;
+import meta::pure::mapping::modelToModel::test::alloy::propertyUnion::dest::*;
+
+Class meta::pure::mapping::modelToModel::test::alloy::propertyUnion::src::Source
+{
+   prop : String[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::propertyUnion::dest::TargetRoot
+{
+   prop   : String[1];
+   nested : TargetChild[*];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::propertyUnion::dest::TargetChild
+{
+   childProp : String[1];
+   nested    : TargetDeepChild[*];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::propertyUnion::dest::TargetDeepChild
+{
+   deepChildProp : String[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::propertyUnion::src::InputClass
+{
+  firstName : String[0..1];
+  union1_field : String[0..1];
+  union2_field : String[0..1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::propertyUnion::dest::MainClass
+{
+  firstName : String[0..1];
+  unionOfInputClass : S[*]; 
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::propertyUnion::dest::S
+{
+  field1 : String[0..1];
+  field2 : String[0..1];
+}
+
+###Mapping
+import meta::pure::mapping::modelToModel::test::alloy::propertyUnion::src::*;
+import meta::pure::mapping::modelToModel::test::alloy::propertyUnion::dest::*;
+
+Mapping meta::pure::mapping::modelToModel::test::alloy::propertyUnion::simplePropertyUnionMap
+(
+   TargetRoot : Pure {
+      ~src Source
+      prop       : $src.prop,
+      nested[s1] : $src,
+      nested[s2] : $src
+   }
+   
+   *TargetChild : Operation {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(s1, s2)
+   }
+   
+   TargetChild[s1] : Pure {
+      ~src Source
+      childProp : $src.prop + '_s1'
+   }
+   
+   TargetChild[s2] : Pure {
+      ~src Source
+      childProp : $src.prop + '_s2'
+   }
+)
+
+###Mapping
+import meta::pure::mapping::modelToModel::test::alloy::propertyUnion::src::*;
+import meta::pure::mapping::modelToModel::test::alloy::propertyUnion::dest::*;
+
+Mapping meta::pure::mapping::modelToModel::test::alloy::propertyUnion::simpleDisjointUnionMap
+(
+  MainClass: Pure
+  {
+    ~src InputClass
+    firstName : $src.firstName,
+    unionOfInputClass[sampleUnion] : $src
+  }
+
+  S[union1]:Pure
+  {
+    ~src InputClass
+    field1 : $src.union1_field
+  }
+
+  S[union2]:Pure
+  {
+    ~src InputClass
+    field1 : $src.union1_field,
+    field2 : $src.union2_field
+  }
+
+  *S[sampleUnion]:Operation
+  {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(union1, union2)
+  }
+) 
+
+###Mapping
+import meta::pure::mapping::modelToModel::test::alloy::propertyUnion::src::*;
+import meta::pure::mapping::modelToModel::test::alloy::propertyUnion::dest::*;
+
+Mapping meta::pure::mapping::modelToModel::test::alloy::propertyUnion::multiLevelUnionMapping
+(
+   TargetRoot[root] : Pure {
+      ~src Source
+      prop   : $src.prop,
+      nested : $src
+   }
+   
+   *TargetChild : Operation {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(s1, s2)
+   }
+   
+   *TargetDeepChild : Operation {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(ds1, ds2, ds3)
+   }
+   
+   TargetChild[s1] : Pure {
+      ~src Source
+      childProp   : $src.prop + '_s1',
+      nested[ds1] : $src,
+      nested[ds2] : $src
+   }
+   
+   TargetChild[s2] : Pure {
+      ~src Source
+      childProp : $src.prop + '_s2',
+      nested[ds1] : []->cast(@Source),
+      nested[ds2] : []->cast(@Source),
+      nested[ds3] : $src
+   }
+   
+   TargetDeepChild[ds1] : Pure {
+      ~src Source
+      deepChildProp : $src.prop + '_ds1'
+   }
+
+   TargetDeepChild[ds2] : Pure {
+      ~src Source
+      deepChildProp : $src.prop + '_ds2'
+   }
+
+   TargetDeepChild[ds3] : Pure {
+      ~src Source
+      deepChildProp : $src.prop + '_ds3'
+   }
+)
+
+###Mapping
+import meta::pure::mapping::modelToModel::test::alloy::propertyUnion::src::*;
+import meta::pure::mapping::modelToModel::test::alloy::propertyUnion::dest::*;
+
+Mapping meta::pure::mapping::modelToModel::test::alloy::propertyUnion::largePropertyUnionMap
+(
+   TargetRoot : Pure {
+      ~src Source
+      prop       : $src.prop,
+      nested[s1] : $src,
+      nested[s2] : $src,
+      nested[s3] : $src,
+      nested[s4] : $src,
+      nested[s5] : $src,
+      nested[s6] : $src,
+      nested[s7] : $src,
+      nested[s8] : $src,
+      nested[s9] : $src,
+      nested[s10] : $src,
+      nested[s11] : $src,
+      nested[s12] : $src,
+      nested[s13] : $src,
+      nested[s14] : $src,
+      nested[s15] : $src,
+      nested[s16] : $src,
+      nested[s17] : $src,
+      nested[s18] : $src,
+      nested[s19] : $src,
+      nested[s20] : $src
+   }
+   
+   *TargetChild : Operation {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15, s16, s17, s18, s19, s20)
+   }
+   
+   TargetChild[s1] : Pure { ~src Source childProp : $src.prop + '_s1' }
+   TargetChild[s2] : Pure { ~src Source childProp : $src.prop + '_s2' }
+   TargetChild[s3] : Pure { ~src Source childProp : $src.prop + '_s3' }
+   TargetChild[s4] : Pure { ~src Source childProp : $src.prop + '_s4' }
+   TargetChild[s5] : Pure { ~src Source childProp : $src.prop + '_s5' }
+   TargetChild[s6] : Pure { ~src Source childProp : $src.prop + '_s6' }
+   TargetChild[s7] : Pure { ~src Source childProp : $src.prop + '_s7' }
+   TargetChild[s8] : Pure { ~src Source childProp : $src.prop + '_s8' }
+   TargetChild[s9] : Pure { ~src Source childProp : $src.prop + '_s9' }
+   TargetChild[s10] : Pure { ~src Source childProp : $src.prop + '_s10' }
+   TargetChild[s11] : Pure { ~src Source childProp : $src.prop + '_s11' }
+   TargetChild[s12] : Pure { ~src Source childProp : $src.prop + '_s12' }
+   TargetChild[s13] : Pure { ~src Source childProp : $src.prop + '_s13' }
+   TargetChild[s14] : Pure { ~src Source childProp : $src.prop + '_s14' }
+   TargetChild[s15] : Pure { ~src Source childProp : $src.prop + '_s15' }
+   TargetChild[s16] : Pure { ~src Source childProp : $src.prop + '_s16' }
+   TargetChild[s17] : Pure { ~src Source childProp : $src.prop + '_s17' }
+   TargetChild[s18] : Pure { ~src Source childProp : $src.prop + '_s18' }
+   TargetChild[s19] : Pure { ~src Source childProp : $src.prop + '_s19' }
+   TargetChild[s20] : Pure { ~src Source childProp : $src.prop + '_s20' }
+)

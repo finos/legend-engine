@@ -16,8 +16,8 @@ package org.finos.legend.engine.external.format.xml.read.handlers;
 
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
-import org.finos.legend.engine.external.format.xml.read.ReadHandler;
 import org.finos.legend.engine.external.format.xml.read.DeserializeContext;
+import org.finos.legend.engine.external.format.xml.read.ReadHandler;
 
 public class Sequence extends Particle
 {

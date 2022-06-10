@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import meta::relational::runtime::*;
+import meta::relational::translation::*;
 import meta::relational::functions::sqlQueryToString::*;
 import meta::pure::executionPlan::*;
 import meta::pure::mapping::*;
@@ -28,14 +29,9 @@ import meta::pure::alloy::connections::alloy::specification::*;
 
 function meta::relational::postProcessor::getCollectionThresholdLimitForDatabaseType(dbType:DatabaseType[1], isTestRun:Boolean[1]):Integer[0..1]
 {
-   let threshMap = newMap([pair(DatabaseType.DB2, 32767),
-                           pair(DatabaseType.MemSQL, 1048576),
-                           pair(DatabaseType.Snowflake, 16348),
-                           pair(DatabaseType.SybaseIQ, 250000)]);
-
    let thresholdForTests = 50;
 
-   if($isTestRun, | $thresholdForTests, | $threshMap->get($dbType));
+   if($isTestRun, | $thresholdForTests, | $dbType->createDbConfig([]).dbExtension.collectionThresholdLimit);
 }
 
 function <<access.private>> meta::relational::postProcessor::prefixForWrapperAllocationNodeName():String[1]
@@ -63,7 +59,7 @@ function meta::relational::postProcessor::processInOperation(query:SQLQuery[1], 
 
                                                                                    let firstLiteralValue    = $d.parameters->at(1)->cast(@LiteralList).values->map(l | $l.value)->at(0);
                                                                                    let collectionValueType  = if($firstLiteralValue->instanceOf(VarPlaceHolder), | $firstLiteralValue->cast(@VarPlaceHolder).type, | $firstLiteralValue->type());
-                                                                                   let selectSQLQuery       = generateTempTableSelectSQLQuery('default', $tempTableName, $tempTableColumnName, meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get($collectionValueType)->toOne());
+                                                                                   let selectSQLQuery       = generateTempTableSelectSQLQuery('default', $tempTableName, $tempTableColumnName, meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get($collectionValueType)->translateCoreTypeToDbSpecificType(^TranslationContext(dbType=$connection.type))->toOne());
 
                                                                                    ^$d(parameters           = [$d.parameters->at(0), $selectSQLQuery]);,
                                                                                    |$d);,
@@ -115,7 +111,8 @@ function meta::relational::postProcessor::generatePostProcessorResult(changedFun
                           let collectionValuesWithoutVarPlaceHolder = $collectionValues->filter(val | !$val->instanceOf(VarPlaceHolder));
                           let varPlaceHoldersInCollection           = $collectionValues->filter(val | $val->instanceOf(VarPlaceHolder))->cast(@VarPlaceHolder);
 
-                          let selectSqlQueryForTempTable            = generateTempTableSelectSQLQuery('default', $tempTableName, $tempTableColumnName, meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get($collectionValueType)->toOne());
+                          let translationContext = ^TranslationContext(dbType=$connection.type);
+                          let selectSqlQueryForTempTable            = generateTempTableSelectSQLQuery('default', $tempTableName, $tempTableColumnName, meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get($collectionValueType)->translateCoreTypeToDbSpecificType($translationContext)->toOne());
                           let processedResultForTempTable           = $selectSqlQueryForTempTable->postProcessSQLQuery($store->toOne(), [], ^Mapping(), $runtime, $exeCtx, $extensions);
 
                           let allocationNode                        = if($collectionValuesWithoutVarPlaceHolder->isNotEmpty(),
@@ -137,7 +134,7 @@ function meta::relational::postProcessor::generatePostProcessorResult(changedFun
                                                                           tempTableName           = $tempTableName,
                                                                           tempTableColumnMetaData = ^TempTableColumnMetaData(
                                                                                                         column = ^SQLResultColumn(label = $tempTableColumnName,
-                                                                                                                                  dataType = meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get($collectionValueType)->toOne())
+                                                                                                                                  dataType = meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get($collectionValueType)->toOne()->translateCoreTypeToDbSpecificType($translationContext))
                                                                                                      ),
                                                                           connection              = $connection,
                                                                           resultType              = ^VoidResultType(type=Void)

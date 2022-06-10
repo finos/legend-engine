@@ -1,0 +1,33 @@
+###Pure
+
+import meta::json::schema::generation::*;
+
+function meta::protocols::pure::v1_22_0::invocation::generation::json::transformJSONSchemaConfig(input:JSONSchemaConfig[1]):meta::protocols::pure::v1_22_0::metamodel::invocation::generation::json::JSONSchemaConfig[1]
+{
+   ^meta::protocols::pure::v1_22_0::metamodel::invocation::generation::json::JSONSchemaConfig(
+        package = $input.package,
+        class = $input.class,
+        includeAllRelatedTypes = $input.includeAllRelatedTypes,
+        useConstraints = $input.useConstraints
+   )
+}
+
+
+###Pure
+
+import meta::external::format::avro::generation::*;
+
+function meta::protocols::pure::v1_22_0::invocation::generation::avro::transformAvroGenerationConfig(input:AvroConfig[1]):meta::protocols::pure::v1_22_0::metamodel::invocation::generation::avro::AvroConfig[1]
+{
+   ^meta::protocols::pure::v1_22_0::metamodel::invocation::generation::avro::AvroConfig(
+      package = $input.package,
+      class = $input.class,
+      includeNamespace=$input.includeNamespace ,
+      includeSuperTypes=$input.includeSuperTypes,
+      includeAssociations=$input.includeAssociations,
+      includeGeneratedMilestoning=$input.includeGeneratedMilestoning,
+      timestampLogicalType=$input.timestampLogicalType,
+      propertyProfile=$input.propertyProfile,
+      namespaceOverride=$input.namespaceOverride
+   )
+}

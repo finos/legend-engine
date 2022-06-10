@@ -1,0 +1,1456 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// --- Single Property
+
+###Pure
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::routing::*;
+import meta::pure::graphFetch::tests::sourceTreeCalc::singleProperty::*;
+
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testSingleProperty():Boolean[1]
+{
+   let tree = #{
+      A {
+         a
+      }
+   }#;
+   
+   let sourceTree = calculateSourceTree($tree, testMapping, meta::pure::router::extension::defaultExtensions())->sortTree();
+   let expected = #{
+      _A {
+         a
+      }
+   }#;
+   assertEquals($expected->asString(true), $sourceTree->asString(true));
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::singleProperty::A
+{
+   a: String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::singleProperty::_A
+{
+   a: String[1];
+}
+
+###Mapping 
+import meta::pure::graphFetch::tests::sourceTreeCalc::singleProperty::*;
+
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::singleProperty::testMapping
+(
+   A: Pure
+      {
+         ~src _A
+         a: $src.a
+      }
+)
+
+// --- Single Property Chain
+
+###Pure
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::routing::*;
+import meta::pure::graphFetch::tests::sourceTreeCalc::singlePropertyChain::*;
+
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testSinglePropertyChain():Boolean[1]
+{
+   let tree = #{
+      A {
+         a
+      }
+   }#;
+   
+   let sourceTree = calculateSourceTree($tree, testMapping, meta::pure::router::extension::defaultExtensions())->sortTree();
+   let expected = #{
+      _A {
+         a {
+            b {
+               c
+            }
+         }
+      }
+   }#;
+   assertEquals($expected->asString(true), $sourceTree->asString(true));
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::singlePropertyChain::A
+{
+   a: String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::singlePropertyChain::_A
+{
+   a: _B[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::singlePropertyChain::_B
+{
+   b: _C[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::singlePropertyChain::_C
+{
+   c: String[1];
+}
+
+###Mapping 
+import meta::pure::graphFetch::tests::sourceTreeCalc::singlePropertyChain::*;
+
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::singlePropertyChain::testMapping
+(
+   A: Pure
+      {
+         ~src _A
+         a: $src.a.b.c
+      }
+)
+
+// --- Equivalent Graph
+
+###Pure
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::routing::*;
+import meta::pure::graphFetch::tests::sourceTreeCalc::equivalentGraph::*;
+
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testEquivalentGraph():Boolean[1]
+{
+   let tree = #{
+      A {
+         a1,
+         a2 {
+            b1 {
+               d {
+                  f
+               }
+            },
+            b2 {
+               e
+            }
+         },
+         a3 {
+            c            
+         }
+      }
+   }#;
+   
+   let sourceTree = calculateSourceTree($tree, testMapping, meta::pure::router::extension::defaultExtensions())->sortTree();
+   let expected = #{
+      _A {
+         a1,
+         a2 {
+            b1 {
+               d {
+                  f
+               }
+            },
+            b2 {
+               e
+            }
+         },
+         a3 {
+            c            
+         }
+      }
+   }#;
+   assertEquals($expected->asString(true), $sourceTree->asString(true));
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::equivalentGraph::A
+{
+   a1: String[1];
+   a2: B[1];
+   a3: C[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::equivalentGraph::B
+{
+   b1: D[1];
+   b2: E[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::equivalentGraph::C
+{
+   c: String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::equivalentGraph::D
+{
+   d: F[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::equivalentGraph::E
+{
+   e: String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::equivalentGraph::F
+{
+   f: String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::equivalentGraph::_A
+{
+   a1: String[1];
+   a2: _B[1];
+   a3: _C[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::equivalentGraph::_B
+{
+   b1: _D[1];
+   b2: _E[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::equivalentGraph::_C
+{
+   c: String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::equivalentGraph::_D
+{
+   d: _F[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::equivalentGraph::_E
+{
+   e: String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::equivalentGraph::_F
+{
+   f: String[1];
+}
+
+###Mapping 
+import meta::pure::graphFetch::tests::sourceTreeCalc::equivalentGraph::*;
+
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::equivalentGraph::testMapping
+(
+   A: Pure
+      {
+         ~src _A
+         a1: $src.a1,
+         a2: $src.a2,
+         a3: $src.a3
+      }
+   
+   B: Pure
+      {
+         ~src _B
+         b1: $src.b1,
+         b2: $src.b2
+      }
+   
+   C: Pure
+      {
+         ~src _C
+         c: $src.c
+      }
+   
+   D: Pure
+      {
+         ~src _D
+         d: $src.d
+      }
+   
+   E: Pure
+      {
+         ~src _E
+         e: $src.e
+      }
+   
+   F: Pure
+      {
+         ~src _F
+         f: $src.f
+      }
+)
+
+// --- Duplicate Paths
+
+###Pure
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::routing::*;
+import meta::pure::graphFetch::tests::sourceTreeCalc::duplicatePaths::*;
+
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testDuplicatePaths():Boolean[1]
+{
+   let tree = #{
+      A {
+         a1,
+         a2
+      }
+   }#;
+   
+   let sourceTree = calculateSourceTree($tree, testMapping, meta::pure::router::extension::defaultExtensions())->sortTree();
+   let expected = #{
+      _A {
+         a {
+            b {
+               c1,
+               c2
+            }
+         }
+      }
+   }#;
+   assertEquals($expected->asString(true), $sourceTree->asString(true));
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::duplicatePaths::A
+{
+   a1: String[1];
+   a2: String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::duplicatePaths::_A
+{
+   a: _B[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::duplicatePaths::_B
+{
+   b: _C[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::duplicatePaths::_C
+{
+   c1: String[1];
+   c2: String[1];
+}
+
+###Mapping 
+import meta::pure::graphFetch::tests::sourceTreeCalc::duplicatePaths::*;
+
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::duplicatePaths::testMapping
+(
+   A: Pure
+      {
+         ~src _A
+         a1: $src.a.b.c1,
+         a2: $src.a.b.c2
+      }
+)
+
+// --- With Functions
+
+###Pure
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::routing::*;
+import meta::pure::graphFetch::tests::sourceTreeCalc::withFunctions::*;
+
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testWithFunctions():Boolean[1]
+{
+   let tree = #{
+      A {
+         a1,
+         a2,
+         a3
+      }
+   }#;
+   
+   let sourceTree = calculateSourceTree($tree, testMapping, meta::pure::router::extension::defaultExtensions())->sortTree();
+   let expected = #{
+      _A {
+         a1 {
+            b {
+               c1
+            }
+         },
+         a2 {
+            b {
+               c2
+            }
+         },
+         a3,
+         a4 {
+            d1 {
+               c1
+            },
+            d2 {
+               e
+            }
+         },
+         a6 {
+            d2 {
+               e
+            }
+         }
+      }
+   }#;
+   assertEquals($expected->asString(true), $sourceTree->asString(true));
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withFunctions::A
+{
+   a1: String[1];
+   a2: String[*];
+   a3: String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withFunctions::_A
+{
+   a1: _B[1];
+   a2: _B[1];
+   a3: Integer[1];
+   a4: _D[*];
+   a5: String[*];
+   a6: _D[*];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withFunctions::_B
+{
+   b: _C[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withFunctions::_C
+{
+   c1: String[1];
+   c2: String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withFunctions::_D
+{
+   d1: _C[1];
+   d2: _E[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withFunctions::_E
+{
+   e: String[1];
+}
+
+###Mapping 
+import meta::pure::graphFetch::tests::sourceTreeCalc::withFunctions::*;
+
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withFunctions::testMapping
+(
+   A: Pure
+      {
+         ~src _A
+         a1: if($src.a3 > 10, |$src.a1.b.c1, |$src.a2.b.c2),
+         a2: $src.a4->filter(x| $x.d1.c1->in(['A', 'B','C'])).d2.e,
+         a3: $src.a6->at(0).d2.e
+      }
+)
+
+// --- With complex target class multiple mappings
+
+###Pure
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::routing::*;
+import meta::pure::graphFetch::tests::sourceTreeCalc::withComplexTarget::*;
+
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testComplexTarget():Boolean[1]
+{
+   let tree = #{
+      _A {
+         a1{
+           b{
+              c1
+           } 
+         },
+         a2{
+           b{
+              c2
+           } 
+         },
+         a3,
+         a4{
+            d1{
+               c1
+            }
+         },
+         a5,
+         a6{
+            d2{
+               e
+            }
+         }
+      }
+   }#;
+   
+   let sourceTree = calculateSourceTree($tree, testMapping, meta::pure::router::extension::defaultExtensions())->sortTree();
+   let expected = #{
+      A {
+         a1,
+         a2,
+         a3,
+         a5,
+         a6
+      }
+   }#;
+   assertEquals($expected->asString(true), $sourceTree->asString(true));
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withComplexTarget::A
+{
+   a1: String[1];
+   a2: String[*];
+   a3: String[1];
+   a4: String[1];
+   a5: Integer[1];
+   a6: String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withComplexTarget::_A
+{
+   a1: _B[1];
+   a2: _B[1];
+   a3: Integer[1];
+   a4: _D[*];
+   a5: String[*];
+   a6: _D[*];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withComplexTarget::_B
+{
+   b: _C[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withComplexTarget::_C
+{
+   c1: String[1];
+   c2: String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withComplexTarget::_D
+{
+   d1: _C[1];
+   d2: _E[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withComplexTarget::_E
+{
+   e: String[1];
+}
+
+###Mapping 
+import meta::pure::graphFetch::tests::sourceTreeCalc::withComplexTarget::*;
+
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withComplexTarget::testMapping
+(
+   _A: Pure
+      {
+         ~src A
+         a1: $src, 
+         a2: $src,
+         a3: $src.a5,
+         a4: $src,
+         a5: $src.a6,
+         a6: $src
+      }
+   
+   _B: Pure
+   {
+      ~src A
+      b: $src
+   }
+   
+   _D: Pure
+   {
+     ~src A
+     d1: $src,
+     d2: $src 
+   }
+   
+   _E: Pure
+   {
+      ~src A
+      e: $src.a1
+   }
+   _C: Pure
+   {
+      ~src A
+      c1: $src.a2->at(0),
+      c2: $src.a3
+   }
+   
+)
+
+// --- With Qualified Property (Target)
+
+###Pure
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::tests::sourceTreeCalc::*;
+import meta::pure::graphFetch::routing::*;
+import meta::pure::graphFetch::tests::sourceTreeCalc::withTargetQualifiedProperty::*;
+
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testWithTargetQualifiedProperty():Boolean[1]
+{
+   let tree = #{
+      A {
+         qa(2)
+      }
+   }#;
+   
+   let sourceTree = calculateSourceTree($tree, testMapping, meta::pure::router::extension::defaultExtensions())->sortTree();
+   let expected = #{
+      _A {
+         a1 {
+            b1
+         }
+      }
+   }#;
+   assertEquals($expected->asString(true), $sourceTree->asString(true));
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withTargetQualifiedProperty::A
+{
+   a1: B[*];
+   qa(i:Integer[1]) {
+      $this.a1->filter(x| $x.b1 == $i)->toOne();
+   }: B[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withTargetQualifiedProperty::B
+{
+   b1: Integer[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withTargetQualifiedProperty::_A
+{
+   a1: _B[*];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withTargetQualifiedProperty::_B
+{
+   b1: Integer[1];
+}
+
+###Mapping 
+import meta::pure::graphFetch::tests::sourceTreeCalc::withTargetQualifiedProperty::*;
+
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withTargetQualifiedProperty::testMapping
+(
+   A: Pure
+      {
+         ~src _A
+         a1: $src.a1
+      }
+
+   B: Pure
+      {
+         ~src _B
+         b1: $src.b1
+      }
+)
+
+// --- With Qualified Property (Source)
+
+###Pure
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::tests::sourceTreeCalc::*;
+import meta::pure::graphFetch::routing::*;
+import meta::pure::graphFetch::tests::sourceTreeCalc::withSourceQualifiedProperty::*;
+
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testWithSourceQualifiedProperty():Boolean[1]
+{
+   let tree = #{
+      A {
+         a1,
+         a2
+      }
+   }#;
+   
+   let sourceTree = calculateSourceTree($tree, testMapping, meta::pure::router::extension::defaultExtensions())->sortTree();
+   let expected = #{
+      _A {
+         a1 {
+            b1,
+            b2,
+            b3 {
+               c1
+            }
+         }
+      }
+   }#;
+   assertEquals($expected->asString(true), $sourceTree->asString(true));
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withSourceQualifiedProperty::A
+{
+   a1: String[1];
+   a2: String[*];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withSourceQualifiedProperty::_A
+{
+   a1: _B[*];
+   qa(i:Integer[1]) {
+      $this.a1->filter(x| $x.b1 == $i)->toOne();
+   }: _B[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withSourceQualifiedProperty::_B
+{
+   b1: Integer[1];
+   b2: String[1];
+   b3: _C[*];
+   qb() {
+      $this.b3.c1;
+   }: String[*];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withSourceQualifiedProperty::_C
+{
+   c1: String[1];
+}
+
+###Mapping 
+import meta::pure::graphFetch::tests::sourceTreeCalc::withSourceQualifiedProperty::*;
+
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withSourceQualifiedProperty::testMapping
+(
+   A: Pure
+      {
+         ~src _A
+         a1: $src.qa(1).b2,
+         a2: $src.qa(2).qb()
+      }
+)
+
+// --- With Milestoned Property
+
+###Pure
+
+import meta::pure::graphFetch::tests::sourceTreeCalc::withMilestonedProperty::*;
+import meta::pure::graphFetch::routing::*;
+import meta::pure::graphFetch::*;
+
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testWithMilestonedProperty():Boolean[1]
+{
+   let tree = #{
+      A {
+         b(%2020-1-1){
+            b1,
+            c(%2020-1-2, %2020-1-3){
+               c1
+            }
+         },
+         c(%2020-1-4, %2020-1-5){
+            c1
+         }
+      }
+   }#;
+   
+   let sourceTree = calculateSourceTree($tree, testMapping, meta::pure::router::extension::defaultExtensions())->sortTree();
+   
+   let expected = #{
+      _A {
+         _b(%2020-1-1){
+            _b1,
+            _c(%2020-1-2, %2020-1-3){
+               _c1
+            }
+         },
+         _c(%2020-1-4, %2020-1-5){
+               _c1
+            }
+      }
+   }#;
+   assertEquals($expected->asString(true), $sourceTree->asString(true));
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withMilestonedProperty::A
+{
+   b : B[1];
+   c : C[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withMilestonedProperty::_A
+{
+   _b : _B[1];
+   _c : _C[1];
+}
+
+Class <<temporal.businesstemporal>> meta::pure::graphFetch::tests::sourceTreeCalc::withMilestonedProperty::_B
+{
+   _b1: Integer[1];
+   _c: _C[1];
+}
+
+Class <<temporal.businesstemporal>> meta::pure::graphFetch::tests::sourceTreeCalc::withMilestonedProperty::B
+{
+   b1: Integer[1];
+   c: C[1];
+}
+
+Class <<temporal.bitemporal>> meta::pure::graphFetch::tests::sourceTreeCalc::withMilestonedProperty::_C
+{
+   _c1: Integer[1];
+}
+
+Class <<temporal.bitemporal>> meta::pure::graphFetch::tests::sourceTreeCalc::withMilestonedProperty::C
+{
+   c1: Integer[1];
+}
+
+###Mapping 
+import meta::pure::graphFetch::tests::sourceTreeCalc::withMilestonedProperty::*;
+
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withMilestonedProperty::testMapping
+(
+   C: Pure
+   {
+      ~src _C
+      c1 : $src._c1
+   }
+   
+   B: Pure
+   {
+      ~src _B
+      b1 : $src._b1,
+      cAllVersions : $src._cAllVersions
+   }
+   
+   A: Pure
+   {
+      ~src _A
+      bAllVersions : $src._bAllVersions,
+      cAllVersions : $src._cAllVersions
+   }
+)
+
+// --- With Constraint Property
+
+###Pure
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::tests::sourceTreeCalc::*;
+import meta::pure::graphFetch::routing::*;
+import meta::pure::graphFetch::tests::sourceTreeCalc::withConstraintProperty::*;
+
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testWithConstraintProperty():Boolean[1]
+{
+   let tree = #{
+      A {
+         a1
+      }
+   }#;
+   
+   let sourceTree = calculateSourceTree($tree, testMapping, meta::pure::router::extension::defaultExtensions())->ensureConstraintsRequirements()->sortTree();
+   let expected = #{
+      _A {
+         a1,
+         a2
+      }
+   }#;
+   assertEquals($expected->asString(true), $sourceTree->asString(true));
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withConstraintProperty::A
+{
+   a1: String[1];
+   a2: String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withConstraintProperty::_A
+[
+   constraint: $this.a2->isEmpty()
+]
+{
+   a1: String[1];
+   a2: String[0..1];
+}
+
+###Mapping 
+import meta::pure::graphFetch::tests::sourceTreeCalc::withConstraintProperty::*;
+
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withConstraintProperty::testMapping
+(
+   A: Pure
+      {
+         ~src _A
+         a1: $src.a1
+      }
+)
+
+// --- With Constraint Property on Child
+
+###Pure
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::tests::sourceTreeCalc::*;
+import meta::pure::graphFetch::routing::*;
+import meta::pure::graphFetch::tests::sourceTreeCalc::withConstraintOnChildProperty::*;
+
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testWithConstraintOnChildProperty():Boolean[1]
+{
+   let tree = #{
+      A {
+         a1
+      }
+   }#;
+   
+   let sourceTree = calculateSourceTree($tree, testMapping, meta::pure::router::extension::defaultExtensions())->ensureConstraintsRequirements()->sortTree();
+   let expected = #{
+      _A {
+         a1,
+         a2 {
+           b1 {
+              c1
+           }
+         }
+      }
+   }#;
+   assertEquals($expected->asString(true), $sourceTree->asString(true));
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withConstraintOnChildProperty::A
+{
+   a1: String[1];
+   a2: String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withConstraintOnChildProperty::_A
+[
+   constraint: $this.a2.b1.c1->isEmpty()
+]
+{
+   a1: String[1];
+   a2: _B[0..1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withConstraintOnChildProperty::_B
+{
+   b1: _C[0..1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withConstraintOnChildProperty::_C
+{
+   c1: String[0..1];
+}
+
+###Mapping 
+import meta::pure::graphFetch::tests::sourceTreeCalc::withConstraintOnChildProperty::*;
+
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withConstraintOnChildProperty::testMapping
+(
+   A: Pure
+      {
+         ~src _A
+         a1: $src.a1
+      }
+)
+
+// --- With Unrelated Constraint Property
+
+###Pure
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::tests::sourceTreeCalc::*;
+import meta::pure::graphFetch::routing::*;
+import meta::pure::graphFetch::tests::sourceTreeCalc::withUnrelatedConstraintProperty::*;
+
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testWithUnrelatedConstraintProperty():Boolean[1]
+{
+   let tree = #{
+      A {
+         a1
+      }
+   }#;
+   
+   let sourceTree = calculateSourceTree($tree, testMapping, meta::pure::router::extension::defaultExtensions())->ensureConstraintsRequirements()->sortTree();
+   let expected = #{
+      _A {
+         a1
+      }
+   }#;
+   assertEquals($expected->asString(true), $sourceTree->asString(true));
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withUnrelatedConstraintProperty::A
+{
+   a1: String[1];
+   a2: String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withUnrelatedConstraintProperty::_A
+[
+   constraint: $this.a1 == ^_B(b1='x').b1 || $this.qp1()
+]
+{
+   a1: String[1];
+   qp1() { $this.a1 == ^_B(b1='y').b1} : Boolean[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withUnrelatedConstraintProperty::_B
+{
+   b1: String[1];
+}
+
+###Mapping 
+import meta::pure::graphFetch::tests::sourceTreeCalc::withUnrelatedConstraintProperty::*;
+
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withUnrelatedConstraintProperty::testMapping
+(
+   A: Pure
+      {
+         ~src _A
+         a1: $src.a1
+      }
+)
+
+###Pure
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::*;
+ 
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Target
+{
+   targetZipCode: String[1];
+   targetAddress: String[1];
+}
+ 
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Person
+{
+   address: Location[1];
+}
+ 
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Location
+{
+   zipCode: String[1];
+   coordinates: String[1];
+}
+ 
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street extends Location
+{
+   street: String[1];
+}
+ 
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Road extends Location
+{
+   road: String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::TargetStreetCluster
+{
+  streetNames: String[*];
+  zipCodes: String[*];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::SourceStreetCluster
+{
+  streetCluster: Street[*];
+}
+ 
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testWithSingleSubType():Boolean[1]
+{
+   let tree0 = #{
+      Target{
+         targetZipCode
+      }
+   }#;
+   let sourceTree0 = calculateSourceTree($tree0, meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::testMappingWithSingleSubType, meta::pure::router::extension::defaultExtensions())->sortTree();
+   let expectedSourceTree0 = #{
+      Person{
+         address{
+            zipCode
+         }
+      }
+   }#; 
+   assertEquals($expectedSourceTree0->sortTree()->meta::pure::graphFetch::treeToString(), $sourceTree0->sortTree()->meta::pure::graphFetch::treeToString());    
+   
+   let tree = #{
+      Target{
+         targetZipCode, 
+         targetAddress
+      }
+   }#;
+   let sourceTree = calculateSourceTree($tree, meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::testMappingWithSingleSubType, meta::pure::router::extension::defaultExtensions())->sortTree();
+   let expectedSourceTree = #{
+      Person{
+         address{
+            zipCode
+         },
+         address->subType(@Street){
+            zipCode,
+            street
+         }
+      }
+   }#; 
+   
+   assertEquals($expectedSourceTree->sortTree()->meta::pure::graphFetch::treeToString(), $sourceTree->sortTree()->meta::pure::graphFetch::treeToString()); 
+  
+   let tree1 = #{
+      Target{
+         targetAddress
+      }
+   }#;
+   let sourceTree1 = calculateSourceTree($tree1, meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::testMappingWithSingleSubType, meta::pure::router::extension::defaultExtensions())->sortTree();
+   let expectedSourceTree1 = #{
+      Person{
+         address->subType(@Street){
+            street
+         }
+      }
+   }#; 
+   assertEquals($expectedSourceTree1->sortTree()->meta::pure::graphFetch::treeToString(), $sourceTree1->sortTree()->meta::pure::graphFetch::treeToString());  
+}
+ 
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testWithMultipleSubTypes():Boolean[1]
+{   
+   let tree = #{
+      Target{
+         targetZipCode, 
+         targetAddress
+      }
+   }#;
+   let sourceTree = calculateSourceTree($tree, meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::testMappingWithMultipleSubTypes, meta::pure::router::extension::defaultExtensions())->sortTree();
+   let expectedSourceTree = #{
+      Person
+      {
+         address{
+            coordinates, 
+            zipCode
+         }, 
+         address->subType(@Street){
+            coordinates,
+            street,
+            zipCode
+         },       
+         address->subType(@Road){
+            coordinates,
+            road, 
+            zipCode
+         }
+      }
+   }#; 
+   assertEquals($expectedSourceTree->sortTree()->meta::pure::graphFetch::treeToString(), $sourceTree->meta::pure::graphFetch::treeToString());
+   
+   let tree1 = #{
+      Target{
+         targetAddress
+      }
+   }#;
+   let sourceTree1 = calculateSourceTree($tree1, meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::testMappingWithMultipleSubTypes, meta::pure::router::extension::defaultExtensions())->sortTree();
+   let expectedSourceTree1 = #{
+      Person
+      {  
+         address{
+            coordinates
+         },   
+         address->subType(@Street){
+            coordinates,
+            street
+         },
+         address->subType(@Road){
+            coordinates,
+            road
+         }
+      }
+   }#; 
+   assertEquals($expectedSourceTree1->sortTree()->meta::pure::graphFetch::treeToString(), $sourceTree1->meta::pure::graphFetch::treeToString());      
+}
+ 
+###Mapping
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::testMappingWithSingleSubType
+(
+   *meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Target: Pure
+   {
+      ~src meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Person
+      targetZipCode: $src.address.zipCode,
+      targetAddress: if($src.address->instanceOf(meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street),|$src.address->cast(@meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street).street,|'unknown')
+   }
+)
+
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::testMappingWithSuperTypeProperties
+(
+  *meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::TargetStreetCluster: Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::SourceStreetCluster
+    streetNames: $src.streetCluster.street,
+    zipCodes: $src.streetCluster.zipCode
+  }
+)
+
+ 
+###Mapping
+import meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::*;
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::testMappingWithMultipleSubTypes
+(
+   *meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Target: Pure
+   {
+      ~src meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Person
+      targetZipCode: $src.address.zipCode,
+      targetAddress: $src.address->match([
+         s:Street[1] | $s.street, 
+         r:Road[1] | $r.road,
+         l:Location[1] | $l.coordinates
+         ])
+   }
+)
+
+###Pure
+import meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::*;
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::A
+{
+  b:meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::B[*];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::C
+{
+  cid:String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::B extends meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::C
+{
+  id:String[1];
+  id2:String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Source
+{
+  a : meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::A[*];
+  accessClassBProperties() { $this.a->filter(a | $a.b.id->isEmpty()).b.id2} : String[*];
+  accessClassBAndCSuperTypeProperties() { $this.a->filter(a | $a.b.id->isNotEmpty() && $a.b->accessCid()).b.id} : String[*];
+}
+
+function meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::accessCid(c : C[*]) : Boolean[1]
+{
+  $c.cid->isNotEmpty();
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::TargetForSubTypeAndSuperTypeAccesses
+{
+  id : String[*];
+}
+
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testNestedSubTypeAndSuperTypeAccesses():Boolean[1]
+{
+  let tree = #{
+      TargetForSubTypeAndSuperTypeAccesses {
+         id
+      }
+   }#;
+
+  let expectedString = 'Source [requires: accessClassBProperties,accessClassBAndCSuperTypeProperties]\n' +
+                        '(\n' +
+                        '  a\n' +
+                        '  (\n' +
+                        '    b\n' +
+                        '    (\n' +
+                        '      id\n' +
+                        '      id2\n' +
+                        '    )\n' +
+                        '  )\n' +
+                        ')';
+
+   let sourceTree = meta::pure::graphFetch::calculateSourceTree($tree, 
+                                                                meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::SourceToTargetMappingWithSubtypeAndSuperTypeAccesses,
+                                                                meta::pure::router::extension::defaultExtensions())->meta::pure::graphFetch::sortTree();
+   assertEquals($expectedString, $sourceTree->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString());
+}
+
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testNestedSubTypeAndSuperTypeAccesses2():Boolean[1]
+{
+  let tree = #{
+      TargetForSubTypeAndSuperTypeAccesses {
+         id
+      }
+   }#;
+
+  let expectedString = 'Source [requires: accessClassBProperties]\n' +
+                        '(\n' +
+                        '  a\n' +
+                        '  (\n' +
+                        '    b\n' +
+                        '    (\n' +
+                        '      id\n' +
+                        '      id2\n' +
+                        '    )\n' +
+                        '  )\n' +
+                        ')';
+
+   let sourceTree = meta::pure::graphFetch::calculateSourceTree($tree, 
+                                                                meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::SourceToTargetMappingWithSubtypeAndSuperTypeAccesses2,
+                                                                meta::pure::router::extension::defaultExtensions())->meta::pure::graphFetch::sortTree();
+   assertEquals($expectedString, $sourceTree->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString());
+
+
+}
+
+function meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::f(a:A[1]):Boolean[1]
+{
+  $a.b.id->isNotEmpty() && $a.b->meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::g();
+}
+
+function meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::g(c:meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::C[*]):Boolean[1]
+{
+  $c.cid->isNotEmpty();
+}
+
+###Mapping
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::SourceToTargetMappingWithSubtypeAndSuperTypeAccesses
+(
+  meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::TargetForSubTypeAndSuperTypeAccesses : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Source
+    id : if($src.a->size() == 1, | $src.accessClassBProperties, | $src.accessClassBAndCSuperTypeProperties)
+  }
+)
+
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::SourceToTargetMappingWithSubtypeAndSuperTypeAccesses2
+(
+  meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::TargetForSubTypeAndSuperTypeAccesses : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Source
+    id : if($src.a->size()==1, | $src.a->filter(a|$a.b.id->isNotEmpty() && $a->meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::f()).b.id, | $src.accessClassBProperties())
+  }
+)
+
+###Pure
+import meta::pure::graphFetch::tests::sourceTreeCalc::withFilters::*;
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withFilters::Source
+{
+  s : String[*];
+  x : String[0..1];
+  y : String[0..1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withFilters::Target_A
+{
+  id : String[*];
+  b  : Target_B[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withFilters::Target_B
+{
+  id : String[*];
+}
+
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testFiltersAddProperties():Boolean[1]
+{
+  let tree = #{
+      Target_A {
+         id,
+         b
+      }
+   }#;
+
+  let expectedString = 'Source\n' +
+                        '(\n' +
+                        '  s\n' +
+                        '  x\n' +
+                        '  y\n' +
+                        ')';
+
+   let sourceTree = meta::pure::graphFetch::calculateSourceTree($tree, 
+                                                                meta::pure::graphFetch::tests::sourceTreeCalc::withFilters::SourceToTargetMappingWithFilters,
+                                                                meta::pure::router::extension::defaultExtensions());
+   assertEquals($expectedString, $sourceTree->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString());
+}
+
+###Mapping
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withFilters::SourceToTargetMappingWithFilters
+(
+  meta::pure::graphFetch::tests::sourceTreeCalc::withFilters::Target_A : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::withFilters::Source
+    ~filter $src.x->isNotEmpty()
+    id : $src.s,
+    b  : $src
+  }
+
+  meta::pure::graphFetch::tests::sourceTreeCalc::withFilters::Target_B : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::withFilters::Source
+    ~filter $src.y->isNotEmpty()
+    id : $src.s
+  }
+)
+
+###Pure
+import meta::pure::graphFetch::tests::sourceTreeCalc::withFlatteningInTransform::*;
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withFlatteningInTransform::Source_A
+{
+  propA : String[1];
+  propB : Source_B[0..1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withFlatteningInTransform::Source_B
+{
+  propC : Source_C[0..1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withFlatteningInTransform::Source_C
+{
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withFlatteningInTransform::Source_C_1 extends Source_C
+{
+  propD : String[0..1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withFlatteningInTransform::Target_A
+{
+  propA : String[1];
+  propB : Target_B[0..1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withFlatteningInTransform::Target_B
+{
+  propC : String[0..1];
+}
+
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testFlatteningInTransform():Boolean[1]
+{
+  let tree = #{
+      Target_A {
+         propA,
+         propB {
+            propC
+         }
+      }
+   }#;
+
+  let expectedString =  'Source_A\n' + 
+                        '(\n' +
+                        '  propA\n' +
+                        '  propB\n' +
+                        '  (\n' +
+                        '    propC\n' +
+                        '    propC->subType(Source_C_1)\n' +   
+                        '    (\n' +
+                        '      propD\n' +
+                        '    )\n' +
+                        '  )\n' +
+                        ')';
+
+   let sourceTree = meta::pure::graphFetch::calculateSourceTree($tree, 
+                                                                meta::pure::graphFetch::tests::sourceTreeCalc::withFlatteningInTransform::SourceToTargetMappingWithFlatteningInTransform,
+                                                                meta::pure::router::extension::defaultExtensions());
+   assertEquals($expectedString, $sourceTree->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString());
+}
+
+###Mapping
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withFlatteningInTransform::SourceToTargetMappingWithFlatteningInTransform
+(
+  meta::pure::graphFetch::tests::sourceTreeCalc::withFlatteningInTransform::Target_A : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::withFlatteningInTransform::Source_A
+     
+    propA : $src.propA,
+    propB : $src.propB.propC->cast(@meta::pure::graphFetch::tests::sourceTreeCalc::withFlatteningInTransform::Source_C_1)
+  }
+
+  meta::pure::graphFetch::tests::sourceTreeCalc::withFlatteningInTransform::Target_B : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::withFlatteningInTransform::Source_C_1
+     
+    propC : $src.propD
+  }
+)
+

@@ -1,3 +1,17 @@
+//  Copyright 2022 Goldman Sachs
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+
 package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -31,7 +45,7 @@ public class ConnectionStateManagerPOJO
     private Set<DataSourceSpecification> buildDataSourceSpecifications()
     {
         Set<DataSourceSpecification> dataSourceSpecificationSet = new HashSet<>();
-        this.pools.forEach(pool-> dataSourceSpecificationSet.add(pool.getDataSourceSpecification()));
+        this.pools.forEach(pool -> dataSourceSpecificationSet.add(pool.getDataSourceSpecification()));
         return dataSourceSpecificationSet;
     }
 
@@ -43,7 +57,8 @@ public class ConnectionStateManagerPOJO
         public final AuthenticationStrategy authenticationStrategy;
         public final PoolDynamic aggregatedPoolStats;
 
-        public RelationalStoreInfo(DataSourceSpecification dataSourceSpecification) {
+        public RelationalStoreInfo(DataSourceSpecification dataSourceSpecification)
+        {
             this.connectionKey = dataSourceSpecification.getConnectionKey();
             this.connectionKeyShortId = connectionKey.shortId();
             this.datasourceName = dataSourceSpecification.toString();
@@ -51,7 +66,8 @@ public class ConnectionStateManagerPOJO
             this.aggregatedPoolStats = null;
         }
 
-        public RelationalStoreInfo(DataSourceSpecification dataSourceSpecification, Stream<DataSourceWithStatistics> poolsForDatasource) {
+        public RelationalStoreInfo(DataSourceSpecification dataSourceSpecification, Stream<DataSourceWithStatistics> poolsForDatasource)
+        {
             this.connectionKey = dataSourceSpecification.getConnectionKey();
             this.connectionKeyShortId = connectionKey.shortId();
             this.datasourceName = dataSourceSpecification.toString();
@@ -59,7 +75,8 @@ public class ConnectionStateManagerPOJO
             this.aggregatedPoolStats = buildAggregatedPoolStats(poolsForDatasource);
         }
 
-        private PoolDynamic buildAggregatedPoolStats(Stream<DataSourceWithStatistics> poolsForDatasource) {
+        private PoolDynamic buildAggregatedPoolStats(Stream<DataSourceWithStatistics> poolsForDatasource)
+        {
             PoolDynamic aggregated = new PoolDynamic(0, 0, 0, 0);
             poolsForDatasource.forEach(pool -> aggregated.addPoolStats(pool.getDataSource()));
             return aggregated;
@@ -150,7 +167,7 @@ public class ConnectionStateManagerPOJO
         {
             if (dataSource != null)
             {
-                HikariPoolMXBean mxBean = ((HikariDataSource)dataSource).getHikariPoolMXBean();
+                HikariPoolMXBean mxBean = ((HikariDataSource) dataSource).getHikariPoolMXBean();
                 if (mxBean != null)
                 {
                     this.activeConnections += mxBean.getActiveConnections();
@@ -173,6 +190,7 @@ public class ConnectionStateManagerPOJO
     {
         return dataSourceSpecifications != null ? dataSourceSpecifications.size() : 0;
     }
+
     @JsonProperty(value = "stores", required = true)
     public Set<RelationalStoreInfo> getStores()
     {

@@ -47,7 +47,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 
 import java.util.List;
 
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.*;
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.appendTabString;
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
 
 public class RelationalGrammarComposerExtension implements IRelationalGrammarComposerExtension
 {
@@ -176,37 +178,37 @@ public class RelationalGrammarComposerExtension implements IRelationalGrammarCom
                 List<IRelationalGrammarComposerExtension> extensions = IRelationalGrammarComposerExtension.getExtensions(context);
 
                 String authenticationStrategy = IRelationalGrammarComposerExtension.process(relationalDatabaseConnection.authenticationStrategy,
-                    ListIterate.flatCollect(extensions, IRelationalGrammarComposerExtension::getExtraAuthenticationStrategyComposers),
-                    context);
+                        ListIterate.flatCollect(extensions, IRelationalGrammarComposerExtension::getExtraAuthenticationStrategyComposers),
+                        context);
 
                 String specification = IRelationalGrammarComposerExtension.process(relationalDatabaseConnection.datasourceSpecification,
-                    ListIterate.flatCollect(extensions, IRelationalGrammarComposerExtension::getExtraDataSourceSpecificationComposers),
-                    context);
+                        ListIterate.flatCollect(extensions, IRelationalGrammarComposerExtension::getExtraDataSourceSpecificationComposers),
+                        context);
 
                 List<String> postProcessorStrings = FastList.newList();
                 if (relationalDatabaseConnection.postProcessors != null && !relationalDatabaseConnection.postProcessors.isEmpty())
                 {
                     postProcessorStrings.addAll(ListIterate.collect(relationalDatabaseConnection.postProcessors, postProcessor -> IRelationalGrammarComposerExtension.process(
-                        postProcessor,
-                        ListIterate.flatCollect(extensions, IRelationalGrammarComposerExtension::getExtraPostProcessorComposers),
-                        context)));
+                            postProcessor,
+                            ListIterate.flatCollect(extensions, IRelationalGrammarComposerExtension::getExtraPostProcessorComposers),
+                            context)));
                 }
 
                 String postProcessors = !postProcessorStrings.isEmpty()
-                    ? "postProcessors:\n" + getTabString() + "[\n" + String.join(",\n", postProcessorStrings) + "\n" + getTabString() + "];\n"
-                    : null;
+                        ? "postProcessors:\n" + getTabString() + "[\n" + String.join(",\n", postProcessorStrings) + "\n" + getTabString() + "];\n"
+                        : null;
 
                 return Tuples.pair(RelationalGrammarParserExtension.RELATIONAL_DATABASE_CONNECTION_TYPE, context.getIndentationString() + getTabString(baseIndentation) + "{\n" +
-                    (relationalDatabaseConnection.element != null ? (context.getIndentationString() + getTabString(baseIndentation + 1) + "store: " + relationalDatabaseConnection.element + ";\n") : "") +
-                    context.getIndentationString() + getTabString(baseIndentation + 1) + "type: " + relationalDatabaseConnection.type.name() + ";\n" +
-                    (relationalDatabaseConnection.timeZone != null ? (context.getIndentationString() + getTabString(baseIndentation + 1) + "timezone: " + relationalDatabaseConnection.timeZone + ";\n") : "") +
-                    (relationalDatabaseConnection.quoteIdentifiers != null ? (context.getIndentationString() + getTabString(baseIndentation + 1) + "quoteIdentifiers: " + relationalDatabaseConnection.quoteIdentifiers + ";\n") : "") +
-                    context.getIndentationString() + getTabString(baseIndentation + 1) + "specification: " + specification + ";\n" +
-                    context.getIndentationString() + getTabString(baseIndentation + 1) + "auth: " + authenticationStrategy + ";\n" +
-                    (postProcessors != null
-                        ? context.getIndentationString() + getTabString(baseIndentation + 1) + postProcessors
-                        : "") +
-                    context.getIndentationString() + "}");
+                        (relationalDatabaseConnection.element != null ? (context.getIndentationString() + getTabString(baseIndentation + 1) + "store: " + relationalDatabaseConnection.element + ";\n") : "") +
+                        context.getIndentationString() + getTabString(baseIndentation + 1) + "type: " + relationalDatabaseConnection.type.name() + ";\n" +
+                        (relationalDatabaseConnection.timeZone != null ? (context.getIndentationString() + getTabString(baseIndentation + 1) + "timezone: " + relationalDatabaseConnection.timeZone + ";\n") : "") +
+                        (relationalDatabaseConnection.quoteIdentifiers != null ? (context.getIndentationString() + getTabString(baseIndentation + 1) + "quoteIdentifiers: " + relationalDatabaseConnection.quoteIdentifiers + ";\n") : "") +
+                        context.getIndentationString() + getTabString(baseIndentation + 1) + "specification: " + specification + ";\n" +
+                        context.getIndentationString() + getTabString(baseIndentation + 1) + "auth: " + authenticationStrategy + ";\n" +
+                        (postProcessors != null
+                                ? context.getIndentationString() + getTabString(baseIndentation + 1) + postProcessors
+                                : "") +
+                        context.getIndentationString() + "}");
             }
             return null;
         });

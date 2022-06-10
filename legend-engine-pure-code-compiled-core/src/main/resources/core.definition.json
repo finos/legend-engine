@@ -1,0 +1,5 @@
+{
+    "name" : "core",
+    "pattern" : "(meta::json|meta::protocols|meta::external::shared::format|meta::pure|meta::alloy|meta::external::language::morphir|meta::external::format::yaml|meta::external::format::rosetta|meta::external::format::protobuf|meta::legend|meta::external::format::avro|meta::external::language::java)(::.*)?",
+    "dependencies" : ["platform"]
+}

@@ -35,7 +35,11 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
-import org.finos.legend.pure.generated.*;
+import org.finos.legend.pure.generated.Root_meta_pure_router_extension_RouterExtension;
+import org.finos.legend.pure.generated.core_external_shared_extension;
+import org.finos.legend.pure.generated.core_servicestore_router_router_extension;
+import org.finos.legend.pure.generated.core_external_format_flatdata_extension;
+import org.finos.legend.pure.generated.core_external_format_json_extension;
 import org.finos.legend.server.pac4j.kerberos.KerberosProfile;
 import org.finos.legend.server.pac4j.kerberos.LocalCredentials;
 

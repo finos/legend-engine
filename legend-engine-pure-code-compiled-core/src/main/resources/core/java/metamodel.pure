@@ -1,0 +1,1190 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::metamodel::*;
+import meta::external::language::java::metamodel::project::*;
+
+/*
+   The modeling strategy is to follow Java reflection
+   Except for types (introduced PrimitiveType and FunctionType)
+   That's why primitive and interface are flags on Class
+*/
+
+Class meta::external::language::java::metamodel::Importable
+{
+}
+
+Class meta::external::language::java::metamodel::Package extends meta::external::language::java::metamodel::AnnotatedElement, meta::external::language::java::metamodel::Importable
+{
+   <<equality.Key>> name : String[1];
+}
+
+Association meta::external::language::java::metamodel::PackageChildren
+{
+   <<equality.Key>> parent : meta::external::language::java::metamodel::Package[0..1];
+   children : meta::external::language::java::metamodel::Package[*];
+}
+
+Enum meta::external::language::java::metamodel::Modifier
+{
+   Abstract,
+   Final,
+   Interface,
+   Native,
+   Private,
+   Protected,
+   Public,
+   Static,
+   Strict,
+   Synchronized,
+   Transient,
+   Volatile,
+   Default
+}
+
+Class meta::external::language::java::metamodel::Type
+{
+}
+
+Class meta::external::language::java::metamodel::ParameterizedType extends meta::external::language::java::metamodel::Type
+{
+   <<equality.Key>> rawType : meta::external::language::java::metamodel::Type[1];
+   <<equality.Key>> typeArguments : meta::external::language::java::metamodel::Type[*];
+}
+
+Class meta::external::language::java::metamodel::WildcardType extends meta::external::language::java::metamodel::Type
+{
+   <<equality.Key>> lowerBounds : meta::external::language::java::metamodel::Type[*];
+   <<equality.Key>> upperBounds : meta::external::language::java::metamodel::Type[*];
+}
+
+Class meta::external::language::java::metamodel::Member
+{
+   modifiers : Modifier[*];
+}
+
+Class meta::external::language::java::metamodel::Field extends meta::external::language::java::metamodel::AnnotatedElement, Member
+[
+   $this.value->isEmpty() || $this.valueCode->isEmpty()
+]
+{
+   name : String[1];
+   type : meta::external::language::java::metamodel::Type[1];
+   value: String[0..1];
+   valueCode: Code[0..1];
+}
+
+Class meta::external::language::java::metamodel::Method extends meta::external::language::java::metamodel::AnnotatedElement, Member, GenericDeclaration
+[
+   $this.body->isEmpty() || $this.bodyCode->isEmpty()
+]
+{
+   name : String[1];
+   parameters : meta::external::language::java::metamodel::Parameter[*];
+   returnType : meta::external::language::java::metamodel::Type[1];
+   body : String[0..1]; // String for now ... will model expressions later
+   bodyCode: Code[0..1];
+   
+   nullResultPossible : Boolean[0..1];
+   functionType : meta::external::language::java::metamodel::FunctionType[0..1];
+}
+
+Class meta::external::language::java::metamodel::Parameter extends meta::external::language::java::metamodel::AnnotatedElement
+{
+   name : String[1];
+   type : meta::external::language::java::metamodel::Type[1];
+}
+
+Class meta::external::language::java::metamodel::Constructor extends meta::external::language::java::metamodel::AnnotatedElement, Member, GenericDeclaration
+[
+   $this.body->isEmpty() || $this.bodyCode->isEmpty()
+]
+{
+   parameters : meta::external::language::java::metamodel::Parameter[*];
+   body : String[0..1]; // String for now ... will model expressions later
+   bodyCode: Code[0..1];
+}
+
+Class meta::external::language::java::metamodel::TypeVariable extends meta::external::language::java::metamodel::Type
+{
+   <<equality.Key>> bounds : meta::external::language::java::metamodel::Type[*];
+   <<equality.Key>> name : String[1];
+}
+
+Class meta::external::language::java::metamodel::GenericDeclaration
+{
+   typeParameters : TypeVariable[*];
+}
+
+Class meta::external::language::java::metamodel::AnnotatedElement
+{
+   annotations : meta::external::language::java::metamodel::Annotation[*];
+   javaDoc: String[0..1];
+}
+
+Class meta::external::language::java::metamodel::Annotation
+{
+
+}
+
+Class meta::external::language::java::metamodel::Array extends meta::external::language::java::metamodel::Type, meta::external::language::java::metamodel::AnnotatedElement
+{
+   <<equality.Key>> rawType : meta::external::language::java::metamodel::Type[1];
+}
+
+Class meta::external::language::java::metamodel::Class extends meta::external::language::java::metamodel::Type, meta::external::language::java::metamodel::GenericDeclaration, meta::external::language::java::metamodel::AnnotatedElement, meta::external::language::java::metamodel::Importable
+{
+   <<equality.Key>> simpleName : String[1];
+   <<equality.Key>> package : meta::external::language::java::metamodel::Package[1];
+
+   modifiers : Modifier[*];
+
+   interfaces : meta::external::language::java::metamodel::Type[*];
+   superType : meta::external::language::java::metamodel::Type[0..1];
+
+   constructors : Constructor[*];
+   fields : Field[*];
+   methods : meta::external::language::java::metamodel::Method[*];
+
+   additionalImports : String[*];
+
+   projectionParentName : String[0..1]; // Java doesn't really have an equivalent AFAIK but we need this
+}
+
+Class meta::external::language::java::metamodel::PrimitiveType extends meta::external::language::java::metamodel::Type
+{
+   <<equality.Key>> simpleName : String[1];
+}
+
+// Not really a type in Java but used to carry type information for lambdas during code generation
+Class meta::external::language::java::metamodel::FunctionType extends meta::external::language::java::metamodel::Type
+{
+   <<equality.Key>> parameterTypes : meta::external::language::java::metamodel::Type[*];
+   <<equality.Key>> returnType     : meta::external::language::java::metamodel::Type[1];
+   nullResultPossible : Boolean[0..1];
+}
+
+Class meta::external::language::java::metamodel::Enumeration extends meta::external::language::java::metamodel::Class
+{
+   enumeration : EnumerationEntry[*];
+}
+
+Class meta::external::language::java::metamodel::EnumerationEntry extends meta::external::language::java::metamodel::AnnotatedElement
+[
+   $this.value->isEmpty() || $this.arguments->isEmpty()
+]
+{
+   name      : String[1];
+   value     : String[0..1];
+   arguments : Code[*];
+}
+
+function meta::external::language::java::metamodel::assignmentOperators():String[*]
+{
+   ['=','+=','-=','*=','/=','%=','&=','^=','|=','<<=','>>=','>>>='];
+}
+
+Profile meta::external::language::java::metamodel::annotations::AnnotationJavaInfo
+{
+  tags : [javaClass];
+}
+
+Class
+{
+  meta::external::language::java::metamodel::annotations::AnnotationJavaInfo.javaClass = 'com.fasterxml.jackson.annotation.JsonIgnoreProperties'
+}
+meta::external::language::java::metamodel::annotations::json::JsonIgnoreProperties extends meta::external::language::java::metamodel::Annotation
+{
+   ignoreUnknown : Boolean[1];
+   value: String[*];
+}
+
+Class meta::external::language::java::metamodel::annotations::json::JsonIgnore extends meta::external::language::java::metamodel::Annotation
+{
+}
+
+Class meta::external::language::java::metamodel::annotations::json::JsonAnyGetter extends meta::external::language::java::metamodel::Annotation
+{
+}
+
+Class meta::external::language::java::metamodel::annotations::json::JsonAnySetter extends meta::external::language::java::metamodel::Annotation
+{
+}
+
+Class meta::external::language::java::metamodel::annotations::json::JsonValue extends meta::external::language::java::metamodel::Annotation
+{
+}
+
+Class meta::external::language::java::metamodel::annotations::json::JsonCreator extends meta::external::language::java::metamodel::Annotation
+{
+}
+
+Class
+{
+  meta::external::language::java::metamodel::annotations::AnnotationJavaInfo.javaClass = 'com.fasterxml.jackson.annotation.JsonProperty'
+}
+meta::external::language::java::metamodel::annotations::json::JsonProperty extends meta::external::language::java::metamodel::Annotation
+{
+   value : String[0..1];
+   required : Boolean[0..1];
+}
+
+Class meta::external::language::java::metamodel::annotations::json::JsonSerialize extends meta::external::language::java::metamodel::Annotation
+{
+   as : meta::external::language::java::metamodel::annotations::json::EnumValue[0..1];
+   using : meta::external::language::java::metamodel::annotations::json::EnumValue[0..1];
+}
+
+Class meta::external::language::java::metamodel::annotations::json::JsonDeserialize extends meta::external::language::java::metamodel::Annotation
+{
+   as : meta::external::language::java::metamodel::annotations::json::EnumValue[0..1];
+   using : meta::external::language::java::metamodel::annotations::json::EnumValue[0..1];
+}
+
+Class meta::external::language::java::metamodel::annotations::json::EnumValue
+{
+   value: String[1];
+}
+
+Class
+{
+  meta::external::language::java::metamodel::annotations::AnnotationJavaInfo.javaClass = 'com.fasterxml.jackson.annotation.JsonSubTypes'
+}
+meta::external::language::java::metamodel::annotations::json::JsonSubTypes extends meta::external::language::java::metamodel::Annotation
+{
+   subTypes : meta::external::language::java::metamodel::annotations::json::JsonSubType[*];
+}
+
+Class meta::external::language::java::metamodel::annotations::json::JsonSubType
+{
+   name  : String[0..1];
+   value : String[1];
+}
+
+
+Class
+{
+  meta::external::language::java::metamodel::annotations::AnnotationJavaInfo.javaClass = 'com.fasterxml.jackson.annotation.JsonTypeInfo'
+}
+meta::external::language::java::metamodel::annotations::json::JsonTypeInfo extends meta::external::language::java::metamodel::Annotation
+{
+    use        : meta::external::language::java::metamodel::annotations::json::EnumValue[1];
+    include    : meta::external::language::java::metamodel::annotations::json::EnumValue[0..1];
+    id         : meta::external::language::java::metamodel::annotations::json::EnumValue[0..1];
+    property   : String[0..1];
+    visible    : Boolean[0..1];
+    defaultImpl: meta::external::language::java::metamodel::annotations::json::EnumValue[0..1];
+}
+
+Class meta::external::language::java::metamodel::annotations::json::JsonAutoDetect extends meta::external::language::java::metamodel::Annotation
+{
+   fieldVisibility: meta::external::language::java::metamodel::annotations::json::EnumValue[1];
+   getterVisibility: meta::external::language::java::metamodel::annotations::json::EnumValue[1];
+   setterVisibility: meta::external::language::java::metamodel::annotations::json::EnumValue[1];
+}
+
+Class meta::external::language::java::metamodel::annotations::json::JsonInclude extends meta::external::language::java::metamodel::Annotation
+{
+   value : meta::external::language::java::metamodel::annotations::json::EnumValue[1];
+}
+
+Class meta::external::language::java::metamodel::annotations::json::JsonTypeName extends meta::external::language::java::metamodel::Annotation
+{
+   value : String[1];
+}
+Class 
+{
+  meta::external::language::java::metamodel::annotations::AnnotationJavaInfo.javaClass = 'javax.annotation.Generated'
+}
+meta::external::language::java::metamodel::annotations::generated::Generated extends meta::external::language::java::metamodel::Annotation
+{
+   value : String[1];
+   comments: String[0..1];
+}
+
+Class 
+{
+  meta::external::language::java::metamodel::annotations::AnnotationJavaInfo.javaClass = 'java.lang.Override'
+}
+meta::external::language::java::metamodel::annotations::override::Override extends meta::external::language::java::metamodel::Annotation
+{
+}
+
+Class meta::external::language::java::metamodel::annotations::jsi::ExposeToSlang extends meta::external::language::java::metamodel::Annotation
+{
+}
+
+Class meta::external::language::java::metamodel::annotations::jsi::TypedStructure extends meta::external::language::java::metamodel::Annotation
+{
+}
+
+Class meta::external::language::java::metamodel::annotations::jsi::ExposeInSlangScope extends meta::external::language::java::metamodel::Annotation
+{
+   value : String[1];
+}
+
+Class
+{
+  meta::external::language::java::metamodel::annotations::AnnotationJavaInfo.javaClass = 'javax.validation.constraints.NotNull'
+}
+meta::external::language::java::metamodel::annotations::java::validation::constraints::NotNull extends meta::external::language::java::metamodel::Annotation
+{
+}
+
+Class meta::external::language::java::metamodel::annotations::java::validation::constraints::Valid extends meta::external::language::java::metamodel::Annotation
+{
+}
+
+Class meta::external::language::java::metamodel::annotations::java::validation::constraints::Size extends meta::external::language::java::metamodel::Annotation
+{
+   min      :Integer[0..1];
+   max      :Integer[0..1];
+   message  :String[0..1];
+}
+
+Class meta::external::language::java::metamodel::annotations::java::validation::constraints::Min extends meta::external::language::java::metamodel::Annotation
+{
+   value    :Integer[1];
+   message  :String[0..1];
+}
+
+Class meta::external::language::java::metamodel::annotations::java::validation::constraints::Max extends meta::external::language::java::metamodel::Annotation
+{
+   value    :Integer[1];
+   message  :String[0..1];
+}
+
+
+Class meta::external::language::java::metamodel::annotations::immutables::value::Immutable extends meta::external::language::java::metamodel::Annotation
+{
+}
+
+Class meta::external::language::java::metamodel::annotations::immutables::value::Auxiliary extends meta::external::language::java::metamodel::Annotation
+{
+}
+
+Class meta::external::language::java::metamodel::annotations::immutables::value::Style extends meta::external::language::java::metamodel::Annotation
+{
+   init: String[0..1];
+   get: String[0..1];
+   set: String[0..1];
+   typeAbstract: String[0..1];
+   typeImmutable: String[0..1];
+   builder: String[0..1];
+   build: String[0..1];
+   strictBuilder: Boolean[0..1];
+   optionalAcceptNullable: Boolean[0..1];
+   jdkOnly: Boolean[0..1];
+}
+
+Class meta::external::language::java::metamodel::annotations::immutables::value::Default extends meta::external::language::java::metamodel::Annotation
+{
+}
+
+Class meta::external::language::java::metamodel::annotations::immutables::value::Check extends meta::external::language::java::metamodel::Annotation
+{
+}
+
+Class meta::external::language::java::metamodel::annotations::SuppressWarnings extends meta::external::language::java::metamodel::Annotation
+{
+   value: String[1];
+}
+
+Profile meta::external::language::java::metamodel::profiles::generation {
+   stereotypes: [opaque, container, reference];
+}
+
+Profile meta::external::language::java::metamodel::profiles::temporalType {
+   stereotypes: [Instant, LocalDate, LocalDateTime, LocalTime, OffsetDateTime, OffsetTime, ZonedDateTime];
+}
+
+Profile meta::external::language::java::metamodel::profiles::collectionType {
+   stereotypes: [List, Set, Map];
+}
+
+Profile meta::external::language::java::metamodel::profiles::integerType {
+   stereotypes: [Integer, Long];
+}
+
+Profile meta::external::language::java::metamodel::profiles::floatType {
+   stereotypes: [Float, BigDecimal, Double];
+}
+
+Profile meta::external::language::java::metamodel::profiles::stringType {
+   stereotypes: [byteArray];
+}
+
+Profile meta::external::language::java::metamodel::profiles::enumValue {
+   stereotypes: [Default];
+   tags:[name];
+}
+
+Profile meta::external::language::java::metamodel::profiles::jsonProperty {
+   stereotypes: [customName, ignoreProperties, ignoreProperty];
+   tags: [value];
+}
+
+Profile meta::external::language::java::metamodel::profiles::immutables {
+   stereotypes: [Auxiliary];
+}
+
+Class meta::external::language::java::metamodel::Code
+{
+   <<equality.Key>> type : meta::external::language::java::metamodel::Type[1];
+   requires              : CodeDependency[*];
+}
+
+Class meta::external::language::java::metamodel::SimpleCode extends Code
+{
+   <<equality.Key>> code : String[1];
+}
+
+Class meta::external::language::java::metamodel::Statement extends Code
+{
+}
+
+Class meta::external::language::java::metamodel::Null extends Code
+{
+}
+
+Class meta::external::language::java::metamodel::This extends Code
+{
+}
+
+Class meta::external::language::java::metamodel::Literal extends Code
+{
+   <<equality.Key>> literal : String[1];
+}
+
+Class meta::external::language::java::metamodel::Block extends Statement
+{
+   <<equality.Key>> statements : Code[*];
+}
+
+Class meta::external::language::java::metamodel::ExpressionStatement extends Statement
+{
+   <<equality.Key>> expression : Code[1];
+}
+
+Class meta::external::language::java::metamodel::Variable extends Code
+{
+   <<equality.Key>> name : String[1];
+}
+
+Class meta::external::language::java::metamodel::CodeParameter extends Variable, meta::external::language::java::metamodel::Parameter
+{
+}
+
+Class meta::external::language::java::metamodel::InfixExpression extends Code
+{
+   <<equality.Key>> left  : Code[1];
+   <<equality.Key>> op    : String[1];
+   <<equality.Key>> right : Code[1];
+}
+
+Class meta::external::language::java::metamodel::PrefixExpression extends Code
+{
+   <<equality.Key>> op         : String[1];
+   <<equality.Key>> expression : Code[1];
+}
+
+Class meta::external::language::java::metamodel::PostfixExpression extends Code
+{
+   <<equality.Key>> expression : Code[1];
+   <<equality.Key>> op         : String[1];
+}
+
+Class meta::external::language::java::metamodel::Conditional extends Code
+{
+   <<equality.Key>> test : Code[1];
+   <<equality.Key>> then : Code[1];
+   <<equality.Key>> else : Code[1];
+}
+
+Class meta::external::language::java::metamodel::InstanceOf extends Code
+{
+   <<equality.Key>> expression : Code[1];
+   <<equality.Key>> class      : meta::external::language::java::metamodel::Class[1];
+}
+
+Class meta::external::language::java::metamodel::LocalVariableDeclaration extends Statement
+{
+   <<equality.Key>> modifiers    : meta::external::language::java::metamodel::Modifier[*];
+   <<equality.Key>> variableName : String[1];
+   <<equality.Key>> initializer  : Code[0..1];
+}
+
+Class meta::external::language::java::metamodel::If extends Statement
+{
+   <<equality.Key>> test : Code[1];
+   <<equality.Key>> then : Code[1];
+   <<equality.Key>> else : Code[0..1];
+}
+
+Class meta::external::language::java::metamodel::For extends Statement
+{
+   <<equality.Key>> init   : Code[0..1];
+   <<equality.Key>> test   : Code[0..1];
+   <<equality.Key>> update : Code[0..1];
+   <<equality.Key>> body   : Code[1];
+}
+
+Class meta::external::language::java::metamodel::ForEach extends Statement
+{
+   <<equality.Key>> parameter  : meta::external::language::java::metamodel::CodeParameter[1];
+   <<equality.Key>> collection : Code[1];
+   <<equality.Key>> body       : Code[1];
+}
+
+Class meta::external::language::java::metamodel::While extends Statement
+{
+   <<equality.Key>> test : Code[1];
+   <<equality.Key>> then : Code[1];
+}
+
+Class meta::external::language::java::metamodel::DoWhile extends Statement
+{
+   <<equality.Key>> do    : Code[1];
+   <<equality.Key>> while : Code[1];
+}
+
+Class meta::external::language::java::metamodel::Try extends Statement
+{
+   <<equality.Key>> try     : Code[1];
+   <<equality.Key>> catches : Catch[*];
+   <<equality.Key>> finally : Finally[0..1];
+}
+
+Class meta::external::language::java::metamodel::Catch extends Code
+{
+   <<equality.Key>> parameter : meta::external::language::java::metamodel::CodeParameter[1];
+   <<equality.Key>> clause    : Code[1];
+}
+
+Class meta::external::language::java::metamodel::Finally extends Code
+{
+   <<equality.Key>> clause    : Code[1];
+}
+
+Class meta::external::language::java::metamodel::Return extends Statement
+{
+   <<equality.Key>> expression : Code[0..1];
+}
+
+Class meta::external::language::java::metamodel::Throw extends Statement
+{
+   <<equality.Key>> expression : Code[1];
+}
+
+Class meta::external::language::java::metamodel::New extends Code
+{
+   <<equality.Key>> typeArguments  : meta::external::language::java::metamodel::Type[*];
+   <<equality.Key>> arguments      : Code[*];
+}
+
+Class meta::external::language::java::metamodel::NewAnonymous extends New
+{
+   <<equality.Key>> methods  : meta::external::language::java::metamodel::CodeMethod[*];
+}
+
+Class meta::external::language::java::metamodel::CodeMethod extends Code
+{
+   <<equality.Key>> modifiers  : meta::external::language::java::metamodel::Modifier[*];
+   <<equality.Key>> name       : String[1];
+   <<equality.Key>> parameters : meta::external::language::java::metamodel::CodeParameter[*];
+   <<equality.Key>> body       : Code[1];
+}
+
+Class meta::external::language::java::metamodel::ArrayAccess extends Code
+{
+   <<equality.Key>> array : Code[1];
+   <<equality.Key>> index : Code[1];
+}
+
+Class meta::external::language::java::metamodel::Cast extends Code
+{
+   <<equality.Key>> expression : Code[1];
+}
+
+Class meta::external::language::java::metamodel::CastProxy extends Cast
+{
+   <<equality.Key>> proxy : Code[1];
+}
+
+Class meta::external::language::java::metamodel::MethodCall extends Code
+{
+   <<equality.Key>> instance       : Code[1];
+   <<equality.Key>> typeArguments  : meta::external::language::java::metamodel::Type[*];
+   <<equality.Key>> methodName     : String[1];
+   <<equality.Key>> arguments      : Code[*];
+}
+
+Class meta::external::language::java::metamodel::ConstructorCall extends Statement
+{
+   <<equality.Key>> arguments      : Code[*];
+}
+
+Class meta::external::language::java::metamodel::ThisConstructorCall extends ConstructorCall
+{  
+}
+
+Class meta::external::language::java::metamodel::SuperConstructorCall extends ConstructorCall
+{
+}
+
+Class meta::external::language::java::metamodel::FieldAccess extends Code
+{
+   <<equality.Key>> instance  : Code[1];
+   <<equality.Key>> fieldName : String[1];
+}
+
+Class meta::external::language::java::metamodel::MethodReference extends Code
+{
+   <<equality.Key>> instance   : Code[1];
+   <<equality.Key>> methodName : String[1];
+}
+
+Class meta::external::language::java::metamodel::StaticMethodCall extends Code
+{
+   <<equality.Key>> class          : meta::external::language::java::metamodel::Type[1];
+   <<equality.Key>> typeArguments  : meta::external::language::java::metamodel::Type[*];
+   <<equality.Key>> methodName     : String[1];
+   <<equality.Key>> arguments      : Code[*];
+}
+
+Class meta::external::language::java::metamodel::StaticFieldAccess extends Code
+{
+   <<equality.Key>> class     : meta::external::language::java::metamodel::Type[1];
+   <<equality.Key>> fieldName : String[1];
+}
+
+Class meta::external::language::java::metamodel::StaticMethodReference extends Code
+{
+   <<equality.Key>> class      : meta::external::language::java::metamodel::Type[1];
+   <<equality.Key>> methodName : String[1];
+}
+
+Class meta::external::language::java::metamodel::Lambda extends Code
+{
+   <<equality.Key>> parameters : meta::external::language::java::metamodel::CodeParameter[*];
+   <<equality.Key>> expression : Code[1];
+}
+
+Class meta::external::language::java::metamodel::DeferredStreamResolve extends Code
+{
+   <<equality.Key>> stream : Code[1];
+}
+
+Class meta::external::language::java::metamodel::CodeDependency
+{
+   <<equality.Key>> name : String[1];
+   stateUpdater          : Function<{CodeDependencyResolutionState[1]->CodeDependencyResolutionState[1]}>[1];
+}
+
+Class meta::external::language::java::metamodel::CodeDependencyResolutionState
+{
+   projectsByDependency : Map<String, Project>[1];
+}
+
+Class meta::external::language::java::metamodel::project::Project
+{
+   root             : ProjectDirectory[1];
+   id               : MavenReference[1];
+   mainDependencies : Dependency[*];
+}
+
+Class meta::external::language::java::metamodel::project::ProjectDirectory
+{
+   name           : String[1];
+   classes        : meta::external::language::java::metamodel::Class[*];
+   files          : File[*];
+
+   // Deliberately not using association
+   parent         : ProjectDirectory[0..1];
+   subdirectories : ProjectDirectory[*];
+
+   fullPath()
+   {
+      if($this.parent->isEmpty(),
+         | fail('Should not reach root'); '';,
+         |
+      if($this.parent.parent->isEmpty(),
+         | $this.name,
+         | $this.parent->toOne().fullPath() + '/' + $this.name
+      ));
+   }: String[1];
+}
+
+Class meta::external::language::java::metamodel::project::File
+{
+   name: String[1];
+}
+
+Class meta::external::language::java::metamodel::project::TextFile extends File
+{
+   content: String[1];
+}
+
+Class meta::external::language::java::metamodel::project::Dependency
+{
+}
+
+Class meta::external::language::java::metamodel::project::MavenReference extends meta::external::language::java::metamodel::project::Dependency
+{
+   <<equality.Key>> group    : String[1];
+   <<equality.Key>> artifact : String[1];
+   <<equality.Key>> version  : String[1];
+}
+
+function meta::external::language::java::metamodel::javaKeywords(): String[*]
+{
+   [
+      'abstract'  ,'continue'   ,'for'         ,'new'        ,'switch',
+      'assert'    ,'default'    ,'if'          ,'package'    ,'synchronized',
+      'boolean'   ,'do'         ,'goto'        ,'private'    ,'this',
+      'break'     ,'double'     ,'implements'  ,'protected'  ,'throw',
+      'byte'      ,'else'       ,'import'      ,'public'     ,'throws',
+      'case'      ,'enum'       ,'instanceof'  ,'return'     ,'transient',
+      'catch'     ,'extends'    ,'int'         ,'short'      ,'try',
+      'char'      ,'final'      ,'interface'   ,'static'     ,'void',
+      'class'     ,'finally'    ,'long'        ,'strictfp'   ,'volatile',
+      'const'     ,'float'      ,'native'      ,'super'      ,'while'
+   ];
+}
+
+function meta::external::language::java::metamodel::isJavaLang(pkg: meta::external::language::java::metamodel::Package[1]):Boolean[1]
+{
+   $pkg.name == 'lang'
+   && $pkg.parent->isNotEmpty()
+   && $pkg.parent.name == 'java'
+   && $pkg.parent.parent->isEmpty();
+}
+
+function meta::external::language::java::metamodel::isStatic(method: meta::external::language::java::metamodel::Method[1]):Boolean[1]
+{
+   $method.modifiers->contains(meta::external::language::java::metamodel::Modifier.Static);
+}
+
+function meta::external::language::java::metamodel::packageNames(pkg: meta::external::language::java::metamodel::Package[1]):String[*]
+{
+   $pkg.parent->map(p| $p->packageNames())->concatenate($pkg.name);
+}
+
+function meta::external::language::java::metamodel::isValidPackageName(name: String[1]): Boolean[1]
+{
+   // TODO Enable once matches is fully available
+   $name->split('.')->forAll(nm | /*$nm->matches('[_$a-zA-Z][_$a-zA-Z0-9]*') && */ !$nm->in(javaKeywords()));
+}
+
+function meta::external::language::java::metamodel::isInPackage(type: meta::external::language::java::metamodel::Type[1], packageName: String[1]):Boolean[1]
+{
+   $type->match([
+      p:meta::external::language::java::metamodel::PrimitiveType[1]     | false,
+      a:meta::external::language::java::metamodel::Array[1]             | $a.rawType->isInPackage($packageName),
+      p:meta::external::language::java::metamodel::ParameterizedType[1] | $p.rawType->isInPackage($packageName),
+      t:meta::external::language::java::metamodel::TypeVariable[1]      | false,
+      c:meta::external::language::java::metamodel::Class[1]             | $c.package->isPackage($packageName)
+   ]);
+}
+
+function meta::external::language::java::metamodel::isPackage(pkg: meta::external::language::java::metamodel::Package[1], packageName: String[1]):Boolean[1]
+{
+   let pos  = $packageName->lastIndexOf('.');
+   if($pos == -1,
+      | $pkg.name == $packageName && $pkg.parent->isEmpty(),
+      {|
+         let parent = $packageName->substring(0, $pos);
+         let name   = $packageName->substring($pos+1);
+         $pkg.name == $name && $pkg.parent->isNotEmpty() && $pkg.parent->toOne()->isPackage($parent);
+      }
+   );
+}
+
+function meta::external::language::java::metamodel::isPrimitiveOrBoxedType(type: meta::external::language::java::metamodel::Type[1]):Boolean[1]
+{
+   $type->toOne()->match([
+      pt: meta::external::language::java::metamodel::PrimitiveType[1] | true,
+      c : meta::external::language::java::metamodel::Class[1]         | isBoxedType($c),
+      a : Any[1]                                  | false
+   ]);
+}
+
+function meta::external::language::java::metamodel::isPrimitive(type: meta::external::language::java::metamodel::Type[1]):Boolean[1]
+{
+   $type->toOne()->match([
+      pt: meta::external::language::java::metamodel::PrimitiveType[1] | true,
+      a : Any[1]                                  | false
+   ]);
+}
+
+function meta::external::language::java::metamodel::isPrimitiveNumber(type: meta::external::language::java::metamodel::Type[1]):Boolean[1]
+{
+   $type->isPrimitive() && $type->cast(@meta::external::language::java::metamodel::PrimitiveType).simpleName->in(['int', 'long', 'short', 'byte', 'float', 'double']);
+}
+
+function meta::external::language::java::metamodel::isPrimitiveInt(type: meta::external::language::java::metamodel::Type[1]):Boolean[1]
+{
+   $type->isPrimitive() && $type->cast(@meta::external::language::java::metamodel::PrimitiveType).simpleName == 'int';
+}
+
+function meta::external::language::java::metamodel::isPrimitiveLong(type: meta::external::language::java::metamodel::Type[1]):Boolean[1]
+{
+   $type->isPrimitive() && $type->cast(@meta::external::language::java::metamodel::PrimitiveType).simpleName == 'long';
+}
+
+function meta::external::language::java::metamodel::isBoxedType(type: meta::external::language::java::metamodel::Type[1]):Boolean[1]
+{
+   $type->instanceOf(meta::external::language::java::metamodel::Class) && $type->cast(@meta::external::language::java::metamodel::Class)->isBoxedType();
+}
+
+function meta::external::language::java::metamodel::isBoxedType(class: meta::external::language::java::metamodel::Class[1]):Boolean[1]
+{
+   $class.simpleName->in(['Boolean', 'Byte', 'Character', 'Float', 'Integer', 'Long', 'Short', 'Double'])
+      && $class.package.name == 'lang'
+      && $class.package.parent->isNotEmpty()
+      && $class.package.parent.name == 'java'
+      && $class.package.parent.parent->isEmpty();
+}
+
+function meta::external::language::java::metamodel::isBoxedNumberType(type: meta::external::language::java::metamodel::Type[1]):Boolean[1]
+{
+   $type->instanceOf(meta::external::language::java::metamodel::Class) && $type->cast(@meta::external::language::java::metamodel::Class)->isBoxedNumberType();
+}
+
+function meta::external::language::java::metamodel::isBoxedNumberType(class: meta::external::language::java::metamodel::Class[1]):Boolean[1]
+{
+   $class.simpleName->in(['Byte', 'Float', 'Integer', 'Long', 'Short', 'Double', 'Number']) && $class.package ->isJavaLang();
+}
+
+function meta::external::language::java::metamodel::isClass(type:meta::external::language::java::metamodel::Type[1], qualifiedName:String[1]):Boolean[1]
+{
+   $type->match([
+      c:meta::external::language::java::metamodel::Class[1] | $c->isClass($qualifiedName),
+      a:Any[1]                                              | false
+   ]);
+}
+
+function meta::external::language::java::metamodel::isClass(type:meta::external::language::java::metamodel::Type[1], pkg:String[1], names:String[*]):Boolean[1]
+{
+   $type->match([
+      c:meta::external::language::java::metamodel::Class[1] | $c->isClass($pkg, $names),
+      a:Any[1]                                              | false
+   ]);
+}
+
+function meta::external::language::java::metamodel::isClass(c:meta::external::language::java::metamodel::Class[1], qualifiedName:String[1]):Boolean[1]
+{
+   let pos  = $qualifiedName->lastIndexOf('.');
+   let pkg  = $qualifiedName->substring(0, $pos);
+   let name = $qualifiedName->substring($pos+1);
+   $c->isClass($pkg, $name);
+}
+
+function meta::external::language::java::metamodel::isClass(c:meta::external::language::java::metamodel::Class[1], pkg:String[1], names:String[*]):Boolean[1]
+{
+   $c->isInPackage($pkg) && $c.simpleName->in($names);
+}
+
+function meta::external::language::java::metamodel::isSubclassOf(c1:meta::external::language::java::metamodel::Class[1], c2:meta::external::language::java::metamodel::Class[1]):Boolean[1]
+{
+   if($c1 == $c2 || $c2->isClass('java.lang.Object'),
+      | true,
+      |
+   if($c1.superType->isNotEmpty(),
+      | $c1.superType->cast(@meta::external::language::java::metamodel::Class)->toOne()->isSubclassOf($c2),
+      |
+   if($c1->isClass('java.lang', 'Byte'),
+      | $c2->isClass('java.lang', ['Short', 'Character', 'Integer', 'Long', 'Float', 'Double', 'Number']),
+      |
+   if($c1->isClass('java.lang', 'Short'),
+      | $c2->isClass('java.lang', ['Character', 'Integer', 'Long', 'Float', 'Double', 'Number']),
+      |
+   if($c1->isClass('java.lang', 'Character'),
+      | $c2->isClass('java.lang', ['Integer', 'Long', 'Float', 'Double', 'Number']),
+      |
+   if($c1->isClass('java.lang', 'Integer'),
+      | $c2->isClass('java.lang', ['Long', 'Float', 'Double', 'Number']),
+      |
+   if($c1->isClass('java.lang', 'Long'),
+      | $c2->isClass('java.lang', ['Float', 'Double', 'Number']),
+      |
+   if($c1->isClass('java.lang', 'Float'),
+      | $c2->isClass('java.lang', ['Double', 'Number']),
+      |
+   if($c1->isClass('java.lang', 'Double'),
+      | $c2->isClass('java.lang', 'Number'),
+      | false
+   )))))))));
+}
+
+function meta::external::language::java::metamodel::isStatement(code: Code[1]):Boolean[1]
+{
+   $code->match([
+      c:SimpleCode[1] | true,   // Since unkmown we rely on caller to ensure it's in the right form
+      c:Statement[1]  | true,
+      c:Code[1]       | false
+   ]);
+}
+
+function meta::external::language::java::metamodel::isNull(expression:Code[1]):Boolean[1]
+{
+   $expression->instanceOf(Null);
+}
+
+
+function meta::external::language::java::metamodel::isSameLiteral(left:Code[1], right:Code[1]):Boolean[1]
+{
+   $left->instanceOf(Literal) && $right->instanceOf(Literal)
+      && $left->cast(@Literal).type == $right->cast(@Literal).type
+      && $left->cast(@Literal).literal == $right->cast(@Literal).literal;
+}
+
+
+function meta::external::language::java::metamodel::isValidExpressionAsStatement(expression:Code[1]):Boolean[1]
+{
+   $expression->match([
+      pre : PrefixExpression[1]  | $pre.op->in(['++', '--']),
+      post: PostfixExpression[1] | $post.op->in(['++', '--']),
+      inf : InfixExpression[1]   | $inf.op->in(assignmentOperators()),
+      mc  : MethodCall[1]        | true,
+      smc : StaticMethodCall[1]  | true,
+      new : New[1]               | true,
+      c   : Code[1]              | false
+   ])
+}
+
+function meta::external::language::java::metamodel::isAssignment(c:Code[1]):Boolean[1]
+{
+   $c->match([
+      inf : InfixExpression[1] | $inf.op->in(assignmentOperators()),
+      c   : Code[1]            | false
+   ])
+}
+
+function meta::external::language::java::metamodel::isDeclaration(c:Code[1]):Boolean[1]
+{
+   $c->match([
+      lvd : LocalVariableDeclaration[1] | true,
+      c   : Code[1]                     | false
+   ]);
+}
+
+function meta::external::language::java::metamodel::isDeclarationWithAssignment(c:Code[1]):Boolean[1]
+{
+   $c->match([
+      lvd : LocalVariableDeclaration[1] | !$lvd.initializer->isEmpty(),
+      c   : Code[1]                     | false
+   ]);
+}
+
+function meta::external::language::java::metamodel::isCollectionsEmptyList(c:Code[1]):Boolean[1]
+{
+   $c->match([
+      smc:StaticMethodCall[1] | $smc.class->isClass('java.util.Collections') && $smc.methodName == 'emptyList',
+      c  :Code[1]             | false
+   ]);
+}
+
+function meta::external::language::java::metamodel::isDeprecated(c:Code[1]):Boolean[1]
+{
+   $c->instanceOf(SimpleCode);
+}
+
+function meta::external::language::java::metamodel::isParameter(c:Code[1]):Boolean[1]
+{
+   $c->instanceOf(Parameter);
+}
+
+function meta::external::language::java::metamodel::parameterName(c:Code[1]):String[1]
+{
+   $c->cast(@Parameter).name;
+}
+
+function meta::external::language::java::metamodel::isVariable(c:Code[1]):Boolean[1]
+{
+   $c->instanceOf(Variable);
+}
+
+function meta::external::language::java::metamodel::variableName(c:Code[1]):String[1]
+{
+   $c->cast(@Variable).name;
+}
+
+
+function meta::external::language::java::metamodel::isJavaArray(type: meta::external::language::java::metamodel::Type[1]):Boolean[1]
+{
+   $type->instanceOf(meta::external::language::java::metamodel::Array);
+}
+
+function meta::external::language::java::metamodel::isJavaPrimitive(type: meta::external::language::java::metamodel::Type[1]):Boolean[1]
+{
+   $type->instanceOf(meta::external::language::java::metamodel::PrimitiveType);
+}
+
+function meta::external::language::java::metamodel::isJavaParameterizedTyype(type: meta::external::language::java::metamodel::Type[1]):Boolean[1]
+{
+   $type->instanceOf(meta::external::language::java::metamodel::ParameterizedType);
+}
+
+function meta::external::language::java::metamodel::isJavaList(type: meta::external::language::java::metamodel::Type[1]):Boolean[1]
+{
+   $type->match([
+      pt: meta::external::language::java::metamodel::ParameterizedType[1] | $pt.rawType->isClass('java.util.List'),
+      a :Any[1]                                                           | false
+   ]);
+}
+
+function meta::external::language::java::metamodel::isJavaCollection(type: meta::external::language::java::metamodel::Type[1]):Boolean[1]
+{
+   $type->match([
+      pt: meta::external::language::java::metamodel::ParameterizedType[1] | $pt.rawType->isClass('java.util', ['List', 'Set', 'EnumSet', 'ArrayList', 'LinkedList', 'HashSet', 'TreeSet']),
+      a :Any[1]                                                           | false
+   ]);
+}
+
+function meta::external::language::java::metamodel::elementType(type: meta::external::language::java::metamodel::Type[1]):meta::external::language::java::metamodel::Type[1]
+{
+   assert($type->isJavaParameterizedTyype(), |'Cannot obtain element type as not a Parameterized Type');
+   $type->cast(@meta::external::language::java::metamodel::ParameterizedType).typeArguments->at(0);
+}
+
+function meta::external::language::java::metamodel::elementTypeOfJavaList(type: meta::external::language::java::metamodel::Type[1]):meta::external::language::java::metamodel::Type[1]
+{
+   assert($type->isJavaList(), |'Cannot obtain element type as not a List');
+   $type->elementType();
+}
+
+function meta::external::language::java::metamodel::isJavaSupplier(type: meta::external::language::java::metamodel::Type[1]):Boolean[1]
+{
+   $type->match([
+      pt: meta::external::language::java::metamodel::ParameterizedType[1] | $pt.rawType->isClass('java.util.function.Supplier'),
+      a :Any[1]                                                           | false
+   ]);
+}
+
+function meta::external::language::java::metamodel::isJavaFunction(type: meta::external::language::java::metamodel::Type[1]):Boolean[1]
+{
+   $type->match([
+      pt: meta::external::language::java::metamodel::ParameterizedType[1] | $pt.rawType->isClass('java.util.function.Function'),
+      a :Any[1]                                                           | false
+   ]);
+}
+
+function meta::external::language::java::metamodel::suppliedTypeOfJavaSupplier(type: meta::external::language::java::metamodel::Type[1]):meta::external::language::java::metamodel::Type[1]
+{
+   assert($type->isJavaSupplier(), |'Cannot obtain supplied type as not a Supplier');
+   $type->cast(@meta::external::language::java::metamodel::ParameterizedType).typeArguments->at(0);
+}
+
+function meta::external::language::java::metamodel::returnTypeOfJavaFunction(type: meta::external::language::java::metamodel::Type[1]):meta::external::language::java::metamodel::Type[1]
+{
+   assert($type->isJavaFunction(), |'Cannot obtain supplied type as not a Function');
+   $type->cast(@meta::external::language::java::metamodel::ParameterizedType).typeArguments->at(1);
+}
+
+function meta::external::language::java::metamodel::inputTypeOfJavaFunction(type: meta::external::language::java::metamodel::Type[1]):meta::external::language::java::metamodel::Type[1]
+{
+   assert($type->isJavaFunction(), |'Cannot obtain supplied type as not a Function');
+   $type->cast(@meta::external::language::java::metamodel::ParameterizedType).typeArguments->at(0);
+}
+
+function meta::external::language::java::metamodel::isJavaStream(type: meta::external::language::java::metamodel::Type[1]):Boolean[1]
+{
+   $type->match([
+      pt: meta::external::language::java::metamodel::ParameterizedType[1] | $pt.rawType->isClass('java.util.stream.Stream'),
+      a :Any[1]                                                           | false
+   ]);
+}
+
+function meta::external::language::java::metamodel::elementTypeOfJavaStream(type: meta::external::language::java::metamodel::Type[1]):meta::external::language::java::metamodel::Type[1]
+{
+   assert($type->isJavaStream(), |'Cannot obtain element type as not a Stream');
+   $type->elementType();
+}
+
+function meta::external::language::java::metamodel::isJavaOptional(type: meta::external::language::java::metamodel::Type[1]):Boolean[1]
+{
+   $type->match([
+      pt: meta::external::language::java::metamodel::ParameterizedType[1] | $pt.rawType->isClass('java.util.Optional'),
+      a :Any[1]                                                           | false
+   ]);
+}
+
+function meta::external::language::java::factory::elementTypeOfJavaOptional(type: meta::external::language::java::metamodel::Type[1]):meta::external::language::java::metamodel::Type[1]
+{
+   assert($type->isJavaOptional(), |'Cannot obtain element type as not an Optional');
+   $type->elementType();
+}
+
+
+function meta::external::language::java::metamodel::project::containsClass(project:Project[1], class:meta::external::language::java::metamodel::Class[1]): Boolean[1]
+{
+   $project->getClass($class)->isNotEmpty();
+}
+
+function meta::external::language::java::metamodel::project::containsClass(project:Project[1], fullClassName:String[1]): Boolean[1]
+{
+   $project->containsClass('src/main/java', $fullClassName);
+}
+
+function meta::external::language::java::metamodel::project::containsClass(project:Project[1], path:String[1], fullClassName:String[1]): Boolean[1]
+{
+   $project->getClass($path, $fullClassName)->isNotEmpty();
+}
+
+function meta::external::language::java::metamodel::project::resolve(project: Project[1], class:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
+{
+   let resolved = $project->getClass($class);
+   if($resolved->isEmpty(), |$class, |$resolved->toOne());
+}
+
+function meta::external::language::java::metamodel::project::getClass(project: Project[1], class:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[0..1]
+{
+   $project->getClass('src/main/java', $class.package->packageNames(), $class.simpleName);
+}
+
+function meta::external::language::java::metamodel::project::getClass(project: Project[1], path:String[1], className: String[1]): meta::external::language::java::metamodel::Class[0..1]
+{
+   let dotPos    = $className->lastIndexOf('.');
+   let clsName   = $className->substring($dotPos+1);
+   let pkgNames  = $className->substring(0, $dotPos)->split('.');
+   $project->getClass($path, $pkgNames, $clsName);
+}
+
+function meta::external::language::java::metamodel::project::getClass(project: Project[1], path:String[1], pkgNames: String[*], clsName: String[1]): meta::external::language::java::metamodel::Class[0..1]
+{
+   let pathNames = $path->split('/');
+   let baseDir   = $pathNames->fold({name:String[1],d:ProjectDirectory[*]| if($d->isEmpty(), |[], |$d.subdirectories->filter(sd|$sd.name == $name))}, $project.root);
+   let dir       = $pkgNames->fold({name:String[1],d:ProjectDirectory[*]| if($d->isEmpty(), |[], |$d.subdirectories->filter(sd|$sd.name == $name))}, $baseDir);
+   let classes   = $dir->map(d|$d.classes->filter(c|$c.simpleName == $clsName));
+
+   assert($classes->size() < 2, |'Unexpectedly found duplicate class ' + $clsName);
+   $classes->first();
+}
+
+function meta::external::language::java::metamodel::project::allClasses(project: Project[1]): meta::external::language::java::metamodel::Class[*]
+{
+   $project->allDirectories().classes;
+}
+
+function meta::external::language::java::metamodel::project::allDirectories(project: Project[1]): ProjectDirectory[*]
+{
+   $project.root->allSubDirectories();
+}
+
+function meta::external::language::java::metamodel::project::allSubDirectories(dir: ProjectDirectory[1]): ProjectDirectory[*]
+{
+   $dir.subdirectories->fold({d, acc|$acc->concatenate($d)->concatenate($d->allSubDirectories())}, []);
+}
+

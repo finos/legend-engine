@@ -30,6 +30,7 @@ import meta::relational::functions::sqlQueryToString::*;
 import meta::relational::functions::typeInference::*;
 import meta::relational::graphFetch::executionPlan::*;
 import meta::relational::mapping::*;
+import meta::relational::translation::*;
 import meta::relational::metamodel::*;
 import meta::relational::metamodel::join::*;
 import meta::relational::metamodel::operation::*;
@@ -289,7 +290,7 @@ function meta::relational::graphFetch::executionPlan::planCrossRootGraphFetchExe
       parentIndex            = $parentIdx,
       graphFetchTree         = $rootTree,
       tempTableName          = tempTableName($currentIdx),
-      columns                = $postProcessedQuery.columns->cast(@Alias)->filter(x | $x.name->startsWith('"pk_'))->map(c | ^SQLResultColumn(label = $c.name->substring(1, $c.name->length() - 1), dataType = $c->inferRelationalType()->toOne())),
+      columns                = $postProcessedQuery.columns->cast(@Alias)->filter(x | $x.name->startsWith('"pk_'))->map(c | ^SQLResultColumn(label = $c.name->substring(1, $c.name->length() - 1), dataType = $c->inferRelationalType(^TranslationContext(dbType=$dbConnection.type))->toOne())),
       parentTempTableName    = crossTempTableName($parentIdx),
       parentTempTableColumns = $srcProperties->map(x | ^SQLResultColumn(label = $x.name->toOne(), dataType = $x->crossKeyRelationalType())),
       children               = $rootTree->generateRelationalChildGraphNodes($rootPath, $setImpl, $simplePrimitiveProperties, $orderedPaths, $store, $mapping, $oneRuntime, $inScopeVars, [], $exeCtx, $extensions, $debug),
@@ -342,7 +343,7 @@ function <<access.private>> meta::relational::graphFetch::executionPlan::buildSQ
    ^SQLExecutionNode
     (
        sqlQuery         = $sql,
-       resultColumns    = $query.columns->cast(@Alias)->map(c | ^SQLResultColumn(label = $c.name, dataType = $c->inferRelationalType()->toOne())),
+       resultColumns    = $query.columns->cast(@Alias)->map(c | ^SQLResultColumn(label = $c.name, dataType = $c->inferRelationalType(^TranslationContext(dbType=$dbConnection.type))->toOne())),
        resultType       = ^ResultType(type = Any),
        connection       = $dbConnection->meta::relational::mapping::updateConnection($extensions)->cast(@DatabaseConnection),
        supportFunctions = relationalPlanSupportFunctions($dbConnection)

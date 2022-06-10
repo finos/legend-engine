@@ -25,7 +25,15 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.graphQL.introspection.model.Translator;
 import org.finos.legend.engine.protocol.graphQL.introspection.model.__Schema;
-import org.finos.legend.pure.generated.*;
+import org.finos.legend.pure.generated.core_external_query_graphql_introspection_transformation;
+import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
+import org.finos.legend.pure.generated.Root_meta_external_query_graphQL_binding_toPure_introspection_GraphQLIntrospectionContainer;
+import org.finos.legend.pure.generated.Root_meta_external_query_graphQL_binding_toPure_introspection_GraphQLIntrospectionContainer_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_toPure_SchemaToModelConfiguration;
+import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_toPure_SchemaToModelConfiguration_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_validation_BindingDetail;
+import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_SchemaSet;
+import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationParameter;
 
 import java.util.Collections;
 import java.util.List;
@@ -52,12 +60,12 @@ public class GraphQLFormatExtension implements ExternalFormatExtension<Root_meta
         try
         {
             return new Root_meta_external_query_graphQL_binding_toPure_introspection_GraphQLIntrospectionContainer_Impl("")
-                        ._schema(
+                    ._schema(
                             new Translator().translate(
                                     new ObjectMapper().readValue(context.getContent(), __Schema.class),
                                     context.getPureModel()
                             )
-                        );
+                    );
         }
         catch (JsonProcessingException e)
         {
@@ -100,7 +108,7 @@ public class GraphQLFormatExtension implements ExternalFormatExtension<Root_meta
     }
 
     @Override
-    public String metamodelToText(Root_meta_external_query_graphQL_binding_toPure_introspection_GraphQLIntrospectionContainer schemaDetail)
+    public String metamodelToText(Root_meta_external_query_graphQL_binding_toPure_introspection_GraphQLIntrospectionContainer schemaDetail, PureModel pureModel)
     {
         return null;
     }

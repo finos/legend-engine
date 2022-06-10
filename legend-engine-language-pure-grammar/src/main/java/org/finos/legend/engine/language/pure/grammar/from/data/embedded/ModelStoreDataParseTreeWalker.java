@@ -27,7 +27,15 @@ import org.finos.legend.engine.protocol.pure.v1.model.data.ModelStoreData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.*;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CBoolean;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDecimal;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CFloat;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CInteger;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CString;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.EnumValue;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.KeyExpression;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.math.BigDecimal;
@@ -37,7 +45,7 @@ import java.util.stream.Collectors;
 
 public class ModelStoreDataParseTreeWalker
 {
-    private static final Multiplicity PURE_ONE = multiplicity(1,1);
+    private static final Multiplicity PURE_ONE = multiplicity(1, 1);
 
     private final ParseTreeWalkerSourceInformation walkerSourceInformation;
     private final SourceInformation sourceInformation;
@@ -54,13 +62,13 @@ public class ModelStoreDataParseTreeWalker
         result.sourceInformation = sourceInformation;
         result.instances = Maps.mutable.empty();
 
-        for(ModelStoreDataParserGrammar.TypeIndexedInstancesContext typeIndexedInstancesContext: ctx.typeIndexedInstances())
+        for (ModelStoreDataParserGrammar.TypeIndexedInstancesContext typeIndexedInstancesContext : ctx.typeIndexedInstances())
         {
             String fullPath = PureGrammarParserUtility.fromQualifiedName(typeIndexedInstancesContext.qualifiedName().packagePath() == null ? Collections.emptyList() : typeIndexedInstancesContext.qualifiedName().packagePath().identifier(), typeIndexedInstancesContext.qualifiedName().identifier());
 
             ValueSpecification instances = collection(typeIndexedInstancesContext.instance().stream().map(this::visitInstance).collect(Collectors.toList()));
 
-            if(result.instances.containsKey(fullPath))
+            if (result.instances.containsKey(fullPath))
             {
                 throw new EngineException("Multiple entries found for type: '" + fullPath + "'", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
             }
@@ -146,7 +154,7 @@ public class ModelStoreDataParseTreeWalker
             else if (literalToken.DECIMAL() != null)
             {
                 String text = literalToken.DECIMAL().getText();
-                result = cDecimal(new BigDecimal(text.substring(0, text.length()-1)));
+                result = cDecimal(new BigDecimal(text.substring(0, text.length() - 1)));
             }
             else if (literalToken.DATE() != null)
             {
@@ -176,7 +184,7 @@ public class ModelStoreDataParseTreeWalker
         else if (ctx.DECIMAL() != null && ctx.MINUS() != null)
         {
             String text = ctx.MINUS().getText() + ctx.DECIMAL().getText();
-            result = cDecimal(new BigDecimal(text.substring(0, text.length()-1)));
+            result = cDecimal(new BigDecimal(text.substring(0, text.length() - 1)));
         }
         else if (ctx.INTEGER() != null && ctx.PLUS() != null)
         {
@@ -189,7 +197,7 @@ public class ModelStoreDataParseTreeWalker
         else if (ctx.DECIMAL() != null && ctx.PLUS() != null)
         {
             String text = ctx.PLUS().getText() + ctx.DECIMAL().getText();
-            result = cDecimal(new BigDecimal(text.substring(0, text.length()-1)));
+            result = cDecimal(new BigDecimal(text.substring(0, text.length() - 1)));
         }
         else
         {

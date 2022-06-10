@@ -1,0 +1,292 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::model::unit::*;
+import meta::pure::model::tests::unit::l1::*;
+import meta::pure::model::tests::unit::l1::l2a::*;
+import meta::pure::model::tests::unit::l1::l2b::*;
+import meta::pure::model::tests::unit::l1::l2a::l3a::*;
+import meta::pure::model::tests::unit::l1::l2b::l3b::*;
+
+function <<test.Test>> meta::pure::model::tests::unit::testPackageInclude(): Boolean[1]
+{
+   let unit = newModelUnit()->include(meta::pure::model::tests::unit::l1);
+   
+   assertSameElements([meta::pure::model::tests::unit::l1], $unit.packageIncludes);
+   assertSameElements([], $unit.packageExcludes);
+   assertSameElements([], $unit.classIncludes);
+   assertSameElements([], $unit.classExcludes);
+   assertSameElements([], $unit.enumerationIncludes);
+   assertSameElements([], $unit.enumerationExcludes);
+   assertSameElements([], $unit.associationIncludes);
+   assertSameElements([], $unit.associationExcludes);
+   assertSameElements([], $unit.functionIncludes);
+   assertSameElements([], $unit.functionExcludes);
+   assertSameElements([], $unit.profileIncludes);
+   assertSameElements([], $unit.profileExcludes);
+
+   let resolved = $unit->resolve();
+   assertSameElements([L1A, L1B, L2aA, L2aB, L2bA, L2bB, L3aA, L3aB, L3bA, L3bB], $resolved.classes);
+   assertSameElements([L1E, L2aE, L2bE, L3aE, L3bE], $resolved.enumerations);
+   assertSameElements([L1A_L1B, L2aA_L2aB, L2bA_L2bB, L3aA_L3aB, L3bA_L3bB], $resolved.associations);
+   assertSameElements([l1f__Any_MANY_, l2af__Any_MANY_, l2bf__Any_MANY_, l3af__Any_MANY_, l3bf__Any_MANY_], $resolved.functions);
+   assertSameElements([L1P, L2aP, L2bP, L3aP, L3bP], $resolved.profiles);
+}
+
+function <<test.Test>> meta::pure::model::tests::unit::testPackageIncludeAndExclude(): Boolean[1]
+{
+   let unit = newModelUnit()->include(meta::pure::model::tests::unit::l1)
+                            ->exclude(meta::pure::model::tests::unit::l1::l2b);
+   
+   assertSameElements([meta::pure::model::tests::unit::l1], $unit.packageIncludes);
+   assertSameElements([meta::pure::model::tests::unit::l1::l2b], $unit.packageExcludes);
+   assertSameElements([], $unit.classIncludes);
+   assertSameElements([], $unit.classExcludes);
+   assertSameElements([], $unit.enumerationIncludes);
+   assertSameElements([], $unit.enumerationExcludes);
+   assertSameElements([], $unit.associationIncludes);
+   assertSameElements([], $unit.associationExcludes);
+   assertSameElements([], $unit.functionIncludes);
+   assertSameElements([], $unit.functionExcludes);
+   assertSameElements([], $unit.profileIncludes);
+   assertSameElements([], $unit.profileExcludes);
+
+   let resolved = $unit->resolve();
+   assertSameElements([L1A, L1B, L2aA, L2aB, L3aA, L3aB], $resolved.classes);
+   assertSameElements([L1E, L2aE, L3aE], $resolved.enumerations);
+   assertSameElements([L1A_L1B, L2aA_L2aB, L3aA_L3aB], $resolved.associations);
+   assertSameElements([l1f__Any_MANY_, l2af__Any_MANY_, l3af__Any_MANY_], $resolved.functions);
+   assertSameElements([L1P, L2aP, L3aP], $resolved.profiles);
+}
+
+function <<test.Test>> meta::pure::model::tests::unit::testPackageIncludeWithElementExludes(): Boolean[1]
+{
+   let unit = newModelUnit()->include(meta::pure::model::tests::unit::l1)
+                            ->exclude(meta::pure::model::tests::unit::l1::L1A)
+                            ->exclude(meta::pure::model::tests::unit::l1::l1f__Any_MANY_)
+                            ->exclude(meta::pure::model::tests::unit::l1::l2a::L2aA)
+                            ->exclude(meta::pure::model::tests::unit::l1::l2b::L2bA_L2bB)
+                            ->exclude(meta::pure::model::tests::unit::l1::l2a::l3a::L3aE)
+                            ->exclude(meta::pure::model::tests::unit::l1::l2b::l3b::L3bP);
+   
+   assertSameElements([meta::pure::model::tests::unit::l1], $unit.packageIncludes);
+   assertSameElements([], $unit.packageExcludes);
+   assertSameElements([], $unit.classIncludes);
+   assertSameElements([L1A, L2aA], $unit.classExcludes);
+   assertSameElements([], $unit.enumerationIncludes);
+   assertSameElements([L3aE], $unit.enumerationExcludes);
+   assertSameElements([], $unit.associationIncludes);
+   assertSameElements([L2bA_L2bB], $unit.associationExcludes);
+   assertSameElements([], $unit.functionIncludes);
+   assertSameElements([l1f__Any_MANY_], $unit.functionExcludes);
+   assertSameElements([], $unit.profileIncludes);
+   assertSameElements([L3bP], $unit.profileExcludes);
+
+   let resolved = $unit->resolve();
+   assertSameElements([L1B, L2aB, L2bA, L2bB, L3aA, L3aB, L3bA, L3bB], $resolved.classes);
+   assertSameElements([L1E, L2aE, L2bE, L3bE], $resolved.enumerations);
+   assertSameElements([L1A_L1B, L2aA_L2aB, L3aA_L3aB, L3bA_L3bB], $resolved.associations);
+   assertSameElements([l2af__Any_MANY_, l2bf__Any_MANY_, l3af__Any_MANY_, l3bf__Any_MANY_], $resolved.functions);
+   assertSameElements([L1P, L2aP, L2bP, L3aP], $resolved.profiles);
+}
+
+function <<test.Test>> meta::pure::model::tests::unit::testElementIncludes(): Boolean[1]
+{
+   let unit = newModelUnit()->include(meta::pure::model::tests::unit::l1::L1A)
+                            ->include(meta::pure::model::tests::unit::l1::l1f__Any_MANY_)
+                            ->include(meta::pure::model::tests::unit::l1::l2a::L2aA)
+                            ->include(meta::pure::model::tests::unit::l1::l2b::L2bA_L2bB)
+                            ->include(meta::pure::model::tests::unit::l1::l2a::l3a::L3aE)
+                            ->include(meta::pure::model::tests::unit::l1::l2b::l3b::L3bP);
+   
+   assertSameElements([], $unit.packageIncludes);
+   assertSameElements([], $unit.packageExcludes);
+   assertSameElements([L1A, L2aA], $unit.classIncludes);
+   assertSameElements([], $unit.classExcludes);
+   assertSameElements([L3aE], $unit.enumerationIncludes);
+   assertSameElements([], $unit.enumerationExcludes);
+   assertSameElements([L2bA_L2bB], $unit.associationIncludes);
+   assertSameElements([], $unit.associationExcludes);
+   assertSameElements([l1f__Any_MANY_], $unit.functionIncludes);
+   assertSameElements([], $unit.functionExcludes);
+   assertSameElements([L3bP], $unit.profileIncludes);
+   assertSameElements([], $unit.profileExcludes);
+
+   let resolved = $unit->resolve();
+   assertSameElements([L1A, L2aA], $resolved.classes);
+   assertSameElements([L3aE], $resolved.enumerations);
+   assertSameElements([L2bA_L2bB], $resolved.associations);
+   assertSameElements([l1f__Any_MANY_], $resolved.functions);
+   assertSameElements([L3bP], $resolved.profiles);
+}
+
+// L1
+
+Class meta::pure::model::tests::unit::l1::L1A
+{
+   
+}
+
+Class meta::pure::model::tests::unit::l1::L1B
+{
+   
+}
+
+Enum meta::pure::model::tests::unit::l1::L1E
+{
+   L1E_A, L1E_B
+}
+
+Profile meta::pure::model::tests::unit::l1::L1P
+{
+}
+
+function meta::pure::model::tests::unit::l1::l1f(): Any[*]
+{
+   []
+}
+
+Association meta::pure::model::tests::unit::l1::L1A_L1B
+{
+   a : meta::pure::model::tests::unit::l1::L1A[1];
+   bs: meta::pure::model::tests::unit::l1::L1B[*];
+}
+
+// L2a
+
+Class meta::pure::model::tests::unit::l1::l2a::L2aA
+{
+   
+}
+
+Class meta::pure::model::tests::unit::l1::l2a::L2aB
+{
+   
+}
+
+Enum meta::pure::model::tests::unit::l1::l2a::L2aE
+{
+   L2aE_A, L2aE_B
+}
+
+Profile meta::pure::model::tests::unit::l1::l2a::L2aP
+{
+}
+
+function meta::pure::model::tests::unit::l1::l2a::l2af(): Any[*]
+{
+   []
+}
+
+Association meta::pure::model::tests::unit::l1::l2a::L2aA_L2aB
+{
+   a : meta::pure::model::tests::unit::l1::l2a::L2aA[1];
+   bs: meta::pure::model::tests::unit::l1::l2a::L2aB[*];
+}
+
+// L2b
+
+Class meta::pure::model::tests::unit::l1::l2b::L2bA
+{
+   
+}
+
+Class meta::pure::model::tests::unit::l1::l2b::L2bB
+{
+   
+}
+
+Enum meta::pure::model::tests::unit::l1::l2b::L2bE
+{
+   L2bE_A, L2bE_B
+}
+
+Profile meta::pure::model::tests::unit::l1::l2b::L2bP
+{
+}
+
+function meta::pure::model::tests::unit::l1::l2b::l2bf(): Any[*]
+{
+   []
+}
+
+Association meta::pure::model::tests::unit::l1::l2b::L2bA_L2bB
+{
+   a : meta::pure::model::tests::unit::l1::l2b::L2bA[1];
+   bs: meta::pure::model::tests::unit::l1::l2b::L2bB[*];
+}
+
+// L3a
+
+Class meta::pure::model::tests::unit::l1::l2a::l3a::L3aA
+{
+   
+}
+
+Class meta::pure::model::tests::unit::l1::l2a::l3a::L3aB
+{
+   
+}
+
+Enum meta::pure::model::tests::unit::l1::l2a::l3a::L3aE
+{
+   L3aE_A, L3aE_B
+}
+
+Profile meta::pure::model::tests::unit::l1::l2a::l3a::L3aP
+{
+}
+
+function meta::pure::model::tests::unit::l1::l2a::l3a::l3af(): Any[*]
+{
+   []
+}
+
+Association meta::pure::model::tests::unit::l1::l2a::l3a::L3aA_L3aB
+{
+   a : meta::pure::model::tests::unit::l1::l2a::l3a::L3aA[1];
+   bs: meta::pure::model::tests::unit::l1::l2a::l3a::L3aB[*];
+}
+
+// L3b
+
+Class meta::pure::model::tests::unit::l1::l2b::l3b::L3bA
+{
+   
+}
+
+Class meta::pure::model::tests::unit::l1::l2b::l3b::L3bB
+{
+   
+}
+
+Enum meta::pure::model::tests::unit::l1::l2b::l3b::L3bE
+{
+   L3bE_A, L3bE_B
+}
+
+Profile meta::pure::model::tests::unit::l1::l2b::l3b::L3bP
+{
+}
+
+function meta::pure::model::tests::unit::l1::l2b::l3b::l3bf(): Any[*]
+{
+   []
+}
+
+Association meta::pure::model::tests::unit::l1::l2b::l3b::L3bA_L3bB
+{
+   a : meta::pure::model::tests::unit::l1::l2b::l3b::L3bA[1];
+   bs: meta::pure::model::tests::unit::l1::l2b::l3b::L3bB[*];
+}

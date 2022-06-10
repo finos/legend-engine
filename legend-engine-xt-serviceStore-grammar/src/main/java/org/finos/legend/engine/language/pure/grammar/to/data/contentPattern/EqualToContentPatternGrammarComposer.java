@@ -26,7 +26,7 @@ public class EqualToContentPatternGrammarComposer implements ContentPatternGramm
     @Override
     public boolean supports(ContentPattern contentPattern)
     {
-        if(contentPattern instanceof EqualToPattern)
+        if (contentPattern instanceof EqualToPattern)
         {
             return true;
         }

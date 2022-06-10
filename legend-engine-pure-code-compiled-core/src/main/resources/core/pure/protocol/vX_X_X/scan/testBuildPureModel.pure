@@ -1,0 +1,61 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::mapping::*;
+import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::*;
+import meta::relational::mapping::*;
+
+function <<test.Test>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::tests::testGetAllElementsFromMapping():Boolean[1]
+{
+  let result = meta::pure::mapping::modelToModel::test::alloy::qualifiedProperties::dataToBookWithFunction->getAllElementsFromMapping(meta::pure::router::extension::defaultExtensions());
+   
+  let expected = ['meta::pure::mapping::modelToModel::test::alloy::qualifiedProperties::dataToBookWithFunction', 
+                  'meta::pure::mapping::modelToModel::test::alloy::qualifiedProperties::printBook__String_1_', 
+                  'meta::pure::mapping::modelToModel::test::alloy::qualifiedProperties::BookWithFunction', 
+                  'meta::pure::mapping::modelToModel::test::alloy::qualifiedProperties::BookData', 
+                  'meta::pure::mapping::modelToModel::test::alloy::qualifiedProperties::BookDataIdentifier', 
+                  'meta::pure::mapping::modelToModel::test::alloy::qualifiedProperties::BookIdentifier', 
+                  'meta::pure::mapping::modelToModel::test::alloy::qualifiedProperties::Book', 
+                  'meta::pure::mapping::modelToModel::test::alloy::qualifiedProperties::BookIdentifierType', 
+                  'meta::pure::mapping::modelToModel::test::alloy::qualifiedProperties::BookData_BookDataIdentifier', 
+                  'meta::pure::mapping::modelToModel::test::alloy::qualifiedProperties::Book_BookIdentifier'];
+
+  let actual = $result->map(x | $x->toRepresentation());
+  
+  //check if result contains all expeted elements
+  assertEquals($expected, $actual);
+}
+
+function <<test.Test>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::tests::testParsingOneLinerMapping():Boolean[1]
+{
+  let result = meta::protocols::pure::vX_X_X::transformation::fromPureGraph::tests::dummyMapping->buildPureModelContextTextFromMapping(meta::pure::router::extension::defaultExtensions());
+
+  let actual = $result.code->replace('\r\n', '\n');
+  let expected = '###Mapping\nMapping meta::protocols::pure::vX_X_X::transformation::fromPureGraph::tests::dummyMapping ()';
+
+  //check if prepared string contains all expected lines of pure code
+  assertEquals($expected, $actual);
+}
+
+function <<test.Test>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::tests::testSplitCodeIntoLines():Boolean[1]
+{
+  let string = 'Mapping meta::pure::mapping::modelToModel::test::filter::filterMapping\n(\nPerson : Pure\n{\n~src _Person\n\nlastName : $src.fullName\n}\n\nFirm : Puren\n{\n~src _Firm\nlegalName : $src.name,\nemployees : $src.employees\n}\n)';
+  let actual = splitCodeIntoLines($string);
+
+  //check if result contains all expected lines of pure code (empty lines included!)
+  assertEquals($string, $actual->makeString('\n'));
+}
+
+###Mapping
+Mapping meta::protocols::pure::vX_X_X::transformation::fromPureGraph::tests::dummyMapping ()

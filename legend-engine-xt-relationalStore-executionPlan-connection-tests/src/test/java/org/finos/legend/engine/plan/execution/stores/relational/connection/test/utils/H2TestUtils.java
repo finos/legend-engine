@@ -14,10 +14,10 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.test.utils;
 
-import java.sql.Connection;
-
 import com.zaxxer.hikari.pool.HikariProxyConnection;
 import org.h2.jdbc.JdbcConnection;
+
+import java.sql.Connection;
 
 public class H2TestUtils
 {
@@ -45,7 +45,7 @@ public class H2TestUtils
         }
     }
 
-    public static void closeProperly(Connection ...connections)
+    public static void closeProperly(Connection... connections)
     {
         for (Connection connection : connections)
         {
@@ -57,7 +57,7 @@ public class H2TestUtils
             {
                 connection.close();
             }
-            catch (Exception e)
+            catch (Exception ignored)
             {
 
             }

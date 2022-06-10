@@ -27,10 +27,12 @@ import java.sql.SQLException;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class TestServiceClassExecution {
+public class TestServiceClassExecution
+{
 
     @Test
-    public void testSimpleRelationalServiceExecution() throws SQLException {
+    public void testSimpleRelationalServiceExecution() throws SQLException
+    {
 
         RelationalExecutionConfiguration relationalExecutionConfiguration = RelationalExecutionConfiguration.newInstance()
                 .withTemporaryTestDbConfiguration(new TemporaryTestDbConfiguration(9090))

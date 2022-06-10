@@ -14,9 +14,9 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.plugin;
 
+import org.finos.legend.engine.plan.execution.stores.StoreExecutor;
 import org.finos.legend.engine.plan.execution.stores.relational.config.RelationalExecutionConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
-import org.finos.legend.engine.plan.execution.stores.StoreExecutor;
 
 public class Relational
 {

@@ -14,9 +14,10 @@
 
 package org.finos.legend.engine.shared.core.identity.credential;
 
+import org.finos.legend.engine.shared.core.identity.Credential;
+
 import javax.security.auth.Subject;
 import javax.security.auth.kerberos.KerberosTicket;
-import org.finos.legend.engine.shared.core.identity.Credential;
 import java.util.Iterator;
 import java.util.Set;
 

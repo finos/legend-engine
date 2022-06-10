@@ -58,34 +58,34 @@ public class TestExternalFormatConnectionGrammarParser extends TestGrammarParser
     {
         // Missing fields
         test("###Connection\n" +
-                     "ExternalFormatConnection meta::mySimpleConnection\n" +
-                     "{\n" +
-                     "}\n\n", "PARSER error at [2:1-4:1]: Field 'store' is required");
+                "ExternalFormatConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "}\n\n", "PARSER error at [2:1-4:1]: Field 'store' is required");
         test("###Connection\n" +
-                     "ExternalFormatConnection meta::mySimpleConnection\n" +
-                     "{\n" +
-                     "  store: domain::SchemaBinding;\n" +
-                     "}\n\n", "PARSER error at [2:1-5:1]: Field 'source' is required");
+                "ExternalFormatConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  store: domain::SchemaBinding;\n" +
+                "}\n\n", "PARSER error at [2:1-5:1]: Field 'source' is required");
         //Duplicate field
         test("###Connection\n" +
-                     "ExternalFormatConnection meta::mySimpleConnection\n" +
-                     "{\n" +
-                     "  store: domain::SchemaBinding1;\n" +
-                     "  store: domain::SchemaBinding2;\n" +
-                     "}\n\n", "PARSER error at [2:1-6:1]: Field 'store' should be specified only once");
+                "ExternalFormatConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  store: domain::SchemaBinding1;\n" +
+                "  store: domain::SchemaBinding2;\n" +
+                "}\n\n", "PARSER error at [2:1-6:1]: Field 'store' should be specified only once");
         test("###Connection\n" +
-                     "ExternalFormatConnection meta::mySimpleConnection\n" +
-                     "{\n" +
-                     "  store: domain::SchemaBinding1;\n" +
-                     "  source: UrlStream\n" +
-                     "  {\n" +
-                     "     url: 'example:://url';\n" +
-                     "  };\n" +
-                     "  source: UrlStream\n" +
-                     "  {\n" +
-                     "     url: 'example:://url';\n" +
-                     "  };\n" +
-                     "}\n\n", "PARSER error at [2:1-13:1]: Field 'source' should be specified only once");
+                "ExternalFormatConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  store: domain::SchemaBinding1;\n" +
+                "  source: UrlStream\n" +
+                "  {\n" +
+                "     url: 'example:://url';\n" +
+                "  };\n" +
+                "  source: UrlStream\n" +
+                "  {\n" +
+                "     url: 'example:://url';\n" +
+                "  };\n" +
+                "}\n\n", "PARSER error at [2:1-13:1]: Field 'source' should be specified only once");
     }
 
     @Test
@@ -93,23 +93,23 @@ public class TestExternalFormatConnectionGrammarParser extends TestGrammarParser
     {
         // Missing field
         test("###Connection\n" +
-                     "ExternalFormatConnection meta::mySimpleConnection\n" +
-                     "{\n" +
-                     "  store: domain::SchemaBinding1;\n" +
-                     "  source: UrlStream\n" +
-                     "  {\n" +
-                     "  };\n" +
-                     "}\n", "PARSER error at [5:3-7:4]: Field 'url' is required");
+                "ExternalFormatConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  store: domain::SchemaBinding1;\n" +
+                "  source: UrlStream\n" +
+                "  {\n" +
+                "  };\n" +
+                "}\n", "PARSER error at [5:3-7:4]: Field 'url' is required");
         //Duplicate field
         test("###Connection\n" +
-                     "ExternalFormatConnection meta::mySimpleConnection\n" +
-                     "{\n" +
-                     "  store: domain::SchemaBinding1;\n" +
-                     "  source: UrlStream\n" +
-                     "  {\n" +
-                     "     url: 'example:://url1';\n" +
-                     "     url: 'example:://url2';\n" +
-                     "  };\n" +
-                     "}\n", "PARSER error at [5:3-9:4]: Field 'url' should be specified only once");
+                "ExternalFormatConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  store: domain::SchemaBinding1;\n" +
+                "  source: UrlStream\n" +
+                "  {\n" +
+                "     url: 'example:://url1';\n" +
+                "     url: 'example:://url2';\n" +
+                "  };\n" +
+                "}\n", "PARSER error at [5:3-9:4]: Field 'url' should be specified only once");
     }
 }

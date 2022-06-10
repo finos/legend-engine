@@ -1,0 +1,707 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Diagram
+Diagram meta::external::language::java::Java_Diagram(width=0.0, height=0.0)
+{
+    TypeView Type_10_7_8_3_1_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_$_0(
+        type=meta::external::language::java::metamodel::Type,
+        position=(295.00000, -295.00000),
+        width=435.00000,
+        height=168.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView WildcardType_11_7_11_6_11_11_11_11_11_4_4_4_4_4_4_4_4_4_4_4_4_4_4_4_4_4_4_4_4_3_$_3(
+        type=meta::external::language::java::metamodel::WildcardType,
+        position=(593.50000, -41.25000),
+        width=113.75000,
+        height=75.75000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView Package_4_1_12_7_3_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_21_20_$_20(
+        type=meta::external::language::java::metamodel::Package,
+        position=(179.50000, 344.91667),
+        width=102.51611,
+        height=48.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView ParameterizedType_5_2_5_10_5_10_10_10_10_10_3_3_3_3_3_3_3_3_3_3_3_3_3_3_3_3_3_3_3_3_21_$_21(
+        type=meta::external::language::java::metamodel::ParameterizedType,
+        position=(225.50000, -42.25000),
+        width=157.00000,
+        height=82.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView PrimitiveType_22_$_22(
+        type=meta::external::language::java::metamodel::PrimitiveType,
+        position=(365.90686, -96.50000),
+        width=138.58838,
+        height=48.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView GenericDeclaration_7_4_11_6_10_12_12_12_14_14_7_7_7_7_7_7_7_7_7_7_7_7_7_7_7_7_7_7_7_7_6_$_6(
+        type=meta::external::language::java::metamodel::GenericDeclaration,
+        position=(365.50000, 71.50000),
+        width=131.00000,
+        height=36.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView TypeVariable_8_5_9_4_9_13_13_13_12_12_5_5_5_5_5_5_5_5_5_5_5_5_5_5_5_5_5_5_5_5_4_$_4(
+        type=meta::external::language::java::metamodel::TypeVariable,
+        position=(149.50000, 64.00000),
+        width=102.51611,
+        height=48.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView Type_10_5_2_14_14_14_13_13_6_6_6_6_6_6_6_6_6_6_6_6_6_6_6_6_6_6_6_6_5_$_5(
+        type=meta::external::language::java::metamodel::Type,
+        position=(41.25000, 69.00000),
+        width=47.11719,
+        height=36.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView AnnotatedElement_9_9_9_9_9_9_9_9_9_9_9_9_9_9_9_9_9_9_9_8_7_$_7(
+        type=meta::external::language::java::metamodel::AnnotatedElement,
+        position=(166.07353, 250.00980),
+        width=128.20068,
+        height=48.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView Annotation_18_18_18_18_18_17_17_17_17_17_17_17_17_17_17_17_17_17_16_15_$_15(
+        type=meta::external::language::java::metamodel::Annotation,
+        position=(-68.59314, 257.00980),
+        width=83.33333,
+        height=36.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView JsonIgnoreProperties_19_19_19_19_18_18_18_18_18_18_18_18_18_18_18_18_18_17_16_$_16(
+        type=meta::external::language::java::metamodel::annotations::json::JsonIgnoreProperties,
+        position=(-111.66533, 352.77785),
+        width=168.50537,
+        height=60.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView Method_3_9_2_13_7_2_2_2_2_2_15_15_15_15_15_15_14_14_14_14_14_14_14_14_14_14_14_14_14_13_12_$_12(
+        type=meta::external::language::java::metamodel::Method,
+        position=(1009.50000, 338.33333),
+        width=196.03760,
+        height=100.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView Parameter_6_14_8_3_3_3_3_3_16_16_16_16_16_16_15_15_15_15_15_15_15_15_15_15_15_15_15_14_13_$_13(
+        type=meta::external::language::java::metamodel::Parameter,
+        position=(1297.00000, 371.91667),
+        width=108.75000,
+        height=48.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView AnnotatedElement_20_20_20_20_20_20_20_20_20_20_19_19_18_17_$_17(
+        type=meta::external::language::java::metamodel::AnnotatedElement,
+        position=(1254.90686, 263.50000),
+        width=160.54004,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView Parameter_21_21_20_19_$_19(
+        type=meta::external::language::java::metamodel::Parameter,
+        position=(967.63100, 263.12069),
+        width=102.51611,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView AnnotatedElement_13_13_13_13_13_13_13_13_13_13_13_13_13_13_13_13_13_13_13_12_11_$_11(
+        type=meta::external::language::java::metamodel::AnnotatedElement,
+        position=(935.74020, 141.00980),
+        width=160.54004,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView GenericDeclaration_1_10_3_12_13_6_6_6_6_6_12_12_12_12_12_12_12_12_12_12_12_12_12_12_12_12_12_12_12_11_10_$_10(
+        type=meta::external::language::java::metamodel::GenericDeclaration,
+        position=(868.91667, 53.16667),
+        width=245.95410,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView AnnotatedElement_10_10_10_10_10_10_10_10_10_10_10_10_10_10_10_10_10_10_10_9_8_$_8(
+        type=meta::external::language::java::metamodel::AnnotatedElement,
+        position=(596.07353, 64.67647),
+        width=160.54004,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView Field_6_3_0_0_0_9_9_9_9_9_2_2_2_2_2_2_2_2_2_2_2_2_2_2_2_2_2_2_2_2_2_$_2(
+        type=meta::external::language::java::metamodel::Field,
+        position=(709.25000, 162.00000),
+        width=137.36377,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView Constructor_0_0_4_2_12_5_5_5_5_5_14_14_14_14_14_14_19_19_19_19_19_19_19_19_19_19_19_20_20_19_18_$_18(
+        type=meta::external::language::java::metamodel::Constructor,
+        position=(747.36207, 292.34770),
+        width=135.51074,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView Class_9_6_13_8_4_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_$_1(
+        type=meta::external::language::java::metamodel::Class,
+        position=(354.25000, 153.00000),
+        width=272.00000,
+        height=270.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView Type_14_9_11_4_4_4_4_4_17_17_17_17_17_17_16_16_16_16_16_16_16_16_16_16_16_16_16_15_14_$_14(
+        type=meta::external::language::java::metamodel::Type,
+        position=(633.16667, 245.08333),
+        width=47.11719,
+        height=36.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView Member_2_8_1_1_14_7_7_7_7_7_11_11_11_11_11_11_11_11_11_11_11_11_11_11_11_11_11_11_11_10_9_$_9(
+        type=meta::external::language::java::metamodel::Member,
+        position=(824.91667, -50.91667),
+        width=348.95410,
+        height=47.80559,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    GeneralizationView gview_0(
+        source=Class_9_6_13_8_4_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_$_1,
+        target=GenericDeclaration_7_4_11_6_10_12_12_12_14_14_7_7_7_7_7_7_7_7_7_7_7_7_7_7_7_7_7_7_7_7_6_$_6,
+        points=[(430.87077,162.88892),(431.00000,89.50000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_1(
+        source=Method_3_9_2_13_7_2_2_2_2_2_15_15_15_15_15_15_14_14_14_14_14_14_14_14_14_14_14_14_14_13_12_$_12,
+        target=GenericDeclaration_1_10_3_12_13_6_6_6_6_6_12_12_12_12_12_12_12_12_12_12_12_12_12_12_12_12_12_12_12_11_10_$_10,
+        points=[(1106.91457,345.88892),(1105.87077,77.88892)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_2(
+        source=Constructor_0_0_4_2_12_5_5_5_5_5_14_14_14_14_14_14_19_19_19_19_19_19_19_19_19_19_19_20_20_19_18_$_18,
+        target=GenericDeclaration_1_10_3_12_13_6_6_6_6_6_12_12_12_12_12_12_12_12_12_12_12_12_12_12_12_12_12_12_12_11_10_$_10,
+        points=[(868.89281,298.88892),(868.87077,157.88892),(917.87077,127.88892),(917.87077,83.88892)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_3(
+        source=Field_6_3_0_0_0_9_9_9_9_9_2_2_2_2_2_2_2_2_2_2_2_2_2_2_2_2_2_2_2_2_2_$_2,
+        target=Member_2_8_1_1_14_7_7_7_7_7_11_11_11_11_11_11_11_11_11_11_11_11_11_11_11_11_11_11_11_10_9_$_9,
+        points=[(832.89432,182.88892),(832.87077,-19.11108)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_4(
+        source=Method_3_9_2_13_7_2_2_2_2_2_15_15_15_15_15_15_14_14_14_14_14_14_14_14_14_14_14_14_14_13_12_$_12,
+        target=Member_2_8_1_1_14_7_7_7_7_7_11_11_11_11_11_11_11_11_11_11_11_11_11_11_11_11_11_11_11_10_9_$_9,
+        points=[(1129.91457,348.88892),(1128.43605,-9.20828)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_5(
+        source=Constructor_0_0_4_2_12_5_5_5_5_5_14_14_14_14_14_14_19_19_19_19_19_19_19_19_19_19_19_20_20_19_18_$_18,
+        target=Member_2_8_1_1_14_7_7_7_7_7_11_11_11_11_11_11_11_11_11_11_11_11_11_11_11_11_11_11_11_10_9_$_9,
+        points=[(855.89281,296.88892),(855.87077,-12.11108)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_6(
+        source=ParameterizedType_5_2_5_10_5_10_10_10_10_10_3_3_3_3_3_3_3_3_3_3_3_3_3_3_3_3_3_3_3_3_21_$_21,
+        target=Type_10_7_8_3_1_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_$_0,
+        points=[(331.87077,-32.11108),(331.87077,-136.11108)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_7(
+        source=Class_9_6_13_8_4_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_$_1,
+        target=Type_10_7_8_3_1_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_$_0,
+        points=[(518.87077,165.88892),(519.87077,-131.11108)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_8(
+        source=WildcardType_11_7_11_6_11_11_11_11_11_4_4_4_4_4_4_4_4_4_4_4_4_4_4_4_4_4_4_4_4_3_$_3,
+        target=Type_10_7_8_3_1_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_$_0,
+        points=[(650.37500,-3.37500),(649.87077,-136.11108)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_9(
+        source=Package_4_1_12_7_3_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_21_20_$_20,
+        target=AnnotatedElement_9_9_9_9_9_9_9_9_9_9_9_9_9_9_9_9_9_9_9_8_7_$_7,
+        points=[(230.75806,368.91667),(230.17387,274.00980)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_10(
+        source=Field_6_3_0_0_0_9_9_9_9_9_2_2_2_2_2_2_2_2_2_2_2_2_2_2_2_2_2_2_2_2_2_$_2,
+        target=AnnotatedElement_10_10_10_10_10_10_10_10_10_10_10_10_10_10_10_10_10_10_10_9_8_$_8,
+        points=[(739.89432,163.88892),(739.89079,117.88892)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_11(
+        source=Class_9_6_13_8_4_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_$_1,
+        target=AnnotatedElement_10_10_10_10_10_10_10_10_10_10_10_10_10_10_10_10_10_10_10_9_8_$_8,
+        points=[(618.87077,154.88892),(617.89079,109.88892)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_12(
+        source=Method_3_9_2_13_7_2_2_2_2_2_15_15_15_15_15_15_14_14_14_14_14_14_14_14_14_14_14_14_14_13_12_$_12,
+        target=AnnotatedElement_13_13_13_13_13_13_13_13_13_13_13_13_13_13_13_13_13_13_13_12_11_$_11,
+        points=[(1081.91457,346.88892),(1081.89079,174.88892)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_13(
+        source=Constructor_0_0_4_2_12_5_5_5_5_5_14_14_14_14_14_14_19_19_19_19_19_19_19_19_19_19_19_20_20_19_18_$_18,
+        target=AnnotatedElement_13_13_13_13_13_13_13_13_13_13_13_13_13_13_13_13_13_13_13_12_11_$_11,
+        points=[(878.89281,295.88892),(878.87077,242.88892),(954.87077,233.88892),(954.89079,197.88892)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_14(
+        source=JsonIgnoreProperties_19_19_19_19_18_18_18_18_18_18_18_18_18_18_18_18_18_17_16_$_16,
+        target=Annotation_18_18_18_18_18_17_17_17_17_17_17_17_17_17_17_17_17_17_16_15_$_15,
+        points=[(-27.41264,382.77785),(-26.92647,275.00980)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_15(
+        source=Parameter_6_14_8_3_3_3_3_3_16_16_16_16_16_16_15_15_15_15_15_15_15_15_15_15_15_15_15_14_13_$_13,
+        target=AnnotatedElement_20_20_20_20_20_20_20_20_20_20_19_19_18_17_$_17,
+        points=[(1335.87077,375.88892),(1335.17688,292.50000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_16(
+        source=Parameter_21_21_20_19_$_19,
+        target=AnnotatedElement_13_13_13_13_13_13_13_13_13_13_13_13_13_13_13_13_13_13_13_12_11_$_11,
+        points=[(1018.88906,292.12069),(1018.89079,182.88892)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_17(
+        source=PrimitiveType_22_$_22,
+        target=Type_10_7_8_3_1_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_$_0,
+        points=[(435.20105,-72.50000),(435.87077,-132.11108)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_0(
+        property=meta::external::language::java::metamodel::Class.constructors,
+        source=Class_9_6_13_8_4_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_$_1,
+        target=Constructor_0_0_4_2_12_5_5_5_5_5_14_14_14_14_14_14_19_19_19_19_19_19_19_19_19_19_19_20_20_19_18_$_18
+,        points=[(623.87077,321.88892),(815.11744,321.34770)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_1(
+        property=meta::external::language::java::metamodel::Class.fields,
+        source=Class_9_6_13_8_4_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_$_1,
+        target=Field_6_3_0_0_0_9_9_9_9_9_2_2_2_2_2_2_2_2_2_2_2_2_2_2_2_2_2_2_2_2_2_$_2
+,        points=[(623.00000,197.00000),(777.93188,198.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_2(
+        property=meta::external::language::java::metamodel::Class.superType,
+        source=Class_9_6_13_8_4_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_$_1,
+        target=Type_10_7_8_3_1_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_$_0
+,        points=[(371.90686,226.00000),(-79.09314,226.00000),(-78.12923,-277.11108),(296.87077,-277.11108)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_3(
+        property=meta::external::language::java::metamodel::Class.interfaces,
+        source=Class_9_6_13_8_4_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_$_1,
+        target=Type_10_7_8_3_1_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_$_0
+,        points=[(371.90686,166.00000),(5.90686,166.00000),(4.87077,-226.11108),(299.87077,-226.11108)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_4(
+        property=meta::external::language::java::metamodel::Class.methods,
+        source=Class_9_6_13_8_4_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_$_1,
+        target=Method_3_9_2_13_7_2_2_2_2_2_15_15_15_15_15_15_14_14_14_14_14_14_14_14_14_14_14_14_14_13_12_$_12
+,        points=[(591.87077,387.88892),(1107.51880,388.33333)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_5(
+        property=meta::external::language::java::metamodel::Class.package,
+        source=Class_9_6_13_8_4_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_$_1,
+        target=Package_4_1_12_7_3_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_21_20_$_20
+,        points=[(375.90686,369.00000),(230.75806,368.91667)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_6(
+        property=meta::external::language::java::metamodel::ParameterizedType.rawType,
+        source=ParameterizedType_5_2_5_10_5_10_10_10_10_10_3_3_3_3_3_3_3_3_3_3_3_3_3_3_3_3_3_3_3_3_21_$_21,
+        target=Type_10_7_8_3_1_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_$_0
+,        points=[(232.75000,-26.50000),(206.00000,-26.75000),(205.87077,-135.11108),(300.87077,-134.11108)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_7(
+        property=meta::external::language::java::metamodel::Method.returnType,
+        source=Method_3_9_2_13_7_2_2_2_2_2_15_15_15_15_15_15_14_14_14_14_14_14_14_14_14_14_14_14_14_13_12_$_12,
+        target=Type_10_7_8_3_1_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_$_0
+,        points=[(1190.91457,374.88892),(1191.60272,-229.88887),(722.60272,-230.88887)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_8(
+        property=meta::external::language::java::metamodel::ParameterizedType.typeArguments,
+        source=ParameterizedType_5_2_5_10_5_10_10_10_10_10_3_3_3_3_3_3_3_3_3_3_3_3_3_3_3_3_3_3_3_3_21_$_21,
+        target=Type_10_7_8_3_1_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_$_0
+,        points=[(232.50000,20.75000),(171.00000,20.75000),(170.90686,-172.00000),(311.90686,-172.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_9(
+        property=meta::external::language::java::metamodel::GenericDeclaration.typeParameters,
+        source=GenericDeclaration_7_4_11_6_10_12_12_12_14_14_7_7_7_7_7_7_7_7_7_7_7_7_7_7_7_7_7_7_7_7_6_$_6,
+        target=TypeVariable_8_5_9_4_9_13_13_13_12_12_5_5_5_5_5_5_5_5_5_5_5_5_5_5_5_5_5_5_5_5_4_$_4
+,        points=[(431.00000,89.50000),(200.75806,88.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_10(
+        property=meta::external::language::java::metamodel::WildcardType.lowerBounds,
+        source=WildcardType_11_7_11_6_11_11_11_11_11_4_4_4_4_4_4_4_4_4_4_4_4_4_4_4_4_4_4_4_4_3_$_3,
+        target=Type_10_7_8_3_1_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_$_0
+,        points=[(704.75000,-29.25000),(773.50000,-29.25000),(772.25000,-139.25000),(731.00000,-139.25000),(512.50000,-211.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_11(
+        property=meta::external::language::java::metamodel::WildcardType.upperBounds,
+        source=WildcardType_11_7_11_6_11_11_11_11_11_4_4_4_4_4_4_4_4_4_4_4_4_4_4_4_4_4_4_4_4_3_$_3,
+        target=Type_10_7_8_3_1_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_$_0
+,        points=[(706.00000,19.50000),(817.25000,19.50000),(817.25000,-176.75000),(719.75000,-176.75000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_12(
+        property=meta::external::language::java::metamodel::Parameter.type,
+        source=Parameter_6_14_8_3_3_3_3_3_16_16_16_16_16_16_15_15_15_15_15_15_15_15_15_15_15_15_15_14_13_$_13,
+        target=Type_10_7_8_3_1_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_0_$_0
+,        points=[(1400.75000,397.41667),(1438.87077,396.88892),(1435.60272,-281.88887),(726.60272,-281.88887)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_13(
+        property=meta::external::language::java::metamodel::Method.parameters,
+        source=Method_3_9_2_13_7_2_2_2_2_2_15_15_15_15_15_15_14_14_14_14_14_14_14_14_14_14_14_14_14_13_12_$_12,
+        target=Parameter_6_14_8_3_3_3_3_3_16_16_16_16_16_16_15_15_15_15_15_15_15_15_15_15_15_15_15_14_13_$_13
+,        points=[(1157.26880,408.58333),(1298.25000,409.91667)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_14(
+        property=meta::external::language::java::metamodel::TypeVariable.bounds,
+        source=TypeVariable_8_5_9_4_9_13_13_13_12_12_5_5_5_5_5_5_5_5_5_5_5_5_5_5_5_5_5_5_5_5_4_$_4,
+        target=Type_10_5_2_14_14_14_13_13_6_6_6_6_6_6_6_6_6_6_6_6_6_6_6_6_6_6_6_6_5_$_5
+,        points=[(200.75806,88.00000),(64.80859,87.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_15(
+        property=meta::external::language::java::metamodel::Field.type,
+        source=Field_6_3_0_0_0_9_9_9_9_9_2_2_2_2_2_2_2_2_2_2_2_2_2_2_2_2_2_2_2_2_2_$_2,
+        target=Type_14_9_11_4_4_4_4_4_17_17_17_17_17_17_16_16_16_16_16_16_16_16_16_16_16_16_16_15_14_$_14
+,        points=[(715.89432,227.88892),(701.87077,227.88892),(701.87077,262.88892),(656.72526,263.08333)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_16(
+        property=meta::external::language::java::metamodel::AnnotatedElement.annotations,
+        source=AnnotatedElement_9_9_9_9_9_9_9_9_9_9_9_9_9_9_9_9_9_9_9_8_7_$_7,
+        target=Annotation_18_18_18_18_18_17_17_17_17_17_17_17_17_17_17_17_17_17_16_15_$_15
+,        points=[(230.17387,274.00980),(-26.92648,275.00980)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_17(
+        property=meta::external::language::java::metamodel::Constructor.parameters,
+        source=Constructor_0_0_4_2_12_5_5_5_5_5_14_14_14_14_14_14_19_19_19_19_19_19_19_19_19_19_19_20_20_19_18_$_18,
+        target=Parameter_21_21_20_19_$_19
+,        points=[(877.89281,315.88892),(978.88716,315.88892)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+}

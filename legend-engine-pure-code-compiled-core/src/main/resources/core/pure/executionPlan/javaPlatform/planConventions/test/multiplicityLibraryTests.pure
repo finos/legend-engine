@@ -1,0 +1,46 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::factory::*;
+import meta::pure::executionPlan::engine::java::*;
+import meta::pure::executionPlan::engine::java::tests::*;
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::engine::java::tests::testToOne() : Boolean[1]
+{
+   javaExpressionTests(engineConventions([]))
+      ->addTest('toOne from one', {|5->toOne()}, 'org.finos.legend.engine.plan.dependencies.util.Library.toOne(5L)', javaLong())
+         ->assert('%s == 5L')
+      ->addTest('toOne from many', {|[5, 2]->filter(n| $n > 3)->toOne()}, 'org.finos.legend.engine.plan.dependencies.util.Library.toOne(java.util.Arrays.asList(5L, 2L).stream().filter((Long n) -> n > 3L).collect(java.util.stream.Collectors.toList()))', javaLong())
+         ->assert('%s == 5L')
+      ->runTests();
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::engine::java::tests::testToOneMany() : Boolean[1]
+{
+   javaExpressionTests(engineConventions([]))
+      ->addTest('toOneMany from one', {|5->toOneMany()}, 'org.finos.legend.engine.plan.dependencies.util.Library.toOneMany(5L)', javaLong()->javaList())
+         ->assert('%s.contains(5L)')
+      ->addTest('toOneMany from many filtered to one', {|[5, 2]->filter(n| $n > 3)->toOneMany()}, 'org.finos.legend.engine.plan.dependencies.util.Library.toOneMany(java.util.Arrays.asList(5L, 2L).stream().filter((Long n) -> n > 3L).collect(java.util.stream.Collectors.toList()))', javaLong()->javaList())
+         ->assert('%s.contains(5L)')
+      ->addTest('toOneMany from many', {|[1,2,3]->toOneMany()}, 'org.finos.legend.engine.plan.dependencies.util.Library.toOneMany(java.util.Arrays.asList(1L, 2L, 3L))', javaLong()->javaList())
+         ->assert('%s.contains(1L)')
+         ->assert('%s.contains(2L)')
+         ->assert('%s.contains(3L)')
+      ->runTests();
+}
+

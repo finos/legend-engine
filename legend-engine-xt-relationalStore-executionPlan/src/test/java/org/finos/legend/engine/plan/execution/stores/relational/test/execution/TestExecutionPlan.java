@@ -270,7 +270,7 @@ public class TestExecutionPlan extends AlloyTestServer
         {
             state.setJavaCompiler(engineJavaCompiler);
         }
-        return  (ConstantResult) executionPlan.rootExecutionNode.accept(new ExecutionNodeExecutor(null, state));
+        return (ConstantResult) executionPlan.rootExecutionNode.accept(new ExecutionNodeExecutor(null, state));
     }
 
     @Test
@@ -501,7 +501,7 @@ public class TestExecutionPlan extends AlloyTestServer
                 "  }\n" +
                 "}";
         SingleExecutionPlan executionPlan = objectMapper.readValue(plan, SingleExecutionPlan.class);
-        RelationalResult result = (RelationalResult)executionPlan.rootExecutionNode.accept(new ExecutionNodeExecutor(null, new ExecutionState(Maps.mutable.empty(), Lists.mutable.withAll(executionPlan.templateFunctions), Lists.mutable.with(new RelationalStoreExecutionState(new RelationalStoreState(serverPort))))));
+        RelationalResult result = (RelationalResult) executionPlan.rootExecutionNode.accept(new ExecutionNodeExecutor(null, new ExecutionState(Maps.mutable.empty(), Lists.mutable.withAll(executionPlan.templateFunctions), Lists.mutable.with(new RelationalStoreExecutionState(new RelationalStoreState(serverPort))))));
         Assert.assertEquals("{\"builder\": {\"_type\":\"classBuilder\",\"mapping\":\"meta::relational::tests::mapping::union::unionMapping\",\"classMappings\":[{\"setImplementationId\":\"set1\",\"properties\":[{\"property\":\"lastName\",\"type\":\"String\"}],\"class\":\"meta::pure::tests::model::simple::Person\"},{\"setImplementationId\":\"set2\",\"properties\":[{\"property\":\"lastName\",\"type\":\"String\"}],\"class\":\"meta::pure::tests::model::simple::Person\"}],\"class\":\"meta::pure::tests::model::simple::Person\"}, \"activities\": [{\"_type\":\"relational\",\"sql\":\"select \\\"unionBase\\\".u_type as u_type, \\\"unionBase\\\".\\\"pk_0_0\\\" as \\\"pk_0_0\\\", \\\"unionBase\\\".\\\"pk_0_1\\\" as \\\"pk_0_1\\\", \\\"unionBase\\\".\\\"lastName\\\" as \\\"lastName\\\" from (select '0' as u_type, \\\"root\\\".ID as \\\"pk_0_0\\\", null as \\\"pk_0_1\\\", \\\"root\\\".lastName_s1 as \\\"lastName\\\" from PersonSet1 as \\\"root\\\" UNION ALL select '1' as u_type, null as \\\"pk_0_0\\\", \\\"root\\\".ID as \\\"pk_0_1\\\", \\\"root\\\".lastName_s2 as \\\"lastName\\\" from PersonSet2 as \\\"root\\\") as \\\"unionBase\\\"\"}], \"result\" : {\"columns\" : [\"U_TYPE\",\"pk_0_0\",\"pk_0_1\",\"lastName\"], \"rows\" : [{\"values\": [\"0\",1,null,\"Doe\"]},{\"values\": [\"0\",2,null,\"Jones\"]},{\"values\": [\"0\",3,null,\"Evans\"]},{\"values\": [\"1\",null,1,\"Smith\"]},{\"values\": [\"1\",null,2,\"Johnson\"]}]}}", result.flush(new RelationalResultToJsonDefaultSerializer(result)));
     }
 
@@ -659,7 +659,7 @@ public class TestExecutionPlan extends AlloyTestServer
                 "  }\n" +
                 "}";
         SingleExecutionPlan executionPlan = objectMapper.readValue(plan, SingleExecutionPlan.class);
-        RelationalResult result = (RelationalResult)executionPlan.rootExecutionNode.accept(new ExecutionNodeExecutor(null, new ExecutionState(Maps.mutable.empty(), Lists.mutable.withAll(executionPlan.templateFunctions), Lists.mutable.with(new RelationalStoreExecutionState(new RelationalStoreState(serverPort))))));
+        RelationalResult result = (RelationalResult) executionPlan.rootExecutionNode.accept(new ExecutionNodeExecutor(null, new ExecutionState(Maps.mutable.empty(), Lists.mutable.withAll(executionPlan.templateFunctions), Lists.mutable.with(new RelationalStoreExecutionState(new RelationalStoreState(serverPort))))));
 
         Assert.assertEquals("{\"builder\": {\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"pk_0\",\"type\":\"VARCHAR(200)\"},{\"name\":\"firmName\",\"type\":\"VARCHAR(200)\"},{\"name\":\"employee_name\",\"type\":\"VARCHAR(200)\"}]}, \"activities\": [{\"_type\":\"relational\",\"sql\":\"Create LOCAL TEMPORARY TABLE Firm_temp_123 (name VARCHAR(200));\"},{\"_type\":\"relational\",\"sql\":\"Create LOCAL TEMPORARY TABLE Person_temp_123 (fullname VARCHAR(1000), firmName VARCHAR(1000));\"},{\"_type\":\"relational\",\"sql\":\"insert into Firm_temp_123(name) values ('FA'), ('FirmA')\"},{\"_type\":\"relational\",\"sql\":\"insert into Person_temp_123 (fullname, firmName) values ('abc', 'FA'), ('xyz', 'FA')\"},{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".name as \\\"pk_0\\\", \\\"root\\\".name as \\\"firmName\\\", \\\"personTable\\\".fullname as \\\"employee_name\\\" from Person_temp_123 as \\\"personTable\\\" left outer join Firm_temp_123 as \\\"root\\\" on (\\\"root\\\".name = \\\"personTable\\\".firmName)\"}], \"result\" : {\"columns\" : [\"pk_0\",\"firmName\",\"employee_name\"], \"rows\" : [{\"values\": [\"FA\",\"FA\",\"abc\"]},{\"values\": [\"FA\",\"FA\",\"xyz\"]}]}}", result.flush(new RelationalResultToJsonDefaultSerializer(result)));
     }
@@ -863,15 +863,15 @@ public class TestExecutionPlan extends AlloyTestServer
 
 
         Map<String, ?> inputWithList = Maps.mutable.with("name", Lists.mutable.with("Alice", "Bob", "Curtis"));
-        RelationalResult resultWithList = (RelationalResult)planExecutor.execute(plan, inputWithList);
+        RelationalResult resultWithList = (RelationalResult) planExecutor.execute(plan, inputWithList);
         Assert.assertEquals("{\"builder\": {\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"name\",\"type\":\"String\",\"relationalType\":\"VARCHAR(1000)\"}]}, \"activities\": [{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".name as \\\"name\\\" from employeeTable as \\\"root\\\" where \\\"root\\\".name in ('Alice','Bob','Curtis')\"}], \"result\" : {\"columns\" : [\"name\"], \"rows\" : [{\"values\": [\"Alice\"]},{\"values\": [\"Bob\"]},{\"values\": [\"Curtis\"]}]}}", resultWithList.flush(new RelationalResultToJsonDefaultSerializer(resultWithList)));
 
         Map<String, ?> inputWithListExceedingThreshold = Maps.mutable.with("name", Lists.mutable.with("Alice", "Bob", "Curtis", "Alice", "Bob", "Curtis", "Alice", "Bob", "Curtis", "Alice", "Bob", "Curtis", "Alice", "Bob", "Curtis", "Alice", "Bob", "Curtis", "Alice", "Bob", "Curtis", "Alice", "Bob", "Curtis", "Alice", "Bob", "Curtis", "Alice", "Bob", "Curtis", "Alice", "Bob", "Curtis", "Alice", "Bob", "Curtis", "Alice", "Bob", "Curtis", "Alice", "Bob", "Curtis", "Alice", "Bob", "Curtis", "Alice", "Bob", "Curtis", "Alice", "Bob", "Curtis", "Alice", "Bob", "Curtis"));
-        RelationalResult resultWithListExceedingThreshold = (RelationalResult)planExecutor.execute(plan, inputWithListExceedingThreshold);
+        RelationalResult resultWithListExceedingThreshold = (RelationalResult) planExecutor.execute(plan, inputWithListExceedingThreshold);
         Assert.assertEquals("{\"builder\": {\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"name\",\"type\":\"String\",\"relationalType\":\"VARCHAR(1000)\"}]}, \"activities\": [{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".name as \\\"name\\\" from employeeTable as \\\"root\\\" where \\\"root\\\".name in (select \\\"temptableforin_name_0\\\".ColumnForStoringInCollection as ColumnForStoringInCollection from tempTableForIn_name as \\\"temptableforin_name_0\\\")\"}], \"result\" : {\"columns\" : [\"name\"], \"rows\" : [{\"values\": [\"Alice\"]},{\"values\": [\"Bob\"]},{\"values\": [\"Curtis\"]}]}}", resultWithListExceedingThreshold.flush(new RelationalResultToJsonDefaultSerializer(resultWithListExceedingThreshold)));
 
         Map<String, ?> streamInput = Maps.mutable.with("name", Lists.mutable.with("Alice", "Bob", "Curtis").stream());
-        RelationalResult resultWithStream = (RelationalResult)planExecutor.execute(plan, streamInput);
+        RelationalResult resultWithStream = (RelationalResult) planExecutor.execute(plan, streamInput);
         Assert.assertEquals("{\"builder\": {\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"name\",\"type\":\"String\",\"relationalType\":\"VARCHAR(1000)\"}]}, \"activities\": [{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".name as \\\"name\\\" from employeeTable as \\\"root\\\" where \\\"root\\\".name in (select \\\"temptableforin_name_0\\\".ColumnForStoringInCollection as ColumnForStoringInCollection from tempTableForIn_name as \\\"temptableforin_name_0\\\")\"}], \"result\" : {\"columns\" : [\"name\"], \"rows\" : [{\"values\": [\"Alice\"]},{\"values\": [\"Bob\"]},{\"values\": [\"Curtis\"]}]}}", resultWithStream.flush(new RelationalResultToJsonDefaultSerializer(resultWithStream)));
 
 //        String poolInfo = ((Map) ((List) ((Map) ((List) ((Map) ((List) objectMapper.readValue(planExecutor.getPlanExecutorInfo().toJSON(), Map.class).get("storeExecutionInfos")).get(0)).get("databases")).get(0)).get("pools")).get(0)).get("dynamic").toString();

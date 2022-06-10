@@ -1,0 +1,54 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::data::*;
+
+Class meta::pure::data::DataElement extends PackageableElement
+[
+  !$this.data->instanceOf(DataElementReference)
+]
+{
+  data: EmbeddedData[1];
+}
+
+// We aim to model subTypes of EmbeddedData based on following strategy
+// 1. One for each store type
+// 2. One for External Format
+// 3. One for Reference
+Class <<typemodifiers.abstract>> meta::pure::data::EmbeddedData
+{
+}
+
+Class meta::pure::data::DataElementReference extends EmbeddedData
+{
+  dataElement : DataElement[1];
+}
+
+Class meta::pure::data::ModelStoreData extends EmbeddedData
+{
+  instances   : Map<Class<Any>, InstanceValue>[1];
+}
+
+//TODO: this should be moved to core_external_shared module, when users have shifted to binding/external formats entirely from JsonModelConnection/ XmlModelConnection
+Class meta::external::shared::format::metamodel::data::ExternalFormatData extends EmbeddedData
+{
+  contentType : String[1];
+  data        : String[1];
+}
+
+Class meta::external::shared::format::metamodel::data::SchemaData
+{
+  location : String[1];
+  content  : String[1];
+}

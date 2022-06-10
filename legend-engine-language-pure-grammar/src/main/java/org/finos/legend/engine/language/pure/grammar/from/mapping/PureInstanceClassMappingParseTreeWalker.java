@@ -35,37 +35,44 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lam
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class PureInstanceClassMappingParseTreeWalker {
+public class PureInstanceClassMappingParseTreeWalker
+{
     private final CharStream input;
     private final ParseTreeWalkerSourceInformation walkerSourceInformation;
     private final PureGrammarParserContext parserContext;
 
-    public PureInstanceClassMappingParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, CharStream input, PureGrammarParserContext parserContext) {
+    public PureInstanceClassMappingParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, CharStream input, PureGrammarParserContext parserContext)
+    {
         this.input = input;
         this.walkerSourceInformation = walkerSourceInformation;
         this.parserContext = parserContext;
     }
 
-    public void visitPureInstanceClassMapping(PureInstanceClassMappingParserGrammar.PureInstanceClassMappingContext ctx, MappingParserGrammar.MappingElementContext classMappingContext, PureInstanceClassMapping pureInstanceClassMapping) {
+    public void visitPureInstanceClassMapping(PureInstanceClassMappingParserGrammar.PureInstanceClassMappingContext ctx, MappingParserGrammar.MappingElementContext classMappingContext, PureInstanceClassMapping pureInstanceClassMapping)
+    {
         // source (optional)
         PureInstanceClassMappingParserGrammar.MappingSrcContext mappingSrcContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.mappingSrc(), "~src", pureInstanceClassMapping.sourceInformation);
-        if (mappingSrcContext != null) {
+        if (mappingSrcContext != null)
+        {
             pureInstanceClassMapping.srcClass = PureGrammarParserUtility.fromQualifiedName(mappingSrcContext.qualifiedName().packagePath() == null ? Collections.emptyList() : mappingSrcContext.qualifiedName().packagePath().identifier(), mappingSrcContext.qualifiedName().identifier());
             pureInstanceClassMapping.sourceClassSourceInformation = walkerSourceInformation.getSourceInformation(mappingSrcContext.qualifiedName());
         }
         // filter (optional)
         PureInstanceClassMappingParserGrammar.MappingFilterContext mappingFilterContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.mappingFilter(), "~filter", pureInstanceClassMapping.sourceInformation);
-        if (mappingFilterContext != null) {
+        if (mappingFilterContext != null)
+        {
             pureInstanceClassMapping.filter = visitLambda(mappingFilterContext.combinedExpression(), pureInstanceClassMapping);
         }
         // property mappings (optional)
         pureInstanceClassMapping.propertyMappings = ListIterate.collect(ctx.propertyMapping(), propertyMappingContext -> visitPurePropertyMapping(propertyMappingContext, classMappingContext, pureInstanceClassMapping));
     }
 
-    private PurePropertyMapping visitPurePropertyMapping(PureInstanceClassMappingParserGrammar.PropertyMappingContext ctx, MappingParserGrammar.MappingElementContext classMappingContext, PureInstanceClassMapping pureInstanceClassMapping) {
+    private PurePropertyMapping visitPurePropertyMapping(PureInstanceClassMappingParserGrammar.PropertyMappingContext ctx, MappingParserGrammar.MappingElementContext classMappingContext, PureInstanceClassMapping pureInstanceClassMapping)
+    {
         PurePropertyMapping purePropertyMapping = new PurePropertyMapping();
 
-        if (ctx.PLUS() != null) {
+        if (ctx.PLUS() != null)
+        {
             // Local property mapping
             purePropertyMapping.localMappingProperty = new LocalMappingPropertyInfo();
             purePropertyMapping.localMappingProperty.type = ctx.type().getText();
@@ -80,7 +87,8 @@ public class PureInstanceClassMappingParseTreeWalker {
         // This might looks strange but the parser rule looks like: sourceAndTargetMappingId: BRACKET_OPEN sourceId (COMMA targetId)? BRACKET_CLOSE
         // so in this case the class mapping ID is `sourceId`
         purePropertyMapping.target = ctx.sourceAndTargetMappingId() != null ? PureGrammarParserUtility.fromQualifiedName(ctx.sourceAndTargetMappingId().sourceId().qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.sourceAndTargetMappingId().sourceId().qualifiedName().packagePath().identifier(), ctx.sourceAndTargetMappingId().sourceId().qualifiedName().identifier()) : null;
-        if (ctx.ENUMERATION_MAPPING() != null) {
+        if (ctx.ENUMERATION_MAPPING() != null)
+        {
             purePropertyMapping.enumMappingId = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
         }
         purePropertyMapping.transform = visitLambda(ctx.combinedExpression(), pureInstanceClassMapping);
@@ -90,7 +98,8 @@ public class PureInstanceClassMappingParseTreeWalker {
         return purePropertyMapping;
     }
 
-    private Lambda visitLambda(PureInstanceClassMappingParserGrammar.CombinedExpressionContext ctx, PureInstanceClassMapping pureInstanceClassMapping) {
+    private Lambda visitLambda(PureInstanceClassMappingParserGrammar.CombinedExpressionContext ctx, PureInstanceClassMapping pureInstanceClassMapping)
+    {
         String lambdaString = this.input.getText(new Interval(ctx.start.getStartIndex(), ctx.stop.getStopIndex()));
         DomainParser parser = new DomainParser();
         // prepare island grammar walker source information
@@ -108,7 +117,8 @@ public class PureInstanceClassMappingParseTreeWalker {
         return lambda;
     }
 
-    private static Multiplicity buildMultiplicity(PureInstanceClassMappingParserGrammar.MultiplicityArgumentContext ctx) {
+    private static Multiplicity buildMultiplicity(PureInstanceClassMappingParserGrammar.MultiplicityArgumentContext ctx)
+    {
         String star = "*";
         Multiplicity m = new Multiplicity();
         m.lowerBound = Integer.parseInt(ctx.fromMultiplicity() != null ? ctx.fromMultiplicity().getText() : star.equals(ctx.toMultiplicity().getText()) ? "0" : ctx.toMultiplicity().getText());

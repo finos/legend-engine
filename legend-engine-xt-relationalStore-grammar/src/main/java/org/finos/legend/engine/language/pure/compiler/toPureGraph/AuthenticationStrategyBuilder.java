@@ -14,8 +14,26 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.*;
-import org.finos.legend.pure.generated.*;
+import org.eclipse.collections.impl.list.mutable.FastList;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.ApiTokenAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategyVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.DefaultH2AuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.DelegatedKerberosAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPApplicationDefaultCredentialsAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPWorkloadIdentityFederationAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.SnowflakePublicAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TestDatabaseAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.UserNamePasswordAuthenticationStrategy;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_ApiTokenAuthenticationStrategy_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_AuthenticationStrategy;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_DefaultH2AuthenticationStrategy_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_DelegatedKerberosAuthenticationStrategy_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_GCPApplicationDefaultCredentialsAuthenticationStrategy_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_GCPWorkloadIdentityFederationAuthenticationStrategy_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_SnowflakePublicAuthenticationStrategy_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_TestDatabaseAuthenticationStrategy_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_UserNamePasswordAuthenticationStrategy_Impl;
 
 public class AuthenticationStrategyBuilder implements AuthenticationStrategyVisitor<Root_meta_pure_alloy_connections_alloy_authentication_AuthenticationStrategy>
 {
@@ -62,6 +80,16 @@ public class AuthenticationStrategyBuilder implements AuthenticationStrategyVisi
         else if (authenticationStrategy instanceof GCPApplicationDefaultCredentialsAuthenticationStrategy)
         {
             return new Root_meta_pure_alloy_connections_alloy_authentication_GCPApplicationDefaultCredentialsAuthenticationStrategy_Impl("");
+        }
+        else if (authenticationStrategy instanceof GCPWorkloadIdentityFederationAuthenticationStrategy)
+        {
+            return new Root_meta_pure_alloy_connections_alloy_authentication_GCPWorkloadIdentityFederationAuthenticationStrategy_Impl("")
+                    ._serviceAccountEmail(((GCPWorkloadIdentityFederationAuthenticationStrategy) authenticationStrategy).serviceAccountEmail)
+                    ._additionalGcpScopes(
+                            ((GCPWorkloadIdentityFederationAuthenticationStrategy) authenticationStrategy).additionalGcpScopes == null ?
+                                    FastList.newList() :
+                                    FastList.newList(((GCPWorkloadIdentityFederationAuthenticationStrategy) authenticationStrategy).additionalGcpScopes)
+                    );
         }
         return null;
     }

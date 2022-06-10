@@ -14,7 +14,8 @@
 
 package org.finos.legend.engine.external.format.xsd.compile.parseTree;
 
-public enum XsdContentProcessing {
+public enum XsdContentProcessing
+{
     LAX,
     SKIP,
     STRICT

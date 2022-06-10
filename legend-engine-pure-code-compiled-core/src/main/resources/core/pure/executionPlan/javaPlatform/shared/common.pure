@@ -1,0 +1,338 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::factory::*;
+import meta::external::language::java::factory::project::*;
+import meta::external::language::java::metamodel::*;
+import meta::external::language::java::metamodel::project::*;
+import meta::external::language::java::serialization::*;
+import meta::external::language::java::transform::*;
+import meta::pure::dataQuality::*;
+import meta::pure::executionPlan::*;
+import meta::pure::executionPlan::engine::*;
+import meta::pure::executionPlan::engine::java::*;
+import meta::pure::executionPlan::engine::java::graphFetch::common::*;
+import meta::pure::executionPlan::engine::java::naming::*;
+import meta::pure::executionPlan::engine::java::typeInfo::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::graphFetch::executionPlan::*;
+import meta::pure::graphFetch::routing::*;
+import meta::pure::metamodel::constraint::*;
+import meta::pure::graphFetch::*;
+import meta::pure::mapping::*;
+import meta::pure::mapping::modelToModel::*;
+import meta::pure::mapping::modelToModel::inMemory::*;
+import meta::pure::milestoning::*;
+
+// ----------------------------------------------------------------------------------------------------------
+// --- Alloy platform dependencies (non-generated)
+// ----------------------------------------------------------------------------------------------------------
+
+function meta::pure::executionPlan::engine::java::platform::iExecutionNodeContextParam(conventions: Conventions[1]):Code[1]
+{
+   j_parameter($conventions->className(IExecutionNodeContext), 'context');
+}
+
+function meta::pure::executionPlan::engine::java::platform::iStoreStreamReadingExecutionNodeContextParam(conventions: Conventions[1]):Code[1]
+{
+   j_parameter($conventions->className(IStoreStreamReadingExecutionNodeContext), 'context');
+}
+
+function meta::pure::executionPlan::engine::java::platform::graphFetchM2MContextParam(conventions: Conventions[1]): Code[1]
+{
+   j_parameter($conventions->className(IGraphFetchM2MExecutionNodeContext), 'context');
+}
+
+function meta::pure::executionPlan::engine::java::platform::buildExecuteClass(body:Code[1], param:Code[1], path:String[1], conventions:Conventions[1]):meta::external::language::java::metamodel::Class[1]
+{
+   let ex       = j_parameter(javaException(), 'e');   
+   let fullBody = j_try(
+                     $body,
+                     j_catch($ex,
+                        javaRuntimeException()->j_new([j_string('Failed in node: '+$path), $ex])->j_throw()
+                     )
+                  );
+   
+   let classesUsed = $param.type->cast(@meta::external::language::java::metamodel::Class)->concatenate($fullBody->classesUsed())->removeDuplicates();
+   let withImports = $conventions->planNodeClass('public', $path, 'Execute')->imports($classesUsed);
+   
+   $withImports->addMethod(javaMethod(['public', 'static'], $body.type, 'execute', $param->cast(@meta::external::language::java::metamodel::Parameter), $fullBody));
+}
+
+function meta::pure::executionPlan::engine::java::platform::graphInstanceOf(elementType:meta::external::language::java::metamodel::Type[1], conventions:Conventions[1]):meta::external::language::java::metamodel::ParameterizedType[1]
+{ 
+   javaParameterizedType($conventions->className(GraphInstance), $elementType);
+}
+
+// ----------------------------------------------------------------------------------------------------------
+// --- Implementation
+// ----------------------------------------------------------------------------------------------------------
+    
+function meta::pure::executionPlan::engine::java::generateTypes(context:GenerationContext[1], debug:DebugContext[1]) : Project[1]
+{
+   print(if($debug.debug,|$debug.space+'generateTypes\n', |''));
+
+   mergeProjects
+   ([
+      generateInterfacesAndEnums($context, $debug->indent()),
+      createUnitClasses($context, $debug->indent())
+   ]);
+}
+   
+function meta::pure::executionPlan::engine::java::generateInterfacesAndEnums(context:GenerationContext[1], debug:DebugContext[1]) : Project[1]
+{
+    generateInterfacesAndEnums($context.conventions, $context.typeInfos, $debug);  
+}
+
+function meta::pure::executionPlan::engine::java::generateInterfacesAndEnums(conventions:Conventions[1], typeInfos:TypeInfoSet[1], debug:DebugContext[1]) : Project[1]
+{
+   print(if($debug.debug,|$debug.space+'generateInterfacesAndEnums\n', |''));
+
+   let classes     = $typeInfos->allClassInfos()      ->filter(ti| !$conventions->isProvidedType($ti.type))->map(cti | $cti->generateInterfaceForClass($conventions, $debug->indent()));
+   let enums       = $typeInfos->allEnumerationInfos()->filter(ti| !$conventions->isProvidedType($ti.type))->map(eti | $conventions->codeClass($eti.type, ClassPurpose.ENUMERATION, $debug->indent()));
+
+   let unitInfos = $typeInfos->allUnitInfos();
+   assert($unitInfos->forAll(ti| !$conventions->isProvidedType($ti.type)), 'Units cannot be provided until the Unit interface is a provded type');
+   
+   let units = if($unitInfos->isEmpty(),
+                  | [],
+                  {|
+                     let iface = $conventions->meta::pure::executionPlan::engine::java::unitInterface();
+                     $unitInfos->map(uti | $uti->generateInterfaceForUnit($iface, $conventions, $debug->indent()))->concatenate($iface);
+                  }
+               );
+
+   $classes->concatenate($enums)->concatenate($units->removeDuplicates())->fold({class,project| $project->addClass($class)}, newProject());
+
+}
+
+//TODO: remove and refactor to use the one using conventions directly below
+function meta::pure::executionPlan::engine::java::createQualifiedPropertiesForClass(class: meta::external::language::java::metamodel::Class[1], qualifiedProperties:QualifiedProperty<Any>[*], context:GenerationContext[1], debug:DebugContext[1]) : Project[1]
+{
+   createQualifiedPropertiesForClass($class, $qualifiedProperties, $context.conventions, $debug);
+}
+
+function meta::pure::executionPlan::engine::java::createQualifiedPropertiesForClass(class: meta::external::language::java::metamodel::Class[1], qualifiedProperties:QualifiedProperty<Any>[*], conventions:Conventions[1], debug:DebugContext[1]) : Project[1]
+{
+   print(if($debug.debug,|$debug.space+'createQualifiedPropertiesForClass: \''+$class->typeToString()+'\'\n',|''));
+
+   let qualifiedClass = $qualifiedProperties->fold(
+      {qp, project|
+         let params     = $qp->functionType().parameters->evaluateAndDeactivate()->tail()->map(p | javaParam($conventions->pureTypeToJavaType($p.genericType.rawType->toOne(), $p.multiplicity), $p.name));
+         let body       = $qp.expressionSequence->evaluateAndDeactivate()->generateJavaMethodBody($conventions, $debug);
+         let newProject = newProject()->addClass($class->addMethod(
+            javaMethod('public', $conventions->pureTypeToJavaType($qp), $conventions->getterName($qp), $params, $body)
+         ));
+
+         mergeProjects($project->concatenate($newProject)->concatenate($body->dependencies()->resolveAndGetProjects())->toOneMany());
+      },
+      newProject()
+   );
+}
+
+function meta::pure::executionPlan::engine::java::createGeneratedMilestonedPropertiesForClass(class: meta::external::language::java::metamodel::Class[1], milestonedProperties:QualifiedProperty<Any>[*], varName: String[1], set: PureInstanceSetImplementation[1], context:GenerationContext[1], extensions : meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]) : Project[1]
+{
+   print(if($debug.debug,|$debug.space+'createGeneratedMilestonedPropertiesForClass: \''+$class->typeToString()+'\'\n',|''));
+
+   let conventions    = $context.conventions;
+
+   let milestonedClass = $milestonedProperties->fold(
+      {mp, project|
+         let returnType     = $conventions->pureTypeToJavaType($mp);
+         let srcMp          = $mp->meta::pure::milestoning::getSourceMilestonedProperty($set);
+         let childSetImpl   = $set.parent.rootClassMappingByClass($mp->functionReturnType().rawType->cast(@meta::pure::metamodel::type::Class<Any>)->toOne());
+         let mapperClass    = $conventions->mapperClassName($childSetImpl->toOne(), $extensions);
+
+         let params         = $mp->functionType().parameters->evaluateAndDeactivate()->tail()->map(p | j_parameter($conventions->pureTypeToJavaType($p.genericType.rawType->toOne(), $p.multiplicity), $p.name));
+         let body           = j_invoke($mapperClass,
+                                       if($srcMp.multiplicity == PureOne, | 'mapOne', | 'mapMany'),
+                                       j_variable($class, $varName->toOne())->j_invoke($conventions->getterName($srcMp),
+                                                                                       $params,
+                                                                                       $conventions->pureTypeToJavaType($srcMp)
+                                                                                      ),
+                                       $conventions->pureTypeToJavaType($mp)
+                                      )->j_return();
+         
+         let propertyMultiplicity     = $mp.multiplicity;
+         let bodyWithMultiplicityCast = if($propertyMultiplicity->isToOne(),
+                                           | $conventions->className(meta::pure::executionPlan::engine::Library)->j_invoke('toOne', $body, $returnType),
+                                           |
+                                           if($propertyMultiplicity->isZeroOne(),
+                                              | $conventions->className(meta::pure::executionPlan::engine::Library)->j_invoke('first', $body, $returnType),
+                                              | $body));
+
+         let newProject = newProject()->addClass($class->addMethod(
+            javaMethod('public', $returnType, $conventions->getterName($mp), $params->cast(@meta::external::language::java::metamodel::Parameter), $bodyWithMultiplicityCast)
+         ));
+
+         mergeProjects($project->concatenate($newProject)->concatenate($bodyWithMultiplicityCast->dependencies()->resolveAndGetProjects())->toOneMany());
+      },
+      newProject()
+   );
+}
+
+function meta::pure::executionPlan::engine::java::createAlloyStoreObjectReferenceMethodsForClass(class:meta::external::language::java::metamodel::Class[1], context:GenerationContext[1], debug:DebugContext[1]) : Project[1]
+{
+   print(if($debug.debug,|$debug.space+'createAlloyStoreObjectReferenceMethodsForClass: \''+$class->typeToString()+'\'\n',|''));
+   let newProject = newProject()->addClass($class->addAlloyStoreObjectReferenceMethodsForClass($context));
+}
+
+function meta::pure::executionPlan::engine::java::addAlloyStoreObjectReferenceMethodsForClass(class:meta::external::language::java::metamodel::Class[1], context:GenerationContext[1]) : meta::external::language::java::metamodel::Class[1]
+{
+   let iface      = $context.conventions->className(IReferencedObject);
+   let methodName = $iface.methods->toOne().name;
+
+   $class
+      ->implements($iface)
+      ->addMethod(javaMethod('public', javaString(), $methodName, [], j_null()->j_return()));
+}
+
+function meta::pure::executionPlan::engine::java::referencedObjectReference(conventions:Conventions[1]):String[1]
+{
+   let methodName = $conventions->className(IReferencedObject).methods->toOne().name;
+   let identifier = $methodName->substring(3, 4)->toLower()+$methodName->substring(4);
+   assert($methodName == $conventions->getterName($identifier), 'Getter name assumptions violated');
+   $identifier;
+}
+
+function meta::pure::executionPlan::engine::java::generateInterfaceForClass(typeInfo: ClassTypeInfo[1], conventions: Conventions[1], debug: DebugContext[1]): meta::external::language::java::metamodel::Class[1]
+{
+   print(if($debug.debug,|$debug.space+'generateInterfaceForClass: \''+$typeInfo.type.name->toOne()+'\'\n', |''));
+   let pkg   = $conventions->className($typeInfo.type).package;
+   let proto = $conventions->className($typeInfo.type)
+      ->addModifiers(['public', 'interface'])
+      ->implements($typeInfo.supertypes->map(c|$conventions->className($c)))
+      ->imports($conventions->standardDataTypeImports())
+      ->imports($typeInfo.supertypes->map(st|$conventions->className($st))->filter(c| $c.package != $pkg));
+
+   let withPropertyGetters = $typeInfo.properties->fold(
+      {p, c|
+         $c->addMethod($p->generateInterfacePropertyGetter($conventions))
+      },
+      $proto
+   );
+
+   let withQualifiedPropertyGetters = $typeInfo.qualifiedProperties->fold(
+      {q, c|
+         $c->addMethod($q->generateInterfaceQualifiedPropertyGetter($conventions))
+      },
+      $withPropertyGetters
+   );
+   
+   let dataRecordClass   = [JsonDataRecord, XmlDataRecord]->concatenate($conventions.extensions.plan_javaRuntime_common_generateInterfaceForClass);
+   let iReferencedObject = $conventions->className(IReferencedObject);
+   if($typeInfo.class->in($dataRecordClass),
+      |$withQualifiedPropertyGetters,
+      |$withQualifiedPropertyGetters->implements($iReferencedObject)->addMethod(javaMethod(javaString(), $iReferencedObject.methods->toOne().name, [])));
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::generateInterfacePropertyGetter(p: AbstractProperty<Any>[1], conventions: Conventions[1]): meta::external::language::java::metamodel::Method[1]
+{
+   javaMethod($conventions->pureTypeToJavaType($p), $conventions->getterName($p), []);
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::generateInterfaceQualifiedPropertyGetter(q: QualifiedProperty<Any>[1], conventions: Conventions[1]): meta::external::language::java::metamodel::Method[1]
+{
+   javaMethod(
+      $conventions->pureTypeToJavaType($q),
+      $conventions->getterName($q),
+      $q->functionType().parameters->evaluateAndDeactivate()->tail()->map(p | javaParam($conventions->pureTypeToJavaType($p.genericType.rawType->toOne(), $p.multiplicity), $p.name))
+   );
+}
+
+function meta::pure::executionPlan::engine::java::generateAndAddGetterMethods(class:meta::external::language::java::metamodel::Class[1], typeInfo:ClassTypeInfo[1], context:GenerationContext[1],  varName:String[1]):meta::external::language::java::metamodel::Class[1]
+{
+   let class1 = $typeInfo.properties->fold(
+      {p,c|
+         $c->addMethod(javaMethod('public', $context.conventions->pureTypeToJavaType($p), $context.conventions->getterName($p), [], 'return '+$varName+'.'+$context.conventions->getterName($p)+'();'));
+      },
+      $class
+   );
+
+   $typeInfo.supertypes->fold({p,c | generateAndAddGetterMethods($c,$context.typeInfos->forClass($p), $context, $varName) }, $class1);
+}
+
+function meta::pure::executionPlan::engine::java::updateImplementationClassWithInstanceSizeMethods(implClass: meta::external::language::java::metamodel::Class[1], context: GenerationContext[1]): Project[1]
+{
+   let conventions = $context.conventions;
+
+   let typePathToSizeMap = newMap([
+      pair($conventions->pureTypeToJavaType(String, ZeroOne)->typeToString(), 24),
+      pair($conventions->pureTypeToJavaType(Integer, PureOne)->typeToString(), 8),
+      pair($conventions->pureTypeToJavaType(Integer, ZeroOne)->typeToString(), 24),
+      pair($conventions->pureTypeToJavaType(Float, PureOne)->typeToString(), 8),
+      pair($conventions->pureTypeToJavaType(Float, ZeroOne)->typeToString(), 24),
+      pair($conventions->pureTypeToJavaType(Boolean, PureOne)->typeToString(), 1),
+      pair($conventions->pureTypeToJavaType(Boolean, ZeroOne)->typeToString(), 17),
+      pair($conventions->pureTypeToJavaType(Decimal, ZeroOne)->typeToString(), 92),
+      pair($conventions->pureTypeToJavaType(Date, ZeroOne)->typeToString(), 64)
+   ]);
+
+   let jThis = j_this($implClass);
+   let size  = javaLong()->j_variable('size');
+   
+   let classSizeMethod = javaMethod(
+      ['private', 'static'], javaLong(), $conventions->getterName(classSizeIdentifier()), [],
+      j_long(
+         $implClass.fields
+            ->filter(x | !$x.modifiers->contains(meta::external::language::java::metamodel::Modifier.Static))
+            ->map(x | let size = $typePathToSizeMap->get($x.type->typeToString());if($size->isEmpty(), | 24, | $size->toOne());)
+            ->sum() + 12
+      )->j_return()
+   );
+
+   let instanceSizeMethod = javaMethod(
+      ['public'], javaLong(), $conventions->getterName(instanceSizeIdentifier()), [],
+      $size->j_declare($implClass->j_invoke($conventions->getterName(classSizeIdentifier()), [], javaLong()))->concatenate(
+         $implClass.fields
+            ->filter(x | !$x.modifiers->contains(meta::external::language::java::metamodel::Modifier.Static))
+            ->filter(x | $x.type->typeToString() ==  $conventions->pureTypeToJavaType(String, ZeroOne)->typeToString())
+            ->map(x | j_if($jThis->j_field($x.name, javaString())->j_ne(j_null()), $size->j_assign($size->j_plus($jThis->j_field($x.name, javaString())->j_invoke('length', [], javaLong())))))
+      )->concatenate(
+         $implClass.fields
+            ->filter(x | !$x.modifiers->contains(meta::external::language::java::metamodel::Modifier.Static))
+            ->filter(x | $x.type->isJavaList())
+            ->map(x |
+               let elType = $x.type->elementTypeOfJavaList();
+               j_if($jThis->j_field($x.name, javaString())->j_ne(j_null()),
+                  j_for(j_parameter($elType, 'i'), $jThis->j_field($x.name),
+                     j_if(j_parameter($elType, 'i')->j_ne(j_null()),
+                        $size->j_assign($size->j_plus(if($typePathToSizeMap->get($elType->typeToString())->isEmpty(), | j_long(20), | j_long($typePathToSizeMap->get($elType->typeToString())->toOne() - 4))))->concatenate(
+                           if ($elType->typeToString() == $conventions->pureTypeToJavaType(String, ZeroOne)->typeToString(),
+                               | $size->j_assign($size->j_plus(j_parameter($elType, 'i')->j_invoke('length', [], javaLong()))),
+                               | []
+                           )
+                        )->toOneMany()
+                     )->j_block()
+                  )->j_block()
+               );
+            )
+      )->concatenate(
+         $size->j_return()
+      )
+   );
+
+   newProject()->addClasses($implClass->addMethods([$classSizeMethod, $instanceSizeMethod]));
+}
+
+function meta::pure::executionPlan::engine::java::classSizeIdentifier():String[1]
+{
+   'classSize$'
+}
+
+function meta::pure::executionPlan::engine::java::instanceSizeIdentifier():String[1]
+{
+   'instanceSize$'
+}
+

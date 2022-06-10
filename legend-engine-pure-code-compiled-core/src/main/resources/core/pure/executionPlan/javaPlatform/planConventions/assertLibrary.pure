@@ -1,0 +1,35 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::metamodel::*;
+import meta::external::language::java::factory::*;
+import meta::external::language::java::serialization::*;
+import meta::external::language::java::transform::*;
+import meta::pure::executionPlan::engine::*;
+
+function meta::pure::executionPlan::engine::java::registerAssertLibrary(conventions: Conventions[1]): Conventions[1]
+{
+   let library  = $conventions->className(Library);
+   let noParams = []->cast(@Code);
+   
+   let lib = newConventionsLibrary()
+      ->addFunctionCoders([
+         fc2(assert_Boolean_1__Function_1__Boolean_1_,         {ctx,test,message     | $library->j_invoke('pureAssert', [$test, $message], javaBoolean())}),
+         fc1(assert_Boolean_1__Boolean_1_,                     {ctx,test             | $library->j_invoke('pureAssert', [$test, j_lambda($noParams, j_string('Assert failed'))], javaBoolean())}),
+         fc3(assert_Boolean_1__String_1__Any_MANY__Boolean_1_, {ctx,test,format,args | $library->j_invoke('pureAssert', [$test, j_lambda($noParams, $library->j_invoke('format', [$format, $args->j_listOf(javaList(javaObject()))], javaString()))], javaBoolean())}),
+         fc2(assert_Boolean_1__String_1__Boolean_1_,           {ctx,test,message     | $library->j_invoke('pureAssert', [$test, j_lambda($noParams, $message)], javaBoolean())})
+      ]);
+
+   $conventions->registerLibrary($lib);
+}

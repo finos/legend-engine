@@ -1,0 +1,85 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::executionPlan::toString::*;
+import meta::pure::executionPlan::*;
+import meta::pure::mapping::*;
+import meta::pure::runtime::*;
+import meta::pure::deepfetch::execution::*;
+import meta::pure::deepfetch::builder::*;
+
+
+function meta::pure::executionPlan::execute(plan:ExecutionPlan[1], parametersValues:Any[*], extensions:meta::pure::router::extension::RouterExtension[*]):Result<Any|*>[1]
+{
+   let parameters = $plan.func->functionType().parameters->evaluateAndDeactivate();
+   validateParams($plan.func->functionType().parameters->evaluateAndDeactivate(), $parametersValues);
+   $plan.rootExecutionNode->processNode($plan.mapping, $plan.runtime, zip($parameters, $parametersValues), $extensions);
+}
+
+function meta::pure::executionPlan::validateParams(v:VariableExpression[*], parametersValues:Any[*]):Boolean[1]
+{
+   let manyParamsSize = $v->filter(x|$x.multiplicity != PureOne);
+   let oneParams =  $v->filter(x |$x.multiplicity == PureOne);
+   let manyParamsValues = $parametersValues->filter(pv|$pv->instanceOf(List));
+   let oneParamsValues = $parametersValues->filter(pv|!$pv->instanceOf(List));
+   assert($manyParamsSize->size()==$manyParamsValues->size(),'Not Enough or too many MANY params. Function params: ['+ $v.name->joinStrings(', ')+']');
+   assert($oneParams->size()==$oneParamsValues->size(),'Not Enough or too many One params. Function params: ['+ $v.name->joinStrings(', ')+']');
+}
+
+function meta::pure::executionPlan::processNode(node:ExecutionNode[1], mapping:Mapping[1], runtime: Runtime[1], parametersValues:Pair<VariableExpression, Any>[*], extensions:meta::pure::router::extension::RouterExtension[*]):Result<Any|*>[1]
+{
+   $node->match(
+      [
+         s:SequenceExecutionNode[1] | let planParams = $s.executionNodes->filter(e|$e->instanceOf(AllocationExecutionNode))->cast(@AllocationExecutionNode)->map(node |let nodeRes = $node.executionNodes->toOne()->processNode($mapping, $runtime, $parametersValues, $extensions).values->toOne();
+                                                                                                                                                                     let varMultiplicity = if($nodeRes->size() == 1, | PureOne, | ZeroMany);
+                                                                                                                                                                     pair(^VariableExpression(name=$node.varName, genericType = ^GenericType(rawType=$node.resultType.type), multiplicity=$varMultiplicity), $nodeRes););
+                                      $s.executionNodes->filter(e|!$e->instanceOf(FunctionParametersValidationNode) && !$e->instanceOf(AllocationExecutionNode))->map(e|$e->processNode($mapping, $runtime, $planParams->concatenate($parametersValues), $extensions))->toOne();,
+         f:FreeMarkerConditionalExecutionNode[1]| if($f.falseBlock->isNotEmpty(), |$f.falseBlock->toOne()->processNode($mapping, $runtime, $parametersValues, $extensions);, |^Result<Any|*>(values = [])),
+         c:ConstantExecutionNode[1]| ^Result<Any|*>(values = $c.values);
+      ]->concatenate($extensions.executionPlan_execution_processNode->map(e|$e->eval($mapping, $runtime, $parametersValues, $extensions)))->toOneMany()
+   );
+}
+
+function meta::pure::executionPlan::buildVariableTemplateString(name:String[1], parameterVal:Any[1], type:meta::pure::metamodel::type::Type[1], runtime:Runtime[1], extensions:meta::pure::router::extension::RouterExtension[*]): String[1]
+{
+   if ($extensions.executionPlan_execution_buildVariableTemplateString->isEmpty(),
+       | '',
+       | $runtime.connections->at(0)->match(
+             $extensions.executionPlan_execution_buildVariableTemplateString->map(e|$e->eval($name, $parameterVal, $type))->toOneMany()
+         )
+    )
+   
+}
+
+function meta::pure::executionPlan::buildVariableCollectionSizeString(name:String[1]): String[1]
+{
+   '${collectionSize('+$name+')}'
+}
+
+function meta::pure::executionPlan::allNodes(node: ExecutionNode[1], extensions:meta::pure::router::extension::RouterExtension[*]): ExecutionNode[*]
+{
+   $node->match(
+      $extensions.executionPlan_execution_allNodes->map(e|$e->eval($extensions))->concatenate(
+         [
+            f : FreeMarkerConditionalExecutionNode[1] | $f->concatenate($f.trueBlock->concatenate($f.falseBlock)->map(n | $n->allNodes($extensions))),
+            g : meta::pure::graphFetch::executionPlan::GlobalGraphFetchExecutionNode[1] | $g->concatenate($g.children->concatenate($g.localGraphFetchExecutionNode)->map(n | $n->allNodes($extensions))),
+            e : ExecutionNode[1] | $e->concatenate($e.executionNodes->map(n | $n->allNodes($extensions)))
+         ]
+      )->toOneMany())
+}
+
+
+
+

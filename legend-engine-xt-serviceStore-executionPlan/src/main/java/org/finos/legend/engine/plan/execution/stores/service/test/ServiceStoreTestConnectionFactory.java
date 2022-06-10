@@ -46,7 +46,8 @@ public class ServiceStoreTestConnectionFactory implements ConnectionFactoryExten
 
             WireMockServer testServer = new TestServerSetupHelper((ServiceStoreEmbeddedData) data, port).setupTestServerWithData();
 
-            Closeable closeable = new Closeable(){
+            Closeable closeable = new Closeable()
+            {
                 @Override
                 public void close() throws IOException
                 {

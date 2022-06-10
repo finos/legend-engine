@@ -26,7 +26,7 @@ public class EqualToJsonContentPatternGrammarComposer implements ContentPatternG
     @Override
     public boolean supports(ContentPattern contentPattern)
     {
-        if(contentPattern instanceof EqualToJsonPattern)
+        if (contentPattern instanceof EqualToJsonPattern)
         {
             return true;
         }

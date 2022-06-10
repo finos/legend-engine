@@ -89,7 +89,7 @@ public class XmlJavaCompilerExtension implements ExecutionPlanJavaCompilerExtens
     }
 
     /**
-     *  Use to generate content of core_external_format_xml/executionPlan/engine.pure (see GeneratePureConfig)
+     * Use to generate content of core_external_format_xml/executionPlan/engine.pure (see GeneratePureConfig)
      */
     public static void main(String[] args)
     {

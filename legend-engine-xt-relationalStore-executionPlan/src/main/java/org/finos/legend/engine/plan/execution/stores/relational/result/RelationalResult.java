@@ -14,14 +14,6 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.result;
 
-import org.finos.legend.engine.plan.execution.stores.relational.activity.RelationalExecutionActivity;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
-import org.finos.legend.engine.plan.execution.stores.relational.result.builder.relation.RelationBuilder;
-import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToCSVSerializer;
-import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToJsonDefaultSerializer;
-import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToPureTDSSerializer;
-import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToPureTDSToObjectSerializer;
-
 import io.opentracing.Span;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.list.ImmutableList;
@@ -49,13 +41,20 @@ import org.finos.legend.engine.plan.execution.result.serialization.Serialization
 import org.finos.legend.engine.plan.execution.result.serialization.Serializer;
 import org.finos.legend.engine.plan.execution.result.transformer.SetImplTransformers;
 import org.finos.legend.engine.plan.execution.result.transformer.TransformerInput;
+import org.finos.legend.engine.plan.execution.stores.relational.activity.RelationalExecutionActivity;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
+import org.finos.legend.engine.plan.execution.stores.relational.result.builder.relation.RelationBuilder;
+import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToCSVSerializer;
+import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToJsonDefaultSerializer;
+import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToPureTDSSerializer;
+import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToPureTDSToObjectSerializer;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalInstantiationExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.TDSColumn;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.result.SQLResultColumn;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.result.SQLResultColumn;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.pac4j.core.profile.CommonProfile;
@@ -113,7 +112,8 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
         {
             this.connection = connection;
             this.statement = connection.createStatement();
-            if(DatabaseType.MemSQL.name().equals(databaseType)){
+            if (DatabaseType.MemSQL.name().equals(databaseType))
+            {
                 this.statement.setFetchSize(100);
             }
             long start = System.currentTimeMillis();
@@ -121,7 +121,7 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
             LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_START, sql).toString());
             this.resultSet = this.statement.executeQuery(sql);
             this.executedSQl = sql;
-            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_STOP, (double)System.currentTimeMillis() - start).toString());
+            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_STOP, (double) System.currentTimeMillis() - start).toString());
             this.resultSetMetaData = resultSet.getMetaData();
             this.columnCount = this.resultSetMetaData.getColumnCount();
             this.resultColumns = sqlResultColumns;
@@ -137,7 +137,7 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
         }
         catch (Throwable e)
         {
-            LOGGER.error("error initialising RelationalResult" ,e);
+            LOGGER.error("error initialising RelationalResult", e);
             this.close();
             if (e instanceof Error)
             {
@@ -175,7 +175,7 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
         }
         catch (Throwable e)
         {
-            LOGGER.error("error initialising RelationalResult" ,e);
+            LOGGER.error("error initialising RelationalResult", e);
             this.close();
             if (e instanceof Error)
             {
@@ -201,7 +201,8 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
                 transformerInputs.add(new TransformerInput<>(
                         columnIndex,
                         c.type,
-                        (index) -> {
+                        (index) ->
+                        {
                             try
                             {
                                 return ExecutionNodeTDSResultHelper.isTDSColumnEnum(node, this.resultSetMetaData.getColumnLabel(index), isDatabaseIdentifiersCaseSensitive);
@@ -211,7 +212,8 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
                                 throw new RuntimeException(e);
                             }
                         },
-                        (index) -> {
+                        (index) ->
+                        {
                             try
                             {
                                 return ExecutionNodeTDSResultHelper.getTDSEnumTransformer(node, this.resultSetMetaData.getColumnLabel(index), isDatabaseIdentifiersCaseSensitive);
@@ -240,7 +242,8 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
                     transformerInputs.add(new TransformerInput<>(
                             profiles != null ? profiles.property : colName,
                             resolveType(profiles, colName),
-                            (colNameX) -> {
+                            (colNameX) ->
+                            {
                                 try
                                 {
                                     return !TEMPORAL_DATE_ALIASES.contains(colNameX) && ExecutionNodeClassResultHelper.isClassPropertyEnum(node, classMappingInfo.setImplementationId, colNameX);
@@ -250,7 +253,8 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
                                     throw new RuntimeException(e);
                                 }
                             },
-                            (colNameX) -> {
+                            (colNameX) ->
+                            {
                                 try
                                 {
                                     return ExecutionNodeClassResultHelper.getClassEnumTransformer(node, classMappingInfo.setImplementationId, colNameX);
@@ -317,13 +321,14 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
     {
         if (temporaryTables != null && statement != null)
         {
-            temporaryTables.forEach((Consumer<? super String>) table -> {
+            temporaryTables.forEach((Consumer<? super String>) table ->
+            {
                 try
                 {
                     DatabaseManager databaseManager = DatabaseManager.fromString(this.databaseType);
                     statement.execute(databaseManager.relationalDatabaseSupport().dropTempTable(table));
                 }
-                catch (Exception ignore)
+                catch (Exception ignored)
                 {
                 }
             });
@@ -495,6 +500,7 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
                 {
                     result = Boolean.valueOf(bool);
                 }
+                break;  // TODO: check this
             }
             case Types.BINARY:
             case Types.VARBINARY:

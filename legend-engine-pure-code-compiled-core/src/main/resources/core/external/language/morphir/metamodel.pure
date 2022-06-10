@@ -1,0 +1,488 @@
+Class meta::external::language::morphir::metamodel::Distribution::IR
+{
+   formatVersion: Integer[1];
+   distribution: meta::external::language::morphir::metamodel::Distribution::Distribution[1];
+}
+
+Class meta::external::language::morphir::metamodel::Distribution::Distribution
+{
+}
+
+Class meta::external::language::morphir::metamodel::Distribution::Library extends meta::external::language::morphir::metamodel::Distribution::Distribution
+{
+  packageName: meta::external::language::morphir::metamodel::Package::PackageName[0..1];
+  dependencies: meta::external::language::morphir::metamodel::Distribution::Dependency[*];
+  packageDef: meta::external::language::morphir::metamodel::Package::Definition[0..1];
+}
+
+Class meta::external::language::morphir::metamodel::Distribution::Dependency
+{
+  packageName: meta::external::language::morphir::metamodel::Package::PackageName[1];
+  specification: meta::external::language::morphir::metamodel::Package::Specification[1];
+}
+
+Class meta::external::language::morphir::metamodel::Package::PackageName
+{
+  path: meta::external::language::morphir::metamodel::Path::Path[0..1];
+}
+
+Class meta::external::language::morphir::metamodel::Package::Definition
+{
+  typeParameter: meta::external::language::morphir::metamodel::Type::Type[0..1];
+  valueParameter: meta::external::language::morphir::metamodel::Type::Type[0..1];
+  modules: meta::external::language::morphir::metamodel::Package::DefinitionModule[*];
+}
+
+Class meta::external::language::morphir::metamodel::Package::DefinitionModule
+{
+  moduleName: meta::external::language::morphir::metamodel::Module::ModuleName[1];
+  accessControlled: meta::external::language::morphir::metamodel::AccessControlled::AccessControlled[1];
+}
+
+Class meta::external::language::morphir::metamodel::Package::Specification
+{
+  modules: meta::external::language::morphir::metamodel::Package::SpecificationModule[*];
+  typeParameter: meta::external::language::morphir::metamodel::Type::Type[1];
+}
+
+Class meta::external::language::morphir::metamodel::Package::SpecificationModule
+{
+  moduleName: meta::external::language::morphir::metamodel::Module::ModuleName[1];
+  specification: meta::external::language::morphir::metamodel::Module::Specification[1];
+}
+
+Class meta::external::language::morphir::metamodel::Module::ModuleName
+{
+  path: meta::external::language::morphir::metamodel::Path::Path[0..1];
+}
+
+Class meta::external::language::morphir::metamodel::Module::Specification
+{
+  types: meta::external::language::morphir::metamodel::Module::SpecificationType[*];
+  values: meta::external::language::morphir::metamodel::Module::SpecificationValue[*];
+  typeParameter: meta::external::language::morphir::metamodel::Type::Type[1];
+}
+
+Class meta::external::language::morphir::metamodel::Module::Definition extends meta::external::language::morphir::metamodel::AccessControlled::AccessControlledValue
+{
+  typeParameter: meta::external::language::morphir::metamodel::Type::Type[0..1];
+  valueParameter: meta::external::language::morphir::metamodel::Type::Type[0..1];
+  types: meta::external::language::morphir::metamodel::Module::DefinitionType[*];
+  values: meta::external::language::morphir::metamodel::Module::DefinitionValue[*];
+}
+
+Class meta::external::language::morphir::metamodel::Module::SpecificationType
+{
+  name: meta::external::language::morphir::metamodel::Name::Name[1];
+  documented: meta::external::language::morphir::metamodel::Documented::Documented[1];
+}
+
+Class meta::external::language::morphir::metamodel::Module::DefinitionType
+{
+  name: meta::external::language::morphir::metamodel::Name::Name[0..1];
+  accessControlled: meta::external::language::morphir::metamodel::AccessControlled::AccessControlled[0..1];
+}
+
+Class meta::external::language::morphir::metamodel::Module::DefinitionValue
+{
+  name: meta::external::language::morphir::metamodel::Name::Name[0..1];
+  accessControlled: meta::external::language::morphir::metamodel::AccessControlled::AccessControlled[0..1];
+}
+
+Class meta::external::language::morphir::metamodel::Module::SpecificationValue
+{
+  name: meta::external::language::morphir::metamodel::Name::Name[1];
+  specification: meta::external::language::morphir::metamodel::Value::Specification[1];
+}
+
+Class meta::external::language::morphir::metamodel::Type::Type
+{
+  typeParameter: meta::external::language::morphir::metamodel::Type::Type[0..1];
+  sourceInformation: meta::external::language::morphir::metamodel::Type::SourceInformation[0..1];
+}
+
+Class meta::external::language::morphir::metamodel::Type::Constructors
+{
+  constructorArgumentTypes: meta::external::language::morphir::metamodel::Type::ConstructorsArgumentTypes[*];
+  typeParameter: meta::external::language::morphir::metamodel::Type::Type[1];
+}
+
+Class meta::external::language::morphir::metamodel::Type::ExtensibleRecord extends meta::external::language::morphir::metamodel::Type::Type
+{
+  name: meta::external::language::morphir::metamodel::Name::Name[0..1];
+  fields: meta::external::language::morphir::metamodel::Type::Field[*];
+}
+
+Class meta::external::language::morphir::metamodel::Type::Variable extends meta::external::language::morphir::metamodel::Type::Type
+{
+  name: meta::external::language::morphir::metamodel::Name::Name[0..1];
+}
+
+Class meta::external::language::morphir::metamodel::Type::TypeAliasDefinition extends meta::external::language::morphir::metamodel::Type::Definition
+{
+  names: meta::external::language::morphir::metamodel::Name::Name[*];
+  type: meta::external::language::morphir::metamodel::Type::Type[0..1];
+}
+
+Class meta::external::language::morphir::metamodel::Type::CustomTypeDefinition extends meta::external::language::morphir::metamodel::Type::Definition
+{
+  names: meta::external::language::morphir::metamodel::Name::Name[*];
+  accessControlled: meta::external::language::morphir::metamodel::AccessControlled::AccessControlled[0..1];
+}
+
+Class meta::external::language::morphir::metamodel::Type::Specification
+{
+  typeParameter: meta::external::language::morphir::metamodel::Type::Type[0..1];
+  names: meta::external::language::morphir::metamodel::Name::Name[*];
+}
+
+Class meta::external::language::morphir::metamodel::Type::Record extends meta::external::language::morphir::metamodel::Type::Type
+{
+  fields: meta::external::language::morphir::metamodel::Type::Field[*];
+}
+
+Class meta::external::language::morphir::metamodel::Type::Function extends meta::external::language::morphir::metamodel::Type::Type
+{
+  argumentType: meta::external::language::morphir::metamodel::Type::Type[0..1];
+  returnType: meta::external::language::morphir::metamodel::Type::Type[0..1];
+}
+
+Class meta::external::language::morphir::metamodel::Type::ConstructorsArgumentTypes
+{
+  name: meta::external::language::morphir::metamodel::Name::Name[1];
+  constructorArgumentType: meta::external::language::morphir::metamodel::Type::ConstructorArgumentType[1..*];
+}
+
+Class meta::external::language::morphir::metamodel::Type::OpaqueTypeSpecification extends meta::external::language::morphir::metamodel::Type::Specification
+{
+}
+
+Class meta::external::language::morphir::metamodel::Type::Field
+{
+  name: meta::external::language::morphir::metamodel::Name::Name[0..1];
+  tpe: meta::external::language::morphir::metamodel::Type::Type[0..1];
+}
+
+Class meta::external::language::morphir::metamodel::Type::TypeAliasSpecification extends meta::external::language::morphir::metamodel::Type::Specification
+{
+  type: meta::external::language::morphir::metamodel::Type::Type[0..1];
+}
+
+Class meta::external::language::morphir::metamodel::Type::Reference extends meta::external::language::morphir::metamodel::Type::Type
+{
+  types: meta::external::language::morphir::metamodel::Type::Type[*];
+  fQName: meta::external::language::morphir::metamodel::FQName::FQName[0..1];
+}
+
+Class meta::external::language::morphir::metamodel::Type::Unit extends meta::external::language::morphir::metamodel::Type::Type
+{
+}
+
+Class meta::external::language::morphir::metamodel::Type::Tuple extends meta::external::language::morphir::metamodel::Type::Type
+{
+  types: meta::external::language::morphir::metamodel::Type::Type[*];
+}
+
+Class meta::external::language::morphir::metamodel::Type::ConstructorArgumentType
+{
+  name: meta::external::language::morphir::metamodel::Name::Name[1];
+  type: meta::external::language::morphir::metamodel::Type::Type[1];
+}
+
+Class meta::external::language::morphir::metamodel::Type::CustomTypeSpecification extends meta::external::language::morphir::metamodel::Type::Specification
+{
+}
+
+Class meta::external::language::morphir::metamodel::Type::Definition
+{
+  typeParameter: meta::external::language::morphir::metamodel::Type::Type[1];
+}
+
+Class meta::external::language::morphir::metamodel::Value::PatternMatchElement
+{
+  pattern: meta::external::language::morphir::metamodel::Value::Pattern[1];
+  value: meta::external::language::morphir::metamodel::Value::Value[1];
+}
+
+Class meta::external::language::morphir::metamodel::Value::Reference extends meta::external::language::morphir::metamodel::Value::Value
+{
+  fQName: meta::external::language::morphir::metamodel::FQName::FQName[0..1];
+}
+
+Class meta::external::language::morphir::metamodel::Value::TuplePattern extends meta::external::language::morphir::metamodel::Value::Pattern
+{
+  patterns: meta::external::language::morphir::metamodel::Value::Pattern[*];
+}
+
+Class meta::external::language::morphir::metamodel::Value::Pattern
+{
+  typeParameter: meta::external::language::morphir::metamodel::Type::Type[1];
+}
+
+Class meta::external::language::morphir::metamodel::Value::Unit extends meta::external::language::morphir::metamodel::Value::Value
+{
+}
+
+Class meta::external::language::morphir::metamodel::Value::Specification
+{
+  typeParameter: meta::external::language::morphir::metamodel::Type::Type[1];
+  inputs: meta::external::language::morphir::metamodel::Value::SpecificationInput[*];
+  output: meta::external::language::morphir::metamodel::Type::Type[0..1];
+}
+
+Class meta::external::language::morphir::metamodel::Value::Record extends meta::external::language::morphir::metamodel::Value::Value
+{
+  values: meta::external::language::morphir::metamodel::Value::RecordValue[*];
+}
+
+Class meta::external::language::morphir::metamodel::Value::Lambda extends meta::external::language::morphir::metamodel::Value::Value
+{
+  inputPattern: meta::external::language::morphir::metamodel::Value::Pattern[0..1];
+  body: meta::external::language::morphir::metamodel::Value::Value[0..1];
+}
+
+Class meta::external::language::morphir::metamodel::Value::Apply extends meta::external::language::morphir::metamodel::Value::Value
+{
+  targetFunction: meta::external::language::morphir::metamodel::Value::Value[0..1];
+  argument: meta::external::language::morphir::metamodel::Value::Value[0..1];
+}
+
+Class meta::external::language::morphir::metamodel::Value::LetRecursion extends meta::external::language::morphir::metamodel::Value::Value
+{
+  value: meta::external::language::morphir::metamodel::Value::Value[0..1];
+  definitions: meta::external::language::morphir::metamodel::Value::LetRecursionDefinition[*];
+}
+
+Class meta::external::language::morphir::metamodel::Value::Constructor extends meta::external::language::morphir::metamodel::Value::Value
+{
+  fQName: meta::external::language::morphir::metamodel::FQName::FQName[0..1];
+}
+
+Class meta::external::language::morphir::metamodel::Value::RecordValue
+{
+  name: meta::external::language::morphir::metamodel::Name::Name[0..1];
+  value: meta::external::language::morphir::metamodel::Value::Value[0..1];
+}
+
+Class meta::external::language::morphir::metamodel::Value::PatternMatch extends meta::external::language::morphir::metamodel::Value::Value
+{
+  value: meta::external::language::morphir::metamodel::Value::Value[0..1];
+  patternMatchElement: meta::external::language::morphir::metamodel::Value::PatternMatchElement[*];
+}
+
+Class meta::external::language::morphir::metamodel::Value::UpdateRecord extends meta::external::language::morphir::metamodel::Value::Value
+{
+  value: meta::external::language::morphir::metamodel::Value::Value[0..1];
+  updateRecordElements: meta::external::language::morphir::metamodel::Value::UpdateRecordElement[*];
+}
+
+Class meta::external::language::morphir::metamodel::Value::Literal extends meta::external::language::morphir::metamodel::Value::Value
+{
+  literal: meta::external::language::morphir::metamodel::Literal::Literal[0..1];
+}
+
+Class meta::external::language::morphir::metamodel::Value::AsPattern extends meta::external::language::morphir::metamodel::Value::Pattern
+{
+  pattern: meta::external::language::morphir::metamodel::Value::Pattern[0..1];
+  name: meta::external::language::morphir::metamodel::Name::Name[0..1];
+}
+
+
+Class meta::external::language::morphir::metamodel::Value::Destructure extends meta::external::language::morphir::metamodel::Value::Value
+{
+  pattern: meta::external::language::morphir::metamodel::Value::Pattern[0..1];
+  firstExpression: meta::external::language::morphir::metamodel::Value::Value[0..1];
+  secondExpression: meta::external::language::morphir::metamodel::Value::Value[0..1];
+}
+
+Class meta::external::language::morphir::metamodel::Value::LetDefinition extends meta::external::language::morphir::metamodel::Value::Value
+{
+  name: meta::external::language::morphir::metamodel::Name::Name[0..1];
+  definition: meta::external::language::morphir::metamodel::Value::Definition[0..1];
+  value: meta::external::language::morphir::metamodel::Value::Value[0..1];
+}
+
+Class meta::external::language::morphir::metamodel::Value::EmptyListPattern extends meta::external::language::morphir::metamodel::Value::Pattern
+{
+}
+
+Class meta::external::language::morphir::metamodel::Value::FieldFunction extends meta::external::language::morphir::metamodel::Value::Value
+{
+  name: meta::external::language::morphir::metamodel::Name::Name[0..1];
+}
+
+Class meta::external::language::morphir::metamodel::Value::ConstructorPattern extends meta::external::language::morphir::metamodel::Value::Pattern
+{
+  patterns: meta::external::language::morphir::metamodel::Value::Pattern[*];
+  fQName: meta::external::language::morphir::metamodel::FQName::FQName[0..1];
+}
+
+Class meta::external::language::morphir::metamodel::Value::List extends meta::external::language::morphir::metamodel::Value::Value
+{
+  values: meta::external::language::morphir::metamodel::Value::Value[*];
+}
+
+Class meta::external::language::morphir::metamodel::Value::HeadTailPattern extends meta::external::language::morphir::metamodel::Value::Pattern
+{
+  head: meta::external::language::morphir::metamodel::Value::Pattern[0..1];
+  tail: meta::external::language::morphir::metamodel::Value::Pattern[0..1];
+}
+
+Class meta::external::language::morphir::metamodel::Value::Tuple extends meta::external::language::morphir::metamodel::Value::Value
+{
+  values: meta::external::language::morphir::metamodel::Value::Value[*];
+}
+
+Class meta::external::language::morphir::metamodel::Value::IfThenElse extends meta::external::language::morphir::metamodel::Value::Value
+{
+  condition: meta::external::language::morphir::metamodel::Value::Value[0..1];
+  thenBranch: meta::external::language::morphir::metamodel::Value::Value[0..1];
+  elseBranch: meta::external::language::morphir::metamodel::Value::Value[0..1];
+}
+
+Class meta::external::language::morphir::metamodel::Value::LetRecursionDefinition
+{
+  name: meta::external::language::morphir::metamodel::Name::Name[1];
+  definition: meta::external::language::morphir::metamodel::Value::Definition[1];
+}
+
+Class meta::external::language::morphir::metamodel::Value::WildcardPattern extends meta::external::language::morphir::metamodel::Value::Pattern
+{
+}
+
+Class meta::external::language::morphir::metamodel::Value::Definition extends meta::external::language::morphir::metamodel::AccessControlled::AccessControlledValue
+{
+  typeParameter: meta::external::language::morphir::metamodel::Type::Type[0..1];
+  valueParameter: meta::external::language::morphir::metamodel::Type::Type[0..1];
+  inputTypes: meta::external::language::morphir::metamodel::Value::DefinitionInputType[*];
+  outputType: meta::external::language::morphir::metamodel::Type::Type[0..1];
+  body: meta::external::language::morphir::metamodel::Value::Value[0..1];
+}
+
+Class meta::external::language::morphir::metamodel::Value::UpdateRecordElement
+{
+  name: meta::external::language::morphir::metamodel::Name::Name[1];
+  value: meta::external::language::morphir::metamodel::Value::Value[1];
+}
+
+Class meta::external::language::morphir::metamodel::Value::UnitPattern extends meta::external::language::morphir::metamodel::Value::Pattern
+{
+}
+
+Class meta::external::language::morphir::metamodel::Value::Value
+{
+  typeParameter: meta::external::language::morphir::metamodel::Type::Type[0..1];
+  valueParameter: meta::external::language::morphir::metamodel::Type::Type[0..1];
+}
+
+Class meta::external::language::morphir::metamodel::Value::Variable extends meta::external::language::morphir::metamodel::Value::Value
+{
+  name: meta::external::language::morphir::metamodel::Name::Name[0..1];
+}
+
+Class meta::external::language::morphir::metamodel::Value::SpecificationInput
+{
+  name: meta::external::language::morphir::metamodel::Name::Name[1];
+  type: meta::external::language::morphir::metamodel::Type::Type[1];
+}
+
+Class meta::external::language::morphir::metamodel::Value::Field extends meta::external::language::morphir::metamodel::Value::Value
+{
+  name: meta::external::language::morphir::metamodel::Name::Name[0..1];
+  value: meta::external::language::morphir::metamodel::Value::Value[0..1];
+}
+
+Class meta::external::language::morphir::metamodel::Value::LiteralPattern extends meta::external::language::morphir::metamodel::Value::Pattern
+{
+  literal: meta::external::language::morphir::metamodel::Literal::Literal[0..1];
+}
+
+Class meta::external::language::morphir::metamodel::Value::DefinitionInputType
+{
+  name: meta::external::language::morphir::metamodel::Name::Name[0..1];
+  value: meta::external::language::morphir::metamodel::Type::Type[0..1];
+  type: meta::external::language::morphir::metamodel::Type::Type[0..1];
+}
+
+Class meta::external::language::morphir::metamodel::AccessControlled::Access
+{
+}
+
+Class meta::external::language::morphir::metamodel::AccessControlled::Public extends meta::external::language::morphir::metamodel::AccessControlled::Access
+{
+}
+
+Class meta::external::language::morphir::metamodel::AccessControlled::Private extends meta::external::language::morphir::metamodel::AccessControlled::Access
+{
+}
+
+Class meta::external::language::morphir::metamodel::AccessControlled::AccessControlled
+{
+  access: meta::external::language::morphir::metamodel::AccessControlled::Access[0..1];
+  value: meta::external::language::morphir::metamodel::AccessControlled::AccessControlledValue[0..1];
+}
+
+Class meta::external::language::morphir::metamodel::AccessControlled::AccessControlledValue
+{
+}
+
+Class meta::external::language::morphir::metamodel::Literal::Literal
+{
+}
+
+Class meta::external::language::morphir::metamodel::Literal::BoolLiteral extends meta::external::language::morphir::metamodel::Literal::Literal
+{
+  value: Boolean[0..1];
+}
+
+Class meta::external::language::morphir::metamodel::Literal::IntLiteral extends meta::external::language::morphir::metamodel::Literal::Literal
+{
+  value: Integer[0..1];
+}
+
+Class meta::external::language::morphir::metamodel::Literal::StringLiteral extends meta::external::language::morphir::metamodel::Literal::Literal
+{
+  value: String[0..1];
+}
+
+Class meta::external::language::morphir::metamodel::Literal::FloatLiteral extends meta::external::language::morphir::metamodel::Literal::Literal
+{
+  value: Float[0..1];
+}
+
+Class meta::external::language::morphir::metamodel::Literal::CharLiteral extends meta::external::language::morphir::metamodel::Literal::Literal
+{
+  value: String[0..1];
+}
+
+Class meta::external::language::morphir::metamodel::Path::Path
+{
+  names: meta::external::language::morphir::metamodel::Name::Name[*];
+}
+
+Class meta::external::language::morphir::metamodel::Documented::Documented extends meta::external::language::morphir::metamodel::AccessControlled::AccessControlledValue
+{
+  doc: String[0..1];
+  value: meta::external::language::morphir::metamodel::Type::Type[1];
+}
+
+Class meta::external::language::morphir::metamodel::FQName::FQName
+{
+  packagePath: meta::external::language::morphir::metamodel::Path::Path[0..1];
+  modulePath: meta::external::language::morphir::metamodel::Path::Path[0..1];
+  name: meta::external::language::morphir::metamodel::Name::Name[0..1];
+}
+
+Class meta::external::language::morphir::metamodel::Name::Name
+{
+  words: String[*];
+}
+
+Class meta::external::language::morphir::metamodel::Type::SourceInformation
+{
+   source: String[1];
+   startLine: Integer[1];
+   startColumn: Integer[1];
+   endLine: Integer[1];
+   endColumn: Integer[1];
+}

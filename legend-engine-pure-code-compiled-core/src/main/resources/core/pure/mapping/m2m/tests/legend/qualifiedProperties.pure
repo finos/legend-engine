@@ -1,0 +1,460 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::executionPlan::engine::java::roadmap::*;
+import meta::json::*;
+import meta::pure::executionPlan::profiles::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::mapping::modelToModel::test::alloy::qualifiedProperties::*;
+import meta::pure::mapping::modelToModel::test::alloy::utils::*;
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.ToFix, meta::pure::profiles::test.AlloyOnly, feature.DataQuality>>
+{  serverVersion.start='v1_19_0',
+   doc.doc='Given: a class that defines a qualified property.',
+   doc.doc='Given: a mapping that uses the qualified property.',
+   doc.doc='When:  a mapping is executed using graphFetchChecked.',
+   doc.doc='Then:  the mapping produces the expected result'
+}
+meta::pure::mapping::modelToModel::test::alloy::dataQuality::canEvaluateAMappingWithAQualifiedProperty() : Boolean[1]
+{
+   let tree = #{SimpleBook {title, author, isbn10, isbn13}}#;
+   let func = {|SimpleBook.all()->graphFetchChecked($tree)->serialize($tree)};
+   let mapping = simplifyBook;
+   let runtime = testJsonRuntime(Book, '{"title":"The Annotated Turing", "author":"Charles Petzold", "identifiers" : [ {"type":"ISBN_10", "id":"0470229055"}, {"type":"ISBN_13", "id":"978-0470229057"} ]}');
+
+   let result = execute($func, $mapping, $runtime, []);
+   let json = $result.values->toOne();
+
+   let expected=
+   '{'+
+   '  "defects":[],'+
+   '  "value":{'+
+   '    "author": "Charles Petzold",'+
+   '    "title": "The Annotated Turing",'+
+   '    "isbn10": "0470229055",'+
+   '    "isbn13": "978-0470229057"'+
+   '   },'+
+   '  "source":{'+
+   '    "defects":[],'+
+   '    "value":{'+
+   '      "author": "Charles Petzold",'+
+   '      "title": "The Annotated Turing",'+
+   '      "identifiers": ['+
+   '        {"type": "ISBN_10", "id":"0470229055"},'+
+   '        {"type": "ISBN_13", "id":"978-0470229057"}'+
+   '      ]'+
+   '    },'+
+   '    "source":{"number":1, "record":"{\\"title\\":\\"The Annotated Turing\\",\\"author\\":\\"Charles Petzold\\",\\"identifiers\\":[{\\"type\\":\\"ISBN_10\\",\\"id\\":\\"0470229055\\"},{\\"type\\":\\"ISBN_13\\",\\"id\\":\\"978-0470229057\\"}]}"}'+
+   '  }'+
+   '}';
+
+   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.ToFix, meta::pure::profiles::test.AlloyOnly, feature.DataQuality>>
+{  serverVersion.start='v1_19_0',
+   doc.doc='Given: a class that defines a qualified property.',
+   doc.doc='Given: a constraint that uses the qualified property on the source class.',
+   doc.doc='When:  a mapping is executed using graphFetchChecked.',
+   doc.doc='Then:  the constraint is evaluated and succeeds for valid data'
+}
+meta::pure::mapping::modelToModel::test::alloy::dataQuality::canEvaluateAConstraintWithAQualifiedPropertyOnTheSource() : Boolean[1]
+{
+   let tree = #{SimpleBook {title, author, isbn10, isbn13}}#;
+   let func = {|SimpleBook.all()->graphFetchChecked($tree)->serialize($tree)};
+   let mapping = simplifyBookWithConstraint;
+   let runtime = testJsonRuntime(BookWithConstraint, '{"title":"The Annotated Turing", "author":"Charles Petzold", "identifiers" : [ {"type":"ISBN_10", "id":"0470229055"}, {"type":"ISBN_13", "id":"978-0470229057"} ]}');
+
+   let result = execute($func, $mapping, $runtime, []);
+   let json = $result.values->toOne();
+
+   let expected=
+   '{'+
+   '  "defects":[],'+
+   '  "value":{'+
+   '    "author": "Charles Petzold",'+
+   '    "title": "The Annotated Turing",'+
+   '    "isbn10": "0470229055",'+
+   '    "isbn13": "978-0470229057"'+
+   '   },'+
+   '  "source":{'+
+   '    "defects":[],'+
+   '    "value":{'+
+   '      "author": "Charles Petzold",'+
+   '      "title": "The Annotated Turing",'+
+   '      "identifiers": ['+
+   '        {"type": "ISBN_10", "id":"0470229055"},'+
+   '        {"type": "ISBN_13", "id":"978-0470229057"}'+
+   '      ]'+
+   '    },'+
+   '    "source":{"number":1, "record":"{\\"title\\":\\"The Annotated Turing\\",\\"author\\":\\"Charles Petzold\\",\\"identifiers\\":[{\\"type\\":\\"ISBN_10\\",\\"id\\":\\"0470229055\\"},{\\"type\\":\\"ISBN_13\\",\\"id\\":\\"978-0470229057\\"}]}"}'+
+   '  }'+
+   '}';
+
+   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.ToFix, meta::pure::profiles::test.AlloyOnly, feature.DataQuality>>
+{  serverVersion.start='v1_19_0',
+   doc.doc='Given: a class that defines a qualified property.',
+   doc.doc='Given: a constraint that uses the qualified property on the source class.',
+   doc.doc='Given: data that will cause the constraint to fail.',
+   doc.doc='When:  a mapping is executed using graphFetchChecked.',
+   doc.doc='Then:  the constraint is evaluated and a defect is reported'
+}
+meta::pure::mapping::modelToModel::test::alloy::dataQuality::canEvaluateAConstraintThatFailsWithAQualifiedPropertyOnTheSource() : Boolean[1]
+{
+   let tree = #{SimpleBook {title, author, isbn10, isbn13}}#;
+   let func = {|SimpleBook.all()->graphFetchChecked($tree)->serialize($tree)};
+   let mapping = simplifyBookWithConstraint;
+   let runtime = testJsonRuntime(BookWithConstraint, '{"title":"The Annotated Turing", "author":"Charles Petzold", "identifiers" : [ {"type":"ISBN_13", "id":"978-0470229057"} ]}');
+
+   let result = execute($func, $mapping, $runtime, []);
+   let json = $result.values->toOne();
+
+   let expected=
+   '{'+
+   '  "defects":[],'+
+   '  "value":{'+
+   '    "author": "Charles Petzold",'+
+   '    "title": "The Annotated Turing",'+
+   '    "isbn10": null,'+
+   '    "isbn13": "978-0470229057"'+
+   '   },'+
+   '  "source":{'+
+   '    "defects":['+
+   '      {'+
+   '        "id"               : "isbn10",'+
+   '        "externalId"       : null,'+
+   '        "message"          : "Constraint :[isbn10] violated in the Class BookWithConstraint",'+
+   '        "enforcementLevel" : "Error",'+
+   '        "ruleType"         : "ClassConstraint",'+
+   '        "ruleDefinerPath"  : "meta::pure::mapping::modelToModel::test::alloy::qualifiedProperties::BookWithConstraint",' +
+   '        "path"             : []' +
+   '      }'+
+   '    ],'+
+   '    "value":{'+
+   '      "author": "Charles Petzold",'+
+   '      "title": "The Annotated Turing",'+
+   '      "identifiers": ['+
+   '        {"type": "ISBN_13", "id":"978-0470229057"}'+
+   '      ]'+
+   '    },'+
+   '    "source":{"number":1, "record":"{\\"title\\":\\"The Annotated Turing\\",\\"author\\":\\"Charles Petzold\\",\\"identifiers\\":[{\\"type\\":\\"ISBN_13\\",\\"id\\":\\"978-0470229057\\"}]}"}'+
+   '  }'+
+   '}';
+
+   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.ToFix, meta::pure::profiles::test.AlloyOnly, feature.DataQuality>>
+{  serverVersion.start='v1_19_0',
+   doc.doc='Given: a class that defines a qualified property.',
+   doc.doc='Given: a constraint that uses the qualified property on the target class.',
+   doc.doc='When:  a mapping is executed using graphFetchChecked.',
+   doc.doc='Then:  the constraint is evaluated and succeeds for valid data'
+}
+meta::pure::mapping::modelToModel::test::alloy::dataQuality::canEvaluateAConstraintWithAQualifiedPropertyOnTheTarget() : Boolean[1]
+{
+   let tree = #{SimpleBookWithConstraint {title, author, isbn10, isbn13}}#;
+   let func = {|SimpleBookWithConstraint.all()->graphFetchChecked($tree)->serialize($tree)};
+   let mapping = simplifyBookWithConstraint2;
+   let runtime = testJsonRuntime(Book, '{"title":"The Annotated Turing", "author":"Charles Petzold", "identifiers" : [ {"type":"ISBN_10", "id":"0470229055"}, {"type":"ISBN_13", "id":"978-0470229057"} ]}');
+
+   let result = execute($func, $mapping, $runtime, []);
+   let json = $result.values->toOne();
+
+   let expected=
+   '{'+
+   '  "defects":[],'+
+   '  "value":{'+
+   '    "author": "Charles Petzold",'+
+   '    "title": "The Annotated Turing",'+
+   '    "isbn10": "0470229055",'+
+   '    "isbn13": "978-0470229057"'+
+   '   },'+
+   '  "source":{'+
+   '    "defects":[],'+
+   '    "value":{'+
+   '      "author": "Charles Petzold",'+
+   '      "title": "The Annotated Turing",'+
+   '      "identifiers": ['+
+   '        {"type": "ISBN_10", "id":"0470229055"},'+
+   '        {"type": "ISBN_13", "id":"978-0470229057"}'+
+   '      ]'+
+   '    },'+
+   '    "source":{"number":1, "record":"{\\"title\\":\\"The Annotated Turing\\",\\"author\\":\\"Charles Petzold\\",\\"identifiers\\":[{\\"type\\":\\"ISBN_10\\",\\"id\\":\\"0470229055\\"},{\\"type\\":\\"ISBN_13\\",\\"id\\":\\"978-0470229057\\"}]}"}'+
+   '  }'+
+   '}';
+
+   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.ToFix, meta::pure::profiles::test.AlloyOnly, feature.DataQuality>>
+{  serverVersion.start='v1_19_0',
+   doc.doc='Given: a class that defines a qualified property.',
+   doc.doc='Given: a constraint that uses the qualified property on the target class.',
+   doc.doc='Given: data that will cause the constraint to fail.',
+   doc.doc='When:  a mapping is executed using graphFetchChecked.',
+   doc.doc='Then:  the constraint is evaluated and a defect is reported'
+}
+meta::pure::mapping::modelToModel::test::alloy::dataQuality::canEvaluateAConstraintThatFailsWithAQualifiedPropertyOnTheTarget() : Boolean[1]
+{
+   let tree = #{SimpleBookWithConstraint {title, author, isbn10, isbn13}}#;
+   let func = {|SimpleBookWithConstraint.all()->graphFetchChecked($tree)->serialize($tree)};
+   let mapping = simplifyBookWithConstraint2;
+   let runtime = testJsonRuntime(Book, '{"title":"CODE", "author":"Charles Petzold", "identifiers" : [ {"type":"ISBN_10", "id":"9780735611313"}, {"type":"ISBN_13", "id":"978-0735611313"} ]}');
+
+   let result = execute($func, $mapping, $runtime, []);
+   let json = $result.values->toOne();
+
+   let expected=
+   '{'+
+   '  "defects":['+
+   '    {'+
+   '      "id"               : "titleHas2WordsOrMore",'+
+   '      "externalId"       : null,'+
+   '      "message"          : "Constraint :[titleHas2WordsOrMore] violated in the Class SimpleBookWithConstraint",'+
+   '      "enforcementLevel" : "Error",'+
+   '      "ruleType"         : "ClassConstraint",'+
+   '      "ruleDefinerPath"  : "meta::pure::mapping::modelToModel::test::alloy::qualifiedProperties::SimpleBookWithConstraint",' +
+   '      "path"             : []' +
+   '    }'+
+   '  ],'+
+   '  "value":{'+
+   '    "author": "Charles Petzold",'+
+   '    "title": "CODE",'+
+   '    "isbn10": "9780735611313",'+
+   '    "isbn13": "978-0735611313"'+
+   '   },'+
+   '  "source":{'+
+   '    "defects":[],'+
+   '    "value":{'+
+   '      "author": "Charles Petzold",'+
+   '      "title": "CODE",'+
+   '      "identifiers": ['+
+   '        {"type": "ISBN_10", "id":"9780735611313"},'+
+   '        {"type": "ISBN_13", "id":"978-0735611313"}'+
+   '      ]'+
+   '    },'+
+   '    "source":{"number":1, "record":"{\\"title\\":\\"CODE\\",\\"author\\":\\"Charles Petzold\\",\\"identifiers\\":[{\\"type\\":\\"ISBN_10\\",\\"id\\":\\"9780735611313\\"},{\\"type\\":\\"ISBN_13\\",\\"id\\":\\"978-0735611313\\"}]}"}'+
+   '  }'+
+   '}';
+   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.ToFix, meta::pure::profiles::test.AlloyOnly, feature.DataQuality>>
+{  serverVersion.start='v1_19_0',
+   doc.doc='Given: a class that defines a qualified property.',
+   doc.doc='Given: a graph fetch tree that uses the qualified property.',
+   doc.doc='When:  a mapping is executed using graphFetchChecked.',
+   doc.doc='Then:  the mapping succeeds and the serialization works'
+}
+meta::pure::mapping::modelToModel::test::alloy::dataQuality::canEvaluateAGraphFetchTreeWithAQualifiedProperty() : Boolean[1]
+{
+   let tree = #{Book {title, author, 'isbn10' : id(BookIdentifierType.ISBN_10)}}#;
+   let func = {|Book.all()->graphFetchChecked($tree)->serialize($tree)};
+   let mapping = dataToBook;
+   let runtime = testJsonRuntime(BookData, '{"title":"The Annotated Turing", "author":"Charles Petzold", "identifiers" : [ {"type":"ISBN_10", "id":"0470229055"}, {"type":"ISBN_13", "id":"978-0470229057"} ]}');
+
+   let result = execute($func, $mapping, $runtime, []);
+   let json = $result.values->toOne();
+
+   let expected=
+   '{'+
+   '  "defects":[],'+
+   '  "value":{'+
+   '    "author": "Charles Petzold",'+
+   '    "title": "The Annotated Turing",'+
+   '    "isbn10": {"type": "ISBN_10", "id":"0470229055"}'+
+   '   },'+
+   '  "source":{'+
+   '    "defects":[],'+
+   '    "value":{'+
+   '      "author": "Charles Petzold",'+
+   '      "title": "The Annotated Turing",'+
+   '      "identifiers": ['+
+   '        {"type": "ISBN_10", "id":"0470229055"},'+
+   '        {"type": "ISBN_13", "id":"978-0470229057"}'+
+   '      ]'+
+   '    },'+
+   '    "source":{"number":1, "record":"{\\"title\\":\\"The Annotated Turing\\",\\"author\\":\\"Charles Petzold\\",\\"identifiers\\":[{\\"type\\":\\"ISBN_10\\",\\"id\\":\\"0470229055\\"},{\\"type\\":\\"ISBN_13\\",\\"id\\":\\"978-0470229057\\"}]}"}'+
+   '  }'+
+   '}';
+
+   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+###Pure
+import meta::pure::mapping::modelToModel::test::alloy::qualifiedProperties::*;
+
+Class meta::pure::mapping::modelToModel::test::alloy::qualifiedProperties::SimpleBook
+{
+   title  : String[1];
+   author : String[1];
+   isbn10 : String[0..1];
+   isbn13 : String[0..1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::qualifiedProperties::SimpleBookWithConstraint extends SimpleBook
+[
+   titleHas2WordsOrMore: $this.titleWords()->size() > 1
+]
+{
+   titleWords() 
+   {
+      $this.title->split(' ')
+   }: String[*];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::qualifiedProperties::Book
+{
+   title  : String[1];
+   author : String[1];
+
+   id(type:BookIdentifierType[1])
+   {
+      if($this.identifiers->exists(id|$id.type == $type) ,|$this.identifiers->filter(id|$id.type == $type)->toOne(), |[]);
+   }:BookIdentifier[0..1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::qualifiedProperties::BookWithFunction extends Book
+{
+   func()
+   {
+      printBook();
+   }:String[1];
+}
+
+function meta::pure::mapping::modelToModel::test::alloy::qualifiedProperties::printBook(): String[1]
+{
+    'This is simple function that prints a text';
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::qualifiedProperties::BookWithConstraint extends Book
+[
+   isbn10: $this.id(BookIdentifierType.ISBN_10)->isNotEmpty()
+]
+{
+}
+
+Enum meta::pure::mapping::modelToModel::test::alloy::qualifiedProperties::BookIdentifierType
+{
+   ISBN_10, ISBN_13
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::qualifiedProperties::BookIdentifier
+{
+   type : BookIdentifierType[1];
+   id   : String[1];
+}
+
+Association meta::pure::mapping::modelToModel::test::alloy::qualifiedProperties::Book_BookIdentifier
+{
+   book        : Book[1];
+   identifiers : BookIdentifier[*];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::qualifiedProperties::BookData
+{
+   title  : String[1];
+   author : String[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::qualifiedProperties::BookDataIdentifier
+{
+   type : BookIdentifierType[1];
+   id   : String[1];
+}
+
+Association meta::pure::mapping::modelToModel::test::alloy::qualifiedProperties::BookData_BookDataIdentifier
+{
+   book        : BookData[1];
+   identifiers : BookDataIdentifier[*];
+}
+
+###Mapping
+import meta::pure::mapping::modelToModel::test::alloy::qualifiedProperties::*;
+
+Mapping meta::pure::mapping::modelToModel::test::alloy::qualifiedProperties::simplifyBook
+(
+   SimpleBook : Pure
+      {
+         ~src Book
+         title  : $src.title,
+         author : $src.author,
+         isbn10 : if($src.identifiers->exists(id|$id.type == BookIdentifierType.ISBN_10), |$src.identifiers->filter(id|$id.type == BookIdentifierType.ISBN_10)->toOne().id, |[]),
+         isbn13 : if($src.identifiers->exists(id|$id.type == BookIdentifierType.ISBN_13), |$src.identifiers->filter(id|$id.type == BookIdentifierType.ISBN_13)->toOne().id, |[])
+      }
+)
+
+Mapping meta::pure::mapping::modelToModel::test::alloy::qualifiedProperties::simplifyBookWithConstraint
+(
+   SimpleBook : Pure
+      {
+         ~src BookWithConstraint
+         title  : $src.title,
+         author : $src.author,
+         isbn10 : if($src.identifiers->exists(id|$id.type == BookIdentifierType.ISBN_10), |$src.identifiers->filter(id|$id.type == BookIdentifierType.ISBN_10)->toOne().id, |[]),
+         isbn13 : if($src.identifiers->exists(id|$id.type == BookIdentifierType.ISBN_13), |$src.identifiers->filter(id|$id.type == BookIdentifierType.ISBN_13)->toOne().id, |[])
+      }
+)
+
+Mapping meta::pure::mapping::modelToModel::test::alloy::qualifiedProperties::simplifyBookWithConstraint2
+(
+   SimpleBookWithConstraint : Pure
+      {
+         ~src Book
+         title  : $src.title,
+         author : $src.author,
+         isbn10 : if($src.identifiers->exists(id|$id.type == BookIdentifierType.ISBN_10), |$src.identifiers->filter(id|$id.type == BookIdentifierType.ISBN_10)->toOne().id, |[]),
+         isbn13 : if($src.identifiers->exists(id|$id.type == BookIdentifierType.ISBN_13), |$src.identifiers->filter(id|$id.type == BookIdentifierType.ISBN_13)->toOne().id, |[])
+      }
+)
+
+Mapping meta::pure::mapping::modelToModel::test::alloy::qualifiedProperties::dataToBook
+(
+   Book : Pure
+      {
+         ~src BookData
+         title       : $src.title,
+         author      : $src.author,
+         identifiers : $src.identifiers
+      }
+
+   BookIdentifier : Pure
+      {
+         ~src BookDataIdentifier
+         type : $src.type,
+         id   : $src.id
+      }
+)
+
+Mapping meta::pure::mapping::modelToModel::test::alloy::qualifiedProperties::dataToBookWithFunction
+(
+   BookWithFunction : Pure
+      {
+         ~src BookData
+         title       : $src.title,
+         author      : $src.author,
+         identifiers : $src.identifiers
+      }
+
+   BookIdentifier : Pure
+      {
+         ~src BookDataIdentifier
+         type : $src.type,
+         id   : $src.id
+      }
+)

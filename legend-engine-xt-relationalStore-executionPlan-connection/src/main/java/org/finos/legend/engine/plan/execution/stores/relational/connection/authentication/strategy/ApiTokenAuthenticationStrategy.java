@@ -84,7 +84,7 @@ public class ApiTokenAuthenticationStrategy extends AuthenticationStrategy
             }
             return new ApiTokenCredential(apiToken);
         }
-        return (ApiTokenCredential)super.getDatabaseCredential(identityState);
+        return (ApiTokenCredential) super.getDatabaseCredential(identityState);
     }
 
 }

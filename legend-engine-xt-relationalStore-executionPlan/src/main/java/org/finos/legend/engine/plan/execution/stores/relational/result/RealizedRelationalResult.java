@@ -113,7 +113,8 @@ public class RealizedRelationalResult extends StreamingResult
     public List<Map<String, Object>> getRowValueMaps(boolean withTransform)
     {
         List<Map<String, Object>> rowValueMaps = Lists.mutable.empty();
-        (withTransform ? this.transformedRows : this.resultSetRows).forEach(row -> {
+        (withTransform ? this.transformedRows : this.resultSetRows).forEach(row ->
+        {
             Map<String, Object> rowValMap = Maps.mutable.empty();
             int index = 0;
             for (SQLResultColumn col : this.columns)

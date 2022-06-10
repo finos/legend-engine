@@ -16,7 +16,6 @@ package org.finos.legend.engine.language.pure.dsl.diagram.grammar.to;
 
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.impl.factory.Lists;
-import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.dsl.diagram.grammar.from.DiagramParserExtension;
@@ -115,22 +114,22 @@ public class DiagramGrammarComposerExtension implements PureGrammarComposerExten
     public static String renderPropertyView(PropertyView propertyView)
     {
         return getTabString() + "propertyView" + "\n" +
-            getTabString() + "{\n" +
-            getTabString(2) + "property: " + PureGrammarComposerUtility.convertPath(propertyView.property._class) + "." + PureGrammarComposerUtility.convertIdentifier(propertyView.property.property) + ";\n" +
-            getTabString(2) + "source: " + propertyView.sourceView + ";\n" +
-            getTabString(2) + "target: " + propertyView.targetView + ";\n" +
-            getTabString(2) + "points: " + renderLine(propertyView.line) + ";\n" +
-            getTabString() + "}\n";
+                getTabString() + "{\n" +
+                getTabString(2) + "property: " + PureGrammarComposerUtility.convertPath(propertyView.property._class) + "." + PureGrammarComposerUtility.convertIdentifier(propertyView.property.property) + ";\n" +
+                getTabString(2) + "source: " + propertyView.sourceView + ";\n" +
+                getTabString(2) + "target: " + propertyView.targetView + ";\n" +
+                getTabString(2) + "points: " + renderLine(propertyView.line) + ";\n" +
+                getTabString() + "}\n";
     }
 
     public static String renderGeneralizationView(GeneralizationView generalizationView)
     {
         return getTabString() + "generalizationView" + "\n" +
-            getTabString() + "{\n" +
-            getTabString(2) + "source: " + generalizationView.sourceView + ";\n" +
-            getTabString(2) + "target: " + generalizationView.targetView + ";\n" +
-            getTabString(2) + "points: " + renderLine(generalizationView.line) + ";\n" +
-            getTabString() + "}\n";
+                getTabString() + "{\n" +
+                getTabString(2) + "source: " + generalizationView.sourceView + ";\n" +
+                getTabString(2) + "target: " + generalizationView.targetView + ";\n" +
+                getTabString(2) + "points: " + renderLine(generalizationView.line) + ";\n" +
+                getTabString() + "}\n";
     }
 
     private static String renderLine(Line line)

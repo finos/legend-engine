@@ -14,7 +14,11 @@
 
 package org.finos.legend.engine.language.pure.grammar.from;
 
-import org.antlr.v4.runtime.*;
+import org.antlr.v4.runtime.BaseErrorListener;
+import org.antlr.v4.runtime.InputMismatchException;
+import org.antlr.v4.runtime.RecognitionException;
+import org.antlr.v4.runtime.Recognizer;
+import org.antlr.v4.runtime.Token;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
@@ -42,7 +46,7 @@ public class ParserErrorListener extends BaseErrorListener
     {
         if (e != null && e.getOffendingToken() != null && e instanceof InputMismatchException)
         {
-            List<String> expectedSymbols  = dereferenceTokens(e.getExpectedTokens().toList());
+            List<String> expectedSymbols = dereferenceTokens(e.getExpectedTokens().toList());
             if (expectedSymbols.isEmpty())
             {
                 msg = "Unexpected token";
@@ -91,7 +95,8 @@ public class ParserErrorListener extends BaseErrorListener
         throw new EngineException(msg, sourceInformation, EngineErrorType.PARSER);
     }
 
-    protected List<String> dereferenceTokens(List<Integer> expectedTokens) {
+    protected List<String> dereferenceTokens(List<Integer> expectedTokens)
+    {
         return Collections.emptyList();
     }
 }
