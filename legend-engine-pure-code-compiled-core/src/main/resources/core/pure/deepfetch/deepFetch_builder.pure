@@ -70,7 +70,7 @@ function meta::pure::deepfetch::builder::toJSON(d:DeepFetchTreeNode[1]):String[1
 
 function meta::pure::deepfetch::builder::getDeepFetchFunction<T>(d:LambdaFunction<{T[1]->Any[*]}>[*]):LambdaFunction<{T[1]->Any[*]}>[1]
 {
-   let propertyExpressions = $d.expressionSequence->evaluateAndDeactivate()->toOneMany()->map(e|$e->removeAutomap());
+   let propertyExpressions = $d.expressionSequence->evaluateAndDeactivate()->map(e|$e->removeAutomap())->toOneMany();
    let templateLambda = $d->at(0);
    ^$templateLambda(functionName=deepFetchFunctionName(), expressionSequence=$propertyExpressions);
 }
