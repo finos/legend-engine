@@ -1,0 +1,134 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::protocols::pure::v1_21_0::metamodel::store::relational::element::*;
+import meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::*;
+import meta::protocols::pure::v1_21_0::metamodel::domain::*;
+import meta::protocols::pure::v1_21_0::metamodel::store::relational::mapping::*;
+
+Class meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::RelationalDatabaseConnection extends meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::DatabaseConnection
+{
+   datasourceSpecification:meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::alloy::specification::DatasourceSpecification[1];
+   authenticationStrategy:meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::alloy::authentication::AuthenticationStrategy[1];
+   postProcessors: meta::protocols::pure::v1_21_0::metamodel::store::relational::postProcessor::PostProcessor[*];
+}
+
+Class meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::alloy::authentication::DelegatedKerberosAuthenticationStrategy extends meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::alloy::authentication::AuthenticationStrategy
+{
+   serverPrincipal: String[0..1];
+}
+
+Class meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::alloy::authentication::DefaultH2AuthenticationStrategy extends meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::alloy::authentication::AuthenticationStrategy
+{
+}
+
+Class meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::alloy::authentication::TestDatabaseAuthenticationStrategy extends meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::alloy::authentication::DefaultH2AuthenticationStrategy
+{
+}
+
+Class meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::alloy::authentication::SnowflakePublicAuthenticationStrategy extends meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::alloy::authentication::AuthenticationStrategy
+{
+    privateKeyVaultReference : String[1];
+    passPhraseVaultReference : String[1];
+    publicUserName : String[1];
+}
+
+Class meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::alloy::authentication::GCPApplicationDefaultCredentialsAuthenticationStrategy extends meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::alloy::authentication::AuthenticationStrategy
+{
+}
+
+Class meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::alloy::specification::LocalH2DatasourceSpecification extends meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::alloy::specification::DatasourceSpecification
+{
+    testDataSetupCsv:String[0..1];
+    testDataSetupSqls:String[*];
+}
+
+Class meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::alloy::specification::EmbeddedH2DatasourceSpecification extends meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::alloy::specification::DatasourceSpecification
+{
+    databaseName:String[1];
+    directory:String[1];
+    autoServerMode:Boolean[1];
+}
+
+Class meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::alloy::specification::StaticDatasourceSpecification extends meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::alloy::specification::DatasourceSpecification
+{
+   host: String[1];
+   port: Integer[1];
+   databaseName: String[1];
+}
+
+Class meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::alloy::specification::SnowflakeDatasourceSpecification extends meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::alloy::specification::DatasourceSpecification
+{
+    accountName : String[1];
+    region : String[1];
+    warehouseName : String[1];
+    databaseName : String[1];
+    cloudType : String[0..1];
+    accountType: String[0..1];
+    organization: String[0..1];
+
+    quotedIdentifiersIgnoreCase : Boolean[0..1];
+
+    proxyHost: String[0..1];
+    proxyPort: String[0..1];
+    nonProxyHosts: String[0..1];
+
+}
+
+Class meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::alloy::specification::BigQueryDatasourceSpecification extends meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::alloy::specification::DatasourceSpecification
+{
+    projectId:String[1];
+    defaultDataset:String[1];
+}
+
+Class meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::TestDatabaseConnection extends meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::DatabaseConnection
+{
+   testDataSetupCsv : String[0..1];
+   testDataSetupSqls : String[*];
+
+}
+
+Class meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::DatabaseConnection extends meta::protocols::pure::v1_21_0::metamodel::runtime::Connection
+{
+   type : String[1];
+   timeZone : String[0..1];
+   quoteIdentifiers : Boolean[0..1];
+   postProcessorWithParameter:	meta::protocols::pure::v1_21_0::metamodel::store::relational::PostProcessorWithParameter[*];
+}
+
+Class meta::protocols::pure::v1_21_0::metamodel::store::relational::PostProcessorWithParameter
+{
+   pp:String[1];
+   parameters: meta::protocols::pure::v1_21_0::metamodel::store::relational::PostProcessorParameter[*];
+}
+
+Class meta::protocols::pure::v1_21_0::metamodel::store::relational::PostProcessorParameter
+{
+   _type:String[1];
+}
+
+Class <<typemodifiers.abstract>> meta::protocols::pure::v1_21_0::metamodel::store::relational::postProcessor::PostProcessor
+{
+   _type:String[1];
+}
+
+Class <<typemodifiers.abstract>> meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::alloy::authentication::AuthenticationStrategy
+{
+   _type: String[1];
+}
+
+Class <<typemodifiers.abstract>> meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::alloy::specification::DatasourceSpecification
+{
+   _type: String[1];
+}

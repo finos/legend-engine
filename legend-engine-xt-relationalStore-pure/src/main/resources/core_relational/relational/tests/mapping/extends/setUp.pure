@@ -1,0 +1,667 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::relational::tests::mapping::extend::model::*;
+
+Class meta::relational::tests::mapping::extend::model::A
+{
+   id : Integer[1];
+   aName : String[1];
+   m1 : M[1];
+   m2 : M[1];
+}
+
+Class meta::relational::tests::mapping::extend::model::B extends A
+{
+   bName : String[1];
+   n1 : N[1];
+   n2 : N[1];
+}
+
+Class meta::relational::tests::mapping::extend::model::C extends B
+{
+   cName : String[1];
+   o1 : O[1];
+   o2 : O[1];
+}
+
+Class meta::relational::tests::mapping::extend::model::D
+{
+   id : Integer[1];
+   dName : String[1];
+}
+
+Class meta::relational::tests::mapping::extend::model::E extends D
+{
+   eName : String[1];
+}
+
+Class meta::relational::tests::mapping::extend::model::F extends E
+{
+   fName : String[1];
+}
+
+Class meta::relational::tests::mapping::extend::model::G
+{
+   id : Integer[1];
+   gName : String[1];
+}
+
+Class meta::relational::tests::mapping::extend::model::H extends G
+{
+   hName : String[1];
+}
+
+Class meta::relational::tests::mapping::extend::model::I extends H
+{
+   iName : String[1];
+}
+
+Class meta::relational::tests::mapping::extend::model::J
+{
+   id : Integer[1];
+   jName : String[1];
+}
+
+Class meta::relational::tests::mapping::extend::model::K extends J
+{
+   kName : String[1];
+}
+
+Class meta::relational::tests::mapping::extend::model::L extends K
+{
+   lName : String[1];
+}
+
+Class meta::relational::tests::mapping::extend::model::M
+{
+   id : Integer[1];
+   mName : String[1];
+}
+
+Class meta::relational::tests::mapping::extend::model::N
+{
+   id : Integer[1];
+   nName : String[1];
+}
+
+Class meta::relational::tests::mapping::extend::model::O
+{
+   id : Integer[1];
+   oName : String[1];
+}
+
+Association meta::relational::tests::mapping::extend::model::AE
+{
+   a : A[1];
+   e : E[1];
+}
+
+Association meta::relational::tests::mapping::extend::model::A2E2
+{
+   a2 : A[1];
+   e2 : E[1];
+}
+
+Association meta::relational::tests::mapping::extend::model::BH
+{
+   b : B[1];
+   h : H[1];
+}
+
+Association meta::relational::tests::mapping::extend::model::B2H2
+{
+   b2 : B[1];
+   h2 : H[1];
+}
+
+Association meta::relational::tests::mapping::extend::model::CK
+{
+   c : C[1];
+   k : K[1];
+}
+
+Association meta::relational::tests::mapping::extend::model::C2K2
+{
+   c2 : C[1];
+   k2 : K[1];
+}
+
+###Relational
+
+Database meta::relational::tests::mapping::extend::store::testDatabase
+(
+   Table ABC(id INT PRIMARY KEY, aName VARCHAR(20), bName VARCHAR(20), cName VARCHAR(20), m1Id INT, m2Id INT,m3Id INT, m4Id INT, n1Id INT, n2Id INT, n3Id INT, o1Id INT, o2Id INT)
+   Table DEF(id INT PRIMARY KEY, dName VARCHAR(20), eName VARCHAR(20), fName VARCHAR(20))
+   Table GHI(id INT PRIMARY KEY, gName VARCHAR(20), hName VARCHAR(20), iName VARCHAR(20))
+   Table JKL(id INT PRIMARY KEY, jName VARCHAR(20), kName VARCHAR(20), lName VARCHAR(20))
+   
+   Table ABC2(id INT PRIMARY KEY, aName VARCHAR(20), bName VARCHAR(20), cName VARCHAR(20), m1Id INT, m2Id INT,m3Id INT, m4Id INT, n1Id INT, n2Id INT, n3Id INT, o1Id INT, o2Id INT)
+   Table DEF2(id INT PRIMARY KEY, dName VARCHAR(20), eName VARCHAR(20), fName VARCHAR(20))
+   Table GHI2(id INT PRIMARY KEY, gName VARCHAR(20), hName VARCHAR(20), iName VARCHAR(20))
+   Table JKL2(id INT PRIMARY KEY, jName VARCHAR(20), kName VARCHAR(20), lName VARCHAR(20))
+   
+   Join AE(ABC.id = DEF.id)
+   Join BH(ABC.id = GHI.id)
+   Join CK(ABC.id = JKL.id)
+   
+   Join A2E2(ABC2.id = DEF2.id)
+   Join B2H2(ABC2.id = GHI2.id)
+   Join C2K2(ABC2.id = JKL2.id)
+   
+   Filter AFilter(ABC.aName = 'aName1')
+   Filter CFilter(ABC.cName = 'cName1')
+)
+
+###Relational
+Database meta::relational::tests::mapping::extend::store::testDatabase2
+(
+   include meta::relational::tests::mapping::extend::store::testDatabase
+)
+
+###Relational
+Database meta::relational::tests::mapping::extend::store::testDatabase3
+(
+   include meta::relational::tests::mapping::extend::store::testDatabase2
+)
+
+###Pure
+import meta::relational::tests::mapping::extend::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::functions::toDDL::*;
+import meta::relational::tests::mapping::extend::model::*;
+import meta::relational::tests::mapping::extend::store::*;
+import meta::relational::runtime::*;
+import meta::pure::runtime::*;
+
+function meta::relational::tests::mapping::extend::testRuntime():Runtime[1]
+{
+  meta::relational::tests::testRuntime(testDatabase);
+}
+
+function <<test.BeforePackage>> meta::relational::tests::mapping::extend::setUp():Boolean[1]
+{
+   let connection = testRuntime().connectionByElement(testDatabase)->cast(@TestDatabaseConnection);
+
+   dropAndCreateTableInDb(testDatabase, 'ABC', $connection);
+   dropAndCreateTableInDb(testDatabase, 'DEF', $connection);
+   dropAndCreateTableInDb(testDatabase, 'GHI', $connection);
+   dropAndCreateTableInDb(testDatabase, 'JKL', $connection);
+   
+   dropAndCreateTableInDb(testDatabase, 'ABC2', $connection);
+   dropAndCreateTableInDb(testDatabase, 'DEF2', $connection);
+   dropAndCreateTableInDb(testDatabase, 'GHI2', $connection);
+   dropAndCreateTableInDb(testDatabase, 'JKL2', $connection);
+
+   executeInDb('insert into ABC (id, aName, bName, cName, m1Id, m2Id, m3Id, m4Id, n1Id, n2Id, n3Id, o1Id, o2Id) values (1, \'aName1\', \'bName1\', \'cName1\', 1, 2, 3, 4, 1, 2, 3, 1 ,2);', $connection);
+   executeInDb('insert into ABC (id, aName, bName, cName, m1Id, m2Id, m3Id, m4Id, n1Id, n2Id, n3Id, o1Id, o2Id) values (2, \'aName2\', \'bName2\', \'cName2\', 2, 3, 4, 5, 2, 3, 4, 2 ,3);', $connection);
+   executeInDb('insert into ABC (id, aName, bName, cName, m1Id, m2Id, m3Id, m4Id, n1Id, n2Id, n3Id, o1Id, o2Id) values (3, \'aName1\', \'bName1\', \'cName1\', 3, 4, 5, 6, 3, 4, 5, 3 ,4);', $connection);
+   executeInDb('insert into ABC (id, aName, bName, cName, m1Id, m2Id, m3Id, m4Id, n1Id, n2Id, n3Id, o1Id, o2Id) values (4, \'aName2\', \'bName2\', \'cName2\', 4, 5, 6, 7, 4, 5, 6, 4, 5);', $connection);
+
+   executeInDb('insert into DEF (id, dName, eName, fName) values (1, \'dName1\', \'eName1\', \'fName1\');', $connection);
+   executeInDb('insert into DEF (id, dName, eName, fName) values (2, \'dName2\', \'eName2\', \'fName2\');', $connection);
+   executeInDb('insert into DEF (id, dName, eName, fName) values (3, \'dName1\', \'eName1\', \'fName1\');', $connection);
+   executeInDb('insert into DEF (id, dName, eName, fName) values (4, \'dName2\', \'eName2\', \'fName2\');', $connection);
+   
+   executeInDb('insert into GHI (id, gName, hName, iName) values (1, \'gName1\', \'hName1\', \'iName1\');', $connection);
+   executeInDb('insert into GHI (id, gName, hName, iName) values (2, \'gName2\', \'hName2\', \'iName2\');', $connection);
+   executeInDb('insert into GHI (id, gName, hName, iName) values (3, \'gName1\', \'hName1\', \'iName1\');', $connection);
+   executeInDb('insert into GHI (id, gName, hName, iName) values (4, \'gName2\', \'hName2\', \'iName2\');', $connection);
+   
+   executeInDb('insert into JKL (id, jName, kName, lName) values (1, \'jName1\', \'kName1\', \'lName1\');', $connection);
+   executeInDb('insert into JKL (id, jName, kName, lName) values (2, \'jName2\', \'kName2\', \'lName2\');', $connection);
+   executeInDb('insert into JKL (id, jName, kName, lName) values (3, \'jName1\', \'kName1\', \'lName1\');', $connection);
+   executeInDb('insert into JKL (id, jName, kName, lName) values (4, \'jName2\', \'kName2\', \'lName2\');', $connection);
+   
+   executeInDb('insert into ABC2 (id, aName, bName, cName, m1Id, m2Id, m3Id, m4Id, n1Id, n2Id, n3Id, o1Id, o2Id) values (1, \'aName1\', \'bName1\', \'cName1\', 1, 2, 3, 4, 1, 2, 3, 1 ,2);', $connection);
+   executeInDb('insert into ABC2 (id, aName, bName, cName, m1Id, m2Id, m3Id, m4Id, n1Id, n2Id, n3Id, o1Id, o2Id) values (2, \'aName2\', \'bName2\', \'cName2\', 2, 3, 4, 5, 2, 3, 4, 2 ,3);', $connection);
+   executeInDb('insert into ABC2 (id, aName, bName, cName, m1Id, m2Id, m3Id, m4Id, n1Id, n2Id, n3Id, o1Id, o2Id) values (3, \'aName1\', \'bName1\', \'cName1\', 3, 4, 5, 6, 3, 4, 5, 3 ,4);', $connection);
+   executeInDb('insert into ABC2 (id, aName, bName, cName, m1Id, m2Id, m3Id, m4Id, n1Id, n2Id, n3Id, o1Id, o2Id) values (4, \'aName2\', \'bName2\', \'cName2\', 4, 5, 6, 7, 4, 5, 6, 4, 5);', $connection);
+
+   executeInDb('insert into DEF2 (id, dName, eName, fName) values (1, \'dName1\', \'eName1\', \'fName1\');', $connection);
+   executeInDb('insert into DEF2 (id, dName, eName, fName) values (2, \'dName2\', \'eName2\', \'fName2\');', $connection);
+   executeInDb('insert into DEF2 (id, dName, eName, fName) values (3, \'dName1\', \'eName1\', \'fName1\');', $connection);
+   executeInDb('insert into DEF2 (id, dName, eName, fName) values (4, \'dName2\', \'eName2\', \'fName2\');', $connection);
+   
+   executeInDb('insert into GHI2 (id, gName, hName, iName) values (1, \'gName1\', \'hName1\', \'iName1\');', $connection);
+   executeInDb('insert into GHI2 (id, gName, hName, iName) values (2, \'gName2\', \'hName2\', \'iName2\');', $connection);
+   executeInDb('insert into GHI2 (id, gName, hName, iName) values (3, \'gName1\', \'hName1\', \'iName1\');', $connection);
+   executeInDb('insert into GHI2 (id, gName, hName, iName) values (4, \'gName2\', \'hName2\', \'iName2\');', $connection);
+   
+   executeInDb('insert into JKL2 (id, jName, kName, lName) values (1, \'jName1\', \'kName1\', \'lName1\');', $connection);
+   executeInDb('insert into JKL2 (id, jName, kName, lName) values (2, \'jName2\', \'kName2\', \'lName2\');', $connection);
+   executeInDb('insert into JKL2 (id, jName, kName, lName) values (3, \'jName1\', \'kName1\', \'lName1\');', $connection);
+   executeInDb('insert into JKL2 (id, jName, kName, lName) values (4, \'jName2\', \'kName2\', \'lName2\');', $connection);
+
+   true;
+}
+
+###Diagram
+
+Diagram meta::relational::tests::mapping::extend::model::ModelDiagram(width=808.47485, height=493.00000)
+{
+    TypeView A_$_0(
+        type=meta::relational::tests::mapping::extend::model::A,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0,
+        position=(808.00000, 106.00000),
+        width=108.64990,
+        height=60.00000)
+
+    TypeView B_$_1(
+        type=meta::relational::tests::mapping::extend::model::B,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0,
+        position=(807.00000, 245.00000),
+        width=108.64990,
+        height=48.00000)
+
+    TypeView C_$_2(
+        type=meta::relational::tests::mapping::extend::model::C,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0,
+        position=(808.00000, 395.00000),
+        width=108.03223,
+        height=48.00000)
+
+    TypeView N_$_3(
+        type=meta::relational::tests::mapping::extend::model::N,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0,
+        position=(1075.82495, 242.50000),
+        width=108.64990,
+        height=60.00000)
+
+    TypeView M_$_4(
+        type=meta::relational::tests::mapping::extend::model::M,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0,
+        position=(1071.82495, 110.50000),
+        width=111.69531,
+        height=60.00000)
+
+    TypeView O_$_5(
+        type=meta::relational::tests::mapping::extend::model::O,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0,
+        position=(1074.82495, 391.50000),
+        width=108.64990,
+        height=60.00000)
+
+    TypeView E_$_6(
+        type=meta::relational::tests::mapping::extend::model::E,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0,
+        position=(536.00000, 82.00000),
+        width=108.64990,
+        height=48.00000)
+
+    TypeView K_$_7(
+        type=meta::relational::tests::mapping::extend::model::K,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0,
+        position=(526.00000, 418.00000),
+        width=108.03223,
+        height=48.00000)
+
+    TypeView H_$_8(
+        type=meta::relational::tests::mapping::extend::model::H,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0,
+        position=(539.00000, 245.00000),
+        width=108.64990,
+        height=48.00000)
+
+    TypeView F_$_9(
+        type=meta::relational::tests::mapping::extend::model::F,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0,
+        position=(380.00000, 125.00000),
+        width=105.58838,
+        height=48.00000)
+
+    TypeView D_$_10(
+        type=meta::relational::tests::mapping::extend::model::D,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0,
+        position=(376.00000, 22.00000),
+        width=108.64990,
+        height=60.00000)
+
+    TypeView G_$_11(
+        type=meta::relational::tests::mapping::extend::model::G,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0,
+        position=(381.00000, 188.00000),
+        width=108.64990,
+        height=60.00000)
+
+    TypeView I_$_12(
+        type=meta::relational::tests::mapping::extend::model::I,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0,
+        position=(382.00000, 291.00000),
+        width=104.97607,
+        height=48.00000)
+
+    TypeView J_$_13(
+        type=meta::relational::tests::mapping::extend::model::J,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0,
+        position=(378.00000, 363.00000),
+        width=104.97607,
+        height=60.00000)
+
+    TypeView L_$_14(
+        type=meta::relational::tests::mapping::extend::model::L,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0,
+        position=(377.00000, 467.00000),
+        width=104.97607,
+        height=48.00000)
+
+    AssociationView aview_15(association=meta::relational::tests::mapping::extend::model::AE,
+        stereotypesVisible=true,
+        nameVisible=false,
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE,
+        points=[(862.32495,136.00000),(590.32495,106.00000)],
+        label='AE',
+        source=A_$_0,
+        target=E_$_6,
+        sourcePropertyPosition=(704.08875, 185.50828),
+        sourceMultiplicityPosition=(704.08875, 164.50828),
+        targetPropertyPosition=(567.41247, 151.49172),
+        targetMultiplicityPosition=(567.41247, 172.49172))
+
+    AssociationView aview_16(association=meta::relational::tests::mapping::extend::model::A2E2,
+        stereotypesVisible=true,
+        nameVisible=false,
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE,
+        points=[(862.32495,136.00000),(590.32495,106.00000)],
+        label='A2E2',
+        source=A_$_0,
+        target=E_$_6,
+        sourcePropertyPosition=(697.41492, 185.50828),
+        sourceMultiplicityPosition=(704.08875, 164.50828),
+        targetPropertyPosition=(567.41247, 151.49172),
+        targetMultiplicityPosition=(567.41247, 172.49172))
+
+    AssociationView aview_17(association=meta::relational::tests::mapping::extend::model::BH,
+        stereotypesVisible=true,
+        nameVisible=false,
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE,
+        points=[(861.32495,269.00000),(593.32495,269.00000)],
+        label='BH',
+        source=B_$_1,
+        target=H_$_8,
+        sourcePropertyPosition=(703.08875, 308.50000),
+        sourceMultiplicityPosition=(703.08875, 329.50000),
+        targetPropertyPosition=(570.41247, 308.50000),
+        targetMultiplicityPosition=(570.41247, 329.50000))
+
+    AssociationView aview_18(association=meta::relational::tests::mapping::extend::model::B2H2,
+        stereotypesVisible=true,
+        nameVisible=false,
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE,
+        points=[(861.32495,269.00000),(593.32495,269.00000)],
+        label='B2H2',
+        source=B_$_1,
+        target=H_$_8,
+        sourcePropertyPosition=(696.41492, 308.50000),
+        sourceMultiplicityPosition=(703.08875, 329.50000),
+        targetPropertyPosition=(570.41247, 308.50000),
+        targetMultiplicityPosition=(570.41247, 329.50000))
+
+    AssociationView aview_19(association=meta::relational::tests::mapping::extend::model::CK,
+        stereotypesVisible=true,
+        nameVisible=false,
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE,
+        points=[(862.01611,419.00000),(580.01611,442.00000)],
+        label='CK',
+        source=C_$_2,
+        target=K_$_7,
+        sourcePropertyPosition=(704.76257, 462.90557),
+        sourceMultiplicityPosition=(704.08875, 483.90557),
+        targetPropertyPosition=(556.79480, 493.09443),
+        targetMultiplicityPosition=(556.79480, 472.09443))
+
+    AssociationView aview_20(association=meta::relational::tests::mapping::extend::model::C2K2,
+        stereotypesVisible=true,
+        nameVisible=false,
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE,
+        points=[(862.01611,419.00000),(580.01611,442.00000)],
+        label='C2K2',
+        source=C_$_2,
+        target=K_$_7,
+        sourcePropertyPosition=(698.08875, 462.90557),
+        sourceMultiplicityPosition=(704.08875, 483.90557),
+        targetPropertyPosition=(556.79480, 493.09443),
+        targetMultiplicityPosition=(556.79480, 472.09443))
+
+    PropertyView pview_21(property=meta::relational::tests::mapping::extend::model::A.m1,
+        stereotypesVisible=true,
+        nameVisible=true,
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE,
+        points=[(862.32495,136.00000),(1127.67261,140.50000)],
+        label='',
+        source=A_$_0,
+        target=M_$_4,
+        propertyPosition=(957.91760, 195.05289),
+        multiplicityPosition=(967.91370, 174.05289))
+
+    PropertyView pview_22(property=meta::relational::tests::mapping::extend::model::A.m2,
+        stereotypesVisible=true,
+        nameVisible=true,
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE,
+        points=[(862.32495,136.00000),(1127.67261,140.50000)],
+        label='',
+        source=A_$_0,
+        target=M_$_4,
+        propertyPosition=(957.91760, 195.05289),
+        multiplicityPosition=(967.91370, 174.05289))
+
+    PropertyView pview_23(property=meta::relational::tests::mapping::extend::model::B.n1,
+        stereotypesVisible=true,
+        nameVisible=true,
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE,
+        points=[(861.32495,269.00000),(1130.14990,272.50000)],
+        label='',
+        source=B_$_1,
+        target=N_$_3,
+        propertyPosition=(965.23987, 327.29271),
+        multiplicityPosition=(971.91370, 306.29271))
+
+    PropertyView pview_24(property=meta::relational::tests::mapping::extend::model::B.n2,
+        stereotypesVisible=true,
+        nameVisible=true,
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE,
+        points=[(861.32495,269.00000),(1130.14990,272.50000)],
+        label='',
+        source=B_$_1,
+        target=N_$_3,
+        propertyPosition=(965.23987, 327.29271),
+        multiplicityPosition=(971.91370, 306.29271))
+
+    PropertyView pview_25(property=meta::relational::tests::mapping::extend::model::C.o1,
+        stereotypesVisible=true,
+        nameVisible=true,
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE,
+        points=[(862.01612,419.00000),(1129.14990,421.50000)],
+        label='',
+        source=C_$_2,
+        target=O_$_5,
+        propertyPosition=(964.23987, 476.49159),
+        multiplicityPosition=(970.91370, 455.49159))
+
+    PropertyView pview_26(property=meta::relational::tests::mapping::extend::model::C.o2,
+        stereotypesVisible=true,
+        nameVisible=true,
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE,
+        points=[(862.01612,419.00000),(1129.14990,421.50000)],
+        label='',
+        source=C_$_2,
+        target=O_$_5,
+        propertyPosition=(964.23987, 476.49159),
+        multiplicityPosition=(970.91370, 455.49159))
+
+   GeneralizationView gview_27(color=#000000,
+       lineWidth=-1.0,
+       lineStyle=SIMPLE,
+       points=[(862.32495,136.00000),(861.32495,269.00000)],
+       label='',
+       source=B_$_1,
+       target=A_$_0)
+
+   GeneralizationView gview_28(color=#000000,
+       lineWidth=-1.0,
+       lineStyle=SIMPLE,
+       points=[(861.32495,269.00000),(862.01611,419.00000)],
+       label='',
+       source=C_$_2,
+       target=B_$_1)
+
+   GeneralizationView gview_29(color=#000000,
+       lineWidth=-1.0,
+       lineStyle=SIMPLE,
+       points=[(430.32495,52.00000),(590.32495,106.00000)],
+       label='',
+       source=E_$_6,
+       target=D_$_10)
+
+   GeneralizationView gview_30(color=#000000,
+       lineWidth=-1.0,
+       lineStyle=SIMPLE,
+       points=[(590.32495,106.00000),(432.79419,149.00000)],
+       label='',
+       source=F_$_9,
+       target=E_$_6)
+
+   GeneralizationView gview_31(color=#000000,
+       lineWidth=-1.0,
+       lineStyle=SIMPLE,
+       points=[(435.32495,218.00000),(593.32495,269.00000)],
+       label='',
+       source=H_$_8,
+       target=G_$_11)
+
+   GeneralizationView gview_32(color=#000000,
+       lineWidth=-1.0,
+       lineStyle=SIMPLE,
+       points=[(593.32495,269.00000),(434.48804,315.00000)],
+       label='',
+       source=I_$_12,
+       target=H_$_8)
+
+   GeneralizationView gview_33(color=#000000,
+       lineWidth=-1.0,
+       lineStyle=SIMPLE,
+       points=[(430.48804,393.00000),(580.01612,442.00000)],
+       label='',
+       source=K_$_7,
+       target=J_$_13)
+
+   GeneralizationView gview_34(color=#000000,
+       lineWidth=-1.0,
+       lineStyle=SIMPLE,
+       points=[(580.01612,442.00000),(429.48804,491.00000)],
+       label='',
+       source=L_$_14,
+       target=K_$_7)
+
+}

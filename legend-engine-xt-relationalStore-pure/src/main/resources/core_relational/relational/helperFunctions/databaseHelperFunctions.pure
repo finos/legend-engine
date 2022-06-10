@@ -1,0 +1,376 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::functions::database::*;
+import meta::relational::functions::sqlQueryToString::*;
+import meta::relational::functions::database::*;
+import meta::relational::functions::toDDL::*;
+import meta::relational::metamodel::datatype::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::functions::database::model::definition::*;
+import meta::relational::functions::database::model::mapping::*;
+import meta::pure::runtime::*;
+import meta::relational::metamodel::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::runtime::*;
+import meta::relational::metamodel::join::*;
+import meta::relational::functions::database::constructDb::*;
+import meta::relational::functions::database::constructDb::joinFunctions::*;
+import meta::relational::functions::pureToSqlQuery::*;
+
+function {doc.doc = 'Helper function to construct a Database object given a DatabaseConnection. If schema name is not specified, all schemas/tables will be included.'}
+meta::relational::functions::database::constructDb(connection:DatabaseConnection[1], dbName:String[1], schemaNames:String[*], tableNames:String[*]):Database[1]
+{
+   constructDb($connection, $dbName, $schemaNames, $tableNames, [])
+}
+
+function {doc.doc = 'Helper function to construct a Database object given a DatabaseConnection. If schema name is not specified, all schemas/tables will be included.'}
+meta::relational::functions::database::constructDb(connection:DatabaseConnection[1], dbName:String[1], schemaNames:String[*], tableNames:String[*], createJoinFunctions:Function<{Table[1],Database[1]->Join[0..1]}>[*]):Database[1]
+{
+   let db = ^meta::relational::metamodel::Database(name = $dbName);
+   let map = sqlTextToRelationalDataTypeMap();
+   let schemasMetaData =
+      if($schemaNames->size() <= 1,
+            | fetchDbSchemasMetaData($connection, $schemaNames->first()),
+            | $schemaNames->map(schemaName|fetchDbSchemasMetaData($connection, $schemaName))
+            );
+   resultSetToSchemas($connection, $tableNames, $schemasMetaData, $db, $map);
+
+   let joins = $createJoinFunctions->map(jf | $db.schemas.tables->map(t | $jf->eval($t,$db)));
+   ^$db(joins=$joins);
+}
+
+function meta::relational::functions::database::constructDb::joinFunctions::alwaysJoinColumnsWithNameTo(sourceTable:Table[1], database:Database[1], targetTableName:String[1], sourceToTargetColumnNamePairs:Pair<String,String>[1..*], extensions:meta::pure::router::extension::RouterExtension[*]):Join[0..1]
+{
+   let operations = $sourceToTargetColumnNamePairs->map(p |
+      let sourceColumnName = $p.first;
+      let targetColumnName = $p.second;
+      let sourceColumn = $sourceTable.columns->filter(c | $c->instanceOf(Column) && ($c->cast(@Column).name == $sourceColumnName))->cast(@Column);
+
+      if ($sourceColumn->isEmpty() || $sourceTable.name == $targetTableName
+                               , |[]
+                               , | let targetTable = $database.schemas.tables->filter(t | $t.name == $targetTableName);
+                                   assertNotEmpty($targetTable, | 'Target table ' + $targetTableName + ' not found');
+                                   let targetColumn = $targetTable.columns->filter(c | $c->instanceOf(Column) && ($c->cast(@Column).name == $targetColumnName))->cast(@Column);
+                                   assertNotEmpty($targetColumn, | 'Target column ' + $targetColumnName + ' not found in table ' + $targetTableName);
+                                   ^DynaFunction(name = 'equal',
+                                                 parameters=[createTableAliasColumnFromColumn($sourceColumn->toOne(),$database),
+                                                             createTableAliasColumnFromColumn($targetColumn->toOne(),$database)]);
+      );
+   );
+
+   if ($operations->isEmpty()
+       ,|[]
+       ,|let op = $operations->andFilters($extensions);
+         ^Join(name=removeUnsupportedChars($op->buildUniqueName(false,$extensions)),
+               operation=$op->cast(@meta::relational::metamodel::operation::Operation)->toOne());
+      );
+}
+
+function meta::relational::functions::database::constructDb::removeUnsupportedChars(string:String[1]):String[1]
+{
+   $string->replace('"','')->replace(' ', '')->replace('/', '')
+}
+
+function <<access.private>> meta::relational::functions::database::constructDb::joinFunctions::createTableAliasColumnFromColumn(column:Column[1], database:Database[1]):TableAliasColumn[1]
+{
+   ^TableAliasColumn(columnName=$column.name, column=$column,
+                     alias=^TableAlias(name=$column.owner->toOne()->cast(@NamedRelation).name,
+                                                                schema=$column.owner->toOne()->cast(@Table).schema.name,
+                                                                database=$database,
+                                                                relationalElement=$column.owner->toOne()));
+}
+
+function meta::relational::metamodel::allSchemas(n:Database[1]):Schema[*]
+{
+   let schemas = $n->allSchemasRecursive();
+   $schemas->groupBy(s|$s.name)->keyValues()->map(p|
+      let schema = $p.second.values->at(0);
+      ^$schema(tables = $p.second.values.tables->removeDuplicates(), views = $p.second.values.views->removeDuplicates());
+   );
+}
+
+function <<access.private>> meta::relational::metamodel::allSchemasRecursive(n:Database[1]):Schema[*]
+{
+   let schemas = $n.includes->map(d|$d->cast(@Database)->allSchemasRecursive())->concatenate($n.schemas);
+}
+
+function meta::relational::metamodel::relation::schema(n:NamedRelation[1]):Schema[1]
+{
+   $n->match([v:View[1]|$v.schema,t:Table[1]|$t.schema]);
+}
+
+
+function meta::relational::metamodel::relation::allJoins(n:Database[1]):Join[*]
+{
+   $n.joins->concatenate($n.includes->map(d|$d->cast(@Database)->allJoins()));
+}
+
+function meta::relational::metamodel::relation::allFilters(n:Database[1]):Filter[*]
+{
+   $n.filters->concatenate($n.includes->map(d|$d->cast(@Database)->allFilters()));
+}
+
+function <<access.private>> meta::relational::functions::database::resultSetToSchemas(connection:DatabaseConnection[1], tableNames:String[*], resultSets:ResultSet[*], database:Database[1], map:Map<String, Function<{Integer[1], Integer[0..1]->meta::relational::metamodel::datatype::DataType[1]}>>[1]):Schema[*]
+{
+    $resultSets->map(rs|
+         $rs.rows->map(m| let schemaName = $m.values->at(0)->toString();
+                     let schemaToReturn = ^Schema(name = $schemaName, database = $database);
+                     let tablesMetaData = if ($tableNames->isEmpty(),
+                                                |fetchDbTablesMetaData($connection, $schemaName, []),
+                                                |$tableNames->map(tableName| fetchDbTablesMetaData($connection, $schemaName, $tableName)));
+                     let tables = resultSetToTables($connection, $tablesMetaData, $schemaToReturn, $map);
+                     mutateAdd($database, 'schemas', $schemaToReturn);
+                     $schemaToReturn;
+                     )
+         )
+}
+
+function <<access.private>> meta::relational::functions::database::resultSetToTables(connection:DatabaseConnection[1], rs:ResultSet[*], schema:Schema[1], map:Map<String, Function<{Integer[1], Integer[0..1]->meta::relational::metamodel::datatype::DataType[1]}>>[1]):Table[*]
+{
+   $rs.rows->map(m| let tableName = $m.values->at(2)->toString();
+                    let newTableName = if ($tableName->contains(' '), | '"' + $tableName + '"', | $tableName);
+                    let tableToReturn = ^Table(schema = $schema, name = $newTableName);
+
+                    let columnsMetaData = fetchDbColumnsMetaData($connection, $schema.name, $tableName, []);
+                    let columns = $columnsMetaData->resultSetToColumns($tableToReturn,$map);
+                    let primaryKeysNames = fetchDbPrimaryKeysMetaData($connection, $schema.name, $tableName).rows
+                                              ->fold({a,b| concatenate($a.values->at(3), $b)}, []);
+                    let primaryKey = $columns->filter(f| contains($primaryKeysNames, $f.name));
+
+                    mutateAdd($tableToReturn, 'columns', $columns);
+                    mutateAdd($tableToReturn, 'primaryKey', $primaryKey);
+                    mutateAdd($schema, 'tables', $tableToReturn);
+                    $tableToReturn;);
+}
+
+function <<access.private>> meta::relational::functions::database::resultSetToColumns(rs:ResultSet[1], table:Table[1], map:Map<String, Function<{Integer[1], Integer[0..1]->meta::relational::metamodel::datatype::DataType[1]}>>[1]):Column[*]
+{
+    $rs.rows->map(m| let columnName = $m.values->at(3)->toString();   //COLUMN_NAME
+                     let typeName = $m.value('SQL_TYPE_NAME');   //SQL_TYPE_NAME
+                     let columnSize = $m.values->at(6)->cast(@Integer);  //COLUMN_SIZE
+                     let decimalDigitsRaw = $m.values->at(8); //DECIMAL_DIGITS
+                     let decimalDigits = if($decimalDigitsRaw->instanceOf(SQLNull),
+                                             |[],
+                                             |$decimalDigitsRaw->cast(@Integer));
+                     let isNullable = if ($m.values->at(10)->cast(@Integer)->equal(0),   //NULLABLE
+                                          |false,
+                                          |true);
+                     let func = $map->get($typeName);
+                     let columnType = if ($func->isEmpty(),
+                                          |^meta::relational::metamodel::datatype::Other(),
+                                          |$func->toOne()->eval($columnSize, $decimalDigits));
+                     let columnNameNeedsEscaping = $columnName->contains(' ') || $columnName->contains('~') || $columnName->contains('>') || $columnName->contains('<') || $columnName->contains('@') || $columnName->contains('.');
+                     let newColumnName = if($columnNameNeedsEscaping, | '"' + $columnName + '"', | $columnName);
+                     ^Column(name = $newColumnName, type = $columnType, nullable = $isNullable, owner=$table););
+}
+
+function <<access.private>> meta::relational::functions::database::sqlTextToRelationalDataTypeMap():Map<String, Function<{Integer[1], Integer[0..1]->meta::relational::metamodel::datatype::DataType[1]}>>[1]
+{
+   newMap([
+      pair('INT',      {columnSize:Integer[1], decimalDigits:Integer[0..1]|^meta::relational::metamodel::datatype::Integer()}),
+      pair('INTEGER',  {columnSize:Integer[1], decimalDigits:Integer[0..1]|^meta::relational::metamodel::datatype::Integer()}),
+      pair('FLOAT',    {columnSize:Integer[1], decimalDigits:Integer[0..1]|^meta::relational::metamodel::datatype::Float()}),
+      pair('VARCHAR',  {columnSize:Integer[1], decimalDigits:Integer[0..1]|^meta::relational::metamodel::datatype::Varchar(size = $columnSize)}),
+      pair('CHAR',     {columnSize:Integer[1], decimalDigits:Integer[0..1]|^meta::relational::metamodel::datatype::Char(size = $columnSize)}),
+      pair('DECIMAL',  {columnSize:Integer[1], decimalDigits:Integer[0..1]|^meta::relational::metamodel::datatype::Decimal(precision = $columnSize, scale = $decimalDigits->toOne())}),
+      pair('TIMESTAMP',{columnSize:Integer[1], decimalDigits:Integer[0..1]|^meta::relational::metamodel::datatype::Timestamp()}),
+      pair('DATE',     {columnSize:Integer[1], decimalDigits:Integer[0..1]|^meta::relational::metamodel::datatype::Date()}),
+      pair('BIGINT',   {columnSize:Integer[1], decimalDigits:Integer[0..1]|^meta::relational::metamodel::datatype::BigInt()}),
+      pair('SMALLINT', {columnSize:Integer[1], decimalDigits:Integer[0..1]|^meta::relational::metamodel::datatype::SmallInt()}),
+      pair('TINYINT',  {columnSize:Integer[1], decimalDigits:Integer[0..1]|^meta::relational::metamodel::datatype::TinyInt()}),
+      pair('DOUBLE',   {columnSize:Integer[1], decimalDigits:Integer[0..1]|^meta::relational::metamodel::datatype::Double()}),
+      pair('NUMERIC',  {columnSize:Integer[1], decimalDigits:Integer[0..1]|^meta::relational::metamodel::datatype::Numeric(precision = $columnSize, scale = $decimalDigits->toOne())}),
+      pair('DISTINCT', {columnSize:Integer[1], decimalDigits:Integer[0..1]|^meta::relational::metamodel::datatype::Distinct()}),
+      pair('OTHER',    {columnSize:Integer[1], decimalDigits:Integer[0..1]|^meta::relational::metamodel::datatype::Other()}),
+      pair('BIT',      {columnSize:Integer[1], decimalDigits:Integer[0..1]|^meta::relational::metamodel::datatype::Bit()}),
+      pair('BINARY',   {columnSize:Integer[1], decimalDigits:Integer[0..1]|^meta::relational::metamodel::datatype::Binary(size = $columnSize)}),
+      pair('REAL',     {columnSize:Integer[1], decimalDigits:Integer[0..1]|^meta::relational::metamodel::datatype::Real()}),
+      pair('ARRAY',    {columnSize:Integer[1], decimalDigits:Integer[0..1]|^meta::relational::metamodel::datatype::Array()}),
+      pair('BOOLEAN',  {columnSize:Integer[1], decimalDigits:Integer[0..1]|^meta::relational::metamodel::datatype::Bit()})
+   ]);
+}
+
+
+
+Class meta::relational::functions::database::DbDiffResult
+{
+   tablesOnlyInPhysicalDb : Table[*];
+
+   tablesOnlyInDefinedDb : Table[*];
+
+   tableWithSameNameButDiffColumn : Table[*];
+
+   schemasOnlyInPhysicalDb : Schema[*];
+
+   schemasOnlyInDefinedDb : Schema[*];
+}
+
+Class meta::relational::functions::database::DbDiffIntermediateResult
+{
+   diffSchemas : Schema[*];
+
+   diffTables : Table[*];
+
+   sameTableNameWithDiffColumns : Table[*];
+}
+
+function meta::relational::functions::database::dbDiff(definedDb:Database[1], physicalDb:Database[1]):DbDiffResult[*]
+{
+   let result1 = calculateDbDiff($definedDb, $physicalDb);
+   let result2 = calculateDbDiff($physicalDb, $definedDb);
+
+   ^DbDiffResult(tablesOnlyInPhysicalDb = $result1.diffTables,
+                 tablesOnlyInDefinedDb = $result2.diffTables,
+                 tableWithSameNameButDiffColumn = concatenate($result1, $result2).sameTableNameWithDiffColumns,
+                 schemasOnlyInPhysicalDb = $result1.diffSchemas,
+                 schemasOnlyInDefinedDb = $result2.diffSchemas);
+}
+
+function <<access.private>> meta::relational::functions::database::calculateDbDiff(actual:Database[1], expected:Database[1]):DbDiffIntermediateResult[1]
+{
+   let actualSchemas = $actual.schemas;
+   let expectedSchemas = $expected.schemas;
+
+   let diffSchemas = $expectedSchemas->filter(f| !contains($actualSchemas.name, $f.name));
+   let sameSchemas = $expectedSchemas->filter(f| !contains($diffSchemas.name, $f.name));
+
+   let diffTables = $sameSchemas->map(m| let expectedTables = $m.tables;
+                                         let actualTables = $actual.schemas->filter(f| $f.name == $m.name).tables;
+                                         let diffTables = $expectedTables->filter(f| !contains($actualTables.name, $f.name));
+                                         $diffTables;);
+   let actualTables = $actual.schemas.tables;
+   let expectedTables = $expected.schemas.tables;
+
+   let sameTables = $expectedTables->filter(f| $actualTables->exists(e | $f.schema.name == $e.schema.name && $f.name == $e.name;));
+
+   let sameTablesWithDiffColumns = $sameTables->map(m| let actualTable = $actualTables->filter(f| $f.name == $m.name && $f.schema.name == $m.schema.name);
+                                                       let diffColumns = $m.columns->cast(@Column)->filter(f| !contains($actualTable.columns->cast(@Column).name, $f.name));
+                                                       if ($diffColumns->isNotEmpty(),
+                                                             |$m,
+                                                             |[]););
+   ^DbDiffIntermediateResult(diffSchemas = $diffSchemas,
+                             diffTables = $diffTables,
+                             sameTableNameWithDiffColumns = $sameTablesWithDiffColumns);
+}
+
+function meta::relational::functions::database::testDatabaseDefinitionForRuntime(database:Database[1], runtime:Runtime[1]):Any[*]
+{
+
+   $database.schemas->map(s | $s.tables->map(t | let sql = meta::relational::functions::sqlQueryToString::createSelectOneRowSql($t, $s, DatabaseType.SybaseIQ);
+                                                 executeInDb($sql, $runtime.connections->at(0)->cast(@DatabaseConnection));
+                                             )
+                      );
+}
+
+function
+{doc.doc = 'Input CSV file must contain one empty line between each table and two empty lines after the last table'}
+meta::relational::functions::database::loadCsvDataToDbTable(csvData:List<String>[*],
+                                                         db:Database[1],
+                                                         databaseConnection:DatabaseConnection[1],
+                                                         tablePostProcessor:Function<{Table[1]->Table[1]}>[1]
+                                                         ):Any[*]
+{
+   let dbConfig = createDbConfig($databaseConnection.type);
+   loadCsvDataToDbTable($csvData, $db, $dbConfig, $tablePostProcessor)->map(sql|executeInDb($sql, $databaseConnection));
+}
+
+Class meta::relational::functions::database::Res
+{
+   p : List<List<String>>[1];
+   s : String[*];
+}
+
+function meta::relational::functions::database::loadCsvDataToDbTable(csvData:List<String>[*],
+                                                         db:Database[1],
+                                                         tablePostProcessor:Function<{Table[1]->Table[1]}>[1]
+                                                         ) : String[*]
+{
+   
+   loadCsvDataToDbTable($csvData, $db, createDbConfig(DatabaseType.H2), $tablePostProcessor);
+}
+
+function meta::relational::functions::database::loadCsvDataToDbTable(csvData:List<String>[*],
+                                                         db:Database[1],
+                                                         dbConfig:DbConfig[1],
+                                                         tablePostProcessor:Function<{Table[1]->Table[1]}>[1]
+                                                         ) : String[*]
+{
+   $csvData->fold({row,tab |if(($row.values->at(0) == '' || $row.values->at(0)->startsWith('-')) && !$tab.p.values->isEmpty() && $row.values->size()==1,
+                                | let schemaName = $tab.p.values->at(0).values->at(0);
+                                  let tableName = $tab.p.values->at(1).values->at(0);
+                                  let columnNames = $tab.p.values->at(2).values;
+                                  let schema = $db.schema($schemaName);
+                                  assertNotEmpty($schema, | 'Schema "' + $schemaName + '" not found in database "' + $db->elementToPath() + '"');
+                                  let table = $schema->toOne().table($tableName);
+                                  assertNotEmpty($table,| 'Table "' + $tableName + '" not found in Schema "' + $schemaName + '" in Database "' + $db->elementToPath() + '"');
+                                  let pTable = $tablePostProcessor->eval($table)->toOne();
+                                  let columns = $columnNames->map(cName | let c = $pTable->toOne().columns->cast(@Column)->filter(tc| $tc.name->equalIgnoreCase($cName->trim()))->first();
+                                                                          assertNotEmpty($c,| 'Column "' + $cName + '" not found in Table "' + $tableName + '" in Database "' + $db->elementToPath() + '"');
+                                                                          $c;  );
+                                  let sql = loadValuesToDbTable2(list($tab.p.values->slice(3,$tab.p.values->size())),
+                                                       $pTable, $columns, $dbConfig);
+                                  ^Res(p=^List<List<String>>(), s=$tab.s->concatenate($sql));,
+                                | let r = $tab.p;
+                                  ^Res(p=^$r(values+=$row), s = $tab.s);
+                            );
+                  },^Res(p=^List<List<String>>(), s = [])
+            ).s;
+
+}
+
+function meta::relational::functions::database::loadValuesToDbTable2(data : List<List<String>>[1], table:Table[1], columns : Column[*]) : String[*]
+{
+   // Default to H2
+   let h2DbConfig = createDbConfig(DatabaseType.H2);
+   loadValuesToDbTable2($data, $table, $columns, $h2DbConfig);
+}
+
+function meta::relational::functions::database::loadValuesToDbTable2(data : List<List<String>>[1], table:Table[1],columns : Column[*], dbConfig: DbConfig[1]) : String[*]
+{
+   $data.values->map(row |  let sql = 'insert into ' + if($table.schema.name=='default', |'' ,|$table.schema.name + '.') + $table.name + ' ('
+            + $columns.name->map(colName | $colName->meta::relational::functions::sqlQueryToString::processColumnName($dbConfig))->joinStrings(',')
+            +') '
+            + 'values ('
+            + $row.values->meta::relational::functions::database::testDataSQLgeneration::convertValuesToCsv($columns.type)
+            + ');';
+   );
+}
+
+function meta::relational::functions::database::findTablesInDbHierarchy(d:Database[1], targetDBs:Database[*]):Table[*]
+{
+   findTablesInDbHierarchy($d, $targetDBs, false);
+}
+
+function meta::relational::functions::database::findTablesInDbHierarchy(d:Database[1], targetDBs:Database[*], includeIncludes : Boolean[1]):Table[*]
+{
+   let shouldInclude = $targetDBs->contains($d) || $includeIncludes;
+   if($shouldInclude,|$d.schemas.tables,|[])->concatenate($d.includes->map(d|$d->cast(@Database)->findTablesInDbHierarchy($targetDBs, $shouldInclude)));
+}
+
+function meta::relational::functions::database::testDataSQLgeneration::convertValuesToCsv(str : String[*], types : Any[*]):String[1]
+{
+   // the split function is not working properly: csv records of the form x,,x,,e are not split with empty Strings
+   // Therefor we insert ---null--- for now instead of empty set.
+   // $value == '---null---' needs to be removed when split is fixed
+   let stringToken = map(range($types->size()), {x |if($str->at($x) == '' || $str->at($x) == '---null---', |'null', |$types->at($x)->match([
+                 s:Varchar[*] | '\'' + $str->at($x)->replace('\'', '\'\'') + '\'',
+                 s:SemiStructured[*] | '\'' + $str->at($x)->replace('\'', '\'\'') + '\'',
+                 s:meta::relational::metamodel::datatype::Char[*] | '\'' + $str->at($x)->replace('\'', '\'\'') + '\'',
+                 d:meta::relational::metamodel::datatype::Date[*] |  '\'' + $str->at($x) + '\'',
+                 t:meta::relational::metamodel::datatype::Timestamp[*] |  '\'' + if($str->at($x)->length() > 10, |$str->at($x), |$str->at($x)) + '\'',
+                 a:Any[*] | $str->at($x)
+                 ]))})->joinStrings(',');
+}
+

@@ -21,6 +21,7 @@ import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
+import org.finos.legend.engine.protocol.pure.v1.model.data.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
@@ -30,6 +31,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualTo;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToJson;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 
 import java.util.List;
 import java.util.Map;
@@ -62,6 +66,23 @@ public class CorePureProtocolExtension implements PureProtocolExtension
                                 Tuples.pair(LegacyRuntime.class, "legacyRuntime"),
                                 Tuples.pair(EngineRuntime.class, "engineRuntime"),
                                 Tuples.pair(RuntimePointer.class, "runtimePointer")
+                        ))
+                        .build(),
+                // Embedded Data
+                ProtocolSubTypeInfo.Builder
+                        .newInstance(EmbeddedData.class)
+                        .withSubtypes(FastList.newListWith(
+                                Tuples.pair(ExternalFormatData.class, "externalFormat"),
+                                Tuples.pair(ModelStoreData.class, "modelStore"),
+                                Tuples.pair(DataElementReference.class, "reference")
+                        ))
+                        .build(),
+                // Test Assertion
+                ProtocolSubTypeInfo.Builder
+                        .newInstance(TestAssertion.class)
+                        .withSubtypes(FastList.newListWith(
+                                Tuples.pair(EqualTo.class, "equalTo"),
+                                Tuples.pair(EqualToJson.class, "equalToJson")
                         ))
                         .build()
         ));

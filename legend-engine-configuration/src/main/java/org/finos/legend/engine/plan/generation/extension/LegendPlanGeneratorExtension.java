@@ -23,10 +23,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransformers;
 import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.plan.generation.transformers.VersionPlanTransformer;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_ExternalFormatExtension;
-import org.finos.legend.pure.generated.Root_meta_pure_router_extension_RouterExtension;
-import org.finos.legend.pure.generated.core_external_shared_extension;
-import org.finos.legend.pure.generated.core_relational_relational_router_router_extension;
+import org.finos.legend.pure.generated.*;
 
 public class LegendPlanGeneratorExtension implements PlanGeneratorExtension {
 
@@ -44,6 +41,7 @@ public class LegendPlanGeneratorExtension implements PlanGeneratorExtension {
         RichIterable<Root_meta_external_shared_format_ExternalFormatExtension> planGenerationExtensions = LazyIterate.collect(ExternalFormatPlanGenerationExtensionLoader.extensions().values(), ext -> ext.getPureExtension(pureModel.getExecutionSupport()));
         pureRouterExtensions.addAll(core_external_shared_extension.Root_meta_external_shared_format_routerExtensions_String_1__ExternalFormatExtension_MANY__RouterExtension_MANY_("externalFormat", planGenerationExtensions, pureModel.getExecutionSupport()).toList());
 
+        pureRouterExtensions.add(core_servicestore_router_router_extension.Root_meta_external_store_service_router_extension_defaultServiceStoreExtensions__RouterExtension_1_(pureModel.getExecutionSupport()));
         pureRouterExtensions.addAll(core_relational_relational_router_router_extension.Root_meta_pure_router_extension_defaultRelationalExtensions__RouterExtension_MANY_(pureModel.getExecutionSupport()).toList());
 
         return pureRouterExtensions.toImmutable();

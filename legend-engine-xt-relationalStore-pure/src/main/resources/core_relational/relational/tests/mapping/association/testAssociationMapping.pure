@@ -1,0 +1,231 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::tests::*;
+import meta::pure::profiles::*;
+import meta::pure::mapping::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::runtime::*;
+import meta::relational::tests::model::simple::*;
+
+import meta::relational::tests::mapping::association::*;
+
+
+function <<test.BeforePackage>> meta::relational::tests::mapping::association::setUp():Boolean[1]
+{
+    createTablesAndFillDb();
+}
+
+
+function <<test.Test>> meta::relational::tests::mapping::association::testPersonToFirm():Boolean[1]
+{
+   let result1 = execute(|Person.all()->project([p|$p.firstName, p|$p.firm.legalName], ['name', 'firm']), associationMappingWithIds, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   assertEquals(7, $result1.rows->size());
+   assertSameElements(['Anthony Firm X', 'David Firm C', 'Fabrice Firm A', 'John Firm X', 'John Firm X', 'Oliver Firm B', 'Peter Firm X'], $result1.rows->map(r|$r.getString('name')+' '+$r.getString('firm')->toString()));
+}
+
+function <<test.Test>> meta::relational::tests::mapping::association::testFirmToEmployees():Boolean[1]
+{
+   let result1 = execute(|Firm.all()->project([f|$f.legalName, f|$f.employees.firstName], ['legalName', 'employee']), associationMappingWithIds, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   assertEquals(7, $result1.rows->size());
+   assertSameElements(['Firm A Fabrice', 'Firm X Anthony', 'Firm X John', 'Firm X John', 'Firm X Peter', 'Firm C David', 'Firm B Oliver'], $result1.rows->map(r|$r.getString('legalName')+' '+$r.getString('employee')->toString()));
+}
+
+function <<test.Test>> meta::relational::tests::mapping::association::testPersonToFirmWithDefaults():Boolean[1]
+{
+   let result1 = execute(|Person.all()->project([p|$p.firstName, p|$p.firm.legalName], ['name', 'firm']), associationMappingWithDefaultIds, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   assertEquals(7, $result1.rows->size());
+   assertSameElements(['Anthony Firm X', 'David Firm C', 'Fabrice Firm A', 'John Firm X', 'John Firm X', 'Oliver Firm B', 'Peter Firm X'], $result1.rows->map(r|$r.getString('name')+' '+$r.getString('firm')->toString()));
+}
+
+function <<test.Test>> meta::relational::tests::mapping::association::testFirmToEmployeesWithDefaults():Boolean[1]
+{
+   let result1 = execute(|Firm.all()->project([f|$f.legalName, f|$f.employees.firstName], ['legalName', 'employee']), associationMappingWithDefaultIds, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   assertEquals(7, $result1.rows->size());
+   assertSameElements(['Firm A Fabrice', 'Firm X Anthony', 'Firm X John', 'Firm X John', 'Firm X Peter', 'Firm C David', 'Firm B Oliver'], $result1.rows->map(r|$r.getString('legalName')+' '+$r.getString('employee')->toString()));
+}
+
+
+function <<test.Test>> meta::relational::tests::mapping::association::testFirmToEmployeesIncludes():Boolean[1]
+{
+   let result1 = execute(|Firm.all()->project([f|$f.legalName, f|$f.employees.firstName], ['legalName', 'employee']), associationMappingWithIncludes, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   assertEquals(7, $result1.rows->size());
+   assertSameElements(['Firm A Fabrice', 'Firm X Anthony', 'Firm X John', 'Firm X John', 'Firm X Peter', 'Firm C David', 'Firm B Oliver'], $result1.rows->map(r|$r.getString('legalName')+' '+$r.getString('employee')->toString()));
+}
+
+function <<test.Test>> meta::relational::tests::mapping::association::testPersonToFirmIncludes():Boolean[1]
+{
+   let result1 = execute(|Person.all()->project([p|$p.firstName, p|$p.firm.legalName], ['name', 'firm']), associationMappingWithIncludes, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   assertEquals(7, $result1.rows->size());
+   assertSameElements(['Anthony Firm X', 'David Firm C', 'Fabrice Firm A', 'John Firm X', 'John Firm X', 'Oliver Firm B', 'Peter Firm X'], $result1.rows->map(r|$r.getString('name')+' '+$r.getString('firm')->toString()));
+}
+
+function <<test.Test>> meta::relational::tests::mapping::association::testPersonToFirmWithDifferentRootMapping():Boolean[1]
+{
+   let result1 = execute(|Person.all()->project([p|$p.firstName, p|$p.firm.legalName, p|$p.firm.ceo.firstName], ['name', 'firm', 'ceo']), associationMappingWithDifferentRoot, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   assertEquals(7, $result1.rows->size());
+}
+
+###Mapping
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::mapping::association::*;
+import meta::relational::tests::*;
+
+
+Mapping meta::relational::tests::mapping::association::associationMappingWithIds
+(
+
+   Person[per1] : Relational
+            {
+                scope([dbInc])
+                (
+                    firstName : personTable.FIRSTNAME,
+                    age : personTable.AGE,
+                    lastName : personTable.LASTNAME
+                ),
+                address : [dbInc]@Address_Person,
+                locations : [dbInc]@Person_Location,
+                manager : [dbInc]@Person_Manager
+            }
+
+   Firm[fir1] : Relational
+          {
+             legalName : [dbInc]firmTable.LEGALNAME             
+          }
+              
+   Employment : Relational
+   {
+      AssociationMapping
+      (
+         employees[fir1, per1] : [dbInc]@Firm_Person,
+         firm[per1, fir1] : [dbInc]@Firm_Person
+      )
+   }
+)
+
+Mapping meta::relational::tests::mapping::association::associationMapping1
+(
+      Person[per1] : Relational
+            {
+                scope([dbInc])
+                (
+                    firstName : personTable.FIRSTNAME,
+                    age : personTable.AGE,
+                    lastName : personTable.LASTNAME
+                ),
+                address : [dbInc]@Address_Person,
+                locations : [dbInc]@Person_Location,
+                manager : [dbInc]@Person_Manager
+            }
+)
+
+Mapping meta::relational::tests::mapping::association::associationMapping2
+(
+      Firm[fir1] : Relational
+          {
+             legalName : [dbInc]firmTable.LEGALNAME             
+          }
+)
+
+Mapping meta::relational::tests::mapping::association::associationMapping3
+(
+   include meta::relational::tests::mapping::association::associationMapping1
+   include meta::relational::tests::mapping::association::associationMapping2
+   
+
+   Employment : Relational
+   {
+      AssociationMapping
+      (
+         employees[fir1, per1] : [dbInc]@Firm_Person,
+         firm[per1, fir1] : [dbInc]@Firm_Person
+      )
+   }
+)
+
+Mapping meta::relational::tests::mapping::association::associationMappingWithIncludes
+(
+   include meta::relational::tests::mapping::association::associationMapping3
+)
+
+
+
+Mapping meta::relational::tests::mapping::association::associationMappingWithDefaultIds
+(
+
+   Person : Relational
+            {
+                scope([dbInc])
+                (
+                    firstName : personTable.FIRSTNAME,
+                    age : personTable.AGE,
+                    lastName : personTable.LASTNAME
+                ),
+                address : [dbInc]@Address_Person,
+                locations : [dbInc]@Person_Location,
+                manager : [dbInc]@Person_Manager
+            }
+
+   Firm : Relational
+          {
+             legalName : [dbInc]firmTable.LEGALNAME             
+          }
+              
+   Employment : Relational
+   {
+      AssociationMapping
+      (
+         employees : [dbInc]@Firm_Person,
+         firm : [dbInc]@Firm_Person
+      )
+   }
+)
+
+
+Mapping meta::relational::tests::mapping::association::associationMappingWithDifferentRoot
+(
+   
+   *Person[rp] : Relational
+   {
+      firstName : [dbInc]personTable.FIRSTNAME     
+   }
+   
+   Firm[rf] : Relational
+   {
+      legalName : [dbInc]firmTable.LEGALNAME
+   }
+              
+   Employment : Relational
+   {
+      AssociationMapping
+      (
+         employees[rf, rp] : [dbInc]@Firm_Person,
+         firm[rp, rf] : [dbInc]@Firm_Person
+      )
+   }
+   
+   FirmCEO : Relational
+   {
+      AssociationMapping
+      (
+         ceo[rf, o] : [dbInc]@Firm_Ceo
+      )
+   }
+   
+   Person[o] : Relational
+   {
+      firstName : [dbInc]personTable.FIRSTNAME
+   }
+)
+

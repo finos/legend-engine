@@ -1,0 +1,389 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::functions::asserts::*;
+import meta::relational::runtime::*;
+import meta::relational::runtime::authentication::*;
+import meta::pure::profiles::*;
+import meta::pure::runtime::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::mapping::*;
+import meta::csv::*;
+import meta::relational::tests::model::simple::*;
+
+import meta::relational::tests::mapping::multigrain::model::*;
+import meta::relational::tests::mapping::multigrain::model::domain::*;
+import meta::relational::tests::mapping::multigrain::model::store::*;
+import meta::relational::tests::mapping::multigrain::model::mapping::*;
+
+
+function <<test.Test>> meta::relational::tests::mapping::multigrain::testProjectPerson():Boolean[1]
+{
+   let result = execute(|Person.all()->project([#/Person/firstName#,#/Person/address/name!address#,#/Person/firm/legalName#,#/Person/firm/address/name!firmAddress#]), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertEquals('firstName,address,legalName,firmAddress\n' + 'Peter,1 the street,Firm X,200 west\n' + 'John,5 Park Ave,Firm X,200 west\n' + 'Fabrice,7 Palo Alto,Firm A,3 somewhere\n', $result.values->toOne()->toCSV());
+   assertSameSQL('select "root".PERSON_FIRSTNAME as "firstName", "root".PERSON_ADDRESS_LINE_1 as "address", "root".FIRM_LEGALNAME as "legalName", "root".FIRM_ADDRESS_LINE_1 as "firmAddress" from PERSON_FIRM_ADDRESS_MULTIGRAIN as "root" where "root".DLEVEL = \'P\'', $result);
+}
+
+
+function <<test.Test>> meta::relational::tests::mapping::multigrain::testProjectFirm():Boolean[1]
+{
+   let result = execute(|Firm.all()->project([#/Firm/legalName#, #/Firm/address/name!address#]), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertEquals('legalName,address\n' + 'Firm X,200 west\n' + 'Firm A,3 somewhere\n', $result.values->toOne()->toCSV());
+   assertSameSQL('select "root".FIRM_LEGALNAME as "legalName", "root".FIRM_ADDRESS_LINE_1 as "address" from PERSON_FIRM_ADDRESS_MULTIGRAIN as "root" where "root".DLEVEL = \'F\'', $result);
+}
+
+
+function <<test.Test>> meta::relational::tests::mapping::multigrain::testProjectPersonWithJoinToAddress():Boolean[1]
+{
+   let result = execute(|Person.all()->project([#/Person/firstName#,#/Person/address/name!address#,#/Person/address/type!addressType#]), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertEquals('firstName,address,addressType\n' + 'Peter,1 the street,CITY\n' + 'John,5 Park Ave,CITY\n' + 'Fabrice,7 Palo Alto,REGION\n', $result.values->toOne()->toCSV());
+   assertSameSQL('select "root".PERSON_FIRSTNAME as "firstName", "root".PERSON_ADDRESS_LINE_1 as "address", "person_firm_address_multigrain_1".ADDRESS_TYPE as "addressType" from PERSON_FIRM_ADDRESS_MULTIGRAIN as "root" left outer join PERSON_FIRM_ADDRESS_MULTIGRAIN as "person_firm_address_multigrain_1" on ("root".PERSON_ADDRESS_OID = "person_firm_address_multigrain_1".OID) where "root".DLEVEL = \'P\'', $result);
+}
+
+// Alloy exclusion reason: 4. Use getter relational protocol
+function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::mapping::multigrain::testGetter():Boolean[1]
+{
+   let result = execute(|Person.all(), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameElements(['Firm A', 'Firm X', 'Firm X'], $result.values->map(p|$p.firm.legalName));
+}
+
+
+function <<test.Test>> meta::relational::tests::mapping::multigrain::testToManyWithQualifierWithFilterOnDataType():Boolean[1]
+{
+   let result = execute(|Position.all()->filter(p | $p.account.primaryIncomeFunction.code == 1022)
+                                       ->project([s | $s.quantity], ['num'])
+                                       , testMappingFirmAccount, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameElements([500], $result.values.rows.values);
+   assertSameSQL('select "root".QTY as "num" from POSITION as "root" left outer join FIRM_ACCT_IF_MULTIGRAIN as "firm_acct_if_multigrain_0" on ("root".ACCT_I = "firm_acct_if_multigrain_0".OID) left outer join FIRM_ACCT_IF_MULTIGRAIN as "firm_acct_if_multigrain_1" on ("firm_acct_if_multigrain_0".ACCOUNT_NUM = "firm_acct_if_multigrain_1".ACCOUNT_NUM and "firm_acct_if_multigrain_1".IF_TYPE = \'P\' and "firm_acct_if_multigrain_1".DLEVEL = \'S\') where "firm_acct_if_multigrain_1".IF_NUM = 1022', $result);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::multigrain::testToManyWithQualifierWithFilterOnJoin():Boolean[1]
+{
+   let result = execute(|Position.all()
+                           ->filter(p | $p.account.incomeFunctionSplits->filter(i | $i.type == 'P')->toOne().incomeFunction.Classification.name == 'IfName1')
+                           //->filter(p | $p.account.primaryIncomeFunction.Classification.name == 'IfName1')
+                                       ->project([s | $s.quantity], ['num'])
+                                       , testMappingFirmAccount, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameElements([500], $result.values.rows.values);
+   assertSameSQL('select "root".QTY as "num" from POSITION as "root" left outer join FIRM_ACCT_IF_MULTIGRAIN as "firm_acct_if_multigrain_0" on ("root".ACCT_I = "firm_acct_if_multigrain_0".OID) left outer join FIRM_ACCT_IF_MULTIGRAIN as "firm_acct_if_multigrain_1" on ("firm_acct_if_multigrain_0".ACCOUNT_NUM = "firm_acct_if_multigrain_1".ACCOUNT_NUM and "firm_acct_if_multigrain_1".IF_TYPE = \'P\' and "firm_acct_if_multigrain_1".DLEVEL = \'S\') left outer join IF_OTHER_INFO as "if_other_info_0" on ("firm_acct_if_multigrain_1".IF_NUM = "if_other_info_0".IF_CODE) where "if_other_info_0".IF_NAME = \'IfName1\'', $result);
+}
+
+
+function <<test.BeforePackage>> meta::relational::tests::mapping::multigrain::setUp():Boolean[1]
+{
+    createTablesAndFillDb();
+}
+
+
+
+function meta::relational::tests::mapping::multigrain::model::store::testDataTypeMappingRuntime():Runtime[1]
+{
+   meta::relational::tests::testRuntime(myDB);
+}
+
+
+function meta::relational::tests::mapping::multigrain::model::store::createTablesAndFillDb():Boolean[1]
+{
+   let connection = testDataTypeMappingRuntime().connectionByElement(myDB)->cast(@TestDatabaseConnection);
+   
+   meta::relational::functions::toDDL::dropAndCreateTableInDb(myDB, 'PERSON_FIRM_ADDRESS_MULTIGRAIN', $connection);
+   
+   let s = 'insert into PERSON_FIRM_ADDRESS_MULTIGRAIN (DLEVEL, OID, PERSON_FIRSTNAME, PERSON_LASTNAME, PERSON_FIRM_OID, PERSON_ADDRESS_OID, PERSON_ADDRESS_LINE_1, FIRM_LEGALNAME, FIRM_ADDRESS_OID, FIRM_ADDRESS_LINE_1, ADDRESS_LINE_1, ADDRESS_TYPE) values ';
+   
+
+   executeInDb($s + '(\'P\', 1, \'Peter\', \'Smith\', 4, 6, \'1 the street\',\'Firm X\', 9, \'200 west\', null, null);', $connection);
+   executeInDb($s + '(\'P\', 2, \'John\',    \'Johnson\', 4, 7, \'5 Park Ave\',  \'Firm X\', 9, \'200 west\', null, null);', $connection);
+   executeInDb($s + '(\'P\', 3, \'Fabrice\', \'Roberts\', 5, 8, \'7 Palo Alto\', \'Firm A\',         10, \'3 somewhere\', null, null);', $connection);
+   executeInDb($s + '(\'F\', 4, null,       null,       null,null, null,         \'Firm X\', 9, \'200 west\', null, null);', $connection);
+   executeInDb($s + '(\'F\', 5, null,       null,       null,null, null,         \'Firm A\',         10,\'3 somewhere\', null, null);', $connection);
+   executeInDb($s + '(\'A\', 6, null,       null,       null,null, null,       null,          null,    null,         \'1 the street\', 1);', $connection);
+   executeInDb($s + '(\'A\', 7, null,       null,       null,null, null,       null,          null,    null,         \'5 Park Ave\',   1);', $connection);
+   executeInDb($s + '(\'A\', 8, null,       null,       null,null, null,       null,          null,    null,         \'7 Palo Alto\', 2);', $connection);
+   executeInDb($s + '(\'A\', 9, null,       null,       null,null, null,       null,          null,    null,         \'200 west\', 1);', $connection);
+   executeInDb($s + '(\'A\', 10, null,       null,       null,null, null,       null,          null,    null,        \'3 somewhere\', 1);', $connection);
+   
+   
+   meta::relational::functions::toDDL::dropAndCreateTableInDb(myDBAccount, 'POSITION', $connection);
+   
+   let b = 'insert into POSITION(OID, ACCT_I, QTY) values';
+   executeInDb($b + '(1, 1, 500);', $connection);
+   //executeInDb($b + '(1, 2, 1000);', $connection);
+   
+   
+   
+   meta::relational::functions::toDDL::dropAndCreateTableInDb(myDBAccount, 'FIRM_ACCT_IF_MULTIGRAIN', $connection);
+   
+   let c = 'insert into FIRM_ACCT_IF_MULTIGRAIN(OID, DLEVEL, ACCOUNT_NUM, IF_NUM, IF_TYPE, IF_PERCENT, IF_DESCRIPTION) values';
+   
+   executeInDb($c + '(1, \'A\', \'7204566\', null, null, null, null);', $connection);
+   executeInDb($c + '(2, \'A\', \'7204567\', null, null, null, null);', $connection);
+   executeInDb($c + '(3, \'S\', \'7204566\', 1022, \'P\', 40.0, null);', $connection);
+   executeInDb($c + '(4, \'S\', \'7204566\', 1023, \'S\', 60.0, null);', $connection);
+   executeInDb($c + '(5, \'S\', \'7204567\', 1022, \'P\', 100.0, null);', $connection);
+   executeInDb($c + '(6, \'I\', null, 1022, null, null, \'IF 1\');', $connection);
+   executeInDb($c + '(7, \'I\', null, 1023, null, null, \'IF 2\');', $connection);
+   
+   meta::relational::functions::toDDL::dropAndCreateTableInDb(myDBAccount, 'IF_OTHER_INFO', $connection);
+   
+   executeInDb('insert into IF_OTHER_INFO (IF_CODE, IF_NAME) values (1022, \'IfName1\');', $connection);
+   executeInDb('insert into IF_OTHER_INFO (IF_CODE, IF_NAME) values (1023, \'IfName2\');', $connection);
+   
+   true;
+}
+
+Class meta::relational::tests::mapping::multigrain::model::domain::Position
+{
+   account:FirmAccount[1];
+   quantity: Integer[1];
+}
+
+Class meta::relational::tests::mapping::multigrain::model::domain::IncomeFunction
+{
+   code:Integer[1];
+   name:String[1];
+      
+}
+
+Class meta::relational::tests::mapping::multigrain::model::domain::AccountIncomeFunctionSplit
+{
+   firmAccount : FirmAccount[1];
+   incomeFunction: IncomeFunction[1];
+   type: String[1];
+   percentage: Float[1];
+}
+
+
+Class meta::relational::tests::mapping::multigrain::model::domain::FirmAccount
+{
+   number:Integer[1];
+   name: String[1];
+   incomeFunctionSplits: AccountIncomeFunctionSplit[*];
+   
+   primaryIncomeFunction()
+   {
+      $this.incomeFunctionSplits->filter(i | $i.type == 'P')->toOne().incomeFunction
+   }:IncomeFunction[1];
+}
+
+
+Class meta::relational::tests::mapping::multigrain::model::domain::Classification
+{
+   name:String[1];
+}
+
+Association meta::relational::tests::mapping::multigrain::model::domain::SDI_IF
+{
+   incomeFunctions:IncomeFunction[*];
+   Classification:Classification[0..1];
+}
+
+
+
+###Relational
+
+Database meta::relational::tests::mapping::multigrain::model::store::myDB
+(
+    
+    Table PERSON_FIRM_ADDRESS_MULTIGRAIN
+    (
+       OID INT PRIMARY KEY,
+       DLEVEL VARCHAR(2),
+       //Person Grain 
+       PERSON_FIRSTNAME VARCHAR(200), 
+       PERSON_LASTNAME VARCHAR(200),
+       PERSON_FIRM_OID INT,
+       PERSON_ADDRESS_OID INT,
+       PERSON_ADDRESS_LINE_1 VARCHAR(200),
+
+       //Firm Grain
+       FIRM_LEGALNAME VARCHAR(200),
+       FIRM_ADDRESS_OID INT,
+       FIRM_ADDRESS_LINE_1 VARCHAR(200),
+       
+       //Address Grain
+       ADDRESS_LINE_1 VARCHAR(200),
+       ADDRESS_TYPE INT       
+    )
+    
+       
+    MultiGrainFilter personGrain(PERSON_FIRM_ADDRESS_MULTIGRAIN.DLEVEL = 'P')
+    MultiGrainFilter firmGrain(PERSON_FIRM_ADDRESS_MULTIGRAIN.DLEVEL = 'F')
+    MultiGrainFilter addressGrain(PERSON_FIRM_ADDRESS_MULTIGRAIN.DLEVEL = 'A')
+       
+
+    Join firmEmployees(PERSON_FIRM_ADDRESS_MULTIGRAIN.PERSON_FIRM_OID = {target}.OID)
+    Join personAddress(PERSON_FIRM_ADDRESS_MULTIGRAIN.PERSON_ADDRESS_OID = {target}.OID)
+)
+
+###Relational
+Database meta::relational::tests::mapping::multigrain::model::store::myDBAccount
+(
+    Table POSITION
+    (
+       OID INT PRIMARY KEY,
+       ACCT_I INT,
+       QTY INT       
+    )
+
+    Table FIRM_ACCT_IF_MULTIGRAIN
+    (
+       OID INT PRIMARY KEY,
+       DLEVEL VARCHAR(2),
+       
+       //Account grain
+       ACCOUNT_NUM VARCHAR(40),
+       
+       //IF split grain
+       IF_NUM INT,
+       IF_TYPE VARCHAR(5),
+       IF_PERCENT INT,
+       
+       //IF grain
+       IF_DESCRIPTION VARCHAR(40)
+    )
+    
+    Table IF_OTHER_INFO
+    (
+       IF_CODE INT PRIMARY KEY,
+       IF_NAME VARCHAR(20)
+    )
+    
+    
+    MultiGrainFilter accountGrain(FIRM_ACCT_IF_MULTIGRAIN.DLEVEL = 'A')
+    MultiGrainFilter accountIFGrain(FIRM_ACCT_IF_MULTIGRAIN.DLEVEL = 'S')
+    MultiGrainFilter ifGrain(FIRM_ACCT_IF_MULTIGRAIN.DLEVEL = 'I')
+    
+    
+    Join posAccount(POSITION.ACCT_I = FIRM_ACCT_IF_MULTIGRAIN.OID)
+    Join account_accountIFSplit(FIRM_ACCT_IF_MULTIGRAIN.ACCOUNT_NUM = {target}.ACCOUNT_NUM)
+    Join ifSplit_if(FIRM_ACCT_IF_MULTIGRAIN.IF_NUM = {target}.IF_NUM)
+    Join ifClass(FIRM_ACCT_IF_MULTIGRAIN.IF_NUM = IF_OTHER_INFO.IF_CODE)
+)
+
+
+###Mapping
+import meta::relational::tests::mapping::multigrain::model::domain::*;
+import meta::relational::tests::mapping::multigrain::model::store::*;
+
+import meta::relational::tests::model::simple::*;
+
+
+Mapping meta::relational::tests::mapping::multigrain::model::mapping::testMapping
+(
+    Person: Relational
+    {
+       ~filter [myDB] personGrain
+       scope([myDB]PERSON_FIRM_ADDRESS_MULTIGRAIN)
+       (
+          firstName: PERSON_FIRSTNAME,
+          lastName: PERSON_LASTNAME,
+          firm
+          (
+             legalName: FIRM_LEGALNAME,
+             address
+             (
+                name: FIRM_ADDRESS_LINE_1
+             )
+          ),
+          address
+          (
+             name: PERSON_ADDRESS_LINE_1,
+             type: EnumerationMapping GE : @personAddress | ADDRESS_TYPE
+          )
+       )
+    }
+        
+    Firm: Relational
+    {
+       ~filter [myDB] firmGrain
+       scope([myDB]PERSON_FIRM_ADDRESS_MULTIGRAIN)
+       (
+          legalName: FIRM_LEGALNAME,
+          address
+          (
+             name: FIRM_ADDRESS_LINE_1
+          )
+          
+       ),
+       employees: [myDB]@firmEmployees
+       
+    }
+    
+    Address: Relational
+    {
+       ~filter [myDB] addressGrain
+       scope([myDB]PERSON_FIRM_ADDRESS_MULTIGRAIN)
+       (
+          name: ADDRESS_LINE_1,
+          type: EnumerationMapping GE : ADDRESS_TYPE 
+       )
+    }
+    
+    
+    GeographicEntityType: EnumerationMapping GE
+    {
+        CITY:  1,
+        REGION: 2
+    }
+    
+)
+
+
+Mapping meta::relational::tests::mapping::multigrain::model::mapping::testMappingFirmAccount
+(
+   Position:Relational
+   {
+      account:[myDBAccount]@posAccount,
+      quantity: [myDBAccount]POSITION.QTY
+   }
+
+
+   FirmAccount:Relational
+   {
+      ~filter [myDBAccount]accountGrain
+      number: [myDBAccount]FIRM_ACCT_IF_MULTIGRAIN.ACCOUNT_NUM,
+      incomeFunctionSplits: [myDBAccount]@account_accountIFSplit
+      
+   }
+   
+   AccountIncomeFunctionSplit:Relational
+   {
+      ~filter [myDBAccount]accountIFGrain
+      type: [myDBAccount]FIRM_ACCT_IF_MULTIGRAIN.IF_TYPE,
+      
+      //incomeFunction: [myDBAccount]@ifSplit_if//,
+      
+      incomeFunction
+      (
+         code: [myDBAccount]FIRM_ACCT_IF_MULTIGRAIN.IF_NUM,
+         Classification: [myDBAccount]@ifClass
+      )
+   }
+   
+   IncomeFunction:Relational
+   {
+      ~filter [myDBAccount]ifGrain
+      code: [myDBAccount]FIRM_ACCT_IF_MULTIGRAIN.IF_NUM,
+      Classification: [myDBAccount]@ifClass
+   }
+
+
+    Classification: Relational
+    {
+       name: [myDBAccount]IF_OTHER_INFO.IF_NAME
+    }
+)

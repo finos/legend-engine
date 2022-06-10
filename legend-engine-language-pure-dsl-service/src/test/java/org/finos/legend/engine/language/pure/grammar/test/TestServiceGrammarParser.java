@@ -105,18 +105,6 @@ public class TestServiceGrammarParser extends TestGrammarParser.TestGrammarParse
                 "    data: 'data';\n" +
                 "  }\n" +
                 "}\n", "PARSER error at [2:1-10:1]: Field 'execution' is required");
-        test("###Service\n" +
-                "Service meta::pure::myServiceSingle\n" +
-                "{\n" +
-                "  documentation: 'this is just for context';\n" +
-                "  pattern: 'url/myUrl/';\n" +
-                "  execution: Single\n" +
-                "  {\n" +
-                "    query: src: meta::transform::tests::Address[1]|$src.a;\n" +
-                "    mapping: meta::myMapping;\n" +
-                "    runtime: meta::myRuntime;\n" +
-                "  }\n" +
-                "}\n", "PARSER error at [2:1-12:1]: Field 'test' is required");
         // Duplicated fields
         test("###Service\n" +
                 "Service meta::pure::myServiceSingle\n" +
@@ -808,5 +796,332 @@ public class TestServiceGrammarParser extends TestGrammarParser.TestGrammarParse
                 "    ];\n" +
                 "  }\n" +
                 "}\n");
+    }
+
+    @Test
+    public void testServiceTestSuitesErrorMessages()
+    {
+        //Test suite should have tests section
+        test("###Service\n" +
+                "Service meta::pure::myServiceSingle\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners:\n" +
+                "  [\n" +
+                "    'ownerName',\n" +
+                "    'ownerName2'\n" +
+                "  ];\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: |demo::_NPerson.all()->graphFetch(#{demo::_NPerson{Age,Name}}#)->serialize(#{demo::_NPerson{Age,Name}}#);\n" +
+                "    mapping: meta::myMapping;\n" +
+                "    runtime: meta::myRuntime;\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite1:\n" +
+                "    {\n" +
+                "      data:\n" +
+                "      [\n" +
+                "        connections:\n" +
+                "        [\n" +
+                "          connection1:\n" +
+                "            ExternalFormat\n" +
+                "            #{\n" +
+                "              contentType: 'application/x.flatdata';\n" +
+                "              data: 'FIRST_NAME,LAST_NAME\\nFred,Bloggs\\nJane,Doe';\n" +
+                "            }#\n" +
+                "        ]\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n",
+                "PARSER error at [20:5-34:5]: Field 'tests' is required"
+        );
+
+        //Test should have asserts associated with it
+        test("###Service\n" +
+                "Service meta::pure::myServiceSingle\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners:\n" +
+                "  [\n" +
+                "    'ownerName',\n" +
+                "    'ownerName2'\n" +
+                "  ];\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: |demo::_NPerson.all()->graphFetch(#{demo::_NPerson{Age,Name}}#)->serialize(#{demo::_NPerson{Age,Name}}#);\n" +
+                "    mapping: meta::myMapping;\n" +
+                "    runtime: meta::myRuntime;\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite1:\n" +
+                "    {\n" +
+                "      data:\n" +
+                "      [\n" +
+                "        connections:\n" +
+                "        [\n" +
+                "          connection1:\n" +
+                "            ExternalFormat\n" +
+                "            #{\n" +
+                "              contentType: 'application/x.flatdata';\n" +
+                "              data: 'FIRST_NAME,LAST_NAME\\nFred,Bloggs\\nJane,Doe';\n" +
+                "            }#\n" +
+                "        ]\n" +
+                "      ]\n" +
+                "      tests:\n" +
+                "      [\n" +
+                "        test1:\n" +
+                "        {\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n",
+                "PARSER error at [36:9-38:9]: Field 'asserts' is required"
+        );
+
+        //Test Data should have at max 1 section for connection test data
+        test("###Service\n" +
+                "Service meta::pure::myServiceSingle\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners:\n" +
+                "  [\n" +
+                "    'ownerName',\n" +
+                "    'ownerName2'\n" +
+                "  ];\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: |demo::_NPerson.all()->graphFetch(#{demo::_NPerson{Age,Name}}#)->serialize(#{demo::_NPerson{Age,Name}}#);\n" +
+                "    mapping: meta::myMapping;\n" +
+                "    runtime: meta::myRuntime;\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite1:\n" +
+                "    {\n" +
+                "      data:\n" +
+                "      [\n" +
+                "        connections:\n" +
+                "        [\n" +
+                "          connection1:\n" +
+                "            ExternalFormat\n" +
+                "            #{\n" +
+                "              contentType: 'application/x.flatdata';\n" +
+                "              data: 'FIRST_NAME,LAST_NAME\\nFred,Bloggs\\nJane,Doe';\n" +
+                "            }#\n" +
+                "        ]\n" +
+                "        connections:\n" +
+                "        [\n" +
+                "          connection2:\n" +
+                "            ExternalFormat\n" +
+                "            #{\n" +
+                "              contentType: 'application/x.flatdata';\n" +
+                "              data: 'FIRST_NAME,LAST_NAME\\nFred,Bloggs\\nJane,Doe';\n" +
+                "            }#\n" +
+                "        ]\n" +
+                "      ]\n" +
+                "      tests:\n" +
+                "      [\n" +
+                "        test1:\n" +
+                "        {\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '{Age:12, Name:\"dummy\"}';\n" +
+                "                  }#;\n" +
+                "              }#\n" +
+                "          ]\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n",
+                "PARSER error at [22:7-42:7]: Field 'connections' should be specified only once"
+        );
+
+        //Unknown assert type
+        test("###Service\n" +
+                        "Service meta::pure::myServiceSingle\n" +
+                        "{\n" +
+                        "  pattern: 'url/myUrl/';\n" +
+                        "  owners:\n" +
+                        "  [\n" +
+                        "    'ownerName',\n" +
+                        "    'ownerName2'\n" +
+                        "  ];\n" +
+                        "  documentation: 'this is just for context';\n" +
+                        "  autoActivateUpdates: true;\n" +
+                        "  execution: Single\n" +
+                        "  {\n" +
+                        "    query: |demo::_NPerson.all()->graphFetch(#{demo::_NPerson{Age,Name}}#)->serialize(#{demo::_NPerson{Age,Name}}#);\n" +
+                        "    mapping: meta::myMapping;\n" +
+                        "    runtime: meta::myRuntime;\n" +
+                        "  }\n" +
+                        "  testSuites:\n" +
+                        "  [\n" +
+                        "    testSuite1:\n" +
+                        "    {\n" +
+                        "      data:\n" +
+                        "      [\n" +
+                        "        connections:\n" +
+                        "        [\n" +
+                        "          connection1:\n" +
+                        "            ExternalFormat\n" +
+                        "            #{\n" +
+                        "              contentType: 'application/x.flatdata';\n" +
+                        "              data: 'FIRST_NAME,LAST_NAME\\nFred,Bloggs\\nJane,Doe';\n" +
+                        "            }#\n" +
+                        "        ]\n" +
+                        "      ]\n" +
+                        "      tests:\n" +
+                        "      [\n" +
+                        "        test1:\n" +
+                        "        {\n" +
+                        "          asserts:\n" +
+                        "          [\n" +
+                        "            assert1:\n" +
+                        "              Unknown\n" +
+                        "              #{\n" +
+                        "              }#\n" +
+                        "          ]\n" +
+                        "        }\n" +
+                        "      ]\n" +
+                        "    }\n" +
+                        "  ]\n" +
+                        "}\n",
+                "PARSER error at [41:15-21]: Unknown test assertion type: Unknown"
+        );
+
+        //Unknown embedded data type
+        test("###Service\n" +
+                        "Service meta::pure::myServiceSingle\n" +
+                        "{\n" +
+                        "  pattern: 'url/myUrl/';\n" +
+                        "  owners:\n" +
+                        "  [\n" +
+                        "    'ownerName',\n" +
+                        "    'ownerName2'\n" +
+                        "  ];\n" +
+                        "  documentation: 'this is just for context';\n" +
+                        "  autoActivateUpdates: true;\n" +
+                        "  execution: Single\n" +
+                        "  {\n" +
+                        "    query: |demo::_NPerson.all()->graphFetch(#{demo::_NPerson{Age,Name}}#)->serialize(#{demo::_NPerson{Age,Name}}#);\n" +
+                        "    mapping: meta::myMapping;\n" +
+                        "    runtime: meta::myRuntime;\n" +
+                        "  }\n" +
+                        "  testSuites:\n" +
+                        "  [\n" +
+                        "    testSuite1:\n" +
+                        "    {\n" +
+                        "      data:\n" +
+                        "      [\n" +
+                        "        connections:\n" +
+                        "        [\n" +
+                        "          connection1:\n" +
+                        "            Unknown\n" +
+                        "            #{\n" +
+                        "            }#\n" +
+                        "        ]\n" +
+                        "      ]\n" +
+                        "      tests:\n" +
+                        "      [\n" +
+                        "        test1:\n" +
+                        "        {\n" +
+                        "          asserts:\n" +
+                        "          [\n" +
+                        "            assert1:\n" +
+                        "              EqualToJson\n" +
+                        "              #{\n" +
+                        "                expected : \n" +
+                        "                  ExternalFormat\n" +
+                        "                  #{\n" +
+                        "                    contentType: 'application/json';\n" +
+                        "                    data: '{Age:12, Name:\"dummy\"}';\n" +
+                        "                  }#;\n" +
+                        "              }#\n" +
+                        "          ]\n" +
+                        "        }\n" +
+                        "      ]\n" +
+                        "    }\n" +
+                        "  ]\n" +
+                        "}\n",
+                "PARSER error at [27:13-19]: Unknown embedded data type: Unknown"
+        );
+
+        //Incorrect asserts
+        test("###Service\n" +
+                        "Service meta::pure::myServiceSingle\n" +
+                        "{\n" +
+                        "  pattern: 'url/myUrl/';\n" +
+                        "  owners:\n" +
+                        "  [\n" +
+                        "    'ownerName',\n" +
+                        "    'ownerName2'\n" +
+                        "  ];\n" +
+                        "  documentation: 'this is just for context';\n" +
+                        "  autoActivateUpdates: true;\n" +
+                        "  execution: Single\n" +
+                        "  {\n" +
+                        "    query: |demo::_NPerson.all()->graphFetch(#{demo::_NPerson{Age,Name}}#)->serialize(#{demo::_NPerson{Age,Name}}#);\n" +
+                        "    mapping: meta::myMapping;\n" +
+                        "    runtime: meta::myRuntime;\n" +
+                        "  }\n" +
+                        "  testSuites:\n" +
+                        "  [\n" +
+                        "    testSuite1:\n" +
+                        "    {\n" +
+                        "      data:\n" +
+                        "      [\n" +
+                        "        connections:\n" +
+                        "        [\n" +
+                        "          connection1:\n" +
+                        "            ExternalFormat\n" +
+                        "            #{\n" +
+                        "              contentType: 'application/x.flatdata';\n" +
+                        "              data: 'FIRST_NAME,LAST_NAME\\nFred,Bloggs\\nJane,Doe';\n" +
+                        "            }#\n" +
+                        "        ]\n" +
+                        "      ]\n" +
+                        "      tests:\n" +
+                        "      [\n" +
+                        "        test1:\n" +
+                        "        {\n" +
+                        "          asserts:\n" +
+                        "          [\n" +
+                        "            assert1:\n" +
+                        "              EqualToJson\n" +
+                        "              #{\n" +
+                        "                actual : \n" +
+                        "                  ExternalFormat\n" +
+                        "                  #{\n" +
+                        "                    contentType: 'application/json';\n" +
+                        "                    data: '{Age:12, Name:\"dummy\"}';\n" +
+                        "                  }#;\n" +
+                        "              }#\n" +
+                        "          ]\n" +
+                        "        }\n" +
+                        "      ]\n" +
+                        "    }\n" +
+                        "  ]\n" +
+                        "}\n",
+                "PARSER error at [43:17-22]: Unexpected token"
+        );
     }
 }

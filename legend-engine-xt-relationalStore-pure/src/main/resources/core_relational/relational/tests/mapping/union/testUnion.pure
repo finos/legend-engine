@@ -1,0 +1,1728 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::functions::sqlstring::*;
+import meta::relational::functions::asserts::*;
+import meta::relational::mapping::*;
+import meta::relational::tests::mapping::union::*;
+import meta::relational::tests::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::runtime::*;
+import meta::relational::tests::model::simple::*;
+
+function <<test.BeforePackage>> meta::relational::tests::mapping::union::setUp():Boolean[1]
+{
+    meta::relational::tests::mapping::union::createTablesAndFillDb();
+}
+
+function <<test.Test>> meta::relational::tests::mapping::union::testSimpleProject():Boolean[1]
+{
+   let result1 = execute(|Person.all()->project([p|$p.lastName], ['name']), unionMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   assertEquals(5, $result1.rows->size());
+   assertSameElements(['Anand', 'Scott', 'Taylor', 'Wright', 'Roberts'], $result1.rows->map(r|$r.getString('name')));
+}
+
+function <<test.ToFix>> meta::relational::tests::mapping::union::testUnionPropertyAccess():Boolean[1]
+{
+   let firm = execute(|Firm.all(), unionMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   assert($firm.employees->size() > 0);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::union::testSimpleProjectWithFunctionInMappingProject():Boolean[1]
+{
+   let result1 = execute(|Person.all()->project([p|$p.lastName], ['name']), unionMappingWithFunction, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   assertEquals(5, $result1.rows->size());
+   assertSameElements(['1Anand', '1Scott', '1Roberts', '2Taylor', '2Wright'], $result1.rows->map(r|$r.getString('name')));
+}
+
+
+function <<test.Test>> meta::relational::tests::mapping::union::testSimpleProjectWithConstantInMappingProject():Boolean[1]
+{
+   let result1 = execute(|Person.all()->project([p | $p.firstName], ['first']), unionMappingWithConstant, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   assertSameElements(['Bob', 'Bob', 'Bob', 'George', 'George'], $result1.rows.values);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::union::testSimpleProjectWithFunctionInMappingQuery():Boolean[1]
+{
+   let result1 = execute(|Person.all()->filter(p|$p.lastName->startsWith('2Ta') || $p.lastName->startsWith('1An')), unionMappingWithFunction, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   assertEquals(2, $result1->size());
+   assertSameElements(['1Anand', '2Taylor'], $result1.lastName);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::union::testSimpleQueryFrom():Boolean[1]
+{
+   let result1 = execute(|Person.all()->filter(p|$p.firm.legalName == 'Firm A'), unionMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   assertEquals(1, $result1->size());
+   assertSameElements(['Roberts'], $result1.lastName);
+   let result2 = execute(|Person.all()->filter(p|$p.firm.legalName == 'Firm X'), unionMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   assertEquals(4, $result2->size());
+   assertSameElements(['Anand', 'Scott', 'Taylor', 'Wright'], $result2.lastName);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::union::testSimpleQueryTo():Boolean[1]
+{
+   let result1 = execute(|Firm.all()->filter(f|$f.employees->exists(e|$e.lastName == 'Wright')), unionMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   assertEquals(1, $result1->size());
+   assertSameElements(['Firm X'], $result1.legalName);
+   let result2 = execute(|Firm.all()->filter(f|$f.employees->exists(e|$e.lastName == 'Roberts')), unionMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   assertEquals(1, $result2->size());
+   assertSameElements(['Firm A'], $result2.legalName);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::union::testProjectThroughAsso():Boolean[1]
+{
+   let result1 = execute(|Firm.all()->project([f|$f.legalName, f|$f.employees.lastName], ['legalName','name']), unionMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   assertEquals(5, $result1.rows->size());
+   assertSameElements(['Anand Firm X', 'Scott Firm X', 'Taylor Firm X', 'Wright Firm X', 'Roberts Firm A'], $result1.rows->map(r|$r.getString('name')+' '+$r.getString('legalName')));
+}
+
+function <<test.Test>> meta::relational::tests::mapping::union::testSimpleQueryFromAssociationMapping():Boolean[1]
+{
+   let result1 = execute(|Person.all()->filter(p|$p.firm.legalName == 'Firm A'), unionMappingWithAssociationMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   assertEquals(1, $result1->size());
+   assertSameElements(['Roberts'], $result1.lastName);
+   let result2 = execute(|Person.all()->filter(p|$p.firm.legalName == 'Firm X'), unionMappingWithAssociationMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   assertEquals(4, $result2->size());
+   assertSameElements(['Anand', 'Scott', 'Taylor', 'Wright'], $result2.lastName);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::union::testSimpleQueryToAssociationMapping():Boolean[1]
+{
+   let result1 = execute(|Firm.all()->filter(f|$f.employees->exists(e|$e.lastName == 'Wright')), unionMappingWithAssociationMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   assertEquals(1, $result1->size());
+   assertSameElements(['Firm X'], $result1.legalName);
+   let result2 = execute(|Firm.all()->filter(f|$f.employees->exists(e|$e.lastName == 'Roberts')), unionMappingWithAssociationMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   assertEquals(1, $result2->size());
+   assertSameElements(['Firm A'], $result2.legalName);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::union::testProjectThroughAssoWithAssociationMapping():Boolean[1]
+{
+   let result1 = execute(|Firm.all()->project([f|$f.legalName, f|$f.employees.lastName], ['legalName','name']), unionMappingWithAssociationMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   assertEquals(5, $result1.rows->size());
+   assertSameElements(['Anand Firm X', 'Scott Firm X', 'Taylor Firm X', 'Wright Firm X', 'Roberts Firm A'], $result1.rows->map(r|$r.getString('name')+' '+$r.getString('legalName')));
+}
+
+function <<test.Test>> meta::relational::tests::mapping::union::testSimpleProjectWithJoinInMapping():Boolean[1]
+{
+   let result1 = execute(|Person.all()->project([p|$p.lastName], ['name']), unionMappingWithJoinInProperty, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   assertEquals(5, $result1.rows->size());
+   assertSameElements(['Anand', 'Scott', 'Taylor', 'Wright', 'Roberts'], $result1.rows->map(r|$r.getString('name')));
+}
+
+function <<test.Test>> meta::relational::tests::mapping::union::testSimpleProjectWithJoinInMappingWithFunction():Boolean[1]
+{
+   let result1 = execute(|Person.all()->project([p|$p.otherNames], ['name']), unionMappingWithJoinInProperty, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   assertEquals(5, $result1.rows->size());
+   assertSameElements(['Anand', 'Scott', 'Taylor', 'Wright', 'Roberts'], $result1.rows->map(r|$r.getString('name')));
+}
+
+function <<test.Test>> meta::relational::tests::mapping::union::testSimpleQueryFromWithJoinInMapping():Boolean[1]
+{
+   let result1 = execute(|Person.all()->filter(p|$p.firm.legalName == 'Firm A'), unionMappingWithJoinInProperty, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   assertEquals(1, $result1->size());
+   assertSameElements(['Roberts'], $result1.lastName);
+   let result2 = execute(|Person.all()->filter(p|$p.firm.legalName == 'Firm X'), unionMappingWithJoinInProperty, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   assertEquals(4, $result2->size());
+   assertSameElements(['Anand', 'Scott', 'Taylor', 'Wright'], $result2.lastName);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::union::testSimpleQueryToWithJoinInMapping():Boolean[1]
+{
+   let result1 = execute(|Firm.all()->filter(f|$f.employees->exists(e|$e.lastName == 'Wright')), unionMappingWithJoinInProperty, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   assertEquals(1, $result1->size());
+   assertSameElements(['Firm X'], $result1.legalName);
+   let result2 = execute(|Firm.all()->filter(f|$f.employees->exists(e|$e.lastName == 'Roberts')), unionMappingWithJoinInProperty, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   assertEquals(1, $result2->size());
+   assertSameElements(['Firm A'], $result2.legalName);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::union::testProjectThroughAssoWithJoinInMapping():Boolean[1]
+{
+   let result1 = execute(|Firm.all()->project([f|$f.legalName, f|$f.employees.lastName], ['legalName','name']), unionMappingWithJoinInProperty, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   assertEquals(5, $result1.rows->size());
+   assertSameElements(['Anand Firm X', 'Scott Firm X', 'Taylor Firm X', 'Wright Firm X', 'Roberts Firm A'], $result1.rows->map(r|$r.getString('name')+' '+$r.getString('legalName')));
+}
+
+
+function <<test.Test>> meta::relational::tests::mapping::union::testProjectThroughAssoWithMultiJoinInMapping():Boolean[1]
+{
+   let result1 = execute(|Firm.all()->project([f|$f.legalName, f|$f.employees.lastName], ['legalName','name']), unionMappingWithJoinSequenceInProperty, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   assertEquals(5, $result1.rows->size());
+   assertSameElements(['Anand Firm X', 'Scott Firm X', 'Taylor Firm X', 'Wright Firm X', 'Roberts Firm A'], $result1.rows->map(r|$r.getString('name')+' '+$r.getString('legalName')));
+}
+
+
+function <<test.Test>> meta::relational::tests::mapping::union::testSimpleQueryFromWithEmbeddedInMapping():Boolean[1]
+{
+   let result1 = execute(|Person.all()->filter(p|$p.firm.legalName == 'Firm A'), unionMappingWithEmbeddedProperty, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   assertEquals(1, $result1->size());
+   assertSameElements(['Roberts'], $result1.lastName);
+   let result2 = execute(|Person.all()->filter(p|$p.firm.legalName == 'Firm X'), unionMappingWithEmbeddedProperty, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   assertEquals(4, $result2->size());
+   assertSameElements(['Anand', 'Scott', 'Taylor', 'Wright'], $result2.lastName);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::union::testSimpleQueryFromWithFilterInMapping():Boolean[1]
+{
+   let result1 = execute(|Person.all()->project([p|$p.lastName],['Lastname']), unionMappingWithFilter, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals(['Scott', 'Anand', 'Taylor', 'Wright'], $result1.values->at(0).rows.values);
+   assertEquals('select "unionBase"."PersonSet1lastName_s1_PersonSet2lastName_s2" as "Lastname" from (select "root".ID as "pk_0_0", null as "pk_0_1", "root".lastName_s1 as "PersonSet1lastName_s1_PersonSet2lastName_s2" from PersonSet1 as "root" where "root".FirmID = 1 UNION ALL select null as "pk_0_0", "root".ID as "pk_0_1", "root".lastName_s2 as "PersonSet1lastName_s1_PersonSet2lastName_s2" from PersonSet2 as "root" where "root".FirmID = 1) as "unionBase"', $result1->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::union::testSimpleProjectionFromWithEmbeddedInMapping():Boolean[1]
+{
+   let result1 = execute(|Person.all()->project([p|$p.lastName,p|$p.firm.legalName], ['lastName','legalName']), unionMappingWithEmbeddedPropertyOneThroughJoin, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   assertSameElements(['Scott Firm X','Anand Firm X','Roberts Firm A','Taylor Firm X','Wright Firm X'], $result1.rows->map(r|$r.getString('lastName')+ ' '+$r.getString('legalName')));
+}
+
+function <<test.Test>> meta::relational::tests::mapping::union::testSimpleProjectionFromWithEmbeddedInMappingWithConstant():Boolean[1]
+{
+   let result1 = execute(|Person.all()->project([p|$p.lastName,p|$p.firm.legalName], ['lastName','legalName']), unionMappingWithEmbeddedPropertyWithConstant, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   assertSameElements(['Anand Wendys', 'Scott Wendys', 'Taylor Vogue', 'Wright Vogue', 'Roberts Wendys'], $result1.rows->map(r|$r.getString('lastName')+ ' '+$r.getString('legalName')));
+}
+
+function <<test.Test>> meta::relational::tests::mapping::union::testAdvancedEmbeddedInMappingQuery():Boolean[1]
+{
+   let result1 = execute(|Firm.all()->filter(f|$f.bridge.employees->exists(e|$e.lastName == 'Wright')), unionMappingWithEmbeddedProperty2, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   assertEquals(1, $result1->size());
+   assertSameElements(['Firm X'], $result1.legalName);
+   let result2 = execute(|Firm.all()->filter(f|$f.bridge.employees->exists(e|$e.lastName == 'Roberts')), unionMappingWithEmbeddedProperty2, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   assertEquals(1, $result2->size());
+   assertSameElements(['Firm A'], $result2.legalName);
+}
+
+
+
+function <<test.Test>> meta::relational::tests::mapping::union::testSimpleQueryUnionToUnion():Boolean[1]
+{
+   let result1 = execute(|Firm.all()->filter(f|$f.employees->exists(e|$e.lastName == 'Wright')), unionToUnionMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   assertEquals(1, $result1->size());
+   assertSameElements(['Firm X'], $result1.legalName);
+   let result2 = execute(|Firm.all()->filter(f|$f.employees->exists(e|$e.lastName == 'Roberts')), unionToUnionMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   assertEquals(1, $result2->size());
+   assertSameElements(['Firm A'], $result2.legalName);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::union::testProjectThroughAssoWithUnionToUnionMapping():Boolean[1]
+{
+   let result1 = execute(|Firm.all()->project([f|$f.legalName, f|$f.employees.lastName], ['legalName','name']), unionToUnionMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   assertEquals(5, $result1.rows->size());
+   assertSameElements(['Anand Firm X', 'Scott Firm X', 'Taylor Firm X', 'Wright Firm X', 'Roberts Firm A'], $result1.rows->map(r|$r.getString('name')+' '+$r.getString('legalName')));
+}
+
+function <<test.Test>> meta::relational::tests::mapping::union::testUnionToUnionJoinSequenceWithMultipleChildrenInUnionSourceTree():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p|$p.firm.legalName == $p.extraInformation)->map(p|$p.firm)->project(f|$f.legalName,'name'), unionToUnionMapping2, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assert($result.values.rows->isEmpty());
+   assertSameSQL('select "unionalias_1"."FirmSet1name_FirmSet2name" as "name" from PersonSet1 as "root" left outer join (select "root".ID as ID_0, null as ID_1, "root".name as "FirmSet1name_FirmSet2name" from FirmSet1 as "root" UNION ALL select null as ID_0, "root".ID as ID_1, "root".name as "FirmSet1name_FirmSet2name" from FirmSet2 as "root") as "unionalias_0" on ("root".FirmID = "unionalias_0".ID_0 or "root".FirmID = "unionalias_0".ID_1) left outer join PersonAdditional as "personadditional_0" on ("root".ID = "personadditional_0".ID) left outer join (select "root".ID as ID_0, null as ID_1, "root".ID as "pk_0_0", null as "pk_0_1", "root".name as "FirmSet1name_FirmSet2name" from FirmSet1 as "root" UNION ALL select null as ID_0, "root".ID as ID_1, null as "pk_0_0", "root".ID as "pk_0_1", "root".name as "FirmSet1name_FirmSet2name" from FirmSet2 as "root") as "unionalias_1" on ("root".FirmID = "unionalias_1".ID_0 or "root".FirmID = "unionalias_1".ID_1) where ("unionalias_0"."FirmSet1name_FirmSet2name" = "personadditional_0".extrainfo OR ("unionalias_0"."FirmSet1name_FirmSet2name" is null AND "personadditional_0".extrainfo is null))', $result);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::union::testProjectEmbeddedMappingUnionWithSameColumnsNames():Boolean[1]
+{
+   let result1 = execute(|Application.all()->project([a|$a.date, a|$a.applicant.nickName, a|$a.firm.nickName], ['date','applicant.name','firm.name']), unionMappingWithEmbeddedPropertyWithColumnsWithSameNames, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select "unionBase"."ApplicationsSet1date_ApplicationsSet2date" as "date", "unionBase"."ApplicationsSet1nickName_s1_ApplicationsSet2nickName" as "applicant.name", "unionBase"."ApplicationsSet1firm_nickName_s1_ApplicationsSet2firm_nickName" as "firm.name" from (select "root".date as "pk_0_0", "root".personID as "pk_1_0", "root".firmID as "pk_2_0", null as "pk_0_1", null as "pk_1_1", null as "pk_2_1", null as "pk_3_1", "root".date as "ApplicationsSet1date_ApplicationsSet2date", "root".nickName_s1 as "ApplicationsSet1nickName_s1_ApplicationsSet2nickName", "root".firm_nickName_s1 as "ApplicationsSet1firm_nickName_s1_ApplicationsSet2firm_nickName" from ApplicationsSet1 as "root" UNION ALL select null as "pk_0_0", null as "pk_1_0", null as "pk_2_0", "root".date as "pk_0_1", "root".firstName as "pk_1_1", "root".lastName as "pk_2_1", "root".firm_legalName as "pk_3_1", "root".date as "ApplicationsSet1date_ApplicationsSet2date", "root".nickName as "ApplicationsSet1nickName_s1_ApplicationsSet2nickName", "root".firm_nickName as "ApplicationsSet1firm_nickName_s1_ApplicationsSet2firm_nickName" from ApplicationsSet2 as "root") as "unionBase"', $result1);
+}
+
+
+function <<test.Test>> meta::relational::tests::mapping::union::testProjectEmbeddedMappingUnionWithSameColumnsNamesDeep():Boolean[1]
+{
+   let result1 = execute(|Application.all()->project([a|$a.date, a|$a.applicant.address.name, a|$a.firm.address.name], ['date','applicant.adress','firm.address']), unionMappingWithEmbeddedPropertyWithColumnsWithSameNames, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select "unionBase"."ApplicationsSet1date_ApplicationsSet2date" as "date", "unionBase"."ApplicationsSet1person_address_s1_ApplicationsSet2person_address_s2" as "applicant.adress", "unionBase"."ApplicationsSet1firm_address_s1_ApplicationsSet2firm_address_s2" as "firm.address" from (select "root".date as "pk_0_0", "root".personID as "pk_1_0", "root".firmID as "pk_2_0", null as "pk_0_1", null as "pk_1_1", null as "pk_2_1", null as "pk_3_1", "root".date as "ApplicationsSet1date_ApplicationsSet2date", "root".person_address_s1 as "ApplicationsSet1person_address_s1_ApplicationsSet2person_address_s2", "root".firm_address_s1 as "ApplicationsSet1firm_address_s1_ApplicationsSet2firm_address_s2" from ApplicationsSet1 as "root" UNION ALL select null as "pk_0_0", null as "pk_1_0", null as "pk_2_0", "root".date as "pk_0_1", "root".firstName as "pk_1_1", "root".lastName as "pk_2_1", "root".firm_legalName as "pk_3_1", "root".date as "ApplicationsSet1date_ApplicationsSet2date", "root".person_address_s2 as "ApplicationsSet1person_address_s1_ApplicationsSet2person_address_s2", "root".firm_address_s2 as "ApplicationsSet1firm_address_s1_ApplicationsSet2firm_address_s2" from ApplicationsSet2 as "root") as "unionBase"', $result1);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::union::testProjectMappingWithSameColumnsNames():Boolean[1]
+{
+   let result1 = execute(|Application.all()->project([a|$a.date, a|$a.applicant.nickName, a|$a.firm.nickName], ['date','applicant.name','firm.name']), mappingWithColumnsWithSameNames, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select "root".date as "date", "personset1_0".nickName as "applicant.name", "firmset1_0".nickName as "firm.name" from ApplicationsSet1 as "root" left outer join PersonSet1 as "personset1_0" on ("root".personID = "personset1_0".ID) left outer join FirmSet1 as "firmset1_0" on ("root".firmID = "firmset1_0".ID)', $result1);
+}
+
+
+function <<test.Test>> meta::relational::tests::mapping::union::testIdentificationOfFKColumnsForUnionSelfJoin():Boolean[1]
+{
+   let query={|Person.all()->project([p|$p.lastName,p|$p.manager.lastName], ['Name','manager'])};
+   let res = execute($query, unionMappingWithSelfJoin,  testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   
+   assertSameSQL('select "unionBase"."PersonSet1lastName_s1_PersonSet2lastName_s2" as "Name", "unionalias_1"."PersonSet1lastName_s1_PersonSet2lastName_s2" as "manager" from (select "root".ID as "pk_0_0", null as "pk_0_1", "root".lastName_s1 as "PersonSet1lastName_s1_PersonSet2lastName_s2", "root".lastName_s1 as lastName from PersonSet1 as "root" UNION ALL select null as "pk_0_0", "root".ID as "pk_0_1", "root".lastName_s2 as "PersonSet1lastName_s1_PersonSet2lastName_s2", "root".lastName_s2 as lastName from PersonSet2 as "root") as "unionBase" left outer join (select "root".lastName_s1 as lastName, "root".lastName_s1 as "PersonSet1lastName_s1_PersonSet2lastName_s2" from PersonSet1 as "root" UNION ALL select "root".lastName_s2 as lastName, "root".lastName_s2 as "PersonSet1lastName_s1_PersonSet2lastName_s2" from PersonSet2 as "root") as "unionalias_1" on ("unionBase".lastName = "unionalias_1".lastName)', $res);
+}
+
+
+function <<test.Test>> meta::relational::tests::mapping::union::testThreewayUnionJoinWithOverlappingFKPKAliasNames():Boolean[1]
+{
+   let query={|Person.all()->project([p|$p.firm.employees.lastName], ['Employees'])};
+   let res = execute($query, unionMappingOverlappingPKAndFKColumns ,  testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select "unionalias_2"."PersonSet1lastName_s1_PersonSet2lastName_s2" as "Employees" from (select "root".ID as "pk_0_0", null as "pk_0_1", "root".FirmID as FirmID_0, null as FirmID_1 from PersonSet1 as "root" UNION ALL select null as "pk_0_0", "root".ID as "pk_0_1", null as FirmID_0, "root".FirmID as FirmID_1 from PersonSet2 as "root") as "unionBase" left outer join (select "root".ID as ID_0, null as ID_1 from FirmSet1 as "root" UNION ALL select null as ID_0, "root".ID as ID_1 from FirmSet2 as "root") as "unionalias_1" on ("unionBase".FirmID_0 = "unionalias_1".ID_0 or "unionBase".FirmID_1 = "unionalias_1".ID_1) left outer join (select "root".FirmID as FirmID_0, null as FirmID_1, "root".lastName_s1 as "PersonSet1lastName_s1_PersonSet2lastName_s2" from PersonSet1 as "root" UNION ALL select null as FirmID_0, "root".FirmID as FirmID_1, "root".lastName_s2 as "PersonSet1lastName_s1_PersonSet2lastName_s2" from PersonSet2 as "root") as "unionalias_2" on ("unionalias_1".ID_0 = "unionalias_2".FirmID_0 or "unionalias_1".ID_1 = "unionalias_2".FirmID_1)', $res);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::union::testChainedJoinsWithUnionsAndIsolation():Boolean[1]
+{
+   let query={|Person.all()->project([p|$p.firm.employees->filter(p|$p.lastName->startsWith('H')).lastName], ['Employees'])};
+   let res = execute($query, chainedJoinsWithUnionsAndIsolation , testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameSQL('select "unionalias_2"."PersonSet1lastName_s1_PersonSet2lastName_s2" as "Employees" from (select "root".ID as "pk_0_0", null as "pk_0_1", "root".FirmID as FirmID_0, null as FirmID_1 from PersonSet1 as "root" UNION ALL select null as "pk_0_0", "root".ID as "pk_0_1", null as FirmID_0, "root".FirmID as FirmID_1 from PersonSet2 as "root") as "unionBase" left outer join (select "root".ID as ID_0, null as ID_1 from FirmSet1 as "root" UNION ALL select null as ID_0, "root".ID as ID_1 from FirmSet2 as "root") as "unionalias_1" on ("unionBase".FirmID_0 = "unionalias_1".ID_0 or "unionBase".FirmID_1 = "unionalias_1".ID_1) left outer join (select "unionalias_3".FirmID_0 as FirmID_0, "unionalias_3".FirmID_1 as FirmID_1, "unionalias_3"."PersonSet1lastName_s1_PersonSet2lastName_s2" as "PersonSet1lastName_s1_PersonSet2lastName_s2" from (select "root".FirmID as FirmID_0, null as FirmID_1, "root".lastName_s1 as "PersonSet1lastName_s1_PersonSet2lastName_s2" from PersonSet1 as "root" UNION ALL select null as FirmID_0, "root".FirmID as FirmID_1, "root".lastName_s2 as "PersonSet1lastName_s1_PersonSet2lastName_s2" from PersonSet2 as "root") as "unionalias_3" where "unionalias_3"."PersonSet1lastName_s1_PersonSet2lastName_s2" like \'H%\') as "unionalias_2" on ("unionalias_1".ID_0 = "unionalias_2".FirmID_0 or "unionalias_1".ID_1 = "unionalias_2".FirmID_1)', $res);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::union::testChainedUnionsWithAggregation():Boolean[1]
+{
+   let query={|Firm.all()->project([p| $p.employeesWithAddressNameSorted('New York')],['New York Employees'])};
+   let res = execute($query, unionToUnionMapping , testRuntime(), meta::pure::router::extension::defaultRelationalExtensions(), noDebug());
+   let tds = $res.values->at(0);
+   assertEquals(['Anand,Scott,Taylor,Wright', 'TDSNull'], $tds.rows->map(r|$r.values->makeString(', ')));
+   assertSameSQL('select "unionalias_1".aggCol as "New York Employees" from (select "root".ID as "pk_0_0", null as "pk_0_1", "root".ID as ID_0, null as ID_1 from FirmSet1 as "root" UNION ALL select null as "pk_0_0", "root".ID as "pk_0_1", null as ID_0, "root".ID as ID_1 from FirmSet2 as "root") as "unionBase" left outer join (select "unionalias_2".ID_1 as ID_1, "unionalias_2"."pk_0_1" as "pk_0_1", "unionalias_2".ID_0 as ID_0, "unionalias_2"."pk_0_0" as "pk_0_0", group_concat("unionalias_2"."PersonSet1lastName_s1_PersonSet2lastName_s2" ) as aggCol from (select "unionalias_3".ID_1, "unionalias_3"."pk_0_1", "unionalias_3".ID_0, "unionalias_3"."pk_0_0", "unionalias_4"."PersonSet1lastName_s1_PersonSet2lastName_s2" from (select "root".ID as "pk_0_0", null as "pk_0_1", "root".ID as ID_0, null as ID_1 from FirmSet1 as "root" UNION ALL select null as "pk_0_0", "root".ID as "pk_0_1", null as ID_0, "root".ID as ID_1 from FirmSet2 as "root") as "unionalias_3" left outer join (select "root".FirmID as FirmID_0, null as FirmID_1, "root".lastName_s1 as "PersonSet1lastName_s1_PersonSet2lastName_s2" from PersonSet1 as "root" UNION ALL select null as FirmID_0, "root".FirmID as FirmID_1, "root".lastName_s2 as "PersonSet1lastName_s1_PersonSet2lastName_s2" from PersonSet2 as "root") as "unionalias_4" on ("unionalias_4".FirmID_0 = "unionalias_3".ID_0 or "unionalias_4".FirmID_1 = "unionalias_3".ID_0 or "unionalias_4".FirmID_0 = "unionalias_3".ID_1 or "unionalias_4".FirmID_1 = "unionalias_3".ID_1) left outer join (select "root".ID as ID_0, null as ID_1, "root".name as "AddressSet1name_AddressSet2name" from AddressSet1 as "root" UNION ALL select null as ID_0, "root".ID as ID_1, "root".name as "AddressSet1name_AddressSet2name" from AddressSet2 as "root") as "unionalias_5" on ("unionalias_4".FirmID_0 = "unionalias_5".ID_0 or "unionalias_4".FirmID_0 = "unionalias_5".ID_1 or "unionalias_4".FirmID_1 = "unionalias_5".ID_0 or "unionalias_4".FirmID_1 = "unionalias_5".ID_1) where trim("unionalias_5"."AddressSet1name_AddressSet2name") = \'New York\' order by "unionalias_4"."PersonSet1lastName_s1_PersonSet2lastName_s2") as "unionalias_2" group by "unionalias_2"."pk_0_0","unionalias_2"."pk_0_1") as "unionalias_1" on ("unionBase".ID_1 = "unionalias_1".ID_1 or "unionBase"."pk_0_1" = "unionalias_1"."pk_0_1" or "unionBase".ID_0 = "unionalias_1".ID_0 or "unionBase"."pk_0_0" = "unionalias_1"."pk_0_0")', $res);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::union::testChainedUnionsWithMultipleAggregation():Boolean[1]
+{
+   let query={|Firm.all()->project([p| $p.employees->sortBy(#/Person/lastName#).lastName->joinStrings(), p| $p.employeesWithAddressNameSorted('New York')],['All Employees', 'New York Employees'])};
+   let res = execute($query, unionToUnionMapping , testRuntime(), meta::pure::router::extension::defaultRelationalExtensions(), noDebug());
+   let tds = $res.values->at(0);
+   assertEquals(['Anand,Scott,Taylor,Wright, Anand,Scott,Taylor,Wright | Roberts, TDSNull'], $tds.rows->map(r|$r.values->makeString(', '))->makeString(' | '));
+   assertSameSQL('select "unionalias_1".aggCol as "All Employees", "unionalias_5".aggCol as "New York Employees" from (select "root".ID as "pk_0_0", null as "pk_0_1", "root".ID as ID_0, null as ID_1 from FirmSet1 as "root" UNION ALL select null as "pk_0_0", "root".ID as "pk_0_1", null as ID_0, "root".ID as ID_1 from FirmSet2 as "root") as "unionBase" left outer join (select "unionalias_2".ID_1 as ID_1, "unionalias_2"."pk_0_1" as "pk_0_1", "unionalias_2".ID_0 as ID_0, "unionalias_2"."pk_0_0" as "pk_0_0", group_concat("unionalias_2"."PersonSet1lastName_s1_PersonSet2lastName_s2" ) as aggCol from (select "unionalias_3".ID_1, "unionalias_3"."pk_0_1", "unionalias_3".ID_0, "unionalias_3"."pk_0_0", "unionalias_4"."PersonSet1lastName_s1_PersonSet2lastName_s2" from (select "root".ID as "pk_0_0", null as "pk_0_1", "root".ID as ID_0, null as ID_1 from FirmSet1 as "root" UNION ALL select null as "pk_0_0", "root".ID as "pk_0_1", null as ID_0, "root".ID as ID_1 from FirmSet2 as "root") as "unionalias_3" left outer join (select "root".FirmID as FirmID_0, null as FirmID_1, "root".lastName_s1 as "PersonSet1lastName_s1_PersonSet2lastName_s2" from PersonSet1 as "root" UNION ALL select null as FirmID_0, "root".FirmID as FirmID_1, "root".lastName_s2 as "PersonSet1lastName_s1_PersonSet2lastName_s2" from PersonSet2 as "root") as "unionalias_4" on ("unionalias_4".FirmID_0 = "unionalias_3".ID_0 or "unionalias_4".FirmID_1 = "unionalias_3".ID_0 or "unionalias_4".FirmID_0 = "unionalias_3".ID_1 or "unionalias_4".FirmID_1 = "unionalias_3".ID_1) order by "unionalias_4"."PersonSet1lastName_s1_PersonSet2lastName_s2") as "unionalias_2" group by "unionalias_2"."pk_0_0","unionalias_2"."pk_0_1") as "unionalias_1" on ("unionBase".ID_1 = "unionalias_1".ID_1 or "unionBase"."pk_0_1" = "unionalias_1"."pk_0_1" or "unionBase".ID_0 = "unionalias_1".ID_0 or "unionBase"."pk_0_0" = "unionalias_1"."pk_0_0") left outer join (select "unionalias_2".ID_1 as ID_1, "unionalias_2"."pk_0_1" as "pk_0_1", "unionalias_2".ID_0 as ID_0, "unionalias_2"."pk_0_0" as "pk_0_0", group_concat("unionalias_2"."PersonSet1lastName_s1_PersonSet2lastName_s2" ) as aggCol from (select "unionalias_3".ID_1, "unionalias_3"."pk_0_1", "unionalias_3".ID_0, "unionalias_3"."pk_0_0", "unionalias_6"."PersonSet1lastName_s1_PersonSet2lastName_s2" from (select "root".ID as "pk_0_0", null as "pk_0_1", "root".ID as ID_0, null as ID_1 from FirmSet1 as "root" UNION ALL select null as "pk_0_0", "root".ID as "pk_0_1", null as ID_0, "root".ID as ID_1 from FirmSet2 as "root") as "unionalias_3" left outer join (select "root".FirmID as FirmID_0, null as FirmID_1, "root".lastName_s1 as "PersonSet1lastName_s1_PersonSet2lastName_s2" from PersonSet1 as "root" UNION ALL select null as FirmID_0, "root".FirmID as FirmID_1, "root".lastName_s2 as "PersonSet1lastName_s1_PersonSet2lastName_s2" from PersonSet2 as "root") as "unionalias_6" on ("unionalias_6".FirmID_0 = "unionalias_3".ID_0 or "unionalias_6".FirmID_1 = "unionalias_3".ID_0 or "unionalias_6".FirmID_0 = "unionalias_3".ID_1 or "unionalias_6".FirmID_1 = "unionalias_3".ID_1) left outer join (select "root".ID as ID_0, null as ID_1, "root".name as "AddressSet1name_AddressSet2name" from AddressSet1 as "root" UNION ALL select null as ID_0, "root".ID as ID_1, "root".name as "AddressSet1name_AddressSet2name" from AddressSet2 as "root") as "unionalias_7" on ("unionalias_6".FirmID_0 = "unionalias_7".ID_0 or "unionalias_6".FirmID_0 = "unionalias_7".ID_1 or "unionalias_6".FirmID_1 = "unionalias_7".ID_0 or "unionalias_6".FirmID_1 = "unionalias_7".ID_1) where trim("unionalias_7"."AddressSet1name_AddressSet2name") = \'New York\' order by "unionalias_6"."PersonSet1lastName_s1_PersonSet2lastName_s2") as "unionalias_2" group by "unionalias_2"."pk_0_0","unionalias_2"."pk_0_1") as "unionalias_5" on ("unionBase".ID_1 = "unionalias_5".ID_1 or "unionBase"."pk_0_1" = "unionalias_5"."pk_0_1" or "unionBase".ID_0 = "unionalias_5".ID_0 or "unionBase"."pk_0_0" = "unionalias_5"."pk_0_0")', $res);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::union::testChainedUnionsWithAggregationWithAdditionalColumn():Boolean[1]
+{
+   let query={|Firm.all()->project([p| $p.legalName, p| $p.employeesWithAddressNameSorted('New York')],['Legal Name', 'New York Employees'])};
+   let res = execute($query, unionToUnionMapping , testRuntime(), meta::pure::router::extension::defaultRelationalExtensions(), noDebug());
+   let tds = $res.values->at(0);
+   assertEquals(['Firm X, Anand,Scott,Taylor,Wright', 'Firm A, TDSNull'], $tds.rows->map(r|$r.values->makeString(', ')));
+   assertSameSQL('select "unionBase"."FirmSet1name_FirmSet2name" as "Legal Name", "unionalias_1".aggCol as "New York Employees" from (select "root".ID as "pk_0_0", null as "pk_0_1", "root".name as "FirmSet1name_FirmSet2name", "root".ID as ID_0, null as ID_1 from FirmSet1 as "root" UNION ALL select null as "pk_0_0", "root".ID as "pk_0_1", "root".name as "FirmSet1name_FirmSet2name", null as ID_0, "root".ID as ID_1 from FirmSet2 as "root") as "unionBase" left outer join (select "unionalias_2".ID_1 as ID_1, "unionalias_2"."pk_0_1" as "pk_0_1", "unionalias_2".ID_0 as ID_0, "unionalias_2"."pk_0_0" as "pk_0_0", group_concat("unionalias_2"."PersonSet1lastName_s1_PersonSet2lastName_s2" ) as aggCol from (select "unionalias_3".ID_1, "unionalias_3"."pk_0_1", "unionalias_3".ID_0, "unionalias_3"."pk_0_0", "unionalias_4"."PersonSet1lastName_s1_PersonSet2lastName_s2" from (select "root".ID as "pk_0_0", null as "pk_0_1", "root".ID as ID_0, null as ID_1 from FirmSet1 as "root" UNION ALL select null as "pk_0_0", "root".ID as "pk_0_1", null as ID_0, "root".ID as ID_1 from FirmSet2 as "root") as "unionalias_3" left outer join (select "root".FirmID as FirmID_0, null as FirmID_1, "root".lastName_s1 as "PersonSet1lastName_s1_PersonSet2lastName_s2" from PersonSet1 as "root" UNION ALL select null as FirmID_0, "root".FirmID as FirmID_1, "root".lastName_s2 as "PersonSet1lastName_s1_PersonSet2lastName_s2" from PersonSet2 as "root") as "unionalias_4" on ("unionalias_4".FirmID_0 = "unionalias_3".ID_0 or "unionalias_4".FirmID_1 = "unionalias_3".ID_0 or "unionalias_4".FirmID_0 = "unionalias_3".ID_1 or "unionalias_4".FirmID_1 = "unionalias_3".ID_1) left outer join (select "root".ID as ID_0, null as ID_1, "root".name as "AddressSet1name_AddressSet2name" from AddressSet1 as "root" UNION ALL select null as ID_0, "root".ID as ID_1, "root".name as "AddressSet1name_AddressSet2name" from AddressSet2 as "root") as "unionalias_5" on ("unionalias_4".FirmID_0 = "unionalias_5".ID_0 or "unionalias_4".FirmID_0 = "unionalias_5".ID_1 or "unionalias_4".FirmID_1 = "unionalias_5".ID_0 or "unionalias_4".FirmID_1 = "unionalias_5".ID_1) where trim("unionalias_5"."AddressSet1name_AddressSet2name") = \'New York\' order by "unionalias_4"."PersonSet1lastName_s1_PersonSet2lastName_s2") as "unionalias_2" group by "unionalias_2"."pk_0_0","unionalias_2"."pk_0_1") as "unionalias_1" on ("unionBase".ID_1 = "unionalias_1".ID_1 or "unionBase"."pk_0_1" = "unionalias_1"."pk_0_1" or "unionBase".ID_0 = "unionalias_1".ID_0 or "unionBase"."pk_0_0" = "unionalias_1"."pk_0_0")', $res);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::union::testChainedUnionsWithMultipleAggregationWithAdditionalColumn():Boolean[1]
+{
+   let query={|Firm.all()->project([p| $p.legalName, p| $p.employees->sortBy(#/Person/lastName#).lastName->joinStrings(), p| $p.employeesWithAddressNameSorted('New York')],['Legal Name', 'All Employees', 'New York Employees'])};
+   let res = execute($query, unionToUnionMapping , testRuntime(), meta::pure::router::extension::defaultRelationalExtensions(), noDebug());
+   let tds = $res.values->at(0);
+   assertEquals(['Firm X, Anand,Scott,Taylor,Wright, Anand,Scott,Taylor,Wright | Firm A, Roberts, TDSNull'], $tds.rows->map(r|$r.values->makeString(', '))->makeString(' | '));
+   assertSameSQL('select "unionBase"."FirmSet1name_FirmSet2name" as "Legal Name", "unionalias_1".aggCol as "All Employees", "unionalias_5".aggCol as "New York Employees" from (select "root".ID as "pk_0_0", null as "pk_0_1", "root".name as "FirmSet1name_FirmSet2name", "root".ID as ID_0, null as ID_1 from FirmSet1 as "root" UNION ALL select null as "pk_0_0", "root".ID as "pk_0_1", "root".name as "FirmSet1name_FirmSet2name", null as ID_0, "root".ID as ID_1 from FirmSet2 as "root") as "unionBase" left outer join (select "unionalias_2".ID_1 as ID_1, "unionalias_2"."pk_0_1" as "pk_0_1", "unionalias_2".ID_0 as ID_0, "unionalias_2"."pk_0_0" as "pk_0_0", group_concat("unionalias_2"."PersonSet1lastName_s1_PersonSet2lastName_s2" ) as aggCol from (select "unionalias_3".ID_1, "unionalias_3"."pk_0_1", "unionalias_3".ID_0, "unionalias_3"."pk_0_0", "unionalias_4"."PersonSet1lastName_s1_PersonSet2lastName_s2" from (select "root".ID as "pk_0_0", null as "pk_0_1", "root".ID as ID_0, null as ID_1 from FirmSet1 as "root" UNION ALL select null as "pk_0_0", "root".ID as "pk_0_1", null as ID_0, "root".ID as ID_1 from FirmSet2 as "root") as "unionalias_3" left outer join (select "root".FirmID as FirmID_0, null as FirmID_1, "root".lastName_s1 as "PersonSet1lastName_s1_PersonSet2lastName_s2" from PersonSet1 as "root" UNION ALL select null as FirmID_0, "root".FirmID as FirmID_1, "root".lastName_s2 as "PersonSet1lastName_s1_PersonSet2lastName_s2" from PersonSet2 as "root") as "unionalias_4" on ("unionalias_4".FirmID_0 = "unionalias_3".ID_0 or "unionalias_4".FirmID_1 = "unionalias_3".ID_0 or "unionalias_4".FirmID_0 = "unionalias_3".ID_1 or "unionalias_4".FirmID_1 = "unionalias_3".ID_1) order by "unionalias_4"."PersonSet1lastName_s1_PersonSet2lastName_s2") as "unionalias_2" group by "unionalias_2"."pk_0_0","unionalias_2"."pk_0_1") as "unionalias_1" on ("unionBase".ID_1 = "unionalias_1".ID_1 or "unionBase"."pk_0_1" = "unionalias_1"."pk_0_1" or "unionBase".ID_0 = "unionalias_1".ID_0 or "unionBase"."pk_0_0" = "unionalias_1"."pk_0_0") left outer join (select "unionalias_2".ID_1 as ID_1, "unionalias_2"."pk_0_1" as "pk_0_1", "unionalias_2".ID_0 as ID_0, "unionalias_2"."pk_0_0" as "pk_0_0", group_concat("unionalias_2"."PersonSet1lastName_s1_PersonSet2lastName_s2" ) as aggCol from (select "unionalias_3".ID_1, "unionalias_3"."pk_0_1", "unionalias_3".ID_0, "unionalias_3"."pk_0_0", "unionalias_6"."PersonSet1lastName_s1_PersonSet2lastName_s2" from (select "root".ID as "pk_0_0", null as "pk_0_1", "root".ID as ID_0, null as ID_1 from FirmSet1 as "root" UNION ALL select null as "pk_0_0", "root".ID as "pk_0_1", null as ID_0, "root".ID as ID_1 from FirmSet2 as "root") as "unionalias_3" left outer join (select "root".FirmID as FirmID_0, null as FirmID_1, "root".lastName_s1 as "PersonSet1lastName_s1_PersonSet2lastName_s2" from PersonSet1 as "root" UNION ALL select null as FirmID_0, "root".FirmID as FirmID_1, "root".lastName_s2 as "PersonSet1lastName_s1_PersonSet2lastName_s2" from PersonSet2 as "root") as "unionalias_6" on ("unionalias_6".FirmID_0 = "unionalias_3".ID_0 or "unionalias_6".FirmID_1 = "unionalias_3".ID_0 or "unionalias_6".FirmID_0 = "unionalias_3".ID_1 or "unionalias_6".FirmID_1 = "unionalias_3".ID_1) left outer join (select "root".ID as ID_0, null as ID_1, "root".name as "AddressSet1name_AddressSet2name" from AddressSet1 as "root" UNION ALL select null as ID_0, "root".ID as ID_1, "root".name as "AddressSet1name_AddressSet2name" from AddressSet2 as "root") as "unionalias_7" on ("unionalias_6".FirmID_0 = "unionalias_7".ID_0 or "unionalias_6".FirmID_0 = "unionalias_7".ID_1 or "unionalias_6".FirmID_1 = "unionalias_7".ID_0 or "unionalias_6".FirmID_1 = "unionalias_7".ID_1) where trim("unionalias_7"."AddressSet1name_AddressSet2name") = \'New York\' order by "unionalias_6"."PersonSet1lastName_s1_PersonSet2lastName_s2") as "unionalias_2" group by "unionalias_2"."pk_0_0","unionalias_2"."pk_0_1") as "unionalias_5" on ("unionBase".ID_1 = "unionalias_5".ID_1 or "unionBase"."pk_0_1" = "unionalias_5"."pk_0_1" or "unionBase".ID_0 = "unionalias_5".ID_0 or "unionBase"."pk_0_0" = "unionalias_5"."pk_0_0")', $res);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::union::testChainedUnionsWithMapAggregation():Boolean[1]
+{
+   let query={|Firm.all()->map(p| $p.employeesWithAddressNameSorted('New York'))};
+   let res = execute($query, unionToUnionMapping , testRuntime(), meta::pure::router::extension::defaultRelationalExtensions(), noDebug());
+   assertEquals(['Anand,Scott,Taylor,Wright'], $res.values);
+   assertSameSQL('select "unionalias_1".aggCol from (select "root".ID as "pk_0_0", null as "pk_0_1", \'0\' as u_type, "root".name as "legalName", "root".ID as ID_0, null as ID_1 from FirmSet1 as "root" UNION ALL select null as "pk_0_0", "root".ID as "pk_0_1", \'1\' as u_type, "root".name as "legalName", null as ID_0, "root".ID as ID_1 from FirmSet2 as "root") as "unionBase" left outer join (select "unionalias_2".ID_1 as ID_1, "unionalias_2"."pk_0_1" as "pk_0_1", "unionalias_2".ID_0 as ID_0, "unionalias_2"."pk_0_0" as "pk_0_0", group_concat("unionalias_2"."PersonSet1lastName_s1_PersonSet2lastName_s2" ) as aggCol from (select "unionalias_1".ID_1, "unionalias_1"."pk_0_1", "unionalias_1".ID_0, "unionalias_1"."pk_0_0", "unionalias_3"."PersonSet1lastName_s1_PersonSet2lastName_s2" from (select "root".ID as "pk_0_0", null as "pk_0_1", \'0\' as u_type, "root".name as "legalName", "root".ID as ID_0, null as ID_1 from FirmSet1 as "root" UNION ALL select null as "pk_0_0", "root".ID as "pk_0_1", \'1\' as u_type, "root".name as "legalName", null as ID_0, "root".ID as ID_1 from FirmSet2 as "root") as "unionalias_1" left outer join (select "root".FirmID as FirmID_0, null as FirmID_1, "root".lastName_s1 as "PersonSet1lastName_s1_PersonSet2lastName_s2" from PersonSet1 as "root" UNION ALL select null as FirmID_0, "root".FirmID as FirmID_1, "root".lastName_s2 as "PersonSet1lastName_s1_PersonSet2lastName_s2" from PersonSet2 as "root") as "unionalias_3" on ("unionalias_3".FirmID_0 = "unionalias_1".ID_0 or "unionalias_3".FirmID_1 = "unionalias_1".ID_0 or "unionalias_3".FirmID_0 = "unionalias_1".ID_1 or "unionalias_3".FirmID_1 = "unionalias_1".ID_1) left outer join (select "root".ID as ID_0, null as ID_1, "root".name as "AddressSet1name_AddressSet2name" from AddressSet1 as "root" UNION ALL select null as ID_0, "root".ID as ID_1, "root".name as "AddressSet1name_AddressSet2name" from AddressSet2 as "root") as "unionalias_4" on ("unionalias_3".FirmID_0 = "unionalias_4".ID_0 or "unionalias_3".FirmID_0 = "unionalias_4".ID_1 or "unionalias_3".FirmID_1 = "unionalias_4".ID_0 or "unionalias_3".FirmID_1 = "unionalias_4".ID_1) where trim("unionalias_4"."AddressSet1name_AddressSet2name") = \'New York\' order by "unionalias_3"."PersonSet1lastName_s1_PersonSet2lastName_s2") as "unionalias_2" group by "unionalias_2"."pk_0_0","unionalias_2"."pk_0_1") as "unionalias_1" on ("unionBase".ID_1 = "unionalias_1".ID_1 or "unionBase"."pk_0_1" = "unionalias_1"."pk_0_1" or "unionBase".ID_0 = "unionalias_1".ID_0 or "unionBase"."pk_0_0" = "unionalias_1"."pk_0_0")', $res);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::union::testUnionViewJoins():Boolean[1]
+{
+   let result = execute(|Firm.all()->groupBy([x | $x.legalName, x | $x.employees.lastName],[agg(x | [$x.employees.age], y | $y->sum())],['Legal Name','Last Name','Age']);, UnionViewJoinsMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertEquals('Firm X, Scott, 1 | Firm X, Taylor, 1', $result.values.rows ->map(r|$r.values->makeString(', '))->makeString(' | ') );
+   assertSize($result.values.rows,2);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::union::testProjectAndFilterSamePropertySameJoinInUnion():Boolean[1]
+{
+   let result = execute(| Person.all()->filter(p | $p.extraInformation == 'Not Available' && !$p.firm.legalName->isEmpty())->project([p | $p.lastName, p | $p.otherNames,  p | $p.firm.legalName, p | $p.extraInformation], ['lastName', 'otherNames', 'extraInformation', 'firmName']), unionMappingWithSameJoinInPropertyInBothUnions, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   println($result->sqlRemoveFormatting());
+   assertEquals(['Scott, GDPR Redacted, Firm X, Not Available', 'Wright, GDPR Redacted, Firm A, Not Available'], $result.values->at(0).rows->map(r|$r.values->makeString(', ')));
+   assertSameSQL('select "unionBase"."PersonMasterlastName_PersonMasterlastName" as "lastName", "unionBase"."PersonMasterPersonAdditionalPersonAdditionalotherName_PersonMasterPersonAdditionalPersonAdditionalotherName" as "otherNames", "unionalias_1"."FirmSet1name_FirmSet2name" as "extraInformation", "unionBase"."PersonMasterPersonAdditionalPersonAdditionalextrainfo_PersonMasterPersonAdditionalPersonAdditionalextrainfo" as "firmName" from (select "personadditional_0".extrainfo as "PersonMasterPersonAdditionalPersonAdditionalextrainfo_PersonMasterPersonAdditionalPersonAdditionalextrainfo", "root".FirmID as FirmID_0, null as FirmID_1, "root".ID as "pk_0_0", null as "pk_0_1", "root".lastName as "PersonMasterlastName_PersonMasterlastName", "personadditional_0".otherName as "PersonMasterPersonAdditionalPersonAdditionalotherName_PersonMasterPersonAdditionalPersonAdditionalotherName" from PersonMaster as "root" left outer join PersonAdditional as "personadditional_0" on ("root".ID = "personadditional_0".ID) UNION ALL select "personadditional_0".extrainfo as "PersonMasterPersonAdditionalPersonAdditionalextrainfo_PersonMasterPersonAdditionalPersonAdditionalextrainfo", null as FirmID_0, "root".FirmID as FirmID_1, null as "pk_0_0", "root".ID as "pk_0_1", "root".lastName as "PersonMasterlastName_PersonMasterlastName", "personadditional_0".otherName as "PersonMasterPersonAdditionalPersonAdditionalotherName_PersonMasterPersonAdditionalPersonAdditionalotherName" from PersonMaster as "root" left outer join PersonAdditional as "personadditional_0" on ("root".ID = "personadditional_0".ID)) as "unionBase" left outer join (select "root".ID as ID_0, null as ID_1, "root".name as "FirmSet1name_FirmSet2name" from FirmSet1 as "root" UNION ALL select null as ID_0, "root".ID as ID_1, "root".name as "FirmSet1name_FirmSet2name" from FirmSet2 as "root") as "unionalias_1" on ("unionBase".FirmID_0 = "unionalias_1".ID_0 or "unionBase".FirmID_1 = "unionalias_1".ID_1) where ("unionBase"."PersonMasterPersonAdditionalPersonAdditionalextrainfo_PersonMasterPersonAdditionalPersonAdditionalextrainfo" = \'Not Available\' and not "unionalias_1"."FirmSet1name_FirmSet2name" is null)', $result);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::union::testUnionOfViewsWithFilterInQualifiedProperty(): Boolean[1]
+{
+   let result = execute(|FirmExtension.all()->project([col(f|$f.allEmployeesLastName, 'Employees Last Name')]), unionOfViews, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let expectedResult = ['LastName Ext1A,LastName Ext1D', 'LastName Ext1B,LastName Ext2D', 'LastName Ext1C', 'LastName Ext2A','LastName Ext2B'];
+   assertEquals($expectedResult, $result.values ->at(0).rows ->map(r |$r.values ->makeString(',')));
+   assertSameSQL('select "firmextension_1".aggCol as "Employees Last Name" from firmExtension as "root" left outer join (select "firmextension_2".firmId as firmId, group_concat("unionalias_0"."PersonExtensionView1lastName_PersonExtensionView2lastName" separator \',\' ) as aggCol from firmExtension as "firmextension_2" left outer join (select "root".personId as person, "root".firmId as firm from midTable as "root") as "midtableview_0" on ("firmextension_2".firmId = "midtableview_0".firm) inner join (select "root".id as id_0, null as id_1, "root".lastName as "PersonExtensionView1lastName_PersonExtensionView2lastName" from (select "root".ID as id, "root".FIRSTNAME as firstName, "root".LASTNAME as lastName, "root".birthdate as birthdate from PersonExtensionT1 as "root") as "root" UNION ALL select null as id_0, "root".id as id_1, "root".lastName as "PersonExtensionView1lastName_PersonExtensionView2lastName" from (select "root".ID as id, "root".FIRSTNAME as firstName, "root".LASTNAME as lastName, "root".birthdate as birthdate from PersonExtensionT2 as "root") as "root") as "unionalias_0" on ("midtableview_0".person = "unionalias_0".id_0 or "midtableview_0".person = "unionalias_0".id_1) group by "firmextension_2".firmId) as "firmextension_1" on ("root".firmId = "firmextension_1".firmId)', $result);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::union::testChainedUnions():Boolean[1]
+{
+   let result1 = execute(|Person.all()->project([p|$p.firm.temporalEntityWithAddress(%2019-1-1).address.name], ['address_name']), unionToUnionMappingForChainedUnions, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   assertEquals(8, $result1.rows->size());
+   assertSameElements(['New York', 'New York', 'New York', 'New York', 'New York', 'New York', 'Hoboken', 'Hoboken'], $result1.rows->map(r|$r.getString('address_name')));
+}
+
+function meta::relational::tests::mapping::union::executeInDb2(sql:String[1], databaseConnection:DatabaseConnection[1]):ResultSet[1]
+{
+    meta::relational::metamodel::execute::executeInDb($sql, $databaseConnection, 0, 1000);
+}
+
+function meta::relational::tests::mapping::union::createTablesAndFillDb():Boolean[1]
+{
+   let connection = testRuntime().connectionByElement(db)->cast(@TestDatabaseConnection);
+
+   executeInDb2('Drop table if exists AddressSet1;', $connection);
+   executeInDb2('Create Table AddressSet1 (name VARCHAR(200), street VARCHAR(200));', $connection);
+   executeInDb2('insert into AddressSet1 (name, street) values (\'Firm X\', \'30 Hudson\');', $connection);
+
+   executeInDb2('Drop table if exists AddressSet2;', $connection);
+   executeInDb2('Create Table AddressSet2 (name VARCHAR(200), street VARCHAR(200));', $connection);
+   executeInDb2('insert into AddressSet2 (name, street) values (\'Firm A\', \'Somwhere In CA\');', $connection);
+   
+   executeInDb2('Drop table if exists PlaceOfInterestSet1;', $connection);
+   executeInDb2('Create Table PlaceOfInterestSet1 (name VARCHAR(200), popularity INTEGER);', $connection);
+   executeInDb2('insert into PlaceOfInterestSet1 (name, popularity) values (\'Firm X\', 7);', $connection);
+   
+   executeInDb2('Drop table if exists PlaceOfInterestSet2;', $connection);
+   executeInDb2('Create Table PlaceOfInterestSet2 (name VARCHAR(200), popularity INTEGER);', $connection);
+   executeInDb2('insert into PlaceOfInterestSet2 (name, popularity) values (\'200 west\', 3);', $connection);
+   
+   executeInDb2('Drop table if exists PersonSet1;', $connection);
+   executeInDb2('Create Table PersonSet1 (ID INT, lastName_s1 VARCHAR(200), FirmID INT, ADDRESSID INT, NICKNAME VARCHAR(200));', $connection);
+   executeInDb2('insert into PersonSet1 (ID, lastName_s1, FirmID, ADDRESSID) values (1, \'Scott\', 1, 1);', $connection);
+   executeInDb2('insert into PersonSet1 (ID, lastName_s1, FirmID, ADDRESSID) values (2, \'Anand\', 1, 1);', $connection);
+   executeInDb2('insert into PersonSet1 (ID, lastName_s1, FirmID, ADDRESSID) values (3, \'Roberts\', 2, 2);', $connection);
+
+   executeInDb2('Drop table if exists PersonSet2;', $connection);
+   executeInDb2('Create Table PersonSet2 (ID INT, lastName_s2 VARCHAR(200), FirmID INT, ADDRESSID INT);', $connection);
+   executeInDb2('insert into PersonSet2 (ID, lastName_s2, FirmID, ADDRESSID) values (1, \'Taylor\', 1, 1);', $connection);
+   executeInDb2('insert into PersonSet2 (ID, lastName_s2, FirmID, ADDRESSID) values (2, \'Wright\', 1, 1);', $connection);
+
+   executeInDb('Drop table if exists PersonSet3;', $connection);
+   executeInDb('Create Table PersonSet3 (Set3ID INT, lastName_s3 VARCHAR(200), FirmID INT);', $connection);
+   executeInDb('insert into PersonSet3 (Set3ID, lastName_s3, FirmID) values (1, \'Taylor\', 1);', $connection);
+   executeInDb('insert into PersonSet3 (Set3ID, lastName_s3, FirmID) values (2, \'Wright\', 1);', $connection);
+   
+   executeInDb2('Drop table if exists FirmSet1;', $connection);
+   executeInDb2('Create Table FirmSet1(id INT, name VARCHAR(200),NICKNAME VARCHAR(200));', $connection);
+   executeInDb2('insert into FirmSet1 (id, name) values (1, \'Firm X\');', $connection);
+
+   executeInDb2('Drop table if exists FirmSet2;', $connection);
+   executeInDb2('Create Table FirmSet2(id INT, name VARCHAR(200));', $connection);
+   executeInDb2('insert into FirmSet2 (id, name) values (2, \'Firm A\');', $connection);
+
+   executeInDb2('Drop table if exists AddressSet1;', $connection);
+   executeInDb2('Create Table AddressSet1(id INT, name VARCHAR(200));', $connection);
+   executeInDb2('insert into AddressSet1 (id, name) values (1, \'New York\');', $connection);
+   
+   executeInDb2('Drop table if exists AddressSet2;', $connection);
+   executeInDb2('Create Table AddressSet2(id INT, name VARCHAR(200));', $connection);
+   executeInDb2('insert into AddressSet2 (id, name) values (2, \'Hoboken\');', $connection);
+   
+   executeInDb2('Drop table if exists Middle;', $connection);
+   executeInDb2('Create Table Middle (ID INT, FirmId INT);', $connection);
+   executeInDb2('insert into Middle (ID, FirmId) values (1, 1);', $connection);
+   executeInDb2('insert into Middle (ID, FirmId) values (2, 2);', $connection);
+   executeInDb2('insert into Middle (ID, FirmId) values (3, 3);', $connection);
+
+   executeInDb2('Drop table if exists PersonFirmSet1;', $connection);
+   executeInDb2('Create Table PersonFirmSet1 (ID INT, lastName_s1 VARCHAR(200), Firm1 VARCHAR(200));', $connection);
+   executeInDb2('insert into PersonFirmSet1 (ID, lastName_s1, Firm1) values (1, \'Scott\', \'Firm X\');', $connection);
+   executeInDb2('insert into PersonFirmSet1 (ID, lastName_s1, Firm1) values (2, \'Anand\', \'Firm X\');', $connection);
+   executeInDb2('insert into PersonFirmSet1 (ID, lastName_s1, Firm1) values (3, \'Roberts\', \'Firm A\');', $connection);
+
+   executeInDb2('Drop table if exists PersonFirmSet2;', $connection);
+   executeInDb2('Create Table PersonFirmSet2 (ID INT, lastName_s2 VARCHAR(200), Firm2 VARCHAR(200));', $connection);
+   executeInDb2('insert into PersonFirmSet2 (ID, lastName_s2, Firm2) values (1, \'Taylor\', \'Firm X\');', $connection);
+   executeInDb2('insert into PersonFirmSet2 (ID, lastName_s2, Firm2) values (2, \'Wright\', \'Firm X\');', $connection);
+
+   executeInDb2('Drop table if exists PersonExtension;', $connection);
+   executeInDb2('Create Table PersonExtension (ID INT, otherLastName VARCHAR(200));', $connection);
+   executeInDb2('insert into PersonExtension (ID, otherLastName) values (1, \'Scott\');', $connection);
+   executeInDb2('insert into PersonExtension (ID, otherLastName) values (2, \'Anand\');', $connection);
+   executeInDb2('insert into PersonExtension (ID, otherLastName) values (3, \'Roberts\');', $connection);
+
+   executeInDb2('Drop table if exists Firm;', $connection);
+   executeInDb2('Create Table Firm(id INT, name VARCHAR(200));', $connection);
+   executeInDb2('insert into Firm (id, name) values (1, \'Firm X\');', $connection);
+   executeInDb2('insert into Firm (id, name) values (2, \'Firm A\');', $connection);
+
+   executeInDb2('Drop table if exists PersonFirmSet1Firm;', $connection);
+   executeInDb2('Create Table PersonFirmSet1Firm(id INT, FirmJ1 VARCHAR(200));', $connection);
+   executeInDb2('insert into PersonFirmSet1Firm (id, FirmJ1) values (1, \'Firm X\');', $connection);
+   executeInDb2('insert into PersonFirmSet1Firm (id, FirmJ1) values (2, \'Firm X\');', $connection);
+   executeInDb2('insert into PersonFirmSet1Firm (id, FirmJ1) values (3, \'Firm A\');', $connection);
+
+   executeInDb2('Drop table if exists PersonMaster;', $connection);
+   executeInDb2('Create Table PersonMaster (ID INT, lastName VARCHAR(200), FirmID INT);', $connection);
+   executeInDb2('insert into PersonMaster (ID, lastName, FirmID) values (1, \'Scott\', 1);', $connection);
+   executeInDb2('insert into PersonMaster (ID, lastName, FirmID) values (2, \'Wright\', 2);', $connection);
+
+   executeInDb2('Drop table if exists PersonAdditional;', $connection);
+   executeInDb2('Create Table PersonAdditional (ID INT, extrainfo VARCHAR(200), otherName VARCHAR(200));', $connection);
+   executeInDb2('insert into PersonAdditional (ID, extrainfo, otherName) values (1, \'Not Available\', \'GDPR Redacted\');', $connection);
+   executeInDb2('insert into PersonAdditional (ID, extrainfo, otherName) values (2, \'Not Available\', \'GDPR Redacted\');', $connection);
+
+   executeInDb2('Drop table if exists firmExtension;', $connection);
+   executeInDb2('create Table firmExtension (firmId INT, legalName VARCHAR(200), establishedDate DATE)', $connection);
+   executeInDb2('insert into firmExtension(firmId, legalName, establishedDate) values(1,\'FirmA\',\'2013-12-01\')', $connection);
+   executeInDb2('insert into firmExtension(firmId, legalName, establishedDate) values(2,\'FirmB\',\'2013-12-01\')', $connection);
+   executeInDb2('insert into firmExtension(firmId, legalName, establishedDate) values(3,\'FirmC\',\'2013-12-02\')', $connection);
+   executeInDb2('insert into firmExtension(firmId, legalName, establishedDate) values(4,\'FirmD\',\'2013-12-02\')', $connection);
+   executeInDb2('insert into firmExtension(firmId, legalName, establishedDate) values(5,\'FirmE\',\'2013-12-02\')', $connection);
+   
+   executeInDb2('Drop table if exists midTable;', $connection);
+   executeInDb2('create Table midTable (personId INT, firmId INT, extra VARCHAR(200))', $connection);
+   executeInDb2('insert into midTable(personId, firmId, extra) values(1,1,\'extraA\' )' , $connection);
+   executeInDb2('insert into midTable(personId, firmId, extra) values(2,2,\'extraB\' )' , $connection);
+   executeInDb2('insert into midTable(personId, firmId, extra) values(3,3,\'extraC\' )' , $connection);
+   executeInDb2('insert into midTable(personId, firmId, extra) values(4,4,\'extraD\' )' , $connection);
+   executeInDb2('insert into midTable(personId, firmId, extra) values(5,5,\'extraE\' )' , $connection);
+   executeInDb2('insert into midTable(personId, firmId, extra) values(11,1,\'extraF\' )' , $connection);
+   executeInDb2('insert into midTable(personId, firmId, extra) values(14,2,\'extraG\' )' , $connection);
+   
+   executeInDb2('Drop table if exists PersonExtensionT1;', $connection);
+   executeInDb2('create Table PersonExtensionT1 (ID INT, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), birthdate DATE)', $connection);
+   executeInDb2('insert into PersonExtensionT1(ID, FIRSTNAME, LASTNAME, birthdate) values(1,\'A\', \'LastName Ext1A\',\'2013-12-01\')', $connection);
+   executeInDb2('insert into PersonExtensionT1(ID, FIRSTNAME, LASTNAME, birthdate) values(2,\'B\', \'LastName Ext1B\',\'2013-12-01\')', $connection);
+   executeInDb2('insert into PersonExtensionT1(ID, FIRSTNAME, LASTNAME, birthdate) values(3,\'C\', \'LastName Ext1C\',\'2013-12-02\')', $connection);
+   executeInDb2('insert into PersonExtensionT1(ID, FIRSTNAME, LASTNAME, birthdate) values(11,\'D\', \'LastName Ext1D\',\'2013-12-02\')', $connection);
+   executeInDb2('insert into PersonExtensionT1(ID, FIRSTNAME, LASTNAME, birthdate) values(12,\'E\', \'LastName Ext1E\',\'2013-12-02\')', $connection);
+   
+   executeInDb2('Drop table if exists PersonExtensionT2;', $connection);
+   executeInDb2('create Table PersonExtensionT2 (ID INT, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), birthdate DATE)', $connection);
+   executeInDb2('insert into PersonExtensionT2(ID, FIRSTNAME, LASTNAME, birthdate) values(4,\'A2\', \'LastName Ext2A\',\'2013-12-01\')', $connection);
+   executeInDb2('insert into PersonExtensionT2(ID, FIRSTNAME, LASTNAME, birthdate) values(5,\'B2\', \'LastName Ext2B\',\'2013-12-01\')', $connection);
+   executeInDb2('insert into PersonExtensionT2(ID, FIRSTNAME, LASTNAME, birthdate) values(13,\'C2\', \'LastName Ext2C\',\'2013-12-02\')', $connection);
+   executeInDb2('insert into PersonExtensionT2(ID, FIRSTNAME, LASTNAME, birthdate) values(14,\'D2\', \'LastName Ext2D\',\'2013-12-02\')', $connection);
+   executeInDb2('insert into PersonExtensionT2(ID, FIRSTNAME, LASTNAME, birthdate) values(15,\'E2\', \'LastName Ext2E\',\'2013-12-02\')', $connection);
+   
+   executeInDb2('Drop table if exists TEMPORALENTITYSET1;', $connection);
+   executeInDb2('Create Table TEMPORALENTITYSET1 (ID INT, name_s1 VARCHAR(200), FirmID INT, ADDRESSID INT, SNAPSHOT_DATE DATE);', $connection);
+   executeInDb2('insert into TEMPORALENTITYSET1 (ID, name_s1, FirmID, ADDRESSID, SNAPSHOT_DATE) values (1, \'Scott\', 1, 1,\'2019-01-01\');', $connection);
+   executeInDb2('insert into TEMPORALENTITYSET1 (ID, name_s1, FirmID, ADDRESSID, SNAPSHOT_DATE) values (2, \'Anand\', 1, 1,\'2019-01-01\');', $connection);
+   executeInDb2('insert into TEMPORALENTITYSET1 (ID, name_s1, FirmID, ADDRESSID, SNAPSHOT_DATE) values (3, \'Roberts\', 1, 1,\'2019-01-01\');', $connection);
+
+   executeInDb2('Drop table if exists TEMPORALENTITYSET2;', $connection);
+   executeInDb2('Create Table TEMPORALENTITYSET2 (ID INT, name_s2 VARCHAR(200), FirmID INT, ADDRESSID INT, SNAPSHOT_DATE DATE);', $connection);
+   executeInDb2('insert into TEMPORALENTITYSET2 (ID, name_s2, FirmID, ADDRESSID, SNAPSHOT_DATE) values (1, \'Taylor\', 2, 2,\'2019-01-01\');', $connection);
+   executeInDb2('insert into TEMPORALENTITYSET2 (ID, name_s2, FirmID, ADDRESSID, SNAPSHOT_DATE) values (2, \'Wright\', 2, 2,\'2019-01-01\');', $connection);
+   
+   meta::relational::functions::toDDL::dropAndCreateTableInDb(myDB, 'ApplicationsSet1',$connection);
+   executeInDb2('insert into ApplicationsSet1 (date,personID, firstName_s1,lastName_s1,nickName_s1, firmID,firm_legalName_s1,firm_nickName_s1) values (\'2016-01-01\',1, \'firstName_s1\',\'lastName_s1\',\'nickName_s1\', 1,\'firm_legalName_s1\',\'firm_nickName_s1\');', $connection);
+  
+   meta::relational::functions::toDDL::dropAndCreateTableInDb(myDB, 'ApplicationsSet2',$connection);
+   executeInDb2('insert into ApplicationsSet2  (date, firstName,lastName,nickName, firm_legalName,firm_nickName) values (\'2016-01-01\', \'firstName\',\'lastName\',\'nickName\', \'firm_legalName\',\'firm_nickName\');', $connection);
+   
+   true;
+}
+
+###Relational
+Database meta::relational::tests::mapping::union::unionOfViewsDb
+(
+   Table PersonExtensionT1
+   (
+      ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), birthdate DATE
+   )
+   
+   Table PersonExtensionT2
+   (
+      ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), birthdate DATE
+   )
+   
+   Table firmExtension
+   (
+      firmId INT PRIMARY KEY, legalName VARCHAR(200), establishedDate DATE
+   )
+   
+   Table midTable
+   (
+      personId INT PRIMARY KEY, firmId Int, extra VARCHAR(20)
+   )
+   
+   View midTableView
+   (
+      person: midTable.personId PRIMARY KEY ,
+      firm: midTable.firmId
+   )
+   
+   View PersonExtensionView1
+   (
+      id:  PersonExtensionT1.ID  PRIMARY KEY,
+      firstName: PersonExtensionT1.FIRSTNAME,
+      lastName: PersonExtensionT1.LASTNAME,
+      birthdate: PersonExtensionT1.birthdate
+   )
+   
+   View PersonExtensionView2
+   (
+      id:  PersonExtensionT2.ID  PRIMARY KEY,
+      firstName: PersonExtensionT2.FIRSTNAME,
+      lastName: PersonExtensionT2.LASTNAME,
+      birthdate: PersonExtensionT2.birthdate
+   )
+   
+   Join Firm_midTableView( firmExtension.firmId= midTableView.firm )
+   Join midTableView_PeView1( midTableView.person = PersonExtensionView1.id)
+   Join midTableView_PeView2( midTableView.person = PersonExtensionView2.id)
+)
+
+###Relational
+Database meta::relational::tests::mapping::union::myDB
+(
+  
+   Table PersonSet1
+    (
+        ID INT PRIMARY KEY,
+        firstName_s1 VARCHAR(200),
+        lastName_s1 VARCHAR(200),
+        FirmID INT,
+        ADDRESSID INT,
+        nickName VARCHAR(200)
+    )
+   
+    Table PersonExtension
+    (
+       ID INT PRIMARY KEY,
+       otherLastName VARCHAR(200)
+    )
+
+    Table PersonSet2
+    (
+        ID INT PRIMARY KEY,
+        firstName_s2 VARCHAR(200),
+        lastName_s2 VARCHAR(200),
+        ADDRESSID INT,
+        FirmID INT
+    )
+
+     Table PersonSet3
+    (
+        Set3ID INT PRIMARY KEY,
+        lastName_s3 VARCHAR(200),
+        FirmID INT
+    )
+   
+    Table PersonSet4
+    (
+        ID INT PRIMARY KEY,
+        firstName_s1 VARCHAR(200),
+        lastName_s1 VARCHAR(200),
+        FirmID_1 INT,
+        FirmID_2 INT
+    )
+   
+    Table Firm
+    (
+        ID INT PRIMARY KEY,
+        name VARCHAR(200)      
+    )
+
+    Table FirmSet1
+    (
+        ID INT PRIMARY KEY,
+        name VARCHAR(200),
+        nickName VARCHAR(200)
+    )
+
+    Table FirmSet2
+    (
+        ID INT PRIMARY KEY,
+        name VARCHAR(200)
+    )
+   
+    Table AddressSet1
+    (
+        ID INT PRIMARY KEY,
+        name VARCHAR(200)
+    )
+
+    Table AddressSet2
+    (
+        ID INT PRIMARY KEY,
+        name VARCHAR(200)
+    )
+
+    Table PersonFirmSet1
+    (
+        ID INT PRIMARY KEY,
+        lastName_s1 VARCHAR(200),
+        Firm1 VARCHAR(200)
+    )
+
+    Table PersonFirmSet1Firm
+    (
+        ID INT PRIMARY KEY,
+        FirmJ1 VARCHAR(200)
+    )
+
+    Table PersonFirmSet2
+    (
+        ID INT PRIMARY KEY,
+        lastName_s2 VARCHAR(200),
+        Firm2 VARCHAR(200)
+    )
+
+    Table Middle
+    (
+        ID INT PRIMARY KEY,
+        FirmID INT PRIMARY KEY
+    )
+
+    Table ApplicationsSet1
+    (
+        date date PRIMARY KEY,        
+        personID int PRIMARY KEY,
+        firstName_s1 VARCHAR(200),
+        lastName_s1 VARCHAR(200),   
+        nickName_s1 VARCHAR(200),
+        person_address_s1 VARCHAR(200),
+        firmID int PRIMARY KEY,
+        firm_legalName_s1 VARCHAR(200),
+        firm_nickName_s1 VARCHAR(200),
+        firm_address_s1 VARCHAR(200)
+    )
+   
+       
+    Table ApplicationsSet2
+    (
+        date date PRIMARY KEY,        
+        firstName VARCHAR(200) PRIMARY KEY,
+        lastName VARCHAR(200) PRIMARY KEY,   
+        nickName VARCHAR(200),
+        person_address_s2 VARCHAR(200),
+        firm_legalName VARCHAR(200) PRIMARY KEY,
+        firm_nickName VARCHAR(200),
+        firm_address_s2 VARCHAR(200)
+    )
+
+    Table PersonMaster
+    (
+        ID INT PRIMARY KEY,
+        firstName VARCHAR(200),
+        lastName VARCHAR(200),
+        FirmID INT
+    )
+
+    Table PersonAdditional
+    (
+        ID INT PRIMARY KEY,
+        extrainfo VARCHAR(200),
+        otherName VARCHAR(200)
+    )
+   
+    Table TemporalEntitySet1
+    (
+        milestoning(
+           business(BUS_SNAPSHOT_DATE = SNAPSHOT_DATE)
+        )
+        ID INT PRIMARY KEY,
+        name_s1 VARCHAR(200) PRIMARY KEY,
+        FirmID INT,
+        ADDRESSID INT,
+        SNAPSHOT_DATE DATE
+    )
+   
+    Table TemporalEntitySet2
+    (
+        milestoning(
+           business(BUS_SNAPSHOT_DATE = SNAPSHOT_DATE)
+        )
+        ID INT PRIMARY KEY,
+        name_s2 VARCHAR(200) PRIMARY KEY,
+        ADDRESSID INT,
+        FirmID INT,
+        SNAPSHOT_DATE DATE
+    )
+   
+   Join firm1_person1_join(FirmSet1.ID=PersonSet1.FirmID)
+   Join firm2_person2_join(FirmSet2.ID=PersonSet2.FirmID)
+   
+   Join person_person_join(PersonSet1.lastName_s1={target}.lastName_s1)
+   Join person_person2_join(PersonSet1.lastName_s1=PersonSet2.lastName_s2)
+   Join person2_person_join(PersonSet2.lastName_s2=PersonSet1.lastName_s1)
+   Join person2_person2_join(PersonSet2.lastName_s2={target}.lastName_s2)
+
+   Join PersonSet1Middle(PersonSet1.FirmID = Middle.ID)
+   Join MiddleFirm(Middle.FirmID = Firm.ID)
+
+   Join PersonSet1PersonFirmSet1Firm(PersonFirmSet1.ID = PersonFirmSet1Firm.ID)
+
+   Join PersonSet1Firm(PersonSet1.FirmID = Firm.ID)
+   Join PersonSet2Firm(PersonSet2.FirmID = Firm.ID)
+   Join PersonSet3Firm(PersonSet3.FirmID = Firm.ID)
+   Join PersonSet4Firm1(PersonSet4.FirmID_1 = Firm.ID)
+   Join PersonSet4Firm2(PersonSet4.FirmID_2 = Firm.ID)
+   
+   Join PersonSet1AddressSet1(PersonSet1.FirmID = AddressSet1.ID)
+   Join PersonSet1AddressSet2(PersonSet1.FirmID = AddressSet2.ID)
+   Join PersonSet2AddressSet1(PersonSet2.FirmID = AddressSet1.ID)
+   Join PersonSet2AddressSet2(PersonSet2.FirmID = AddressSet2.ID)
+   Join TemporalEntitySet1AddressSet1_withLastName(TemporalEntitySet1.ADDRESSID = AddressSet1.ID and greaterThan(length(TemporalEntitySet1.name_s1), 0))
+   Join TemporalEntitySet2AddressSet2_withLastName(TemporalEntitySet2.ADDRESSID = AddressSet2.ID and greaterThan(length(TemporalEntitySet2.name_s2), 0))
+   
+   Join PersonSet1PersonAdditional(PersonSet1.ID = PersonAdditional.ID)
+   
+   Join PersonSet1PersonExtension(PersonSet1.ID = PersonExtension.ID)
+
+   Join PersonSet1FirmSet1(PersonSet1.FirmID = FirmSet1.ID)
+   Join PersonSet2FirmSet1(PersonSet2.FirmID = FirmSet1.ID)
+   Join PersonSet1FirmSet2(PersonSet1.FirmID = FirmSet2.ID)
+   Join PersonSet2FirmSet2(PersonSet2.FirmID = FirmSet2.ID)
+   Join TemporalEntitySet1FirmSet1(TemporalEntitySet1.FirmID = FirmSet1.ID)
+   Join TemporalEntitySet2FirmSet2(TemporalEntitySet2.FirmID = FirmSet2.ID)
+
+   Join ApplicationPerson(ApplicationsSet1.personID = PersonSet1.ID)
+   Join ApplicationFirm(ApplicationsSet1.firmID = FirmSet1.ID)
+
+   Join PersonMasterPersonAdditional(PersonMaster.ID = PersonAdditional.ID)
+   Join PersonMasterFirmSet1(PersonMaster.FirmID = FirmSet1.ID)
+   Join PersonMasterFirmSet2(PersonMaster.FirmID = FirmSet2.ID)
+
+   Filter GsPersonFilter1(PersonSet1.FirmID = 1)
+   Filter GsPersonFilter2(PersonSet2.FirmID = 1)
+
+   View FIRM_TO_PERSON_VIEW (~groupBy (ApplicationsSet1.personID,ApplicationsSet1.firmID) PERSON_ID: ApplicationsSet1.personID PRIMARY KEY,FIRM_ID: ApplicationsSet1.firmID PRIMARY KEY, DATE: max(ApplicationsSet1.date))
+
+   Join APP_TO_FIRM_JOIN(FirmSet1.ID = FIRM_TO_PERSON_VIEW.FIRM_ID)
+   Join FIRM_TO_PERSON_JOIN1( FIRM_TO_PERSON_VIEW.PERSON_ID = PersonSet1.ID)
+   Join FIRM_TO_PERSON_JOIN2( FIRM_TO_PERSON_VIEW.PERSON_ID = PersonSet2.ID)
+)
+
+###Mapping
+import meta::relational::tests::mapping::union::*;
+import meta::relational::tests::model::simple::*;
+Mapping meta::relational::tests::mapping::union::unionOfViews
+(
+ 
+   *PersonExtension[ext] : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(e1, e2)
+   }
+   
+   FirmExtension: Relational
+   {
+      scope([unionOfViewsDb] firmExtension)
+     (
+      legalName: legalName,
+      establishedDate: establishedDate,
+      employeesExt[e1]: @Firm_midTableView> (INNER) @midTableView_PeView1,
+      employeesExt[e2]: @Firm_midTableView> (INNER) @midTableView_PeView2
+     )
+   }
+   
+   PersonExtension[e1]: Relational
+   {
+     scope([unionOfViewsDb] PersonExtensionView1)
+     ( 
+        firstName: firstName,
+        lastName: lastName,
+        birthdate: birthdate
+
+     )
+   }
+   
+   PersonExtension[e2]: Relational
+   {
+     scope([unionOfViewsDb] PersonExtensionView2)
+     ( 
+        firstName: firstName,
+        lastName: lastName,
+        birthdate: birthdate
+     )
+   }
+)
+
+###Mapping
+import meta::relational::tests::mapping::union::*;
+import meta::relational::tests::model::simple::*;
+
+Mapping meta::relational::tests::mapping::union::chainedJoinsWithUnionsAndIsolation
+(
+   
+   *Firm : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(FirmSet1, FirmSet2)
+   }
+
+   *Person : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)
+   }
+
+
+   Firm[FirmSet1]: Relational
+   {
+      legalName: [myDB]FirmSet1.name,
+      employees[FirmSet1,set1]: [myDB]@firm1_person1_join
+   }
+   
+   Firm[FirmSet2]: Relational
+   {
+      legalName: [myDB]FirmSet2.name,
+      employees[FirmSet2,set2]:  [myDB]@firm2_person2_join
+   }
+
+   Person[set1] : Relational
+   {
+      lastName : [myDB]PersonSet1.lastName_s1,
+      firm[set1,FirmSet1] : [myDB]@PersonSet1FirmSet1
+   }
+
+   Person[set2] : Relational
+   {
+      lastName : [myDB]PersonSet2.lastName_s2,
+      firm[set2,FirmSet2] : [myDB]@PersonSet2FirmSet2
+   }   
+
+   
+)
+
+###Mapping
+import meta::relational::tests::mapping::union::*;
+import meta::relational::tests::model::simple::*;
+
+Mapping meta::relational::tests::mapping::union::unionMappingOverlappingPKAndFKColumns
+(
+   
+   *Firm : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(FirmSet1, FirmSet2)
+   }
+
+   *Person : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)
+   }
+
+
+
+   Firm[FirmSet1]: Relational
+   {
+      legalName: [myDB]FirmSet1.name,
+      employees[FirmSet1,set1]: [myDB]@firm1_person1_join
+   }
+   
+    Firm[FirmSet2]: Relational
+   {
+      legalName: [myDB]FirmSet2.name,
+      employees[FirmSet2,set2]:  [myDB]@firm2_person2_join
+   }
+
+   
+   Person[set1] : Relational
+   {
+      lastName : [myDB]PersonSet1.lastName_s1,
+      firm[set1,FirmSet1] : [myDB]@PersonSet1FirmSet1
+      
+   }
+
+   Person[set2] : Relational
+   {
+      lastName : [myDB]PersonSet2.lastName_s2,
+      firm[set2,FirmSet2] : [myDB]@PersonSet2FirmSet2
+      
+   }
+   
+)
+
+
+###Mapping
+import meta::relational::tests::mapping::union::*;
+import meta::relational::tests::model::simple::*;
+
+Mapping meta::relational::tests::mapping::union::unionMappingWithSelfJoin
+(
+   *Person : Operation
+            {
+               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)
+            }
+
+
+   Person[set1] : Relational
+            {
+               lastName :[myDB] PersonSet1.lastName_s1,
+               manager[set1]: [myDB]@person_person_join,
+               manager[set2]:[myDB] @person_person2_join
+            }
+
+   Person[set2] : Relational
+            {
+               lastName : [myDB]PersonSet2.lastName_s2,
+               manager[set1]: [myDB]@person2_person_join,
+               manager[set2]:[myDB] @person2_person2_join
+            }
+
+)
+
+###Mapping
+import meta::relational::tests::mapping::union::*;
+import meta::relational::tests::model::simple::*;
+
+Mapping meta::relational::tests::mapping::union::unionMapping
+(
+   *Person : Operation
+            {
+               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)
+            }
+
+
+   Person[set1] : Relational
+            {
+               lastName : [myDB]PersonSet1.lastName_s1,
+               firm : [myDB]@PersonSet1Firm
+            }
+
+   Person[set2] : Relational
+            {
+               lastName : [myDB]PersonSet2.lastName_s2,
+               firm : [myDB]@PersonSet2Firm
+            }
+
+   Firm : Relational
+          {
+             legalName : [myDB]Firm.name,
+             employees[set1]:[myDB]@PersonSet1Firm,
+             employees[set2]:[myDB]@PersonSet2Firm
+          }
+)
+
+###Mapping
+import meta::relational::tests::mapping::union::*;
+import meta::relational::tests::model::simple::*;
+
+Mapping meta::relational::tests::mapping::union::unionMappingWithAssociationMapping
+(
+   *Person : Operation
+            {
+               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)
+            }
+
+
+   Person[set1] : Relational
+            {
+               lastName : [myDB]PersonSet1.lastName_s1
+            }
+
+   Person[set2] : Relational
+            {
+               lastName : [myDB]PersonSet2.lastName_s2
+            }
+
+   Firm[fir1] : Relational
+          {
+             legalName : [myDB]Firm.name
+          }
+
+   Employment : Relational
+   {
+      AssociationMapping
+      (
+         employees[fir1,set1]:[myDB]@PersonSet1Firm,
+         employees[fir1,set2]:[myDB]@PersonSet2Firm,
+         firm[set1,fir1] : [myDB]@PersonSet1Firm,
+         firm[set2,fir1] : [myDB]@PersonSet2Firm
+      )
+   }
+)
+
+
+###Mapping
+import meta::relational::tests::mapping::union::*;
+import meta::relational::tests::model::simple::*;
+
+Mapping meta::relational::tests::mapping::union::unionMappingWithJoinInProperty
+(
+   *Person : Operation
+            {
+               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)   
+            }
+            
+
+   Person[set1] : Relational
+            {
+               ~mainTable [myDB]PersonSet1 
+               lastName : [myDB]@PersonSet1PersonExtension | PersonExtension.otherLastName,
+               otherNames : [myDB]@PersonSet1PersonExtension | concat('', PersonExtension.otherLastName),
+               firm : [myDB]@PersonSet1Firm
+            }
+            
+   Person[set2] : Relational
+            {
+               lastName : [myDB] PersonSet2.lastName_s2,
+               otherNames : [myDB] PersonSet2.lastName_s2,
+               firm : [myDB]@PersonSet2Firm
+            }
+            
+   Firm : Relational
+          {
+             legalName : [myDB]Firm.name,
+             employees[set1]:[myDB]@PersonSet1Firm,
+             employees[set2]:[myDB]@PersonSet2Firm
+          }
+)
+
+###Mapping
+import meta::relational::tests::mapping::union::*;
+import meta::relational::tests::model::simple::*;
+
+Mapping meta::relational::tests::mapping::union::unionMappingWithSameJoinInPropertyInBothUnions
+(
+
+   *Firm : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(FirmSet1, FirmSet2)
+   }
+
+   *Person : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)
+   }
+
+
+   Firm[FirmSet1]: Relational
+   {
+      legalName: [myDB]FirmSet1.name,
+      employees[FirmSet1,set1]: [myDB]@PersonMasterFirmSet1
+   }
+
+   Firm[FirmSet2]: Relational
+   {
+      legalName: [myDB]FirmSet2.name,
+      employees[FirmSet2,set2]:  [myDB]@PersonMasterFirmSet2
+   }
+
+   Person[set1] : Relational
+   {
+      firstName : [myDB]PersonMaster.firstName,
+      lastName : [myDB]PersonMaster.lastName,
+      extraInformation : [myDB]@PersonMasterPersonAdditional | PersonAdditional.extrainfo,
+      otherNames: [myDB]@PersonMasterPersonAdditional | PersonAdditional.otherName,
+      firm[set1,FirmSet1] : [myDB]@PersonMasterFirmSet1
+   }
+
+   Person[set2] : Relational
+   {
+      firstName : [myDB]PersonMaster.firstName,
+      lastName : [myDB]PersonMaster.lastName,
+      extraInformation : [myDB]@PersonMasterPersonAdditional | PersonAdditional.extrainfo,
+      otherNames: [myDB]@PersonMasterPersonAdditional | PersonAdditional.otherName,
+      firm[set2,FirmSet2] : [myDB]@PersonMasterFirmSet2
+   }
+
+
+)
+
+###Mapping
+import meta::relational::tests::mapping::union::*;
+import meta::relational::tests::model::simple::*;
+
+Mapping meta::relational::tests::mapping::union::unionMappingWithJoinSequenceInProperty
+(
+   *Person : Operation
+            {
+               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)   
+            }
+            
+
+   Person[set1] : Relational
+            {
+               ~mainTable [myDB]PersonSet1 
+               lastName : [myDB]@PersonSet1PersonExtension | PersonExtension.otherLastName,
+               firm : [myDB]@PersonSet1Firm
+            }
+            
+   Person[set2] : Relational
+            {
+               lastName : [myDB]PersonSet2.lastName_s2,
+               firm : [myDB]@PersonSet2Firm
+            }
+            
+   Firm : Relational
+          {
+             legalName : [myDB]Firm.name,
+             employees[set1]:[myDB]@MiddleFirm > [myDB]@PersonSet1Middle,
+             employees[set2]:[myDB]@PersonSet2Firm
+          }
+)
+
+
+###Mapping
+import meta::relational::tests::mapping::union::*;
+import meta::relational::tests::model::simple::*;
+
+Mapping meta::relational::tests::mapping::union::unionMappingWithEmbeddedPropertyOneThroughJoin
+(
+   *Person : Operation
+            {
+               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)   
+            }
+            
+
+   Person[set1] : Relational
+            {
+               lastName : [myDB]PersonFirmSet1.lastName_s1,
+               firm (
+                  legalName : [myDB]@PersonSet1PersonFirmSet1Firm | PersonFirmSet1Firm.FirmJ1
+               )
+            }
+            
+   Person[set2] : Relational
+            {
+               lastName : [myDB]PersonFirmSet2.lastName_s2,
+               firm (
+                  legalName : [myDB]PersonFirmSet2.Firm2
+               )
+            }
+)
+
+###Mapping
+import meta::relational::tests::mapping::union::*;
+import meta::relational::tests::model::simple::*;
+
+Mapping meta::relational::tests::mapping::union::unionMappingWithEmbeddedProperty
+(
+   *Person : Operation
+            {
+               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)   
+            }
+            
+
+   Person[set1] : Relational
+            {
+               lastName : [myDB]PersonFirmSet1.lastName_s1,
+               firm (
+                  legalName : [myDB]PersonFirmSet1.Firm1
+               )
+            }
+            
+   Person[set2] : Relational
+            {
+               lastName : [myDB]PersonFirmSet2.lastName_s2,
+               firm (
+                  legalName : [myDB]PersonFirmSet2.Firm2
+               )
+            }
+)
+
+###Mapping
+import meta::relational::tests::mapping::union::*;
+import meta::relational::tests::model::simple::*;
+
+Mapping meta::relational::tests::mapping::union::unionMappingWithEmbeddedProperty2
+(
+   *Person : Operation
+            {
+               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)   
+            }
+
+   *Firm : Operation
+            {
+               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(firm_set1, firm_set2)   
+            }
+
+
+   Person[set1] : Relational
+            {
+               firstName : [myDB]PersonSet1.firstName_s1,
+               lastName : [myDB]PersonSet1.lastName_s1,
+               bridge
+               (
+                  firm[firm_set1] : [myDB]@PersonSet1FirmSet1,
+                  firm[firm_set2] : [myDB]@PersonSet1FirmSet2
+               )
+            }
+            
+   Person[set2] : Relational
+            {
+               firstName : [myDB]PersonSet2.firstName_s2,
+               lastName : [myDB]PersonSet2.lastName_s2,
+               bridge
+               (
+                  firm[firm_set1] : [myDB]@PersonSet2FirmSet1,
+                  firm[firm_set2] : [myDB]@PersonSet2FirmSet2
+               )
+            }
+            
+   Firm[firm_set1] : Relational
+          {
+              legalName : [myDB]FirmSet1.name,
+              bridge
+              (
+                  employees[set1]:[myDB]@PersonSet1FirmSet1,
+                  employees[set2]:[myDB]@PersonSet2FirmSet1
+              )
+          }
+
+   Firm[firm_set2]  : Relational
+          {
+             legalName : [myDB]FirmSet2.name,
+             bridge
+             (
+                employees[set1]:[myDB]@PersonSet1FirmSet2,
+                employees[set2]:[myDB]@PersonSet2FirmSet2
+             )
+          }
+)
+
+###Mapping
+import meta::relational::tests::mapping::union::*;
+import meta::relational::tests::model::simple::*;
+
+Mapping meta::relational::tests::mapping::union::unionToUnionMapping
+(
+   *Person : Operation
+            {
+               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)   
+            }
+
+   *Firm : Operation
+            {
+               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(firm_set1, firm_set2)   
+            }
+
+   *Address : Operation
+            {
+               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(a_set1, a_set2)
+            }   
+
+   Person[set1] : Relational
+            {
+               lastName : [myDB]PersonSet1.lastName_s1,
+               firm[firm_set1] : [myDB]@PersonSet1FirmSet1,
+               firm[firm_set2] : [myDB]@PersonSet1FirmSet2,
+               address[a_set1] : [myDB]@PersonSet1AddressSet1,
+               address[a_set2] : [myDB]@PersonSet1AddressSet2
+            }
+            
+   Person[set2] : Relational
+            {
+               lastName : [myDB]PersonSet2.lastName_s2,
+               firm[firm_set1] : [myDB]@PersonSet2FirmSet1,
+               firm[firm_set2] : [myDB]@PersonSet2FirmSet2,
+               address[a_set1] : [myDB]@PersonSet2AddressSet1,
+               address[a_set2] : [myDB]@PersonSet2AddressSet2
+            }
+            
+   Firm[firm_set1] : Relational
+          {
+             legalName : [myDB]FirmSet1.name,
+             employees[set1]:[myDB]@PersonSet1FirmSet1,
+             employees[set2]:[myDB]@PersonSet2FirmSet1
+          }
+
+   Firm[firm_set2]  : Relational
+          {
+             legalName : [myDB]FirmSet2.name,
+             employees[set1]:[myDB]@PersonSet1FirmSet2,
+             employees[set2]:[myDB]@PersonSet2FirmSet2
+          }
+   
+   Address[a_set1] : Relational
+             {
+                name : [myDB]AddressSet1.name
+             }
+   Address[a_set2] : Relational
+             {
+                name : [myDB]AddressSet2.name
+             }   
+)
+
+Mapping meta::relational::tests::mapping::union::unionToUnionMappingForChainedUnions
+(
+   *TemporalEntityWithAddress : Operation
+            {
+               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)   
+            }
+
+   *Firm : Operation
+            {
+               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(firm_set1, firm_set2)   
+            }
+
+   *Address : Operation
+            {
+               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(a_set1, a_set2)
+            }   
+
+   Person : Relational
+            {
+               lastName : [myDB]PersonSet1.lastName_s1,
+               firm[firm_set1] : [myDB]@PersonSet1FirmSet1,
+               firm[firm_set2] : [myDB]@PersonSet1FirmSet2
+            }
+   
+   TemporalEntityWithAddress[set1] : Relational
+            {
+               name : [myDB]TemporalEntitySet1.name_s1,
+               address[a_set1] : [myDB]@TemporalEntitySet1AddressSet1_withLastName
+            }
+            
+   TemporalEntityWithAddress[set2] : Relational
+            {
+               name : [myDB]TemporalEntitySet2.name_s2,
+               address[a_set2] : [myDB]@TemporalEntitySet2AddressSet2_withLastName
+            }
+            
+   Firm[firm_set1] : Relational
+          {
+             legalName : [myDB]FirmSet1.name,
+             temporalEntityWithAddress[set1]:[myDB]@TemporalEntitySet1FirmSet1
+          }
+
+   Firm[firm_set2]  : Relational
+          {
+             legalName : [myDB]FirmSet2.name,
+             temporalEntityWithAddress[set2]:[myDB]@TemporalEntitySet2FirmSet2
+          }
+   
+   Address[a_set1] : Relational
+             {
+                name : [myDB]AddressSet1.name
+             }
+   Address[a_set2] : Relational
+             {
+                name : [myDB]AddressSet2.name
+             }   
+)
+
+###Mapping
+import meta::relational::tests::mapping::union::*;
+import meta::relational::tests::model::simple::*;
+
+Mapping meta::relational::tests::mapping::union::unionToUnionMapping2
+(
+   Person[set1] : Relational
+            {
+               lastName : [myDB]PersonSet1.lastName_s1,
+               firm[firm_set1] : [myDB]@PersonSet1FirmSet1,
+               firm[firm_set2] : [myDB]@PersonSet1FirmSet2,
+               extraInformation : [myDB]@PersonSet1PersonAdditional | PersonAdditional.extrainfo
+            }   
+   
+   *Firm : Operation
+            {
+               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(firm_set1, firm_set2)   
+            }
+
+            
+   Firm[firm_set1] : Relational
+          {
+             legalName : [myDB]FirmSet1.name,
+             employees[set1]:[myDB]@PersonSet1FirmSet1,
+             employees[set2]:[myDB]@PersonSet2FirmSet1
+          }
+
+   Firm[firm_set2]  : Relational
+          {
+             legalName : [myDB]FirmSet2.name,
+             employees[set1]:[myDB]@PersonSet1FirmSet2,
+             employees[set2]:[myDB]@PersonSet2FirmSet2
+          }
+)
+
+###Mapping
+import meta::relational::tests::mapping::union::*;
+import meta::relational::tests::model::simple::*;
+
+Mapping meta::relational::tests::mapping::union::unionMappingWithFunction
+(
+   *Person : Operation
+            {
+               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)   
+            }
+            
+
+   Person[set1] : Relational
+            {
+               lastName : concat('1', [myDB]PersonSet1.lastName_s1),
+               firm : [myDB]@PersonSet1Firm
+            }
+            
+   Person[set2] : Relational
+            {
+               lastName : concat('2', [myDB]PersonSet2.lastName_s2),
+               firm : [myDB]@PersonSet2Firm
+            }
+)
+
+###Mapping
+import meta::relational::tests::mapping::union::*;
+import meta::relational::tests::model::simple::*;
+
+Mapping meta::relational::tests::mapping::union::unionMappingWithLongPropertyMapping
+(
+   *Person : Operation
+            {
+               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)   
+            }
+            
+
+   Person[set1] : Relational
+            {
+               lastName : concat('thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters',concat('ForTestPurposesOnly', [myDB]PersonSet1.lastName_s1)),
+               firm : [myDB]@PersonSet1Firm
+            }
+            
+   Person[set2] : Relational
+            {
+               lastName : concat('thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters',concat('ForTestPurposesOnly', [myDB]PersonSet2.lastName_s2)),
+               firm : [myDB]@PersonSet2Firm
+            }
+)
+
+
+###Mapping
+import meta::relational::tests::mapping::union::*;
+import meta::relational::tests::model::simple::*;
+
+Mapping meta::relational::tests::mapping::union::unionMappingWithFilter
+(
+   *Person : Operation
+            {
+               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)   
+            }
+            
+
+   Person[set1] : Relational
+            {
+               ~filter [myDB]GsPersonFilter1
+               
+               lastName : [myDB]PersonSet1.lastName_s1
+            }
+            
+   Person[set2] : Relational
+            {
+               ~filter [myDB]GsPersonFilter2
+               
+               lastName : [myDB]PersonSet2.lastName_s2
+            }
+)
+
+
+###Mapping
+import meta::relational::tests::mapping::union::*;
+import meta::relational::tests::model::simple::*;
+
+Mapping meta::relational::tests::mapping::union::unionMappingWithConstant
+(
+   *Person : Operation
+            {
+               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)   
+            }
+            
+
+   Person[set1] : Relational
+            {
+               firstName : 'Bob',
+               lastName : [myDB]PersonSet1.lastName_s1
+            }
+            
+   Person[set2] : Relational
+            {
+               firstName : 'George',
+               lastName : [myDB]PersonSet2.lastName_s2
+               
+            }
+)
+
+
+###Mapping
+import meta::relational::tests::mapping::union::*;
+import meta::relational::tests::model::simple::*;
+
+Mapping meta::relational::tests::mapping::union::unionMappingWithEmbeddedPropertyWithConstant
+(
+   *Person : Operation
+            {
+               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)   
+            }
+            
+
+   Person[set1] : Relational
+            {
+               lastName : [myDB]PersonFirmSet1.lastName_s1,
+               firm (
+                  legalName : 'Wendys'
+               )
+            }
+            
+   Person[set2] : Relational
+            {
+               lastName : [myDB]PersonFirmSet2.lastName_s2,
+               firm (
+                  legalName : 'Vogue'
+               )
+            }
+)
+
+###Mapping
+import meta::relational::tests::mapping::union::*;
+import meta::relational::tests::model::simple::*;
+
+Mapping meta::relational::tests::mapping::union::unionMappingWithEmbeddedPropertyWithColumnsWithSameNames
+(
+   *Application : Operation
+            {
+               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)   
+            }
+            
+   Application[set1] : Relational
+            {
+               
+               source: 'agency1',
+               date : [myDB]ApplicationsSet1.date,
+               applicant (
+                   firstName : [myDB]ApplicationsSet1.firstName_s1,
+                   lastName : [myDB]ApplicationsSet1.lastName_s1,
+                   nickName : [myDB]ApplicationsSet1.nickName_s1,
+                   address
+                   (
+                     name:[myDB]ApplicationsSet1.person_address_s1
+                   )
+                   ),
+               firm (
+                  legalName : [myDB]ApplicationsSet1.firm_legalName_s1,
+                  nickName : [myDB]ApplicationsSet1.firm_nickName_s1,
+                  address
+                   (
+                     name:[myDB]ApplicationsSet1.firm_address_s1
+                   )
+               )
+            }
+            
+   Application[set2] : Relational
+            {
+               source: 'agency2',
+               date : [myDB]ApplicationsSet2.date,
+               applicant (
+                   firstName : [myDB]ApplicationsSet2.firstName,
+                   lastName : [myDB]ApplicationsSet2.lastName,
+                   nickName : [myDB]ApplicationsSet2.nickName,
+                  address
+                   (
+                     name:[myDB]ApplicationsSet2.person_address_s2
+                   )
+               ),
+               firm (
+                  legalName : 'vogue',
+                  nickName : [myDB]ApplicationsSet2.firm_nickName,
+                  address
+                   (
+                     name:[myDB]ApplicationsSet2.firm_address_s2
+                   )
+               )
+            }
+)
+
+###Mapping
+import meta::relational::tests::mapping::union::*;
+import meta::relational::tests::model::simple::*;
+
+Mapping meta::relational::tests::mapping::union::mappingWithColumnsWithSameNames
+(
+  
+            
+   Application : Relational
+            {              
+               source:    'agency1',
+               date :     [myDB]ApplicationsSet1.date,
+               applicant: [myDB]@ApplicationPerson,
+               firm:      [myDB]@ApplicationFirm
+            }
+     
+   Person : Relational
+            {
+               firstName : 'Bob',
+               lastName :  [myDB]PersonSet1.lastName_s1,
+               nickName:   [myDB]PersonSet1.nickName
+            }
+  
+   Firm : Relational
+          {
+             legalName : [myDB]FirmSet1.name,
+             nickName:   [myDB]FirmSet1.nickName
+           }
+)
+
+
+
+###Mapping
+import meta::relational::tests::mapping::union::*;
+import meta::relational::tests::model::simple::*;
+
+Mapping meta::relational::tests::UnionViewJoinsMapping
+(
+    Firm : Relational
+    {
+       scope([myDB] FirmSet1 )
+
+       (
+          legalName : name,
+          nickName : nickName
+       )
+       ,employees[p1] : [myDB]@APP_TO_FIRM_JOIN > @FIRM_TO_PERSON_JOIN1
+       ,employees[p2] : [myDB]@APP_TO_FIRM_JOIN > @FIRM_TO_PERSON_JOIN2
+    }
+
+   *Person : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(p1, p2)
+   }
+
+   Person[p1] : Relational
+   {
+      lastName : [myDB]PersonSet1.lastName_s1,
+      age : [myDB]PersonSet1.ID
+   }
+
+   Person[p2] : Relational
+   {
+      lastName : [myDB]PersonSet2.lastName_s2,
+      age : [myDB]PersonSet2.ID
+   }
+)
+
+###Mapping
+import meta::relational::tests::mapping::union::*;
+import meta::relational::tests::model::simple::*;
+
+Mapping meta::relational::tests::mapping::union::unionToUnionMapping3
+(
+   Person[set1] : Relational
+            {
+               lastName : [myDB]PersonSet1.lastName_s1,
+               firstName : [myDB]PersonSet1.firstName_s1
+            }   
+   
+   *Firm : Operation
+            {
+               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(firm_set1, firm_set2)   
+            }
+
+   Firm[firm_set1] : Relational
+          {
+             legalName : [myDB]FirmSet1.name,
+             employees[set1]:[myDB]@PersonSet1FirmSet1
+          }
+
+   Firm[firm_set2]  : Relational
+          {
+             legalName : [myDB]FirmSet2.name
+          }
+)
+
+###Mapping
+import meta::relational::tests::mapping::union::*;
+import meta::relational::tests::model::simple::*;
+
+Mapping meta::relational::tests::mapping::union::unionToUnionMappingWithJoinToSameTableWithDiffKeys
+(
+   Firm[firm_set1] : Relational
+          {
+             legalName : [myDB]Firm.name,
+             employees[set1]:[myDB]@PersonSet4Firm1,
+             employees[set2]:[myDB]@PersonSet4Firm2
+          }
+   
+   *Person : Operation
+            {
+               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)   
+            }
+   
+   Person[set1] : Relational
+            {
+               +firmId:String[1] : [myDB]PersonSet4.FirmID_1,
+               firstName : [myDB]PersonSet4.firstName_s1
+            }   
+   
+   Person[set2] : Relational
+            {
+               +firmId:String[1] : [myDB]PersonSet4.FirmID_2,
+               firstName : [myDB]PersonSet4.firstName_s1
+            }   
+)

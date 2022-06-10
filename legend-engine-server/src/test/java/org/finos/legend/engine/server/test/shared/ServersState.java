@@ -35,10 +35,12 @@ public class ServersState
         {
             this.server.shutDown();
             this.metadataServer.shutDown();
-            this.H2Server.shutdown();
-            this.H2Server.stop();
-        }
-        catch (Exception e)
+            if (this.H2Server != null)
+            {
+                this.H2Server.shutdown();
+                this.H2Server.stop();
+            }
+        } catch (Exception e)
         {
             throw new RuntimeException(e);
         }

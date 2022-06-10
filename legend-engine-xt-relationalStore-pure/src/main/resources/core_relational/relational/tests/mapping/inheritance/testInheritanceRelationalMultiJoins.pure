@@ -1,0 +1,169 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::tests::mapping::inheritance::relational::*;
+import meta::relational::functions::asserts::*;
+import meta::relational::tests::mapping::inheritance::relational::multiJoins::*;
+import meta::relational::tests::model::inheritance::*;
+import meta::relational::tests::*;
+import meta::pure::profiles::*;
+import meta::pure::mapping::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::runtime::*;
+
+function <<test.BeforePackage>> meta::relational::tests::mapping::inheritance::relational::multiJoins::setUp():Boolean[1]
+{
+    meta::relational::tests::mapping::inheritance::relational::multiJoins::createTablesAndFillDb();
+}
+
+function <<test.Test>> meta::relational::tests::mapping::inheritance::relational::multiJoins::testProjectAssociation():Boolean[1]
+{
+   let result1 = execute(|Person.all()->project([p|$p.roadVehicles->map(r|$r.wheelCount)], ['wheelCount']), inheritance, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   assertEquals(5, $result1.rows->size());
+   assertSameElements([4,4,4,3,2], $result1.rows.values);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::inheritance::relational::multiJoins::testSubTypeProjectDirect():Boolean[1]
+{
+   let result1 = execute(|RoadVehicle.all()->project([r|$r.wheelCount, r|$r.person.name], ['wheels', 'name']), inheritance, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   assertEquals(5, $result1.rows->size());
+   assertSameElements(['2 David Scott', '3 Atul Anand', '4 Atul Anand', '4 David Scott', '4 David Scott'], $result1.rows->map(r|$r.get('wheels')->toString()+' '+$r.get('name')->toString()));
+}
+
+function <<test.Test>> meta::relational::tests::mapping::inheritance::relational::multiJoins::testForcedSubTypeProjectDirect():Boolean[1]
+{
+   let result = execute(|RoadVehicle.all()->project([r|$r.id, r|$r.description, r|$r.wheelCount, r|$r->subType(@Bicycle).person.name], ['id', 'description', 'wheels', 'name']), inheritance, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   assertSameElements(['1, MBK, 2, David Scott', '1, Peugeot, 4, TDSNull', '2, BMX, 3, Atul Anand', '2, Renault, 4, TDSNull', '3, Nissan, 4, TDSNull'], $result.values->at(0).rows->map(r|$r.values->makeString(', ')));
+}
+
+
+function meta::relational::tests::mapping::inheritance::relational::multiJoins::createTablesAndFillDb():Boolean[1]
+{
+   let connection = testRuntime().connectionByElement(db)->cast(@TestDatabaseConnection);
+
+   executeInDb('Drop table if exists Person;', $connection);
+   executeInDb('Create Table Person (id INT, name VARCHAR(200));', $connection);
+   executeInDb('insert into Person (id, name) values (1, \'David Scott\');', $connection);
+   executeInDb('insert into Person (id, name) values (2, \'Atul Anand\');', $connection);
+
+   executeInDb('Drop table if exists PersonMidTable;', $connection);
+   executeInDb('Create Table PersonMidTable (id1 INT, id2 INT);', $connection);
+   executeInDb('insert into PersonMidTable (id1, id2) values (1, 1);', $connection);
+   executeInDb('insert into PersonMidTable (id1, id2) values (2, 2);', $connection);
+
+   executeInDb('Drop table if exists Car;', $connection);
+   executeInDb('Create Table Car (id INT, c_PersonID VARCHAR(200), db_car_wheelCount INTEGER, c_description VARCHAR(200), engineType INT);', $connection);
+   executeInDb('insert into Car (id, c_PersonID, db_car_wheelCount, c_description, engineType) values (1, 1, 4, \'Peugeot\', 1);', $connection);
+   executeInDb('insert into Car (id, c_PersonID, db_car_wheelCount, c_description, engineType) values (2, 1, 4, \'Renault\', 2);', $connection);
+   executeInDb('insert into Car (id, c_PersonID, db_car_wheelCount, c_description, engineType) values (3, 2, 4, \'Nissan\', 3);', $connection);
+   
+   executeInDb('Drop table if exists Bicycle;', $connection);
+   executeInDb('Create Table Bicycle(id INT, b_PersonID VARCHAR(200), db_bic_wheelCount INTEGER, b_description VARCHAR(200));', $connection);
+   executeInDb('insert into Bicycle (id, b_PersonID, db_bic_wheelCount, b_description) values (1, 1, 2, \'MBK\');', $connection);
+   executeInDb('insert into Bicycle (id, b_PersonID, db_bic_wheelCount, b_description) values (2, 2, 3, \'BMX\');', $connection);
+
+   true;
+}
+
+
+###Relational
+
+Database meta::relational::tests::mapping::inheritance::relational::multiJoins::myDB
+(
+    Table Person
+    (
+        ID INT PRIMARY KEY,
+        name VARCHAR(200)
+    )
+    
+    Table PersonMidTable
+    (
+       ID1 INT PRIMARY KEY,
+       ID2 INT PRIMARY KEY 
+    )
+
+    Table Car
+    (
+        ID INT PRIMARY KEY,
+        db_car_wheelCount INT,
+        engineType INT, 
+        c_Description VARCHAR(200),
+        c_PersonID INT
+    )
+
+    Table Bicycle
+    (
+        ID INT PRIMARY KEY,
+        db_bic_wheelCount INT,
+        b_Description VARCHAR(200),
+        b_PersonID INT
+    )
+    
+    Join PersonPersonMid(Person.ID = PersonMidTable.ID1)
+    Join PersonCar(PersonMidTable.ID2 = Car.c_PersonID)
+    Join PersonBicycle(PersonMidTable.ID2 = Bicycle.b_PersonID)
+)
+
+###Mapping
+import meta::relational::tests::mapping::inheritance::relational::multiJoins::*;
+import meta::relational::tests::model::inheritance::*;
+
+Mapping meta::relational::tests::mapping::inheritance::relational::multiJoins::inheritance
+(
+   Person : Relational
+            {
+               name : [myDB] Person.name,
+               vehicles[map1] : [myDB]@PersonPersonMid > @PersonCar,
+               vehicles[map2] : [myDB]@PersonPersonMid > @PersonBicycle,
+               roadVehicles[map1] : [myDB]@PersonPersonMid > @PersonCar,
+               roadVehicles[map2] : [myDB]@PersonPersonMid > @PersonBicycle
+            }
+            
+   Car[map1]: Relational
+            {
+               id : [myDB] Car.ID,
+               engineType : EnumerationMapping engineTypeMapping : [myDB] Car.engineType,
+               wheelCount :  [myDB] Car.db_car_wheelCount,
+               description : [myDB] Car.c_Description,
+               person : [myDB] @PersonCar > @PersonPersonMid 
+            }
+
+   Bicycle[map2] : Relational
+            {
+               id : [myDB] Bicycle.ID,
+               wheelCount :  [myDB] Bicycle.db_bic_wheelCount,
+               description : [myDB] Bicycle.b_Description,
+               person : [myDB] @PersonBicycle > @PersonPersonMid 
+            }
+
+   EngineType: EnumerationMapping engineTypeMapping
+   {
+      V: [1],
+      U: [2],
+      H: [3],
+      W: [4],
+      X: [5]
+   }
+   
+   Vehicle : Operation
+                 {
+                    meta::pure::router::operations::inheritance_OperationSetImplementation_1__SetImplementation_MANY_()
+                 }
+
+   RoadVehicle : Operation
+                 {
+                    meta::pure::router::operations::inheritance_OperationSetImplementation_1__SetImplementation_MANY_()
+                 }
+
+)

@@ -16,7 +16,7 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.servic
 
 import java.util.List;
 
-public class MultiExecutionTest extends ServiceTest
+public class MultiExecutionTest extends ServiceTest_Legacy
 {
     public List<KeyedSingleExecutionTest> tests;
 }

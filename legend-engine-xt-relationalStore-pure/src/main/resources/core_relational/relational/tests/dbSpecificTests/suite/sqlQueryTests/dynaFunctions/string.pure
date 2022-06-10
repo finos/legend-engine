@@ -1,0 +1,235 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::metamodel::*;
+import meta::relational::dbTestRunner::*;
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::concat::testSpaceBeforeSecondString(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='concat', parameters=[^Literal(value='Joe'),^Literal(value=' Bloggs')]);
+  let expected = ^Literal(value='Joe Bloggs');
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::concat::testNoSpace(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='concat', parameters=[^Literal(value='Mrs'), ^Literal(value='Smith') ]);
+  let expected = ^Literal(value='MrsSmith');
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::joinStrings::testNoSpace(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='joinStrings', parameters=[^Literal(value='Mrs'), ^Literal(value='-') ]);            // join a list of strings with sep??
+  let expected = ^Literal(value='Mrs');
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::replace::testCharReplace(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='replace', parameters=[^Literal(value='Joe'), ^Literal(value='J'), ^Literal(value='P') ]);           //case sensitive matching is supported by only a few dbs 
+  let expected = ^Literal(value='Poe');
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::replace::testStringReplace(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='replace', parameters=[^Literal(value='Joe Bloggs'), ^Literal(value=' Bl'), ^Literal(value='_Bl') ]);
+  let expected = ^Literal(value='Joe_Bloggs');
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::indexOf::testChar(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='indexOf', parameters=[^Literal(value='String Random'),^Literal(value='o')]);
+  let expected = ^Literal(value=12);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::indexOf::testString(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='indexOf', parameters=[^Literal(value='String Random'),^Literal(value='and')]);
+  let expected = ^Literal(value=9);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::rtrim::testNoSpace(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='rtrim', parameters=[^Literal(value='Smith')]);
+  let expected = ^Literal(value='Smith');
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::rtrim::testTrailingSpace(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='rtrim', parameters=[^Literal(value=' Bloggs ')]);
+  let expected = ^Literal(value=' Bloggs');
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::ltrim::testNoSpace(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='ltrim', parameters=[^Literal(value='Smith')]);
+  let expected = ^Literal(value='Smith');
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::ltrim::testStartingSpace(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='ltrim', parameters=[^Literal(value=' Bloggs ')]);
+  let expected = ^Literal(value='Bloggs ');
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::trim::testNoSpace(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='trim', parameters=[^Literal(value='Smith')]);
+  let expected = ^Literal(value='Smith');
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::trim::testSpace(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='trim', parameters=[^Literal(value=' Bloggs ')]);
+  let expected = ^Literal(value='Bloggs');
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::toUpper::test1(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='toUpper', parameters=[^Literal(value='Smith')]);
+  let expected = ^Literal(value='SMITH');
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::toLower::test1(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='toLower', parameters=[^Literal(value='Smith')]);
+  let expected = ^Literal(value='smith');
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+//substring - for now these tests are 1 based indexing and second param is length  // ideally switch to pure style indexing
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::substring::testCustomEndIndex(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='substring', parameters=[^Literal(value='Smith'), ^Literal(value=1), ^Literal(value=3)]);
+  let expected = ^Literal(value='Smi');
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::substring::testCustomStartIndex(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='substring', parameters=[^Literal(value='Smith'), ^Literal(value=3), ^Literal(value=2)]);
+  let expected = ^Literal(value='it');
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::substring::testEndIndexExceedingStringLength(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='substring', parameters=[^Literal(value='Smith'), ^Literal(value=3), ^Literal(value=7)]);
+  let expected = ^Literal(value='ith');
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::left::testNoSpace(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='left', parameters=[^Literal(value='Smith'), ^Literal(value=3)]);
+  let expected = ^Literal(value='Smi');
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::left::testSpace(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='left', parameters=[^Literal(value=' Bloggs '), ^Literal(value=3)]);
+  let expected = ^Literal(value=' Bl');
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::right::testNoSpace(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='right', parameters=[^Literal(value='Smith'), ^Literal(value=3)]);
+  let expected = ^Literal(value='ith');
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::right::testSpace(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='right', parameters=[^Literal(value=' Bloggs '), ^Literal(value=3)]);
+  let expected = ^Literal(value='gs ');
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+// contains, endsWith , startsWith
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::contains::testNoSpace(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='contains', parameters=[^Literal(value='Bloggs'), ^Literal(value='lo')]);
+  let expected = ^Literal(value=true);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::contains::testSpace(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='contains', parameters=[^Literal(value=' Bloggs '), ^Literal(value=' ')]);
+  let expected = ^Literal(value=true);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::contains::testSpaceFalse(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='contains', parameters=[^Literal(value='Bloggs'), ^Literal(value=' ')]);
+  let expected = ^Literal(value=false);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::startsWith::testStartsWith(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='startsWith', parameters=[^Literal(value='Bloggs'), ^Literal(value='Bl')]);
+  let expected = ^Literal(value=true);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::startsWith::testNotStartsWith(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='startsWith', parameters=[^Literal(value='Bloggs'), ^Literal(value='gl')]);
+  let expected = ^Literal(value=false);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::startsWith::testStartsWithSpace(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='startsWith', parameters=[^Literal(value=' Bloggs'), ^Literal(value=' ')]);
+  let expected = ^Literal(value=true);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::endsWith::testEndsWith(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='endsWith', parameters=[^Literal(value='Bloggs'), ^Literal(value='ggs')]);
+  let expected = ^Literal(value=true);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::endsWith::testNotEndsWith(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='endsWith', parameters=[^Literal(value='Bloggs'), ^Literal(value='gz')]);
+  let expected = ^Literal(value=false);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<dbTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::startsWith::testEndsWithSpace(config:DbTestConfig[1]):String[0..1]
+{
+  let dynaFunc = ^DynaFunction(name='endsWith', parameters=[^Literal(value=' Bloggs '), ^Literal(value=' ')]);
+  let expected = ^Literal(value=true);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}

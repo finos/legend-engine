@@ -100,7 +100,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.ServiceLoader;
 
-public class Server extends Application<ServerConfiguration>
+public class Server<T extends ServerConfiguration> extends Application<T>
 {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
 
@@ -113,14 +113,14 @@ public class Server extends Application<ServerConfiguration>
     }
 
     @Override
-    public void initialize(Bootstrap<ServerConfiguration> bootstrap)
+    public void initialize(Bootstrap<T> bootstrap)
     {
         bootstrap.addBundle(new AssetsBundle("/web", "/", "legend_index.html"));
-        bootstrap.addBundle(new SwaggerBundle<ServerConfiguration>()
+        bootstrap.addBundle(new SwaggerBundle<T>()
         {
             @Override
             protected SwaggerBundleConfiguration getSwaggerBundleConfiguration(
-                    ServerConfiguration configuration)
+                    T configuration)
             {
                 return configuration.swagger;
             }
@@ -137,7 +137,7 @@ public class Server extends Application<ServerConfiguration>
     }
 
     @Override
-    public void run(ServerConfiguration serverConfiguration, Environment environment)
+    public void run(T serverConfiguration, Environment environment)
     {
         loadVaults(serverConfiguration.vaults);
 

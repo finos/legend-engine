@@ -1,0 +1,30 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::mapping::*;
+import meta::pure::mapping::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::runtime::*;
+import meta::pure::router::extension::*;
+import meta::pure::runtime::*;
+import meta::relational::metamodel::*;
+
+function meta::relational::mapping::connectionAwareProcessors(query:SQLQuery[1], runtime:Runtime[1], store:Database[0..1], exeCtx:ExecutionContext[1], extensions:RouterExtension[*]): PostProcessorResult[1]
+{
+   let connection = if($store->isNotEmpty(),|let connection =$runtime->connectionByElement($store->toOne()),|$runtime.connections->at(0));
+   let connectionAwarePostProcessors =  if($connection->instanceOf(DatabaseConnection), | $connection->cast(@DatabaseConnection).sqlQueryPostProcessorsConnectionAware, | []);
+   let connectionAwarePostProcessorOutput = $connectionAwarePostProcessors->fold({pp,q|$pp->eval($q, $connection->cast(@DatabaseConnection)).values->toOne()}, $query->cast(@SelectSQLQuery));
+   ^PostProcessorResult(query = $connectionAwarePostProcessorOutput,resultPostProcessor = { result:Result<Any|*>[1] | $result});
+
+}

@@ -1,0 +1,133 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::constraints::functions::util::*;
+import meta::pure::metamodel::constraint::*;
+import meta::relational::validation::showcase::model::*;
+
+Class {doc.doc = 'Simple Trade model (with constraints)'} meta::relational::validation::showcase::model::Trade
+[
+   etiNotEmpty
+   (
+      ~function: $this.externalTradeId->isNotEmpty()
+      ~message : 'External Trade ID is not valid'
+   ),
+   validLocation        : ['Asia', 'EMEA', 'Americas']->contains($this.location->toOne()),
+   validTradeGroup      : $this.tradeGroup.status->toOne()->in([TradingGroupStatus.DEAD, TradingGroupStatus.LIVE]),
+   quantityInValidRange
+   (
+      ~owner: System
+      ~externalId: 'Trade_Constraint@4'
+      ~function: abs($this.quantity) < 100000
+      ~enforcementLevel: Error
+      ~message: 'Quantity not in range: ' + $this.quantity->toString()
+   ),
+   latestEventDateValid : $this.latestEventDate <= %9999-01-01,
+   knownProduct         : $this.product.name->isNotEmpty(),
+   knownAccount         : $this.account.name->isNotEmpty(),
+   isATypeAccount       : $this.account->toOne().isTypeA,
+   cusipExists          : $this.product.cusip->isNotEmpty()
+]
+{
+   tradeId : String[1];
+   externalTradeId : String[0..1];
+   location : String[0..1];
+   tradeGroup : TradeTradingGroup[0..1];
+   date : StrictDate[1];
+   quantity : Float[1];
+   product : Product[0..1];
+   settlementDateTime : DateTime[0..1];
+   latestEventDate : StrictDate[0..1];
+   events: TradeEvent[*];
+}
+
+Class {doc.doc = 'Simple Trade model (with constraints)'} meta::relational::validation::showcase::model::TradeTradingGroup
+{
+   name : String[0..1];
+   status : TradingGroupStatus[0..1];
+}
+
+Class meta::relational::validation::showcase::model::Product
+{
+   name : String[1];
+   
+   cusip() { $this.synonymByType(ProductSynonymType.CUSIP).name } : String[1];
+   isin() { $this.synonymByType(ProductSynonymType.ISIN).name } : String[1];
+   cusipSynonym() { $this.synonymByType(ProductSynonymType.CUSIP) } : Synonym[1];
+   isinSynonym() { $this.synonymByType(ProductSynonymType.ISIN) } : Synonym[1];
+}
+
+Class meta::relational::validation::showcase::model::TradeEvent
+{
+   eventType : String[0..1];
+   date : StrictDate[1];
+   traderAddress : String[0..1];
+}
+
+Class meta::relational::validation::showcase::model::Synonym
+{
+   typeAsString : String[1];
+   type : ProductSynonymType[1];
+   name : String[1];
+}
+
+Class meta::relational::validation::showcase::model::Account
+{
+   name : String[1];
+   createDate : StrictDate[1];
+   
+   accountCategory() { if ( $this.name->endsWith('_A'), | 'A', | 'B') } : String[1];
+   isTypeA()  { if ( $this.name->endsWith('_A'), | true, | false) } : Boolean[1];
+}
+
+Association meta::relational::validation::showcase::model::ProdSynonym
+{
+   synonyms : Synonym[*];
+   product : Product[1];
+   
+   synonymByType(type:ProductSynonymType[1]) { $this.synonyms->filter(s|$s.type == $type)->toOne() } : Synonym[1];
+}
+
+Association meta::relational::validation::showcase::model::Trade_Accounts
+{
+   account : Account[0..1];
+   trades : Trade[*];
+}
+
+Enum meta::relational::validation::showcase::model::ProductSynonymType
+{
+   CUSIP,
+   ISIN,
+   GSN
+}
+
+Enum meta::relational::validation::showcase::model::TradingGroupStatus 
+{
+   DEAD,
+   LIVE,
+   UNKNOWN
+}
+
+function meta::relational::validation::showcase::model::getConstraintsContextInformation():ConstraintContextInformation<Any>[*]
+{
+   [
+      createConstraintContextInformation('validLocation', Trade, EnforcementLevel.Warn, 'Location is not known'),
+      createConstraintContextInformation('validTradeGroup', Trade, EnforcementLevel.Warn, 'Trade group is not known'),
+      createConstraintContextInformation('latestEventDateValid', Trade, EnforcementLevel.Error, 'Latest event date is not valid'),
+      createConstraintContextInformation('knownProduct', Trade, EnforcementLevel.Error, 'Product unknown'),
+      createConstraintContextInformation('knownAccount', Trade, EnforcementLevel.Error, 'Account unknown'),
+      createConstraintContextInformation('isATypeAccount', Trade, EnforcementLevel.Warn, t | 'Account is not Type A : ' + $t.account.name->toOne()),
+      createConstraintContextInformation('cusipExists', Trade, EnforcementLevel.Error, 'Product cusip empty')
+   ]
+}

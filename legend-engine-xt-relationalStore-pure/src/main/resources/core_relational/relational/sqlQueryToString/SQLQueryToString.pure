@@ -1,0 +1,2592 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::functions::pureToSqlQuery::*;
+import meta::pure::router::extension::*;
+import meta::relational::functions::sqlQueryToString::*;
+import meta::relational::metamodel::*;
+import meta::relational::metamodel::operation::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::metamodel::join::*;
+import meta::relational::functions::sqlQueryToString::*;
+import meta::relational::runtime::*;
+import meta::relational::functions::sqlQueryToString::functions::*;
+import meta::pure::profiles::*;
+
+Enum meta::relational::functions::sqlQueryToString::GenerationSide
+{
+   Select,
+   Where
+}
+
+Class meta::relational::functions::sqlQueryToString::GenerationState
+{
+  <<equality.Key>> generationSide : GenerationSide[1];
+  <<equality.Key>> withinWhenClause : Boolean[0..1];
+}
+
+Class meta::relational::functions::sqlQueryToString::Config
+{
+   callingFromFilter : Boolean[0..1];
+   useQuotesForTableAliasColumn : Boolean[0..1];
+   generateJoin:Boolean[0..1];
+   generateJoinTarget : TableAlias[0..1];
+}
+
+Class meta::relational::functions::sqlQueryToString::Format
+{
+   newLine:String[1];
+   indent:String[1];
+
+   indentStack:String[*];
+
+   separator(){
+      $this.newLine + $this.indentStack->makeString();
+   }:String[1];
+}
+
+Class meta::relational::functions::sqlQueryToString::DbConfig
+{
+   dbType:DatabaseType[1];
+   dbTimeZone:String[0..1];
+   quoteIdentifiers:Boolean[1];
+
+   dbExtension: DbExtension[1];
+
+   dynaFuncDispatch(dynaFn:DynaFunction[1], state:GenerationState[1])
+   {
+     $this.dbExtension.dynaFuncDispatch->eval($dynaFn, $state);
+   }: DynaFunctionToSql[1];
+
+   isDbReservedIdentifier(str:String[1])
+   {
+     $this.dbExtension.isDbReservedIdentifier->eval($str);
+   }: Boolean[1];
+
+   literalProcessor(type:Type[1])
+   {
+     getLiteralProcessorForType($type, $this.dbExtension.literalProcessor, $this.dbTimeZone);
+   }: LiteralProcessor[1];
+}
+
+Class meta::relational::functions::sqlQueryToString::DbExtension
+{
+   dynaFuncDispatch: meta::pure::metamodel::function::Function<{DynaFunction[1], GenerationState[1] -> DynaFunctionToSql[1]}>[1];
+   isDbReservedIdentifier: meta::pure::metamodel::function::Function<{String[1] -> Boolean[1]}>[1];
+   literalProcessor: meta::pure::metamodel::function::Function<{Type[1] -> LiteralProcessor[1]}>[1];
+}
+
+function meta::relational::functions::sqlQueryToString::sqlQueryToString(sqlQuery:SQLQuery[1], dbType:DatabaseType[1], extensions:RouterExtension[*]):String[1]
+{
+   sqlQueryToString($sqlQuery, $dbType, [], [], $extensions);
+}
+
+function meta::relational::functions::sqlQueryToString::sqlQueryToString(sqlQuery:SQLQuery[1], dbType:DatabaseType[1], dbTimeZone:String[0..1], quoteIdentifiers:Boolean[0..1], extensions:RouterExtension[*]):String[1]
+{
+   sqlQueryToString($sqlQuery, $dbType, $dbTimeZone, $quoteIdentifiers, ^Format(newLine='', indent=''), $extensions);
+}
+
+function meta::relational::functions::sqlQueryToString::sqlQueryToStringPretty(sqlQuery:SQLQuery[1], dbType:DatabaseType[1], dbTimeZone:String[0..1], quoteIdentifiers:Boolean[0..1], extensions:RouterExtension[*]):String[1]
+{
+   sqlQueryToString($sqlQuery, $dbType, $dbTimeZone, $quoteIdentifiers, ^Format(newLine='\n', indent='\t'), $extensions);
+}
+
+function meta::relational::functions::sqlQueryToString::sqlQueryToString(sqlQuery:SQLQuery[1], dbType:DatabaseType[1], dbTimeZone:String[0..1], quoteIdentifiers:Boolean[0..1], format:Format[1], extensions:RouterExtension[*]):String[1]
+{
+   processOperation($sqlQuery, createDbConfig($dbType, $dbTimeZone, $quoteIdentifiers), $format, ^Config(), $extensions);
+}
+
+function meta::relational::functions::sqlQueryToString::createDbConfig(dbType:DatabaseType[1]):DbConfig[1]
+{
+   createDbConfig($dbType, []);
+}
+
+function meta::relational::functions::sqlQueryToString::createDbConfig( dbType:DatabaseType[1], dbTimeZone:String[0..1]):DbConfig[1]
+{
+   createDbConfig($dbType, $dbTimeZone, []);
+}
+
+function meta::relational::functions::sqlQueryToString::createDbConfig( dbType:DatabaseType[1], dbTimeZone:String[0..1], quoteIdentifiers:Boolean[0..1]):DbConfig[1]
+{
+   ^DbConfig(
+      dbType = $dbType,
+      dbTimeZone = $dbTimeZone,
+      quoteIdentifiers = if($quoteIdentifiers->isEmpty(), |false, |$quoteIdentifiers->toOne()),
+      dbExtension = $dbType->createDbExtension($dbTimeZone)
+   );
+}
+
+function meta::relational::functions::sqlQueryToString::createDbExtension(dbType:DatabaseType[1], dbTimeZone:String[0..1]):DbExtension[1]
+{
+   let reservedWords = dbReservedWords($dbType);
+   let literalProcessors = getLiteralProcessors($dbType, $dbTimeZone);
+   ^DbExtension(
+      dynaFuncDispatch = getDynaFunctionMappings($dbType),
+      isDbReservedIdentifier = {str:String[1]| $str->in($reservedWords)},
+      literalProcessor = {type:Type[1]| $literalProcessors->get(if($type->instanceOf(Enumeration), | Enum, | $type))->toOne()}
+   );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::indent(d:Format[1]):Format[1]
+{
+   ^$d(indentStack += $d.indent);
+}
+
+function meta::relational::functions::sqlQueryToString::processOperation(relationalOperationElement:RelationalOperationElement[1], dbType:DatabaseType[1], extensions:RouterExtension[*]):String[1]
+{
+   processOperation($relationalOperationElement, createDbConfig($dbType, []), ^Format(newLine='', indent=''), ^Config(), $extensions);
+}
+
+function meta::relational::functions::sqlQueryToString::processOperation(relationalOperationElement:RelationalOperationElement[1], dbType:DatabaseType[1], dbTimeZone:String[0..1], quoteIdentifiers:Boolean[0..1], extensions:RouterExtension[*]):String[1]
+{
+   processOperation($relationalOperationElement, createDbConfig($dbType, $dbTimeZone, $quoteIdentifiers), ^Format(newLine='', indent=''), ^Config(), $extensions);
+}
+
+function meta::relational::functions::sqlQueryToString::processOperation(relationalOperationElement:RelationalOperationElement[1], dbType:DatabaseType[1], config:Config[1], extensions:RouterExtension[*]):String[1]
+{
+   processOperation($relationalOperationElement, createDbConfig($dbType, []), ^Format(newLine='', indent=''), $config, $extensions);
+}
+
+function meta::relational::functions::sqlQueryToString::processOperation(relationalOperationElement:RelationalOperationElement[1], dbConfig : DbConfig[1], format:Format[1], extensions:RouterExtension[*]):String[1]
+{
+   processOperation($relationalOperationElement, $dbConfig, $format, ^GenerationState(generationSide = GenerationSide.Where, withinWhenClause = false), ^Config(), $extensions);
+}
+
+function meta::relational::functions::sqlQueryToString::processOperation(relationalOperationElement:RelationalOperationElement[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], extensions:RouterExtension[*]):String[1]
+{
+   processOperation($relationalOperationElement, $dbConfig, $format, ^GenerationState(generationSide = GenerationSide.Where, withinWhenClause = false), $config, $extensions);
+}
+
+function meta::relational::functions::sqlQueryToString::processOperation(relationalOperationElement:RelationalOperationElement[1], dbConfig : DbConfig[1], format:Format[1], generationState:GenerationState[1], extensions:RouterExtension[*]):String[1]
+{
+   processOperation($relationalOperationElement, $dbConfig, $format, $generationState, ^Config(), $extensions);
+}
+
+function meta::relational::functions::sqlQueryToString::processOperation(relationalOperationElement:RelationalOperationElement[1], dbConfig : DbConfig[1], format:Format[1], generationState:GenerationState[1], config:Config[1], extensions:RouterExtension[*]):String[1]
+{
+   $relationalOperationElement->match($extensions->map(e|$e.moduleExtension('relational')->cast(@RelationalExtension).sqlQueryToString_processOperation)->map(f | $f->eval($dbConfig, $format, $generationState, $config, $extensions))->concatenate(
+                                       [
+                                          v:VarPlaceHolder[1]| '${'+$v.name+'}',
+                                          v:VarSetPlaceHolder[1]| '${'+$v.varName+'}',
+                                          v:VarCrossSetPlaceHolder[1]| '${'+$v.varName+'}',
+                                          w:WindowColumn[1]|$w->processWindowColumn($dbConfig, $format, $generationState, $config, $extensions) ,
+                                          s:ViewSelectSQLQuery[1]|'('+$s.selectSQLQuery->processOperation($dbConfig, $format, $generationState, $config, $extensions)+')',
+                                          t:Table[1]|$t->tableToString($dbConfig),
+                                          js:JoinStrings[1] | processJoinStringsOperation($js, $dbConfig, $format, $generationState, $extensions),
+                                          alias:Alias[1]|
+                                                let innerTerm = $alias.relationalElement->match([
+                                                   r : VarSetPlaceHolder[1]|$r->processOperation($dbConfig, $format, $generationState, $config, $extensions),
+                                                   s : SelectSQLQuery[1]|$s->processSelectSQLQuery($dbConfig, $format, $config, true, $extensions),
+                                                   r : RelationalOperationElement[1]|$r->processOperation($dbConfig, $format, $generationState, $config, $extensions)
+                                                ]);
+
+                                                let identifier = $alias.name->processIdentifier($dbConfig);
+                                            
+                                                let sqlOp = $alias.relationalElement->instanceOf(SelectSQLQuery) || $alias.relationalElement->instanceOf(VarCrossSetPlaceHolder);
+
+                                                '%s%s%s as %s'->format([
+                                                      if ($sqlOp,|'(',|''),
+                                                      $innerTerm,
+                                                      if ($sqlOp,|')',|''),
+                                                      $identifier
+                                                      ]);
+                                             ,
+                                          c:TableAliasColumn[1]|let doubleQuote = if($config.useQuotesForTableAliasColumn == false, |'', |'"');
+                                                                if(!$config.generateJoin->isEmpty() && $config.generateJoin->toOne(),|if ($config.generateJoinTarget == $c.alias,
+                                                                                                                                          |'{target}.',
+                                                                                                                                          |let schema = $c.alias.relationalElement->match([t:Table[1]|$t.schema.name, v:View[1]|$v.schema.name]);
+                                                                                                                                           if ($schema == 'default',|'',|$schema+'.');
+                                                                                                                                      )
+                                                                                                                                    ,|''
+                                                                ) + if ($config.generateJoinTarget == $c.alias, |'',|processIdentifier($doubleQuote+$c.alias.name->toOne()+$doubleQuote, $dbConfig) + '.') + processColumnName($c.column.name->toOne(), $dbConfig);,
+                                          l:Literal[1]| processLiteral($l, $dbConfig),
+                                          ll:LiteralList[1] | $ll.values->map(e | $e->processOperation($dbConfig, $format, $generationState, $config, $extensions))->joinStrings('(', ', ', ')'),
+                                          s:SelectSQLQuery[1]| $s->processSelectSQLQuery($dbConfig, $format, $config, false, $extensions),
+                                          u:UnionAll[1]| '('+$u.queries->map(q|$q->processSelectSQLQuery($dbConfig, $format, $config, false, $extensions))->makeString(' UNION ALL ')+')',
+                                          u:Union[1]| '('+$u.queries->map(q|$q->processSelectSQLQuery($dbConfig, $format, $config, false, $extensions))->makeString(' UNION ')+')',
+                                          f:FreeMarkerOperationHolder[1]|processFreeMarkerOperationHolder($f, $dbConfig, $format, $generationState, $config, false, $extensions),
+                                          d:DynaFunction[1]|processDynaFunction($d, $dbConfig, $format, $generationState, $config, $extensions),
+                                          c:ColumnName[1]|processIdentifier($c.name->toOne(), $dbConfig),
+                                          s:SemiStructuredObjectNavigation[1]|processSemiStructuredObjectNavigation($s, $dbConfig, $format, $generationState, $config, $extensions),
+                                          {f:meta::relational::metamodel::operation::Function[1]| assert(false, 'Don\'t know how to handle %s', $f->type()); 'TO DO'; }
+                                       ])->toOneMany()
+                                     );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processWindowColumn(w:WindowColumn[1], dbConfig : DbConfig[1], format:Format[1],generationState:GenerationState[1], config:Config[1], extensions:RouterExtension[*]):String[1]
+{
+   let supportedDbs = [DatabaseType.Sybase,DatabaseType.SybaseIQ,DatabaseType.DB2,DatabaseType.Hive,DatabaseType.H2,DatabaseType.MemSQL, DatabaseType.BigQuery, DatabaseType.Redshift, DatabaseType.Snowflake, DatabaseType.Databricks];
+   assert($supportedDbs->contains($dbConfig.dbType), 'Window Columns are not supported for Database Type: '+$dbConfig.dbType->toString() +'. Supported Databases are: '+ $supportedDbs->map(d|$d->toString())->joinStrings(',') +'.') ;
+   $w.func->processOperation($dbConfig, $format, $generationState, $config, $extensions) + ' OVER ('
+   + if($w.window.partition->isNotEmpty(),
+        |'Partition By ' + $w.window.partition->map(f|$f->processOperation($dbConfig, $format, $generationState, $config, $extensions))->joinStrings(',')+' ',
+        |'')
+   + if($w.window.sortBy->isNotEmpty(),
+        |'Order By '+$w.window.sortBy->toOne()->processOperation($dbConfig, $format, $generationState, $config, $extensions)
+              + if($w.window.sortDirection->isNotEmpty(), | ' ' +$w.window.sortDirection->toOne().name, | '')
+              +')',
+        |')') ;
+}
+
+Class <<access.private>> meta::relational::functions::sqlQueryToString::LiteralProcessor
+{
+   types:Type[*];
+   format: String[1];
+   transform: meta::pure::metamodel::function::Function<{Nil[1]->String[1]}>[1];
+
+   formatValue(value:Any[1]) {
+      $this.format->format($this.transformValue($value))
+   }:String[1];
+
+   transformValue(value:Any[1]) {
+      $this.transform->eval($value)
+   }:String[1];
+}
+
+function meta::relational::functions::sqlQueryToString::getLiteralProcessorForType(type:Type[1], literalProcessor: meta::pure::metamodel::function::Function<{Type[1] -> LiteralProcessor[1]}>[1], dbTimeZone:String[0..1]): LiteralProcessor[1]
+{
+   if($type->equal(VarPlaceHolder),
+      |^LiteralProcessor(format = '%s', transform = {v:VarPlaceHolder[1] | convertPlaceHolderToSQLString($v, $literalProcessor, $dbTimeZone)}),
+      |$literalProcessor->eval($type));
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::getLiteralProcessors(dbType:DatabaseType[1], dbTimeZone:String[0..1]):Map<Type,LiteralProcessor>[1]
+{
+   let default = newMap([
+      pair(Enum,           ^LiteralProcessor(format = '%s',     transform = toString_Any_1__String_1_)),
+      pair(String,         ^LiteralProcessor(format = '\'%s\'', transform = convertStringToSQLString_String_1__String_1_)),
+      pair(Number,         ^LiteralProcessor(format = '%s',     transform = toString_Any_1__String_1_)),
+      pair(Integer,        ^LiteralProcessor(format = '%s',     transform = toString_Any_1__String_1_)),
+      pair(Float,          ^LiteralProcessor(format = '%s',     transform = toString_Any_1__String_1_)),
+      pair(Decimal,        ^LiteralProcessor(format = '%s',     transform = toString_Any_1__String_1_)),
+      pair(Boolean,        ^LiteralProcessor(format = '\'%s\'', transform = toString_Any_1__String_1_)),
+      pair(SQLNull,        ^LiteralProcessor(format = '%s',     transform = convertSQLNullToSQLString_SQLNull_1__String_1_)),
+      pair(StrictDate,     ^LiteralProcessor(format = '\'%s\'', transform = {d:StrictDate[1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(DateTime,       ^LiteralProcessor(format = '\'%s\'', transform = {d:DateTime[1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(Date,           ^LiteralProcessor(format = '\'%s\'', transform = {d:Date[1] | $d->convertDateToSqlString($dbTimeZone)}))
+   ]);
+
+   let specific = if ($dbType == DatabaseType.SybaseIQ,
+                      | getLiteralProcessorsForSybaseIQ($dbTimeZone),
+                      | if($dbType == DatabaseType.Sybase,
+                           | getLiteralProcessorsForSybaseASE($dbTimeZone),
+                              | if ($dbType == DatabaseType.Databricks,
+                              | getLiteralProcessorsForDatabricks($dbTimeZone),
+                                | if ($dbType == DatabaseType.Postgres,
+                                | getLiteralProcessorsForPostgres($dbTimeZone),
+                                | if ($dbType == DatabaseType.Presto,
+                                     | getLiteralProcessorsForPresto($dbTimeZone),
+                                     | if($dbType == DatabaseType.BigQuery,
+                                      | getLiteralProcessorsForBigQuery($dbTimeZone),
+                                        | if($dbType == DatabaseType.Redshift,
+                                        | getLiteralProcessorsForRedshift($dbTimeZone),
+                                      | newMap([]->cast(@Pair<Type, LiteralProcessor>))
+                                 )))))));
+
+   $default->putAll($specific);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::getLiteralProcessorsForSybaseASE(dbTimeZone:String[0..1]):Map<Type,LiteralProcessor>[1]
+{
+   newMap([
+      pair(StrictDate,     ^LiteralProcessor(format = 'convert(DATE, \'%s\', 101)',     transform = {d:StrictDate[1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(DateTime,       ^LiteralProcessor(format = 'convert(DATETIME, \'%s\', 101)', transform = {d:DateTime[1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(Date,           ^LiteralProcessor(format = 'convert(DATETIME, \'%s\', 101)', transform = {d:Date[1] | $d->convertDateToSqlString($dbTimeZone)}))
+   ])
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::getLiteralProcessorsForSybaseIQ(dbTimeZone:String[0..1]):Map<Type,LiteralProcessor>[1]
+{
+   newMap([
+      pair(StrictDate,     ^LiteralProcessor(format = 'convert(DATE, \'%s\', 121)',     transform = {d:StrictDate[1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(DateTime,       ^LiteralProcessor(format = 'convert(DATETIME, \'%s\', 121)', transform = {d:DateTime[1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(Date,           ^LiteralProcessor(format = 'convert(DATETIME, \'%s\', 121)', transform = {d:Date[1] | $d->convertDateToSqlString($dbTimeZone)}))
+   ])
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::getLiteralProcessorsForDatabricks(dbTimeZone:String[0..1]):Map<Type,LiteralProcessor>[1]
+{
+   newMap([
+      pair(StrictDate,     ^LiteralProcessor(format = 'to_date(\'%s\')',    transform = {d:StrictDate[1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(DateTime,       ^LiteralProcessor(format = 'to_timestamp(\'%s\')', transform = {d:DateTime[1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(Date,           ^LiteralProcessor(format = 'to_date(\'%s\')',    transform = {d:Date[1] | $d->convertDateToSqlString($dbTimeZone)}))
+   ])
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::getLiteralProcessorsForPostgres(dbTimeZone:String[0..1]):Map<Type,LiteralProcessor>[1]
+{
+   newMap([
+      pair(Enum,           ^LiteralProcessor(format = 'Text%s',          transform = toString_Any_1__String_1_)),
+      pair(String,         ^LiteralProcessor(format = 'Text\'%s\'',          transform = convertStringToSQLString_String_1__String_1_)),
+      pair(Boolean,        ^LiteralProcessor(format = 'Boolean\'%s\'',   transform = toString_Any_1__String_1_)),
+      pair(StrictDate,     ^LiteralProcessor(format = 'Date\'%s\'',      transform = {d:StrictDate[1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(DateTime,       ^LiteralProcessor(format = 'Timestamp\'%s\'', transform = {d:DateTime[1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(Date,           ^LiteralProcessor(format = 'Timestamp\'%s\'', transform = {d:Date[1] | $d->convertDateToSqlString($dbTimeZone)}))
+   ])
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::getLiteralProcessorsForPresto(dbTimeZone:String[0..1]):Map<Type,LiteralProcessor>[1]
+{
+   newMap([
+      pair(StrictDate,     ^LiteralProcessor(format = 'Date(\'%s\')',      transform = {d:StrictDate[1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(DateTime,       ^LiteralProcessor(format = 'Timestamp\'%s\'', transform = {d:DateTime[1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(Date,           ^LiteralProcessor(format = 'Timestamp\'%s\'', transform = {d:Date[1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(Boolean,        ^LiteralProcessor(format = '%s', transform = toString_Any_1__String_1_))
+   ])
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::getLiteralProcessorsForBigQuery(dbTimeZone:String[0..1]):Map<Type,LiteralProcessor>[1]
+{
+   newMap([
+      pair(StrictDate,     ^LiteralProcessor(format = 'PARSE_DATE(\'%%Y-%%m-%%d\', \'%s\')',   transform = {d:StrictDate[1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(DateTime,       ^LiteralProcessor(format = 'PARSE_DATETIME(\'%%Y-%%m-%%d %%H:%%M:%%E6S\', \'%s\')', transform = {d:DateTime[1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(Date,           ^LiteralProcessor(format = 'PARSE_DATE(\'%%Y-%%m-%%d\', \'%s\')', transform = {d:Date[1] | $d->convertDateToSqlString($dbTimeZone)}))
+   ])
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::getLiteralProcessorsForRedshift(dbTimeZone:String[0..1]):Map<Type,LiteralProcessor>[1]
+{
+   newMap([
+      pair(StrictDate,     ^LiteralProcessor(format = 'Date\'%s\'',      transform = {d:StrictDate[1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(DateTime,       ^LiteralProcessor(format = 'Timestamp\'%s\'', transform = {d:DateTime[1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(Date,           ^LiteralProcessor(format = 'Timestamp\'%s\'', transform = {d:Date[1] | $d->convertDateToSqlString($dbTimeZone)}))
+   ])
+}
+
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processLiteral(literal:Literal[1], dbConfig : DbConfig[1]) : String[1]
+{
+   $literal.value->processLiteralValue($dbConfig);
+}
+
+function  meta::relational::functions::sqlQueryToString::processLiteralDefaultForPlanService(a:Any[1], dbType:DatabaseType[1], dbTimeZone : String[0..1], quoteIdentifiers:Boolean[0..1]): String[1]
+{
+   let dbConfig = createDbConfig($dbType, $dbTimeZone, $quoteIdentifiers);
+   let type = if($a->instanceOf(List),
+                 |
+                 if($a->cast(@List<Any>).values->isNotEmpty(),
+                    |$a->cast(@List<Any>).values->type(),
+                    |let typeArgumentType = $a.classifierGenericType.typeArguments.rawType; if($typeArgumentType->isEmpty(),|String,|$typeArgumentType->toOne());),
+                 |$a->type());
+   let processor = $dbConfig.literalProcessor($type);
+   if(!$a->type()==String,
+      | if($a->type()==List,
+           | $a->cast(@List<Any>)->processLiteralListForPlanService($type, $dbConfig, $dbType, $dbTimeZone)->joinStrings(','),
+           | $processor.formatValue($a)),
+      |$processor.formatValue($a)->replace('\'\'', '\''));
+}
+
+function meta::relational::functions::sqlQueryToString::processLiteralListForPlanService(a:List<Any>[*], type:Type[1], dbConfig : DbConfig[1], dbType:DatabaseType[1], dbTimeZone : String[0..1]): String[1]
+{
+
+   $a.values->map(v|$v->match([
+                     s:String[1]| $dbConfig.literalProcessor($type).formatValue($s)->replace('\'\'', '\''),
+                     a:Any[1]| $dbConfig.literalProcessor($type).formatValue($a)
+                  ]))
+   ->joinStrings(',');
+}
+
+function meta::relational::functions::sqlQueryToString::processLiteralValue(a:Any[1], dbTimeZone:String[0..1], dbType:DatabaseType[1], quoteIdentifiers:Boolean[0..1]) : String[1]
+{
+   let dbConfig = createDbConfig($dbType, $dbTimeZone, $quoteIdentifiers);
+   processLiteralValue($a, $dbConfig);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processLiteralValue(a:Any[1], dbConfig : DbConfig[1]) : String[1]
+{
+   let processor = $dbConfig.literalProcessor($a->type());
+   $processor.formatValue($a);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::convertStringToSQLString(s:String[1]):String[1]
+{
+   $s->replace('\'', '\'\'')->replace('\@@','\'')
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::convertSQLNullToSQLString(s:SQLNull[1]):String[1]
+{
+   'null'
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::getPrefixAndSuffixForType(type:Type[1], literalProcessor: meta::pure::metamodel::function::Function<{Type[1] -> LiteralProcessor[1]}>[1]):Pair<String, String>[1]
+{
+   let lp           = $literalProcessor->eval($type);
+   // We need this replace here to mimic what we would have done if we had executed the format string on input.
+   // %% is used in format to escape a required % symbol. We don't need to do this while building freemarker context
+   let lpFormat     = $lp.format->replace('%%', '%');
+
+   let index        = $lpFormat->indexOf('%s');
+   let prefix       = $lpFormat->substring(0, $index);
+   let suffix       = $lpFormat->substring($index+2);
+
+   ^Pair<String, String>(first = $prefix, second = $suffix);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::getVariableType(v:VarPlaceHolder[1]):Type[1]
+{
+   if ($v.propertyPath->isNotEmpty(),
+       | $v.propertyPath->last().genericType.rawType->toOne(),
+       | $v.type);
+}
+
+function meta::relational::functions::sqlQueryToString::convertPlaceHolderToSQLString(v:VarPlaceHolder[1], literalProcessor: meta::pure::metamodel::function::Function<{Type[1] -> LiteralProcessor[1]}>[1], dbTimeZone:String[0..1]):String[1]
+{
+   let vType        = $v->getVariableType();
+
+   let prefixSuffix = getPrefixAndSuffixForType($vType, $literalProcessor);
+   let prefix       = $prefixSuffix.first;
+   let suffix       = $prefixSuffix.second;
+   let value        = processPlaceHolder($v, $vType, $prefix, $suffix, $dbTimeZone);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processPlaceHolder(v:VarPlaceHolder[1], type:Type[1], prefix:String[1], suffix:String[1], dbTimeZone:String[0..1]): String[1]
+{
+   let noPropertyPath              = $v.propertyPath->isEmpty();
+   let placeHolderWithPath         = $v.name+if($noPropertyPath,|'',|'[\"')+$v.propertyPath->map(p|$p.name)->joinStrings('.')+if($noPropertyPath,|'',|'\"]');
+   let resolvedPlaceHolder         = if($type == String,
+                                           | $placeHolderWithPath->convertStringToSQLString(),
+                                           | $placeHolderWithPath);
+
+   let isPossibleDateTimeType      = [Date, DateTime]->contains($v.type);
+   let possiblyApplyDateTzFunction = if($isPossibleDateTimeType,| processDatePlaceHolder($resolvedPlaceHolder, $dbTimeZone),| $resolvedPlaceHolder);
+
+   if($v->isCollectionPlaceHolder(),
+      |if($resolvedPlaceHolder == $possiblyApplyDateTzFunction,
+         |'${renderCollection('+$resolvedPlaceHolder + ' \",\" \"' + $prefix + '\" \"'+ $suffix + '\" ' + placeHolderDefaultValue() +')}',
+         |'${renderCollectionWithTz('+ $resolvedPlaceHolder + ' "['+$dbTimeZone->toOne()+']" '+ '\",\" \"' + $prefix + '\" \"'+ $suffix + '\" ' + placeHolderDefaultValue() +')}'),
+      |if($v.multiplicity->isNotEmpty() && $v.multiplicity->toOne()->isZeroOne() && $resolvedPlaceHolder == $possiblyApplyDateTzFunction,
+          |'${varPlaceHolderToString(' + $possiblyApplyDateTzFunction + '![] ' + ' \"' + $prefix + '\" \"'+ $suffix + '\" '+ placeHolderDefaultValue()+')}',
+          |$prefix + '${'+$possiblyApplyDateTzFunction+'}' + $suffix)
+      );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::isCollectionPlaceHolder(v:VarPlaceHolder[1]):Boolean[1]
+{
+   $v.multiplicity->isNotEmpty() && $v.multiplicity == ZeroMany;
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::placeHolderDefaultValue():String[1]
+{
+   '\"' + convertSQLNullToSQLString(^SQLNull()) +'\"';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processDatePlaceHolder(dateParameter:String[1], dbTimeZone:String[0..1]): String[1]
+{
+   let isNonSystemTz = $dbTimeZone->isNotEmpty() && !meta::pure::functions::date::systemDefaultTimeZones()->contains($dbTimeZone->toOne());
+   if($isNonSystemTz,|'GMTtoTZ( "['+$dbTimeZone->toOne()+']" '+$dateParameter+')'
+                    ,| $dateParameter);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processDistinct(s:SelectSQLQuery[1], format:Format[1]):String[1]
+{
+   if ($s.distinct->isEmpty() || !$s.distinct->toOne(),|'',|'distinct ');
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processTop(s:SelectSQLQuery[1], dbType:DatabaseType[1], format:Format[1]):String[1]
+{
+   if ($s.fromRow == [] && $s.toRow != [] && !$s.toRow->toOne().value->instanceOf(SQLNull) && databaseUsesTopForTake($dbType),
+         |'top '+$s.toRow->toOne()->getValueForTake()+' ', |'');
+
+}
+
+function  meta::relational::functions::sqlQueryToString::getValueForTake(l:Literal[1]):String[1]
+{
+   $l.value->match([
+      i:Integer[1]| $i->toString(),
+      v:VarPlaceHolder[1] |$v->processPlaceHolder($v->getVariableType(), '', '', [])
+   ]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processLimit(s:SelectSQLQuery[1], dbType:DatabaseType[1], format:Format[1]):String[1]
+{
+   if ($s.fromRow == [] && $s.toRow == [],
+      |
+         // No limit or offset required
+         '';
+      , |
+         if ($s.fromRow == [],
+            |
+               // We have a "take"
+               assert($s.toRow->isNotEmpty());
+
+               if(!databaseUsesTopForTake($dbType) && $dbType != DatabaseType.DB2,
+                  | '%s limit %s'->format([$format.separator, $s.toRow->toOne()->getValueForTake()]),
+                  | ''
+                  );
+            ,
+            |
+               //We have a "slice" or a "drop"
+               assert($s.fromRow->isNotEmpty());
+
+               let size = if ($s.toRow == [],
+                              | -1,
+                              |$s.toRow.value->match([
+                                 i:Integer[1]| $s.toRow->toOne().value->cast(@Integer) - $s.fromRow->toOne().value->cast(@Integer) ,
+                                 v:VarPlaceHolder[1]|[$s.toRow->toOne().value->cast(@VarPlaceHolder).name, $s.fromRow->toOne().value->cast(@VarPlaceHolder).name]->joinStrings('${','?number - ', '?number}')
+                                 ])
+                             );
+
+
+               if($dbType == DatabaseType.Postgres,
+                  |'%s offset %s'->format([$format.separator, $s.fromRow->toOne()->getValueForTake()]) + if ($size == -1, | '', | ' limit %s'->format($size)),
+                  | if ($dbType == DatabaseType.Presto,
+                     | processLimitForPresto($format, $s.fromRow, $size),
+                     | if($dbType == DatabaseType.Snowflake,
+                        | processLimitForSnowflake($format, $s.fromRow, $size),
+                        |
+                     // queries where specifying query with "limit 100,1000" would return 1100 rows.
+                     // However when a order by column is specified, the expected number of rows is returned (i.e. 900 rows).
+                     // Given that a slice without an order is largely meaningless, we'll simply report an error (rather than trying to simulate something)
+                     //
+                     // http://infocenter.sybase.com/help/index.jsp?topic=/com.sybase.infocenter.dc00801.1601/doc/html/san1281564978024.html
+
+                     assert($dbType != DatabaseType.SybaseIQ || $s.orderBy->isNotEmpty(), | $dbType->makeString() + ' requires an order by column for meaningful limit/offset');
+
+                     '%s limit %s,%s'->format([$format.separator, $s.fromRow->toOne()->getValueForTake(), $size]);
+                  )));
+            )
+      );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processLimitForSnowflake(format:Format[1], fromRow:Literal[0..1], size:Any[1]):String[1]
+{
+   if ($fromRow->isNotEmpty(),
+       | if ($size == -1,
+             | '%s limit \'\' offset %s'->format([$format.separator, $fromRow->toOne()->getValueForTake()]),
+             | '%s limit %s offset %s'->format([$format.separator, $size, $fromRow->toOne()->getValueForTake()])),
+       | '%s limit %s'->format($size));
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processLimitForPresto(format:Format[1], fromRow:Literal[0..1], size:Any[1]):String[1]
+{
+   if ($fromRow->isNotEmpty(),
+       | if ($size == -1,
+            | '%s offset %s'->format([$format.separator, $fromRow->toOne()->getValueForTake()]),
+            | '%s offset %s rows fetch next %s rows only'->format([$format.separator, $fromRow->toOne()->getValueForTake(), $size])),
+       | '%s limit %s'->format($size));
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processTopForDB2(s:SelectSQLQuery[1], dbType:DatabaseType[1],format:Format[1]):String[1]
+{
+   if ($dbType == DatabaseType.DB2
+       ,|if ($s.fromRow == [] && $s.toRow != [], | ' ' + $format.separator +'fetch first ' + $s.toRow->toOne()->getValueForTake()->toString() +' rows only', |'')
+       ,|'');
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databaseUsesTopForTake(dbType:DatabaseType[1]):Boolean[1]
+{
+   $dbType != DatabaseType.MemSQL && $dbType != DatabaseType.Postgres && $dbType != DatabaseType.DB2  && $dbType != DatabaseType.Snowflake && $dbType != DatabaseType.Presto && $dbType != DatabaseType.BigQuery && $dbType != DatabaseType.Databricks;
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::rewriteSliceAsWindowFunction(selectQuery:SelectSQLQuery[1]):SelectSQLQuery[1]
+{
+   assert($selectQuery.fromRow->isNotEmpty() || $selectQuery.toRow->isNotEmpty(), 'Expected at least one of fromRow/toRow');
+
+   let columnName = 'row_number';
+   let func = ^DynaFunction(name = meta::pure::functions::math::olap::rowNumber_Any_MANY__Map_1_.functionName->toOne()) ;
+   let sortDirection = if($selectQuery.orderBy->isNotEmpty(),
+                   | $selectQuery.orderBy->at(0).direction, //We probably should pass on all order by columns (rather than just the first), but WindowColumn doesn't support that
+                   | []
+                   );
+   let sortBy = if($selectQuery.orderBy->isNotEmpty(),
+                   | $selectQuery.orderBy.column->at(0), //We probably should pass on all order by columns (rather than just the first), but WindowColumn doesn't support that
+                   | $selectQuery.columns->at(0)
+                   )
+                  ->match([
+                         a:Alias[1]|$a.relationalElement,
+                         r:RelationalOperationElement[1]|$r
+                      ]);
+
+   let windowColumn = ^Alias(
+          name='"'+$columnName+'"' ,
+          relationalElement = ^meta::relational::metamodel::WindowColumn(
+                columnName = $columnName,
+                func= $func,
+                window = ^meta::relational::metamodel::Window(partition=[],sortBy=$sortBy, sortDirection=$sortDirection)
+             )
+          );
+
+   let innerQuery = ^$selectQuery(
+      columns = $selectQuery.columns->concatenate($windowColumn),
+      toRow = [],
+      fromRow = [],
+      orderBy = []
+      );
+
+   let tableAlias = ^TableAlias(name = 'limitoffset_via_window_subquery', relationalElement=$innerQuery);
+
+   let row_number_col = ^TableAliasColumn(
+                           alias =  $tableAlias,
+                           column = ^Column(
+                                           name = $columnName,
+                                           type = ^meta::relational::metamodel::datatype::Integer()
+                                           )
+                        );
+
+
+   let filters = if($selectQuery.fromRow->isEmpty(),
+                       | [],
+                       | ^DynaFunction(name = greaterThan_Number_1__Number_1__Boolean_1_.functionName->toOne(), parameters = [$row_number_col, $selectQuery.fromRow->toOne()])
+                       )
+                 ->concatenate(
+                       if($selectQuery.toRow->isEmpty(),
+                          | [],
+                          | ^DynaFunction(name = lessThanEqual_Number_1__Number_1__Boolean_1_.functionName->toOne(), parameters = [$row_number_col,  $selectQuery.toRow->toOne()])
+                          )
+                       );
+
+   let filter = if($filters->size() <= 1,
+                   | $filters->first(),
+                   | ^DynaFunction(name = and_Boolean_MANY__Boolean_1_.functionName->toOne(), parameters = $filters)
+                );
+
+   ^TdsSelectSqlQuery(
+      columns = $innerQuery.columns->init()->cast(@Alias)->map(c|
+            ^Alias(
+               name = $c.name,
+               relationalElement = ^TableAliasColumn(
+                                                     alias =  $tableAlias,
+                                                     column = ^Column(
+                                                              name = $c.name,
+                                                              type = ^meta::relational::metamodel::datatype::Integer()
+                                                              )
+                                                      )
+                )
+            ),
+      data =^RootJoinTreeNode(alias = $tableAlias),
+      filteringOperation = $filter
+      );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processSelectSQLQuery(selectQuery:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:RouterExtension[*]):String[1]
+{
+   // Sybase IQ does not support limit / offset in a subselect, so we need to adjust it, e.g.
+   //       select * from (select top 10 "root".id as "ID" from trades as "root" ) as x
+   // gives
+   //       SQL Anywhere Error -1001030: Feature,  TOP/FIRST/LIMIT in a view, is not supported.
+   // but instead needs to be
+   //      select * from (select "limitoffset_via_window_subquery"."ID" as "ID" from (select "root".id as "ID", row_number() OVER (Order By "root".id) as "row_number" from trades as "root")
+   //            as "limitoffset_via_window_subquery" where "limitoffset_via_window_subquery".row_number < 10) as x
+   // Also see https://www.jooq.org/doc/3.1/manual/sql-building/sql-statements/select-statement/limit-clause/#N467C4
+
+   let s = if(($isSubSelect && ($dbConfig.dbType == DatabaseType.SybaseIQ) && ($selectQuery.fromRow->isNotEmpty() || $selectQuery.toRow->isNotEmpty())) || ($dbConfig.dbType == DatabaseType.MemSQL && $selectQuery.fromRow->isNotEmpty() && $selectQuery.toRow->isEmpty()),
+              | $selectQuery->rewriteSliceAsWindowFunction(),
+              | $selectQuery
+              );
+
+   if ($s.columns->isEmpty() && !$s.data->isEmpty() && $s.data.alias.relationalElement->toOne()->instanceOf(Union) && $s.data.children->isEmpty(),
+      | $s.data.alias.relationalElement->toOne()->processOperation($dbConfig, $format->indent(), $config, $extensions),
+      | let opStr = if($s.filteringOperation->isEmpty(), |'', |$s.filteringOperation->map(s|$s->maybeWrapAsBooleanOperation($dbConfig.dbType, $extensions)->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+        let havingStr = if($s.havingOperation->isEmpty(), |'', |$s.havingOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+
+        $format.separator + 'select ' +
+
+        if ($dbConfig.dbType == DatabaseType.SybaseIQ || $dbConfig.dbType == DatabaseType.Sybase,
+              |processDistinct($s, $format) +
+               processTop($s, $dbConfig.dbType, $format),
+              |processTop($s, $dbConfig.dbType, $format) +
+               processDistinct($s, $format)
+           )+
+        printColumns($s.columns, $dbConfig, $format->indent(), $extensions) +
+        if($s.data == [],|'',| ' ' + $format.separator + 'from ' + $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), $extensions)) +
+        if (eq($opStr, ''), |'', | ' ' + $format.separator + 'where ' + $opStr) +
+        if ($s.groupBy->isEmpty(),|'',| ' ' + $format.separator + 'group by '+$s.groupBy->processGroupByColumns($dbConfig, $format->indent(), $extensions)->makeString(','))+
+        if (eq($havingStr, ''), |'', | ' ' + $format.separator + 'having ' + $havingStr) +
+        if ($s.orderBy->isEmpty(),|'',| ' ' + $format.separator + 'order by '+ $s.orderBy->map(o | $o.column->match([a:Alias[1]|$a.name->processIdentifier($dbConfig), r:RelationalOperationElement[1]|$r->processOperation($dbConfig, $format->indent(), $config, $extensions)]) + if ($o.direction == meta::relational::metamodel::SortDirection.ASC, |'', | ' desc'))->makeString(','))+
+        + processTopForDB2($s,$dbConfig.dbType,$format)
+        + processLimit($s, $dbConfig.dbType, $format);
+   );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processGroupByColumns(columns:RelationalOperationElement[*], dbConfig : DbConfig[1], format:Format[1], extensions:RouterExtension[*]):String[*]
+{
+   let supportsAliasInGroupBy = !($dbConfig.dbType->in([DatabaseType.DB2, DatabaseType.Sybase, DatabaseType.Presto, DatabaseType.Snowflake]));
+   $columns->map(c | $c->match([
+                                a:Alias[1] | if($supportsAliasInGroupBy == true, | $a->cast(@Alias).name->processIdentifier($dbConfig)
+                                                                               , | $a->cast(@Alias).relationalElement->processOperation($dbConfig, $format, $extensions)),
+                                c:TableAliasColumn[1] | $c->processOperation($dbConfig, $format, $extensions)
+                                ]));
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processLiteralValue(value:Any[1], dbTimeZone:String[1]):String[1]
+{
+    $value->match([s:String[1]  | '\'' + $s->replace('\'', '\'\'') + '\'',
+                   n:Number[1]  | $n->toString(),
+                   b:Boolean[1] | '\'' + $b->toString() + '\'',
+                   d:Date[1]    | '\'' + $d->convertDateToSqlString($dbTimeZone) + '\''])
+}
+
+function meta::relational::functions::sqlQueryToString::convertDateToSqlString(date:Date[1], dbTimeZone:String[0..1]):String[1]
+{
+   //Default to UTC, if timezone is not specified. GMT is the same as UTC, UTC is not actually a timezone
+   let timeZone = if( $dbTimeZone->isEmpty(), | 'GMT', |  $dbTimeZone->toOne());
+   if($date->hasSecond(),
+      | if ($date->hasSubsecond(),
+            | format('%t{[' + $timeZone + ']yyyy-MM-dd HH:mm:ss.SSSSSS}', $date),
+            | format('%t{[' + $timeZone + ']yyyy-MM-dd HH:mm:ss}', $date)),
+      | format('%t{[' + $timeZone + ']yyyy-MM-dd}', $date));
+
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processJoinStringsOperation(js:JoinStrings[1], dbConfig : DbConfig[1], format:Format[1], generationState:GenerationState[1], extensions:RouterExtension[*]):String[1]
+{
+    let strings = $js.strings->map(s | $s->processOperation($dbConfig, $format, $generationState, $extensions));
+    let isGroupByCat = $js.strings->size() == 1;
+
+    let separator = if($js.separator->isEmpty(), |'\'\'', |$js.separator->toOne()->processOperation($dbConfig, $format, $generationState, $extensions));
+    let prefix = if($js.prefix->isEmpty(), |'\'\'', |$js.prefix->toOne()->processOperation($dbConfig, $format, $generationState, $extensions));
+    let suffix = if($js.suffix->isEmpty(), |'\'\'', |$js.suffix->toOne()->processOperation($dbConfig, $format, $generationState, $extensions));
+    let strs = if(eq($prefix, '\'\''),
+                  | if(eq($suffix, '\'\''), | $strings, | $strings->add($suffix)),
+                  | if(eq($suffix, '\'\''), | $strings->add(0, $prefix), | $strings->add(0, $prefix)->add($suffix)));
+    if ($strs->size() == 0, | $strs->at(0), | if ($isGroupByCat, |groupByCat($strs, $dbConfig.dbType, $separator),|stringCat($strs, $dbConfig.dbType, $separator)));
+}
+
+function meta::relational::functions::sqlQueryToString::functions::groupByCat(vals : String[*], dbType:DatabaseType[1],separator : String[1]):String[1]
+{
+   let h2Sep = if ($separator == '\'\'', | '', | ' separator '+ $separator);
+   if ($dbType == DatabaseType.H2,
+      |'group_concat('+$vals->at(0)+ $h2Sep+' )',
+      |if ($dbType == DatabaseType.SybaseIQ,
+         |'list('+$vals->at(0)+','+ $separator+' )',
+         | fail('The database type \''+$dbType->id()+'\' is not supported yet!');'';
+      )
+    );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::printColumns(s:RelationalOperationElement[*], dbConfig : DbConfig[1], format:Format[1], extensions:RouterExtension[*]):String[1]
+{
+   if ($s->size() == 0,
+         |'*',
+         | $format.separator + $s->map(r|  $r->match([a:Alias[1] | let shouldWrapWithCase = ( $a.relationalElement->isBooleanOperation($extensions) && !supportsConditionalExpressionInSelectColumns($dbConfig.dbType) );
+
+                                                                   $shouldWrapWithCase->if(|'case when (' + $a.relationalElement->processOperation($dbConfig, $format, ^GenerationState(generationSide = GenerationSide.Select, withinWhenClause = true), $extensions) + ') then \'true\' else \'false\' end as ' + $a.name,
+                                                                                           | $r->processOperation($dbConfig, $format, ^GenerationState(generationSide = GenerationSide.Select, withinWhenClause = false), $extensions)
+                                                                                           );,
+                                                      z:RelationalOperationElement[1]   | $z->processOperation($dbConfig, $format, ^GenerationState(generationSide = GenerationSide.Select, withinWhenClause = false), $extensions)
+                                                      ])
+
+                                      )->joinStrings(', ' + $format.separator);
+
+       );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::maybeWrapAsBooleanOperation(e:RelationalOperationElement[1], dbType:DatabaseType[1], extensions:RouterExtension[*]):RelationalOperationElement[1]
+{
+   if ($e->isBooleanOperation($extensions) || supportsConditionalExpressionInSelectColumns($dbType), | $e, | ^DynaFunction(name ='equal', parameters=[$e, ^Literal(value=true)]););
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::supportsConditionalExpressionInSelectColumns(dbType:DatabaseType[1]):Boolean[1]
+{
+   !($dbType == DatabaseType.SybaseIQ) && !($dbType == DatabaseType.DB2)
+}
+
+function <<access.private>> meta::relational::functions::formatAliasName(alias: TableAlias[1], dbConfig:DbConfig[1]):TableAlias[1]
+{
+  if ($dbConfig.dbType == DatabaseType.BigQuery, | ^$alias(name =  $alias.name ), | ^$alias(name = '"' + $alias.name + '"'))
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processJoinTreeNode(joinTreeNode:RelationalTreeNode[1], parent:TableAlias[0..1], dbConfig : DbConfig[1], format:Format[1], extensions:RouterExtension[*]):String[1]
+{
+   let tableAlias = $joinTreeNode->match(
+                                    [
+                                       r:RootJoinTreeNode[1] | $r.alias,
+                                       j:JoinTreeNode[1] | $j.join.otherTableFromAlias($parent->toOne());
+                                    ]
+                                    );
+   let val = $joinTreeNode->match(
+                                    [
+                                       r:RootJoinTreeNode[1] |
+                                             $tableAlias->toOne()
+                                                ->map(a|^$a(name = '"' + $a.name + '"')) //Not sure why this is necessary, but it's retained to keep the generated SQL the same as previously (and does no real harm)
+                                                ->processOperation($dbConfig, $format->indent(), $extensions),
+                                       j:JoinTreeNode[1] |
+                                             if($j.joinType == JoinType.INNER,| ' ' + $format.separator() + 'inner join ',|if($j.joinType == JoinType.LEFT_OUTER,| ' ' + $format.separator() + 'left outer join ',| ' ' + $format.separator() + 'right outer join '))
+                                                + $j.alias
+                                                      ->map(a|^$a(name = '"' + $a.name + '"')) //Not sure why this is necessary, but it's retained to keep the generated SQL the same as previously (and does no real harm)
+                                                      ->toOne()->processOperation($dbConfig, $format->indent(), $extensions) + $format.separator()
+                                                + ' ' + 'on (' + processOperation($j.join.operation, $dbConfig, $format->indent(), ^Config(), $extensions) + ')';,
+                                       a:Any[1] | ''
+                                    ]
+                                    );
+   let children = if($dbConfig.dbType == DatabaseType.MemSQL,
+                     |$joinTreeNode.children()->sortBy({node | if($node.joinType == JoinType.INNER, |1, |if($node.joinType == JoinType.LEFT_OUTER, |2, |3))}),
+                     |$joinTreeNode.children());
+   $children->map(child | processJoinTreeNode($child, $tableAlias->cast(@TableAlias), $dbConfig, $format, $extensions))->joinStrings($val, '', '');
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::tableToString(table:Table[1], dbConfig : DbConfig[1]):String[1]
+{
+   let schemaName = if ($dbConfig.dbType == DatabaseType.Presto,
+                        | $table.schema.name->replace('$', '.'),
+                        | $table.schema.name
+                     );
+   if($schemaName == 'default', | $table.name->processIdentifier($dbConfig), | $schemaName->processIdentifier($dbConfig) + '.' + $table.name->processIdentifier($dbConfig));
+}
+
+function meta::relational::functions::sqlQueryToString::functions::stringCat(vals : String[*], dbType:DatabaseType[1], separator : String[1]):String[1]
+{
+   let emptyStr = if ($dbType == DatabaseType.Postgres, | 'Text\'\'', | '\'\'');
+   if ($dbType->in([DatabaseType.H2, DatabaseType.Postgres, DatabaseType.MemSQL, DatabaseType.Presto, DatabaseType.BigQuery, DatabaseType.Redshift, DatabaseType.Snowflake, DatabaseType.Databricks]),
+      |$vals->joinStrings('concat(', if($emptyStr == $separator, |', ', | ',' + $separator + ',') , ')'),
+      |if($dbType == DatabaseType.DB2,
+          | $vals->joinStrings('(',if($emptyStr == $separator, |' concat ', | ' concat ' + $separator + ' concat '), ')'),
+          | if ($dbType == DatabaseType.SybaseIQ || $dbType == DatabaseType.SqlServer,
+               |$vals->joinStrings(if($emptyStr == $separator, |'+', | '+' + $separator + '+')),
+               | fail('The database type \''+$dbType->id()+'\' is not supported yet!');'';
+               )
+          )
+    );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::removeQuotes(s:String[1]):String[1]
+{
+   let firstQuote = $s->indexOf('\'') +1;
+   $s->substring($firstQuote, $s->length()-1);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processFreeMarkerOperationHolder(freeMarkerOp:FreeMarkerOperationHolder[1], dbConfig : DbConfig[1], format:Format[1], generationState:GenerationState[1], config: Config[1], nestedFreeMarkerOperationHolder: Boolean[1], extensions:RouterExtension[*]):String[1]
+{
+   let freeMarkerOpMap = getFreeMarkerOperationMap();
+   let res = $freeMarkerOpMap->get($freeMarkerOp.name);
+   assert($res->isNotEmpty(),  | $freeMarkerOp.name + 'freeMarker Operation is not supported!');
+
+   let processedParams = $freeMarkerOp.parameters->map(p | $p->match([
+                                                               f:FreeMarkerOperationHolder[1] | $f->processFreeMarkerOperationHolder($dbConfig, $format, $generationState, $config, true, $extensions);,
+                                                               l:Literal[1]                   | $l.value->match([v:VarPlaceHolder[1] | if($v.multiplicity->isNotEmpty() && $v.multiplicity->toOne()->isZeroOne(), |$v.name + '![]', |$v.name);,
+                                                                                                                 a:Any[1]            | $a->toString();]),
+                                                               a:RelationalOperationElement[1]| '\'' + $a->processOperation($dbConfig, $format, $generationState, $config, $extensions)->replace('\'', '\\\'') + '\'';
+   ]));
+   let params = if($res.transform->isEmpty(), | $processedParams, | $res.transform->toOne()->eval($processedParams));
+
+   if($nestedFreeMarkerOperationHolder, |format($res->toOne().format, $params), |'(${' + format($res->toOne().format, $params) + '})');
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processDynaFunction(func:DynaFunction[1], dbConfig : DbConfig[1], format:Format[1], generationState:GenerationState[1], config: Config[1], extensions:RouterExtension[*]):String[1]
+{
+   if ($func->isEqualsFromFilter($config),
+      | processEqualFromFilter($func,$dbConfig,$format,$generationState,$config, $extensions),
+      |
+   if ($func.name == 'case',
+      | processCase($func,$dbConfig,$format,$generationState,$config, $extensions),
+      |
+   if ($func.name == 'not',
+      | processNot($func,$dbConfig,$format,$generationState,$config, $extensions),
+      | let result = $dbConfig.dynaFuncDispatch($func, $generationState);
+
+        let params = if ($func.name->in(['and', 'or']),
+                        | $func.parameters->map(p | $p->maybeWrapAsBooleanOperation($dbConfig.dbType, $extensions)),
+                        |
+                     if($func.name == 'if',
+                        | $func.parameters->head()->map(p | $p->maybeWrapAsBooleanOperation($dbConfig.dbType, $extensions))->concatenate($func.parameters->tail()),
+                        | $func.parameters
+                     ));
+        let conf = if($func.name->in(['and', 'or']), | $config, | ^$config(callingFromFilter = []));
+        $result->toOne().toSql($params, $dbConfig, $format, if($result.toSql.parametersWithinWhenClause->isEmpty(),|range(0,$params->size(),1)->map(i|$generationState),|$result.toSql.parametersWithinWhenClause->map(b|^$generationState(withinWhenClause=$b))), $conf, $extensions);
+   )));
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processCase(func:DynaFunction[1], dbConfig : DbConfig[1], format:Format[1], generationState:GenerationState[1], config: Config[1], extensions:RouterExtension[*]):String[1]
+{
+   let params = $func.parameters;
+   let size = ($params->size()-1)/2;
+   let range = range(0, $size->floor()*2, 2);
+   'case '+ $range->map(o| $format.separator + 'when '+$params->at($o)->processOperation($dbConfig, $format, ^$generationState(withinWhenClause = true), $extensions)+ ' ' + $format.separator + 'then '+$params->at($o+1)->processOperation($dbConfig, $format, $generationState, $extensions))->makeString(' ')+ ' ' + $format.separator + 'else '+$params->at($params->size()-1)->processOperation($dbConfig, $format, $generationState, $extensions)+' end';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::isEqualsFromFilter(func:DynaFunction[1], config: Config[1]):Boolean[1]
+{
+   $func.name == 'equal' && $config.callingFromFilter == true &&
+      $func.parameters->forAll(p | $p->instanceOf(TableAliasColumn) && $p->cast(@TableAliasColumn).column.nullable != false);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::isAndOr(func:DynaFunction[1]):Boolean[1]
+{
+   $func.name == 'and' || $func.name == 'or';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::isNot(func:DynaFunction[1]):Boolean[1]
+{
+   $func.name == 'not';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processEqualFromFilter(func:DynaFunction[1], dbConfig : DbConfig[1], format:Format[1], generationState:GenerationState[1], config: Config[1], extensions:RouterExtension[*]):String[1]
+{
+   let params = $func.parameters->map(p | $p->processOperation($dbConfig, $format, $generationState, $config, $extensions));
+   let left = $params->at(0);
+   let right = $params->at(1);
+   '(' + $left + ' = ' + $right + ' OR (' + $left + ' is null AND ' + $right + ' is null))';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processNot(func:DynaFunction[1], dbConfig : DbConfig[1], format:Format[1], generationState:GenerationState[1], config: Config[1], extensions:RouterExtension[*]):String[1]
+{
+   let parameter = $func.parameters->at(0);
+   $parameter->match([
+                       dynaFunction:DynaFunction[1] |  let functionName = $dynaFunction.name;
+                                                       if($functionName == 'equal', | $dynaFunction->processNotEqual($dbConfig, $format, $generationState, $config, $extensions),
+                                                                                    | if($functionName == 'in', | $dynaFunction->processNotIn($dbConfig, $format, $generationState, $config, $extensions),
+                                                                                                                | if($dynaFunction->isAndOr() || $dynaFunction->isNot(), | 'not ('+$dynaFunction->processOperation($dbConfig, $format, $generationState, $config, $extensions) +')';,
+                                                                                                                                                                         | 'not ' + $dynaFunction->maybeWrapAsBooleanOperation($dbConfig.dbType, $extensions)->processOperation($dbConfig, $format, $generationState, $config, $extensions);
+                                                                                                                     );
+                                                                                         );
+                                                          );,
+                       rOp: RelationalOperationElement[1] | 'not ' + $rOp->maybeWrapAsBooleanOperation($dbConfig.dbType, $extensions)->processOperation($dbConfig, $format, $generationState, $config, $extensions)
+                    ]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processNotEqual(func:DynaFunction[1], dbConfig : DbConfig[1], format:Format[1], generationState:GenerationState[1], config: Config[1], extensions:RouterExtension[*]):String[1]
+{
+   let processedParams = $func.parameters->map(p | $p->processOperation($dbConfig, $format, $generationState, $config, $extensions));
+   let left = $func.parameters->at(0);
+   let right = $func.parameters->at(1);
+   let processedLeft = $processedParams->at(0);
+   let processedRight = $processedParams->at(1);
+   let orNull =   if($left->instanceOf(Literal) && $right->instanceOf(Literal),
+                     | '',
+                     | if(!$left->instanceOf(Literal) && $right->instanceOf(Literal),
+                          |' OR ' + $processedLeft + ' is null',
+                          |if ($left->instanceOf(Literal) && !$right->instanceOf(Literal),
+                               |' OR ' + $processedRight + ' is null',
+                               | ' OR ' + $processedLeft + ' is null' + ' AND ' + $processedRight + ' is not null' + ' OR ' + $processedLeft + ' is not null' + ' AND ' + $processedRight + ' is null'
+                              )
+                         )
+                   );
+   '(' + $processedLeft + ' <> ' + $processedRight + $orNull + ')';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processNotIn(func:DynaFunction[1], dbConfig : DbConfig[1], format:Format[1], generationState:GenerationState[1], config: Config[1], extensions:RouterExtension[*]):String[1]
+{
+   let processedParams = $func.parameters->map(p | $p->processOperation($dbConfig, $format, $generationState, $config, $extensions));
+   let processedLeft = $processedParams->at(0);
+   let processedRight = $processedParams->at(1);
+   '(' + $processedLeft + ' not in ' + if($processedRight->startsWith('(') && $processedRight->endsWith(')'), | $processedRight, | '(' + $processedRight + ')') + ' OR ' + $processedLeft + ' is null)';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processSemiStructuredObjectNavigation(s:SemiStructuredObjectNavigation[1], dbConfig:DbConfig[1], format:Format[1], generationState:GenerationState[1], config:Config[1], extensions:RouterExtension[*]): String[1]
+{
+   let supportedDbTypes = [DatabaseType.Snowflake, DatabaseType.H2];
+   assert($dbConfig.dbType->in($supportedDbTypes), | 'Semi structured navigation not supported for database type: ' + $dbConfig.dbType->toString() + '. Supported database types are: ' + $supportedDbTypes->map(d|$d->toString())->joinStrings(', '));
+
+   let processedOperand = $s.operand->processOperation($dbConfig, $format, $generationState, $config, $extensions);
+
+   if ($dbConfig.dbType == DatabaseType.Snowflake, | $s->processSemiStructuredObjectNavigationForSnowflake($processedOperand), |
+   if ($dbConfig.dbType == DatabaseType.H2, | $s->processSemiStructuredObjectNavigationForH2($processedOperand), |
+   fail('Unsupported database type ' +$dbConfig.dbType->toString()); '';));
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processSemiStructuredObjectNavigationForSnowflake(s:SemiStructuredObjectNavigation[1], processedOperand:String[1]): String[1]
+{
+   // https://docs.snowflake.com/en/user-guide/querying-semistructured.html
+
+   let elementAccess = $processedOperand + $s->match([
+      p: SemiStructuredPropertyAccess[1]     | '[\'' + $p.property->cast(@Literal).value->cast(@String) + '\']' + if($p.index->isEmpty(),|'',|'['+ $p.index->toOne()->cast(@Literal).value->toString()+']'),
+      a: SemiStructuredArrayElementAccess[1] | '[' + $a.index->cast(@Literal).value->toString() + ']'
+   ]);
+
+   let castSuffix = if($s.returnType == String, | '::varchar', |
+                    if($s.returnType == StrictDate, | '::date', |
+                    if($s.returnType->isNotEmpty() && $s.returnType->toOne()->_subTypeOf(Date), | '::timestamp', |
+                    if($s.returnType->isNotEmpty() && $s.returnType->toOne()->instanceOf(Enumeration), | '::varchar', |
+                    ''))));
+
+   $elementAccess + $castSuffix;
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processSemiStructuredObjectNavigationForH2(s:SemiStructuredObjectNavigation[1], processedOperand:String[1]): String[1]
+{
+   // Use a user defined function for H2 (testing purpose)
+
+   let udfName = 'legend_h2_extension_json_navigate';
+
+   let elementAccess = $s->match([
+      p: SemiStructuredPropertyAccess[1] |
+         let propertyAccess = $udfName + '(' + $processedOperand + ', \'' + $p.property->cast(@Literal).value->cast(@String) + '\', null)';
+         if ($p.index->isNotEmpty(),
+             | $udfName + '(' + $propertyAccess + ', null, ' + $p.index->toOne()->cast(@Literal).value->toString() + ')',
+             | $propertyAccess
+         );,
+
+      a: SemiStructuredArrayElementAccess[1] | $udfName + '(' + $processedOperand + ', null, ' + $a.index->cast(@Literal).value->toString() + ')'
+   ]);
+
+   if ($s.returnType == String, | 'cast(' + $elementAccess + ' as varchar)', |
+   if ($s.returnType == Boolean, | 'cast(' + $elementAccess + ' as boolean)', |
+   if ($s.returnType == Float, | 'cast(' + $elementAccess + ' as float)', |
+   if ($s.returnType == Integer, | 'cast(' + $elementAccess + ' as integer)', |
+   if ($s.returnType == StrictDate, | 'cast(' + $elementAccess + ' as date)', |
+   if ($s.returnType->isNotEmpty() && $s.returnType->toOne()->_subTypeOf(Date), | 'cast(' + $elementAccess + ' as timestamp)', |
+   if ($s.returnType->isNotEmpty() && $s.returnType->toOne()->instanceOf(Enumeration), | 'cast(' + $elementAccess + ' as varchar)', |
+   $elementAccess)))))));
+}
+
+Class <<access.private>> meta::relational::functions::sqlQueryToString::DynaFunctionToSql
+{
+   funcName:String[1];
+   stateMatch:GenerationState[*];
+   toSql: ToSql[1];
+
+   toSql(parameters:RelationalOperationElement[*], dbConfig : DbConfig[1], format:Format[1], generationStates:GenerationState[*], config: Config[1], extensions:RouterExtension[*])
+   {
+      let processedParams = $parameters->zip($generationStates)->map(p | $p.first->processOperation($dbConfig, $format, $p.second, $config, $extensions));
+      let params = if($this.toSql.transform->isEmpty(), | $processedParams, | $this.toSql.transform->toOne()->eval($processedParams));
+
+      format($this.toSql.format, $params);
+   }:String[1];
+}
+
+Class <<access.private>> meta::relational::functions::sqlQueryToString::ToSql
+[
+    !$this.format->contains(' when ') || !$this.parametersWithinWhenClause->isEmpty()
+]
+{
+   format:String[1];
+   transform:meta::pure::metamodel::function::Function<{String[*]->String[*]}>[0..1];
+   parametersWithinWhenClause : Boolean[*];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::mapToDBUnitType(unit:String[1]):String[1]
+{
+   [
+      pair(DurationUnit.YEARS->toString(), 'YEAR'),
+      pair(DurationUnit.MONTHS->toString(), 'MONTH'),
+      pair(DurationUnit.WEEKS->toString(), 'WEEK'),
+      pair(DurationUnit.DAYS->toString(), 'DAY'),
+      pair(DurationUnit.HOURS->toString(), 'HOUR'),
+      pair(DurationUnit.MINUTES->toString(), 'MINUTE'),
+      pair(DurationUnit.SECONDS->toString(), 'SECOND'),
+      pair(DurationUnit.MILLISECONDS->toString(), 'MILLISECOND'),
+      pair(DurationUnit.MICROSECONDS->toString(), 'MICROSECOND')
+   ]->filter(p | $p.first == $unit).second->toOne();
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::mapToDBDayOfWeekNumber(day:String[1]):Integer[1]
+{
+   [
+      pair(DayOfWeek.Monday->toString(), 2),
+      pair(DayOfWeek.Tuesday->toString(), 3),
+      pair(DayOfWeek.Wednesday->toString(), 4),
+      pair(DayOfWeek.Thursday->toString(), 5),
+      pair(DayOfWeek.Friday->toString(), 6),
+      pair(DayOfWeek.Saturday->toString(), 7),
+      pair(DayOfWeek.Sunday->toString(), 1)
+   ]->filter(p | $p.first == $day).second->toOne();
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::mapToDBDayOfWeekNumberPresto(day:String[1]):Integer[1]
+{
+   [
+      pair(DayOfWeek.Monday->toString(), 1),
+      pair(DayOfWeek.Tuesday->toString(), 2),
+      pair(DayOfWeek.Wednesday->toString(), 3),
+      pair(DayOfWeek.Thursday->toString(), 4),
+      pair(DayOfWeek.Friday->toString(), 5),
+      pair(DayOfWeek.Saturday->toString(), 6),
+      pair(DayOfWeek.Sunday->toString(), 7)
+   ]->filter(p | $p.first == $day).second->toOne();
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::dateDiffDatabricks(p:String[2..3]):String[1]
+{
+    let interval = if($p->size() == 2, |'DAY', |$p->at(2)->mapToDBUnitType());
+    let cmd = if ($interval == 'YEAR',
+        | 'year('+ $p->at(0) +') - year('+ $p->at(1) +')',
+        | if ($interval == 'MONTH',
+             | 'months_between('+ $p->at(0) +', '+ $p->at(1) +')',
+             | if ($interval == 'DAY',
+                  | 'datediff('+ $p->at(0) +', '+ $p->at(1) +')',
+                  | ''
+             )
+        )
+    );
+    if ($cmd == '',|fail('The DurationUnit \''+$p->at(2)+'\' is not supported yet for date_diff'),|'');
+    [$cmd];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::formatMostRecentMemSnowflake(p:String[1..2], defaultDay:String[1]):String[*]
+{
+   let day = $p->last()->toOne()->mapToDBDayOfWeekNumber()->toString();
+   let current = if ($p->size() == 2, | $p->first()->toOne(), | $defaultDay);
+   [$day, $current, $day, $current, $day, $current, $current];
+}
+
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::formatMostRecentPresto(p:String[1..2], defaultDay:String[1]):String[*]
+{
+   let day = $p->last()->toOne()->mapToDBDayOfWeekNumberPresto()->toString();
+   let current = if ($p->size() == 2, | $p->first()->toOne(), | $defaultDay);
+   [$day, $current, $day, $current, $day, $current, $current];
+}
+function <<access.private>> meta::relational::functions::sqlQueryToString::formatMostRecentMemDb2(p:String[1..2], defaultDay:String[1]):String[*]
+{
+   let day = $p->last()->toOne()->mapToDBDayOfWeekNumber()->toString();
+   let current = if ($p->size() == 2, | $p->first()->toOne(), | $defaultDay);
+   [$current, $day, $current, $day, $current, $day, $current];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::formatMostRecentDatabricks(p:String[1..2], defaultDay:String[1]):String[*]
+{
+   let day = $p->last()->toOne()->mapToDBDayOfWeekNumber()->toString();
+   let current = if ($p->size() == 2, | $p->first()->toOne(), | $defaultDay);
+   [$current, $current, $day, $current, $day];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::formatMostRecentH2Sybase(p:String[1..2], defaultDay:String[1]):String[*]
+{
+   let day = $p->last()->toOne()->mapToDBDayOfWeekNumber()->toString();
+   let current = if ($p->size() == 2, | $p->first()->toOne(), | $defaultDay);
+   [$day, $current, $day, $current, $day, $current, $current];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::isBooleanOperation(relationalElement:RelationalOperationElement[1], extensions:RouterExtension[*]):Boolean[1]
+{
+   $relationalElement->match($extensions.moduleExtension('relational')->cast(@RelationalExtension).sqlQueryToString_isBooleanOperation->concatenate([
+      d:DynaFunction[1] | $d.name->in(['or', 'and', 'lessThan', 'lessThanEqual', 'greaterThan', 'greaterThanEqual', 'equal', 'notEqual', 'notEqualAnsi', 'startsWith', 'endsWith', 'contains', 'isEmpty', 'isNotEmpty', 'isNull', 'isNotNull','isAlphaNumeric', 'exists', 'not', 'in', 'isNumeric', 'matches', 'isDistinct'])
+                                       || ($d.name == 'group' && $d.parameters->toOne()->isBooleanOperation($extensions));,
+      f:FreeMarkerOperationHolder[1] | $f.name->in(['optionalVarPlaceHolderOpSelector']);,
+      a:Any[1] | false
+   ])->toOneMany()
+   )
+}
+function <<access.private>> meta::relational::functions::sqlQueryToString::getTransformForAddPlus():LambdaFunction<{String[*]->String[*]}>[1]
+{
+   {p:String[*]|if($p->size() == 1, | 'sum(' + $p->toOne() + ')', | $p->joinStrings('(', ' + ', ')'))};
+}
+
+function meta::relational::functions::sqlQueryToString::getDatabaseTypes():DatabaseType[*]
+{
+   [DatabaseType.DB2, DatabaseType.H2, DatabaseType.MemSQL, DatabaseType.Sybase, DatabaseType.SybaseIQ, DatabaseType.Composite, DatabaseType.Postgres, DatabaseType.SqlServer, DatabaseType.Snowflake, DatabaseType.Hive, DatabaseType.Presto, DatabaseType.BigQuery, DatabaseType.Redshift, DatabaseType.Databricks];
+}
+
+//TO DO - Remove notASybaseAse and list all DBs for 'trim' function instead
+function <<access.private>> meta::relational::functions::sqlQueryToString::getDynaFunctionMappings(dbType:DatabaseType[1]):meta::pure::metamodel::function::Function<{DynaFunction[1], GenerationState[1]->DynaFunctionToSql[1]}>[1]
+{
+   let allTypes = getDatabaseTypes();
+   let aSybase    = [DatabaseType.Sybase, DatabaseType.SybaseIQ];
+   let notASybase = $allTypes->filter(x|!$x->in($aSybase));
+   let sybaseAse  = [DatabaseType.Sybase];
+   let notASybaseAse = $allTypes->filter(x|!$x->in($sybaseAse));
+   assert($dbType->in($allTypes), 'The dbType ' + $dbType->toString() + ' is not supported yet');
+
+   let selectInsideWhen  = ^GenerationState(generationSide=GenerationSide.Select, withinWhenClause=true);
+   let selectOutsideWhen = ^GenerationState(generationSide=GenerationSide.Select, withinWhenClause=false);
+   let whereInsideWhen   = ^GenerationState(generationSide=GenerationSide.Where,  withinWhenClause=true);
+   let whereOutsideWhen  = ^GenerationState(generationSide=GenerationSide.Where,  withinWhenClause=false);
+   let allStates = [$selectInsideWhen, $selectOutsideWhen, $whereInsideWhen, $whereOutsideWhen];
+   let notSelectOutsideWhen = [$selectInsideWhen, $whereInsideWhen, $whereOutsideWhen];
+
+   let dispatch = $dbType->createDynafunctionMap([
+      forDynafunction('abs',                   [ choice($allTypes,                 $allStates,            ^ToSql(format='abs(%s)'))]),
+      forDynafunction('acos',                  [ choice($allTypes,                 $allStates,            ^ToSql(format='acos(%s)'))]),
+      forDynafunction('add',                   [ choice($allTypes,                 $allStates,            ^ToSql(format='%s',  transform=getTransformForAddPlus()))]),
+      forDynafunction('adjust',                [ choice($aSybase,                  $allStates,            ^ToSql(format='dateadd(%s)', transform={p:String[3] | $p->at(2)->mapToDBUnitType() + ', ' + $p->at(1) + ', ' + $p->at(0)})),
+                                                 choice(DatabaseType.DB2,          $allStates,            ^ToSql(format='%s', transform=meta::relational::functions::sqlQueryToString::transformAdjustDB2SQL_String_3__String_1_)),
+                                                 choice(DatabaseType.H2,           $allStates,            ^ToSql(format='dateadd(%s)', transform={p:String[3] | $p->at(2)->mapToDBUnitType() + ', ' + $p->at(1) + ', ' + $p->at(0)})),
+                                                 choice(DatabaseType.Postgres,     $allStates,            ^ToSql(format='(%s + (INTERVAL \'1 %s\' * %s))', transform={p:String[3] | [$p->at(0), $p->at(2)->replace('Text', ''), $p->at(1)]})), //https://www.postgresql.org/message-id/2B704E31-B533-4159-B6F0-EC284CFE824C%40skype.net
+                                                 choice(DatabaseType.MemSQL,       $allStates,            ^ToSql(format='adddate(%s)', transform={p:String[3] | $p->at(0) + ', INTERVAL ' + $p->at(1) + ' ' + $p->at(2)->mapToDBUnitType()})),
+                                                 choice(DatabaseType.Snowflake,    $allStates,            ^ToSql(format='dateadd(%s)', transform={p:String[3] | $p->at(2)->mapToDBUnitType() + ', ' + $p->at(1) + ', ' + $p->at(0)})),
+                                                 choice(DatabaseType.Presto,       $allStates,            ^ToSql(format='date_add(%s)', transform={p:String[3] | '\'' + $p->at(2)->mapToDBUnitType() + '\', ' + $p->at(1) + ', ' + $p->at(0)})),
+                                                 choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='%s', transform={p:String[3] | $p->at(0) + ' + INTERVAL ' + $p->at(1) + ' ' + $p->at(2)->mapToDBUnitType()})),
+                                                 choice(DatabaseType.BigQuery,     $allStates,            ^ToSql(format='date_add(%s)', transform={p:String[3] | $p->at(0) + ', INTERVAL ' + $p->at(1) + ' ' + $p->at(2)->mapToDBUnitType()})) ]),
+      forDynafunction('and',                   [ choice($allTypes,                 $allStates,            ^ToSql(format='%s', transform={p:String[*]|$p->makeString(' and ')}))]),
+      forDynafunction('asin',                  [ choice($allTypes,                 $allStates,            ^ToSql(format='asin(%s)'))]),
+      forDynafunction('atan',                  [ choice($allTypes,                 $allStates,            ^ToSql(format='atan(%s)'))]),
+      forDynafunction('atan2',                 [ choice($aSybase,                  $allStates,            ^ToSql(format='atan2(%s,%s)')),
+                                                 choice(DatabaseType.DB2,          $allStates,            ^ToSql(format='atan2(%s,%s)')),
+                                                 choice(DatabaseType.H2,           $allStates,            ^ToSql(format='atan2(%s,%s)')),
+                                                 choice(DatabaseType.MemSQL,       $allStates,            ^ToSql(format='atan2(%s,%s)')),
+                                                 choice(DatabaseType.Postgres,     $allStates,            ^ToSql(format='atan2(%s,%s)')),
+                                                 choice(DatabaseType.Snowflake,    $allStates,            ^ToSql(format='atan2(%s,%s)')),
+                                                 choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='atan2(%s,%s)')),
+                                                 choice(DatabaseType.Presto,       $allStates,            ^ToSql(format='atan2(%s,%s)')),
+                                                 choice(DatabaseType.BigQuery,     $allStates,            ^ToSql(format='atan2(%s,%s)')),
+                                                 choice(DatabaseType.Redshift,     $allStates,            ^ToSql(format='atan2(%s,%s)')),
+                                                 choice(DatabaseType.SqlServer,    $allStates,            ^ToSql(format='atn2(%s,%s)'))]),
+      forDynafunction('average',               [ choice($allTypes,                 $allStates,            ^ToSql(format='avg(1.0 * %s)'))]),
+      forDynafunction('averageRank',           [ choice($allTypes,                 $allStates,            ^ToSql(format='average_rank()'))]),
+      forDynafunction('ceiling',               [ choice($allTypes,                 $allStates,            ^ToSql(format='ceiling(%s)'))]),
+      forDynafunction('coalesce',              [ choice($allTypes,                 $allStates,            ^ToSql(format='coalesce%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')}))]),
+      forDynafunction('concat',                [ choice($aSybase,                  $allStates,            ^ToSql(format='%s', transform={p:String[*]|$p->joinStrings(' + ')})),
+                                                 choice(DatabaseType.DB2,          $allStates,            ^ToSql(format='%s', transform={p:String[*]|$p->joinStrings('(',' concat ', ')')})),
+                                                 choice(DatabaseType.H2,           $allStates,            ^ToSql(format='concat%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
+                                                 choice(DatabaseType.MemSQL,       $allStates,            ^ToSql(format='concat%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
+                                                 choice(DatabaseType.Presto,       $allStates,            ^ToSql(format='concat%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
+                                                 choice(DatabaseType.Snowflake,    $allStates,            ^ToSql(format='concat%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
+                                                 choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='concat%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
+                                                 choice(DatabaseType.SqlServer,    $allStates,            ^ToSql(format='%s', transform={p:String[*]|$p->joinStrings(' + ')})),
+                                                 choice(DatabaseType.Redshift,     $allStates,            ^ToSql(format='%s', transform={p:String[*]|$p->joinStrings(' + ')})),
+                                                 choice(DatabaseType.BigQuery,     $allStates,            ^ToSql(format='concat%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})) ]),
+      forDynafunction('contains',              [ choice($allTypes,                 $allStates,            ^ToSql(format=likePattern('%%%s%%'), transform={p:String[2]|$p->transformLikeParams($dbType)}))]),
+      forDynafunction('convertDate',           [ choice($aSybase,                  $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateIQ()})),
+                                                 choice(DatabaseType.DB2,          $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateDB2()})),
+                                                 choice(DatabaseType.H2,           $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateH2()})),
+                                                 choice(DatabaseType.MemSQL,       $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateMemSQL()})),
+                                                 choice(DatabaseType.Presto,       $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDatePresto()})),
+                                                 choice(DatabaseType.Snowflake,    $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateSnowflake()})),
+                                                 choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateDatabricks()}))]),
+      forDynafunction('convertDateTime',       [ choice($aSybase,                  $allStates,            ^ToSql(format='%s' , transform={p:String[*] | $p->convertToDateTimeIQ()})),
+                                                 choice(DatabaseType.DB2,          $allStates,            ^ToSql(format='%s' , transform={p:String[*] | $p->convertToDateTimeDB2()})),
+                                                 choice(DatabaseType.H2,           $allStates,            ^ToSql(format='%s' , transform={p:String[*] | $p->convertToDateTimeH2()})),
+                                                 choice(DatabaseType.Presto,       $allStates,            ^ToSql(format='%s' , transform={p:String[*] | $p->convertToDateTimePresto()})),
+                                                 choice(DatabaseType.Snowflake,    $allStates,            ^ToSql(format='%s' , transform={p:String[*] | $p->convertToDateTimeSnowflake()})),
+                                                 choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='%s' , transform={p:String[*] | $p->convertToDateTimeDatabricks()}))]),
+      forDynafunction('convertVarchar128',     [ choice($aSybase,                  $allStates,            ^ToSql(format='convert(VARCHAR(128), %s)')),
+                                                 choice(DatabaseType.DB2,          $allStates,            ^ToSql(format='cast(%s as VARCHAR(128))')),
+                                                 choice(DatabaseType.Presto,       $allStates,            ^ToSql(format='cast(%s as VARCHAR(128))')),
+                                                 choice(DatabaseType.H2,           $allStates,            ^ToSql(format='convert(%s, VARCHAR(128))')),
+                                                 choice(DatabaseType.Snowflake,    $allStates,            ^ToSql(format='to_char(%s)')),
+                                                 choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='case(%s as STRING)')),
+                                                 choice(DatabaseType.MemSQL,       $allStates,            ^ToSql(format='convert(%s, CHAR)'))]),
+      forDynafunction('cos',                   [ choice($allTypes,                 $allStates,            ^ToSql(format='cos(%s)'))]),
+      forDynafunction('count',                 [ choice($allTypes,                 $allStates,            ^ToSql(format='count(%s)', transform={p:String[*]|if($p->isEmpty(),|'*',|$p)}))]),
+      forDynafunction('dateDiff',              [ choice($aSybase,                  $allStates,            ^ToSql(format='datediff(%s,%s,%s)', transform={p:String[*]|[$p->at(2)->processDateDiffDurationUnit(DatabaseType.SybaseIQ),$p->at(0),$p->at(1)]})),
+                                                 choice(DatabaseType.H2,           $allStates,            ^ToSql(format='datediff(%s,%s,%s)', transform={p:String[*]|[$p->at(2)->processDateDiffDurationUnit(DatabaseType.H2),$p->at(0),$p->at(1)]})),
+                                                 choice(DatabaseType.Presto,       $allStates,            ^ToSql(format='date_diff(%s,%s,%s)', transform={p:String[*]|[$p->at(2)->processDateDiffDurationUnit(DatabaseType.Presto),$p->at(0),$p->at(1)]})),
+                                                 choice(DatabaseType.MemSQL,       $allStates,            ^ToSql(format='%s', transform={p:String[*]|generateDateDiffExpressionForMemSQL ([$p->at(1),$p->at(0), $p->at(2)])})),
+                                                 choice(DatabaseType.Postgres,     $allStates,            ^ToSql(format='%s', transform={p:String[*]|generateDateDiffExpressionForPostgres($p)})),
+                                                 choice(DatabaseType.Snowflake,    $allStates,            ^ToSql(format='datediff(%s,%s,%s)', transform={p:String[*]|[$p->at(2)->processDateDiffDurationUnit(DatabaseType.Snowflake),$p->at(0),$p->at(1)]})),
+                                                 choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='%s' , transform={p:String[2..3] | $p->dateDiffDatabricks()}))]),
+      forDynafunction('datePart',              [ choice(DatabaseType.SybaseIQ,     $allStates,            ^ToSql(format='date(%s)')),
+                                                 choice(DatabaseType.Sybase,       $allStates,            ^ToSql(format='cast(%s as date)')),
+                                                 choice(DatabaseType.DB2,          $allStates,            ^ToSql(format='date(%s)')),
+                                                 choice(DatabaseType.H2,           $allStates,            ^ToSql(format='cast(truncate(%s) as date)')),
+                                                 choice(DatabaseType.Postgres,     $allStates,            ^ToSql(format='Date(%s)')),
+                                                 choice(DatabaseType.MemSQL,       $allStates,            ^ToSql(format='date(%s)')),
+                                                 choice(DatabaseType.Snowflake,    $allStates,            ^ToSql(format='Date(%s)')),
+                                                 choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='to_date(%s)')),
+                                                 choice(DatabaseType.Presto,       $allStates,            ^ToSql(format='Date(%s)')),
+                                                 choice(DatabaseType.SqlServer,    $allStates,            ^ToSql(format='cast(%s as date)'))]),
+      forDynafunction('dayOfMonth',            [ choice(DatabaseType.H2,           $allStates,            ^ToSql(format='DAY_OF_MONTH(%s)')),
+                                                 choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='dayofmonth(%s)'))]),
+      forDynafunction('dayOfWeekNumber',       [ choice($aSybase,                  $allStates,            ^ToSql(format='datepart(WEEKDAY,%s)')),
+                                                 choice(DatabaseType.DB2,          $allStates,            ^ToSql(format='dayofweek_iso(%s)')),
+                                                 choice(DatabaseType.H2,           $allStates,            ^ToSql(format='DAY_OF_WEEK(%s)')),
+                                                 choice(DatabaseType.MemSQL,       $allStates,            ^ToSql(format='dayofweek(%s)')),
+                                                 choice(DatabaseType.Presto,       $allStates,            ^ToSql(format='day_of_week(%s)')),
+                                                 choice(DatabaseType.Snowflake,    $allStates,            ^ToSql(format='DAYOFWEEKISO(%s)')),
+                                                 choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='dayofweek(%s)')),
+                                                 choice(DatabaseType.SqlServer,    $allStates,            ^ToSql(format='datepart(dw, %s)'))]),
+      forDynafunction('denseRank',             [ choice($allTypes,                 $allStates,            ^ToSql(format='dense_rank()'))]),
+      forDynafunction('distinct',              [ choice($allTypes,                 $allStates,            ^ToSql(format='distinct(%s)', transform={p:String[*]|if($p->isEmpty(),|'*',|$p)}))]),
+      forDynafunction('divide',                [ choice($allTypes,                 $allStates,            ^ToSql(format='((1.0 * %s) / %s)'))]),
+      forDynafunction('endsWith',              [ choice($allTypes,                 $allStates,            ^ToSql(format=likePattern('%%%s'), transform={p:String[2]|$p->transformLikeParams($dbType)}))]),
+      forDynafunction('equal',                 [ choice($allTypes,                 $allStates,            ^ToSql(format='%s = %s'))]),
+      forDynafunction('exists',                [ choice($allTypes,                 $allStates,            ^ToSql(format='exists(%s)'))]),
+      forDynafunction('exp',                   [ choice($allTypes,                 $allStates,            ^ToSql(format='exp(%s)'))]),
+      forDynafunction('firstDayOfMonth',       [ choice($aSybase,                  $allStates,            ^ToSql(format='dateadd(DAY, -(day(%s) - 1), %s)', transform={p:String[1] | $p->repeat(2)})),
+                                                 choice(DatabaseType.DB2,          $allStates,            ^ToSql(format='date(1) + (year(%s)-1) YEARS + (month(%s)-1) MONTHS', transform={p:String[1] | $p->repeat(2)})),
+                                                 choice(DatabaseType.H2,           $allStates,            ^ToSql(format='dateadd(DAY, -(dayofmonth(%s) - 1), %s)', transform={p:String[1] | $p->repeat(2)})),
+                                                 choice(DatabaseType.MemSQL,       $allStates,            ^ToSql(format='subdate(%s, INTERVAL dayofmonth(%s) - 1 DAY) ', transform={p:String[1] | $p->repeat(2)})),
+                                                 choice(DatabaseType.Snowflake,    $allStates,            ^ToSql(format='DATE_TRUNC(\'MONTH\', %s)')),
+                                                 choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='trunc(%s, \'MONTH\')')),
+                                                 choice(DatabaseType.Presto,       $allStates,            ^ToSql(format='date_trunc(\'month\', %s)')),
+                                                 choice(DatabaseType.SqlServer,    $allStates,            ^ToSql(format='dateadd(day, -(day(cast(%s as date)) - 1), cast(%s as date))', transform={p:String[1] | $p->repeat(2)}))]),
+      forDynafunction('firstDayOfQuarter',     [ choice($aSybase,                  $allStates,            ^ToSql(format='dateadd(QUARTER, quarter(%s) - 1, dateadd(DAY, -(datepart(dayofyear, %s) - 1), %s))', transform={p:String[1] | $p->repeat(3)})),
+                                                 choice(DatabaseType.DB2,          $allStates,            ^ToSql(format='date(1) + ((year(%s)-1) YEARS) + (3 * QUARTER(%s) - 3) MONTHS', transform={p:String[1] | $p->repeat(2)})),
+                                                 choice(DatabaseType.H2,           $allStates,            ^ToSql(format='dateadd(MONTH, 3 * quarter(%s) - 3, dateadd(DAY, -(dayofyear(%s) - 1), %s))', transform={p:String[1] | $p->repeat(3)})),
+                                                 choice(DatabaseType.MemSQL,       $allStates,            ^ToSql(format='adddate(subdate(%s, INTERVAL dayofyear(%s) - 1 DAY), INTERVAL (quarter(date(%s) -1)) QUARTER)', transform={p:String[1] | $p->repeat(3)})),
+                                                 choice(DatabaseType.Snowflake,    $allStates,            ^ToSql(format='DATE_TRUNC(\'QUARTER\', %s)')),
+                                                 choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='trunc(%s, \'QUARTER\')')),
+                                                 choice(DatabaseType.Presto,       $allStates,            ^ToSql(format='date_trunc(\'quarter\', %s)')),
+                                                 choice(DatabaseType.SqlServer,    $allStates,            ^ToSql(format='dateadd(qq, datediff(qq, 0, %s), 0)'))]),
+      forDynafunction('firstDayOfThisMonth',   [ choice($aSybase,                  $allStates,            ^ToSql(format='dateadd(DAY, -(day(today()) - 1), today())%s', transform={p:String[*] | ''})),
+                                                 choice(DatabaseType.DB2,          $allStates,            ^ToSql(format='date(1) + (year(current date)-1) YEARS + (month(current date)-1) MONTHS')),
+                                                 choice(DatabaseType.H2,           $allStates,            ^ToSql(format='dateadd(DAY, -(dayofmonth(current_date()) - 1), current_date())')),
+                                                 choice(DatabaseType.MemSQL,       $allStates,            ^ToSql(format='subdate(curdate(), INTERVAL dayofmonth(current_date()) - 1 DAY) ')),
+                                                 choice(DatabaseType.Snowflake,    $allStates,            ^ToSql(format='DATE_TRUNC(\'MONTH\', CURRENT_DATE)%s', transform={p:String[*] | ''})),
+                                                 choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='trunc(current_date(), \'MONTH\')%s', transform={p:String[*] | ''})),
+                                                 choice(DatabaseType.Presto,       $allStates,            ^ToSql(format='date_trunc(\'month\', current_date)%s', transform={p:String[*] | ''})),
+                                                 choice(DatabaseType.SqlServer,    $allStates,            ^ToSql(format='dateadd(day, -(day(cast(getdate() as date)) - 1), cast(getdate() as date))'))]),
+      forDynafunction('firstDayOfThisQuarter', [ choice($aSybase,                  $allStates,            ^ToSql(format='dateadd(QUARTER, quarter(today()) - 1, dateadd(DAY, -(datepart(dayofyear, today()) - 1), today()))%s', transform={p:String[*] | ''})),
+                                                 choice(DatabaseType.DB2,          $allStates,            ^ToSql(format='date(1) + ((year(current date)-1) YEARS) + (3 * QUARTER(current date) - 3) MONTHS')),
+                                                 choice(DatabaseType.H2,           $allStates,            ^ToSql(format='dateadd(MONTH, 3 * quarter(current_date) - 3, dateadd(DAY, -(dayofyear(current_date()) - 1), current_date()))')),
+                                                 choice(DatabaseType.MemSQL,       $allStates,            ^ToSql(format='adddate(subdate(curdate(), INTERVAL dayofyear(current_date()) - 1 DAY), INTERVAL (quarter(curdate()) -1) QUARTER)')),
+                                                 choice(DatabaseType.Snowflake,    $allStates,            ^ToSql(format='DATE_TRUNC(\'QUARTER\', CURRENT_DATE)%s', transform={p:String[*] | ''})),
+                                                 choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='trunc(CURRENT_DATE, \'QUARTER\')%s', transform={p:String[*] | ''})),
+                                                 choice(DatabaseType.Presto,       $allStates,            ^ToSql(format='date_trunc(\'quarter\', current_date)%s', transform={p:String[*] | ''})),
+                                                 choice(DatabaseType.SqlServer,    $allStates,            ^ToSql(format='dateadd(qq, datediff(qq, 0, getdate()), 0)'))]),
+      forDynafunction('firstDayOfThisYear',    [ choice($aSybase,                  $allStates,            ^ToSql(format='dateadd(DAY, -(datepart(dayofyear, today()) - 1), today())%s', transform={p:String[*] | ''})),
+                                                 choice(DatabaseType.DB2,          $allStates,            ^ToSql(format='date(1) + (year(current date)-1) YEARS')),
+                                                 choice(DatabaseType.H2,           $allStates,            ^ToSql(format='dateadd(DAY, -(dayofyear(current_date()) - 1), current_date())')),
+                                                 choice(DatabaseType.MemSQL,       $allStates,            ^ToSql(format='subdate(curdate(), INTERVAL dayofyear(current_date()) - 1 DAY)')),
+                                                 choice(DatabaseType.Snowflake,    $allStates,            ^ToSql(format='DATE_TRUNC(\'YEAR\', CURRENT_DATE)%s', transform={p:String[*] | ''})),
+                                                 choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='trunc(CURRENT_DATE, \'YEAR\')%s', transform={p:String[*] | ''})),
+                                                 choice(DatabaseType.Presto,       $allStates,            ^ToSql(format='date_trunc(\'year\', current_date)%s', transform={p:String[*] | ''})),
+                                                 choice(DatabaseType.SqlServer,    $allStates,            ^ToSql(format='dateadd(yy, datediff(yy, 0, getdate()), 0)'))]),
+      forDynafunction('firstDayOfWeek',        [ choice($aSybase,                  $allStates,            ^ToSql(format='dateadd(DAY, -(mod(datepart(weekday, %s)+5, 7)), %s)', transform={p:String[1] | $p->repeat(2)})),
+                                                 choice(DatabaseType.H2,           $allStates,            ^ToSql(format='dateadd(DAY, -(mod(dayofweek(%s)+5, 7)), %s)', transform={p:String[1] | $p->repeat(2)})),
+                                                 choice(DatabaseType.Snowflake,    $allStates,            ^ToSql(format='DATE_TRUNC(\'WEEK\', %s)')),
+                                                 choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='trunc(%s, \'WEEK\')')),
+                                                 choice(DatabaseType.Presto,       $allStates,            ^ToSql(format='date_trunc(\'week\', %s)'))]),
+      forDynafunction('firstDayOfYear',        [ choice($aSybase,                  $allStates,            ^ToSql(format='dateadd(DAY, -(datepart(dayofyear, %s) - 1), %s)', transform={p:String[1] | $p->repeat(2)})),
+                                                 choice(DatabaseType.DB2,          $allStates,            ^ToSql(format='date(1) + (year(%s)-1) YEARS')),
+                                                 choice(DatabaseType.H2,           $allStates,            ^ToSql(format='dateadd(DAY, -(dayofyear(%s) - 1), %s)', transform={p:String[1] | $p->repeat(2)})),
+                                                 choice(DatabaseType.MemSQL,       $allStates,            ^ToSql(format='subdate(%s, INTERVAL dayofyear(%s) - 1 DAY)', transform={p:String[1] | $p->repeat(2)})),
+                                                 choice(DatabaseType.Snowflake,    $allStates,            ^ToSql(format='DATE_TRUNC(\'YEAR\', %s)')),
+                                                 choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='trunc(%s, \'YEAR\')')),
+                                                 choice(DatabaseType.Presto,       $allStates,            ^ToSql(format='date_trunc(\'year\', %s)')),
+                                                 choice(DatabaseType.SqlServer,    $allStates,            ^ToSql(format='dateadd(yy, datediff(yy, 0, %s), 0)'))]),
+      forDynafunction('floor',                 [ choice($allTypes,                 $allStates,            ^ToSql(format='floor(%s)'))]),
+      forDynafunction('greaterThan',           [ choice($allTypes,                 $allStates,            ^ToSql(format='%s > %s'))]),
+      forDynafunction('greaterThanEqual',      [ choice($allTypes,                 $allStates,            ^ToSql(format='%s >= %s'))]),
+      forDynafunction('group',                 [ choice($allTypes,                 $allStates,            ^ToSql(format='(%s)'))]),
+      forDynafunction('hour',                  [ choice($aSybase,                  $allStates,            ^ToSql(format='hour(%s)')),
+                                                 choice(DatabaseType.Composite,    $allStates,            ^ToSql(format='hour(%s)')),
+                                                 choice(DatabaseType.DB2,          $allStates,            ^ToSql(format='hour(%s)')),
+                                                 choice(DatabaseType.H2,           $allStates,            ^ToSql(format='hour(%s)')),
+                                                 choice(DatabaseType.MemSQL,       $allStates,            ^ToSql(format='hour(%s)')),
+                                                 choice(DatabaseType.Presto,       $allStates,            ^ToSql(format='hour(%s)')),
+                                                 choice(DatabaseType.Postgres,     $allStates,            ^ToSql(format='date_part(\'hour\', %s)')),
+                                                 choice(DatabaseType.Snowflake,    $allStates,            ^ToSql(format='date_part(\'hour\', %s)')),
+                                                 choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='hour(%s)')),
+                                                 choice(DatabaseType.SqlServer,    $allStates,            ^ToSql(format='hour(%s)')),
+                                                 choice(DatabaseType.Redshift,     $allStates,            ^ToSql(format='date_part(hour, %s)')),
+                                                 choice(DatabaseType.BigQuery,     $allStates,            ^ToSql(format='extract(hour from %s)'))]),
+      forDynafunction('if',                    [ choice($allTypes,                 $allStates,            ^ToSql(format='case when %s then %s else %s end', parametersWithinWhenClause = [true, false, false]))]),
+      forDynafunction('in',                    [ choice($allTypes,                 $allStates,            ^ToSql(format='%s in %s', transform={p:String[2] | if($p->at(1)->startsWith('(') && $p->at(1)->endsWith(')'), | $p, | [$p->at(0), ('(' + $p->at(1) + ')')])}))]),
+      forDynafunction('objectReferenceIn',     [ choice($allTypes,                 $allStates,            ^ToSql(format='%s objectReferenceIn %s', transform={p:String[*] | if($p->at(1)->startsWith('(') && $p->at(1)->endsWith(')'), | [$p->at(0), $p->at(1)], | [$p->at(0), ('(' + $p->at(1) + ')')])}))]),
+      forDynafunction('indexOf',               [ choice($aSybase,                  $allStates,            ^ToSql(format='LOCATE(%s)', transform={p:String[2] | $p->at(0) + ', ' + $p->at(1)}))]),
+      forDynafunction('indexOf',               [ choice(DatabaseType.H2,           $allStates,            ^ToSql(format='LOCATE(%s)', transform={p:String[2] | $p->at(1) + ', ' + $p->at(0)})),
+                                                 choice(DatabaseType.MemSQL,       $allStates,            ^ToSql(format='LOCATE(%s)', transform={p:String[2] | $p->at(1) + ', ' + $p->at(0)})),
+                                                 choice(DatabaseType.Presto,       $allStates,            ^ToSql(format='strpos(%s)', transform={p:String[2] | $p->at(0) + ', ' + $p->at(1)})),
+                                                 choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='locate(%s)', transform={p:String[2] | $p->at(0) + ', ' + $p->at(1)})),
+                                                 choice(DatabaseType.Snowflake,    $allStates,            ^ToSql(format='CHARINDEX(%s)', transform={p:String[2] | $p->at(1) + ', ' + $p->at(0)}))]),
+      forDynafunction('isDistinct',            [ choice($allTypes,                 $allStates,            ^ToSql(format='count(distinct(%s)) = count(%s)', transform={p:String[*]|assert($p->isNotEmpty(), |'"isDistinct" aggregation can be applied on primitive values only'); $p->concatenate($p);}))]),
+      forDynafunction('isEmpty',               [ choice($aSybase,                  $selectOutsideWhen,    ^ToSql(format='case when (%s is null) then \'true\' else \'false\' end', parametersWithinWhenClause=true)),
+                                                 choice($aSybase,                  $notSelectOutsideWhen, ^ToSql(format='%s is null')),
+                                                 choice($notASybase,               $allStates,            ^ToSql(format='%s is null'))]),
+      forDynafunction('isNotEmpty',            [ choice($aSybase,                  $selectOutsideWhen,    ^ToSql(format='case when (%s is not null) then \'true\' else \'false\' end', parametersWithinWhenClause=true)),
+                                                 choice($aSybase,                  $notSelectOutsideWhen, ^ToSql(format='%s is not null')),
+                                                 choice($notASybase,               $allStates,            ^ToSql(format='%s is not null'))]),
+      forDynafunction('isNotNull',             [ choice($aSybase,                  $selectOutsideWhen,    ^ToSql(format='case when (%s is not null) then \'true\' else \'false\' end', parametersWithinWhenClause=true)),
+                                                 choice($aSybase,                  $notSelectOutsideWhen, ^ToSql(format='%s is not null')),
+                                                 choice($notASybase,               $allStates,            ^ToSql(format='%s is not null'))]),
+      forDynafunction('isNull',                [ choice($aSybase,                  $selectOutsideWhen,    ^ToSql(format='case when (%s is null) then \'true\' else \'false\' end', parametersWithinWhenClause=true)),
+                                                 choice($aSybase,                  $notSelectOutsideWhen, ^ToSql(format='%s is null')),
+                                                 choice($notASybase,               $allStates,            ^ToSql(format='%s is null'))]),
+      forDynafunction('isNumeric',             [ choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='(lower(%s) = upper(%s))')),
+                                                 choice(DatabaseType.H2,           $allStates,            ^ToSql(format='(lower(%s) = upper(%s))')),
+                                                 choice($aSybase,                  $allStates,            ^ToSql(format='isnumeric(%s)'))]),
+      forDynafunction('isAlphaNumeric',        [ choice($aSybase,                  $allStates,            ^ToSql(format=likePatternWithoutEscape('%%%s%%'), transform={p:String[1]|$p->transformAlphaNumericParams($dbType)})),
+                                                 choice(DatabaseType.Snowflake,    $allStates,            ^ToSql(format=regexpPattern('%s'), transform={p:String[1]|$p->transformAlphaNumericParams($dbType)})),
+                                                 choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='rlike(%s)', transform={p:String[1]|$p->transformAlphaNumericParams($dbType)})),
+                                                 choice(DatabaseType.H2,           $allStates,            ^ToSql(format=regexpPattern('%s'), transform={p:String[1]|$p->transformAlphaNumericParams($dbType)}))]),
+      forDynafunction('joinStrings',           [ choice($aSybase,                  $allStates,            ^ToSql(format='list(%s,%s)')),
+                                                 choice(DatabaseType.DB2,          $allStates,            ^ToSql(format='listagg(%s,%s)')),
+                                                 choice(DatabaseType.H2,           $allStates,            ^ToSql(format='group_concat(%s separator %s)')),
+                                                 choice(DatabaseType.Postgres,     $allStates,            ^ToSql(format='string_agg(%s, %s)')),
+                                                 choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='array_join(%s, %s)')),
+                                                 choice(DatabaseType.Snowflake,    $allStates,            ^ToSql(format='listagg(%s, %s)')),
+                                                 choice(DatabaseType.MemSQL,       $allStates,            ^ToSql(format='group_concat(%s separator %s)')),
+                                                 choice(DatabaseType.Redshift,     $allStates,            ^ToSql(format='listagg(%s, %s)')),
+                                                 choice(DatabaseType.BigQuery,     $allStates,            ^ToSql(format='string_agg(%s, %s)'))]),
+      forDynafunction('left',                  [ choice($aSybase,                  $allStates,            ^ToSql(format='left(%s,%s)')),
+                                                 choice(DatabaseType.H2,           $allStates,            ^ToSql(format='left(%s,%s)')),
+                                                 choice(DatabaseType.Snowflake,    $allStates,            ^ToSql(format='left(%s,%s)')),
+                                                 choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='left(%s,%s)')),
+                                                 choice(DatabaseType.Presto,       $allStates,            ^ToSql(format='substr(%s,1,%s)')),
+                                                 choice(DatabaseType.SqlServer,    $allStates,            ^ToSql(format='left(%s,%s)'))]),
+      forDynafunction('length',                [ choice($aSybase,                  $allStates,            ^ToSql(format='char_length(%s)')),
+                                                 choice(DatabaseType.Composite,    $allStates,            ^ToSql(format='char_length(%s)')),
+                                                 choice(DatabaseType.DB2,          $allStates,            ^ToSql(format='CHARACTER_LENGTH(%s,CODEUNITS32)')),
+                                                 choice(DatabaseType.H2,           $allStates,            ^ToSql(format='char_length(%s)')),
+                                                 choice(DatabaseType.MemSQL,       $allStates,            ^ToSql(format='char_length(%s)')),
+                                                 choice(DatabaseType.Postgres,     $allStates,            ^ToSql(format='char_length(%s)')),
+                                                 choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='length(%s)')),
+                                                 choice(DatabaseType.Snowflake,    $allStates,            ^ToSql(format='length(%s)')),
+                                                 choice(DatabaseType.Presto,       $allStates,            ^ToSql(format='length(%s)')),
+                                                 choice(DatabaseType.SqlServer,    $allStates,            ^ToSql(format='len(%s)'))]),
+      forDynafunction('lessThan',              [ choice($allTypes,                 $allStates,            ^ToSql(format='%s < %s'))]),
+      forDynafunction('lessThanEqual',         [ choice($allTypes,                 $allStates,            ^ToSql(format='%s <= %s'))]),
+      forDynafunction('log',                   [ choice($allTypes,                 $allStates,            ^ToSql(format='ln(%s)'))]),
+      forDynafunction('ltrim',                 [ choice($aSybase,                  $allStates,            ^ToSql(format='ltrim(%s)')),
+                                                 choice(DatabaseType.H2,           $allStates,            ^ToSql(format='ltrim(%s)')),
+                                                 choice(DatabaseType.Snowflake,    $allStates,            ^ToSql(format='ltrim(%s)')),
+                                                 choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='ltrim(%s)')),
+                                                 choice(DatabaseType.Presto,       $allStates,            ^ToSql(format='ltrim(%s)')),
+                                                 choice(DatabaseType.SqlServer,    $allStates,            ^ToSql(format='ltrim(%s)'))]),
+      forDynafunction('matches',               [ choice($aSybase,                  $allStates,            ^ToSql(format=regexpPattern('%s'), transform={p:String[2]|$p->transformRegexpParams($dbType)})),
+                                                 choice(DatabaseType.H2,           $allStates,            ^ToSql(format=regexpPattern('%s'), transform={p:String[2]|$p->transformRegexpParams($dbType)})),
+                                                 choice(DatabaseType.Snowflake,    $allStates,            ^ToSql(format=regexpPattern('%s'), transform={p:String[2]|$p->transformRegexpParams($dbType)})),
+                                                 choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='rlike(%s)', transform={p:String[2]|$p->transformRegexpParams($dbType)})),
+                                                 choice(DatabaseType.Presto,       $allStates,            ^ToSql(format=regexpLikePattern('%s','%s'), transform={p:String[2]|$p->transformRegexpParams($dbType)}))]),
+      forDynafunction('max',                   [ choice($allTypes,                 $allStates,            ^ToSql(format='max(%s)'))]),
+      forDynafunction('min',                   [ choice($allTypes,                 $allStates,            ^ToSql(format='min(%s)'))]),
+      forDynafunction('minute',                [ choice($aSybase,                  $allStates,            ^ToSql(format='minute(%s)')),
+                                                 choice(DatabaseType.DB2,          $allStates,            ^ToSql(format='minute(%s)')),
+                                                 choice(DatabaseType.H2,           $allStates,            ^ToSql(format='minute(%s)')),
+                                                 choice(DatabaseType.MemSQL,       $allStates,            ^ToSql(format='minute(%s)')),
+                                                 choice(DatabaseType.Presto,       $allStates,            ^ToSql(format='minute(%s)')),
+                                                 choice(DatabaseType.Snowflake,    $allStates,            ^ToSql(format='minute(%s)')),
+                                                 choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='minute(%s)')),
+                                                 choice(DatabaseType.SqlServer,    $allStates,            ^ToSql(format='minute(%s)')),
+                                                 choice(DatabaseType.Redshift,     $allStates,            ^ToSql(format='extract(minute from %s)')),
+                                                 choice(DatabaseType.BigQuery,     $allStates,            ^ToSql(format='extract(minute from %s)'))]),
+      forDynafunction('minus',                 [ choice($allTypes,                 $allStates,            ^ToSql(format='%s', transform={p:String[*]|if($p->size() == 1, | '-' + $p->toOne(), | $p->joinStrings('(', ' - ', ')'))}))]),
+      forDynafunction('mod',                   [ choice($aSybase,                  $allStates,            ^ToSql(format='mod(%s,%s)')),
+                                                 choice(DatabaseType.DB2,          $allStates,            ^ToSql(format='mod(%s,%s)')),
+                                                 choice(DatabaseType.H2,           $allStates,            ^ToSql(format='mod(%s,%s)')),
+                                                 choice(DatabaseType.MemSQL,       $allStates,            ^ToSql(format='mod(%s,%s)')),
+                                                 choice(DatabaseType.Postgres,     $allStates,            ^ToSql(format='mod(%s,%s)')),
+                                                 choice(DatabaseType.Presto,       $allStates,            ^ToSql(format='mod(%s,%s)')),
+                                                 choice(DatabaseType.Snowflake,    $allStates,            ^ToSql(format='mod(%s,%s)')),
+                                                 choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='mod(%s,%s)')),
+                                                 choice(DatabaseType.Redshift,     $allStates,            ^ToSql(format='mod(%s,%s)')),
+                                                 choice(DatabaseType.BigQuery,     $allStates,            ^ToSql(format='mod(%s,%s)'))]),
+      forDynafunction('month',                 [ choice($aSybase,                  $allStates,            ^ToSql(format='month(%s)')),
+                                                 choice(DatabaseType.DB2,          $allStates,            ^ToSql(format='month(%s)')),
+                                                 choice(DatabaseType.H2,           $allStates,            ^ToSql(format='month(%s)')),
+                                                 choice(DatabaseType.MemSQL,       $allStates,            ^ToSql(format='month(%s)')),
+                                                 choice(DatabaseType.Presto,       $allStates,            ^ToSql(format='month(%s)')),
+                                                 choice(DatabaseType.Snowflake,    $allStates,            ^ToSql(format='MONTH(%s)')),
+                                                 choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='month(%s)')),
+                                                 choice(DatabaseType.SqlServer,    $allStates,            ^ToSql(format='month(%s)')),
+                                                 choice(DatabaseType.Redshift,     $allStates,            ^ToSql(format='extract(month from %s)')),
+                                                 choice(DatabaseType.BigQuery,     $allStates,            ^ToSql(format='extract(month from %s)'))]),
+      forDynafunction('monthNumber',           [ choice($aSybase,                  $allStates,            ^ToSql(format='month(%s)')),
+                                                 choice(DatabaseType.DB2,          $allStates,            ^ToSql(format='month(%s)')),
+                                                 choice(DatabaseType.H2,           $allStates,            ^ToSql(format='month(%s)')),
+                                                 choice(DatabaseType.MemSQL,       $allStates,            ^ToSql(format='month(%s)')),
+                                                 choice(DatabaseType.Presto,       $allStates,            ^ToSql(format='month(%s)')),
+                                                 choice(DatabaseType.Snowflake,    $allStates,            ^ToSql(format='MONTH(%s)')),
+                                                 choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='month(%s)')),
+                                                 choice(DatabaseType.SqlServer,    $allStates,            ^ToSql(format='month(%s)')),
+                                                 choice(DatabaseType.Redshift,     $allStates,            ^ToSql(format='extract(month from %s)')),
+                                                 choice(DatabaseType.BigQuery,     $allStates,            ^ToSql(format='extract(month from %s)'))]),
+      forDynafunction('mostRecentDayOfWeek',   [ choice($aSybase,                  $allStates,            ^ToSql(format='dateadd(Day, case when %s - dow(%s) > 0 then %s - dow(%s) - 7 else %s - dow(%s) end, %s)', transform={p:String[1..2] | $p->formatMostRecentH2Sybase('today()')}, parametersWithinWhenClause = [false, false])),
+                                                 choice(DatabaseType.DB2,          $allStates,            ^ToSql(format='%s + case when %s - dayofweek(%s) > 0 then %s - dayofweek(%s) - 7 else %s - dayofweek(%s) end DAY', transform={p:String[1..2] | $p->formatMostRecentMemDb2('current date')}, parametersWithinWhenClause = [false, false])),
+                                                 choice(DatabaseType.H2,           $allStates,            ^ToSql(format='dateadd(DAY, case when %s - DAY_OF_WEEK(%s) > 0 then %s - DAY_OF_WEEK(%s) - 7 else %s - DAY_OF_WEEK(%s) end, %s)', transform={p:String[1..2] | $p->formatMostRecentH2Sybase('current_date()')}, parametersWithinWhenClause = [false, false])),
+                                                 choice(DatabaseType.MemSQL,       $allStates,            ^ToSql(format='adddate(%s, INTERVAL case when %s - dayofweek(%s) > 0 then %s - dayofweek(%s) - 7 else %s - dayofweek(%s) end DAY)', transform={p:String[1..2] | $p->formatMostRecentMemDb2('curdate()')}, parametersWithinWhenClause = [false, false])),
+                                                 choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='date_sub(%s, case when dayofweek(%s) = %s then 0 else dayofweek(%s) - %s end)', transform={p:String[1..2] | $p->formatMostRecentDatabricks('current_date()')}, parametersWithinWhenClause = [false, false])),
+                                                 choice(DatabaseType.Snowflake,    $allStates,            ^ToSql(format='DATE_TRUNC(\'WEEK\', CURRENT_DATE)%s', transform={p:String[*] | ''})),
+                                                 choice(DatabaseType.Presto,       $allStates,            ^ToSql(format='date_add(\'day\', case when %s - day_of_week(%s) > 0 then %s - day_of_week(%s) - 7 else %s - day_of_week(%s) end, %s)', transform={p:String[1..2] | $p->formatMostRecentPresto('current_date')}, parametersWithinWhenClause = [false, false]))]),
+      forDynafunction('now',                   [ choice($aSybase,                  $allStates,            ^ToSql(format='now(%s)', transform={p:String[*] | ''})),
+                                                 choice(DatabaseType.DB2,          $allStates,            ^ToSql(format='current timestamp')),
+                                                 choice(DatabaseType.H2,           $allStates,            ^ToSql(format='current_timestamp()')),
+                                                 choice(DatabaseType.MemSQL,       $allStates,            ^ToSql(format='now()')),
+                                                 choice(DatabaseType.Postgres,     $allStates,            ^ToSql(format='now()')),
+                                                 choice(DatabaseType.Presto,       $allStates,            ^ToSql(format='current_timestamp')),
+                                                 choice(DatabaseType.Snowflake,    $allStates,            ^ToSql(format='current_timestamp')),
+                                                 choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='current_timestamp')),
+                                                 choice(DatabaseType.Redshift,     $allStates,            ^ToSql(format='now()')),
+                                                 choice(DatabaseType.SqlServer,    $allStates,            ^ToSql(format='getdate()')),
+                                                 choice(DatabaseType.BigQuery,     $allStates,            ^ToSql(format='current_timestamp()'))]),
+      forDynafunction('notEqual',              [ choice($allTypes,                 $allStates,            ^ToSql(format='%s != %s'))]),
+      forDynafunction('notEqualAnsi',          [ choice($allTypes,                 $allStates,            ^ToSql(format='%s <> %s'))]),
+      forDynafunction('or',                    [ choice($allTypes,                 $allStates,            ^ToSql(format='%s', transform={p:String[*]|$p->makeString(' or ')}))]),
+      forDynafunction('parseDate',             [ choice($aSybase,                  $allStates,            ^ToSql(format='%s', transform={p:String[*] | if( $p->size()==1,|'cast('+$p->at(0)+' as timestamp)' ,|'convert( datetime,'+ $p->at(0)+','+$p->at(1)+')' )})),
+                                                 choice(DatabaseType.H2,           $allStates,            ^ToSql(format='parsedatetime(%s,%s)')),
+                                                 choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='to_date(%s,%s)')),
+                                                 choice(DatabaseType.Presto,       $allStates,            ^ToSql(format='date_parse(%s,%s)'))]),
+      forDynafunction('parseDecimal',          [ choice($aSybase,                  $allStates,            ^ToSql(format='cast(%s as decimal)')),
+                                                 choice(DatabaseType.H2,           $allStates,            ^ToSql(format='cast(%s as decimal)')),
+                                                 choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='cast(%s as double)')),
+                                                 choice(DatabaseType.Redshift,     $allStates,            ^ToSql(format='cast(%s as decimal)')),
+                                                 choice(DatabaseType.BigQuery,     $allStates,            ^ToSql(format='cast(%s as decimal)'))]),
+      forDynafunction('parseFloat',            [ choice($aSybase,                  $allStates,            ^ToSql(format='cast(%s as float)')),
+                                                 choice(DatabaseType.Composite,    $allStates,            ^ToSql(format='cast(%s as float)')),
+                                                 choice(DatabaseType.DB2,          $allStates,            ^ToSql(format='cast(%s as float)')),
+                                                 choice(DatabaseType.H2,           $allStates,            ^ToSql(format='cast(%s as float)')),
+                                                 choice(DatabaseType.MemSQL,       $allStates,            ^ToSql(format='cast(%s as decimal)')),
+                                                 choice(DatabaseType.Presto,       $allStates,            ^ToSql(format='cast(%s as double)')),
+                                                 choice(DatabaseType.Postgres,     $allStates,            ^ToSql(format='cast(%s as float)')),
+                                                 choice(DatabaseType.Snowflake,    $allStates,            ^ToSql(format='cast(%s as float)')),
+                                                 choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='cast(%s as float)')),
+                                                 choice(DatabaseType.Redshift,     $allStates,            ^ToSql(format='cast(%s as float)')),
+                                                 choice(DatabaseType.SqlServer,    $allStates,            ^ToSql(format='cast(%s as float)')),
+                                                 choice(DatabaseType.BigQuery,     $allStates,            ^ToSql(format='cast(%s as float64)'))]),
+      forDynafunction('parseInteger',          [ choice($aSybase,                  $allStates,            ^ToSql(format='cast(%s as integer)'))]),
+      forDynafunction('parseInteger',          [ choice(DatabaseType.Composite,    $allStates,            ^ToSql(format='cast(%s as integer)')),
+                                                 choice(DatabaseType.DB2,          $allStates,            ^ToSql(format='cast(%s as integer)')),
+                                                 choice(DatabaseType.H2,           $allStates,            ^ToSql(format='cast(%s as integer)')),
+                                                 choice(DatabaseType.MemSQL,       $allStates,            ^ToSql(format='cast(%s as signed integer)')),
+                                                 choice(DatabaseType.Postgres,     $allStates,            ^ToSql(format='cast(%s as integer)')),
+                                                 choice(DatabaseType.Presto,       $allStates,            ^ToSql(format='cast(%s as integer)')),
+                                                 choice(DatabaseType.Snowflake,    $allStates,            ^ToSql(format='cast(%s as integer)')),
+                                                 choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='cast(%s as int)')),
+                                                 choice(DatabaseType.SqlServer,    $allStates,            ^ToSql(format='cast(%s as integer)')),
+                                                 choice(DatabaseType.Redshift,     $allStates,            ^ToSql(format='cast(%s as integer)')),
+                                                 choice(DatabaseType.BigQuery ,    $allStates,            ^ToSql(format='cast(%s as int64)'))]),
+      forDynafunction('parseJson',             [ choice(DatabaseType.Snowflake,    $allStates,            ^ToSql(format='parse_json(%s)'))]),
+      forDynafunction('plus',                  [ choice($allTypes,                 $allStates,            ^ToSql(format='%s', transform=getTransformForAddPlus()))]),
+      forDynafunction('position',              [ choice($aSybase,                  $allStates,            ^ToSql(format='charindex(%s, %s)')),
+                                                 choice(DatabaseType.Composite,    $allStates,            ^ToSql(format='position(%s, %s)')),
+                                                 choice(DatabaseType.DB2,          $allStates,            ^ToSql(format='position(%s, %s)')),
+                                                 choice(DatabaseType.H2,           $allStates,            ^ToSql(format='position(%s, %s)')),
+                                                 choice(DatabaseType.MemSQL,       $allStates,            ^ToSql(format='LOCATE(%s, %s)')),
+                                                 choice(DatabaseType.Postgres,     $allStates,            ^ToSql(format='position(%s in %s)')),
+                                                 choice(DatabaseType.Presto,       $allStates,            ^ToSql(format='position(%s in %s)')),
+                                                 choice(DatabaseType.Snowflake,    $allStates,            ^ToSql(format='position(%s in %s)')),
+                                                 choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='array_position(%s, %s)')),
+                                                 choice(DatabaseType.SqlServer,    $allStates,            ^ToSql(format='charindex(%s, %s)')),
+                                                 choice(DatabaseType.Redshift,     $allStates,            ^ToSql(format='position(%s in %s)')),
+                                                 choice(DatabaseType.BigQuery,     $allStates,            ^ToSql(format='strpos(%s, %s)'))]),
+      forDynafunction('pow',                   [ choice($allTypes,                 $allStates,            ^ToSql(format='power(%s, %s)'))]),
+      forDynafunction('previousDayOfWeek',     [ choice($aSybase,                  $allStates,            ^ToSql(format='dateadd(DAY, case when %s - dow(%s) >= 0 then %s - dow(%s) - 7 else %s - dow(%s) end, %s)', transform={p:String[1..2] | $p->formatMostRecentH2Sybase('today()')}, parametersWithinWhenClause = [false, false])),
+                                                 choice(DatabaseType.DB2,          $allStates,            ^ToSql(format='%s + case when %s - dayofweek(%s) >= 0 then %s - dayofweek(%s) - 7 else %s - dayofweek(%s) end DAY', transform={p:String[1..2] | $p->formatMostRecentMemDb2('current date')}, parametersWithinWhenClause = [false, false])),
+                                                 choice(DatabaseType.H2,           $allStates,            ^ToSql(format='dateadd(DAY, case when %s - DAY_OF_WEEK(%s) >= 0 then %s - DAY_OF_WEEK(%s) - 7 else %s - DAY_OF_WEEK(%s) end, %s)', transform={p:String[1..2] | $p->formatMostRecentH2Sybase('current_date()')}, parametersWithinWhenClause = [false, false])),
+                                                 choice(DatabaseType.MemSQL,       $allStates,            ^ToSql(format='adddate(%s, INTERVAL case when %s - dayofweek(%s) >= 0 then %s - dayofweek(%s) - 7 else %s - dayofweek(%s) end DAY)', transform={p:String[1..2] | $p->formatMostRecentMemDb2('curdate()')}, parametersWithinWhenClause = [false, false])),
+                                                 choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='date_sub(%s, case when dayofweek(%s) = %s then 7 else dayofweek(%s) - %s end)', transform={p:String[1..2] | $p->formatMostRecentDatabricks('current_date()')}, parametersWithinWhenClause = [false, false])),
+                                                 choice(DatabaseType.Snowflake,    $allStates,            ^ToSql(format='dateadd(DAY, case when %s - DAYOFWEEK(%s) +1  >= 0 then %s  - DAYOFWEEK(%s) -1 - 7 else %s - DAYOFWEEK(%s) -1 end, %s)', transform={p:String[1..2] | $p->formatMostRecentMemSnowflake('current_date')}, parametersWithinWhenClause = [false, false])),
+                                                 choice(DatabaseType.Presto,       $allStates,            ^ToSql(format='date_add(\'day\', case when %s - day_of_week(%s) >= 0 then %s - day_of_week(%s) - 7 else %s - day_of_week(%s) end, %s)', transform={p:String[1..2] | $p->formatMostRecentPresto('current_date')}, parametersWithinWhenClause = [false, false]))]),
+      forDynafunction('percentile',            [ choice($allTypes,                 $allStates,            ^ToSql(format='%s', transform = {p:String[*] | $p->transformPercentile($dbType)}))]),
+      forDynafunction('quarter',               [ choice($aSybase ,                 $allStates,            ^ToSql(format='quarter(%s)')),
+                                                 choice(DatabaseType.DB2,          $allStates,            ^ToSql(format='quarter(%s)')),
+                                                 choice(DatabaseType.H2,           $allStates,            ^ToSql(format='quarter(%s)')),
+                                                 choice(DatabaseType.MemSQL,       $allStates,            ^ToSql(format='quarter(%s)')),
+                                                 choice(DatabaseType.Presto,       $allStates,            ^ToSql(format='quarter(%s)')),
+                                                 choice(DatabaseType.Postgres,     $allStates,            ^ToSql(format='quarter(%s)')),
+                                                 choice(DatabaseType.Snowflake,    $allStates,            ^ToSql(format='quarter(%s)')),
+                                                 choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='quarter(%s)')),
+                                                 choice(DatabaseType.SqlServer,    $allStates,            ^ToSql(format='quarter(%s)')),
+                                                 choice(DatabaseType.BigQuery,     $allStates,            ^ToSql(format='extract( quarter from %s)'))]),
+      forDynafunction('quarterNumber',          [ choice($aSybase ,                $allStates,            ^ToSql(format='quarter(%s)')),
+                                                 choice(DatabaseType.DB2,          $allStates,            ^ToSql(format='quarter(%s)')),
+                                                 choice(DatabaseType.H2,           $allStates,            ^ToSql(format='quarter(%s)')),
+                                                 choice(DatabaseType.MemSQL,       $allStates,            ^ToSql(format='quarter(%s)')),
+                                                 choice(DatabaseType.Presto,       $allStates,            ^ToSql(format='quarter(%s)')),
+                                                 choice(DatabaseType.Postgres,     $allStates,            ^ToSql(format='quarter(%s)')),
+                                                 choice(DatabaseType.Snowflake,    $allStates,            ^ToSql(format='quarter(%s)')),
+                                                 choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='quarter(%s)')),
+                                                 choice(DatabaseType.SqlServer,    $allStates,            ^ToSql(format='quarter(%s)')),
+                                                 choice(DatabaseType.BigQuery,     $allStates,            ^ToSql(format='extract( quarter from %s)'))]),
+      forDynafunction('rank',                  [ choice($allTypes,                 $allStates,            ^ToSql(format='rank()'))]),
+      forDynafunction('rem',                   [ choice($aSybase,                  $allStates,            ^ToSql(format='mod(%s,%s)')),
+                                                 choice(DatabaseType.DB2,          $allStates,            ^ToSql(format='mod(%s,%s)')),
+                                                 choice(DatabaseType.H2,           $allStates,            ^ToSql(format='mod(%s,%s)')),
+                                                 choice(DatabaseType.Postgres,     $allStates,            ^ToSql(format='mod(%s,%s)')),
+                                                 choice(DatabaseType.Presto,       $allStates,            ^ToSql(format='mod(%s,%s)')),
+                                                 choice(DatabaseType.Snowflake,    $allStates,            ^ToSql(format='mod(%s,%s)')),
+                                                 choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='mod(%s,%s)')),
+                                                 choice(DatabaseType.Redshift,     $allStates,            ^ToSql(format='mod(%s,%s)')),
+                                                 choice(DatabaseType.BigQuery,     $allStates,             ^ToSql(format='mod(%s,%s)'))]),
+      forDynafunction('replace',               [ choice($allTypes,                 $allStates,            ^ToSql(format='replace(%s, %s, %s)'))]),
+      forDynafunction('right',                 [ choice($aSybase,                  $allStates,            ^ToSql(format='right(%s,%s)')),
+                                                 choice(DatabaseType.H2,           $allStates,            ^ToSql(format='right(%s,%s)')),
+                                                 choice(DatabaseType.Snowflake,    $allStates,            ^ToSql(format='right(%s,%s)')),
+                                                 choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='right(%s,%s)')),
+                                                 choice(DatabaseType.Presto,       $allStates,            ^ToSql(format='substr(%s,-1,%s)')),
+                                                 choice(DatabaseType.SqlServer,    $allStates,            ^ToSql(format='right(%s,%s)')),
+                                                 choice(DatabaseType.Redshift,     $allStates,            ^ToSql(format='right(%s,%s)')),
+                                                 choice(DatabaseType.BigQuery,     $allStates,            ^ToSql(format='right(%s,%s)'))]),
+      forDynafunction('rowNumber',             [ choice($allTypes,                 $allStates,            ^ToSql(format='row_number()'))]),
+      forDynafunction('round',                 [ choice($aSybase,                  $allStates,            ^ToSql(format='round(%s, %s)', transform=transformRound_String_MANY__String_MANY_)),
+                                                 choice(DatabaseType.Composite,    $allStates,            ^ToSql(format='round(%s, %s)', transform=transformRound_String_MANY__String_MANY_)),
+                                                 choice(DatabaseType.DB2,          $allStates,            ^ToSql(format='round(%s, %s)', transform=transformRound_String_MANY__String_MANY_)),
+                                                 choice(DatabaseType.H2,           $allStates,            ^ToSql(format='round(%s, %s)', transform=transformRound_String_MANY__String_MANY_)),
+                                                 choice(DatabaseType.MemSQL,       $allStates,            ^ToSql(format='round(%s, %s)', transform=transformRound_String_MANY__String_MANY_)),
+                                                 choice(DatabaseType.Presto,       $allStates,            ^ToSql(format='round(%s, %s)', transform=transformRound_String_MANY__String_MANY_)),
+                                                 choice(DatabaseType.Postgres,     $allStates,            ^ToSql(format='round((%s)::numeric, %s)', transform=transformRound_String_MANY__String_MANY_)),
+                                                 choice(DatabaseType.Snowflake,    $allStates,            ^ToSql(format='round((%s)::numeric, %s)', transform=transformRound_String_MANY__String_MANY_)),
+                                                 choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='round(%s, %s)', transform=transformRound_String_MANY__String_MANY_)),
+                                                 choice(DatabaseType.SqlServer,    $allStates,            ^ToSql(format='round(%s, 0)')),
+                                                 choice(DatabaseType.Redshift,     $allStates,            ^ToSql(format='round(%s, %s)', transform=transformRound_String_MANY__String_MANY_)),
+                                                 choice(DatabaseType.BigQuery ,    $allStates,            ^ToSql(format='round(%s, 0)'))]),
+      forDynafunction('rtrim',                 [ choice($aSybase,                  $allStates,            ^ToSql(format='rtrim(%s)')),
+                                                 choice(DatabaseType.DB2,          $allStates,            ^ToSql(format='rtrim(%s)')),
+                                                 choice(DatabaseType.H2,           $allStates,            ^ToSql(format='rtrim(%s)')),
+                                                 choice(DatabaseType.MemSQL,       $allStates,            ^ToSql(format='rtrim(%s)')),
+                                                 choice(DatabaseType.Snowflake,    $allStates,            ^ToSql(format='rtrim(%s)')),
+                                                 choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='rtrim(%s)')),
+                                                 choice(DatabaseType.Presto,       $allStates,            ^ToSql(format='rtrim(%s)')),
+                                                 choice(DatabaseType.SqlServer,    $allStates,            ^ToSql(format='rtrim(%s)')),
+                                                 choice(DatabaseType.Redshift,     $allStates,            ^ToSql(format='rtrim(%s)')),
+                                                 choice(DatabaseType.BigQuery,     $allStates,            ^ToSql(format='rtrim(%s)'))]),
+      forDynafunction('second',                [ choice($aSybase ,                 $allStates,            ^ToSql(format='second(%s)')),
+                                                 choice(DatabaseType.DB2,          $allStates,            ^ToSql(format='second(%s)')),
+                                                 choice(DatabaseType.H2,           $allStates,            ^ToSql(format='second(%s)')),
+                                                 choice(DatabaseType.MemSQL,       $allStates,            ^ToSql(format='second(%s)')),
+                                                 choice(DatabaseType.Presto,       $allStates,            ^ToSql(format='second(%s)')),
+                                                 choice(DatabaseType.Postgres,     $allStates,            ^ToSql(format='second(%s)')),
+                                                 choice(DatabaseType.Snowflake,    $allStates,            ^ToSql(format='second(%s)')),
+                                                 choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='second(%s)')),
+                                                 choice(DatabaseType.SqlServer,    $allStates,            ^ToSql(format='second(%s)')),
+                                                 choice(DatabaseType.Redshift,     $allStates,            ^ToSql(format='extract( second from %s)')),
+                                                 choice(DatabaseType.BigQuery,     $allStates,            ^ToSql(format='extract( second from %s)'))]),
+      forDynafunction('sin',                   [ choice($allTypes,                 $allStates,            ^ToSql(format='sin(%s)'))]),
+      forDynafunction('size',                  [ choice($allTypes,                 $allStates,            ^ToSql(format='count(%s)', transform={p:String[*]|if($p->isEmpty(),|'*',|$p)}))]),
+      forDynafunction('sqlFalse',              [ choice($allTypes,                 $allStates,            ^ToSql(format='%s', transform={p:String[*]|processLiteralValue(false, [], $dbType, [])}))]),
+      forDynafunction('sqlNull',               [ choice($allTypes,                 $allStates,            ^ToSql(format='null'))]),
+      forDynafunction('sqlTrue',               [ choice($allTypes,                 $allStates,            ^ToSql(format='%s', transform={p:String[*]|processLiteralValue(true, [], $dbType, [])}))]),
+      forDynafunction('sqrt',                  [ choice($allTypes,                 $allStates,            ^ToSql(format='sqrt(%s)'))]),
+      forDynafunction('startsWith',            [ choice($allTypes,                 $allStates,            ^ToSql(format=likePattern('%s%%'), transform={p:String[2]|$p->transformLikeParams($dbType)}))]),
+      forDynafunction('sub',                   [ choice($allTypes,                 $allStates,            ^ToSql(format='%s-%s'))]),
+      forDynafunction('substring',             [ choice($aSybase,                  $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
+                                                 choice(DatabaseType.Composite,    $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
+                                                 choice(DatabaseType.DB2,          $allStates,            ^ToSql(format='substr%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
+                                                 choice(DatabaseType.H2,           $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
+                                                 choice(DatabaseType.MemSQL,       $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
+                                                 choice(DatabaseType.Postgres,     $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
+                                                 choice(DatabaseType.Snowflake,    $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
+                                                 choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
+                                                 choice(DatabaseType.Presto,       $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
+                                                 choice(DatabaseType.SqlServer,    $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
+                                                 choice(DatabaseType.Redshift,     $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
+                                                 choice(DatabaseType.BigQuery ,    $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')}))]),
+      forDynafunction('stdDevPopulation',      [ choice($aSybase,                  $allStates,            ^ToSql(format='stddev_pop(%s)')),
+                                                 choice(DatabaseType.DB2,          $allStates,            ^ToSql(format='stddev_pop(%s)')),
+                                                 choice(DatabaseType.H2,           $allStates,            ^ToSql(format='stddev_pop(%s)')),
+                                                 choice(DatabaseType.MemSQL,       $allStates,            ^ToSql(format='stddev_pop(%s)')),
+                                                 choice(DatabaseType.Presto,       $allStates,            ^ToSql(format='stddev_pop(%s)')),
+                                                 choice(DatabaseType.Postgres,     $allStates,            ^ToSql(format='stddev_pop(%s)')),
+                                                 choice(DatabaseType.Snowflake,    $allStates,            ^ToSql(format='stddev_pop(%s)')),
+                                                 choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='stddev_pop(%s)')),
+                                                 choice(DatabaseType.SqlServer,    $allStates,            ^ToSql(format='stdevp(%s)')),
+                                                 choice(DatabaseType.Redshift,     $allStates,            ^ToSql(format='stddev_pop(%s)')),
+                                                 choice(DatabaseType.BigQuery,     $allStates,            ^ToSql(format='stddev_pop(%s)'))]),
+      forDynafunction('stdDevSample',          [ choice($aSybase,                  $allStates,            ^ToSql(format='stddev_samp(%s)')),
+                                                 choice(DatabaseType.DB2,          $allStates,            ^ToSql(format='stddev_samp(%s)')),
+                                                 choice(DatabaseType.H2,           $allStates,            ^ToSql(format='stddev_samp(%s)')),
+                                                 choice(DatabaseType.MemSQL,       $allStates,            ^ToSql(format='stddev_samp(%s)')),
+                                                 choice(DatabaseType.Presto,       $allStates,            ^ToSql(format='stddev_samp(%s)')),
+                                                 choice(DatabaseType.Postgres,     $allStates,            ^ToSql(format='stddev_samp(%s)')),
+                                                 choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='stddev_samp(%s)')),
+                                                 choice(DatabaseType.Snowflake,    $allStates,            ^ToSql(format='stddev_samp(%s)')),
+                                                 choice(DatabaseType.SqlServer,    $allStates,            ^ToSql(format='stdev(%s)')),
+                                                 choice(DatabaseType.Redshift,     $allStates,            ^ToSql(format='stddev_samp(%s)')),
+                                                 choice(DatabaseType.BigQuery,     $allStates,            ^ToSql(format='stddev_samp(%s)'))]),
+      forDynafunction('sum',                   [ choice($allTypes,                 $allStates,            ^ToSql(format='sum(%s)'))]),
+      forDynafunction('tan',                   [ choice($allTypes,                 $allStates,            ^ToSql(format='tan(%s)'))]),
+      forDynafunction('times',                 [ choice($allTypes,                 $allStates,            ^ToSql(format='%s', transform={p:String[*]|if($p->size() == 1, | $p->toOne() , | $p->joinStrings('(', ' * ', ')'))}))]),
+      forDynafunction('today',                 [ choice($aSybase,                  $allStates,            ^ToSql(format='today(%s)', transform={p:String[*] | ''})),
+                                                 choice(DatabaseType.DB2,          $allStates,            ^ToSql(format='current date')),
+                                                 choice(DatabaseType.H2,           $allStates,            ^ToSql(format='current_date()')),
+                                                 choice(DatabaseType.MemSQL,       $allStates,            ^ToSql(format='curdate()')),
+                                                 choice(DatabaseType.Postgres,     $allStates,            ^ToSql(format='current_date')),
+                                                 choice(DatabaseType.Snowflake,    $allStates,            ^ToSql(format='current_date')),
+                                                 choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='current_date')),
+                                                 choice(DatabaseType.Presto,       $allStates,            ^ToSql(format='current_date')),
+                                                 choice(DatabaseType.SqlServer,    $allStates,            ^ToSql(format='cast(getdate() as date)')),
+                                                 choice(DatabaseType.Redshift,     $allStates,            ^ToSql(format='current_date')),
+                                                 choice(DatabaseType.BigQuery,     $allStates,             ^ToSql(format='CURRENT_DATE()'))]),
+      forDynafunction('toLower',               [ choice($allTypes,                 $allStates,            ^ToSql(format='lower(%s)'))]),
+      forDynafunction('toOne',                 [ choice($allTypes,                 $allStates,            ^ToSql(format='%s'))]),
+      forDynafunction('toString',              [ choice($aSybase,                  $allStates,            ^ToSql(format='cast(%s as varchar)')),
+                                                 choice(DatabaseType.DB2,          $allStates,            ^ToSql(format='cast(%s as varchar(16000))')),
+                                                 choice(DatabaseType.H2,           $allStates,            ^ToSql(format='cast(%s as varchar)')),
+                                                 choice(DatabaseType.MemSQL,       $allStates,            ^ToSql(format='cast(%s as char)')),
+                                                 choice(DatabaseType.Snowflake,    $allStates,            ^ToSql(format='cast(%s as varchar)')),
+                                                 choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='cast(%s as string)')),
+                                                 choice(DatabaseType.Postgres,     $allStates,            ^ToSql(format='cast(%s as varchar)')),
+                                                 choice(DatabaseType.Presto,       $allStates,            ^ToSql(format='cast(%s as varchar)')),
+                                                 choice(DatabaseType.SqlServer,    $allStates,            ^ToSql(format='cast(%s as varchar)')),
+                                                 choice(DatabaseType.Redshift,     $allStates,            ^ToSql(format='cast(%s as varchar)')),
+                                                 choice(DatabaseType.BigQuery,     $allStates,             ^ToSql(format='cast(%s as string)'))]),
+      forDynafunction('toUpper',               [ choice($allTypes,                 $allStates,            ^ToSql(format='upper(%s)'))]),
+      forDynafunction('trim',                  [ choice($notASybaseAse,            $allStates,            ^ToSql(format='trim(%s)')),
+                                                 choice($sybaseAse,                $allStates,            ^ToSql(format='rtrim(ltrim(%s))')) ]),
+      forDynafunction('weekOfYear',            [ choice($aSybase,                  $allStates,            ^ToSql(format='datepart(WEEK,%s)')),
+                                                 choice(DatabaseType.DB2,          $allStates,            ^ToSql(format='week_iso(%s)')),
+                                                 choice(DatabaseType.H2,           $allStates,            ^ToSql(format='week(%s)')),
+                                                 choice(DatabaseType.Presto,       $allStates,            ^ToSql(format='week(%s)')),
+                                                 choice(DatabaseType.Snowflake,    $allStates,            ^ToSql(format='WEEKOFYEAR(%s)')),
+                                                 choice(DatabaseType.Databricks,   $allStates,            ^ToSql(format='WEEKOFYEAR(%s)')),
+                                                 choice(DatabaseType.SqlServer,    $allStates,            ^ToSql(format='datepart(wk, %s)')),
+                                                 choice(DatabaseType.Redshift,     $allStates,            ^ToSql(format='extract(week from %s)')),
+                                                 choice(DatabaseType.BigQuery,     $allStates,           ^ToSql(format='extract(week from %s)'))]),
+      forDynafunction('year',                  [ choice($aSybase,                  $allStates,            ^ToSql(format='year(%s)')),
+                                                 choice(DatabaseType.DB2,          $allStates,            ^ToSql(format='year(%s)')),
+                                                 choice(DatabaseType.H2,           $allStates,            ^ToSql(format='year(%s)')),
+                                                 choice(DatabaseType.MemSQL,       $allStates,            ^ToSql(format='year(%s)')),
+                                                 choice(DatabaseType.Presto,       $allStates,            ^ToSql(format='year(%s)')),
+                                                 choice(DatabaseType.Snowflake,    $allStates,            ^ToSql(format='year(%s)')),
+                                                 choice(DatabaseType.Redshift,    $allStates,             ^ToSql(format='extract(year from %s)')),
+                                                 choice(DatabaseType.SqlServer,    $allStates,            ^ToSql(format='year(wk, %s)'))])
+   ]);
+
+   { func:DynaFunction[1], generationState:GenerationState[1] |
+        let result = $dispatch->get($func.name)->cast(@List<DynaFunctionToSql>).values->filter(d | $d.stateMatch->isEmpty() || $generationState->in($d.stateMatch));
+        assertSize($result, 1, | 'The function \''+$func.name+'\' (state: ['+$generationState.generationSide->id()+', '+if($generationState->isEmpty(),|'empty',|$generationState.withinWhenClause->toOne()->toString())+']) is not supported yet');
+        assert($result.toSql.parametersWithinWhenClause->isEmpty() || ($result.toSql.parametersWithinWhenClause->size() >= $func.parameters->size()),|'Error generating \''+$func.name+'\' The function takes '+$func.parameters->size()->toString()+' parameters but '+$result.toSql.parametersWithinWhenClause->size()->toString()+' within where clause flag were provided.');
+        $result->toOne();
+   };
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::getFreeMarkerOperationMap():Map<String, ToSql>[1]
+{
+   let freeMarkerOpMap = [
+      pair('variableCollectionSize', ^ToSql(format='collectionSize(%s)')),
+      pair('optionalVarPlaceHolderOpSelector', ^ToSql(format='optionalVarPlaceHolderOperationSelector(%s, %s, %s)'))
+   ]->newMap();
+}
+
+Class <<access.private>> meta::relational::functions::sqlQueryToString::Choice
+{
+   dynafunctionName: String[1];
+   dbTypes: DatabaseType[*];
+   generationStates: GenerationState[*];
+   toSql: ToSql[1];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::forDynafunction(dynafunctionName: String[1], choices: meta::pure::metamodel::function::Function<{DatabaseType[1], String[1]->Choice[0..1]}>[*]):meta::pure::metamodel::function::Function<{DatabaseType[1]->Choice[*]}>[1]
+{
+   {dbType: DatabaseType[1]| $choices->map(f|$f->eval($dbType, $dynafunctionName))};
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::choice(dbTypes: DatabaseType[*], generationStates:GenerationState[*], toSql:ToSql[1]):meta::pure::metamodel::function::Function<{DatabaseType[1], String[1]->Choice[0..1]}>[1]
+{
+   {dbType: DatabaseType[1], name:String[1]| if($dbType->in($dbTypes),
+                                                | ^Choice(dynafunctionName=$name, dbTypes=$dbTypes, generationStates=$generationStates, toSql=$toSql),
+                                                | [])
+   };
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::createDynafunctionMap(dbType: DatabaseType[1], choices: meta::pure::metamodel::function::Function<{DatabaseType[1]->Choice[*]}>[*]):Map<String, List<DynaFunctionToSql>>[1]
+{
+   $choices
+      ->map(f|$f->eval($dbType))
+      ->map(c| ^DynaFunctionToSql(
+                   funcName=$c.dynafunctionName,
+                   stateMatch=$c.generationStates,
+                   toSql=$c.toSql
+                ))
+      ->groupBy(x| $x.funcName);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::regexpLikePattern(query1: String[1], query2: String[1]):String[1]
+{
+   'REGEXP_LIKE(' + $query1 + ', \'' + '^' +$query2 + '$' +'\')'
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::regexpPattern(query: String[1]):String[1]
+{
+   '%s regexp \'' + '^' +$query + '$' +'\''
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::transformRegexpParams(params: String[2], dbType: DatabaseType[1]):String[*]
+{
+   let regExpression = $params->at(1)->meta::relational::functions::sqlQueryToString::removeQuotes();
+   $params->at(0)->concatenate($regExpression);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::likePattern(query: String[1]):String[1]
+{
+   '%s like \'' + $query + '\'%s'
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::transformLikeParams(params: String[2], dbType: DatabaseType[1]):String[*]
+{
+   let likeExpression = $params->at(1)->meta::relational::functions::sqlQueryToString::removeQuotes()->escapeLikeExpr($dbType);
+   $params->at(0)
+      ->concatenate($likeExpression)
+      ->concatenate(likeEscapeClause($likeExpression, $dbType));
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::escapeLikeExpr(query: String[1], dbType: DatabaseType[1]):String[1]
+{
+   // Escaping references...
+   // Sybase IQ: http://infocenter.sybase.com/help/index.jsp?topic=/com.sybase.infocenter.dc38151.1520/html/iqrefbb/CACGCGGC.htm
+   // DB2: https://www.ibm.com/support/knowledgecenter/SSEPGG_9.7.0/com.ibm.db2.luw.sql.ref.doc/doc/r0000751.html
+   // H2: http://www.h2database.com/html/grammar.html#condition_right_hand_side
+
+   let common = $query
+      ->replace('_', '\\_')
+      ->replace('%', '\\%');
+
+   if($dbType == DatabaseType.SybaseIQ,
+      | $common->replace('[', '\\['),
+      | $common);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::likeEscapeClause(expr: String[1], dbType: DatabaseType[1]):String[*]
+{
+   if($dbType == DatabaseType.SybaseIQ && $expr->contains('\\'),
+      |' escape \'\\\'',
+      |'');
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::likePatternWithoutEscape(query: String[1]):String[1]
+{
+   '%s not like \'' + $query + '\''
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::transformAlphaNumericParams(params: String[1], dbType: DatabaseType[1]):String[*]
+{
+   let param =  if($dbType == DatabaseType.SybaseIQ,|'\'[^a-zA-Z0-9]\'',|'\'[a-zA-Z0-9]*\'');
+   let expression = $param->meta::relational::functions::sqlQueryToString::removeQuotes();
+   $params->at(0)->concatenate($expression);
+}
+
+function  <<access.private>> meta::relational::functions::sqlQueryToString::generateDateDiffExpressionForMemSQL(params:String[*]):String[1]
+{
+  let enumList = [DurationUnit.YEARS,DurationUnit.MONTHS,DurationUnit.WEEKS,DurationUnit.DAYS,DurationUnit.HOURS,DurationUnit.MINUTES,DurationUnit.SECONDS,DurationUnit.MILLISECONDS]->map(e|$e->toString());
+
+  let indexOfDiff = $enumList->indexOf($params->at(2)->replace('Text', ''));
+
+  let dbSpecificUnits = [
+
+     {| fail('The DurationUnit \''+$params->at(2)+'\' is not supported yet!');'';},
+     {| fail('The DurationUnit \''+$params->at(2)+'\' is not supported yet!');'';},
+     {| fail('The DurationUnit \''+$params->at(2)+'\' is not supported yet!');'';},
+     {| format('(%s)', [
+        'datediff(%s , %s)'
+     ])},
+     {| fail('The DurationUnit \''+$params->at(2)+'\' is not supported yet!');'';},
+     {| fail('The DurationUnit \''+$params->at(2)+'\' is not supported yet!');'';},
+     {| format('(%s)', [
+        'time_to_sec(timediff(%s , %s))'
+     ])},
+     {| fail('The DurationUnit \''+$params->at(2)+'\' is not supported yet!');'';}
+  ];
+
+  format($dbSpecificUnits->at($indexOfDiff)->eval(), [$params->at(0), $params->at(1)]);
+}
+
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::transformRound(p:String[*]):String[*]
+{
+   if ($p->size() == 2,
+       | [$p->at(0), $p->at(1)],
+       | [$p->at(0), '0']);
+}
+
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::transformAdjustDB2SQL(p:String[3]):String[1]
+{
+   let startDate = $p->at(0);
+   let number = $p->at(1)->parseInteger();
+   let unit = $p->at(2);
+
+   'date(%s) %s %s %s'->format([
+      $startDate,
+      if ($number < 0 , | '-', | '+'),
+      if($unit == 'WEEKS', | $number * 7, | $number)->abs()->toString(),
+      if($unit == 'WEEKS', | 'DAYS', | $unit)
+   ]);
+}
+
+function meta::relational::functions::sqlQueryToString::processColumnName(name:String[1], dbConfig:DbConfig[1]):String[1]
+{
+    let lowerName = $name->toLower();
+    let dbType = $dbConfig.dbType;
+
+    let res = if ($dbType == DatabaseType.H2 || $dbType == DatabaseType.Postgres,
+         | [],
+         | if ($dbType == DatabaseType.SybaseIQ,
+               |
+                  if($dbConfig.isDbReservedIdentifier($lowerName),
+                     | '"' + $lowerName + '"',
+                     | []
+                     ),
+               |
+                  if($lowerName->in(['kerberos', 'date', 'first']),
+                     | '"' + $name->toUpper() + '"',
+                     | []
+                     )
+
+                )
+         );
+
+    let mappedName = if ($res->isEmpty(),|$name, |$res->toOne());
+
+    $mappedName->processIdentifier($dbConfig);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::dbReservedWords(dbType : DatabaseType[1]):String[*]
+{
+    if ($dbType == DatabaseType.Postgres,
+         | [],
+         | if ($dbType == DatabaseType.SybaseIQ,
+               |
+                  sybaseReservedWords(),
+               |
+                 if ($dbType == DatabaseType.MemSQL,
+                     |memSQLReservedWords(),
+                     | if($dbType == DatabaseType.H2,
+                          | h2ReservedWords(),
+                          | ['kerberos', 'date', 'first']
+                    )
+
+               )
+         )
+   );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::h2ReservedWords():String[*]
+{
+   [
+      'all','array','case','check','constraint','cross','current_date','current_time','current_timestamp','current_user','distinct','except','exists','false','fetch','for','foreign','from',
+      'full','group','having','if','inner','intersect','intersects','interval','is','join','like','limit','localtime','localtimestamp','minus','natural','not','null','offset','on','order','primary',
+      'qualify','row','rownum','select','sysdate','systime','systimestamp','table','today','top','true','union','unique','values','where','window','with'
+   ];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::memSQLReservedWords():String[*]
+{
+    [
+       'absolute','action','allocate','are','assertion',
+       'bit', 'bit_length', 'both',
+       'cascaded',' case',' cast',' catalog',' char',' char_length',' character',' character_length',' coalesce',' collate',' collation',' column',' connection',' constraints',' corresponding',' cross',' current_date',' current_time',' current_timestamp',' current_user',
+       'date',' day',' dec',' decimal',' deferrable',' deferred',' describe',' descriptor',' diagnostics',' disconnect',' domain',
+       'end-exec',' exception',' extract',
+       'false',' first',' float',' found',' full',
+       'get',' global',' go',
+       'hour',
+       'immediate',' indicator',' initially',' inner',' input',' insensitive',' int',' integer',' interval',
+       'join',
+       'kerberos','key',
+       'language',' last',' leading',' left',' local',' lower',
+       'match',' minute',' module',' month',
+       'names',' natural',' nchar',' next',' no',' nullif',' numeric',
+       'octet_length',' outer',' output',' overlaps',
+       'pad',' partial',' position',' preserve',' prior',
+       'real',' relative',' restrict',' right',
+       'scroll',' second',' section',' semi_sensitive',' session_user ',' size ',' smallint',' space',' sql',' sqlcode',' sqlerror',' sqlstate',' substring',' system_user',
+       'then',' time',' timestamp',' timezone_hour',' timezone_minute',' trailing',' translate',' translation',' trim',' true',
+       'unknown',' upper',' usage',
+       'value', 'varchar',
+       'when',' whenever',' write',' year',
+       'zone'
+       ];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseReservedWords():String[*]
+{
+   //Based on
+   // http://infocenter.sybase.com/help/index.jsp?topic=/com.sybase.infocenter.dc38151.1510/html/iqrefbb/Alhakeywords.htm
+   // and
+   // http://infocenter.sybase.com/help/index.jsp?topic=/com.sybase.infocenter.dc38151.1601/doc/html/san1278452828146.html
+
+   [
+   'active',
+   'add',
+   'algorithm',
+   'all',
+   'alter',
+   'and',
+   'any',
+   'append',
+   'array',
+   'as',
+   'asc',
+   'attach',
+   'auto',
+   'backup',
+   'begin',
+   'between',
+   'bigint',
+   'binary',
+   'bit',
+   'bottom',
+   'break',
+   'by',
+   'calibrate',
+   'calibration',
+   'call',
+   'cancel',
+   'capability',
+   'cascade',
+   'case',
+   'cast',
+   'certificate',
+   'char',
+   'char_convert',
+   'character',
+   'check',
+   'checkpoint',
+   'checksum',
+   'clientport',
+   'close',
+   'columns',
+   'comment',
+   'commit',
+   'committed',
+   'comparisons',
+   'compressed',
+   'computes',
+   'conflict',
+   'connect',
+   'constraint',
+   'contains',
+   'continue',
+   'convert',
+   'create',
+   'cross',
+   'cube',
+   'current',
+   'current_timestamp',
+   'current_user',
+   'cursor',
+   'date',
+   'datetimeoffset',
+   'dbspace',
+   'dbspacename',
+   'deallocate',
+   'debug',
+   'dec',
+   'decimal',
+   'declare',
+   'decoupled',
+   'decrypted',
+   'default',
+   'delay',
+   'delete',
+   'deleting',
+   'density',
+   'desc',
+   'detach',
+   'deterministic',
+   'disable',
+   'distinct',
+   'do',
+   'double',
+   'drop',
+   'dynamic',
+   'elements',
+   'else',
+   'elseif',
+   'enable',
+   'encapsulated',
+   'encrypted',
+   'end',
+   'endif',
+   'escape',
+   'except',
+   'exception',
+   'exclude',
+   'exec',
+   'execute',
+   'existing',
+   'exists',
+   'explicit',
+   'express',
+   'externlogin',
+   'fastfirstrow',
+   'fetch',
+   'first',
+   'float',
+   'following',
+   'for',
+   'force',
+   'foreign',
+   'forward',
+   'from',
+   'full',
+   'gb',
+   'goto',
+   'grant',
+   'group',
+   'grouping',
+   'having',
+   'hidden',
+   'history',
+   'holdlock',
+   'identified',
+   'if',
+   'in',
+   'inactive',
+   'index',
+   'index_lparen',
+   'inner',
+   'inout',
+   'input',
+   'insensitive',
+   'insert',
+   'inserting',
+   'install',
+   'instead',
+   'int',
+   'integer',
+   'integrated',
+   'intersect',
+   'into',
+   'iq',
+   'is',
+   'isolation',
+   'jdk',
+   'join',
+   'json',
+   'kb',
+   'kerberos',
+   'key',
+   'lateral',
+   'left',
+   'like',
+   'limit',
+   'lock',
+   'logging',
+   'login',
+   'long',
+   'match',
+   'mb',
+   'membership',
+   'merge',
+   'message',
+   'mode',
+   'modify',
+   'namespace',
+   'natural',
+   'nchar',
+   'new',
+   'no',
+   'noholdlock',
+   'nolock',
+   'not',
+   'notify',
+   'null',
+   'numeric',
+   'nvarchar',
+   'of',
+   'off',
+   'on',
+   'open',
+   'openstring',
+   'openxml',
+   'optimization',
+   'option',
+   'options',
+   'or',
+   'order',
+   'others',
+   'out',
+   'outer',
+   'over',
+   'pages',
+   'paglock',
+   'partial',
+   'partition',
+   'passthrough',
+   'password',
+   'plan',
+   'preceding',
+   'precision',
+   'prepare',
+   'primary',
+   'print',
+   'privileges',
+   'proc',
+   'procedure',
+   'proxy',
+   'publication',
+   'raiserror',
+   'range',
+   'raw',
+   'readcommitted',
+   'readonly',
+   'readpast',
+   'readtext',
+   'readuncommitted',
+   'readwrite',
+   'real',
+   'recursive',
+   'reference',
+   'references',
+   'refresh',
+   'release',
+   'relocate',
+   'remote',
+   'remove',
+   'rename',
+   'reorganize',
+   'repeatable',
+   'repeatableread',
+   'reserve',
+   'resizing',
+   'resource',
+   'restore',
+   'restrict',
+   'return',
+   'revoke',
+   'right',
+   'rollback',
+   'rollup',
+   'root',
+   'row',
+   'rowlock',
+   'rows',
+   'rowtype',
+   'save',
+   'savepoint',
+   'schedule',
+   'scroll',
+   'secure',
+   'select',
+   'sensitive',
+   'serializable',
+   'service',
+   'session',
+   'set',
+   'setuser',
+   'share',
+   'smallint',
+   'soapaction',
+   'some',
+   'space',
+   'spatial',
+   'sqlcode',
+   'sqlstate',
+   'start',
+   'stop',
+   'subtrans',
+   'subtransaction',
+   'synchronize',
+   'syntax_error',
+   'table',
+   'tablock',
+   'tablockx',
+   'tb',
+   'temporary',
+   'then',
+   'ties',
+   'time',
+   'timestamp',
+   'tinyint',
+   'to',
+   'top',
+   'tran',
+   'transaction',
+   'transactional',
+   'transfer',
+   'treat',
+   'tries',
+   'trigger',
+   'truncate',
+   'tsequal',
+   'unbounded',
+   'uncommitted',
+   'union',
+   'unique',
+   'uniqueidentifier',
+   'unknown',
+   'unnest',
+   'unsigned',
+   'update',
+   'updating',
+   'updlock',
+   'url',
+   'user',
+   'using',
+   'utc',
+   'validate',
+   'values',
+   'varbinary',
+   'varbit',
+   'varchar',
+   'variable',
+   'varray',
+   'varying',
+   'view',
+   'virtual',
+   'wait',
+   'waitfor',
+   'web',
+   'when',
+   'where',
+   'while',
+   'window',
+   'with',
+   'with_cube',
+   'with_lparen',
+   'with_rollup',
+   'withauto',
+   'within',
+   'word',
+   'work',
+   'writeserver',
+   'writetext',
+   'xlock',
+   'xml'
+   ]
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processDateDiffDurationUnit(durationUnit:String[1], dbType:DatabaseType[1]):String[1]
+{
+   let enumList = [DurationUnit.YEARS,DurationUnit.MONTHS,DurationUnit.WEEKS,DurationUnit.DAYS,DurationUnit.HOURS,DurationUnit.MINUTES,DurationUnit.SECONDS,DurationUnit.MILLISECONDS]->map(e|$e->toString());
+   let dbs = [pair(DatabaseType.H2, list(['year', 'month', 'week', 'day', 'hour', 'minute', 'second', 'millisecond'])),
+              pair(DatabaseType.SybaseIQ, list(['yy', 'mm', 'wk', 'dd', 'hh', 'mi', 'ss', 'ms'])),
+              pair(DatabaseType.Presto, list(['\'year\'', '\'month\'', '\'week\'', '\'day\'', '\'hour\'', '\'minute\'', '\'second\'', '\'millisecond\''])),
+              pair(DatabaseType.Snowflake, list(['year', 'month', 'week', 'day', 'hour', 'minute', 'second','']))]->newMap();
+   let dbTypeUnitPair = $dbs->get($dbType);
+   let dbUnitType = $enumList->zip($dbTypeUnitPair.values)->filter(h | $h.first == $durationUnit).second->toOne();
+   assert($dbUnitType->isNotEmpty(), $durationUnit + ' is not supported by ' + toString($dbType) + ' in the DateDiff Function.');
+   $dbUnitType;
+}
+
+
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processIdentifier(originalIdentifier:String[1], dbConfig : DbConfig[1]):String[1]
+{
+  let processedIdentifier = $originalIdentifier->map(identifier|
+                                 if($dbConfig.quoteIdentifiers || $identifier->startsWith('"'),
+                                    | '"%s"'->format($identifier->replace('"', '')),
+                                    | $identifier
+                                    )
+                              )->map(identifier|
+                                 if(!$identifier->startsWith('"') && $dbConfig.isDbReservedIdentifier($identifier),
+                                    | '"%s"'->format($identifier),
+                                    | $identifier
+                                    )
+                              );
+
+  if(($dbConfig.dbType == DatabaseType.MemSQL || $dbConfig.dbType == DatabaseType.BigQuery || $dbConfig.dbType == DatabaseType.Databricks) && $processedIdentifier->startsWith('"') && $processedIdentifier->endsWith('"'),
+       | '`' + $processedIdentifier->substring(1, $processedIdentifier->length() - 1) + '`',
+       | $processedIdentifier);
+}
+
+function meta::relational::functions::sqlQueryToString::createSelectOneRowSql(table:Table[1], schema:Schema[1], dbType:DatabaseType[1]):String[1]
+{
+   'select top 1 ' + $table.columns->cast(@Column).name->map(s | $s->processColumnName(createDbConfig($dbType, [])))->makeString(',') + ' from ' + $schema.name + '.' + $table.name;
+}
+
+
+function meta::relational::functions::sqlQueryToString::sqlNull():SQLNull[1]
+{
+    ^SQLNull();
+}
+
+
+function meta::relational::functions::sqlQueryToString::sqlTrue():Boolean[1]
+{
+    true;
+}
+
+function meta::relational::functions::sqlQueryToString::sqlFalse():Boolean[1]
+{
+    false;
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::generateDateDiffExpressionForPostgres(params:String[*]):String[1]
+{
+  let enumList = [DurationUnit.YEARS,DurationUnit.MONTHS,DurationUnit.WEEKS,DurationUnit.DAYS,DurationUnit.HOURS,DurationUnit.MINUTES,DurationUnit.SECONDS,DurationUnit.MILLISECONDS]->map(e|$e->toString());
+
+  let indexOfDiff = $enumList->indexOf($params->at(2)->replace('Text', ''));
+
+  let dbSpecificUnits = [
+
+     { | format('(%s)', [
+        'DATE_PART(\'year\', %s) - DATE_PART(\'year\', %s)'
+     ])},
+     {| format('(%s * 12 + (%s))', [
+        generateDateDiffExpressionForPostgres([$params->at(0), $params->at(1), DurationUnit.YEARS->toString()]),
+        'DATE_PART(\'month\', %s) - DATE_PART(\'month\', %s)'
+     ])},
+     {| format('(%s)', [
+        'TRUNC(DATE_PART(\'day\', %s - %s)/7)'
+     ])},
+     {| format('(%s)', [
+        'DATE_PART(\'day\', %s - %s)'
+     ])},
+     {| format('(%s * 24 + (%s))', [
+        generateDateDiffExpressionForPostgres([$params->at(0), $params->at(1), DurationUnit.DAYS->toString()]),
+        'DATE_PART(\'hour\', %s - %s)'
+     ])},
+     {| format('(%s * 60 + (%s))', [
+        generateDateDiffExpressionForPostgres([$params->at(0), $params->at(1), DurationUnit.HOURS->toString()]),
+        'DATE_PART(\'minute\', %s - %s)'
+     ])},
+     {| format('(%s * 60 + (%s))', [
+        generateDateDiffExpressionForPostgres([$params->at(0), $params->at(1), DurationUnit.MINUTES->toString()]),
+        'DATE_PART(\'second\', %s - %s)'
+     ])},
+     {| format('(%s * 1000 + (%s))', [
+        generateDateDiffExpressionForPostgres([$params->at(0), $params->at(1), DurationUnit.SECONDS->toString()]),
+        'DATE_PART(\'milliseconds\', %s - %s)'
+     ])}
+  ];
+
+  format($dbSpecificUnits->at($indexOfDiff)->eval(), [$params->at(0), $params->at(1)]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::convertToDateMemSQL(params:String[*]):String[1]
+{
+   assert( 2 - $params->size()  >= 0,'Incorrect number of parameters for convertDate: convertDate(column,[dateformat])');
+   assert($params->size()==1 || dateFormatsMemSQL()->contains($params->at(1)->replace('\'', '')) , | $params->at(1) +' not supported ');
+   let dateFormat = if( $params->size() == 1,|'\'YYYY-MM-DD\'' ,| $params->at(1););
+   'cast( to_date('+$params->at(0)+','+$dateFormat +') as date)';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::convertToDatePresto(params:String[*]):String[1]
+{
+   assert( 2 - $params->size()  >= 0,'Incorrect number of parameters for convertDate: convertDate(column,[dateformat])');
+   assert($params->size()==1 || dateFormatsMemSQL()->contains($params->at(1)->replace('\'', '')) , | $params->at(1) +' not supported ');
+   let dateFormat = if( $params->size() == 1,|'\'%Y-%m-%d\'' ,| $params->at(1););
+   'date( date_parse('+$params->at(0)+','+$dateFormat +') )';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::convertToDateDatabricks(params:String[*]):String[1]
+{
+   assert( 2 - $params->size()  >= 0,'Incorrect number of parameters for convertDate: convertDate(column,[dateformat])');
+   assert($params->size()==1 || dateFormatsDatabricks()->contains($params->at(1)->replace('\'', '')) , | $params->at(1) +' not supported ');
+   let dateFormat = if( $params->size() == 1,|'\'%Y-%m-%d\'' ,| $params->at(1););
+   'to_date('+$params->at(0)+','+$dateFormat +')';
+}
+
+function meta::relational::functions::sqlQueryToString::normalizeH2DateFormat(params:String[1]):String[1]
+{
+   [pair('YYYY', 'yyyy'), pair('DD', 'dd')]->fold({e, a| $a->replace($e.first,$e.second)}, $params);
+
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::convertToDateH2(params:String[*]):String[1]
+{
+
+      assert( 2 - $params->size()  >= 0,'Incorrect number of parameters for convertDate: convertDate(column,[dateformat])');
+      let dateFormat = if( $params->size() == 1,|'\'yyyy-MM-dd\'' ,| let normalizedFormat = $params->at(1)->normalizeH2DateFormat();
+                                                                     assert(dateFormatsH2()->contains($normalizedFormat->replace('\'', '')), $normalizedFormat +' not supported ');
+                                                                     $normalizedFormat;
+                                                                     );
+      'cast( parseDateTime('+$params->at(0)+','+$dateFormat +') as date)';
+
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::convertToDateTimeH2(params:String[*]):String[1]
+{
+   $params->convertDateTimeFunctionHasCorrectParams();
+   let dateTimeFormat = if( $params->size() == 1,|'\'yyyy-MM-dd hh:mm:ss[.nnnnnnnnn]\'',| $params->at(1););
+   'parseDateTime('+$params->at(0)+','+$dateTimeFormat +')';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::convertToDateTimeDatabricks(params:String[*]):String[1]
+{
+   $params->convertDateTimeFunctionHasCorrectParams();
+   let dateTimeFormat = if( $params->size() == 1,|'\'yyyy-MM-dd hh:mm:ss[.nnnnnnnnn]\'',| $params->at(1););
+   'to_timestamp('+$params->at(0)+','+$dateTimeFormat +')';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::convertToDateTimePresto(params:String[*]):String[1]
+{
+   $params->convertDateTimeFunctionHasCorrectParams();
+   let dateTimeFormat = if( $params->size() == 1,|'\'%Y-%m-%d %H:%i:%s\'',| $params->at(1););
+   'date_parse('+$params->at(0)+','+$dateTimeFormat +')';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::convertToDateDB2(params:String[*]):String[1]
+{
+   $params->convertDateFunctionHasCorrectParams();
+   let dateFormat = if( $params->size() == 1 ,|'\'YYYY-MM-DD\'',| $params->at(1));
+   //http://www.ibm.com/support/knowledgecenter/SSEPEK_10.0.0/sqlref/src/tpc/db2z_bif_todate.html
+   'to_date('+$params->at(0)+','+$dateFormat +')';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::convertToDateTimeDB2(params:String[*]):String[1]
+{
+   $params->convertDateTimeFunctionHasCorrectParams();
+   let dateTimeFormat = if( $params->size() == 1,|'\'YYYY-MM-DD HH24:MI:SS\'',| $params->at(1));
+   //http://www.ibm.com/support/knowledgecenter/SSEPGG_9.7.0/com.ibm.db2.luw.sql.ref.doc/doc/r0007107.html
+   'timestamp_format('+$params->at(0)+','+$dateTimeFormat +')';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::convertToDateIQ(params:String[*]):String[1]
+{
+   $params->convertDateFunctionHasCorrectParams();
+   let dateFormat = if( $params->size() == 1,| 120,| dateFormats()->get($params->at(1)->replace('\'', ''))->toOne(););
+   if ($dateFormat == 106,
+       |'convert ( date,(\'01 \' + ' + 'substring(' + $params->at(0) + ',1,3)' + ' + \' \' + ' + 'substring(' + $params->at(0) + ',4,4))' + ',' + $dateFormat->toString() + ')',
+       |'convert ( date,'+$params->at(0)+','+$dateFormat->toString() +')';);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::convertToDateTimeIQ(params:String[*]):String[1]
+{
+   $params->convertDateTimeFunctionHasCorrectParams();
+   let dateTimeFormat = if( $params->size() == 1,| 120 ,| dateTimeFormats()->get($params->at(1)->replace('\'', ''))->toOne(););
+   //http://infocenter.sybase.com/help/index.jsp?topic=/com.sybase.infocenter.dc38151.1520/html/iqrefbb/Dateformat.htm
+   'convert( timestamp,'+$params->at(0)+','+$dateTimeFormat->toString() +')';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::convertDateFunctionHasCorrectParams(params:String[*]):Boolean[1]
+{
+  assert( 2 - $params->size()  >= 0,'Incorrect number of parameters for convertDate: convertDate(column,[dateformat])');
+  let supportedDateFormat = if($params->size() == 2, |dateFormats()->get($params->at(1)->replace('\'', '')), |[]);
+  assert($params->size()==1 || $supportedDateFormat->size() == 1 , | $params->at(1) +' not supported ');
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::convertDateTimeFunctionHasCorrectParams(params:String[*]):Boolean[1]
+{
+  assert( 2 - $params->size()  >= 0,'Incorrect number of parameters for convertDateTime: convertDateTime(column,[dateTimeformat])');
+  let supportedDateTimeFormat = if($params->size() == 2, |dateTimeFormats()->get($params->at(1)->replace('\'', '')), |[]);
+  assert($params->size() ==1 || $supportedDateTimeFormat->size() == 1 , | $params->at(1) +' not supported ');
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::convertToDateSnowflake(params:String[*]):String[1]
+{
+   assert(2 - $params->size()  >= 0,'Incorrect number of parameters for convertDate: convertDate(column,[dateformat])');
+   assert($params->size()==1 || dateFormatsSnowFlake()->contains($params->at(1)->replace('\'', '')) , | $params->at(1) +' not supported ');
+   let dateFormat = if( $params->size() == 1 ,|'\'YYYY-MM-DD\'',| $params->at(1));
+   //https://docs.snowflake.net/manuals/sql-reference/data-types-datetime.html
+   'to_date('+$params->at(0)+','+$dateFormat +')';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::convertToDateTimeSnowflake(params:String[*]):String[1]
+{
+   assert(2 - $params->size()  >= 0,'Incorrect number of parameters for convertDateTime: convertDateTime(column,[dateTimeformat])');
+   let supportedDateTimeFormat = if($params->size() == 2, |dateTimeFormatsSnowFlake()->get($params->at(1)->replace('\'', '')), |[]);
+   assert($params->size() == 1 || $supportedDateTimeFormat->size() == 1 , | $params->at(1) +' not supported ');
+   let dateTimeFormat = if( $params->size() == 1,|'\'YYYY-MM-DD HH24:MI:SS\'',| $params->at(1));
+   //https://docs.snowflake.net/manuals/sql-reference/data-types-datetime.html
+   'to_timestamp('+$params->at(0)+','+$dateTimeFormat +')';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::dateFormats():Map<String,Integer>[1]
+{
+   newMap([pair('yyyy-MM-dd',120),
+           pair('MMMyyyy', 106),
+           pair('dd MMM yy',6),
+           pair('yyyyMMdd', 112)]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::dateFormatsMemSQL():String[*]
+{
+   ['YYYY-MM-DD', 'MMMYYYY', 'YYYYMMDD'];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::dateFormatsH2():String[*]
+{
+   ['yyyy-MM-dd', 'MMMyyyy', 'yyyyMMdd'];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::dateFormatsDatabricks():String[*]
+{
+   ['yyyy-MM-dd', 'MMMyyyy', 'yyyyMMdd'];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::dateFormatsSnowFlake():String[*]
+{
+   ['yyyy-MM-dd', 'MMMyyyy', 'yyyyMMdd','DD/MM/YYYY', 'YYYY/MM/DD'];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::dateTimeFormats():Map<String,Integer>[1]
+{
+   newMap([pair('yyyy-mm-dd hh:mi:ss',120),
+           pair('yyyy-MM-dd hh:mm:ss',120),
+           pair('yyyy-MM-dd hh:mm:ss.mmm',121)]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::dateTimeFormatsSnowFlake():Map<String,Integer>[1]
+{
+   newMap([pair('yyyy-mm-dd hh:mi:ss',120),
+           pair('yyyy-MM-dd hh:mm:ss',120),
+           pair('yyyy-MM-dd hh:mm:ss.mmm',121),
+           pair('YYYY-MM-DDTHH:MI:SS',120),
+           pair('YYYY-MM-DDTHH:MI:SS.FF', 121)]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::transformPercentile(args: String[*], dbType: DatabaseType[1]): String[1]
+{
+   let dbConfig = createDbConfig($dbType, []);
+   let boolProc = $dbConfig.literalProcessor(Boolean);
+   let trueVal  = $boolProc.formatValue(true);
+   let falseVal = $boolProc.formatValue(false);
+
+   let column     = $args->at(0);
+   let percentile = $args->at(1);
+   let ascending  = if($args->size() > 2, | $args->at(2), | $trueVal);
+   let continuous = if($args->size() > 3, | $args->at(3), | $trueVal);
+
+   assert($ascending->in([$trueVal, $falseVal]), 'Ascending argument for percentile should be ' + $trueVal + ' or ' + $falseVal + '. Got: ' + $ascending);
+   assert($continuous->in([$trueVal, $falseVal]), 'Continuous argument for percentile should be ' + $trueVal + ' or ' + $falseVal + '. Got: ' + $continuous);
+
+   let func  = if($continuous == $trueVal, | 'percentile_cont', | 'percentile_disc');
+   let order = if($ascending == $trueVal, | 'asc', | 'desc');
+
+   $func + '(' + $percentile + ') within group (order by ' + $column + ' ' + $order + ')';
+}
