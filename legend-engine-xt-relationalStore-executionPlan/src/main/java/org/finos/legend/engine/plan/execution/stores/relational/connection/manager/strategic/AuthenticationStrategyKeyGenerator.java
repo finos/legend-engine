@@ -32,6 +32,11 @@ public class AuthenticationStrategyKeyGenerator implements AuthenticationStrateg
             MiddleTierKeytabAuthenticationStrategy middleTierKeytabAuthenticationStrategy = (MiddleTierKeytabAuthenticationStrategy) authenticationStrategy;
             return new MiddleTierKeytabAuthenticationStrategyKey(middleTierKeytabAuthenticationStrategy.principal, middleTierKeytabAuthenticationStrategy.keytabVaultReference, middleTierKeytabAuthenticationStrategy.keytabMetadataVaultReference);
         }
+        else if(authenticationStrategy instanceof MiddleTierUserNamePasswordAuthenticationStrategy)
+        {
+            MiddleTierUserNamePasswordAuthenticationStrategy middleTierUserNamePasswordAuthenticationStrategy = (MiddleTierUserNamePasswordAuthenticationStrategy) authenticationStrategy;
+            return new MiddleTierUserNamePasswordAuthenticationStrategyKey(middleTierUserNamePasswordAuthenticationStrategy.vaultReference);
+        }
         else if(authenticationStrategy instanceof UserNamePasswordAuthenticationStrategy)
         {
             UserNamePasswordAuthenticationStrategy userNamePasswordAuthStrategy = (UserNamePasswordAuthenticationStrategy) authenticationStrategy;

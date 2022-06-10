@@ -136,6 +136,11 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connectio
          keytabVaultReference = $k.keytabVaultReference,
          keytabMetadataVaultReference = $k.keytabMetadataVaultReference
       ),
+      mup:meta::pure::alloy::connections::alloy::authentication::MiddleTierUserNamePasswordAuthenticationStrategy[1] |
+      ^meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::authentication::MiddleTierUserNamePasswordAuthenticationStrategy(
+         _type = 'middleTierUserNamePassword',
+         vaultReference = $mup.vaultReference
+      ),
       u:meta::pure::alloy::connections::alloy::authentication::UserNamePasswordAuthenticationStrategy[1] |
       ^meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::authentication::UserNamePasswordAuthenticationStrategy(
          _type = 'userNamePassword',

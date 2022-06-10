@@ -58,6 +58,19 @@ keytabVaultReferenceConfig:             MIDDLETIER_KEYTAB_VAULT_REFERENCE COLON 
 keytabMetadataVaultReferenceConfig:               MIDDLETIER_KEYTAB_METADATA_VAULT_REFERENCE COLON STRING SEMI_COLON
 ;
 
+middleTierUserNamePasswordAuth:                             MIDDLETIER_USERNAME_PASSWORD_AUTH middleTierUserNamePasswordAuthConfig?
+;
+middleTierUserNamePasswordAuthConfig:       BRACE_OPEN
+                                            (
+                                                vaultReferenceConfig
+                                            )*
+                                        BRACE_CLOSE
+;
+
+vaultReferenceConfig:                  MIDDLETIER_USERNAME_PASSWORD_VAULT_REFERENCE COLON STRING SEMI_COLON
+;
+
+
 userNamePasswordAuth:                   USERNAME_PASSWORD_AUTH
                                             BRACE_OPEN
                                                 (

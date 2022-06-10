@@ -49,6 +49,13 @@ public class AuthenticationStrategyTransformer implements AuthenticationStrategy
                     middleTierKeytabAuthenticationStrategy.keytabMetadataVaultReference
             );
         }
+        else if (authenticationStrategy instanceof MiddleTierUserNamePasswordAuthenticationStrategy)
+        {
+            MiddleTierUserNamePasswordAuthenticationStrategy middleTierUserNameAuthenticationStrategy = (MiddleTierUserNamePasswordAuthenticationStrategy) authenticationStrategy;
+            return new org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.MiddleTierUserNamePasswordAuthenticationStrategy(
+                    middleTierUserNameAuthenticationStrategy.vaultReference
+            );
+        }
         else if (authenticationStrategy instanceof UserNamePasswordAuthenticationStrategy)
         {
             UserNamePasswordAuthenticationStrategy userNamePasswordAuthenticationStrategy = (UserNamePasswordAuthenticationStrategy) authenticationStrategy;
