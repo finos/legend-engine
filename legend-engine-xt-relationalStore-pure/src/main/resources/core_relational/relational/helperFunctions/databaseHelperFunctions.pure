@@ -339,7 +339,7 @@ function meta::relational::functions::database::loadValuesToDbTable2(data : List
 
 function meta::relational::functions::database::loadValuesToDbTable2(data : List<List<String>>[1], table:Table[1],columns : Column[*], dbConfig: DbConfig[1]) : String[*]
 {
-    ^LoadTableSQL(table=$table, columnsToLoad=$columns, parsedData=$data)->translateLoadTableStatement($dbConfig);
+    $dbConfig.translateLoadTable(^LoadTableSQL(table=$table, columnsToLoad=$columns, parsedData=$data));
 }
 
 function meta::relational::functions::database::findTablesInDbHierarchy(d:Database[1], targetDBs:Database[*]):Table[*]

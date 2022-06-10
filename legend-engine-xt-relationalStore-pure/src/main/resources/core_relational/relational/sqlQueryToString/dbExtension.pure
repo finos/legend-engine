@@ -52,6 +52,11 @@ Class meta::relational::functions::sqlQueryToString::DbConfig
      $this.dbExtension.isDbReservedIdentifier->eval($str);
    }: Boolean[1];
 
+   literalProcessor(type:Type[1])
+   {
+     getLiteralProcessorForType($type, $this.dbExtension.literalProcessor);
+   }: LiteralProcessor[1];
+
    windowColumnProcessor(w:WindowColumn[1], sgc:SqlGenerationContext[1])
    {
      assert($this.dbExtension.windowColumnProcessor->isNotEmpty(), 'Window Columns not supported for Database Type: ' + $this.dbType->toString());
@@ -99,6 +104,47 @@ Class meta::relational::functions::sqlQueryToString::DbConfig
    {
      $this.dbExtension.dynaFuncDispatch->eval($dynaFn, $sgc);
    }: DynaFunctionToSql[1];
+
+   ddlCommandsTranslator()
+   {
+     assert($this.dbExtension.ddlCommandsTranslator->isNotEmpty(), 'DDL commands translator not supported for Database Type: ' + $this.dbType->toString());
+     $this.dbExtension.ddlCommandsTranslator->toOne();
+   }: RelationalDDLCommandsTranslator[1];
+
+   translateCreateSchema(c:CreateSchemaSQL[1])
+   {
+     let translator = $this.ddlCommandsTranslator;
+     assert($translator.createSchema->isNotEmpty(), 'Create schema translation not supported for Database Type: ' + $this.dbType->toString());
+     $translator.createSchema->toOne()->eval($c);
+   }: String[*];
+
+   translateDropSchema(d:DropSchemaSQL[1])
+   {
+     let translator = $this.ddlCommandsTranslator;
+     assert($translator.dropSchema->isNotEmpty(), 'Drop schema translation not supported for Database Type: ' + $this.dbType->toString());
+     $translator.dropSchema->toOne()->eval($d);
+   }: String[*];
+
+   translateCreateTable(c:CreateTableSQL[1])
+   {
+     let translator = $this.ddlCommandsTranslator;
+     assert($translator.createTable->isNotEmpty(), 'Create table translation not supported for Database Type: ' + $this.dbType->toString());
+     $translator.createTable->toOne()->eval($c, $this);
+   }: String[*];
+
+   translateDropTable(d:DropTableSQL[1])
+   {
+     let translator = $this.ddlCommandsTranslator;
+     assert($translator.dropTable->isNotEmpty(), 'Drop table translation not supported for Database Type: ' + $this.dbType->toString());
+     $translator.dropTable->toOne()->eval($d);
+   }: String[*];
+
+   translateLoadTable(l:LoadTableSQL[1])
+   {
+     let translator = $this.ddlCommandsTranslator;
+     assert($translator.loadTable->isNotEmpty(), 'Load table translation not supported for Database Type: ' + $this.dbType->toString());
+     $translator.loadTable->toOne()->eval($l, $this);
+   }: String[*];
 }
 
 function meta::relational::functions::sqlQueryToString::createDbConfig(dbType:DatabaseType[1]):DbConfig[1]
@@ -350,7 +396,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::proce
 
 function meta::relational::functions::sqlQueryToString::processLiteralValue(a:Any[1], dbConfig : DbConfig[1]) : String[1]
 {
-   let processor = getLiteralProcessorForType($a->type(), $dbConfig.dbExtension.literalProcessor);
+   let processor = $dbConfig.literalProcessor($a->type());
    $processor.formatValue($a, $dbConfig.dbTimeZone);
 }
 

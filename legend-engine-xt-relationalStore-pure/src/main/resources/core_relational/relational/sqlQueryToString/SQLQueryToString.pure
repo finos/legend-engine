@@ -44,7 +44,7 @@ function  meta::relational::functions::sqlQueryToString::processLiteralDefaultFo
                     |$a->cast(@List<Any>).values->type(),
                     |let typeArgumentType = $a.classifierGenericType.typeArguments.rawType; if($typeArgumentType->isEmpty(),|String,|$typeArgumentType->toOne());),
                  |$a->type());
-   let processor = getLiteralProcessorForType($type, $dbConfig.dbExtension.literalProcessor);
+   let processor = $dbConfig.literalProcessor($type);
    if(!$a->type()==String,
       | if($a->type()==List,
            | $a->cast(@List<Any>)->processLiteralListForPlanService($type, $dbConfig, $dbType, $dbTimeZone)->joinStrings(','),
@@ -56,10 +56,33 @@ function meta::relational::functions::sqlQueryToString::processLiteralListForPla
 {
 
    $a.values->map(v|$v->match([
-                     s:String[1]| getLiteralProcessorForType($type, $dbConfig.dbExtension.literalProcessor).formatValue($s, $dbTimeZone)->replace('\'\'', '\''),
-                     a:Any[1]| getLiteralProcessorForType($type, $dbConfig.dbExtension.literalProcessor).formatValue($a, $dbTimeZone)
+                     s:String[1]| $dbConfig.literalProcessor($type).formatValue($s, $dbTimeZone)->replace('\'\'', '\''),
+                     a:Any[1]| $dbConfig.literalProcessor($type).formatValue($a, $dbTimeZone)
                   ]))
    ->joinStrings(',');
+}
+
+function meta::relational::functions::sqlQueryToString::createSelectOneRowSql(table:Table[1], schema:Schema[1], dbType:DatabaseType[1]):String[1]
+{
+   'select top 1 ' + $table.columns->cast(@Column).name->map(s | $s->processColumnName(createDbConfig($dbType, [])))->makeString(',') + ' from ' + $schema.name + '.' + $table.name;
+}
+
+function  meta::relational::functions::sqlQueryToString::getValueForTake(l:Literal[1]):String[1]
+{
+   $l.value->match([
+      i:Integer[1]| $i->toString(),
+      v:VarPlaceHolder[1] |$v->processPlaceHolder($v->getVariableType(), '', '', [])
+   ]);
+}
+
+function meta::relational::functions::sqlQueryToString::convertPlaceHolderToSQLString(v:VarPlaceHolder[1], literalProcessor: meta::pure::metamodel::function::Function<{Type[1] -> LiteralProcessor[1]}>[1], dbTimeZone:String[0..1]):String[1]
+{
+   let vType        = $v->getVariableType();
+
+   let prefixSuffix = getPrefixAndSuffixForType($vType, $literalProcessor);
+   let prefix       = $prefixSuffix.first;
+   let suffix       = $prefixSuffix.second;
+   let value        = processPlaceHolder($v, $vType, $prefix, $suffix, $dbTimeZone);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::getPrefixAndSuffixForType(type:Type[1], literalProcessor: meta::pure::metamodel::function::Function<{Type[1] -> LiteralProcessor[1]}>[1]):Pair<String, String>[1]
@@ -81,21 +104,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::getVa
    if ($v.propertyPath->isNotEmpty(),
        | $v.propertyPath->last().genericType.rawType->toOne(),
        | $v.type);
-}
-
-function meta::relational::functions::sqlQueryToString::convertPlaceHolderToSQLString(v:VarPlaceHolder[1], literalProcessor: meta::pure::metamodel::function::Function<{Type[1] -> LiteralProcessor[1]}>[1], dbTimeZone:String[0..1]):String[1]
-{
-   let vType        = $v->getVariableType();
-
-   let prefixSuffix = getPrefixAndSuffixForType($vType, $literalProcessor);
-   let prefix       = $prefixSuffix.first;
-   let suffix       = $prefixSuffix.second;
-   let value        = processPlaceHolder($v, $vType, $prefix, $suffix, $dbTimeZone);
-}
-
-function meta::relational::functions::sqlQueryToString::createSelectOneRowSql(table:Table[1], schema:Schema[1], dbType:DatabaseType[1]):String[1]
-{
-   'select top 1 ' + $table.columns->cast(@Column).name->map(s | $s->processColumnName(createDbConfig($dbType, [])))->makeString(',') + ' from ' + $schema.name + '.' + $table.name;
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::processPlaceHolder(v:VarPlaceHolder[1], type:Type[1], prefix:String[1], suffix:String[1], dbTimeZone:String[0..1]): String[1]
@@ -136,14 +144,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::proce
                     ,| $dateParameter);
 }
 
-function  meta::relational::functions::sqlQueryToString::getValueForTake(l:Literal[1]):String[1]
-{
-   $l.value->match([
-      i:Integer[1]| $i->toString(),
-      v:VarPlaceHolder[1] |$v->processPlaceHolder($v->getVariableType(), '', '', [])
-   ]);
-}
-
 function <<access.private>> meta::relational::functions::sqlQueryToString::processFreeMarkerOperationHolder(freeMarkerOp:FreeMarkerOperationHolder[1], dbConfig : DbConfig[1], format:Format[1], generationState:GenerationState[1], config: Config[1], nestedFreeMarkerOperationHolder: Boolean[1], extensions:RouterExtension[*]):String[1]
 {
    let freeMarkerOpMap = getFreeMarkerOperationMap();
@@ -167,39 +167,4 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::getFr
       pair('variableCollectionSize', ^ToSql(format='collectionSize(%s)')),
       pair('optionalVarPlaceHolderOpSelector', ^ToSql(format='optionalVarPlaceHolderOperationSelector(%s, %s, %s)'))
    ]->newMap();
-}
-
-function meta::relational::functions::toDDL::translateCreateSchemaStatement(createSchemaSQL:CreateSchemaSQL[1], dbConfig:DbConfig[1]) : String[*]
-{
-  assert($dbConfig.dbExtension.ddlCommandsTranslator->size()==1, ' No relational commands provider found for given db type : '+ $dbConfig.dbType->toString());
-  assert($dbConfig.dbExtension.ddlCommandsTranslator->toOne().createSchema->size()==1, ' No create schema command provider found for given db type : '+ $dbConfig.dbType->toString());
-  $dbConfig.dbExtension.ddlCommandsTranslator->toOne().createSchema->toOne()->eval($createSchemaSQL);
-}
-
-function meta::relational::functions::toDDL::translateDropSchemaStatement(dropSchemaSQL:DropSchemaSQL[1], dbConfig:DbConfig[1]) : String[*]
-{
-  assert($dbConfig.dbExtension.ddlCommandsTranslator->size()==1, ' No relational commands provider found for given db type : '+ $dbConfig.dbType->toString());
-  assert($dbConfig.dbExtension.ddlCommandsTranslator->toOne().dropSchema->size()==1, ' No drop Schema command provider found for given db type : '+ $dbConfig.dbType->toString());
-  $dbConfig.dbExtension.ddlCommandsTranslator->toOne().dropSchema->toOne()->eval($dropSchemaSQL);
-}
-
-function  meta::relational::functions::toDDL::translateCreateTableStatement(createTableSQL:CreateTableSQL[1], dbConfig:DbConfig[1]) : String[*]
-{
-  assert($dbConfig.dbExtension.ddlCommandsTranslator->size()==1, ' No relational commands provider found for given db type : '+ $dbConfig.dbType->toString());
-  assert($dbConfig.dbExtension.ddlCommandsTranslator->toOne().createTable->size()==1, ' No create table command provider found for given db type : '+ $dbConfig.dbType->toString());
-  $dbConfig.dbExtension.ddlCommandsTranslator->toOne().createTable->toOne()->eval($createTableSQL, $dbConfig);
-}
-
-function  meta::relational::functions::toDDL::translateDropTableStatement(dropTableSQL:DropTableSQL[1], dbConfig:DbConfig[1]) : String[*]
-{
-  assert($dbConfig.dbExtension.ddlCommandsTranslator->size()==1, ' No relational commands provider found for given db type : '+ $dbConfig.dbType->toString());
-  assert($dbConfig.dbExtension.ddlCommandsTranslator->toOne().dropTable->size()==1, ' No drop table command provider found for given db type : '+ $dbConfig.dbType->toString());
-  $dbConfig.dbExtension.ddlCommandsTranslator->toOne().dropTable->toOne()->eval($dropTableSQL);
-}
-
-function  meta::relational::functions::toDDL::translateLoadTableStatement(loadTableSQL:LoadTableSQL[1], dbConfig:DbConfig[1]) : String[*]
-{
-  assert($dbConfig.dbExtension.ddlCommandsTranslator->size()==1, ' No relational commands provider found for given db type : '+ $dbConfig.dbType->toString());
-  assert($dbConfig.dbExtension.ddlCommandsTranslator->toOne().loadTable->size()==1, ' No drop table command provider found for given db type : '+ $dbConfig.dbType->toString());
-  $dbConfig.dbExtension.ddlCommandsTranslator->toOne().loadTable->toOne()->eval($loadTableSQL, $dbConfig);
 }
