@@ -155,6 +155,7 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-external-shared-format-model</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-external-format-avro</artifactId>
@@ -165,11 +166,12 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-external-language-morphir</artifactId>
+            <artifactId>legend-engine-external-format-rosetta</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-external-format-rosetta</artifactId>
+            <artifactId>legend-engine-external-language-morphir</artifactId>
         </dependency>
         <!-- ENGINE EXTERNAL -->
 
@@ -194,11 +196,11 @@
 
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-persistence-protocol</artifactId>
+            <artifactId>legend-engine-xt-persistence-grammar</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-persistence-grammar</artifactId>
+            <artifactId>legend-engine-xt-persistence-protocol</artifactId>
         </dependency>
 
         <dependency>
@@ -208,20 +210,20 @@
 
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-protocol</artifactId>
+            <artifactId>legend-engine-xt-relationalStore-grammar</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-grammar</artifactId>
+            <artifactId>legend-engine-xt-relationalStore-protocol</artifactId>
         </dependency>
 
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-serviceStore-protocol</artifactId>
+            <artifactId>legend-engine-xt-serviceStore-grammar</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-serviceStore-grammar</artifactId>
+            <artifactId>legend-engine-xt-serviceStore-protocol</artifactId>
         </dependency>
 
         <dependency>
@@ -246,13 +248,13 @@
         <!-- ECLIPSE COLLECTIONS -->
 
         <!-- TEST -->
-        <!-- DO NOT ADD NEW FURTHER TEST DEPENDENCIES -->
+        <!-- DO NOT ADD FURTHER TEST DEPENDENCIES -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
-        <!-- DO NOT ADD NEW FURTHER TEST DEPENDENCIES -->
+        <!-- DO NOT ADD FURTHER TEST DEPENDENCIES -->
         <!-- TEST -->
     </dependencies>
 
