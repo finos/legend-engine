@@ -486,8 +486,8 @@ function meta::protocols::pure::v1_22_0::transformation::fromPureGraph::valueSpe
                                  _type = 'func',
                                  function = $fe.func.functionName->toOne(),
                                  fControl = $fe.func.name->toOne(),
-                                 parameters = $fe.parametersValues->head()->toOne()->meta::protocols::pure::v1_22_0::transformation::fromPureGraph::valueSpecification::transformNewClass()
-                                             ->concatenate($fe.parametersValues->tail()->map(vs|$vs->meta::protocols::pure::v1_22_0::transformation::fromPureGraph::valueSpecification::transformValueSpecification( $inScope, $open, $extensions) ))
+                                 parameters = $fe->toOne().parametersValues->head()->toOne()->meta::protocols::pure::v1_22_0::transformation::fromPureGraph::valueSpecification::transformNewClass()
+                                             ->concatenate($fe->toOne().parametersValues->tail()->map(vs|$vs->meta::protocols::pure::v1_22_0::transformation::fromPureGraph::valueSpecification::transformValueSpecification( $inScope, $open, $extensions) ))
                                  );,
 
 

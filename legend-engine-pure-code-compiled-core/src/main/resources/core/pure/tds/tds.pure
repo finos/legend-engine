@@ -308,7 +308,7 @@ function meta::pure::tds::projectWithColumnSubset<T>(set:T[*], columnSpecificati
 function meta::pure::tds::projectWithColumnSubset<T>(set:T[*], functions:Function<{T[1]->Any[*]}>[*], ids:String[*], columnList:String[*]):TabularDataSet[1]
 {  
    $columnList->map( i| assert($ids->contains($i) , 'SubSetColumnList should be in project List '  ) );
-   $set->project( $functions->zip($ids)->filter(p:Pair<Function<{T[1]->Any[*]}>,String>[1] |$p.second->in($columnList))->map(p|^BasicColumnSpecification<Nil>(func = $p.first->cast(@Function<{Nil[1]->Any[*]}>), name = $p.second)));
+   $set->project( $functions->zip($ids)->filter(p:Pair<Function<{T[1]->Any[*]}>,String>[1] |$p.second->in($columnList))->map(p|^BasicColumnSpecification<Nil>(func = $p.first->cast(@Function<{Nil[1]->Any[*]}>), name = $p.second))->cast(@BasicColumnSpecification<T>));
 }
 
 function 
@@ -344,7 +344,7 @@ function
    {doc.doc = 'Project the values from the lambda functions specified to create a new TDS'}
    meta::pure::tds::project<K>(set:K[*], functions:Function<{K[1]->Any[*]}>[*], ids:String[*]):TabularDataSet[1]
 {
-   $set->project($functions->zip($ids)->map(p|^BasicColumnSpecification<Nil>(func = $p.first->cast(@Function<{Nil[1]->Any[*]}>), name = $p.second)));
+   $set->project($functions->zip($ids)->map(p|^BasicColumnSpecification<Nil>(func = $p.first->cast(@Function<{Nil[1]->Any[*]}>), name = $p.second))->cast(@BasicColumnSpecification<K>));
 }
 
 function 
