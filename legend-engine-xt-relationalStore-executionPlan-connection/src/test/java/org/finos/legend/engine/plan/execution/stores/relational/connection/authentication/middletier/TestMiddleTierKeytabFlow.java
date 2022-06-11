@@ -1,4 +1,4 @@
-package org.finos.legend.engine.plan.execution.stores.relational.connection.authentication;
+package org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.middletier;
 
 import org.apache.hadoop.minikdc.MiniKdc;
 import org.eclipse.collections.api.factory.Lists;
@@ -6,9 +6,9 @@ import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.map.MutableMap;
 import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
 import org.finos.legend.engine.authentication.middletier.MemSqlStaticWithMiddletierKeytabAuthenticationFlow;
-import org.finos.legend.engine.authentication.middletier.MiddletierKeytabMetadata;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.MiddleTierKeytabAuthenticationStrategy;
 import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
+import org.finos.legend.engine.shared.core.identity.credential.middletier.MiddleTierKeytabCredential;
 import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
 import org.finos.legend.engine.shared.core.vault.Vault;
 import org.finos.legend.engine.shared.core.vault.VaultImplementation;
@@ -21,7 +21,7 @@ import java.util.Properties;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-public class TestKeytabFlow {
+public class TestMiddleTierKeytabFlow {
     private static Path miniKdcServerWorkingDir;
     private static MiniKdc miniKdcServer;
     private static Path keytabsWorkingDir;
@@ -69,7 +69,7 @@ public class TestKeytabFlow {
     @Test
     public void testKeytabMetadataDoesNotMatchKeytab() throws Exception {
         this.vault.add("file::reference1", "fred.kt");
-        this.vault.add("reference2", new MiddletierKeytabMetadata("file::some other reference", new String[]{"service1"}).toJSON());
+        this.vault.add("reference2", new MiddleTierKeytabCredential("file::some other reference", new String[]{"service1"}).toJSON());
 
         MiddleTierKeytabAuthenticationStrategy middleTierKeytabAuthenticationStrategy = new MiddleTierKeytabAuthenticationStrategy("fred@EXAMPLE.COM", "file::reference1", "reference2");
         try {
@@ -84,7 +84,7 @@ public class TestKeytabFlow {
     @Test
     public void testKeytabMetadataContextDoesNotMatchRuntimeContext() throws Exception {
         this.vault.add("file::reference1", "fred.kt");
-        this.vault.add("reference2", new MiddletierKeytabMetadata("file::reference1", new String[]{"service1"}).toJSON());
+        this.vault.add("reference2", new MiddleTierKeytabCredential("file::reference1", new String[]{"service1"}).toJSON());
 
         MiddleTierKeytabAuthenticationStrategy middleTierKeytabAuthenticationStrategy = new MiddleTierKeytabAuthenticationStrategy("fred@EXAMPLE.COM", "file::reference1", "reference2");
         try {
@@ -99,7 +99,7 @@ public class TestKeytabFlow {
     @Test
     public void testUseKeytabWithoutRuntimeContext() throws Exception {
         this.vault.add("file::reference1", "fred.kt");
-        this.vault.add("reference2", new MiddletierKeytabMetadata("file::reference1", new String[]{"service1"}).toJSON());
+        this.vault.add("reference2", new MiddleTierKeytabCredential("file::reference1", new String[]{"service1"}).toJSON());
 
         MiddleTierKeytabAuthenticationStrategy middleTierKeytabAuthenticationStrategy = new MiddleTierKeytabAuthenticationStrategy("fred@EXAMPLE.COM", "file::reference1", "reference2");
         try {
@@ -120,7 +120,7 @@ public class TestKeytabFlow {
     @Test
     public void testCreateAndUseKeytabSuccessfully() throws Exception {
         this.vault.add("file::reference1", "fred.kt");
-        this.vault.add("reference2", new MiddletierKeytabMetadata("file::reference1", new String[]{"service1"}).toJSON());
+        this.vault.add("reference2", new MiddleTierKeytabCredential("file::reference1", new String[]{"service1"}).toJSON());
 
         MiddleTierKeytabAuthenticationStrategy middleTierKeytabAuthenticationStrategy = new MiddleTierKeytabAuthenticationStrategy("fred@EXAMPLE.COM", "file::reference1", "reference2");
         DatabaseAuthenticationFlow.RuntimeContext runtimeContext = DatabaseAuthenticationFlow.RuntimeContext.newWith(Maps.immutable.of("context", "service1").castToMap());

@@ -21,7 +21,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.credential.MiddleTierUserPasswordCredential;
+import org.finos.legend.engine.shared.core.identity.credential.middletier.MiddleTierUserPasswordCredential;
 import org.finos.legend.engine.shared.core.vault.Vault;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

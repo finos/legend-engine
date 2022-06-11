@@ -22,6 +22,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
+import org.finos.legend.engine.shared.core.identity.credential.middletier.MiddleTierKeytabCredential;
 import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
 import org.finos.legend.engine.shared.core.vault.Vault;
 import org.slf4j.Logger;
@@ -65,9 +66,9 @@ public abstract class AbstractMiddletierKeytabAuthenticationFlow implements Data
             throw new UnsupportedOperationException("Unsafe attempt to make a credential with a (Java) null runtime context");
         }
 
-        MiddletierKeytabMetadata middletierKeytabMetadata = this.getKeytabMetadataFromVault(authenticationStrategy.keytabMetadataVaultReference);
-        this.validateKeytabMetadataPointsToKeytab(authenticationStrategy.keytabVaultReference, middletierKeytabMetadata);
-        this.validateKeytabAgainstRuntimeContext(authenticationStrategy.keytabVaultReference, middletierKeytabMetadata, runtimeContext);
+        MiddleTierKeytabCredential middleTierKeytabCredential = this.getKeytabMetadataFromVault(authenticationStrategy.keytabMetadataVaultReference);
+        this.validateKeytabMetadataPointsToKeytab(authenticationStrategy.keytabVaultReference, middleTierKeytabCredential);
+        this.validateKeytabAgainstRuntimeContext(authenticationStrategy.keytabVaultReference, middleTierKeytabCredential, runtimeContext);
 
         String keytabFileLocation = resolveKeytabFileLocation(authenticationStrategy);
         Subject subject = SubjectTools.getSubjectFromKeytab(keytabFileLocation, authenticationStrategy.principal, true);
@@ -80,36 +81,36 @@ public abstract class AbstractMiddletierKeytabAuthenticationFlow implements Data
         return Vault.INSTANCE.getValue(authenticationStrategy.keytabVaultReference);
     }
 
-    protected MiddletierKeytabMetadata getKeytabMetadataFromVault(String keytabMetadataVaultReference) throws Exception
+    protected MiddleTierKeytabCredential getKeytabMetadataFromVault(String keytabMetadataVaultReference) throws Exception
     {
         String keytabVaultMetatadataAsString = Vault.INSTANCE.getValue(keytabMetadataVaultReference);
         if (keytabVaultMetatadataAsString == null)
         {
             throw new Exception(String.format("Failed to locate keytab metadata using vault reference '%s'", keytabMetadataVaultReference));
         }
-        return new ObjectMapper().readValue(keytabVaultMetatadataAsString, MiddletierKeytabMetadata.class);
+        return new ObjectMapper().readValue(keytabVaultMetatadataAsString, MiddleTierKeytabCredential.class);
     }
 
-    protected MiddletierKeytabMetadata validateKeytabMetadataPointsToKeytab(String keytabVaultReference, MiddletierKeytabMetadata middletierKeytabMetadata) throws Exception
+    protected MiddleTierKeytabCredential validateKeytabMetadataPointsToKeytab(String keytabVaultReference, MiddleTierKeytabCredential middleTierKeytabCredential) throws Exception
     {
         // Does the metadata refer to the keytab
-        if (!middletierKeytabMetadata.getKeytabReference().equals(keytabVaultReference))
+        if (!middleTierKeytabCredential.getKeytabReference().equals(keytabVaultReference))
         {
             LOGGER.warn(String.format("Use of keytab with reference '%s' not authorized. Mismatch between keytab vault reference and it's associated vault metadata", keytabVaultReference));
             throw new Exception(String.format("Use of keytab with reference '%s' not authorized. Mismatch between keytab vault reference and it's associated vault metadata", keytabVaultReference));
         }
-        return middletierKeytabMetadata;
+        return middleTierKeytabCredential;
     }
 
     // Note - This is an extension method to allow additional organization specific validation logic
     protected abstract void runAdditionalKeytabMetadataValidations(String keytabVaultReference, String keytabMetadataReference);
 
-    protected void validateKeytabAgainstRuntimeContext(String keyTabReference, MiddletierKeytabMetadata middletierKeytabMetadata, String runtimeContext) throws Exception
+    protected void validateKeytabAgainstRuntimeContext(String keyTabReference, MiddleTierKeytabCredential middleTierKeytabCredential, String runtimeContext) throws Exception
     {
-        Optional<String> matches = Arrays.stream(middletierKeytabMetadata.getUsageContexts()).filter(usageContext -> usageContext.equals(runtimeContext)).findAny();
+        Optional<String> matches = Arrays.stream(middleTierKeytabCredential.getUsageContexts()).filter(usageContext -> usageContext.equals(runtimeContext)).findAny();
         if (!matches.isPresent())
         {
-            LOGGER.warn(String.format("Use of keytab with reference '%s' not authorized. Mismatch between runtime context '%s' and keytab metadata contexts '%s'", keyTabReference, runtimeContext, Arrays.toString(middletierKeytabMetadata.getUsageContexts())));
+            LOGGER.warn(String.format("Use of keytab with reference '%s' not authorized. Mismatch between runtime context '%s' and keytab metadata contexts '%s'", keyTabReference, runtimeContext, Arrays.toString(middleTierKeytabCredential.getUsageContexts())));
             throw new Exception(String.format("Use of keytab with reference '%s' not authorized. Mismatch between runtime context and keytab metadata context", keyTabReference));
         }
     }

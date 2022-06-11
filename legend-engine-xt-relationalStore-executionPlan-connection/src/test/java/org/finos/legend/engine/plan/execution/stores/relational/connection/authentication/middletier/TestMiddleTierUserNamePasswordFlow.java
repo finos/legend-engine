@@ -6,7 +6,7 @@ import org.eclipse.collections.api.factory.Maps;
 import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
 import org.finos.legend.engine.authentication.middletier.MemSqlStaticWithMiddletierUserNamePasswordAuthenticationFlow;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.MiddleTierUserNamePasswordAuthenticationStrategy;
-import org.finos.legend.engine.shared.core.identity.credential.MiddleTierUserPasswordCredential;
+import org.finos.legend.engine.shared.core.identity.credential.middletier.MiddleTierUserPasswordCredential;
 import org.finos.legend.engine.shared.core.vault.Vault;
 import org.finos.legend.engine.shared.core.vault.VaultImplementation;
 import org.junit.After;

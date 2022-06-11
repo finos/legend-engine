@@ -12,38 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.shared.core.identity.credential;
+package org.finos.legend.engine.shared.core.identity.credential.middletier;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.finos.legend.engine.shared.core.identity.Credential;
 
 import java.util.Objects;
 
-public class MiddleTierUserPasswordCredential implements Credential
+public class MiddleTierKeytabCredential implements Credential
 {
-    private String user;
-    private String password;
     private String[] usageContexts;
+    private String keytabReference;
 
-    public MiddleTierUserPasswordCredential()
+    public MiddleTierKeytabCredential()
     {
         // jackson
     }
 
-    public MiddleTierUserPasswordCredential(String user, String password, String[] usageContexts)
+    public MiddleTierKeytabCredential(String keytabReference, String[] usageContexts)
     {
-        this.user = user;
-        this.password = password;
+        this.keytabReference = keytabReference;
         this.usageContexts = usageContexts;
-    }
-
-    public String getUser()
-    {
-        return user;
-    }
-
-    public String getPassword()
-    {
-        return password;
     }
 
     public String[] getUsageContexts()
@@ -51,19 +40,19 @@ public class MiddleTierUserPasswordCredential implements Credential
         return usageContexts;
     }
 
-    public void setUser(String user)
+    public String getKeytabReference()
     {
-        this.user = user;
+        return keytabReference;
     }
 
-    public void setPassword(String password)
+    public void setKeytabReference(String keytabReference)
     {
-        this.password = password;
+        this.keytabReference = keytabReference;
     }
 
-    public void setUsageContexts(String[] usageContexts)
+    public String toJSON() throws Exception
     {
-        this.usageContexts = usageContexts;
+        return new ObjectMapper().writeValueAsString(this);
     }
 
     @Override
@@ -77,14 +66,14 @@ public class MiddleTierUserPasswordCredential implements Credential
         {
             return false;
         }
-        MiddleTierUserPasswordCredential that = (MiddleTierUserPasswordCredential) o;
-        return user.equals(that.user) &&
-                password.equals(that.password) && usageContexts.equals(that.usageContexts);
+        MiddleTierKeytabCredential that = (MiddleTierKeytabCredential) o;
+        return keytabReference.equals(that.keytabReference) &&
+                usageContexts.equals(that.usageContexts);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(user, password, usageContexts);
+        return Objects.hash(keytabReference, usageContexts);
     }
 }

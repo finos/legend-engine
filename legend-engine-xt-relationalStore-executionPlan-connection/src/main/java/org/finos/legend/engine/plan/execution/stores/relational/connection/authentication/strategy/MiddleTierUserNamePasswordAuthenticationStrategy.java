@@ -24,7 +24,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.Da
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.ConnectionStateManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.IdentityState;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.credential.MiddleTierUserPasswordCredential;
+import org.finos.legend.engine.shared.core.identity.credential.middletier.MiddleTierUserPasswordCredential;
 
 import java.sql.Connection;
 import java.sql.SQLException;
