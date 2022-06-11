@@ -18,7 +18,7 @@ Class meta::external::format::protobuf::binding::fromPure::ModelToProtobufDataCo
   {doc.doc='Affects the C++ and Java code generators (and possibly third-party generators) changing the generated code to optimize for these characteristics.'} 
   optimizeFor:OptimizeMode[0..1];
   {doc.doc='Freeform options that are not part of the specification but can be passed through to other tooling'}
-  customOptions:meta::external::format::protobuf::binding::fromPure::ProtobufOption[*];
+  customOptions:Map<String,Any>[0..1];
 }
 
 Class meta::external::format::protobuf::binding::fromPure::ProtobufOption
@@ -127,8 +127,8 @@ function meta::external::format::protobuf::binding::fromPure::configToOptions(co
   $properties->map( p | let res = $p->eval($config);  
                         if( !$res->isEmpty() ,| ^Option(name=$p.name->toOne()->splitOnCamelCase()->toLowerFirstCharacter()->joinStrings('_'), 
                                                         value=$res->toOne()->toOptionValue()), | []);
-                        )->concatenate($config.customOptions->map(o |
-                              ^Option(name=$o.name, value=$o.value->toOptionValue()))
+                        )->concatenate($config.customOptions->map(x|$x->keyValues()->sortBy(x|$x.first)->map(o |
+                              ^Option(name=$o.first, value=$o.second->toOptionValue())))
                            );
 }
 

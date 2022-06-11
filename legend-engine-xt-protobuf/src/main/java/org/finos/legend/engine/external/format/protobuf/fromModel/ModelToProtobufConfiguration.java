@@ -15,11 +15,10 @@
 package org.finos.legend.engine.external.format.protobuf.fromModel;
 
 import org.finos.legend.engine.external.format.protobuf.ProtobufFormatExtension;
-import org.finos.legend.engine.external.format.protobuf.deprecated.generation.configuration.CustomOption;
 import org.finos.legend.engine.external.shared.format.model.fromModel.ModelToSchemaConfiguration;
 
 import java.util.Collections;
-import java.util.List;
+import java.util.Map;
 
 public class ModelToProtobufConfiguration extends ModelToSchemaConfiguration
 {
@@ -27,7 +26,7 @@ public class ModelToProtobufConfiguration extends ModelToSchemaConfiguration
     public String javaOuterClassname;
     public Boolean javaMultipleFiles;
     public OptimizeMode optimizeFor;
-    public List<CustomOption> customOptions = Collections.emptyList();
+    public Map<String,Object> customOptions = Collections.EMPTY_MAP;
 
     public ModelToProtobufConfiguration()
     {
