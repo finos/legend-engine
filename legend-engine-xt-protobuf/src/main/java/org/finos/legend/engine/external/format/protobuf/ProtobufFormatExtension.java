@@ -26,13 +26,13 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.pure.generated.Root_meta_external_format_protobuf_binding_ProtobufSchema;
 import org.finos.legend.pure.generated.Root_meta_external_format_protobuf_binding_fromPure_ModelToProtobufDataConfiguration;
 import org.finos.legend.pure.generated.Root_meta_external_format_protobuf_binding_fromPure_ModelToProtobufDataConfiguration_Impl;
-import org.finos.legend.pure.generated.Root_meta_external_format_protobuf_binding_fromPure_ProtobufOption_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_validation_BindingDetail;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_SchemaSet;
 import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationParameter;
 import org.finos.legend.pure.generated.core_external_format_protobuf_metamodel_metamodel_serialization;
 import org.finos.legend.pure.generated.core_external_format_protobuf_transformation_transformation;
+import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.map.PureMap;
 
 import java.util.List;
 
@@ -110,7 +110,7 @@ public class ProtobufFormatExtension implements ExternalFormatExtension<Root_met
                 ._javaOuterClassname(modelToSchemaConfiguration.javaOuterClassname)
                 ._javaMultipleFiles(modelToSchemaConfiguration.javaMultipleFiles)
                 ._optimizeFor(modelToSchemaConfiguration.optimizeFor == null ? null : pureModel.getEnumValue("meta::external::format::protobuf::binding::fromPure::OptimizeMode", modelToSchemaConfiguration.optimizeFor.name()))
-                ._customOptions(ListIterate.collect(modelToSchemaConfiguration.customOptions, o -> new Root_meta_external_format_protobuf_binding_fromPure_ProtobufOption_Impl("")._name(o.name)._value(o.value)));
+                ._customOptions(new PureMap(modelToSchemaConfiguration.customOptions));
 
         modelToSchemaConfiguration.sourceModel.forEach(pe -> configuration._sourceModelAdd(pureModel.getPackageableElement(pe)));
 

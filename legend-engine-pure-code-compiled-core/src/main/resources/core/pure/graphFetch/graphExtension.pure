@@ -416,11 +416,11 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForPrope
       {none:PurePropertyMapping[0] |
          if($setImplementation->isNoMappingPassThru($requiredProperty->toOne()),
             {| 
-               let path = ^PropertyPathNode(
+               let lPath = list(^PropertyPathNode(
                   class    = $setImplementation.srcClass->toOne()->cast(@Class<Any>),
                   property = $setImplementation->noMappingPassThruSourceProperty($requiredProperty->toOne())->toOne()
-               );
-               ^Res(current=list($path), result=list($path));
+               ));
+               ^Res(current=$lPath, result=$lPath);
             },
             {| 
               assert($setImplementation->isNoMappingDefaultToEmpty($requiredProperty->toOne()) || $setImplementation->isPartOfMerge(), |'No mapping found for property \'' + $tgtPgft.property.name->toOne() + '\''); 
@@ -443,7 +443,7 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForPrope
    let withSubTypes        = $inlinedPropertyGraphTrees->concatenate($inlinedPropertyGraphTrees->map(pgft | let appendAtPath = $propertyPaths.current->filter(path| $path.values->size() > 1);
                                                                                                             if($appendAtPath->isEmpty(),
                                                                                                                | $setClasses->map(sc | if($sc->getAllTypeGeneralisationsExcluded()->contains($pgft.property.genericType.rawType->toOne()), | ^$pgft(subType=$sc->cast(@Class<Any>)), | [])),
-                                                                                                               | $pgft->getSubTreeNodesAtPath(list($appendAtPath.values->tail()), $setClasses->cast(@Class<Any>), $extensions)
+                                                                                                               | $pgft->getSubTreeNodesAtPath(list($appendAtPath->toOne().values->tail()), $setClasses->cast(@Class<Any>), $extensions)
                                                                                                             );
                                                                                                      ));
 
