@@ -268,17 +268,6 @@ Diagram meta::relational::metamodel::RelationalOperationDiagram(width=0.0, heigh
         color=#FFFFCC,
         lineWidth=1.0)
 
-    TypeView b28979e4_033c_4247_a984_ff65c8628a20(
-        type=meta::relational::functions::pureToSqlQuery::VarPlaceHolder,
-        position=(566.23030, -328.27681),
-        width=169.76120,
-        height=86.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
 
     TypeView 605b06a1_462a_431a_9763_1165fd93b644(
         type=meta::relational::functions::pureToSqlQuery::OperationWithParentPropertyMapping,
@@ -292,17 +281,6 @@ Diagram meta::relational::metamodel::RelationalOperationDiagram(width=0.0, heigh
         color=#FFFFCC,
         lineWidth=1.0)
 
-    TypeView cview_29(
-        type=meta::relational::functions::pureToSqlQuery::FreeMarkerOperationHolder,
-        position=(706.69583, -4.37103),
-        width=179.35822,
-        height=44.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
 
     TypeView cview_25(
         type=meta::relational::metamodel::DynaFunction,
@@ -688,14 +666,6 @@ Diagram meta::relational::metamodel::RelationalOperationDiagram(width=0.0, heigh
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
-    GeneralizationView gview_24(
-        source=b28979e4_033c_4247_a984_ff65c8628a20,
-        target=cview_21,
-        points=[(638.11518,-303.46976),(639.75888,-419.92167)],
-        label='',
-        color=#000000,
-        lineWidth=-1.0,
-        lineStyle=SIMPLE)
 
     GeneralizationView gview_25(
         source=605b06a1_462a_431a_9763_1165fd93b644,
@@ -769,14 +739,6 @@ Diagram meta::relational::metamodel::RelationalOperationDiagram(width=0.0, heigh
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
-    GeneralizationView gview_33(
-        source=cview_29,
-        target=cview_21,
-        points=[(839.69583,-1.37103),(844.75888,-415.92167)],
-        label='',
-        color=#000000,
-        lineWidth=-1.0,
-        lineStyle=SIMPLE)
 
     PropertyView pview_0(
         property=meta::relational::metamodel::relation::Milestoning.owner,
@@ -1114,17 +1076,4 @@ Diagram meta::relational::metamodel::RelationalOperationDiagram(width=0.0, heigh
         nameVisible=true,
         lineStyle=SIMPLE)
 
-    PropertyView pview_24(
-        property=meta::relational::functions::pureToSqlQuery::FreeMarkerOperationHolder.parameters,
-        source=cview_29,
-        target=cview_21
-,        points=[(796.37493,17.62897),(1948.54818,16.75767),(1940.54818,-551.24233),(1453.69583,-556.37103)],
-        label='',
-        propertyPosition=(0.0,0.0),
-        multiplicityPosition=(0.0,0.0),
-        color=#000000,
-        lineWidth=-1.0,
-        stereotypesVisible=true,
-        nameVisible=true,
-        lineStyle=SIMPLE)
 }

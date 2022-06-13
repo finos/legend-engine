@@ -1,0 +1,47 @@
+import meta::relational::functions::sqlQueryToString::composite::*;
+import meta::relational::functions::sqlQueryToString::default::*;
+import meta::relational::functions::sqlQueryToString::*;
+import meta::relational::metamodel::operation::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::metamodel::*;
+import meta::relational::runtime::*;
+import meta::pure::router::extension::*;
+
+function <<db.ExtensionLoader>> meta::relational::functions::sqlQueryToString::composite::dbExtensionLoaderForComposite():DbExtensionLoader[1]
+{
+  ^DbExtensionLoader(dbType = DatabaseType.Composite, loader = createDbExtensionForComposite__DbExtension_1_);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::composite::createDbExtensionForComposite():DbExtension[1]
+{
+   let reservedWords = defaultReservedWords();
+   let literalProcessors = getDefaultLiteralProcessors();
+   let literalProcessor = {type:Type[1]| $literalProcessors->get(if($type->instanceOf(Enumeration), | Enum, | $type))->toOne()};
+   let dynaFuncDispatch = getDynaFunctionToSqlDefault($literalProcessor)->groupBy(d| $d.funcName)->putAll(
+     getDynaFunctionToSqlForComposite()->groupBy(d| $d.funcName))->getDynaFunctionDispatcher();
+
+   ^DbExtension(
+      isBooleanLiteralSupported = true,
+      isDbReservedIdentifier = {str:String[1]| $str->in($reservedWords)},
+      literalProcessor = $literalProcessor,
+      selectSQLQueryProcessor = processSelectSQLQueryDefault_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
+      columnNameToIdentifier = columnNameToIdentifierDefault_String_1__DbConfig_1__String_1_,
+      identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
+      dynaFuncDispatch = $dynaFuncDispatch
+   );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::composite::getDynaFunctionToSqlForComposite(): DynaFunctionToSql[*]
+{
+  let allStates = allGenerationStates();
+
+  [
+    dynaFnToSql('hour',                   $allStates,            ^ToSql(format='hour(%s)')),
+    dynaFnToSql('length',                 $allStates,            ^ToSql(format='char_length(%s)')),
+    dynaFnToSql('parseFloat',             $allStates,            ^ToSql(format='cast(%s as float)')),
+    dynaFnToSql('parseInteger',           $allStates,            ^ToSql(format='cast(%s as integer)')),
+    dynaFnToSql('position',               $allStates,            ^ToSql(format='position(%s, %s)')),
+    dynaFnToSql('round',                  $allStates,            ^ToSql(format='round(%s, %s)', transform=transformRound_String_MANY__String_MANY_)),
+    dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')}))
+  ];
+}
