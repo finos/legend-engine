@@ -1,0 +1,62 @@
+###Pure
+
+import meta::pure::generation::metamodel::*;
+import meta::external::format::avro::generation::*;
+import meta::json::*;
+import meta::protocols::pure::v1_20_0::transformation::fromPureGraph::*;
+import meta::alloy::metadataServer::*;
+import meta::pure::functions::io::http::*;
+
+function <<access.private>> meta::protocols::pure::v1_20_0::invocation::generation::avro::legendGenerateAvro(input:AvroConfig[1], host:String[1], port:Integer[1]):AvroOutput[*]
+{
+   meta::protocols::pure::v1_20_0::invocation::generation::avro::legendGenerateAvro($input, $host, $port, 'v1');
+}
+
+function meta::protocols::pure::v1_20_0::invocation::generation::avro::legendGenerateAvro(avroConfig:AvroConfig[1], host:String[1], port:Integer[1], version:String[1]):AvroOutput[*]
+{
+   let resp = executeHTTPRaw(^URL(host = $host , port=$port, path = '/api/pure/'+$version+'/schemaGeneration/avro'),
+                                 HTTPMethod.POST,
+                                 'application/json',
+                                 '{ "clientVersion":"v1_20_0",'+
+                                 '  "config":'+$avroConfig->meta::protocols::pure::v1_20_0::invocation::generation::avro::transformAvroGenerationConfig()->alloyToJSON()+','+
+                                 '  "model":'+if ($avroConfig.package->isEmpty(),
+                                                  |$avroConfig.class->toOne()->pathToElement()->toOne()->cast(@Type)->buildPureModelFromType(meta::pure::router::extension::defaultExtensions())->alloyToJSON(),
+                                                  |$avroConfig.package->toOne()->pathToElement()->toOne()->cast(@Package)->buildPureModelFromPackage(meta::pure::router::extension::defaultExtensions())->alloyToJSON())+
+                                 '}'
+                                );
+   assertEq(200, $resp.statusCode, | $resp.entity);
+   $resp.entity->parseJSON()->fromJSON(AvroOutput, ^ExtendedJSONDeserializationConfig(nullReplacementInArray = ^TDSNull(), typeKeyName='__TYPE', failOnUnknownProperties=true))->cast(@AvroOutput);
+}
+
+###Pure
+Class meta::protocols::pure::v1_20_0::metamodel::invocation::generation::avro::AvroConfig extends meta::protocols::pure::v1_20_0::metamodel::invocation::generation::GenerationConfiguration
+{
+
+   includeNamespace: Boolean[0..1];
+   includeSuperTypes: Boolean[0..1];
+   includeAssociations: Boolean[0..1];
+   includeGeneratedMilestoning: Boolean[0..1];
+   timestampLogicalType: String[0..1];
+   propertyProfile: Profile[*];
+   namespaceOverride: Map<String, String>[0..1];
+}
+
+###Pure
+
+import meta::external::format::avro::generation::*;
+
+function meta::protocols::pure::v1_20_0::invocation::generation::avro::transformAvroGenerationConfig(input:AvroConfig[1]):meta::protocols::pure::v1_20_0::metamodel::invocation::generation::avro::AvroConfig[1]
+{
+   ^meta::protocols::pure::v1_20_0::metamodel::invocation::generation::avro::AvroConfig(
+      package = $input.package,
+      class = $input.class,
+      includeNamespace=$input.includeNamespace ,
+      includeSuperTypes=$input.includeSuperTypes,
+      includeAssociations=$input.includeAssociations,
+      includeGeneratedMilestoning=$input.includeGeneratedMilestoning,
+      timestampLogicalType=$input.timestampLogicalType,
+      propertyProfile=$input.propertyProfile,
+      namespaceOverride=$input.namespaceOverride
+   )
+}
+

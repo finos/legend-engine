@@ -78,6 +78,18 @@
         <module>legend-engine-xt-relationalStore-grammar</module>
         <module>legend-engine-xt-relationalStore-protocol</module>
 
+        <module>legend-engine-xt-avro</module>
+        <module>legend-engine-xt-avro-pure</module>
+
+        <module>legend-engine-xt-rosetta</module>
+        <module>legend-engine-xt-rosetta-pure</module>
+
+        <module>legend-engine-xt-morphir</module>
+        <module>legend-engine-xt-morphir-pure</module>
+
+
+
+
         <module>legend-engine-pure-code-compiled-core</module>
         <module>legend-engine-pure-code-compiled-core-external-shared</module>
 
@@ -93,10 +105,7 @@
         <module>legend-engine-external-shared</module>
         <module>legend-engine-external-shared-format-model</module>
         <module>legend-engine-external-shared-format-runtime</module>
-        <module>legend-engine-external-format-avro</module>
-        <module>legend-engine-external-format-rosetta</module>
         <module>legend-engine-external-language-java</module>
-        <module>legend-engine-external-language-morphir</module>
         <module>legend-engine-language-pure-modelManager</module>
         <module>legend-engine-language-pure-modelManager-sdlc</module>
         <module>legend-engine-language-pure-compiler</module>
@@ -770,6 +779,39 @@
                 <version>${project.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-avro</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-avro-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-rosetta</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-rosetta-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-morphir</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-morphir-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
 
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
@@ -974,27 +1016,12 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-external-format-avro</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-external-format-jsonSchema</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-external-format-rosetta</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-external-language-java</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-external-language-morphir</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

@@ -36,16 +36,4 @@ Class meta::protocols::pure::vX_X_X::metamodel::invocation::generation::json::JS
 }
 
 
-###Pure
-Class meta::protocols::pure::vX_X_X::metamodel::invocation::generation::avro::AvroConfig extends meta::protocols::pure::vX_X_X::metamodel::invocation::generation::GenerationConfiguration
-{
 
-   includeNamespace: Boolean[0..1];
-   includeSuperTypes: Boolean[0..1];
-   includeAssociations: Boolean[0..1];
-   includeGeneratedMilestoning: Boolean[0..1];
-   timestampLogicalType: String[0..1];
-   propertyProfile: Profile[*];
-   namespaceOverride: Map<String, String>[0..1];
-   generateLogicalTypes:Boolean[0..1];
-}
