@@ -17,8 +17,6 @@ package org.finos.legend.engine.protocol.pure.v1;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
-import org.eclipse.collections.impl.list.mutable.FastList;
-import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
@@ -44,36 +42,26 @@ public class ServiceProtocolExtension implements PureProtocolExtension
     @Override
     public List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()
     {
-        return Lists.mutable.with(() -> Lists.mutable.with(
-                ProtocolSubTypeInfo.Builder
-                        .newInstance(PackageableElement.class)
-                        .withSubtypes(FastList.newListWith(
-                                Tuples.pair(Service.class, "service")
-                        )).build(),
-                ProtocolSubTypeInfo.Builder
-                        .newInstance(Execution.class)
+        return Lists.fixedSize.with(() -> Lists.mutable.with(
+                ProtocolSubTypeInfo.newBuilder(PackageableElement.class)
+                        .withSubtype(Service.class, "service")
+                        .build(),
+                ProtocolSubTypeInfo.newBuilder(Execution.class)
                         .withDefaultSubType(PureSingleExecution.class)
-                        .withSubtypes(FastList.newListWith(
-                                Tuples.pair(PureSingleExecution.class, "pureSingleExecution"),
-                                Tuples.pair(PureMultiExecution.class, "pureMultiExecution")
-                        )).build(),
-                ProtocolSubTypeInfo.Builder
-                        .newInstance(ServiceTest_Legacy.class)
+                        .withSubtype(PureSingleExecution.class, "pureSingleExecution")
+                        .withSubtype(PureMultiExecution.class, "pureMultiExecution")
+                        .build(),
+                ProtocolSubTypeInfo.newBuilder(ServiceTest_Legacy.class)
                         .withDefaultSubType(SingleExecutionTest.class)
-                        .withSubtypes(FastList.newListWith(
-                                Tuples.pair(SingleExecutionTest.class, "singleExecutionTest"),
-                                Tuples.pair(MultiExecutionTest.class, "multiExecutionTest")
-                        )).build(),
-                ProtocolSubTypeInfo.Builder
-                        .newInstance(TestSuite.class)
-                        .withSubtypes(FastList.newListWith(
-                                Tuples.pair(ServiceTestSuite.class, "serviceTestSuite")
-                        )).build(),
-                ProtocolSubTypeInfo.Builder
-                        .newInstance(Test.class)
-                        .withSubtypes(FastList.newListWith(
-                                Tuples.pair(ServiceTest.class, "serviceTest")
-                        )).build()
+                        .withSubtype(SingleExecutionTest.class, "singleExecutionTest")
+                        .withSubtype(MultiExecutionTest.class, "multiExecutionTest")
+                        .build(),
+                ProtocolSubTypeInfo.newBuilder(TestSuite.class)
+                        .withSubtype(ServiceTestSuite.class, "serviceTestSuite")
+                        .build(),
+                ProtocolSubTypeInfo.newBuilder(Test.class)
+                        .withSubtype(ServiceTest.class, "serviceTest")
+                        .build()
         ));
     }
 

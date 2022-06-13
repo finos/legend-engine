@@ -17,8 +17,10 @@ package org.finos.legend.engine.language.pure.grammar.to;
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
+import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.ExternalFormatGrammarParserExtension;
@@ -33,52 +35,38 @@ import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shar
 import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.ExternalSource;
 import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.UrlStreamExternalSource;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
 
 public class ExternalFormatGrammarComposerExtension implements IExternalFormatGrammarComposerExtension
 {
     @Override
     public List<Function3<List<PackageableElement>, PureGrammarComposerContext, String, String>> getExtraSectionComposers()
     {
-        return Lists.mutable.with((elements, context, sectionName) ->
-        {
-            if (!ExternalFormatGrammarParserExtension.NAME.equals(sectionName))
-            {
-                return null;
-            }
-            return ListIterate.collect(elements, ExternalFormatGrammarComposerExtension::renderElement).makeString("\n\n");
-        });
+        return Collections.singletonList((elements, context, sectionName) -> ExternalFormatGrammarParserExtension.NAME.equals(sectionName)
+                ? LazyIterate.collect(elements, ExternalFormatGrammarComposerExtension::renderElement).makeString("\n\n")
+                : null);
     }
 
     @Override
     public List<Function3<List<PackageableElement>, PureGrammarComposerContext, List<String>, PureGrammarComposerExtension.PureFreeSectionGrammarComposerResult>> getExtraFreeSectionComposers()
     {
-        return org.eclipse.collections.impl.factory.Lists.mutable.with((elements, context, composedSections) ->
+        return Collections.singletonList((elements, context, composedSections) ->
         {
-            List<PackageableElement> composableElements = ListIterate.selectInstancesOf(elements, ExternalFormatSchemaSet.class)
-                    .collect(PackageableElement.class::cast)
-                    .withAll(ListIterate.selectInstancesOf(elements, Binding.class));
+            MutableList<PackageableElement> composableElements = Iterate.select(elements, e -> (e instanceof ExternalFormatSchemaSet) || (e instanceof Binding), Lists.mutable.empty());
             return composableElements.isEmpty()
                     ? null
-                    : new PureFreeSectionGrammarComposerResult(LazyIterate.collect(composableElements, ExternalFormatGrammarComposerExtension::renderElement).makeString("###" + ExternalFormatGrammarParserExtension.NAME + "\n", "\n\n", ""), composableElements);
+                    : new PureFreeSectionGrammarComposerResult(composableElements.asLazy().collect(ExternalFormatGrammarComposerExtension::renderElement).makeString("###" + ExternalFormatGrammarParserExtension.NAME + "\n", "\n\n", ""), composableElements);
         });
     }
 
     @Override
     public List<Function2<Connection, PureGrammarComposerContext, Pair<String, String>>> getExtraConnectionValueComposers()
     {
-        return Lists.mutable.with((connectionValue, context) ->
-        {
-            if (connectionValue instanceof ExternalFormatConnection)
-            {
-                return renderExternalFormatConnection((ExternalFormatConnection) connectionValue, context);
-            }
-            return null;
-        });
+        return Collections.singletonList((connectionValue, context) -> (connectionValue instanceof ExternalFormatConnection)
+                ? renderExternalFormatConnection((ExternalFormatConnection) connectionValue, context)
+                : null);
     }
 
     private Pair<String, String> renderExternalFormatConnection(ExternalFormatConnection connection, PureGrammarComposerContext context)
@@ -92,28 +80,25 @@ public class ExternalFormatGrammarComposerExtension implements IExternalFormatGr
         return Tuples.pair(
                 ExternalFormatGrammarParserExtension.EXTERNAL_FORMAT_CONNECTION_TYPE,
                 context.getIndentationString() + "{\n" +
-                        (connection.element == null ? "" : context.getIndentationString() + getTabString(1) + "store: " + connection.element + ";\n") +
-                        context.getIndentationString() + getTabString(1) + "source: " + specification + ";\n" +
+                        (connection.element == null ? "" : context.getIndentationString() + PureGrammarComposerUtility.getTabString(1) + "store: " + connection.element + ";\n") +
+                        context.getIndentationString() + PureGrammarComposerUtility.getTabString(1) + "source: " + specification + ";\n" +
                         context.getIndentationString() + "}");
     }
 
     @Override
     public List<Function2<ExternalSource, PureGrammarComposerContext, String>> getExtraExternalSourceSpecificationComposers()
     {
-        return Lists.mutable.with((specification, context) ->
-        {
-            if (specification instanceof UrlStreamExternalSource)
-            {
-                UrlStreamExternalSource spec = (UrlStreamExternalSource) specification;
-                int baseIndentation = 1;
-                return "UrlStream\n" +
-                        context.getIndentationString() + getTabString(1) + "{\n" +
-                        context.getIndentationString() + getTabString(2) + "url: " + convertString(spec.url, true) + ";\n" +
-                        context.getIndentationString() + getTabString(1) + "}";
-            }
+        return Collections.singletonList((specification, context) -> (specification instanceof UrlStreamExternalSource)
+                ? composeUrlStreamExternalSource((UrlStreamExternalSource) specification, context)
+                : null);
+    }
 
-            return null;
-        });
+    private String composeUrlStreamExternalSource(UrlStreamExternalSource spec, PureGrammarComposerContext context)
+    {
+        return "UrlStream\n" +
+                context.getIndentationString() + PureGrammarComposerUtility.getTabString(1) + "{\n" +
+                context.getIndentationString() + PureGrammarComposerUtility.getTabString(2) + "url: " + PureGrammarComposerUtility.convertString(spec.url, true) + ";\n" +
+                context.getIndentationString() + PureGrammarComposerUtility.getTabString(1) + "}";
     }
 
     private static String renderElement(PackageableElement element)
@@ -122,7 +107,7 @@ public class ExternalFormatGrammarComposerExtension implements IExternalFormatGr
         {
             return renderSchemaSet((ExternalFormatSchemaSet) element);
         }
-        else if (element instanceof Binding)
+        if (element instanceof Binding)
         {
             return renderSchemaBinding((Binding) element);
         }

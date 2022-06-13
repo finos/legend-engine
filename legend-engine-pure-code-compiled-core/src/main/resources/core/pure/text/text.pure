@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2022 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// stub
-Class meta::pure::metamodel::dataSpace::DataSpace extends PackageableElement
+Class meta::pure::metamodel::text::Text extends PackageableElement
 {
-
+    type : String[1];
+    content : String[1];
 }
