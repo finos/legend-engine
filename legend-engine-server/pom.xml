@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>3.2.1-SNAPSHOT</version>
+        <version>3.4.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-server</artifactId>
@@ -69,6 +69,8 @@
                 <configuration>
                     <useSystemClassLoader>false</useSystemClassLoader>
                     <excludes>
+                        <!-- Exclude Base class also for db specific tests -->
+                        <exclude>**/Test_Relational_DbSpecific_UsingPureClientTestSuite.java</exclude>
                         <exclude>**/Test_Relational_DbSpecific_SqlServer_UsingPureClientTestSuite.java</exclude>
                         <exclude>**/Test_Relational_DbSpecific_Redshift_UsingPureClientTestSuite.java</exclude>
                         <exclude>**/Test_Relational_DbSpecific_Snowflake_UsingPureClientTestSuite.java</exclude>
@@ -89,8 +91,8 @@
             <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-code-compiled-core</artifactId>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-code-compiled-core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -507,6 +509,11 @@
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-configuration-external</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-code-compiled-tests</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- TEST -->

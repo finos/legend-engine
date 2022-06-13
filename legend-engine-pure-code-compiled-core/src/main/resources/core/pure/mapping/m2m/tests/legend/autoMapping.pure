@@ -1,0 +1,108 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::executionPlan::engine::java::roadmap::*;
+import meta::json::*;
+import meta::pure::executionPlan::profiles::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::mapping::modelToModel::*;
+import meta::pure::mapping::modelToModel::test::alloy::simple::automap::*;
+import meta::pure::mapping::modelToModel::test::alloy::simple::automap::src::*;
+import meta::pure::mapping::modelToModel::test::alloy::simple::automap::dest::*;
+import meta::pure::runtime::*;
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.M2MBasics>> 
+{  serverVersion.start='v1_19_0',
+   doc.doc='Given: a simple graph using an association',
+   doc.doc='When:  a mapping is executed using graphFetch and serialize.',
+   doc.doc='Then:  the mapping is applied and the result of the mapping is serialized demonstrating the translated graph.'
+} 
+meta::pure::mapping::modelToModel::test::alloy::simple::mapSourceToTargetBasedOnNameAndType() : Boolean[1]
+{
+   let tree = #{Firm {name, employees {firstName, lastName, age}} }#;
+
+   let result = execute(
+      |Firm.all()->graphFetch($tree)->serialize($tree),
+      firmMappings,
+      ^Runtime(connections = ^JsonModelConnection(
+                                element=^ModelStore(), 
+                                class=_Firm, 
+                                url='data:application/json,{"name":"Acme Corp", "employees":[{"firstName":"Fred","lastName":"Bloggs", "age":37}, {"firstName":"John","lastName":"Doe", "age": 43}]}'
+                             )
+      ),
+      []
+   );
+
+   let expected = '{"name":"Acme Corp", "employees":[{"firstName":"Fred","lastName":"Bloggs", "age":37}, {"firstName":"John","lastName":"Doe", "age": 43}]}';
+   assert(jsonEquivalent($expected->parseJSON(), $result.values->toOne()->parseJSON()));
+}
+
+###Pure
+import meta::pure::mapping::modelToModel::test::alloy::simple::automap::src::*;
+import meta::pure::mapping::modelToModel::test::alloy::simple::automap::dest::*;
+
+Class meta::pure::mapping::modelToModel::test::alloy::simple::automap::src::_Firm
+{
+   name      : String[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::simple::automap::src::_Person
+{
+   firstName : String[1];
+   lastName  : String[1];
+   age       : Integer[1];
+}
+
+Association meta::pure::mapping::modelToModel::test::alloy::simple::automap::src::_Firm__Person
+{
+   firm      : _Firm[1];        
+   employees : _Person[*];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::simple::automap::dest::Firm
+{
+   name      : String[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::simple::automap::dest::Person
+{
+   firstName : String[1];
+   lastName  : String[1];
+   age       : Integer[1];
+}
+
+Association meta::pure::mapping::modelToModel::alloy::test::simple::automap::dest::Firm_Person
+{
+   firm      : Firm[1];        
+   employees : Person[*];
+}
+
+###Mapping
+import meta::pure::mapping::modelToModel::test::alloy::simple::automap::src::*;
+import meta::pure::mapping::modelToModel::test::alloy::simple::automap::dest::*;
+
+Mapping meta::pure::mapping::modelToModel::test::alloy::simple::automap::firmMappings
+(
+   Firm : Pure
+            {
+               ~src _Firm
+               employees: $src.employees
+            }
+   
+   Person : Pure
+            {
+               ~src _Person
+               firstName: $src.firstName
+            }
+)

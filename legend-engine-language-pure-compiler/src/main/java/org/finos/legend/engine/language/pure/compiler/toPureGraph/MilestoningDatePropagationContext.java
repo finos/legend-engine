@@ -13,6 +13,7 @@
 // limitations under the License.
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
+
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 
 public class MilestoningDatePropagationContext

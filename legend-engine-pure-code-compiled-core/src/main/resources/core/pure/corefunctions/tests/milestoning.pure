@@ -1,0 +1,82 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::milestoning::*;
+import meta::pure::milestoning::tests::*;
+
+
+function <<test.Test>> meta::pure::milestoning::tests::testHasGeneratedMilestoningPropertyStereotype():Boolean[1]
+{
+  let milestonedGeneratedPropertyNames = BusinessTemporalClassA.properties->filter(p|$p->hasGeneratedMilestoningPropertyStereotype()).name;
+  let milestonedGeneratedQualifiedPropertyFunctionNames = BusinessTemporalClassA.qualifiedProperties->filter(p|$p->hasGeneratedMilestoningPropertyStereotype()).functionName;
+
+  assertEquals(['businessDate','milestoning','bAllVersions'],$milestonedGeneratedPropertyNames);
+  assertEquals(['b','b','bAllVersionsInRange'],$milestonedGeneratedQualifiedPropertyFunctionNames);
+}
+
+function <<test.Test>> meta::pure::milestoning::tests::testEdgePointPropertyFunctions():Boolean[1]
+{
+  let edgePointProperty = BusinessTemporalClassA.properties->filter(p|$p->isEdgePointProperty())->toOne();
+
+  assertEquals('bAllVersions',$edgePointProperty.name);
+  assertEquals('b',$edgePointProperty->originalPropertyNameForEdgePointProperty());
+}
+
+function <<test.Test>> meta::pure::milestoning::tests::testedgePointPropertyName():Boolean[1]
+{
+   let nonTemporalProperty = BusinessTemporalClassA.properties->filter(p|!$p->hasGeneratedMilestoningPropertyStereotype())->toOne();
+   assertEquals('c',$nonTemporalProperty.name);
+   assertEquals('cAllVersions',edgePointPropertyName($nonTemporalProperty));
+}
+
+function <<test.Test>> meta::pure::milestoning::tests::testGetMilestonedGeneratedQualifiedPropertiesForEdgePointProperty():Boolean[1]
+{
+   let edgePointProperty = BusinessTemporalClassA.properties->filter(p|$p->isEdgePointProperty())->toOne();
+   let matchingMilestoneGeneratedQps = $edgePointProperty->getMilestonedGeneratedQualifiedPropertiesForEdgePointProperty();
+   assertEquals(['b','b'],$matchingMilestoneGeneratedQps.functionName);
+}
+
+
+Class <<temporal.businesstemporal>> meta::pure::milestoning::tests::BusinessTemporalClassA
+{
+   b : BusinessTemporalClassB[0..1];
+   c : NonTemporalClassC[0..1];
+}
+
+Class <<temporal.businesstemporal>> meta::pure::milestoning::tests::BusinessTemporalClassB
+{
+
+}
+
+Class meta::pure::milestoning::tests::NonTemporalClassC
+{
+
+}
+
+Class <<temporal.businesstemporal>> meta::pure::milestoning::tests::BusinessTemporalClassD
+{
+
+}
+
+Association meta::pure::milestoning::tests::DuplicatePropAssociation
+{
+   propertyB: meta::pure::milestoning::tests::BusinessTemporalClassB[0..*];
+   propertyB: meta::pure::milestoning::tests::BusinessTemporalClassD[0..1];
+}
+
+function <<test.Test>> meta::pure::milestoning::tests::testReverseMilestoning(): Boolean[1]
+{
+   let prop =  meta::pure::milestoning::tests::BusinessTemporalClassB.propertiesFromAssociations->map(p | $p->meta::pure::milestoning::reverseMilestoningTransforms());
+   assertSameElements([meta::pure::milestoning::tests::BusinessTemporalClassB.propertiesFromAssociations->cast(@AbstractProperty<Any>)->toOne()->meta::pure::milestoning::originalPropertyNameForEdgePointProperty()], $prop.name);
+}

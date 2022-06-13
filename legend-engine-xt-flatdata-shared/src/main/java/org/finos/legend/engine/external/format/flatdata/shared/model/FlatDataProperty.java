@@ -24,7 +24,7 @@ public class FlatDataProperty
 
     public FlatDataProperty(String name, Object value)
     {
-        this(name,  Collections.singletonList(value));
+        this(name, Collections.singletonList(value));
     }
 
     public FlatDataProperty(String name, List<Object> values)

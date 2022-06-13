@@ -1,0 +1,38 @@
+###Pure
+import meta::protocols::generation::builder::*;
+
+function meta::protocols::generation::builder::builderGeneration(a:Any[1]):String[1]
+{
+  $a->builderGeneration('');
+}
+
+function <<access.private>> meta::protocols::generation::builder::builderGeneration(a:Any[1], space:String[1]):String[1]
+{
+  let type = $a->genericType().rawType->toOne();
+  $type->match(
+    [
+      c:Class<Any>[1]|
+        let content = $type->cast(@Class<Any>)->meta::pure::functions::meta::hierarchicalProperties()->sortBy(a|$a.name->toOne())->map(p|
+                                                let val = $p->eval($a);
+                                                if ($val->isEmpty(),
+                                                  |[],
+                                                  | $space + '  ' + $p.name->toOne() +' = ' + $val->match(
+                                                                                                  [
+                                                                                                    a : Any[1] | $a->toOne()->builderGeneration($space+'  '),
+                                                                                                    z : Any[*] | '[' + $z->map(x|$x->builderGeneration($space+'  '))->joinStrings(', ') + ']'
+                                                                                                  ]
+                                                                                              )
+                                                );
+                                            )->joinStrings(',\n');
+        '^'+$type->elementToPath()+' (' +if ($content == '',|'',|'\n') +
+          $content +
+        if ($content == '',|'',|'\n'+$space)+')';,
+      t:PrimitiveType[1]|$a->match([
+                              s:String[1]|'\''+$s+'\'',
+                              a:Any[1]|$a->toString()
+                            ]),
+      e:Enumeration<Any>[1]|$e->elementToPath() + '.' + $a->toString()
+    ]
+  );
+}
+

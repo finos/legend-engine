@@ -1,0 +1,109 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::profiles::*;
+
+function <<test.Test>> meta::pure::functions::string::tests::format::testFormatString():Boolean[1]
+{
+    assertEq('the quick brown fox jumps over the lazy dog', format('the quick brown %s jumps over the lazy %s', ['fox', 'dog']));
+    assertEq('the quick brown fox jumps over the lazy box', format('the quick brown %s jumps over the lazy %s', ['fox', 'box']));
+}
+
+function <<test.Test>> meta::pure::functions::string::tests::format::testFormatInteger():Boolean[1]
+{
+    assertEq('the quick brown fox jumps over the lazy 3', format('the quick brown %s jumps over the lazy %d', ['fox', 3]));
+    assertEq('the quick brown fox jumps over the lazy -3', format('the quick brown %s jumps over the lazy %d', ['fox', -3]));
+}
+
+function <<test.Test>> meta::pure::functions::string::tests::format::testFormatIntegerWithZeroPadding():Boolean[1]
+{
+    assertEq('the quick brown fox jumps over the lazy 00003', format('the quick brown %s jumps over the lazy %05d', ['fox', 3]));
+    assertEq('the quick brown fox jumps over the lazy -00003', format('the quick brown %s jumps over the lazy %05d', ['fox', -3]));
+}
+
+function <<test.Test>> meta::pure::functions::string::tests::format::testFormatFloat():Boolean[1]
+{
+    assertEq('the quick brown fox jumps over the lazy 1.5', format('the quick brown %s jumps over the lazy %f', ['fox', 1.5]));
+    assertEq('the quick brown fox jumps over the lazy -1.5', format('the quick brown %s jumps over the lazy %f', ['fox', -1.5]));
+}
+
+function <<test.Test>> meta::pure::functions::string::tests::format::testFormatFloatWithZeroPadding():Boolean[1]
+{
+    assertEq('the quick brown fox jumps over the lazy 1.5000', format('the quick brown %s jumps over the lazy %.4f', ['fox', 1.5]));
+    assertEq('the quick brown fox jumps over the lazy -1.5000', format('the quick brown %s jumps over the lazy %.4f', ['fox', -1.5]));
+}
+
+function <<test.Test>> meta::pure::functions::string::tests::format::testFormatFloatWithTruncation():Boolean[1]
+{
+    assertEq('the quick brown fox jumps over the lazy 1.1', format('the quick brown %s jumps over the lazy %.1f', ['fox', 1.11]));
+    assertEq('the quick brown fox jumps over the lazy -1.1', format('the quick brown %s jumps over the lazy %.1f', ['fox', -1.11]));
+}
+
+function <<test.Test>> meta::pure::functions::string::tests::format::testFormatFloatWithRounding():Boolean[1]
+{
+    assertEq('the quick brown fox jumps over the lazy 1.34', format('the quick brown %s jumps over the lazy %.2f', ['fox', 1.338]));
+    assertEq('the quick brown fox jumps over the lazy -1.34', format('the quick brown %s jumps over the lazy %.2f', ['fox', -1.338]));
+    assertEq('the quick brown fox jumps over the lazy 10.00', format('the quick brown %s jumps over the lazy %.2f', ['fox', 9.999]));
+    assertEq('the quick brown fox jumps over the lazy -10.00', format('the quick brown %s jumps over the lazy %.2f', ['fox', -9.999]));
+    assertEq('the quick brown fox jumps over the lazy 1.61', format('the quick brown %s jumps over the lazy %.2f', ['fox', 1.613]));
+    assertEq('the quick brown fox jumps over the lazy -1.61', format('the quick brown %s jumps over the lazy %.2f', ['fox', -1.613]));
+    assertEq('the quick brown fox jumps over the lazy 0.61', format('the quick brown %s jumps over the lazy %.2f', ['fox', 0.613]));
+    assertEq('the quick brown fox jumps over the lazy -0.61', format('the quick brown %s jumps over the lazy %.2f', ['fox', -0.613]));
+    assertEq('the quick brown fox jumps over the lazy 0.06', format('the quick brown %s jumps over the lazy %.2f', ['fox', 0.0553]));
+    assertEq('the quick brown fox jumps over the lazy -0.06', format('the quick brown %s jumps over the lazy %.2f', ['fox', -0.0553]));
+    assertEq('the quick brown fox jumps over the lazy 0.01', format('the quick brown %s jumps over the lazy %.2f', ['fox', 0.00553]));
+    assertEq('the quick brown fox jumps over the lazy -0.01', format('the quick brown %s jumps over the lazy %.2f', ['fox', -0.00553]));
+    assertEq('the quick brown fox jumps over the lazy 0.00', format('the quick brown %s jumps over the lazy %.2f', ['fox', 0.000553]));
+    assertEq('the quick brown fox jumps over the lazy -0.00', format('the quick brown %s jumps over the lazy %.2f', ['fox', -0.000553]));
+}
+
+function <<test.Test>> meta::pure::functions::string::tests::format::testSimpleFormatDate():Boolean[1]
+{
+    assertEq('the quick brown fox jumps over the lazy 2014-01-01T00:00:00.000+0000', format('the quick brown %s jumps over the lazy %s', ['fox', %2014-01-01T00:00:00.000]));
+    assertEq('the quick brown fox jumps over the lazy 2014-01-01T00:00:00.000+0000', format('the quick brown %s jumps over the lazy %t', ['fox', %2014-01-01T00:00:00.000]));
+}
+
+function <<test.Test>> meta::pure::functions::string::tests::format::testFormatDate():Boolean[1]
+{
+    assertEq('on 2014-03-10', format('on %t{yyyy-MM-dd}', %2014-03-10));
+    assertEq('on 2014-03-10', format('on %t{yyyy-MM-dd}', %2014-03-10T12:00:00));
+    assertEq('on 2014-03-10 1:07:44PM', format('on %t{yyyy-MM-dd h:mm:ssa}', %2014-03-10T13:07:44.001));
+    assertEq('on 2014-03-10 01:07:44PM', format('on %t{yyyy-MM-dd hh:mm:ssa}', %2014-03-10T13:07:44.001));
+    assertEq('on 2014-03-10T13:07:44.001+0000', format('on %t{yyyy-MM-dd"T"HH:mm:ss.SSSZ}', %2014-03-10T13:07:44.001));
+    assertEq('on 2014-03-10 13:07:44.001Z', format('on %t{yyyy-MM-dd HH:mm:ss.SSSX}', %2014-03-10T13:07:44.001));
+    assertEq('on 2014-03-10 08:07:44.001-0500', format('on %t{[EST]yyyy-MM-dd HH:mm:ss.SSSZ}', %2014-03-10T13:07:44.001));
+    assertEq('on 2014-03-10 14:07:44.001+0100', format('on %t{[CET]yyyy-MM-dd HH:mm:ss.SSSZ}', %2014-03-10T13:07:44.001));
+}
+
+function <<test.Test>> meta::pure::functions::string::tests::format::testFormatBoolean():Boolean[1]
+{
+    assertEq('the quick brown fox jumps over the lazy true', format('the quick brown %s jumps over the lazy %s', ['fox', true]));
+    assertEq('the quick brown fox jumps over the lazy false', format('the quick brown %s jumps over the lazy %s', ['fox', false]));
+}
+
+function <<test.Test>> meta::pure::functions::string::tests::format::testFormatList():Boolean[1]
+{
+    assertEq('the quick brown fox jumps over the lazy [dog, [cat, mouse]]', format('the quick brown %s jumps over the lazy %s', ['fox', ^List<Any>(values=['dog', ^List<String>(values=['cat', 'mouse'])])]));
+}
+
+function <<test.Test>> meta::pure::functions::string::tests::format::testFormatPair():Boolean[1]
+{
+    assertEq('the quick brown fox jumps over the lazy <dog, <cat, mouse>>', format('the quick brown %s jumps over the lazy %s', ['fox', ^Pair<Any, Any>(first='dog', second=^Pair<String, String>(first='cat', second='mouse'))]));
+}
+
+function <<test.Test>> meta::pure::functions::string::tests::format::testFormatRepr():Boolean[1]
+{
+    assertEq('the quick brown fox jumps over the lazy \'dog \\ \\\'dog\\\'\'', format('the quick brown %s jumps over the lazy %r', ['fox', 'dog \\ \'dog\'']));
+    assertEq('the quick brown fox jumps over the lazy %2014-01-01T00:00:00.000+0000', format('the quick brown %s jumps over the lazy %r', ['fox', %2014-01-01T00:00:00.000]));
+}

@@ -40,7 +40,8 @@ public interface IExternalFormatGrammarParserExtension extends PureGrammarParser
         return process(code, processors, "External Source Specification");
     }
 
-    static <T extends SpecificationSourceCode, U> U process(T code, List<Function<T, U>> processors, String type) {
+    static <T extends SpecificationSourceCode, U> U process(T code, List<Function<T, U>> processors, String type)
+    {
         return ListIterate
                 .collect(processors, processor -> processor.apply(code))
                 .select(Objects::nonNull)
@@ -48,7 +49,8 @@ public interface IExternalFormatGrammarParserExtension extends PureGrammarParser
                 .orElseThrow(() -> new EngineException("Unsupported " + type + " type '" + code.getType() + "'", code.getSourceInformation(), EngineErrorType.PARSER));
     }
 
-    default List<Function<ExternalSourceSpecificationSourceCode, ExternalSource>> getExtraExternalSourceSpecificationParsers() {
+    default List<Function<ExternalSourceSpecificationSourceCode, ExternalSource>> getExtraExternalSourceSpecificationParsers()
+    {
         return Collections.emptyList();
     }
 }

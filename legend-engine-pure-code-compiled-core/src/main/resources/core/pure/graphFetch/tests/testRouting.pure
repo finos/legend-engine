@@ -1,0 +1,83 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::graphFetch::execution::*;
+import meta::pure::runtime::*;
+
+function <<test.Test>> meta::pure::graphFetch::tests::routing::testSimpleM2MTreeRouting():Boolean[1]
+{
+   let m2mTree = #{
+      meta::pure::mapping::modelToModel::test::shared::dest::Firm {
+         legalName
+      }
+   }#;
+   let f = routeFunction(|meta::pure::mapping::modelToModel::test::shared::dest::Firm.all()->graphFetch($m2mTree)->serialize($m2mTree), meta::pure::mapping::modelToModel::test::simple::simpleModelMappingWithAssociation, ^Runtime(), ^ExecutionContext(), meta::pure::router::extension::defaultExtensions(), noDebug());
+   assertEquals(' | {Platform> {MODEL> [1 meta_pure_mapping_modelToModel_test_shared_dest_Firm/[1 meta_pure_mapping_modelToModel_test_shared_dest_Firm/[1 meta_pure_mapping_modelToModel_test_shared_dest_Firm/Class Firm].all()] -> graphFetch({MODEL> [meta_pure_mapping_modelToModel_test_shared_dest_Firm / meta::pure::mapping::modelToModel::test::shared::dest::Firm] {@(meta_pure_mapping_modelToModel_test_shared_dest_Firm->)@ [ / legalName]}})]} -> serialize(#{meta::pure::mapping::modelToModel::test::shared::dest::Firm {legalName}}#)};', $f.functions->at(0)->meta::pure::router::printer::asString());
+}
+
+function <<test.Test>> meta::pure::graphFetch::tests::routing::testSimpleM2MTreeRoutingWithAssociation():Boolean[1]
+{
+   let m2mTree = #{
+      meta::pure::mapping::modelToModel::test::shared::dest::Firm {
+         legalName,
+         employees {
+            firstName
+         }
+      }
+   }#;
+   let f = routeFunction(|meta::pure::mapping::modelToModel::test::shared::dest::Firm.all()->graphFetch($m2mTree)->serialize($m2mTree), meta::pure::mapping::modelToModel::test::simple::simpleModelMappingWithAssociation, ^Runtime(), ^ExecutionContext(), meta::pure::router::extension::defaultExtensions(), noDebug());
+   assertEquals(' | {Platform> {MODEL> [1 meta_pure_mapping_modelToModel_test_shared_dest_Firm/[1 meta_pure_mapping_modelToModel_test_shared_dest_Firm/[1 meta_pure_mapping_modelToModel_test_shared_dest_Firm/Class Firm].all()] -> graphFetch({MODEL> [meta_pure_mapping_modelToModel_test_shared_dest_Firm / meta::pure::mapping::modelToModel::test::shared::dest::Firm] {@(meta_pure_mapping_modelToModel_test_shared_dest_Firm->)@ [ / legalName], @(meta_pure_mapping_modelToModel_test_shared_dest_Firm->meta_pure_mapping_modelToModel_test_shared_dest_Person)@ [meta_pure_mapping_modelToModel_test_shared_dest_Person / employees] {@(meta_pure_mapping_modelToModel_test_shared_dest_Person->)@ [ / firstName]}}})]} -> serialize(#{meta::pure::mapping::modelToModel::test::shared::dest::Firm {legalName, employees {firstName}}}#)};', $f.functions->at(0)->meta::pure::router::printer::asString());
+}
+
+function <<test.Test>> meta::pure::graphFetch::tests::routing::testSimpleM2MTreeRoutingUsingNonRootSet():Boolean[1]
+{
+   let m2mTree = #{
+      meta::pure::mapping::modelToModel::test::shared::dest::Firm {
+         legalName,
+         employees {
+            firstName
+         }
+      }
+   }#;
+   let f = routeFunction(|meta::pure::mapping::modelToModel::test::shared::dest::Firm.all()->graphFetch($m2mTree)->serialize($m2mTree), meta::pure::mapping::modelToModel::test::simple::simpleModelMappingWithMultipleClassMappings, ^Runtime(), ^ExecutionContext(), meta::pure::router::extension::defaultExtensions(), noDebug());
+   assertEquals(' | {Platform> {MODEL> [1 meta_pure_mapping_modelToModel_test_shared_dest_Firm/[1 meta_pure_mapping_modelToModel_test_shared_dest_Firm/[1 meta_pure_mapping_modelToModel_test_shared_dest_Firm/Class Firm].all()] -> graphFetch({MODEL> [meta_pure_mapping_modelToModel_test_shared_dest_Firm / meta::pure::mapping::modelToModel::test::shared::dest::Firm] {@(meta_pure_mapping_modelToModel_test_shared_dest_Firm->)@ [ / legalName], @(meta_pure_mapping_modelToModel_test_shared_dest_Firm->p1)@ [p1 / employees] {@(meta_pure_mapping_modelToModel_test_shared_dest_Person->)@ [ / firstName]}}})]} -> serialize(#{meta::pure::mapping::modelToModel::test::shared::dest::Firm {legalName, employees {firstName}}}#)};', $f.functions->at(0)->meta::pure::router::printer::asString());
+}
+
+function <<test.Test>> meta::pure::graphFetch::tests::routing::crossStore::testM2MTreeCrossStoreRouting():Boolean[1]
+{
+   let m2mTree = #{
+      meta::pure::mapping::modelToModel::test::shared::src::_SimpleFirm {
+         name,
+         simpleEmployees {
+            fullName
+         }
+      }
+   }#;
+   let f = routeFunction(|meta::pure::mapping::modelToModel::test::shared::src::_SimpleFirm.all()->graphFetch($m2mTree)->serialize($m2mTree), meta::pure::mapping::modelToModel::test::crossStore::crossStoreModelMapping, ^Runtime(), ^ExecutionContext(), meta::pure::router::extension::defaultExtensions(), noDebug());
+   assertEquals(' | {Platform> {MODEL> [1 firm_set/[1 firm_set/[1 firm_set/Class _SimpleFirm].all()] -> graphFetch({MODEL> [firm_set / meta::pure::mapping::modelToModel::test::shared::src::_SimpleFirm] {@(meta_pure_mapping_modelToModel_test_shared_src__SimpleFirm->)@ [ / name], {MODEL> @(firm_set->person_Set)@ [person_Set / simpleEmployees] {@(meta_pure_mapping_modelToModel_test_shared_src__SimplePerson->)@ [ / fullName]}}}})]} -> serialize(#{meta::pure::mapping::modelToModel::test::shared::src::_SimpleFirm {name, simpleEmployees {fullName}}}#)};', $f.functions->at(0)->meta::pure::router::printer::asString());
+}
+
+function <<test.Test>> meta::pure::graphFetch::tests::routing::crossStore::testM2MTreeCrossStoreRoutingWithLocalMappingProperty():Boolean[1]
+{
+   let m2mTree = #{
+      meta::pure::mapping::modelToModel::test::shared::src::_SimpleFirm {
+         name,
+         simpleEmployees {
+            fullName
+         }
+      }
+   }#;
+   let f = routeFunction(|meta::pure::mapping::modelToModel::test::shared::src::_SimpleFirm.all()->graphFetch($m2mTree)->serialize($m2mTree), meta::pure::mapping::modelToModel::test::crossStore::crossStoreModelMappingWithLocalMappingProperty, ^Runtime(), ^ExecutionContext(), meta::pure::router::extension::defaultExtensions(), noDebug());
+   assertEquals(' | {Platform> {MODEL> [1 firm_set/[1 firm_set/[1 firm_set/Class _SimpleFirm].all()] -> graphFetch({MODEL> [firm_set / meta::pure::mapping::modelToModel::test::shared::src::_SimpleFirm] {@(meta_pure_mapping_modelToModel_test_shared_src__SimpleFirm->)@ [ / name], {MODEL> @(firm_set->person_Set)@ [person_Set / simpleEmployees] {@(meta_pure_mapping_modelToModel_test_shared_src__SimplePerson->)@ [ / fullName], @(meta_pure_mapping_modelToModel_test_shared_src__SimplePerson->)@ [ / firmName]}}}})]} -> serialize(#{meta::pure::mapping::modelToModel::test::shared::src::_SimpleFirm {name, simpleEmployees {fullName}}}#)};', $f.functions->at(0)->meta::pure::router::printer::asString());
+}

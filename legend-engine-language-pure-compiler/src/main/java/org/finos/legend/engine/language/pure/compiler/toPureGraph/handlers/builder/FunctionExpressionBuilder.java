@@ -61,7 +61,7 @@ public abstract class FunctionExpressionBuilder
     private boolean comp(VariableExpression vv, org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification vs, PureModel pureModel, ProcessingContext processingContext)
     {
         boolean isSignatureFunction = vv._genericType()._rawType() != null && Type.subTypeOf(vv._genericType()._rawType(), pureModel.getType("meta::pure::metamodel::function::Function"), pureModel.getExecutionSupport().getProcessorSupport());
-        boolean isParamFunction = vs instanceof Lambda || vs instanceof Path || isVariableSubtypeOfFunction(vs, processingContext, pureModel) || (vs instanceof Collection && ((Collection) vs).values.stream().allMatch(v -> v instanceof Lambda || v instanceof Path   || isVariableSubtypeOfFunction(v, processingContext, pureModel)));
+        boolean isParamFunction = vs instanceof Lambda || vs instanceof Path || isVariableSubtypeOfFunction(vs, processingContext, pureModel) || (vs instanceof Collection && ((Collection) vs).values.stream().allMatch(v -> v instanceof Lambda || v instanceof Path || isVariableSubtypeOfFunction(v, processingContext, pureModel)));
 
         boolean isParamEmpty = vs instanceof Collection && ((Collection) vs).values.isEmpty();
         return isParamEmpty || (isSignatureFunction && isParamFunction) || (!isSignatureFunction && !isParamFunction);

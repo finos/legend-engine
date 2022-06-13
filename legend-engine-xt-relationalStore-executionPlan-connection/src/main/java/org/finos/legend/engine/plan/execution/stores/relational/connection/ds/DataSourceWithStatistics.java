@@ -51,7 +51,7 @@ public class DataSourceWithStatistics
 
     public DataSourceWithStatistics(String poolName, DataSource dataSource, IdentityState identityState, DataSourceSpecification dataSourceSpecification)
     {
-        this(poolName,dataSource,identityState,dataSourceSpecification,new DataSourceStatistics());
+        this(poolName, dataSource, identityState, dataSourceSpecification, new DataSourceStatistics());
     }
 
     public DataSourceWithStatistics(String poolName, IdentityState identityState, DataSourceSpecification dataSourceSpecification)
@@ -94,9 +94,9 @@ public class DataSourceWithStatistics
     {
         try
         {
-            ((HikariDataSource)this.dataSource).close();
+            ((HikariDataSource) this.dataSource).close();
         }
-        catch (Exception e)
+        catch (Exception ignored)
         {
         }
     }
@@ -126,7 +126,8 @@ public class DataSourceWithStatistics
         return statistics.buildConnection();
     }
 
-    public void logConnectionError() {
+    public void logConnectionError()
+    {
         this.statistics.logConnectionError();
     }
 
@@ -140,13 +141,14 @@ public class DataSourceWithStatistics
         return dataSourceSpecification;
     }
 
-    public boolean hasActiveConnections() {
-        return this.dataSource!=null && ((HikariDataSource)dataSource).getHikariPoolMXBean().getActiveConnections()>0;
+    public boolean hasActiveConnections()
+    {
+        return this.dataSource != null && ((HikariDataSource) dataSource).getHikariPoolMXBean().getActiveConnections() > 0;
     }
 
     public Properties getProperties()
     {
-        return ((HikariDataSource)this.dataSource).getDataSourceProperties();
+        return ((HikariDataSource) this.dataSource).getDataSourceProperties();
     }
 }
 

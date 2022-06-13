@@ -47,7 +47,8 @@ public class ExternalIntegration_TestConnectionObjectProtocol_Snowflake extends 
         testSnowflakePublicConnection(c -> c.getConnectionUsingProfiles(null));
     }
 
-    private void testSnowflakePublicConnection(Function<DataSourceSpecification, Connection> toDBConnection) throws Exception {
+    private void testSnowflakePublicConnection(Function<DataSourceSpecification, Connection> toDBConnection) throws Exception
+    {
 
         Vault.INSTANCE.registerImplementation(new EnvironmentVaultImplementation());
 
@@ -59,7 +60,8 @@ public class ExternalIntegration_TestConnectionObjectProtocol_Snowflake extends 
                                 "INTEGRATION_ROLE1"),
                         new SnowflakeManager(),
                         new SnowflakePublicAuthenticationStrategy("SNOWFLAKE_INTEGRATION_USER1_PRIVATEKEY", "SNOWFLAKE_INTEGRATION_USER1_PASSWORD", "INTEGRATION_USER1"));
-        try (Connection connection = toDBConnection.valueOf(ds)) {
+        try (Connection connection = toDBConnection.valueOf(ds))
+        {
             testConnection(connection, "select * from INTEGRATION_DB1.INTEGRATION_SCHEMA1.test");
         }
     }

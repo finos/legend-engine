@@ -1,0 +1,255 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::factory::*;
+import meta::pure::executionPlan::engine::java::*;
+import meta::pure::executionPlan::engine::java::tests::*;
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::engine::java::tests::testStringLiteral() : Boolean[1]
+{
+   javaExpressionTests(engineConventions([]))
+      ->addTest('String literal', {|'"String" literal\n\t\\'}, '"\\"String\\" literal\\n\\t\\\\"', javaString())
+         ->assert('%s.equals("\\"String\\" literal\\n\\t\\\\")')
+      ->runTests();
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::engine::java::tests::testContents() : Boolean[1]
+{
+   javaExpressionTests(engineConventions([]))
+      ->addTest('String contains', {|'Hello, World'->contains('ello')}, '"Hello, World".contains("ello")', javaBoolean())
+         ->assert('%s == true')
+      ->addTest('String startsWith', {|'Hello, World'->startsWith('Hell')}, '"Hello, World".startsWith("Hell")', javaBoolean())
+         ->assert('%s == true')
+      ->addTest('String endsWith', {|'Hello, World'->endsWith('orld')}, '"Hello, World".endsWith("orld")', javaBoolean())
+         ->assert('%s == true')
+   ->runTests();
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::engine::java::tests::testParsing() : Boolean[1]
+{
+   javaExpressionTests(engineConventions([]))
+      ->addTest('String parseInteger', {|'777'->parseInteger()}, 'Long.parseLong("777")', javaLong())
+         ->assert('%s == 777L')
+      ->addTest('String parseFloat', {|'77.7'->parseFloat()}, 'Double.parseDouble("77.7")', javaDouble())
+         ->assert('%s == 77.7d')
+   ->runTests();
+}
+
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::engine::java::tests::testExtractions() : Boolean[1]
+{
+   javaExpressionTests(engineConventions([]))
+      ->addTest('Substring', {|'Hello, World'->substring(7, 11)}, '"Hello, World".substring((int) 7L, (int) 11L)', javaString())
+         ->assert('%s.equals("Worl")')
+      ->addTest('Substring', {|'Hello, World'->substring(7)}, '"Hello, World".substring((int) 7L)', javaString())
+         ->assert('%s.equals("World")')
+      ->addTest('String trim', {|'Hello, World          '->trim()}, '"Hello, World          ".trim()', javaString())
+         ->assert('%s.equals("Hello, World")')
+      ->addTest('String toUpperFirstCharacter', {|'hello world'->toUpperFirstCharacter()->toOne()}, 'org.finos.legend.engine.plan.dependencies.util.Library.toOne(java.util.Optional.ofNullable("hello world").map(java.util.stream.Stream::of).orElseGet(java.util.stream.Stream::empty).map(org.finos.legend.engine.plan.dependencies.util.Library::toUpperFirstCharacter).collect(java.util.stream.Collectors.toList()))', javaString())
+         ->assert('%s.equals("Hello world")')
+      ->addTest('String toLower', {|'Hello, World'->toLower()}, '"Hello, World".toLowerCase()', javaString())
+         ->assert('%s.equals("hello, world")')
+      ->addTest('String toUpper', {|'Hello, World'->toUpper()}, '"Hello, World".toUpperCase()', javaString())
+         ->assert('%s.equals("HELLO, WORLD")')
+      ->addTest('Empty String toUpperFirstCharacter', {| ''->toUpperFirstCharacter()->toOne()}, 'org.finos.legend.engine.plan.dependencies.util.Library.toOne(java.util.Optional.ofNullable("").map(java.util.stream.Stream::of).orElseGet(java.util.stream.Stream::empty).map(org.finos.legend.engine.plan.dependencies.util.Library::toUpperFirstCharacter).collect(java.util.stream.Collectors.toList()))', javaString())
+         ->assert('%s.equals("")')
+      ->addTest('List of String toUpperFirstCharacter', {| ['', 'a', 'hello world']->toUpperFirstCharacter()}, 'java.util.Arrays.asList("", "a", "hello world").stream().map(org.finos.legend.engine.plan.dependencies.util.Library::toUpperFirstCharacter).collect(java.util.stream.Collectors.toList())', javaList(javaString()))
+         ->assert('%s.size() == 3')
+         ->assert('%s.contains("")')
+         ->assert('%s.contains("A")')
+         ->assert('%s.contains("Hello world")')
+      ->addTest('null toUpperFirstCharacter', {| []->cast(@String)->toUpperFirstCharacter()}, 'java.util.Optional.ofNullable((String) null).map(java.util.stream.Stream::of).orElseGet(java.util.stream.Stream::empty).map(org.finos.legend.engine.plan.dependencies.util.Library::toUpperFirstCharacter).collect(java.util.stream.Collectors.toList())', javaList(javaString()))
+         ->assert('%s.isEmpty()')
+      ->addTest('String replace', {|'Hello, Worlld'->replace('ll', 'xx')}, '"Hello, Worlld".replace("ll", "xx")', javaString())
+         ->assert('%s.equals("Hexxo, Worxxd")')
+      ->runTests();
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::engine::java::tests::testPositional() : Boolean[1]
+{
+   javaExpressionTests(engineConventions([]))
+      ->addTest('IndexOf in String', {|'Hello, World'->indexOf('W')}, '(long) "Hello, World".indexOf("W")', javaLong())
+         ->assert('%s == 7L')
+      ->addTest('IndexOf with fromIndex-1 in String', {|'Hello, World'->indexOf('o', 1)}, '(long) "Hello, World".indexOf("o", (int) 1L)', javaLong())
+         ->assert('%s == 4L')
+      ->addTest('IndexOf with fromIndex-2 in String', {|'Hello, World'->indexOf('o', 5)}, '(long) "Hello, World".indexOf("o", (int) 5L)', javaLong())
+         ->assert('%s == 8L')
+      ->addTest('String Length', {|'Hello, World'->length()}, '(long) "Hello, World".length()', javaLong())
+         ->assert('%s == 12L')
+      ->runTests();
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::engine::java::tests::stringConcatenation() : Boolean[1]
+{
+   javaExpressionTests(engineConventions([]))
+      ->addTest('JoinStrings args: none', {|['what', 'so', 'ever']->joinStrings()}, 'java.util.Arrays.asList("what", "so", "ever").stream().collect(java.util.stream.Collectors.joining(""))', javaString())
+         ->assert('%s.equals("whatsoever")')
+      ->addTest('JoinStrings args: inter-string', {|['mother', 'in', 'law']->joinStrings('-')}, 'java.util.Arrays.asList("mother", "in", "law").stream().collect(java.util.stream.Collectors.joining("-"))', javaString())
+         ->assert('%s.equals("mother-in-law")')
+      ->addTest('JoinStrings args: start, inter, end', {|['mother', 'in', 'law']->joinStrings('<','-','>')}, '"<" + java.util.Arrays.asList("mother", "in", "law").stream().collect(java.util.stream.Collectors.joining("-")) + ">"', javaString())
+         ->assert('(%s).equals("<mother-in-law>")')
+      ->addTest('String plus (+)', {|'what' + 'so' + 'ever'}, 'java.util.Arrays.asList("what", "so", "ever").stream().collect(java.util.stream.Collectors.joining(""))', javaString())
+         ->assert('%s.equals("whatsoever")')
+      ->runTests();
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0', doc.todo='Add lots more tests' }
+meta::pure::executionPlan::engine::java::tests::toString() : Boolean[1]
+{
+   javaExpressionTests(engineConventions([]))
+      ->addTest('String toString', {|3->toString()}, 'org.finos.legend.engine.plan.dependencies.util.Library.pureToString(3L)', javaString())
+         ->assert('"3".equals(%s)')
+      ->runTests();
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::engine::java::tests::split() : Boolean[1]
+{
+   javaExpressionTests(engineConventions([]))
+      ->addTest('String Split', {|'happy-go-lucky'->split('-')}, 'org.finos.legend.engine.plan.dependencies.util.Library.split("happy-go-lucky", "-")', javaList(javaString()))
+         ->assert('%s.contains("happy")')
+         ->assert('%s.contains("go")')
+         ->assert('%s.contains("lucky")')
+         ->assert('%s.size() == 3')
+      ->addTest('String Split', {|'unspaced'->split(' ')}, 'org.finos.legend.engine.plan.dependencies.util.Library.split("unspaced", " ")', javaList(javaString()))
+         ->assert('%s.contains("unspaced")')
+         ->assert('%s.size() == 1')
+      ->runTests();
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::engine::java::tests::stringInequality() : Boolean[1]
+{
+   javaExpressionTests(engineConventions([]))
+      // >
+      ->addTest('String : [1]   ,[1]    : A > A',          {|'A' > 'A'}, '"A".compareTo("A") > 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('String : [1]   ,[1]    : A > B',          {|'A' > 'B'}, '"A".compareTo("B") > 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('String : [1]   ,[1]    : B > A',          {|'B' > 'A'}, '"B".compareTo("A") > 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('String : [0..1],[1]    : empty > A',      {|[]->cast(@String)->first() > 'A'}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare(org.finos.legend.engine.plan.dependencies.util.Library.first((String) null), "A") > 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('String : [0..1],[1]    : A > A',          {|['A']->first() > 'A'}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare(org.finos.legend.engine.plan.dependencies.util.Library.first("A"), "A") > 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('String : [0..1],[1]    : A > B',          {|['A']->first() > 'B'}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare(org.finos.legend.engine.plan.dependencies.util.Library.first("A"), "B") > 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('String : [0..1],[1]    : B > A',          {|['B']->first() > 'A'}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare(org.finos.legend.engine.plan.dependencies.util.Library.first("B"), "A") > 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('String : [1]   ,[0..1] : A > empty',      {|'A' > []->cast(@String)->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare("A", org.finos.legend.engine.plan.dependencies.util.Library.first((String) null)) > 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('String : [1]   ,[0..1] : A > A',          {|'A' > ['A']->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare("A", org.finos.legend.engine.plan.dependencies.util.Library.first("A")) > 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('String : [1]   ,[0..1] : A > B',          {|'A' > ['B']->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare("A", org.finos.legend.engine.plan.dependencies.util.Library.first("B")) > 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('String : [1]   ,[0..1] : B > A',          {|'B' > ['A']->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare("B", org.finos.legend.engine.plan.dependencies.util.Library.first("A")) > 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('String : [0..1],[0..1] : empty > empty',  {|[]->cast(@String)->first() > []->cast(@String)->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare(org.finos.legend.engine.plan.dependencies.util.Library.first((String) null), org.finos.legend.engine.plan.dependencies.util.Library.first((String) null)) > 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('String : [0..1],[0..1] : A > empty',      {|['A']->first() > []->cast(@String)->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare(org.finos.legend.engine.plan.dependencies.util.Library.first("A"), org.finos.legend.engine.plan.dependencies.util.Library.first((String) null)) > 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('String : [0..1],[0..1] : empty > A',      {|[]->cast(@String)->first() > ['A']->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare(org.finos.legend.engine.plan.dependencies.util.Library.first((String) null), org.finos.legend.engine.plan.dependencies.util.Library.first("A")) > 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('String : [0..1],[0..1] : A > A',          {|['A']->first() > ['A']->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare(org.finos.legend.engine.plan.dependencies.util.Library.first("A"), org.finos.legend.engine.plan.dependencies.util.Library.first("A")) > 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('String : [0..1],[0..1] : A > B',          {|['A']->first() > ['B']->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare(org.finos.legend.engine.plan.dependencies.util.Library.first("A"), org.finos.legend.engine.plan.dependencies.util.Library.first("B")) > 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('String : [0..1],[0..1] : B > A',          {|['B']->first() > ['A']->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare(org.finos.legend.engine.plan.dependencies.util.Library.first("B"), org.finos.legend.engine.plan.dependencies.util.Library.first("A")) > 0', javaBoolean())->assert('(%s)==true')
+      // >=
+      ->addTest('String : [1]   ,[1]    : A >= A',         {|'A' >= 'A'}, '"A".compareTo("A") >= 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('String : [1]   ,[1]    : A >= B',         {|'A' >= 'B'}, '"A".compareTo("B") >= 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('String : [1]   ,[1]    : B >= A',         {|'B' >= 'A'}, '"B".compareTo("A") >= 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('String : [0..1],[1]    : empty >= A',     {|[]->cast(@String)->first() >= 'A'}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare(org.finos.legend.engine.plan.dependencies.util.Library.first((String) null), "A") >= 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('String : [0..1],[1]    : A >= A',         {|['A']->first() >= 'A'}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare(org.finos.legend.engine.plan.dependencies.util.Library.first("A"), "A") >= 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('String : [0..1],[1]    : A >= B',         {|['A']->first() >= 'B'}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare(org.finos.legend.engine.plan.dependencies.util.Library.first("A"), "B") >= 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('String : [0..1],[1]    : B >= A',         {|['B']->first() >= 'A'}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare(org.finos.legend.engine.plan.dependencies.util.Library.first("B"), "A") >= 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('String : [1]   ,[0..1] : A >= empty',     {|'A' >= []->cast(@String)->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare("A", org.finos.legend.engine.plan.dependencies.util.Library.first((String) null)) >= 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('String : [1]   ,[0..1] : A >= A',         {|'A' >= ['A']->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare("A", org.finos.legend.engine.plan.dependencies.util.Library.first("A")) >= 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('String : [1]   ,[0..1] : A >= B',         {|'A' >= ['B']->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare("A", org.finos.legend.engine.plan.dependencies.util.Library.first("B")) >= 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('String : [1]   ,[0..1] : B >= A',         {|'B' >= ['A']->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare("B", org.finos.legend.engine.plan.dependencies.util.Library.first("A")) >= 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('String : [0..1],[0..1] : empty >= empty', {|[]->cast(@String)->first() >= []->cast(@String)->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare(org.finos.legend.engine.plan.dependencies.util.Library.first((String) null), org.finos.legend.engine.plan.dependencies.util.Library.first((String) null)) >= 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('String : [0..1],[0..1] : A >= empty',     {|['A']->first() >= []->cast(@String)->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare(org.finos.legend.engine.plan.dependencies.util.Library.first("A"), org.finos.legend.engine.plan.dependencies.util.Library.first((String) null)) >= 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('String : [0..1],[0..1] : empty >= A',     {|[]->cast(@String)->first() >= ['A']->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare(org.finos.legend.engine.plan.dependencies.util.Library.first((String) null), org.finos.legend.engine.plan.dependencies.util.Library.first("A")) >= 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('String : [0..1],[0..1] : A >= A',         {|['A']->first() >= ['A']->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare(org.finos.legend.engine.plan.dependencies.util.Library.first("A"), org.finos.legend.engine.plan.dependencies.util.Library.first("A")) >= 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('String : [0..1],[0..1] : A >= B',         {|['A']->first() >= ['B']->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare(org.finos.legend.engine.plan.dependencies.util.Library.first("A"), org.finos.legend.engine.plan.dependencies.util.Library.first("B")) >= 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('String : [0..1],[0..1] : B >= A',         {|['B']->first() >= ['A']->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare(org.finos.legend.engine.plan.dependencies.util.Library.first("B"), org.finos.legend.engine.plan.dependencies.util.Library.first("A")) >= 0', javaBoolean())->assert('(%s)==true')
+      // <
+      ->addTest('String : [1]   ,[1]    : A < A',          {|'A' < 'A'}, '"A".compareTo("A") < 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('String : [1]   ,[1]    : A < B',          {|'A' < 'B'}, '"A".compareTo("B") < 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('String : [1]   ,[1]    : B < A',          {|'B' < 'A'}, '"B".compareTo("A") < 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('String : [0..1],[1]    : empty < A',      {|[]->cast(@String)->first() < 'A'}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare(org.finos.legend.engine.plan.dependencies.util.Library.first((String) null), "A") < 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('String : [0..1],[1]    : A < A',          {|['A']->first() < 'A'}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare(org.finos.legend.engine.plan.dependencies.util.Library.first("A"), "A") < 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('String : [0..1],[1]    : A < B',          {|['A']->first() < 'B'}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare(org.finos.legend.engine.plan.dependencies.util.Library.first("A"), "B") < 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('String : [0..1],[1]    : B < A',          {|['B']->first() < 'A'}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare(org.finos.legend.engine.plan.dependencies.util.Library.first("B"), "A") < 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('String : [1]   ,[0..1] : A < empty',      {|'A' < []->cast(@String)->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare("A", org.finos.legend.engine.plan.dependencies.util.Library.first((String) null)) < 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('String : [1]   ,[0..1] : A < A',          {|'A' < ['A']->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare("A", org.finos.legend.engine.plan.dependencies.util.Library.first("A")) < 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('String : [1]   ,[0..1] : A < B',          {|'A' < ['B']->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare("A", org.finos.legend.engine.plan.dependencies.util.Library.first("B")) < 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('String : [1]   ,[0..1] : B < A',          {|'B' < ['A']->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare("B", org.finos.legend.engine.plan.dependencies.util.Library.first("A")) < 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('String : [0..1],[0..1] : empty < empty',  {|[]->cast(@String)->first() < []->cast(@String)->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare(org.finos.legend.engine.plan.dependencies.util.Library.first((String) null), org.finos.legend.engine.plan.dependencies.util.Library.first((String) null)) < 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('String : [0..1],[0..1] : A < empty',      {|['A']->first() < []->cast(@String)->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare(org.finos.legend.engine.plan.dependencies.util.Library.first("A"), org.finos.legend.engine.plan.dependencies.util.Library.first((String) null)) < 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('String : [0..1],[0..1] : empty < A',      {|[]->cast(@String)->first() < ['A']->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare(org.finos.legend.engine.plan.dependencies.util.Library.first((String) null), org.finos.legend.engine.plan.dependencies.util.Library.first("A")) < 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('String : [0..1],[0..1] : A < A',          {|['A']->first() < ['A']->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare(org.finos.legend.engine.plan.dependencies.util.Library.first("A"), org.finos.legend.engine.plan.dependencies.util.Library.first("A")) < 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('String : [0..1],[0..1] : A < B',          {|['A']->first() < ['B']->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare(org.finos.legend.engine.plan.dependencies.util.Library.first("A"), org.finos.legend.engine.plan.dependencies.util.Library.first("B")) < 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('String : [0..1],[0..1] : B < A',          {|['B']->first() < ['A']->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare(org.finos.legend.engine.plan.dependencies.util.Library.first("B"), org.finos.legend.engine.plan.dependencies.util.Library.first("A")) < 0', javaBoolean())->assert('(%s)==false')
+      // <=
+      ->addTest('String : [1]   ,[1]    : A <= A',         {|'A' <= 'A'}, '"A".compareTo("A") <= 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('String : [1]   ,[1]    : A <= B',         {|'A' <= 'B'}, '"A".compareTo("B") <= 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('String : [1]   ,[1]    : B <= A',         {|'B' <= 'A'}, '"B".compareTo("A") <= 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('String : [0..1],[1]    : empty <= A',     {|[]->cast(@String)->first() <= 'A'}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare(org.finos.legend.engine.plan.dependencies.util.Library.first((String) null), "A") <= 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('String : [0..1],[1]    : A <= A',         {|['A']->first() <= 'A'}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare(org.finos.legend.engine.plan.dependencies.util.Library.first("A"), "A") <= 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('String : [0..1],[1]    : A <= B',         {|['A']->first() <= 'B'}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare(org.finos.legend.engine.plan.dependencies.util.Library.first("A"), "B") <= 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('String : [0..1],[1]    : B <= A',         {|['B']->first() <= 'A'}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare(org.finos.legend.engine.plan.dependencies.util.Library.first("B"), "A") <= 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('String : [1]   ,[0..1] : A <= empty',     {|'A' <= []->cast(@String)->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare("A", org.finos.legend.engine.plan.dependencies.util.Library.first((String) null)) <= 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('String : [1]   ,[0..1] : A <= A',         {|'A' <= ['A']->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare("A", org.finos.legend.engine.plan.dependencies.util.Library.first("A")) <= 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('String : [1]   ,[0..1] : A <= B',         {|'A' <= ['B']->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare("A", org.finos.legend.engine.plan.dependencies.util.Library.first("B")) <= 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('String : [1]   ,[0..1] : B <= A',         {|'B' <= ['A']->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare("B", org.finos.legend.engine.plan.dependencies.util.Library.first("A")) <= 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('String : [0..1],[0..1] : empty <= empty', {|[]->cast(@String)->first() <= []->cast(@String)->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare(org.finos.legend.engine.plan.dependencies.util.Library.first((String) null), org.finos.legend.engine.plan.dependencies.util.Library.first((String) null)) <= 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('String : [0..1],[0..1] : A <= empty',     {|['A']->first() <= []->cast(@String)->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare(org.finos.legend.engine.plan.dependencies.util.Library.first("A"), org.finos.legend.engine.plan.dependencies.util.Library.first((String) null)) <= 0', javaBoolean())->assert('(%s)==false')
+      ->addTest('String : [0..1],[0..1] : empty <= A',     {|[]->cast(@String)->first() <= ['A']->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare(org.finos.legend.engine.plan.dependencies.util.Library.first((String) null), org.finos.legend.engine.plan.dependencies.util.Library.first("A")) <= 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('String : [0..1],[0..1] : A <= A',         {|['A']->first() <= ['A']->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare(org.finos.legend.engine.plan.dependencies.util.Library.first("A"), org.finos.legend.engine.plan.dependencies.util.Library.first("A")) <= 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('String : [0..1],[0..1] : A <= B',         {|['A']->first() <= ['B']->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare(org.finos.legend.engine.plan.dependencies.util.Library.first("A"), org.finos.legend.engine.plan.dependencies.util.Library.first("B")) <= 0', javaBoolean())->assert('(%s)==true')
+      ->addTest('String : [0..1],[0..1] : B <= A',         {|['B']->first() <= ['A']->first()}, 'org.finos.legend.engine.plan.dependencies.util.Library.safeCompare(org.finos.legend.engine.plan.dependencies.util.Library.first("B"), org.finos.legend.engine.plan.dependencies.util.Library.first("A")) <= 0', javaBoolean())->assert('(%s)==false')
+      ->runTests();
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::engine::java::tests::testStringPureTests() : Boolean[1]
+{
+   javaPureTests(meta::pure::executionPlan::engine::java::engineConventions([]), [
+      meta::pure::functions::lang::tests::greaterThan::testGreaterThan_String__Boolean_1_,
+      meta::pure::functions::lang::tests::greaterThanEqual::testGreaterThanEqual_String__Boolean_1_,
+      meta::pure::functions::lang::tests::lessThan::testLessThan_String__Boolean_1_,
+      meta::pure::functions::lang::tests::lessThanEqual::testLessThanEqual_String__Boolean_1_
+   ])
+      ->generate(meta::pure::functions::tests::model::GeographicEntityType)
+      ->addTestsWithin(meta::pure::functions::string::tests::format)
+      ->excludeTest(meta::pure::functions::string::tests::format::testFormatList__Boolean_1_) // requires new
+      ->excludeTest(meta::pure::functions::string::tests::format::testFormatPair__Boolean_1_) // requires new
+      ->addTestsWithin(meta::pure::functions::string::tests::toString)
+      ->excludeTest(meta::pure::functions::string::tests::toString::testListToString__Boolean_1_) // requires new
+      ->excludeTest(meta::pure::functions::string::tests::toString::testPairToString__Boolean_1_) // requires new
+      ->excludeTest(meta::pure::functions::string::tests::toString::testPairCollectionToString__Boolean_1_) // requires new
+      ->excludeTest(meta::pure::functions::string::tests::toString::testPersonToString__Boolean_1_) // requires new
+      ->excludeTest(meta::pure::functions::string::tests::toString::testClassToString__Boolean_1_) // requires metadata
+      ->excludeTest(meta::pure::functions::string::tests::toString::testEnumerationToString__Boolean_1_) // requires metadata   
+      ->addTestsWithin(meta::pure::functions::string::tests::toRepresentation)
+      ->excludeTest(meta::pure::functions::string::tests::toRepresentation::testClassInstanceToRepresentation__Boolean_1_) // requires new
+      ->excludeTest(meta::pure::functions::string::tests::toRepresentation::testClassToRepresentation__Boolean_1_) // requires metadata
+      ->excludeTest(meta::pure::functions::string::tests::toRepresentation::testFunctionToRepresentation__Boolean_1_) // requires metadata
+      ->addTestsWithin(meta::pure::functions::string::tests::parseBoolean)
+      ->addTestsWithin(meta::pure::functions::string::tests::chunk)
+      ->addTestsWithin(meta::pure::functions::string::tests::parseDecimal)
+      ->addTestsWithin(meta::pure::functions::string::tests::matches)
+      ->runTests();
+}

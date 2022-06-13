@@ -91,7 +91,7 @@ public class AvroGenerationService
             LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE_AVRO_CODE_INTERACTIVE_START : LoggingEventType.GENERATE_AVRO_CODE_START).toString());
             PureModel pureModel = pureModelFunc.value();
             RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationOutput> output = core_external_format_avro_tramsformation_avroSchemaGenerator.Root_meta_external_format_avro_generation_generateAvroFromPureWithScope_AvroConfig_1__AvroOutput_MANY_(avroConfig.process(pureModel), pureModel.getExecutionSupport());
-            LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE_AVRO_CODE_INTERACTIVE_STOP : LoggingEventType.GENERATE_AVRO_CODE_STOP, (double)System.currentTimeMillis() - start).toString());
+            LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE_AVRO_CODE_INTERACTIVE_STOP : LoggingEventType.GENERATE_AVRO_CODE_STOP, (double) System.currentTimeMillis() - start).toString());
             return ManageConstantResult.manageResult(pm, output.collect(v -> new GenerationOutput(v._content(), v._fileName(), v._format())).toList());
         }
         catch (Exception ex)

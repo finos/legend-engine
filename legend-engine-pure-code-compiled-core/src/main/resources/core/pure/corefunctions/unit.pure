@@ -1,0 +1,55 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::functions::lang::*;
+import meta::pure::unit::*;
+
+function meta::pure::functions::math::plus(masses: Mass[*]):Mass~Gram[1]
+{
+   let cv = $masses->map(m|let cv = $m->type()->cast(@Unit).conversionFunction->cast(@Function<{Number[1]->Number[1]}>)->toOne()->eval(getUnitValue($m)););
+   let resultNumeric = $cv->sum();
+   newUnit(Mass~Gram, $resultNumeric)->cast(@Mass~Gram);
+}
+
+function meta::pure::functions::math::minus(masses: Mass[*]):Mass~Gram[1]
+{
+   let cv = $masses->map(m|let cv = $m->type()->cast(@Unit).conversionFunction->cast(@Function<{Number[1]->Number[1]}>)->toOne()->eval(getUnitValue($m)););
+   let resultNumeric = $cv->minus();
+   newUnit(Mass~Gram, $resultNumeric)->cast(@Mass~Gram);
+}
+
+function meta::pure::unit::massScalarTimes(mass: Mass[1], nums: Number[*]):Mass~Gram[1]
+{
+   let convertedValue = $mass->type()->cast(@Unit).conversionFunction->cast(@Function<{Number[1]->Number[1]}>)->toOne()->eval(getUnitValue($mass));
+   let numsMultResult = $nums->times();
+   let myValue = [$convertedValue, $numsMultResult]->times();
+   newUnit(Mass~Gram, $myValue)->cast(@Mass~Gram);
+}
+
+function meta::pure::unit::massScalarDivision(mass: Mass[1], nums: Number[*]):Mass~Gram[1]
+{
+   let convertedValue = $mass->type()->cast(@Unit).conversionFunction->cast(@Function<{Number[1]->Number[1]}>)->toOne()->eval(getUnitValue($mass));
+   let numsMultResult = $nums->times();
+   assert($numsMultResult != 0, 'Cannot divide by zero.');
+   let myValue = $convertedValue->divide($numsMultResult);
+   newUnit(Mass~Gram, $myValue)->cast(@Mass~Gram);
+}
+
+Measure meta::pure::unit::Mass  // Mass instance of Measure
+{
+   *Gram: x -> $x;              // Gram instance of Unit, subtype of Mass; star stands for canonical unit
+   Kilogram: x -> $x * 1000;    // Kilogram instance of Unit, subtype of Mass
+   Pound: x -> $x * 453.59;     // Pound instance of Unit, subtype of Mass
+}
+

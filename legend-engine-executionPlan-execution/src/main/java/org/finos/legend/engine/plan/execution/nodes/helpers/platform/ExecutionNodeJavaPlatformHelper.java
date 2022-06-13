@@ -21,8 +21,6 @@ import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.map.mutable.UnifiedMap;
 import org.eclipse.collections.impl.tuple.Tuples;
-import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
-import org.finos.legend.engine.shared.javaCompiler.StringJavaSource;
 import org.finos.legend.engine.plan.execution.nodes.ExecutionNodeExecutor;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
@@ -35,6 +33,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.JavaPl
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
+import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
+import org.finos.legend.engine.shared.javaCompiler.StringJavaSource;
 import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
 
@@ -121,6 +121,10 @@ public class ExecutionNodeJavaPlatformHelper
                 {
                     return toResult(executeStaticJavaMethod(method, context.getChildResult()));
                 }
+                if (parameterTypes.length == 1 && parameterTypes[0].isInstance(executionState.authId) && methodRequiresAuthId(className, methodName))
+                {
+                    return toResult(executeStaticJavaMethod(method, executionState.authId));
+                }
                 if (parameterTypes.length == 2 && parameterTypes[0].isInstance(context.getChildResult()) && parameterTypes[1].isInstance(context))
                 {
                     return toResult(executeStaticJavaMethod(method, context.getChildResult(), context));
@@ -162,6 +166,11 @@ public class ExecutionNodeJavaPlatformHelper
             }
             throw new RuntimeException(cause);
         }
+    }
+
+    private static boolean methodRequiresAuthId(String className, String methodName)
+    {
+        return "org.finos.legend.engine.plan.dependencies.store.platform.PredefinedExpressions".equals(className) && "currentUserId".equals(methodName);
     }
 
     public static <T> T executeStaticJavaMethod(ExecutionNode node, String className, String methodName, List<? extends Class<?>> parameterTypes, List<?> parameters, ExecutionState executionState, MutableList<CommonProfile> pm)
@@ -278,7 +287,7 @@ public class ExecutionNodeJavaPlatformHelper
                 {
                     LOGGER.info(new LogInfo(pm, LoggingEventType.JAVA_COMPILATION_START, "Node: " + node.getClass().getName()).toString());
                     compiler.compile(classesToCompile);
-                    LOGGER.info(new LogInfo(pm, LoggingEventType.JAVA_COMPILATION_STOP, (double)System.currentTimeMillis() - start).toString());
+                    LOGGER.info(new LogInfo(pm, LoggingEventType.JAVA_COMPILATION_STOP, (double) System.currentTimeMillis() - start).toString());
                 }
             }
             catch (Exception jce)

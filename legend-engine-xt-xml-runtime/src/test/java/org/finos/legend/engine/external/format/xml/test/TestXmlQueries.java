@@ -17,7 +17,6 @@ package org.finos.legend.engine.external.format.xml.test;
 import net.javacrumbs.jsonunit.JsonMatchers;
 import org.finos.legend.engine.external.shared.runtime.test.TestExternalFormatQueries;
 import org.hamcrest.MatcherAssert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class TestXmlQueries extends TestExternalFormatQueries
@@ -40,10 +39,10 @@ public class TestXmlQueries extends TestExternalFormatQueries
     {
         String grammar = firmModel() + firmSelfMapping() + schemalessBinding() + urlStreamRuntime("test::firm::mapping::SelfMapping", "test::firm::Binding");
         String result = runTest(grammar,
-                                "|test::firm::model::Firm.all()->graphFetchChecked(" + firmTree() + ")->serialize(" + firmTree() + ")",
-                                "test::firm::mapping::SelfMapping",
-                                "test::runtime",
-                                resource("queries/manyFirmsAttributes.xml"));
+                "|test::firm::model::Firm.all()->graphFetchChecked(" + firmTree() + ")->serialize(" + firmTree() + ")",
+                "test::firm::mapping::SelfMapping",
+                "test::runtime",
+                resource("queries/manyFirmsAttributes.xml"));
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/manyFirmsAttributesCheckedResult.json")));
     }
@@ -53,10 +52,10 @@ public class TestXmlQueries extends TestExternalFormatQueries
     {
         String grammar = firmModel() + firmSelfMapping() + schemalessBinding() + urlStreamRuntime("test::firm::mapping::SelfMapping", "test::firm::Binding");
         String result = runTest(grammar,
-                                "|test::firm::model::Firm.all()->graphFetchChecked(" + firmTree() + ")->serialize(" + firmTree() + ")",
-                                "test::firm::mapping::SelfMapping",
-                                "test::runtime",
-                                resource("queries/manyFirmsElements.xml"));
+                "|test::firm::model::Firm.all()->graphFetchChecked(" + firmTree() + ")->serialize(" + firmTree() + ")",
+                "test::firm::mapping::SelfMapping",
+                "test::runtime",
+                resource("queries/manyFirmsElements.xml"));
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/manyFirmsElementsCheckedResult.json")));
     }
@@ -66,10 +65,10 @@ public class TestXmlQueries extends TestExternalFormatQueries
     {
         String grammar = firmModel() + firmSelfMapping() + schemalessBinding() + urlStreamRuntime("test::firm::mapping::SelfMapping", "test::firm::Binding");
         String result = runTest(grammar,
-                                "|test::firm::model::Firm.all()->graphFetch(" + firmTree() + ")->serialize(" + firmTree() + ")",
-                                "test::firm::mapping::SelfMapping",
-                                "test::runtime",
-                                resource("queries/manyFirmsElements.xml"));
+                "|test::firm::model::Firm.all()->graphFetch(" + firmTree() + ")->serialize(" + firmTree() + ")",
+                "test::firm::mapping::SelfMapping",
+                "test::runtime",
+                resource("queries/manyFirmsElements.xml"));
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/manyFirmsElementsObjectResult.json")));
     }
@@ -77,12 +76,12 @@ public class TestXmlQueries extends TestExternalFormatQueries
     @Test
     public void testDeserializeFullGraphWithoutSchema()
     {
-        String grammar = firmModel() + firmSelfMapping() +  schemalessBinding() + urlStreamRuntime("test::firm::mapping::SelfMapping", "test::firm::Binding");
+        String grammar = firmModel() + firmSelfMapping() + schemalessBinding() + urlStreamRuntime("test::firm::mapping::SelfMapping", "test::firm::Binding");
         String result = runTest(grammar,
-                                "|test::firm::model::Firm.all()->graphFetchChecked(" + fullTree() + ")->serialize(" + fullTree() + ")",
-                                "test::firm::mapping::SelfMapping",
-                                "test::runtime",
-                                resource("queries/fullFirm.xml"));
+                "|test::firm::model::Firm.all()->graphFetchChecked(" + fullTree() + ")->serialize(" + fullTree() + ")",
+                "test::firm::mapping::SelfMapping",
+                "test::runtime",
+                resource("queries/fullFirm.xml"));
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/fullFirmCheckedResult.json")));
     }
@@ -92,10 +91,10 @@ public class TestXmlQueries extends TestExternalFormatQueries
     {
         String grammar = firmModel() + firmSelfMapping() + schemalessBinding() + urlStreamRuntime("test::firm::mapping::SelfMapping", "test::firm::Binding");
         String result = runTest(grammar,
-                                "|test::firm::model::Firm.all()->graphFetch(" + fullTree() + ")->serialize(" + fullTree() + ")",
-                                "test::firm::mapping::SelfMapping",
-                                "test::runtime",
-                                resource("queries/fullFirm.xml"));
+                "|test::firm::model::Firm.all()->graphFetch(" + fullTree() + ")->serialize(" + fullTree() + ")",
+                "test::firm::mapping::SelfMapping",
+                "test::runtime",
+                resource("queries/fullFirm.xml"));
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/fullFirmUnwrappedResult.json")));
     }
@@ -105,18 +104,18 @@ public class TestXmlQueries extends TestExternalFormatQueries
     {
         String grammar = firmModel() + firmSelfMapping() + schemalessBinding() + urlStreamRuntime("test::firm::mapping::SelfMapping", "test::firm::Binding");
         String result1 = runTest(grammar,
-                                "|test::firm::model::Firm.all()->graphFetchChecked(" + fullTree() + ")->serialize(" + fullTree() + ")",
-                                "test::firm::mapping::SelfMapping",
-                                "test::runtime",
-                                resource("queries/firmInvalidRanking.xml"));
+                "|test::firm::model::Firm.all()->graphFetchChecked(" + fullTree() + ")->serialize(" + fullTree() + ")",
+                "test::firm::mapping::SelfMapping",
+                "test::runtime",
+                resource("queries/firmInvalidRanking.xml"));
 
         MatcherAssert.assertThat(result1, JsonMatchers.jsonEquals(resourceReader("queries/firmInvalidRankingCheckedResult.json")));
 
         String result2 = runTest(grammar,
-                                 "|test::firm::model::Firm.all()->graphFetchChecked(" + fullTree() + ")->serialize(" + fullTree() + ")",
-                                 "test::firm::mapping::SelfMapping",
-                                 "test::runtime",
-                                 resource("queries/firmInvalidLongitude.xml"));
+                "|test::firm::model::Firm.all()->graphFetchChecked(" + fullTree() + ")->serialize(" + fullTree() + ")",
+                "test::firm::mapping::SelfMapping",
+                "test::runtime",
+                resource("queries/firmInvalidLongitude.xml"));
 
         MatcherAssert.assertThat(result2, JsonMatchers.jsonEquals(resourceReader("queries/firmInvalidLongitudeCheckedResult.json")));
     }
@@ -125,11 +124,11 @@ public class TestXmlQueries extends TestExternalFormatQueries
     public void testDeserializeConstraintViolation()
     {
         String grammar = firmModel() + firmSelfMapping() + schemalessBinding() + urlStreamRuntime("test::firm::mapping::SelfMapping", "test::firm::Binding");
-        String result  = runTest(grammar,
-                                 "|test::firm::model::Firm.all()->graphFetchChecked(" + fullTree() + ")->serialize(" + fullTree() + ")",
-                                 "test::firm::mapping::SelfMapping",
-                                 "test::runtime",
-                                 resource("queries/firmLongitudeConstraintViolation.xml"));
+        String result = runTest(grammar,
+                "|test::firm::model::Firm.all()->graphFetchChecked(" + fullTree() + ")->serialize(" + fullTree() + ")",
+                "test::firm::mapping::SelfMapping",
+                "test::runtime",
+                resource("queries/firmLongitudeConstraintViolation.xml"));
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/firmLongitudeConstraintViolationCheckedResult.json")));
     }
@@ -139,10 +138,10 @@ public class TestXmlQueries extends TestExternalFormatQueries
     {
         String grammar = firmModel() + firmSelfMapping() + schemalessBinding() + urlStreamRuntime("test::firm::mapping::SelfMapping", "test::firm::Binding");
         String result = runTest(grammar,
-                                "|test::firm::model::Firm.all()->graphFetchChecked(" + fullTree() + ")->serialize(" + fullTree() + ")",
-                                "test::firm::mapping::SelfMapping",
-                                "test::runtime",
-                                resource("queries/firmWithXsiNil.xml"));
+                "|test::firm::model::Firm.all()->graphFetchChecked(" + fullTree() + ")->serialize(" + fullTree() + ")",
+                "test::firm::mapping::SelfMapping",
+                "test::runtime",
+                resource("queries/firmWithXsiNil.xml"));
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/firmWithXsiNilCheckedResult.json")));
     }

@@ -1,0 +1,420 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::factory::*;
+import meta::external::language::java::factory::project::*;
+import meta::external::language::java::metamodel::*;
+import meta::external::language::java::metamodel::project::*;
+import meta::external::language::java::transform::*;
+import meta::external::shared::format::binding::*;
+import meta::external::shared::format::executionPlan::*;
+import meta::external::shared::format::executionPlan::engine::*;
+import meta::external::shared::format::metamodel::*;
+import meta::pure::executionPlan::*;
+import meta::pure::executionPlan::engine::*;
+import meta::pure::executionPlan::engine::java::*;
+import meta::pure::executionPlan::engine::java::naming::*;
+import meta::pure::executionPlan::engine::java::typeInfo::*;
+import meta::pure::executionPlan::toString::*;
+import meta::pure::metamodel::serialization::grammar::*;
+import meta::pure::router::extension::*;
+
+function meta::external::shared::format::executionPlan::createDataClassesProject(classes:meta::pure::metamodel::type::Class<Any>[*], path:String[1], context:GenerationContext[1], debug:DebugContext[1]): Project[1]
+{
+   print(if($debug.debug,|$debug.space+'('+$path+') createDataClassesProject\n', |''));
+   mergeProjects($classes->map(c| $c->createDataClass($path, $context, $debug->indent()))->toOneMany());
+}
+
+function meta::external::shared::format::executionPlan::generateDataTestProject(packageName:String[1], baseJavaPackage:String[1]): Project[1]
+{
+   let conventions = engineConventions(meta::external::shared::format::routerExtensions('externalFormat', []))->setBasePackageName($baseJavaPackage);
+
+   let package   = $packageName->pathToElement()->cast(@Package);
+   let classes   = $package.children->filter(pe| $pe->instanceOf(meta::pure::metamodel::type::Class))->cast(@meta::pure::metamodel::type::Class<Any>);
+   let typeInfos = $classes->fold({c, ti| $ti->addForClass($c, true, true, false, true)}, newTypeInfoSet());
+   let context   = ^GenerationContext(typeInfos=$typeInfos, conventions=$conventions);
+
+   let project = mergeProjects(generateTypes($context, noDebug())->concatenate($classes->map(c| $c->createDataClass('node', $context, noDebug())))->toOneMany());
+   newProject()->addClasses($project->allClasses()->map(cl | $cl->inferImports()));
+}
+
+function meta::external::shared::format::executionPlan::generateDataQualityNode(deserializeNode:ExecutionNode[1], enableConstraints:Boolean[1], checked:Boolean[1]): ExecutionNode[1]
+{
+   ^DataQualityExecutionNode(
+      resultType        = $deserializeNode.resultType,
+      resultSizeRange   = $deserializeNode.resultSizeRange,
+      enableConstraints = $enableConstraints,
+      checked           = $checked,
+      executionNodes    = $deserializeNode
+   );
+}
+
+function meta::external::shared::format::executionPlan::planPrepareDataQuality(path:String[1], context:GenerationContext[1], extensions:RouterExtension[*], debug:DebugContext[1]): Function<{Nil[1]->GenerationContext[1]}>[*]
+{
+   {node:DataQualityExecutionNode[1] | 
+      print(if($debug.debug,|$debug.space+'('+$path+') prepare DataQualityExecutionNode\n', |''));
+      let childNodeInfo   = $context->nodeInfosForPath($path + '.n1')->toOne();
+      $context->addNodeInfo(^$childNodeInfo(path=$path));
+   };
+}
+
+function meta::external::shared::format::executionPlan::getSourceNodeFromExternalSource(externalSource:ExternalSource[1]): ExecutionNode[1]
+{
+   $externalSource->match([
+      u:UrlStreamExternalSource[1]     | generateUrlStreamExecutionNode($u),
+      e:ExternalSource[1]              | fail('External source format not supported !!'); @ExecutionNode;
+   ]);
+}
+
+function meta::external::shared::format::executionPlan::generateUrlStreamExecutionNode(externalSource:UrlStreamExternalSource[1]): ExecutionNode[1]
+{
+   let sourceUrl = $externalSource->cast(@UrlStreamExternalSource).url;
+   
+   ^UrlStreamExecutionNode(
+      resultType = ^DataTypeResultType(type = String),
+      url        = $sourceUrl
+   );
+}
+
+function meta::external::shared::format::executionPlan::printPlanNodeToString(space:String[1], extensions:RouterExtension[*]): Function<{Nil[1]->String[1]}>[*]
+{
+   [
+      {node:DataQualityExecutionNode[1] |
+         'DataQuality\n' +
+         $space + '(' + header($node, $space, $extensions) + '\n' +
+         $space + '  enableConstraints = ' + $node.enableConstraints->toString() + '\n' +
+         $space + '  checked = ' + $node.checked->toString() + '\n' +
+         $node->childrenToString($space+'  ', $extensions) + '\n' +
+         $node.implementation->printImplementation('implementation', $space+'  ', $extensions) +
+         $space + ')\n'
+      },
+      {node:UrlStreamExecutionNode[1] |
+         'UrlStream\n' +
+         $space + '(' + header($node, $space, $extensions) + '\n' +
+         $space + '  url = ' + $node.url + '\n' +
+         $node->childrenToString($space+'  ', $extensions) + '\n' +
+         $space + ')\n'
+      }
+   ]
+}
+
+Class <<access.private>> meta::external::shared::format::executionPlan::PropertyDetails
+{
+   property          : AbstractProperty<Any>[1];
+   fieldName         : String[1];
+   sizeFieldName     : String[1];
+   propType          : meta::pure::metamodel::type::Type[1];
+   javaType          : meta::external::language::java::metamodel::Type[1];
+   itemType          : meta::external::language::java::metamodel::Type[1];
+   getterName        : String[1];
+   adderName         : String[1];
+   adderParam        : Code[1];
+   multiplicityCheck : Code[0..1];
+   
+   name() {$this.property.name->toOne()}: String[1];
+   isViaAssociation() {$this.property.owner->instanceOf(Association)}: Boolean[1];
+}
+
+function meta::external::shared::format::executionPlan::createDataClass(class:meta::pure::metamodel::type::Class<Any>[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]): Project[1]
+{
+   print(if($debug.debug,|$debug.space+'('+$path+') createDataClass for '+$class->elementToPath()+'\n', |''));
+   
+   let conventions = $context.conventions;
+   let pureDate    = $conventions->className(PureDate);
+   let defects     = j_variable(javaList($conventions->defectClass()), 'defects');
+
+   let mappedProperties = if(!$context->nodeInfosForPath($path).data->isEmpty(),
+                             |$context->nodeInfosForPath($path).data->toOne()->cast(@meta::external::shared::format::binding::validation::SuccessfulBindingDetail).mappedPropertiesForClass($class),
+                             |$context.typeInfos->allProperties($class));
+
+   let baseClass = $conventions->dataClass($class, $path)->addModifiers('public')
+      ->implements($conventions->className($class))
+      ->addIExternalData($class, $context);
+   
+   let properties = $context.typeInfos->allProperties($class)->map(p|
+      let fieldName     = $conventions->fieldName($p);
+      let sizeFieldName = $fieldName+'Size';
+      let javaType      = $conventions->pureTypeToJavaType($p);
+      let propType      = $p->functionReturnType().rawType->toOne();
+      let itemType      = if($javaType->isJavaList(), |$javaType->elementType(), |$javaType)->toUnboxed();
+                                                                   
+      let occurs                = occursFromMultiplicity($p.multiplicity);
+      let getSize               = if($javaType->isJavaList(), 
+                                     | j_this($baseClass)->j_field($fieldName, $javaType)->j_invoke('size', [], javaInt()),
+                                     | j_this($baseClass)->j_field($sizeFieldName, javaInt())
+                                  );
+      let lowerBoundClause      = $getSize->j_lt($occurs.first);
+      let upperBoundClause      = $getSize->j_gt($occurs.second);
+      let expectedMultiplicity  = $p.multiplicity->printMultiplicity();
+      let addMultiplicityDefect = $defects->j_invoke('add', $conventions->newClassStructureDefect(j_string('Invalid multiplicity for '+$p.name->toOne()+': expected ['+$expectedMultiplicity+'] found [')->j_plus($getSize)->j_plus(j_string(']')), j_string($class->elementToPath())), javaVoid());
+                                                                   
+      ^PropertyDetails(
+         property          = $p,
+         fieldName         = $fieldName,
+         sizeFieldName     = $sizeFieldName,
+         propType          = $propType,
+         javaType          = $javaType,
+         itemType          = $itemType,
+         getterName        = $conventions->getterName($p),
+         adderName         = '_'+$fieldName+'Add',
+         adderParam        = if($propType->instanceOf(meta::pure::metamodel::type::Class),
+                                | j_parameter($conventions->dataClass($propType->cast(@meta::pure::metamodel::type::Class<Any>), $path), 'value'),
+                                |
+                             if($itemType == $pureDate,
+                                | j_parameter(javaTemporal(), 'value'),
+                                | j_parameter($itemType, 'value')
+                             )),
+         multiplicityCheck = if($p.multiplicity->hasLowerBound() && $p.multiplicity->hasUpperBound(),
+                                | j_if($lowerBoundClause->j_or($upperBoundClause), $addMultiplicityDefect),
+                                |
+                             if($p.multiplicity->hasLowerBound(),
+                                | j_if($lowerBoundClause, $addMultiplicityDefect),
+                                |
+                             if($p.multiplicity->hasUpperBound(),
+                                | j_if($upperBoundClause, $addMultiplicityDefect),
+                                | []
+                             )))
+      );
+   );
+
+   let withFieldsAndGetters = $properties->fold(
+      {p, c|
+         if($p.javaType->isJavaList(), 
+            {|
+               $c ->addField(javaField('private', $p.javaType, $p.fieldName))
+                  ->addMethod({cls|
+                     let field = j_this($cls)->j_field($p.fieldName);
+
+                     javaMethod('public', $p.javaType, $p.getterName, [],
+                        j_return(j_conditional($field->j_eq(j_null()), javaCollections()->j_invoke($p.itemType, 'emptyList', [], $p.javaType), $field))
+                     );
+                  })
+                  ->addMethods({cls|
+                     $cls->filter(c| $p.property->in($mappedProperties))->map(c| $c->adderMethods($p, $conventions));
+                  });
+            },
+            {|
+               $c ->addField(javaField('private', $p.javaType->toUnboxed(), $p.fieldName))
+                  ->addField(javaField('private', javaInt(), $p.sizeFieldName))
+                  ->addMethod({cls|
+                     let field     = j_this($cls)->j_field($p.fieldName);
+                     let fieldSize = j_this($cls)->j_field($p.sizeFieldName);
+
+                     javaMethod('public', $p.javaType, $p.getterName, [],
+                        j_return(j_conditional($fieldSize->j_eq(j_int(0)), j_null(), $field))
+                     );
+                  })
+                  ->addMethods({cls|
+                     $cls->filter(c| $p.property->in($mappedProperties))->map(c| $c->adderMethods($p, $conventions));
+                  });
+
+            }
+         );
+      }, 
+      $baseClass      
+   );
+   
+   let propertyName = j_parameter(javaString(), 'propertyName');
+   let objectParam  = j_parameter($withFieldsAndGetters, 'object');
+
+   let adderClauses  = $properties->filter(p | $p.property->in($mappedProperties))->map(
+      {p|
+         let adderImpl = if($p.itemType == javaBoolean(),
+                            {|
+                               let value = j_parameter(javaBoolean(), 'value');
+                               j_return(j_newAnon(
+                                  javaParameterizedType($conventions->className(_ExternalDataBooleanAdder), $withFieldsAndGetters), j_string($p.name),
+                                  j_method(['public'], javaVoid(), 'addTo', [$objectParam, $value], $objectParam->j_invoke($p.adderName, $value, javaVoid()))
+                               ));
+                            },
+                            |
+                         if($p.itemType == javaLong(),
+                            {|
+                               let value = j_parameter(javaLong(), 'value');
+                               j_return(j_newAnon(
+                                  javaParameterizedType($conventions->className(_ExternalDataLongAdder), $withFieldsAndGetters), j_string($p.name),
+                                  j_method(['public'], javaVoid(), 'addTo', [$objectParam, $value], $objectParam->j_invoke($p.adderName, $value, javaVoid()))
+                               ));
+                            },
+                            |
+                         if($p.itemType == javaDouble(),
+                            {|
+                               let value = j_parameter(javaDouble(), 'value');
+                               j_return(j_newAnon(
+                                  javaParameterizedType($conventions->className(_ExternalDataDoubleAdder), $withFieldsAndGetters), j_string($p.name),
+                                  j_method(['public'], javaVoid(), 'addTo', [$objectParam, $value], $objectParam->j_invoke($p.adderName, $value, javaVoid()))
+                               ));
+                            },
+                            {|
+                               let value = j_parameter($p.adderParam.type, 'value');
+                               j_return(j_newAnon(
+                                  javaParameterizedType($conventions->className(_ExternalDataObjectAdder), [$withFieldsAndGetters, $p.adderParam.type]), j_string($p.name),
+                                  j_method(['public'], javaVoid(), 'addTo', [$objectParam, $value], $objectParam->j_invoke($p.adderName, $value, javaVoid()))
+                               ));
+                            }
+                         )));
+         
+         pair($propertyName->j_invoke('equals', j_string($p.name)), $adderImpl);
+      }
+   );
+
+   let dataClass = $withFieldsAndGetters
+      ->addMethod({c|
+          javaMethod('public', javaList($conventions->defectClass()), 'checkMultiplicities', [],
+             $defects->j_declare(j_new(javaArrayList($conventions->defectClass()), []))
+                ->concatenate($properties.multiplicityCheck)
+                ->concatenate(j_return($defects))
+          );
+        })
+      ->addMethod({c|
+          let exception = javaIllegalArgumentException()->j_new(j_string('Unknown property ')->j_plus($propertyName))->j_throw();
+         
+          javaMethod(['public', 'static'], javaParameterizedType($conventions->className(_ExternalDataAdder), $c), '_getAdderForProperty', $propertyName,
+             if($adderClauses->isEmpty(), |$exception, |j_if(list($adderClauses), $exception))
+          );
+        })
+      ->addAlloyStoreObjectReferenceMethodsForClass($context);
+
+   let constraintChecking = $dataClass->createConstraintCheckingForClass($class, $context, $debug);
+   let instanceSizing     = $dataClass->updateImplementationClassWithInstanceSizeMethods($context);
+   mergeProjects(newProject()->concatenate([$constraintChecking, $instanceSizing])->toOneMany());
+}
+
+function meta::external::shared::format::executionPlan::addIExternalData(javaClass:meta::external::language::java::metamodel::Class[1], class:meta::pure::metamodel::type::Class<Any>[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Class[1]
+{
+   let conventions = $context.conventions;
+
+   $javaClass
+      ->implements($conventions->className(_IExternalData))
+      ->addField(c|
+           javaField(['public', 'static', 'final'], $conventions->className(_IExternalDataFactory), 'FACTORY',
+              j_newAnon($conventions->className(_IExternalDataFactory), [],
+                 [
+                    j_method(['public'], $conventions->className(_IExternalData), 'newInstance', [], j_return(j_new($c, []))),
+                    j_method(['public'], javaString(), 'getPureClassName', [], j_return(j_string($class->elementToPath())))
+                 ]
+              )
+           )
+        );
+}
+
+Class <<access.private>> meta::external::shared::format::executionPlan::AdderValue
+{
+   create: Code[*];
+   access: Code[1];
+}
+
+function <<access.private>> meta::external::shared::format::executionPlan::adderMethods(jc:meta::external::language::java::metamodel::Class[1], prop: PropertyDetails[1], conventions:Conventions[1]): meta::external::language::java::metamodel::Method[*]
+{
+   let pureDate    = $conventions->className(PureDate);
+   let field       = j_this($jc)->j_field($prop.fieldName);
+
+   let adderValue  = if($prop.itemType == $pureDate && $prop.propType == StrictDate,
+                        {|
+                           let var = j_variable($pureDate, 'v');
+                           ^AdderValue(
+                              create = $var->j_declare($pureDate->j_invoke('fromTemporal', [$prop.adderParam, javaCalendar()->j_field('DAY_OF_MONTH', javaInt())], $pureDate)),
+                              access = $var
+                           );
+                        },
+                        |
+                     if($prop.itemType == $pureDate,
+                        {|
+                           let var = j_variable($pureDate, 'v');
+                           ^AdderValue(
+                              create = $var->j_declare($pureDate->j_invoke('fromTemporal', [$prop.adderParam, javaCalendar()->j_field('MILLISECOND', javaInt())], $pureDate)),
+                              access = $var
+                           );
+                        },
+                        {|
+                           ^AdderValue(access = $prop.adderParam);
+                        }
+                     ));
+
+
+   let impl = $adderValue.create->concatenate(
+      if($prop.javaType->isJavaList(),
+         {|
+            [
+               j_if($field->j_eq(j_null()),
+                  $field->j_assign(javaArrayList($prop.itemType)->j_new([]))
+               ),
+               $field->j_invoke('add', $adderValue.access)
+            ]
+         },
+         {|
+            let fieldSize = j_this($jc)->j_field($prop.sizeFieldName);
+
+            [
+               j_if($fieldSize->j_eq(j_int(0)),
+                  $field->j_assign($adderValue.access)
+               ),
+               $fieldSize->j_inc()
+            ];
+         }
+      )
+   );
+
+   if($prop.isViaAssociation,
+      {|
+         let implName      = $prop.adderName+'Impl';
+         let otherProp     = $prop.property.owner->cast(@Association).properties->filter(p| $p != $prop.property)->toOne();
+         let otherImplName = '_' + $conventions->fieldName($otherProp) + 'AddImpl';
+         
+         [
+            javaMethod([], javaVoid(), $implName, $prop.adderParam, $impl),
+            javaMethod('public', javaVoid(), $prop.adderName, $prop.adderParam,
+               [
+                  j_this($jc)->j_invoke($implName, $prop.adderParam, javaVoid()),
+                  $prop.adderParam->j_invoke($otherImplName, j_this($jc), javaVoid())
+               ]
+            )
+         ];
+      },
+      | javaMethod('public', javaVoid(), $prop.adderName, $prop.adderParam, $impl)
+   );
+}
+
+function meta::external::shared::format::executionPlan::dataClass(conventions:Conventions[1], class:meta::pure::metamodel::type::Class<Any>[1], path:String[1]): meta::external::language::java::metamodel::Class[1]
+{
+  $conventions->planNodeClass([], $path, $conventions->identifier($class->elementToPath('_')) + '_Impl');
+}
+
+
+function meta::external::shared::format::executionPlan::occursFromMultiplicity(mult:Multiplicity[1]): Pair<Code, Code>[1]
+{
+   if($mult == PureOne,
+      | pair(j_long(1), j_long(1)),
+      |
+   if($mult == ZeroOne,
+      | pair(j_long(0), j_long(1)),
+      |
+   if($mult == ZeroMany,
+      | pair(j_long(0), javaLongMax()),
+      | pair(j_long($mult->getLowerBound()), if($mult->hasUpperBound(), |j_long($mult->getUpperBound()), |javaLongMax()))
+   )));
+}
+
+function meta::external::shared::format::executionPlan::printConnection(extensions:RouterExtension[*]): Function<{Nil[1]->String[1]}>[*]
+{
+   [
+      {ext:ExternalFormatConnection[1] |
+         let source = $ext.externalSource->match([
+            u:UrlStreamExternalSource[1] | 'url="'+$u.url+'"'
+         ]);
+         'binding="'+$ext.element->cast(@Binding)->elementToPath()+'", source=('+$source+')';
+      }
+   ];
+}
+

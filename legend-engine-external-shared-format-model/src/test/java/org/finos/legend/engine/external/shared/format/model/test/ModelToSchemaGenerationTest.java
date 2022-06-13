@@ -41,13 +41,13 @@ public class ModelToSchemaGenerationTest
             }
             catch (Exception e)
             {
-                Assert.fail("The generated model cannot be compiled: " +  e.getMessage());
+                Assert.fail("The generated model cannot be compiled: " + e.getMessage());
             }
             return combined;
         }
         catch (Exception e)
         {
-            Assert.fail("The model code cannot be compiled: " +  e.getMessage());
+            Assert.fail("The model code cannot be compiled: " + e.getMessage());
         }
 
         return null;

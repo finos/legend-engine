@@ -1,0 +1,107 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+//---------
+// Execute
+//---------
+Class meta::protocols::pure::v1_21_0::metamodel::invocation::execution::execute::ExecutionInput
+{
+    clientVersion:String[1];
+    function:meta::protocols::pure::v1_21_0::metamodel::valueSpecification::raw::Lambda[1];
+    mapping:String[0..1];
+    runtime:meta::protocols::pure::v1_21_0::metamodel::Runtime[0..1];
+    context:meta::protocols::pure::v1_21_0::metamodel::ExecutionContext[0..1];
+    model:meta::protocols::pure::v1_21_0::metamodel::PureModelContext[1];
+}
+
+Class meta::protocols::pure::v1_21_0::metamodel::invocation::execution::execute::Result
+{
+   builder : meta::protocols::pure::v1_21_0::metamodel::invocation::execution::execute::Builder[1];
+   activities : meta::protocols::pure::v1_21_0::metamodel::invocation::execution::execute::ExecutionActivity[*];
+   generationInfo : meta::protocols::pure::v1_21_0::metamodel::invocation::execution::execute::GenerationInfo[0..1];
+}
+
+Class meta::protocols::pure::v1_21_0::metamodel::invocation::execution::execute::GenerationInfo
+{
+   generationId : String[1];
+   activatedBy : String[1];
+   activatedTimestamp : Integer[1];
+}
+
+Class meta::protocols::pure::v1_21_0::metamodel::invocation::execution::execute::ExecutionActivity
+{
+   _type : String[1];
+}
+
+Class meta::protocols::pure::v1_21_0::metamodel::invocation::execution::execute::AggregationAwareActivity extends meta::protocols::pure::v1_21_0::metamodel::invocation::execution::execute::ExecutionActivity
+{
+   rewrittenQuery : String[1];
+}
+
+
+Class meta::protocols::pure::v1_21_0::metamodel::invocation::execution::execute::Res
+{
+   columns : String[*];
+   rows : meta::protocols::pure::v1_21_0::metamodel::invocation::execution::execute::Row[*];
+}
+
+Class meta::protocols::pure::v1_21_0::metamodel::invocation::execution::execute::Builder
+{
+   _type : String[1];
+}
+
+Class meta::protocols::pure::v1_21_0::metamodel::invocation::execution::execute::TDSBuilder extends meta::protocols::pure::v1_21_0::metamodel::invocation::execution::execute::Builder
+{
+   columns : meta::protocols::pure::v1_21_0::metamodel::invocation::execution::execute::TDSColumn[*];
+}
+
+Class meta::protocols::pure::v1_21_0::metamodel::invocation::execution::execute::ClassBuilder extends meta::protocols::pure::v1_21_0::metamodel::invocation::execution::execute::Builder
+{
+   class : String[1];
+   mapping : String[1];
+   classMappings : 	meta::protocols::pure::v1_21_0::metamodel::invocation::execution::execute::ClassMappingInfo[*];
+}
+
+Class meta::protocols::pure::v1_21_0::metamodel::invocation::execution::execute::DataTypeBuilder extends meta::protocols::pure::v1_21_0::metamodel::invocation::execution::execute::Builder
+{
+   type : String[1];
+}
+
+Class meta::protocols::pure::v1_21_0::metamodel::invocation::execution::execute::ClassMappingInfo
+{
+   class : String[1];
+   setImplementationId : String[1];
+   properties : meta::protocols::pure::v1_21_0::metamodel::invocation::execution::execute::PropertyInfo[*];
+}
+
+Class meta::protocols::pure::v1_21_0::metamodel::invocation::execution::execute::PropertyInfo
+{
+   property : String[1];
+   type : String[1];
+}
+
+Class meta::protocols::pure::v1_21_0::metamodel::invocation::execution::execute::TDSColumn
+{
+   name : String[1];
+   doc : String[0..1];
+   type : String[0..1];
+   relationalType : String[0..1];
+   enumMapping : Map<String, List<String>>[0..1];
+}
+
+Class meta::protocols::pure::v1_21_0::metamodel::invocation::execution::execute::Row
+{
+   values : Any[*];
+}

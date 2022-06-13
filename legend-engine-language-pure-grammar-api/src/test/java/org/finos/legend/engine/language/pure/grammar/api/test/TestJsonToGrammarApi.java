@@ -385,7 +385,7 @@ public class TestJsonToGrammarApi
     @Test
     public void testFunctionNameWithParameters()
     {
-        String expected ="function domainModel::migration::test::account::getRowsResult(a: String[1]): meta::pure::metamodel::type::Any[*]\n" +
+        String expected = "function domainModel::migration::test::account::getRowsResult(a: String[1]): meta::pure::metamodel::type::Any[*]\n" +
                 "{\n" +
                 "   1\n" +
                 "}\n";
@@ -420,7 +420,7 @@ public class TestJsonToGrammarApi
     @Test
     public void testMetaNewFunctionWithMultiParameters()
     {
-        String expected ="Class modelA::Firm extends meta::pure::metamodel::type::Any\n" +
+        String expected = "Class modelA::Firm extends meta::pure::metamodel::type::Any\n" +
                 "{\n" +
                 "  name: String[1];\n" +
                 "  address: String[1];\n" +
@@ -446,42 +446,42 @@ public class TestJsonToGrammarApi
     @Test
     public void testDiagramWithNoGenViewsInJson()
     {
-        String expected ="###Diagram\n" +
-        "Diagram ui::testDiagram\n" +
-        "{\n" +
-        "  classView abe13f41-8b54-4013-98ea-7a8ea2e20ca9\n" +
-        "  {\n" +
-        "    class: ui::mapping::editor::domain::Something;\n" +
-        "    position: (846.9999961853027,339.98577880859375);\n" +
-        "    rectangle: (98.86376953125,55.0);\n"+
-        "  }\n" +
-        "  classView 72b5ba37-b5ac-41d1-ada5-cfe132542bc7\n" +
-        "  {\n" +
-        "    class: ui::mapping::editor::domain::Anything;\n" +
-        "    position: (314.99999618530273,387.98577880859375);\n" +
-        "    rectangle: (98.86376953125,67.0);\n" +
-        "  }\n" +
-        "  classView 2ce40294-a427-4833-b3f7-646cdbe85adb\n" +
-        "  {\n" +
-        "    class: ui::mapping::editor::domain::Other;\n" +
-        "    position: (546.9318771362305,622.4715576171875);\n" +
-        "    rectangle: (52.00390625,31.0);\n" +
-        "  }\n" +
-        "  propertyView\n" +
-        "  {\n" +
-        "    property: ui::mapping::editor::domain::Other.otherFriend;\n" +
-        "    source: 2ce40294-a427-4833-b3f7-646cdbe85adb;\n" +
-        "    target: 72b5ba37-b5ac-41d1-ada5-cfe132542bc7;\n" +
-        "    points: [(572.9338302612305,637.9715576171875),(364.43188095092773,421.48577880859375)];\n" +
-        "  }\n" +
-        "  propertyView\n" +
-        "  {\n" +
-        "    property: ui::mapping::editor::domain::Other.friend;\n" +
-        "    source: 2ce40294-a427-4833-b3f7-646cdbe85adb;\n" +
-        "    target: abe13f41-8b54-4013-98ea-7a8ea2e20ca9;\n" +
-        "    points: [(572.9338302612305,637.9715576171875),(694.5517029224175,549.2286682128906),(896.4318809509277,367.48577880859375)];\n" +
-        "  }\n" +
-        "}\n";
+        String expected = "###Diagram\n" +
+                "Diagram ui::testDiagram\n" +
+                "{\n" +
+                "  classView abe13f41-8b54-4013-98ea-7a8ea2e20ca9\n" +
+                "  {\n" +
+                "    class: ui::mapping::editor::domain::Something;\n" +
+                "    position: (846.9999961853027,339.98577880859375);\n" +
+                "    rectangle: (98.86376953125,55.0);\n" +
+                "  }\n" +
+                "  classView 72b5ba37-b5ac-41d1-ada5-cfe132542bc7\n" +
+                "  {\n" +
+                "    class: ui::mapping::editor::domain::Anything;\n" +
+                "    position: (314.99999618530273,387.98577880859375);\n" +
+                "    rectangle: (98.86376953125,67.0);\n" +
+                "  }\n" +
+                "  classView 2ce40294-a427-4833-b3f7-646cdbe85adb\n" +
+                "  {\n" +
+                "    class: ui::mapping::editor::domain::Other;\n" +
+                "    position: (546.9318771362305,622.4715576171875);\n" +
+                "    rectangle: (52.00390625,31.0);\n" +
+                "  }\n" +
+                "  propertyView\n" +
+                "  {\n" +
+                "    property: ui::mapping::editor::domain::Other.otherFriend;\n" +
+                "    source: 2ce40294-a427-4833-b3f7-646cdbe85adb;\n" +
+                "    target: 72b5ba37-b5ac-41d1-ada5-cfe132542bc7;\n" +
+                "    points: [(572.9338302612305,637.9715576171875),(364.43188095092773,421.48577880859375)];\n" +
+                "  }\n" +
+                "  propertyView\n" +
+                "  {\n" +
+                "    property: ui::mapping::editor::domain::Other.friend;\n" +
+                "    source: 2ce40294-a427-4833-b3f7-646cdbe85adb;\n" +
+                "    target: abe13f41-8b54-4013-98ea-7a8ea2e20ca9;\n" +
+                "    points: [(572.9338302612305,637.9715576171875),(694.5517029224175,549.2286682128906),(896.4318809509277,367.48577880859375)];\n" +
+                "  }\n" +
+                "}\n";
         testModelFromProtocol(expected, "diagramWithNoGenView.json");
     }
 

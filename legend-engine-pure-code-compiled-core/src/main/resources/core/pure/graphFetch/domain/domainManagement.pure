@@ -1,0 +1,120 @@
+import meta::pure::graphFetch::domain::*;
+
+function meta::pure::graphFetch::domain::extractDomainTypeClassFromFunction<T>(func:FunctionDefinition<{->T[*]}>[1]):Pair<String, FunctionDefinition<{->Any[*]}>>[*]
+{
+  let main = $func.expressionSequence->evaluateAndDeactivate();
+  if ($main->size() == 1 && $main->toOne()->instanceOf(FunctionExpression),
+    | let treeContainer = if ($main->toOne()->cast(@FunctionExpression).func == meta::pure::graphFetch::execution::graphFetch_T_MANY__RootGraphFetchTree_1__T_MANY_,
+                            | $main->cast(@FunctionExpression).parametersValues->at(1)->cast(@InstanceValue),
+                            | if ($main->toOne()->cast(@FunctionExpression).func == meta::pure::graphFetch::execution::serialize_T_MANY__RootGraphFetchTree_1__String_1_,
+                                | $main->cast(@FunctionExpression).parametersValues->at(1)->cast(@InstanceValue),
+                                | fail('GraphQL translation only supports graphFetch')
+                            )
+                          )->cast(@InstanceValue);
+      let tree = $treeContainer.values->toOne()->cast(@meta::pure::graphFetch::RootGraphFetchTree<Any>);
+      $tree->extractDomainTypeClassFromGraphFetchTree();,
+    | fail('GraphQL translation only supports graphFetch');
+  )->cast(@Pair<String,FunctionDefinition<{->Any[*]}>>);
+}
+
+function meta::pure::graphFetch::domain::extractDomainTypeClassFromGraphFetchTree(tree:meta::pure::graphFetch::RootGraphFetchTree<Any>[1]):Pair<String, FunctionDefinition<{->Any[*]}>>[*]
+{
+    let subTrees = $tree.subTrees->cast(@meta::pure::graphFetch::PropertyGraphFetchTree)->evaluateAndDeactivate();
+    let properties = $subTrees.property;
+    let result = $properties->findGetAllInQualifiedProperties();
+    if ($result->isEmpty(),
+      |fail('The system can\'t find a \'set definition\' (i.e. .all()) in any property of the query type leveraged in the tree navigation.'),
+      |if ($properties->size() == $result->size(),
+        | $result->zip($subTrees)->map(x|            
+            let parametersValueByName = $x.second.property->functionType().parameters->tail().name->zip($x.second.parameters)->newMap();
+            let newFunc = $x.first;
+            let genType = ^GenericType(rawType=meta::pure::graphFetch::RootGraphFetchTree, typeArguments=$x.first.genericType);
+            let newTree = ^InstanceValue(
+                            genericType = $genType,
+                            multiplicity = PureOne,
+                            values = ^meta::pure::graphFetch::RootGraphFetchTree<Any>
+                                     (
+                                        class = $x.first.genericType.rawType->toOne()->cast(@Class<Any>),
+                                        subTrees = $x.second.subTrees
+                                     )
+            );
+
+            let stringType = ^GenericType(rawType=String);
+           
+            let func = ^LambdaFunction<{->Any[*]}>
+            (
+              expressionSequence =
+                  ^$newFunc(
+                    func = meta::pure::graphFetch::execution::serialize_T_MANY__RootGraphFetchTree_1__String_1_,
+                    functionName = 'serialize',
+                    genericType = $stringType,
+                    resolvedTypeParameters = $stringType,
+                    parametersValues = [
+                      ^$newFunc(
+                          func = meta::pure::graphFetch::execution::graphFetch_T_MANY__RootGraphFetchTree_1__T_MANY_,
+                          functionName = 'graphFetch',
+                          genericType = $x.first.genericType,
+                          resolvedTypeParameters = $x.first.genericType,
+                          parametersValues = [
+                            $x.first->reprocessVariables($parametersValueByName),
+                            $newTree
+                          ],
+                          usageContext = []
+                        ),
+                      $newTree
+                    ],
+                    usageContext = []
+                  )
+            );
+            pair($x.second.property.name->toOne(), $func);
+
+          );,
+        | fail('All properties need to be getAll');
+      )
+    )->cast(@Pair<String, FunctionDefinition<{->Any[*]}>>);  
+}
+
+function <<access.private>> meta::pure::graphFetch::domain::findGetAllInQualifiedProperties(properties:AbstractProperty<Any>[*]):SimpleFunctionExpression[*]
+{
+  $properties->map(
+    p | if ($p->instanceOf(QualifiedProperty),
+          | let exp =  $p->cast(@QualifiedProperty<Any>).expressionSequence->evaluateAndDeactivate()->toOne();
+            let val = $exp->lookForGetAll();
+            if ($val->instanceOf(SimpleFunctionExpression) && $val->cast(@SimpleFunctionExpression).func == getAll_Class_1__T_MANY_,
+              |$exp->cast(@SimpleFunctionExpression),
+              |[]
+            );,
+          |[]
+        );
+  );
+}
+
+function <<access.private>> meta::pure::graphFetch::domain::lookForGetAll(s:ValueSpecification[1]):ValueSpecification[1]
+{
+  $s->match([
+    s:SimpleFunctionExpression[1]|if($s.func != getAll_Class_1__T_MANY_ && !$s.parametersValues->isEmpty(),
+                                      |$s.parametersValues->at(0)->lookForGetAll(),
+                                      |$s
+                                    );,
+    i:ValueSpecification[1]|$i
+  ]);
+}
+
+
+function <<access.private>> meta::pure::graphFetch::domain::reprocessVariables(vs:ValueSpecification[1], vars:Map<String, ValueSpecification>[1]):ValueSpecification[1]
+{
+   $vs->match([
+      fe : FunctionExpression[1] | ^$fe(parametersValues = $fe.parametersValues->evaluateAndDeactivate()->map(x | $x->reprocessVariables($vars))),
+      iv : InstanceValue[1] | ^$iv
+                              (
+                                 values = $iv.values->evaluateAndDeactivate()->map(val | $val->match([
+                                    l : LambdaFunction<Any>[1] | ^$l(expressionSequence = $l.expressionSequence->evaluateAndDeactivate()->at(0)->reprocessVariables($vars)),
+                                    v : ValueSpecification[1] | $v->reprocessVariables($vars),
+                                    a : Any[1] | $a
+                                 ]))
+
+                              ),
+      ve : VariableExpression[1] | let resolved = $vars->get($ve.name); if($resolved->isEmpty(), | $ve, | $resolved->toOne());,
+      v  : ValueSpecification[1] | $v
+   ]);
+}

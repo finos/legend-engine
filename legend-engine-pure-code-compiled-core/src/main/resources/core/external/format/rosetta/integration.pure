@@ -1,0 +1,33 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::format::rosetta::generation::*;
+import meta::pure::generation::metamodel::*;
+
+Class meta::external::format::rosetta::generation::RosettaConfig extends GenerationConfiguration
+{
+   // TODO delete as scopeElements will take care of this
+   classes: Class<Any>[*];
+   enums : Enumeration<Any>[*];
+}
+
+function <<access.private, Generation.Configuration>>  meta::external::format::rosetta::generation::describeConfiguration():GenerationParameter[*]
+{
+  meta::pure::generation::describeConfiguration(RosettaConfig,meta::external::format::rosetta::generation::defaultConfig__RosettaConfig_1_, ['classes', 'enums']);
+}
+
+function  meta::external::format::rosetta::generation::defaultConfig():RosettaConfig[1]
+{
+    ^RosettaConfig(classes= [],enums=[]);
+}

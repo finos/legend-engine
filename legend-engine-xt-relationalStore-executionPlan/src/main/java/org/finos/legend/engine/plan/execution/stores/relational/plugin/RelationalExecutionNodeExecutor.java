@@ -16,19 +16,6 @@ package org.finos.legend.engine.plan.execution.stores.relational.plugin;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.finos.legend.engine.plan.execution.stores.relational.RelationalDatabaseCommandsVisitorBuilder;
-import org.finos.legend.engine.plan.execution.stores.relational.RelationalExecutor;
-import org.finos.legend.engine.plan.execution.stores.relational.activity.AggregationAwareActivity;
-import org.finos.legend.engine.plan.execution.stores.relational.blockConnection.BlockConnection;
-import org.finos.legend.engine.plan.execution.stores.relational.blockConnection.BlockConnectionContext;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
-
-import org.finos.legend.engine.plan.execution.stores.relational.result.PreparedTempTableResult;
-import org.finos.legend.engine.plan.execution.stores.relational.result.ResultColumn;
-import org.finos.legend.engine.plan.execution.stores.relational.result.ResultInterpreterExtension;
-import org.finos.legend.engine.plan.execution.stores.relational.result.TempTableStreamingResult;
-import org.finos.legend.engine.plan.execution.stores.relational.result.graphFetch.RelationalGraphObjectsBatch;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
@@ -45,7 +32,13 @@ import org.finos.legend.engine.plan.dependencies.domain.graphFetch.IGraphInstanc
 import org.finos.legend.engine.plan.dependencies.store.relational.IRelationalCreateAndPopulateTempTableExecutionNodeSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.relational.IRelationalResult;
 import org.finos.legend.engine.plan.dependencies.store.relational.classResult.IRelationalClassInstantiationNodeExecutor;
-import org.finos.legend.engine.plan.dependencies.store.relational.graphFetch.*;
+import org.finos.legend.engine.plan.dependencies.store.relational.graphFetch.IRelationalChildGraphNodeExecutor;
+import org.finos.legend.engine.plan.dependencies.store.relational.graphFetch.IRelationalClassQueryTempTableGraphFetchExecutionNodeSpecifics;
+import org.finos.legend.engine.plan.dependencies.store.relational.graphFetch.IRelationalCrossRootGraphNodeExecutor;
+import org.finos.legend.engine.plan.dependencies.store.relational.graphFetch.IRelationalCrossRootQueryTempTableGraphFetchExecutionNodeSpecifics;
+import org.finos.legend.engine.plan.dependencies.store.relational.graphFetch.IRelationalPrimitiveQueryGraphFetchExecutionNodeSpecifics;
+import org.finos.legend.engine.plan.dependencies.store.relational.graphFetch.IRelationalRootGraphNodeExecutor;
+import org.finos.legend.engine.plan.dependencies.store.relational.graphFetch.IRelationalRootQueryTempTableGraphFetchExecutionNodeSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.shared.IReferencedObject;
 import org.finos.legend.engine.plan.execution.cache.ExecutionCache;
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCacheByEqualityKeys;
@@ -64,12 +57,54 @@ import org.finos.legend.engine.plan.execution.result.graphFetch.GraphFetchResult
 import org.finos.legend.engine.plan.execution.result.graphFetch.GraphObjectsBatch;
 import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResult;
 import org.finos.legend.engine.plan.execution.stores.StoreType;
+import org.finos.legend.engine.plan.execution.stores.relational.RelationalDatabaseCommandsVisitorBuilder;
+import org.finos.legend.engine.plan.execution.stores.relational.RelationalExecutor;
+import org.finos.legend.engine.plan.execution.stores.relational.activity.AggregationAwareActivity;
+import org.finos.legend.engine.plan.execution.stores.relational.blockConnection.BlockConnection;
+import org.finos.legend.engine.plan.execution.stores.relational.blockConnection.BlockConnectionContext;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.result.FunctionHelper;
+import org.finos.legend.engine.plan.execution.stores.relational.result.PreparedTempTableResult;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RealizedRelationalResult;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
+import org.finos.legend.engine.plan.execution.stores.relational.result.ResultColumn;
+import org.finos.legend.engine.plan.execution.stores.relational.result.ResultInterpreterExtension;
 import org.finos.legend.engine.plan.execution.stores.relational.result.SQLExecutionResult;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.*;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.*;
+import org.finos.legend.engine.plan.execution.stores.relational.result.TempTableStreamingResult;
+import org.finos.legend.engine.plan.execution.stores.relational.result.graphFetch.RelationalGraphObjectsBatch;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.AggregationAwareExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.AllocationExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ConstantExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.CreateAndPopulateTempTableExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ErrorExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNodeVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.FreeMarkerConditionalExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.FunctionParametersValidationNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.GraphFetchM2MExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.JavaPlatformImplementation;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.MultiResultSequenceExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.PureExpressionPlatformExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalBlockExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalClassInstantiationExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalDataTypeInstantiationExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalRelationDataInstantiationExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalTdsInstantiationExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SQLExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SequenceExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.GlobalGraphFetchExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.GraphFetchExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.LocalGraphFetchExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.RelationalClassQueryTempTableGraphFetchExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.RelationalCrossRootGraphFetchExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.RelationalCrossRootQueryTempTableGraphFetchExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.RelationalGraphFetchExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.RelationalPrimitiveQueryGraphFetchExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.RelationalRootGraphFetchExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.RelationalRootQueryTempTableGraphFetchExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.RelationalTempTableGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.InMemoryCrossStoreGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.InMemoryPropertyGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.InMemoryRootGraphFetchExecutionNode;
@@ -88,7 +123,17 @@ import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.ServiceLoader;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -101,7 +146,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
 {
     private final ExecutionState executionState;
     private final MutableList<CommonProfile> profiles;
-    private MutableList<Function2<ExecutionState, List<Map<String, Object>>,Result>> resultInterpreterExtensions;
+    private MutableList<Function2<ExecutionState, List<Map<String, Object>>, Result>> resultInterpreterExtensions;
 
     public RelationalExecutionNodeExecutor(ExecutionState executionState, MutableList<CommonProfile> profiles)
     {
@@ -1162,9 +1207,11 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
 
             boolean isUnion = setIdCount > 1;
             AtomicLong batchIndex = new AtomicLong(0L);
-            Spliterator<GraphObjectsBatch> graphObjectsBatchSpliterator = new Spliterators.AbstractSpliterator<GraphObjectsBatch>(Long.MAX_VALUE, Spliterator.ORDERED) {
+            Spliterator<GraphObjectsBatch> graphObjectsBatchSpliterator = new Spliterators.AbstractSpliterator<GraphObjectsBatch>(Long.MAX_VALUE, Spliterator.ORDERED)
+            {
                 @Override
-                public boolean tryAdvance(Consumer<? super GraphObjectsBatch> action) {
+                public boolean tryAdvance(Consumer<? super GraphObjectsBatch> action)
+                {
 
                     /* Ensure all children run in the same connection */
                     RelationalStoreExecutionState relationalStoreExecutionState = (RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational);
@@ -1186,7 +1233,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                         {
                             relationalGraphObjectsBatch.incrementRowCount();
 
-                            int setIndex = isUnion ? rootResultSet.getInt(1): 0;
+                            int setIndex = isUnion ? rootResultSet.getInt(1) : 0;
                             Object cachedObject = RelationalExecutionNodeExecutor.this.checkAndReturnCachedObject(cachingEnabledForNode, setIndex, multiSetCache);
                             boolean shouldDeepFetchOnThisInstance = cachedObject == null;
                             Object object;
@@ -1243,7 +1290,8 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                             }
                         }
 
-                        instancesToDeepFetchAndCache.stream().filter(x -> x.getTwo() != null).forEach(x -> {
+                        instancesToDeepFetchAndCache.stream().filter(x -> x.getTwo() != null).forEach(x ->
+                        {
                             Object object = x.getOne().getValue();
                             x.getTwo().put(new RelationalGraphFetchUtils.RelationalObjectGraphFetchCacheKey(object, primaryKeyGetters), object);
                         });
@@ -1400,7 +1448,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                 relationalGraphObjectsBatch.incrementRowCount();
 
                 Object child;
-                int setIndex = isUnion ? childResultSet.getInt(1): 0;
+                int setIndex = isUnion ? childResultSet.getInt(1) : 0;
                 Object cachedObject = RelationalExecutionNodeExecutor.this.checkAndReturnCachedObject(cachingEnabledForNode, setIndex, multiSetCache);
                 boolean shouldDeepFetchOnThisInstance = cachedObject == null;
 
@@ -1453,7 +1501,8 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                 this.executeTempTableNodeChildren(node, realizedRelationalResult, databaseConnection, childSqlResult.getDatabaseType(), childSqlResult.getDatabaseTimeZone(), currentMap, primaryKeyGetters, this.executionState);
             }
 
-            childInstancesToDeepFetchAndCache.stream().filter(x -> x.getTwo() != null).forEach(x -> {
+            childInstancesToDeepFetchAndCache.stream().filter(x -> x.getTwo() != null).forEach(x ->
+            {
                 Object object = x.getOne().getValue();
                 x.getTwo().put(new RelationalGraphFetchUtils.RelationalObjectGraphFetchCacheKey(object, primaryKeyGetters), object);
             });
@@ -1628,7 +1677,8 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                     if (cachingEnabled)
                     {
                         List<Method> getters = parentCrossKeyGettersOrderedPerTargetProperties;
-                        parentToChildMap.forEach((p, cs) -> {
+                        parentToChildMap.forEach((p, cs) ->
+                        {
                             crossCache.put(
                                     new RelationalGraphFetchUtils.RelationalCrossObjectGraphFetchCacheKey(p, getters),
                                     cs

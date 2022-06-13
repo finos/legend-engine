@@ -41,7 +41,8 @@ public abstract class DbSpecificTests
         MutableList<Future<Boolean>> result = FastList.newList();
         for (int i = 0; i < 30; i++)
         {
-            result.add(executor.submit(() -> {
+            result.add(executor.submit(() ->
+            {
                 try (Statement st = connection.createStatement();
                      ResultSet resultSet = st.executeQuery(sqlExpression))
                 {

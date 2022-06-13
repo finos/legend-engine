@@ -22,7 +22,7 @@ import java.util.Optional;
 public class XsdAnyAttribute extends XsdAnnotated
 {
     public List<String> namespace;
-    public XsdContentProcessing processContents ;
+    public XsdContentProcessing processContents;
 
     @Override
     public void accept(XsdObjectVisitor visitor)

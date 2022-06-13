@@ -16,31 +16,36 @@ import meta::relational::runtime::*;
 import meta::relational::dbTestRunner::*;
 import meta::relational::tests::dbSpecificTests::H2::*;
 import meta::pure::alloy::connections::*;
+import meta::pure::test::*;
 
-function <<test.Test>> meta::relational::tests::dbSpecificTests::snowflake::runSQLQueryTests():Boolean[1]
+
+function <<test.TestCollection>> meta::relational::tests::dbSpecificTests::snowflake::runSQLQueryTestsParam(): PureTestCollection[1]
 {
   let connection = meta::relational::dbTestRunner::getTestConnection(DatabaseType.Snowflake, meta::pure::router::extension::defaultRelationalExtensions());
   
-  let allTests = collectTests(meta::relational::tests::dbSpecificTests::sqlQueryTests);
-  
+  meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions
+          ->collectParameterizedTests('Snowflake',
+                ^DbTestConfig(dbType=DatabaseType.Snowflake, connection=$connection), [],
+                meta::relational::tests::dbSpecificTests::snowflake::runSQLQueryTestsParamFilter_FunctionDefinition_1__Boolean_1_
+                );
+}
+
+
+function meta::relational::tests::dbSpecificTests::snowflake::runSQLQueryTestsParamFilter(f:FunctionDefinition<Any>[1]):Boolean[1]
+{
+  // currently hardcoding unsupported funcs, In future fetch this from db extensions and skip
   let unsupportedDynaFunctions = ['dayOfMonth'];
 
-  let failingSupportedDynaFunctions =[
-    'sqlTrue','sqlFalse',
-    'second' , 'minute' , 'hour' , 'dayOfWeekNumber' ,'weekOfYear' ,'month', 'monthNumber', 'quarter', 'quarterNumber', 'year',            // SnowflakeSQLException: SQL compilation error: Function EXTRACT does not support VARCHAR(19) argument type"
-    'dateDiff',               // select datediff(,'2014-12-04 14:22:23','2014-12-04 15:22:23')'    for MilloSeconds , okay for seconds, minutes, hours etc
-    'firstDayOfWeek',         // Error : SnowflakeSQLException: SQL compilation error:Function DATE_TRUNC does not support VARCHAR(19) argument type,  SQL generated: select DATE_TRUNC('WEEK', '2014-12-04 15:22:23')
-    'previousDayOfWeek',
-    'firstDayOfMonth',
-    'firstDayOfQuarter',
-    'firstDayOfYear',
-    'ceiling' ,                                             //SQL compilation error:Unknown function CEILING"
-    'datePart','mostRecentDayOfWeek'                       // time zone difference between local pure ide and snowflake hosted account
-    ];
+  //these dynafunctions need to be fixed , currently skipping to suppress github integration test failures
+  let failingSupportedDynaFunctions = [ 'ceiling', 'dateDiff',
+                                        'firstDayOfMonth', 'firstDayOfWeek', 'firstDayOfYear', 'firstDayOfQuarter',
+                                        'hour', 'minute', 'month', 'monthNumber', 'quarter' , 'quarterNumber' , 'previousDayOfWeek' , 'second' , 'weekOfYear' ,'year' , 'dayOfWeekNumber',
+                                        'datePart', 'mostRecentDayOfWeek', 'sqlFalse', 'sqlTrue'
+                                      ];
 
   let ignoredTests= $unsupportedDynaFunctions->concatenate($failingSupportedDynaFunctions)->map(dynaFuncName |
               let dynaFuncPackageName = 'meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::' + $dynaFuncName;
               $dynaFuncPackageName->pathToElement()->cast(@Package)->collectTests(););
-              
-  runTestsWith($allTests, $ignoredTests, DatabaseType.Snowflake, $connection,  []);
+
+  !$ignoredTests->contains($f);
 }

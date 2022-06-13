@@ -1,4 +1,4 @@
-# Copyright 2020 FINOS
+# Copyright 2022 Goldman Sachs
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ env:
 
 on:
   schedule:
-    - cron: '0 0 * * 2' # every Tuesday on default/base branch
+    - cron: "0 0 * * 2" # every Tuesday on default/base branch
   push:
     branches:
       - master
@@ -54,11 +54,12 @@ jobs:
       - name: Download deps and plugins
         run: mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies
       - name: Build
+        env:
+          MAVEN_OPTS: -Xmx4000m
         run: mvn clean install -DskipTests=true
-      - name: Print out mvn version
-        run: mvn -v
       - name: Connection Protocol Integration Tests
         env:
+          MAVEN_OPTS: -Xmx4000m
           REDSHIFT_INTEGRATION_USER1_NAME: ${{ secrets.REDSHIFT_INTEGRATION_USER1_NAME }}
           REDSHIFT_INTEGRATION_USER1_PASSWORD: ${{ secrets.REDSHIFT_INTEGRATION_USER1_PASSWORD }}
         run: |

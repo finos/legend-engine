@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.test.runner.shared;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
 
 import java.io.IOException;
 import java.util.Comparator;
@@ -23,9 +25,6 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeType;
 
 public class JsonNodeComparator implements Comparator<JsonNode>
 {

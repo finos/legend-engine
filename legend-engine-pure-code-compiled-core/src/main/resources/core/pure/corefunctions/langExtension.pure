@@ -1,0 +1,83 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+function meta::pure::functions::boolean::isTrue(value:Boolean[0..1]):Boolean[1]
+{
+    !$value->isEmpty() && $value->toOne();
+}
+
+function meta::pure::functions::boolean::isFalse(value:Boolean[0..1]):Boolean[1]
+{
+    !$value->isEmpty() && !$value->toOne();
+}
+
+function meta::pure::functions::lang::orElse<T>(maybe:T[0..1], dflt:T[1]):T[1]
+{
+    if($maybe->isEmpty(), |$dflt, |$maybe->toOne());
+}
+
+function meta::pure::functions::lang::mayRemoveOverride<T>(value:T[0..1]):T[0..1]
+{
+   if ($value->isEmpty(),|$value,|$value->toOne()->removeOverride());
+}
+
+function meta::pure::functions::lang::identity<T|m>(any:T[m]):T[m]
+{
+    $any
+}
+
+function meta::pure::functions::lang::stringIdentity(s:String[1]):String[1]
+{
+    $s;
+}
+
+function meta::pure::functions::lang::subType<T|m>(source:Any[m], object:T[1]):T[m]
+{
+   fail('Not implemented yet');
+   $source->cast($object);
+}
+
+/*
+ * whenSubType is a temporary alternative to allow migration from the existing subType which is 
+ * wrongly defined in terms of multiplicity.  Once all code is migrated to use whenSubType the 
+ * naming can be flipped back to subType.
+ *
+ * subType (and now whenSubType) functions are not implemented yet due to limitations on the use
+ * of the @Type syntax in compiled mode.  In compiled mode this reduces to null and so it's not 
+ * possible to recover type information from it.  If this is fixed these should work (they do in 
+ * interpreted mode)  and the libary implementation in M2M can be removed as it will then 
+ * impelement these automatically.
+ */
+function meta::pure::functions::lang::whenSubType<T>(source:Any[1], object:T[1]):T[0..1]
+{
+   fail('Not implemented yet');
+   let type = $object->type();
+   $source->filter(x| $x->instanceOf($type))->first()->cast($object);
+}
+
+function meta::pure::functions::lang::whenSubType<T>(source:Any[0..1], object:T[1]):T[0..1]
+{
+   fail('Not implemented yet');
+   let type = $object->type();
+   $source->filter(x| $x->instanceOf($type))->first()->cast($object);
+}
+
+function meta::pure::functions::lang::whenSubType<T>(source:Any[*], object:T[1]):T[*]
+{
+   fail('Not implemented yet');
+   let type = $object->type();
+   $source->filter(x| $x->instanceOf($type))->cast($object);
+}
+
+

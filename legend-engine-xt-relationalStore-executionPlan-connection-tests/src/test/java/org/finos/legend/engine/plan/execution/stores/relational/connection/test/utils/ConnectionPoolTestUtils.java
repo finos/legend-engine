@@ -47,7 +47,7 @@ public class ConnectionPoolTestUtils
     public static ConcurrentMutableMap<ConnectionKey, DataSourceSpecification> getDataSourceSpecifications() throws Exception
     {
         ConcurrentMutableMap<ConnectionKey, DataSourceSpecification> dataSourceSpecifications = ConcurrentHashMap.newMap();
-        getConnectionPools().valuesView().forEach(pool-> dataSourceSpecifications.putIfAbsent(pool.getConnectionKey(),pool.getDataSourceSpecification()));
+        getConnectionPools().valuesView().forEach(pool -> dataSourceSpecifications.putIfAbsent(pool.getConnectionKey(), pool.getDataSourceSpecification()));
 
         return dataSourceSpecifications;
     }
@@ -67,7 +67,7 @@ public class ConnectionPoolTestUtils
     {
         ConnectionStateManager connectionStateManager = ConnectionStateManager.getInstance();
         Identity identity = IdentityFactoryProvider.getInstance().makeIdentityForTesting(identityName);
-        Stream<String> poolNames = connectionKeys.stream().map(key -> connectionStateManager.poolNameFor(identity,key));
+        Stream<String> poolNames = connectionKeys.stream().map(key -> connectionStateManager.poolNameFor(identity, key));
         List<DataSourceWithStatistics> connectionPoolsForUser = poolNames
                 .map(poolName -> connectionStateManager.get(poolName))
                 .filter(Objects::nonNull)

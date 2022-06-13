@@ -1,0 +1,51 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::functions::tests::model::*;
+import meta::pure::profiles::*;
+
+function <<test.Test>> meta::pure::functions::collection::tests::filter::testFilterLiteral():Boolean[1]
+{
+    assertEquals(['Doe'], ['Smith', 'Doe', 'Branche']->filter(s | eq($s->length(), 3)));
+    assertEquals(['Branche', 'Doe'], ['Smith', 'Branche', 'Doe']->filter(s | $s != 'Smith'));
+}
+
+function <<test.Test>> meta::pure::functions::collection::tests::filter::testFilterLiteralFromVar():Boolean[1]
+{
+    let set = ['Smith', 'Branche', 'Doe'];
+    assertEquals(['Smith', 'Doe'], $set->filter(s | $s->length() < 6));
+}
+
+function <<test.Test>> meta::pure::functions::collection::tests::filter::testLambdaAsFunctionParameter():Boolean[1]
+{
+    assertEquals(['Doe'], filter(['Smith', 'Doe', 'Branche'], s | eq($s->length(), 3)));
+}
+
+function <<test.Test>> meta::pure::functions::collection::tests::filter::testFilterInstance():Boolean[1]
+{
+    let smith = ^Person(firstName='Fabrice', lastName='Smith');
+    let doe = ^Person(firstName='Pierre', lastName='Doe');
+    let branche = ^Person(firstName='Justin', lastName='Branche');
+    assertEquals([$smith, $doe], [$smith, $branche, $doe]->filter(p | !$p.lastName->isEmpty() && ($p.lastName->toOne()->length() < 6)));
+}
+
+
+function <<test.Test>> meta::pure::functions::collection::tests::filter::testFilterUsingVarForFunction():Boolean[1]
+{
+    let smith = ^Person(firstName='Fabrice', lastName='Smith');
+    let doe = ^Person(firstName='Pierre', lastName='Doe');
+    let branche = ^Person(firstName='Justin', lastName='Branche');
+    let f = {p:Person[1] | !$p.lastName->isEmpty() && ($p.lastName->toOne()->length() < 6)};
+    assertEquals([$smith, $doe], [$smith, $branche, $doe]->filter($f));
+}

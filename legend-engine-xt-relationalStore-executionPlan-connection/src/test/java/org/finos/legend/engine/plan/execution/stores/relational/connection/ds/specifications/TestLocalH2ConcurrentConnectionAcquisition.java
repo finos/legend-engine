@@ -14,11 +14,22 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications;
 
+import com.zaxxer.hikari.pool.HikariProxyConnection;
+import org.eclipse.collections.impl.factory.Lists;
+import org.finos.legend.engine.authentication.credential.CredentialSupplier;
+import org.finos.legend.engine.authentication.demoflows.H2LocalWithDefaultUserPasswordFlow;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.TestDatabaseAuthenticationStrategy;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Manager;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
+import org.h2.jdbc.JdbcConnection;
+import org.junit.Test;
+
+import javax.security.auth.Subject;
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -34,22 +45,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import javax.security.auth.Subject;
-
-import com.zaxxer.hikari.pool.HikariProxyConnection;
-import org.eclipse.collections.impl.factory.Lists;
-import org.finos.legend.engine.authentication.credential.CredentialSupplier;
-import org.finos.legend.engine.authentication.demoflows.H2LocalWithDefaultUserPasswordFlow;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.RelationalExecutorInfo;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.TestDatabaseAuthenticationStrategy;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Manager;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.LocalH2DataSourceSpecificationKey;
-import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.credential.PlaintextUserPasswordCredential;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
-import org.h2.jdbc.JdbcConnection;
-import org.junit.Ignore;
-import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 public class TestLocalH2ConcurrentConnectionAcquisition
@@ -89,12 +84,12 @@ public class TestLocalH2ConcurrentConnectionAcquisition
         assertEquals(10, workerNames.size());
 
         Map<String, H2WorkerState> statesByThread = workerStates.stream().collect(Collectors.toMap(ws -> ws.name, Function.identity()));
-        for (int i = 0 ; i < 10; i++)
+        for (int i = 0; i < 10; i++)
         {
             String threadName = String.format("worker-%d", i);
             String expected = String.format("worker-%d_data0,worker-%d_data1", i, i);
             String actual = statesByThread.get(threadName).data.stream().collect(Collectors.joining(","));
-            assertEquals("Mismatch in data for worker "+ threadName, expected, actual);
+            assertEquals("Mismatch in data for worker " + threadName, expected, actual);
         }
     }
 

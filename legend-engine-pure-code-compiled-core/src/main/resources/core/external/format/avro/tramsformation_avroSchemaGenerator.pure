@@ -1,0 +1,287 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::json::*;
+import meta::pure::generation::*;
+import meta::pure::generation::metamodel::*;
+import meta::external::format::avro::generation::*;
+import meta::external::format::avro::metamodel::*;
+import meta::external::format::avro::serialization::*;
+
+function  meta::external::format::avro::generation::transform(input: AvroConfig[1]): AvroOutput[*]
+{
+  meta::legend::test::mayExecuteLegendTest(
+       {clientVersion, serverVersion, serializationKind, host, port|
+                   let fStr = 'meta::protocols::pure::'+$clientVersion+'::invocation::generation::avro::legendGenerateAvro_AvroConfig_1__String_1__Integer_1__String_1__AvroOutput_MANY_';
+                   let xf = $fStr->pathToElement()->cast(@Function<{AvroConfig[1], String[1], Integer[1], String[1]->AvroOutput[*]}>);
+                   $xf->evaluate([$input, $host, $port, $serverVersion]->map(v|list($v)))->toOneMany()->cast(@AvroOutput);},
+       | meta::external::format::avro::generation::internal_transform($input)
+    )->toOneMany();   
+}
+
+function <<access.private,Generation.Transformation>> meta::external::format::avro::generation::internal_transform(input: AvroConfig[1]): AvroOutput[*]
+{
+   assertFalse($input.class->isEmpty(),'a class must be provided to avro transform');
+   let possibleElement = forgivingPathToElement($input.class->toOne());
+   assertNotEmpty($possibleElement, | $input.class->toOne() + ' was not found');    
+   assertFalse($possibleElement->size()>1, | $input.class->toOne() + ' more than one found ');
+   $input->meta::external::format::avro::generation::generateAvroFromPure($possibleElement->toOne()->cast(@Class<Any>));
+}
+
+
+
+Class meta::external::format::avro::generation::AvroState
+{
+   seenNames: Map<AvroSchemaName, AvroSchema>[1];
+}
+
+Profile meta::external::format::avro::generation::Avro
+{
+   stereotypes:[
+        ignore
+   ];
+   tags:[
+        default,
+        type
+   ];
+}
+
+function <<access.protected>> meta::external::format::avro::generation::versionedClassToAavroSchema(versionedClassName: String[1], packageOverride: String[1], prettyJSON: Boolean[1]): String[1]
+{
+   let versionedClass = $versionedClassName->meta::pure::functions::meta::pathToElement()->cast(@Class<Any>);
+   let package = $packageOverride->meta::pure::functions::meta::pathToElement()->cast(@Package);
+
+   let namespace = $versionedClass.package->toOne()->elementToPath('.');
+   let namespaceOverride = $package->elementToPath('.');
+
+   let schemaInJSON = meta::external::format::avro::generation::classToAvroSchema($versionedClass, ^AvroConfig(namespaceOverride=[pair($namespace, $namespaceOverride)]->newMap()))->meta::external::format::avro::serialization::avroSchemaToJSON();
+
+   if($prettyJSON, |$schemaInJSON->toPrettyJSONString(), |$schemaInJSON->toCompactJSONString());
+}
+
+function meta::external::format::avro::generation::generateAvroFromPureWithScope(config: AvroConfig[1]): AvroOutput[*]
+{
+   $config.scopeElements->filter(e| !$e->instanceOf(Package))->map(e|assert($e->instanceOf(Type),' Avro generation of ' + $e->type().name->toOne()+ ' is not currently supported. Tried to generate avro for '+ $e->elementToPath()) ;);
+   let scopeElements = $config.allPackageScopeElements()->filter(p|$p->instanceOf(Class))->cast(@Class<Any>);
+   $scopeElements->map(c| $config->meta::external::format::avro::generation::generateAvroFromPure($c));
+}
+
+function meta::external::format::avro::generation::generateAvroFromPure(config: AvroConfig[1], class: Class<Any>[1]): AvroOutput[*]
+{
+   let content = $class->meta::external::format::avro::generation::classToAvroSchema($config)->avroSchemaToJSON()->toCompactJSONString();
+   ^AvroOutput(content=$content,fileName=$class->elementToPath()->pathToFileName('avro'), format='json');
+}
+
+function meta::external::format::avro::generation::classToAvroSchema(class: Class<Any>[1], config: AvroConfig[1]): AvroSchema[1]
+{
+   $class->classToAvroSchma(^AvroState(seenNames=newMap([]->cast(@Pair<AvroSchemaName, AvroSchema>))), $config).first;
+}
+
+function <<access.private>> meta::external::format::avro::generation::propertyToAvroSchema(property: AbstractProperty<Any>[1], state: AvroState[1], config: AvroConfig[1]): Pair<AvroSchema, AvroState>[1]
+{
+   let propertyType = $property.genericType.rawType->toOne();
+   let avroSchemaAndState = $propertyType->match([
+      p: PrimitiveType[1]| 
+         let avroType = $property.taggedValues->filter(t| $t.tag.profile==Avro && $t.tag.value=='type')->map(t| $t.value)->last();
+         pair($p->primitiveTypeToAvroSchema($avroType, $config)->toOne(), $state);,
+      e: Enumeration<Any>[1]| $e->enumerationToAvroSchema($state, $config),
+      c: Class<Any>[1]| $c->classToAvroSchma($state, $config)
+   ]);
+
+   let isArray = if($property.multiplicity->hasUpperBound(), |$property.multiplicity->getUpperBound()>1,| true);
+   let avroSchema = if($isArray, |^AvroArraySchema(elementType=$avroSchemaAndState.first),|
+                      if($property.multiplicity->isZeroOne(), 
+                           | if($avroSchemaAndState.first->instanceOf(AvroUnionSchema), |
+                                     ^AvroUnionSchema(types=^AvroNullSchema()->union($avroSchemaAndState.first->cast(@AvroUnionSchema).types)),|
+                                     ^AvroUnionSchema(types=[^AvroNullSchema(), $avroSchemaAndState.first])
+                              ),
+                       | $avroSchemaAndState.first)
+                     );
+   pair($avroSchema, $avroSchemaAndState.second);
+}
+
+function <<access.private>> meta::external::format::avro::generation::primitiveTypeToAvroSchema(type: PrimitiveType[1], avroType: String[0..1], config: AvroConfig[1]): AvroSchema[0..1]
+{
+   if ($type == String, | ^AvroStringSchema(), |
+      if ($type == Float, | if($avroType->isNotEmpty() && $avroType->toOne() =='float',|^AvroFloatSchema(), |^AvroDoubleSchema()), |
+         if ($type == Boolean, | ^AvroBooleanSchema(), |
+            if ($type == Integer, | if($avroType->isNotEmpty() && $avroType->toOne() =='int',|^AvroIntSchema(), |^AvroLongSchema()), |
+               if ($type == Number, | ^AvroUnionSchema(types=[^AvroDoubleSchema(), ^AvroLongSchema()]), |
+                   if ($type == StrictDate, | ^AvroIntSchema(logicalType=^LogicalType(name='date')), |
+                       if ($type == Date || $type == DateTime , | ^AvroLongSchema(logicalType=^LogicalType(name=$config.timestampLogicalType())), |
+                           if ($type == Decimal, | ^AvroStringSchema(), |
+                     fail('Primitive Type '+ $type->toString() + ' is not supported.');[];
+   ))))))));
+}
+
+function <<access.private>> meta::external::format::avro::generation::enumerationToAvroSchema(enumeration: Enumeration<Any>[1], state: AvroState[1], config: AvroConfig[1]): Pair<AvroSchema,AvroState>[1]
+{
+   let name = $enumeration->enumerationToName($config);
+   if($state.seenNames->keys()->contains($name), |
+      pair(^AvroEnumSchema(name=$name), $state), |
+      let doc =$enumeration->cast(@ElementWithTaggedValues).taggedValues->filter(t| $t.tag.profile==doc && $t.tag.value=='doc')->map(t| $t.value);
+      let schema = ^AvroEnumSchema(name=$name, doc=if($doc->isEmpty(),|[],|$doc->toOne()), symbols=$enumeration->enumValues()->map(v|$v->cast(@Enum).name), props=$enumeration->cast(@AnnotatedElement)->elementToCustomAvroProperty($config));
+      pair($schema, ^$state(seenNames=$state.seenNames->put($name, $schema))););
+}
+
+function <<access.private>> meta::external::format::avro::generation::classToAvroSchma(class: Class<Any>[1], state: AvroState[1], config: AvroConfig[1]): Pair<AvroSchema,AvroState>[1]
+{
+   let specifics = $class.specializations.specific->cast(@Class<Any>);
+   if($specifics->isNotEmpty(), 
+      | let c = $class->classToRecord($state,$config);
+        let res = $specifics->fold({s, r|let l=$r.first; let ts = $s->classToAvroSchma($r.second, $config);
+                                   pair(^$l(values+=$ts.first), $ts.second);}, pair(^List<AvroSchema>(), $c.second)); 
+      pair(^AvroUnionSchema(types=$c.first->concatenate($res.first.values))
+                         , $res.second);, 
+      |  $class->classToRecord($state,$config);
+         
+      );
+}
+
+
+function <<access.private>> meta::external::format::avro::generation::classToRecord(class: Class<Any>[1], state: AvroState[1], config: AvroConfig[1]): Pair<AvroSchema,AvroState>[1]
+{
+    let name = $class->classToName($config);
+
+   if($state.seenNames->keys()->contains($name), 
+     |pair(^AvroRecordSchema(name=$name), $state),
+     |       
+         
+         let st = ^$state(seenNames=$state.seenNames->put($name, ^AvroRecordSchema(name=$name)));
+         let doc =$class.taggedValues->filter(t| $t.tag.profile==doc && $t.tag.value=='doc')->map(t| $t.value);
+         let schemaAndState = $class->propertiesFromClass($config)
+            ->fold({p, c|  let ts=$p->propertyToAvroSchema($c.second, $config);
+                           let defaultNull = if($ts.first->instanceOf(AvroUnionSchema) && $ts.first->cast(@AvroUnionSchema).types->first()->toOne()->instanceOf(AvroNullSchema), | ^JSONNull(), |[]);
+                           let default = $p.taggedValues->filter(t| $t.tag.profile==Avro && $t.tag.value=='default')->map(t| $t.value);
+                           let defaultValue = if($default->isEmpty(), |$defaultNull, |$default->toOne()->defaultValue($ts.first));
+                           let field=^AvroSchemaField(name=$p.name->toOne(), 
+                                                     schema=$ts.first, 
+                                                     default=$defaultValue, 
+                                                     props=$p->elementToCustomAvroProperty($config),
+                                                     logicalType = $p->getLogicalType($config)
+                                                     );
+                           let l=$c.first;
+                           ^$c(first=^$l(values+=$field), second=$ts.second);},
+                           pair(^List<AvroSchemaField>(), $st)
+                  );
+         let schema = ^AvroRecordSchema(name=$name, 
+                                        doc=if($doc->isEmpty(),|[],|$doc->toOne()), 
+                                        fields=$schemaAndState.first.values,
+                                        props=$class->elementToCustomAvroProperty($config)
+                                       );
+         let newState = $schemaAndState.second;
+         pair($schema, ^$newState(seenNames=$newState.seenNames->put($name, $schema)));
+
+   );
+}
+function <<access.private>> meta::external::format::avro::generation::getLogicalType(property: AbstractProperty<Any>[1], config: AvroConfig[1]): LogicalType[0..1]
+{
+   $property.genericType.rawType -> match(
+      [
+        {c:Class<Any>[1] | 
+            let specializations = allSpecializations($c);
+           if($config.generateLogicalTypes() && ( $c -> isAbstract() || ($specializations -> size() > 1)), 
+               | ^LogicalType(name=$c->classToName($config).name()) , 
+               | []
+           );
+        },
+        {a:Any[1] | []}      
+      ]
+   );
+}
+
+function <<access.private>> meta::external::format::avro::generation::enumerationToName(enumeration: Enumeration<Any>[1], config: AvroConfig[1]): AvroSchemaName[1]
+{
+   let namespace = if($config.includeNamespace(), | possiblyOverrideNamespace(elementToPath($enumeration->cast(@PackageableElement).package->toOne(),'.'), $config), |[]);
+   ^AvroSchemaName(name=$enumeration->enumName(), space=$namespace);
+}
+
+function <<access.private>> meta::external::format::avro::generation::classToName(class: Class<Any>[1], config: AvroConfig[1]): AvroSchemaName[1]
+{
+   let namespace = if($config.includeNamespace(), | possiblyOverrideNamespace(elementToPath($class.package->toOne(),'.'), $config), |[]);
+   ^AvroSchemaName(name=$class.name->toOne(), space=$namespace);
+}
+
+function <<access.private>> meta::external::format::avro::generation::possiblyOverrideNamespace(namespace: String[1], config: AvroConfig[1]): String[1]
+{
+   if($config.namespaceOverride->isEmpty(), |$namespace, | 
+       let override = $config.namespaceOverride->toOne()->get($namespace)->cast(@String);
+       if ($override->isEmpty(), | $namespace, | $override->toOne()););
+}
+
+function <<access.private>> meta::external::format::avro::generation::propertiesFromClass(class: Class<Any>[1], config:AvroConfig[1]): AbstractProperty<Any>[*]
+{
+   let classes = if($config.includeSuperTypes(), |
+   $class->union($class->superTypes()), |
+   $class
+   );
+   let props = $classes->map(c|
+   let props = []->concatenate($c.properties);
+
+   if($config.includeAssociations(), |$props->concatenate($c.propertiesFromAssociations)->concatenate($c.qualifiedPropertiesFromAssociations->removeDuplicatesBy({p| $p.name->toOne()})), | $props);)
+   ->meta::pure::milestoning::excludeRangeMilestoningProperty()
+   ->filter(p|!$p->hasStereotype('ignore', Avro));
+
+   if($config.includeGeneratedMilestoning(), | $props, |$props->filter(p|!$p->meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype()));
+}
+
+function <<access.private>> meta::external::format::avro::generation::superTypes(class: Class<Any>[1]): Class<Any>[*]
+{
+   $class.generalizations.general.rawType->map(rw |
+      $rw->match([
+         c:Class<Any>[1]| if($c != Any, |$c->union($c->superTypes()), | [];),
+         a:Any[1]| []
+      ])
+   );
+}
+
+function <<access.private>> meta::external::format::avro::generation::defaultValue(default: String[1], type: AvroSchema[1]): JSONElement[0..1]
+{
+   $type->match([
+      null:AvroNullSchema[1]| ^JSONNull(),
+      boolean:AvroBooleanSchema[1]| ^JSONBoolean(value=$default->parseBoolean()),
+      int:AvroIntSchema[1]| ^JSONNumber(value=$default->parseInteger()),
+      long:AvroLongSchema[1]| ^JSONNumber(value=$default->parseInteger()),
+      float:AvroFloatSchema[1]| ^JSONNumber(value=$default->parseFloat()),
+      double:AvroDoubleSchema[1]| ^JSONNumber(value=$default->parseFloat()),
+      string:AvroStringSchema[1]| ^JSONString(value=$default),
+      enum: AvroEnumSchema[1]| [], //not supported
+      array: AvroArraySchema[1]| $default->parseJSON(),
+      union: AvroUnionSchema[1]| $default->defaultValue($union.types->at(0)),
+      record: AvroRecordSchema[1]| [] //not supported
+   ]);
+}
+
+function <<access.private>> meta::external::format::avro::generation::isAvroPropertyProfile(profile: Profile[1], config: AvroConfig[1]): Boolean[1]
+{ 
+   $config.propertyProfile->contains($profile);
+}
+
+function <<access.private>> meta::external::format::avro::generation::elementToCustomAvroProperty(element: AnnotatedElement[1], config: AvroConfig[1]): JSONKeyValue[*]
+{
+  $element.taggedValues->taggedValuesToAvroProperties($config)->concatenate( $element.stereotypes->stereoTypeToAvroProperties($config));
+
+} 
+
+
+function <<access.private>> meta::external::format::avro::generation::taggedValuesToAvroProperties(taggedValues: TaggedValue[*], config: AvroConfig[1]): JSONKeyValue[*]
+{
+   $taggedValues->filter(tv|$tv.tag.profile->isAvroPropertyProfile($config))->map(tv|newJSONKeyValue($tv.tag.value, $tv.value->parseJSON()));
+}
+
+function <<access.private>> meta::external::format::avro::generation::stereoTypeToAvroProperties(stereoType: Stereotype[*], config: AvroConfig[1]): JSONKeyValue[*]
+{
+   
+   $stereoType->filter(tv|$tv.profile->isAvroPropertyProfile($config))->map(tv|newJSONKeyValue($tv.value, ^JSONBoolean(value=true)));
+}

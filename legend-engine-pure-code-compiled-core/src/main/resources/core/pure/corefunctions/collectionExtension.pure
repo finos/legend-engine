@@ -1,0 +1,318 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+Class meta::pure::functions::collection::AggregateValue<T,V,U>
+{
+   mapFn : FunctionDefinition<{T[1]->V[*]}>[1];
+   aggregateFn : FunctionDefinition<{V[*]->U[0..1]}>[1];
+}
+
+function meta::pure::functions::collection::agg<T,V,U>(mapFn:FunctionDefinition<{T[1]->V[*]}>[1], aggregateFn:FunctionDefinition<{V[*]->U[0..1]}>[1]):meta::pure::functions::collection::AggregateValue<T,V,U>[1]
+{
+   /*let expr = $mapFn.expressionSequence->at(0)->cast(@SimpleFunctionExpression)->evaluateAndDeactivate();
+   let validate = if ($expr.multiplicity->toOne()->isToOne(), 
+            | [], 
+            | if ($expr.func == map_T_MANY__Function_1__V_MANY_ && $expr.parametersValues->at(0)->cast(@SimpleFunctionExpression).func->instanceOf(Property), | [] , | fail('Currently only properties are supported as the map function when the multiplicity is toMany.'));
+              );*/
+   
+   ^meta::pure::functions::collection::AggregateValue<T,V,U>(mapFn=$mapFn, aggregateFn=$aggregateFn);
+}
+
+function meta::pure::functions::collection::isDistinct<T>(set:T[*]):Boolean[1]
+{
+   $set->removeDuplicates()->size() == $set->size();
+}
+
+function meta::pure::functions::collection::isDistinct<T>(collection:T[*], graphFetchTree:meta::pure::graphFetch::RootGraphFetchTree<T>[1]):Boolean[1]
+{
+   fail('Not implemented!');
+   true;
+}
+
+function meta::pure::functions::collection::isEqual<T>(c1:T[1], c2:T[1], graphFetchTree:meta::pure::graphFetch::RootGraphFetchTree<T>[1]):Boolean[1]
+{
+   fail('Not implemented!');
+   true;
+}
+
+function meta::pure::functions::collection::objectReferenceIn(value:Any[1], collection:String[*]):Boolean[1]
+{
+   fail('UnSupported Operation: Only Supported via Plans');
+   false;
+}
+
+function meta::pure::functions::collection::parseObjectReferences(objectReferences:String[*], storeType:String[1], args:Any[*]):Any[*]
+{
+   fail('UnSupported Operation: Only Supported via Plans');
+   false;
+}
+
+function meta::pure::functions::collection::mergeInstance(sets:Any[*]):Any[1]
+{
+   fail('UnSupported Operation: Only Supported via Plans');
+   false;
+}
+
+function meta::pure::functions::collection::in(value:Any[0..1], collection:Any[*]):Boolean[1]
+{
+    $value->isNotEmpty() && $collection->exists(x | $value == $x)
+}
+
+function meta::pure::functions::collection::union<T>(set1:T[*], set2:T[*]):T[*]
+{
+   $set1->concatenate($set2)->removeDuplicates();
+}
+
+function meta::pure::functions::collection::remove<T>(set:T[*], other:T[1]):T[*]
+{
+   $set->filter(e|$other != $e);
+}
+
+function meta::pure::functions::collection::removeAll<T>(set:T[*], other:T[*]):T[*]
+{
+   $set->filter(e|!$other->contains($e));
+}
+
+function meta::pure::functions::collection::removeAll<T>(set:T[*], other:T[*], comparator:Function<{T[1],T[1]->Boolean[1]}>[1]):T[*]
+{
+   $set->filter(e|!$other->contains($e, $comparator));
+}
+
+function meta::pure::functions::collection::contains<Z>(collection:Z[*], value:Z[1], comparator:Function<{Z[1],Z[1]->Boolean[1]}>[1]):Boolean[1]
+{
+    $collection->exists(x | $comparator->eval($value, $x))
+}
+
+
+function meta::pure::functions::collection::merge<S,K>(m1:Map<K,List<S>>[1], m2:Map<K,List<S>>[1]):Map<K,List<S>>[1]
+{
+   $m1->keys()->concatenate($m2->keys())
+   ->map(k|let l1 = $m1->get($k);
+           let l2 = $m2->get($k);
+           if($l1->isEmpty(),
+               |pair($k,$l2->toOne()),
+               |if($l2->isEmpty(),
+                   | pair($k,$l1->toOne()),
+                   | pair($k,list($l1->toOne().values->concatenate($l2->toOne().values)))
+                )
+           );
+     )
+   ->newMap();
+}
+
+function meta::pure::functions::collection::isNotEmpty(p:Any[*]):Boolean[1]
+{
+    !isEmpty($p)
+}
+
+function meta::pure::functions::collection::intersection<T>(a:T[*], b:T[*]):T[*]
+{
+   let r = $a->removeAll($b);
+   $a->removeAll($r);
+}
+
+function meta::pure::functions::collection::partition<I>(c:I[*], f:Function<{I[1]->Boolean[1]}>[1]):Pair<List<I>,List<I>>[1]
+{
+   $c->fold({i,a|if($f->eval($i),
+                    |let l = $a.first; ^$a(first=^$l(values+=$i));,
+                    |let l = $a.second;^$a(second=^$l(values+=$i));
+                 )
+            },
+            pair(^List<I>(), ^List<I>())
+   );   
+}
+
+function meta::pure::functions::collection::and(vals:Boolean[*]):Boolean[1]
+{
+   $vals->fold({i,a|$i && $a}, true)
+}
+
+function meta::pure::functions::collection::or(vals:Boolean[1..*]):Boolean[1]
+{
+   $vals->fold({i,a|$i || $a}, false)
+}
+
+
+
+function meta::pure::functions::collection::newMultiValueMap<S,K>(values : Pair<K,S>[*]):Map<K,List<S>>[1]
+{
+   $values->fold({pair,map|
+         let key = $pair.first;
+         let value = $pair.second;
+         let currentList = $map->get($key);
+      
+         $map->put($key, ^List<S>(values=if($currentList->isEmpty(), |$value, |$currentList->toOne().values->concatenate($value))));
+      },^Map<K,List<S>>());
+}
+
+function meta::pure::functions::collection::dropAt<T>(collection : T[*], index : Integer[1], count : Integer[1]) : T[*]
+{
+   assert($index >= 0);
+   assert($index < $collection->size());
+   
+   if($index == 0, |[], |$collection->take($index))->concatenate($collection->slice($index+$count, $collection->size()))->cast(@T);
+}
+
+function meta::pure::functions::collection::dropAt<T>(collection : T[*], index : Integer[1]) : T[*]
+{
+  $collection->dropAt($index, 1);
+}
+
+function meta::pure::functions::collection::defaultIfEmpty<T>(collection : T[*], default : T[1..*]) : T[1..*]
+{ 
+   if($collection->isEmpty(), |$default, |$collection->toOneMany());
+}
+
+function meta::pure::functions::collection::allButOneAreEmpty(lists:List<Any>[1..*]):Boolean[1]
+{
+   $lists->filter(list:List<Any>[1]|$list.values->size() > 0)->size() == 1;
+}
+
+function meta::pure::functions::collection::uniqueValueOnly<T>(values : T[*]):T[0..1]
+{
+   $values->uniqueValueOnly([]->cast(@T));
+}
+
+function meta::pure::functions::collection::uniqueValueOnly<T>(values : T[*], defaultValue : T[0..1]):T[0..1]
+{
+   if($values->distinct()->size() == 1, 
+      | $values->meta::pure::functions::collection::max(), 
+      | $defaultValue
+      );
+}
+
+function meta::pure::functions::collection::max<X>(values : X[*]):X[0..1]
+{
+   $values->sort()->last();
+}
+
+function {doc.doc ='returns true only if exactly one of the values are true'} meta::pure::functions::collection::oneOf(values:Boolean[*]):Boolean[1]
+{
+  $values ->filter(b | $b == true)->size() == 1;
+}
+
+function meta::pure::functions::collection::toIndexed<T>(values:T[*]): Pair<Integer,T>[*]
+{
+   zip(range($values->size()), $values);
+}
+
+function meta::pure::functions::collection::toNumbered<T>(values:T[*]): Pair<Integer,T>[*]
+{
+   zip(range(1, $values->size() + 1), $values);
+}
+
+function meta::pure::functions::collection::count(s:Any[*]):Integer[1]
+{
+   $s->size();
+}
+
+function meta::pure::functions::collection::sort<T|m>(col:T[m], comp:Function<{T[1],T[1]->Integer[1]}>[0..1]):T[m]
+{
+    sort($col, [], $comp)
+}
+
+function meta::pure::functions::collection::sortBy<T,U|m>(col:T[m], key:Function<{T[1]->U[1]}>[0..1]):T[m]
+{
+    sort($col, $key, [])
+}
+
+function meta::pure::functions::collection::sort<T|m>(col:T[m]):T[m]
+{
+    sort($col, [], [])
+}
+
+function meta::pure::functions::collection::removeDuplicates<T>(col:T[*], eql:Function<{T[1],T[1]->Boolean[1]}>[1]):T[*]
+{
+    $col->removeDuplicates([], $eql)
+}
+
+function meta::pure::functions::collection::removeDuplicatesBy<T>(col:T[*], key:Function<{T[1]->Any[1]}>[1]):T[*]
+{
+    $col->removeDuplicates($key, [])
+}
+
+function meta::pure::functions::collection::max<T>(col:T[1..*], comp:Function<{T[1],T[1]->Integer[1]}>[1]):T[1]
+{
+    $col->tail()->fold({v, m | if($comp->eval($v, $m) > 0, | $v, | $m)}, $col->at(0))
+}
+
+function meta::pure::functions::collection::min<T>(col:T[1..*], comp:Function<{T[1],T[1]->Integer[1]}>[1]):T[1]
+{
+    $col->tail()->fold({v, m | if($comp->eval($v, $m) < 0, | $v, | $m)}, $col->at(0))
+}
+
+function meta::pure::functions::collection::in(value:Any[1], collection:Any[*]):Boolean[1]
+{
+    $collection->exists(x | $value == $x)
+}
+
+function meta::pure::functions::collection::containsAll(collection:Any[*], values:Any[*]):Boolean[1]
+{
+    $values->forAll(v | $collection->contains($v))
+}
+
+function meta::pure::functions::collection::containsAny(collection:Any[*], values:Any[*]):Boolean[1]
+{
+    $values->exists(v | $collection->contains($v))
+}
+
+// Return the head element of the collection, or no elements if the collection is empty
+function meta::pure::functions::collection::head<T>(set:T[*]):T[0..1]
+{
+    $set->first();
+}
+
+function meta::pure::functions::collection::limit<T>(set:T[*], count:Integer[1]):T[*]
+{
+    $set->take($count);
+}
+
+function meta::pure::functions::collection::lookup<T>(set:T[*], keyName:String[1], key:String[1]):T[*]
+{
+    $set->filter(i | let property = $i->genericType()->properties()->get($keyName);
+                     !$property->isEmpty() && ($property->toOne()->eval($i) == $key);
+                );
+}
+
+function meta::pure::functions::collection::getPropertyValues(obj:Any[1], propertyName:String[1]):Any[*]
+{
+   let property = $obj->genericType()->properties()->get($propertyName);
+   $property->toOne()->eval($obj);
+}
+
+function meta::pure::functions::collection::range(stop:Integer[1]):Integer[*]
+{
+    range(0, $stop);
+}
+
+function meta::pure::functions::collection::range(start:Integer[1], stop:Integer[1]):Integer[*]
+{
+    range($start, $stop, 1)
+}
+
+function meta::pure::functions::collection::get<U>(l:List<U>[1], index:Integer[1]):U[1]
+{
+    $l.values->at($index);
+}
+
+function meta::pure::functions::collection::appendTreeToNode(root:TreeNode[1], position: TreeNode[1], joinTree:TreeNode[1]): TreeNode[1]
+{
+   $root->meta::pure::functions::collection::replaceTreeNode($position, ^$position(childrenData += $joinTree));
+}
+
+function meta::pure::functions::collection::getAllForEachDate<T>(type:Class<T>[1], dates:Date[*]):T[*]
+{
+    fail('not implemented');
+    [];
+}

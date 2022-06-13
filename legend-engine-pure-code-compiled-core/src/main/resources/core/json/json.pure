@@ -1,0 +1,119 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::json::*;
+import meta::pure::profiles::*;
+
+// Constructor functions
+function meta::json::newJSONKeyValue(key:String[1], value:JSONElement[1]):JSONKeyValue[1]
+{
+    ^JSONKeyValue(key=^JSONString(value=$key), value=$value)
+}
+
+function meta::json::newJSONObject(keyValuePairs:JSONKeyValue[*]):JSONObject[1]
+{
+    ^JSONObject(keyValuePairs=$keyValuePairs)
+}
+
+// Equivalence functions
+
+function meta::json::jsonEquivalent(element1:JSONElement[1], element2:JSONElement[1]):Boolean[1]
+{
+    if($element1->instanceOf(JSONObject),
+       | $element2->instanceOf(JSONObject) && jsonObjectsEquivalent($element1->cast(@JSONObject), $element2->cast(@JSONObject)),
+       | if($element1->instanceOf(JSONArray),
+            | $element2->instanceOf(JSONArray) && jsonArraysEquivalent($element1->cast(@JSONArray), $element2->cast(@JSONArray)),
+            | $element1 == $element2))
+}
+
+function <<access.private>> meta::json::jsonArraysEquivalent(array1:JSONArray[1], array2:JSONArray[1]):Boolean[1]
+{
+    let values1 = $array1.values;
+    let values2 = $array2.values;
+    ($values1->size() == $values2->size()) && zip($values1, $values2)->forAll(pair | jsonEquivalent($pair.first, $pair.second));
+}
+
+function <<access.private>> meta::json::jsonObjectsEquivalent(obj1:JSONObject[1], obj2:JSONObject[1]):Boolean[1]
+{
+    let keyValues1 = $obj1.keyValuePairs;
+    let keyValues2 = $obj2.keyValuePairs;
+    ($keyValues1->size() == $keyValues2->size()) &&
+        zip($keyValues1->sortBy(kv | $kv.key.value), $keyValues2->sortBy(kv | $kv.key.value))->forAll(pair | jsonKeyValuesEquivalent($pair.first, $pair.second));
+}
+
+function <<access.private>> meta::json::jsonKeyValuesEquivalent(kv1:JSONKeyValue[1], kv2:JSONKeyValue[1]):Boolean[1]
+{
+    jsonEquivalent($kv1.key, $kv2.key) && jsonEquivalent($kv1.value, $kv2.value)
+}
+
+// JSON to string functions
+
+function meta::json::toCompactJSONString(json:JSONElement[1]):String[1]
+{
+    $json->match([
+                  b:JSONBoolean[1] | $b.value->toString(),
+                  s:JSONString[1] | $s.value->stringToJSON(),
+                  n:JSONNumber[1] | $n.value->toString(),
+                  n:JSONNull[1] | 'null',
+                  a:JSONArray[1] | $a.values->map(v | $v->toCompactJSONString())->joinStrings('[', ',', ']'),
+                  o:JSONObject[1] | $o.keyValuePairs->map(kv | $kv.key->toCompactJSONString() + ':' + $kv.value->toCompactJSONString())->joinStrings('{', ',', '}')
+                 ])
+}
+
+
+function meta::json::toCompactJSONStrings(json:JSONElement[1]):String[*]
+{
+    $json->match([
+                  b:JSONBoolean[1] | $b.value->toString(),
+                  s:JSONString[1] | $s.value->stringToJSON(),
+                  n:JSONNumber[1] | $n.value->toString(),
+                  n:JSONNull[1] | 'null',
+                  a:JSONArray[1] | if ($a.values->isEmpty(), |'[]', | ['[']->concatenate($a.values->head()->toOne()->toCompactJSONStrings())->concatenate($a.values->tail()->map(v | [',']->concatenate($v->toCompactJSONStrings())))->concatenate(']')),
+                  o:JSONObject[1] | if ($o.keyValuePairs->isEmpty(),
+                                          | '{}',
+                                          | let head = $o.keyValuePairs->head()->toOne();
+                                            let start = '{' + $head.key->toCompactJSONString() + ':';
+                                            [$start]->concatenate($head.value->toCompactJSONStrings())->concatenate($o.keyValuePairs->tail()->map(
+                                                           kv | let key = ',' + $kv.key->toCompactJSONString() + ':'; 
+                                                                 [$key]->concatenate($kv.value->toCompactJSONStrings());
+                                                                 )
+                                                                 )->concatenate(['}']);
+                                                           )
+                 ])
+}
+
+function meta::json::toPrettyJSONString(json:JSONElement[1]):String[1]
+{
+   $json->toPrettyJSONString(0) + '\n';
+}
+
+
+function meta::json::toPrettyJSONString(json:JSONElement[1], nestingCount:Integer[1]):String[1]
+{
+    let indent = repeat('  ', $nestingCount)->joinStrings();
+    $json->match([
+                  b:JSONBoolean[1] | $b.value->toString(),
+                  s:JSONString[1] | $s.value->stringToJSON(),
+                  n:JSONNumber[1] | $n.value->toString(),
+                  n:JSONNull[1] | 'null',
+                  a:JSONArray[1] | $a.values->map(v | $v->toPrettyJSONString($nestingCount + 1))->joinStrings('[\n', ',\n', '\n' + $indent + ']'),
+                  o:JSONObject[1] | $o.keyValuePairs->map(kv | '  ' + $indent + $kv.key.value->stringToJSON() + ': ' + $kv.value->toPrettyJSONString($nestingCount + 1))->joinStrings($indent + '{\n', ',\n', '\n' + $indent + '}')
+                 ]);
+}
+
+function <<access.private>> meta::json::stringToJSON(string:String[1]):String[1]
+{
+   '"' + $string->meta::json::escape() + '"'
+}
+

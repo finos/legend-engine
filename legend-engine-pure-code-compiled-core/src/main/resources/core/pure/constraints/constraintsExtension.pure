@@ -1,0 +1,348 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::router::store::platform::*;
+import meta::pure::constraints::functions::util::*;
+import meta::pure::constraints::functions::*;
+import meta::pure::metamodel::constraint::*;
+import meta::json::*;
+
+Enum meta::pure::metamodel::constraint::EnforcementLevel
+{
+   Error, Warn
+}
+
+Class meta::pure::metamodel::constraint::ValidatedInstance extends Any
+{
+   instance:Any[1];
+}
+
+
+Class meta::pure::metamodel::constraint::ValidationResult
+{
+   success:Boolean[1];
+   constraint:Constraint[1];
+   enforcementLevel: EnforcementLevel[1];
+   message: String[0..1];
+
+   constraintId(){
+      $this.constraint.name->toOne()
+   }:String[1];
+
+   inputValues() {
+      $this.constraint->simplePropertiesInConstraintDefinition($this.ins.instance->genericType()->genericTypeClass()->getAllClassGeneralisations())->removeDuplicates()->map( p | ^Pair<Property<Nil,Any|*>, List<Any>>(first=$p, second=^List<Any>(values=$p->rawEvalProperty($this.ins.instance))));
+   }:Pair<Property<Nil,Any|*>, List<Any>>[*];
+}
+
+Association meta::pure::metamodel::constraint::ValidatedInstance_ValidationResult
+{
+   ins: ValidatedInstance[1];
+   results: ValidationResult[*];
+}
+
+
+Class meta::pure::metamodel::constraint::ConstraintContextInformation<T>
+{
+   class: Class<T>[1];
+   constraint: Constraint[1];
+   enforcementLevel: EnforcementLevel[1];
+   message: String[0..1];
+   messageFunction: FunctionDefinition<{T[1]->String[1]}>[0..1];
+}
+
+
+
+function {doc.doc = 'Get all constraints in the class hierarchy'}
+meta::pure::constraints::functions::allConstraintsInHierarchy(class:Class<Any>[1]):Constraint[*]
+{
+   let generalisations = $class.generalizations->map(g | $g.general->cast(@GenericType).rawType->toOne()->cast(@Class<Any>)->allConstraintsInHierarchy());
+   $generalisations->concatenate($class.constraints);
+}
+
+function {doc.doc = 'Get constraint with the given name from the given class. Note that this searches only directly on the class, not those inherited from super-classes'}
+   meta::pure::constraints::functions::constraintByName(class:Class<Any>[1], name:String[1]):Constraint[0..1]
+{
+    $class.constraints->filter(c | $c.name == $name)->first()
+}
+
+function {doc.doc = 'Get constraint with the given name from the given class hierachy '}
+   meta::pure::constraints::functions::constraintInHierarchyByName(class:Class<Any>[1], name:String[1]):Constraint[0..1]
+{
+    $class->allConstraintsInHierarchy()->filter(c | $c.name == $name)->first()
+}
+
+function meta::pure::constraints::functions::executeConstraints(instance:Any[1]):ValidatedInstance[1]
+{
+   let constraints = $instance->genericType()->genericTypeClass()->allConstraintsInHierarchy();
+   let validated = ^ValidatedInstance(instance=$instance, results=[]);
+   if($constraints->isEmpty(),
+      | $validated,
+      | let results = $constraints->map(c | $c->evaluateConstraint($validated));
+        $validated;
+   );
+}
+
+function meta::pure::constraints::functions::validateConstraintHandler(instance:Any[1]):ValidatedInstance[1]
+{
+   let constraints = $instance->genericType()->genericTypeClass()->allConstraintsInHierarchy();
+   let validated = ^ValidatedInstance(instance=$instance, results=[]);
+   if($constraints->isEmpty(),
+      | $validated,
+      | $constraints->map(c |
+           let result = $c.functionDefinition->evaluate(^List<Any>(values=$instance))->cast(@Boolean)->toOne();
+           if($result,
+              | [],
+              | ^ValidationResult(success = false, constraint = $c, enforcementLevel=EnforcementLevel.Error, ins = $validated)
+           );
+        );
+        $validated;
+   );
+}
+
+function meta::pure::metamodel::constraint::evaluateConstraint(c:Constraint[1], ins:ValidatedInstance[1]):ValidationResult[1]
+{
+   evaluateConstraint($c, $ins, []);
+}
+
+function meta::pure::metamodel::constraint::evaluateConstraint(c:Constraint[1], ins:ValidatedInstance[1], constraintInformation: ConstraintContextInformation<Any>[*]):ValidationResult[1]
+{
+   let pass = $c.functionDefinition->evaluate(^List<Any>(values=$ins.instance))->cast(@Boolean)->toOne();
+   let thisConstraintInfo = getContextInformationForConstraint($c, $constraintInformation);
+   ^ValidationResult(
+      success=$pass,
+      constraint=$c,
+      enforcementLevel=$thisConstraintInfo.enforcementLevel,
+      message=$thisConstraintInfo.message->isEmpty()->if( | $thisConstraintInfo.messageFunction->isEmpty()->if(|$thisConstraintInfo.message, |$thisConstraintInfo.messageFunction->toOne()->evaluate(^List<Any>(values=$ins.instance))->cast(@String)->toOne()),
+                                                          | $thisConstraintInfo.message),
+      ins=$ins
+   );
+}
+
+function meta::pure::constraints::functions::evaluateConstraints(instances:Any[*]):ValidatedInstance[*]
+{
+  evaluateConstraints($instances, [], false);
+}
+
+function meta::pure::constraints::functions::evaluateConstraints(instances:Any[*], deep: Boolean[1]):ValidatedInstance[*]
+{
+  evaluateConstraints($instances, [], $deep);
+}
+
+function meta::pure::constraints::functions::evaluateConstraints(instances:Any[*], constraintInformation: ConstraintContextInformation<Any>[*]):ValidatedInstance[*]
+{
+  evaluateConstraints($instances, $constraintInformation, false);
+}
+
+function meta::pure::constraints::functions::evaluateConstraints(instances:Any[*], constraintInformation: ConstraintContextInformation<Any>[*], deep: Boolean[1]):ValidatedInstance[*]
+{
+   evaluateConstraints($instances, $constraintInformation, $deep, []);
+}
+
+function <<access.private>> meta::pure::constraints::functions::evaluateConstraints(toValidate:Any[*], constraintInformation: ConstraintContextInformation<Any>[*], deep: Boolean[1], validated: Any[*]):ValidatedInstance[*]
+{
+   let instances = $toValidate->filter(i | !$validated->contains($i));
+   if($instances->isEmpty()
+      ,|[]
+      ,|let _class = $instances->at(0)->genericType()->genericTypeClass();
+        let allConstraints =  $_class->allConstraintsInHierarchy();
+        let propertiesByConstraint =  $allConstraints->map(c |^Pair<Constraint,List<Any>>(first=$c,second=^List<Any>(values=$c->simplePropertiesInConstraintDefinition($_class->getAllClassGeneralisations()))))->newMap();
+        let thisLevelResults = $instances->map(i | let validated = ^ValidatedInstance(instance=$i, results=[]);
+                            let validations = $allConstraints->map(c | let pass = $c.functionDefinition->evaluate(^List<Any>(values=$i))->cast(@Boolean)->toOne();
+                                                                       if($pass,
+                                                                          | [],
+                                                                          | let thisConstraintInfo = getContextInformationForConstraint($c, $constraintInformation);
+                                                                            ^ValidationResult(
+                                                                               success=$pass,
+                                                                               constraint=$c,
+                                                                               enforcementLevel=$thisConstraintInfo.enforcementLevel,
+                                                                               message=$thisConstraintInfo.message->isEmpty()->if( | $thisConstraintInfo.messageFunction->isEmpty()->if(|$thisConstraintInfo.message, |$thisConstraintInfo.messageFunction->toOne()->evaluate(^List<Any>(values=$i))->cast(@String)->toOne()),
+                                                                                                                                   | $thisConstraintInfo.message),
+                                                                               ins=$validated);
+                                                                       );
+                                                                  );
+                            if($validations->isEmpty() ,| [] ,| $validated);
+                       );
+        if ($deep,
+            |let complexProperties = $_class.properties->filter(p |!$p.genericType.rawType->toOne()->instanceOf(DataType);)->cast(@Property<Nil,Any|*>) ;
+             let complexPropertiesResults = $complexProperties->map(p | $instances->map(i| $p->rawEvalProperty($i)->evaluateConstraints($constraintInformation, $deep, $instances->concatenate($validated))));
+             let propertiesFromAssociations =  $_class.propertiesFromAssociations;
+             let propertiesFromAssociationsResults = $propertiesFromAssociations->map(p | $instances->map(i| $p->rawEvalProperty($i)->evaluateConstraints($constraintInformation, $deep, $instances->concatenate($validated))));
+             $complexPropertiesResults->concatenate($propertiesFromAssociationsResults)->concatenate($thisLevelResults);,
+            |$thisLevelResults
+        );
+
+   );
+
+}
+
+function meta::pure::constraints::functions::assertConstraint(class:Class<Any>[1], keyExpressions:KeyValue[*],constraintIds:String[*],validity:Boolean[1]):Boolean[1]
+{
+   let allConstraints = $class->allConstraintsInHierarchy();
+   assertFalse($allConstraints->isEmpty());
+
+   let result = $class->dynamicNew($keyExpressions,[],[],[],executeConstraints_Any_1__ValidatedInstance_1_);
+
+   assert($result->instanceOf(ValidatedInstance));
+   assert($result->cast(@ValidatedInstance).instance->instanceOf($class));
+   let validatedResult = $result->cast(@ValidatedInstance).results;
+   assertFalse($validatedResult->isEmpty());
+   println($validatedResult);
+   $constraintIds->map( id | assertEquals(1, $validatedResult->filter(r | $r.constraintId == $id)->size(),| 'Constraint [' + $id +'] not found'));
+   $constraintIds->map( id | assertEquals($validity,$validatedResult->filter(r | $r.constraintId == $id)->toOne().success,| 'Constraint [' + $id +'] expected to be ' + $validity->toString()));
+   true;
+}
+
+function meta::pure::constraints::functions::assertValidConstraint(class:Class<Any>[1], keyExpressions:KeyValue[*],constraintIds:String[*]):Boolean[1]
+{
+  assertConstraint($class,$keyExpressions,$constraintIds,true);
+}
+
+function meta::pure::constraints::functions::assertInvalidConstraint(class:Class<Any>[1], keyExpressions:KeyValue[*],constraintIds:String[*]):Boolean[1]
+{
+   assertConstraint($class,$keyExpressions,$constraintIds,false);
+}
+
+
+
+function {doc.doc = 'Get all properties (part of the specified classes) involved in the specification of the given Constraint'}
+meta::pure::constraints::functions::util::simplePropertiesInConstraintDefinition(constraint:Constraint[1], classes: Class<Any>[*]):Property<Nil,Any|*>[*]
+{
+  $constraint.functionDefinition.expressionSequence->evaluateAndDeactivate()->map(e | $e->propertiesInValueSpecification($classes));
+
+}
+
+
+function meta::pure::constraints::functions::util::propertiesInValueSpecification(v:ValueSpecification[1], classes: Class<Any>[*]):Property<Nil,Any|*>[*]
+{
+    $v->match(  [   f:FunctionExpression[1]| $f.func->match([
+                                                p:Property<Nil,Any|*>[1]| if($classes->contains($p.owner), | $p.genericType.rawType->toOne()->match([pi:PrimitiveType[1]|[$p], e:Enumeration<Any>[1]|[$p],a:Any[1]|[]]), | []),
+                                                a:Any[1]|[]
+                                             ])->concatenate( $f.parametersValues->map(vs | propertiesInValueSpecification($vs, $classes)));,
+                    i:InstanceValue[1]| if ($i.values->isEmpty(),
+                                             |[],
+                                             |$i.values->map(val | $val->match([
+                                                 fd:FunctionDefinition<Any>[1] | $fd.expressionSequence->evaluateAndDeactivate()->map(vs|propertiesInValueSpecification($vs, $classes));,
+                                                 f:FunctionExpression[1] | propertiesInValueSpecification($f, $classes),
+                                                 a:Any[1] | []
+                                                ]))
+                                          );,
+                    v:Any[1]| []
+
+                ]
+             );
+}
+
+
+function meta::pure::constraints::functions::util::extractPropertyValues(properties:Property<Nil,Any|*>[*],i:Any[1]):Pair<String,List<Any>>[*]
+{
+
+   $properties->removeDuplicates()->map( p | ^Pair<String,List<Any>>(first=$p.name->toOne(),second=^List<Any>(values=$p->rawEvalProperty($i))));
+
+}
+
+function meta::pure::constraints::functions::util::getViolationsByConstraint(instances: ValidatedInstance[*], class: Class<Any>[1], constraint: Constraint[1]):ValidatedInstance[*]
+{
+   $instances->filter(ins | $ins.instance->instanceOf($class) && $ins.results.constraint->contains($constraint));
+}
+
+function meta::pure::constraints::functions::util::getViolationsByConstraintId(instances: ValidatedInstance[*], class: Class<Any>[1], constraintId: String[1]):ValidatedInstance[*]
+{
+   $instances->filter(ins | $ins.instance->instanceOf($class) && $ins.results.constraintId->contains($constraintId));
+}
+
+function meta::pure::constraints::functions::util::buildValidationReport(values: ValidatedInstance[*]): String[1]
+{
+   $values->toJSON(getExtraSerializersForValidatedInstance());
+}
+
+function meta::pure::constraints::functions::util::getExtraSerializersForValidatedInstance(): Function<{Nil[1],JSONState[1] ->JSONElement[1]}>[*]
+{
+   [{res : ValidationResult[1], j : JSONState[1] |
+      ^JSONObject(keyValuePairs=
+                  [
+                     ^JSONKeyValue(key=^JSONString(value='success'), value=$res.success->recurse($res, $j)),
+                     ^JSONKeyValue(key=^JSONString(value='constraintId'), value=$res.constraintId->recurse($res, $j)),
+                     ^JSONKeyValue(key=^JSONString(value='enforcementLevel'), value=$res.enforcementLevel->recurse($res, $j)),
+                     ^JSONKeyValue(key=^JSONString(value='message'), value=$res.message->recurse($res, $j)),
+                     ^JSONKeyValue(key=^JSONString(value='inputValues'), value=^JSONObject(keyValuePairs=$res.inputValues->map(iv | ^JSONKeyValue(key=^JSONString(value=$iv.first.name->toOne()), value=$iv.second->recurse($res, $j)))))
+                  ]
+            )
+   },
+      {val : ValidatedInstance[1], j : JSONState[1] |
+      ^JSONObject(keyValuePairs=
+                  [
+                     ^JSONKeyValue(key=^JSONString(value='instance'), value=$val.instance->recurse($val, $j)),
+                     ^JSONKeyValue(key=^JSONString(value='results'), value=$val.results->recurse($val, $j))
+                  ]
+            )
+   }];
+}
+
+
+function meta::pure::constraints::functions::util::reprocessValueSpecification(v:ValueSpecification[1]):ValueSpecification[1]
+{
+    $v->evaluateAndDeactivate()->match(  [   f: FunctionExpression[1] | ^$f(parametersValues=$f.parametersValues->map(vs | $vs->reprocessValueSpecification())),
+                    v: VariableExpression[1] | if($v.name == 'this', | ^$v(name='qualified_this_placeholder'), | $v),
+                    i: InstanceValue[1] | ^$i(values=$i.values->map(val | $val->match([
+                                                  fd: FunctionDefinition<Any>[1] | ^$fd(expressionSequence=$fd.expressionSequence->map(vs | $vs->reprocessValueSpecification())),
+                                                  fe: FunctionExpression[1] | $fe->reprocessValueSpecification(),
+                                                  ve: VariableExpression[1] | $ve->reprocessValueSpecification(),
+                                                  a:  Any[1] | $a
+                                                ]))),
+                    v: ValueSpecification[1]| $v
+                ]
+             )->toOne();
+}
+
+function meta::pure::constraints::functions::util::getContextInformationForConstraint(c: Constraint[1], constraintInformation: ConstraintContextInformation<Any>[*]):ConstraintContextInformation<Any>[1]
+{
+   let filtered = $constraintInformation->filter(info | $info.constraint == $c);
+   $filtered->isNotEmpty()->if(
+   | assertSize($filtered, 1, 'Multiple constraint information overrides for same constraints are not allowed');
+     $filtered->toOne();,
+   | let defaultMessageFunction = $c.messageFunction->cast(@FunctionDefinition<{Nil[1]->String[1]}>);
+     let defaultEnforcementLevel = if($c.enforcementLevel->isEmpty(), | EnforcementLevel.Error,| extractEnumValue(EnforcementLevel, $c.enforcementLevel->toOne()));
+     ^ConstraintContextInformation<Nil>(constraint = $c, class = Nil, enforcementLevel = $defaultEnforcementLevel, messageFunction = $defaultMessageFunction);
+   );
+}
+
+
+function meta::pure::constraints::functions::util::createConstraintContextInformation(id: String[1], class: String[1], enforcementLevel: EnforcementLevel[1]):ConstraintContextInformation<Any>[1]
+{
+   createConstraintContextInformation($id, $class, $enforcementLevel, []);
+}
+
+function meta::pure::constraints::functions::util::createConstraintContextInformation(id: String[1], class: String[1], enforcementLevel: EnforcementLevel[1], message: String[0..1]):ConstraintContextInformation<Any>[1]
+{
+   createConstraintContextInformation($id, $class->pathToElement()->cast(@Class<Any>), $enforcementLevel, $message);
+}
+
+function meta::pure::constraints::functions::util::createConstraintContextInformation(id: String[1], class: Class<Any>[1], enforcementLevel: EnforcementLevel[1]):ConstraintContextInformation<Any>[1]
+{
+   createConstraintContextInformation($id, $class, $enforcementLevel, []);
+}
+
+function meta::pure::constraints::functions::util::createConstraintContextInformation(id: String[1], class: Class<Any>[1], enforcementLevel: EnforcementLevel[1], message: String[0..1]):ConstraintContextInformation<Any>[1]
+{
+   let constraint = $class->constraintByName($id);
+   assertSize($constraint, 1, | 'Constraint with id "' + $id + '" not found in the class "' + $class->elementToPath() + '"');
+   ^ConstraintContextInformation<Any>(constraint = $constraint->toOne(), class = $class, enforcementLevel = $enforcementLevel, message = $message);
+}
+
+function meta::pure::constraints::functions::util::createConstraintContextInformation<T>(id: String[1], class: Class<T>[1], enforcementLevel: EnforcementLevel[1], messageFunction: FunctionDefinition<{T[1]->String[1]}>[1]):ConstraintContextInformation<T>[1]
+{
+   let constraint = $class->constraintByName($id);
+   assertSize($constraint, 1, | 'Constraint with id "' + $id + '" not found in the class "' + $class->elementToPath() + '"');
+   ^ConstraintContextInformation<T>(constraint = $constraint->toOne(), class = $class, enforcementLevel = $enforcementLevel, messageFunction = $messageFunction);
+}

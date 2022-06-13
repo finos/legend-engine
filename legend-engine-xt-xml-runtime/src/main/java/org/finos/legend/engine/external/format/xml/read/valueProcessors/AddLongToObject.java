@@ -20,7 +20,7 @@ import org.finos.legend.engine.external.format.xml.shared.datatypes.LongSimpleTy
 import org.finos.legend.engine.external.shared.runtime.dependencies.ExternalDataAdder;
 import org.finos.legend.engine.external.shared.runtime.dependencies.ExternalDataLongAdder;
 
-public class AddLongToObject<T>  implements ValueProcessor<T>
+public class AddLongToObject<T> implements ValueProcessor<T>
 {
     private final ExternalDataLongAdder<T> dataAdder;
     private final LongSimpleTypeHandler handler;

@@ -20,8 +20,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public class OAuthProfile {
-    public String key, discoveryUrl, clientId, secret;
+public class OAuthProfile
+{
+    public String key;
+    public String discoveryUrl;
+    public String clientId;
+    public String secret;
     public Map<String, String> customParams = Maps.mutable.empty();
 
     public static OAuthProfile makeUnknownProfile()

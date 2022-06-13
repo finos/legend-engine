@@ -16,7 +16,8 @@ package org.finos.legend.engine.language.pure.grammar.from.domain;
 
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 
-public class ParserTreeWalkerUtility {
+public class ParserTreeWalkerUtility
+{
     /**
      * Return the index of the first character in string
      * between start and end that is not a digit.  Returns

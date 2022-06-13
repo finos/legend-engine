@@ -17,5 +17,6 @@ package org.finos.legend.engine.external.shared.runtime.dependencies;
 public interface IExternalDataFactory
 {
     IExternalData newInstance();
+
     String getPureClassName();
 }

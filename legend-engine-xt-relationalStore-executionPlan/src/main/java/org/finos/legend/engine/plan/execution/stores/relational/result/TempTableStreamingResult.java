@@ -14,13 +14,12 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.result;
 
-import org.finos.legend.engine.plan.execution.stores.relational.serialization.StreamingTempTableResultCSVSerializer;
-
 import org.finos.legend.engine.plan.execution.result.ResultVisitor;
 import org.finos.legend.engine.plan.execution.result.StreamingResult;
 import org.finos.legend.engine.plan.execution.result.builder.Builder;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
 import org.finos.legend.engine.plan.execution.result.serialization.Serializer;
+import org.finos.legend.engine.plan.execution.stores.relational.serialization.StreamingTempTableResultCSVSerializer;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.CreateAndPopulateTempTableExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.TempTableColumnMetaData;
 

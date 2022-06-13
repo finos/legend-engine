@@ -1,0 +1,375 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::format::protobuf::binding::fromPure::*;
+import meta::external::format::protobuf::metamodel::serialization::*;
+import meta::external::format::protobuf::binding::fromPure::tests::trade::*;
+import meta::external::format::protobuf::binding::fromPure::tests::account::*;
+import meta::external::format::protobuf::metamodel::*;
+import meta::pure::executionPlan::profiles::*;
+import meta::external::format::protobuf::binding::fromPure::tests::*;
+
+Class meta::external::format::protobuf::binding::fromPure::tests::trade::Trade
+{
+   type:String[1];
+   id:Integer[1];
+   npv:Float[1];
+   notionals:Float[*];
+   account : Account[1];
+}
+
+Enum meta::external::format::protobuf::binding::fromPure::tests::trade::MyEnum
+{
+   a,b
+}
+
+Class meta::external::format::protobuf::binding::fromPure::tests::account::Account
+{
+   name : String[1];
+   t : Trade[1];
+   enum : MyEnum[1];
+   aDate:StrictDate[1];
+}
+
+Class meta::external::format::protobuf::binding::fromPure::tests::Person
+{
+   name : String[1];
+}
+
+Class meta::external::format::protobuf::binding::fromPure::tests::StandaloneThing
+{
+   name : String[1];
+}
+
+Class meta::external::format::protobuf::binding::fromPure::tests::ClassWithMap
+{
+   map : Map<String,Integer>[1];
+}
+
+Class meta::external::format::protobuf::binding::fromPure::tests::oneof::Shape
+{
+}
+
+Class meta::external::format::protobuf::binding::fromPure::tests::oneof::Circle extends meta::external::format::protobuf::binding::fromPure::tests::oneof::Shape
+{
+  radius:Float[1];
+}
+
+Class meta::external::format::protobuf::binding::fromPure::tests::oneof::Rectangle extends meta::external::format::protobuf::binding::fromPure::tests::oneof::Shape
+{
+  height:Float[1];
+  width:Float[1];
+}
+
+Class meta::external::format::protobuf::binding::fromPure::tests::oneof::Drawing
+{
+  shapes:meta::external::format::protobuf::binding::fromPure::tests::oneof::Shape[*];
+}
+
+
+
+
+
+
+
+
+function <<test.Test>> {serverVersion.start='v1_23_0'} meta::external::format::protobuf::binding::fromPure::tests::transform_testClassToProtoBuf():Boolean[1]
+{
+  let config = ^ModelToProtobufDataConfiguration(
+                                                format = 'Protobuf',
+                                                targetBinding='res::ResBinding',
+                                                targetSchemaSet='res::ResSchemaSet',
+                                                sourceModel=meta::external::format::protobuf::binding::fromPure::tests::trade::Trade
+                                                );
+
+
+  let binding = meta::external::format::protobuf::binding::fromPure::transform($config)->map(o|pair($o.location, $o.content));
+  assertSize($binding, 2);
+  transform_testClassToProtoBuf_assert($binding);
+
+  // Test legacy generation flow 
+  let generation = meta::external::format::protobuf::deprecated::generation::transform($config->meta::external::format::protobuf::deprecated::generation::translateConfig())->map(o|pair($o.fileName, $o.content));
+  assertSize($generation, 2);
+  transform_testClassToProtoBuf_assert($generation);
+}
+
+function meta::external::format::protobuf::binding::fromPure::tests::transform_testClassToProtoBuf_assert(results:Pair<String,String>[*]):Boolean[1]
+{
+  let resultForTrade = $results->filter( r | $r.first == 'meta_external_format_protobuf_binding_fromPure_tests_trade.proto');
+  assertEquals('syntax = "proto3";\n' +
+                'package meta.external.format.protobuf.binding.fromPure.tests.trade;\n' +
+                '\n' +
+                'import "meta_external_format_protobuf_binding_fromPure_tests_account.proto";\n' + 
+                '\n' +
+                'enum MyEnum {\n'+
+                '  a = 0;\n'+
+                '  b = 1;\n'+
+                '}\n'+
+                '\n' + 
+                'message Trade {\n'+
+                '  string type = 1;\n'+
+                '  int64 id = 2;\n'+
+                '  double npv = 3;\n'+
+                '  repeated double notionals = 4;\n'+
+                '  meta.external.format.protobuf.binding.fromPure.tests.account.Account account = 5;\n'+
+                '}'
+                , $resultForTrade.second);
+  let resultForAccount = $results->filter( r | $r.first == 'meta_external_format_protobuf_binding_fromPure_tests_account.proto');              
+  assertEquals('syntax = "proto3";\n' +
+                'package meta.external.format.protobuf.binding.fromPure.tests.account;\n' +
+                '\n' +
+                'import "google/protobuf/timestamp.proto";\n' +
+                'import "meta_external_format_protobuf_binding_fromPure_tests_trade.proto";\n' +
+                '\n' +
+                'message Account {\n'+
+                '  string name = 1;\n'+
+                '  meta.external.format.protobuf.binding.fromPure.tests.trade.Trade t = 2;\n'+
+                '  meta.external.format.protobuf.binding.fromPure.tests.trade.MyEnum enum = 3;\n'+
+                '  google.protobuf.Timestamp a_date = 4;\n'+
+                '}', $resultForAccount.second);
+}
+
+
+
+
+
+function <<test.Test>> {serverVersion.start='v1_23_0'} meta::external::format::protobuf::binding::fromPure::tests::transform_testClassToProtoBufWithOptions():Boolean[1]
+{
+  let config = ^ModelToProtobufDataConfiguration(
+                               format = 'Protobuf',
+                               targetBinding='res::ResBinding',
+                               targetSchemaSet='res::ResSchemaSet',
+                               sourceModel=meta::external::format::protobuf::binding::fromPure::tests::Person,
+                               javaPackage='com.gs.person');
+
+  let binding = meta::external::format::protobuf::binding::fromPure::transform($config)->map(o|pair($o.location, $o.content));
+  transform_testClassToProtoBufWithOptions_assert($binding);
+
+  // Test legacy generation flow 
+  let generation = meta::external::format::protobuf::deprecated::generation::transform($config->meta::external::format::protobuf::deprecated::generation::translateConfig())->map(o|pair($o.fileName, $o.content));
+  transform_testClassToProtoBufWithOptions_assert($generation);
+}
+
+function meta::external::format::protobuf::binding::fromPure::tests::transform_testClassToProtoBufWithOptions_assert(results:Pair<String,String>[*]):Boolean[1]
+{
+   assertEquals('syntax = "proto3";\n'
+      + 'package meta.external.format.protobuf.binding.fromPure.tests;\n'
+      + '\n'
+      + 'option java_package = "com.gs.person";\n'
+      + '\n'
+      + 'message Person {\n'
+      + '  string name = 1;\n'
+      + '}'
+      , $results.second);
+}
+
+
+
+
+
+
+
+function <<test.Test>> {serverVersion.start='v1_23_0'} meta::external::format::protobuf::binding::fromPure::tests::transform_testOneofToProtoBuf():Boolean[1]
+{
+  let config = ^ModelToProtobufDataConfiguration(
+                               format = 'Protobuf',
+                               targetBinding='res::ResBinding',
+                               targetSchemaSet='res::ResSchemaSet',
+                               sourceModel=meta::external::format::protobuf::binding::fromPure::tests::oneof);
+
+  let binding = meta::external::format::protobuf::binding::fromPure::transform($config)->map(o|pair($o.location, $o.content));
+  transform_testOneofToProtoBuf_assert($binding);
+
+  // Test legacy generation flow 
+  let generation = meta::external::format::protobuf::deprecated::generation::transform($config->meta::external::format::protobuf::deprecated::generation::translateConfig())->map(o|pair($o.fileName, $o.content));
+  transform_testOneofToProtoBuf_assert($generation);
+}
+
+function meta::external::format::protobuf::binding::fromPure::tests::transform_testOneofToProtoBuf_assert(results:Pair<String,String>[*]):Boolean[1]
+{
+  let resultForInheritence = $results->filter( r | $r.first == 'meta_external_format_protobuf_binding_fromPure_tests_oneof.proto');
+  assertEquals('syntax = "proto3";\n'+
+                'package meta.external.format.protobuf.binding.fromPure.tests.oneof;\n'+
+                '\n' +
+                'message Circle {\n'+
+                '  double radius = 1;\n'+
+                '}\n'+
+                '\n' + 
+                'message Drawing {\n'+
+                '  repeated Shape shapes = 1;\n'+
+                '}\n'+
+                '\n' + 
+                'message Rectangle {\n'+
+                '  double height = 1;\n'+
+                '  double width = 2;\n'+
+                '}\n'+
+                '\n' + 
+                'message Shape {\n' +
+                '  oneof shape {\n'+
+                '    Circle circle = 1;\n'+
+                '    Rectangle rectangle = 2;\n'+
+                '  }\n'+
+                '}', $resultForInheritence.second);   
+}
+
+
+
+
+
+
+
+function <<test.Test>> {serverVersion.start='v1_23_0'} meta::external::format::protobuf::binding::fromPure::tests::transform_testToProtoBufWithOptions():Boolean[1]
+{
+  let config = ^ModelToProtobufDataConfiguration(
+                               format = 'Protobuf',
+                               targetBinding='res::ResBinding',
+                               targetSchemaSet='res::ResSchemaSet',
+                               sourceModel=meta::external::format::protobuf::binding::fromPure::tests::oneof,
+                               javaPackage='com.gs.mymodel', 
+                               javaOuterClassname='TestClass', 
+                               javaMultipleFiles=true, 
+                               optimizeFor=OptimizeMode.SPEED,
+                               customOptions=[pair('aString', 'stuff'),
+                                              pair('aBool', true)]->newMap());                              
+
+  let binding = meta::external::format::protobuf::binding::fromPure::transform($config)->map(o|pair($o.location, $o.content));
+  transform_testToProtoBufWithOptions_assert($binding);
+
+  // Test legacy generation flow 
+  let generation = meta::external::format::protobuf::deprecated::generation::transform($config->meta::external::format::protobuf::deprecated::generation::translateConfig())->map(o|pair($o.fileName, $o.content));
+  transform_testToProtoBufWithOptions_assert($generation);
+}
+
+function meta::external::format::protobuf::binding::fromPure::tests::transform_testToProtoBufWithOptions_assert(results:Pair<String,String>[*]):Boolean[1]
+{
+  let resultForInheritence = $results->filter( r | $r.first == 'meta_external_format_protobuf_binding_fromPure_tests_oneof.proto');
+  assertEquals('syntax = "proto3";\n'+
+                'package meta.external.format.protobuf.binding.fromPure.tests.oneof;\n'+
+                '\n' +
+                'option java_package = "com.gs.mymodel";\n'+
+                'option java_outer_classname = "TestClass";\n'+
+                'option java_multiple_files = true;\n'+
+                'option optimize_for = SPEED;\n'+
+                'option aBool = true;\n'+
+                'option aString = "stuff";\n'+
+                '\n' +
+                'message Circle {\n'+
+                '  double radius = 1;\n'+
+                '}\n'+
+                '\n' + 
+                'message Drawing {\n'+
+                '  repeated Shape shapes = 1;\n'+
+                '}\n'+
+                '\n' + 
+                'message Rectangle {\n'+
+                '  double height = 1;\n'+
+                '  double width = 2;\n'+
+                '}\n'+
+                '\n' + 
+                'message Shape {\n' +
+                '  oneof shape {\n'+
+                '    Circle circle = 1;\n'+
+                '    Rectangle rectangle = 2;\n'+
+                '  }\n'+
+                '}', $resultForInheritence.second);   
+}
+
+
+
+
+
+
+
+// Start exclude because of Map ----------------------------------------------
+
+function <<test.Test, test.ExcludeAlloy>> meta::external::format::protobuf::binding::fromPure::tests::testGenerateProtobufFromPureWithScope():Boolean[1]
+{
+  let results = meta::external::format::protobuf::binding::fromPure::transform(^ModelToProtobufDataConfiguration(
+                                                                                  format = 'Protobuf',
+                                                                                  targetBinding='res::ResBinding',
+                                                                                  targetSchemaSet='res::ResSchemaSet',
+                                                                                  sourceModel=[meta::external::format::protobuf::binding::fromPure::tests]
+                                                                                  )
+                                                                       )->map(o|pair($o.location, $o.content));
+
+  assertSize($results, 4);
+  
+  meta::external::format::protobuf::binding::fromPure::tests::transform_testClassToProtoBuf_assert($results);
+
+  meta::external::format::protobuf::binding::fromPure::tests::transform_testOneofToProtoBuf_assert($results);
+
+  let resultForTestPkg = $results->filter( r | $r.first == 'meta_external_format_protobuf_binding_fromPure_tests.proto');
+  assertEquals('syntax = "proto3";\n' +
+                'package meta.external.format.protobuf.binding.fromPure.tests;\n' +
+                '\n' + 
+                'message ClassWithMap {\n' +
+                '  map<string,int64> map = 1;\n' +
+                '}\n' +
+                '\n' + 
+                'message Person {\n' +
+                '  string name = 1;\n' +
+                '}\n' +
+                '\n' +  
+                'message StandaloneThing {\n' +
+                '  string name = 1;\n' +
+                '}', $resultForTestPkg.second);
+}
+
+function <<test.Test, test.ExcludeAlloy>> meta::external::format::protobuf::binding::fromPure::tests::transform_testClassWithMapToProtoBuf():Boolean[1]
+{
+  let config = ^ModelToProtobufDataConfiguration(
+                              format = 'Protobuf',
+                              targetBinding='res::ResBinding',
+                              targetSchemaSet='res::ResSchemaSet',
+                              sourceModel=meta::external::format::protobuf::binding::fromPure::tests::ClassWithMap);
+   assertEquals('syntax = "proto3";\n'
+      + 'package meta.external.format.protobuf.binding.fromPure.tests;\n'
+      + '\n'
+      + 'message ClassWithMap {\n'
+      + '  map<string,int64> map = 1;\n'
+      + '}'
+      , meta::external::format::protobuf::binding::fromPure::transform($config).content);
+}
+
+// End exclude because of Map ----------------------------------------------
+
+
+
+function <<test.Test>> meta::external::format::protobuf::binding::fromPure::tests::testLiteralBlockOptionToString():Boolean[1]
+{
+  let option = ^Option(name='a', value=^BlockLiteral(values=[^BlockValue(name='get', value=^StringLiteral(value='a/b'))]));
+  assertEquals('option a = { get: "a/b" };\n', $option->toString());
+}
+
+function <<test.Test>> meta::external::format::protobuf::binding::fromPure::tests::testOptionsToString():Boolean[1]
+{
+  let config = ^ModelToProtobufDataConfiguration(
+                         format = 'Protobuf',
+                         targetBinding='res::ResBinding',
+                         targetSchemaSet='res::ResSchemaSet',
+                         javaPackage='com.gs.mymodel', 
+                         javaOuterClassname='TestClass', 
+                         javaMultipleFiles=true, 
+                         optimizeFor=OptimizeMode.SPEED,
+                         customOptions=[pair('aString', 'stuff'),
+                                        pair('aBool', true)]->newMap());
+  let options = meta::external::format::protobuf::binding::fromPure::configToOptions($config);
+  assertEquals('option java_package = "com.gs.mymodel";\n'
+    + 'option java_outer_classname = "TestClass";\n'
+    + 'option java_multiple_files = true;\n'
+    + 'option optimize_for = SPEED;\n'
+    + 'option aBool = true;\n'
+    + 'option aString = "stuff";\n'
+    , $options->map( o | $o->toString())->joinStrings());                       
+}

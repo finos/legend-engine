@@ -1,0 +1,70 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::profiles::*;
+
+function <<test.Test>> meta::pure::functions::collection::tests::drop::testDropNegativeOnEmptyList():Boolean[1]
+{
+  assertEmpty([]->drop(-1));
+}
+
+function <<test.Test>> meta::pure::functions::collection::tests::drop::testDropNegativeOnNonEmptyList():Boolean[1]
+{
+  assertEquals([1, 2, 3], [1, 2, 3]->drop(-1));
+}
+
+function <<test.Test>> meta::pure::functions::collection::tests::drop::testDropZeroOnEmptyList():Boolean[1]
+{
+  assertEmpty([]->drop(0));
+}
+
+function <<test.Test>> meta::pure::functions::collection::tests::drop::testDropZeroOnNonEmptyList():Boolean[1]
+{
+  assertEquals([1, 2, 3], [1, 2, 3]->drop(0));
+}
+
+function <<test.Test>> meta::pure::functions::collection::tests::drop::testDropOneOnEmptyList():Boolean[1]
+{
+  assertEmpty([]->drop(1));
+}
+
+function <<test.Test>> meta::pure::functions::collection::tests::drop::testDropOneOnNonEmptyList():Boolean[1]
+{
+  assertEquals([2, 3], [1, 2, 3]->drop(1));
+}
+
+function <<test.Test>> meta::pure::functions::collection::tests::drop::testDropManyOnEmptyList():Boolean[1]
+{
+  assertEmpty([]->drop(2));
+}
+
+function <<test.Test>> meta::pure::functions::collection::tests::drop::testDropManyOnNonEmptyList():Boolean[1]
+{
+  assertEquals([3], [1, 2, 3]->drop(2));
+}
+
+function <<test.Test>> meta::pure::functions::collection::tests::drop::testDropExceedsSizeOnEmptyList():Boolean[1]
+{
+  assertEmpty([]->drop(5));
+}
+
+function <<test.Test>> meta::pure::functions::collection::tests::drop::testDropExceedsSizeOnNonEmptyList():Boolean[1]
+{
+  assertEmpty([1, 2, 3]->drop(5));
+}
+
+function <<test.Test>> meta::pure::functions::collection::tests::drop::testDropInList():Boolean[1]
+{
+  assertEquals(list([2, 3]), list([1, 2, 3]->drop(1)));
+}

@@ -20,7 +20,7 @@ import org.finos.legend.engine.external.format.xml.shared.datatypes.BooleanSimpl
 import org.finos.legend.engine.external.shared.runtime.dependencies.ExternalDataAdder;
 import org.finos.legend.engine.external.shared.runtime.dependencies.ExternalDataBooleanAdder;
 
-public class AddBooleanToObject<T>  implements ValueProcessor<T>
+public class AddBooleanToObject<T> implements ValueProcessor<T>
 {
     private final ExternalDataBooleanAdder<T> dataAdder;
     private final BooleanSimpleTypeHandler handler;

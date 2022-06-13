@@ -1,0 +1,516 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::format::avro::generation::*;
+import meta::pure::executionPlan::profiles::*;
+import meta::external::format::avro::generation::tests::*;
+import meta::json::*;
+
+Profile meta::external::format::avro::generation::tests::AvroProperty
+{
+   stereotypes: [s1];
+   tags: [
+     p1, p2, p3
+   ];
+}
+
+
+Class <<access.private>> meta::external::format::avro::generation::tests::A
+{
+   <<AvroProperty.s1>>a: String[1];
+}
+
+Class <<access.private>> meta::external::format::avro::generation::tests::B
+{
+   b: Integer[0..1];
+}
+
+Class <<access.private>> meta::external::format::avro::generation::tests::C
+{
+   c: Float[*];
+}
+
+Enum meta::external::format::avro::generation::tests::MyEnum
+{
+   V1, V2
+}
+
+Class <<access.private>> meta::external::format::avro::generation::tests::D
+{
+   d: MyEnum[1];
+}
+
+Class <<access.private>> meta::external::format::avro::generation::tests::EE
+{
+   ee: String[1];
+}
+
+
+Class <<access.private>> meta::external::format::avro::generation::tests::E extends EE
+{
+   e: Date[0..1];
+}
+
+
+Class <<access.private>> meta::external::format::avro::generation::tests::E2 extends EE
+{
+   e2: Date[0..1];
+}
+
+
+Class <<access.private>> meta::external::format::avro::generation::tests::EHolder 
+{
+   property1: EE[0..1];
+   property2: EE[0..1];
+} 
+
+Class <<access.private>> meta::external::format::avro::generation::tests::F
+{
+   f: A[0..1];
+}
+
+Class <<access.private>> meta::external::format::avro::generation::tests::G
+{
+   g1: StrictDate[1];
+   g2: DateTime[1];
+   g3: Date[1];
+}
+
+Class <<access.private>> meta::external::format::avro::generation::tests::I
+{
+   <<Avro.ignore>>
+   ignored: String[0..1];
+   included: String[0..1];
+}
+
+Class <<access.private>> meta::external::format::avro::generation::tests::J
+{
+   {Avro.type='float'}
+   j1: Float[0..1];
+   {Avro.type='int'}
+   j2: Integer[0..1];
+}
+
+Class <<access.private>> meta::external::format::avro::generation::tests::K
+{
+   {Avro.default='1.2'}
+   k1: Float[1];
+   {Avro.default='5'}
+   k2: Integer[1];
+   {Avro.default='false'}
+   k3: Boolean[1];
+   {Avro.default=''}
+   k4: String[1];
+}
+
+Class <<access.private>> meta::external::format::avro::generation::tests::L
+{
+   {Avro.default='[]'}
+   l: Float[*];
+}
+
+Class <<access.private>> meta::external::format::avro::generation::tests::P
+{
+   {Avro.default='[0.0, 1.0]'}
+   p: Float[*];
+}
+
+Class <<access.private>> meta::external::format::avro::generation::tests::Q
+{
+   {AvroProperty.p1='1'}
+   q: String[1];
+   r: R[1];
+}
+
+Enum
+{AvroProperty.p3='[]'}
+meta::external::format::avro::generation::tests::EnumWithAvroTags
+{
+   V1, V2
+} 
+
+
+Class <<access.private>>
+{AvroProperty.p1='3.14', AvroProperty.p2='{"k1":"v1", "k2":2}'}
+meta::external::format::avro::generation::tests::R
+{
+   r: String[1];
+   enum: EnumWithAvroTags[1];
+}
+
+Class <<access.private>> meta::external::format::avro::generation::tests::S
+{
+   s: String[1];
+}
+
+Class <<access.private>> meta::external::format::avro::generation::tests::T
+{
+   t: String[1];
+}
+
+Association meta::external::format::avro::generation::tests::S_T
+{
+   assoc_t: T[1];
+   assoc_s: S[1];
+}
+
+
+Class <<access.private, temporal.businesstemporal>> meta::external::format::avro::generation::tests::M
+{
+   m: Boolean[1];
+}
+
+Class <<access.private, temporal.businesstemporal>> meta::external::format::avro::generation::tests::N
+{
+   n: Boolean[1];
+}
+
+Class <<access.private, temporal.businesstemporal>> meta::external::format::avro::generation::tests::O
+{
+   o: Boolean[1];
+}
+
+Association meta::external::format::avro::generation::tests::NO
+{
+   classN : N[1];
+   classO : O[1];
+}
+
+Class <<access.private>> meta::external::format::avro::generation::tests::W
+{
+   w: Number[1];
+}
+
+Class <<access.private>> meta::external::format::avro::generation::tests::X extends W
+{
+   x: Integer[1];
+}
+
+Class <<access.private>> meta::external::format::avro::generation::tests::Y extends W
+{
+   y: Float[*];
+}
+
+Class <<access.private>> meta::external::format::avro::generation::tests::Z extends W
+{
+   z: Boolean[0..1];
+}
+
+Class <<access.private>> meta::external::format::avro::generation::tests::Dec
+{
+   dec: Decimal[0..1];
+}
+
+function <<test.Test>> meta::external::format::avro::generation::tests::simpleToOneStringProperty(): Boolean[1]
+{
+   let schema = classToAvroSchema(A, ^AvroConfig())->meta::external::format::avro::serialization::avroSchemaToJSON()->toCompactJSONString();
+   assertEquals('{"type":"record","name":"A","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"a","type":"string"}]}', $schema);
+}
+
+function <<test.Test>> meta::external::format::avro::generation::tests::simpleToOneDifferentDateTypeProperty(): Boolean[1]
+{
+   let schema = classToAvroSchema(G, ^AvroConfig())->meta::external::format::avro::serialization::avroSchemaToJSON()->toCompactJSONString();
+   assertEquals('{"type":"record","name":"G","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"g1","type":{"type":"int","logicalType":"date"}},{"name":"g2","type":{"type":"long","logicalType":"timestamp-micros"}},{"name":"g3","type":{"type":"long","logicalType":"timestamp-micros"}}]}', $schema);
+}
+
+function <<test.Test>> meta::external::format::avro::generation::tests::dateTypePropertyWithTimestampLogicalType(): Boolean[1]
+{
+   let schema = classToAvroSchema(G, ^AvroConfig(timestampLogicalType='timestamp-millis'))->meta::external::format::avro::serialization::avroSchemaToJSON()->toCompactJSONString();
+   assertEquals('{"type":"record","name":"G","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"g1","type":{"type":"int","logicalType":"date"}},{"name":"g2","type":{"type":"long","logicalType":"timestamp-millis"}},{"name":"g3","type":{"type":"long","logicalType":"timestamp-millis"}}]}', $schema);
+}
+
+function <<test.Test>> meta::external::format::avro::generation::tests::simpleZeroOneIntegerProperty(): Boolean[1]
+{
+   let schema = classToAvroSchema(B, ^AvroConfig())->meta::external::format::avro::serialization::avroSchemaToJSON()->toCompactJSONString();
+   assertEquals('{"type":"record","name":"B","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"b","type":["null","long"],"default":null}]}', $schema);
+}
+
+function <<test.Test>> meta::external::format::avro::generation::tests::simpleZeroManyFloatProperty(): Boolean[1]
+{
+   let schema = classToAvroSchema(C, ^AvroConfig())->meta::external::format::avro::serialization::avroSchemaToJSON()->toCompactJSONString();
+   assertEquals('{"type":"record","name":"C","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"c","type":{"type":"array","items":"double"}}]}', $schema);
+}
+
+function <<test.Test>> meta::external::format::avro::generation::tests::simpleToOneEnumerationProperty(): Boolean[1]
+{
+   let schema = classToAvroSchema(D, ^AvroConfig())->meta::external::format::avro::serialization::avroSchemaToJSON()->toCompactJSONString();
+   assertEquals('{"type":"record","name":"D","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"d","type":{"type":"enum","name":"MyEnum","namespace":"meta.external.format.avro.generation.tests","symbols":["V1","V2"]}}]}', $schema);
+}
+
+function <<test.Test>> meta::external::format::avro::generation::tests::includePropertiesFromSuperTypes(): Boolean[1]
+{
+   let schema = classToAvroSchema(E, ^AvroConfig())->meta::external::format::avro::serialization::avroSchemaToJSON()->toCompactJSONString();
+   assertEquals('{"type":"record","name":"E","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"e","type":["null",{"type":"long","logicalType":"timestamp-micros"}],"default":null},{"name":"ee","type":"string"}]}', $schema);
+}
+
+function <<test.Test>> meta::external::format::avro::generation::tests::excludePropertiesFromSuperTypes(): Boolean[1]
+{
+   let schema = classToAvroSchema(E, ^AvroConfig(includeSuperTypes=false))->meta::external::format::avro::serialization::avroSchemaToJSON()->toCompactJSONString();
+   assertEquals('{"type":"record","name":"E","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"e","type":["null",{"type":"long","logicalType":"timestamp-micros"}],"default":null}]}', $schema);
+}
+
+function <<test.Test>> meta::external::format::avro::generation::tests::notIncludeNamepsace(): Boolean[1]
+{
+   let schema = classToAvroSchema(A, ^AvroConfig(includeNamespace=false))->meta::external::format::avro::serialization::avroSchemaToJSON()->toCompactJSONString();
+   assertEquals('{"type":"record","name":"A","fields":[{"name":"a","type":"string"}]}', $schema);
+}
+
+function <<test.Test>> meta::external::format::avro::generation::tests::includePropertiesFromAssociation(): Boolean[1]
+{
+   let schema = classToAvroSchema(S, ^AvroConfig())->meta::external::format::avro::serialization::avroSchemaToJSON()->toCompactJSONString();
+   assertEquals('{"type":"record","name":"S","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"s","type":"string"},{"name":"assoc_t","type":{"type":"record","name":"T","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"t","type":"string"},{"name":"assoc_s","type":"meta.external.format.avro.generation.tests.S"}]}}]}', $schema);
+}
+
+function <<test.Test>> meta::external::format::avro::generation::tests::excludePropertiesFromAssociation(): Boolean[1]
+{
+   let schema = classToAvroSchema(S, ^AvroConfig(includeAssociations=false))->meta::external::format::avro::serialization::avroSchemaToJSON()->toCompactJSONString();
+   assertEquals('{"type":"record","name":"S","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"s","type":"string"}]}', $schema);
+}
+
+function <<test.Test>> meta::external::format::avro::generation::tests::includeGeneratedMilestoning(): Boolean[1]
+{
+   let schema = classToAvroSchema(M, ^AvroConfig(includeGeneratedMilestoning=true))->meta::external::format::avro::serialization::avroSchemaToJSON()->toCompactJSONString();
+   assertEquals('{"type":"record","name":"M","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"m","type":"boolean"},{"name":"businessDate","type":{"type":"long","logicalType":"timestamp-micros"}}]}', $schema);
+}
+
+function <<test.Test>> meta::external::format::avro::generation::tests::excludeGeneratedMilestoning(): Boolean[1]
+{
+   let schema = classToAvroSchema(M, ^AvroConfig())->meta::external::format::avro::serialization::avroSchemaToJSON()->toCompactJSONString();
+   assertEquals('{"type":"record","name":"M","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"m","type":"boolean"}]}', $schema);
+}
+
+function <<test.Test>> meta::external::format::avro::generation::tests::includeGeneratedMilestoningPropertiesFromAssociation(): Boolean[1]
+{
+   let schema = classToAvroSchema(N, ^AvroConfig(includeAssociations=true, includeGeneratedMilestoning=true))->meta::external::format::avro::serialization::avroSchemaToJSON()->toCompactJSONString();
+   assertEquals('{"type":"record","name":"N","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"n","type":"boolean"},{"name":"businessDate","type":{"type":"long","logicalType":"timestamp-micros"}},{"name":"classOAllVersions","type":{"type":"array","items":{"type":"record","name":"O","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"o","type":"boolean"},{"name":"businessDate","type":{"type":"long","logicalType":"timestamp-micros"}},{"name":"classNAllVersions","type":{"type":"array","items":"meta.external.format.avro.generation.tests.N"}},{"name":"classN","type":"meta.external.format.avro.generation.tests.N"}]}}},{"name":"classO","type":"meta.external.format.avro.generation.tests.O"}]}', $schema);
+}
+
+function <<test.Test>> meta::external::format::avro::generation::tests::typeUnion(): Boolean[1]
+{
+   let schema = classToAvroSchema(W, ^AvroConfig())->meta::external::format::avro::serialization::avroSchemaToJSON()->toCompactJSONString();
+    assertEquals('[{"type":"record","name":"W","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"w","type":["double","long"]}]},'+
+                '{"type":"record","name":"X","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"x","type":"long"},{"name":"w","type":["double","long"]}]},'+
+                '{"type":"record","name":"Y","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"y","type":{"type":"array","items":"double"}},{"name":"w","type":["double","long"]}]},'+
+                '{"type":"record","name":"Z","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"z","type":["null","boolean"],"default":null},{"name":"w","type":["double","long"]}]}'+
+                ']', $schema);
+}
+
+function <<test.Test>> meta::external::format::avro::generation::tests::ignoredProperties(): Boolean[1]
+{
+   let schema = classToAvroSchema(I, ^AvroConfig())->meta::external::format::avro::serialization::avroSchemaToJSON()->toCompactJSONString();
+   assertEquals('{"type":"record","name":"I","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"included","type":["null","string"],"default":null}]}', $schema);
+}
+
+function <<test.Test>> meta::external::format::avro::generation::tests::avroTypeSpecified(): Boolean[1]
+{
+   let schema = classToAvroSchema(J, ^AvroConfig())->meta::external::format::avro::serialization::avroSchemaToJSON()->toCompactJSONString();
+   assertEquals('{"type":"record","name":"J","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"j1","type":["null","float"],"default":null},{"name":"j2","type":["null","int"],"default":null}]}', $schema);
+}
+
+function <<test.Test>> meta::external::format::avro::generation::tests::defaultValues(): Boolean[1]
+{
+   let schema = classToAvroSchema(K, ^AvroConfig())->meta::external::format::avro::serialization::avroSchemaToJSON()->toCompactJSONString();
+   assertEquals('{"type":"record","name":"K","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"k1","type":"double","default":1.2},{"name":"k2","type":"long","default":5},{"name":"k3","type":"boolean","default":false},{"name":"k4","type":"string","default":""}]}', $schema);
+}
+
+function <<test.Test>> meta::external::format::avro::generation::tests::defaultArray(): Boolean[1]
+{
+   let schema = classToAvroSchema(P, ^AvroConfig())->meta::external::format::avro::serialization::avroSchemaToJSON()->toCompactJSONString();
+   assertEquals('{"type":"record","name":"P","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"p","type":{"type":"array","items":"double"},"default":[0.0,1.0]}]}', $schema);
+}
+
+function <<test.Test>> meta::external::format::avro::generation::tests::defaultEmptyArray(): Boolean[1]
+{
+   let schema = classToAvroSchema(L, ^AvroConfig())->meta::external::format::avro::serialization::avroSchemaToJSON()->toCompactJSONString();
+   assertEquals('{"type":"record","name":"L","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"l","type":{"type":"array","items":"double"},"default":[]}]}', $schema);
+}
+
+function <<test.Test>> meta::external::format::avro::generation::tests::properties(): Boolean[1]
+{
+   let schema = classToAvroSchema(Q, ^AvroConfig(propertyProfile=meta::external::format::avro::generation::tests::AvroProperty))->meta::external::format::avro::serialization::avroSchemaToJSON()->toCompactJSONString();
+   assertEquals('{"type":"record","name":"Q","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"q","type":"string","p1":1},{"name":"r","type":{"type":"record","name":"R","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"r","type":"string"},{"name":"enum","type":{"type":"enum","name":"EnumWithAvroTags","namespace":"meta.external.format.avro.generation.tests","symbols":["V1","V2"],"p3":[]}}],"p1":3.14,"p2":{"k1":"v1","k2":2}}}]}', $schema);
+}
+
+function <<test.Test>> meta::external::format::avro::generation::tests::namespaceOverride(): Boolean[1]
+{
+   let schema = classToAvroSchema(D, ^AvroConfig(namespaceOverride=[pair('meta.external.format.avro.generation.tests','o.v.e.r.r.i.d.e')]->newMap()))->meta::external::format::avro::serialization::avroSchemaToJSON()->toCompactJSONString();
+   assertEquals('{"type":"record","name":"D","namespace":"o.v.e.r.r.i.d.e","fields":[{"name":"d","type":{"type":"enum","name":"MyEnum","namespace":"o.v.e.r.r.i.d.e","symbols":["V1","V2"]}}]}', $schema);
+}
+
+function <<test.Test>> meta::external::format::avro::generation::tests::decimalType(): Boolean[1]
+{
+   let schema = classToAvroSchema(Dec, ^AvroConfig())->meta::external::format::avro::serialization::avroSchemaToJSON()->toCompactJSONString();
+   assertEquals('{"type":"record","name":"Dec","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"dec","type":["null","string"],"default":null}]}', $schema);
+}
+
+
+function <<test.Test>> {serverVersion.start='v1_20_0'} meta::external::format::avro::generation::tests::transform_simpleToOneStringProperty(): Boolean[1]
+{
+   let schema = transform(^AvroConfig(class=A->elementToPath()))->at(0)->at(0).content;
+   assertEquals('{"type":"record","name":"A","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"a","type":"string"}]}', $schema);
+}
+
+function <<test.Test>> {serverVersion.start='v1_20_0'} meta::external::format::avro::generation::tests::transform_simpleToOneDifferentDateTypeProperty(): Boolean[1]
+{
+   let schema = transform( ^AvroConfig(class=G->elementToPath()))->at(0).content;
+   assertEquals('{"type":"record","name":"G","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"g1","type":{"type":"int","logicalType":"date"}},{"name":"g2","type":{"type":"long","logicalType":"timestamp-micros"}},{"name":"g3","type":{"type":"long","logicalType":"timestamp-micros"}}]}', $schema);
+}
+
+function <<test.Test>> {serverVersion.start='v1_20_0'} meta::external::format::avro::generation::tests::transform_dateTypePropertyWithTimestampLogicalType(): Boolean[1]
+{
+   let schema = transform(^AvroConfig(class=G->elementToPath(),timestampLogicalType='timestamp-millis'))->at(0).content;
+   assertEquals('{"type":"record","name":"G","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"g1","type":{"type":"int","logicalType":"date"}},{"name":"g2","type":{"type":"long","logicalType":"timestamp-millis"}},{"name":"g3","type":{"type":"long","logicalType":"timestamp-millis"}}]}', $schema);
+}
+
+function <<test.Test>> {serverVersion.start='v1_20_0'} meta::external::format::avro::generation::tests::transform_simpleZeroOneIntegerProperty(): Boolean[1]
+{
+   let schema = transform(^AvroConfig(class=B->elementToPath()))->at(0).content;
+   assertEquals('{"type":"record","name":"B","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"b","type":["null","long"],"default":null}]}', $schema);
+}
+
+function <<test.Test>> {serverVersion.start='v1_20_0'}  meta::external::format::avro::generation::tests::transform_simpleZeroManyFloatProperty(): Boolean[1]
+{
+   let schema = transform( ^AvroConfig(class=C->elementToPath()))->at(0).content;
+   assertEquals('{"type":"record","name":"C","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"c","type":{"type":"array","items":"double"}}]}', $schema);
+}
+
+function <<test.Test>> {serverVersion.start='v1_20_0'} meta::external::format::avro::generation::tests::transform_simpleToOneEnumerationProperty(): Boolean[1]
+{
+   let schema = transform(^AvroConfig(class=D->elementToPath()))->at(0).content;
+   assertEquals('{"type":"record","name":"D","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"d","type":{"type":"enum","name":"MyEnum","namespace":"meta.external.format.avro.generation.tests","symbols":["V1","V2"]}}]}', $schema);
+}
+
+function <<test.Test>> {serverVersion.start='v1_20_0'} meta::external::format::avro::generation::tests::transform_includePropertiesFromSuperTypes(): Boolean[1]
+{
+   let schema = transform( ^AvroConfig(class=E->elementToPath()))->at(0).content;
+   assertEquals('{"type":"record","name":"E","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"e","type":["null",{"type":"long","logicalType":"timestamp-micros"}],"default":null},{"name":"ee","type":"string"}]}', $schema);
+}
+
+function <<test.Test>> {serverVersion.start='v1_20_0'} meta::external::format::avro::generation::tests::transform_excludePropertiesFromSuperTypes(): Boolean[1]
+{
+   let schema = transform( ^AvroConfig(class=E->elementToPath(),includeSuperTypes=false))->at(0).content;
+   assertEquals('{"type":"record","name":"E","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"e","type":["null",{"type":"long","logicalType":"timestamp-micros"}],"default":null}]}', $schema);
+}
+
+function <<test.Test>> {serverVersion.start='v1_20_0'} meta::external::format::avro::generation::tests::transform_notIncludeNamepsace(): Boolean[1]
+{
+   let schema = transform( ^AvroConfig(class=A->elementToPath(),includeNamespace=false))->at(0).content;
+   assertEquals('{"type":"record","name":"A","fields":[{"name":"a","type":"string"}]}', $schema);
+}
+
+function <<test.Test, test.ExcludeAlloy>> {serverVersion.start='v1_11_0'} meta::external::format::avro::generation::tests::transform_includePropertiesFromAssociation(): Boolean[1]
+{
+   let schema = transform( ^AvroConfig(class=S->elementToPath()))->at(0).content;
+   assertEquals('{"type":"record","name":"S","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"s","type":"string"},{"name":"assoc_t","type":{"type":"record","name":"T","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"t","type":"string"},{"name":"assoc_s","type":"meta.external.format.avro.generation.tests.S"}]}}]}', $schema);
+}
+
+function <<test.Test, test.ExcludeAlloy>> {serverVersion.start='v1_11_0'} meta::external::format::avro::generation::tests::transform_excludePropertiesFromAssociation(): Boolean[1]
+{
+   let schema = transform(^AvroConfig(class=S->elementToPath(),includeAssociations=false))->at(0).content;
+   assertEquals('{"type":"record","name":"S","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"s","type":"string"}]}', $schema);
+}
+
+function <<test.Test>> {serverVersion.start='v1_20_0'} meta::external::format::avro::generation::tests::transform_includeGeneratedMilestoning(): Boolean[1]
+{
+   let schema = transform(^AvroConfig(class=M->elementToPath(),includeGeneratedMilestoning=true))->at(0).content;
+   assertEquals('{"type":"record","name":"M","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"m","type":"boolean"},{"name":"businessDate","type":{"type":"long","logicalType":"timestamp-micros"}}]}', $schema);
+}
+
+function <<test.Test>> {serverVersion.start='v1_20_0'} meta::external::format::avro::generation::tests::transform_excludeGeneratedMilestoning(): Boolean[1]
+{
+   let schema = transform( ^AvroConfig(class=M->elementToPath()))->at(0).content;
+   assertEquals('{"type":"record","name":"M","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"m","type":"boolean"}]}', $schema);
+}
+
+function <<test.Test, test.ExcludeAlloy>> {serverVersion.start='v1_11_0'} meta::external::format::avro::generation::tests::transform_includeGeneratedMilestoningPropertiesFromAssociation(): Boolean[1]
+{
+   let schema = transform(^AvroConfig(class=N->elementToPath(),includeAssociations=true, includeGeneratedMilestoning=true))->at(0).content;
+   assertEquals('{"type":"record","name":"N","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"n","type":"boolean"},{"name":"businessDate","type":{"type":"long","logicalType":"timestamp-micros"}},{"name":"classOAllVersions","type":{"type":"array","items":{"type":"record","name":"O","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"o","type":"boolean"},{"name":"businessDate","type":{"type":"long","logicalType":"timestamp-micros"}},{"name":"classNAllVersions","type":{"type":"array","items":"meta.external.format.avro.generation.tests.N"}},{"name":"classN","type":"meta.external.format.avro.generation.tests.N"}]}}},{"name":"classO","type":"meta.external.format.avro.generation.tests.O"}]}', $schema);
+}
+
+function <<test.Test, test.ExcludeAlloy>> {serverVersion.start='v1_11_0'} meta::external::format::avro::generation::tests::transform_typeUnion(): Boolean[1]
+{
+   let schema = transform(^AvroConfig(class=W->elementToPath()))->at(0).content;
+    assertEquals('[{"type":"record","name":"W","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"w","type":["double","long"]}]},'+
+                '{"type":"record","name":"X","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"x","type":"long"},{"name":"w","type":["double","long"]}]},'+
+                '{"type":"record","name":"Y","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"y","type":{"type":"array","items":"double"}},{"name":"w","type":["double","long"]}]},'+
+                '{"type":"record","name":"Z","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"z","type":["null","boolean"],"default":null},{"name":"w","type":["double","long"]}]}'+
+                ']', $schema);
+}
+
+function <<test.Test>> {serverVersion.start='v1_20_0'} meta::external::format::avro::generation::tests::transform_ignoredProperties(): Boolean[1]
+{
+   let schema = transform(^AvroConfig(class=I->elementToPath()))->at(0).content;
+   assertEquals('{"type":"record","name":"I","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"included","type":["null","string"],"default":null}]}', $schema);
+}
+
+function <<test.Test>> {serverVersion.start='v1_20_0'} meta::external::format::avro::generation::tests::transform_avroTypeSpecified(): Boolean[1]
+{
+   let schema = transform(^AvroConfig(class=J->elementToPath()))->at(0).content;
+   assertEquals('{"type":"record","name":"J","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"j1","type":["null","float"],"default":null},{"name":"j2","type":["null","int"],"default":null}]}', $schema);
+}
+
+function <<test.Test>> {serverVersion.start='v1_20_0'} meta::external::format::avro::generation::tests::transform_defaultValues(): Boolean[1]
+{
+   let schema = transform(^AvroConfig(class=K->elementToPath()))->at(0).content;
+   assertEquals('{"type":"record","name":"K","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"k1","type":"double","default":1.2},{"name":"k2","type":"long","default":5},{"name":"k3","type":"boolean","default":false},{"name":"k4","type":"string","default":""}]}', $schema);
+}
+
+function <<test.Test>> {serverVersion.start='v1_20_0'} meta::external::format::avro::generation::tests::transform_defaultArray(): Boolean[1]
+{
+   let schema = transform(^AvroConfig(class=P->elementToPath()))->at(0).content;
+   assertEquals('{"type":"record","name":"P","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"p","type":{"type":"array","items":"double"},"default":[0.0,1.0]}]}', $schema);
+}
+
+function <<test.Test>> {serverVersion.start='v1_20_0'} meta::external::format::avro::generation::tests::transform_defaultEmptyArray(): Boolean[1]
+{
+   let schema = transform(^AvroConfig(class=L->elementToPath()))->at(0).content;
+   assertEquals('{"type":"record","name":"L","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"l","type":{"type":"array","items":"double"},"default":[]}]}', $schema);
+}
+
+function <<test.Test>> {serverVersion.start='v1_20_0'} meta::external::format::avro::generation::tests::transform_properties(): Boolean[1]
+{
+   let schema = transform(^AvroConfig(class=Q->elementToPath(),propertyProfile=meta::external::format::avro::generation::tests::AvroProperty))->at(0).content;
+   assertEquals('{"type":"record","name":"Q","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"q","type":"string","p1":1},{"name":"r","type":{"type":"record","name":"R","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"r","type":"string"},{"name":"enum","type":{"type":"enum","name":"EnumWithAvroTags","namespace":"meta.external.format.avro.generation.tests","symbols":["V1","V2"],"p3":[]}}],"p1":3.14,"p2":{"k1":"v1","k2":2}}}]}', $schema);
+}
+
+function <<test.Test>> {serverVersion.start='v1_20_0'} meta::external::format::avro::generation::tests::transform_namespaceOverride(): Boolean[1]
+{
+   let schema = transform(^AvroConfig(class=D->elementToPath(),namespaceOverride=[pair('meta.external.format.avro.generation.tests','o.v.e.r.r.i.d.e')]->newMap()))->at(0).content;
+   assertEquals('{"type":"record","name":"D","namespace":"o.v.e.r.r.i.d.e","fields":[{"name":"d","type":{"type":"enum","name":"MyEnum","namespace":"o.v.e.r.r.i.d.e","symbols":["V1","V2"]}}]}', $schema);
+}
+
+function <<test.Test>> {serverVersion.start='v1_20_0'} meta::external::format::avro::generation::tests::transform_decimalType(): Boolean[1]
+{
+   let schema = transform( ^AvroConfig(class=Dec->elementToPath()))->at(0).content;
+   assertEquals('{"type":"record","name":"Dec","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"dec","type":["null","string"],"default":null}]}', $schema);
+}
+
+
+function <<test.Test>> meta::external::format::avro::generation::tests::transformTypeWithLogicalTypeInheritence(): Boolean[1]
+{
+   let schema = classToAvroSchema(EHolder, ^AvroConfig(generateLogicalTypes=true))->meta::external::format::avro::serialization::avroSchemaToJSON()->toCompactJSONString();
+    assertEquals('{"type":"record","name":"EHolder","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"property1","type":["null",{"type":"record","name":"EE","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"ee","type":"string"}]},{"type":"record","name":"E","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"e","type":["null",{"type":"long","logicalType":"timestamp-micros"}],"default":null},{"name":"ee","type":"string"}]},{"type":"record","name":"E2","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"e2","type":["null",{"type":"long","logicalType":"timestamp-micros"}],"default":null},{"name":"ee","type":"string"}]}],"default":null,"logicalType":"meta.external.format.avro.generation.tests.EE"},{"name":"property2","type":["null","meta.external.format.avro.generation.tests.EE","meta.external.format.avro.generation.tests.E","meta.external.format.avro.generation.tests.E2"],"default":null,"logicalType":"meta.external.format.avro.generation.tests.EE"}]}'
+                ,$schema);
+}
+
+
+
+function <<test.Test>> meta::external::format::avro::generation::tests::profileOnProperties(): Boolean[1]
+{  
+   
+   let schema = classToAvroSchema(A, ^AvroConfig(propertyProfile=meta::external::format::avro::generation::tests::AvroProperty))->meta::external::format::avro::serialization::avroSchemaToJSON()->toCompactJSONString();
+   assertEquals('{"type":"record","name":"A","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"a","type":"string","s1":true}]}', $schema);
+}
+

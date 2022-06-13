@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.external.format.jsonSchema.extension;
 
-
 import org.finos.legend.engine.external.format.jsonSchema.schema.generations.JSONSchemaConfig;
 import org.finos.legend.engine.language.pure.dsl.generation.config.ConfigBuilder;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationSpecification;

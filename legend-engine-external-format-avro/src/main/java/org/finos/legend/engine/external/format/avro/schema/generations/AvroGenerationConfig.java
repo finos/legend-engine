@@ -61,7 +61,7 @@ public class AvroGenerationConfig extends GenerationConfiguration
      * Generates properties from specified profile tags
      */
     public List<String> propertyProfile = Collections.emptyList();
-    public Boolean generateLogicalTypes ;
+    public Boolean generateLogicalTypes;
 
     /**
      * Override namespace in generated schema
@@ -101,7 +101,7 @@ public class AvroGenerationConfig extends GenerationConfiguration
             avroConfig._propertyProfile(ListIterate.collect(propertyProfile, pureModel::getProfile));
         }
 
-        if (generateLogicalTypes !=  null)
+        if (generateLogicalTypes != null)
         {
             avroConfig._generateLogicalTypes(generateLogicalTypes);
         }

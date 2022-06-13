@@ -17,13 +17,15 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.auth
 import java.util.List;
 import java.util.Objects;
 
-public class GCPWorkloadIdentityFederationAuthenticationStrategyKey implements AuthenticationStrategyKey{
+public class GCPWorkloadIdentityFederationAuthenticationStrategyKey implements AuthenticationStrategyKey
+{
     public static final String TYPE = "GCPWorkloadIdentityFederation";
 
     private String serviceAccountEmail;
     private List<String> additionalGcpScopes;
 
-    public GCPWorkloadIdentityFederationAuthenticationStrategyKey(String serviceAccountEmail, List<String> additionalGcpScopes) {
+    public GCPWorkloadIdentityFederationAuthenticationStrategyKey(String serviceAccountEmail, List<String> additionalGcpScopes)
+    {
         this.serviceAccountEmail = serviceAccountEmail;
         this.additionalGcpScopes = additionalGcpScopes;
     }
@@ -40,7 +42,7 @@ public class GCPWorkloadIdentityFederationAuthenticationStrategyKey implements A
             return false;
         }
         GCPWorkloadIdentityFederationAuthenticationStrategyKey that = (GCPWorkloadIdentityFederationAuthenticationStrategyKey) o;
-        return  Objects.equals(serviceAccountEmail, that.serviceAccountEmail) &&
+        return Objects.equals(serviceAccountEmail, that.serviceAccountEmail) &&
                 Objects.equals(additionalGcpScopes, that.additionalGcpScopes);
     }
 
@@ -55,7 +57,7 @@ public class GCPWorkloadIdentityFederationAuthenticationStrategyKey implements A
     {
         return "type:" + type() +
                 "_serviceAccountEmail:" + serviceAccountEmail +
-                "_gcpAdditionalScopes:" + (additionalGcpScopes != null ? String.join(",",additionalGcpScopes) : "null");
+                "_gcpAdditionalScopes:" + (additionalGcpScopes != null ? String.join(",", additionalGcpScopes) : "null");
     }
 
     @Override

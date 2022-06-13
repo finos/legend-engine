@@ -44,7 +44,6 @@ public class TestCorporateActionsFile extends AbstractDriverTest
         returned.forEach(this::assertNoDefects);
 
 
-
         List<IChecked<Delete>> actions = deserializer.recordsCreatedBy("actions");
         List<IChecked<Delete>> deletes = deserializer.recordsCreatedBy("deletes");
         List<IChecked<DvdCash>> dvdCashes = deserializer.recordsCreatedBy("dvdCash");
@@ -276,158 +275,158 @@ public class TestCorporateActionsFile extends AbstractDriverTest
     private String grammar(boolean includeNoAction)
     {
         return "section actions: BloombergActions\n" +
-                        "{\n" +
-                        (includeNoAction ? "        includeNoActionRecords;\n" : "") +
-                        "  Record\n" +
-                        "  {\n" +
-                        "    SECURITY                  : STRING;\n" +
-                        "    ID_BB_COMPANY             : INTEGER;\n" +
-                        "    ID_BB_SECURITY            : INTEGER;\n" +
-                        "    R_CODE                    : INTEGER;\n" +
-                        "    ID_ACTION                 : INTEGER(optional);\n" +
-                        "    MNEMONIC                  : STRING(optional);\n" +
-                        "    ACTION_FLAG               : STRING(optional);\n" +
-                        "    ID_BB_GLOBAL_COMPANY_NAME : STRING(optional);\n" +
-                        "    SECURITY_ID_TYP           : STRING(optional);\n" +
-                        "    SECURITY_ID               : STRING(optional);\n" +
-                        "    CRNCY                     : STRING(optional);\n" +
-                        "    MARKET_SECTOR_DES         : STRING(optional);\n" +
-                        "    ID_BB_UNIQUE              : STRING(optional);\n" +
-                        "    ANNOUNCE_DT               : DATE(optional);\n" +
-                        "    EFF_DT                    : DATE(optional);\n" +
-                        "    AMENDED_DT                : DATE(optional);\n" +
-                        "    ID_BB_GLOBAL              : STRING(optional);\n" +
-                        "    ID_BB_GLOBAL_COMPANY      : STRING(optional);\n" +
-                        "    ID_BB_SEC_NUM_DES         : STRING(optional);\n" +
-                        "    FEED_SOURCE               : STRING(optional);\n" +
-                        "    N_FIELDS                  : INTEGER(optional);\n" +
-                        "    CP_NOTES                  : STRING(optional);\n" +
-                        "  }\n" +
-                        "}\n" +
-                        "\n" +
-                        "section deletes: BloombergActionDetails\n" +
-                        "{\n" +
-                        "  actionFlags: 'D';\n" +
-                        "\n" +
-                        "  Record\n" +
-                        "  {\n" +
-                        "    CP_DELETE_REASON : STRING(optional);\n" +
-                        "  }\n" +
-                        "}\n" +
-                        "\n" +
-                        "section dvdCash: BloombergActionDetails\n" +
-                        "{\n" +
-                        "  actionFlags: ['N', 'U'];\n" +
-                        "  mnemonics: 'DVD_CASH';\n" +
-                        "\n" +
-                        "  Record\n" +
-                        "  {\n" +
-                        "    CP_RECORD_DT              : DATE(optional);\n" +
-                        "    CP_PAY_DT                 : DATE(optional);\n" +
-                        "    CP_FREQ                   : INTEGER(optional);\n" +
-                        "    CP_NET_AMT                : DECIMAL(optional);\n" +
-                        "    CP_TAX_AMT                : DECIMAL(optional);\n" +
-                        "    CP_GROSS_AMT              : DECIMAL(optional);\n" +
-                        "    CP_FRANKED_AMT            : DECIMAL(optional);\n" +
-                        "    CP_DVD_CRNCY              : STRING(optional);\n" +
-                        "    CP_DVD_TYP                : STRING(optional);\n" +
-                        "    CP_SPPL_AMT               : DECIMAL(optional);\n" +
-                        "    CP_FOREIGN_AMT            : DECIMAL(optional);\n" +
-                        "    CP_PAR_PCT                : DECIMAL(optional);\n" +
-                        "    CP_STOCK_OPT              : STRING(optional);\n" +
-                        "    CP_REINVEST_RATIO         : DECIMAL(optional);\n" +
-                        "    CP_PX                     : DECIMAL(optional);\n" +
-                        "    CP_TAX_RT                 : DECIMAL(optional);\n" +
-                        "    CP_ADJ                    : DECIMAL(optional);\n" +
-                        "    CP_ADJ_DT                 : DATE(optional);\n" +
-                        "    CP_INDICATOR              : STRING(optional);\n" +
-                        "    CP_DVD_DRP_DISCOUNT       : DECIMAL(optional);\n" +
-                        "    CP_EUSD_TID               : DECIMAL(optional);\n" +
-                        "    CP_EUSD_TID_SW            : DECIMAL(optional);\n" +
-                        "    CP_DIST_AMT_STATUS        : STRING(optional);\n" +
-                        "    CP_NOTES                  : STRING(optional);\n" +
-                        "  }\n" +
-                        "}\n" +
-                        "\n" +
-                        "section stockBuy: BloombergActionDetails\n" +
-                        "{\n" +
-                        "  actionFlags: ['N', 'U'];\n" +
-                        "  mnemonics: 'STOCK_BUY';\n" +
-                        "\n" +
-                        "  Record\n" +
-                        "  {\n" +
-                        "    CP_AMT                    : DECIMAL(optional);\n" +
-                        "    CP_STOCK_BUY_TYP          : STRING(optional);\n" +
-                        "    CP_COMPLETED_DT           : DATE(optional);\n" +
-                        "    CP_TERM_FLAG              : BOOLEAN(optional);\n" +
-                        "    CP_SEC_TYP                : STRING(optional);\n" +
-                        "    CP_PX                     : DECIMAL(optional);\n" +
-                        "    CP_SH                     : DECIMAL(optional);\n" +
-                        "    CP_VAL_PURCHASED          : DECIMAL(optional);\n" +
-                        "    CP_CRNCY                  : STRING(optional);\n" +
-                        "    CP_NOTES                  : STRING(optional);\n" +
-                        "  }\n" +
-                        "}\n" +
-                        "\n" +
-                        "section acquis: BloombergActionDetails\n" +
-                        "{\n" +
-                        "  actionFlags: ['N', 'U'];\n" +
-                        "  mnemonics: 'ACQUIS';\n" +
-                        "\n" +
-                        "  Record\n" +
-                        "  {\n" +
-                        "    CP_FLAG                        : STRING(optional);\n" +
-                        "    CP_TKR                         : STRING(optional);\n" +
-                        "    CP_NAME                        : STRING(optional);\n" +
-                        "    CP_ID_BB_COMP                  : INTEGER(optional);\n" +
-                        "    CP_UNIT                        : STRING(optional);\n" +
-                        "    CP_TOT_AMT                     : DECIMAL(optional);\n" +
-                        "    CP_ACQUIS_TYP                  : STRING(optional);\n" +
-                        "    CP_CASH                        : DECIMAL(optional);\n" +
-                        "    CP_CASH_FLAG                   : STRING(optional);\n" +
-                        "    CP_SH                          : DECIMAL(optional);\n" +
-                        "    CP_SH_FLAG                     : STRING(optional);\n" +
-                        "    CP_DEBT                        : DECIMAL(optional);\n" +
-                        "    CP_DEBT_FLAG                   : STRING(optional);\n" +
-                        "    CP_STAT                        : STRING(optional);\n" +
-                        "    CP_DT_FLAG                     : STRING(optional);\n" +
-                        "    CP_INIT_OFFER_PREMIUM          : STRING(optional);\n" +
-                        "    CP_CUR_PREMIUM                 : STRING(optional);\n" +
-                        "    CP_PCT_OWNED                   : DECIMAL(optional);\n" +
-                        "    CP_PCT_SOUGHT                  : DECIMAL(optional);\n" +
-                        "    CP_UNSOLICITED                 : STRING(optional);\n" +
-                        "    CP_DETAIL_FLAG                 : STRING(optional);\n" +
-                        "    CP_CRNCY                       : STRING(optional);\n" +
-                        "    CP_CASH_VAL                    : DECIMAL(optional);\n" +
-                        "    CP_ARBITRAGE_PROF              : DECIMAL(optional);\n" +
-                        "    CP_CUR_TOT_VAL                 : DECIMAL(optional);\n" +
-                        "    CP_ADVISORS_NUM                : INTEGER(optional);\n" +
-                        "    CP_SH_FRACTIONAL               : STRING(optional);\n" +
-                        "    CP_ADVISORS                    : STRING(optional);\n" +
-                        "    CP_ACQ_TKR                     : STRING(optional);\n" +
-                        "    CP_ACQ_ID_BB_GLOBAL            : STRING(optional);\n" +
-                        "    CP_ACQ_ID_BB_GLOBAL_COMPANY    : STRING(optional);\n" +
-                        "    CP_ACQ_ID_BB_SEC_NUM_DES       : STRING(optional);\n" +
-                        "    CP_ACQ_FEED_SOURCE             : STRING(optional);\n" +
-                        "    CP_TARGET_TKR                  : STRING(optional);\n" +
-                        "    CP_TARGET_ID_BB_GLOBAL         : STRING(optional);\n" +
-                        "    CP_TARGET_ID_BB_GLOBAL_COMPANY : STRING(optional);\n" +
-                        "    CP_TARGET_ID_BB_SEC_NUM_DES    : STRING(optional);\n" +
-                        "    CP_TARGET_FEED_SOURCE          : STRING(optional);\n" +
-                        "    CP_NOTES                       : STRING(optional);\n" +
-                        "  }\n" +
-                        "}\n" +
-                        "section metadata: BloombergMetadata\n" +
-                        "{\n" +
-                        "  Record\n" +
-                        "  {\n" +
-                        "    PROGRAMNAME  : STRING;\n" +
-                        "    DATEFORMAT   : STRING;\n" +
-                        "    DATARECORDS  : INTEGER;\n" +
-                        "    TIMESTARTED  : DATETIME(format='EEE MMM d HH:mm:ss z yyyy');\n" +
-                        "    TIMEFINISHED : DATETIME(format='EEE MMM d HH:mm:ss z yyyy');\n" +
-                        "  }\n" +
-                        "}\n";
+                "{\n" +
+                (includeNoAction ? "        includeNoActionRecords;\n" : "") +
+                "  Record\n" +
+                "  {\n" +
+                "    SECURITY                  : STRING;\n" +
+                "    ID_BB_COMPANY             : INTEGER;\n" +
+                "    ID_BB_SECURITY            : INTEGER;\n" +
+                "    R_CODE                    : INTEGER;\n" +
+                "    ID_ACTION                 : INTEGER(optional);\n" +
+                "    MNEMONIC                  : STRING(optional);\n" +
+                "    ACTION_FLAG               : STRING(optional);\n" +
+                "    ID_BB_GLOBAL_COMPANY_NAME : STRING(optional);\n" +
+                "    SECURITY_ID_TYP           : STRING(optional);\n" +
+                "    SECURITY_ID               : STRING(optional);\n" +
+                "    CRNCY                     : STRING(optional);\n" +
+                "    MARKET_SECTOR_DES         : STRING(optional);\n" +
+                "    ID_BB_UNIQUE              : STRING(optional);\n" +
+                "    ANNOUNCE_DT               : DATE(optional);\n" +
+                "    EFF_DT                    : DATE(optional);\n" +
+                "    AMENDED_DT                : DATE(optional);\n" +
+                "    ID_BB_GLOBAL              : STRING(optional);\n" +
+                "    ID_BB_GLOBAL_COMPANY      : STRING(optional);\n" +
+                "    ID_BB_SEC_NUM_DES         : STRING(optional);\n" +
+                "    FEED_SOURCE               : STRING(optional);\n" +
+                "    N_FIELDS                  : INTEGER(optional);\n" +
+                "    CP_NOTES                  : STRING(optional);\n" +
+                "  }\n" +
+                "}\n" +
+                "\n" +
+                "section deletes: BloombergActionDetails\n" +
+                "{\n" +
+                "  actionFlags: 'D';\n" +
+                "\n" +
+                "  Record\n" +
+                "  {\n" +
+                "    CP_DELETE_REASON : STRING(optional);\n" +
+                "  }\n" +
+                "}\n" +
+                "\n" +
+                "section dvdCash: BloombergActionDetails\n" +
+                "{\n" +
+                "  actionFlags: ['N', 'U'];\n" +
+                "  mnemonics: 'DVD_CASH';\n" +
+                "\n" +
+                "  Record\n" +
+                "  {\n" +
+                "    CP_RECORD_DT              : DATE(optional);\n" +
+                "    CP_PAY_DT                 : DATE(optional);\n" +
+                "    CP_FREQ                   : INTEGER(optional);\n" +
+                "    CP_NET_AMT                : DECIMAL(optional);\n" +
+                "    CP_TAX_AMT                : DECIMAL(optional);\n" +
+                "    CP_GROSS_AMT              : DECIMAL(optional);\n" +
+                "    CP_FRANKED_AMT            : DECIMAL(optional);\n" +
+                "    CP_DVD_CRNCY              : STRING(optional);\n" +
+                "    CP_DVD_TYP                : STRING(optional);\n" +
+                "    CP_SPPL_AMT               : DECIMAL(optional);\n" +
+                "    CP_FOREIGN_AMT            : DECIMAL(optional);\n" +
+                "    CP_PAR_PCT                : DECIMAL(optional);\n" +
+                "    CP_STOCK_OPT              : STRING(optional);\n" +
+                "    CP_REINVEST_RATIO         : DECIMAL(optional);\n" +
+                "    CP_PX                     : DECIMAL(optional);\n" +
+                "    CP_TAX_RT                 : DECIMAL(optional);\n" +
+                "    CP_ADJ                    : DECIMAL(optional);\n" +
+                "    CP_ADJ_DT                 : DATE(optional);\n" +
+                "    CP_INDICATOR              : STRING(optional);\n" +
+                "    CP_DVD_DRP_DISCOUNT       : DECIMAL(optional);\n" +
+                "    CP_EUSD_TID               : DECIMAL(optional);\n" +
+                "    CP_EUSD_TID_SW            : DECIMAL(optional);\n" +
+                "    CP_DIST_AMT_STATUS        : STRING(optional);\n" +
+                "    CP_NOTES                  : STRING(optional);\n" +
+                "  }\n" +
+                "}\n" +
+                "\n" +
+                "section stockBuy: BloombergActionDetails\n" +
+                "{\n" +
+                "  actionFlags: ['N', 'U'];\n" +
+                "  mnemonics: 'STOCK_BUY';\n" +
+                "\n" +
+                "  Record\n" +
+                "  {\n" +
+                "    CP_AMT                    : DECIMAL(optional);\n" +
+                "    CP_STOCK_BUY_TYP          : STRING(optional);\n" +
+                "    CP_COMPLETED_DT           : DATE(optional);\n" +
+                "    CP_TERM_FLAG              : BOOLEAN(optional);\n" +
+                "    CP_SEC_TYP                : STRING(optional);\n" +
+                "    CP_PX                     : DECIMAL(optional);\n" +
+                "    CP_SH                     : DECIMAL(optional);\n" +
+                "    CP_VAL_PURCHASED          : DECIMAL(optional);\n" +
+                "    CP_CRNCY                  : STRING(optional);\n" +
+                "    CP_NOTES                  : STRING(optional);\n" +
+                "  }\n" +
+                "}\n" +
+                "\n" +
+                "section acquis: BloombergActionDetails\n" +
+                "{\n" +
+                "  actionFlags: ['N', 'U'];\n" +
+                "  mnemonics: 'ACQUIS';\n" +
+                "\n" +
+                "  Record\n" +
+                "  {\n" +
+                "    CP_FLAG                        : STRING(optional);\n" +
+                "    CP_TKR                         : STRING(optional);\n" +
+                "    CP_NAME                        : STRING(optional);\n" +
+                "    CP_ID_BB_COMP                  : INTEGER(optional);\n" +
+                "    CP_UNIT                        : STRING(optional);\n" +
+                "    CP_TOT_AMT                     : DECIMAL(optional);\n" +
+                "    CP_ACQUIS_TYP                  : STRING(optional);\n" +
+                "    CP_CASH                        : DECIMAL(optional);\n" +
+                "    CP_CASH_FLAG                   : STRING(optional);\n" +
+                "    CP_SH                          : DECIMAL(optional);\n" +
+                "    CP_SH_FLAG                     : STRING(optional);\n" +
+                "    CP_DEBT                        : DECIMAL(optional);\n" +
+                "    CP_DEBT_FLAG                   : STRING(optional);\n" +
+                "    CP_STAT                        : STRING(optional);\n" +
+                "    CP_DT_FLAG                     : STRING(optional);\n" +
+                "    CP_INIT_OFFER_PREMIUM          : STRING(optional);\n" +
+                "    CP_CUR_PREMIUM                 : STRING(optional);\n" +
+                "    CP_PCT_OWNED                   : DECIMAL(optional);\n" +
+                "    CP_PCT_SOUGHT                  : DECIMAL(optional);\n" +
+                "    CP_UNSOLICITED                 : STRING(optional);\n" +
+                "    CP_DETAIL_FLAG                 : STRING(optional);\n" +
+                "    CP_CRNCY                       : STRING(optional);\n" +
+                "    CP_CASH_VAL                    : DECIMAL(optional);\n" +
+                "    CP_ARBITRAGE_PROF              : DECIMAL(optional);\n" +
+                "    CP_CUR_TOT_VAL                 : DECIMAL(optional);\n" +
+                "    CP_ADVISORS_NUM                : INTEGER(optional);\n" +
+                "    CP_SH_FRACTIONAL               : STRING(optional);\n" +
+                "    CP_ADVISORS                    : STRING(optional);\n" +
+                "    CP_ACQ_TKR                     : STRING(optional);\n" +
+                "    CP_ACQ_ID_BB_GLOBAL            : STRING(optional);\n" +
+                "    CP_ACQ_ID_BB_GLOBAL_COMPANY    : STRING(optional);\n" +
+                "    CP_ACQ_ID_BB_SEC_NUM_DES       : STRING(optional);\n" +
+                "    CP_ACQ_FEED_SOURCE             : STRING(optional);\n" +
+                "    CP_TARGET_TKR                  : STRING(optional);\n" +
+                "    CP_TARGET_ID_BB_GLOBAL         : STRING(optional);\n" +
+                "    CP_TARGET_ID_BB_GLOBAL_COMPANY : STRING(optional);\n" +
+                "    CP_TARGET_ID_BB_SEC_NUM_DES    : STRING(optional);\n" +
+                "    CP_TARGET_FEED_SOURCE          : STRING(optional);\n" +
+                "    CP_NOTES                       : STRING(optional);\n" +
+                "  }\n" +
+                "}\n" +
+                "section metadata: BloombergMetadata\n" +
+                "{\n" +
+                "  Record\n" +
+                "  {\n" +
+                "    PROGRAMNAME  : STRING;\n" +
+                "    DATEFORMAT   : STRING;\n" +
+                "    DATARECORDS  : INTEGER;\n" +
+                "    TIMESTARTED  : DATETIME(format='EEE MMM d HH:mm:ss z yyyy');\n" +
+                "    TIMEFINISHED : DATETIME(format='EEE MMM d HH:mm:ss z yyyy');\n" +
+                "  }\n" +
+                "}\n";
     }
 
     @SuppressWarnings("WeakerAccess")  // Required for reflective access

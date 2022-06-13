@@ -27,7 +27,11 @@ import org.finos.legend.engine.plan.dependencies.domain.dataQuality.BasicDefect;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IChecked;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IDefect;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 public class BloombergDataReadDriver<T> extends AbstractBloombergReadDriver<T>

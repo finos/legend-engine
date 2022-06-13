@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>3.2.1-SNAPSHOT</version>
+        <version>3.4.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-xt-protobuf-grammar</artifactId>
@@ -46,37 +46,7 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>Generate translator for metamodel</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>java</goal>
-                        </goals>
-                        <configuration>
-                            <includePluginDependencies>true</includePluginDependencies>
-                            <mainClass>org.finos.legend.engine.protocol.generation.GenerateTranslator</mainClass>
-                            <arguments>
-                                <argument>meta::external::format::protobuf::metamodel</argument>
-                                <argument>org.finos.legend.engine.protocol.protobuf3.metamodel</argument>
-                                <argument>${project.build.directory}/generated-sources/</argument>
-                            </arguments>
-                            <classpathScope>test</classpathScope>
-                        </configuration>
-                    </execution>
-                </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-protocol-generation</artifactId>
-                        <version>3.2.1-SNAPSHOT</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
-            <plugin>
+             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
                 <executions>
@@ -109,13 +79,6 @@
     </build>
 
     <dependencies>
-        <!-- Pure -->
-        <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-m3-core</artifactId>
-        </dependency>
-        <!-- Pure -->
-
         <!-- ENGINE -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -123,23 +86,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-protocol-pure</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-protobuf-pure</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-protobuf-protocol</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-shared-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-language-pure-compiler</artifactId>
         </dependency>
         <!-- ENGINE -->
 

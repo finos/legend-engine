@@ -33,7 +33,7 @@ public abstract class StreamingDriverDescription implements FlatDataDriverDescri
         return new PropertyDescription.Builder(CommonDataHandler.dataTypeParsingProperties())
                 .optionalStringProperty(StreamingDriverHelper.RECORD_SEPARATOR)
                 .booleanProperty(StreamingDriverHelper.MAY_CONTAIN_BLANK_LINES)
-                .requiredExclusiveGroup(StreamingDriverHelper.SCOPE, b->b
+                .requiredExclusiveGroup(StreamingDriverHelper.SCOPE, b -> b
                         .booleanProperty(StreamingDriverHelper.UNTIL_EOF)
                         .optionalIntegerProperty(StreamingDriverHelper.FOR_NUMBER_OF_LINES)
                         .optionalStringProperty(StreamingDriverHelper.UNTIL_LINE_EQUALS)

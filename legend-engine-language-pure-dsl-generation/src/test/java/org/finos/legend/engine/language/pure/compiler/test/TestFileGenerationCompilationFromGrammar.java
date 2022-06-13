@@ -14,8 +14,6 @@
 
 package org.finos.legend.engine.language.pure.compiler.test;
 
-import org.junit.Test;
-
 public class TestFileGenerationCompilationFromGrammar extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite
 {
     @Override

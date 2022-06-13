@@ -19,7 +19,6 @@ import freemarker.template.Template;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
-import org.checkerframework.checker.nullness.Opt;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.factory.Lists;
@@ -42,7 +41,6 @@ import org.finos.legend.engine.plan.execution.stores.relational.activity.Relatio
 import org.finos.legend.engine.plan.execution.stores.relational.blockConnection.BlockConnection;
 import org.finos.legend.engine.plan.execution.stores.relational.config.RelationalExecutionConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.RelationalExecutorInfo;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutionState;
@@ -210,9 +208,9 @@ public class RelationalExecutor
         }
     }
 
-    public static Result evaluateAdditionalExtractors(MutableList<Function2<ExecutionState, List<Map<String, Object>>,Result>> resultInterpreterExtensions, ExecutionState executionState, List<Map<String, Object>> rowValueMaps)
+    public static Result evaluateAdditionalExtractors(MutableList<Function2<ExecutionState, List<Map<String, Object>>, Result>> resultInterpreterExtensions, ExecutionState executionState, List<Map<String, Object>> rowValueMaps)
     {
-        for (Function2<ExecutionState, List<Map<String, Object>>,Result> func : resultInterpreterExtensions)
+        for (Function2<ExecutionState, List<Map<String, Object>>, Result> func : resultInterpreterExtensions)
         {
             Result res = func.value(executionState, rowValueMaps);
             if (res != null)
@@ -308,7 +306,8 @@ public class RelationalExecutor
                 {
                     try (Statement statement = connectionManagerConnection.createStatement())
                     {
-                        tempTableList.forEach((Consumer<? super String>) table -> {
+                        tempTableList.forEach((Consumer<? super String>) table ->
+                        {
                             try
                             {
                                 statement.execute(databaseManager.relationalDatabaseSupport().dropTempTable(table));
@@ -369,7 +368,7 @@ public class RelationalExecutor
             t.process(vars, stringWriter);
             result = stringWriter.toString();
         }
-        catch (Exception e)
+        catch (Exception ignored)
         {
         }
         return result;

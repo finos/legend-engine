@@ -1,0 +1,166 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::profiles::*;
+import meta::pure::functions::meta::tests::generalizations::*;
+
+Class meta::pure::functions::meta::tests::generalizations::A {}
+
+Class meta::pure::functions::meta::tests::generalizations::B extends A {}
+
+Class meta::pure::functions::meta::tests::generalizations::C extends A {}
+
+Class meta::pure::functions::meta::tests::generalizations::D extends B {}
+
+Class meta::pure::functions::meta::tests::generalizations::E extends D, C {}
+
+Class meta::pure::functions::meta::tests::generalizations::F extends C, D {}
+
+Class meta::pure::functions::meta::tests::generalizations::G extends E, D {}
+
+Class meta::pure::functions::meta::tests::generalizations::H extends E, B {}
+
+Class meta::pure::functions::meta::tests::generalizations::I extends F, B, A {}
+
+
+function <<test.Test>> meta::pure::functions::meta::tests::generalizations::testGeneralizationsAny():Boolean[1]
+{
+    assertEquals(Any, Any->generalizations());
+}
+
+function <<test.Test>> meta::pure::functions::meta::tests::generalizations::testGeneralizationsPrimitive():Boolean[1]
+{
+    assertEquals([Boolean, Any], Boolean->generalizations());
+    assertEquals([Date, Any], Date->generalizations());
+    assertEquals([Float, Number, Any], Float->generalizations());
+    assertEquals([Integer, Number, Any], Integer->generalizations());
+    assertEquals([Number, Any], Number->generalizations());
+    assertEquals([String, Any], String->generalizations());
+}
+
+function <<test.Test>> meta::pure::functions::meta::tests::generalizations::testGeneralizationsA():Boolean[1]
+{
+    assertEquals([A, Any], A->generalizations());
+}
+
+function <<test.Test>> meta::pure::functions::meta::tests::generalizations::testGeneralizationsB():Boolean[1]
+{
+    assertEquals([B, A, Any], B->generalizations());
+}
+
+function <<test.Test>> meta::pure::functions::meta::tests::generalizations::testGeneralizationsC():Boolean[1]
+{
+    assertEquals([C, A, Any], C->generalizations());
+}
+
+function <<test.Test>> meta::pure::functions::meta::tests::generalizations::testGeneralizationsD():Boolean[1]
+{
+    assertEquals([D, B, A, Any], D->generalizations());
+}
+
+function <<test.Test>> meta::pure::functions::meta::tests::generalizations::testGeneralizationsE():Boolean[1]
+{
+    assertEquals([E, D, B, C, A, Any], E->generalizations());
+}
+
+function <<test.Test>> meta::pure::functions::meta::tests::generalizations::testGeneralizationsF():Boolean[1]
+{
+    assertEquals([F, C, D, B, A, Any], F->generalizations());
+}
+
+function <<test.Test>> meta::pure::functions::meta::tests::generalizations::testGeneralizationsG():Boolean[1]
+{
+    assertEquals([G, E, D, B, C, A, Any], G->generalizations());
+}
+
+function <<test.Test>> meta::pure::functions::meta::tests::generalizations::testGeneralizationsH():Boolean[1]
+{
+    assertEquals([H, E, D, B, C, A, Any], H->generalizations());
+}
+
+function <<test.Test>> meta::pure::functions::meta::tests::generalizations::testGeneralizationsI():Boolean[1]
+{
+    assertEquals([I, F, C, D, B, A, Any], I->generalizations());
+}
+
+function <<test.Test>> meta::pure::functions::meta::tests::generalizations::testSimpleGeneralization():Boolean[1]
+{
+   let b = ^DD(propA='iA', propB='iB');
+   assertInstanceOf($b, DD);
+   assertInstanceOf($b, AA);
+   assertEquals('iA', $b.propA);
+   assertEquals('iB', $b.propB);
+}
+
+function <<test.Test>> meta::pure::functions::meta::tests::generalizations::testSuperTypeInstantiation():Boolean[1]
+{
+   let a = ^AA(propA='iA');
+   assertInstanceOf($a, AA);
+   assertFalse($a->instanceOf(DD));
+   assertEquals('iA', $a.propA);
+}
+
+function <<test.Test>> meta::pure::functions::meta::tests::generalizations::testMultipleGeneralization():Boolean[1]
+{
+   let b = ^BB(propA='iA',propB='iB',propC='iC');
+   assertInstanceOf($b, AA);
+   assertInstanceOf($b, BB);
+   assertInstanceOf($b, CC);
+   assertEquals('iA', $b.propA);
+   assertEquals('iB', $b.propB);
+   assertEquals('iC', $b.propC);
+}
+
+function <<test.Test>> meta::pure::functions::meta::tests::generalizations::testMultipleGeneralizationFunctionMatching():Boolean[1]
+{
+   let b = ^BB(propA='iA',propB='iB',propC='iC');
+   assertEquals($b.propA, callWithA($b));
+   assertEquals($b.propB, callWithB($b));
+   assertEquals($b.propC, callWithC($b));
+}
+
+function meta::pure::functions::meta::tests::generalizations::callWithA(a:AA[1]):String[1]
+{
+   $a.propA;
+}
+
+function meta::pure::functions::meta::tests::generalizations::callWithB(b:BB[1]):String[1]
+{
+   $b.propB;
+}
+
+function meta::pure::functions::meta::tests::generalizations::callWithC(c:CC[1]):String[1]
+{
+   $c.propC;
+}
+
+Class meta::pure::functions::meta::tests::generalizations::AA
+{
+   propA:String[1];
+}
+
+Class meta::pure::functions::meta::tests::generalizations::CC
+{
+   propC:String[1];
+}
+
+Class meta::pure::functions::meta::tests::generalizations::BB extends AA,CC
+{
+   propB:String[1];
+}
+
+Class meta::pure::functions::meta::tests::generalizations::DD extends AA
+{
+   propB:String[1];
+}

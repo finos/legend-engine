@@ -31,12 +31,12 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Concre
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -130,8 +130,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     {
         String code =
                 "function example::testMaxInteger(input: Integer[1]):Any[0..1]\n" +
-                        "{\n"+
-                        "   [1,$input]->meta::pure::functions::math::max();"+
+                        "{\n" +
+                        "   [1,$input]->meta::pure::functions::math::max();" +
                         "}\n";
         test(code);
     }
@@ -141,8 +141,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     {
         String code =
                 "function example::testMaxInteger(input: Integer[1]):Any[0..1]\n" +
-                        "{\n"+
-                        "   [1,$input]->max();"+
+                        "{\n" +
+                        "   [1,$input]->max();" +
                         "}\n";
         test(code);
     }
@@ -152,18 +152,18 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     {
         String code =
                 "function example::testMaxInteger(input: Integer[1]):Any[0..1]\n" +
-                        "{\n"+
-                        "   [1,$input]->max();"+
-                        "}\n"+
+                        "{\n" +
+                        "   [1,$input]->max();" +
+                        "}\n" +
                         "function example::testMaxInteger():Any[0..1]\n" +
-                        "{\n"+
-                        "   [1,2]->max();"+
-                        "}\n"+"###Pure\n"+
-                        "import example::*;\n"+
+                        "{\n" +
+                        "   [1,2]->max();" +
+                        "}\n" + "###Pure\n" +
+                        "import example::*;\n" +
                         "function example::test::go():Any[0..1]\n" +
-                        "{\n"+
-                        "   testMaxInteger(1);"+
-                        "   testMaxInteger();"+
+                        "{\n" +
+                        "   testMaxInteger(1);" +
+                        "   testMaxInteger();" +
                         "}\n";
         test(code);
     }
@@ -173,31 +173,31 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     {
         String code =
                 "function example::testMaxInteger(input: Integer[1]):Any[0..1]\n" +
-                        "{\n"+
-                        "   [1,$input]->max();"+
-                        "}\n"+
+                        "{\n" +
+                        "   [1,$input]->max();" +
+                        "}\n" +
                         "function example::testMaxInteger(input: Number[1]):Any[0..1]\n" +
-                        "{\n"+
-                        "   [1,2]->max();"+
-                        "}\n"+
+                        "{\n" +
+                        "   [1,2]->max();" +
+                        "}\n" +
                         "function example::testMaxInteger(f: Float[1], d: Float[1]):Any[0..1]\n" +
-                        "{\n"+
-                        "   [1, $f, $d]->max();"+
-                        "}\n"+
+                        "{\n" +
+                        "   [1, $f, $d]->max();" +
+                        "}\n" +
                         "function example::testMaxInteger():Any[0..1]\n" +
-                        "{\n"+
-                        "   [1,2]->max();"+
-                        "}\n"+
+                        "{\n" +
+                        "   [1,2]->max();" +
+                        "}\n" +
                         "function example::test::testMaxInteger():Any[0..1]\n" +
-                        "{\n"+
-                        "   [1,2]->max();"+
-                        "}\n"+
+                        "{\n" +
+                        "   [1,2]->max();" +
+                        "}\n" +
                         "function example::test::go():Any[0..1]\n" +
-                        "{\n"+
-                        "   example::testMaxInteger(1);"+
-                        "   example::testMaxInteger();"+
-                        "   example::test::testMaxInteger();"+
-                        "   example::testMaxInteger(1.0, 1.123);"+
+                        "{\n" +
+                        "   example::testMaxInteger(1);" +
+                        "   example::testMaxInteger();" +
+                        "   example::test::testMaxInteger();" +
+                        "   example::testMaxInteger(1.0, 1.123);" +
                         "}\n";
         test(code);
     }
@@ -207,14 +207,14 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     {
         String code =
                 "function example::testMaxInteger(input: Integer[1]):Any[0..1]\n" +
-                        "{\n"+
-                        "   [1,$input]->max();"+
-                        "}\n"+
+                        "{\n" +
+                        "   [1,$input]->max();" +
+                        "}\n" +
                         "function example::testMaxInteger(input: Integer[1]):Any[0..1]\n" +
-                        "{\n"+
-                        "   [1,2]->max();"+
+                        "{\n" +
+                        "   [1,2]->max();" +
                         "}\n";
-        test(code,"COMPILATION error at [4:1-6:17]: Duplicated element 'example::testMaxInteger_Integer_1__Any_$0_1$_'");
+        test(code, "COMPILATION error at [4:1-6:17]: Duplicated element 'example::testMaxInteger_Integer_1__Any_$0_1$_'");
     }
 
     @Test
@@ -844,7 +844,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     @Test
     public void testPackageableElementMismatchWithGetAll()
     {
-        test(  "###Pure\n" +
+        test("###Pure\n" +
                 "Class test::A" +
                 "{ prop : String[1];" +
                 "}" +
@@ -1561,20 +1561,20 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     public void testMatchMaxFunction()
     {
         test("function example::testMaxString():Any[0..1]\n" +
-                "{\n"+
-                "   ['string1', 'string2']->max();"+
+                "{\n" +
+                "   ['string1', 'string2']->max();" +
                 "}\n" +
                 "function example::testMaxInteger():Any[0..1]\n" +
-                "{\n"+
-                "   [1,2]->max();"+
-                "}\n"+
+                "{\n" +
+                "   [1,2]->max();" +
+                "}\n" +
                 "function example::testMaxFloat():Any[0..1]\n" +
-                "{\n"+
-                "   [1.0,2.0]->max();"+
-                "}\n"+
+                "{\n" +
+                "   [1.0,2.0]->max();" +
+                "}\n" +
                 "function example::testMaxDate():Any[0..1]\n" +
-                "{\n"+
-                "   [%1999-01-01,%2000-01-01]->max();"+
+                "{\n" +
+                "   [%1999-01-01,%2000-01-01]->max();" +
                 "}\n"
         );
     }
@@ -2004,6 +2004,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "   } : Boolean[1];\n" +
                 "}\n");
     }
+
     @Test
     public void testClassWithBusinessTemporalMilesoning()
     {
@@ -2038,7 +2039,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
 
     public String getMilestoningModelWithDatePropagationAndInheritance()
     {
-        String model ="###Pure\n" +
+        String model = "###Pure\n" +
                 "Class <<temporal.businesstemporal>> {doc.doc = 'Account class'} my::domainModel::migration::test::account::AccountValue\n" +
                 "{\n" +
                 "  value: String[1];\n" +
@@ -2078,8 +2079,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
         Assert.assertEquals(3, collectionsQPs.size());
         RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty> singleDateQPWithArgAndNoArg = collectionsQPs.select(p -> p.getName().equals("productType"));
         Assert.assertTrue("Missing productType property for Class in my::domainModel::migration::test::product::Collections _qualifiedProperties", singleDateQPWithArgAndNoArg.size() == 2);
-        Assert.assertTrue("One of the productType properties for Class in my::domainModel::migration::test::product::Collections _qualifiedProperties should contain one argument for Date", ListIterate.anySatisfy(singleDateQPWithArgAndNoArg.toList(), qp->((Root_meta_pure_metamodel_type_FunctionType_Impl) (qp._classifierGenericType()._typeArguments().getFirst()._rawType()))._parameters.size() == 2));
-        Assert.assertTrue("One of the productType properties for Class in my::domainModel::migration::test::product::Collections _qualifiedProperties should not contain one argument for Date", ListIterate.anySatisfy(singleDateQPWithArgAndNoArg.toList(), qp->((Root_meta_pure_metamodel_type_FunctionType_Impl) qp._classifierGenericType()._typeArguments().getFirst()._rawType())._parameters.size() == 1));
+        Assert.assertTrue("One of the productType properties for Class in my::domainModel::migration::test::product::Collections _qualifiedProperties should contain one argument for Date", ListIterate.anySatisfy(singleDateQPWithArgAndNoArg.toList(), qp -> ((Root_meta_pure_metamodel_type_FunctionType_Impl) (qp._classifierGenericType()._typeArguments().getFirst()._rawType()))._parameters.size() == 2));
+        Assert.assertTrue("One of the productType properties for Class in my::domainModel::migration::test::product::Collections _qualifiedProperties should not contain one argument for Date", ListIterate.anySatisfy(singleDateQPWithArgAndNoArg.toList(), qp -> ((Root_meta_pure_metamodel_type_FunctionType_Impl) qp._classifierGenericType()._typeArguments().getFirst()._rawType())._parameters.size() == 1));
     }
 
     @Test

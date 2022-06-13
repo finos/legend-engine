@@ -20,9 +20,9 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.Exception
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.pac4j.core.profile.CommonProfile;
 
-import java.io.IOException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.IOException;
 
 public class ManageConstantResult
 {

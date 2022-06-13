@@ -1375,7 +1375,7 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
                 hasHour() ? hour : 0,
                 hasMinute() ? minute : 0,
                 hasSecond() ? second : 0,
-                hasSubsecond() ? Integer.parseInt((subsecond+"000000000").substring(0, 9)): 0
+                hasSubsecond() ? Integer.parseInt((subsecond + "000000000").substring(0, 9)) : 0
         ).atZone(ZoneId.of("UTC")).toInstant();
     }
 
@@ -2047,7 +2047,7 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
             }
             else
             {
-                result = (long)earlierLaterPair.getTwo().getOne().get(Calendar.DAY_OF_YEAR) - earlierLaterPair.getOne().getOne().get(Calendar.DAY_OF_YEAR);
+                result = (long) earlierLaterPair.getTwo().getOne().get(Calendar.DAY_OF_YEAR) - earlierLaterPair.getOne().getOne().get(Calendar.DAY_OF_YEAR);
             }
             return result;
         }

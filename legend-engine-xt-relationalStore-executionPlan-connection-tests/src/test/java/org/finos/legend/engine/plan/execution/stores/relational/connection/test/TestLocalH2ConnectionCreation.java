@@ -95,7 +95,7 @@ public class TestLocalH2ConnectionCreation extends DbSpecificTests
         ConnectionKey key1 = this.connectionManagerSelector.generateKeyFromDatabaseConnection(db1);
         Assert.assertNotNull(key1);
         assertNotNull(ConnectionPoolTestUtils.getDataSourceSpecifications().get(key1));
-        String poolName = this.connectionStateManager.poolNameFor(identity1,key1);
+        String poolName = this.connectionStateManager.poolNameFor(identity1, key1);
         // We have a connection pool for the user
         assertNotNull(this.connectionStateManager.get(poolName));
 
@@ -123,7 +123,7 @@ public class TestLocalH2ConnectionCreation extends DbSpecificTests
 
         // We have a connection pool for the user
 
-        assertNotNull(this.connectionStateManager.get(this.connectionStateManager.poolNameFor(identity1,connectionKey)));
+        assertNotNull(this.connectionStateManager.get(this.connectionStateManager.poolNameFor(identity1, connectionKey)));
 
         H2TestUtils.closeProperly(db1Conn1, db2Conn1);
     }
@@ -148,8 +148,8 @@ public class TestLocalH2ConnectionCreation extends DbSpecificTests
 
         // We have 2 connection pools for the user
         assertEquals(2, ConnectionPoolTestUtils.countNumHikariPools(identity1.getName()));
-        assertNotNull(connectionStateManager.get(connectionStateManager.poolNameFor(identity1,this.connectionManagerSelector.generateKeyFromDatabaseConnection(db1))));
-        assertNotNull(connectionStateManager.get(connectionStateManager.poolNameFor(identity1,this.connectionManagerSelector.generateKeyFromDatabaseConnection(db2))));
+        assertNotNull(connectionStateManager.get(connectionStateManager.poolNameFor(identity1, this.connectionManagerSelector.generateKeyFromDatabaseConnection(db1))));
+        assertNotNull(connectionStateManager.get(connectionStateManager.poolNameFor(identity1, this.connectionManagerSelector.generateKeyFromDatabaseConnection(db2))));
 
         H2TestUtils.closeProperly(db1Conn1, db2Conn1);
     }
@@ -162,14 +162,14 @@ public class TestLocalH2ConnectionCreation extends DbSpecificTests
 
         Connection db1Conn1 = this.connectionManagerSelector.getDatabaseConnection(identity1, db1);
         String db1Conn1Name = h2Name(db1Conn1);
-        String poolName1 = this.connectionStateManager.poolNameFor(identity1,this.connectionManagerSelector.generateKeyFromDatabaseConnection(db1));
+        String poolName1 = this.connectionStateManager.poolNameFor(identity1, this.connectionManagerSelector.generateKeyFromDatabaseConnection(db1));
 
         Identity identity2 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("identity2");
         RelationalDatabaseConnection db2 = this.buildLocalH2DatasourceSpec(Lists.mutable.with("drop table if exists Test2;"));
 
         Connection db2Conn1 = this.connectionManagerSelector.getDatabaseConnection(identity2, db2);
         String db2Conn1Name = h2Name(db2Conn1);
-        String poolName2 = this.connectionStateManager.poolNameFor(identity2,this.connectionManagerSelector.generateKeyFromDatabaseConnection(db2));
+        String poolName2 = this.connectionStateManager.poolNameFor(identity2, this.connectionManagerSelector.generateKeyFromDatabaseConnection(db2));
 
         // Connections are distinct
         assertNotSame(db1Conn1Name, db2Conn1Name);
@@ -197,14 +197,14 @@ public class TestLocalH2ConnectionCreation extends DbSpecificTests
 
         Connection db1Conn1 = this.connectionManagerSelector.getDatabaseConnection(identity1, db1);
         String db1Conn1Name = h2Name(db1Conn1);
-        String poolName1 = this.connectionStateManager.poolNameFor(identity1,this.connectionManagerSelector.generateKeyFromDatabaseConnection(db1));
+        String poolName1 = this.connectionStateManager.poolNameFor(identity1, this.connectionManagerSelector.generateKeyFromDatabaseConnection(db1));
 
         Identity identity2 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("identity2");
         RelationalDatabaseConnection db2 = this.buildLocalH2DatasourceSpec();
 
         Connection db2Conn1 = this.connectionManagerSelector.getDatabaseConnection(identity2, db2);
         String db2Conn1Name = h2Name(db2Conn1);
-        String poolName2 = this.connectionStateManager.poolNameFor(identity2,this.connectionManagerSelector.generateKeyFromDatabaseConnection(db2));
+        String poolName2 = this.connectionStateManager.poolNameFor(identity2, this.connectionManagerSelector.generateKeyFromDatabaseConnection(db2));
 
 
         // Connections are distinct
@@ -222,7 +222,7 @@ public class TestLocalH2ConnectionCreation extends DbSpecificTests
 
         Assert.assertNotNull(this.connectionStateManager.get(poolName1));
         Assert.assertNotNull(this.connectionStateManager.get(poolName2));
-        Assert.assertNotSame(this.connectionStateManager.get(poolName1),this.connectionStateManager.get(poolName2));
+        Assert.assertNotSame(this.connectionStateManager.get(poolName1), this.connectionStateManager.get(poolName2));
         H2TestUtils.closeProperly(db1Conn1, db2Conn1);
     }
 

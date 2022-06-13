@@ -46,7 +46,8 @@ public class TestRosettaFileGeneration
             Root_meta_external_format_rosetta_generation_RosettaConfig metaModelConfig = rosettaConfig.process(pureModel);
             List<? extends Root_meta_pure_generation_metamodel_GenerationOutput> outputs = core_external_format_rosetta_transformation_entry.Root_meta_external_format_rosetta_generation_generateRosettaFromPureWithScope_RosettaConfig_1__GenerationOutput_MANY_(metaModelConfig, pureModel.getExecutionSupport()).toList();
             Assert.assertEquals(outputs.size(), 1);
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
             throw new RuntimeException(e);
         }

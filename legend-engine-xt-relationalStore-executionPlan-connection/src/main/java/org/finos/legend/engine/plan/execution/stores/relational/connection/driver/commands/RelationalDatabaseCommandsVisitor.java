@@ -14,9 +14,10 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands;
 
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.databricks.DatabricksCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.bigquery.BigQueryCommands;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.databricks.DatabricksCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Commands;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.postgres.PostgresCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.redshift.RedshiftCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.snowflake.SnowflakeCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.sqlserver.SqlServerCommands;
@@ -24,10 +25,16 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.drive
 public interface RelationalDatabaseCommandsVisitor<T>
 {
     T visit(SnowflakeCommands snowflakeCommands);
+
     T visit(DatabricksCommands databricksCommands);
+
     T visit(H2Commands h2Commands);
+
     T visit(SqlServerCommands sqlServerCommands);
+
     T visit(BigQueryCommands bigQueryCommands);
+
     T visit(RedshiftCommands redshiftCommands);
 
+    T visit(PostgresCommands postgresCommands);
 }

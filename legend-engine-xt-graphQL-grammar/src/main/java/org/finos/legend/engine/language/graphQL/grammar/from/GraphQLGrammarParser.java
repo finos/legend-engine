@@ -14,7 +14,15 @@
 
 package org.finos.legend.engine.language.graphQL.grammar.from;
 
-import org.antlr.v4.runtime.*;
+import org.antlr.v4.runtime.ANTLRErrorListener;
+import org.antlr.v4.runtime.BaseErrorListener;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.InputMismatchException;
+import org.antlr.v4.runtime.Parser;
+import org.antlr.v4.runtime.RecognitionException;
+import org.antlr.v4.runtime.Recognizer;
+import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.eclipse.collections.api.factory.Lists;
@@ -22,13 +30,43 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.graphQL.grammar.from.antlr4.GraphQLLexer;
 import org.finos.legend.engine.language.graphQL.grammar.from.antlr4.GraphQLParser;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.graphQL.metamodel.Definition;
 import org.finos.legend.engine.protocol.graphQL.metamodel.Document;
 import org.finos.legend.engine.protocol.graphQL.metamodel.ExecutableDocument;
-import org.finos.legend.engine.protocol.graphQL.metamodel.executable.*;
-import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.*;
-import org.finos.legend.engine.protocol.graphQL.metamodel.value.*;
+import org.finos.legend.engine.protocol.graphQL.metamodel.executable.Argument;
+import org.finos.legend.engine.protocol.graphQL.metamodel.executable.Field;
+import org.finos.legend.engine.protocol.graphQL.metamodel.executable.FragmentDefinition;
+import org.finos.legend.engine.protocol.graphQL.metamodel.executable.FragmentSpread;
+import org.finos.legend.engine.protocol.graphQL.metamodel.executable.OperationDefinition;
+import org.finos.legend.engine.protocol.graphQL.metamodel.executable.OperationType;
+import org.finos.legend.engine.protocol.graphQL.metamodel.executable.Selection;
+import org.finos.legend.engine.protocol.graphQL.metamodel.executable.VariableDefinition;
+import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.DirectiveDefinition;
+import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.EnumTypeDefinition;
+import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.EnumValueDefinition;
+import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.ExecutableDirectiveLocation;
+import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.FieldDefinition;
+import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.InputValueDefinition;
+import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.InterfaceTypeDefinition;
+import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.ListTypeReference;
+import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.NamedTypeReference;
+import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.ObjectTypeDefinition;
+import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.RootOperationTypeDefinition;
+import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.ScalarTypeDefinition;
+import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.SchemaDefinition;
+import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.TypeReference;
+import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.TypeSystemDirectiveLocation;
+import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.UnionTypeDefinition;
+import org.finos.legend.engine.protocol.graphQL.metamodel.value.BooleanValue;
+import org.finos.legend.engine.protocol.graphQL.metamodel.value.EnumValue;
+import org.finos.legend.engine.protocol.graphQL.metamodel.value.FloatValue;
+import org.finos.legend.engine.protocol.graphQL.metamodel.value.IntValue;
+import org.finos.legend.engine.protocol.graphQL.metamodel.value.ListValue;
+import org.finos.legend.engine.protocol.graphQL.metamodel.value.NullValue;
+import org.finos.legend.engine.protocol.graphQL.metamodel.value.StringValue;
+import org.finos.legend.engine.protocol.graphQL.metamodel.value.Value;
+import org.finos.legend.engine.protocol.graphQL.metamodel.value.Variable;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
 import java.util.BitSet;
 import java.util.Collections;
@@ -54,12 +92,12 @@ public class GraphQLGrammarParser
         ANTLRErrorListener errorListener = new BaseErrorListener()
         {
             @Override
-            public void syntaxError(            Recognizer<?, ?> recognizer,
-                                                Object offendingSymbol,
-                                                int line,
-                                                int charPositionInLine,
-                                                String msg,
-                                                RecognitionException e)
+            public void syntaxError(Recognizer<?, ?> recognizer,
+                                    Object offendingSymbol,
+                                    int line,
+                                    int charPositionInLine,
+                                    String msg,
+                                    RecognitionException e)
             {
                 if (e != null && e.getOffendingToken() != null && e instanceof InputMismatchException)
                 {
@@ -78,7 +116,7 @@ public class GraphQLGrammarParser
                         SourceInformation sourceInformation = new SourceInformation(
                                 "",
                                 line,
-                                charPositionInLine + 1 ,
+                                charPositionInLine + 1,
                                 line,
                                 charPositionInLine + 1 + ((Token) offendingSymbol).getStopIndex() - ((Token) offendingSymbol).getStartIndex());
                         // NOTE: for some reason sometimes ANTLR report the end index of the token to be smaller than the start index so we must reprocess it here
@@ -98,7 +136,7 @@ public class GraphQLGrammarParser
                 SourceInformation sourceInformation = new SourceInformation(
                         "",
                         line,
-                        charPositionInLine + 1 ,
+                        charPositionInLine + 1,
                         offendingToken.getLine(),
                         charPositionInLine + offendingToken.getText().length());
                 throw new GraphQLParserException(msg, sourceInformation);
@@ -204,11 +242,12 @@ public class GraphQLGrammarParser
     private SchemaDefinition visitSchemaDefinition(GraphQLParser.SchemaDefinitionContext schemaDefinitionContext)
     {
         SchemaDefinition schemaDefinition = new SchemaDefinition();
-        schemaDefinition.rootOperationTypeDefinitions = ListIterate.collect(schemaDefinitionContext.rootOperationTypeDefinition(), o -> {
-                RootOperationTypeDefinition root = new RootOperationTypeDefinition();
-                root.operationType = OperationType.valueOf(o.operationType().getText());
-                root.type = o.namedType().getText();
-                return root;
+        schemaDefinition.rootOperationTypeDefinitions = ListIterate.collect(schemaDefinitionContext.rootOperationTypeDefinition(), o ->
+        {
+            RootOperationTypeDefinition root = new RootOperationTypeDefinition();
+            root.operationType = OperationType.valueOf(o.operationType().getText());
+            root.type = o.namedType().getText();
+            return root;
         });
         return schemaDefinition;
     }
@@ -219,21 +258,22 @@ public class GraphQLGrammarParser
         directiveDefinition.name = directiveDefinitionContext.name().getText();
         directiveDefinition.executableLocation = Lists.mutable.empty();
         directiveDefinition.typeSystemLocation = Lists.mutable.empty();
-        ListIterate.forEach(directiveDefinitionContext.directiveLocations().directiveLocation(), v -> {
-           if (v.executableDirectiveLocation() != null)
-           {
-               ExecutableDirectiveLocation res = ExecutableDirectiveLocation.valueOf(v.executableDirectiveLocation().getText());
-               directiveDefinition.executableLocation.add(res);
-           }
-           else if (v.typeSystemDirectiveLocation() != null)
-           {
-               TypeSystemDirectiveLocation res = TypeSystemDirectiveLocation.valueOf(v.typeSystemDirectiveLocation().getText());
-               directiveDefinition.typeSystemLocation.add(res);
-           }
-           else
-           {
-               throw new RuntimeException("ERROR");
-           }
+        ListIterate.forEach(directiveDefinitionContext.directiveLocations().directiveLocation(), v ->
+        {
+            if (v.executableDirectiveLocation() != null)
+            {
+                ExecutableDirectiveLocation res = ExecutableDirectiveLocation.valueOf(v.executableDirectiveLocation().getText());
+                directiveDefinition.executableLocation.add(res);
+            }
+            else if (v.typeSystemDirectiveLocation() != null)
+            {
+                TypeSystemDirectiveLocation res = TypeSystemDirectiveLocation.valueOf(v.typeSystemDirectiveLocation().getText());
+                directiveDefinition.typeSystemLocation.add(res);
+            }
+            else
+            {
+                throw new RuntimeException("ERROR");
+            }
         });
         directiveDefinition.argumentDefinitions = directiveDefinitionContext.argumentsDefinition() == null ? Collections.emptyList() : ListIterate.collect(directiveDefinitionContext.argumentsDefinition().inputValueDefinition(), this::visitInputValueDefinition);
         return directiveDefinition;
@@ -337,10 +377,11 @@ public class GraphQLGrammarParser
     {
         EnumTypeDefinition enumTypeDefinition = new EnumTypeDefinition();
         enumTypeDefinition.name = enumTypeDefinitionContext.name().getText();
-        enumTypeDefinition.values = enumTypeDefinitionContext.enumValuesDefinition() == null ? Collections.emptyList() : ListIterate.collect(enumTypeDefinitionContext.enumValuesDefinition().enumValueDefinition(), o -> {
-          EnumValueDefinition enumValueDefinition = new EnumValueDefinition();
+        enumTypeDefinition.values = enumTypeDefinitionContext.enumValuesDefinition() == null ? Collections.emptyList() : ListIterate.collect(enumTypeDefinitionContext.enumValuesDefinition().enumValueDefinition(), o ->
+        {
+            EnumValueDefinition enumValueDefinition = new EnumValueDefinition();
             enumValueDefinition.value = o.enumValue().getText();
-          return enumValueDefinition;
+            return enumValueDefinition;
         });
         return enumTypeDefinition;
     }

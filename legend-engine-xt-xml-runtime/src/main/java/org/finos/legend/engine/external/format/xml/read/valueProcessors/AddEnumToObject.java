@@ -39,7 +39,7 @@ public class AddEnumToObject<T, V extends Enum<?>> implements ValueProcessor<T>
     {
         String text = handler.parse(rawValue);
         V value = null;
-        for (V v: clazz.getEnumConstants())
+        for (V v : clazz.getEnumConstants())
         {
             if (XmlUtils.lenientMatch(v.name(), text))
             {

@@ -1,5 +1,18 @@
-package org.finos.legend.engine.external.format.flatdata.shared.driver.core.util;
+//  Copyright 2022 Goldman Sachs
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
 
+package org.finos.legend.engine.external.format.flatdata.shared.driver.core.util;
 
 import org.finos.legend.engine.external.format.flatdata.shared.driver.core.connection.CharCursor;
 
@@ -21,8 +34,9 @@ public class SimpleLineReader implements LineReader
 
         if (eol == null)
         {
-            isEol = from -> cursor.peek(from+1) == '\n' || cursor.peek(from+1) == '\r';
-            consumeEol = () -> {
+            isEol = from -> cursor.peek(from + 1) == '\n' || cursor.peek(from + 1) == '\r';
+            consumeEol = () ->
+            {
                 int ch1 = cursor.advance();
                 if (ch1 == '\r' && cursor.peek(1) == '\n')
                 {
@@ -33,14 +47,14 @@ public class SimpleLineReader implements LineReader
         else if (eol.length() == 1)
         {
             char eolChar = eol.charAt(0);
-            isEol = from -> cursor.peek(from+1) == eolChar;
+            isEol = from -> cursor.peek(from + 1) == eolChar;
             consumeEol = cursor::advance;
         }
         else if (eol.length() == 2)
         {
             char eolChar0 = eol.charAt(0);
             char eolChar1 = eol.charAt(1);
-            isEol = from -> cursor.peek(from+1) == eolChar0 && cursor.peek(from+2) == eolChar1;
+            isEol = from -> cursor.peek(from + 1) == eolChar0 && cursor.peek(from + 2) == eolChar1;
             consumeEol = () -> cursor.advance(2);
         }
         else
@@ -63,7 +77,7 @@ public class SimpleLineReader implements LineReader
         }
 
         int chars = 0;
-        while (cursor.peek(chars+1) != CharCursor.END_OF_DATA && !isEol.check(chars))
+        while (cursor.peek(chars + 1) != CharCursor.END_OF_DATA && !isEol.check(chars))
         {
             chars++;
         }

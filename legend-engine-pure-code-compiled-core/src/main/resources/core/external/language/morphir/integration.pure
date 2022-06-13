@@ -1,0 +1,45 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::morphir::generation::*;
+import meta::pure::generation::metamodel::*;
+import meta::json::*;
+
+Class meta::external::language::morphir::generation::MorphirConfig extends GenerationConfiguration
+{
+}
+
+function <<access.private, Generation.Configuration>>  meta::external::language::morphir::generation::describeConfiguration():GenerationParameter[*]
+{
+    []
+}
+
+function meta::external::language::morphir::generation::defaultConfig():MorphirConfig[1]
+{
+    ^MorphirConfig();
+}
+
+function meta::external::language::morphir::generation::generateMorphirIRFromPureWithScope(morphirConfig:MorphirConfig[1]):GenerationOutput[*]
+{
+    let scopeElements = $morphirConfig.allPackageScopeElements()->filter(p|$p->instanceOf(FunctionDefinition))->cast(@FunctionDefinition<Any>);
+    let content = $scopeElements->map(c| meta::external::language::morphir::generation::generateMorphirIRFromPure($c))->joinStrings('\n\n');
+    ^GenerationOutput(content=$content, fileName='morphir-ir.json', format = 'json');
+}
+
+function meta::external::language::morphir::generation::generateMorphirIRFromPure(func:FunctionDefinition<Any>[1]):String[*]
+{
+    let minFuncTransformedModel = $func->meta::external::language::morphir::transform::transformToMorphirModel();
+    let minFuncSerializedComplete = $minFuncTransformedModel->meta::external::language::morphir::serialization::morphirModelToJson();
+    $minFuncSerializedComplete->map(elem| $elem->toCompactJSONString());
+}

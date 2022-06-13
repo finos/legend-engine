@@ -1,0 +1,44 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::profiles::*;
+
+function {doc.doc = 'Return whether an element has a doc string.'} meta::pure::functions::doc::hasDoc(element:AnnotatedElement[1]):Boolean[1]
+{
+    let tag = doc->tag('doc');
+    $element.taggedValues->exists(t | $t.tag == $tag);
+}
+
+function {doc.doc = 'Get the doc strings for an element.'} meta::pure::functions::doc::getDocs(element:AnnotatedElement[1]):String[*]
+{
+    let tag = doc->tag('doc');
+    $element.taggedValues->filter(t | $t.tag == $tag)->map(t | $t.value);
+}
+
+function {doc.doc = 'Return whether an element is deprecated.'} meta::pure::functions::doc::isDeprecated(element:AnnotatedElement[1]):Boolean[1]
+{
+    $element->hasStereotype('deprecated', meta::pure::profiles::doc)
+}
+
+function {doc.doc = 'Return whether an element has any todos.'} meta::pure::functions::doc::hasTodo(element:AnnotatedElement[1]):Boolean[1]
+{
+    let tag = doc->tag('todo');
+    $element.taggedValues->exists(t | $t.tag == $tag);
+}
+
+function {doc.doc = 'Get the todos for an element.'} meta::pure::functions::doc::getTodos(element:AnnotatedElement[1]):String[*]
+{
+    let tag = doc->tag('todo');
+    $element.taggedValues->filter(t | $t.tag == $tag)->map(t | $t.value);
+}

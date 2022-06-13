@@ -1,0 +1,87 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::profiles::*;
+
+function <<test.Test>> meta::pure::functions::math::tests::rem::testRem():Boolean[1]
+{
+    assertEq(2, rem(12, 5));
+    assertEq(5, rem(5, 12));
+}
+
+function <<test.Test>> meta::pure::functions::math::tests::rem::testRemWithNegativeIntegers():Boolean[1]
+{
+    assertEq(-2, rem(-12, 5));
+    assertEq(-5, rem(-5, 12));
+}
+
+function <<test.Test>> meta::pure::functions::math::tests::rem::testRemWithFloats():Boolean[1]
+{
+    assertEq(0.5, rem(5, 1.5));
+    assertEq(1.0, rem(5.5, 1.5));
+}
+
+function <<test.Test>> meta::pure::functions::math::tests::rem::testRemWithMixedIntegersAndFloats():Boolean[1]
+{
+    assertEq(0.0, rem(5, 2.5));
+    assertEq(2.5, rem(7.5, 5));
+}
+
+function <<test.Test>> meta::pure::functions::math::tests::rem::testRemWithNegativeFloats():Boolean[1]
+{
+    assertEq(-0.5, rem(-5, 1.5));
+    assertEq(0.5, rem(5, -1.5));
+    assertEq(1.0, rem(5.5, -1.5));
+}
+
+function <<test.Test>> meta::pure::functions::math::tests::rem::testRemInEval():Boolean[1]
+{
+    let dividend = 12;
+    let divisor = 5;
+    assertEquals(2, rem_Number_1__Number_1__Number_1_->eval(12, 5));
+    assertEquals(-2, rem_Number_1__Number_1__Number_1_->eval(-12, 5));
+    assertEquals(2, rem_Number_1__Number_1__Number_1_->eval($dividend, $divisor));
+}
+
+function <<test.Test>> meta::pure::functions::math::tests::rem::testRemInEvalWithFloat():Boolean[1]
+{
+    let dividend = 5;
+    let divisor = 1.5;
+    assertEquals(0.5, rem_Number_1__Number_1__Number_1_->eval(5, 1.5));
+    assertEquals(2.5, rem_Number_1__Number_1__Number_1_->eval(7.5, 5));
+    assertEquals(0.5, rem_Number_1__Number_1__Number_1_->eval($dividend, $divisor));
+}
+
+function <<test.Test>> meta::pure::functions::math::tests::rem::testRemInEvalWithMixedIntegersAndFloats():Boolean[1]
+{
+    let dividend = 7.5;
+    let divisor = 5;
+    assertEquals(0.0, rem_Number_1__Number_1__Number_1_->eval(5, 2.5));
+    assertEquals(1.0, rem_Number_1__Number_1__Number_1_->eval(5.5, 1.5));
+    assertEquals(2.5, rem_Number_1__Number_1__Number_1_->eval($dividend, $divisor));
+}
+
+function <<test.Test>> meta::pure::functions::math::tests::rem::testRemInEvalWithNegativeNumbers():Boolean[1]
+{
+    let dividend = -5;
+    let divisor = 1.5;
+    assertEquals(0.5, rem_Number_1__Number_1__Number_1_->eval(5, -1.5));
+    assertEquals(1.0, rem_Number_1__Number_1__Number_1_->eval(5.5, -1.5));
+    assertEquals(-0.5, rem_Number_1__Number_1__Number_1_->eval($dividend, $divisor));
+}
+
+function <<test.Test>> meta::pure::functions::math::tests::rem::testRemWithDecimals():Boolean[1]
+{
+    assertEq(0.14d, rem(3.14, 1.5d));
+}

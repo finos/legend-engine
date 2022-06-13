@@ -1,0 +1,922 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::factory::*;
+import meta::external::language::java::metamodel::*;
+import meta::external::language::java::metamodel::annotations::json::*;
+import meta::external::language::java::metamodel::project::*;
+import meta::external::language::java::serialization::*;
+
+// --- Stringifier
+
+Class meta::external::language::java::serialization::Stringifier
+{
+   imports          : meta::external::language::java::metamodel::Importable[*];
+   classesInPackage : meta::external::language::java::metamodel::Class[*];
+   project          : meta::external::language::java::metamodel::project::Project[0..1];
+
+   stack            : meta::external::language::java::metamodel::Class[*];
+   tab              : String[1];
+   tabDepth         : Integer[1];
+   scope            : Scope[1];
+   foldLevel        : Integer[1];
+   wipLine          : String[1];
+   pending          : String[1];
+   completeLines    : String[1];
+
+   tabString()  { range(0, $this.tabDepth)->map(x| $this.tab)->joinStrings() }: String[1];
+
+   inParameters() { $this.scope == Scope.IN_PARAMETERS }: Boolean[1];
+   inForHead()    { $this.scope == Scope.IN_FOR_HEAD   }: Boolean[1];
+}
+
+Enum meta::external::language::java::serialization::Scope
+{
+   DEFAULT, IN_PARAMETERS, IN_FOR_HEAD
+}
+
+function meta::external::language::java::serialization::newStringifier(project:meta::external::language::java::metamodel::project::Project[1]): Stringifier[1]
+{
+   ^Stringifier(foldLevel=0, wipLine='', pending='', completeLines='', scope=Scope.DEFAULT, tab='    ', tabDepth=0, project=$project)
+}
+
+function meta::external::language::java::serialization::newStringifier(): Stringifier[1]
+{
+   ^Stringifier(foldLevel=0, wipLine='', pending='', completeLines='', scope=Scope.DEFAULT, tab='    ', tabDepth=0)
+}
+
+// --- Entry Points
+
+function meta::external::language::java::serialization::ofClass(sfer:Stringifier[1], j:meta::external::language::java::metamodel::Class[1]): String[1]
+{
+   let newSfer = $sfer->classSerializer($j);
+   $j->match([
+      e: meta::external::language::java::metamodel::Enumeration[1] | $newSfer->ofEnumInternal($e),
+      c: meta::external::language::java::metamodel::Class[1]       | $newSfer->ofClassInternal($c)
+   ])->getResult();
+}
+
+function meta::external::language::java::serialization::ofEnum(sfer:Stringifier[1], j:meta::external::language::java::metamodel::Enumeration[1]): String[1]
+{
+   let newSfer = $sfer->classSerializer($j);
+   $newSfer->ofEnumInternal($j)->getResult();
+}
+
+function meta::external::language::java::serialization::classToString(j:meta::external::language::java::metamodel::Class[1]):String[1]
+{
+   newStringifier()->ofClass($j);
+}
+
+function meta::external::language::java::serialization::enumToString(j:meta::external::language::java::metamodel::Enumeration[1]):String[1]
+{
+   newStringifier()->ofEnum($j);
+}
+
+function meta::external::language::java::serialization::packageToString(j:meta::external::language::java::metamodel::Package[1]):String[1]
+{
+   $j.parent->match([
+      p0:meta::external::language::java::metamodel::Package[0] | [],
+      p :meta::external::language::java::metamodel::Package[1] | $p->packageToString()
+   ])->concatenate($j.name)->joinStrings('.');
+}
+
+function meta::external::language::java::serialization::qualifiedClassName(j:meta::external::language::java::metamodel::Class[1]):String[1]
+{
+   $j.package->packageToString() + '.' + $j.simpleName;
+}
+
+// TODO This should not be necessary once all code gen creates Code instead of String
+function meta::external::language::java::serialization::codeToString(code: Code[1], forClass:meta::external::language::java::metamodel::Class[1]):String[1]
+{
+   newStringifier()->classSerializer($forClass)->doCode($code)->getResult();
+}
+
+function meta::external::language::java::serialization::codeToString(code: Code[1]):String[1]
+{
+   newStringifier()->doCode($code)->getResult();
+}
+
+function meta::external::language::java::serialization::typeToString(type:meta::external::language::java::metamodel::Type[1]):String[1]
+{
+   newStringifier()->doType($type)->getResult();
+}
+
+// TODO This should not be necessary once all code gen creates Code instead of String
+function meta::external::language::java::serialization::typeToString(type:meta::external::language::java::metamodel::Type[1], forClass:meta::external::language::java::metamodel::Class[1]):String[1]
+{
+   newStringifier()->classSerializer($forClass)->doType($type)->getResult();
+}
+
+// --- Implementation
+
+function <<access.private>> meta::external::language::java::serialization::classSerializer(sfer:Stringifier[1], class:meta::external::language::java::metamodel::Class[1]): Stringifier[1]
+{
+   if($sfer.imports->isNotEmpty(),
+      | $sfer,
+      {|
+         let classImports = $class.additionalImports->map(
+            {imp|
+               if($imp->endsWith('.*'),
+                  | javaPackage($imp->substring(0, $imp->length()-2)),
+                  | javaClass($imp)
+               )
+            }
+         )->cast(@meta::external::language::java::metamodel::Importable);
+
+         ^$sfer(
+            imports          = $classImports,
+            classesInPackage = $sfer.project->map(p| $p->allClasses())->filter(c| $c.package == $class.package)
+         );
+
+      }
+   );
+}
+
+function <<access.private>> meta::external::language::java::serialization::ofEnumInternal(sfer:Stringifier[1], j:meta::external::language::java::metamodel::Enumeration[1]): Stringifier[1]
+{
+   $sfer
+      ->initialize($j)
+      ->doPackage($j.package)
+      ->doImports($j.additionalImports)
+      ->doJavaDoc($j)
+      ->doAnnotations($j)
+      ->doEnumDeclaration($j)
+      ->openBrace()
+      ->forEach($j.enumeration, {s, e| $s->doEnumEntry($e)})
+      ->pending(';')
+      ->blankLine()
+      ->doClassBody($j)
+      ->closeBrace();
+}
+
+function <<access.private>> meta::external::language::java::serialization::doEnumDeclaration(sfer:Stringifier[1], j:meta::external::language::java::metamodel::Class[1]): Stringifier[1]
+{
+   $sfer
+   ->doModifiers($j.modifiers)
+   ->addWord('enum')
+   ->addText($j.simpleName);
+}
+
+function <<access.private>> meta::external::language::java::serialization::doEnumEntry(sfer:Stringifier[1], e:meta::external::language::java::metamodel::EnumerationEntry[1]): Stringifier[1]
+{
+   $sfer
+      ->blankLine($e->hasJavaDoc() || $e.annotations->isNotEmpty())
+      ->doJavaDoc($e)
+      ->doAnnotations($e)
+      ->addText($e.name)
+      ->ifNotEmpty($e.value, {s, v| $s->addText('("')->addText($v->toOne())->addText('")')})
+      ->ifNotEmpty($e.arguments, {s, args| $s->joining($args, {s2, a| $s2->doCode($a)}, '(', ', ', ')')})
+      ->pending(',\n')
+      ->blankLine($e->hasJavaDoc() || $e.annotations->isNotEmpty());
+}
+
+function <<access.private>> meta::external::language::java::serialization::ofClassInternal(sfer:Stringifier[1], j:meta::external::language::java::metamodel::Class[1]): Stringifier[1]
+{
+   $sfer
+      ->initialize($j)
+      ->doPackage($j.package)
+      ->doImports($j.additionalImports)
+      ->doJavaDoc($j)
+      ->doAnnotations($j)
+      ->doClassDeclaration($j)
+      ->openBrace()
+      ->doClassBody($j)
+      ->closeBrace();
+}
+
+function <<access.private>> meta::external::language::java::serialization::doClassDeclaration(sfer:Stringifier[1], j:meta::external::language::java::metamodel::Class[1]): Stringifier[1]
+{
+   let withModifiers   = $sfer->doModifiers($j.modifiers);
+
+   if($j.modifiers->contains(meta::external::language::java::metamodel::Modifier.Interface),
+     {|
+        $withModifiers
+           ->addText($j.simpleName)
+           ->doTypeParameters($j.typeParameters)->space()
+           ->ifNotEmpty($j.interfaces, {s, ifcs| $s->addWord('extends')->joining($ifcs, {s, i| $s->doType($i)}, ', ')->space()});
+     },
+     {|
+        $withModifiers
+           ->addWord('class')
+           ->addText($j.simpleName)
+           ->doTypeParameters($j.typeParameters)->space()
+           ->ifNotEmpty($j.superType, {s, st| $s->addWord('extends')->doType($st->toOne())->space()})
+           ->ifNotEmpty($j.interfaces, {s, ifcs| $s->addWord('implements')->joining($ifcs, {s, i| $s->doType($i)}, ', ')->space()});
+     }
+   );
+}
+
+function <<access.private>> meta::external::language::java::serialization::doClassBody(sfer:Stringifier[1], j:meta::external::language::java::metamodel::Class[1]): Stringifier[1]
+{
+   $sfer
+      ->forEach($j.fields, {s, f| $s->doField($f)})
+      ->blankLine()
+      ->forEach($j.constructors, {s, c| $s->doConstructor($c, $j)})
+      ->forEach($j.methods, {s, m| $s->doMethod($m)});
+}
+
+function <<access.private>> meta::external::language::java::serialization::doField(sfer:Stringifier[1], f:meta::external::language::java::metamodel::Field[1]): Stringifier[1]
+{
+   let initializer = $f.value->map(s| j_code($s, javaVoid()))->concatenate($f.valueCode)->first();
+
+   $sfer
+      ->blankLine($f->hasJavaDoc() || $f.annotations->isNotEmpty())
+      ->doJavaDoc($f)
+      ->doAnnotations($f)
+      ->doModifiers($f.modifiers)
+      ->doType($f.type)->space()
+      ->addText($f.name)
+      ->ifNotEmpty($initializer, {s,i| $s->addText(' = ')->doCode($i->toOne())})
+      ->semicolon()
+      ->newLine()
+      ->blankLine($f->hasJavaDoc() || $f.annotations->isNotEmpty());
+}
+
+function <<access.private>> meta::external::language::java::serialization::doConstructor(sfer:Stringifier[1], c:meta::external::language::java::metamodel::Constructor[1], j:meta::external::language::java::metamodel::Class[1]): Stringifier[1]
+{
+   let code = $c.body->map(b| j_code($b->toOne(), javaVoid()))->concatenate($c.bodyCode)->first();
+
+   $sfer
+      ->blankLine()
+      ->doJavaDoc($c)
+      ->doAnnotations($c)
+      ->doModifiers($c.modifiers)
+      ->addText($j.simpleName)
+      ->doParameters($c.parameters)
+      ->openBrace()
+      ->ifNotEmpty($code, {s, c| $s->doMethodBodyCode($c->toOne())})
+      ->closeBrace();
+}
+
+function meta::external::language::java::serialization::doMethod(sfer:Stringifier[1], m:meta::external::language::java::metamodel::Method[1]): Stringifier[1]
+{
+   let code = $m.body->map(b| j_code($b->toOne(), javaVoid()))->concatenate($m.bodyCode)->first();
+
+   let preamble = $sfer
+      ->blankLine($m.body->isNotEmpty() || $m.bodyCode->isNotEmpty() || $m->hasJavaDoc() || $m.annotations->isNotEmpty())
+      ->doJavaDoc($m)
+      ->doAnnotations($m)
+      ->doModifiers($m.modifiers)
+      ->ifNotEmpty($m.typeParameters, {s,tp| $s->doTypeParameters($tp)->space()})
+      ->doType($m.returnType)->space()
+      ->addText($m.name)
+      ->doParameters($m.parameters)
+      ->ifNotEmpty($code,
+           {s, c| $s->openBrace()->doMethodBodyCode($c->toOne())->closeBrace()},
+           {s   | $s->semicolon()->newLine()}
+        )
+      ->blankLine($m.body->isNotEmpty()||$m.bodyCode->isNotEmpty());
+}
+
+function <<access.private>> meta::external::language::java::serialization::doParameters(sfer:Stringifier[1], parameters:meta::external::language::java::metamodel::Parameter[*]): Stringifier[1]
+{
+   $sfer->startParameters()->joiningFoldable($parameters, {s,p| $s->doParameter($p)}, '(', ', ', ')')->endParameters();
+}
+
+function <<access.private>> meta::external::language::java::serialization::doParametersWithoutFolds(sfer:Stringifier[1], parameters:meta::external::language::java::metamodel::Parameter[*]): Stringifier[1]
+{
+   $sfer->startParameters()->joining($parameters, {s,p| $s->doParameter($p)}, '(', ', ', ')')->endParameters();
+}
+
+function <<access.private>> meta::external::language::java::serialization::doParameter(sfer:Stringifier[1], p:meta::external::language::java::metamodel::Parameter[1]): Stringifier[1]
+{
+   $sfer
+      ->doJavaDoc($p)
+      ->doAnnotations($p)
+      ->doType($p.type)->space()
+      ->addText($p.name);
+}
+
+function <<access.private>> meta::external::language::java::serialization::doModifiers(sfer:Stringifier[1], modifiers:meta::external::language::java::metamodel::Modifier[*]): Stringifier[1]
+{
+   $sfer->forEach($modifiers, {s, m| $s->addWord($m->modifierToString())});
+}
+
+function <<access.private>> meta::external::language::java::serialization::doTypeParameters(sfer:Stringifier[1], ts:meta::external::language::java::metamodel::TypeVariable[*]): Stringifier[1]
+{
+   $sfer->ifNotEmpty($ts, {s, tvars|
+                             $s->joining($tvars, {s, t|
+                                                    $s->addText($t.name)->ifNotEmpty($t.bounds, {s, bounds| $s->joining($bounds, {s2, b| $s2->doType($b)}, ' extends ', ' & ', '')})
+                                                 }, '<', ', ', '>')
+                          });
+}
+
+function <<access.private>> meta::external::language::java::serialization::doType(sfer:Stringifier[1], javaType:meta::external::language::java::metamodel::Type[1]): Stringifier[1]
+{
+   $javaType->match([
+      {p:meta::external::language::java::metamodel::PrimitiveType[1] |
+         $sfer->addText($p.simpleName);
+      },
+      {a:meta::external::language::java::metamodel::Array[1] |
+         $sfer->doType($a.rawType)->addText('[]');
+      },
+      {p:meta::external::language::java::metamodel::ParameterizedType[1] |
+         $sfer->doType($p.rawType)->joining($p.typeArguments, {s,t| $s->doType($t)}, '<', ', ', '>');
+      },
+      {t:meta::external::language::java::metamodel::TypeVariable[1] |
+        $sfer->addText($t.name);
+      },
+      {f:meta::external::language::java::metamodel::FunctionType[1] |
+         $sfer->addText('{')->joining($f.parameterTypes, {s, pt| $s->doType($pt)}, ',')->addText('->')->doType($f.returnType)->addText('}');
+      },
+      {w:meta::external::language::java::metamodel::WildcardType[1]|
+         $sfer->addText('?')
+            ->ifNotEmpty($w.upperBounds, {s, bounds| $s->joining($bounds, {s, b| $s->doType($b)}, ' extends ', '&', '')})
+            ->ifNotEmpty($w.lowerBounds, {s, bounds| $s->joining($bounds, {s, b| $s->doType($b)}, ' super ', '&', '')});
+      },
+      {c:meta::external::language::java::metamodel::Class[1]|
+         let prefix   = if($sfer->shouldQualifyName($c), |$c.package->packageToString()+'.', |'');
+         let res      = $prefix+$c.simpleName;
+         $sfer->addText(if($res=='java.lang.Void' || $res=='Void',|'void',|$res));
+      }
+   ]);
+}
+
+function <<access.private>> meta::external::language::java::serialization::shouldQualifyName(sfer:Stringifier[1], class:meta::external::language::java::metamodel::Class[1]): Boolean[1]
+{
+   let classPkg = $class.package->packageToString();
+   let stackPkg = $sfer.stack->first()->map(c| $c.package->packageToString());
+   let imported = $classPkg == 'java.lang'
+      || ($classPkg == $stackPkg && !$sfer.imports->filter(i| $i->instanceOf(meta::external::language::java::metamodel::Class))->cast(@meta::external::language::java::metamodel::Class)->exists(c|$c.simpleName == $class.simpleName))
+      || $sfer.imports->exists({i|
+            $i->match([
+               c:meta::external::language::java::metamodel::Class[1]   | $class.simpleName == $c.simpleName && $classPkg == $c.package->packageToString(),
+               p:meta::external::language::java::metamodel::Package[1] | $classPkg == $p->packageToString()
+            ]);
+         });
+   let shadowed = $sfer.classesInPackage->exists(c| $c != $class && $c.simpleName == $class.simpleName);
+   !$imported || $shadowed;
+}
+
+function meta::external::language::java::serialization::doMethodBodyCode(sfer:Stringifier[1], code:Code[1]): Stringifier[1]
+{
+   $code->match([
+      b:Block[1] | $sfer->forEach($b.statements, {s, c| $s->doCode($c)->newLine()}),
+      c:Code[1]  | $sfer->doCode($c->toStatement())
+   ]);
+}
+
+function <<access.private>> meta::external::language::java::serialization::doPackage(sfer:Stringifier[1], j:meta::external::language::java::metamodel::Package[1]): Stringifier[1]
+{
+   $sfer->addLine('package ' + $j->packageToString() + ';')->blankLine();
+}
+
+function <<access.private>> meta::external::language::java::serialization::doImports(sfer:Stringifier[1], imports:String[*]): Stringifier[1]
+{
+   $imports->filter(i | $i != '')->fold({i, s| $s->addLine('import '+$i+';')}, $sfer)->blankLine();
+}
+
+function <<access.private>> meta::external::language::java::serialization::hasJavaDoc(j:meta::external::language::java::metamodel::AnnotatedElement[1]): Boolean[1]
+{
+   $j.javaDoc->isNotEmpty() && $j.javaDoc->map(d| $d->split('\n'))->map(d |$d->splitStringOnSpaces(60))->map(d| $d->trim())->filter(d| $d != '')->isNotEmpty();
+}
+
+function <<access.private>> meta::external::language::java::serialization::doJavaDoc(sfer:Stringifier[1], j:meta::external::language::java::metamodel::AnnotatedElement[1]): Stringifier[1]
+{
+   let docLines = $j.javaDoc->map(d| $d->split('\n'))->map(d |$d->splitStringOnSpaces(60))->map(d| $d->trim())->filter(d| $d != '');
+   if($docLines->isEmpty(),
+      | $sfer,
+      |
+   if($sfer.inParameters,
+      {|
+         let openDoc  = $sfer->addText('/**');
+         $docLines->fold({d, s| $s->addText(' ' + $d)}, $openDoc)->addText(' */')->space();
+      },
+      {|
+         let openDoc  = $sfer->addLine('/**');
+         $docLines->fold({d, s| $s->addLine(' * ' + $d)}, $openDoc)->addLine(' */');
+      }
+   ));
+}
+
+function <<access.private>> {doc.doc = 'Split a String (for JavaDoc) on spaces only, with a target minimum line length'}
+meta::external::language::java::serialization::splitStringOnSpaces(s:String[1], targetLineLength:Integer[1]):String[*]
+{
+   $s->chunk($targetLineLength)->fold({s1:String[1], s2:String[*] |
+            let initial = $s2->init();
+            let last = $s2->last()->toOne();
+            if($s1->contains(' ') && ($last->length() > $targetLineLength),
+               | $initial->concatenate([($last + $s1->substring(0, $s1->indexOf(' '))),
+                                         $s1->substring($s1->indexOf(' ') + 1)]),
+               | $initial->concatenate($last + $s1));}, ['']->take(1)); // hack to work around a bug in compiled mode
+}
+
+function <<access.private>> meta::external::language::java::serialization::doAnnotations(sfer:Stringifier[1], j:meta::external::language::java::metamodel::AnnotatedElement[1]): Stringifier[1]
+{
+   $j.annotations->fold({a, s| $s->doAnnotation($a)}, $sfer);
+}
+
+function <<access.private>> meta::external::language::java::serialization::doAnnotation(sfer:Stringifier[1], a:meta::external::language::java::metamodel::Annotation[1]): Stringifier[1]
+{
+   let type = $a->genericType().rawType->cast(@meta::pure::metamodel::type::Class<Any>);
+
+   if($type == JsonSubTypes,
+      {|
+         let jst      = $a->cast(@JsonSubTypes);
+         let subTypes = $jst.subTypes->map(st| '@JsonSubTypes.Type(value=' + $st.value->toOne() + '.class' + $st.name->map(n| ', name="' + $n + '"')->orElse('') + ')');
+         $sfer->addLine('@JsonSubTypes({' + $subTypes->joinStrings(', ') + '})');
+      },
+      {|
+         let properties      = $type.properties;
+         let propsWithValues = $properties->map(p| pair($p.name->toOne(), list($p->eval($a))))->filter(p| $p.second.values->isNotEmpty());
+         let propsText       = if($propsWithValues->isEmpty(),
+                                  | '',
+                                  |
+                               if($propsWithValues->size() == 1 && $propsWithValues->at(0).first == 'value',
+                                  | '(' + annotationValues($propsWithValues->at(0).second.values) + ')',
+                                  | $propsWithValues->map(p| $p.first+'='+annotationValues($p.second.values))->joinStrings('(', ', ', ')')
+                               ));
+
+         if($sfer.inParameters,
+            | $sfer->addText('@'+$type.name->toOne()+$propsText)->space(),
+            | $sfer->addLine('@'+$type.name->toOne()+$propsText)
+         );
+      }
+   );
+}
+
+function <<access.private>> meta::external::language::java::serialization::annotationValues(values:Any[*]): String[1]
+{
+   let texts = $values->map(v| $v->match([
+      b:Boolean[1]                                              | $b->toString(),
+      s:String[1]                                               | '"'+$s+'"',
+      i:Integer[1]                                              | $i->toString(),
+      r: meta::external::language::java::metamodel::annotations::json::EnumValue[1] | $r.value
+   ]));
+
+   if($texts->size() == 1,
+      | $texts->toOne(),
+      | $texts->joinStrings('{', ',', '}')
+   );
+}
+
+function <<access.private>> meta::external::language::java::serialization::modifierToString(modifier:meta::external::language::java::metamodel::Modifier[1]):String[1]
+{
+   $modifier->id()->toLower();
+}
+
+function <<access.private>> meta::external::language::java::serialization::doCode(sfer:Stringifier[1], code: Code[0..1]) :Stringifier[1]
+{
+   $sfer->ifNotEmpty($code, {s, c| $s->doCode($c->toOne())});
+}
+
+function <<access.private>> meta::external::language::java::serialization::doCode(sfer:Stringifier[1], code: Code[1]) :Stringifier[1]
+{
+   $code->map(c| $c->resolveDeferred())->match([
+      c:SimpleCode[1]               | $sfer->forEach($c.code->replace('\n\n','\nBLANKLINE\n')->split('\n')->map(l| if($l->trim() == '', |'BLANKLINE', |$l)), {s, l| if($l == 'BLANKLINE', |$s->blankLine(), |$s->addText($l)->newLine())}),
+      c:Null[1]                     | $sfer->addText('null'),
+      c:This[1]                     | if($sfer.stack->isEmpty() || $sfer.stack->last() == $c.type, |$sfer, |$sfer->doType($c.type)->addText('.'))->addText('this'),
+      c:Variable[1]                 | if($sfer.inParameters, |$sfer->doType($c.type)->space(), |$sfer)->addText($c.name),
+      c:ArrayAccess[1]              | $sfer->doCode($c.array)->addText('[')->doCode($c.index)->addText(']'),
+      c:Literal[1]                  | $sfer->addText($c.literal),
+      c:InfixExpression[1]          | $sfer->maybeParentheses($c.left, $c)->space()->addText($c.op)->space()->maybeParentheses($c.right, $c),
+      c:PrefixExpression[1]         | $sfer->addText($c.op)->maybeParentheses($c.expression, $c),
+      c:PostfixExpression[1]        | $sfer->maybeParentheses($c.expression, $c)->addText($c.op),
+      c:Conditional[1]              | $sfer->maybeParentheses($c.test, $c)->addText(' ')->foldable()->addText('? ')->subFoldingStart()->maybeParentheses($c.then, $c)->addText(' ')->subFoldingEnd()->foldable()->addText(': ')->subFoldingStart()->maybeParentheses($c.else, $c)->subFoldingEnd(),
+      c:InstanceOf[1]               | $sfer->maybeParentheses($c.expression, $c)->addText(' instanceof ')->doType($c.class),
+      c:Block[1]                    | $sfer->openBrace()->forEach($c.statements, {s,st| $s->doCode($st)->newLine()})->closeBrace(),
+      c:ExpressionStatement[1]      | $sfer->doCode($c.expression)->semicolon()->newLine(),
+      c:LocalVariableDeclaration[1] | $sfer->doModifiers($c.modifiers)->doType($c.type)->space()->addWord($c.variableName)->ifNotEmpty($c.initializer, {s, i| $s->addText('=')->space()->doCode($i)})->when(!$sfer.inForHead, {s|$s->semicolon()}),
+      c:If[1]                       | $sfer->addWord('if')->addText('(')->doCode($c.test)->addText(')')->doCode($c.then)->ifNotEmpty($c.else, {s, else| $s->addWord('else')->doCode($else->toOne())}),
+      c:For[1]                      | $sfer->addWord('for')->addText('(')->startForHead()->doCode($c.init)->semicolon()->space()->doCode($c.test)->semicolon()->space()->doCode($c.update)->endForHead()->addText(')')->newLine()->doCode($c.body),
+      c:ForEach[1]                  | $sfer->addWord('for')->addText('(')->startParameters()->doParameter($c.parameter)->endParameters()->addText(': ')->doCode($c.collection)->addText(')')->newLine()->doCode($c.body),
+      c:While[1]                    | $sfer->addWord('while')->addText('(')->doCode($c.test)->addText(')')->newLine()->doCode($c.then),
+      c:DoWhile[1]                  | $sfer->addWord('do')->doCode($c.do)->addWord('while')->addText('(')->doCode($c.while)->addText(')')->semicolon(),
+      c:Try[1]                      | $sfer->addWord('try')->doCode($c.try)->forEach($c.catches, {s, ctch| $s->doCode($ctch)})->ifNotEmpty($c.finally, {s, fin| $s->doCode($fin->toOne())}),
+      c:Catch[1]                    | $sfer->addWord('catch')->doParameters($c.parameter)->doCode($c.clause),
+      c:Finally[1]                  | $sfer->addWord('finally')->doCode($c.clause),
+      c:Return[1]                   | $sfer->addWord('return')->ifNotEmpty($c.expression, {s, e| $s->doCode($e->toOne())})->semicolon()->newLine(),
+      c:Throw[1]                    | $sfer->addWord('throw')->doCode($c.expression)->semicolon(),
+      c:New[1]                      | $sfer->doCodeNew($c),
+      c:CodeMethod[1]               | $sfer->doModifiers($c.modifiers)->doType($c.type)->space()->addText($c.name)->doParameters($c.parameters)->newLine()->doCode($c.body),
+      c:CastProxy[1]                | $sfer->doCode($c.proxy),
+      c:Cast[1]                     | $sfer->addText('(')->doType($c.type)->addText(')')->space()->maybeParentheses($c.expression, $c),
+      c:ThisConstructorCall[1]      | $sfer->addText('this')->doArguments($c.arguments)->semicolon(),
+      c:SuperConstructorCall[1]     | $sfer->addText('super')->doArguments($c.arguments)->semicolon(),
+      c:MethodCall[1]               | $sfer->maybeInstanceParentheses($c.instance)->foldable()->addText('.')->doTypeArguments($c.typeArguments)->addText($c.methodName)->doArguments($c.arguments),
+      c:FieldAccess[1]              | $sfer->maybeInstanceParentheses($c.instance)->foldable()->addText('.')->addText($c.fieldName),
+      c:MethodReference[1]          | $sfer->maybeInstanceParentheses($c.instance)->addText('::')->addText($c.methodName),
+      c:StaticMethodCall[1]         | $sfer->doType($c.class)->foldable()->addText('.')->doTypeArguments($c.typeArguments)->addText($c.methodName)->doArguments($c.arguments),
+      c:StaticFieldAccess[1]        | $sfer->doType($c.class)->foldable()->addText('.')->addText($c.fieldName),
+      c:StaticMethodReference[1]    | $sfer->doType($c.class)->addText('::')->addText($c.methodName),
+      c:Lambda[1]                   | $sfer->doParametersWithoutFolds($c.parameters)->addText(' -> ')->doLambdaExpression($c.expression)
+   ]);
+}
+
+function <<access.private>> meta::external::language::java::serialization::doCodeNew(sfer:Stringifier[1], c:New[1]): Stringifier[1]
+{
+   let newAndArgs = $sfer
+      ->addWord('new')
+      ->doType($c.type)
+      ->doTypeArguments($c.typeArguments)
+      ->doArguments($c.arguments);
+
+   $c->match([
+      a: NewAnonymous[1] | $newAndArgs->startAnonymousInnerClass()->forEach($a.methods, {s, m| $s->doCode($m)})->endAnonymousInnerClass(),
+      n: New[1]          | $newAndArgs
+   ]);
+}
+
+function <<access.private>> meta::external::language::java::serialization::doLambdaExpression(sfer:Stringifier[1], code: Code[1]): Stringifier[1]
+{
+   $code->match([
+      c:Block[1]  | if($c.statements->size() == 1 && ($c.statements->at(0)->instanceOf(Return) || !$c.statements->at(0)->isStatement()),
+                       | $sfer->doLambdaExpression($c.statements->at(0)),
+                       | $sfer->doCode($c)
+                    ),
+      c:Return[1] | $sfer->doCode($c.expression->toOne()),
+      c:Code[1]   | $sfer->doCode(if($c->isStatement(), |$c->j_block(), |$c))
+   ]);
+}
+
+function <<access.private>> meta::external::language::java::serialization::doTypeArguments(sfer:Stringifier[1], args:meta::external::language::java::metamodel::Type[*]): Stringifier[1]
+{
+   $sfer->ifNotEmpty($args, {s, as| $s->joining($as, {s,t| $s->doType($t)}, '<', ', ', '>')});
+}
+
+function <<access.private>> meta::external::language::java::serialization::doArguments(sfer:Stringifier[1], args:Code[*]): Stringifier[1]
+{
+   $sfer->joiningFoldable($args, {s,a| $s->doCode($a)}, '(', ', ', ')');
+}
+
+function <<access.private>> meta::external::language::java::serialization::precedence(code: Code[1]):Integer[1]
+{
+   $code->resolveDeferred()->match([
+      post:PostfixExpression[1]                                 | 14,     // 14 postfix                expr++ expr--
+      pre :PrefixExpression[1]                                  | 13,     // 13 unary                  ++expr --expr +expr -expr ~ !
+      pre :Cast[1]                                              | 13,     // 13 unary                  (type)
+      {in:InfixExpression[1]|
+         if($in.op->in(['*', '/', '%']),                        | 12, |   // 12 multiplicative         * / %
+         if($in.op->in(['+', '-']),                             | 11, |   // 11 additive               + -
+         if($in.op->in(['<<', '>>', '>>>']),                    | 10, |   // 10 shift                  << >> >>>
+         if($in.op->in(['<', '>', '<=', '>=']),                 |  9, |   //  9 relational             < > <= >= instanceof (see below)
+         if($in.op->in(['==', '!=']),                           |  8, |   //  8 equality               == !=
+         if($in.op->in(['&']),                                  |  7, |   //  7 bitwise AND            &
+         if($in.op->in(['^']),                                  |  6, |   //  6 bitwise exclusive OR   ^
+         if($in.op->in(['|']),                                  |  5, |   //  5 bitwise inclusive OR   |
+         if($in.op->in(['&&']),                                 |  4, |   //  4 logical AND            &&
+         if($in.op->in(['||']),                                 |  3, |   //  3 logical OR             ||
+                                                                          //  2 ternary (SEE BELOW)
+         if($in.op->in(assignmentOperators()),                  |  1, |   //  1 assignment             = += -= *= /= %= &= ^= |= <<= >>= >>>=
+            fail('Unknown operator: '+$in.op);-1;
+         )))))))))))
+      },
+      i:InstanceOf[1]                                           |  9,     //  9 relational             instanceof (see above)
+      c:Conditional[1]                                          |  2,     //  2 ternary                ? :
+      c:SimpleCode[1]                                           |  0,     //  unknown so no precedence
+      c:Code[1]                                                 | 99      //  anything else considered atomic
+   ])
+}
+
+function <<access.private>> meta::external::language::java::serialization::maybeParentheses(sfer:Stringifier[1], code:Code[1], wrt:Code[1]): Stringifier[1]
+{
+   if($code->precedence() < $wrt->precedence(),
+      | $sfer->addText('(')->doCode($code)->addText(')'),
+      | $sfer->doCode($code)
+   );
+}
+
+function <<access.private>> meta::external::language::java::serialization::maybeInstanceParentheses(sfer:Stringifier[1], code:Code[1]): Stringifier[1]
+{
+   let required = $code->resolveDeferred()->match([
+      c:SimpleCode[1]               | false,  // We don't know but safe at present and deprecated.  Any issues should be moved to new style
+      c:This[1]                     | false,
+      c:Variable[1]                 | false,
+      c:ArrayAccess[1]              | false,
+      c:Literal[1]                  | false,
+      c:New[1]                      | false,
+      c:MethodCall[1]               | false,
+      c:FieldAccess[1]              | false,
+      c:StaticMethodCall[1]         | false,
+      c:StaticFieldAccess[1]        | false,
+      c:Code[1]                     | true
+   ]);
+
+   if($required,
+      | $sfer->addText('(')->doCode($code)->addText(')'),
+      | $sfer->doCode($code)
+   );
+}
+
+function <<access.private>> meta::external::language::java::serialization::startParameters(sfer:Stringifier[1]): Stringifier[1]
+{
+   ^$sfer(scope=Scope.IN_PARAMETERS);
+}
+
+function <<access.private>> meta::external::language::java::serialization::endParameters(sfer:Stringifier[1]): Stringifier[1]
+{
+   ^$sfer(scope=Scope.DEFAULT);
+}
+
+function <<access.private>> meta::external::language::java::serialization::startForHead(sfer:Stringifier[1]): Stringifier[1]
+{
+   ^$sfer(scope=Scope.IN_FOR_HEAD);
+}
+
+function <<access.private>> meta::external::language::java::serialization::endForHead(sfer:Stringifier[1]): Stringifier[1]
+{
+   ^$sfer(scope=Scope.DEFAULT);
+}
+
+function <<access.private>> meta::external::language::java::serialization::startAnonymousInnerClass(sfer:Stringifier[1]): Stringifier[1]
+{
+   let level  = if($sfer.stack->isEmpty(),
+                   | 1,
+                   |
+                if($sfer.stack->at(0).package == anonymousPackage(),
+                   | $sfer.stack->size()+1,
+                   | $sfer.stack->size()
+                ));
+
+   let anon = anonymousNestedClass($level);
+
+   $sfer->push($anon)->openBrace();
+}
+
+function <<access.private>> meta::external::language::java::serialization::endAnonymousInnerClass(sfer:Stringifier[1]): Stringifier[1]
+{
+   $sfer->closeBrace()->pop();
+}
+
+function <<access.private>> meta::external::language::java::serialization::debug(sfer:Stringifier[1], message:String[1]): Stringifier[1]
+{
+   println($message);
+   println('scope         = ' + $sfer.scope->toString());
+   println('tabDepth      = ' + $sfer.tabDepth->toString());
+   println('pending       = \'' + $sfer.pending->replace('\n', '\\n') + '\'');
+   println('wipLine       = \'' + $sfer.wipLine + '\'');
+   println('completeLines = \'' + $sfer.completeLines->replace('\n', '\\n') + '\'');
+   println('--------------------------------------------------');
+   $sfer;
+}
+
+function <<access.private>> meta::external::language::java::serialization::addText(sfer:Stringifier[1], s:String[1]): Stringifier[1]
+{
+   if($s == '',
+      | $sfer,
+      {|
+
+         let lineEnded = if($sfer.pending->endsWith('\n'), |$sfer->finishLine(false), |$sfer);
+
+         ^$lineEnded(
+            wipLine = $lineEnded.wipLine + $lineEnded.pending + $s,
+            pending = ''
+         );
+      }
+   );
+}
+
+function <<access.private>> meta::external::language::java::serialization::finishLine(sfer:Stringifier[1], lastLine:Boolean[1]): Stringifier[1]
+{
+   let newLinePos     = $sfer.pending->indexOf('\n');
+   let beforeNewLines = if($lastLine, |'', |$sfer.pending->substring(0, $newLinePos));
+   let newLines       = if($lastLine, |'', |$sfer.pending->substring($newLinePos));
+   let newCompleted   = applyFolds($sfer.wipLine + $beforeNewLines, 0, 100)->joinStrings('\n');
+
+   ^$sfer(
+      completeLines = $sfer.completeLines + $newCompleted + $newLines,
+      pending       = '',
+      wipLine       = $sfer.tabString
+   );
+}
+
+function <<access.private>> meta::external::language::java::serialization::openBrace(sfer:Stringifier[1]): Stringifier[1]
+{
+   $sfer->pending('\n')->addText('{')->pending('\n')->indent();
+}
+
+function <<access.private>> meta::external::language::java::serialization::closeBrace(sfer:Stringifier[1]): Stringifier[1]
+{
+   $sfer->outdent()->pending('\n')->addText('}')->pending('\n');
+}
+
+function <<access.private>> meta::external::language::java::serialization::push(sfer:Stringifier[1], class:meta::external::language::java::metamodel::Class[1]): Stringifier[1]
+{
+   ^$sfer(stack += $class);
+}
+
+function <<access.private>> meta::external::language::java::serialization::pop(sfer:Stringifier[1]): Stringifier[1]
+{
+   ^$sfer(stack = $sfer.stack->init());
+}
+
+function <<access.private>> meta::external::language::java::serialization::indent(sfer:Stringifier[1]): Stringifier[1]
+{
+   ^$sfer(tabDepth=$sfer.tabDepth+1);
+}
+
+function <<access.private>> meta::external::language::java::serialization::outdent(sfer:Stringifier[1]): Stringifier[1]
+{
+   ^$sfer(tabDepth=$sfer.tabDepth+-1);
+}
+
+function <<access.private>> meta::external::language::java::serialization::addWord(sfer:Stringifier[1], s:String[1]): Stringifier[1]
+{
+   $sfer->addText($s)->space();
+}
+
+function <<access.private>> meta::external::language::java::serialization::addLine(sfer:Stringifier[1], s:String[1]): Stringifier[1]
+{
+   $sfer->addText($s)->newLine();
+}
+
+function <<access.private>> meta::external::language::java::serialization::pending(sfer:Stringifier[1], s:String[1]): Stringifier[1]
+{
+   ^$sfer(pending=$s);
+}
+
+function <<access.private>> meta::external::language::java::serialization::semicolon(sfer:Stringifier[1]): Stringifier[1]
+{
+   ^$sfer(wipLine=$sfer.wipLine + ';', pending='');
+}
+
+function <<access.private>> meta::external::language::java::serialization::openParentheses(sfer:Stringifier[1]): Stringifier[1]
+{
+   $sfer->addText('(');
+}
+
+function <<access.private>> meta::external::language::java::serialization::closeParentheses(sfer:Stringifier[1]): Stringifier[1]
+{
+   ^$sfer(wipLine=$sfer.wipLine + ')', pending='');
+}
+
+function <<access.private>> meta::external::language::java::serialization::space(sfer:Stringifier[1]): Stringifier[1]
+{
+   if( $sfer.pending->startsWith(' '),
+      | $sfer,
+      | $sfer->pending(' ')
+   );
+}
+
+function <<access.private>> meta::external::language::java::serialization::newLine(sfer:Stringifier[1]): Stringifier[1]
+{
+   if($sfer.pending->endsWith('\n'),
+      | $sfer,
+      | $sfer->pending('\n')
+   );
+}
+
+function <<access.private>> meta::external::language::java::serialization::blankLine(sfer:Stringifier[1], condition:Boolean[1]): Stringifier[1]
+{
+   if($condition,
+      | $sfer->blankLine(),
+      | $sfer
+   );
+}
+
+function <<access.private>> meta::external::language::java::serialization::blankLine(sfer:Stringifier[1]): Stringifier[1]
+{
+   if($sfer.pending->endsWith('\n\n') || $sfer.wipLine->matches(' *\\{'),
+      | $sfer,
+      |
+   if($sfer.pending->endsWith('\n'),
+      | $sfer->pending($sfer.pending+'\n'),
+      | $sfer->pending($sfer.pending+'\n\n')
+   ));
+}
+
+function <<access.private>> meta::external::language::java::serialization::foldable(sfer:Stringifier[1]): Stringifier[1]
+{
+   if($sfer.foldLevel <= 99,
+      | $sfer->addText(format('|FOLD%02d|', $sfer.foldLevel)),
+      | $sfer
+   );
+}
+
+function <<access.private>> meta::external::language::java::serialization::subFoldingStart(sfer:Stringifier[1]): Stringifier[1]
+{
+   ^$sfer(foldLevel = $sfer.foldLevel + 1);
+}
+
+function <<access.private>> meta::external::language::java::serialization::subFoldingEnd(sfer:Stringifier[1]): Stringifier[1]
+{
+   ^$sfer(foldLevel = $sfer.foldLevel - 1);
+}
+
+function <<access.private>> meta::external::language::java::serialization::forEach<T>(sfer:Stringifier[1], collection:T[*], apply:Function<{Stringifier[1],T[1]->Stringifier[1]}>[1]): Stringifier[1]
+{
+   $sfer->joining($collection, $apply, '', '', '');
+}
+
+function <<access.private>> meta::external::language::java::serialization::ifNotEmpty<T|m>(sfer:Stringifier[1], collection:T[m], apply:Function<{Stringifier[1],T[m]->Stringifier[1]}>[1]): Stringifier[1]
+{
+   if($collection->isEmpty(),
+      | $sfer,
+      | $apply->eval($sfer, $collection)
+   );
+}
+
+function <<access.private>> meta::external::language::java::serialization::ifNotEmpty<T|m>(sfer:Stringifier[1], collection:T[m], apply:Function<{Stringifier[1],T[m]->Stringifier[1]}>[1], whenEmpty:Function<{Stringifier[1]->Stringifier[1]}>[1]): Stringifier[1]
+{
+   if($collection->isEmpty(),
+      | $whenEmpty->eval($sfer),
+      | $apply->eval($sfer, $collection)
+   );
+}
+
+function <<access.private>> meta::external::language::java::serialization::apply(sfer:Stringifier[1], apply:Function<{Stringifier[1]->Stringifier[1]}>[1]): Stringifier[1]
+{
+   $apply->eval($sfer);
+}
+
+function <<access.private>> meta::external::language::java::serialization::when(sfer:Stringifier[1], condition:Boolean[1], apply:Function<{Stringifier[1]->Stringifier[1]}>[1]): Stringifier[1]
+{
+   if($condition,
+      | $apply->eval($sfer),
+      | $sfer
+   );
+}
+
+function <<access.private>> meta::external::language::java::serialization::joining<T>(sfer:Stringifier[1], collection:T[*], apply:Function<{Stringifier[1],T[1]->Stringifier[1]}>[1], separator:String[1]): Stringifier[1]
+{
+   $sfer->joining($collection, $apply, '', $separator, '');
+}
+
+function <<access.private>> meta::external::language::java::serialization::joining<T>(sfer:Stringifier[1], collection:T[*], apply:Function<{Stringifier[1],T[1]->Stringifier[1]}>[1], prefix:String[1], separator:String[1], suffix:String[1]): Stringifier[1]
+{
+   let prefixed = if($prefix == '(', |$sfer->openParentheses(), |$sfer->addText($prefix));
+
+   let middled  = if($collection->isEmpty(),
+                     | $prefixed,
+                     {|
+                        let addFirst = $apply->eval($prefixed, $collection->at(0));
+                        $collection->tail()->fold({x, s| $apply->eval($s->addText($separator), $x)}, $addFirst);
+                     }
+                  );
+   
+   if($suffix == ')', |$middled->closeParentheses(), |$middled->addText($suffix));
+}
+
+function <<access.private>> meta::external::language::java::serialization::joiningFoldable<T>(sfer:Stringifier[1], collection:T[*], apply:Function<{Stringifier[1],T[1]->Stringifier[1]}>[1], prefix:String[1], separator:String[1], suffix:String[1]): Stringifier[1]
+{
+   let prefixed = $sfer->subFoldingStart()->apply(sf| if($prefix == '(', |$sf->openParentheses(), |$sf->addText($prefix)))->foldable();
+
+   let middled  = if($collection->isEmpty(),
+                    | $prefixed,
+                    {|
+                       let addFirst = $apply->eval($prefixed->subFoldingStart(), $collection->at(0))->subFoldingEnd();
+                       $collection->tail()->fold({x, s| $apply->eval($s->addText($separator)->foldable()->subFoldingStart(), $x)->subFoldingEnd()}, $addFirst);
+                    }
+                  );
+   
+   $middled->subFoldingEnd()->apply(sf| if($suffix == ')', |$sf->closeParentheses(), |$sf->addText($suffix)));
+}
+
+function <<access.private>> meta::external::language::java::serialization::initialize(sfer:Stringifier[1], j:meta::external::language::java::metamodel::Class[1]): Stringifier[1]
+{
+   ^$sfer(stack=$j, wipLine='', pending='', completeLines='');
+}
+
+function meta::external::language::java::serialization::getResult(sfer:Stringifier[1]): String[1]
+{
+   $sfer->finishLine(true).completeLines;
+}
+
+function <<access.private>> meta::external::language::java::serialization::applyFolds(s:String[1], level:Integer[1], maxLength:Integer[1]): String[1]
+{
+   let levelSplit = format('|FOLD%02d|', $level);
+
+   if($s == 'BLANKLINE',
+     | '',
+     |
+   if($s->contains($levelSplit),
+      {|
+         // Using replace->split as split is unreliable on these Strings
+         let parts          = $s->replace($levelSplit, '\n')->split('\n')->map(p| $p->applyFolds($level+1, 60));
+         let unfoldedLength = $parts->map(p| $p->replace('\n', '')->length())->sum();
+         if($unfoldedLength <= $maxLength,
+            | $parts->map(p| $p->replace('\n', ''))->joinStrings(''),
+            {|
+               let allParts  = $parts->map(p| $p->split('\n'));
+               let prefold   = $allParts->at(0);
+               let padding   = $prefold->chunk(1)->map(ch| ' ')->joinStrings();
+               let remaining = $allParts->tail();
+               $prefold + $remaining->first()->concatenate($remaining->tail()->map(p| $padding + $p))->map(p| $p->trimTrailing())->joinStrings('\n');
+            }
+         );
+      },
+      |
+   if($s->contains('|FOLD'),
+      | $s->applyFolds($level+1, $maxLength),
+      | $s
+   )));
+}
+
+function <<access.private>> meta::external::language::java::serialization::trimTrailing(s:String[1]): String[1]
+{
+   if($s->endsWith(' '),
+      | $s->substring(0, $s->length()-1)->trimTrailing(),
+      | $s
+   );
+}

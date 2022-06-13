@@ -25,7 +25,8 @@ public class Test_LoadMappings_UsingPureClient extends TestSuite
     {
         return PureTestHelper.wrapSuite(
                 () -> PureTestHelper.initClientVersionIfNotAlreadySet("vX_X_X"),
-                () -> {
+                () ->
+                {
                     CompiledExecutionSupport executionSupport = PureTestHelper.getClassLoaderExecutionSupport();
                     TestSuite suite = new TestSuite();
                     // NOTE: temporarily ignore these tests until we bring extensions back into Legend

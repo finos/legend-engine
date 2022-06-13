@@ -1,0 +1,1575 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::executionPlan::engine::java::roadmap::*;
+import meta::json::*;
+import meta::pure::executionPlan::profiles::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::mapping::modelToModel::test::alloy::dataQuality::*;
+import meta::pure::mapping::modelToModel::test::alloy::dataQuality::dest::*;
+import meta::pure::mapping::modelToModel::test::alloy::dataQuality::mapping::*;
+import meta::pure::mapping::modelToModel::test::alloy::dataQuality::src::*;
+import meta::pure::mapping::modelToModel::test::alloy::utils::*;
+import meta::pure::mapping::modelToModel::test::dataQuality::*;
+import meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::dest::*;
+import meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::src::*;
+import meta::pure::mapping::modelToModel::*;
+import meta::pure::runtime::*;
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.DataQuality>>
+{  serverVersion.start='v1_19_0',
+   doc.doc='Given: a class that defines no constraints.',
+   doc.doc='When:  the mapping is executed using graphFetchChecked.',
+   doc.doc='Then:  the mapping completes without error and no defects are reported'
+}
+meta::pure::mapping::modelToModel::test::alloy::dataQuality::canUseGraphFetchCheckedWhenNoConstraints() : Boolean[1]
+{
+   let tree = #{WithoutConstraints {i}}#;
+   let func = {|WithoutConstraints.all()->graphFetchChecked($tree)->serialize($tree)};
+   let mapping = copyIntegerMapping;
+   let runtime = testJsonRuntime(_Num, '{"i":3}');
+   
+   let result = execute($func, $mapping, $runtime, []);
+   let json = $result.values->toOne();
+
+   let expected= 
+   '{'+
+   '  "defects":[],'+
+   '  "value":{"i":3},'+
+   '  "source":{'+
+   '    "defects":[],'+
+   '    "value":{"i":3},'+
+   '    "source":{"number":1, "record":"{\\"i\\":3}"}'+
+   '  }'+
+   '}';
+   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.DataQuality>>
+{  serverVersion.start='v1_19_0',
+   doc.doc='Given: a class that defines no constraints.',
+   doc.doc='Given: a superclass that defines no constraints.',
+   doc.doc='When:  the mapping is executed using graphFetchChecked.',
+   doc.doc='Then:  the mapping completes without error and no defects are reported'
+}
+meta::pure::mapping::modelToModel::test::alloy::dataQuality::canUseGraphFetchCheckedWhenNoConstraintsInherited() : Boolean[1]
+{
+   let tree = #{WithoutConstraintsInheritsNoConstriants {i}}#;
+   let func = {|WithoutConstraintsInheritsNoConstriants.all()->graphFetchChecked($tree)->serialize($tree)};
+   let mapping = copyIntegerMapping;
+   let runtime = testJsonRuntime(_Num, '{"i":3}');
+   
+   let result = execute($func, $mapping, $runtime, []);
+   let json = $result.values->toOne();
+
+   let expected= 
+   '{'+
+   '  "defects":[],'+
+   '  "value":{"i":3},'+
+   '  "source":{'+
+   '    "defects":[],'+
+   '    "value":{"i":3},'+
+   '    "source":{"number":1, "record":"{\\"i\\":3}"}'+
+   '  }'+
+   '}';
+   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.DataQuality>>
+{  serverVersion.start='v1_19_0',
+   doc.doc='Given: a source object that meets its constriants that maps to a target object that also meets its constraints.',
+   doc.doc='When:  the mapping is executed using graphFetch.',
+   doc.doc='Then:  the mapping completes without error'
+}
+meta::pure::mapping::modelToModel::test::alloy::dataQuality::constraintsPassWhenUsingGraphFetch() : Boolean[1]
+{
+   let tree = #{SomeDataConstrained {i, b, child {s}}}#;
+   let func = {|SomeDataConstrained.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = simpleConstrainedDataMapping;
+   let runtime = ^Runtime(
+      connections = ^JsonModelConnection(
+         element=^ModelStore(),
+         class = _SomeDataConstrained,
+         url = 'data:application/json,{"i":3, "b":false, "child": {"s":"Hello"}}'
+      )
+   );
+   
+   let result = execute($func, $mapping, $runtime, []);
+
+   assert(true);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.DataQuality>>
+{  serverVersion.start='v1_19_0',
+   doc.doc='Given: a source object that meets its constriants that maps to a target object that also meets its constraints.',
+   doc.doc='When:  the mapping is executed using graphFetchChecked.',
+   doc.doc='Then:  the result is a Checked object containing the target and source along with no defects.'
+}
+meta::pure::mapping::modelToModel::test::alloy::dataQuality::constraintsPassForValidData() : Boolean[1]
+{
+   let tree = #{WithConstraints {i, child {s}}}#;
+   let func = {|WithConstraints.all()->graphFetchChecked($tree)->serialize($tree)};
+   let mapping = doubleIntegerMapping;
+   let runtime = testJsonRuntime(_Num, '{"i":3, "child" : {"s": "Hello"}}');
+   
+   let result = execute($func, $mapping, $runtime, []);
+   let json = $result.values->toOne();
+   let expected= 
+   '{'+
+   '  "defects":[],'+
+   '  "value":{"i":6,"child":{"s":"Hello"}},'+
+   '  "source":{'+
+   '    "defects":[],'+
+   '    "value":{"i":3,"child":{"s":"Hello"}},'+
+   '    "source":{"number":1, "record":"{\\"i\\":3,\\"child\\":{\\"s\\":\\"Hello\\"}}"}'+
+   '  }'+
+   '}';
+   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.DataQuality>>
+{  serverVersion.start='v1_19_0',
+   doc.doc='Given: a source object that meets its constriants that fails to map to a target object for a property to meet its constraints.',
+   doc.doc='When:  the mapping is executed using graphFetchChecked.',
+   doc.doc='Then:  the result is a Checked object containing the target and source along with a defects.'
+}
+meta::pure::mapping::modelToModel::test::alloy::dataQuality::unmappedConstraintPropertiesCauseDefects() : Boolean[1]
+{
+   let tree = #{WithConstraints {child {s}}}#;
+   let func = {|WithConstraints.all()->graphFetchChecked($tree)->serialize($tree)};
+   let mapping = noIMapping;
+   let runtime = testJsonRuntime(_Num2, '{"int":3, "child" : {"s": "Hello"}}');
+   
+   let result = execute($func, $mapping, $runtime, []);
+   let json = $result.values->toOne();
+   let expected= 
+   '{'+
+   '  "defects":['+
+   '    {'+
+   '      "id"               : "TestConstraint",'+
+   '      "externalId"       : null,'+
+   '      "message"          : "Unable to evaluate constraint [TestConstraint]: No mapping for property \'i\'",'+
+   '      "enforcementLevel" : "Error",'+
+   '      "ruleType"         : "ClassConstraint",'+
+   '      "ruleDefinerPath"  : "meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::dest::WithConstraints",' +
+   '      "path"             : []' +
+   '    },'+
+   '    {'+
+   '      "id"               : "MoreThanOne",'+
+   '      "externalId"       : "TEST",'+
+   '      "message"          : "Unable to evaluate constraint [MoreThanOne]: No mapping for property \'i\'",'+
+   '      "enforcementLevel" : "Warn",'+
+   '      "ruleType"         : "ClassConstraint",'+
+   '      "ruleDefinerPath"  : "meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::dest::WithConstraints",' +
+   '      "path"             : []' +
+   '    }'+
+   '  ],'+
+   '  "value":{"child":{"s":"Hello"}},'+
+   '  "source":{'+
+   '    "defects":[],'+
+   '    "value":{"child":{"s":"Hello"}},'+
+   '    "source":{"number":1, "record":"{\\"int\\":3,\\"child\\":{\\"s\\":\\"Hello\\"}}"}'+
+   '  }'+
+   '}';
+
+   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.DataQuality>>
+{  serverVersion.start='v1_19_0',
+   doc.doc='Given: a source object that meets its constriants that fails to map to a target object for a property to meet its constraints via a qualified property.',
+   doc.doc='When:  the mapping is executed using graphFetchChecked.',
+   doc.doc='Then:  the result is a Checked object containing the target and source along with a defects.'
+}
+meta::pure::mapping::modelToModel::test::alloy::dataQuality::unmappedConstraintPropertiesViaQualifierCauseDefects() : Boolean[1]
+{
+   let tree = #{WithConstraintsViaQualifier {s}}#;
+   let func = {|WithConstraintsViaQualifier.all()->graphFetchChecked($tree)->serialize($tree)};
+   let mapping = noIViaQualifierMapping;
+   let runtime = testJsonRuntime(_Num2, '{"int":3}');
+   
+   let result = execute($func, $mapping, $runtime, []);
+   let json = $result.values->toOne();
+   let expected= 
+   '{'+
+   '  "defects":['+
+   '    {'+
+   '      "id"               : "MoreThanOne",'+
+   '      "externalId"       : "TEST",'+
+   '      "message"          : "Unable to evaluate constraint [MoreThanOne]: No mapping for property \'i\'",'+
+   '      "enforcementLevel" : "Warn",'+
+   '      "ruleType"         : "ClassConstraint",'+
+   '      "ruleDefinerPath"  : "meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::dest::WithConstraintsViaQualifier",' +
+   '      "path"             : []' +
+   '    }'+
+   '  ],'+
+   '  "value":{"s": "hello"},'+
+   '  "source":{'+
+   '    "defects":[],'+
+   '    "value":{},'+
+   '    "source":{"number":1, "record":"{\\"int\\":3}"}'+
+   '  }'+
+   '}'; 
+
+   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.DataQuality>> 
+{  serverVersion.start='v1_19_0',
+   doc.doc='Given: a class that defines constraints.',
+   doc.doc='Given: data that fails one constraint.',
+   doc.doc='When:  the mapping is executed using graphFetch.',
+   doc.doc='Then:  the inherited constaints should be evaluated and a defect returned.'
+} 
+meta::pure::mapping::modelToModel::test::alloy::dataQuality::constraintsFailForInvalidDataOneDefect() : Boolean[1]
+{
+   let tree = #{WithConstraints {i}}#;
+   let func = {|WithConstraints.all()->graphFetchChecked($tree)->serialize($tree)};
+   let mapping = copyIntegerMapping;
+   let runtime = testJsonRuntime(_Num, '{"i":2}');
+   
+   let result = execute($func, $mapping, $runtime, []);
+   let json = $result.values->toOne();
+
+   let expected= 
+   '{'+
+   '  "defects":['+
+   '    {'+
+   '      "id"               : "TestConstraint",'+
+   '      "externalId"       : null,'+
+   '      "message"          : "Constraint :[TestConstraint] violated in the Class WithConstraints",'+
+   '      "enforcementLevel" : "Error",'+
+   '      "ruleType"         : "ClassConstraint",'+
+   '      "ruleDefinerPath"  : "meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::dest::WithConstraints",' +
+   '      "path"             : []' +
+   '    }'+
+   '  ],'+
+   '  "value":{"i":2},'+
+   '  "source":{'+
+   '    "defects":[],'+
+   '    "value":{"i":2},'+
+   '    "source":{"number":1,"record":"{\\"i\\":2}"}'+
+   '  }'+
+   '}';
+   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.DataQuality>> 
+{  serverVersion.start='v1_19_0',
+   doc.doc='Given: a class that defines constraints.',
+   doc.doc='Given: data that fails two constraints.',
+   doc.doc='When:  the mapping is executed using graphFetch.',
+   doc.doc='Then:  the inherited constaints should be evaluated and defects returned.'
+} 
+meta::pure::mapping::modelToModel::test::alloy::dataQuality::constraintsFailForInvalidDataTwoDefects() : Boolean[1]
+{
+   let tree = #{WithConstraints {i}}#;
+   let func = {|WithConstraints.all()->graphFetchChecked($tree)->serialize($tree)};
+   let mapping = copyIntegerMapping;
+   let runtime = testJsonRuntime(_Num, '{"i":1}');
+   
+   let result = execute($func, $mapping, $runtime, []);
+   let json = $result.values->toOne();
+
+   let expected= 
+   '{'+
+   '  "defects":['+
+   '    {'+
+   '      "id"               : "TestConstraint",'+
+   '      "externalId"       : null,'+
+   '      "message"          : "Constraint :[TestConstraint] violated in the Class WithConstraints",'+
+   '      "enforcementLevel" : "Error",'+
+   '      "ruleType"         : "ClassConstraint",'+
+   '      "ruleDefinerPath"  : "meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::dest::WithConstraints",' +
+   '      "path"             : []' +
+   '    },'+
+   '    {'+
+   '      "id"               : "MoreThanOne",'+
+   '      "externalId"       : "TEST",'+
+   '      "message"          : "1 <= 1",'+
+   '      "enforcementLevel" : "Warn",'+
+   '      "ruleType"         : "ClassConstraint",'+
+   '      "ruleDefinerPath"  : "meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::dest::WithConstraints",' +
+   '      "path"             : []' +
+   '    }'+
+   '  ],'+
+   '  "value":{"i":1},'+
+   '  "source":{'+
+   '    "defects":[],'+
+   '    "value":{"i":1},'+
+   '    "source":{"number":1,"record":"{\\"i\\":1}"}'+
+   '  }'+
+   '}';
+
+   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.DataQuality>> 
+{  serverVersion.start='v1_19_0',
+   doc.doc='Given: a class that inherits constraints.',
+   doc.doc='Given: data that meets those constraints.',
+   doc.doc='When:  the mapping is executed using graphFetch.',
+   doc.doc='Then:  the inherited constaints should be evaluated and no defects returned.'
+} 
+meta::pure::mapping::modelToModel::test::alloy::dataQuality::constraintsAreInheritedAndPassForValidData() : Boolean[1]
+{
+   let tree = #{InheritsConstriants {i}}#;
+   let func = {|InheritsConstriants.all()->graphFetchChecked($tree)->serialize($tree)};
+   let mapping = copyIntegerMapping;
+   let runtime = testJsonRuntime(_Num, '{"i":6}');
+   
+   let result = execute($func, $mapping, $runtime, []);
+   let json = $result.values->toOne();
+
+   let expected= 
+   '{'+
+   '  "defects":[],'+
+   '  "value":{"i":6},'+
+   '  "source":{'+
+   '    "defects":[],'+
+   '    "value":{"i":6},'+
+   '    "source":{"number":1,"record":"{\\"i\\":6}"}'+
+   '  }'+
+   '}';
+   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.DataQuality>> 
+{  serverVersion.start='v1_19_0',
+   doc.doc='Given: a class that inherits constraints.',
+   doc.doc='Given: data that fails a constraint on the superclass and one on the subclass.',
+   doc.doc='When:  the mapping is executed using graphFetch.',
+   doc.doc='Then:  the inherited constaints should be evaluated and a defect returned.'
+} 
+meta::pure::mapping::modelToModel::test::alloy::dataQuality::constraintsAreInheritedAndFailForInvalidData() : Boolean[1]
+{
+   let tree = #{InheritsConstriants {i}}#;
+   let func = {|InheritsConstriants.all()->graphFetchChecked($tree)->serialize($tree)};
+   let mapping = copyIntegerMapping;
+   let runtime = testJsonRuntime(_Num, '{"i":2}');
+   
+   let result = execute($func, $mapping, $runtime, []);
+   let json = $result.values->toOne();
+
+   let expected= 
+   '{'+
+   '  "defects":['+
+   '    {'+
+   '      "id"               : "TestConstraint",'+
+   '      "externalId"       : null,'+
+   '      "message"          : "Constraint :[TestConstraint] violated in the Class WithConstraints",'+
+   '      "enforcementLevel" : "Error",'+
+   '      "ruleType"         : "ClassConstraint",'+
+   '      "ruleDefinerPath"  : "meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::dest::WithConstraints",' +
+   '      "path"             : []' +
+   '    },'+
+   '    {'+
+   '      "id"               : "MoreThanTwo",'+
+   '      "externalId"       : "TEST2",'+
+   '      "message"          : "2 <= 2",'+
+   '      "enforcementLevel" : "Warn",'+
+   '      "ruleType"         : "ClassConstraint",'+
+   '      "ruleDefinerPath"  : "meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::dest::InheritsConstriants",' +
+   '      "path"             : []' +
+   '    }'+
+   '  ],'+
+   '  "value":{"i":2},'+
+   '  "source":{'+
+   '    "defects":[],'+
+   '    "value":{"i":2},'+
+   '    "source":{"number":1,"record":"{\\"i\\":2}"}'+
+   '  }'+
+   '}';
+   
+   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.DataQuality>>
+{  serverVersion.start='v1_19_0',
+   doc.doc='Given: a source object that meets its constriants but maps to a target object that fails.',
+   doc.doc='When:  the mapping is executed using graphFetchChecked.',
+   doc.doc='Then:  the result is a Checked object containing the target and source along with a defect explaining the error.'
+}
+meta::pure::mapping::modelToModel::test::alloy::dataQuality::returnCheckResultWithDefectForConstraintViolationOnTarget() : Boolean[1]
+{
+   let tree = #{SomeDataConstrained {i, b}}#;
+   let func = {|SomeDataConstrained.all()->graphFetchChecked($tree)->serialize($tree)};
+   let mapping = simpleConstrainedDataMapping;
+   let runtime = testJsonRuntime(_SomeDataConstrained, '{"i":2, "b":false}');
+
+   let result = execute($func, $mapping, $runtime, []);
+   let json = $result.values->toOne();
+   let expected = 
+   '{'+
+   '  "defects":['+
+   '    {'+
+   '      "id":"TestIConstraint",'+
+   '      "externalId":"extID",'+
+   '       "message":"Expected value >= 5 but got 4",'+
+   '       "enforcementLevel":"Warn",'+
+   '       "ruleDefinerPath":"meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::dest::SomeDataConstrained",'+
+   '       "ruleType":"ClassConstraint",'+
+   '       "path"             : []' +
+   '    }'+
+   '  ],'+
+   '  "value":{"i":4,"b":false},'+
+   '  "source":{'+
+   '    "defects":[],'+
+   '    "value":{"i":2,"b":false},'+
+   '    "source":{"number":1,"record":"{\\"i\\":2,\\"b\\":false}"}'+
+   '  }'+
+   '}';
+   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.DataQuality>>
+{  serverVersion.start='v1_19_0',
+   doc.doc='Given: a source object that meets its constriants but maps to a target objects that fails for some child element.',
+   doc.doc='When:  the mapping is executed using graphFetchChecked.',
+   doc.doc='Then:  the result is a Checked object containing the target and source along with a defect explaining the error.  The defect should contain the path to the failing object including indexes in any intermediate collections.'
+}
+meta::pure::mapping::modelToModel::test::alloy::dataQuality::returnCheckResultWithDefectForConstraintViolationOnChildOfTarget() : Boolean[1]
+{
+   let tree = #{AuthorWithConstraints {name, books {title, pages, marketing {reviews {by}}}}}#;
+   let func = {|AuthorWithConstraints.all()->graphFetchChecked($tree)->serialize($tree)};
+   let mapping = constraintsLiteratureMapping;
+   let runtime = testJsonRuntime(_Author, '{"name":"Plato", "books":[{"title": "Euthyphro", "pages": 20, "marketing": { "reviews": [{"by": "Socretes"},{"by": "Plato"}] }}, {"title": "Phaedo", "pages":61}]}');
+   
+   let result = execute($func, $mapping, $runtime, []);
+   let json = $result.values->toOne();
+   let expected= 
+   '{'+
+   '  "defects":['+
+   '    {'+
+   '      "id":"nameParts",'+
+   '      "externalId":null,'+
+   '       "message":"Constraint :[nameParts] violated in the Class AuthorWithConstraints",'+
+   '       "enforcementLevel":"Error",'+
+   '       "ruleDefinerPath":"meta::pure::mapping::modelToModel::test::alloy::dataQuality::dest::AuthorWithConstraints",'+
+   '       "ruleType":"ClassConstraint",'+
+   '       "path": []'+
+   '    },'+
+   '    {'+
+   '      "id":"pageCount",'+
+   '      "externalId":null,'+
+   '       "message":"Constraint :[pageCount] violated in the Class BookWithConstraints",'+
+   '       "enforcementLevel":"Error",'+
+   '       "ruleDefinerPath":"meta::pure::mapping::modelToModel::test::alloy::dataQuality::dest::BookWithConstraints",'+
+   '       "ruleType":"ClassConstraint",'+
+   '       "path": ['+
+   '         {'+
+   '           "propertyName":"books",'+
+   '           "index":0' +
+   '         }'+
+   '       ]'+
+   '    },'+
+   '    {'+
+   '      "id":"noSelfReview",'+
+   '      "externalId":null,'+
+   '       "message":"Constraint :[noSelfReview] violated in the Class Review",'+
+   '       "enforcementLevel":"Error",'+
+   '       "ruleDefinerPath":"meta::pure::mapping::modelToModel::test::alloy::dataQuality::dest::Review",'+
+   '       "ruleType":"ClassConstraint",'+
+   '       "path": ['+
+   '         {'+
+   '           "propertyName":"books",'+
+   '           "index":0' +
+   '         },'+
+   '         {'+
+   '           "propertyName":"marketing",'+
+   '           "index":null' +
+   '         },'+
+   '         {'+
+   '           "propertyName":"reviews",'+
+   '           "index":1' +
+   '         }'+
+   '       ]'+
+   '    },'+
+   '    {'+
+   '      "id":"titleLength",'+
+   '      "externalId":null,'+
+   '       "message":"Constraint :[titleLength] violated in the Class BookWithConstraints",'+
+   '       "enforcementLevel":"Error",'+
+   '       "ruleDefinerPath":"meta::pure::mapping::modelToModel::test::alloy::dataQuality::dest::BookWithConstraints",'+
+   '       "ruleType":"ClassConstraint",'+
+   '       "path": ['+
+   '         {'+
+   '           "propertyName":"books",'+
+   '           "index":1' +
+   '         }'+
+   '       ]'+
+   '    }'+
+   '  ],'+
+   '  "value": {'+
+   '    "name":"Plato",'+
+   '    "books":['+
+   '      {"title":"Euthyphro", "pages":20, "marketing":{"reviews":[{"by":"Socretes"},{"by":"Plato"}]}},'+
+   '      {"title":"Phaedo",    "pages":61, "marketing":null}'+
+   '    ]'+
+   '  },'+
+   '  "source":{'+
+   '    "defects":[],'+
+   '    "value": {'+
+   '      "name":"Plato",'+
+   '      "books":['+
+   '        {"title":"Euthyphro", "pages":20, "marketing":{"reviews":[{"by":"Socretes"},{"by":"Plato"}]}},'+
+   '        {"title":"Phaedo",    "pages":61, "marketing":null}'+
+   '      ]'+
+   '    },'+
+   '    "source":{"number":1, "record":"{\\"name\\":\\"Plato\\",\\"books\\":[{\\"title\\":\\"Euthyphro\\",\\"pages\\":20,\\"marketing\\":{\\"reviews\\":[{\\"by\\":\\"Socretes\\"},{\\"by\\":\\"Plato\\"}]}},{\\"title\\":\\"Phaedo\\",\\"pages\\":61}]}"}'+
+   '  }'+
+   '}';
+   
+   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.DataQuality>>
+{  serverVersion.start='v1_19_0',
+   doc.doc='Given: a source object that fails its constriants.',
+   doc.doc='When:  the mapping is executed using graphFetchChecked.',
+   doc.doc='Then:  the result is a Checked object containing the target and source containing a Checked for the source which includes the defect.'
+}
+meta::pure::mapping::modelToModel::test::alloy::dataQuality::returnCheckResultWithDefectForConstraintViolationOnSource() : Boolean[1]
+{
+   let tree = #{SomeDataConstrained {i, b}}#;
+   let func = {|SomeDataConstrained.all()->graphFetchChecked($tree)->serialize($tree)};
+   let mapping = simpleConstrainedDataMapping;
+   let runtime = testJsonRuntime(_SomeDataConstrained, '{"i":1, "b":false}');
+
+   let result = execute($func, $mapping, $runtime, []);
+   let json = $result.values->toOne();
+   let expected = 
+   '{'+
+   '  "defects":['+
+   '    {'+
+   '      "id":"TestIConstraint",'+
+   '      "externalId":"extID",'+
+   '      "message":"Expected value >= 5 but got 1",'+
+   '      "enforcementLevel":"Warn",'+
+   '      "ruleDefinerPath":"meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::dest::SomeDataConstrained",'+
+   '      "ruleType":"ClassConstraint",'+
+   '      "path"             : []' +
+   '    }'+
+   '  ],'+
+   '  "value":{"i":1,"b":false},'+
+   '  "source":{'+
+   '    "defects":['+
+   '      {'+
+   '        "id":"TestConstraint",'+
+   '        "externalId":null,'+
+   '        "message":"Constraint :[TestConstraint] violated in the Class _SomeDataConstrained",'+
+   '        "enforcementLevel":"Error",'+
+   '        "ruleDefinerPath":"meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::src::_SomeDataConstrained",'+
+   '        "ruleType":"ClassConstraint",'+
+   '        "path"             : []' +
+   '      }'+
+   '    ],'+
+   '    "value":{"i":1,"b":false},'+
+   '    "source":{"number":1,"record":"{\\"i\\":1,\\"b\\":false}"}'+
+   '  }'+
+   '}';
+   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.DataQuality>> 
+{  serverVersion.start='v1_19_0',
+   doc.doc='Given: a class that defines a constraint.',
+   doc.doc='Given: a superclass without constraints.',
+   doc.doc='Given: data that meets the constraint.',
+   doc.doc='When:  the mapping is executed using graphFetch.',
+   doc.doc='Then:  the constaint should be evaluated and no defects returned.'
+} 
+meta::pure::mapping::modelToModel::test::alloy::dataQuality::canDefineConstraintAndInheritFromAClassThatDoesNotDefineConstraintsAndPassForValidData() : Boolean[1]
+{
+   let tree = #{WithConstraintInheritsNoConstriants {i}}#;
+   let func = {|WithConstraintInheritsNoConstriants.all()->graphFetchChecked($tree)->serialize($tree)};
+   let mapping = copyIntegerMapping;
+   let runtime = testJsonRuntime(_Num, '{"i":6}');
+   
+   let result = execute($func, $mapping, $runtime, []);
+   let json = $result.values->toOne();
+
+   let expected= 
+   '{'+
+   '  "defects":[],'+
+   '  "value":{"i":6},'+
+   '  "source":{'+
+   '    "defects":[],'+
+   '    "value":{"i":6},'+
+   '    "source":{"number":1,"record":"{\\"i\\":6}"}'+
+   '  }'+
+   '}';
+   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.DataQuality>> 
+{  serverVersion.start='v1_19_0',
+   doc.doc='Given: a class that defines a constraint.',
+   doc.doc='Given: a superclass without constraints.',
+   doc.doc='Given: data that fails the constraint.',
+   doc.doc='When:  the mapping is executed using graphFetch.',
+   doc.doc='Then:  the constaint should be evaluated and a defect returned.'
+} 
+meta::pure::mapping::modelToModel::test::alloy::dataQuality::canDefineConstraintAndInheritFromAClassThatDoesNotDefineConstraintsAndFailForInvalidData() : Boolean[1]
+{
+   let tree = #{WithConstraintInheritsNoConstriants {i}}#;
+   let func = {|WithConstraintInheritsNoConstriants.all()->graphFetchChecked($tree)->serialize($tree)};
+   let mapping = copyIntegerMapping;
+   let runtime = testJsonRuntime(_Num, '{"i":2}');
+   
+   let result = execute($func, $mapping, $runtime, []);
+   let json = $result.values->toOne();
+
+   let expected= 
+   '{'+
+   '  "defects":['+
+   '    {'+
+   '      "id"               : "MoreThanTwo",'+
+   '      "externalId"       : "TEST2",'+
+   '      "message"          : "2 <= 2",'+
+   '      "enforcementLevel" : "Warn",'+
+   '      "ruleType"         : "ClassConstraint",'+
+   '      "ruleDefinerPath"  : "meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::dest::WithConstraintInheritsNoConstriants",' +
+   '      "path"             : []' +
+   '    }'+
+   '  ],'+
+   '  "value":{"i":2},'+
+   '  "source":{'+
+   '    "defects":[],'+
+   '    "value":{"i":2},'+
+   '    "source":{"number":1,"record":"{\\"i\\":2}"}'+
+   '  }'+
+   '}';
+   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.DataQuality>>
+{  serverVersion.start='v1_19_0',
+   doc.doc='Given: a source object that fails due to a breach of multiplicity.',
+   doc.doc='When:  the mapping is executed using graphFetchChecked.',
+   doc.doc='Then:  the result is a Checked object without a target and a no-source defect.  The source of the Checked will be another Checked containing the defect for the source and the offending source data.'
+}
+meta::pure::mapping::modelToModel::test::alloy::dataQuality::returnCheckResultWithDefectForMultiplicityConstructionViolationOnSource() : Boolean[1]
+{
+   let tree = #{WithConstraints {i, child}}#;
+   let func = {|WithConstraints.all()->graphFetchChecked($tree)->serialize($tree)};
+   let mapping = doubleIntegerMapping;
+   let runtime = testJsonRuntime(_Num, '{"child":{}}');
+   
+   let result = execute($func, $mapping, $runtime, []);
+   let json = $result.values->toOne();
+   let expected= 
+   '{'+
+   '  "defects":['+
+   '    {'+
+   '      "id"               : null,'+
+   '      "externalId"       : null,'+
+   '      "message"          : "No Input Available",'+
+   '      "enforcementLevel" : "Critical",'+
+   '      "ruleType"         : "NoInput",'+
+   '      "ruleDefinerPath"  : "meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::dest::WithConstraints",' +
+   '      "path"             : []' +
+   '    }'+
+   '  ],'+
+   '  "value": null,'+
+   '  "source":{'+
+   '    "defects":['+
+   '      {'+
+   '        "id"               : null,'+
+   '        "externalId"       : null,'+
+   '        "message"          : "Invalid multiplicity for s: expected [1] found [0]",'+
+   '        "enforcementLevel" : "Critical",'+
+   '        "ruleType"         : "ClassStructure",'+
+   '        "ruleDefinerPath"  : "meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::src::_SomeDataConstrainedChild",' +
+   '        "path": ['+
+   '          {'+
+   '            "propertyName":"child",'+
+   '            "index":null' +
+   '          }'+
+   '        ]'+
+   '      },'+
+   '      {'+
+   '        "id"               : null,'+
+   '        "externalId"       : null,'+
+   '        "message"          : "Invalid multiplicity for i: expected [1] found [0]",'+
+   '        "enforcementLevel" : "Critical",'+
+   '        "ruleType"         : "ClassStructure",'+
+   '        "ruleDefinerPath"  : "meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::src::_Num",' +
+   '        "path"             : []' +
+   '      }'+
+   '    ],'+
+   '    "value":null,'+
+   '    "source":{"number":1, "record":"{\\"child\\":{}}"}'+
+   '  }'+
+   '}';
+   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.DataQuality>>
+{  serverVersion.start='v1_19_0',
+   doc.doc='Given: a source object that fails due to a breach of multiplicity.',
+   doc.doc='When: the mapping is executed using graphFetchChecked.',
+   doc.doc='Then: the result is a Checked object without a target and a no-source defect.  The source of the Checked will be another Checked containing the defect for the source and the offending source data.'
+}
+meta::pure::mapping::modelToModel::test::alloy::dataQuality::returnCheckResultWithDefectForAParsingErrorWhichCausesMultiplicityConstructionViolationOnSource() : Boolean[1]
+{
+   let tree = #{SomeDataConstrained {i, b, child {s, d}}}#;
+   let func = {|SomeDataConstrained.all()->graphFetchChecked($tree)->serialize($tree)};
+   let mapping = simpleConstrainedDataMapping;
+   let runtime = testJsonRuntime(_SomeDataConstrained, '{"i":"NaN", "b":[1, false], "child":{"s":false, "d":"notadate"}}');
+   
+   let result = execute($func, $mapping, $runtime, []);
+   let json = $result.values->toOne();
+   
+   let expected= 
+   '{'+
+   '  "defects":['+
+   '    {'+
+   '      "id"               : null,'+
+   '      "externalId"       : null,'+
+   '      "message"          : "No Input Available",'+
+   '      "enforcementLevel" : "Critical",'+
+   '      "ruleType"         : "NoInput",'+
+   '      "ruleDefinerPath"  : "meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::dest::SomeDataConstrained",' +
+   '      "path"             : []' +
+   '    }'+
+   '  ],'+
+   '  "value": null,'+
+   '  "source":{'+
+   '    "defects":['+
+   '      {'+
+   '        "id"               : null,'+
+   '        "externalId"       : null,'+
+   '        "message"          : "i: Unexpected node type:STRING for PURE Integer",'+
+   '        "enforcementLevel" : "Error",'+
+   '        "ruleType"         : "InvalidInput",'+
+   '        "ruleDefinerPath"  : "meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::src::_SomeDataConstrained",' +
+   '        "path": []'+
+   '      },'+
+   '      {'+
+   '        "id"               : null,'+
+   '        "externalId"       : null,'+
+   '        "message"          : "b: Unexpected node type:NUMBER for PURE Boolean",'+
+   '        "enforcementLevel" : "Error",'+
+   '        "ruleType"         : "InvalidInput",'+
+   '        "ruleDefinerPath"  : "meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::src::_SomeDataConstrained",' +
+   '        "path": []'+
+   '      },'+
+   '      {'+
+   '        "id"               : null,'+
+   '        "externalId"       : null,'+
+   '        "message"          : "s: Unexpected node type:BOOLEAN for PURE String",'+
+   '        "enforcementLevel" : "Error",'+
+   '        "ruleType"         : "InvalidInput",'+
+   '        "ruleDefinerPath"  : "meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::src::_SomeDataConstrainedChild",' +
+   '        "path"             : ['+
+   '          {'+
+   '            "propertyName":"child",'+
+   '            "index":null' +
+   '          }'+
+   '        ]'+
+   '      },'+
+   '      {'+
+   '        "id"               : null,'+
+   '        "externalId"       : null,'+
+   '        "message"          : "d: Error parsing year: \'notadate\'",'+
+   '        "enforcementLevel" : "Error",'+
+   '        "ruleType"         : "InvalidInput",'+
+   '        "ruleDefinerPath"  : "meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::src::_SomeDataConstrainedChild",' +
+   '        "path"             : ['+
+   '          {'+
+   '            "propertyName":"child",'+
+   '            "index":null' +
+   '          }'+
+   '        ]'+
+   '      },'+
+   '      {'+
+   '        "id"               : null,'+
+   '        "externalId"       : null,'+
+   '        "message"          : "Invalid multiplicity for s: expected [1] found [0]",'+
+   '        "enforcementLevel" : "Critical",'+
+   '        "ruleType"         : "ClassStructure",'+
+   '        "ruleDefinerPath"  : "meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::src::_SomeDataConstrainedChild",' +
+   '        "path"             : ['+
+   '          {'+
+   '            "propertyName":"child",'+
+   '            "index":null' +
+   '          }'+
+   '        ]'+
+   '      },'+
+   '      {'+
+   '        "id"               : null,'+
+   '        "externalId"       : null,'+
+   '        "message"          : "Invalid multiplicity for i: expected [1] found [0]",'+
+   '        "enforcementLevel" : "Critical",'+
+   '        "ruleType"         : "ClassStructure",'+
+   '        "ruleDefinerPath"  : "meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::src::_SomeDataConstrained",' +
+   '        "path"             : []' +
+   '      }'+
+   '    ],'+
+   '    "value":null,'+
+   '    "source":{"number":1, "record":"{\\"i\\":\\"NaN\\",\\"b\\":[1,false],\\"child\\":{\\"s\\":false,\\"d\\":\\"notadate\\"}}"}'+
+   '  }'+
+   '}';
+   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.DataQuality>>
+{  serverVersion.start='v1_19_0',
+   doc.doc='Given: a source object that fails its constriants.',
+   doc.doc='Given: an execution constraint that requests no constraint checking.',
+   doc.doc='When:  the mapping is executed using graphFetchChecked.',
+   doc.doc='Then:  the result is a Checked object containing the target and source containing a Checked for the source which does not includes the defect.'
+}
+meta::pure::mapping::modelToModel::test::alloy::dataQuality::returnCheckResultWithoutDefectForConstraintViolationOnSourceWhenConstraintsSuppressed() : Boolean[1]
+{
+   let tree = #{SomeDataConstrained {i, b}}#;
+   let func = {|SomeDataConstrained.all()->graphFetchChecked($tree)->serialize($tree)};
+   let mapping = simpleConstrainedDataMapping;
+   let runtime = testJsonRuntime(_SomeDataConstrained, '{"i":1, "b":false}');
+
+   let result = execute($func, $mapping, $runtime, ^ExecutionContext(enableConstraints=false), []);
+   let json = $result.values->toOne();
+   let expected = 
+   '{'+
+   '  "defects":[],'+
+   '  "value":{"i":1,"b":false},'+
+   '  "source":{'+
+   '    "defects":[],'+
+   '    "value":{"i":1,"b":false},'+
+   '    "source":{"number":1,"record":"{\\"i\\":1,\\"b\\":false}"}'+
+   '  }'+
+   '}';
+   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.DataQuality>>
+{  serverVersion.start='v1_19_0',
+   doc.doc='Given: a source object that fails its constriants.',
+   doc.doc='Given: an execution constraint that requests no constraint checking.',
+   doc.doc='When:  the mapping is executed using graphFetch.',
+   doc.doc='Then:  the execution succeeds to produce the target object.'
+}
+meta::pure::mapping::modelToModel::test::alloy::dataQuality::executionSucceedsForConstraintViolationOnSourceWhenConstraintsSuppressed() : Boolean[1]
+{
+   let tree = #{SomeDataConstrained {i, b}}#;
+   let func = {|SomeDataConstrained.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = simpleConstrainedDataMapping;
+   let runtime = testJsonRuntime(_SomeDataConstrained, '{"i":1, "b":false}');
+
+   let result = execute($func, $mapping, $runtime, ^ExecutionContext(enableConstraints=false), []);
+   let json = $result.values->toOne();
+   let expected = '{"i":1,"b":false}';
+   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.DataQuality>>
+{  serverVersion.start='v1_19_0',
+   doc.doc='Given: a source object that meets its constriants but maps to a target object that fails.',
+   doc.doc='Given: an execution constraint that requests no constraint checking.',
+   doc.doc='When:  the mapping is executed using graphFetchChecked.',
+   doc.doc='Then:  the result is a Checked object containing the target without defects and source (as a Checked).'
+}
+meta::pure::mapping::modelToModel::test::alloy::dataQuality::returnCheckResultWithoutDefectForConstraintViolationOnTargetWhenConstraintsSuppressed() : Boolean[1]
+{
+   let tree = #{SomeDataConstrained {i, b}}#;
+   let func = {|SomeDataConstrained.all()->graphFetchChecked($tree)->serialize($tree)};
+   let mapping = simpleConstrainedDataMapping;
+   let runtime = testJsonRuntime(_SomeDataConstrained, '{"i":2, "b":false}');
+
+   let result = execute($func, $mapping, $runtime, ^ExecutionContext(enableConstraints=false), []);
+   let json = $result.values->toOne();
+   let expected = 
+   '{'+
+   '  "defects":[],'+
+   '  "value":{"i":4,"b":false},'+
+   '  "source":{'+
+   '    "defects":[],'+
+   '    "value":{"i":2,"b":false},'+
+   '    "source":{"number":1,"record":"{\\"i\\":2,\\"b\\":false}"}'+
+   '  }'+
+   '}';   
+   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.DataQuality>>
+{  serverVersion.start='v1_19_0',
+   doc.doc='Given: a source object that meets its constriants but maps to a target object that fails.',
+   doc.doc='Given: an execution constraint that requests no constraint checking.',
+   doc.doc='When:  the mapping is executed using graphFetch.',
+   doc.doc='Then:  the execution succeeds to produce the target object.'
+}
+meta::pure::mapping::modelToModel::test::alloy::dataQuality::executionSucceedsForConstraintViolationOnTargetWhenConstraintsSuppressed() : Boolean[1]
+{
+   let tree = #{SomeDataConstrained {i, b}}#;
+   let func = {|SomeDataConstrained.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = simpleConstrainedDataMapping;
+   let runtime = testJsonRuntime(_SomeDataConstrained, '{"i":2, "b":false}');
+
+   let result = execute($func, $mapping, $runtime, ^ExecutionContext(enableConstraints=false), []);
+   let json = $result.values->toOne();
+   let expected = '{"i":4,"b":false}';
+   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.DataQuality>>
+{  serverVersion.start='v1_19_0',
+   doc.doc='Given: a source object that meets its constriants but maps to a target objects that fails for some child element.',
+   doc.doc='Given: graph fetch tree that does not include the properties.',
+   doc.doc='When:  the mapping is executed using graphFetchChecked.',
+   doc.doc='Then:  the result is a Checked object containing the target and source along with a defect explaining the error.  The defect should contain the path to the failing object including indexes in any intermediate collections.'
+}
+meta::pure::mapping::modelToModel::test::alloy::dataQuality::fetchGraphIsExpandedToAccomodateImplicitConstraintPropertiesOnTarget() : Boolean[1]
+{
+   let tree = #{AuthorWithConstraints {name, books {title}}}#;
+   let func = {|AuthorWithConstraints.all()->graphFetchChecked($tree)->serialize($tree)};
+   let mapping = constraintsLiteratureMapping;
+   let runtime = testJsonRuntime(_Author, '{"name":"Plato", "books":[{"title": "Euthyphro", "pages": 20, "marketing": { "reviews": [{"by": "Socretes"},{"by": "Plato"}] }}, {"title": "Phaedo", "pages":61}]}');
+   
+   let result = execute($func, $mapping, $runtime, []);
+   let json = $result.values->toOne();
+   let expected= 
+   '{'+
+   '  "defects":['+
+   '    {'+
+   '      "id":"nameParts",'+
+   '      "externalId":null,'+
+   '       "message":"Constraint :[nameParts] violated in the Class AuthorWithConstraints",'+
+   '       "enforcementLevel":"Error",'+
+   '       "ruleDefinerPath":"meta::pure::mapping::modelToModel::test::alloy::dataQuality::dest::AuthorWithConstraints",'+
+   '       "ruleType":"ClassConstraint",'+
+   '       "path": []'+
+   '    },'+
+   '    {'+
+   '      "id":"pageCount",'+
+   '      "externalId":null,'+
+   '       "message":"Constraint :[pageCount] violated in the Class BookWithConstraints",'+
+   '       "enforcementLevel":"Error",'+
+   '       "ruleDefinerPath":"meta::pure::mapping::modelToModel::test::alloy::dataQuality::dest::BookWithConstraints",'+
+   '       "ruleType":"ClassConstraint",'+
+   '       "path": ['+
+   '         {'+
+   '           "propertyName":"books",'+
+   '           "index":0' +
+   '         }'+
+   '       ]'+
+   '    },'+
+   '    {'+
+   '      "id":"titleLength",'+
+   '      "externalId":null,'+
+   '       "message":"Constraint :[titleLength] violated in the Class BookWithConstraints",'+
+   '       "enforcementLevel":"Error",'+
+   '       "ruleDefinerPath":"meta::pure::mapping::modelToModel::test::alloy::dataQuality::dest::BookWithConstraints",'+
+   '       "ruleType":"ClassConstraint",'+
+   '       "path": ['+
+   '         {'+
+   '           "propertyName":"books",'+
+   '           "index":1' +
+   '         }'+
+   '       ]'+
+   '    }'+
+   '  ],'+
+   '  "value": {'+
+   '    "name":"Plato",'+
+   '    "books":['+
+   '      {"title":"Euthyphro"},'+
+   '      {"title":"Phaedo"}'+
+   '    ]'+
+   '  },'+
+   '  "source":{'+
+   '    "defects":[],'+
+   '    "value": {'+
+   '      "name":"Plato",'+
+   '      "books":['+
+   '        {"title":"Euthyphro", "pages":20},'+
+   '        {"title":"Phaedo",    "pages":61}'+
+   '      ]'+
+   '    },'+
+   '    "source":{"number":1, "record":"{\\"name\\":\\"Plato\\",\\"books\\":[{\\"title\\":\\"Euthyphro\\",\\"pages\\":20,\\"marketing\\":{\\"reviews\\":[{\\"by\\":\\"Socretes\\"},{\\"by\\":\\"Plato\\"}]}},{\\"title\\":\\"Phaedo\\",\\"pages\\":61}]}"}'+
+   '  }'+
+   '}';
+   
+   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.DataQuality>>
+{  serverVersion.start='v1_19_0',
+   doc.doc='Given: a source object that fails its constriants.',
+   doc.doc='Given: graph fetch tree that does not include the properties.',
+   doc.doc='When:  the mapping is executed using graphFetchChecked.',
+   doc.doc='Then:  the result is a Checked object containing the target and source containing a Checked for the source which includes the defect.'
+}
+meta::pure::mapping::modelToModel::test::alloy::dataQuality::fetchGraphIsExpandedToAccomodateImplicitConstraintPropertiesOnSource() : Boolean[1]
+{
+   let tree = #{SomeDataUnconstrained {b}}#;
+   let func = {|SomeDataUnconstrained.all()->graphFetchChecked($tree)->serialize($tree)};
+   let mapping = simpleUnconstrainedDataMapping;
+   let runtime = testJsonRuntime(_SomeDataConstrained, '{"i":1, "b":false}');
+
+   let result = execute($func, $mapping, $runtime, []);
+   let json = $result.values->toOne();
+   let expected = 
+   '{'+
+   '  "defects":[],'+
+   '  "value":{"b":false},'+
+   '  "source":{'+
+   '    "defects":['+
+   '      {'+
+   '        "id":"TestConstraint",'+
+   '        "externalId":null,'+
+   '        "message":"Constraint :[TestConstraint] violated in the Class _SomeDataConstrained",'+
+   '        "enforcementLevel":"Error",'+
+   '        "ruleDefinerPath":"meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::src::_SomeDataConstrained",'+
+   '        "ruleType":"ClassConstraint",'+
+   '        "path"             : []' +
+   '      }'+
+   '    ],'+
+   '    "value":{"b":false, "i": 1},'+
+   '    "source":{"number":1,"record":"{\\"i\\":1,\\"b\\":false}"}'+
+   '  }'+
+   '}';
+
+   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+
+###Pure
+import meta::pure::mapping::modelToModel::test::alloy::dataQuality::dest::*;
+import meta::pure::mapping::modelToModel::test::alloy::dataQuality::src::*;
+import meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::src::*;
+import meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::dest::*;
+
+Class meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::src::_SomeDataConstrained
+[
+   TestConstraint(
+      ~function:(1 < $this.i)
+   )   
+]
+{
+   i     : Integer[1];
+   b     : Boolean[1];
+   child : _SomeDataConstrainedChild[0..1];
+}
+
+Class meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::src::_SomeDataConstrainedChild
+{
+   s : String[1];
+   d : StrictDate[0..1];
+}
+
+Class meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::dest::SomeDataUnconstrained
+{
+   i : Integer[1];
+   b : Boolean[0..1];
+}
+
+Class meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::dest::SomeDataConstrained
+[
+   TestIConstraint(
+      ~externalId       : 'extID'
+      ~function         : 5 < $this.i
+      ~enforcementLevel : Warn
+      ~message          : 'Expected value >= 5 but got '+$this.i->toString()
+   )
+]
+{
+   i : Integer[1];
+   b : Boolean[0..1];
+   child : SomeDataConstrainedChild[0..1];
+}
+
+Class meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::dest::SomeDataConstrainedChild
+[
+   TestChildConstraint : $this.s == 'Hello'
+]
+{
+   s : String[1];
+   d : StrictDate[0..1];
+}
+
+Class meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::src::_Num
+{
+   i     :Integer[1];
+   child : _SomeDataConstrainedChild[0..1];
+
+}
+
+Class meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::src::_Num2
+{
+   int   :Integer[1];
+   child : _SomeDataConstrainedChild[0..1];
+
+}
+
+Class meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::src::_X
+[
+   TestConstraint(
+      ~function:(1 < $this.i)
+   )
+]
+{
+   i:Integer[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::src::_Y extends _X
+[
+   TestConstraintChild(
+      ~function:(2 < $this.i && $this.b)
+   )
+]
+{
+   b: Boolean[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::dest::WithoutConstraints
+{
+   i:Integer[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::dest::WithConstraints
+[
+   TestConstraint(
+      ~function:(3 < $this.i)
+   ),
+   
+   MoreThanOne(
+      ~externalId: 'TEST'
+      ~function:(1 < $this.i)
+      ~enforcementLevel: Warn
+      ~message: $this.i->toString() + ' <= 1'
+   )
+]
+{
+   i     : Integer[1];
+   child : SomeDataConstrainedChild[0..1];
+}
+
+Class meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::dest::WithConstraintsViaQualifier
+[
+   MoreThanOne(
+      ~externalId: 'TEST'
+      ~function:($this.number > 1)
+      ~enforcementLevel: Warn
+      ~message: $this.number->toString() + ' <= 1'
+   )
+]
+{
+   i : Integer[1];
+   s : String[1];
+   number() {$this.i}: Integer[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::dest::InheritsConstriants extends WithConstraints
+[
+   MoreThanTwo(
+      ~externalId: 'TEST2'
+      ~function:(2 < $this.i)
+      ~enforcementLevel: Warn
+      ~message: $this.i->toString() + ' <= 2'
+   )
+]
+{
+}
+
+Class meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::dest::WithConstraintInheritsNoConstriants extends WithoutConstraints
+[
+   MoreThanTwo(
+      ~externalId: 'TEST2'
+      ~function:(2 < $this.i)
+      ~enforcementLevel: Warn
+      ~message: $this.i->toString() + ' <= 2'
+   )
+]
+{
+}
+
+Class meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::dest::WithoutConstraintsInheritsNoConstriants extends WithoutConstraints
+{
+}
+
+Class meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::dest::Z
+{
+   i:Integer[1];
+   b:Boolean[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::dataQuality::src::_Author
+{
+   name: String[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::dataQuality::src::_Book
+{
+   title : String[1];
+   pages : Integer[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::dataQuality::src::_Marketing
+{
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::dataQuality::src::_Review
+{
+   by : String[1];
+}
+
+Association meta::pure::mapping::modelToModel::test::alloy::dataQuality::src::_Author_Book
+{
+   author: _Author[1];
+   books: _Book[*];
+}
+
+Association meta::pure::mapping::modelToModel::test::alloy::dataQuality::src::_Book_Marketing
+{
+   book: _Book[1];
+   marketing: _Marketing[0..1];
+}
+
+Association meta::pure::mapping::modelToModel::test::alloy::dataQuality::src::_Marketing_Review
+{
+   marketing: _Marketing[1];
+   reviews: _Review[*];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::dataQuality::dest::Author
+{
+   name: String[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::dataQuality::dest::AuthorWithConstraints
+[
+   nameParts: $this.name->split(' ')->size() > 1
+]
+{
+   name: String[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::dataQuality::dest::Book
+{
+   title : String[1];
+   pages : Integer[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::dataQuality::dest::BookWithConstraints
+[
+   titleLength : $this.title->length() > 7,
+   pageCount   : $this.pages > 50
+]
+{
+   title     : String[1];
+   pages     : Integer[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::dataQuality::dest::Marketing
+{
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::dataQuality::dest::Review
+[
+   noSelfReview: $this.by != $this.marketing.book.author.name
+]
+{
+   by : String[1];
+}
+
+Association meta::pure::mapping::modelToModel::test::alloy::dataQuality::dest::AuthorBook
+{
+   author: Author[1];
+   books: Book[*];
+}
+
+Association meta::pure::mapping::modelToModel::test::alloy::dataQuality::dest::AuthorBookConstraints
+{
+   author: AuthorWithConstraints[1];
+   books: BookWithConstraints[*];
+}
+
+Association meta::pure::mapping::modelToModel::test::alloy::dataQuality::dest::BookMarketingConstraints
+{
+   book: BookWithConstraints[1];
+   marketing: Marketing[0..1];
+}
+
+Association meta::pure::mapping::modelToModel::test::alloy::dataQuality::dest::MarketingReviewConstraints
+{
+   marketing: Marketing[1];
+   reviews: Review[*];
+}
+
+
+###Mapping
+import meta::pure::mapping::modelToModel::test::alloy::dataQuality::src::*;
+import meta::pure::mapping::modelToModel::test::alloy::dataQuality::dest::*;
+
+Mapping meta::pure::mapping::modelToModel::test::alloy::dataQuality::mapping::simpleLiteratureMapping
+(
+   Author : Pure 
+      {
+         ~src _Author
+         name  : $src.name,
+         books : $src.books
+      }
+
+   Book : Pure 
+      {
+         ~src _Book
+         title : $src.title,
+         pages : $src.pages
+      }
+)
+
+###Mapping
+import meta::pure::mapping::modelToModel::test::alloy::dataQuality::src::*;
+import meta::pure::mapping::modelToModel::test::alloy::dataQuality::dest::*;
+
+Mapping meta::pure::mapping::modelToModel::test::alloy::dataQuality::mapping::constraintsLiteratureMapping
+(
+   AuthorWithConstraints : Pure 
+      {
+         ~src _Author
+         name  : $src.name,
+         books : $src.books
+      }
+
+   BookWithConstraints : Pure 
+      {
+         ~src _Book
+         title     : $src.title,
+         pages     : $src.pages,
+         marketing : $src.marketing
+      }
+
+   Marketing : Pure 
+      {
+         ~src _Marketing
+         reviews : $src.reviews
+      }
+
+   Review : Pure 
+      {
+         ~src _Review
+         by : $src.by
+      }
+)
+
+###Mapping
+import meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::src::*;
+import meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::dest::*;
+
+Mapping meta::pure::mapping::modelToModel::test::dataQuality::simpleConstrainedDataMapping
+(
+   SomeDataConstrained : Pure 
+      {
+         ~src _SomeDataConstrained
+         i    : $src.i*$src.i,
+         b    : $src.b,
+         child: $src.child
+      }
+
+   SomeDataConstrainedChild : Pure
+      {
+         ~src _SomeDataConstrainedChild
+         s    : $src.s,
+         d    : $src.d
+      }
+)
+
+###Mapping
+import meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::src::*;
+import meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::dest::*;
+
+Mapping meta::pure::mapping::modelToModel::test::dataQuality::simpleUnconstrainedDataMapping
+(
+   SomeDataUnconstrained : Pure 
+      {
+         ~src _SomeDataConstrained
+         i    : $src.i*$src.i,
+         b    : $src.b
+      }
+)
+
+###Mapping
+import meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::src::*;
+import meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::dest::*;
+
+Mapping meta::pure::mapping::modelToModel::test::dataQuality::copyIntegerMapping
+(
+   InheritsConstriants : Pure
+      {
+         ~src _Num
+         i:$src.i
+      }
+
+   WithConstraints : Pure
+      {
+         ~src _Num
+         i:$src.i
+      }
+   
+   WithConstraintInheritsNoConstriants : Pure
+      {
+         ~src _Num
+         i:$src.i
+      }
+
+   WithoutConstraints : Pure
+      {
+         ~src _Num
+         i:$src.i
+      }
+   
+   WithoutConstraintsInheritsNoConstriants : Pure
+      {
+         ~src _Num
+         i:$src.i
+      }
+)
+
+###Mapping
+import meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::src::*;
+import meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::dest::*;
+
+Mapping meta::pure::mapping::modelToModel::test::dataQuality::doubleIntegerMapping
+(
+   WithConstraints : Pure
+      {
+         ~src _Num
+         i     : $src.i * 2,
+         child : $src.child
+      }
+
+   SomeDataConstrainedChild : Pure
+      {
+         ~src _SomeDataConstrainedChild
+         s    : $src.s,
+         d    : $src.d
+      }
+)
+
+###Mapping
+import meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::src::*;
+import meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::dest::*;
+
+Mapping meta::pure::mapping::modelToModel::test::dataQuality::noIMapping
+(
+   WithConstraints : Pure
+      {
+         ~src _Num2
+         child : $src.child
+      }
+
+   SomeDataConstrainedChild : Pure
+      {
+         ~src _SomeDataConstrainedChild
+         s    : $src.s,
+         d    : $src.d
+      }
+)
+
+Mapping meta::pure::mapping::modelToModel::test::dataQuality::noIViaQualifierMapping
+(
+   WithConstraintsViaQualifier : Pure
+      {
+         ~src _Num2
+         s : 'hello'
+      }
+)
+
+###Mapping
+import meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::src::*;
+import meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::dest::*;
+
+Mapping meta::pure::mapping::modelToModel::test::dataQuality::simpleConstrainedWithInheritanceDataMapping
+(
+   Z : Pure
+      {
+         ~src _Y
+         i:$src.i*$src.i,
+         b:$src.b
+         
+      }
+)
+
+###Pure
+import meta::pure::executionPlan::engine::java::roadmap::*;
+import meta::json::*;
+import meta::pure::executionPlan::profiles::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::mapping::modelToModel::test::alloy::utils::*;
+import meta::pure::mapping::modelToModel::test::dataQuality::*;
+
+Class meta::pure::mapping::modelToModel::test::dataQuality::SourceWidget
+{
+   name: String[0..1]; 
+} 
+
+Class meta::pure::mapping::modelToModel::test::dataQuality::Parent
+[
+
+  VALID_NAME
+  (
+    ~function: $this.isValid
+    ~enforcementLevel: Error
+    ~message: 'Name is missing on the widget'
+  )
+]
+{   
+   name: String[0..1];   
+   isValid() {$this.name->isNotEmpty()}: Boolean[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::dataQuality::Widget extends Parent {}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.DataQuality>>
+{  serverVersion.start='v1_19_0',
+   doc.doc='Given: a class that inherits a constraint that calls a qualified property.',
+   doc.doc='When:  the mapping is executed using graphFetchChecked.',
+   doc.doc='Then:  the result is a Checked object containing the target and source.'
+}
+meta::pure::mapping::modelToModel::test::alloy::dataQuality::fetchGraphIsExpandedfForInheritedConstraintWithQualifier() : Boolean[1]
+{
+   let tree = #{Widget{name}}#;
+   
+   let result = execute(
+      |Widget.all()->graphFetchChecked($tree)->serialize($tree),
+      SourceWidgetToWidget,
+      testJsonRuntime(SourceWidget, '{"name":"Dave"}'),
+      []
+   );
+   let json = $result.values->toOne();
+   let expected = 
+   '{'+
+   '  "defects":[],'+
+   '  "value":{"name":"Dave"},'+
+   '  "source":{'+
+   '    "defects":[],'+
+   '    "value":{"name":"Dave"},'+
+   '    "source":{"number":1,"record":"{\\"name\\":\\"Dave\\"}"}'+
+   '  }'+
+   '}';   
+
+   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+###Mapping
+import meta::pure::mapping::modelToModel::test::dataQuality::*;
+
+Mapping meta::pure::mapping::modelToModel::test::dataQuality::SourceWidgetToWidget
+(
+   *Widget[alloy_mastery_sourcing_testModel_vendors_sourceCreate_Widget]: Pure
+   {
+      ~src SourceWidget     
+      name: $src.name
+   }
+)

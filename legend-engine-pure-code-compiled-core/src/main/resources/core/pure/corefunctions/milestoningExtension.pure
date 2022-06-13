@@ -1,0 +1,65 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::milestoning::*;
+
+function meta::pure::milestoning::isTemporal(type:Type[1]):Boolean[1]
+{
+   ['processingtemporal','businesstemporal','bitemporal']->exists(s| $type->hasStereotype($s, temporal))
+}
+
+function meta::pure::milestoning::hasGeneratedMilestoningDatePropertyStereotype(f:ElementWithStereotypes[1]):Boolean[1]
+{
+   $f->hasStereotype('generatedmilestoningdateproperty',meta::pure::profiles::milestoning)
+}
+
+function meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype(f:ElementWithStereotypes[1]):Boolean[1]
+{
+   $f->hasStereotype('generatedmilestoningproperty',meta::pure::profiles::milestoning) || $f->hasGeneratedMilestoningDatePropertyStereotype()
+}
+
+function meta::pure::milestoning::isGeneratedMilestoningPropertyStereotype(s:Stereotype[1]):Boolean[1]
+{
+   $s == meta::pure::profiles::milestoning->stereotype('generatedmilestoningproperty') || $s == meta::pure::profiles::milestoning->stereotype('generatedmilestoningdateproperty')
+}
+
+function meta::pure::milestoning::edgePointPropertyName(p:AbstractProperty<Any>[1]):String[0..1]{
+   if (!$p.name->isEmpty(),|$p.name->toOne()+'AllVersions',|[])
+}
+
+function meta::pure::milestoning::originalPropertyNameForEdgePointProperty(p:AbstractProperty<Any>[1]):String[0..1]{
+   if (!$p.name->isEmpty() && isEdgePointProperty($p) ,|$p.name->toOne()->substring(0,$p.name->toOne()->length()-11),|$p.name)
+}
+
+function meta::pure::milestoning::isEdgePointProperty(p:AbstractProperty<Any>[1]):Boolean[1]{
+   $p->instanceOf(Property) && !$p.name->isEmpty() && $p.name->toOne()->endsWith('AllVersions') && hasGeneratedMilestoningPropertyStereotype($p)
+}
+
+function meta::pure::milestoning::getMilestonedGeneratedQualifiedPropertiesForEdgePointProperty(p:AbstractProperty<Any>[1]):QualifiedProperty<Any>[*]{
+   if($p->isEdgePointProperty(),|let clazz = $p.classifierGenericType.typeArguments->at(0).rawType->toOne()->cast(@Class<Any>);
+                                 $clazz.qualifiedProperties->concatenate($clazz.qualifiedPropertiesFromAssociations)
+                                 ->filter(q|$q->hasGeneratedMilestoningPropertyStereotype() && $q.name==$p->originalPropertyNameForEdgePointProperty());,
+                                |[]);
+}
+
+function meta::pure::milestoning::undoMilestoningTransform(p:AbstractProperty<Any>[*]):AbstractProperty<Any>[*]
+{
+   $p->map(p|$p->undoMilestoningTransform());
+}
+
+function meta::pure::milestoning::undoMilestoningTransform(p:AbstractProperty<Any>[1]):AbstractProperty<Any>[0..1]
+{
+   if($p->meta::pure::milestoning::isEdgePointProperty(),|^$p(name=$p->meta::pure::milestoning::originalPropertyNameForEdgePointProperty(), stereotypes=$p.stereotypes->filter(s|!$s->isGeneratedMilestoningPropertyStereotype()))
+                                                        ,| if($p->meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype(),|[],|$p));
+}

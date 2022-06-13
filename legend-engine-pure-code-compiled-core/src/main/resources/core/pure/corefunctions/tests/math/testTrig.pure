@@ -1,0 +1,94 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::profiles::*;
+
+function <<test.Test>> meta::pure::functions::math::tests::trigonometry::testSine():Boolean[1]
+{
+   assertEq(0.0, sin(0));
+   assertEqWithinTolerance(0.841470984807, sin(1), 0.000000000001);
+   assertEqWithinTolerance(0.997494986604, sin(1.5), 0.000000000001);
+   assertEqWithinTolerance(0.841470984807, sin_Number_1__Float_1_->eval(1), 0.000000000001);
+}
+
+function <<test.Test>> meta::pure::functions::math::tests::trigonometry::testCosine():Boolean[1]
+{
+   assertEq(1.0, cos(0));
+   assertEqWithinTolerance(0.540302305868, cos(-1), 0.000000000001);
+   assertEqWithinTolerance(0.070737201667, cos(-1.5), 0.000000000001);
+   assertEqWithinTolerance(0.540302305868, cos_Number_1__Float_1_->eval(1), 0.000000000001);
+}
+
+function <<test.Test>> meta::pure::functions::math::tests::trigonometry::testTangent():Boolean[1]
+{
+   assertEq(0.0, tan(0));
+   assertEqWithinTolerance(-2.185039863262, tan(2), 0.000000000001);
+   assertEqWithinTolerance(-2.185039863262, tan_Number_1__Float_1_->eval(2), 0.000000000001);
+}
+
+function <<test.Test>> meta::pure::functions::math::tests::trigonometry::testArcSine():Boolean[1]
+{
+   assertEq(0.0, asin(0));
+   assertEqWithinTolerance(1.570796326794, asin(1), 0.000000000001);
+   assertEqWithinTolerance(-0.523598775598, asin(-0.5), 0.000000000001);
+   assertEqWithinTolerance(1.570796326794, asin_Number_1__Float_1_->eval(1), 0.000000000001);
+}
+
+function <<test.Test>> meta::pure::functions::math::tests::trigonometry::testArcCosine():Boolean[1]
+{
+   assertEqWithinTolerance(1.570796326794, acos(0), 0.000000000001);
+   assertEqWithinTolerance(3.141592653589, acos(-1), 0.000000000001);
+   assertEqWithinTolerance(1.047197551196, acos(0.5), 0.000000000001);
+   assertEqWithinTolerance(1.047197551196, acos_Number_1__Float_1_->eval(0.5), 0.000000000001);
+}
+
+function <<test.Test>> meta::pure::functions::math::tests::trigonometry::testArcTangent():Boolean[1]
+{
+   assertEq(0.0, atan(0));
+   assertEqWithinTolerance(0.982793723247, atan(1.5), 0.000000000001);
+   assertEqWithinTolerance(1.560796660108, atan(100), 0.000000000001);
+   assertEqWithinTolerance(1.560796660108, atan_Number_1__Float_1_->eval(100), 0.000000000001);
+}
+
+function <<test.Test>> meta::pure::functions::math::tests::trigonometry::testArcTangent2():Boolean[1]
+{
+   assertEq(0.0, atan2(0, 1));
+   assertEqWithinTolerance(1.570796326794, atan2(1, 0), 0.000000000001);
+   assertEqWithinTolerance(0.141897054604, atan2(0.5, 3.5), 0.000000000001);
+   assertEqWithinTolerance(1.570796326794, atan2_Number_1__Number_1__Float_1_->eval(1,0), 0.000000000001);
+}
+
+function <<test.Test>> meta::pure::functions::math::tests::trigonometry::testSquareRoot():Boolean[1]
+{
+   assertEq(0.0, sqrt(0));
+   assertEq(3.0, sqrt(9));
+   assertEq(0.1, sqrt(0.01));
+   assertEq(3.0, sqrt_Number_1__Float_1_->eval(9));
+}
+
+function <<test.Test>> meta::pure::functions::math::tests::trigonometry::testCalculatingDistanceHaversine():Boolean[1]
+{
+   assertEqWithinTolerance(314.3490784335, distanceHaversineRadians(toRadians(1.5), toRadians(2.5), toRadians(3.5), toRadians(4.5)), 0.0000000001);
+   assertEqWithinTolerance(0.0, distanceHaversineRadians(toRadians(1.5), toRadians(2.5), toRadians(1.5), toRadians(2.5)), 0.0000000001);
+   assertEqWithinTolerance(0.0, distanceHaversineRadians(1, 0, 1, 0), 0.0000000001);
+   assertEqWithinTolerance(49.10256209097, distanceHaversineDegrees(37.42205, -122.084347, 37.77493, -122.419416), 0.0000000001);
+}
+
+function <<test.Test>> meta::pure::functions::math::tests::trigonometry::testCalculatingDistancesphericalLawOfCosines():Boolean[1]
+{
+   assertEqWithinTolerance(314.3490784335, distanceSphericalLawOfCosinesRadians(toRadians(1.5), toRadians(2.5), toRadians(3.5), toRadians(4.5)), 0.0000000001);
+   assertEqWithinTolerance(0.0, distanceSphericalLawOfCosinesRadians(toRadians(1.5), toRadians(2.5), toRadians(1.5), toRadians(2.5)), 0.0001);
+   assertEqWithinTolerance(0.0, distanceSphericalLawOfCosinesRadians(1, 0, 1, 0), 0.0001);
+   assertEqWithinTolerance(49.10256209097, distanceSphericalLawOfCosinesDegrees(37.42205, -122.084347, 37.77493, -122.419416), 0.0000000001);
+}

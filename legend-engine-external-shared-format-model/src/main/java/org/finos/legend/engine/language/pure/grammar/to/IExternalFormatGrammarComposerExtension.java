@@ -38,7 +38,8 @@ public interface IExternalFormatGrammarComposerExtension extends PureGrammarComp
         return process(externalSource, processors, context, "External Source Specification", externalSource.sourceInformation);
     }
 
-    static <T> String process(T item, List<Function2<T, PureGrammarComposerContext, String>> processors, PureGrammarComposerContext context, String type, SourceInformation srcInfo) {
+    static <T> String process(T item, List<Function2<T, PureGrammarComposerContext, String>> processors, PureGrammarComposerContext context, String type, SourceInformation srcInfo)
+    {
         return ListIterate
                 .collect(processors, processor -> processor.value(item, context))
                 .select(Objects::nonNull)
@@ -46,7 +47,8 @@ public interface IExternalFormatGrammarComposerExtension extends PureGrammarComp
                 .orElseThrow(() -> new EngineException("Unsupported " + type + " type '" + item.getClass() + "'", srcInfo, EngineErrorType.PARSER));
     }
 
-    default List<Function2<ExternalSource, PureGrammarComposerContext, String>> getExtraExternalSourceSpecificationComposers() {
+    default List<Function2<ExternalSource, PureGrammarComposerContext, String>> getExtraExternalSourceSpecificationComposers()
+    {
         return FastList.newList();
     }
 }

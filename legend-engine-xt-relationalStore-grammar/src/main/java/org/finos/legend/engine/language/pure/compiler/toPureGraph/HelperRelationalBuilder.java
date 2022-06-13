@@ -374,7 +374,7 @@ public class HelperRelationalBuilder
     {
         return visited.add(database) &&
                 (database._schemas().anySatisfy(s -> schemaName.equals(s._name())) ||
-                    database._includes().anySatisfy(incl -> schemaExists(visited, (Database) incl, schemaName)));
+                        database._includes().anySatisfy(incl -> schemaExists(visited, (Database) incl, schemaName)));
     }
 
     private static SetIterable<Database> getAllIncludedDBs(Database database)
@@ -637,7 +637,7 @@ public class HelperRelationalBuilder
             }
         }
         join._aliases(Lists.fixedSize.of(new Root_meta_pure_functions_collection_Pair_Impl<TableAlias, TableAlias>("")._first(aliases.get(0))._second(aliases.get(1)),
-                new Root_meta_pure_functions_collection_Pair_Impl<TableAlias, TableAlias>("")._first(aliases.get(1))._second(aliases.get(0))))
+                        new Root_meta_pure_functions_collection_Pair_Impl<TableAlias, TableAlias>("")._first(aliases.get(1))._second(aliases.get(0))))
                 ._database(database)
                 ._operation(op);
         return join;
@@ -1134,7 +1134,7 @@ public class HelperRelationalBuilder
     {
         String propertyName = propertyMapping.property.property;
         String edgePointPropertyName = MilestoningFunctions.getEdgePointPropertyName(propertyName);
-        Function<Type, Boolean> isTypeTemporalMilestoned = type -> Milestoning.temporalStereotypes(((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement)type)._stereotypes()) != null;
+        Function<Type, Boolean> isTypeTemporalMilestoned = type -> Milestoning.temporalStereotypes(((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) type)._stereotypes()) != null;
 
         // case where local property is not null and you find property in mapping class
         if (propertyMapping.localMappingProperty != null)
@@ -1333,7 +1333,7 @@ public class HelperRelationalBuilder
         {
             org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping propMapping = ListIterate.detect(legendPropertyMappings, propertyMapping -> propertyMapping.property.property.equals(propertyAndJoinTreeNode.getOne()));
             SourceInformation srcInfo = propMapping == null ? classMapping.sourceInformation : propMapping.sourceInformation;
-            if(propertyAndJoinTreeNode.getTwo()._joinType() != null)
+            if (propertyAndJoinTreeNode.getTwo()._joinType() != null)
             {
                 throw new EngineException("Do not support specifying join type for the first join in the classMapping.", srcInfo, EngineErrorType.COMPILATION);
             }
@@ -1530,7 +1530,7 @@ public class HelperRelationalBuilder
         Class<?> propertyReturnType = (Class<?>) propertyType;
         if (!bindingClasses.contains(propertyReturnType))
         {
-            throw new EngineException("Class: " + platform_pure_corefunctions_meta.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement)propertyType, context.getExecutionSupport()) + " should be included in modelUnit for binding: " + propertyMapping.bindingTransformer.binding, propertyMapping.sourceInformation, EngineErrorType.COMPILATION);
+            throw new EngineException("Class: " + platform_pure_corefunctions_meta.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) propertyType, context.getExecutionSupport()) + " should be included in modelUnit for binding: " + propertyMapping.bindingTransformer.binding, propertyMapping.sourceInformation, EngineErrorType.COMPILATION);
         }
 
         Sets.mutable.withAll(bindingClasses).forEach(clazz -> addSemiStructuredSetImplementation(parent._parent(), clazz, binding._contentType(), (RootRelationalInstanceSetImplementation) parent, context));
@@ -1546,7 +1546,7 @@ public class HelperRelationalBuilder
                                 ._binding(binding)
                                 ._class(propertyReturnType)
                 );
-        }
+    }
 
     private static String generateTargetSetImplementationIdForProperty(Property<?, ?> property, String rootSetId, CompileContext context)
     {
@@ -1568,14 +1568,15 @@ public class HelperRelationalBuilder
         if (mapping._classMappings().select(cm -> setId.equals(cm._id())).isEmpty())
         {
             SemiStructuredRelationalInstanceSetImplementation setImpl = new Root_meta_relational_mapping_SemiStructuredRelationalInstanceSetImplementation_Impl("")
-                ._root(false)
+                    ._root(false)
                     ._class(clazz)
                     ._id(setId)
                     ._parent(mapping)
                     ._userDefinedPrimaryKey(false)
                     ._mainTableAlias(rootSet._mainTableAlias());
 
-            core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_hierarchicalProperties_Class_1__Property_MANY_(clazz, context.getExecutionSupport()).forEach(p -> {
+            core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_hierarchicalProperties_Class_1__Property_MANY_(clazz, context.getExecutionSupport()).forEach(p ->
+            {
                 boolean isPrimitiveProperty = core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_isPrimitiveValueProperty_AbstractProperty_1__Boolean_1_(p, context.getExecutionSupport());
 
                 if (isPrimitiveProperty)
@@ -1603,21 +1604,21 @@ public class HelperRelationalBuilder
                     core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_allSpecializations_Class_1__Class_MANY_(propertyReturnType, context.getExecutionSupport()).forEach(allClasses::add);
 
                     allClasses.forEach(cl ->
-                                    setImpl._propertyMappingsAdd(
-                                            new Root_meta_relational_mapping_SemiStructuredRelationalPropertyMapping_Impl("")
-                                                ._sourceSetImplementationId(setId)
-                                                ._targetSetImplementationId(generatedSemiStructuredMappingId(cl, rootSetId, context))
-                                                ._property(p)
-                                                ._owner(setImpl)
-                                                ._relationalOperationElement(
-                                                        new Root_meta_relational_metamodel_operation_SemiStructuredPropertyAccess_Impl("")
-                                                                ._operand(new Root_meta_relational_metamodel_RelationalOperationElement_Impl(""))
-                                                                ._contentType(bindingContentType)
-                                                                ._returnType(cl)
-                                                                ._property(new Root_meta_relational_metamodel_Literal_Impl("")._value(p._name()))
-                                                )
-                                    )
-                            );
+                            setImpl._propertyMappingsAdd(
+                                    new Root_meta_relational_mapping_SemiStructuredRelationalPropertyMapping_Impl("")
+                                            ._sourceSetImplementationId(setId)
+                                            ._targetSetImplementationId(generatedSemiStructuredMappingId(cl, rootSetId, context))
+                                            ._property(p)
+                                            ._owner(setImpl)
+                                            ._relationalOperationElement(
+                                                    new Root_meta_relational_metamodel_operation_SemiStructuredPropertyAccess_Impl("")
+                                                            ._operand(new Root_meta_relational_metamodel_RelationalOperationElement_Impl(""))
+                                                            ._contentType(bindingContentType)
+                                                            ._returnType(cl)
+                                                            ._property(new Root_meta_relational_metamodel_Literal_Impl("")._value(p._name()))
+                                            )
+                            )
+                    );
                 }
             });
 

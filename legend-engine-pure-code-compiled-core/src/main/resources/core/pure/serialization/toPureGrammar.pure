@@ -1,0 +1,290 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::mapping::*;
+import meta::pure::metamodel::serialization::grammar::*;
+
+function meta::pure::metamodel::serialization::grammar::printFunctionDefinitionExpressions(functionDefinition:FunctionDefinition<Any>[1], space:String[1]):String[*]
+{
+   $functionDefinition.expressionSequence->evaluateAndDeactivate()->map(vs|printValueSpecification($vs, $space+'   '));
+}
+
+function meta::pure::metamodel::serialization::grammar::printLambdaParameters(func:Function<Any>[1]):String[1]
+{
+   let funcType = $func->genericType().typeArguments->at(0).rawType->toOne()->cast(@FunctionType);
+   $funcType.parameters->evaluateAndDeactivate()->map(v | $v.name)->joinStrings(', ');
+}
+
+function meta::pure::metamodel::serialization::grammar::printFunctionDefinition(functionDefinition:FunctionDefinition<Any>[1], space:String[1]):String[1]
+{
+   let expressions = printFunctionDefinitionExpressions($functionDefinition, $space);
+
+   $functionDefinition->match([
+      lambda:LambdaFunction<Any>[1]    | let functionParameters = '{'+printLambdaParameters($lambda)+'|';                                       
+                                         let multipleLineIndent = repeat(' ', $functionParameters->length())->joinStrings('');
+                                         $functionParameters+($expressions->joinStrings(';\n'+$multipleLineIndent))+'}';,
+      other:FunctionDefinition<Any>[1] | $other->printFunctionSignature()+'\n'+
+                                         $space+'{\n'+
+                                         $expressions->joinStrings($space+'  ', ';\n'+$space, ';\n')+
+                                         $space+'}';
+   ]);
+}
+
+function meta::pure::metamodel::serialization::grammar::printValueSpecification(v:Any[1], space:String[1]):String[1]
+{
+    $v->match(  [  f:FunctionExpression[1] |$f->meta::pure::metamodel::serialization::grammar::removeAutomap()->cast(@FunctionExpression)->printPropertyOrFunctionExpression( $space),
+                    i:InstanceValue[1] | printInstanceValue($i, $space),
+                    v:VariableExpression[1] | '$' + $v.name,
+                    a:Any[1] | $space+'UNKNOWN ' + $a->type()->toOne()->id() + '\n'
+                ]
+             )
+}
+function <<access.private>> meta::pure::metamodel::serialization::grammar::removeAutomap(v:ValueSpecification[1]):ValueSpecification[1]
+
+{
+   $v->match([fe:FunctionExpression[1] | if($fe.functionName=='map' 
+                                            ,| let left = $fe.parametersValues->at(0);
+                                               let prop = $fe.parametersValues->at(1)->cast(@InstanceValue).values->at(0)->cast(@LambdaFunction<Any>).expressionSequence->at(0)->cast(@FunctionExpression);
+                                              if($prop.parametersValues->at(0)->instanceOf(VariableExpression) && $prop.parametersValues->at(0)->cast(@VariableExpression).name=='v_automap',
+                                                 |  let leftUnMapped = $left->meta::pure::metamodel::serialization::grammar::removeAutomap();
+                                                   ^$prop(parametersValues=$leftUnMapped);,
+                                                 |  ^$fe(parametersValues=$fe.parametersValues->at(0)->meta::pure::metamodel::serialization::grammar::removeAutomap()->concatenate( $fe.parametersValues->tail()))
+                                                );
+
+                                           ,| ^$fe(parametersValues=$fe.parametersValues->at(0)->meta::pure::metamodel::serialization::grammar::removeAutomap()->concatenate( $fe.parametersValues->tail()))
+                                      ),
+               v:ValueSpecification[1] |  $v]);
+}
+
+
+function meta::pure::metamodel::serialization::grammar::printInstanceValue(i:InstanceValue[1], space:String[1]):String[1]
+{
+   if ($i.multiplicity == PureOne && $i.values->isEmpty(),
+       |'@'+$i.genericType->printGenericType(),
+       |$i.values->map(v|$v->match([
+                            f:FunctionDefinition<Any>[1] | $f->printFunctionDefinition($space+'    '),
+                            f:FunctionExpression[1]      | $f->printPropertyOrFunctionExpression($space),
+                            x:InstanceValue[1] | $x->printInstanceValue($space),
+                            a:Any[1]                     | $a->toRepresentation()
+                         ]))->match([
+                           empty:String[0]    |'[]';,
+                           singular:String[1] |$singular;,
+                           multiple:String[*] |$multiple->joinStrings('[', ', ', ']');
+                         ])
+   )
+}
+
+function meta::pure::metamodel::serialization::grammar::printPropertyOrFunctionExpression(functionExpression:FunctionExpression[1], space:String[1]):String[1]
+{
+    $functionExpression.func->match([
+                                        p:Property<Nil,Any|*>[1]| let o = $functionExpression.parametersValues->first()->toOne(); printProperty($p, $o, $space);, 
+                                        p:Any[1]|printFunctionExpression($functionExpression, $space)
+                                    ])
+}
+
+function meta::pure::metamodel::serialization::grammar::special():Map<String, String>[1]
+{
+   [
+      pair('equal', '=='),
+      pair('lessThanEqual', '<='),
+      pair('lessThan', '<'),
+      pair('greaterThanEqual', '>='),
+      pair('greaterThan', '>'),
+      pair('plus', '+'),
+      pair('minus', '-'),
+      pair('times', '*'),
+      pair('divide', '/'),
+      pair('and', '&&'),
+      pair('or', '||')
+   ]->newMap()
+}
+
+function meta::pure::metamodel::serialization::grammar::printFunctionExpression(functionExpression:FunctionExpression[1], space:String[1]):String[1]
+{
+   let name = $functionExpression.func.functionName->toOne();
+    if($functionExpression.parametersValues->isEmpty(),
+        |$name->toOne()+'()',
+        |let m = special();
+         if ($m->get($name)->isEmpty(),
+             | let firstParam = $functionExpression.parametersValues->head()->toOne(); 
+               if((($firstParam->instanceOf(SimpleFunctionExpression)   && $firstParam->cast(@SimpleFunctionExpression).functionName->isNotEmpty()  && ($m->get($firstParam->cast(@SimpleFunctionExpression).functionName->toOne())->isNotEmpty()))
+                    || $firstParam->instanceOf(FunctionExpression))   && $firstParam->cast(@FunctionExpression).func.functionName->isNotEmpty()  && ($m->get($firstParam->cast(@FunctionExpression).func.functionName->toOne())->isNotEmpty())  ,
+                   | $functionExpression.func.functionName->toOne() + $functionExpression.parametersValues->map(vs | printValueSpecification($vs, $space))->joinStrings('(', ', ', ')');,
+                   | $functionExpression.parametersValues->head()->toOne()->printValueSpecification($space) + '->' + $functionExpression.func.functionName->toOne() + $functionExpression.parametersValues->tail()->map(vs | printValueSpecification($vs, $space))->joinStrings('(', ', ', ')');
+                   );,
+             |let vals = if ($name->in(['plus', 'minus', 'times']),
+                  |$functionExpression.parametersValues->cast(@InstanceValue).values,
+                  |$functionExpression.parametersValues
+              );
+              $vals->at(0)->printValueSpecification($space) + ' ' + $m->get($name)->toOne() + ' ' + $vals->at(1)->printValueSpecification($space);
+         );
+    );
+}
+
+function meta::pure::metamodel::serialization::grammar::printProperty(p:Property<Nil,Any|*>[1], o:ValueSpecification[1], space:String[1]):String[1]
+{
+   $o->printValueSpecification($space) + '.' + $p.name->toOne();
+}
+
+function <<access.private>> meta::pure::metamodel::serialization::grammar::printStatements(statements:String[*]):String[1]
+{
+   $statements->match([
+      none: String[0]    | '';,
+      many: String[1..*] | $statements->joinStrings('', ';\n', ';\n');
+   ])
+}
+
+function meta::pure::metamodel::serialization::grammar::printEnumeration(enum:Enumeration<Any>[1]):String[1]
+{
+    'Enum ' + printStereotypes($enum) + printTaggedValues($enum) + elementToPath($enum) + '\n' +
+    '{\n' +
+        $enum->enumValues()->map(p|printStereotypes($p->cast(@ElementWithStereotypes)) + printTaggedValues($p->cast(@ElementWithTaggedValues)) + '  ' + $p->id()) -> joinStrings('', ',\n', '\n') +
+    '}';
+}
+
+function meta::pure::metamodel::serialization::grammar::printAssociation(association:Association[1]):String[1]
+{
+    'Association ' + printStereotypes($association) + printTaggedValues($association) + if($association.name->isEmpty(), |'', |' ' + elementToPath($association)) + '\n' +
+    '{\n' +
+        $association.properties->map(p:Property<Nil,Any|*>[1]| '  ' + $p.name->toOne() + ':' + printGenericType($p.genericType) + '[' + printMultiplicity($p.multiplicity) + ']') -> printStatements() +
+    '}';
+}
+
+function meta::pure::metamodel::serialization::grammar::printConstraint(constraint:meta::pure::metamodel::constraint::Constraint[1]):String[1]
+{
+   assert($constraint.name->size() == 1, 'Constraints should have a name.');
+   assert($constraint.functionDefinition.expressionSequence->size() == 1, 'Constraints can only have a single expression.');
+   
+   let expressions = printFunctionDefinitionExpressions($constraint.functionDefinition, '')->toOne();
+   $constraint.name->toOne()+' : '+$expressions;
+}
+
+function meta::pure::metamodel::serialization::grammar::printClass(cl:Class<Any>[1]):String[1]
+{
+    let superClasses = $cl.generalizations->map(g:Generalization[1]| let type = $g.general->printGenericType();
+                                                                     if($type == 'meta::pure::metamodel::type::Any', | [], | $type););
+    'Class ' + printStereotypes($cl) + printTaggedValues($cl) + elementToPath($cl) + printClassTypeParameters($cl) + if($superClasses->isEmpty(),|'',|$superClasses->joinStrings(' extends ', ',', '')) + '\n' +
+    if($cl.constraints->isEmpty(), | '', |$cl.constraints->map(c|'  '+printConstraint($c))->joinStrings('[\n',',\n','\n]\n')) +
+    '{\n' +
+        $cl.properties                          -> map(p:Property<Nil,Any|*>[1]    |'  '  + $p -> printProperty()) -> printStatements() +
+        $cl.propertiesFromAssociations          -> map(p:Property<Nil,Any|*>[1]    |'  ~' + $p -> printProperty()) -> printStatements() +
+        $cl.qualifiedProperties                 -> map(p:QualifiedProperty<Any>[1] |'  '  + printStereotypes($p)  +  printTaggedValues($p) + $p -> printFunctionSignature()) -> printStatements() +
+        $cl.qualifiedPropertiesFromAssociations -> map(p:QualifiedProperty<Any>[1] |'  ~' + printStereotypes($p)  +  printTaggedValues($p) + $p -> printFunctionSignature()) -> printStatements() +
+    '}';
+}
+
+function meta::pure::metamodel::serialization::grammar::printClassTypeParameters(cl:Class<Any>[1]):String[1]
+{
+   if ($cl.typeParameters->isNotEmpty(),
+       | if ($cl.multiplicityParameters->isNotEmpty(),
+             |'<' + $cl.typeParameters->map(p | $p.name)->joinStrings(',') + '|' + $cl.multiplicityParameters->evaluateAndDeactivate()->map(p | $p.values)->cast(@String)->joinStrings(',') + '>',
+             |$cl.typeParameters->map(p | $p.name)->joinStrings('<', ',', '>')),
+       | if ($cl.multiplicityParameters->isNotEmpty(),
+             | $cl.multiplicityParameters->evaluateAndDeactivate()->map(p | $p.values)->cast(@String)->joinStrings('<|', ',', '>'),
+             | ''));
+}
+
+function meta::pure::metamodel::serialization::grammar::printStereotypes(me:ElementWithStereotypes[1]):String[1]
+{
+    if($me.stereotypes->isEmpty(), |'', |$me.stereotypes->map(c|$c.profile->elementToPath()+'.'+$c.value)->joinStrings('<<', ',', '>> '));
+}
+
+function meta::pure::metamodel::serialization::grammar::printTaggedValues(me:ElementWithTaggedValues[1]):String[1]
+{
+    if($me.taggedValues->isEmpty(), |'', |$me.taggedValues->map(tv|$tv.tag.profile->elementToPath()+'.'+$tv.tag.value+'=\''+$tv.value+'\'')->joinStrings('{', ',', '} '));
+}
+
+function meta::pure::metamodel::serialization::grammar::printProperty(p:Property<Nil,Any|*>[1]):String[1]
+{
+    printStereotypes($p)  +  printTaggedValues($p) + $p.name->toOne() + ' : ' + printGenericType($p.genericType) + '[' + printMultiplicity($p.multiplicity) + ']';
+}
+
+function meta::pure::metamodel::serialization::grammar::printGenericType(genericType:GenericType[1]):String[1]
+{
+    if ($genericType.rawType->isEmpty(),
+        |$genericType.typeParameter->toOne().name->toOne(),
+        |$genericType.rawType->toOne()->match(
+                        [
+                            f:FunctionType[1]|printFunctionType($f),
+                            c:Class<Any>[1]|if ($c.name->isEmpty(),|'?MappingClass?',|$c->elementToPath()),
+                            e:Enumeration<Any>[1]|$e->elementToPath(),
+                            a:Any[1]|$a->id()
+                        ]) +
+                        if($genericType.typeArguments->isNotEmpty(),
+                           |if($genericType.multiplicityArguments->isNotEmpty(),
+                               |'<' + $genericType.typeArguments->map(g|$g->printGenericType())->joinStrings(',') + '|' + $genericType.multiplicityArguments->map(m | $m->printMultiplicity())->joinStrings(',') + '>',
+                               |$genericType.typeArguments->map(g|$g->printGenericType())->joinStrings('<', ',', '>')),
+                           |if($genericType.multiplicityArguments->isNotEmpty(),
+                               |$genericType.multiplicityArguments->map(m | $m->printMultiplicity())->joinStrings('<|', ',', '>'),
+                               |'')))
+}
+
+function meta::pure::metamodel::serialization::grammar::printFunctionType(functionType:FunctionType[1]):String[1]
+{
+    '{'+$functionType.parameters->evaluateAndDeactivate()->map(v|printGenericType($v.genericType)+'['+printMultiplicity($v.multiplicity)+']')->joinStrings(',')
+    +'->'
+    +printGenericType($functionType.returnType)+'['+printMultiplicity($functionType.returnMultiplicity)+']}';
+}
+
+function meta::pure::metamodel::serialization::grammar::printFunctionSignature(func:Function<Any>[1]):String[1]
+{
+    let funcType = $func->genericType().typeArguments->at(0).rawType->toOne()->cast(@FunctionType);
+    let parameters = $funcType.parameters->evaluateAndDeactivate();
+    let returnType = $funcType.returnType;
+    let typeParams =  $funcType.typeParameters->evaluateAndDeactivate();
+
+    if($func.functionName->isEmpty(), | 'LAMBDA', | $func.functionName->toOne()) + if($typeParams->isEmpty(), |'', |$typeParams->map(t:TypeParameter[1]|$t.name)->joinStrings('<', ', ','>')) + $parameters->map(v | $v.name + ': ' + printGenericType($v.genericType) + '[' + printMultiplicity($v.multiplicity) + ']')->joinStrings('(', ', ', ')') + ': ' + printGenericType($returnType) + '[' + printMultiplicity($funcType.returnMultiplicity) + ']';
+}
+
+function meta::pure::metamodel::serialization::grammar::printMultiplicity(multiplicity:Multiplicity[1]):String[1]
+{
+    if ($multiplicity->isMultiplicityConcrete(),
+        | let lowerBound = $multiplicity->getLowerBound();
+          if ($multiplicity->hasUpperBound(),
+              | let upperBound = $multiplicity->getUpperBound();
+                if ($lowerBound == $upperBound,
+                    | $lowerBound->toString(),
+                    | $lowerBound->toString() + '..' + $upperBound->toString());,
+              | if ($lowerBound == 0,
+                    | '*',
+                    | $lowerBound->toString() + '..*'));,
+        | $multiplicity.multiplicityParameter->toOne())
+}
+
+function meta::pure::metamodel::serialization::grammar::printPath(path : meta::pure::metamodel::path::Path<Nil,Any|*>[1]) : String[1]
+{
+    printPath($path, '.');
+}
+
+function meta::pure::metamodel::serialization::grammar::printPath(path : meta::pure::metamodel::path::Path<Nil,Any|*>[1], separator : String[1]) : String[1]
+{
+    printGenericType($path.start)
+    + $separator
+    + $path.path->map(e | $e->match([
+            propertyPathElement :  meta::pure::metamodel::path::PropertyPathElement[1] | $propertyPathElement.property.name->toOne(),
+            castPathElement :  meta::pure::metamodel::path::CastPathElement[1]         | printGenericType($castPathElement.type)
+        ]))->makeString($separator);
+}
+
+function meta::pure::metamodel::serialization::grammar::printType(type : meta::pure::metamodel::type::Type[1]):String[1]
+{
+   $type->match([
+      c:Class<Any>[1]       | $c->printClass();,
+      e:Enumeration<Any>[1] | $e->printEnumeration();,
+      a:Any[1]              | $a->toRepresentation();
+   ]);
+}
+
+
+

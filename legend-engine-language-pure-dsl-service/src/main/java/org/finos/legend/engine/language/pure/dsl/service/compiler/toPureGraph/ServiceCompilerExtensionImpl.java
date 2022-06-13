@@ -32,7 +32,17 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTestSuite;
 import org.finos.legend.engine.protocol.pure.v1.model.test.Test;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.*;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_ParameterValue;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PureExecution;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_ServiceTest;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_ServiceTestSuite;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_ServiceTestSuite_Impl;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_ServiceTest_Impl;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_extension_TaggedValue_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_test_AtomicTest;
+import org.finos.legend.pure.generated.Root_meta_pure_test_Test;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
 
@@ -69,7 +79,7 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                     //
                     if (service.testSuites != null)
                     {
-                        RichIterable<? extends VariableExpression> parameters = ((FunctionType)((Root_meta_legend_service_metamodel_PureExecution) pureService._execution())._func()._classifierGenericType()._typeArguments().getOnly()._rawType())._parameters();
+                        RichIterable<? extends VariableExpression> parameters = ((FunctionType) ((Root_meta_legend_service_metamodel_PureExecution) pureService._execution())._func()._classifierGenericType()._typeArguments().getOnly()._rawType())._parameters();
 
                         List<String> testSuiteIds = ListIterate.collect(service.testSuites, suite -> suite.id);
                         List<String> duplicateTestSuiteIds = testSuiteIds.stream().filter(e -> Collections.frequency(testSuiteIds, e) > 1).distinct().collect(Collectors.toList());
@@ -78,10 +88,11 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                         {
                             throw new EngineException("Multiple testSuites found with ids : '" + String.join(",", duplicateTestSuiteIds) + "'", service.sourceInformation, EngineErrorType.COMPILATION);
                         }
-                        pureService._tests(ListIterate.collect(service.testSuites, suite -> {
+                        pureService._tests(ListIterate.collect(service.testSuites, suite ->
+                        {
                             Root_meta_legend_service_metamodel_ServiceTestSuite pureServiceTestSuite = (Root_meta_legend_service_metamodel_ServiceTestSuite) suite.accept(new TestFirstPassBuilder(context, new ProcessingContext("Service '" + context.pureModel.buildPackageString(service._package, service.name) + "' Second Pass")));
 
-                            for(Root_meta_pure_test_AtomicTest pureTest: pureServiceTestSuite._tests())
+                            for (Root_meta_pure_test_AtomicTest pureTest : pureServiceTestSuite._tests())
                             {
                                 Root_meta_legend_service_metamodel_ServiceTest pureServiceTest = (Root_meta_legend_service_metamodel_ServiceTest) pureTest;
                                 HelperServiceBuilder.validateServiceTestParameterValues((List<Root_meta_legend_service_metamodel_ParameterValue>) pureServiceTest._parameters().toList(), parameters, ListIterate.detect(suite.tests, t -> t.id.equals(pureServiceTest._id())).sourceInformation);

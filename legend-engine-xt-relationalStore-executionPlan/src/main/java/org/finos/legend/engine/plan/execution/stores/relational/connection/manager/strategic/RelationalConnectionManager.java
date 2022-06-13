@@ -132,7 +132,7 @@ public class RelationalConnectionManager implements ConnectionManager
         // TODO : pass identity into this method
         RelationalDatabaseConnection testConnection = buildTestDatabaseDatasourceSpecification();
         Identity identity = IdentityFactoryProvider.getInstance().makeIdentity((Subject) null);
-        Optional<CredentialSupplier> credentialHolder = RelationalConnectionManager.getCredential(flowProviderHolder, testConnection, identity );
+        Optional<CredentialSupplier> credentialHolder = RelationalConnectionManager.getCredential(flowProviderHolder, testConnection, identity);
         return this.getDataSourceSpecification(testConnection).getConnectionUsingIdentity(identity, credentialHolder);
     }
 
@@ -184,7 +184,7 @@ public class RelationalConnectionManager implements ConnectionManager
     {
         if (connection instanceof RelationalDatabaseConnection)
         {
-            RelationalDatabaseConnection relationalDatabaseConnection = (RelationalDatabaseConnection)connection;
+            RelationalDatabaseConnection relationalDatabaseConnection = (RelationalDatabaseConnection) connection;
             return new ConnectionKey(
                     buildDataSourceKey(relationalDatabaseConnection.datasourceSpecification, relationalDatabaseConnection),
                     buildAuthStrategyKey(relationalDatabaseConnection.authenticationStrategy)
@@ -197,7 +197,7 @@ public class RelationalConnectionManager implements ConnectionManager
     {
         if (connection instanceof RelationalDatabaseConnection)
         {
-            RelationalDatabaseConnection relationalDatabaseConnection = (RelationalDatabaseConnection)connection;
+            RelationalDatabaseConnection relationalDatabaseConnection = (RelationalDatabaseConnection) connection;
             ConnectionKey connectionKey = this.generateKeyFromDatabaseConnection(connection);
             return buildDataSourceTrans(relationalDatabaseConnection.datasourceSpecification, relationalDatabaseConnection, connectionKey);
         }

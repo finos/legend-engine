@@ -202,8 +202,8 @@ public class TestXmlDeserializer
         Assert.assertEquals("Acme Inc.", firm.getName());
         Assert.assertEquals(2L, firm.getRanking().longValue());
         Assert.assertEquals(2, firm.getEmployees().size());
-        Assert.assertEquals(Arrays.asList("John","Fred"), firm.getEmployees().stream().map(Person::getFirstName).collect(Collectors.toList()));
-        Assert.assertEquals(Arrays.asList("Doe","Bloggs"), firm.getEmployees().stream().map(Person::getLastName).collect(Collectors.toList()));
+        Assert.assertEquals(Arrays.asList("John", "Fred"), firm.getEmployees().stream().map(Person::getFirstName).collect(Collectors.toList()));
+        Assert.assertEquals(Arrays.asList("Doe", "Bloggs"), firm.getEmployees().stream().map(Person::getLastName).collect(Collectors.toList()));
         Assert.assertEquals(Arrays.asList("1991-02-10", "1983-12-13"), firm.getEmployees().stream().map(Person::getDateOfBirth).map(Object::toString).collect(Collectors.toList()));
         Assert.assertEquals(Arrays.asList(true, false), firm.getEmployees().stream().map(Person::getIsAlive).collect(Collectors.toList()));
         Assert.assertEquals(Arrays.asList(1.78, 1.65), firm.getEmployees().stream().map(Person::getHeightInMeters).collect(Collectors.toList()));
@@ -248,8 +248,8 @@ public class TestXmlDeserializer
         Assert.assertEquals("Acme Inc.", firm.getName());
         Assert.assertEquals(2L, firm.getRanking().longValue());
         Assert.assertEquals(2, firm.getEmployees().size());
-        Assert.assertEquals(Arrays.asList("John","Fred"), firm.getEmployees().stream().map(Person::getFirstName).collect(Collectors.toList()));
-        Assert.assertEquals(Arrays.asList("Doe","Bloggs"), firm.getEmployees().stream().map(Person::getLastName).collect(Collectors.toList()));
+        Assert.assertEquals(Arrays.asList("John", "Fred"), firm.getEmployees().stream().map(Person::getFirstName).collect(Collectors.toList()));
+        Assert.assertEquals(Arrays.asList("Doe", "Bloggs"), firm.getEmployees().stream().map(Person::getLastName).collect(Collectors.toList()));
         Assert.assertEquals(Arrays.asList("1991-02-10", "1983-12-13"), firm.getEmployees().stream().map(Person::getDateOfBirth).map(Object::toString).collect(Collectors.toList()));
         Assert.assertEquals(Arrays.asList(true, false), firm.getEmployees().stream().map(Person::getIsAlive).collect(Collectors.toList()));
         Assert.assertEquals(Arrays.asList(1.78, 1.65), firm.getEmployees().stream().map(Person::getHeightInMeters).collect(Collectors.toList()));
@@ -292,8 +292,8 @@ public class TestXmlDeserializer
         Assert.assertEquals("Acme Inc.", firm.getName());
         Assert.assertEquals(2L, firm.getRanking().longValue());
         Assert.assertEquals(2, firm.getEmployees().size());
-        Assert.assertEquals(Arrays.asList("John","Fred"), firm.getEmployees().stream().map(Person::getFirstName).collect(Collectors.toList()));
-        Assert.assertEquals(Arrays.asList("Doe","Bloggs"), firm.getEmployees().stream().map(Person::getLastName).collect(Collectors.toList()));
+        Assert.assertEquals(Arrays.asList("John", "Fred"), firm.getEmployees().stream().map(Person::getFirstName).collect(Collectors.toList()));
+        Assert.assertEquals(Arrays.asList("Doe", "Bloggs"), firm.getEmployees().stream().map(Person::getLastName).collect(Collectors.toList()));
         Assert.assertEquals(Arrays.asList("1991-02-10", "1983-12-13"), firm.getEmployees().stream().map(Person::getDateOfBirth).map(Object::toString).collect(Collectors.toList()));
         Assert.assertEquals(Arrays.asList(true, false), firm.getEmployees().stream().map(Person::getIsAlive).collect(Collectors.toList()));
         Assert.assertEquals(Arrays.asList(1.78, 1.65), firm.getEmployees().stream().map(Person::getHeightInMeters).collect(Collectors.toList()));

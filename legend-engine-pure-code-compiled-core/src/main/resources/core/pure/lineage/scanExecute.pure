@@ -1,0 +1,179 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::lineage::scanExecutes::*;
+import meta::pure::mapping::*;
+import meta::pure::lineage::scanExecutes::*;
+import meta::pure::lineage::scanProject::*;
+
+Class <<access.private>> meta::pure::lineage::scanExecutes::Global
+{
+   processedFuncs : Function<Any>[*];
+   executes : Execute[*];
+
+}
+
+Class <<access.private>> meta::pure::lineage::scanExecutes::Local
+{
+   vars : Map<String,ValueSpecification>[1];
+}
+
+Class <<access.private>> meta::pure::lineage::scanExecutes::Payload
+{
+   global : Global[1];
+   local : Local[1];
+}
+
+Class meta::pure::lineage::scanExecutes::Execute
+{
+   functionExpression : FunctionExpression[0..1];
+   funcEntryPoint : ValueSpecification[1];
+   mappingEntryPoint : ValueSpecification[1];
+}
+
+
+function meta::pure::lineage::scanExecutes::scanExecutes(f:FunctionDefinition<Any>[1]):Execute[*]
+{
+   $f->processFuncDef(^Payload(
+                           global=^Global(),
+                           local=^Local(vars=$f->functionType().parameters->evaluateAndDeactivate()->map(v|pair($v.name, ^InstanceValue(genericType=$v.genericType, multiplicity=$v.multiplicity, values='VarsReplacedByInstance')))->cast(@Pair<String,ValueSpecification>)->newMap())
+                     ), false).global.executes;
+}
+
+
+function <<access.private>> meta::pure::lineage::scanExecutes::processFuncDef(f:FunctionDefinition<Any>[1], payload:Payload[1], reset:Boolean[1]):Payload[1]
+{
+   if ($payload.global.processedFuncs->contains($f),
+       |$payload,
+       |let npayload = if($reset, |^$payload(local = ^Local(vars=newMap([]->cast(@Pair<String,ValueSpecification>)))), |$payload);
+        let global = $npayload.global;
+        let nnpayload = ^$npayload(global = ^$global(processedFuncs+=$f));
+        let res = $f.expressionSequence->evaluateAndDeactivate()->fold({a,b|$a->scan($b)}, $nnpayload);
+        ^$res(local=$payload.local);
+    );
+}
+
+function <<access.private>> meta::pure::lineage::scanExecutes::resolve(v:ValueSpecification[1], p:Map<String, ValueSpecification>[1]):ValueSpecification[1]
+{
+   $v->match([
+      v:VariableExpression[1]|let rO = $p->get($v.name)->evaluateAndDeactivate();
+                              let r = if($rO->isEmpty(),|^InstanceValue(genericType=$v.genericType, multiplicity=$v.multiplicity, values='VarsReplacedByInstance')->evaluateAndDeactivate(),|$rO->toOne());
+                              $r->match([
+                                                  sv:VariableExpression[1]|assert($v.name != $sv.name,'error');$sv->resolve($p);,
+                                                  v:ValueSpecification[1]|$v->resolve($p)
+                                                 ]);,
+      v:ValueSpecification[1]|$v
+   ]);
+}
+
+function <<access.private>> meta::pure::lineage::scanExecutes::scan(val:Any[1], payload:Payload[1]):Payload[1]
+{
+   $val->match([
+      l:LambdaFunction<Any>[1]|$l->processFuncDef($payload, false),
+      f:FunctionDefinition<Any>[1]|$f->processFuncDef($payload, true),
+      n:NativeFunction<Any>[1]|$payload,
+      fe:FunctionExpression[1]|  let newP = if($fe.func == meta::pure::functions::lang::letFunction_String_1__T_m__T_m_,
+                                              |let local = $payload.local;
+                                               let name = $fe.parametersValues->at(0)->evaluateAndDeactivate()->cast(@InstanceValue).values->at(0)->cast(@String);
+                                               ^$payload(local=^$local(vars=$local.vars->put($name, $fe.parametersValues->evaluateAndDeactivate()->at(1)->inLine($local.vars, [])->cast(@ValueSpecification))));,
+                                              |$payload
+                                        );
+
+                                // ---------------------------------
+                                let paramsRes = $fe.parametersValues->fold({a,b|$a->scan($b);}, $newP);
+
+                                // ---------------------------------
+                                let f = $fe.func;
+                                let step2 = if(!$f->isEmpty() && $f->elementToPath()->startsWith('meta::pure::router'),
+                                   |let ps = $fe.parametersValues->evaluateAndDeactivate();
+                                    let e = ^Execute
+                                    (
+                                       functionExpression = $fe,
+                                       funcEntryPoint = $ps->at(0)->inLine($paramsRes.local.vars, [])->cast(@ValueSpecification),
+                                       mappingEntryPoint = $ps->at(1)->inLine($paramsRes.local.vars, [])->cast(@ValueSpecification)
+                                    );
+                                    let global = $paramsRes.global;
+                                    ^$paramsRes(global = ^$global(executes += $e));,
+                                   |if ($fe.func == new_Class_1__String_1__KeyExpression_MANY__T_1_ && $fe.parametersValues->at(0).genericType.typeArguments.rawType.name == 'ExecuteRequestSpecification',
+                                        |let kv = $fe.parametersValues->evaluateAndDeactivate()->at(2)->cast(@InstanceValue).values->cast(@KeyExpression);
+                                               println('1ok');
+                                         let e = ^Execute
+                                                 (
+                                                   funcEntryPoint = $kv->filter(k|$k.key.values == 'lambda')->cast(@KeyExpression).expression->cast(@ValueSpecification)->toOne()->inLine($paramsRes.local.vars, [])->cast(@ValueSpecification),
+                                                   mappingEntryPoint = $kv->filter(k|$k.key.values == 'mapping').expression->cast(@ValueSpecification)->toOne()->inLine($paramsRes.local.vars, [])->cast(@ValueSpecification)
+                                                 );
+                                               println('2ok');
+                                         let global = $paramsRes.global;
+                                         ^$paramsRes(global = ^$global(executes += $e));,
+                                        |$paramsRes
+                                    )
+                                );
+
+                                // ---------------------------------
+                                if($fe.func->shouldScan(),
+                                   |$fe.func->match([
+                                                     f:FunctionDefinition<Any>[1]|
+                                                        let local = $payload.local;
+                                                        let xx = $f->functionType().parameters.name->zip($fe.parametersValues->evaluateAndDeactivate()->map(z|$z->resolve($step2.local.vars)));
+                                                        let r = $f->processFuncDef(^$step2(local=^$local(vars=$local.vars->keyValues()->concatenate($xx)->newMap())), false);
+                                                        ^$r(local=$step2.local);,
+                                                     a:Any[1]|$a->scan($step2)
+                                                    ]
+                                                  ),
+                                   |$step2
+                                );,
+      i:InstanceValue[1]|$i.values->fold({a,b|$a->scan($b)}, $payload),
+      p:VariableExpression[1]|$payload,
+      p:KeyExpression[1]|$p.expression->fold({a,b|$a->scan($b)}, $payload),
+      p:Mapping[1]|$payload,
+      c:Class<Any>[1]|$payload,
+      p:Property<Nil,Any|*>[1]|$payload,
+      e:Enumeration<Any>[1]|$payload,
+      p:String[1]|$payload,
+      p:Boolean[1]|$payload,
+      p:Integer[1]|$payload,
+      a:Any[1]|$payload
+   ]
+  );
+}
+
+function <<access.private>> meta::pure::lineage::scanExecutes::inLine(v:Any[1], vars:Map<String, ValueSpecification>[0..1], processed:Any[*]):Any[1]
+{
+   if ($processed->contains($v),
+       |$v,
+       |$v->match(
+          [
+             l:LambdaFunction<Any>[1]|let params = $l.classifierGenericType.typeArguments.rawType->cast(@FunctionType).parameters->map(p|^Pair<String,ValueSpecification>(first=$p.name, second=$p));
+                                      ^$l(expressionSequence = $l.expressionSequence->evaluateAndDeactivate()->map(e|$e->inLine(if($vars->isNotEmpty(), |$vars->toOne()->keyValues()->concatenate($params)->newMap(),|$params->newMap()), $processed->concatenate($v)))->cast(@ValueSpecification));,
+             fe:FunctionExpression[1]|^$fe(parametersValues = $fe.parametersValues->evaluateAndDeactivate()->map(pw|$pw->inLine($vars, $processed->concatenate($v)))->cast(@ValueSpecification));,
+             i:InstanceValue[1]|^$i(values = $i.values->map(i|$i->inLine($vars, $processed->concatenate($v)))),
+             p:VariableExpression[1]|if($vars->isEmpty(),
+                                                         |^InstanceValue(genericType=$p.genericType, multiplicity=$p.multiplicity, values='VarsReplacedByInstance')->evaluateAndDeactivate(),
+                                                         |let r = $vars->toOne()->get($p.name)->evaluateAndDeactivate();
+                                                          if($r->isEmpty(),
+                                                            |^InstanceValue(genericType=$p.genericType, multiplicity=$p.multiplicity, values='VarsReplacedByInstance')->evaluateAndDeactivate(),
+                                                            |$r->toOne()->inLine($vars, $processed->concatenate($v));
+                                                         );
+                                            );,
+             p:KeyExpression[1]|^$p(expression = $p.expression->inLine($vars, $processed->concatenate($v))->cast(@ValueSpecification)),
+             a:Any[1]|$a
+          ]
+       );
+    );
+}
+
+function <<access.private>> meta::pure::lineage::scanExecutes::shouldScan(f:Function<Any>[1]):Boolean[1]
+{
+   $f.package->isEmpty() || !$f.package->toOne()->elementToPath()->startsWith('meta');
+}

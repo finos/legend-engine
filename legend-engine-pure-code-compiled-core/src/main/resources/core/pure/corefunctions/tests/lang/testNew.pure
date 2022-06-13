@@ -1,0 +1,99 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::profiles::*;
+import meta::pure::functions::tests::model::*;
+
+function <<test.Test>> meta::pure::functions::lang::tests::new::testDynamicInstance():Boolean[1]
+{
+    let p = ^Person(firstName='first', lastName='last');
+    assertIs(Person, $p->genericType().rawType->toOne());
+    assertEquals('last', $p.lastName);
+    assertEquals('first', $p.firstName);
+    assertEquals('last, first', $p.fullName(true));
+    assertEquals('first last', $p.fullName(false));
+    assertEmpty($p.otherNames);
+    assert($p->id()->startsWith('Anonymous_') || $p->id()->startsWith('@_'));
+}
+
+function <<test.Test>> meta::pure::functions::lang::tests::new::testFunctionExecutionInConstructor():Boolean[1]
+{
+    let p = ^Person(firstName='Pierre', lastName=['_', 'Doe']->joinStrings(' '));
+    assertEquals('_ Doe', $p.lastName);
+}
+
+function <<test.Test>> meta::pure::functions::lang::tests::new::testWithToManyProperty():Boolean[1]
+{
+    let p = ^Person(firstName='John', lastName='Doe', otherNames=['Johny', 'Jon', 'Jo']);
+    assertEquals('John', $p.firstName);
+    assertEquals('Doe', $p.lastName);
+    assertEquals(['Johny', 'Jon', 'Jo'], $p.otherNames);
+}
+
+function <<test.Test>> meta::pure::functions::lang::tests::new::testNewGeneric():Boolean[1]
+{
+    let l = ^List<String>(values=['a', 'b', 'c']);
+    assertIs(List, $l->genericType().rawType->toOne());
+    assertIs(String, $l->genericType().typeArguments->at(0).rawType->toOne());
+    assertEquals(['a', 'b', 'c'], $l.values);
+}
+
+function <<test.Test>> {test.excludePlatform = 'Java compiled'} meta::pure::functions::lang::tests::new::testNewGenericFunc():Boolean[1]
+{
+    let l1 = ^List<String>(values=['a', 'b', 'c']);
+    assertIs(List, $l1->type()->toOne());
+    assertIs(String, $l1->genericType().typeArguments->at(0).rawType->toOne());
+    assert($l1->id()->startsWith('Anonymous_') || $l1->id()->startsWith('@_'));
+    assertEquals(['a', 'b', 'c'], $l1.values);
+
+    let l2 = new($l1->class(), '');
+    assertIs(List, $l2->type()->toOne());
+    assertIs(String, $l2->genericType().typeArguments->at(0).rawType->toOne());
+    assert($l2->id()->startsWith('Anonymous_') || $l2->id()->startsWith('@_'));
+    assertEmpty($l2->cast(@List<String>).values);
+
+    let l3 = new($l1->class(), '', [^KeyExpression(key = ^InstanceValue(values='values', genericType=^GenericType(rawType=String), multiplicity=PureOne), expression = ^InstanceValue(values=['a', 'b', 'c'], genericType=^GenericType(rawType=String), multiplicity=ZeroMany))]);
+    assertIs(List, $l3->type()->toOne());
+    assertIs(String, $l3->genericType().typeArguments->at(0).rawType->toOne());
+    assert($l3->id()->startsWith('Anonymous_') || $l3->id()->startsWith('@_'));
+    assertEquals(['a', 'b', 'c'], $l3->cast(@List<String>).values);
+    assertEquals($l1, $l3);
+}
+
+function <<test.Test>> meta::pure::functions::lang::tests::new::testNewWithIdVariable():Boolean[1]
+{
+    let id = '1234';
+    let firm = ^Firm(legalName=$id);
+    assertEquals($id, $firm.legalName);
+}
+
+function <<test.Test>> meta::pure::functions::lang::tests::new::testNewWithAssociation():Boolean[1]
+{
+    let pierre = ^Person(firstName='Pierre', lastName='Doe', firm=^Firm(legalName='FirmX'));
+    assertEquals('Pierre', $pierre.firstName);
+    assertEquals('Doe', $pierre.lastName);
+
+    let firmX = $pierre.firm->toOne();
+    assertEquals('FirmX', $firmX.legalName);
+
+    assertEquals($firmX, $pierre.firm);
+    assertEquals($pierre, $firmX.employees);
+
+    let bob = ^Person(firstName='Bob', lastName='Roe', firm=$firmX);
+    assertEquals('Bob', $bob.firstName);
+    assertEquals('Roe', $bob.lastName);
+
+    assertEquals($firmX, $bob.firm);
+    assertSameElements([$bob, $pierre], $firmX.employees);
+}

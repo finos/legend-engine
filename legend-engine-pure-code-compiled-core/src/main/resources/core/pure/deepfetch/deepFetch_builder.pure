@@ -1,0 +1,237 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::metamodel::treepath::*;
+import meta::pure::store::platform::metamodel::*;
+import meta::pure::router::store::embedded::*;
+import meta::pure::router::clustering::*;
+import meta::pure::deepfetch::builder::*;
+import meta::pure::mapping::*;
+import meta::pure::store::*;
+
+Class meta::pure::deepfetch::builder::DeepFetchTreeNode extends TreeNode
+{
+   id : String[0..1];
+   store: Store[1];
+   
+   children(){
+      $this.childrenData->cast(@PropertyDeepFetchTreeNode)
+   }:PropertyDeepFetchTreeNode[*];
+}
+
+Class meta::pure::deepfetch::builder::PropertyDeepFetchTreeNode extends DeepFetchTreeNode
+{
+   routedFunctionExpression : ExtendedRoutedValueSpecification[1];
+   property : AbstractProperty<Any>[1];
+   propertyParameters : ValueSpecification[*];
+   
+   embeddedGroupId : String[0..1];
+   isLastEmbeddedGroupNode : Boolean[0..1];   
+   isEmbeddedMapping : Boolean[0..1];   
+
+}
+
+function meta::pure::deepfetch::builder::isLastTerminalEmbeddedNode(pdfn:DeepFetchTreeNode[1]):Boolean[1]{
+   $pdfn->match([p:PropertyDeepFetchTreeNode[1]|!$p.isLastEmbeddedGroupNode->isEmpty() && $p.isLastEmbeddedGroupNode->toOne(), d:DeepFetchTreeNode[1]|false]);
+}
+
+function meta::pure::deepfetch::builder::isEmbeddedMapping(pdfn:DeepFetchTreeNode[1]):Boolean[1]{
+   $pdfn->match([p:PropertyDeepFetchTreeNode[1]|!$p.isEmbeddedMapping->isEmpty() && $p.isEmbeddedMapping->toOne(), d:DeepFetchTreeNode[1]|false]);
+}
+
+Class meta::pure::deepfetch::builder::RootDeepFetchTreeNode extends DeepFetchTreeNode
+{
+   class : Class<Any>[0..1];
+   parent : DeepFetchTreeNode[0..1];
+}
+
+function meta::pure::deepfetch::builder::toJSON(d:DeepFetchTreeNode[1]):String[1]{
+   let children = if(!$d.childrenData->isEmpty(),|', "children":['+$d.children->map(c|$c->toJSON())->makeString(',')+']',|'');
+   
+   let pdfnSpecifs = $d->match([p:PropertyDeepFetchTreeNode[1]| let propertyName = '"property":"'+$d->cast(@PropertyDeepFetchTreeNode).property.name->toOne()+'"';
+                                                                let embeddedGroupId = if(!$p.embeddedGroupId->isEmpty(),| '"embeddedGroupId":"'+$p.embeddedGroupId->toOne()+'"',|'');
+                                                                let isEmbeddedMapping = if(!$p.isEmbeddedMapping->isEmpty() && $p.isEmbeddedMapping->toOne(),|'"isEmbeddedMapping":"'+$p.isEmbeddedMapping->toOne()->toString()+'"',|'');
+                                                                let isLastEmbeddedGroupNode = if(!$p.isLastEmbeddedGroupNode->isEmpty(),| '"isLastEmbeddedGroupNode":"'+$p.isLastEmbeddedGroupNode->toOne()->toString()+'"',|'');
+                                                                [$propertyName, $embeddedGroupId, $isEmbeddedMapping, $isLastEmbeddedGroupNode,' ']->filter(s|$s!='')->makeString(',');,
+                                d:DeepFetchTreeNode[1]|'']);
+   '{ "id": "'+if(!$d.id->isEmpty(),|$d.id->toOne(),|'')+'", '+$pdfnSpecifs+'"store":"'+$d.store.name->toOne()+'"'+$children+'}';
+}
+
+function meta::pure::deepfetch::builder::getDeepFetchFunction<T>(d:LambdaFunction<{T[1]->Any[*]}>[*]):LambdaFunction<{T[1]->Any[*]}>[1]
+{
+   let propertyExpressions = $d.expressionSequence->evaluateAndDeactivate()->map(e|$e->removeAutomap())->toOneMany();
+   let templateLambda = $d->at(0);
+   ^$templateLambda(functionName=deepFetchFunctionName(), expressionSequence=$propertyExpressions);
+}
+
+function meta::pure::deepfetch::builder::isDeepFetchFunction(f:FunctionDefinition<Any>[1]):Boolean[1]
+{
+   $f.functionName == deepFetchFunctionName() && $f.expressionSequence->evaluateAndDeactivate()->fold({e,a| $e->instanceOf(FunctionExpression) && $e->cast(@FunctionExpression).func->instanceOf(Property) && $a}, true);
+}
+
+function <<access.private>> meta::pure::deepfetch::builder::deepFetchFunctionName():String[1]
+{
+   'deepFetch'
+}
+
+function meta::pure::deepfetch::builder::buildDeepFetchTrees(rootCVS:ClusteredValueSpecification[1], vs:ValueSpecification[*], f:FunctionDefinition<Any>[1], context:DebugContext[1]):RootDeepFetchTreeNode[*]
+{  
+   let tree = buildDeepFetchTree($rootCVS, $vs);
+   buildSubTrees($tree)->cast(@RootDeepFetchTreeNode);
+}
+
+function meta::pure::deepfetch::builder::buildSubTrees(n:DeepFetchTreeNode[1]):DeepFetchTreeNode[*]
+{  
+   let children = $n.children;
+   let childrenByStore = $children.store->evaluateAndDeactivate()->distinct()->map(s|pair($s,^List<DeepFetchTreeNode>(values=$children->filter(c|$c.store == $s))));
+   let sameTreeChildren = $childrenByStore->filter(c|$c.first == $n.store->evaluateAndDeactivate()).second.values;
+   let differentTreeChildren = $childrenByStore->filter(c|$c.first != $n.store->evaluateAndDeactivate()).second;
+   
+   let differentTreeSubTreesPair = $differentTreeChildren->map(d| let res = $d.values->map(v|let subtree = $v->buildSubTrees(); pair($subtree->at(0), ^List<DeepFetchTreeNode>(values=$subtree->tail())););
+                                                                  let r = ^RootDeepFetchTreeNode(id=$n.id, store=$n.store, childrenData=$res.first, parent=$n);
+                                                                  pair($r, ^List<DeepFetchTreeNode>(values=$res.second.values));
+                                                               );
+   
+   let sameTreeSubTreesPair = $sameTreeChildren->map(d| if($d.children()->isEmpty(),|pair($d,^List<DeepFetchTreeNode>(values=[]->cast(@DeepFetchTreeNode)))
+                                                                                   ,|let res = $d->buildSubTrees();
+                                                                                     pair($res->at(0), ^List<DeepFetchTreeNode>(values=$res->tail())); 
+                                                          )
+                                                     );
+  ^$n(childrenData=$sameTreeSubTreesPair.first)->concatenate($sameTreeSubTreesPair.second.values)->concatenate($differentTreeSubTreesPair.first)->concatenate($differentTreeSubTreesPair.second.values);
+}
+
+function <<access.private>> meta::pure::deepfetch::builder::buildDeepFetchTree(rootCVS:ClusteredValueSpecification[1], vs:ValueSpecification[*]):RootDeepFetchTreeNode[1]
+{  
+   assert(!$rootCVS.store->instanceOf(PlatformStore),'Deep fetch from a function (mapped to) the PlatformStore is not currently supported');
+   let dfThreads = $vs->map(v|$v->buildThread([],$rootCVS.store))->cast(@RootDeepFetchTreeNode);
+   let root = $dfThreads->mergeThreads();
+   let rootWithEnumMetaData = $root->addEnumMetaData()->cast(@RootDeepFetchTreeNode);
+   ^$rootWithEnumMetaData(store=$rootCVS.store);
+}
+
+function <<access.private>> meta::pure::deepfetch::builder::isEmbeddedMapping(vs:ValueSpecification[1]):Boolean[1]
+{
+   $vs->byPassClusterInfo()->cast(@ExtendedRoutedValueSpecification).sets->fold({s,a|$s->instanceOf(EmbeddedSetImplementation) || $a},false)
+}
+
+function meta::pure::deepfetch::builder::buildThread(vs:ValueSpecification[1], child:PropertyDeepFetchTreeNode[0..1], childStore:Store[0..1]):DeepFetchTreeNode[*]
+{  
+   let wrappedValueSpecification = byPassValueSpecificationWrapper($vs);
+   let dfns = $wrappedValueSpecification->match([ v:VariableExpression[1] |  ^RootDeepFetchTreeNode(childrenData=$child, class=$v.genericType.rawType->cast(@Class<Any>)->toOne(), store=$childStore->toOne());,
+                                                 fe:FunctionExpression[1] | let store=if($vs->instanceOf(ClusteredValueSpecification) && !$vs->cast(@ClusteredValueSpecification).store->instanceOf(EmbeddedStore),|$vs->cast(@ClusteredValueSpecification).store, |$childStore)->toOne();
+                                                                            let propertyAndParameters = $vs->getPropertyAndParameters();
+                                                                            let pdfn = ^PropertyDeepFetchTreeNode(routedFunctionExpression=$vs->byPassClusterInfo()->cast(@ExtendedRoutedValueSpecification), childrenData=$child, store=$store, isEmbeddedMapping=$vs->isEmbeddedMapping(), property=$propertyAndParameters.first, propertyParameters=$propertyAndParameters.second.values);
+                                                                            let parentProperty = $fe.parametersValues->at(0);
+                                                                            if(!$parentProperty->isEmpty(),| $parentProperty->toOne()->buildThread($pdfn, $store);
+                                                                                                          ,| $pdfn);  ]);                             
+   $dfns->validate();
+   $dfns;
+}
+
+function meta::pure::deepfetch::builder::validate(dfns:DeepFetchTreeNode[*]):Any[*]
+{
+   $dfns->map(dfn|$dfn->match([pdfn:PropertyDeepFetchTreeNode[1]| assert(!$pdfn.property->functionReturnType().rawType->toOne()->instanceOf(DataType),| 'Deep fetch of DataType properties is not supported, property:'+$pdfn.property->toString());
+                                                                  assert(!$pdfn.property->instanceOf(QualifiedProperty),|'Deep fetch of qualified properties is not yet supported');                                                               
+                                                                  assert($pdfn.routedFunctionExpression.sets->size()==1, | 'Deep fetch of multiple sets Implementations is not yet supported: '+$pdfn->toJSON());,
+                               dfn:DeepFetchTreeNode[1]| assert(!$dfn.store->instanceOf(PlatformStore),| 'Deep fetch through the PlatformStore is not yet supported:' + $dfn->toJSON());])
+             )
+}
+
+function meta::pure::deepfetch::builder::mergeThreads(roots:RootDeepFetchTreeNode[*]):RootDeepFetchTreeNode[1]
+{
+   let distinctRootClasses = $roots.class->distinct();
+   assert($distinctRootClasses->size()==1,'Deep fetch paths should have the same root class');
+   let childNodes = $roots.childrenData->cast(@PropertyDeepFetchTreeNode);
+   let mergedChildNodes = $childNodes->fold({n, a| $a->mergeChildThreads($n, '0', []) }, []->cast(@PropertyDeepFetchTreeNode)); 
+   let root = $roots->at(0);
+   ^$root(id = '0', childrenData=$mergedChildNodes);
+}
+
+function <<access.private>> meta::pure::deepfetch::builder::mergeChildThreads(dfns:PropertyDeepFetchTreeNode[*], n:PropertyDeepFetchTreeNode[1], parentId : String[1], embeddedGroupId : String[0..1]):PropertyDeepFetchTreeNode[*]
+{  let mergeNode = $dfns->filter(d|$d->shouldMerge($n));
+   if( $mergeNode->isEmpty(),|let id = $dfns->size()+1;
+                              $dfns->concatenate($n->setIds($parentId,$id, $embeddedGroupId));
+                            ,|assert($mergeNode->size() == 1,'Deep fetch tree merging found more than one merge compatible deep fetch nodes');
+                              let oneMergeNode = $mergeNode->at(0);
+                              let mergedChildren = $mergeNode.children()->concatenate($n.children())->fold({n, a| $a->mergeChildThreads($n,  $mergeNode.id->toOne(), $oneMergeNode.embeddedGroupId) }, []->cast(@PropertyDeepFetchTreeNode));
+                              let mergeNodeWithMergedChildren = ^$oneMergeNode(childrenData=$mergedChildren);
+                              $dfns->filter(n|$n != $oneMergeNode)->concatenate($mergeNodeWithMergedChildren);
+                            );
+}
+
+function <<access.private>> meta::pure::deepfetch::builder::setIds(pdfns:PropertyDeepFetchTreeNode[*], parentId:String[1], startChildIndex:Integer[1], embeddedGroupId : String[0..1]):PropertyDeepFetchTreeNode[*]
+{
+   let size=$pdfns->size();
+   let indexedPdfn = range($startChildIndex, $startChildIndex+$size)->zip($pdfns);
+   $indexedPdfn->map(p|let nEmbeddedGroupId = if($p.second->isEmbeddedMapping() && $embeddedGroupId->isEmpty(),|$parentId, |if($p.second->isEmbeddedMapping() && !$embeddedGroupId->isEmpty(),|$embeddedGroupId,|[]));
+                       let pdfn = $p.second;
+                       let pdfnId = $parentId+'_'+ $p.first->toString();
+                       ^$pdfn(id=$pdfnId, childrenData=$pdfn.children->setIds($pdfnId, 1, $nEmbeddedGroupId), embeddedGroupId=$nEmbeddedGroupId););
+}
+
+function <<access.private>> meta::pure::deepfetch::builder::shouldMerge(lp:PropertyDeepFetchTreeNode[1], rp:PropertyDeepFetchTreeNode[1]):Boolean[1]
+{     
+   $lp.property->match([ p:Property<Nil,Any|*>[1] | $rp.property->instanceOf(Property) && $p == $rp.property,
+                         q:QualifiedProperty<Any>[1] | assert(false, | 'qualified properties ('+$q.name->toOne()+') are not yet supported in Deep Fetch')])
+}
+
+function <<access.private>> meta::pure::deepfetch::builder::addEnumMetaData(dfn:DeepFetchTreeNode[1]):DeepFetchTreeNode[1]
+{
+   let embeddedGroupIdNodeIdPairs = $dfn->getNodeIdsByEmbeddedGroupId();
+   let nodeIdsByGroupId = $embeddedGroupIdNodeIdPairs.first->distinct()->map(egid|pair($egid,^List<String>(values=$embeddedGroupIdNodeIdPairs->filter(p|$p.first==$egid).second)));
+   
+   let rightMost = {n1:String[1], n2:String[1] | assert($n1 != $n2,| 'deep fetch tree should not have duplicate (embedded) node ids'+$n1); 
+                                                 let diffs = $n1->split('_')->zip($n2->split('_'))->filter(p|$p.first != $p.second); 
+                                                 let idPair = $diffs->first(); if($idPair.first > $idPair.second,|$n1,|$n2);};
+   
+   let longestPathIds = $nodeIdsByGroupId.second->map(nodeIds| let longestPathIds = $nodeIds.values->fold({id,a| if($a == '',|$id ,|if($id->length() == $a->length(),| $rightMost->eval($a, $id)
+                                                                                                                                                                    ,| if($id->length() > $a->length(),|$id,|$a)))}
+                                                                                                         ,'');
+
+                                                      );
+   addTerminalEnumNodeInfoToTree($dfn,$longestPathIds);
+}
+
+function <<access.private>> meta::pure::deepfetch::builder::addTerminalEnumNodeInfoToTree(dfn:DeepFetchTreeNode[1], terminalEnumNodeIds:String[*]):DeepFetchTreeNode[1]
+{
+   let children=$dfn.children->map(c|$c->addTerminalEnumNodeInfoToTree($terminalEnumNodeIds));
+   if($dfn->instanceOf(PropertyDeepFetchTreeNode) && $dfn.id->in($terminalEnumNodeIds),| let pdfn=$dfn->cast(@PropertyDeepFetchTreeNode); ^$pdfn(isLastEmbeddedGroupNode=true, childrenData=$children);,|^$dfn(childrenData=$children));
+}
+
+function <<access.private>> meta::pure::deepfetch::builder::getNodeIdsByEmbeddedGroupId(dfn:DeepFetchTreeNode[1]):Pair<String, String>[*]
+{
+   if($dfn->instanceOf(PropertyDeepFetchTreeNode) && !$dfn->cast(@PropertyDeepFetchTreeNode).embeddedGroupId->isEmpty(),|pair($dfn->cast(@PropertyDeepFetchTreeNode).embeddedGroupId->toOne(), $dfn.id->toOne()),|[])->concatenate($dfn.children->map(c|$c->getNodeIdsByEmbeddedGroupId()))
+}
+
+function <<access.private>> meta::pure::deepfetch::builder::byPassClusterInfo(v:ValueSpecification[1]):ExtendedRoutedValueSpecification[1]
+{
+   $v->match([ c: ClusteredValueSpecification[1]|byPassClusterInfo($c.val),
+               e: ExtendedRoutedValueSpecification[1] | $e]);                               
+}
+
+function <<access.private>> meta::pure::deepfetch::builder::getPropertyAndParameters(v:ValueSpecification[1]):Pair<AbstractProperty<Any>,List<ValueSpecification>>[1]
+{
+    let fe = $v->getFunctionExpression();
+    pair($fe.func->cast(@AbstractProperty<Any>)->toOne(), ^List<ValueSpecification>(values=$fe.parametersValues));
+}
+
+function <<access.private>> meta::pure::deepfetch::builder::getFunctionExpression(v:ValueSpecification[1]):FunctionExpression[0..1]
+{
+   $v->match([ fe:FunctionExpression[1]| $fe,
+               e: RoutedValueSpecification[1]|getFunctionExpression($e.value),
+               c: ClusteredValueSpecification[1]|getFunctionExpression($c.val),
+               a: Any[1] | []]);                               
+}
+
+

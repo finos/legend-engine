@@ -1,0 +1,346 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::functions::meta::tests::*;
+import meta::pure::functions::meta::tests::reverseProperties::*;
+
+function <<test.Test>> meta::pure::functions::meta::tests::testAllProperties():Boolean[1]
+{
+   assert(OwnerClassTestClassA->allProperties()->size() > 0);
+}
+
+function <<test.Test>> meta::pure::functions::meta::tests::testPropertyByName():Boolean[1]
+{
+   assert(OwnerClassTestClassA->propertyByName('otherProp')->size() == 1);
+   assert(OwnerClassTestClassA->propertyByName('otherProp')->toOne().name == 'otherProp');
+   assert(OwnerClassTestClassA->propertyByName('nonExistingProp')->size() == 0);
+}
+
+function <<test.Test>> meta::pure::functions::meta::tests::testOwnerClass():Boolean[1]
+{
+    let otherPropClassA = OwnerClassTestClassA.properties->at(0);
+    let assocPropClassA = OwnerClassTestClassA.propertiesFromAssociations->at(0);
+
+    assert($otherPropClassA->ownerClass() == OwnerClassTestClassA);
+    assert($otherPropClassA.owner == $otherPropClassA->ownerClass());
+
+    assert($assocPropClassA->ownerClass() == OwnerClassTestClassA);
+    assert($assocPropClassA.owner != $assocPropClassA->ownerClass());
+
+    let otherPropClassB = OwnerClassTestClassA.properties->at(0);
+    let assocPropClassB = OwnerClassTestClassA.propertiesFromAssociations->at(0);
+
+    assert($otherPropClassB->ownerClass() == OwnerClassTestClassA);
+    assert($otherPropClassB.owner == $otherPropClassB->ownerClass());
+
+    assert($assocPropClassB->ownerClass() == OwnerClassTestClassA);
+    assert($assocPropClassB.owner != $assocPropClassB->ownerClass());
+}
+
+function <<test.Test>> meta::pure::functions::meta::tests::testOwnerClassMilestoning():Boolean[1]
+{
+   let property = OwnerClassWithMilestoningA->propertyByName('prop2');
+   assertEquals(OwnerClassWithMilestoningA, $property->toOne()->ownerClass());
+
+   let property2 = OwnerClassWithMilestoningB->propertyByName('prop1');
+   assertEquals(OwnerClassWithMilestoningB, $property2->toOne()->ownerClass());
+}
+
+function <<test.Test>> meta::pure::functions::meta::tests::testFullPackageName():Boolean[1]
+{
+   assertEquals('meta::pure',meta::pure->fullPackageName('::'));
+   assertEquals('meta::pure::functions::meta::tests::OwnerClassTestClassA',meta::pure::functions::meta::tests::OwnerClassTestClassA->fullPackageName('::'));
+   assertEquals('meta::pure::functions::meta::tests::OwnerClassTestClassA.otherProp',meta::pure::functions::meta::tests::OwnerClassTestClassA->propertyByName('otherProp')->toOne()->fullPackageName('::'));
+
+}
+
+function <<test.Test>> meta::pure::functions::meta::tests::testGetPackageableElements():Boolean[1]
+{
+   let source = meta::pure::functions::meta::tests::packageA::ClassA->sourceInformation()->toOne();
+   let results = $source->getPackageableElements();
+   assertEquals(meta::pure::functions::meta::tests::packageA->getAllPackageElements(true)->size(), $results->size());
+}
+
+function <<test.Test>> meta::pure::functions::meta::tests::testGetPackageableElementsForCollection():Boolean[1]
+{
+   let source = meta::pure::functions::meta::tests::packageA::ClassA->sourceInformation()->toOne();
+   let source2 = meta::pure::functions::meta::tests::packageA::ClassB->sourceInformation()->toOne();
+   let results = [$source,$source2]->getPackageableElements();
+   assertEquals(meta::pure::functions::meta::tests::packageA->getAllPackageElements(true)->size(), $results->size());
+}
+
+function <<test.Test>> meta::pure::functions::meta::tests::isWithinPackageTest():Boolean[1]
+{
+   assertEquals(true, OwnerClassTestClassA->isWithinPackage(::));
+   assertEquals(true, OwnerClassTestClassA->isWithinPackage(meta::pure::functions::meta::tests));
+   assertEquals(true, OwnerClassTestClassA->isWithinPackage(meta::pure::functions::meta));
+   assertEquals(true, OwnerClassTestClassA->isWithinPackage(meta::pure));
+   assertEquals(false, OwnerClassTestClassA->isWithinPackage(meta::pure::functions::meta::tests::subpackageD));
+}
+
+function <<test.Test>> meta::pure::functions::meta::tests::forgivingPathToElementTest():Boolean[1]
+{
+   assertEmpty(forgivingPathToElement('someunknownpackage::someunknownelement'));
+   // Test where in the package there's class and subpackage with the similar name and path has typo causing part of the path to resolve into Class (or potentially any PackageableElement) not Package
+   assertEmpty(forgivingPathToElement('meta::pure::functions::meta::tests::Special::factory__Special_1_'));
+   assertContains(meta::pure::functions::meta::forgivingPathToElement_String_1__PackageableElement_$0_1$_, forgivingPathToElement('meta::pure::functions::meta::forgivingPathToElement_String_1__PackageableElement_$0_1$_')->toOne());
+}
+
+function <<test.Test>> meta::pure::functions::meta::tests::testReverseProperties():Boolean[1]
+{
+   let r = B->reverseProperties();
+   assertEquals(2, $r->size());
+   assertSameElements(['b','b2'], $r.name);
+}
+
+function <<test.Test>> meta::pure::functions::meta::tests::isConcreteTypeTest():Boolean[1]
+{
+   let v = ^OwnerClassTestClassA(otherProp='A');
+   assert(isConcrete($v->genericType()));
+   assertFalse(isConcrete(meta::pure::functions::meta::tests::doSomething_T_MANY__T_1_->functionType().returnType));
+}
+
+function meta::pure::functions::meta::tests::doSomething<T>(tees: T[*]):T[1]
+{
+   $tees->toOne();
+}
+
+function <<test.Test>> meta::pure::functions::meta::tests::testGetLeafTypes_parent():Boolean[1]
+{
+   assertEquals(MyOtherClass, MyClass->getLeafTypes());
+}
+
+function <<test.Test>> meta::pure::functions::meta::tests::testGetLeafTypes_child():Boolean[1]
+{
+   assertEquals(MyOtherClass, MyOtherClass->getLeafTypes());
+}
+
+/* Test helper classes */
+
+Class meta::pure::functions::meta::tests::OwnerClassTestClassA
+{
+   otherProp : String[1];
+}
+
+Class meta::pure::functions::meta::tests::OwnerClassTestClassB
+{
+
+}
+
+Class meta::pure::functions::meta::tests::subpackageD::OwnerClassTestClassC
+{
+
+}
+
+Class meta::pure::functions::meta::tests::OwnerClassWithMilestoningA
+{
+
+}
+
+Class <<temporal.businesstemporal>> meta::pure::functions::meta::tests::OwnerClassWithMilestoningB
+{
+
+}
+
+Association meta::pure::functions::meta::tests::ownerClassTestClassAssociationMilestoning
+{
+  prop1 : meta::pure::functions::meta::tests::OwnerClassWithMilestoningA[1];
+  prop2 : meta::pure::functions::meta::tests::OwnerClassWithMilestoningB[*];
+}
+
+Association meta::pure::functions::meta::tests::ownerClassTestClassAssociation
+{
+  prop1 : meta::pure::functions::meta::tests::OwnerClassTestClassA[1];
+  prop2 : meta::pure::functions::meta::tests::OwnerClassTestClassB[*];
+}
+
+Class meta::pure::functions::meta::tests::reverseProperties::A
+{
+   b : meta::pure::functions::meta::tests::reverseProperties::B[1];
+}
+
+Class meta::pure::functions::meta::tests::reverseProperties::B
+{
+   
+}
+
+Association meta::pure::functions::meta::tests::reverseProperties::asso
+{
+  a : meta::pure::functions::meta::tests::reverseProperties::A[1];
+  b2 : meta::pure::functions::meta::tests::reverseProperties::B[1];
+}
+
+/* Helper class and function for case when in one package we have class and subpackage with the similar name (difference only in case) */
+Class meta::pure::functions::meta::tests::Special
+{
+   
+}
+
+function meta::pure::functions::meta::tests::special::factory():Special[1]
+{
+   ^Special();
+}
+
+Class <<access.private>> meta::pure::functions::meta::tests::MyClass
+{
+   <<equality.Key>> id : Integer[*];
+   <<equality.Key>> parameterName : Any[*];
+   
+   toString()
+   {
+        $this->simpleToString()
+   }:String[1];      
+}
+
+Class <<access.private>> meta::pure::functions::meta::tests::MyOtherClass extends MyClass
+{
+
+   z:String[1];
+   
+   toString()
+   {
+        $this->simpleToString()
+   }:String[1];      
+}
+
+
+function <<test.Test>> meta::pure::functions::meta::tests::simpleToStringTest():Boolean[1]
+{
+   let x = ^MyOtherClass(id=[1,2], z='hello', parameterName = ['kkk', 'adddd', ^MyClass(id=[1,2])]);
+   let r = $x->simpleToString();
+   
+   println($r);
+   
+   assertEquals('meta::pure::functions::meta::tests::MyOtherClass(id=[1, 2], parameterName=[\'kkk\', \'adddd\', meta::pure::functions::meta::tests::MyClass(id=[1, 2], parameterName=[])], z=\'hello\')', $r);
+}
+
+function <<test.Test>> meta::pure::functions::meta::tests::testFindPackagableElement():Boolean[1]
+{
+   assertEquals(meta::pure::functions::meta::tests::MyClass, meta::pure::functions::meta::tests::MyClass->findPackagableElement());
+   assertEquals(meta::pure::functions::meta::tests::MyClass, meta::pure::functions::meta::tests::MyClass.properties->at(0)->findPackagableElement());
+}
+
+function <<test.Test>> meta::pure::functions::meta::tests::testPathToPackage():Boolean[1]
+{
+   let pkgName = 'meta::noExists::myPkg';
+   assertEmpty($pkgName->forgivingPathToElement(), 'Package ' + $pkgName + ' should not exist for test');
+   assertNotEmpty($pkgName->pathToPackage(true));
+   assertEquals($pkgName, $pkgName->pathToPackage(true)->elementToPath());
+   
+   
+   assertNotEmpty(meta::pure::functions::meta::tests->elementToPath()->pathToPackage());
+   
+}
+
+Class <<access.private>> meta::pure::functions::meta::tests::TestSubsumesClass
+{
+   zeroOne:String[0..1];
+   one:String[1];
+   many:String[*];
+   oneMany:String[1..*];
+   twoMany:String[2..*];
+   fiveTen:String[5..10];
+
+}
+
+
+function <<test.Test>> meta::pure::functions::meta::tests::testSubsumes():Boolean[1]
+{
+   
+   
+  let zeroOne = meta::pure::functions::meta::tests::TestSubsumesClass->propertyByName('zeroOne').multiplicity->toOne();
+  let one = meta::pure::functions::meta::tests::TestSubsumesClass->propertyByName('one').multiplicity->toOne();
+  let many = meta::pure::functions::meta::tests::TestSubsumesClass->propertyByName('many').multiplicity->toOne();
+  let oneMany = meta::pure::functions::meta::tests::TestSubsumesClass->propertyByName('oneMany').multiplicity->toOne();
+  let twoMany =  meta::pure::functions::meta::tests::TestSubsumesClass->propertyByName('twoMany').multiplicity->toOne();
+  let fiveTen = meta::pure::functions::meta::tests::TestSubsumesClass->propertyByName('fiveTen').multiplicity->toOne();
+
+   
+   assert($one->multiplicitySubsumes($one));
+   assertFalse($one->multiplicitySubsumes($zeroOne));
+   assertFalse($one->multiplicitySubsumes($many));
+   assertFalse($one->multiplicitySubsumes($oneMany));
+  
+
+   assertFalse($one->multiplicitySubsumes($fiveTen));
+   assert($zeroOne->multiplicitySubsumes($one));
+   assertFalse($zeroOne->multiplicitySubsumes($oneMany));
+   assertFalse($zeroOne->multiplicitySubsumes($many));
+  
+   assert($oneMany->multiplicitySubsumes($oneMany));
+   assert($oneMany->multiplicitySubsumes($one));
+   assert($oneMany->multiplicitySubsumes($oneMany));
+   assert($oneMany->multiplicitySubsumes($oneMany));
+   assertFalse($oneMany->multiplicitySubsumes($zeroOne));
+
+   assertFalse($fiveTen->multiplicitySubsumes($one));
+   assertFalse($fiveTen->multiplicitySubsumes($many));
+   assertFalse($fiveTen->multiplicitySubsumes($oneMany));
+   assertFalse($fiveTen->multiplicitySubsumes($twoMany));
+
+   
+  assert($twoMany->multiplicitySubsumes($fiveTen));
+
+}
+
+function meta::pure::functions::meta::tests::special::recursiveFunc():Special[1]
+{
+   meta::pure::functions::meta::tests::special::recursiveFunc();
+   meta::pure::functions::meta::tests::special::recursiveFunc2();
+}
+
+function meta::pure::functions::meta::tests::special::recursiveFunc2():Special[1]
+{
+   meta::pure::functions::meta::tests::special::recursiveFunc();
+   ^Special();
+}
+
+function meta::pure::functions::meta::tests::special::specialParam(special:Special[1]):Any[1]
+{
+  true;
+}
+
+Class meta::pure::functions::meta::tests::QualifiedNewProperty
+{
+  newClass()
+  {
+    $this.newClass();
+    ^Special();
+  } : Special[1];
+}
+
+function meta::pure::functions::meta::tests::special::miscNewFunctionCalls():Any[1]
+{
+  //New call in let statement
+   let a = ^Special();
+
+   //New call inside if
+   if(true, |^Special(), |false);
+   
+   //New call in qualified property
+   let qualifiedNewProperty = ^QualifiedNewProperty();
+   $qualifiedNewProperty.newClass();
+
+   //New call in parameter
+   meta::pure::functions::meta::tests::special::specialParam(^Special());
+}
+
+function <<test.Test>> meta::pure::functions::meta::tests::testFindExpressionsForFunctionInFunctionDefinition():Boolean[1]
+{
+  let miscNewFunctionCallsRes = meta::pure::functions::meta::tests::special::miscNewFunctionCalls__Any_1_->findExpressionsForFunctionInFunctionDefinition([new_Class_1__String_1__T_1_, new_Class_1__String_1__KeyExpression_MANY__T_1_], f|true);
+  let recursiveFuncRes = meta::pure::functions::meta::tests::special::recursiveFunc__Special_1_->findExpressionsForFunctionInFunctionDefinition([new_Class_1__String_1__T_1_, new_Class_1__String_1__KeyExpression_MANY__T_1_], f|true);
+ 
+  assertEquals($miscNewFunctionCallsRes->size(), 4);
+  assertEquals($recursiveFuncRes->size(), 1);
+}

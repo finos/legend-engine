@@ -1,0 +1,1918 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::profiles::*;
+import meta::json::schema::tests::constraints::*;
+import meta::json::schema::tests::*;
+import meta::pure::executionPlan::profiles::*;
+import meta::pure::generation::metamodel::*;
+import meta::json::schema::generation::*;
+import meta::json::*;
+import meta::json::schema::*;
+import meta::json::schema::tests::*;
+
+
+Class <<typemodifiers.abstract>>
+{doc.doc = 'The Being Class'}
+meta::json::schema::tests::Being
+{
+   omg:String[1];
+}
+
+Class
+{doc.doc = 'The Foo Class'}
+meta::json::schema::tests::Foo
+{
+
+   beings:Being[2];
+}
+
+
+Class
+{doc.doc = 'The Animal Class'}
+meta::json::schema::tests::Animal extends Being
+{
+
+   name:String[1];
+   age:Integer[1];
+   <<JSONSchemaOpenAPIExtension.discriminatorProperty>>type:AnimalType[1];
+   aliases:String[*];
+   extra:OtherInfo[4];
+}
+
+Class
+{doc.doc = 'The Cat Class',JSONSchemaOpenAPIExtension.discriminatorName='CAT',JSONSchemaOpenAPIExtension.discriminatorName='cat'}
+meta::json::schema::tests::Cat extends Animal
+{
+   {doc.doc = 'Is the animal a vegetarian?'}
+   vegetarian:Boolean[1];
+}
+
+Class
+{doc.doc = 'The Dog Class',JSONSchemaOpenAPIExtension.discriminatorName='DOG'}
+meta::json::schema::tests::Dog extends Animal
+{
+   {doc.doc = 'Does the dog bark?'}
+   hasBark:Boolean[1];
+}
+
+
+Class
+{doc.doc = 'The Fish Class'}
+meta::json::schema::tests::Fish extends Animal
+{
+
+}
+
+Class
+{doc.doc = 'The OtherInfo Class'}
+meta::json::schema::tests::OtherInfo
+{
+   info:String[1];
+}
+
+Enum
+{doc.doc = 'The AnimalType Enum'}
+meta::json::schema::tests::AnimalType
+{
+     CAT, DOG, BIRD, FISH, HUMAN
+}
+
+Class
+{doc.doc = 'A Recursive Test Class'}
+meta::json::schema::tests::RecursiveTestClass
+{
+   name:String[1];
+   children:RecursiveTestClass[*];   // Direct Recursion
+   others:SomeOtherClass[*];         // InDirect Recursion
+}
+
+Class
+{doc.doc = 'Some Other Class'}
+meta::json::schema::tests::SomeOtherClass
+{
+   items:RecursiveTestClass[*];
+}
+
+Class
+{doc.doc = 'No Required Fields Class'}
+meta::json::schema::tests::NoRequiredFieldsClass
+{
+   a:String[0..1];
+   b:String[0..1];
+   c:String[0..1];
+}
+
+
+Class meta::json::schema::tests::PrimitiveTypeDomain
+{
+   {doc.doc = 'String Field'}
+   stringField : String[1];
+
+   {doc.doc = 'Float Field'}
+   floatField: Float[1];
+
+   {doc.doc = 'Integer Field'}
+   integerField: Integer[1];
+
+   {doc.doc = 'Date Field'}
+   dateField: Date[1];
+
+   {doc.doc = 'DateTime Field'}
+   dateTimeField: DateTime[1];
+
+   {doc.doc = 'StrictDate Field'}
+   strictDateField: StrictDate[1];
+
+   {doc.doc = 'Boolean Field'}
+   booleanField: Boolean[1];
+
+
+   stringNoDescriptionField : String[1];
+
+   {doc.doc = 'String Field- multiple'}
+   srtingMultipleField: String[*];
+
+   {doc.doc = 'Float Field - multiple'}
+   floatMultipleField: Float[*];
+
+   {doc.doc = 'Integer Field - multiple'}
+   integerMultipleField: Integer[*];
+
+   {doc.doc = 'Date Field-multiple'}
+   dateMultipleField: Date[*];
+
+   {doc.doc = 'DateTime Field-multiple'}
+   dateTimeMultipleField: DateTime[*];
+
+   {doc.doc = 'StrictDate Field-multiple'}
+   strictDateMultipleField: StrictDate[*];
+
+   {doc.doc = 'Field String - Range 1..3'}
+   stringRangeField: String[1..3];
+
+   {doc.doc = 'Field String - Range 0..3'}
+   stringRangeZeroField: String[0..3];
+
+   {doc.doc = 'Field Integer - Range 1..3'}
+   integerRangeField: Integer[1..3];
+
+   {doc.doc = 'Field Integer - Range 0..3'}
+   integerRangeZeroField: Integer[0..3];
+
+   {doc.doc = 'Field Float - range 1..3'}
+   floatRangeField: Float[1..3];
+
+   {doc.doc = 'Field Float - range 0..3'}
+   floatRangeZeroField: Float[0..3];
+
+   {doc.doc = 'Date Field-multiple 1..3'}
+   dateRangeField: Date[1..3];
+
+   {doc.doc = 'Date Field-multiple 0..3'}
+   dateRangeZeroField: Date[0..3];
+
+   {doc.doc = 'DateTime Field-multiple 1..3'}
+   dateTimeRangeField: DateTime[1..3];
+
+   {doc.doc = 'DateTime Field-multiple 0..3'}
+   dateTimeRangeZeroField: DateTime[0..3];
+
+   {doc.doc = 'StrictDate Field-multiple 1..3'}
+   strictDateRangeField: StrictDate[1..3];
+
+   {doc.doc = 'StrictDate Field-multiple 0..3'}
+   strictDateRangeZeroField: StrictDate[0..3];
+
+}
+
+Class
+
+meta::json::schema::tests::ClassWithUnspportedConstraint
+[
+  c: $this.p1-> unsupportedFunction() || not($this.p1 + $this.p2 < 10) ,
+  c2: $this.p2-> unsupportedFunction() 
+
+]
+{
+   p1:Integer[1];
+   p2:Integer[1];
+
+}
+
+function meta::json::schema::tests::unsupportedFunction(value:Integer[1]):Boolean[1]
+{
+   ($value/10)==2;
+}
+
+
+function <<access.private>>  meta::json::schema::tests::constraints::matchString():String[1]
+{
+ 'abcd';
+}
+
+function {doc.doc='a complex function'}  meta::json::schema::tests::constraints::constraintFunctionComplex(value:Any[0..1]):Boolean[1]
+{
+oneOf([((($value->makeString()->isNoLongerThan(32) && $value->makeString()->isNoShorterThan(4) && $value->makeString()->matches(matchString()) )
+          || $value->makeString()->isNoShorterThan(7)
+          || $value->makeString()->isNoShorterThan(2))  && $value->toOne()->instanceOf(String))
+       , $value->toOne()->constraintFunctionSimpleNumber() ])
+}
+
+
+function  meta::json::schema::tests::constraints::nested::constraintFunctionSimpleNumberNested(valueNumber:Any[0..1]):Boolean[1]
+{
+    $valueNumber->toOne()->instanceOf(Number)  ;
+}
+
+function  meta::json::schema::tests::constraints::constraintFunctionSimpleNumber(valueNumber:Any[0..1]):Boolean[1]
+{
+    $valueNumber->toOne()->instanceOf(String)  ||  $valueNumber->meta::json::schema::tests::constraints::nested::constraintFunctionSimpleNumberNested() ;
+}
+
+
+function  meta::json::schema::tests::constraints::constraintRegEXFn(value:String[1]):Boolean[1]
+{
+   $value->matches('regexp');
+}
+
+function  meta::json::schema::tests::AnimalAnyOf(value:Any[1]):Boolean[1]
+{
+   or([$value->instanceOf(Cat),$value->instanceOf(Dog),$value->instanceOf(Fish)]);
+}
+
+function  meta::json::schema::tests::AnimalOneOf(value:Any[1]):Boolean[1]
+{
+   oneOf([$value->instanceOf(Cat),$value->instanceOf(Dog),$value->instanceOf(Fish)]);
+}
+
+Class
+{doc.doc = 'Class With Constraints'}
+  meta::json::schema::tests::constraints::ClassWithConstraints
+[
+   simple: $this.simple->constraintFunctionSimpleNumber(),
+   complex: $this.complex->constraintFunctionComplex() && $this.complex->makeString()->isNoShorterThan(4),
+  duplicateConstraint: $this.duplicateConstraint->toOne() ->instanceOf(String),
+   inLine : $this.inLine->toOne()->instanceOf(String) || $this.inLine->toOne()->instanceOf(Number),
+   constant: $this.constant=='constantValue',
+   number:( ($this.number>10) && ($this.number < 15)) || (( $this.number >= 0 )&& ( $this.number <=2)),
+   dateOrString: if( $this.dateOrString->isNotEmpty(),| $this.dateOrString->toOne()->instanceOf(String) || $this.dateOrString->toOne()->instanceOf(StrictDate),|true),
+    manyString:    $this.manyString->forAll(v |$v->isNoShorterThan(4) && $v->isNoLongerThan(10) && $v->constraintRegEXFn())  && $this.manyString->isDistinct() ,
+   uuid: $this.uuidProperty->isUUID()
+]
+{
+   constant:String[0..1];
+   duplicateConstraint:String[0..1];
+    simple:Any[0..1];
+  <<JSONSchemaGeneration.writeOnly>>dateOrString:Any[0..1];
+  inLine: Any[0..1];
+  complex:Any[0..1];
+   <<JSONSchemaGeneration.readOnly>>number:Number[1];
+   manyString:String[*];
+   manyNumeric:Integer[*];
+   <<JSONSchemaGeneration.writeOnly>> requiredMax:Integer[1..20];
+   requiredMinItem:Integer[3..20];
+   optionalMax:Integer[0..5];
+   <<JSONSchemaTypeExtension.null>>uuidProperty:String[0..1];
+   <<meta::json::schema::JSONSchemaTypeExtension.array>> forcedArrayOptional:String[0..1];
+  <<meta::json::schema::JSONSchemaTypeExtension.array>> forcedArrayRequired:String[0..1];
+  <<meta::json::schema::JSONSchemaTypeExtension.object>> objectType : meta::pure::metamodel::type::Any[0..1];
+
+
+}
+
+Class
+{doc.doc = 'Class With Function Reference'}
+  meta::json::schema::tests::ClassWithFunctionReference
+[
+    simple: $this.simple->constraintFunctionSimpleNumber()
+]
+{
+  simple:Any[0..1];
+
+
+}
+
+Class
+{doc.doc = 'Class With Function Reference'}
+  meta::json::schema::tests::AssociatedClass
+
+
+{
+  simple:String[0..1];
+
+
+}
+
+Association  meta::json::schema::tests::associations::associationsingle
+   {
+   associatedClassSingle:   meta::json::schema::tests::AssociatedClass[1];
+   otherInfoSingle:   meta::json::schema::tests::OtherInfo[0..1];
+}
+
+Association  meta::json::schema::tests::associations::associationsarray
+   {
+   associatedClassarray:   meta::json::schema::tests::AssociatedClass[1];
+   otherInfoArray:   meta::json::schema::tests::OtherInfo[2..6];
+}
+
+Class  meta::json::schema::tests::parent::parentClass
+{
+   childClass:meta::json::schema::tests::parent::level1::childClass[1];
+   childClass2:meta::json::schema::tests::parent2::level1::level2::childClass2[1];
+
+}
+
+Class  meta::json::schema::tests::parent::parent::levela::parentClass2
+{
+   childClass4:meta::json::schema::tests::parent::level1::levela::childClass4[0..1];
+   childClass3:meta::json::schema::tests::parent::level1::level2::childClass3[1];
+
+
+}
+
+Class  meta::json::schema::tests::parent::level1::childClass
+{
+
+}
+
+Class  meta::json::schema::tests::parent::level1::level2::childClass3
+{
+
+}
+
+Class  meta::json::schema::tests::parent::level1::levela::childClass4
+{
+
+}
+
+
+Class  meta::json::schema::tests::parent2::level1::level2::childClass2
+{
+   parentClass:meta::json::schema::tests::parent::parentClass[1];
+
+}
+
+
+Class
+<<meta::json::schema::JSONSchemaGeneration.noAdditionalProperties>> {JSONSchemaJavaExtension.javaType = 'com.supertype' }
+  meta::json::schema::tests::ClassWithProfileInterface
+{
+      classType:String[1];
+}
+
+
+function meta::json::schema::tests::subtypeAnimal(value:Animal[1]):Boolean[1]
+{
+
+   $value->discriminateOneOf($value.type,[Dog,Fish,Cat],[mapSchema('CAT',Cat),mapSchema('dog',Dog),mapSchema('DOG',Dog)]);
+
+}
+
+
+
+Class meta::json::schema::tests::discriminatorSuperType
+{
+   property:String[1];
+}
+
+
+Class
+<<JSONSchemaGeneration.noAdditionalProperties>> {doc.doc = 'Class With Profile',JSONSchemaJavaExtension.javaInterface = 'com.supertype' }
+  meta::json::schema::tests::ClassWithProfile  extends meta::json::schema::tests::ClassWithProfileInterface
+{
+      {JSONSchemaGeneration.defaultValue='0',doc.doc='integer defaulted to zero',JSONSchemaGeneration.example='1236540789000125'}int:Integer[0..1];
+
+   {JSONSchemaGeneration.defaultValue='0',doc.doc='number defaulted to zero',JSONSchemaGeneration.example='1236540789000125'}size:Number[0..1];
+   {JSONSchemaGeneration.defaultValue='test',JSONSchemaGeneration.example='abc'}name:String[0..1];
+   {JSONSchemaGeneration.defaultValue='true',JSONSchemaGeneration.example='false'}bool:Boolean[1];
+   interfaceProperty:meta::json::schema::tests::ClassWithProfileInterface[0..1];
+   pets:jsonSchemaEnum[1];
+   abstractClass:meta::json::schema::tests::Being[1];
+}
+
+Enum
+{doc.doc = 'Enum with Profile' ,JSONSchemaGeneration.defaultValue='Guinea Pig'}
+
+  meta::json::schema::tests::jsonSchemaEnum
+{
+   Dog,
+   Cat,
+   {JSONSchemaGeneration.name='Guinea Pig'}Guinea_Pig
+
+}
+
+function meta::json::schema::tests::testSuite():Boolean[1]
+{
+	println('++++Starting JSON Schema Tests++++');
+	newJSONKeyStringValueAsObjectTest();
+	newJSONKeyStringValueTest();
+	newJsonRefTest();
+	titleTest();
+	descriptionTest();
+	schemaTest();
+	propertiesTest();
+	allOfGeneralizationsTest();
+	extendsGeneralizationsTest();
+	convertPrimitiveTypeTest();
+	allGeneralizationsTest();
+	allNonPrimitivePropertiesOfClassTest();
+	allReferencedElementsTest();
+	isEnumTest();
+	createObjectPropertyTest();
+	enumTest();
+	requiredTest();
+	requiredEmptyTest();
+	recursiveTest();
+	definitionsTest();
+	toJSONSchemaTest();
+    arrayMinMaxItemKeyValue();
+    allPrimitivePropertiesOfClass();
+    dateAndDateTimeJSONFormatTest();
+	println('++++Finishing JSON Schema Tests++++');
+	assert(true);
+}
+
+
+function <<test.Test>> meta::json::schema::tests::arrayMinMaxItemKeyValue():Boolean[1]
+{
+   let property = PrimitiveTypeDomain.properties->get('stringRangeField')->toOne()->cast(@Property<Nil,Any|*>);
+   let stringRangeJSONKeyValue= meta::json::schema::arrayMinMaxItemKeyValue($property);
+   assertEq('minItems', $stringRangeJSONKeyValue->first()->cast(@JSONKeyValue).key->cast(@JSONString).value->toOne());
+   assertEq(1, $stringRangeJSONKeyValue->first()->cast(@JSONKeyValue).value->cast(@JSONNumber).value->toOne());
+   assertEq('maxItems', $stringRangeJSONKeyValue->last()->cast(@JSONKeyValue).key->cast(@JSONString).value->toOne());
+   assertEq(3, $stringRangeJSONKeyValue->last()->cast(@JSONKeyValue).value->cast(@JSONNumber).value->toOne());
+}
+
+function <<test.Test>> meta::json::schema::tests::allPrimitivePropertiesOfClass():Boolean[1]
+{
+   println('-->Testing String Primitive type');
+   let propertyString = PrimitiveTypeDomain.properties->get('stringField')->cast(@Property<Nil,Any|*>)->toOne();
+   let stringJSONKeyValue= $propertyString->propertyTypeValue(PrimitiveTypeDomain);
+   assert(confirmPrimitiveProperty($stringJSONKeyValue, 'string'));
+
+   let propertyInteger = PrimitiveTypeDomain.properties->get('integerField')->cast(@Property<Nil,Any|*>)->toOne();
+   let integerJSONKeyValue= $propertyInteger->propertyTypeValue(PrimitiveTypeDomain);
+   assert(confirmPrimitiveProperty($integerJSONKeyValue, 'integer'));
+
+   let propertyFloat = PrimitiveTypeDomain.properties->get('floatField')->toOne()->cast(@Property<Nil,Any|*>)->toOne();
+   let floatJSONKeyValue= $propertyFloat->propertyTypeValue(PrimitiveTypeDomain);
+   assert(confirmPrimitiveProperty($floatJSONKeyValue, 'number'));
+
+   let propertyDate = PrimitiveTypeDomain.properties->get('dateField')->toOne()->cast(@Property<Nil,Any|*>)->toOne();
+   let dateJSONKeyValue= $propertyDate->propertyTypeValue(PrimitiveTypeDomain);
+   assert(confirmPrimitiveProperty($dateJSONKeyValue, 'string'));
+
+   let propertyDateTime = PrimitiveTypeDomain.properties->get('dateTimeField')->toOne()->cast(@Property<Nil,Any|*>)->toOne();
+   let dateTimeJSONKeyValue= $propertyDateTime->propertyTypeValue(PrimitiveTypeDomain);
+   assert(confirmPrimitiveProperty($dateTimeJSONKeyValue, 'string'));
+
+   let propertyStrictDate = PrimitiveTypeDomain.properties->get('strictDateField')->toOne()->cast(@Property<Nil,Any|*>)->toOne();
+   let strictDateJSONKeyValue= $propertyStrictDate->propertyTypeValue(PrimitiveTypeDomain);
+   assert(confirmPrimitiveProperty($dateTimeJSONKeyValue, 'string'));
+
+   let propertyBoolean = PrimitiveTypeDomain.properties->get('booleanField')->toOne()->cast(@Property<Nil,Any|*>)->toOne();
+   let booleanJSONKeyValue= $propertyBoolean->propertyTypeValue(PrimitiveTypeDomain);
+   assert(confirmPrimitiveProperty($booleanJSONKeyValue, 'boolean'));
+}
+
+function <<test.Test>> meta::json::schema::tests::dateAndDateTimeJSONFormatTest():Boolean[1]
+{
+   let strictDateFields = [
+      'strictDateField', 'strictDateMultipleField', 'strictDateRangeField', 'strictDateRangeZeroField'
+   ];
+   $strictDateFields->map(f|
+      let prop = PrimitiveTypeDomain.properties->get($f)->toOne()->cast(@Property<Nil,Any|*>)->toOne();
+      let keyValue = $prop->propertyFormatValue();
+
+      assertEquals('format', $keyValue.key->cast(@JSONString).value);
+      assertEquals('date', $keyValue.value->cast(@JSONString).value);
+   );
+
+   let dateAndDateTimeFields = [
+      'dateField', 'dateMultipleField', 'dateRangeField', 'dateRangeZeroField',
+      'dateTimeField', 'dateTimeMultipleField', 'dateTimeRangeField', 'dateTimeRangeZeroField'
+   ];
+   $dateAndDateTimeFields->map(f|
+      let prop = PrimitiveTypeDomain.properties->get($f)->toOne()->cast(@Property<Nil,Any|*>)->toOne();
+      let keyValue = $prop->propertyFormatValue();
+
+      assertEquals('format', $keyValue.key->cast(@JSONString).value);
+      assertEquals('date-time', $keyValue.value->cast(@JSONString).value);
+   );
+
+   // non Date/DateTime/StrictDate fields should have empty format value
+   PrimitiveTypeDomain.properties->filter(p| $p.genericType.rawType->toOne() != Date && $p.genericType.rawType->toOne() != DateTime && $p.genericType.rawType->toOne() != StrictDate)
+    -> map(p|
+      let prop = $p->cast(@Property<Nil,Any|*>)->toOne();
+      assertEmpty($prop->propertyFormatValue());
+    );
+
+   true;
+}
+
+function meta::json::schema::tests::confirmPrimitiveProperty(jsonKeyValue:JSONKeyValue[1], expectedType:String[1]):Boolean[1]
+{
+   assertEq('type', $jsonKeyValue->cast(@JSONKeyValue).key->cast(@JSONString).value);
+   assertEq($expectedType, $jsonKeyValue->cast(@JSONKeyValue).value->cast(@JSONString).value);
+}
+
+
+function <<test.Test>> meta::json::schema::tests::newJSONKeyStringValueAsObjectTest():Boolean[1]
+{
+   let expectedJSON = ^JSONObject( keyValuePairs = [
+         ^JSONKeyValue( key   = ^JSONString( value = 'foo' ),
+                        value = ^JSONString( value = 'bar' ) ) ] );
+
+   assertJSONEquals( $expectedJSON, newJSONKeyStringValueAsObject( 'foo', 'bar') );
+}
+
+function <<test.Test>> meta::json::schema::tests::newJSONKeyStringValueTest():Boolean[1]
+{
+  let expectedJSON = ^JSONKeyValue( key   = ^JSONString( value = 'foo' ),
+                                    value = ^JSONString( value = 'bar' ) );
+
+  assertJSONEquals( $expectedJSON, newJSONKeyStringValue( 'foo', 'bar') );
+
+}
+
+function <<test.Test>>  meta::json::schema::tests::newJsonRefTest():Boolean[1]
+{
+   assertJSONEquals(
+      newJSONKeyStringValue( '$ref', '#/definitions/meta::json::schema::tests::Animal'),
+      Animal -> newJsonRef() );
+
+   assertJSONEquals(
+      newJSONKeyStringValue( '$ref', '#/definitions/meta::json::schema::tests::Cat'),
+      Cat -> newJsonRef() );
+
+    assertJSONEquals(
+      newJSONKeyStringValue( '$ref', '#/definitions/meta::json::schema::tests::Being'),
+      Being -> newJsonRef() );
+
+
+   assertJSONEquals(
+      newJSONKeyStringValue( '$ref', '#/definitions/meta::json::schema::tests::AnimalType'),
+      AnimalType -> newJsonRef() );
+}
+
+
+function <<test.Test>>  meta::json::schema::tests::titleTest():Boolean[1]
+{
+ assertJSONEquals(
+       newJSONKeyStringValue('title', 'meta::json::schema::tests::Animal'),
+       Animal -> title() );
+
+ assertJSONEquals(
+       newJSONKeyStringValue('title', 'meta::json::schema::tests::Cat'),
+       Cat -> title() );
+
+
+ assertJSONEquals(
+       newJSONKeyStringValue('title', 'meta::json::schema::tests::AnimalType'),
+       AnimalType -> title() );
+}
+
+function <<test.Test>>   meta::json::schema::tests::descriptionTest():Boolean[1]
+{
+ assertJSONEquals(
+       newJSONKeyStringValue('description', 'The Being Class'),
+       Being -> description() );
+
+ assertJSONEquals(
+       newJSONKeyStringValue('description', 'The OtherInfo Class'),
+       OtherInfo -> description() );
+
+ assertJSONEquals(
+       newJSONKeyStringValue('description', 'The Animal Class'),
+       Animal -> description() );
+
+ assertJSONEquals(
+       newJSONKeyStringValue('description', 'The Cat Class'),
+       Cat -> description() );
+
+ assertEquals(
+       newJSONKeyStringValue('description', 'The AnimalType Enum'),
+       AnimalType -> description() );
+}
+
+
+function <<test.Test>>  meta::json::schema::tests::schemaTest():Boolean[1]
+{
+ assertJSONEquals(
+       newJSONKeyStringValue('$schema', 'http://json-schema.org/draft-07/schema#'),
+       Animal -> schema() );
+
+  assertJSONEquals(
+       newJSONKeyStringValue('$schema', 'http://json-schema.org/draft-07/schema#'),
+       Being -> schema() );
+
+
+ assertJSONEquals(
+       newJSONKeyStringValue('$schema', 'http://json-schema.org/draft-07/schema#'),
+       OtherInfo -> schema() );
+
+ assertJSONEquals(
+       newJSONKeyStringValue('$schema', 'http://json-schema.org/draft-07/schema#'),
+       Cat -> schema() );
+
+
+ assertJSONEquals(
+        newJSONKeyStringValue('$schema', 'http://json-schema.org/draft-07/schema#'),
+       AnimalType -> schema() );
+}
+
+function <<test.Test>> meta::json::schema::tests::propertiesTest():Boolean[1]
+{
+  let expectedJSON =
+     newJSONKeyValue( 'properties',
+            newJSONObject( [
+               newJSONKeyValue( 'vegetarian', newJSONObject( [
+                  newJSONKeyStringValue( 'type', 'boolean' ),
+                  newJSONKeyStringValue( 'description', 'Is the animal a vegetarian?' )
+               ] ) )
+            ] ) );
+
+   assertJSONEquals(
+       $expectedJSON,
+       Cat -> properties() );
+}
+
+function <<test.Test>> meta::json::schema::tests::allOfGeneralizationsTest():Boolean[1]
+{
+   let expectedJSON =
+     newJSONKeyValue( 'allOf', ^JSONArray( values = [
+            newJSONObject( [ newJSONKeyStringValue( '$ref', '#/definitions/meta::json::schema::tests::Animal' ) ] )
+     ] ) );
+
+   assertJSONEquals(
+       $expectedJSON,
+       Cat -> allOfGeneralizations() );
+}
+
+function <<test.Test>> meta::json::schema::tests::extendsGeneralizationsTest():Boolean[1]
+{
+   let expectedJSON =
+     newJSONKeyValue( 'extends', ^JSONArray( values = [
+            newJSONObject( [ newJSONKeyStringValue( '$ref', '#/definitions/meta::json::schema::tests::Animal' ) ] )
+     ] ) );
+
+   assertJSONEquals(
+       $expectedJSON,
+       Cat -> extendsGeneralizations() );
+}
+
+function <<test.Test>> meta::json::schema::tests::convertPrimitiveTypeTest():Boolean[1]
+{
+   assertEquals( 'string', String->convertPrimitiveType() );
+   assertEquals( 'string', Date->convertPrimitiveType() );
+   assertEquals( 'string', DateTime->convertPrimitiveType() );
+   assertEquals( 'string', StrictDate->convertPrimitiveType() );
+   assertEquals( 'integer', Integer->convertPrimitiveType() );
+   assertEquals( 'number', Float->convertPrimitiveType() );
+   assertEquals( 'boolean', Boolean->convertPrimitiveType() );
+}
+
+function <<test.Test>> meta::json::schema::tests::allGeneralizationsTest():Boolean[1]
+{
+   assertEquals( [ Animal, Being ]   , Cat->allGeneralizations() );
+   assertEquals( [ Being ]           , Animal->allGeneralizations() );
+}
+
+
+
+
+function <<test.Test>> meta::json::schema::tests::allNonPrimitivePropertiesOfClassTest():Boolean[1]
+{
+   assertSameElements( [ AnimalType, OtherInfo ], Cat->allNonPrimitivePropertiesOfClass() );
+}
+
+function <<test.Test>> meta::json::schema::tests::allReferencedElementsTest():Boolean[1]
+{
+    assertSameElements( [ Animal, AnimalType , Fish, Cat , Dog,  OtherInfo ], Being->allReferencedElements() );
+    assertSameElements( [ AnimalType, Being, Fish,  Cat, Dog,   OtherInfo ], Animal->allReferencedElements() );
+    assertSameElements( [ AnimalType, Animal, Being, OtherInfo ], Cat->allReferencedElements() );
+}
+
+
+function <<test.Test>> meta::json::schema::tests::isEnumTest() : Boolean[1]
+{
+   assert( AnimalType->isEnum() );
+   assertFalse( Being->isEnum() );
+   assertFalse( Animal->isEnum() );
+   assertFalse( Cat->isEnum() );
+   assertFalse( OtherInfo->isEnum() );
+}
+
+function <<test.Test>> meta::json::schema::tests::createObjectPropertyTest() : Boolean[1]
+{
+  assertJSONEquals(
+      newJSONKeyStringValue( '$ref', '#/definitions/meta::json::schema::tests::Cat'),
+      Cat -> createObjectProperty() );
+
+
+
+  assertJSONEquals(
+      newJSONKeyValue( 'oneOf',
+         ^JSONArray( values = [
+           newJSONKeyStringValueAsObject( '$ref', '#/definitions/meta::json::schema::tests::Animal'),
+           newJSONKeyStringValueAsObject( '$ref', '#/definitions/meta::json::schema::tests::Cat'),
+           newJSONKeyStringValueAsObject( '$ref', '#/definitions/meta::json::schema::tests::Dog'),
+           newJSONKeyStringValueAsObject( '$ref', '#/definitions/meta::json::schema::tests::Fish')
+
+
+         ] ) ),
+      Being -> createObjectProperty() );
+
+
+  assertJSONEquals(
+      newJSONKeyStringValue( '$ref', '#'),
+      Cat -> createObjectProperty(Cat) );
+
+  assertJSONEquals(
+      newJSONKeyValue( 'oneOf',
+         ^JSONArray( values = [
+            newJSONKeyStringValueAsObject( '$ref', '#'),
+            newJSONKeyStringValueAsObject( '$ref', '#/definitions/meta::json::schema::tests::Cat'),
+            newJSONKeyStringValueAsObject( '$ref', '#/definitions/meta::json::schema::tests::Dog'),
+            newJSONKeyStringValueAsObject( '$ref', '#/definitions/meta::json::schema::tests::Fish')
+
+         ] ) ),
+      Animal -> createObjectProperty(Animal) );
+
+
+
+}
+
+function <<test.Test>> meta::json::schema::tests::enumTest() : Boolean[1]
+{
+   let expectedJSON = newJSONKeyValue(
+      'enum',
+      ^JSONArray( values = [
+         ^JSONString( value='CAT'),
+         ^JSONString( value='DOG'),
+         ^JSONString( value='BIRD'),
+         ^JSONString( value='FISH'),
+         ^JSONString( value='HUMAN') ] ) );
+
+   assertJSONEquals( $expectedJSON, AnimalType->enum() );
+}
+
+function <<test.Test>> meta::json::schema::tests::requiredTest() : Boolean[1]
+{
+   let expectedJSON = newJSONKeyValue( 'required', ^JSONArray( values = [
+      ^JSONString( value = 'name' ),
+      ^JSONString( value = 'age' ),
+       ^JSONString( value = 'type' ),
+      ^JSONString( value = 'extra' )
+
+
+   ]));
+
+   assertJSONEquals( $expectedJSON, Animal->required() );
+}
+
+function <<test.Test>> meta::json::schema::tests::requiredEmptyTest() : Boolean[1]
+{
+   assertJSONEquals( [], NoRequiredFieldsClass->required() );
+}
+
+function <<test.Test>> meta::json::schema::tests::recursiveTest() : Boolean[1]
+{
+   let expectedJSON =
+   ^JSONObject(keyValuePairs = [
+	^JSONKeyValue( key=^JSONString( value='$schema'), value=^JSONString( value = 'http://json-schema.org/draft-07/schema#')),
+	^JSONKeyValue( key=^JSONString( value='title'), value=^JSONString( value = 'meta::json::schema::tests::RecursiveTestClass')),
+	^JSONKeyValue( key=^JSONString( value='description'), value=^JSONString( value = 'A Recursive Test Class')),
+	^JSONKeyValue( key=^JSONString( value='type'), value=^JSONString( value = 'object')),
+	^JSONKeyValue( key=^JSONString( value='properties'), value=^JSONObject(keyValuePairs = [
+	^JSONKeyValue( key=^JSONString( value='name'), value=^JSONObject(keyValuePairs = [
+	^JSONKeyValue( key=^JSONString( value='type'), value=^JSONString( value = 'string'))])),
+	^JSONKeyValue( key=^JSONString( value='children'), value=^JSONObject(keyValuePairs = [
+	^JSONKeyValue( key=^JSONString( value='type'), value=^JSONString( value = 'array')),
+	^JSONKeyValue( key=^JSONString( value='items'), value=^JSONObject(keyValuePairs = [
+	^JSONKeyValue( key=^JSONString( value='$ref'), value=^JSONString( value = '#'))]))])),
+	^JSONKeyValue( key=^JSONString( value='others'), value=^JSONObject(keyValuePairs = [
+	^JSONKeyValue( key=^JSONString( value='type'), value=^JSONString( value = 'array')),
+	^JSONKeyValue( key=^JSONString( value='items'), value=^JSONObject(keyValuePairs = [
+	^JSONKeyValue( key=^JSONString( value='$ref'), value=^JSONString( value = '#/definitions/meta::json::schema::tests::SomeOtherClass'))]))]))])),
+	^JSONKeyValue( key=^JSONString( value='required'), value=^JSONArray( values=[	^JSONString( value = 'name')])),
+	^JSONKeyValue( key=^JSONString( value='definitions'), value=^JSONObject(keyValuePairs = [
+	^JSONKeyValue( key=^JSONString( value='meta::json::schema::tests::SomeOtherClass'), value=^JSONObject(keyValuePairs = [
+	^JSONKeyValue( key=^JSONString( value='$schema'), value=^JSONString( value = 'http://json-schema.org/draft-07/schema#')),
+	^JSONKeyValue( key=^JSONString( value='title'), value=^JSONString( value = 'meta::json::schema::tests::SomeOtherClass')),
+	^JSONKeyValue( key=^JSONString( value='description'), value=^JSONString( value = 'Some Other Class')),
+	^JSONKeyValue( key=^JSONString( value='type'), value=^JSONString( value = 'object')),
+	^JSONKeyValue( key=^JSONString( value='properties'), value=^JSONObject(keyValuePairs = [
+	^JSONKeyValue( key=^JSONString( value='items'), value=^JSONObject(keyValuePairs = [
+	^JSONKeyValue( key=^JSONString( value='type'), value=^JSONString( value = 'array')),
+	^JSONKeyValue( key=^JSONString( value='items'), value=^JSONObject(keyValuePairs = [
+	^JSONKeyValue( key=^JSONString( value='$ref'), value=^JSONString( value = '#'))]))]))]))
+    ]))]))]);
+
+   assertJSONEquals($expectedJSON, RecursiveTestClass->toJSONSchema() );
+}
+
+
+function <<test.Test>>meta::json::schema::tests::definitionsTest() : Boolean[1]
+{
+   let expectedJSON =
+	^JSONKeyValue( key=^JSONString( value='definitions'), value=^JSONObject(keyValuePairs = [
+
+    ^JSONKeyValue( key=^JSONString( value='meta::json::schema::tests::AnimalType'), value=^JSONObject(keyValuePairs = [
+	^JSONKeyValue( key=^JSONString( value='$schema'), value=^JSONString( value = 'http://json-schema.org/draft-07/schema#')),
+	^JSONKeyValue( key=^JSONString( value='title'), value=^JSONString( value = 'meta::json::schema::tests::AnimalType')),
+	^JSONKeyValue( key=^JSONString( value='description'), value=^JSONString( value = 'The AnimalType Enum')),
+
+	^JSONKeyValue( key=^JSONString( value='enum'), value=^JSONArray( values=[	^JSONString( value = 'CAT'),
+	^JSONString( value = 'DOG'),
+	^JSONString( value = 'BIRD'),
+	^JSONString( value = 'FISH'),
+	^JSONString( value = 'HUMAN')])),
+   ^JSONKeyValue( key=^JSONString( value='type'), value=^JSONString( value = 'string'))
+    ]
+
+              )),
+
+    ^JSONKeyValue( key=^JSONString( value='meta::json::schema::tests::Being'), value=^JSONObject(keyValuePairs = [
+	^JSONKeyValue( key=^JSONString( value='$schema'), value=^JSONString( value = 'http://json-schema.org/draft-07/schema#')),
+	^JSONKeyValue( key=^JSONString( value='title'), value=^JSONString( value = 'meta::json::schema::tests::Being')),
+	^JSONKeyValue( key=^JSONString( value='description'), value=^JSONString( value = 'The Being Class')),
+	^JSONKeyValue( key=^JSONString( value='type'), value=^JSONString( value = 'object')),
+	^JSONKeyValue( key=^JSONString( value='properties'), value=^JSONObject(keyValuePairs = [
+	^JSONKeyValue( key=^JSONString( value='omg'), value=^JSONObject(keyValuePairs = [
+	^JSONKeyValue( key=^JSONString( value='type'), value=^JSONString( value = 'string'))]))])),
+	^JSONKeyValue( key=^JSONString( value='required'), value=^JSONArray( values=[	^JSONString( value = 'omg')]))])),
+
+
+    ^JSONKeyValue( key=^JSONString( value='meta::json::schema::tests::Cat'), value=^JSONObject(keyValuePairs = [
+	^JSONKeyValue( key=^JSONString( value='$schema'), value=^JSONString( value = 'http://json-schema.org/draft-07/schema#')),
+	^JSONKeyValue( key=^JSONString( value='title'), value=^JSONString( value = 'meta::json::schema::tests::Cat')),
+	^JSONKeyValue( key=^JSONString( value='description'), value=^JSONString( value = 'The Cat Class')),
+	^JSONKeyValue( key=^JSONString( value='allOf'), value=^JSONArray( values=[	^JSONObject(keyValuePairs = [
+	^JSONKeyValue( key=^JSONString( value='$ref'), value=^JSONString( value = '#/definitions/meta::json::schema::tests::Animal'))])])),
+	^JSONKeyValue( key=^JSONString( value='type'), value=^JSONString( value = 'object')),
+	^JSONKeyValue( key=^JSONString( value='properties'), value=^JSONObject(keyValuePairs = [
+	^JSONKeyValue( key=^JSONString( value='vegetarian'), value=^JSONObject(keyValuePairs = [
+	^JSONKeyValue( key=^JSONString( value='type'), value=^JSONString( value = 'boolean')),
+	^JSONKeyValue( key=^JSONString( value='description'), value=^JSONString( value = 'Is the animal a vegetarian?'))]))])),
+	^JSONKeyValue( key=^JSONString( value='required'), value=^JSONArray( values=[	^JSONString( value = 'vegetarian')]))])),
+
+    ^JSONKeyValue( key=^JSONString( value='meta::json::schema::tests::Dog'), value=^JSONObject(keyValuePairs = [
+	^JSONKeyValue( key=^JSONString( value='$schema'), value=^JSONString( value = 'http://json-schema.org/draft-07/schema#')),
+	^JSONKeyValue( key=^JSONString( value='title'), value=^JSONString( value = 'meta::json::schema::tests::Dog')),
+	^JSONKeyValue( key=^JSONString( value='description'), value=^JSONString( value = 'The Dog Class')),
+	^JSONKeyValue( key=^JSONString( value='allOf'), value=^JSONArray( values=[	^JSONObject(keyValuePairs = [
+	^JSONKeyValue( key=^JSONString( value='$ref'), value=^JSONString( value = '#/definitions/meta::json::schema::tests::Animal'))])])),
+	^JSONKeyValue( key=^JSONString( value='type'), value=^JSONString( value = 'object')),
+	^JSONKeyValue( key=^JSONString( value='properties'), value=^JSONObject(keyValuePairs = [
+	^JSONKeyValue( key=^JSONString( value='hasBark'), value=^JSONObject(keyValuePairs = [
+	^JSONKeyValue( key=^JSONString( value='type'), value=^JSONString( value = 'boolean')),
+	^JSONKeyValue( key=^JSONString( value='description'), value=^JSONString( value = 'Does the dog bark?'))]))])),
+	^JSONKeyValue( key=^JSONString( value='required'), value=^JSONArray( values=[	^JSONString( value = 'hasBark')]))])),
+
+    ^JSONKeyValue( key=^JSONString( value='meta::json::schema::tests::Fish'), value=^JSONObject(keyValuePairs = [
+	^JSONKeyValue( key=^JSONString( value='$schema'), value=^JSONString( value = 'http://json-schema.org/draft-07/schema#')),
+	^JSONKeyValue( key=^JSONString( value='title'), value=^JSONString( value = 'meta::json::schema::tests::Fish')),
+	^JSONKeyValue( key=^JSONString( value='description'), value=^JSONString( value = 'The Fish Class')),
+	^JSONKeyValue( key=^JSONString( value='allOf'), value=^JSONArray( values=[	^JSONObject(keyValuePairs = [
+	^JSONKeyValue( key=^JSONString( value='$ref'), value=^JSONString( value = '#/definitions/meta::json::schema::tests::Animal'))])])),
+	^JSONKeyValue( key=^JSONString( value='type'), value=^JSONString( value = 'object'))
+      ])),
+
+    ^JSONKeyValue( key=^JSONString( value='meta::json::schema::tests::OtherInfo'), value=^JSONObject(keyValuePairs = [
+	^JSONKeyValue( key=^JSONString( value='$schema'), value=^JSONString( value = 'http://json-schema.org/draft-07/schema#')),
+	^JSONKeyValue( key=^JSONString( value='title'), value=^JSONString( value = 'meta::json::schema::tests::OtherInfo')),
+	^JSONKeyValue( key=^JSONString( value='description'), value=^JSONString( value = 'The OtherInfo Class')),
+	^JSONKeyValue( key=^JSONString( value='type'), value=^JSONString( value = 'object')),
+	^JSONKeyValue( key=^JSONString( value='properties'), value=^JSONObject(keyValuePairs = [
+	^JSONKeyValue( key=^JSONString( value='info'), value=^JSONObject(keyValuePairs = [
+	^JSONKeyValue( key=^JSONString( value='type'), value=^JSONString( value = 'string'))]))])),
+	^JSONKeyValue( key=^JSONString( value='required'), value=^JSONArray( values=[	^JSONString( value = 'info')]))]))]));
+
+    assertJSONEquals( $expectedJSON, Animal->definitions());
+}
+
+
+function <<test.Test, test.ExcludeAlloy>> meta::json::schema::tests::toJSONSchemaTest():Boolean[1]
+{
+   let expectedJSON =
+   ^JSONObject(keyValuePairs = [
+	^JSONKeyValue( key=^JSONString( value='$schema'), value=^JSONString( value = 'http://json-schema.org/draft-07/schema#')),
+	^JSONKeyValue( key=^JSONString( value='title'), value=^JSONString( value = 'meta::json::schema::tests::Cat')),
+	^JSONKeyValue( key=^JSONString( value='description'), value=^JSONString( value = 'The Cat Class')),
+	^JSONKeyValue( key=^JSONString( value='allOf'), value=^JSONArray( values=[	^JSONObject(keyValuePairs = [
+	^JSONKeyValue( key=^JSONString( value='$ref'), value=^JSONString( value = '#/definitions/meta::json::schema::tests::Animal'))])])),
+	^JSONKeyValue( key=^JSONString( value='type'), value=^JSONString( value = 'object')),
+	^JSONKeyValue( key=^JSONString( value='properties'), value=^JSONObject(keyValuePairs = [
+	^JSONKeyValue( key=^JSONString( value='vegetarian'), value=^JSONObject(keyValuePairs = [
+	^JSONKeyValue( key=^JSONString( value='type'), value=^JSONString( value = 'boolean')),
+	^JSONKeyValue( key=^JSONString( value='description'), value=^JSONString( value = 'Is the animal a vegetarian?'))]))])),
+	^JSONKeyValue( key=^JSONString( value='required'), value=^JSONArray( values=[	^JSONString( value = 'vegetarian')])),
+	^JSONKeyValue( key=^JSONString( value='definitions'), value=^JSONObject(keyValuePairs = [
+
+    ^JSONKeyValue( key=^JSONString( value='meta::json::schema::tests::AnimalType'), value=^JSONObject(keyValuePairs = [
+	^JSONKeyValue( key=^JSONString( value='$schema'), value=^JSONString( value = 'http://json-schema.org/draft-07/schema#')),
+	^JSONKeyValue( key=^JSONString( value='title'), value=^JSONString( value = 'meta::json::schema::tests::AnimalType')),
+	^JSONKeyValue( key=^JSONString( value='description'), value=^JSONString( value = 'The AnimalType Enum')),
+
+	^JSONKeyValue( key=^JSONString( value='enum'), value=^JSONArray( values=[	^JSONString( value = 'CAT'),
+	^JSONString( value = 'DOG'),
+	^JSONString( value = 'BIRD'),
+	^JSONString( value = 'FISH'),
+	^JSONString( value = 'HUMAN')])),
+    ^JSONKeyValue( key=^JSONString( value='type'), value=^JSONString( value = 'string'))])),
+
+
+
+    ^JSONKeyValue( key=^JSONString( value='meta::json::schema::tests::Being'), value=^JSONObject(keyValuePairs = [
+	^JSONKeyValue( key=^JSONString( value='$schema'), value=^JSONString( value = 'http://json-schema.org/draft-07/schema#')),
+	^JSONKeyValue( key=^JSONString( value='title'), value=^JSONString( value = 'meta::json::schema::tests::Being')),
+	^JSONKeyValue( key=^JSONString( value='description'), value=^JSONString( value = 'The Being Class')),
+	^JSONKeyValue( key=^JSONString( value='type'), value=^JSONString( value = 'object')),
+	^JSONKeyValue( key=^JSONString( value='properties'), value=^JSONObject(keyValuePairs = [
+	^JSONKeyValue( key=^JSONString( value='omg'), value=^JSONObject(keyValuePairs = [
+	^JSONKeyValue( key=^JSONString( value='type'), value=^JSONString( value = 'string'))]))])),
+	^JSONKeyValue( key=^JSONString( value='required'), value=^JSONArray( values=[	^JSONString( value = 'omg')]))])),
+
+
+    ^JSONKeyValue( key=^JSONString( value='meta::json::schema::tests::Animal'), value=^JSONObject(keyValuePairs = [
+	^JSONKeyValue( key=^JSONString( value='$schema'), value=^JSONString( value = 'http://json-schema.org/draft-07/schema#')),
+	^JSONKeyValue( key=^JSONString( value='title'), value=^JSONString( value = 'meta::json::schema::tests::Animal')),
+	^JSONKeyValue( key=^JSONString( value='description'), value=^JSONString( value = 'The Animal Class')),
+	^JSONKeyValue( key=^JSONString( value='allOf'), value=^JSONArray( values=[	^JSONObject(keyValuePairs = [
+	^JSONKeyValue( key=^JSONString( value='$ref'), value=^JSONString( value = '#/definitions/meta::json::schema::tests::Being'))])])),
+	^JSONKeyValue( key=^JSONString( value='type'), value=^JSONString( value = 'object')),
+	^JSONKeyValue( key=^JSONString( value='properties'), value=^JSONObject(keyValuePairs = [
+	^JSONKeyValue( key=^JSONString( value='name'), value=^JSONObject(keyValuePairs = [
+	^JSONKeyValue( key=^JSONString( value='type'), value=^JSONString( value = 'string'))])),
+	^JSONKeyValue( key=^JSONString( value='age'), value=^JSONObject(keyValuePairs = [
+	^JSONKeyValue( key=^JSONString( value='type'), value=^JSONString( value = 'integer'))])),
+	^JSONKeyValue( key=^JSONString( value='type'), value=^JSONObject(keyValuePairs = [
+	^JSONKeyValue( key=^JSONString( value='$ref'), value=^JSONString( value = '#/definitions/meta::json::schema::tests::AnimalType'))])),
+	^JSONKeyValue( key=^JSONString( value='aliases'), value=^JSONObject(keyValuePairs = [
+	^JSONKeyValue( key=^JSONString( value='type'), value=^JSONString( value = 'array')),
+	^JSONKeyValue( key=^JSONString( value='items'), value=^JSONObject(keyValuePairs = [
+	^JSONKeyValue( key=^JSONString( value='type'), value=^JSONString( value = 'string'))]))])),
+	^JSONKeyValue( key=^JSONString( value='extra'), value=^JSONObject(keyValuePairs = [
+	^JSONKeyValue( key=^JSONString( value='type'), value=^JSONString( value = 'array')),
+	^JSONKeyValue( key=^JSONString( value='items'), value=^JSONObject(keyValuePairs = [
+	^JSONKeyValue( key=^JSONString( value='$ref'), value=^JSONString( value = '#/definitions/meta::json::schema::tests::OtherInfo'))])),
+	^JSONKeyValue( key=^JSONString( value='minItems'), value=^JSONNumber( value = 4)),
+	^JSONKeyValue( key=^JSONString( value='maxItems'), value=^JSONNumber( value = 4))]))])),
+	^JSONKeyValue( key=^JSONString( value='required'), value=^JSONArray( values=[	^JSONString( value = 'name'),
+	^JSONString( value = 'age'),^JSONString( value = 'type'),
+	^JSONString( value = 'extra')]))])),
+
+
+
+    ^JSONKeyValue( key=^JSONString( value='meta::json::schema::tests::OtherInfo'), value=^JSONObject(keyValuePairs = [
+	^JSONKeyValue( key=^JSONString( value='$schema'), value=^JSONString( value = 'http://json-schema.org/draft-07/schema#')),
+	^JSONKeyValue( key=^JSONString( value='title'), value=^JSONString( value = 'meta::json::schema::tests::OtherInfo')),
+	^JSONKeyValue( key=^JSONString( value='description'), value=^JSONString( value = 'The OtherInfo Class')),
+	^JSONKeyValue( key=^JSONString( value='type'), value=^JSONString( value = 'object')),
+	^JSONKeyValue( key=^JSONString( value='properties'), value=^JSONObject(keyValuePairs = [
+	^JSONKeyValue( key=^JSONString( value='info'), value=^JSONObject(keyValuePairs = [
+	^JSONKeyValue( key=^JSONString( value='type'), value=^JSONString( value = 'string'))]))])),
+	^JSONKeyValue( key=^JSONString( value='required'), value=^JSONArray( values=[	^JSONString( value = 'info')]))]))]))]);
+
+  assert(jsonEquivalent( $expectedJSON, Cat->toJSONSchema() ));
+}
+
+function <<access.private>> meta::json::schema::tests::assertJSONEquals( expected:JSONObject[0..1], actual:JSONObject[0..1] ):Boolean[1]
+{
+   let actualJsonString    = if( $actual->isEmpty(),   | '', | $actual->toOne()->toPrettyJSONString()   );
+   let expectedJsonString  = if( $expected->isEmpty(), | '', | $expected->toOne()->toPrettyJSONString() );
+
+   assertEquals( $expectedJsonString, $actualJsonString );
+}
+
+function <<access.private>> meta::json::schema::tests::assertJSONEquals( expected:JSONKeyValue[0..1], actual:JSONKeyValue[0..1] ):Boolean[1]
+{
+   let actualJson    = if( $actual->isEmpty(),   | [], | $actual->toOne()->newJSONObject()   );
+   let expectedJson  = if( $expected->isEmpty(), | [], | $expected->toOne()->newJSONObject() );
+
+   assertJSONEquals(  $expectedJson, $actualJson );
+}
+
+
+function <<test.Test>> {serverVersion.start='v1_20_0'} meta::json::schema::generation::tests::toJSONSchemaTest():Boolean[1]
+{
+    let jsonSchema = toJSONSchema(^JSONSchemaConfig(class='meta::json::schema::tests::Cat'));
+    assertFalse( $jsonSchema->isEmpty() );
+    assertSize($jsonSchema,1);
+   let expectedjson = '{\n' +
+        '  "allOf": [\n' +
+        '    {\n' +
+        '      "$ref": "#\\/definitions\\/meta::json::schema::tests::Animal"\n' +
+        '    }\n' +
+        '  ],\n' +
+        '  "$schema": "http:\\/\\/json-schema.org\\/draft-07\\/schema#",\n' +
+        '  "description": "The Cat Class",\n' +
+        '  "title": "meta::json::schema::tests::Cat",\n' +
+        '  "type": "object",\n' +
+        '  "definitions":   {\n' +
+        '    "meta::json::schema::tests::AnimalType":     {\n' +
+        '      "$schema": "http:\\/\\/json-schema.org\\/draft-07\\/schema#",\n' +
+        '      "description": "The AnimalType Enum",\n' +
+        '      "title": "meta::json::schema::tests::AnimalType",\n' +
+        '      "type": "string",\n' +
+        '      "enum": [\n' +
+        '"CAT",\n' +
+        '"DOG",\n' +
+        '"BIRD",\n' +
+        '"FISH",\n' +
+        '"HUMAN"\n' +
+        '      ]\n' +
+        '    },\n' +
+        '    "meta::json::schema::tests::Animal":     {\n' +
+        '      "allOf": [\n' +
+        '        {\n' +
+        '          "$ref": "#\\/definitions\\/meta::json::schema::tests::Being"\n' +
+        '        }\n' +
+        '      ],\n' +
+        '      "$schema": "http:\\/\\/json-schema.org\\/draft-07\\/schema#",\n' +
+        '      "description": "The Animal Class",\n' +
+        '      "title": "meta::json::schema::tests::Animal",\n' +
+        '      "type": "object",\n' +
+        '      "properties":       {\n' +
+        '        "aliases":         {\n' +
+        '          "type": "array",\n' +
+        '          "items":           {\n' +
+        '            "type": "string"\n' +
+        '          }\n' +
+        '        },\n' +
+        '        "extra":         {\n' +
+        '          "minItems": 4,\n' +
+        '          "maxItems": 4,\n' +
+        '          "type": "array",\n' +
+        '          "items":           {\n' +
+        '            "$ref": "#\\/definitions\\/meta::json::schema::tests::OtherInfo"\n' +
+        '          }\n' +
+        '        },\n' +
+        '        "name":         {\n' +
+        '          "type": "string"\n' +
+        '        },\n' +
+        '        "type":         {\n' +
+        '          "$ref": "#\\/definitions\\/meta::json::schema::tests::AnimalType"\n' +
+        '        },\n' +
+        '        "age":         {\n' +
+        '          "type": "integer"\n' +
+        '        }\n' +
+        '      },\n' +
+        '      "required": [\n' +
+        '"name",\n' +
+        '"age",\n' +
+        '"type",\n' +
+        '"extra"\n' +
+        '     ]\n' +
+        '    },\n' +
+        '    "meta::json::schema::tests::OtherInfo":     {\n' +
+        '      "$schema": "http:\\/\\/json-schema.org\\/draft-07\\/schema#",\n' +
+        '      "description": "The OtherInfo Class",\n' +
+        '      "title": "meta::json::schema::tests::OtherInfo",\n' +
+        '      "type": "object",\n' +
+        '      "properties":       {\n' +
+        '        "info":         {\n' +
+        '          "type": "string"\n' +
+        '        }\n' +
+        '      },\n' +
+        '      "required": [\n' +
+        '"info"\n' +
+        '      ]\n' +
+        '    },\n' +
+        '    "meta::json::schema::tests::Being":     {\n' +
+        '      "$schema": "http:\\/\\/json-schema.org\\/draft-07\\/schema#",\n' +
+        '      "description": "The Being Class",\n' +
+        '      "title": "meta::json::schema::tests::Being",\n' +
+        '      "type": "object",\n' +
+        '      "properties":       {\n' +
+        '        "omg":         {\n' +
+        '          "type": "string"\n' +
+        '        }\n' +
+        '      },\n' +
+        '      "required": [\n' +
+        '"omg"\n' +
+        '      ]\n' +
+        '    }\n' +
+        '  },\n' +
+        '  "properties":   {\n' +
+        '    "vegetarian":     {\n' +
+        '      "description": "Is the animal a vegetarian?",\n' +
+        '      "type": "boolean"\n' +
+        '    }\n' +
+        '  },\n' +
+        '  "required": [\n' +
+        '"vegetarian"\n' +
+        '  ]\n' +
+        '}';
+   assert(jsonEquivalent($expectedjson->meta::json::parseJSON(),$jsonSchema->at(0).content->meta::json::parseJSON()));
+}
+
+function <<test.Test>> {serverVersion.start='v1_20_0'} meta::json::schema::generation::tests::toJSONSchemaTestAnyOf():Boolean[1]
+{
+    let jsonSchema = toJSONSchema(^JSONSchemaConfig(class='meta::json::schema::tests::Cat',generateAnyOfSubType=false));
+    assertFalse( $jsonSchema->isEmpty() );
+    assertSize($jsonSchema,1);
+    let expectedjson=  '{\n' +
+        '  "allOf": [\n' +
+        '    {\n' +
+        '      "$ref": "#\\/definitions\\/meta::json::schema::tests::Animal"\n' +
+        '    }\n' +
+        '  ],\n' +
+        '  "$schema": "http:\\/\\/json-schema.org\\/draft-07\\/schema#",\n' +
+        '  "description": "The Cat Class",\n' +
+        '  "title": "meta::json::schema::tests::Cat",\n' +
+        '  "type": "object",\n' +
+        '  "definitions":   {\n' +
+        '    "meta::json::schema::tests::AnimalType":     {\n' +
+        '      "$schema": "http:\\/\\/json-schema.org\\/draft-07\\/schema#",\n' +
+        '      "description": "The AnimalType Enum",\n' +
+        '      "title": "meta::json::schema::tests::AnimalType",\n' +
+        '      "type": "string",\n' +
+        '      "enum": [\n' +
+        '"CAT",\n' +
+        '"DOG",\n' +
+        '"BIRD",\n' +
+        '"FISH",\n' +
+        '"HUMAN"\n' +
+        '      ]\n' +
+        '    },\n' +
+        '    "meta::json::schema::tests::Animal":     {\n' +
+        '      "allOf": [\n' +
+        '        {\n' +
+        '          "$ref": "#\\/definitions\\/meta::json::schema::tests::Being"\n' +
+        '        }\n' +
+        '      ],\n' +
+        '      "$schema": "http:\\/\\/json-schema.org\\/draft-07\\/schema#",\n' +
+        '      "description": "The Animal Class",\n' +
+        '      "title": "meta::json::schema::tests::Animal",\n' +
+        '      "type": "object",\n' +
+        '      "properties":       {\n' +
+        '        "aliases":         {\n' +
+        '          "type": "array",\n' +
+        '          "items":           {\n' +
+        '            "type": "string"\n' +
+        '          }\n' +
+        '        },\n' +
+        '        "extra":         {\n' +
+        '          "minItems": 4,\n' +
+        '          "maxItems": 4,\n' +
+        '          "type": "array",\n' +
+        '          "items":           {\n' +
+        '            "$ref": "#\\/definitions\\/meta::json::schema::tests::OtherInfo"\n' +
+        '          }\n' +
+        '        },\n' +
+        '        "name":         {\n' +
+        '          "type": "string"\n' +
+        '        },\n' +
+        '        "type":         {\n' +
+        '          "$ref": "#\\/definitions\\/meta::json::schema::tests::AnimalType"\n' +
+        '        },\n' +
+        '        "age":         {\n' +
+        '          "type": "integer"\n' +
+        '        }\n' +
+        '      },\n' +
+        '      "required": [\n' +
+        '"name",\n' +
+        '"age",\n' +
+        '"type",\n' +
+        '"extra"\n' +
+        '      ]\n'+
+        '    },\n' +
+        '    "meta::json::schema::tests::OtherInfo":     {\n' +
+        '      "$schema": "http:\\/\\/json-schema.org\\/draft-07\\/schema#",\n' +
+        '      "description": "The OtherInfo Class",\n' +
+        '      "title": "meta::json::schema::tests::OtherInfo",\n' +
+        '      "type": "object",\n' +
+        '      "properties":       {\n' +
+        '        "info":         {\n' +
+        '          "type": "string"\n' +
+        '        }\n' +
+        '      },\n' +
+        '      "required": [\n' +
+        '"info"\n' +
+        '      ]\n' +
+        '    },\n' +
+        '    "meta::json::schema::tests::Being":     {\n' +
+        '      "$schema": "http:\\/\\/json-schema.org\\/draft-07\\/schema#",\n' +
+        '      "description": "The Being Class",\n' +
+        '      "title": "meta::json::schema::tests::Being",\n' +
+        '      "type": "object",\n' +
+        '      "properties":       {\n' +
+        '        "omg":         {\n' +
+        '          "type": "string"\n' +
+        '        }\n' +
+        '      },\n' +
+        '      "required": [\n' +
+        '"omg"\n' +
+        '      ]\n' +
+        '    }\n' +
+        '  },\n' +
+        '  "properties":   {\n' +
+        '    "vegetarian":     {\n' +
+        '      "description": "Is the animal a vegetarian?",\n' +
+        '      "type": "boolean"\n' +
+        '    }\n' +
+        '  },\n' +
+        '  "required": [\n' +
+        '"vegetarian"\n' +
+        '  ]\n' +
+        '}';
+    assertEquals($expectedjson->meta::json::parseJSON()->toPrettyJSONString(),$jsonSchema->at(0).content->meta::json::parseJSON()->toPrettyJSONString());
+}
+
+function <<test.Test>> { meta::pure::executionPlan::profiles::serverVersion.start='v1_17_0'}  meta::json::schema::generation::tests::testProfile():Boolean[1]
+{
+    let jsonSchema = toJSONSchema(^JSONSchemaConfig(class='meta::json::schema::tests::ClassWithProfile',
+                                                    includeAllRelatedTypes=false  ));
+    assertFalse( $jsonSchema->isEmpty() );
+    assertSize($jsonSchema,1);
+
+    let expectedjson= '{\n' +
+        '  "allOf": [\n' +
+        '    {\n' +
+        '      "$ref": "ClassWithProfileInterface.json"\n' +
+        '    }\n' +
+        '  ],\n' +
+        '  "javaInterfaces": [\n' +
+        '"com.supertype"\n' +
+        '  ],\n' +
+        '  "$schema": "http:\\/\\/json-schema.org\\/draft-07\\/schema#",\n' +
+        '  "description": "Class With Profile",\n' +
+        '  "additionalProperties": false,\n' +
+        '  "title": "meta::json::schema::tests::ClassWithProfile",\n' +
+        '  "type": "object",\n' +
+        '  "properties":   {\n' +
+        '    "pets":     {\n' +
+        '      "$ref": "jsonSchemaEnum.json"\n' +
+        '    },\n' +
+        '    "interfaceProperty":     {\n' +
+        '      "oneOf": [\n' +
+        '        {\n' +
+        '          "$ref": "ClassWithProfile.json"\n' +
+        '        },\n' +
+   '        {\n' +
+        '          "$ref": "ClassWithProfileInterface.json"\n' +
+        '        }\n' +
+        '      ]\n' +
+        '    },\n' +
+        '    "size":     {\n' +
+        '      "default": 0.0,\n' +
+        '      "description": "number defaulted to zero",\n' +
+        '      "type": "number",\n' +
+        '      "example": 1236540789000125.0\n' +
+        '    },\n' +
+        '    "bool":     {\n' +
+        '      "default": true,\n' +
+        '      "type": "boolean",\n' +
+        '      "example": false\n' +
+        '    },\n' +
+        '    "abstractClass":     {\n' +
+        '      "oneOf": [\n' +
+        '        {\n' +
+        '          "$ref": "Animal.json"\n' +
+        '        },\n' +
+        '        {\n' +
+        '          "$ref": "Cat.json"\n' +
+        '        },\n' +
+        '        {\n' +
+        '          "$ref": "Dog.json"\n' +
+        '        },\n' +
+        '        {\n' +
+        '          "$ref": "Fish.json"\n' +
+        '        }\n'  +
+
+
+        '      ]\n' +
+        '    },\n' +
+        '    "name":     {\n' +
+        '      "default": "test",\n' +
+        '      "type": "string",\n' +
+        '      "example": "abc"\n' +
+        '    },\n' +
+        '    "int":     {\n' +
+        '      "default": 0,\n' +
+        '      "description": "integer defaulted to zero",\n' +
+        '      "type": "integer",\n' +
+        '      "example": 1236540789000125\n' +
+        '    }\n' +
+        '  },\n' +
+        '  "required": [\n' +
+        '"bool",\n' +
+        '"pets",\n' +
+        '"abstractClass"\n' +
+        '  ]\n' +
+        '}';
+
+
+    assertEquals($expectedjson->meta::json::parseJSON()->toCompactJSONString(),$jsonSchema->at(0).content->meta::json::parseJSON()->toCompactJSONString());
+
+      let jsonSchemaEnum = toJSONSchema(^JSONSchemaConfig(class='meta::json::schema::tests::jsonSchemaEnum',
+                                                      includeAllRelatedTypes=false  ));
+
+
+     let expectedjsonEnum= '{\n' +
+        '  "default": "Guinea Pig",\n' +
+        '  "$schema": "http:\\/\\/json-schema.org\\/draft-07\\/schema#",\n' +
+        '  "description": "Enum with Profile",\n' +
+        '  "title": "meta::json::schema::tests::jsonSchemaEnum",\n' +
+        '  "type": "string",\n' +
+        '  "enum": [\n' +
+        '"Dog",\n' +
+        '"Cat",\n' +
+        '"Guinea Pig"\n' +
+        '  ]\n' +
+        '}';
+     assertEquals($expectedjsonEnum->meta::json::parseJSON()->toCompactJSONString(),$jsonSchemaEnum->at(0).content->meta::json::parseJSON()->toCompactJSONString());
+
+
+}
+
+
+function <<test.Test>>  meta::json::schema::generation::tests::testInterface():Boolean[1]
+{
+    let jsonSchema = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[meta::json::schema::tests::ClassWithProfileInterface,meta::json::schema::tests::ClassWithProfile],
+                                                    includeAllRelatedTypes = false  ));
+    assertSize($jsonSchema,2);
+    let expectedjson=  '{\n' +
+        '  "$schema": "http:\\/\\/json-schema.org\\/draft-07\\/schema#",\n' +
+        '  "additionalProperties": false,\n' +
+        '  "title": "meta::json::schema::tests::ClassWithProfileInterface",\n' +
+        '  "type": "object",\n' +
+        '  "properties":   {\n' +
+        '    "classType":     {\n' +
+        '      "type": "string"\n' +
+        '    }\n' +
+        '  },\n' +
+        '  "required": [\n' +
+        '"classType"\n' +
+        '  ],\n' +
+        '  "javaType": "com.supertype"\n' +
+        '}\n';
+    assertEquals($expectedjson->meta::json::parseJSON()->toCompactJSONString(),$jsonSchema->filter(f|$f.fileName=='meta/json/schema/tests/ClassWithProfileInterface.json').content->toOne()->meta::json::parseJSON()->toCompactJSONString());
+}
+
+function <<test.Test>>  meta::json::schema::generation::tests::toJSONSchemaWithConstraint():Boolean[1]
+{
+    let jsonSchema = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[ meta::json::schema::tests::constraints],
+                                                           useConstraints = true ,includeAllRelatedTypes=false,generateConstraintFunctionSchemas=true ));
+    assertFalse( $jsonSchema->isEmpty() );
+    let expectedjson=  '{\n' +
+        '  "$schema": "http:\\/\\/json-schema.org\\/draft-07\\/schema#",\n' +
+        '  "description": "Class With Constraints",\n' +
+        '  "title": "meta::json::schema::tests::constraints::ClassWithConstraints",\n' +
+        '  "type": "object",\n' +
+        '  "properties":   {\n' +
+        '    "requiredMax":     {\n' +
+        '      "minItems": 1,\n' +
+        '      "writeOnly": true,\n' +
+        '      "maxItems": 20,\n' +
+        '      "type": "array",\n' +
+        '      "items":       {\n' +
+        '        "type": "integer"\n' +
+        '      }\n' +
+        '    },\n' +
+        '    "constant":     {\n' +
+        '      "type": "string",\n' +
+        '      "enum": [\n' +
+        '"constantValue"\n' +
+        '      ]\n' +
+        '    },\n' +
+        '    "inLine":     {\n' +
+        '      "anyOf": [\n' +
+        '        {\n' +
+        '          "type": "string"\n' +
+        '        },\n' +
+        '        {\n' +
+        '          "type": "number"\n' +
+        '        }\n' +
+        '      ]\n' +
+        '    },\n' +
+        '    "manyNumeric":     {\n' +
+        '      "type": "array",\n' +
+        '      "items":       {\n' +
+        '        "type": "integer"\n' +
+        '      }\n' +
+        '    },\n' +
+        '    "uuidProperty":     {\n' +
+        '      "format": "uuid",\n' +
+        '      "type": "string"\n' +
+        '    },\n' +
+        '    "simple":     {\n' +
+        '      "$ref": "constraintFunctionSimpleNumber.json"\n' +
+        '    },\n' +
+        '    "forcedArrayRequired":     {\n' +
+        '      "maxItems": 1,\n' +
+        '      "type": "array",\n' +
+        '      "items":       {\n' +
+        '        "type": "string"\n' +
+        '      }\n' +
+        '    },\n' +
+        '    "forcedArrayOptional":     {\n' +
+        '      "maxItems": 1,\n' +
+        '      "type": "array",\n' +
+        '      "items":       {\n' +
+        '        "type": "string"\n' +
+        '      }\n' +
+        '    },\n' +
+        '    "objectType": {\n' +
+            '      "type": "object"\n' +
+      +     '    }, '+
+        '    "manyString":     {\n' +
+        '      "uniqueItems": true,\n' +
+        '      "type": "array",\n' +
+        '      "items":       {\n' +
+        '        "minLength": 4,\n' +
+        '        "$ref": "constraintRegEXFn.json",\n' +
+        '        "maxLength": 10\n' +
+        '      }\n' +
+        '    },\n' +
+        '    "number":     {\n' +
+        '      "anyOf": [\n' +
+        '        {\n' +
+        '          "exclusiveMaximum": 15,\n' +
+        '          "exclusiveMinimum": 10\n' +
+        '        },\n' +
+        '        {\n' +
+        '          "maximum": 2,\n' +
+        '          "minimum": 0\n' +
+        '        }\n' +
+        '      ],\n' +
+        '      "readOnly": true,\n' +
+        '      "type": "number"\n' +
+        '    },\n' +
+        '    "dateOrString":     {\n' +
+        '      "writeOnly": true,\n' +
+        '      "anyOf": [\n' +
+        '        {\n' +
+        '          "type": "string"\n' +
+        '        },\n' +
+        '        {\n' +
+        '          "format": "date",\n' +
+        '          "type": "string"\n' +
+        '        }\n' +
+        '      ]\n' +
+        '    },\n' +
+        '    "complex":     {\n' +
+        '      "minLength": 4,\n' +
+        '      "$ref": "constraintFunctionComplex.json"\n' +
+        '    },\n' +
+        '    "requiredMinItem":     {\n' +
+        '      "minItems": 3,\n' +
+        '      "maxItems": 20,\n' +
+        '      "type": "array",\n' +
+        '      "items":       {\n' +
+        '        "type": "integer"\n' +
+        '      }\n' +
+        '    },\n' +
+        '    "duplicateConstraint":     {\n' +
+        '      "type": "string"\n' +
+        '    },\n' +
+        '    "optionalMax":     {\n' +
+        '      "maxItems": 5,\n' +
+        '      "type": "array",\n' +
+        '      "items":       {\n' +
+        '        "type": "integer"\n' +
+        '      }\n' +
+        '    }\n' +
+        '  },\n' +
+        '  "required": [\n' +
+        '"number",\n' +
+        '"requiredMax",\n' +
+        '"requiredMinItem"\n' +
+        '  ]\n' +
+        '}';
+   
+  let constraintClassSchema = $jsonSchema->filter(f|$f.fileName=='meta/json/schema/tests/constraints/ClassWithConstraints.json').content->toOne()->meta::json::parseJSON()->toCompactJSONString(); 
+   assertEquals($expectedjson->meta::json::parseJSON()->toCompactJSONString(),$constraintClassSchema);
+
+}
+
+
+function <<test.Test>>  meta::json::schema::generation::tests::testFunctionSchema():Boolean[1]
+{
+    let jsonSchema = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[meta::json::schema::tests::constraints::constraintFunctionSimpleNumber_Any_$0_1$__Boolean_1_,meta::json::schema::tests::ClassWithFunctionReference,meta::json::schema::tests::constraints::constraintFunctionComplex_Any_$0_1$__Boolean_1_],
+                                                         useConstraints = true ,includeAllRelatedTypes=false,generateConstraintFunctionSchemas=true ));
+    assertFalse( $jsonSchema->isEmpty() );
+    assertSize($jsonSchema,3);
+
+      let actualFunctionSchema = $jsonSchema->filter(f|$f.fileName=='meta/json/schema/tests/constraints/constraintFunctionSimpleNumber.json').content->toOne()->meta::json::parseJSON()->toCompactJSONString();
+
+
+    let expectedFunctionSchemajson=  '{\n' +
+        '  "$schema": "http:\\/\\/json-schema.org\\/draft-07\\/schema#",\n' +
+        '  "anyOf": [\n' +
+        '    {\n' +
+        '      "type": "string"\n' +
+        '    },\n' +
+        '    {\n' +
+        '      "$ref": "nested\\/constraintFunctionSimpleNumberNested.json"\n' +
+        '    }\n' +
+        '  ],\n' +
+        '  "title": "meta::json::schema::tests::constraints::constraintFunctionSimpleNumber"\n' +
+        '}';
+   assertEquals($expectedFunctionSchemajson->meta::json::parseJSON()->toCompactJSONString(),$actualFunctionSchema);
+
+
+
+   let actualClassWithFunctionRef = $jsonSchema->filter(f|$f.fileName=='meta/json/schema/tests/ClassWithFunctionReference.json').content->toOne()->meta::json::parseJSON()->toCompactJSONString();
+   let expectedClassWithFunctionRef= '{\n' +
+        '  "$schema": "http:\\/\\/json-schema.org\\/draft-07\\/schema#",\n' +
+        '  "description": "Class With Function Reference",\n' +
+        '  "title": "meta::json::schema::tests::ClassWithFunctionReference",\n' +
+        '  "type": "object",\n' +
+        '  "properties":   {\n' +
+        '    "simple":     {\n' +
+        '      "$ref": "constraints\\/constraintFunctionSimpleNumber.json"\n' +
+        '    }\n' +
+        '  }\n' +
+        '}';
+
+
+   assertEquals($expectedClassWithFunctionRef->meta::json::parseJSON()->toCompactJSONString(),$actualClassWithFunctionRef);
+
+   let actualComplexSchema = $jsonSchema->filter(f|$f.fileName=='meta/json/schema/tests/constraints/constraintFunctionComplex.json').content->toOne()->meta::json::parseJSON()->toCompactJSONString();
+    let expectedComplexFunction= '{\n' +
+        '  "oneOf": [\n' +
+        '    {\n' +
+        '      "anyOf": [\n' +
+        '        {\n' +
+        '          "minLength": 4,\n' +
+        '          "pattern": "abcd",\n' +
+        '          "maxLength": 32\n' +
+        '        },\n' +
+        '        {\n' +
+        '          "minLength": 7\n' +
+        '        },\n' +
+        '        {\n' +
+        '          "minLength": 2\n' +
+        '        }\n' +
+        '      ],\n' +
+        '      "type": "string"\n' +
+        '    },\n' +
+        '    {\n' +
+        '      "$ref": "constraintFunctionSimpleNumber.json"\n' +
+        '    }\n' +
+        '  ],\n' +
+        '  "$schema": "http:\\/\\/json-schema.org\\/draft-07\\/schema#",\n' +
+        '  "description": "a complex function",\n' +
+        '  "title": "meta::json::schema::tests::constraints::constraintFunctionComplex"\n' +
+        '}';
+
+
+   assertEquals($expectedComplexFunction->meta::json::parseJSON()->toCompactJSONString(),$actualComplexSchema);
+
+
+
+}
+
+
+
+
+ function <<test.Test>> meta::json::schema::generation::tests::testOpenAPI():Boolean[1]
+{
+
+
+     let jsonSchema = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[meta::json::schema::tests::subtypeAnimal_Animal_1__Boolean_1_,
+                                                                                           meta::json::schema::tests::Animal,
+                                                                                           meta::json::schema::tests::Cat,
+                                                                                           meta::json::schema::tests::Dog],
+                                                         useConstraints = true ,includeAllRelatedTypes=false,generateConstraintFunctionSchemas=true,schemaSpecification=JSONSchemaSpecification.OPEN_API_V3_0_3 ));
+
+
+   let expectedSubTypeAnimal= '{\n' +
+        '  "oneOf": [\n' +
+        '    {\n' +
+        '      "$ref": "Dog.json"\n' +
+        '    },\n' +
+        '    {\n' +
+        '      "$ref": "Fish.json"\n' +
+        '    },\n' +
+        '    {\n' +
+        '      "$ref": "Cat.json"\n' +
+        '    }\n' +
+        '  ],\n' +
+        '  "title": "meta::json::schema::tests::subtypeAnimal",\n' +
+        '  "discriminator":   {\n' +
+        '    "mapping":     {\n' +
+        '      "CAT": "Cat.json",\n' +
+        '      "dog": "Dog.json",\n' +
+        '      "DOG": "Dog.json"\n' +
+        '    },\n' +
+        '    "propertyName": "type"\n' +
+        '  }\n' +
+        '}\n';
+
+
+   let expectedAnimal ='{\n' +
+        '  "allOf": [\n' +
+        '    {\n' +
+        '      "$ref": "Being.json"\n' +
+        '    }\n' +
+        '  ],\n' +
+        '  "description": "The Animal Class",\n' +
+        '  "title": "meta::json::schema::tests::Animal",\n' +
+        '  "type": "object",\n' +
+        '  "properties":   {\n' +
+        '    "aliases":     {\n' +
+        '      "type": "array",\n' +
+        '      "items":       {\n' +
+        '        "type": "string"\n' +
+        '      }\n' +
+        '    },\n' +
+        '    "extra":     {\n' +
+        '      "minItems": 4,\n' +
+        '      "maxItems": 4,\n' +
+        '      "type": "array",\n' +
+        '      "items":       {\n' +
+        '        "$ref": "OtherInfo.json"\n' +
+        '      }\n' +
+        '    },\n' +
+        '    "name":     {\n' +
+        '      "type": "string"\n' +
+        '    },\n' +
+        '    "type":     {\n' +
+        '      "$ref": "AnimalType.json"\n' +
+        '    },\n' +
+        '    "age":     {\n' +
+        '      "type": "integer"\n' +
+        '    }\n' +
+        '  },\n' +
+        '  "required": [\n' +
+        '"name",\n' +
+        '"age",\n' +
+        '"type",\n' +
+         '"extra"\n' +
+        '  ],\n' +
+        '  "discriminator":   {\n' +
+        '    "mapping":     {\n' +
+        '      "CAT": "Cat.json",\n' +
+        '      "cat": "Cat.json",\n' +
+        '      "DOG": "Dog.json"\n' +
+        '    },\n' +
+        '    "propertyName": "type"\n' +
+        '  }\n' +
+        '}';
+
+
+  let actualsubTypeAnimal =  $jsonSchema->filter(f|$f.fileName=='meta/json/schema/tests/subtypeAnimal.json').content->toOne()->meta::json::parseJSON()->toCompactJSONString();
+
+  let actualAnimal = $jsonSchema->filter(f|$f.fileName=='meta/json/schema/tests/Animal.json').content->toOne()->meta::json::parseJSON()->toCompactJSONString();
+  assertEquals($expectedSubTypeAnimal->meta::json::parseJSON()->toCompactJSONString(),$actualsubTypeAnimal);
+  assertEquals($expectedAnimal->meta::json::parseJSON()->toCompactJSONString(),$actualAnimal);
+
+}
+
+ function <<test.Test>> meta::json::schema::generation::tests::testOpenAPIYAML():Boolean[1]
+{
+
+
+     let jsonSchema = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[meta::json::schema::tests::subtypeAnimal_Animal_1__Boolean_1_,
+                                                                                           meta::json::schema::tests::Animal,
+                                                                                           meta::json::schema::tests::Cat,
+                                                                                           meta::json::schema::tests::Dog],
+                                                         useConstraints = true ,includeAllRelatedTypes=false,generateConstraintFunctionSchemas=true,schemaSpecification=JSONSchemaSpecification.OPEN_API_V3_0_3_YAML ));
+
+
+   let expectedSubTypeAnimal= 'discriminator: \n' +
+                              '  propertyName: "type"\n' +
+                              '  mapping: \n' +
+                              '    CAT: "Cat.yaml"\n' +
+                              '    dog: "Dog.yaml"\n' +
+                              '    DOG: "Dog.yaml"\n' +
+                              'oneOf: \n' +
+                              '  - $ref: "Dog.yaml"\n' +
+                              '  - $ref: "Fish.yaml"\n' +
+                              '  - $ref: "Cat.yaml"\n' +
+                              'title: "meta::json::schema::tests::subtypeAnimal"';
+
+
+   let expectedAnimal ='title: "meta::json::schema::tests::Animal"\n' +
+                     'description: "The Animal Class"\n' +
+                     'allOf: \n' +
+                     '  - $ref: "Being.yaml"\n' +
+                     'type: "object"\n' +
+                     'properties: \n' +
+                     '  name: \n' +
+                     '    type: "string"\n' +
+                     '  age: \n' +
+                     '    type: "integer"\n' +
+                     '  type: \n' +
+                     '    $ref: "AnimalType.yaml"\n' +
+                     '  aliases: \n' +
+                     '    type: "array"\n' +
+                     '    items: \n' +
+                     '      type: "string"\n' +
+                     '  extra: \n' +
+                     '    type: "array"\n' +
+                     '    items: \n' +
+                     '      $ref: "OtherInfo.yaml"\n' +
+                     '    minItems: 4\n' +
+                     '    maxItems: 4\n' +
+                     'discriminator: \n' +
+                     '  propertyName: "type"\n' +
+                     '  mapping: \n' +
+                     '    CAT: "Cat.yaml"\n' +
+                     '    cat: "Cat.yaml"\n' +
+                     '    DOG: "Dog.yaml"\n' +
+                     'required: \n' +
+                     '  - "name"\n' +
+                     '  - "age"\n' +
+                     '  - "type"\n' +
+                     '  - "extra"' ;
+
+  let actualsubTypeAnimal =  $jsonSchema->filter(f|$f.fileName=='meta/json/schema/tests/subtypeAnimal.yaml').content->toOne();
+  let actualAnimal = $jsonSchema->filter(f|$f.fileName=='meta/json/schema/tests/Animal.yaml').content->toOne();
+   
+  assertEquals($expectedSubTypeAnimal,$actualsubTypeAnimal);
+  assertEquals($expectedAnimal,$actualAnimal);
+}
+
+ function <<test.Test>> meta::json::schema::generation::tests::testOpenAPIYAMLPlain():Boolean[1]
+{
+
+
+     let jsonSchema = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[meta::json::schema::tests::subtypeAnimal_Animal_1__Boolean_1_,
+                                                                                           meta::json::schema::tests::Animal,
+                                                                                           meta::json::schema::tests::Cat,
+                                                                                           meta::json::schema::tests::Dog],
+                                                         useConstraints = true ,includeAllRelatedTypes=false,generateConstraintFunctionSchemas=true,schemaSpecification=JSONSchemaSpecification.OPEN_API_V3_0_3_YAML_PLAIN ));
+
+
+   let expectedSubTypeAnimal= 'discriminator: \n' +
+                              '  propertyName: type\n' +
+                              '  mapping: \n' +
+                              '    CAT: Cat.yaml\n' +
+                              '    dog: Dog.yaml\n' +
+                              '    DOG: Dog.yaml\n' +
+                              'oneOf: \n' +
+                              '  - $ref: Dog.yaml\n' +
+                              '  - $ref: Fish.yaml\n' +
+                              '  - $ref: Cat.yaml\n' +
+                              'title: meta::json::schema::tests::subtypeAnimal';
+
+
+   let expectedAnimal = 'title: meta::json::schema::tests::Animal\n' +
+                        'description: The Animal Class\n' +
+                        'allOf: \n' +
+                        '  - $ref: Being.yaml\n' +
+                        'type: object\n' +
+                        'properties: \n' +
+                        '  name: \n' +
+                        '    type: string\n' +
+                        '  age: \n' +
+                        '    type: integer\n' +
+                        '  type: \n' +
+                        '    $ref: AnimalType.yaml\n' +
+                        '  aliases: \n' +
+                        '    type: array\n' +
+                        '    items: \n' +
+                        '      type: string\n' +
+                        '  extra: \n' +
+                        '    type: array\n' +
+                        '    items: \n' +
+                        '      $ref: OtherInfo.yaml\n' +
+                        '    minItems: 4\n' +
+                        '    maxItems: 4\n' +
+                        'discriminator: \n' +
+                        '  propertyName: type\n' +
+                        '  mapping: \n' +
+                        '    CAT: Cat.yaml\n' +
+                        '    cat: Cat.yaml\n' +
+                        '    DOG: Dog.yaml\n' +
+                        'required: \n' +
+                        '  - name\n' +
+                        '  - age\n' +
+                        '  - type\n' +
+                        '  - extra' ;
+
+  let actualsubTypeAnimal =  $jsonSchema->filter(f|$f.fileName=='meta/json/schema/tests/subtypeAnimal.yaml').content->toOne();
+  let actualAnimal = $jsonSchema->filter(f|$f.fileName=='meta/json/schema/tests/Animal.yaml').content->toOne();
+  assertEquals($expectedSubTypeAnimal,$actualsubTypeAnimal);
+  assertEquals($expectedAnimal,$actualAnimal);
+}
+
+
+
+ function <<test.Test>> meta::json::schema::generation::tests::testUnsupportedConstraint():Boolean[1]
+{
+
+
+     let jsonSchema = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[meta::json::schema::tests::ClassWithUnspportedConstraint,meta::json::schema::tests::unsupportedFunction_Integer_1__Boolean_1_],
+                                                         useConstraints = true ,includeAllRelatedTypes=false,generateConstraintFunctionSchemas=true ));
+
+
+   let expectedClassSchema= '{' +
+                              '  "$schema": "http:\/\/json-schema.org\/draft-07\/schema#",' +
+                              '  "title": "meta::json::schema::tests::ClassWithUnspportedConstraint",' +
+                              '  "type": "object",' +
+                              '  "properties":   {' +
+                              '    "p1":     {' +
+                              '      "anyOf": [' +
+                              '        {' +
+                              '          "$ref": "unsupportedFunction.json"' +
+                              '        }' +
+                              '      ]' +
+                              '    },' +
+                              '    "p2":     {' +
+                              '      "$ref": "unsupportedFunction.json"' +
+                              '    }' +
+                              '  },' +
+                              '  "required": [' +
+                              '"p1",' +
+                              '"p2"' +
+                              '  ]' +
+                              '}';
+
+    let expectedfn = '{' +
+                     '  "title": "meta::json::schema::tests::unsupportedFunction",' +
+                     '  "$schema": "http:\/\/json-schema.org\/draft-07\/schema#"' +
+                     '}';
+
+
+   let class = $jsonSchema->filter(f|$f.fileName=='meta/json/schema/tests/ClassWithUnspportedConstraint.json');
+   let fn = $jsonSchema->filter(f|$f.fileName=='meta/json/schema/tests/unsupportedFunction.json');
+
+   assertSameElements($class.message.message,['Property meta::json::schema::tests::ClassWithUnspportedConstraint.p1 references an unsupported schema and likely did not generate correctly',
+                                               'Property meta::json::schema::tests::ClassWithUnspportedConstraint.p2 references an unsupported schema and likely did not generate correctly']);
+   
+   assertSameElements($fn.message.message,['Unsupported function found : $value / 10 at meta::json::schema::tests::unsupportedFunction_Integer_1__Boolean_1_']);
+   
+   
+  assertEquals($expectedClassSchema->meta::json::parseJSON()->toCompactJSONString(),$class.content->toOne()->meta::json::parseJSON()->toCompactJSONString());
+  assertEquals($expectedfn->meta::json::parseJSON()->toCompactJSONString(),$fn.content->toOne()->meta::json::parseJSON()->toCompactJSONString());
+
+}
+
+
+function <<test.Test,test.ExcludeAlloy>> meta::json::schema::generation::tests::testExcludeConstraintsFromDefinitions():Boolean[1]
+{
+ let actualSchema =  meta::json::schema::generation::toJSONSchema(^JSONSchemaConfig(class='meta::json::schema::tests::ClassWithUnspportedConstraint'))->at(0).content;
+ let expectedSchema = '{' +
+                        '  "$schema": "http:\/\/json-schema.org\/draft-07\/schema#",' +
+                        '  "title": "meta::json::schema::tests::ClassWithUnspportedConstraint",' +
+                        '  "type": "object",' +
+                        '  "properties":   {' +
+                        '    "p1":     {' +
+                        '      "type": "integer"' +
+                        '    },' +
+                        '    "p2":     {' +
+                        '      "type": "integer"' +
+                        '    }' +
+                        '  },' +
+                        '  "required": [' +
+                        '"p1",' +
+                        '"p2"' +
+                        '  ]' +
+                        '}';
+  assertEquals($expectedSchema->meta::json::parseJSON()->toCompactJSONString(),$actualSchema->meta::json::parseJSON()->toCompactJSONString());
+
+}
+
+
+
+function <<test.Test>>  meta::json::schema::generation::tests::testAssociation():Boolean[1]
+{
+    let jsonSchema = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[meta::json::schema::tests::associations,meta::json::schema::tests::AssociatedClass],
+                                                    includeAllRelatedTypes = false  ));
+    assertSize($jsonSchema,1);
+    let expectedjson=  '{' +
+'     "$schema": "http:\/\/json-schema.org\/draft-07\/schema#",' +
+'     "title": "meta::json::schema::tests::AssociatedClass",' +
+'     "description": "Class With Function Reference",' +
+'     "type": "object",' +
+'     "properties":   {' +
+'       "simple":     {' +
+'         "type": "string"' +
+'       },' +
+'       "otherInfoSingle":     {' +
+'         "$ref": "OtherInfo.json"' +
+'       },' +
+'       "otherInfoArray":     {' +
+'         "type": "array",' +
+'         "items":       {' +
+'           "$ref": "OtherInfo.json"' +
+'         },' +
+'         "minItems": 2,' +
+'         "maxItems": 6' +
+'       }' +
+'     },' +
+'     "required": [' +
+'   "otherInfoArray"' +
+'     ]' +
+'   }' ;
+
+    assertEquals($expectedjson->meta::json::parseJSON()->toCompactJSONString(),$jsonSchema.content->toOne()->meta::json::parseJSON()->toCompactJSONString());
+}

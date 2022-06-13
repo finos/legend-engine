@@ -20,80 +20,102 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class DataSourceStatistics {
+public class DataSourceStatistics
+{
     private final AtomicInteger builtConnections;
     private final AtomicInteger requestedConnections;
     private final AtomicInteger connectionErrors = new AtomicInteger();
     private final AtomicLong firstConnectionRequest;
     private AtomicLong lastConnectionRequest;
 
-    public DataSourceStatistics() {
+    public DataSourceStatistics()
+    {
         this.firstConnectionRequest = new AtomicLong(System.currentTimeMillis());
         this.builtConnections = new AtomicInteger(0);
         this.lastConnectionRequest = new AtomicLong(getCurrentTimeInInMillis());
         this.requestedConnections = new AtomicInteger(0);
     }
 
-    private DataSourceStatistics(int builtConnections, long firstConnectionRequest, long lastConnectionRequest, int requestedConnections) {
+    private DataSourceStatistics(int builtConnections, long firstConnectionRequest, long lastConnectionRequest, int requestedConnections)
+    {
         this.builtConnections = new AtomicInteger(builtConnections);
         this.firstConnectionRequest = new AtomicLong(firstConnectionRequest);
         this.lastConnectionRequest = new AtomicLong(lastConnectionRequest);
         this.requestedConnections = new AtomicInteger(requestedConnections);
     }
 
-    public static DataSourceStatistics clone(DataSourceStatistics statistics) {
+    public static DataSourceStatistics clone(DataSourceStatistics statistics)
+    {
         return new DataSourceStatistics(statistics.builtConnections.get(), statistics.firstConnectionRequest.get(), statistics.lastConnectionRequest.get(), statistics.requestedConnections.get());
     }
 
-    public int getRequestedConnections() {
+    public int getRequestedConnections()
+    {
         return requestedConnections.get();
     }
 
-    public int requestConnection() {
+    public int requestConnection()
+    {
         lastConnectionRequest.set(getCurrentTimeInInMillis());
         return requestedConnections.incrementAndGet();
     }
 
-    private long getCurrentTimeInInMillis() {
+    private long getCurrentTimeInInMillis()
+    {
         return ConnectionStateManager.getInstance().getClock().millis();
     }
 
-    public long getFirstConnectionRequest() {
+    public long getFirstConnectionRequest()
+    {
         return firstConnectionRequest.get();
     }
 
-    public long getLastConnectionRequest() {
+    public long getLastConnectionRequest()
+    {
         return lastConnectionRequest.get();
     }
 
-    public long getDataSourceAge() {
+    public long getDataSourceAge()
+    {
         return getCurrentTimeInInMillis() - this.firstConnectionRequest.get();
     }
 
-    public long getLastConnectionRequestAge() {
+    public long getLastConnectionRequestAge()
+    {
         return getCurrentTimeInInMillis() - this.lastConnectionRequest.get();
     }
 
-    public int buildConnection() {
+    public int buildConnection()
+    {
         return builtConnections.incrementAndGet();
     }
 
-    public int getBuiltConnections() {
+    public int getBuiltConnections()
+    {
         return builtConnections.get();
     }
 
-    public void logConnectionError() {
+    public void logConnectionError()
+    {
         this.connectionErrors.incrementAndGet();
     }
 
-    public int getTotalConnectionErrors() {
+    public int getTotalConnectionErrors()
+    {
         return this.connectionErrors.get();
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+    public boolean equals(Object o)
+    {
+        if (this == o)
+        {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass())
+        {
+            return false;
+        }
         DataSourceStatistics that = (DataSourceStatistics) o;
         return Objects.equals(getBuiltConnections(), that.getBuiltConnections())
                 && Objects.equals(getRequestedConnections(), that.getRequestedConnections())
@@ -103,7 +125,8 @@ public class DataSourceStatistics {
     }
 
     @Override
-    public int hashCode() {
+    public int hashCode()
+    {
         return Objects.hash(getBuiltConnections(), getRequestedConnections(), getTotalConnectionErrors(), getFirstConnectionRequest(), getLastConnectionRequest());
     }
 }

@@ -14,20 +14,18 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.serialization;
 
-import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
-
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.plan.execution.result.serialization.CsvSerializer;
+import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.result.SQLResultColumn;
 
 import java.io.BufferedWriter;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
 

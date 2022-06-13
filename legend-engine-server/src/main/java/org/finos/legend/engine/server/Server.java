@@ -64,7 +64,6 @@ import org.finos.legend.engine.plan.execution.stores.relational.plugin.Relationa
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutor;
 import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStore;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
-import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransformers;
 import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
 import org.finos.legend.engine.query.graphQL.api.debug.GraphQLDebug;
 import org.finos.legend.engine.query.graphQL.api.execute.GraphQLExecute;
@@ -91,7 +90,6 @@ import org.finos.legend.server.pac4j.LegendPac4jBundle;
 import org.finos.legend.server.shared.bundles.ChainFixingFilterHandler;
 import org.finos.legend.server.shared.bundles.HostnameHeaderBundle;
 import org.slf4j.Logger;
-
 import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
 import javax.ws.rs.container.DynamicFeature;
@@ -104,12 +102,14 @@ public class Server<T extends ServerConfiguration> extends Application<T>
 {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
 
+    protected RelationalStoreExecutor relationalStoreExecutor;
+
     private Environment environment;
 
     public static void main(String[] args) throws Exception
     {
         EngineUrlStreamHandlerFactory.initialize();
-        new Server().run(args);
+        new Server().run(args.length == 0 ? new String[]{"server", "legend-engine-server/src/test/resources/org/finos/legend/engine/server/test/userTestConfig.json"} : args);
     }
 
     @Override
@@ -149,7 +149,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
 
         ChainFixingFilterHandler.apply(environment.getApplicationContext(), serverConfiguration.filterPriorities);
 
-        RelationalStoreExecutor relationalStoreExecutor = (RelationalStoreExecutor) Relational.build(serverConfiguration.relationalexecution);
+        relationalStoreExecutor = (RelationalStoreExecutor) Relational.build(serverConfiguration.relationalexecution);
         PlanExecutor planExecutor = PlanExecutor.newPlanExecutor(relationalStoreExecutor, ServiceStore.build(), InMemory.build());
 
         // Session Management

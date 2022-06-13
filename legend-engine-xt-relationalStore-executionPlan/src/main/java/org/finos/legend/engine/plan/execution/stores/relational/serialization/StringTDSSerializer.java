@@ -14,14 +14,13 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.serialization;
 
+import io.opentracing.Scope;
+import io.opentracing.util.GlobalTracer;
+import org.eclipse.collections.api.block.function.Function;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.result.builder.tds.TDSBuilder;
 import org.finos.legend.engine.plan.execution.result.serialization.Serializer;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
-import org.eclipse.collections.api.block.function.Function;
-import org.eclipse.collections.api.list.MutableList;
-
-import io.opentracing.Scope;
-import io.opentracing.util.GlobalTracer;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -49,14 +48,15 @@ public class StringTDSSerializer extends Serializer
         streamCollection(targetStream, ((TDSBuilder) relationalResult.builder).columns.stream().map(col -> col.name).collect(Collectors.toList()));
         try
         {
-            MutableList<Function<Object, Object>>  transformers = relationalResult.getTransformers();
+            MutableList<Function<Object, Object>> transformers = relationalResult.getTransformers();
 
             int rowCount = 0;
             try (Scope ignored = GlobalTracer.get().buildSpan("Relational Streaming: Fetch first row").startActive(true))
             {
                 if (relationalResult.resultSet.next())
                 {
-                    streamCollection(targetStream, IntStream.range(1, relationalResult.columnCount + 1).mapToObj(i -> {
+                    streamCollection(targetStream, IntStream.range(1, relationalResult.columnCount + 1).mapToObj(i ->
+                    {
                         try
                         {
                             return transformers.get(i - 1).valueOf(relationalResult.resultSet.getObject(i));
@@ -72,7 +72,8 @@ public class StringTDSSerializer extends Serializer
             {
                 while (relationalResult.resultSet.next())
                 {
-                    streamCollection(targetStream, IntStream.range(1, relationalResult.columnCount + 1).mapToObj(i -> {
+                    streamCollection(targetStream, IntStream.range(1, relationalResult.columnCount + 1).mapToObj(i ->
+                    {
                         try
                         {
                             return transformers.get(i - 1).valueOf(relationalResult.resultSet.getObject(i));
@@ -90,7 +91,7 @@ public class StringTDSSerializer extends Serializer
                 }
             }
         }
-        catch (SQLException e)
+        catch (SQLException ignored)
         {
         }
     }
@@ -110,8 +111,10 @@ public class StringTDSSerializer extends Serializer
 
     private void streamObject(OutputStream outputStream, Object object) throws IOException
     {
-        if (object==null)
+        if (object == null)
+        {
             return;
+        }
         outputStream.write(object.toString().getBytes());
     }
 }

@@ -22,32 +22,32 @@ public class TestExternalFormatGrammarRoundtrip extends TestGrammarRoundtrip.Tes
     public void testSchemas()
     {
         test("###ExternalFormat\n" +
-                     "SchemaSet test::Example\n" +
-                     "{\n" +
-                     "  format: Example;\n" +
-                     "  schemas: [\n" +
-                     "    {\n" +
-                     "      content: 'Sample Schema Description\\nsome data\\nis described here\\n';\n" +
-                     "    }\n" +
-                     "  ];\n" +
-                     "}\n" +
-                     "\n" +
-                     "SchemaSet test::Example2\n" +
-                     "{\n" +
-                     "  format: Example;\n" +
-                     "  schemas: [\n" +
-                     "    {\n" +
-                     "      id: ex2_1;\n" +
-                     "      location: 'ex2_1.schema';\n" +
-                     "      content: 'Second Sample Schema Description\\nSchema 1 of Example 2';\n" +
-                     "    },\n" +
-                     "    {\n" +
-                     "      id: ex2_2;\n" +
-                     "      location: 'ex2_2.schema';\n" +
-                     "      content: 'Third Sample Schema Description\\nSchema 2 of Example 2';\n" +
-                     "    }\n" +
-                     "  ];\n" +
-                     "}\n"
+                "SchemaSet test::Example\n" +
+                "{\n" +
+                "  format: Example;\n" +
+                "  schemas: [\n" +
+                "    {\n" +
+                "      content: 'Sample Schema Description\\nsome data\\nis described here\\n';\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n" +
+                "\n" +
+                "SchemaSet test::Example2\n" +
+                "{\n" +
+                "  format: Example;\n" +
+                "  schemas: [\n" +
+                "    {\n" +
+                "      id: ex2_1;\n" +
+                "      location: 'ex2_1.schema';\n" +
+                "      content: 'Second Sample Schema Description\\nSchema 1 of Example 2';\n" +
+                "    },\n" +
+                "    {\n" +
+                "      id: ex2_2;\n" +
+                "      location: 'ex2_2.schema';\n" +
+                "      content: 'Third Sample Schema Description\\nSchema 2 of Example 2';\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n"
         );
     }
 
@@ -55,28 +55,28 @@ public class TestExternalFormatGrammarRoundtrip extends TestGrammarRoundtrip.Tes
     public void testValidSchemaAndBinding()
     {
         test("###ExternalFormat\n" +
-                     "SchemaSet test::Example\n" +
-                     "{\n" +
-                     "  format: Example;\n" +
-                     "  schemas: [\n" +
-                     "    {\n" +
-                     "      content: 'Schema Description';\n" +
-                     "    }\n" +
-                     "  ];\n" +
-                     "}\n" +
-                     "\n" +
-                     "Binding test::ExampleBinding\n" +
-                     "{\n" +
-                     "  schemaSet: test::Example;\n" +
-                     "  contentType: 'text/example';\n" +
-                     "  modelIncludes: [\n" +
-                     "    my::ClassA,\n" +
-                     "    my::ClassB\n" +
-                     "  ];\n" +
-                     "  modelExcludes: [\n" +
-                     "    my::ClassC\n" +
-                     "  ];\n" +
-                     "}\n"
+                "SchemaSet test::Example\n" +
+                "{\n" +
+                "  format: Example;\n" +
+                "  schemas: [\n" +
+                "    {\n" +
+                "      content: 'Schema Description';\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n" +
+                "\n" +
+                "Binding test::ExampleBinding\n" +
+                "{\n" +
+                "  schemaSet: test::Example;\n" +
+                "  contentType: 'text/example';\n" +
+                "  modelIncludes: [\n" +
+                "    my::ClassA,\n" +
+                "    my::ClassB\n" +
+                "  ];\n" +
+                "  modelExcludes: [\n" +
+                "    my::ClassC\n" +
+                "  ];\n" +
+                "}\n"
         );
     }
 
@@ -84,30 +84,30 @@ public class TestExternalFormatGrammarRoundtrip extends TestGrammarRoundtrip.Tes
     public void testValidSchemaAndBindingWithId()
     {
         test("###ExternalFormat\n" +
-                     "SchemaSet test::Example\n" +
-                     "{\n" +
-                     "  format: Example;\n" +
-                     "  schemas: [\n" +
-                     "    {\n" +
-                     "      id: s1;\n" +
-                     "      content: 'Schema Description';\n" +
-                     "    }\n" +
-                     "  ];\n" +
-                     "}\n" +
-                     "\n" +
-                     "Binding test::ExampleBinding\n" +
-                     "{\n" +
-                     "  schemaSet: test::Example;\n" +
-                     "  schemaId: s1;\n" +
-                     "  contentType: 'text/example';\n" +
-                     "  modelIncludes: [\n" +
-                     "    my::ClassA,\n" +
-                     "    my::ClassB\n" +
-                     "  ];\n" +
-                     "  modelExcludes: [\n" +
-                     "    my::ClassC\n" +
-                     "  ];\n" +
-                     "}\n"
+                "SchemaSet test::Example\n" +
+                "{\n" +
+                "  format: Example;\n" +
+                "  schemas: [\n" +
+                "    {\n" +
+                "      id: s1;\n" +
+                "      content: 'Schema Description';\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n" +
+                "\n" +
+                "Binding test::ExampleBinding\n" +
+                "{\n" +
+                "  schemaSet: test::Example;\n" +
+                "  schemaId: s1;\n" +
+                "  contentType: 'text/example';\n" +
+                "  modelIncludes: [\n" +
+                "    my::ClassA,\n" +
+                "    my::ClassB\n" +
+                "  ];\n" +
+                "  modelExcludes: [\n" +
+                "    my::ClassC\n" +
+                "  ];\n" +
+                "}\n"
         );
     }
 
@@ -115,17 +115,17 @@ public class TestExternalFormatGrammarRoundtrip extends TestGrammarRoundtrip.Tes
     public void testValidSchemalessBinding()
     {
         test("###ExternalFormat\n" +
-                     "Binding test::ExampleBinding\n" +
-                     "{\n" +
-                     "  contentType: 'text/example';\n" +
-                     "  modelIncludes: [\n" +
-                     "    my::ClassA,\n" +
-                     "    my::ClassB\n" +
-                     "  ];\n" +
-                     "  modelExcludes: [\n" +
-                     "    my::ClassC\n" +
-                     "  ];\n" +
-                     "}\n"
+                "Binding test::ExampleBinding\n" +
+                "{\n" +
+                "  contentType: 'text/example';\n" +
+                "  modelIncludes: [\n" +
+                "    my::ClassA,\n" +
+                "    my::ClassB\n" +
+                "  ];\n" +
+                "  modelExcludes: [\n" +
+                "    my::ClassC\n" +
+                "  ];\n" +
+                "}\n"
         );
     }
 }

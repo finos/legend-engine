@@ -190,7 +190,9 @@ public class ObjectStreamConnection implements Connection
         }
 
         abstract Object get(long index);
+
         abstract boolean isEndOfData();
+
         abstract int size();
 
         void addCursor()
@@ -215,7 +217,7 @@ public class ObjectStreamConnection implements Connection
             {
                 createNextBlock();
             }
-            return  nextBlock;
+            return nextBlock;
         }
 
         private void createNextBlock()
@@ -292,7 +294,7 @@ public class ObjectStreamConnection implements Connection
 
         DataBlock(long startIndex, List<Object> data)
         {
-            super(startIndex, startIndex+data.size());
+            super(startIndex, startIndex + data.size());
             this.data = data;
             capacityUsed.addAndGet(data.size());
         }

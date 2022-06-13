@@ -37,7 +37,8 @@ public class BloombergKeyValues
     private final List<String> lines = new ArrayList<>();
     private long firstLineNumber;
 
-    BloombergKeyValues(FlatDataProcessingContext context) {
+    BloombergKeyValues(FlatDataProcessingContext context)
+    {
         this.context = context;
     }
 

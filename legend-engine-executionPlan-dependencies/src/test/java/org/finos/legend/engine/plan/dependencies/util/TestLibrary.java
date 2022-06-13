@@ -1,35 +1,54 @@
-package org.finos.legend.engine.plan.dependencies.util;
+//  Copyright 2022 Goldman Sachs
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
 
-import java.util.Arrays;
-import java.util.List;
+package org.finos.legend.engine.plan.dependencies.util;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-public class TestLibrary {
+import java.util.Arrays;
+import java.util.List;
+
+public class TestLibrary
+{
     @Test
-    public void testSplitEmptyToken() {
+    public void testSplitEmptyToken()
+    {
         List<String> res = Library.split("abc", "");
         List<String> expected = Arrays.asList("abc");
         Assert.assertEquals(expected, res);
     }
 
     @Test
-    public void testSplitSingleCharToken() {
+    public void testSplitSingleCharToken()
+    {
         List<String> res = Library.split("abc", "b");
         List<String> expected = Arrays.asList("a", "c");
         Assert.assertEquals(expected, res);
     }
 
     @Test
-    public void testSplitMultiCharToken() {
+    public void testSplitMultiCharToken()
+    {
         List<String> res = Library.split("abcdefabcdefabc", "def");
         List<String> expected = Arrays.asList("abc", "abc", "abc");
         Assert.assertEquals(expected, res);
     }
 
     @Test
-    public void testAt() {
+    public void testAt()
+    {
         Assert.assertEquals("a", Library.at("a", 0));
         Assert.assertEquals("a", Library.at(Arrays.asList("a", "b"), 0));
 
@@ -63,7 +82,8 @@ public class TestLibrary {
     }
 
     @Test
-    public void testIndexOf() {
+    public void testIndexOf()
+    {
         Integer testIndexOfOneElement = Library.indexOf("a", "a");
         Integer expectedTestIndexOfOneElement = 0;
         Assert.assertEquals(expectedTestIndexOfOneElement, testIndexOfOneElement);

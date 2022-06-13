@@ -386,7 +386,8 @@ public class HelperMappingBuilder
 
     public static org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.aggregationAware.AggregateSetImplementationContainer processAggregateSetImplementationContainer(AggregateSetImplementationContainer aggregateSetImplementationContainer, CompileContext context, Mapping parent)
     {
-        if (aggregateSetImplementationContainer.setImplementation.mappingClass == null) {
+        if (aggregateSetImplementationContainer.setImplementation.mappingClass == null)
+        {
             Class _class = context.resolveClass(aggregateSetImplementationContainer.setImplementation._class, aggregateSetImplementationContainer.setImplementation.classSourceInformation);
             aggregateSetImplementationContainer.setImplementation.mappingClass = new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingClass();
             aggregateSetImplementationContainer.setImplementation.mappingClass.name = _class.getName() + "_" + parent.getName() + "_" + aggregateSetImplementationContainer.setImplementation.id;
@@ -495,7 +496,8 @@ public class HelperMappingBuilder
                 mappingClass._generalizations(Lists.immutable.with(newGeneralization));
                 setImplementation._class()._specializationsAdd(newGeneralization);
 
-                mappingClass._properties(ListIterate.collect(localPropertyMappings, pm -> {
+                mappingClass._properties(ListIterate.collect(localPropertyMappings, pm ->
+                {
                     Property property = pm._property();
                     property._owner(mappingClass);
                     property._classifierGenericType()._typeArguments().toList().get(0)._rawType(mappingClass);

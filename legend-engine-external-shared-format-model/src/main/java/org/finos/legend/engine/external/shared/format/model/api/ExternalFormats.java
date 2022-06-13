@@ -31,6 +31,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
@@ -39,7 +40,11 @@ import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 import org.slf4j.Logger;
 
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
@@ -104,7 +109,7 @@ public class ExternalFormats
             PureModel pureModel = this.modelManager.loadModel(generateModelInput.model, generateModelInput.clientVersion, profiles, null);
             SchemaToModelGenerator generator = new SchemaToModelGenerator(pureModel, generateModelInput.clientVersion);
             PureModelContextData generated = generator.generate(generateModelInput.config);
-            LOGGER.info(new LogInfo(profiles, interactive ? LoggingEventType.GENERATE_EXTERNAL_FORMAT_MODEL_INTERACTIVE_STOP : LoggingEventType.GENERATE_EXTERNAL_FORMAT_MODEL_STOP, (double)System.currentTimeMillis() - start).toString());
+            LOGGER.info(new LogInfo(profiles, interactive ? LoggingEventType.GENERATE_EXTERNAL_FORMAT_MODEL_INTERACTIVE_STOP : LoggingEventType.GENERATE_EXTERNAL_FORMAT_MODEL_STOP, (double) System.currentTimeMillis() - start).toString());
             return ManageConstantResult.manageResult(profiles, generated, objectMapper);
         }
         catch (Exception ex)
@@ -125,15 +130,27 @@ public class ExternalFormats
         {
             long start = System.currentTimeMillis();
             LOGGER.info(new LogInfo(profiles, interactive ? LoggingEventType.GENERATE_EXTERNAL_FORMAT_SCHEMA_INTERACTIVE_START : LoggingEventType.GENERATE_EXTERNAL_FORMAT_SCHEMA_START).toString());
+            if (generateSchemaInput.config == null || generateSchemaInput.config.format == null)
+            {
+                throw new EngineException("Please provide a Format");
+            }
             ExternalFormatExtension extension = extensions.get(generateSchemaInput.config.format);
-            if (!extension.supportsModelGeneration())
+            if (extension == null)
+            {
+                throw new UnsupportedOperationException("Can't find an extension supporting the external format " + generateSchemaInput.config.format);
+            }
+            if (!extension.supportsSchemaGeneration())
             {
                 throw new UnsupportedOperationException("Model generation not supported for " + extension.getFormat());
+            }
+            if (generateSchemaInput.model == null)
+            {
+                throw new UnsupportedOperationException("Please provide a PureModelContext");
             }
             PureModel pureModel = this.modelManager.loadModel(generateSchemaInput.model, generateSchemaInput.clientVersion, profiles, null);
             ModelToSchemaGenerator generator = new ModelToSchemaGenerator(pureModel);
             PureModelContextData generated = generator.generate(generateSchemaInput.config);
-            LOGGER.info(new LogInfo(profiles, interactive ? LoggingEventType.GENERATE_EXTERNAL_FORMAT_SCHEMA_INTERACTIVE_STOP : LoggingEventType.GENERATE_EXTERNAL_FORMAT_SCHEMA_STOP, (double)System.currentTimeMillis() - start).toString());
+            LOGGER.info(new LogInfo(profiles, interactive ? LoggingEventType.GENERATE_EXTERNAL_FORMAT_SCHEMA_INTERACTIVE_STOP : LoggingEventType.GENERATE_EXTERNAL_FORMAT_SCHEMA_STOP, (double) System.currentTimeMillis() - start).toString());
             return ManageConstantResult.manageResult(profiles, generated, objectMapper);
         }
         catch (Exception ex)

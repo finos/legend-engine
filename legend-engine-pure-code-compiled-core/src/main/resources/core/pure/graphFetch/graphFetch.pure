@@ -1,0 +1,145 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::dataQuality::*;
+
+function meta::pure::graphFetch::execution::graphFetch<T>(collection: T[*], graphFetchTree: RootGraphFetchTree<T>[1]):T[*]
+{
+   fail('Not implemented!');
+   $collection;
+}
+
+
+function meta::pure::graphFetch::execution::graphFetch<T>(collection: T[*], graphFetchTree: RootGraphFetchTree<T>[1], batchSize: Integer[1]):T[*]
+{
+   assert($batchSize > 1, | 'Batch size should be positive');
+   fail('Not implemented!');
+   $collection;
+}
+
+function meta::pure::graphFetch::execution::graphFetchChecked<T>(collection: T[*], graphFetchTree: RootGraphFetchTree<T>[1]):Checked<T>[*]
+{
+   fail('Not implemented!');
+   $collection->map(e|^Checked<T>(value=$e));
+}
+
+function meta::pure::graphFetch::execution::graphFetchFunctions():Function<Any>[*]
+{
+ [meta::pure::graphFetch::execution::graphFetch_T_MANY__RootGraphFetchTree_1__T_MANY_, meta::pure::graphFetch::execution::graphFetch_T_MANY__RootGraphFetchTree_1__Integer_1__T_MANY_, meta::pure::graphFetch::execution::graphFetchChecked_T_MANY__RootGraphFetchTree_1__Checked_MANY_]  
+}
+
+function meta::pure::graphFetch::execution::serialize<T>(collection: T[*], graphFetchTree: RootGraphFetchTree<T>[1]):String[1]
+{
+   fail('Not implemented!');
+   'Not impemented!';
+}
+
+function meta::pure::graphFetch::execution::serialize<T>(collection: Checked<T>[*], graphFetchTree: RootGraphFetchTree<T>[1]):String[1]
+{
+   fail('Not implemented!');
+   'Not impemented!';
+}
+
+function meta::pure::graphFetch::execution::checkCompatibility(fe: FunctionExpression[1], tree: RootGraphFetchTree<Any>[1]):Boolean[1]
+{
+   assert($fe.genericType.rawType->toOne() == $tree.class,
+          | 'Graph Fetch Execution Error: \n' +
+            'GraphFetchTree is given for class: \'' + $tree.class.name->toOne() + '\'\n'+
+            'Query returns: \'' + $fe.genericType.rawType.name->toOne() + '\'')
+}
+
+
+
+Class meta::pure::graphFetch::execution::AlloySerializationConfig
+{
+    typeKeyName : String[1];
+    includeType: Boolean[0..1];
+    includeEnumType: Boolean[0..1];
+    removePropertiesWithNullValues: Boolean[0..1];
+    removePropertiesWithEmptySets: Boolean[0..1];
+    fullyQualifiedTypePath: Boolean[0..1];
+    includeObjectReference: Boolean[0..1];
+}
+
+function meta::pure::graphFetch::execution::defaultAlloyConfig(): meta::pure::graphFetch::execution::AlloySerializationConfig[1]
+{
+   ^meta::pure::graphFetch::execution::AlloySerializationConfig(
+      typeKeyName = '@type',
+      includeType = true,
+      includeEnumType = true,
+      removePropertiesWithNullValues = true,
+      removePropertiesWithEmptySets = false,
+      fullyQualifiedTypePath = true,
+      includeObjectReference = false
+   );
+}
+
+function meta::pure::graphFetch::execution::alloyConfig(includeType:Boolean[1], includeEnumType:Boolean[1], removePropertiesWithNullValues:Boolean[1],  removePropertiesWithEmptySets:Boolean[1]): meta::pure::graphFetch::execution::AlloySerializationConfig[1]
+{
+   meta::pure::graphFetch::execution::alloyConfig($includeType, $includeEnumType, $removePropertiesWithNullValues, $removePropertiesWithEmptySets, false);
+}
+
+function meta::pure::graphFetch::execution::alloyConfig(includeType:Boolean[1], includeEnumType:Boolean[1], removePropertiesWithNullValues:Boolean[1],  removePropertiesWithEmptySets:Boolean[1], includeObjectReference:Boolean[1]): meta::pure::graphFetch::execution::AlloySerializationConfig[1]
+{
+   ^meta::pure::graphFetch::execution::AlloySerializationConfig(
+      typeKeyName = '@type',
+      includeType = $includeType,
+      includeEnumType = $includeEnumType,
+      removePropertiesWithNullValues = $removePropertiesWithNullValues,
+      removePropertiesWithEmptySets = $removePropertiesWithEmptySets,
+      fullyQualifiedTypePath = true,
+      includeObjectReference = $includeObjectReference
+   );
+}
+
+function meta::pure::graphFetch::execution::alloyConfig(includeType:Boolean[1], includeEnumType:Boolean[1], removePropertiesWithNullValues:Boolean[1],  removePropertiesWithEmptySets:Boolean[1], typeString:String[1], fullyQualifiedTypePath:Boolean[1]): meta::pure::graphFetch::execution::AlloySerializationConfig[1]
+{
+  meta::pure::graphFetch::execution::alloyConfig($includeType, $includeEnumType, $removePropertiesWithNullValues, $removePropertiesWithEmptySets, $typeString, $fullyQualifiedTypePath, false);
+}
+
+function meta::pure::graphFetch::execution::alloyConfig(includeType:Boolean[1], includeEnumType:Boolean[1], removePropertiesWithNullValues:Boolean[1],  removePropertiesWithEmptySets:Boolean[1], typeString:String[1], fullyQualifiedTypePath:Boolean[1], includeObjectReference:Boolean[1]): meta::pure::graphFetch::execution::AlloySerializationConfig[1]
+{
+   ^meta::pure::graphFetch::execution::AlloySerializationConfig(
+      typeKeyName = $typeString,
+      includeType = $includeType,
+      includeEnumType = $includeEnumType,
+      removePropertiesWithNullValues = $removePropertiesWithNullValues,
+      removePropertiesWithEmptySets = $removePropertiesWithEmptySets,
+      fullyQualifiedTypePath = $fullyQualifiedTypePath,
+      includeObjectReference = $includeObjectReference
+   );
+}
+
+function meta::pure::graphFetch::execution::serialize<T>(collection: T[*], graphFetchTree: RootGraphFetchTree<T>[1], config: AlloySerializationConfig[1]):String[1]
+{
+   fail('Not implemented!');
+   'Not impemented!';
+}
+
+
+function meta::pure::graphFetch::execution::serialize<T>(collection: Checked<T>[*], graphFetchTree: RootGraphFetchTree<T>[1], config: AlloySerializationConfig[1]):String[1]
+{
+   fail('Not implemented!');
+   'Not impemented!';
+}
+
+function meta::pure::graphFetch::execution::isSerialize(fe:FunctionExpression[1]):Boolean[1]
+{
+   $fe.func == serialize_T_MANY__RootGraphFetchTree_1__String_1_ ||
+   $fe.func == serialize_Checked_MANY__RootGraphFetchTree_1__String_1_ ||
+   $fe.func == serialize_T_MANY__RootGraphFetchTree_1__AlloySerializationConfig_1__String_1_ ||
+   $fe.func == serialize_Checked_MANY__RootGraphFetchTree_1__AlloySerializationConfig_1__String_1_;
+}

@@ -29,7 +29,12 @@ import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
-import org.finos.legend.pure.generated.*;
+import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionPlan;
+import org.finos.legend.pure.generated.Root_meta_pure_router_extension_RouterExtension;
+import org.finos.legend.pure.generated.core_external_format_json_extension;
+import org.finos.legend.pure.generated.core_external_shared_extension;
+import org.finos.legend.pure.generated.core_pure_executionPlan_executionPlan_print;
+import org.finos.legend.pure.generated.core_relational_relational_router_router_extension;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -49,7 +54,7 @@ public abstract class AbstractTestSemiStructured
         this.pureModel = Compiler.compile(contextData, null, null);
     }
 
-    abstract public String modelResourcePath();
+    public abstract String modelResourcePath();
 
     protected String buildExecutionPlanString(String function, String mapping, String runtime)
     {

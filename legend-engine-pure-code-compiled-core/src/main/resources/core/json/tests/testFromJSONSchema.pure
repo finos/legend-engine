@@ -1,0 +1,944 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::json::*;
+import meta::json::schema::*;
+import meta::json::schema::fromSchema::*;
+import meta::json::schema::generation::*;
+import meta::alloy::metadataServer::*;
+import meta::pure::metamodel::serialization::grammar::*;
+
+import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::*;
+import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::*;
+import meta::json::schema::fromSchema::tests::*;
+
+function <<test.Test>> meta::json::schema::fromSchema::tests::testFromJSONSchema():Boolean[1]
+
+{
+    let prefix = 'meta::json::schema::fromSchema::tests';
+    let fileMap = [
+                schemaInput('/PropertyTestObject.json', propertyTests(),$prefix),
+                   schemaInput('/ExampleEnum.json', enum(),$prefix),
+                   schemaInput('/SuperType.json', superType(),$prefix),
+                   schemaInput('/complexFragment.json', complexFragment(),$prefix),
+                     schemaInput('/SimpleObject.json', simpleObject(),$prefix),
+                   schemaInput('/simpleReference.json', simpleFragment(),$prefix)
+
+               ]; 
+
+   let generated =  $fileMap->JSONSchemaToPure(); 
+   assertSize($generated,6);
+   let actualEnum = $generated->filter(g|$g->elementToPath()=='meta::json::schema::fromSchema::tests::ExampleEnum')->toSerializer()->parseJSON();
+   let expectedEnum = meta::json::schema::fromSchema::tests::ExampleEnum->toSerializer()->parseJSON();
+   
+   
+  
+     let actualFragment = $generated->filter(g|$g->elementToPath()=='meta::json::schema::fromSchema::tests::complexFragment_Any_$0_1$__Boolean_1_')->toSerializer()->parseJSON();
+    let expectedFragment = meta::json::schema::fromSchema::tests::complexFragment_Any_$0_1$__Boolean_1_->toSerializer()->parseJSON();
+   
+    let expectedPropertyObject   = meta::json::schema::fromSchema::tests::PropertyTestObject->toSerializer()->parseJSON();
+    let actualPropertyObject = $generated->filter(g|$g->elementToPath()=='meta::json::schema::fromSchema::tests::PropertyTestObject')->toSerializer()->parseJSON();
+   
+   
+    let actualSuperType = $generated->filter(g|$g->elementToPath()=='meta::json::schema::fromSchema::tests::SuperType')->toSerializer()->parseJSON();
+    let expectedSuperType = meta::json::schema::fromSchema::tests::SuperType->toSerializer()->parseJSON();
+   
+    let simpleReference = $generated->filter(g|$g->elementToPath()=='meta::json::schema::fromSchema::tests::simpleReference_String_$0_1$__Boolean_1_')->toSerializer()->parseJSON();
+    let expectedsimpleReference = meta::json::schema::fromSchema::tests::simpleReference_String_$0_1$__Boolean_1_->toSerializer()->parseJSON();
+   
+    let simpleObject = $generated->filter(g|$g->elementToPath()=='meta::json::schema::fromSchema::tests::SimpleObject')->toSerializer()->parseJSON();
+    let expectedObject  = meta::json::schema::fromSchema::tests::SimpleObject->toSerializer()->parseJSON();
+
+
+   assert(jsonEquivalent($expectedFragment,$actualFragment));
+   assert(jsonEquivalent($expectedEnum,$actualEnum));
+   assert(jsonEquivalent($expectedSuperType,$actualSuperType));
+   assert(jsonEquivalent($expectedsimpleReference,$simpleReference));
+
+   assert(jsonEquivalent($expectedPropertyObject,$actualPropertyObject));
+   assert(jsonEquivalent($expectedFragment,$actualFragment));
+
+}
+
+function    meta::json::schema::fromSchema::tests::printTransformToString(packs:PackageableElement[*]):String[1]
+{
+
+   $packs->sortBy(p|$p->elementToPath())->map(p|$p->match([c:Class<Any>[1]|$c->printClass(),
+                                                   p:Profile[1]|$p->meta::json::schema::fromSchema::tests::printProfile(),
+                                                   e:Enumeration<Any>[1] |$e->printEnumeration(),
+                                                 f:FunctionDefinition<Any>[1] | 'function '+  printStereotypes($f) + printTaggedValues($f) + $f.package->toOne()->elementToPath()+'::'+$f->printFunctionDefinition('')  ]) ) ->joinStrings('\n')
+                                                
+}
+
+function<<access.private>> meta::json::schema::fromSchema::tests::printProfile(p:Profile[1]):String[1]
+{
+    'Profile ' +$p->elementToPath()+'\n{'+
+     
+   if($p.p_stereotypes->isNotEmpty(),|'stereotypes:['+ $p.p_stereotypes.value->joinStrings(',')+'];\n' ,|'')+
+   
+   
+  if($p.p_tags->isNotEmpty(),|'tags:['+ $p.p_tags.value->joinStrings(',')+'];\n' ,|'')+ '}';
+  
+
+   
+}
+
+
+function <<test.Test>> meta::json::schema::fromSchema::tests::dereferenceTest():Boolean[1]
+{
+   assertEquals('/l1/child.json',meta::json::schema::fromSchema::refToFullPath('/../child.json','/l1/l2/parent.json'));
+   assertEquals('/l1/l2/child.json',meta::json::schema::fromSchema::refToFullPath('/./child.json','/l1/l2/parent.json'));
+   assertEquals('/l1/l2/child.json',meta::json::schema::fromSchema::refToFullPath('/child.json','/l1/l2/parent.json'));
+   assertEquals('/l1/l2/child.json',meta::json::schema::fromSchema::refToFullPath('child.json','/l1/l2/parent.json'));
+   assertEquals('/l1/l2/child.json',meta::json::schema::fromSchema::refToFullPath('./child.json','/l1/l2/parent.json'));
+   assertEquals('/l1/l2/l3/child.json',meta::json::schema::fromSchema::refToFullPath('./l3/child.json','/l1/l2/parent.json'));
+   assertEquals('/l1/l2A/child.json',meta::json::schema::fromSchema::refToFullPath('../l2A/child.json','/l1/l2/parent.json'));
+   assertEquals('/child.json',meta::json::schema::fromSchema::refToFullPath('../../child.json','/l1/l2/parent.json'));
+   assertEquals('/l0/child.json',meta::json::schema::fromSchema::refToFullPath('../../child.json','/l0/l1/l2/parent.json'));
+   assertEquals('/l.0/ch.ild.json',meta::json::schema::fromSchema::refToFullPath('../../ch.ild.json','/l.0/l1/l2/par.ent.json'));
+   assertEquals('/l.0/ch.ild.json',meta::json::schema::fromSchema::refToFullPath('../../ch.ild','/l.0/l1/l2/par.ent.json'));
+   assertEquals('/l0/l1/l2/child.json',meta::json::schema::fromSchema::refToFullPath('../../../l1/l2/child','/l0/l1/l2/l3/parent.json'));
+   assertEquals('/a/1/2/child.json',meta::json::schema::fromSchema::refToFullPath('../../1/2/child.json','/a/a/b/parent.json'));
+   assertEquals('/l1/definitions/child.json',meta::json::schema::fromSchema::refToFullPath('/./child.json','/l1/definitions/parent.json'));
+   assertEquals('/a/definitions/2/child.json',meta::json::schema::fromSchema::refToFullPath('../../definitions/2/child.json','/a/a/b/parent.json'));
+   assertEquals('/a/components/schemas/2/child.json',meta::json::schema::fromSchema::refToFullPath('../../components/schemas/2/child.json','/a/a/b/parent.json'));
+   assertEquals('/l1/l2/child.json',meta::json::schema::fromSchema::refToFullPath('#/definitions/l1::l2::child','/a/b/parent.json'));
+   assertEquals('/a/b/child.json',meta::json::schema::fromSchema::refToFullPath('#/definitions/child','/a/b/parent.json'));
+   assertEquals('/a/l1a/child.json',meta::json::schema::fromSchema::refToFullPath('../l1a/parent2.json/definitions/child','/a/b/parent.json'));
+   assertEquals('/a/b/child.json',meta::json::schema::fromSchema::refToFullPath('/definitions/child','/a/b/parent.json'));
+   assertEquals('/a/b/child.json',meta::json::schema::fromSchema::refToFullPath('/definitions/a::b::child','/a/b/parent.json'));
+   assertEquals('/l1/l2/child.json',meta::json::schema::fromSchema::refToFullPath('/file.json/definitions/l1::l2::child','/a/b/c/parent.json'));
+   assertEquals('/a/b/c/parent.json',meta::json::schema::fromSchema::refToFullPath('#','/a/b/c/parent.json'));
+   assertEquals('/l1/definitions.json',meta::json::schema::fromSchema::refToFullPath('/../definitions.json','/l1/l2/parent.json'));
+
+}
+
+
+function <<test.Test>> meta::json::schema::fromSchema::tests::openAPITest():Boolean[1]
+{
+ let schema=   '{\n' +
+            '  "type": "object",\n' +
+            '  "description": "A simple description",\n' +
+            '  "allOf": [\n' +
+                '    {\n' +
+                '      "$ref": "SuperType"\n' +
+                 '    },\n' +
+                 '  ],\n' +
+            '  "properties": {\n' +
+                '        "simpleString": {\n' +
+                '          "type": "string",\n' +
+                   '            "nullable": true\n' +
+
+                  '        }, '+
+                 '        "arrayMaxItemOne": {\n' +
+                '          "type": "array",\n' +
+                '          "description": "description",\n' +
+                '          "items": {\n' +
+                '            "type": "string",\n' +
+                '            "nullable": true,\n' +
+                '            "description": "A combined"\n' +
+                '          },\n' +
+                '          "maxItems": 10\n' +
+                '        }\n' +
+
+   
+            '  }\n' +
+            '}';
+   
+
+    let prefix = 'meta::json::schema::fromSchema::tests';
+    let fileMap = [schemaInput('/openAPI.json', $schema,$prefix)
+
+               ]; 
+
+   let generated =  $fileMap->JSONSchemaToPure()->filter(g|$g->elementToPath()=='meta::json::schema::fromSchema::tests::openAPI')->toSerializer()->parseJSON();
+   let expected = meta::json::schema::fromSchema::tests::openAPI->toSerializer()->parseJSON();
+   
+   assert(jsonEquivalent($expected,$generated));
+
+}
+
+
+
+
+function    meta::json::schema::fromSchema::tests::toSerializer(packs:PackageableElement[*]):String[1]
+{
+
+   $packs->sortBy(p|$p.classifierGenericType.rawType.name->toOne())->map(p|$p->match([c:Class<Any>[1]|$c->transformClass(true, [])->alloyToJSON(),
+                                                                                      e:Enumeration<Any>[1] |$e->transformEnum() ->alloyToJSON(),
+                                                                                      f:FunctionDefinition<Any>[1] |  $f->transformFunction([])->alloyToJSON(),
+                                                                                      p:Profile[1]|$p->transformProfile([])->alloyToJSON()])) ->joinStrings(',\n\n')
+                                                                                      
+}
+
+function <<access.private>> meta::json::schema::fromSchema::tests::propertyTests():String[1]
+
+{
+
+ ' {\n' +
+                '       "$schema": "http://json-schema.org/draft-07/schema#",\n' +
+                '       "type": "object",\n' +
+                 '          "readOnly": true\n' +
+
+                '      "properties": {\n' +
+                '        "readOnlyId": {\n' +
+                '          "type": "string",\n' +
+                '          "readOnly": true\n' +
+                '        },\n' +
+                '    "inLineEnum" : {\n' +
+                '      "type": "string",\n' +
+                '      "default": "defaultValue",\n' +
+                '      "enum": [\n' +
+                '        "defaultValue"\n' +
+                '      ]\n' +
+                '    },\n' +
+                '        "formatWriteOnly": {\n' +
+                '          "type": "string",\n' +
+                '          "format": "date",\n' +
+                '          "writeOnly": true\n' +
+                '        },\n' +
+                '        "stringConstraints": {\n' +
+                '      "description": "A description",\n' +
+                '          "type": "string",\n' +
+                '          "example": "bleh bleh",\n' +
+                '          "minLength": 10,\n' +
+                '          "maxLength": 300,\n' +
+                '          "pattern": "^[a-z]{10, 300}$"\n' +
+                '        },\n' +
+                '        "dateTime": {\n' +
+                '          "type": "string",\n' +
+                '          "format": "date-time"\n' +
+                '        },\n' +
+               '        "int64": {\n' +
+                '          "type": "integer",\n' +
+                '          "format": "int64"\n' +
+                '        },\n' +
+               '        "int32": {\n' +
+                '          "type": "integer",\n' +
+                '          "format": "int32"\n' +
+                '        },\n' +
+               '        "byte": {\n' +
+                '          "type": "string",\n' +
+                '          "format": "byte"\n' +
+                '        },\n' +
+                '        "binary": {\n' +
+                '          "type": "string",\n' +
+                '          "format": "binary"\n' +
+                '        },\n' +
+                '        "uuid": {\n' +
+                '          "type": "string",\n' +
+                '          "format": "uuid"\n' +
+                '        },\n' +
+                '        "double": {\n' +
+                '          "type": "number",\n' +
+                '          "format": "double"\n' +
+                '        },\n' +
+                '        "float": {\n' +
+                '          "type": "number",\n' +
+                '          "format": "float"\n' +
+                '        },\n' +
+
+                '        "minMaxNumber": {\n' +
+                '          "type": "number",\n' +
+                '          "minimum": 18,\n' +
+                '          "maximum": 150\n' +
+                '        },\n' +
+//                 '        "nullable": {\n' +
+//                 '          "type": "string",\n' +
+//                 '          "nullable": true\n' +
+//                 '        },\n' +
+                '    "anyOfConstraint": {\n' +
+               '      "description": "any of",\n' +
+                             '  "anyOf": [\n' +
+                               '    {\n' +
+                               '      "type": "string",\n' +
+                               '      "pattern" : "^[a-z]*$",\n' +
+                               '      "maxLength": 32\n' +
+                               '    },\n' +
+                               '    {\n' +
+                               '      "type": "number",\n' +
+                              '        "maximum": 5\n' +
+
+                               '    },\n' +
+                               '    {\n' +
+                              '      "type": "string",\n' +
+                               '      "pattern" : "^[a-z]*$",\n' +
+                               '      "maxLength": 256\n' +
+                               '    }\n' +
+                               '  ]\n ' +
+                        '    },\n' +
+                '    "oneOfConstraint": {\n' +
+               '      "description": "one of",\n' +
+                             '  "oneOf": [\n' +
+                               '    {\n' +
+                               '      "type": "string",\n' +
+                               '      "pattern" : "^[a-z]*$",\n' +
+                               '      "maxLength": 32\n' +
+                               '    },\n' +
+                               '    {\n' +
+                               '      "type": "number",\n' +
+                              '        "maximum": 10\n' +
+
+                               '    },\n' +
+                               '    {\n' +
+                              '      "type": "string",\n' +
+                               '      "pattern" : "^[a-z]*$",\n' +
+                               '      "maxLength": 256\n' +
+                               '    }\n' +
+                               '  ]\n ' +
+                        '    },\n' +
+                '        "arrayFeatures": {\n' +
+                '          "type": "array",\n' +
+                '          "items": {\n' +
+                '            "type": "string",\n' +
+                '            "minLength": 10,\n' +
+                '            "maxLength": 300,\n' +
+                '            "example": "array example",' +
+
+                '            "pattern": "^[a-z]{10, 300}$"\n' +
+
+                '          },\n' +
+                '          "uniqueItems": true,\n' +
+                '          "minItems": 4,\n' +
+                '          "maxItems": 20\n' +
+                '        },\n' +
+   
+                '        "optionalArrayWithMax": {\n' +
+                '          "type": "array",\n' +
+                '          "items": {\n' +
+                '            "type": "string",\n' +
+                '            "pattern": "^[a-z]{10, 300}$"\n' +
+
+                '          },\n' +
+                '          "maxItems": 20\n' +
+                '        },\n' +
+                 '        "arrayMaxItemOne": {\n' +
+                '          "type": "array",\n' +
+                '          "items": {\n' +
+                '            "type": "string",\n' +
+                '          },\n' +
+                '          "maxItems": 1\n' +
+                '        },\n' +
+
+                '        "arrayWithFeaturesOutsideOfItems": {\n' +
+                 '          "type": "array",\n' +
+                '  "readOnly": true,\n' +
+                '    "example": ["array", "example"],' +
+
+                '          "items": {\n' +
+                '            "type": "string",\n' +
+                '          "format": "uuid"\n' +
+
+                '          },\n' +
+                '        },\n' +
+
+                '        "requiredArrayWithMax": {\n' +
+                '          "type": "array",\n' +
+                '          "items": {\n' +
+                '              "type": "string",\n' +
+                '              "format": "date-time"\n' +
+                '                    },\n' +
+                '          "uniqueItems": true,\n' +
+                '          "maxItems": 20\n' +
+                 '        },\n' +
+                           '    "enumType": {\n' +
+                        '      "$ref": "ExampleEnum.json"\n' +
+                 '            },\n' +
+              '    "simpleTypeReference": {\n' +
+                        '      "$ref": "SimpleObject.json"\n' +
+                  +     '    }, '+
+                 '    "objectType": {\n' +
+                        '      "type": "object"\n' +
+                  +     '    }, '+
+                 '    "constant": {\n' +
+                   '            "type": "string",\n' +
+                        '      "const": "my constant"\n' +
+                  +     '    } '+
+
+
+
+                '      },\n' +
+               '"required": [\n' +
+               '    "enumType",\n' +
+               '    "requiredArrayWithMax"\n' +
+               '  ],'+
+
+                '    }';
+
+
+}
+
+function <<access.private>> meta::json::schema::fromSchema::tests::enum():String[1]
+{
+   
+   '{\n' +
+            '  "description": "Example Enum Doc",\n' +
+            '  "type": "string",\n' +
+            '  "readOnly": true,\n' +
+               '  "javaType": \n' +
+            '    "org.example.ExampleEnum"\n' +
+            '  ,\n' +
+            '  "enum": [\n' +
+               '    "",\n' +
+            '    "simpleEnum",\n' +
+            '    "enum::withcolon",\n' +
+            '    "enum withspace",\n' +
+            '    "123numberstart",\n' +
+            '    "() /other characters",\n' +
+            '    "true"\n' +
+            '  ]\n' +
+            '}\n';
+   
+}
+
+
+function <<access.private>> meta::json::schema::fromSchema::tests::simpleObject():String[1]
+{
+   '{\n' +
+            '  "$schema": "http://json-schema.org/draft-07/schema#",\n' +
+            '  "type": "object",\n' +
+            '  "description": "A simple description",\n' +
+            '  "allOf": [\n' +
+                '    {\n' +
+                '      "$ref": "SuperType"\n' +
+                 '    },\n' +
+                 '  ],\n' +
+            '  "properties": {\n' +
+                '        "simpleString": {\n' +
+                '          "type": "string"\n' +
+                  '        }, '+
+                                   '"simpleReference": {\n' +
+                        '      "$ref": "simpleReference.json"\n' +
+                       '    },\n' +
+                 '        "arrayMaxItemOne": {\n' +
+                '          "type": "array",\n' +
+                   '          "uniqueItems": true,\n' +
+
+                '          "items": {\n' +
+                '            "type": "string",\n' +
+                   '          "format": "uuid"\n' +
+
+                '          },\n' +
+                '          "maxItems": 10\n' +
+                '        }\n' +
+
+   
+            '  }\n' +
+            '}';
+   
+}
+
+
+
+
+function <<access.private>> meta::json::schema::fromSchema::tests::classWithInterface():String[1]
+{
+   '{\n' +
+            '  "$schema": "http://json-schema.org/draft-07/schema#",\n' +
+            '  "type": "object",\n' +
+            '  "description": "A simple description",\n' +
+            '  "javaInterfaces": [\n' +
+            '    "org.example.myInterface"\n' +
+            '  ],\n' +
+            '  "properties": {\n' +
+                '        "simpleString": {\n' +
+                '          "type": "string"\n' +
+                  '        }\n' +
+            '  }\n' +
+            '}';
+   
+}
+
+function <<access.private>> meta::json::schema::fromSchema::tests::anyOf():String[1]
+{
+   '{\n' +
+            '  "$schema": "http://json-schema.org/draft-07/schema#",\n' +
+            '  "type": "object",\n' +
+            '  "description": "A simple description",\n' +
+            '  "properties": {\n' +
+                '        "simpleString": {\n' +
+                '          "type": "string"\n' +
+                  '        }\n' +
+            '  }\n' +
+            '}';
+   
+}
+
+
+
+function  <<access.private>>   meta::json::schema::fromSchema::tests::superType():String[1]
+
+{
+
+'{\n' +
+            '  "$schema": "http://json-schema.org/draft-07/schema#",\n' +
+            '  "description": "a Super Type Object",\n' +
+            '  "type": "object"\n' +
+            '}\n';
+
+}
+
+function <<access.private>>  meta::json::schema::fromSchema::tests::complexFragment():String[1]
+{
+   
+   '{\n' +
+                '  "$schema": "http://json-schema.org/draft-07/schema#",\n' +
+                '  "description": "complex Fragment",\n' +
+                '  "writeOnly": true,\n' +
+
+                '  "anyOf": [\n' +
+                '    {\n' +
+                '      "type": "string",\n' +
+                '      "maxLength": 32\n' +
+                '    },\n' +
+                '    {\n' +
+                '      "type": "number"\n' +
+                '    },\n' +
+                '    {\n' +
+               '      "type": "string",\n' +
+                '      "pattern": "^*",\n' +
+                '      "maxLength": 256\n' +
+                '    }\n' +
+                '  ]\n}';
+   
+}
+
+function   meta::json::schema::fromSchema::tests::nestedObject():Boolean[1]
+{
+   
+let cat=    '{\n' +
+        '    "title": "Cat",\n' +
+        '    "allOf": [\n' +
+        '        {\n' +
+        '            "$ref": "Pet.json"\n' +
+        '        },\n' +
+        '    {\n' +
+        '    "type": "object",\n' +
+        '    "properties": {\n' +
+        '        "hasMeow": {\n' +  
+        '            "type": "Boolean"\n' +
+        '        }\n' +
+                 '"friend": {\n' +
+      '      "$ref": "Pet.json"\n' +
+     '    }\n' +
+
+        '    }}]\n' +
+        '}\n' ;
+
+    let prefix = 'example';
+    let fileMap = [schemaInput('/Cat.json', $cat,$prefix),
+                  schemaInput('/Pet.json', $cat,$prefix)
+
+               ]; 
+
+   let generated =  $fileMap->JSONSchemaToPure()->filter(g|$g->elementToPath()=='example::Cat')->toSerializer();
+
+true;
+
+}
+
+
+
+function <<JSONSchemaGeneration.readOnly>> meta::json::schema::fromSchema::tests::simpleFragment():String[1]
+{
+   
+  '{\n' +
+                   '  "readOnly": true,\n' +
+   '   "type": "string",\n' +
+                   '          "format": "uuid"\n' +
+
+   '    }\n' ;
+
+
+}
+
+
+
+
+
+
+function <<test.Test>>  meta::json::schema::fromSchema::tests::discriminatorTest():Boolean[1]
+{
+ let cat ='{\n' +
+        '    "title": "Cat",\n' +
+        '    "allOf": [\n' +
+        '        {\n' +
+        '            "$ref": "/shared/Pet.json"\n' +
+        '        }\n' +
+        '    ],\n' +
+        '    "type": "object",\n' +
+        '    "properties": {\n' +
+        '        "hasMeow": {\n' +
+        '            "type": "boolean"\n' +
+        '        },\n' +
+                    '"friend": {\n' +
+      '      "$ref": "friends.json"\n' +
+     '    }\n' +
+
+   
+        '    }\n' +
+        '}\n' ;
+ 
+  let bigCat ='{\n' +
+        '    "title": "Big Cat",\n' +
+        '    "allOf": [\n' +
+        '        {\n' +
+        '            "$ref": "Cat.json"\n' +
+        '        }\n' +
+        '    ],\n' +
+        '    "type": "object",\n' +
+        '    "properties": {\n' +
+        '        "harRoar": {\n' +
+        '            "type": "boolean"\n' +
+        '        }'+
+        '    }\n' +
+        '}\n' ;
+ let dog = '{\n' +
+        '    "title": "Dog",\n' +
+        '    "allOf": [\n' +
+        '        {\n' +
+        '            "$ref": "/shared/Pet.json"\n' +
+        '        }\n' +
+        '    ],\n' +
+        '    "type": "object",\n' +
+        '    "properties": {\n' +
+        '        "hasBark": {\n' +
+        '            "type": "boolean"\n' +
+        '        }\n' +
+        '        "friends": {\n' +
+                '          "type": "array",\n' +
+                      '          "uniqueItems": true,\n' +
+
+                '          "items": {\n' +
+                        '      "$ref": "friendsNoMap.json"\n' +
+                '          }\n' +
+                '        },\n' +
+   
+          '"friendsMaxThree": {\n' +
+                '          "type": "array",\n' +
+               '"maxItems":3,"minItems":1,'+
+   '          "items": {\n' +
+                        '      "$ref": "friendsNoMap.json"\n' +
+                '          }\n' +
+                '        },\n'  +
+   
+  
+         '        "bestFriend": {\n' +
+                        '      "$ref": "friendsNoMap.json"\n' +
+                '        },\n' +
+        '        "siblings": {\n' +
+                '          "type": "array",\n' +
+                      '          "uniqueItems": true,\n' +
+
+                '          "items": {\n' +
+                        '      "$ref": "Dog.json"\n' +
+                '          }\n' +
+                '        }\n' +
+
+        '    }\n' +
+        '}\n' ;
+
+ let pet =     '{\n' +
+        '    "title": "Pet",\n' +
+        '    "type": "object",\n' +
+        '    "properties": {\n' +
+        '        "petType": {\n' +
+        '            "type": "string",\n' +
+        '            "enum": [\n' +
+        '                "Feline",\n' +
+   
+        '                "Canine,"\n' +
+        '                "woof"\n' +
+
+        '            ],\n' +
+        '        }\n' +
+        '    },\n' +
+       '    "discriminator": {  \n' +
+        '        "propertyName": "petType",\n' +
+        '        "mapping": {\n' +
+        '            "Feline": "Cat.json",\n' +
+        '            "Canine": "Dog.json",\n' +
+        '              "woof": "Dog.json",\n' +
+        '             "bigCat": "BigCat.json"\n' +
+
+        '        }\n' +
+        '    },\n' +
+               '"required": [\n' +
+               '    "petType"\n' +
+               '  ]'+
+        '}';
+
+   
+  let discriminatorWithMapping ='{\n' +
+        '    "oneOf": [\n' +
+        '        {\n' +
+        '            "$ref": "Cat.json"\n' +
+        '        },\n' +
+        '        {\n' +
+        '            "$ref": "Dog.json"\n' +
+        '        }\n' +
+        '    ],\n' +
+        '    "discriminator": {  \n' +
+        '        "propertyName": "petType",\n' +
+        '        "mapping": {\n' +
+        '            "Feline": "Cat.json",\n' +
+        '            "Canine": "Dog.json",\n' +
+        '              "woof": "Dog.json",\n' +
+        '             "bigCat": "BigCat.json"\n' +
+
+        '        }\n' +
+        '    }\n' +
+        '}'; 
+   
+   
+   let discriminatorNoMapping = 
+'{\n' +
+        '    "oneOf": [\n' +
+        '        {\n' +
+        '            "$ref": "Cat.json"\n' +
+        '        },\n' +
+        '        {\n' +
+        '            "$ref": "Dog.json"\n' +
+        '        }\n' +
+        '    ],\n' +
+        '    "discriminator": {  \n' +
+        '        "propertyName": "petType"\n' +
+        '    }\n' +
+        '}';
+
+   
+   
+   let anyAnimal =' {\n' +
+        '  "$schema": "http:\\/\\/json-schema.org\\/draft-07\\/schema#",\n' +
+        '  "anyOf": [\n' +
+        '    {\n' +
+        '      "$ref": "Cat.json"\n' +
+       '    },\n' +
+        '    {\n' +
+        '      "$ref": "Dog.json"\n' +
+        '    },\n' +
+        '    {\n' +
+        '      "$ref": "BigCat.json"\n' +
+        '    }\n' +
+
+        '  ]\n' +
+        '}';
+   
+   
+    let prefix = 'meta::json::schema::fromSchema::tests';
+    let fileMap = [
+                  schemaInput('Cat.json', $cat,$prefix),
+                  schemaInput('Dog.json', $dog,$prefix),
+                    schemaInput('/shared/Pet.json', $pet,$prefix),
+                    schemaInput('BigCat.json', $bigCat,$prefix),
+                   schemaInput('friends.json', $discriminatorWithMapping,$prefix),
+                  schemaInput('friendsNoMap.json', $discriminatorNoMapping,$prefix),
+                    schemaInput('anyAnimal.json', $anyAnimal,$prefix)
+
+
+               ]; 
+
+   let generated =  $fileMap->JSONSchemaToPure();
+   
+
+   assertSize($generated,7);
+
+   meta::json::schema::fromSchema::tests::testfromJSONSchema(meta::json::schema::fromSchema::tests::shared::Pet,$generated);
+
+   //use grammar assertion  since  simple function references  don't serialize the same in memory and compiled 
+   let generatedCat =  $generated->filter(g|$g->elementToPath()=='meta::json::schema::fromSchema::tests::Cat')->printTransformToString();
+   let expectedCat = meta::json::schema::fromSchema::tests::Cat->printTransformToString();
+   assertEquals($expectedCat,$generatedCat);
+
+
+   let generatedDog =  $generated->filter(g|$g->elementToPath()=='meta::json::schema::fromSchema::tests::Dog')->printTransformToString();
+   let expectedDog = meta::json::schema::fromSchema::tests::Dog->printTransformToString();
+   
+   
+    assertEquals($expectedDog,$generatedDog);
+   let friendsWithMap =  $generated->filter(g|$g->elementToPath()=='meta::json::schema::fromSchema::tests::friends_Pet_1__Boolean_1_')->toSerializer()->parseJSON();
+   let expectedfriendsWithMap = meta::json::schema::fromSchema::tests::friends_Pet_1__Boolean_1_->toSerializer()->parseJSON();
+    assert(jsonEquivalent($friendsWithMap,$expectedfriendsWithMap));
+   
+    let generatedDiscriminatorUnMapped =  $generated->filter(g|$g->elementToPath()=='meta::json::schema::fromSchema::tests::friendsNoMap_Pet_1__Boolean_1_')->toSerializer()->parseJSON();
+   let expectedDiscriminatorUnMapped =meta::json::schema::fromSchema::tests::friendsNoMap_Pet_1__Boolean_1_->toSerializer()->parseJSON();
+   assert(jsonEquivalent($generatedDiscriminatorUnMapped,$expectedDiscriminatorUnMapped));
+   
+   let generatedAnyAnimal =  $generated->filter(g|$g->elementToPath()== 'meta::json::schema::fromSchema::tests::anyAnimal_Any_$0_1$__Boolean_1_')->toSerializer()->parseJSON();
+   let expectedAnyAnimal = meta::json::schema::fromSchema::tests::anyAnimal_Any_$0_1$__Boolean_1_->toSerializer()->parseJSON();
+   
+   assert(jsonEquivalent($generatedAnyAnimal,$expectedAnyAnimal));
+
+}
+
+function  meta::json::schema::fromSchema::tests::printschemas(expected:JSONElement[1],actual:JSONElement[1]):String[1]
+{
+'expected\n'+ $expected->toPrettyJSONString()  + '\nactual\n' +$actual->toPrettyJSONString();
+
+}
+
+
+
+Class {meta::json::schema::JSONSchemaGeneration.title='Big Cat', meta::json::schema::JSONSchemaOpenAPIExtension.discriminatorName='bigCat'} meta::json::schema::fromSchema::tests::BigCat extends meta::json::schema::fromSchema::tests::Cat
+{
+  harRoar : Boolean[0..1];
+}
+Class {meta::json::schema::JSONSchemaGeneration.title='Cat',meta::json::schema::JSONSchemaOpenAPIExtension.discriminatorName='Feline'} meta::json::schema::fromSchema::tests::Cat extends meta::json::schema::fromSchema::tests::shared::Pet
+[
+  friend_inLine : $this.friend->meta::pure::functions::collection::isNotEmpty()->meta::pure::functions::lang::if({|$this.friend->meta::pure::functions::multiplicity::toOne()->meta::json::schema::fromSchema::tests::friends()}, {|true})
+]
+{
+  friend : meta::json::schema::fromSchema::tests::shared::Pet[0..1];
+  hasMeow : Boolean[0..1];
+}
+
+Class {meta::json::schema::JSONSchemaGeneration.title='Dog',meta::json::schema::JSONSchemaOpenAPIExtension.discriminatorName='woof',meta::json::schema::JSONSchemaOpenAPIExtension.discriminatorName='Canine'} meta::json::schema::fromSchema::tests::Dog extends meta::json::schema::fromSchema::tests::shared::Pet
+[
+  bestFriend_inLine : $this.bestFriend->meta::pure::functions::collection::isNotEmpty()->meta::pure::functions::lang::if({|$this.bestFriend->toOne()->meta::json::schema::fromSchema::tests::friendsNoMap()}, {|true}),
+  siblings_inLine : $this.siblings->meta::pure::functions::collection::isDistinct(),
+  friendsMaxThree_inLine : $this.friendsMaxThree->meta::pure::functions::collection::forAll({value|$value->meta::json::schema::fromSchema::tests::friendsNoMap()}),
+  friends_inLine : $this.friends->meta::pure::functions::collection::isNotEmpty()->meta::pure::functions::lang::if({|$this.friends->meta::pure::functions::collection::isDistinct()->meta::pure::functions::boolean::and($this.friends->meta::pure::functions::collection::forAll({value|$value->meta::json::schema::fromSchema::tests::friendsNoMap()}))}, {|true})
+]
+{
+  hasBark : Boolean[0..1];
+  bestFriend : meta::json::schema::fromSchema::tests::shared::Pet[0..1];
+  siblings : meta::json::schema::fromSchema::tests::Dog[*];
+  friendsMaxThree : meta::json::schema::fromSchema::tests::shared::Pet[1..3];
+  friends : meta::json::schema::fromSchema::tests::shared::Pet[*];
+}
+
+Class {meta::json::schema::JSONSchemaGeneration.title='Pet'}  meta::json::schema::fromSchema::tests::shared::Pet
+[
+  petType_inLine : $this.petType->meta::pure::functions::collection::in(['Feline', 'Canine,', 'woof'])
+]
+{
+  <<meta::json::schema::JSONSchemaOpenAPIExtension.discriminatorProperty>> petType : String[1];
+}
+
+function meta::json::schema::fromSchema::tests::friendsNoMap(value: meta::json::schema::fromSchema::tests::shared::Pet[1]): Boolean[1]
+{
+  $value->meta::json::schema::discriminateOneOf(  $value.petType,[meta::json::schema::fromSchema::tests::Cat, meta::json::schema::fromSchema::tests::Dog], []);
+}
+function meta::json::schema::fromSchema::tests::friends(value: meta::json::schema::fromSchema::tests::shared::Pet[1]): Boolean[1]
+{
+  $value->meta::json::schema::discriminateOneOf($value.petType,[meta::json::schema::fromSchema::tests::Cat, meta::json::schema::fromSchema::tests::Dog], [meta::json::schema::mapSchema('bigCat',meta::json::schema::fromSchema::tests::BigCat), meta::json::schema::mapSchema('Feline',meta::json::schema::fromSchema::tests::Cat),meta::json::schema::mapSchema( 'woof',meta::json::schema::fromSchema::tests::Dog), meta::json::schema::mapSchema('Canine',meta::json::schema::fromSchema::tests::Dog)]);
+ }
+function meta::json::schema::fromSchema::tests::anyAnimal(value: meta::pure::metamodel::type::Any[0..1]): Boolean[1]
+{
+  $value->meta::pure::functions::collection::isNotEmpty()->meta::pure::functions::lang::if({|[$value->meta::pure::functions::multiplicity::toOne()->meta::pure::functions::meta::instanceOf(meta::json::schema::fromSchema::tests::Cat), $value->meta::pure::functions::multiplicity::toOne()->meta::pure::functions::meta::instanceOf(meta::json::schema::fromSchema::tests::Dog), $value->meta::pure::functions::multiplicity::toOne()->meta::pure::functions::meta::instanceOf(meta::json::schema::fromSchema::tests::BigCat)]->meta::pure::functions::collection::or()}, {|true});
+}
+
+
+Class <<meta::json::schema::JSONSchemaGeneration.readOnly>> meta::json::schema::fromSchema::tests::PropertyTestObject
+[ 
+  constant_inLine : $this.constant->meta::pure::functions::collection::isNotEmpty()->meta::pure::functions::lang::if({|($this.constant->meta::pure::functions::multiplicity::toOne()) == ('my constant')}, {|true}),
+  anyOfConstraint_inLine : $this.anyOfConstraint->meta::pure::functions::collection::isNotEmpty()->meta::pure::functions::lang::if({|[$this.anyOfConstraint->meta::pure::functions::multiplicity::toOne()->meta::pure::functions::meta::instanceOf(String)->meta::pure::functions::boolean::and($this.anyOfConstraint->meta::pure::functions::string::makeString()->meta::pure::functions::string::matches('^[a-z]*$')->meta::pure::functions::boolean::and($this.anyOfConstraint->meta::pure::functions::string::makeString()->meta::pure::functions::string::isNoLongerThan(32))), meta::pure::functions::boolean::and(($this.anyOfConstraint->meta::pure::functions::multiplicity::toOne()->meta::pure::functions::lang::cast(@Number)) <= (5), $this.anyOfConstraint->meta::pure::functions::multiplicity::toOne()->meta::pure::functions::meta::instanceOf(Float)), $this.anyOfConstraint->meta::pure::functions::multiplicity::toOne()->meta::pure::functions::meta::instanceOf(String)->meta::pure::functions::boolean::and($this.anyOfConstraint->meta::pure::functions::string::makeString()->meta::pure::functions::string::matches('^[a-z]*$')->meta::pure::functions::boolean::and($this.anyOfConstraint->meta::pure::functions::string::makeString()->meta::pure::functions::string::isNoLongerThan(256)))]->meta::pure::functions::collection::or()}, {|true}),
+  arrayWithFeaturesOutsideOfItems_inLine : $this.arrayWithFeaturesOutsideOfItems->meta::pure::functions::collection::forAll({value|$value->meta::pure::functions::string::isUUID()}),
+  minMaxNumber_inLine : $this.minMaxNumber->meta::pure::functions::collection::isNotEmpty()->meta::pure::functions::lang::if({|meta::pure::functions::boolean::and(($this.minMaxNumber->meta::pure::functions::multiplicity::toOne()->meta::pure::functions::lang::cast(@Number)) <= (150), ($this.minMaxNumber->meta::pure::functions::multiplicity::toOne()->meta::pure::functions::lang::cast(@Number)) >= (18))}, {|true}),
+  uuid_inLine : $this.uuid->meta::pure::functions::collection::isNotEmpty()->meta::pure::functions::lang::if({|$this.uuid->meta::pure::functions::string::isUUID()}, {|true}),
+  inLineEnum_inLine : $this.inLineEnum->meta::pure::functions::collection::isNotEmpty()->meta::pure::functions::lang::if({|$this.inLineEnum->meta::pure::functions::multiplicity::toOne()->meta::pure::functions::collection::in('defaultValue')}, {|true}),
+  requiredArrayWithMax_inLine : $this.requiredArrayWithMax->meta::pure::functions::collection::isDistinct(),
+  optionalArrayWithMax_inLine : $this.optionalArrayWithMax->meta::pure::functions::collection::forAll({value|$value->meta::pure::functions::string::makeString()->meta::pure::functions::string::matches('^[a-z]{10, 300}$')}),
+  oneOfConstraint_inLine : $this.oneOfConstraint->meta::pure::functions::collection::isNotEmpty()->meta::pure::functions::lang::if({|[$this.oneOfConstraint->meta::pure::functions::multiplicity::toOne()->meta::pure::functions::meta::instanceOf(String)->meta::pure::functions::boolean::and($this.oneOfConstraint->meta::pure::functions::string::makeString()->meta::pure::functions::string::matches('^[a-z]*$')->meta::pure::functions::boolean::and($this.oneOfConstraint->meta::pure::functions::string::makeString()->meta::pure::functions::string::isNoLongerThan(32))), meta::pure::functions::boolean::and(($this.oneOfConstraint->meta::pure::functions::multiplicity::toOne()->meta::pure::functions::lang::cast(@Number)) <= (10), $this.oneOfConstraint->meta::pure::functions::multiplicity::toOne()->meta::pure::functions::meta::instanceOf(Float)), $this.oneOfConstraint->meta::pure::functions::multiplicity::toOne()->meta::pure::functions::meta::instanceOf(String)->meta::pure::functions::boolean::and($this.oneOfConstraint->meta::pure::functions::string::makeString()->meta::pure::functions::string::matches('^[a-z]*$')->meta::pure::functions::boolean::and($this.oneOfConstraint->meta::pure::functions::string::makeString()->meta::pure::functions::string::isNoLongerThan(256)))]->meta::pure::functions::collection::oneOf()}, {|true}),
+  stringConstraints_inLine : $this.stringConstraints->meta::pure::functions::collection::isNotEmpty()->meta::pure::functions::lang::if({|$this.stringConstraints->meta::pure::functions::string::makeString()->meta::pure::functions::string::matches('^[a-z]{10, 300}$')->meta::pure::functions::boolean::and($this.stringConstraints->meta::pure::functions::string::makeString()->meta::pure::functions::string::isNoShorterThan(10)->meta::pure::functions::boolean::and($this.stringConstraints->meta::pure::functions::string::makeString()->meta::pure::functions::string::isNoLongerThan(300)))}, {|true}),
+  arrayFeatures_inLine : $this.arrayFeatures->meta::pure::functions::collection::isDistinct()->meta::pure::functions::boolean::and($this.arrayFeatures->meta::pure::functions::collection::forAll({value|$value->meta::pure::functions::string::makeString()->meta::pure::functions::string::matches('^[a-z]{10, 300}$')->meta::pure::functions::boolean::and($value->meta::pure::functions::string::makeString()->meta::pure::functions::string::isNoShorterThan(10)->meta::pure::functions::boolean::and($value->meta::pure::functions::string::makeString()->meta::pure::functions::string::isNoLongerThan(300)))}))
+]
+{
+  dateTime : DateTime[0..1];
+  constant : String[0..1];
+  <<meta::json::schema::JSONSchemaTypeExtension.byte>> byte : String[0..1];
+  <<meta::json::schema::JSONSchemaTypeExtension.double>> double : Float[0..1];
+  {meta::pure::profiles::doc.doc='any of'} anyOfConstraint : meta::pure::metamodel::type::Any[0..1];
+  enumType : meta::json::schema::fromSchema::tests::ExampleEnum[1];
+  <<meta::json::schema::JSONSchemaGeneration.readOnly>> {meta::json::schema::JSONSchemaGeneration.example='array',meta::json::schema::JSONSchemaGeneration.example='example'} arrayWithFeaturesOutsideOfItems : String[*];
+  <<meta::json::schema::JSONSchemaGeneration.writeOnly>> formatWriteOnly : StrictDate[0..1];
+  minMaxNumber : Float[0..1];
+  float : Float[0..1];
+  uuid : String[0..1];
+  {meta::json::schema::JSONSchemaGeneration.defaultValue='defaultValue'} inLineEnum : String[0..1];
+  requiredArrayWithMax : DateTime[1..20];
+  <<meta::json::schema::JSONSchemaTypeExtension.object>> objectType : meta::pure::metamodel::type::Any[0..1];
+  optionalArrayWithMax : String[0..20];
+  {meta::pure::profiles::doc.doc='one of'} oneOfConstraint : meta::pure::metamodel::type::Any[0..1];
+  <<meta::json::schema::JSONSchemaTypeExtension.int32>> int32 : Integer[0..1];
+  <<meta::json::schema::JSONSchemaTypeExtension.int64>> int64 : Integer[0..1];
+  <<meta::json::schema::JSONSchemaTypeExtension.binary>> binary : String[0..1];
+  <<meta::json::schema::JSONSchemaGeneration.readOnly>> readOnlyId : String[0..1];
+  {meta::json::schema::JSONSchemaGeneration.example='bleh bleh',meta::pure::profiles::doc.doc='A description'} stringConstraints : String[0..1];
+  {meta::json::schema::JSONSchemaGeneration.example='array example'} arrayFeatures : String[4..20];
+  <<meta::json::schema::JSONSchemaTypeExtension.array>> arrayMaxItemOne : String[0..1];
+  simpleTypeReference : meta::json::schema::fromSchema::tests::SimpleObject[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc='A simple description'} meta::json::schema::fromSchema::tests::SimpleObject extends meta::json::schema::fromSchema::tests::SuperType
+[
+  simpleReference : $this.simpleReference->meta::json::schema::fromSchema::tests::simpleReference(),
+  arrayMaxItemOne_inLine : $this.arrayMaxItemOne->meta::pure::functions::collection::isNotEmpty()->meta::pure::functions::lang::if({|$this.arrayMaxItemOne->meta::pure::functions::collection::isDistinct()->meta::pure::functions::boolean::and($this.arrayMaxItemOne->meta::pure::functions::collection::forAll({value|$value->meta::pure::functions::string::isUUID()}))}, {|true})
+]
+{
+  simpleReference : String[0..1];
+  simpleString : String[0..1];
+  {meta::pure::profiles::doc.doc='A combined description'} arrayMaxItemOne : String[0..10];
+}
+Class {meta::pure::profiles::doc.doc='a Super Type Object'} meta::json::schema::fromSchema::tests::SuperType
+{
+} 
+function  <<JSONSchemaGeneration.writeOnly>>  {doc.doc ='complex Fragment'} meta::json::schema::fromSchema::tests::complexFragment(value: meta::pure::metamodel::type::Any[0..1]): Boolean[1]
+{
+  $value->meta::pure::functions::collection::isNotEmpty()->meta::pure::functions::lang::if({|[$value->meta::pure::functions::multiplicity::toOne()->meta::pure::functions::meta::instanceOf(String)->meta::pure::functions::boolean::and($value->meta::pure::functions::string::makeString()->meta::pure::functions::string::isNoLongerThan(32)), $value->meta::pure::functions::multiplicity::toOne()->meta::pure::functions::meta::instanceOf(Float), $value->meta::pure::functions::multiplicity::toOne()->meta::pure::functions::meta::instanceOf(String)->meta::pure::functions::boolean::and($value->meta::pure::functions::string::makeString()->meta::pure::functions::string::matches('^*')->meta::pure::functions::boolean::and($value->meta::pure::functions::string::makeString()->meta::pure::functions::string::isNoLongerThan(256)))]->meta::pure::functions::collection::or()}, {|true});
+}
+function<<JSONSchemaGeneration.readOnly>> meta::json::schema::fromSchema::tests::simpleReference(value: String[0..1]): Boolean[1]
+{
+  $value->meta::pure::functions::collection::isNotEmpty()->meta::pure::functions::lang::if({|$value->meta::pure::functions::string::isUUID()}, {|true});
+}
+
+
+
+Class {meta::pure::profiles::doc.doc='A simple description'} meta::json::schema::fromSchema::tests::openAPI extends meta::json::schema::fromSchema::tests::SuperType
+{
+  <<meta::json::schema::JSONSchemaTypeExtension.null>> simpleString : String[0..1];
+  <<meta::json::schema::JSONSchemaTypeExtension.null>> {doc.doc='A combined description'} arrayMaxItemOne : String[0..10];
+}
+            
+Enum <<meta::json::schema::JSONSchemaGeneration.readOnly>> {JSONSchemaJavaExtension.javaType='org.example.ExampleEnum', meta::pure::profiles::doc.doc='Example Enum Doc'} meta::json::schema::fromSchema::tests::ExampleEnum
+{
+  simpleEnum,
+{JSONSchemaGeneration.name='enum::withcolon'}  enum__withcolon,
+{JSONSchemaGeneration.name='enum withspace'}  enum_withspace,
+{JSONSchemaGeneration.name='123numberstart'}   _123numberstart,
+{JSONSchemaGeneration.name='() /other characters'}   ____other_characters,
+{JSONSchemaGeneration.name='true'}   _true
+   
+}
+
+
+function  meta::json::schema::fromSchema::tests::testfromJSONSchema(type:PackageableElement[1],generatedElements:PackageableElement[*]):Boolean[1]
+{
+   meta::json::schema::fromSchema::tests::testfromJSONSchema($type,$generatedElements,false);   
+}
+
+function  meta::json::schema::fromSchema::tests::testfromJSONSchema(type:PackageableElement[1],generatedElements:PackageableElement[*],debug:Boolean[1]):Boolean[1]
+{
+    if($debug,
+       |'Expected'->println();
+        $type->toSerializer()->parseJSON()->toPrettyJSONString()->println();
+       'Actual'->println();
+       $generatedElements->filter(p|$p->elementToPath()==$type->elementToPath())->toOne()->toSerializer()->parseJSON()->toPrettyJSONString()->println();
+       false;,
+      |
+       assert(jsonEquivalent($type->toSerializer()->parseJSON(),$generatedElements->filter(p|$p->elementToPath()==$type->elementToPath())->toOne()->toSerializer()->parseJSON()));
+);
+   
+
+}

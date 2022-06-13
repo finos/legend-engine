@@ -14,22 +14,22 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy;
 
+import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.shared.core.operational.Assert;
-import org.eclipse.collections.api.tuple.Pair;
-import org.eclipse.collections.impl.tuple.Tuples;
 
+import javax.security.auth.Subject;
 import java.security.AccessController;
 import java.util.Properties;
-import javax.security.auth.Subject;
 
 public abstract class InteractiveAuthenticationStrategy extends AuthenticationStrategy
 {
     @Override
     public Pair<String, Properties> handleConnection(String url, Properties properties, DatabaseManager databaseManager)
     {
-        Assert.assertTrue(Subject.getSubject(AccessController.getContext()) != null, ()->"A 'Secure Connect' or a Kerberos connection can't be built outside of a user call");
+        Assert.assertTrue(Subject.getSubject(AccessController.getContext()) != null, () -> "A 'Secure Connect' or a Kerberos connection can't be built outside of a user call");
         return Tuples.pair(url, properties);
     }
 }

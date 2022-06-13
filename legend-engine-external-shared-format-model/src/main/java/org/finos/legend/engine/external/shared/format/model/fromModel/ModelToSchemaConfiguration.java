@@ -23,4 +23,9 @@ public abstract class ModelToSchemaConfiguration extends GenerationConfiguration
 {
     public List<String> sourceModel = new ArrayList<>();
     public String targetSchemaSet;
+
+    public ModelToSchemaConfiguration(String format)
+    {
+        this.format = format;
+    }
 }

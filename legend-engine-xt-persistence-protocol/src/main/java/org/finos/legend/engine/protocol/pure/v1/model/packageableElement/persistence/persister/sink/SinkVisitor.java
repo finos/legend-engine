@@ -17,5 +17,6 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persis
 public interface SinkVisitor<T>
 {
     T visit(RelationalSink val);
+
     T visit(ObjectStorageSink val);
 }

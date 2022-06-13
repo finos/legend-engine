@@ -79,7 +79,7 @@ public class ExternalSchemaSetGrammarBuilder
         grammar.append("{\n");
         grammar.append("  format:").append(format).append(";\n");
         grammar.append("  schemas: [\n");
-        for (int i=0; i<schemas.size(); i++)
+        for (int i = 0; i < schemas.size(); i++)
         {
             SchemaValues values = schemas.get(i);
             grammar.append("    {\n");
@@ -92,7 +92,7 @@ public class ExternalSchemaSetGrammarBuilder
                 grammar.append("      location:").append(PureGrammarComposerUtility.convertString(values.location, true)).append(";\n");
             }
             grammar.append("      content:").append(PureGrammarComposerUtility.convertString(values.content, true)).append(";\n");
-            grammar.append("    }").append(i < schemas.size()-1 ? "," : "").append("\n");
+            grammar.append("    }").append(i < schemas.size() - 1 ? "," : "").append("\n");
         }
         grammar.append("  ];\n");
         grammar.append("}\n");

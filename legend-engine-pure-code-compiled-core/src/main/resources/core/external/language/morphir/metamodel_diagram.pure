@@ -1,0 +1,1731 @@
+###Diagram
+Diagram meta::external::language::morphir::Morphir_Diagram(width=0.0, height=0.0)
+{
+    TypeView cview_0(
+        type=meta::external::language::morphir::metamodel::Name::Name,
+        position=(-17.48242, -1425.25000),
+        width=104.33691,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_1(
+        type=meta::external::language::morphir::metamodel::FQName::FQName,
+        position=(-231.48242, -1426.25000),
+        width=141.02148,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_2(
+        type=meta::external::language::morphir::metamodel::Distribution::Dependency,
+        position=(188.51758, -1498.25000),
+        width=190.59668,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_3(
+        type=meta::external::language::morphir::metamodel::Package::Specification,
+        position=(189.51758, -1408.25000),
+        width=192.35303,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_4(
+        type=meta::external::language::morphir::metamodel::Package::SpecificationModule,
+        position=(-91.48242, -1348.25000),
+        width=179.53223,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_5(
+        type=meta::external::language::morphir::metamodel::Module::ModuleName,
+        position=(-285.48242, -1340.25000),
+        width=101.29150,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_6(
+        type=meta::external::language::morphir::metamodel::Module::Specification,
+        position=(-87.48242, -1243.25000),
+        width=171.61523,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_7(
+        type=meta::external::language::morphir::metamodel::Distribution::Library,
+        position=(182.10425, -1607.50000),
+        width=202.82666,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_8(
+        type=meta::external::language::morphir::metamodel::Documented::Documented,
+        position=(-601.27576, -1234.12500),
+        width=105.56689,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_9(
+        type=meta::external::language::morphir::metamodel::Value::Specification,
+        position=(-85.27576, -1038.12500),
+        width=168.50000,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_10(
+        type=meta::external::language::morphir::metamodel::Distribution::IR,
+        position=(201.00000, -1774.00000),
+        width=164.20850,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_11(
+        type=meta::external::language::morphir::metamodel::Value::SpecificationInput,
+        position=(-265.17242, -1030.56250),
+        width=124.00391,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_12(
+        type=meta::external::language::morphir::metamodel::Type::Tuple,
+        position=(-312.17242, -824.56250),
+        width=93.76123,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_13(
+        type=meta::external::language::morphir::metamodel::Type::Unit,
+        position=(-491.17242, -825.56250),
+        width=43.32617,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_14(
+        type=meta::external::language::morphir::metamodel::Type::Reference,
+        position=(-210.17242, -824.56250),
+        width=141.64990,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_15(
+        type=meta::external::language::morphir::metamodel::Type::Function,
+        position=(64.82758, -826.56250),
+        width=154.06787,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_16(
+        type=meta::external::language::morphir::metamodel::Type::ExtensibleRecord,
+        position=(-7.17242, -749.56250),
+        width=121.36719,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_17(
+        type=meta::external::language::morphir::metamodel::Type::Field,
+        position=(-3.17242, -659.56250),
+        width=112.93066,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_18(
+        type=meta::external::language::morphir::metamodel::Package::Definition,
+        position=(468.82758, -1606.56250),
+        width=174.60693,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_19(
+        type=meta::external::language::morphir::metamodel::AccessControlled::AccessControlled,
+        position=(533.82758, -1405.56250),
+        width=204.63135,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_20(
+        type=meta::external::language::morphir::metamodel::AccessControlled::Access,
+        position=(817.82758, -1390.56250),
+        width=150.00000,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_21(
+        type=meta::external::language::morphir::metamodel::AccessControlled::Private,
+        position=(817.82758, -1324.56250),
+        width=68.00000,
+        height=31.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_22(
+        type=meta::external::language::morphir::metamodel::AccessControlled::Public,
+        position=(896.82758, -1324.56250),
+        width=69.00000,
+        height=31.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_23(
+        type=meta::external::language::morphir::metamodel::AccessControlled::AccessControlledValue,
+        position=(499.82758, -1312.56250),
+        width=273.00000,
+        height=30.78125,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_24(
+        type=meta::external::language::morphir::metamodel::Module::Definition,
+        position=(459.82758, -1237.78125),
+        width=161.03418,
+        height=86.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_25(
+        type=meta::external::language::morphir::metamodel::Value::Definition,
+        position=(633.82758, -1237.78125),
+        width=200.46875,
+        height=100.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_26(
+        type=meta::external::language::morphir::metamodel::Value::DefinitionInputType,
+        position=(918.82758, -1222.78125),
+        width=131.76172,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_27(
+        type=meta::external::language::morphir::metamodel::Value::Variable,
+        position=(618.82758, -998.78125),
+        width=112.93066,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_28(
+        type=meta::external::language::morphir::metamodel::Value::Tuple,
+        position=(824.32758, -994.78125),
+        width=103.15527,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_29(
+        type=meta::external::language::morphir::metamodel::Value::Record,
+        position=(966.32758, -994.78125),
+        width=141.05371,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_30(
+        type=meta::external::language::morphir::metamodel::Value::Unit,
+        position=(768.32758, -995.78125),
+        width=43.32617,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_31(
+        type=meta::external::language::morphir::metamodel::Value::List,
+        position=(504.32758, -998.78125),
+        width=103.15527,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_32(
+        type=meta::external::language::morphir::metamodel::Value::LetDefinition,
+        position=(1145.32758, -999.78125),
+        width=154.43848,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_33(
+        type=meta::external::language::morphir::metamodel::Value::Reference,
+        position=(876.32758, -928.78125),
+        width=141.64990,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_34(
+        type=meta::external::language::morphir::metamodel::Value::LetRecursion,
+        position=(1069.32758, -903.78125),
+        width=111.10449,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_35(
+        type=meta::external::language::morphir::metamodel::Value::LetRecursionDefinition,
+        position=(1256.32758, -909.78125),
+        width=152.00586,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_36(
+        type=meta::external::language::morphir::metamodel::Module::DefinitionValue,
+        position=(116.82758, -1186.78125),
+        width=239.46289,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_37(
+        type=meta::external::language::morphir::metamodel::Module::DefinitionType,
+        position=(120.82758, -1278.78125),
+        width=239.46289,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_38(
+        type=meta::external::language::morphir::metamodel::Value::Apply,
+        position=(1316.32758, -998.78125),
+        width=159.97070,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_39(
+        type=meta::external::language::morphir::metamodel::Value::Value,
+        position=(360.82758, -1098.78125),
+        width=1146.50000,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_40(
+        type=meta::external::language::morphir::metamodel::Value::Destructure,
+        position=(306.32758, -997.78125),
+        width=180.78906,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_41(
+        type=meta::external::language::morphir::metamodel::Value::Constructor,
+        position=(425.32758, -911.78125),
+        width=141.64990,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_42(
+        type=meta::external::language::morphir::metamodel::Value::UpdateRecord,
+        position=(580.82758, -925.78125),
+        width=281.00293,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_43(
+        type=meta::external::language::morphir::metamodel::Value::Lambda,
+        position=(324.32758, -846.78125),
+        width=156.90918,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_44(
+        type=meta::external::language::morphir::metamodel::Value::FieldFunction,
+        position=(1441.32758, -918.78125),
+        width=112.93066,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_45(
+        type=meta::external::language::morphir::metamodel::Value::Field,
+        position=(1511.32758, -1000.78125),
+        width=112.93066,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_46(
+        type=meta::external::language::morphir::metamodel::Value::IfThenElse,
+        position=(1565.32758, -917.78125),
+        width=144.09375,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_47(
+        type=meta::external::language::morphir::metamodel::Literal::IntLiteral,
+        position=(870.32758, -743.78125),
+        width=119.03760,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_48(
+        type=meta::external::language::morphir::metamodel::Literal::FloatLiteral,
+        position=(1001.32758, -743.78125),
+        width=108.63916,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_49(
+        type=meta::external::language::morphir::metamodel::Literal::CharLiteral,
+        position=(1122.32758, -743.78125),
+        width=114.13916,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_50(
+        type=meta::external::language::morphir::metamodel::Literal::BoolLiteral,
+        position=(1248.32758, -743.78125),
+        width=125.75684,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_51(
+        type=meta::external::language::morphir::metamodel::Literal::StringLiteral,
+        position=(744.32758, -742.78125),
+        width=114.13916,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_52(
+        type=meta::external::language::morphir::metamodel::Value::PatternMatch,
+        position=(286.32758, -720.78125),
+        width=141.00000,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_53(
+        type=meta::external::language::morphir::metamodel::Value::Literal,
+        position=(591.32758, -833.78125),
+        width=88.00000,
+        height=43.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_54(
+        type=meta::external::language::morphir::metamodel::Literal::Literal,
+        position=(748.32758, -828.78125),
+        width=621.00000,
+        height=39.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_55(
+        type=meta::external::language::morphir::metamodel::Distribution::Distribution,
+        position=(240.10425, -1678.50000),
+        width=87.32422,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_56(
+        type=meta::external::language::morphir::metamodel::Value::AsPattern,
+        position=(368.32758, -556.78125),
+        width=129.41455,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_57(
+        type=meta::external::language::morphir::metamodel::Value::ConstructorPattern,
+        position=(504.32758, -557.78125),
+        width=141.64990,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_58(
+        type=meta::external::language::morphir::metamodel::Value::EmptyListPattern,
+        position=(663.32758, -556.78125),
+        width=119.35156,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_59(
+        type=meta::external::language::morphir::metamodel::Value::HeadTailPattern,
+        position=(798.32758, -555.78125),
+        width=117.80762,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_60(
+        type=meta::external::language::morphir::metamodel::Value::LiteralPattern,
+        position=(923.32758, -556.78125),
+        width=116.59375,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_61(
+        type=meta::external::language::morphir::metamodel::Value::TuplePattern,
+        position=(1052.32758, -556.78125),
+        width=121.46533,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_62(
+        type=meta::external::language::morphir::metamodel::Value::Pattern,
+        position=(368.32758, -632.78125),
+        width=871.00000,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_63(
+        type=meta::external::language::morphir::metamodel::Value::PatternMatchElement,
+        position=(569.32758, -726.78125),
+        width=142.69531,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_64(
+        type=meta::external::language::morphir::metamodel::Value::UnitPattern,
+        position=(1181.32758, -554.78125),
+        width=84.66992,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_65(
+        type=meta::external::language::morphir::metamodel::Package::PackageName,
+        position=(-18.48242, -1596.25000),
+        width=101.38672,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_66(
+        type=meta::external::language::morphir::metamodel::Path::Path,
+        position=(-19.48242, -1508.25000),
+        width=104.98145,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_67(
+        type=meta::external::language::morphir::metamodel::Package::DefinitionModule,
+        position=(521.82758, -1499.56250),
+        width=227.23291,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_68(
+        type=meta::external::language::morphir::metamodel::Module::SpecificationType,
+        position=(-412.27576, -1235.12500),
+        width=174.01611,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_69(
+        type=meta::external::language::morphir::metamodel::Type::TypeAliasDefinition,
+        position=(-635.67242, -835.78125),
+        width=131.12305,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_70(
+        type=meta::external::language::morphir::metamodel::Type::Record,
+        position=(-49.17242, -823.56250),
+        width=94.56689,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_71(
+        type=meta::external::language::morphir::metamodel::Module::SpecificationValue,
+        position=(-90.27576, -1136.12500),
+        width=157.15021,
+        height=58.23438,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_72(
+        type=meta::external::language::morphir::metamodel::Type::Variable,
+        position=(-435.17242, -825.56250),
+        width=112.93066,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_73(
+        type=meta::external::language::morphir::metamodel::Type::Type,
+        position=(-627.17242, -940.56250),
+        width=849.04688,
+        height=80.67188,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    GeneralizationView gview_0(
+        source=cview_7,
+        target=cview_55,
+        points=[(283.51758,-1571.50000),(283.76636,-1663.50000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_1(
+        source=cview_13,
+        target=cview_73,
+        points=[(-469.50934,-810.56250),(-470.10211,-884.55469)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_2(
+        source=cview_72,
+        target=cview_73,
+        points=[(-378.70709,-803.56250),(-379.14899,-891.22656)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_3(
+        source=cview_12,
+        target=cview_73,
+        points=[(-265.29181,-802.56250),(-265.14899,-885.22656)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_4(
+        source=cview_14,
+        target=cview_73,
+        points=[(-139.34747,-795.56250),(-139.64899,-901.22656)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_5(
+        source=cview_70,
+        target=cview_73,
+        points=[(-1.88898,-801.56250),(-3.10211,-884.55469)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_6(
+        source=cview_15,
+        target=cview_73,
+        points=[(141.86151,-797.56250),(142.85101,-899.22656)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_7(
+        source=cview_16,
+        target=cview_73,
+        points=[(53.51117,-720.56250),(53.85101,-887.22656)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_8(
+        source=cview_21,
+        target=cview_20,
+        points=[(851.82758,-1309.06250),(851.82758,-1371.56250)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_9(
+        source=cview_22,
+        target=cview_20,
+        points=[(931.32758,-1309.06250),(931.82758,-1367.56250)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_10(
+        source=cview_24,
+        target=cview_23,
+        points=[(540.34467,-1194.78125),(541.82758,-1302.78125)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_11(
+        source=cview_25,
+        target=cview_23,
+        points=[(734.06195,-1187.78125),(733.82758,-1290.78125)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_12(
+        source=cview_27,
+        target=cview_39,
+        points=[(675.29291,-976.78125),(673.57758,-1067.78125)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_13(
+        source=cview_42,
+        target=cview_39,
+        points=[(751.32758,-880.78125),(752.82758,-1050.28125)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_14(
+        source=cview_30,
+        target=cview_39,
+        points=[(789.99066,-980.78125),(788.07758,-1043.78125)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_15(
+        source=cview_28,
+        target=cview_39,
+        points=[(875.90521,-972.78125),(873.82758,-1046.28125)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_16(
+        source=cview_33,
+        target=cview_39,
+        points=[(947.15253,-906.78125),(945.07758,-1049.78125)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_17(
+        source=cview_29,
+        target=cview_39,
+        points=[(1036.85443,-972.78125),(1034.82758,-1044.28125)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_18(
+        source=cview_53,
+        target=cview_39,
+        points=[(618.03070,-816.28125),(540.32758,-816.78125),(540.32758,-756.78125),(270.32758,-757.78125),(270.87445,-1022.89063),(423.87445,-1022.89063),(422.87445,-1048.89063)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_19(
+        source=cview_31,
+        target=cview_39,
+        points=[(555.90521,-976.78125),(555.32758,-1041.78125)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_20(
+        source=cview_34,
+        target=cview_39,
+        points=[(1124.87982,-881.78125),(1121.07758,-1071.78125)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_21(
+        source=cview_32,
+        target=cview_39,
+        points=[(1222.54681,-963.78125),(1220.82758,-1075.28125)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_22(
+        source=cview_43,
+        target=cview_39,
+        points=[(402.78217,-817.78125),(294.32758,-815.78125),(295.87445,-1011.89063),(450.87445,-1011.89063),(448.87445,-1054.89063)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_23(
+        source=cview_46,
+        target=cview_39,
+        points=[(1637.37445,-881.78125),(1636.64789,-1026.89063),(1497.64789,-1027.89063),(1497.32758,-1087.78125)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_24(
+        source=cview_44,
+        target=cview_39,
+        points=[(1497.79291,-896.78125),(1496.64789,-1004.89063),(1421.64789,-1004.89063),(1419.64789,-1047.89063)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_25(
+        source=cview_45,
+        target=cview_39,
+        points=[(1567.79291,-971.78125),(1567.64789,-1015.89063),(1457.64789,-1015.89063),(1456.64789,-1049.89063)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_26(
+        source=cview_40,
+        target=cview_39,
+        points=[(473.87445,-996.89063),(474.87445,-1045.89063)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_27(
+        source=cview_41,
+        target=cview_39,
+        points=[(496.15253,-889.78125),(498.32758,-1047.78125)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_28(
+        source=cview_38,
+        target=cview_39,
+        points=[(1396.31293,-969.78125),(1397.32758,-1051.78125)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_29(
+        source=cview_51,
+        target=cview_54,
+        points=[(801.39716,-720.78125),(799.32758,-811.78125)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_30(
+        source=cview_47,
+        target=cview_54,
+        points=[(929.84637,-721.78125),(925.32758,-805.78125)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_31(
+        source=cview_48,
+        target=cview_54,
+        points=[(1055.64716,-721.78125),(1052.32758,-796.78125)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_32(
+        source=cview_49,
+        target=cview_54,
+        points=[(1179.39716,-721.78125),(1177.32758,-804.78125)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_33(
+        source=cview_50,
+        target=cview_54,
+        points=[(1311.20599,-721.78125),(1310.32758,-806.78125)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_34(
+        source=cview_52,
+        target=cview_39,
+        points=[(356.82758,-698.78125),(246.32758,-698.78125),(247.87445,-1035.89063),(365.87445,-1035.89063),(364.32758,-1087.78125)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_35(
+        source=cview_56,
+        target=cview_62,
+        points=[(433.03485,-527.78125),(432.32758,-591.78125)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_36(
+        source=cview_57,
+        target=cview_62,
+        points=[(575.15253,-528.78125),(573.32758,-602.78125)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_37(
+        source=cview_58,
+        target=cview_62,
+        points=[(723.00336,-541.78125),(723.32758,-602.78125)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_38(
+        source=cview_59,
+        target=cview_62,
+        points=[(857.23138,-526.78125),(857.32758,-601.78125)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_39(
+        source=cview_60,
+        target=cview_62,
+        points=[(981.62445,-534.78125),(981.32758,-602.78125)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_40(
+        source=cview_61,
+        target=cview_62,
+        points=[(1113.06024,-534.78125),(1112.32758,-596.78125)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_41(
+        source=cview_64,
+        target=cview_62,
+        points=[(1223.66254,-539.78125),(1222.32758,-591.78125)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_0(
+        property=meta::external::language::morphir::metamodel::Distribution::IR.distribution,
+        source=cview_10,
+        target=cview_55
+,        points=[(283.10425,-1745.00000),(389.87445,-1745.89063),(389.87445,-1663.89063),(283.76636,-1663.50000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_1(
+        property=meta::external::language::morphir::metamodel::Distribution::Library.packageName,
+        source=cview_7,
+        target=cview_65
+,        points=[(184.87445,-1590.89063),(75.87445,-1590.89063)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_2(
+        property=meta::external::language::morphir::metamodel::Package::PackageName.path,
+        source=cview_65,
+        target=cview_66
+,        points=[(81.87445,-1562.89063),(138.87445,-1562.89063),(138.87445,-1504.89063),(-18.12555,-1503.89063)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_3(
+        property=meta::external::language::morphir::metamodel::Path::Path.names,
+        source=cview_66,
+        target=cview_0
+,        points=[(77.87445,-1473.89063),(136.87445,-1473.89063),(136.87445,-1403.89063),(34.68604,-1403.25000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_4(
+        property=meta::external::language::morphir::metamodel::FQName::FQName.packagePath,
+        source=cview_1,
+        target=cview_66
+,        points=[(-160.97168,-1404.25000),(-253.12555,-1403.89063),(-253.12555,-1469.89063),(-21.12555,-1469.89063),(33.00830,-1486.25000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_5(
+        property=meta::external::language::morphir::metamodel::FQName::FQName.name,
+        source=cview_1,
+        target=cview_0
+,        points=[(-160.97168,-1404.25000),(34.68604,-1403.25000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_6(
+        property=meta::external::language::morphir::metamodel::Distribution::Library.dependencies,
+        source=cview_7,
+        target=cview_2
+,        points=[(377.87445,-1553.89063),(425.87445,-1553.89063),(424.87445,-1470.89063),(283.81592,-1469.25000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_7(
+        property=meta::external::language::morphir::metamodel::Distribution::Dependency.specification,
+        source=cview_2,
+        target=cview_3
+,        points=[(283.81592,-1469.25000),(285.69409,-1379.25000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_8(
+        property=meta::external::language::morphir::metamodel::Package::Specification.modules,
+        source=cview_3,
+        target=cview_4
+,        points=[(285.69409,-1379.25000),(148.51758,-1380.25000),(147.51758,-1320.25000),(-1.71631,-1319.25000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_9(
+        property=meta::external::language::morphir::metamodel::Package::SpecificationModule.moduleName,
+        source=cview_4,
+        target=cview_5
+,        points=[(-75.12555,-1332.89063),(-191.12555,-1331.89063)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_10(
+        property=meta::external::language::morphir::metamodel::Package::SpecificationModule.specification,
+        source=cview_4,
+        target=cview_6
+,        points=[(-87.12555,-1303.89063),(-136.12555,-1303.89063),(-136.12555,-1208.89063),(-1.67480,-1207.25000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_11(
+        property=meta::external::language::morphir::metamodel::Module::Specification.types,
+        source=cview_6,
+        target=cview_68
+,        points=[(-86.12555,-1182.89063),(-244.12555,-1181.89063)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_12(
+        property=meta::external::language::morphir::metamodel::Module::SpecificationType.documented,
+        source=cview_68,
+        target=cview_8
+,        points=[(-325.26770,-1206.12500),(-548.49231,-1205.12500)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_13(
+        property=meta::external::language::morphir::metamodel::Module::Specification.values,
+        source=cview_6,
+        target=cview_71
+,        points=[(-69.12555,-1173.89063),(-123.12555,-1173.89063),(-123.12555,-1108.89063),(-11.70065,-1107.00781)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_14(
+        property=meta::external::language::morphir::metamodel::Module::SpecificationValue.specification,
+        source=cview_71,
+        target=cview_9
+,        points=[(-11.70065,-1107.00781),(130.87445,-1105.89063),(131.87445,-1001.89063),(-1.02576,-1002.12500)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_15(
+        property=meta::external::language::morphir::metamodel::Value::Specification.inputs,
+        source=cview_9,
+        target=cview_11
+,        points=[(-1.02576,-1002.12500),(-203.17047,-1001.56250)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_16(
+        property=meta::external::language::morphir::metamodel::Value::SpecificationInput.type,
+        source=cview_11,
+        target=cview_73
+,        points=[(-203.17047,-1001.56250),(-655.12555,-1002.89063),(-655.12555,-925.89063),(-619.12555,-925.89063)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_17(
+        property=meta::external::language::morphir::metamodel::Type::Record.fields,
+        source=cview_70,
+        target=cview_17
+,        points=[(-1.88898,-801.56250),(-58.12555,-804.89063),(-57.12555,-626.89063),(15.87445,-626.89063)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_18(
+        property=meta::external::language::morphir::metamodel::Type::ExtensibleRecord.fields,
+        source=cview_16,
+        target=cview_17
+,        points=[(53.51117,-720.56250),(144.87445,-720.89063),(144.87445,-630.89063),(53.29291,-630.56250)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_19(
+        property=meta::external::language::morphir::metamodel::Distribution::Library.packageDef,
+        source=cview_7,
+        target=cview_18
+,        points=[(382.87445,-1591.89063),(472.87445,-1591.89063)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_20(
+        property=meta::external::language::morphir::metamodel::Package::Definition.modules,
+        source=cview_18,
+        target=cview_67
+,        points=[(556.13104,-1570.56250),(784.87445,-1570.89063),(784.87445,-1471.89063),(635.44403,-1470.56250)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_21(
+        property=meta::external::language::morphir::metamodel::Package::DefinitionModule.accessControlled,
+        source=cview_67,
+        target=cview_19
+,        points=[(528.87445,-1484.89063),(495.87445,-1484.89063),(496.87445,-1395.89063),(556.87445,-1395.89063)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_22(
+        property=meta::external::language::morphir::metamodel::AccessControlled::AccessControlled.access,
+        source=cview_19,
+        target=cview_20
+,        points=[(636.14325,-1376.56250),(892.82758,-1375.56250)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_23(
+        property=meta::external::language::morphir::metamodel::AccessControlled::AccessControlled.value,
+        source=cview_19,
+        target=cview_23
+,        points=[(535.87445,-1364.89063),(469.87445,-1364.89063),(469.87445,-1298.89063),(636.32758,-1297.17188)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_24(
+        property=meta::external::language::morphir::metamodel::Module::Definition.types,
+        source=cview_24,
+        target=cview_37
+,        points=[(464.32758,-1227.78125),(360.32758,-1227.78125),(323.82758,-1252.78125)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_25(
+        property=meta::external::language::morphir::metamodel::Module::Definition.values,
+        source=cview_24,
+        target=cview_36
+,        points=[(484.87445,-1178.89063),(302.32758,-1177.78125)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_26(
+        property=meta::external::language::morphir::metamodel::Value::Definition.inputTypes,
+        source=cview_25,
+        target=cview_26
+,        points=[(734.06195,-1187.78125),(984.70844,-1186.78125)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_27(
+        property=meta::external::language::morphir::metamodel::Value::Definition.body,
+        source=cview_25,
+        target=cview_39
+,        points=[(647.87445,-1142.89063),(507.87445,-1141.89063),(508.87445,-1112.89063),(321.87445,-1112.89063),(321.87445,-1069.89063),(634.82758,-1070.28125)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_28(
+        property=meta::external::language::morphir::metamodel::Value::LetRecursion.definitions,
+        source=cview_34,
+        target=cview_35
+,        points=[(1124.87982,-881.78125),(1332.33051,-880.78125)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_29(
+        property=meta::external::language::morphir::metamodel::Value::Literal.literal,
+        source=cview_53,
+        target=cview_54
+,        points=[(635.32758,-812.28125),(1058.82758,-809.28125)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_30(
+        property=meta::external::language::morphir::metamodel::Value::PatternMatch.patternMatchElement,
+        source=cview_52,
+        target=cview_63
+,        points=[(356.82758,-698.78125),(640.67523,-697.78125)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_31(
+        property=meta::external::language::morphir::metamodel::Value::PatternMatchElement.pattern,
+        source=cview_63,
+        target=cview_62
+,        points=[(690.87445,-679.89063),(1293.87445,-679.89063),(1294.87445,-625.89063),(641.32758,-630.78125)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_32(
+        property=meta::external::language::morphir::metamodel::Type::TypeAliasDefinition.type,
+        source=cview_69,
+        target=cview_73
+,        points=[(-570.11090,-813.78125),(-670.12555,-812.89063),(-669.12555,-870.89063),(-620.12555,-870.89063)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+}

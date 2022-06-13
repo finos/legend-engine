@@ -26,7 +26,6 @@ import org.eclipse.collections.impl.utility.ArrayIterate;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
-import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
@@ -44,7 +43,8 @@ import org.finos.legend.pure.m3.navigation.profile.Profile;
 
 import java.util.Objects;
 
-public class MilestoningDatePropagationHelper {
+public class MilestoningDatePropagationHelper
+{
 
     private static final String ALL_VERSIONS_IN_RANGE_PROPERTY_NAME_SUFFIX = "AllVersionsInRange";
     private static final String ALL_VERSIONS_PROPERTY_NAME_SUFFIX = "AllVersions";
@@ -52,14 +52,14 @@ public class MilestoningDatePropagationHelper {
 
     public static boolean isGetAllFunctionWithMilestoningContext(SimpleFunctionExpression func)
     {
-       return "getAll".equals(func._functionName()) && ("getAll_Class_1__Date_1__T_MANY_".equals(func._func().getName()) || "getAll_Class_1__Date_1__Date_1__T_MANY_".equals(func._func().getName()));
+        return "getAll".equals(func._functionName()) && ("getAll_Class_1__Date_1__T_MANY_".equals(func._func().getName()) || "getAll_Class_1__Date_1__Date_1__T_MANY_".equals(func._func().getName()));
     }
 
     public static void setMilestoningPropagationContext(SimpleFunctionExpression func, ProcessingContext processingContext)
     {
         Assert.assertTrue(isGetAllFunctionWithMilestoningContext(func), () -> "MilestoneDatePropagationContext can only be set from getAll() function");
         ValueSpecification parameterValue = func._parametersValues().getFirst();
-        MilestoningStereotype milestoningStereotype = Milestoning.temporalStereotypes(((AnnotatedElement)parameterValue._genericType()._typeArguments().toList().getFirst()._rawType())._stereotypes());
+        MilestoningStereotype milestoningStereotype = Milestoning.temporalStereotypes(((AnnotatedElement) parameterValue._genericType()._typeArguments().toList().getFirst()._rawType())._stereotypes());
         ListIterable<? extends ValueSpecification> temporalParameterValues = func._parametersValues().toList();
         setMilestoningDates(temporalParameterValues, milestoningStereotype, processingContext);
     }
@@ -88,7 +88,7 @@ public class MilestoningDatePropagationHelper {
 
     public static void updateMilestoningPropagationContext(SimpleFunctionExpression property, ProcessingContext processingContext)
     {
-        if(!property._func()._functionName().endsWith(ALL_VERSIONS_IN_RANGE_PROPERTY_NAME_SUFFIX) && !property._func()._functionName().endsWith(ALL_VERSIONS_PROPERTY_NAME_SUFFIX))
+        if (!property._func()._functionName().endsWith(ALL_VERSIONS_IN_RANGE_PROPERTY_NAME_SUFFIX) && !property._func()._functionName().endsWith(ALL_VERSIONS_PROPERTY_NAME_SUFFIX))
         {
             Class target = (Class) property._genericType()._rawType();
             MilestoningStereotype targetTypeMilestoningStereotype = Milestoning.temporalStereotypes(target._stereotypes());
@@ -104,7 +104,7 @@ public class MilestoningDatePropagationHelper {
     public static void updateMilestoningPropagationContextForFilter(SimpleFunctionExpression func, ProcessingContext processingContext)
     {
         ValueSpecification parameterValue = func._parametersValues().getFirst();
-        if(parameterValue instanceof SimpleFunctionExpression && isGetAllFunctionWithMilestoningContext((SimpleFunctionExpression) parameterValue))
+        if (parameterValue instanceof SimpleFunctionExpression && isGetAllFunctionWithMilestoningContext((SimpleFunctionExpression) parameterValue))
         {
             setMilestoningPropagationContext((SimpleFunctionExpression) parameterValue, processingContext);
         }
@@ -124,7 +124,7 @@ public class MilestoningDatePropagationHelper {
         {
             updateMilestoningPropagationContext(func, processingContext);
         }
-        else if(property instanceof QualifiedProperty || property.getName().endsWith(ALL_VERSIONS_PROPERTY_NAME_SUFFIX) || property.getName().endsWith(ALL_VERSIONS_IN_RANGE_PROPERTY_NAME_SUFFIX))
+        else if (property instanceof QualifiedProperty || property.getName().endsWith(ALL_VERSIONS_PROPERTY_NAME_SUFFIX) || property.getName().endsWith(ALL_VERSIONS_IN_RANGE_PROPERTY_NAME_SUFFIX))
         {
             processingContext.milestoningDatePropagationContext.setProcessingDate(null);
             processingContext.milestoningDatePropagationContext.setBusinessDate(null);
@@ -146,7 +146,8 @@ public class MilestoningDatePropagationHelper {
             processingContext.milestoningDatePropagationContext.setProcessingDate(null);
             processingContext.milestoningDatePropagationContext.setBusinessDate(null);
         }
-        if (result instanceof SimpleFunctionExpression && isGetAllFunctionWithMilestoningContext((SimpleFunctionExpression) result) && processingContext.milestoningDatePropagationContext.isDatePropagationSupported) {
+        if (result instanceof SimpleFunctionExpression && isGetAllFunctionWithMilestoningContext((SimpleFunctionExpression) result) && processingContext.milestoningDatePropagationContext.isDatePropagationSupported)
+        {
             setMilestoningPropagationContext((SimpleFunctionExpression) result, processingContext);
         }
         if (result instanceof SimpleFunctionExpression && isFilter((SimpleFunctionExpression) result))
@@ -165,7 +166,7 @@ public class MilestoningDatePropagationHelper {
         String stereotype = String.valueOf(Milestoning.GeneratedMilestoningStereotype.generatedmilestoningproperty);
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile profile = context.pureModel.getProfile("meta::pure::profiles::milestoning");
         Stereotype milestoningStereotype = (Stereotype) Profile.findStereotype(profile, stereotype);
-        RichIterable<? extends Stereotype> stereotypes =  property._stereotypes();
+        RichIterable<? extends Stereotype> stereotypes = property._stereotypes();
         return stereotypes.detect(s -> s != null && milestoningStereotype.equals(s)) != null;
     }
 
@@ -180,7 +181,7 @@ public class MilestoningDatePropagationHelper {
         {
             throw new EngineException("Unable to get milestoning date parameters for non milestoned QualifiedProperty: " + milestonedQualifiedProperty.getName());
         }
-        Class returnType = (Class)milestonedQualifiedProperty._genericType()._rawType();
+        Class returnType = (Class) milestonedQualifiedProperty._genericType()._rawType();
         MilestoningStereotype milestoningStereotype = Milestoning.temporalStereotypes(returnType._stereotypes());
         return 1 + milestoningStereotype.getTemporalDatePropertyNames().size();
     }
@@ -189,7 +190,7 @@ public class MilestoningDatePropagationHelper {
     {
         if (isGeneratedQualifiedPropertyWithDatePropagationSupported(property, context))
         {
-            return parametersCount != getCountOfParametersSatisfyingMilestoningDateRequirments((QualifiedProperty)property, context);
+            return parametersCount != getCountOfParametersSatisfyingMilestoningDateRequirments((QualifiedProperty) property, context);
         }
         return false;
     }
@@ -209,7 +210,7 @@ public class MilestoningDatePropagationHelper {
         return milestoningStereotype != null && isProcessingTemporal(milestoningStereotype) || isBusinessTemporal(milestoningStereotype);
     }
 
-    private static Type getMilestonedPropertyOwningType(AbstractProperty<?>property)
+    private static Type getMilestonedPropertyOwningType(AbstractProperty<?> property)
     {
         if (property._owner() instanceof Class)
         {
@@ -266,7 +267,7 @@ public class MilestoningDatePropagationHelper {
         {
             if (isBiTemporal(sourceTypeMilestoning) && oneDateParamSupplied(parametersValues))
             {
-                milestoningDateParameters[0] =  processingContext.milestoningDatePropagationContext.getProcessingDate();
+                milestoningDateParameters[0] = processingContext.milestoningDatePropagationContext.getProcessingDate();
                 milestoningDateParameters[1] = parametersValues.get(1);
             }
             else if (isSingleDateTemporal(sourceTypeMilestoning) && oneDateParamSupplied(parametersValues))
@@ -276,12 +277,12 @@ public class MilestoningDatePropagationHelper {
                 int otherPropagatedDateIndex;
                 if (isProcessingTemporal(sourceTypeMilestoning))
                 {
-                    propagatedDate =  processingContext.milestoningDatePropagationContext.getProcessingDate();
+                    propagatedDate = processingContext.milestoningDatePropagationContext.getProcessingDate();
                     otherPropagatedDateIndex = 1;
                 }
                 else
                 {
-                    propagatedDate =  processingContext.milestoningDatePropagationContext.getBusinessDate();
+                    propagatedDate = processingContext.milestoningDatePropagationContext.getBusinessDate();
                     otherPropagatedDateIndex = 0;
                 }
                 setMilestoningDateParameters(milestoningDateParameters, propagatedDateIndex, propagatedDate);

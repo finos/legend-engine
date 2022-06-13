@@ -1,0 +1,373 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Diagram
+Diagram meta::external::format::protobuf::Protobuf_Diagram(width=0.0, height=0.0)
+{
+    TypeView ScalarType_$_1(
+        type=meta::external::format::protobuf::metamodel::ScalarType,
+        position=(799.00000, 190.00000),
+        width=287.00000,
+        height=92.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView Int64_$_2(
+        type=meta::external::format::protobuf::metamodel::Int64,
+        position=(798.00000, 331.00000),
+        width=48.00781,
+        height=36.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView Double_$_3(
+        type=meta::external::format::protobuf::metamodel::Double,
+        position=(828.00000, 380.00000),
+        width=60.66667,
+        height=36.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView Int32_$_4(
+        type=meta::external::format::protobuf::metamodel::Int32,
+        position=(869.00000, 334.00000),
+        width=48.00781,
+        height=36.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView Float_$_5(
+        type=meta::external::format::protobuf::metamodel::Float,
+        position=(903.00000, 378.00000),
+        width=48.66667,
+        height=36.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView Bool_$_7(
+        type=meta::external::format::protobuf::metamodel::Bool,
+        position=(937.00000, 335.00000),
+        width=46.66667,
+        height=36.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView String_$_6(
+        type=meta::external::format::protobuf::metamodel::String,
+        position=(1020.00000, 329.00000),
+        width=54.66667,
+        height=36.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView MessagePtr_$_12(
+        type=meta::external::format::protobuf::metamodel::MessagePtr,
+        position=(1115.83283, 211.00000),
+        width=117.80762,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView EnumPtr_$_13(
+        type=meta::external::format::protobuf::metamodel::EnumPtr,
+        position=(1238.83283, 212.00000),
+        width=117.80762,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView ProtoBufType_$_14(
+        type=meta::external::format::protobuf::metamodel::ProtoBufType,
+        position=(577.00000, 75.00000),
+        width=762.15808,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_2(
+        type=meta::external::format::protobuf::metamodel::ProtoFile,
+        position=(192.79391, 174.12797),
+        width=211.29150,
+        height=100.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView Enumeration_$_11(
+        type=meta::external::format::protobuf::metamodel::Enumeration,
+        position=(572.83283, 295.05263),
+        width=115.31543,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView Enum_$_8(
+        type=meta::external::format::protobuf::metamodel::Enum,
+        position=(550.31579, 393.89474),
+        width=166.07764,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_4(
+        type=meta::external::format::protobuf::metamodel::Field,
+        position=(581.84654, 155.18060),
+        width=131.25146,
+        height=86.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_5(
+        type=meta::external::format::protobuf::metamodel::Message,
+        position=(108.21718, -14.61307),
+        width=181.93848,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_6(
+        type=meta::external::format::protobuf::metamodel::ProtoItemDefinition,
+        position=(357.21718, -107.61307),
+        width=131.32813,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    GeneralizationView gview_0(
+        source=ScalarType_$_1,
+        target=ProtoBufType_$_14,
+        points=[(942.50000,236.00000),(941.15808,103.25000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_1(
+        source=Int32_$_4,
+        target=ScalarType_$_1,
+        points=[(893.00391,352.00000),(893.15808,279.50000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_2(
+        source=Int64_$_2,
+        target=ScalarType_$_1,
+        points=[(822.00391,349.00000),(821.15808,263.50000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_3(
+        source=Bool_$_7,
+        target=ScalarType_$_1,
+        points=[(960.33333,353.00000),(959.15808,280.50000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_4(
+        source=Double_$_3,
+        target=ScalarType_$_1,
+        points=[(858.33203,398.00000),(859.15808,274.50000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_5(
+        source=Float_$_5,
+        target=ScalarType_$_1,
+        points=[(927.33333,396.00000),(927.15808,273.50000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_6(
+        source=String_$_6,
+        target=ScalarType_$_1,
+        points=[(1047.33203,347.00000),(1047.15808,278.50000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_7(
+        source=MessagePtr_$_12,
+        target=ProtoBufType_$_14,
+        points=[(1174.73664,240.00000),(1166.15808,107.25000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_8(
+        source=EnumPtr_$_13,
+        target=ProtoBufType_$_14,
+        points=[(1297.73664,241.00000),(1291.15808,110.25000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_9(
+        source=Enumeration_$_11,
+        target=cview_6,
+        points=[(630.49054,324.05263),(422.88124,-85.61307)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_10(
+        source=cview_4,
+        target=cview_6,
+        points=[(647.47227,198.18060),(422.88124,-85.61307)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_11(
+        source=cview_5,
+        target=cview_6,
+        points=[(199.18642,14.38693),(422.88124,-85.61307)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_0(
+        property=meta::external::format::protobuf::metamodel::Enumeration.values,
+        source=Enumeration_$_11,
+        target=Enum_$_8
+,        points=[(630.49055,324.05263),(633.35461,429.89474)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_1(
+        property=meta::external::format::protobuf::metamodel::Field.type,
+        source=cview_4,
+        target=ProtoBufType_$_14
+,        points=[(647.47227,198.18060),(958.07904,97.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_2(
+        property=meta::external::format::protobuf::metamodel::ProtoFile.topLevelDefs,
+        source=cview_2,
+        target=cview_6
+,        points=[(298.43966,224.12797),(422.88124,-85.61307)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_3(
+        property=meta::external::format::protobuf::metamodel::Message.content,
+        source=cview_5,
+        target=cview_6
+,        points=[(199.18642,14.38693),(422.88124,-85.61307)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+}

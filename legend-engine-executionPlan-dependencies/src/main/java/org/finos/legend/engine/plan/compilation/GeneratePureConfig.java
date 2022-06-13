@@ -41,9 +41,8 @@ import org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch.IInMe
 import org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch.IInMemoryRootGraphFetchMergeExecutionNodeSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch.IStoreStreamReadingExecutionNodeSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.platform.IGraphSerializer;
-import org.finos.legend.engine.plan.dependencies.store.platform.IPlatformPureExpressionExecutionNodeGraphFetchUnionSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.platform.IPlatformPureExpressionExecutionNodeGraphFetchMergeSpecifics;
-
+import org.finos.legend.engine.plan.dependencies.store.platform.IPlatformPureExpressionExecutionNodeGraphFetchUnionSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.platform.IPlatformPureExpressionExecutionNodeSerializeSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.platform.ISerializationWriter;
 import org.finos.legend.engine.plan.dependencies.store.platform.PredefinedExpressions;
@@ -242,21 +241,21 @@ public class GeneratePureConfig
     {
         pureToJavaClasses.put(pureClassPath, clazz);
         return (pureClassPath.startsWith(purePackage))
-               ? this.defineClass(pureClassPath, clazz)
-               : this.mapClass(pureClassPath, clazz);
+                ? this.defineClass(pureClassPath, clazz)
+                : this.mapClass(pureClassPath, clazz);
     }
 
     public String pureClassFor(Class<?> clazz)
     {
         return pureToJavaClasses.entrySet().stream().filter(kv -> kv.getValue().equals(clazz)).findFirst().map(Map.Entry::getKey)
-                                .orElseGet(() ->
-                                           {
-                                               if (mainConfig == null)
-                                               {
-                                                   throw new IllegalArgumentException("No mapping for " + clazz.getName());
-                                               }
-                                               return mainConfig.pureClassFor(clazz);
-                                           });
+                .orElseGet(() ->
+                {
+                    if (mainConfig == null)
+                    {
+                        throw new IllegalArgumentException("No mapping for " + clazz.getName());
+                    }
+                    return mainConfig.pureClassFor(clazz);
+                });
     }
 
     private GeneratePureConfig defineClass(String pureClassPath, Class<?> clazz)
@@ -277,10 +276,10 @@ public class GeneratePureConfig
     private void provided(String pureClassPath, String as)
     {
         providedTypes.add(o ->
-                          {
-                              o.finishLine("");
-                              o.startLine("->addProvidedType(" + pureClassPath + ", " + as + ")");
-                          });
+        {
+            o.finishLine("");
+            o.startLine("->addProvidedType(" + pureClassPath + ", " + as + ")");
+        });
     }
 
     private EncodeableType encodeType(Type type)
@@ -482,9 +481,9 @@ public class GeneratePureConfig
         while (!pending.isEmpty())
         {
             JavaClass toDeclare = pending.stream()
-                                         .filter(jc -> !jc.dependsOnUndeclared())
-                                         .findFirst()
-                                         .orElse(pending.get(0));
+                    .filter(jc -> !jc.dependsOnUndeclared())
+                    .findFirst()
+                    .orElse(pending.get(0));
             toDeclare.declaration(out);
             out.lineOut("");
             pending.remove(toDeclare);
@@ -569,8 +568,8 @@ public class GeneratePureConfig
             this.method = Objects.requireNonNull(method);
             this.returnType = GeneratePureConfig.this.encodeType(method.getGenericReturnType());
             this.paramTypes = Arrays.stream(method.getGenericParameterTypes())
-                                    .map(GeneratePureConfig.this::encodeType)
-                                    .collect(Collectors.toList());
+                    .map(GeneratePureConfig.this::encodeType)
+                    .collect(Collectors.toList());
         }
 
         Set<JavaClass> dependsOn()
@@ -673,7 +672,7 @@ public class GeneratePureConfig
         private Set<JavaClass> argumentsDependencies(List<?> arguments)
         {
             Set<JavaClass> result = Sets.mutable.empty();
-            for (Object a: arguments)
+            for (Object a : arguments)
             {
                 if (a instanceof JavaClass)
                 {
@@ -699,7 +698,8 @@ public class GeneratePureConfig
 
         private String codeArguments(List<?> arguments)
         {
-            return arguments.stream().map(a -> {
+            return arguments.stream().map(a ->
+            {
                 if (a instanceof String)
                 {
                     return "'" + a + "'";
@@ -739,10 +739,10 @@ public class GeneratePureConfig
         void computeDependencies()
         {
             Arrays.stream(clazz.getMethods())
-                  .filter(m -> m.getDeclaringClass() != Object.class)
-                  .filter(m -> !m.isSynthetic())
-                  .map(JavaMethod::new)
-                  .forEach(methods::add);
+                    .filter(m -> m.getDeclaringClass() != Object.class)
+                    .filter(m -> !m.isSynthetic())
+                    .map(JavaMethod::new)
+                    .forEach(methods::add);
         }
 
         String reference()
@@ -753,8 +753,8 @@ public class GeneratePureConfig
         String referenceOrConstruction()
         {
             return this.declared
-                   ? reference()
-                   : construction();
+                    ? reference()
+                    : construction();
         }
 
         void declaration(Output out)
@@ -762,13 +762,13 @@ public class GeneratePureConfig
             out.startLine("let " + variable() + " = " + this.construction());
             out.indent();
             this.methods.stream()
-                        .sorted()
-                        .map(JavaMethod::construction)
-                        .forEach(d ->
-                                 {
-                                     out.finishLine("");
-                                     out.startLine("->addMethod(" + d + ")");
-                                 });
+                    .sorted()
+                    .map(JavaMethod::construction)
+                    .forEach(d ->
+                    {
+                        out.finishLine("");
+                        out.startLine("->addMethod(" + d + ")");
+                    });
             this.declared = true;
             out.finishLine(";");
             out.outdent();

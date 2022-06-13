@@ -103,10 +103,10 @@ public class FlatDataGrammarHelper
                 {
                     throw new IllegalStateException("Unrecognized property array value type: " + value.getClass().getSimpleName());
                 }
-                for (int i=1; i<property.getValues().size(); i++)
+                for (int i = 1; i < property.getValues().size(); i++)
                 {
                     Object nextValue = property.getValues().get(i);
-                    if (! value.getClass().isInstance(nextValue))
+                    if (!value.getClass().isInstance(nextValue))
                     {
                         throw new IllegalStateException("Inconsistent property array value types");
                     }

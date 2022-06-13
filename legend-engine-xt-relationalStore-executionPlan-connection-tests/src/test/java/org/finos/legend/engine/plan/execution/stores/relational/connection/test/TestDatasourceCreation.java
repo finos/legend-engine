@@ -21,7 +21,6 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.Conne
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Manager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.LocalH2DataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.StaticDataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.StaticDataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.ConnectionStateManager;
@@ -43,11 +42,13 @@ import org.junit.rules.TemporaryFolder;
 
 import java.util.Collections;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
 
 public class TestDatasourceCreation
 {
-    private  Server server;
+    private Server server;
 
     @Rule
     public TemporaryFolder tempFolder = new TemporaryFolder();
@@ -85,7 +86,7 @@ public class TestDatasourceCreation
         // User gets connection to db1
         RelationalDatabaseConnection database1 = buildStaticDatabaseSpec("127.0.0.1", server.getPort(), "db1");
         ConnectionKey connectionKey = this.connectionManagerSelector.generateKeyFromDatabaseConnection(database1);
-        String key = this.connectionStateManager.poolNameFor(identity,connectionKey);
+        String key = this.connectionStateManager.poolNameFor(identity, connectionKey);
         this.connectionManagerSelector.getDatabaseConnection(identity, database1);
 
         // We have a single data source
@@ -116,7 +117,7 @@ public class TestDatasourceCreation
         // User gets connection to db1
         RelationalDatabaseConnection database1 = buildStaticDatabaseSpec("127.0.0.1", server.getPort(), "db2");
         ConnectionKey connectionKey = this.connectionManagerSelector.generateKeyFromDatabaseConnection(database1);
-        String pool1 = this.connectionStateManager.poolNameFor(identity,connectionKey);
+        String pool1 = this.connectionStateManager.poolNameFor(identity, connectionKey);
         this.connectionManagerSelector.getDatabaseConnection(identity, database1);
 
 
@@ -130,7 +131,7 @@ public class TestDatasourceCreation
         // User gets another connection to db2
         RelationalDatabaseConnection database2 = buildStaticDatabaseSpec("127.0.0.1", server.getPort(), "db3");
         ConnectionKey key2 = this.connectionManagerSelector.generateKeyFromDatabaseConnection(database2);
-        String pool2 = this.connectionStateManager.poolNameFor(identity,key2);
+        String pool2 = this.connectionStateManager.poolNameFor(identity, key2);
 
         this.connectionManagerSelector.getDatabaseConnection(identity, database2);
 
@@ -154,12 +155,12 @@ public class TestDatasourceCreation
         // User gets connection to db1
         RelationalDatabaseConnection database1 = buildStaticDatabaseSpec("127.0.0.1", server.getPort(), "db4");
         ConnectionKey connectionKey = this.connectionManagerSelector.generateKeyFromDatabaseConnection(database1);
-        String key1 = this.connectionStateManager.poolNameFor(identity1,connectionKey);
+        String key1 = this.connectionStateManager.poolNameFor(identity1, connectionKey);
 
         this.connectionManagerSelector.getDatabaseConnection(identity1, database1);
 
         DataSourceSpecification ds = builStaticDataSourceSpecification("127.0.0.1", server.getPort(), "db4");
-        assertEquals(ds.getConnectionKey(),connectionKey);
+        assertEquals(ds.getConnectionKey(), connectionKey);
 
         // We have a single data source
         datasourceSpecifications = ConnectionPoolTestUtils.getDataSourceSpecifications();
@@ -173,7 +174,7 @@ public class TestDatasourceCreation
         // User gets another connection to db2
         RelationalDatabaseConnection database2 = buildStaticDatabaseSpec("127.0.0.1", server.getPort(), "db5");
         ConnectionKey key2 = this.connectionManagerSelector.generateKeyFromDatabaseConnection(database2);
-        String pool2 = this.connectionStateManager.poolNameFor(identity2,key2);
+        String pool2 = this.connectionStateManager.poolNameFor(identity2, key2);
         this.connectionManagerSelector.getDatabaseConnection(identity2, database2);
 
         // We now have 2 data sources one per database + user
@@ -205,8 +206,8 @@ public class TestDatasourceCreation
 
     public StaticDataSourceSpecification builStaticDataSourceSpecification(String host, int port, String databaseName)
     {
-        return  new StaticDataSourceSpecification(
-                new StaticDataSourceSpecificationKey(host,port,databaseName),
+        return new StaticDataSourceSpecification(
+                new StaticDataSourceSpecificationKey(host, port, databaseName),
                 new H2Manager(),
                 new org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.TestDatabaseAuthenticationStrategy());
     }

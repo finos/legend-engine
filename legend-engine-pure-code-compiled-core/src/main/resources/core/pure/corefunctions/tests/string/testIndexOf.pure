@@ -1,0 +1,43 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::profiles::*;
+
+function <<test.Test>> meta::pure::functions::string::tests::indexOf::test():Boolean[1]
+{
+    let string = 'the quick brown fox jumps over the lazy dog';
+
+    assertEquals(4, $string->indexOf('quick'));
+    assertEquals(16, $string->indexOf('fox'));
+    assertEquals(-1, $string->indexOf('happy'));
+}
+
+
+function <<test.Test>> meta::pure::functions::string::tests::indexOf::testFromIndex():Boolean[1]
+{
+    let string = 'the the';
+
+    assertEquals(1, $string->indexOf('h', 0));
+    assertEquals(5, $string->indexOf('h', 3));
+}
+
+function <<test.Test>> meta::pure::functions::string::tests::lastIndexOf::lastIndexOfTest():Boolean[1] {
+   assertEquals(-1, 'abc'->lastIndexOf('d'));
+   assertEquals(1, 'abc'->lastIndexOf('b'));
+   assertEquals(3, 'abcbc'->lastIndexOf('b'));
+   assertEquals(0, 'abcdef'->lastIndexOf('ab'));
+   assertEquals(6, 'abcdefabcdef'->lastIndexOf('ab'));
+   assertEquals(12, 'abcdefabcdefabcdef'->lastIndexOf('ab'));
+}
+

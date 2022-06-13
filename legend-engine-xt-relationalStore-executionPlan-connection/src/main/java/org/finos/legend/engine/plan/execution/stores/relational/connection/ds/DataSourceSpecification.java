@@ -28,8 +28,8 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.Conne
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.IdentityState;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.ConnectionStateManager;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.IdentityState;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.KerberosUtils;
 import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
@@ -64,13 +64,13 @@ public abstract class DataSourceSpecification
     // - they are unused and idleTimeout is reached(defaults to 10 min)
     // - they are unused and maxLifetime is reached(defaults to 30 min)
 
+    public static MetricRegistry METRIC_REGISTRY;
 
     static
-    {  //house keeper frequency can only be altered via system property and will affect all pools!!
+    {
+        //house keeper frequency can only be altered via system property and will affect all pools!!
         System.setProperty(HIKARICP_HOUSEKEEPING_PERIOD_MS, String.valueOf(Long.getLong(HIKARICP_HOUSEKEEPING_PERIOD_MS, HIKARICP_DEFAULT_HOUSEKEEPER_FREQ_IN_MS)));
     }
-
-    public static MetricRegistry METRIC_REGISTRY;
 
     private final ConnectionStateManager connectionStateManager = ConnectionStateManager.getInstance();
     private final ConnectionKey connectionKey;
@@ -78,22 +78,22 @@ public abstract class DataSourceSpecification
     private final AuthenticationStrategy authenticationStrategy;
     protected final Properties extraDatasourceProperties = new Properties();
     protected final org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationKey datasourceKey;
-    private final int minPoolSize ;
+    private final int minPoolSize;
     private final int maxPoolSize;
 
     protected DataSourceSpecification(org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, Properties extraUserProperties)
     {
-        this(key,databaseManager,authenticationStrategy,extraUserProperties, HIKARICP_DEFAULT_MAX_POOL_SIZE, HIKARICP_DEFAULT_MIN_IDLE);
+        this(key, databaseManager, authenticationStrategy, extraUserProperties, HIKARICP_DEFAULT_MAX_POOL_SIZE, HIKARICP_DEFAULT_MIN_IDLE);
     }
 
-    protected DataSourceSpecification(org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, Properties extraUserProperties,int maxPoolSize,int minPoolSize)
+    protected DataSourceSpecification(org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, Properties extraUserProperties, int maxPoolSize, int minPoolSize)
     {
         this.datasourceKey = key;
         this.databaseManager = databaseManager;
         this.authenticationStrategy = authenticationStrategy;
         this.connectionKey = new ConnectionKey(this.datasourceKey, this.authenticationStrategy.getKey());
         this.extraDatasourceProperties.putAll(extraUserProperties);
-        this.maxPoolSize  = maxPoolSize;
+        this.maxPoolSize = maxPoolSize;
         this.minPoolSize = minPoolSize;
         MetricsHandler.observeCount("datastore specifications");
         MetricsHandler.incrementDatastoreSpecCount();
@@ -122,7 +122,7 @@ public abstract class DataSourceSpecification
 
     public Connection getConnectionUsingProfiles(MutableList<CommonProfile> profiles)
     {
-         Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
         return this.getConnectionUsingIdentity(identity, Optional.empty());
     }
 
@@ -144,7 +144,7 @@ public abstract class DataSourceSpecification
         {
             dataSourceBuilder = () -> this.buildDataSource(identity);
         }
-        return getConnection(new IdentityState(identity,databaseCredentialSupplierHolder),dataSourceBuilder);
+        return getConnection(new IdentityState(identity, databaseCredentialSupplierHolder), dataSourceBuilder);
     }
 
     protected Connection getConnection(IdentityState identityState, Supplier<DataSource> dataSourcePoolBuilder)
@@ -160,7 +160,7 @@ public abstract class DataSourceSpecification
             // ---------------------
             try
             {
-                DataSourceWithStatistics dataSourceWithStatistics = this.connectionStateManager.getDataSourceForIdentityIfAbsentBuild(identityState,this,dataSourcePoolBuilder);
+                DataSourceWithStatistics dataSourceWithStatistics = this.connectionStateManager.getDataSourceForIdentityIfAbsentBuild(identityState, this, dataSourcePoolBuilder);
                 // Logs and traces and stats -----
                 String poolName = dataSourceWithStatistics.getPoolName();
                 scope.span().setTag("Pool", poolName);
@@ -218,7 +218,7 @@ public abstract class DataSourceSpecification
             }
 
             // Properties management --------------
-            MapAdapter.adapt(properties).keyValuesView().forEach((Procedure<Pair>)p -> jdbcConfig.addDataSourceProperty(p.getOne().toString(), p.getTwo()));
+            MapAdapter.adapt(properties).keyValuesView().forEach((Procedure<Pair>) p -> jdbcConfig.addDataSourceProperty(p.getOne().toString(), p.getTwo()));
             //-------------------------------------
 
             HikariDataSource ds = new HikariDataSource(jdbcConfig);

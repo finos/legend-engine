@@ -20,7 +20,6 @@ import org.finos.legend.engine.plan.execution.stores.relational.config.Temporary
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.LocalH2DataSourceSpecification;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.ConnectionStateManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.test.utils.ConnectionPoolTestUtils;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
@@ -29,7 +28,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -37,13 +35,17 @@ import javax.security.auth.Subject;
 import java.sql.Connection;
 import java.util.Collections;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
 
-public class TestLocalH2DatasourceSpecificationCaching extends DbSpecificTests {
+public class TestLocalH2DatasourceSpecificationCaching extends DbSpecificTests
+{
     private ConnectionManagerSelector connectionManagerSelector;
 
     @Override
-    protected Subject getSubject() {
+    protected Subject getSubject()
+    {
         return null;
     }
 
@@ -68,7 +70,8 @@ public class TestLocalH2DatasourceSpecificationCaching extends DbSpecificTests {
      */
 
     @Test
-    public void multipleRequestsShareSameLocalH2DatasourceSpecification() throws Exception {
+    public void multipleRequestsShareSameLocalH2DatasourceSpecification() throws Exception
+    {
         Identity identity1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("identity1");
 
         assertEquals(0, ConnectionPoolTestUtils.getDataSourceSpecifications().size());
@@ -99,7 +102,8 @@ public class TestLocalH2DatasourceSpecificationCaching extends DbSpecificTests {
         assertSame(localH2DatasourceSpecification2, localH2DatasourceSpecification3);
     }
 
-    public RelationalDatabaseConnection buildLocalH2DatasourceSpec() throws Exception {
+    public RelationalDatabaseConnection buildLocalH2DatasourceSpec() throws Exception
+    {
         MutableList<String> setupSqls = Lists.mutable.with("drop table if exists PersonTable;",
                 "create table PersonTable(id INT, firmId INT, firstName VARCHAR(200), lastName VARCHAR(200));",
                 "insert into PersonTable (id, firmId, firstName, lastName) values (1, 1, 'pierre', 'de belen');",
@@ -113,7 +117,8 @@ public class TestLocalH2DatasourceSpecificationCaching extends DbSpecificTests {
     }
 
     @Test
-    public void multipleRequestsDoNoShareSameLocalH2DatasourceSpecificationWhenSetupSQLsDiffer() throws Exception {
+    public void multipleRequestsDoNoShareSameLocalH2DatasourceSpecificationWhenSetupSQLsDiffer() throws Exception
+    {
         Identity identity1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("identity1");
 
         // User gets a connection
@@ -121,21 +126,21 @@ public class TestLocalH2DatasourceSpecificationCaching extends DbSpecificTests {
         Connection conn1 = this.connectionManagerSelector.getDatabaseConnection(identity1, spec1);
 
 
-        LocalH2DataSourceSpecification localH2DatasourceSpecification1 = (LocalH2DataSourceSpecification)getDatasourceSpecification(this.connectionManagerSelector.generateKeyFromDatabaseConnection(spec1));
+        LocalH2DataSourceSpecification localH2DatasourceSpecification1 = (LocalH2DataSourceSpecification) getDatasourceSpecification(this.connectionManagerSelector.generateKeyFromDatabaseConnection(spec1));
 
         // User gets a connection
         RelationalDatabaseConnection spec2 = this.buildLocalH2DatasourceSpecWithTableName("PERSON2");
         Connection conn2 = this.connectionManagerSelector.getDatabaseConnection(identity1, spec2);
 
 
-        LocalH2DataSourceSpecification localH2DatasourceSpecification2 = (LocalH2DataSourceSpecification)getDatasourceSpecification( this.connectionManagerSelector.generateKeyFromDatabaseConnection(spec2));
+        LocalH2DataSourceSpecification localH2DatasourceSpecification2 = (LocalH2DataSourceSpecification) getDatasourceSpecification(this.connectionManagerSelector.generateKeyFromDatabaseConnection(spec2));
 
         // User gets a connection
         RelationalDatabaseConnection spec3 = this.buildLocalH2DatasourceSpecWithTableName("PERSON3");
         Connection conn3 = this.connectionManagerSelector.getDatabaseConnection(identity1, spec3);
 
 
-        LocalH2DataSourceSpecification localH2DatasourceSpecification3 = (LocalH2DataSourceSpecification)getDatasourceSpecification(this.connectionManagerSelector.generateKeyFromDatabaseConnection(spec3));
+        LocalH2DataSourceSpecification localH2DatasourceSpecification3 = (LocalH2DataSourceSpecification) getDatasourceSpecification(this.connectionManagerSelector.generateKeyFromDatabaseConnection(spec3));
 
         assertNotSame(localH2DatasourceSpecification1, localH2DatasourceSpecification2);
         assertNotSame(localH2DatasourceSpecification2, localH2DatasourceSpecification3);
@@ -144,13 +149,12 @@ public class TestLocalH2DatasourceSpecificationCaching extends DbSpecificTests {
 
     public DataSourceSpecification getDatasourceSpecification(ConnectionKey connectionKey) throws Exception
     {
-        return ConnectionPoolTestUtils.getConnectionPools().valuesView().detect(pool-> pool.getConnectionKey().equals(connectionKey)).getDataSourceSpecification();
+        return ConnectionPoolTestUtils.getConnectionPools().valuesView().detect(pool -> pool.getConnectionKey().equals(connectionKey)).getDataSourceSpecification();
     }
 
     public RelationalDatabaseConnection buildLocalH2DatasourceSpecWithTableName(String personTableName)
     {
-        MutableList<String> setupSqls = Lists.mutable.with
-                        (
+        MutableList<String> setupSqls = Lists.mutable.with(
                                 "drop table if exists __PERSON_TABLE__;",
                                 "create table __PERSON_TABLE__(id INT, firmId INT, firstName VARCHAR(200), lastName VARCHAR(200));",
                                 "insert into __PERSON_TABLE__ (id, firmId, firstName, lastName) values (1, 1, 'pierre', 'de belen');",

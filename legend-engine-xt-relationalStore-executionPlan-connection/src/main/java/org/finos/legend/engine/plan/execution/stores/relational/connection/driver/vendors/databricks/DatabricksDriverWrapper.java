@@ -16,7 +16,11 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.driv
 
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.ApiTokenAuthenticationStrategy;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.Driver;
+import java.sql.DriverManager;
+import java.sql.DriverPropertyInfo;
+import java.sql.SQLException;
 import java.util.Properties;
 import java.util.logging.Logger;
 
@@ -32,13 +36,14 @@ public class DatabricksDriverWrapper implements Driver
     public DatabricksDriverWrapper() throws SQLException
     {
         // Loading driver, making sure we have spark driver on classpath
-       try
-       {
-           Class.forName(DRIVER_CLASSNAME).getDeclaredConstructor().newInstance();
-       } catch (Exception e)
-       {
-           throw new SQLException("Could not find driver [" + DRIVER_CLASSNAME + "] on classpath");
-       }
+        try
+        {
+            Class.forName(DRIVER_CLASSNAME).getDeclaredConstructor().newInstance();
+        }
+        catch (Exception e)
+        {
+            throw new SQLException("Could not find driver [" + DRIVER_CLASSNAME + "] on classpath");
+        }
     }
 
     @Override

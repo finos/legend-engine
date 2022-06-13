@@ -14,10 +14,6 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.result;
 
-import org.finos.legend.engine.plan.execution.stores.relational.activity.RelationalExecutionActivity;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
-
 import io.opentracing.Span;
 import org.eclipse.collections.api.block.procedure.Procedure;
 import org.eclipse.collections.api.list.MutableList;
@@ -25,7 +21,10 @@ import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.plan.execution.result.ExecutionActivity;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.ResultVisitor;
+import org.finos.legend.engine.plan.execution.stores.relational.activity.RelationalExecutionActivity;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SQLExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.result.SQLResultColumn;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
@@ -82,15 +81,16 @@ public class SQLExecutionResult extends Result
             this.connection = connection;
             this.statement = connection.createStatement();
 
-            if(DatabaseType.MemSQL.name().equals(databaseType)){
+            if (DatabaseType.MemSQL.name().equals(databaseType))
+            {
                 this.statement.setFetchSize(100);
-            }            
+            }
 
             long start = System.currentTimeMillis();
             String sql = ((RelationalExecutionActivity) activities.get(activities.size() - 1)).sql;
             LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_START, sql).toString());
             this.resultSet = this.statement.executeQuery(sql);
-            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_STOP, (double)System.currentTimeMillis() - start).toString());
+            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_STOP, (double) System.currentTimeMillis() - start).toString());
             this.executedSql = sql;
 
             this.resultSetMetaData = resultSet.getMetaData();
@@ -209,7 +209,8 @@ public class SQLExecutionResult extends Result
         DatabaseManager databaseManager = DatabaseManager.fromString(this.SQLExecutionNode.getDatabaseTypeName());
         if (this.temporaryTables != null && this.statement != null)
         {
-            this.temporaryTables.forEach((Consumer<? super String>) table -> {
+            this.temporaryTables.forEach((Consumer<? super String>) table ->
+            {
                 try
                 {
                     statement.execute(databaseManager.relationalDatabaseSupport().dropTempTable(table));
@@ -220,14 +221,15 @@ public class SQLExecutionResult extends Result
             });
         }
 
-        Consumer<AutoCloseable> closingFunction = (AutoCloseable c) -> {
+        Consumer<AutoCloseable> closingFunction = (AutoCloseable c) ->
+        {
             if (c != null)
             {
                 try
                 {
                     c.close();
                 }
-                catch (Exception e)
+                catch (Exception ignored)
                 {
                 }
             }

@@ -17,8 +17,8 @@ package org.finos.legend.engine.language.pure.grammar.from.domain;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CStrictTime;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CStrictTime;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 public class StrictTimeParseTreeWalker
@@ -38,6 +38,7 @@ public class StrictTimeParseTreeWalker
         String value = this.timeToken.getText();
         return this.parseStrictTime(value);
     }
+
     /**
      * Parse a portion of a string into the correct CStrictTime type
      *
@@ -117,7 +118,7 @@ public class StrictTimeParseTreeWalker
         {
             previous = index + 1;
             index = ParserTreeWalkerUtility.findNonDigit(value, previous, end);
-            if(previous == end || index < end)
+            if (previous == end || index < end)
             {
                 throwInvalidTimeString("Error parsing subsecond", value, start, end);
             }

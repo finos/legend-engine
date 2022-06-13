@@ -1,3 +1,17 @@
+//  Copyright 2022 Goldman Sachs
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+
 package org.finos.legend.engine.query.graphQL.api.grammar.test;
 
 import org.eclipse.collections.api.block.function.Function;
@@ -49,29 +63,29 @@ public class TestGrammarApi extends TestGrammar<ExecutableDocument>
                         "  values: [String]\n" +
                         "  length(unit: LengthUnit = METER): Float\n" +
                         "}"),
-                        Tuples.pair("2", "enum Direction {\n"+
-                                "  NORTH\n"+
-                                "  SOUTH\n"+
-                                "  EAST\n"+
-                                "  WEST\n"+
-                                "}")));
+                Tuples.pair("2", "enum Direction {\n" +
+                        "  NORTH\n" +
+                        "  SOUTH\n" +
+                        "  EAST\n" +
+                        "  WEST\n" +
+                        "}")));
     }
 
     @Test
     public void testBatchError()
     {
         testBatchError(createBatchInput(Tuples.pair("1", "type Car implements Vehicle & X & Z {\n" +
-                        "  id: ID!\n" +
-                        "  name: String!\n" +
-                        "  values: [String]\n" +
-                        "  length(unit: LengthUnit = METER): Float\n" +
-                        "}"),
-                Tuples.pair("2", "enu Direction {\n"+
-                        "  NORTH\n"+
-                        "  SOUTH\n"+
-                        "  EAST\n"+
-                        "  WEST\n"+
-                        "}")),
+                                "  id: ID!\n" +
+                                "  name: String!\n" +
+                                "  values: [String]\n" +
+                                "  length(unit: LengthUnit = METER): Float\n" +
+                                "}"),
+                        Tuples.pair("2", "enu Direction {\n" +
+                                "  NORTH\n" +
+                                "  SOUTH\n" +
+                                "  EAST\n" +
+                                "  WEST\n" +
+                                "}")),
                 createExpectedBatchResult(Tuples.pair("1", "type Car implements Vehicle & X & Z {\n" +
                                 "  id: ID!\n" +
                                 "  name: String!\n" +
@@ -79,7 +93,7 @@ public class TestGrammarApi extends TestGrammar<ExecutableDocument>
                                 "  length(unit: LengthUnit = METER): Float\n" +
                                 "}"),
                         Tuples.pair("2", "{\"message\":\"Unexpected token\",\"sourceInformation\":{\"endColumn\":3,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":1,\"startLine\":1}}"))
-                );
+        );
     }
 
     private static final GraphQLGrammar graphQLGrammar = new GraphQLGrammar();

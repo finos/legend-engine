@@ -22,23 +22,23 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
     public String getDuplicatedElementTestCode()
     {
         return "Class model::element {}\n" +
-            "###DataSpace\n" +
-            "DataSpace model::element" +
-            "{\n" +
-            "  groupId: 'test.group';\n" +
-            "  artifactId: 'test-data-space';\n" +
-            "  versionId: '1.0.0';\n" +
-            "  executionContexts:\n" +
-            "  [\n" +
-            "    {\n" +
-            "      name: 'Context 1';\n" +
-            "      description: 'some information about the context';\n" +
-            "      mapping: model::String;\n" +
-            "      defaultRuntime: model::Runtime;\n" +
-            "    }\n" +
-            "  ];\n" +
-            "  defaultExecutionContext: 'Context 1';\n" +
-            "}\n";
+                "###DataSpace\n" +
+                "DataSpace model::element" +
+                "{\n" +
+                "  groupId: 'test.group';\n" +
+                "  artifactId: 'test-data-space';\n" +
+                "  versionId: '1.0.0';\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      description: 'some information about the context';\n" +
+                "      mapping: model::String;\n" +
+                "      defaultRuntime: model::Runtime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "}\n";
     }
 
     @Override
@@ -52,41 +52,41 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
     {
         // Faulty stereotype
         test("###DataSpace\n" +
-            "DataSpace <<NoProfile.NoKey>> model::dataSpace" +
-            "{\n" +
-            "  groupId: 'test.group';\n" +
-            "  artifactId: 'test-data-space';\n" +
-            "  versionId: '1.0.0';\n" +
-            "  executionContexts:\n" +
-            "  [\n" +
-            "    {\n" +
-            "      name: 'Context 1';\n" +
-            "      description: 'some information about the context';\n" +
-            "      mapping: model::String;\n" +
-            "      defaultRuntime: model::Runtime;\n" +
-            "    }\n" +
-            "  ];\n" +
-            "  defaultExecutionContext: 'Context 1';\n" +
-            "}\n", "COMPILATION error at [2:13-21]: Can't find the profile 'NoProfile'");
+                "DataSpace <<NoProfile.NoKey>> model::dataSpace" +
+                "{\n" +
+                "  groupId: 'test.group';\n" +
+                "  artifactId: 'test-data-space';\n" +
+                "  versionId: '1.0.0';\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      description: 'some information about the context';\n" +
+                "      mapping: model::String;\n" +
+                "      defaultRuntime: model::Runtime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "}\n", "COMPILATION error at [2:13-21]: Can't find the profile 'NoProfile'");
 
         // Faulty tagged value
         test("###DataSpace\n" +
-            "DataSpace { NoProfile.NoKey = 'something' } model::dataSpace" +
-            "{\n" +
-            "  groupId: 'test.group';\n" +
-            "  artifactId: 'test-data-space';\n" +
-            "  versionId: '1.0.0';\n" +
-            "  executionContexts:\n" +
-            "  [\n" +
-            "    {\n" +
-            "      name: 'Context 1';\n" +
-            "      description: 'some information about the context';\n" +
-            "      mapping: model::String;\n" +
-            "      defaultRuntime: model::Runtime;\n" +
-            "    }\n" +
-            "  ];\n" +
-            "  defaultExecutionContext: 'Context 1';\n" +
-            "}\n", "COMPILATION error at [2:13-21]: Can't find the profile 'NoProfile'");
+                "DataSpace { NoProfile.NoKey = 'something' } model::dataSpace" +
+                "{\n" +
+                "  groupId: 'test.group';\n" +
+                "  artifactId: 'test-data-space';\n" +
+                "  versionId: '1.0.0';\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      description: 'some information about the context';\n" +
+                "      mapping: model::String;\n" +
+                "      defaultRuntime: model::Runtime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "}\n", "COMPILATION error at [2:13-21]: Can't find the profile 'NoProfile'");
     }
 
 
@@ -95,56 +95,56 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
     {
         // No execution context provided
         test("###DataSpace\n" +
-            "DataSpace model::dataSpace" +
-            "{\n" +
-            "  groupId: 'test.group';\n" +
-            "  artifactId: 'test-data-space';\n" +
-            "  versionId: '1.0.0';\n" +
-            "  executionContexts:\n" +
-            "  [\n" +
-            "  ];\n" +
-            "  defaultExecutionContext: 'Context 1';\n" +
-            "}\n", "COMPILATION error at [2:1-10:1]: Data space must have at least one execution context");
+                "DataSpace model::dataSpace" +
+                "{\n" +
+                "  groupId: 'test.group';\n" +
+                "  artifactId: 'test-data-space';\n" +
+                "  versionId: '1.0.0';\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "}\n", "COMPILATION error at [2:1-10:1]: Data space must have at least one execution context");
 
         // Unknown default execution context
         test("###DataSpace\n" +
-            "DataSpace model::dataSpace" +
-            "{\n" +
-            "  groupId: 'test.group';\n" +
-            "  artifactId: 'test-data-space';\n" +
-            "  versionId: '1.0.0';\n" +
-            "  executionContexts:\n" +
-            "  [\n" +
-            "    {\n" +
-            "      name: 'Context 1';\n" +
-            "      description: 'some information about the context';\n" +
-            "      mapping: model::String;\n" +
-            "      defaultRuntime: model::Runtime;\n" +
-            "    }\n" +
-            "  ];\n" +
-            "  defaultExecutionContext: 'Context 2';\n" +
-            "}\n", "COMPILATION error at [2:1-16:1]: Default execution context does not match any existing execution contexts");
+                "DataSpace model::dataSpace" +
+                "{\n" +
+                "  groupId: 'test.group';\n" +
+                "  artifactId: 'test-data-space';\n" +
+                "  versionId: '1.0.0';\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      description: 'some information about the context';\n" +
+                "      mapping: model::String;\n" +
+                "      defaultRuntime: model::Runtime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 2';\n" +
+                "}\n", "COMPILATION error at [2:1-16:1]: Default execution context does not match any existing execution contexts");
     }
 
     @Test
     public void testDiagramCompilation()
     {
         test("###DataSpace\n" +
-            "DataSpace model::dataSpace" +
-            "{\n" +
-            "  groupId: 'test.group';\n" +
-            "  artifactId: 'test-data-space';\n" +
-            "  versionId: '1.0.0';\n" +
-            "  executionContexts:\n" +
-            "  [\n" +
-            "    {\n" +
-            "      name: 'Context 1';\n" +
-            "      description: 'some information about the context';\n" +
-            "      mapping: model::String;\n" +
-            "      defaultRuntime: model::Runtime;\n" +
-            "    }\n" +
-            "  ];\n" +
-            "  defaultExecutionContext: 'Context 1';\n" +
-            "}\n");
+                "DataSpace model::dataSpace" +
+                "{\n" +
+                "  groupId: 'test.group';\n" +
+                "  artifactId: 'test-data-space';\n" +
+                "  versionId: '1.0.0';\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      description: 'some information about the context';\n" +
+                "      mapping: model::String;\n" +
+                "      defaultRuntime: model::Runtime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "}\n");
     }
 }

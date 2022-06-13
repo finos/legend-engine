@@ -1,0 +1,41 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::json::*;
+import meta::alloy::objectReference::*;
+import meta::pure::runtime::*;
+import meta::pure::mapping::*;
+
+function meta::alloy::objectReference::generateObjectReferences(clientVersion:String[1], pathToMappingElement:String[1], rootSetId:String[1], pathToRuntimeFunction:String[1], pkMaps:Map<String, Any>[*], extensions:meta::pure::router::extension::RouterExtension[*]):String[1]
+{
+   generateVersionedObjectReferences($clientVersion, $pathToMappingElement, $rootSetId, $rootSetId, $pathToRuntimeFunction, $pkMaps, $extensions);
+}
+
+function meta::alloy::objectReference::generateObjectReferencesForGivenSetId(clientVersion:String[1], pathToMappingElement:String[1], rootSetId:String[1], setId:String[1], pathToRuntimeFunction:String[1], pkMaps:Map<String, Any>[*], extensions:meta::pure::router::extension::RouterExtension[*]):String[1]
+{
+   generateVersionedObjectReferences($clientVersion, $pathToMappingElement, $rootSetId, $setId, $pathToRuntimeFunction, $pkMaps, $extensions);
+}
+
+function <<access.private>> meta::alloy::objectReference::generateVersionedObjectReferences(clientVersion:String[1], pathToMappingElement:String[1], rootSetId:String[1], setId:String[1], pathToRuntimeFunction:String[1], pkMaps:Map<String, Any>[*], extensions:meta::pure::router::extension::RouterExtension[*]):String[1]
+{
+   let versionedFuncString = 'meta::protocols::pure::'+$clientVersion+'::invocation::execution::execute:::generateAlloyObjectReference_Mapping_1__String_1__String_1__Runtime_1__Map_1__RouterExtension_MANY__AlloyObjectReference_1_';
+   let versionedFunc       = $versionedFuncString->pathToElement()->cast(@Function<{Mapping[1], String[1], String[1], Runtime[1], Map<String, Any>[1], meta::pure::router::extension::RouterExtension[*] -> Any[1]}>);
+
+   let mapping             = $pathToMappingElement->pathToElement()->cast(@Mapping);
+   let runtime             = $pathToRuntimeFunction->pathToElement()->cast(@Function<{->Runtime[1]}>)->eval();
+
+   $pkMaps->map(pkMap |
+      $versionedFunc->eval($mapping, $rootSetId, $setId, $runtime, $pkMap, $extensions);
+   )->toJSON();
+}

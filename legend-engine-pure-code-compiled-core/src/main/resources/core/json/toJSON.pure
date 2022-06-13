@@ -1,0 +1,469 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::functions::cipher::*;
+import meta::pure::graphFetch::routing::*;
+import meta::pure::graphFetch::*;
+import meta::pure::metamodel::treepath::*;
+import meta::pure::metamodel::serialization::json::*;
+import meta::pure::mapping::*;
+import meta::json::*;
+import meta::json::tojson::*;
+import meta::json::stream::*;
+
+
+function meta::json::defaultConfig():Config[1]
+{
+   config(false, true, false, false);
+}
+
+function meta::json::defaultConfigWithCipher(secret:String[1]):Config[1]
+{
+   let cipherStereotypes = meta::pure::profiles::cipher.p_stereotypes->filter(s|$s.value=='Cipher');
+   defaultConfigWithCipher($secret, $cipherStereotypes);
+}
+
+function meta::json::defaultConfigWithDecipher(secret:String[1]):Config[1]
+{
+   let decipherStereotypes = meta::pure::profiles::cipher.p_stereotypes->filter(s|$s.value=='Decipher');
+   defaultConfigWithDecipher($secret, $decipherStereotypes);
+}
+
+function meta::json::defaultConfigWithCipher(secret:String[1], cipherStereotypes: Stereotype[*]):Config[1]
+{
+   config(false, true, false, false, '__TYPE', true, $secret,  $cipherStereotypes, [], [], false);
+}
+
+function meta::json::defaultConfigWithDecipher(secret:String[1], decipherStereotypes: Stereotype[*]):Config[1]
+{
+   config(false, true, false, false, '__TYPE', true, [], [], $secret, $decipherStereotypes, false);
+}
+
+function {service.contentType='application/json'} meta::json::toJSON(obj:Any[*]):String[1]
+{
+   toJSON($obj, [], 5);
+}
+
+function {service.contentType='application/json'} meta::json::toJSON<T>(obj:T[*], propertyPaths:LambdaFunction<{T[1]->Any[*]}>[*]):String[1]
+{
+   let propertyPathTree = $propertyPaths->buildPropertyPathTree();
+   toJSONElement($obj, [], 100, defaultConfig(), $propertyPathTree)->toCompactJSONString();
+}
+
+function {service.contentType='application/json'} meta::json::toJSONElement<T>(obj:T[*], propertyPaths:LambdaFunction<{T[1]->Any[*]}>[*]):JSONElement[1]
+{
+   let propertyPathTree = $propertyPaths->buildPropertyPathTree();
+   toJSONElement($obj, [], 100, defaultConfig(), $propertyPathTree);
+}
+
+function {service.contentType='application/json'} meta::json::toJSON(obj:Any[*], extraSerializers:Function<{Nil[1],JSONState[1] ->JSONElement[1]}>[*]):String[1]
+{
+   toJSON($obj, $extraSerializers, 5);
+}
+
+function {service.contentType='application/json'} meta::json::toJSON(obj:Any[*], max:Integer[0..1]):String[1]
+{
+   toJSON($obj, [], $max, defaultConfig());
+}
+
+function {service.contentType='application/json'} meta::json::toJSON(obj:Any[*], extraSerializers:Function<{Nil[1],JSONState[1] ->JSONElement[1]}>[*], max:Integer[0..1]):String[1]
+{
+   toJSON($obj, $extraSerializers, $max, defaultConfig());
+}
+
+function {service.contentType='application/json'} meta::json::toJSON(obj:Any[*], max:Integer[0..1], config:Config[1]):String[1]
+{
+   toJSON($obj, [], $max, $config);
+}
+
+function {service.contentType='application/json'} meta::json::toJSON(obj:Any[*], includeType:Boolean[1], typeString:String[1]):String[1]
+{
+   toJSON($obj, [], 5, config($includeType, true, false, false, $typeString, false));
+}
+
+function {service.contentType='application/json'} meta::json::toJSON(obj:Any[*], max:Integer[0..1], includeType:Boolean[1]):String[1]
+{
+   toJSON($obj, [], $max, config($includeType, true, false, false));
+}
+
+function {service.contentType='application/json'} meta::json::toJSON(obj:Any[*], extraSerializers:Function<{Nil[1],JSONState[1] ->JSONElement[1]}>[*], max:Integer[0..1], config:Config[1]):String[1]
+{
+   toJSONElement($obj, $extraSerializers, $max, $config)->toCompactJSONString();
+}
+
+function {service.contentType='application/json'} meta::json::toJSON<T>(obj:T[*], graphFetchTree:GraphFetchTree[1]):String[1]
+{
+   toJSON($obj, $graphFetchTree, defaultConfig());
+}
+
+function {service.contentType='application/json'} meta::json::toJSON<T>(obj:T[*], graphFetchTree:GraphFetchTree[1], config:Config[1]):String[1]
+{
+   toJSONElement($obj, [], 100, $config, $graphFetchTree)->toCompactJSONString();
+}
+
+Class meta::json::Config
+{
+   includeType:Boolean[1];
+   includeEnumType : Boolean[1];
+   removePropertiesWithNullValues:Boolean[1];
+   removePropertiesWithEmptySets:Boolean[1];
+   typeString:String[1];
+   fullyQualifiedTypePath:Boolean[1];
+   cipher() {$this.cipherSecret->isNotEmpty()} :Boolean[1];
+   cipherSecret:String[0..1];
+   cipherStereotypes: Stereotype[*];
+   decipher() {$this.decipherSecret->isNotEmpty()} :Boolean[1];
+   decipherSecret:String[0..1];
+   decipherStereotypes: Stereotype[*];
+   fullyRespectGraphFetchTree : Boolean[1];
+}
+
+function meta::json::config(includeType:Boolean[1], includeEnumType:Boolean[1], removePropertiesWithNullValues:Boolean[1],  removePropertiesWithEmptySets:Boolean[1]):meta::json::Config[1]
+{
+   config($includeType, $includeEnumType, $removePropertiesWithNullValues, $removePropertiesWithEmptySets, '__TYPE', true);
+}
+
+function meta::json::config(includeType:Boolean[1], includeEnumType:Boolean[1], removePropertiesWithNullValues:Boolean[1],  removePropertiesWithEmptySets:Boolean[1], fullyRespectDepfetchTree:Boolean[1]):meta::json::Config[1]
+{
+   config($includeType, $includeEnumType, $removePropertiesWithNullValues, $removePropertiesWithEmptySets, '__TYPE', true, [], [], [], [], $fullyRespectDepfetchTree);
+}
+
+function meta::json::config(includeType:Boolean[1], includeEnumType:Boolean[1], removePropertiesWithNullValues:Boolean[1],  removePropertiesWithEmptySets:Boolean[1], typeString:String[1], fullyQualifiedTypePath:Boolean[1]):meta::json::Config[1]
+{
+   config($includeType, $includeEnumType, $removePropertiesWithNullValues, $removePropertiesWithEmptySets, $typeString, $fullyQualifiedTypePath, [], [], [], [], false);
+}
+
+function meta::json::config(includeType:Boolean[1], includeEnumType:Boolean[1], removePropertiesWithNullValues:Boolean[1],  removePropertiesWithEmptySets:Boolean[1], typeString:String[1], fullyQualifiedTypePath:Boolean[1], fullyRespectDepfetchTree:Boolean[1]):meta::json::Config[1]
+{
+   config($includeType, $includeEnumType, $removePropertiesWithNullValues, $removePropertiesWithEmptySets, $typeString, $fullyQualifiedTypePath, [], [], [], [], $fullyRespectDepfetchTree);
+}
+
+function meta::json::config(includeType:Boolean[1], includeEnumType:Boolean[1], removePropertiesWithNullValues:Boolean[1],  removePropertiesWithEmptySets:Boolean[1], typeString:String[1], fullyQualifiedTypePath:Boolean[1], 
+                            cipherSecret: String[0..1], cipherStereotypes: Stereotype[*],
+                            decipherSecret: String[0..1], decipherStereotypes: Stereotype[*], fullyRespectGraphFetchTree:Boolean[1]):meta::json::Config[1]
+{
+   ^meta::json::Config
+   (
+      includeType = $includeType,
+      includeEnumType = $includeEnumType,
+      removePropertiesWithNullValues = $removePropertiesWithNullValues,
+      removePropertiesWithEmptySets = $removePropertiesWithEmptySets,
+      typeString = $typeString,
+      fullyQualifiedTypePath = $fullyQualifiedTypePath,
+      cipherSecret = $cipherSecret,
+      cipherStereotypes = $cipherStereotypes,
+      decipherSecret = $decipherSecret,
+      decipherStereotypes = $decipherStereotypes,
+      fullyRespectGraphFetchTree = $fullyRespectGraphFetchTree
+   );
+}
+
+//--------
+// Stream
+//--------
+
+
+function {service.contentType='application/json'} meta::json::toJSONStringStream(obj:Any[*], max:Integer[0..1], includeType:Boolean[1]):String[*]
+{
+   meta::json::toJSONStringStream($obj, $max, config($includeType, true, false, false));
+}
+
+function {service.contentType='application/json'} meta::json::toJSONStringStream(obj:Any[*], max:Integer[0..1], config:Config[1]):String[*]
+{
+   $obj->match([
+                  t:TabularDataSet[1] | optimizedTdsJSONStringStream($t, ^$config(includeType=false)),
+                  r:Result<TabularDataSet|1>[1]| optimizedResultJSONStringStream($r, $max, $config),
+                  a:Any[*] | toJSONElement($obj, [], $max, $config)->toCompactJSONStrings()
+         ]);
+
+}
+
+function meta::json::optimizedTdsJSONStringStream(t:TabularDataSet[1], config:Config[1]):String[*]
+{
+   let head = ['{\"columns\":']->concatenate($t.columns->map(c | '{\"name\":\"' + $c.name + '\",\"type\":' + if($c.type->isEmpty(),|'\"\"',|'\"' + $c.type->toOne()->elementToPath() + '\"') + ',\"metaType\":' + if($c.type->isEmpty(),|'\"\"', | '\"' + $c.type->toOne()->match([{pt:PrimitiveType[1] | 'PrimitiveType'}, {et:Enumeration<Any>[1] | 'Enumeration' }, {et:Any[1] | 'InvalidType' }]) + '\"') + '}')->joinStrings('[', ',', ']'))
+   ->concatenate(',\"rows\":[');
+
+   let body = if($t.rows->isEmpty(), | $head, | $head->concatenate($t.rows->head()->toOne()->tdsRowToJSON())
+                                                ->concatenate($t.rows->tail()->map(r | [',']->concatenate($r->tdsRowToJSON()))));
+
+   if(
+    $config.includeType,
+    {| $body->concatenate(']')->concatenate(', \"' + $config.typeString + '\": \"')->concatenate($t->class()->elementToPath())->concatenate('\"}')},
+    {| $body->concatenate(']}')}
+   );
+}
+
+function meta::json::optimizedResultJSONStringStream(r:Result<TabularDataSet|1>[1], max:Integer[0..1], config:Config[1]):String[*]
+{
+   let columnsConfig = config(true, true, false, false);
+   let dataConfig = ^$config(includeEnumType = false);  
+   let body = '{';
+   let bodyWithValues = $body
+                        ->concatenate('\"values\": [')
+                        ->concatenate(
+                           $r.values->toOne()->map(v | $v->optimizedTdsJSONStringStream($columnsConfig))
+                        )->concatenate('], ')
+                        ->concatenate('\"activities\": [')
+                        ->concatenate(
+                           $r.activities
+                                 ->map(v | $v->toJSONElement([], $max, $dataConfig)->toCompactJSONStrings()->joinStrings())->makeString(', '))
+                        ->concatenate(']');
+   if(
+    $config.includeType,
+    {| $bodyWithValues->concatenate(', \"' + $config.typeString + '\": \"')->concatenate($r->class()->elementToPath())->concatenate('\"}')},
+    {| $bodyWithValues->concatenate('}')}
+   );
+   
+}
+
+function {service.contentType='application/json'} meta::json::tdsToJSONKeyValueObjectString(t:TabularDataSet[1]):String[*]
+{
+   $t->optimizedTdsToJSONKeyValueObjectStringStream();
+}
+
+function {service.contentType='application/json'} meta::json::optimizedTdsToJSONKeyValueObjectStringStream(t:TabularDataSet[1]):String[*]
+{
+  if ($t.rows->isEmpty(), 
+      | '[]', 
+      | '['->concatenate($t.rows->head()->toOne()->tdsRowToJSONKeyValueObject($t.columns)
+            ->concatenate($t.rows->tail()->map(r | ','->concatenate($r->tdsRowToJSONKeyValueObject($t.columns)))))
+         ->concatenate(']'));
+}
+
+function <<access.private>> meta::json::tdsRowToJSONKeyValueObject(row:TDSRow[1], columns:TDSColumn[*]):String[1]
+{
+   $columns->map(col | $col.name->stringToJSON() + ':' + $row.get($col.name)->tdsRowValueToJSON())->joinStrings('{', ',', '}')
+}
+
+function <<access.private>> meta::json::tdsRowToJSON(row:TDSRow[1]):String[1]
+{
+   '{\"values\":' + $row.values->map(v| $v->tdsRowValueToJSON())->joinStrings('[', ',', ']') + '}';
+}
+
+function <<access.private>> meta::json::tdsRowValueToJSON(value:Any[1]):String[1]
+{
+   $value->match([
+         n:Number[1] | $n->toString(),
+         b:Boolean[1] | $b->toString(),
+         d:Date[1] | '\"' + $d->toString() + '\"',
+         s:String[1] | $s->stringToJSON(),
+         e:Enum[1] | '\"' + $e->id() + '\"',
+         n:TDSNull[1] | 'null'
+   ])
+}
+
+
+
+//---------------
+// toJSONElement
+//---------------
+
+function meta::json::toJSONElement(obj:Any[*]):JSONElement[1]
+{
+   toJSONElement($obj, [], 5, defaultConfig());
+}
+
+function meta::json::toJSONElement(obj:Any[*], extraSerializers:Function<{Nil[1],JSONState[1] ->JSONElement[1]}>[*]):JSONElement[1]
+{
+   toJSONElement($obj, $extraSerializers, 5, defaultConfig());
+}
+
+Class meta::json::JSONState
+{
+   lambdas : Function<{Nil[1],JSONState[1]->JSONElement[1]}>[1..*];
+   config : Config[1];
+   currentDepth : Integer[1];
+   propertyPathTree:PropertyPathTreeNode[0..1];
+   graphFetchTrees:GraphFetchTree[*];
+   parents : Any[*];
+   cipher : Boolean[1];
+   decipher: Boolean[1];
+}
+
+function meta::json::toJSONElement(obj:Any[*], extraSerializers:Function<{Nil[1],JSONState[1] ->JSONElement[1]}>[*], max:Integer[0..1], config:Config[1]):JSONElement[1]
+{
+   toJSONElement($obj, $extraSerializers, $max, $config, [])
+}
+
+
+function meta::json::toJSONElement(obj:Any[*], extraSerializers:Function<{Nil[1],JSONState[1] ->JSONElement[1]}>[*], max:Integer[0..1], config:Config[1], propertyPathTree:PropertyPathTreeNode[0..1]):JSONElement[1]
+{
+   toJSONElement($obj, $extraSerializers, $max, $config, $propertyPathTree, false, false);
+}
+
+function meta::json::toJSONElement(obj:Any[*], extraSerializers:Function<{Nil[1],JSONState[1] ->JSONElement[1]}>[*], max:Integer[0..1], config:Config[1], propertyPathTree:PropertyPathTreeNode[0..1], cipher: Boolean[1], decipher: Boolean[1]):JSONElement[1]
+{
+   let lambdas = buildLambdas($extraSerializers, $max, $config);
+   $obj->meta::pure::milestoning::excludeRangeMilestoningProperty()->match($lambdas, ^JSONState(lambdas = $lambdas, currentDepth = 0, config = $config, propertyPathTree=$propertyPathTree, cipher=$cipher, decipher=$decipher));
+}
+
+function meta::json::toJSONElement(obj:Any[*], extraSerializers:Function<{Nil[1],JSONState[1] ->JSONElement[1]}>[*], max:Integer[0..1], config:Config[1], graphFetchTree:GraphFetchTree[1]):JSONElement[1]
+{
+   toJSONElement($obj, $extraSerializers, $max, $config, $graphFetchTree, false, false);
+}
+
+function meta::json::toJSONElement(obj:Any[*], extraSerializers:Function<{Nil[1],JSONState[1] ->JSONElement[1]}>[*], max:Integer[0..1], config:Config[1], graphFetchTree:GraphFetchTree[1], cipher: Boolean[1], decipher: Boolean[1]):JSONElement[1]
+{
+   let lambdas = buildLambdas($extraSerializers, $max, $config);
+   $obj->meta::pure::milestoning::excludeRangeMilestoningProperty()->match($lambdas, ^JSONState(lambdas = $lambdas, currentDepth = 0, config = $config, graphFetchTrees=$graphFetchTree, cipher=$cipher, decipher=$decipher));
+}
+
+function <<access.private>> meta::json::buildLambdas(extraSerializers:Function<{Nil[1],JSONState[1] ->JSONElement[1]}>[*], max:Integer[0..1], config:Config[1]): Function<{Nil[1],JSONState[1] ->JSONElement[1]}>[1..*]
+{
+   $extraSerializers->concatenate(
+      [
+         {s:String[1], state:JSONState[1] | if($state.cipher, | ^JSONString(value=encrypt($s, $config.cipherSecret->toOne())),|                                         
+                                               if($state.decipher, | ^JSONString(value=decrypt($s, $config.decipherSecret->toOne()));, |
+                                                  ^JSONString(value=$s));)},
+         {n:Number[1], state:JSONState[1]  | if($state.cipher,| ^JSONString(value=encrypt($n, $config.cipherSecret->toOne())), |^JSONNumber(value=$n))},
+         {d:Date[1], state:JSONState[1]  | if($state.cipher, |^JSONString(value=encrypt($d->toString(), $config.cipherSecret->toOne())),|^JSONString(value=$d->toString()))}, // TODO consider giving it structure
+         {b:Boolean[1], state:JSONState[1]  | if($state.cipher, |^JSONString(value=encrypt($b, $config.cipherSecret->toOne())),|^JSONBoolean(value=$b))},
+         {e:Enum[1], state:JSONState[1]  | let value= $state.config.includeEnumType->if(| $e->type()->toOne()->elementToPath() + '.' + $e->id(), | $e->id()); if($state.cipher,|^JSONString(value=encrypt($value,$config.cipherSecret->toOne())),|^JSONString(value=$value));}, // TODO consider giving it structure
+         {e:Enumeration<Any>[1], state:JSONState[1]  | $e->enumerationToJSON()},
+
+         {m:Map<Any,Any>[1], state:JSONState[1]  | newJSONObject($m->keyValues()->map(p|newJSONKeyValue($p.first->toString(), $p.second->recurse($m, $state))))},
+         {l:List<Any>[1], state:JSONState[1] | let result = $l.values->recurse($l, $state);
+                                               if($result->instanceOf(JSONArray), | $result, | ^JSONArray(values=$result));},
+
+         {a:Association[1], state:JSONState[1]  | $a->associationToJSON()},
+         {c:Class<Any>[1], state:JSONState[1]  | $c->classToJSON()},
+         {g:GenericType[1], state:JSONState[1]  | $g->genericTypeToJSON()},
+         {p:Property<Nil,Any|*>[1], state:JSONState[1]  | $p->propertyToJSON()},
+         {q:QualifiedProperty<Any>[1], state:JSONState[1]  | $q->qualifiedPropertyToJSON()},
+         {s:Stereotype[1], state:JSONState[1]  | $s->stereotypeToJSON()},
+         {t:TaggedValue[1], state:JSONState[1]  | $t->taggedValueToJSON()},
+         {t:Tag[1], state:JSONState[1]  | $t->tagToJSON()},
+         {m:Multiplicity[1], state:JSONState[1]  | $m->multiplicityToJSON()},
+         {f:FunctionDefinition<Any>[1], state:JSONState[1]  | ^JSONString(value=$f.name->toOne())}, // TODO consider giving it structure
+         {p:PackageableElement[1], state:JSONState[1]  | ^JSONString(value=$p->elementToPath())}, // TODO consider giving it structure
+         
+         {t:TabularDataSet[1], state:JSONState[1]  | let c= $state.config;
+                                                     let nstate = ^$state(config=^$config(includeEnumType = false));
+                                                     newJSONObject([
+                                                           newJSONKeyValue('columns', ^JSONArray(values=$t.columns->map(c|newJSONObject([newJSONKeyValue('name', ^JSONString(value=$c.name)), newJSONKeyValue('type', ^JSONString(value=if($c.type->isEmpty(),|'',|$c.type->toOne()->elementToPath()))), newJSONKeyValue('metaType', ^JSONString(value=if($c.type->isEmpty(),|'',|$c.type->toOne()->match([{pt:PrimitiveType[1] | 'PrimitiveType'}, {et:Enumeration<Any>[1] | 'Enumeration' }, {et:Any[1] | 'InvalidType' }]))))])))),
+                                                           newJSONKeyValue('rows', ^JSONArray(values=$t.rows->map(r|newJSONObject(newJSONKeyValue('values', ^JSONArray(values=$r.values->map(v |$v->recurse($t, $nstate))))))))
+                                                     ]);},
+         {n:TDSNull[1], state:JSONState[1]  | ^JSONNull()},
+
+         {k:Any[1], state:JSONState[1]  | $k->anyToJSON($state, $max, $config)},
+         {k:Any[*], state:JSONState[1]  | if($max->isEmpty() || ($state.currentDepth < $max->toOne()),
+                                              | ^JSONArray(values=$k->map(o | $o->recurse([], $state))),
+                                              | ^JSONArray()
+                                          )}
+      ]
+   )->toOneMany();
+}
+
+function meta::json::anyToJSON(k:Any[1], state:JSONState[1], max:Integer[0..1], config:Config[1]):JSONElement[1]
+{
+    let evalProp = {p:Property<Nil,Any|*>[1], k:Any[1], s:JSONState[1]| 
+      let values = $p->eval($k->evaluateAndDeactivate());
+      let allowedTypes = $s.graphFetchTrees->map(gft|$gft->match([
+                                                              rgft: RootGraphFetchTree<Any>[1] | $rgft.class,
+                                                              pgft: PropertyGraphFetchTree[1]  | $pgft.subType
+                                                           ]));
+      let filtered = if($allowedTypes->isEmpty(),
+                       | $values,
+                       | $values->filter(x|$allowedTypes->exists(at| $x->instanceOf($at)))
+                     );
+      let cipher = $s.config.cipher() && $s.config.cipherStereotypes->fold({e,a|$p->hasStereotype($e.value, $e.profile)||$a }, false);
+      let decipher = $s.config.decipher() && $s.config.decipherStereotypes->fold({e,a|$p->hasStereotype($e.value, $e.profile)||$a }, false);
+      if($filtered->isEmpty(),
+         | if($p.multiplicity->isZeroOne(),
+              | if($s.config.removePropertiesWithNullValues,
+                   | [],
+                   | newJSONKeyValue($p.name->toOne(), ^JSONNull())
+                ),
+              | if($s.config.removePropertiesWithEmptySets,
+                   |[],
+                   | newJSONKeyValue($p.name->toOne(), ^JSONArray())
+                )
+           ),
+         | newJSONKeyValue($p.name->toOne(), if($filtered->size() == 1,
+                                                | if($p.multiplicity->hasUpperBound() && eq($p.multiplicity->getUpperBound(), 1),
+                                                     | $filtered->recurse($k, $cipher, $decipher, $s),
+                                                     | ^JSONArray(values=$filtered->toOne()->recurse($k, $cipher, $decipher, $s))
+                                                  ),
+                                                | $filtered->recurse($k, $cipher, $decipher, $s)
+                                             )
+                          );
+      );
+   };
+
+   let gft = $state.graphFetchTrees->filter(gft| $gft->match([
+      pgft: PropertyGraphFetchTree[1] | $pgft.subType->isEmpty() || $k->instanceOf($pgft.subType->toOne()),
+      gft:  GraphFetchTree[1]         | true
+   ]));
+   if ($max->isEmpty() || ($state.currentDepth < $max->toOne()),
+       | let pairs = if($state.propertyPathTree->isNotEmpty(),
+                        {| 
+                            let simpleProperties = $k->genericType()->properties()->filter(p | $p->isDataTypeProperty() && $p->isToJSONProperty());
+                            let simplePairs = $simpleProperties->map(p|$evalProp->eval($p, $k, $state));
+                            let cptns = $state.propertyPathTree.children->filter(cptn | $cptn.property->toOne()->instanceOf(Property) && $cptn.property->toOne()->cast(@Property<Nil,Any|*>)->isToJSONProperty());
+                            let complexDfPairs = $cptns->map(cptn|$evalProp->eval($cptn.property, $k, ^$state(propertyPathTree=$cptn)));
+                            $simplePairs->concatenate($complexDfPairs);
+                        },
+                        |
+                     if($gft->isNotEmpty(),
+                        {| 
+                           let pgfts            = $gft.subTrees
+                                                     ->filter(st | $st->instanceOf(PropertyGraphFetchTree))
+                                                     ->cast(@PropertyGraphFetchTree)
+                                                     ->filter(pgft | $pgft.property->cast(@Property<Nil,Any|*>)->isToJSONProperty());
+                           let pgftsByProperty  = $pgfts->groupBy(pgft | $pgft.property);
+                           let complexDfPairs   = $pgftsByProperty->keys()->map(p|$evalProp->eval($p, $k, ^$state(graphFetchTrees=$pgftsByProperty->get($p).values)));
+                           if ($config.fullyRespectGraphFetchTree,
+                                |$complexDfPairs,
+                                |let simpleProperties = $k->genericType()->properties()->filter(p | $p->isDataTypeProperty() && $p->isToJSONProperty());
+                                 let simplePairs      = $simpleProperties->map(p|$evalProp->eval($p, $k, ^$state(graphFetchTrees=[])));
+                                 $simplePairs->concatenate($complexDfPairs);
+                           );
+                        },
+                        {|
+                           let properties = $k->genericType()->properties()->filter(p | $p->isToJSONProperty());
+                           $properties->map(p|$evalProp->eval($p, $k, $state));
+                        }
+                     ));
+                     ^JSONObject(keyValuePairs=if($config.includeType, |$pairs->add(0, newJSONKeyValue($config.typeString, ^JSONString(value=if($config.fullyQualifiedTypePath, |$k->class()->elementToPath(), |$k->class().name->toOne())))), |$pairs));,
+       |    ^JSONObject());
+}
+
+function meta::json::recurse(v:Any[*], parent:Any[0..1], cipher:Boolean[1], decipher:Boolean[1], state:JSONState[1]):JSONElement[1]
+{
+   $v->match($state.lambdas, ^$state(currentDepth = $state.currentDepth + 1, parents+=$parent, cipher=($state.cipher||$cipher), decipher=($state.decipher||$decipher)))
+}
+
+function meta::json::recurse(v:Any[*], parent:Any[0..1], state:JSONState[1]):JSONElement[1]
+{
+   recurse($v, $parent, false, false, $state);
+}
+
+function meta::json::sort(json:JSONElement[1]):JSONElement[1]
+{
+   $json->match([
+      o:JSONObject[1] | newJSONObject($o.keyValuePairs->sortBy(kv | $kv.key.value)->map(kv | ^JSONKeyValue(key = $kv.key, value = $kv.value->meta::json::sort()))),
+      a:JSONArray[1] | ^JSONArray(values = $a.values->map(v | $v->meta::json::sort())),
+      e:JSONElement[1] | $e
+   ])
+}
+
+function meta::json::toJsonNative(instance: Any[*], config: JSONSerializationConfig[1]):String[1]
+{
+    meta::json::toJsonBeta($instance, $config);
+}
+
+function meta::json::toJsonNative(instance: Any[*]):String[1]
+{
+    meta::json::toJsonBeta($instance);
+}

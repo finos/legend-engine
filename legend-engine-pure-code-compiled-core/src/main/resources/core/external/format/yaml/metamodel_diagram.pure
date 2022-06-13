@@ -1,0 +1,223 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Diagram
+Diagram meta::external::format::yaml::YAML_Diagram(width=0.0, height=0.0)
+{
+    TypeView cview_8(
+        type=meta::external::format::yaml::metamodel::YAMLString,
+        position=(940.00000, 207.00000),
+        width=101.86667,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_2(
+        type=meta::external::format::yaml::metamodel::YAMLBoolean,
+        position=(431.00000, 191.00000),
+        width=113.48334,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_6(
+        type=meta::external::format::yaml::metamodel::YAMLNumber,
+        position=(462.00000, 260.00000),
+        width=111.66667,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_4(
+        type=meta::external::format::yaml::metamodel::YAMLKeyValue,
+        position=(790.00000, 203.00000),
+        width=116.61666,
+        height=104.81907,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_7(
+        type=meta::external::format::yaml::metamodel::YAMLObject,
+        position=(607.00000, 237.00000),
+        width=90.23333,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_1(
+        type=meta::external::format::yaml::metamodel::YAMLArray,
+        position=(366.00000, 251.00000),
+        width=84.23333,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_3(
+        type=meta::external::format::yaml::metamodel::YAMLElement,
+        position=(359.00000, 133.00000),
+        width=685.61666,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_5(
+        type=meta::external::format::yaml::metamodel::YAMLNull,
+        position=(549.00000, 313.00000),
+        width=84.15000,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    GeneralizationView gview_0(
+        source=cview_1,
+        target=cview_3,
+        points=[(408.11666,266.00000),(408.61666,152.81907)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_1(
+        source=cview_2,
+        target=cview_3,
+        points=[(487.74167,213.00000),(487.61666,154.81907)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_2(
+        source=cview_5,
+        target=cview_3,
+        points=[(592.30833,320.85940),(592.61666,152.81907)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_3(
+        source=cview_6,
+        target=cview_3,
+        points=[(560.61666,264.81907),(560.61666,155.81907)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_4(
+        source=cview_7,
+        target=cview_3,
+        points=[(652.11666,252.00000),(652.61666,157.81907)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_5(
+        source=cview_8,
+        target=cview_3,
+        points=[(990.93333,229.00000),(990.61666,154.81907)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_0(
+        property=meta::external::format::yaml::metamodel::YAMLArray.values,
+        source=cview_1,
+        target=cview_3
+,        points=[(408.11666,266.00000),(324.61666,266.81907),(324.61666,151.81907),(701.80833,148.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_1(
+        property=meta::external::format::yaml::metamodel::YAMLKeyValue.value,
+        source=cview_4,
+        target=cview_3
+,        points=[(901.61666,295.81907),(1065.61666,296.81907),(1064.61666,149.81907),(701.80833,148.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_2(
+        property=meta::external::format::yaml::metamodel::YAMLObject.keyValuePairs,
+        source=cview_7,
+        target=cview_4
+,        points=[(652.11666,252.00000),(811.61666,251.81907)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_3(
+        property=meta::external::format::yaml::metamodel::YAMLKeyValue.key,
+        source=cview_4,
+        target=cview_8
+,        points=[(892.61666,229.81907),(990.93333,229.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+}

@@ -25,10 +25,16 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 public interface IngestModeVisitor<T>
 {
     T visit(AppendOnly val);
+
     T visit(BitemporalDelta val);
+
     T visit(BitemporalSnapshot val);
+
     T visit(NontemporalDelta val);
+
     T visit(NontemporalSnapshot val);
+
     T visit(UnitemporalDelta val);
+
     T visit(UnitemporalSnapshot val);
 }

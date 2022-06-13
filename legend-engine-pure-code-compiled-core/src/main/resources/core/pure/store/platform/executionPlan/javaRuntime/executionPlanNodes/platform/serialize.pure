@@ -1,0 +1,417 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::metamodel::*;
+import meta::external::language::java::metamodel::project::*;
+import meta::external::language::java::factory::*;
+import meta::external::language::java::factory::project::*;
+import meta::external::language::java::serialization::*;
+import meta::external::language::java::transform::*;
+import meta::pure::dataQuality::*;
+import meta::pure::executionPlan::*;
+import meta::pure::executionPlan::engine::*;
+import meta::pure::executionPlan::engine::java::*;
+import meta::pure::executionPlan::engine::java::naming::*;
+import meta::pure::executionPlan::engine::java::serialize::*;
+import meta::pure::executionPlan::engine::java::typeInfo::*;
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::execution::*;
+
+Class meta::pure::executionPlan::engine::java::serialize::SerializeData
+{
+   tree           : RootGraphFetchTree<Any>[1];
+   auxiliaryTrees : RootGraphFetchTree<Any>[*];
+   config         : AlloySerializationConfig[0..1];
+}
+
+function meta::pure::executionPlan::engine::java::serialize::prepareForSerialize(p:PureExpressionPlatformExecutionNode[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]): GenerationContext[1]
+{
+   print(if($debug.debug,|$debug.space+'('+$path+') prepareForSerialize\n', |''));
+   
+   let fe        = $p.expression->cast(@FunctionExpression);
+   let tree      = $fe.parametersValues->at(1)->cast(@InstanceValue).values->cast(@RootGraphFetchTree<Any>)->toOne();
+   let config    = if ($fe.parametersValues->size() > 2,
+                       |$fe.parametersValues->at(2)->match([
+                          i:InstanceValue[1] | $i.values->cast(@AlloySerializationConfig)->toOne(),
+                          f:SimpleFunctionExpression [1] | $f->reactivate()->cast(@AlloySerializationConfig)->toOne();
+                       ]),
+                       |[]
+                   );
+   let newInfo   = $context.typeInfos->addForGraphFetchTree($tree);
+   let childInfo = $context->childNodeInfosForPath($path);
+   
+   let data = ^SerializeData(
+      tree           = $tree,
+      auxiliaryTrees = $childInfo.graphFetchTrees,
+      config         = $config
+   );
+
+   ^$context(typeInfos=$newInfo, nodeInfos=$context.nodeInfos->concatenate(^NodeInfo(path=$path, returnType=^SimpleJavaType(pureType=String, javaType=javaString()), data=$data, graphFetchTrees=$data.tree->concatenate($data.auxiliaryTrees))));
+}
+
+function meta::pure::executionPlan::engine::java::serialize::generateImplementionForSerialize(p:PureExpressionPlatformExecutionNode[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]): GeneratedCode[1]
+{
+   print(if($debug.debug,|$debug.space+'generateImplementionForSerialize\n', |''));
+
+   let serializeClass = $context.conventions->planNodeClass('public', $path, 'Serialize');
+
+   let project = mergeProjects([
+      generateInterfacesAndEnums($context, $debug->indent()),
+      createSerializeProject($path, $context, $debug)
+   ]);
+   generatedCode($project, $serializeClass);
+}
+
+function meta::pure::executionPlan::engine::java::serialize::createSerializeProject(path:String[1], context:GenerationContext[1], debug:DebugContext[1]): Project[1]
+{
+   let conventions = $context.conventions;
+   let data        = $context->nodeInfosForPath($path).data->cast(@SerializeData)->toOne();
+
+   let childReturnTypes = $context->childNodeInfosForPath($path).returnType;
+   assert($childReturnTypes->map(t|$t->match([s:SimpleJavaType[1]|$s, c:CheckedJavaType[1]|$c.checkedOf])).pureType->removeDuplicates()->size()==1,'Only one return type should be selected during Serialization Class generation');
+   let inputType = $childReturnTypes->at(0);
+   
+   let iface = $conventions->className(IPlatformPureExpressionExecutionNodeSerializeSpecifics);
+   let proto = $conventions->planNodeClass('public', $path, 'Serialize')->implements($iface);
+   
+   let serializerWild = javaParameterizedType($conventions->className(IGraphSerializer), javaWildcard());
+   let pDepth         = j_parameter(javaInt(), 'depth');
+   let pWriter        = j_parameter($conventions->className(ISerializationWriter), 'writer');
+   let pContext       = j_parameter($conventions->className(IExecutionNodeContext), 'context');
+   
+   let tree       = prepareTree($data, $inputType)->groupByFields()->cast(@RootGraphFetchTree<Any>);
+   let serializer = treeSerializerClass($path, $tree, $conventions, $debug);
+   let method     = pair(javaMethod('public', $serializerWild, 'serializer', [$pWriter, $pContext]), j_return(j_new($serializer, [$pWriter, $pContext])));
+
+   let serializeClass = javaClass($proto, [$method]);
+   newProject()->addClasses([$serializeClass, $serializer]);
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::serialize::prnt(tree:GraphFetchTree[1], indent:String[1]): Any[*]
+{
+   $tree->match([
+      t:SerializeTopRootGraphFetchTree<Any>[1] | println($indent+'SerializeTopRootGraphFetchTree ' + $t.class.name->toOne());              $t.subTrees->map(st| $st->prnt($indent + '  '));,
+      t:SerializeTopPropertyGraphFetchTree[1]  | println($indent+'SerializeTopPropertyGraphFetchTree ' + $t.property.name->toOne());       $t.subTrees->map(st| $st->prnt($indent + '  '));,
+      t:SerializePropertyGraphFetchTree[1]     | println($indent+'SerializePropertyGraphFetchTree/fieldSet ' + $t.property.name->toOne() + ' : ' + $t.returnType.name->toOne()); $t.fieldSet->map(st| $st->prnt($indent + '  '));,
+      t:PropertyGraphFetchTree[1]              | println($indent+'PropertyGraphFetchTree ' + $t.property.name->toOne());                   $t.subTrees->map(st| $st->prnt($indent + '  '));,
+      t:RootGraphFetchTree<Any>[1]             | println($indent+'RootGraphFetchTree ' + $t.class.name->toOne());                          $t.subTrees->map(st| $st->prnt($indent + '  '));
+   ]);
+}
+
+Class meta::pure::executionPlan::engine::java::serialize::SerializeTop
+{
+}
+
+Class meta::pure::executionPlan::engine::java::serialize::SerializeTopRootGraphFetchTree<T> extends RootGraphFetchTree<T>, SerializeTop
+{
+}
+
+Class meta::pure::executionPlan::engine::java::serialize::SerializeTopPropertyGraphFetchTree extends PropertyGraphFetchTree, SerializeTop
+{
+}
+
+Class meta::pure::executionPlan::engine::java::serialize::SerializePropertyGraphFetchTree extends PropertyGraphFetchTree
+{
+   fieldName : String[1];
+   fieldSet  : PropertyGraphFetchTree[*];
+   
+   returnType() {
+      if($this.property == checkedProperty('value') || $this.property == checkedProperty('source'), 
+         | $this.fieldSet->at(0).subType->toOne(), 
+         | $this.property->functionReturnType().rawType->toOne()
+      );
+   }:meta::pure::metamodel::type::Type[1];
+
+   defaultTree()  { 
+      if($this.property == checkedProperty('value') || $this.property == checkedProperty('source'), 
+         | $this.fieldSet->at(0), 
+         | $this.fieldSet->filter(t| $t.subType->isEmpty())->first()
+      );
+   }: GraphFetchTree[0..1];
+
+   subTypeTrees() { 
+      if($this.property == checkedProperty('value') || $this.property == checkedProperty('source'), 
+         | [], 
+         | $this.fieldSet->filter(t| $t.subType->isNotEmpty());
+      );
+   }: GraphFetchTree[*];
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::serialize::prepareTree(data:SerializeData[1], javaType:JavaType[1]): RootGraphFetchTree<Any>[1]
+{
+   let defectTree = #{Defect {id, externalId, message, enforcementLevel, ruleType, ruleDefinerPath, path { propertyName, index }}}#;
+   
+   $javaType->match([
+      {chk:CheckedJavaType[1] |
+         let defectsTree = ^PropertyGraphFetchTree(property=checkedProperty('defects'), subTrees=$defectTree.subTrees);
+         let valueTree   = prepareTree($data, $chk.checkedOf)->toPropertyTree(checkedProperty('value'));
+
+         if($chk.source->isEmpty(),
+            | ^RootGraphFetchTree<Any>(class=Checked, subTrees=[$defectsTree, $valueTree]),
+            | let sourceTree  = prepareTree($data, $chk.source->toOne())->toPropertyTree(checkedProperty('source'));
+               ^RootGraphFetchTree<Any>(class=Checked, subTrees=[$defectsTree, $sourceTree, $valueTree]);
+            );
+      },
+      {simp:SimpleJavaType[1] | 
+         let tree = $data->treeForClass($simp.pureType->cast(@meta::pure::metamodel::type::Class<Any>));
+         ^SerializeTopRootGraphFetchTree<Any>(class=$tree.class, subTrees=$tree.subTrees);
+      }
+   ]);
+
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::serialize::treeForClass(data:SerializeData[1], class:meta::pure::metamodel::type::Class<Any>[1]): RootGraphFetchTree<Any>[1]
+{
+   if($class->_subTypeOf($data.tree.class),
+      | $data.tree,
+      |
+   if($data.auxiliaryTrees->exists(t|$class->_subTypeOf($t.class)),
+      | $data.auxiliaryTrees->filter(t|$class->_subTypeOf($t.class))->toOne(),
+      | ^RootGraphFetchTree<Any>(class=$class->cast(@meta::pure::metamodel::type::Class<Any>))
+   ));               
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::serialize::toPropertyTree(root:RootGraphFetchTree<Any>[1], property:AbstractProperty<Any>[1]): PropertyGraphFetchTree[1]
+{
+   $root->match([
+      st: SerializeTopRootGraphFetchTree<Any>[1] | ^SerializeTopPropertyGraphFetchTree(property=$property, subType=$root.class, subTrees=$root.subTrees),
+      r : RootGraphFetchTree<Any>[1]             | ^PropertyGraphFetchTree            (property=$property, subType=$root.class, subTrees=$root.subTrees)
+   ]);
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::serialize::groupByFields(tree:GraphFetchTree[1]): GraphFetchTree[1]
+{
+   let byFieldName        = $tree.subTrees->cast(@PropertyGraphFetchTree)->groupBy(st| $st->subTreeFieldName());
+   let fieldNamesInOrder  = $tree.subTrees->cast(@PropertyGraphFetchTree)->map(st| $st->subTreeFieldName())->removeDuplicates();
+
+   let grouped = $fieldNamesInOrder->map(fieldName |
+      let subTrees = $byFieldName->get($fieldName)->toOne().values;
+      let first    = $subTrees->at(0);
+      assert($subTrees.property->removeDuplicates()->size() == 1, 'Conflicting sub trees specified for ' + $fieldName + ' (multiple properties)');
+      if($first.property->instanceOf(QualifiedProperty),
+         | assert($subTrees->tail()->forAll(st| $st.parameters == $first.parameters), 'Conflicting sub trees specified for ' + $fieldName + ' (differing parameters to a qualified property)'),
+         | assert($subTrees->filter(t| $t.subType->isEmpty())->size() <= 1, 'Conflicting sub trees specified for ' + $fieldName + ' (multiple properties not differentiated by subType)')
+      );
+                           
+      let property = $subTrees->at(0).property;
+      ^SerializePropertyGraphFetchTree(
+         fieldName  = $fieldName,
+         fieldSet   = $subTrees->map(st| $st->groupByFields())->cast(@PropertyGraphFetchTree),
+         property   = $property,
+         parameters = $subTrees->at(0).parameters,
+         subType    = if($property == checkedProperty('value') || $property == checkedProperty('source'), |$subTrees->at(0).subType, |[])
+      );
+   );
+
+   ^$tree(subTrees=$grouped);
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::serialize::treeSerializerClass(path:String[1], tree:RootGraphFetchTree<Any>[1], conventions:Conventions[1], debug:DebugContext[1]): meta::external::language::java::metamodel::Class[1]
+{
+   print(if($debug.debug,|$debug.space+'treeSerializerClass\n', |''));
+   
+   let rootClass = $conventions->pureTypeToJavaType($tree.class, PureOne);
+   let ifaceRaw  = $conventions->className(IGraphSerializer);
+   let iface     = javaParameterizedType($ifaceRaw, $rootClass);   
+   let proto     = $conventions->planNodeClass('public', $path, 'Serializer')->implements($iface);
+
+   let fWriter   = javaField('private', $conventions->className(ISerializationWriter), 'writer');
+   let fContext  = javaField('private', $conventions->className(IExecutionNodeContext), 'context');
+   let pWriter   = j_parameter($fWriter.type, 'writer');
+   let pContext  = j_parameter($fContext.type, 'context');
+   
+   let constructor = pair(javaConstructor([], [$pWriter, $pContext]), j_block([
+      j_this($proto)->j_field($fWriter)->j_assign($pWriter),
+      j_this($proto)->j_field($fContext)->j_assign($pContext)
+   ]));
+
+   let methods     = treeSerialiseMethods($proto, [], $tree.class, $tree, $conventions, $debug->indent());
+   let firstMethod = $methods->at(0).first;
+   let withRenamed = pair(^$firstMethod(name='serialize'), $methods->at(0).second)->concatenate($methods->tail());
+                             
+   javaClass($proto, [$fWriter, $fContext], $constructor, $withRenamed);   
+}
+
+
+function <<access.private>> meta::pure::executionPlan::engine::java::serialize::treeSerialiseMethods(jClass:meta::external::language::java::metamodel::Class[1], path:String[*], class:meta::pure::metamodel::type::Class<Any>[1], tree:GraphFetchTree[1], conventions:Conventions[1], debug:DebugContext[1]): Pair<meta::external::language::java::metamodel::Method, Code>[*]
+{
+   let name = treeSerialiseMethodName($path, $class, false, $conventions);
+   print(if($debug.debug,|$debug.space+'treeSerialiseMethods '+$name+'\n', |''));
+
+   let defaultTree  = $tree->match([spgft:SerializePropertyGraphFetchTree[1] | $spgft.defaultTree,  other:GraphFetchTree[1] | $tree ]);
+   let subTypeTrees = $tree->match([spgft:SerializePropertyGraphFetchTree[1] | $spgft.subTypeTrees, other:GraphFetchTree[1] | []    ])->cast(@PropertyGraphFetchTree);
+
+   if($defaultTree->isNotEmpty() && $subTypeTrees->isEmpty(),
+      {|
+         let method         = treeSerialiseMethod($jClass, $path, $class, $defaultTree->toOne(), $conventions, $debug);
+         let subTreeMethods = $defaultTree.subTrees->cast(@SerializePropertyGraphFetchTree)
+            ->filter(spgft| $spgft.returnType->instanceOf(meta::pure::metamodel::type::Class))
+            ->map(spgft| treeSerialiseMethods($jClass, $path->concatenate($spgft.property.name->toOne()), $spgft.returnType->cast(@meta::pure::metamodel::type::Class<Any>), $spgft, $conventions, $debug->indent()));
+         $method->concatenate($subTreeMethods);
+      }
+      ,
+      {|
+         let indexed            = $subTypeTrees->toIndexed();
+         let subTypeMethods     = $indexed->map(ist| list(treeSerialiseMethods($jClass, $path->add('subType'+$ist.first->toString()), $ist.second.subType->toOne(), $ist.second, $conventions, $debug)));
+         let subTypesAndMethods = $subTypeTrees.subType->zip($subTypeMethods->map(l| $l.values->at(0).first));
+         
+         let name          = treeSerialiseMethodName($path, $class, false, $conventions);
+         let value         = j_parameter($conventions->className($class), 'value');
+         let testsAndThens = list($subTypesAndMethods->map(tm| 
+                                let jType = $conventions->pureTypeToJavaType($tm.first, PureOne);
+                                pair(
+                                   $value->j_instanceof($jType), 
+                                   j_this($jClass)->j_invoke($tm.second, $value->j_cast($jType))
+                                );
+                             ));
+         let else          = $defaultTree->map(t |treeSerialiseMethod($jClass, $path, $class, $t, $conventions, $debug)).second;
+         let defaultSubTreeMethods = $defaultTree.subTrees->cast(@SerializePropertyGraphFetchTree)
+            ->filter(spgft| $spgft.returnType->instanceOf(meta::pure::metamodel::type::Class))
+            ->map(spgft| treeSerialiseMethods($jClass, $path->concatenate($spgft.property.name->toOne()), $spgft.returnType->cast(@meta::pure::metamodel::type::Class<Any>), $spgft, $conventions, $debug->indent()));
+         
+         let method        = pair(javaMethod('public', javaVoid(), $name, [$value]), j_if($testsAndThens, $else));
+         
+         $method->concatenate($defaultSubTreeMethods)->concatenate($subTypeMethods.values);
+      }
+   );
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::serialize::treeSerialiseMethod(jClass:meta::external::language::java::metamodel::Class[1], path:String[*], class:meta::pure::metamodel::type::Class<Any>[1], tree:GraphFetchTree[1], conventions:Conventions[1], debug:DebugContext[1]): Pair<meta::external::language::java::metamodel::Method, Code>[1]
+{
+   let name = treeSerialiseMethodName($path, $class, false, $conventions);
+   
+   let pureDate = $conventions->className(PureDate);
+   let jThis    = j_this($jClass);
+   let fWriter  = $jThis->j_field($conventions->writerField());
+   let fContext = $jThis->j_field($conventions->contextField());
+   let value    = j_parameter($conventions->className($class), 'value');
+
+   let propertyLines = $tree.subTrees->cast(@SerializePropertyGraphFetchTree)->map(
+      {spgft |
+         let property     = $spgft.property;
+         let propertyName = $property.name->toOne();
+         let type         = $spgft.returnType;
+
+         let getterCall = if($property == checkedProperty('value') || $property == checkedProperty('value') || $property == checkedProperty('source'), 
+                             | $value->j_invoke($conventions->getterName($property), [], javaWildcard())->j_cast($conventions->pureTypeToJavaType($type, PureOne)),
+                             {|
+                                $value->j_invoke(
+                                   $conventions->getterName($property), 
+                                   if($property->instanceOf(QualifiedProperty),
+                                      {|
+                                         let valueExtractor = {x: VariableExpression[1] | 
+                                                                 let javaType = $conventions->pureTypeToJavaType($x.genericType, $x.multiplicity);
+                                                                 let typeArg  = if($javaType->isJavaList(), |$fContext->j_invoke('listType', $javaType->elementType()->toBoxed()->j_classField()), |$javaType->toBoxed()->j_classField());
+                                                                 $fContext->j_invoke('getResult', [j_string($x.name), $typeArg], $javaType);
+                                                              };
+                                         let parameters = $spgft.parameters->evaluateAndDeactivate();
+                                         $parameters->map(x | 
+                                            let vals = $x->match([
+                                               iv : InstanceValue[1]      | $iv.values->map(x | if($x->instanceOf(VariableExpression), | $valueExtractor->eval($x), | $conventions->primitiveLiteral($x))),
+                                               v  : VariableExpression[1] | $valueExtractor->eval($v),
+                                               vs : ValueSpecification[1] | $vs->generateJava($conventions, $debug)
+                                            ]);
+                                            let param = $property->functionType().parameters->evaluateAndDeactivate()->tail()->at($parameters->indexOf($x)); 
+                                            if($param.multiplicity->hasToOneUpperBound(), 
+                                               | if($vals->isEmpty(), | j_null(), | $vals->toOne()), 
+                                               | javaArrays()->j_invoke('asList', $vals, $conventions->pureTypeToJavaType($param.genericType.rawType->toOne(), $param.multiplicity))
+                                            );
+                                         );
+                                      },
+                                      | []
+                                   ), 
+                                   $conventions->pureTypeToJavaType($property)
+                                );
+                             }
+                          );
+         
+         if($type == Any,
+            {|               
+               let methodRef = $jThis->j_methodReference(treeSerialiseMethodName($path->concatenate($propertyName), $type->cast(@meta::pure::metamodel::type::Class<Any>), false, $conventions), javaFunctionType($conventions->pureTypeToJavaType($type, PureOne), javaVoid()));
+               j_if(
+                  list([
+                     pair($getterCall->j_instanceof(javaString()),       $fWriter->j_invoke('writeStringProperty',  [j_string($spgft.fieldName), $getterCall->j_cast(javaString())])),
+                     pair($getterCall->j_instanceof(javaNumber()),       $fWriter->j_invoke('writeNumberProperty',  [j_string($spgft.fieldName), $getterCall->j_cast(javaNumber())])),
+                     pair($getterCall->j_instanceof(javaBooleanBoxed()), $fWriter->j_invoke('writeBooleanProperty', [j_string($spgft.fieldName), $getterCall->j_cast(javaBooleanBoxed())])),
+                     pair($getterCall->j_instanceof($pureDate),          $fWriter->j_invoke('writeDateProperty',    [j_string($spgft.fieldName), $getterCall->j_cast($pureDate)]))
+                     // TODO Enum Units
+                  ]),
+                  $fWriter->j_invoke('writeComplexProperty', [j_string($spgft.fieldName), $getterCall, $methodRef])
+               );
+            },
+            |
+         if($type->instanceOf(meta::pure::metamodel::type::Class),
+            {|
+               let methodRef = $jThis->j_methodReference(treeSerialiseMethodName($path->concatenate($propertyName), $type->cast(@meta::pure::metamodel::type::Class<Any>), false, $conventions), javaFunctionType($conventions->pureTypeToJavaType($type, PureOne), javaVoid()));
+               $fWriter->j_invoke('writeComplexProperty', [j_string($spgft.fieldName), $getterCall, $methodRef]);
+            },
+            |
+         if($type->instanceOf(meta::pure::metamodel::type::Enumeration),
+            {|
+               let names = if($getterCall.type->isJavaList(),
+                              {| 
+                                 let x = j_parameter($getterCall.type->elementType(), 'x');
+                                 $getterCall->j_streamOf()->js_map(j_lambda($x, $x->j_invoke('name', [], javaString())))->js_resolve(javaList(javaString()));
+                              },
+                              | j_conditional($getterCall->j_eq(j_null()), j_null(), $getterCall->j_invoke('name', [], javaString()))
+                           );
+               $fWriter->j_invoke('writeEnumProperty', [j_string($spgft.fieldName), j_string($type->elementToPath()), $names]);
+            },
+            |
+         if($type->instanceOf(Unit),
+            {|
+               let values = if($getterCall.type->isJavaList(),
+                               {| 
+                                  let x = j_parameter($getterCall.type->elementType(), 'x');
+                                  $getterCall->j_streamOf()->js_map(j_lambda($x, $x->j_invoke('getUnitValue', [], javaNumber())))->js_resolve(javaList(javaNumber()));
+                               },
+                               | j_conditional($getterCall->j_eq(j_null()), j_null(), $getterCall->j_invoke('getUnitValue', [], javaNumber()))
+                           );
+               $fWriter->j_invoke('writeUnitProperty', [j_string($spgft.fieldName), $getterCall->j_invoke('getUnitType', [], javaString()), $values]);
+            },
+            | $fWriter->j_invoke('write'+$type->toString()+'Property', [j_string($spgft.fieldName), $getterCall])
+         ))));
+      }            
+   );   
+
+   pair(
+      javaMethod('public', javaVoid(), $name, [$value]),
+      {|
+         let iReferencedObject = $conventions->className(IReferencedObject);        
+         
+         let start = if($tree->toOne()->instanceOf(SerializeTop),
+                        | j_if($value->j_instanceof($iReferencedObject),
+                             $fWriter->j_invoke('startObject', [j_string($class->elementToPath()), $value->j_cast($iReferencedObject)->j_invoke($iReferencedObject.methods->toOne().name, [], javaString())]),
+                             $fWriter->j_invoke('startObject', j_string($class->elementToPath()))
+                          ),
+                        | $fWriter->j_invoke('startObject', j_string($class->elementToPath()))
+                     );
+         let end   = $fWriter->j_invoke('endObject', []);
+         j_block($start->concatenate($propertyLines)->concatenate($end));
+      }->eval()
+   );
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::serialize::writerField(conventions:Conventions[1]):  meta::external::language::java::metamodel::Field[1] { javaField('private', $conventions->className(ISerializationWriter), 'writer'); }
+function <<access.private>> meta::pure::executionPlan::engine::java::serialize::contextField(conventions:Conventions[1]): meta::external::language::java::metamodel::Field[1] { javaField('private', $conventions->className(IExecutionNodeContext), 'context'); }
+
+function <<access.private>> meta::pure::executionPlan::engine::java::serialize::subTreeFieldName(tree:PropertyGraphFetchTree[1]): String[1]
+{      
+   if($tree.alias->isEmpty(), |$tree.property.name->toOne() + if($tree.property->instanceOf(QualifiedProperty), | $tree.parameters->evaluateAndDeactivate()->map(x | $x->meta::pure::router::printer::asString())->joinStrings('(', ', ', ')'), | ''), |$tree.alias)->toOne();
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::serialize::treeSerialiseMethodName(path:String[*], class:meta::pure::metamodel::type::Class<Any>[1], checked:Boolean[1], conventions:Conventions[1]): String[1]
+{
+   'write'+if($checked, |'Checked', |'')+$conventions->pureTypeToJavaType($class, PureOne)->cast(@meta::external::language::java::metamodel::Class).simpleName+'_'+$path->joinStrings('_');
+}

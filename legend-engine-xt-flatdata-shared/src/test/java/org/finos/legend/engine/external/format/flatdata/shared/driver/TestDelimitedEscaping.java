@@ -88,19 +88,19 @@ public class TestDelimitedEscaping extends AbstractDriverTest
     private void runTest(String expectedField1, String expectedField2, String rawLine, char quoteChar)
     {
         FlatData flatData = parseFlatData("section default: DelimitedWithHeadings\n" +
-                                                  "{\n" +
-                                                  "  scope.untilEof;\n" +
-                                                  "  delimiter       : ',';\n" +
-                                                  "  quoteChar       : '\\'';\n" +
-                                                  "  escapingChar    : '" + (quoteChar == '\\' ? "\\\\" : quoteChar + "") + "';\n" +
-                                                  "  nullString      : '';\n" +
-                                                  "\n" +
-                                                  "  Record\n" +
-                                                  "  {\n" +
-                                                  "    FIELD1 : STRING;\n" +
-                                                  "    FIELD2 : STRING;\n" +
-                                                  "  }\n" +
-                                                  "}\n"
+                "{\n" +
+                "  scope.untilEof;\n" +
+                "  delimiter       : ',';\n" +
+                "  quoteChar       : '\\'';\n" +
+                "  escapingChar    : '" + (quoteChar == '\\' ? "\\\\" : quoteChar + "") + "';\n" +
+                "  nullString      : '';\n" +
+                "\n" +
+                "  Record\n" +
+                "  {\n" +
+                "    FIELD1 : STRING;\n" +
+                "    FIELD2 : STRING;\n" +
+                "  }\n" +
+                "}\n"
         );
 
         List<IChecked<Data>> records = deserialize(Data.class, flatData, data("\n", "FIELD1,FIELD2", rawLine));
@@ -114,19 +114,19 @@ public class TestDelimitedEscaping extends AbstractDriverTest
     private void runTestInvalid(String expectedDefect, String rawLine, char quoteChar)
     {
         FlatData flatData = parseFlatData("section default: DelimitedWithHeadings\n" +
-                                                  "{\n" +
-                                                  "  scope.untilEof;\n" +
-                                                  "  delimiter       : ',';\n" +
-                                                  "  quoteChar       : '\\'';\n" +
-                                                  "  escapingChar    : '" + (quoteChar == '\\' ? "\\\\" : quoteChar + "") + "';\n" +
-                                                  "  nullString      : '';\n" +
-                                                  "\n" +
-                                                  "  Record\n" +
-                                                  "  {\n" +
-                                                  "    FIELD1 : STRING;\n" +
-                                                  "    FIELD2 : STRING;\n" +
-                                                  "  }\n" +
-                                                  "}\n"
+                "{\n" +
+                "  scope.untilEof;\n" +
+                "  delimiter       : ',';\n" +
+                "  quoteChar       : '\\'';\n" +
+                "  escapingChar    : '" + (quoteChar == '\\' ? "\\\\" : quoteChar + "") + "';\n" +
+                "  nullString      : '';\n" +
+                "\n" +
+                "  Record\n" +
+                "  {\n" +
+                "    FIELD1 : STRING;\n" +
+                "    FIELD2 : STRING;\n" +
+                "  }\n" +
+                "}\n"
         );
 
         List<IChecked<Data>> records = deserialize(Data.class, flatData, data("\n", "FIELD1,FIELD2", rawLine));

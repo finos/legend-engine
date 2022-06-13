@@ -1,0 +1,146 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+function <<test.Test>> meta::pure::functions::date::tests::testAdjustByYears():Boolean[1]
+{
+    assertEquals(%2016, %2015->adjust(1, DurationUnit.YEARS));
+    assertEquals(%2027, %2015->adjust(12, DurationUnit.YEARS));
+    assertEquals(%2011, %2015->adjust(-4, DurationUnit.YEARS));
+
+    assertEquals(%2016-02-28, %2015-02-28->adjust(1, DurationUnit.YEARS));
+    assertEquals(%2013-02-28, %2012-02-29->adjust(1, DurationUnit.YEARS));
+    assertEquals(%2016-02-29, %2012-02-29->adjust(4, DurationUnit.YEARS));
+}
+
+function <<test.Test>> meta::pure::functions::date::tests::testAdjustReflectiveEvaluation():Boolean[1]
+{
+    assertEquals(%2016-02-28, meta::pure::functions::date::adjust_Date_1__Integer_1__DurationUnit_1__Date_1_->eval(%2015-02-28, 1, DurationUnit.YEARS));
+    assertEquals(%2016-02-28, meta::pure::functions::date::adjust_Date_1__Integer_1__DurationUnit_1__Date_1_->evaluate([^List<Any>(values=%2015-02-28), ^List<Any>(values=1), ^List<Any>(values=DurationUnit.YEARS)]));
+}
+
+function <<test.Test>> meta::pure::functions::date::tests::testAdjustByMonths():Boolean[1]
+{
+    assertEquals(%2015-03, %2012-03->adjust(36, DurationUnit.MONTHS));
+    assertEquals(%2009-03, %2012-03->adjust(-36, DurationUnit.MONTHS));
+
+    assertEquals(%2014-03-31, %2012-03-31->adjust(24, DurationUnit.MONTHS));
+    assertEquals(%2010-02-28, %2012-02-28->adjust(-24, DurationUnit.MONTHS));
+    assertEquals(%2010-02-28, %2012-02-29->adjust(-24, DurationUnit.MONTHS));
+
+    assertEquals(%2014-04-30, %2012-03-31->adjust(25, DurationUnit.MONTHS));
+    assertEquals(%2010-01-28, %2012-02-28->adjust(-25, DurationUnit.MONTHS));
+    assertEquals(%2010-01-29, %2012-02-29->adjust(-25, DurationUnit.MONTHS));
+
+    assertEquals(%2015-02-28, %2015-01-31->adjust(1, DurationUnit.MONTHS));
+    assertEquals(%2015-02-28T13:55:21, %2015-01-31T13:55:21->adjust(1, DurationUnit.MONTHS));
+    assertEquals(%2015-03-31, %2015-01-31->adjust(2, DurationUnit.MONTHS));
+    assertEquals(%2015-04-30, %2015-01-31->adjust(3, DurationUnit.MONTHS));
+    assertEquals(%2015-05-31, %2015-01-31->adjust(4, DurationUnit.MONTHS));
+
+    assertEquals(%2015-03-28, %2015-02-28->adjust(1, DurationUnit.MONTHS));
+    assertEquals(%2016-03-29, %2016-02-29->adjust(1, DurationUnit.MONTHS));
+}
+
+function <<test.Test>> meta::pure::functions::date::tests::testAdjustByWeeks():Boolean[1]
+{
+    assertEquals(%2015-04-23, %2015-04-16->adjust(1, DurationUnit.WEEKS));
+    assertEquals(%2015-04-09, %2015-04-16->adjust(-1, DurationUnit.WEEKS));
+
+    assertEquals(%2015-04-30, %2015-04-16->adjust(2, DurationUnit.WEEKS));
+    assertEquals(%2015-04-02, %2015-04-16->adjust(-2, DurationUnit.WEEKS));
+
+    assertEquals(%2015-05-07, %2015-04-16->adjust(3, DurationUnit.WEEKS));
+    assertEquals(%2015-06-06, %2015-05-16->adjust(3, DurationUnit.WEEKS));
+}
+
+function <<test.Test>> meta::pure::functions::date::tests::testAdjustByDays():Boolean[1]
+{
+    assertEquals(%2015-04-20, %2015-04-16->adjust(4, DurationUnit.DAYS));
+    assertEquals(%2015-04-12, %2015-04-16->adjust(-4, DurationUnit.DAYS));
+
+    assertEquals(%2015-05-02, %2015-04-16->adjust(16, DurationUnit.DAYS));
+    assertEquals(%2015-06-01, %2015-05-16->adjust(16, DurationUnit.DAYS));
+
+    assertEquals(%2015-03-31, %2015-04-16->adjust(-16, DurationUnit.DAYS));
+    assertEquals(%2015-03-30, %2015-04-16->adjust(-17, DurationUnit.DAYS));
+
+    assertEquals(%2015-03-30, %2014-03-30->adjust(365, DurationUnit.DAYS));
+    assertEquals(%2013-03-30, %2014-03-30->adjust(-365, DurationUnit.DAYS));
+}
+
+function <<test.Test>> meta::pure::functions::date::tests::testAdjustByHours():Boolean[1]
+{
+    assertEquals(%2015-04-15T13:12:11, %2015-04-15T12:12:11->adjust(1, DurationUnit.HOURS));
+    assertEquals(%2015-04-15T11:12:11, %2015-04-15T12:12:11->adjust(-1, DurationUnit.HOURS));
+
+    assertEquals(%2015-04-16T12:12:11, %2015-04-15T12:12:11->adjust(24, DurationUnit.HOURS));
+    assertEquals(%2015-04-14T12:12:11, %2015-04-15T12:12:11->adjust(-24, DurationUnit.HOURS));
+
+    assertEquals(%2015-04-17T00:12:11, %2015-04-15T12:12:11->adjust(36, DurationUnit.HOURS));
+    assertEquals(%2015-04-14T00:12:11, %2015-04-15T12:12:11->adjust(-36, DurationUnit.HOURS));
+}
+
+function <<test.Test>> meta::pure::functions::date::tests::testAdjustByMinutes():Boolean[1]
+{
+    assertEquals(%2015-04-15T13:12:11, %2015-04-15T13:11:11->adjust(1, DurationUnit.MINUTES));
+    assertEquals(%2015-04-15T13:10:11, %2015-04-15T13:11:11->adjust(-1, DurationUnit.MINUTES));
+
+    assertEquals(%2015-04-15T14:12:11, %2015-04-15T13:11:11->adjust(61, DurationUnit.MINUTES));
+    assertEquals(%2015-04-15T12:10:11, %2015-04-15T13:11:11->adjust(-61, DurationUnit.MINUTES));
+
+    assertEquals(%2015-04-16T13:12:11, %2015-04-15T13:11:11->adjust(1441, DurationUnit.MINUTES));
+    assertEquals(%2015-04-14T13:10:11, %2015-04-15T13:11:11->adjust(-1441, DurationUnit.MINUTES));
+}
+
+function <<test.Test>> meta::pure::functions::date::tests::testAdjustBySeconds():Boolean[1]
+{
+    assertEquals(%2015-04-15T13:11:12, %2015-04-15T13:11:11->adjust(1, DurationUnit.SECONDS));
+    assertEquals(%2015-04-15T13:11:10, %2015-04-15T13:11:11->adjust(-1, DurationUnit.SECONDS));
+
+    assertEquals(%2015-04-15T13:12:12, %2015-04-15T13:11:11->adjust(61, DurationUnit.SECONDS));
+    assertEquals(%2015-04-15T13:10:10, %2015-04-15T13:11:11->adjust(-61, DurationUnit.SECONDS));
+
+    assertEquals(%2015-04-15T14:11:12, %2015-04-15T13:11:11->adjust(3601, DurationUnit.SECONDS));
+    assertEquals(%2015-04-15T12:11:10, %2015-04-15T13:11:11->adjust(-3601, DurationUnit.SECONDS));
+}
+
+function <<test.Test>> meta::pure::functions::date::tests::testAdjustByMicroseconds():Boolean[1]
+{
+  assertEquals(%2015-04-15T13:11:11.338001, %2015-04-15T13:11:11.338000->adjust(1, DurationUnit.MICROSECONDS));
+  assertEquals(%2015-04-15T13:11:11.337999, %2015-04-15T13:11:11.338000->adjust(-1, DurationUnit.MICROSECONDS));
+
+  assertEquals(%2015-04-15T13:11:11.338061, %2015-04-15T13:11:11.338000->adjust(61, DurationUnit.MICROSECONDS));
+  assertEquals(%2015-04-15T13:11:11.337939, %2015-04-15T13:11:11.338000->adjust(-61, DurationUnit.MICROSECONDS));
+
+  assertEquals(%2015-04-15T13:11:11.341601, %2015-04-15T13:11:11.338000->adjust(3601, DurationUnit.MICROSECONDS));
+  assertEquals(%2015-04-15T13:11:11.334399, %2015-04-15T13:11:11.338000->adjust(-3601, DurationUnit.MICROSECONDS));
+  
+  // Test epoch calculation
+  assertEquals(%2021-06-21T09:37:37.4990000+0000, 
+               %1970-01-01T00:00:00.0000000->adjust(1624268257499000, DurationUnit.MICROSECONDS));
+  assertEquals(%2021-06-21T09:37:37.4990000+0000, 
+               %1970-01-01T00:00:00.0000000->adjust(floor(1624268257499000000/1000), DurationUnit.MICROSECONDS));
+}
+
+function <<test.Test>> meta::pure::functions::date::tests::testAdjustByMilliseconds():Boolean[1]
+{
+    assertEquals(%2015-04-15T13:11:11.339, %2015-04-15T13:11:11.338->adjust(1, DurationUnit.MILLISECONDS));
+    assertEquals(%2015-04-15T13:11:11.337, %2015-04-15T13:11:11.338->adjust(-1, DurationUnit.MILLISECONDS));
+
+    assertEquals(%2015-04-15T13:11:11.399, %2015-04-15T13:11:11.338->adjust(61, DurationUnit.MILLISECONDS));
+    assertEquals(%2015-04-15T13:11:11.277, %2015-04-15T13:11:11.338->adjust(-61, DurationUnit.MILLISECONDS));
+
+    assertEquals(%2015-04-15T13:11:14.939, %2015-04-15T13:11:11.338->adjust(3601, DurationUnit.MILLISECONDS));
+    assertEquals(%2015-04-15T13:11:07.737, %2015-04-15T13:11:11.338->adjust(-3601, DurationUnit.MILLISECONDS));
+}

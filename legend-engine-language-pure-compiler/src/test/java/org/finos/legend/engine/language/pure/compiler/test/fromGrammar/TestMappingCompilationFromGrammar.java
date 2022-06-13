@@ -1487,8 +1487,8 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 String.format(
                         mapping,
                         "   test::Firm_Person: XStore {\n" +
-                        "      employer[p1, f]: $this.firmId + $that.id\n" +
-                        "   }"),
+                                "      employer[p1, f]: $this.firmId + $that.id\n" +
+                                "   }"),
                 "COMPILATION error at [36:7-46]: Can't find class mapping 'p1' in mapping 'test::crossPropertyMappingWithLocalProperties'"
         );
 

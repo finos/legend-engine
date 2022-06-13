@@ -1,0 +1,492 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+Class meta::legend::test::handlers::model::TestInequalities
+{
+   string_one : String[1];
+   string_zeroOne : String[0..1];
+   boolean_one : Boolean[1];
+   boolean_zeroOne : Boolean[0..1];
+   date_one : Date[1];
+   date_zeroOne : Date[0..1];
+   number_one : Number[1];
+   number_zeroOne : Number[0..1];
+   float_one : Float[1];
+   float_zeroOne : Float[0..1];
+   integer_one : Integer[1];
+   integer_zeroOne : Integer[0..1];
+   strictDate_one : StrictDate[1];
+   strictDate_zeroOne : StrictDate[0..1];
+   dateTime_one : DateTime[1];
+   dateTime_zeroOne : DateTime[0..1];
+
+   greaterThanBoolean() {($this.boolean_zeroOne > $this.boolean_one) && ($this.boolean_one > $this.boolean_zeroOne) && ($this.boolean_one > $this.boolean_one) && ($this.boolean_zeroOne > $this.boolean_zeroOne)}:Boolean[1];
+   greaterThanDate() {($this.date_zeroOne > $this.date_one) && ($this.date_one > $this.date_zeroOne) && ($this.date_one > $this.date_one) && ($this.date_zeroOne > $this.date_zeroOne)}:Boolean[1];
+   greaterThanNumber(){($this.number_zeroOne > $this.number_one) && ($this.number_one > $this.number_zeroOne) && ($this.number_one > $this.number_one) && ($this.number_zeroOne > $this.number_zeroOne)}:Boolean[1];
+   greaterThanString(){($this.string_zeroOne > $this.string_one) && ($this.string_one > $this.string_zeroOne) && ($this.string_one > $this.string_one) && ($this.string_zeroOne > $this.string_zeroOne)}:Boolean[1];
+   greaterThanFloat(){($this.float_zeroOne > $this.float_one) && ($this.float_one > $this.float_zeroOne) && ($this.float_one > $this.float_one) && ($this.float_zeroOne > $this.float_zeroOne)}:Boolean[1];
+   greaterThanInteger(){($this.integer_zeroOne > $this.integer_one) && ($this.integer_one > $this.integer_zeroOne) && ($this.integer_one > $this.integer_one) && ($this.integer_zeroOne > $this.integer_zeroOne)}:Boolean[1];
+   greaterThanStrictDate(){($this.strictDate_zeroOne > $this.strictDate_one) && ($this.strictDate_one > $this.strictDate_zeroOne) && ($this.strictDate_one > $this.strictDate_one) && ($this.strictDate_zeroOne > $this.strictDate_zeroOne)}:Boolean[1];
+   greaterThanDateTime(){($this.dateTime_zeroOne > $this.dateTime_one) && ($this.dateTime_one > $this.dateTime_zeroOne) && ($this.dateTime_one > $this.dateTime_one) && ($this.dateTime_zeroOne > $this.dateTime_zeroOne)}:Boolean[1];
+
+   lessThanBoolean(){($this.boolean_zeroOne < $this.boolean_one) && ($this.boolean_one < $this.boolean_zeroOne) && ($this.boolean_one < $this.boolean_one) &&  ($this.boolean_zeroOne < $this.boolean_zeroOne)}:Boolean[1];
+   lessThanDate(){($this.date_zeroOne < $this.date_one) && ($this.date_one < $this.date_zeroOne) && ($this.date_one < $this.date_one) && ($this.date_zeroOne < $this.date_zeroOne)}:Boolean[1];
+   lessThanNumber(){($this.number_zeroOne < $this.number_one) && ($this.number_one < $this.number_zeroOne) && ($this.number_one < $this.number_one) && ($this.number_zeroOne < $this.number_zeroOne)}:Boolean[1];
+   lessThanString(){($this.string_zeroOne < $this.string_one) && ($this.string_one < $this.string_zeroOne) && ($this.string_one < $this.string_one) && ($this.string_zeroOne < $this.string_zeroOne)}:Boolean[1];
+   lessThanFloat(){($this.float_zeroOne < $this.float_one) && ($this.float_one < $this.float_zeroOne) && ($this.float_one < $this.float_one) && ($this.float_zeroOne < $this.float_zeroOne)}:Boolean[1];
+   lessThanInteger(){($this.integer_zeroOne < $this.integer_one) && ($this.integer_one < $this.integer_zeroOne) && ($this.integer_one < $this.integer_one) && ($this.integer_zeroOne < $this.integer_zeroOne)}:Boolean[1];
+   lessThanStrictDate(){($this.strictDate_zeroOne < $this.strictDate_one) && ($this.strictDate_one < $this.strictDate_zeroOne) && ($this.strictDate_one < $this.strictDate_one) && ($this.strictDate_zeroOne < $this.strictDate_zeroOne)}:Boolean[1];
+   lessThanDateTime(){($this.dateTime_zeroOne < $this.dateTime_one) && ($this.dateTime_one < $this.dateTime_zeroOne) && ($this.dateTime_one < $this.dateTime_one) && ($this.dateTime_zeroOne < $this.dateTime_zeroOne)}:Boolean[1];
+
+   lessThanEqualBoolean(){($this.boolean_zeroOne <= $this.boolean_one) && ($this.boolean_one <= $this.boolean_zeroOne) && ($this.boolean_one <= $this.boolean_one) && ($this.boolean_zeroOne <= $this.boolean_zeroOne)}:Boolean[1];
+   lessThanEqualDate(){($this.date_zeroOne <= $this.date_one) && ($this.date_one <= $this.date_zeroOne) && ($this.date_one <= $this.date_one) && ($this.date_zeroOne <= $this.date_zeroOne)}:Boolean[1];
+   lessThanEqualNumber(){($this.number_zeroOne <= $this.number_one) && ($this.number_one <= $this.number_zeroOne) && ($this.number_one <= $this.number_one) && ($this.number_zeroOne <= $this.number_zeroOne)}:Boolean[1];
+   lessThanEqualString(){($this.string_zeroOne <= $this.string_one) && ($this.string_one <= $this.string_zeroOne) && ($this.string_one <= $this.string_one) && ($this.string_zeroOne <= $this.string_zeroOne)}:Boolean[1];
+   lessThanEqualFloat(){($this.float_zeroOne <= $this.float_one) && ($this.float_one <=$this.float_zeroOne) && ($this.float_one <= $this.float_one) && ($this.float_zeroOne <= $this.float_zeroOne)}:Boolean[1];
+   lessThanEqualInteger(){($this.integer_zeroOne <= $this.integer_one) && ($this.integer_one <= $this.integer_zeroOne) && ($this.integer_one <= $this.integer_one) && ($this.integer_zeroOne <= $this.integer_zeroOne)}:Boolean[1];
+   lessThanEqualStrictDate(){($this.strictDate_zeroOne <= $this.strictDate_one) && ($this.strictDate_one <= $this.strictDate_zeroOne) && ($this.strictDate_one <= $this.strictDate_one) && ($this.strictDate_zeroOne <= $this.strictDate_zeroOne)}:Boolean[1];
+   lessThanEqualDateTime(){($this.dateTime_zeroOne <= $this.dateTime_one) && ($this.dateTime_one <= $this.dateTime_zeroOne) && ($this.dateTime_one <= $this.dateTime_one) && ($this.dateTime_zeroOne <= $this.dateTime_zeroOne)}:Boolean[1];
+
+   greaterThanEqualBoolean(){($this.boolean_zeroOne >= $this.boolean_one) && ($this.boolean_one >= $this.boolean_zeroOne) && ($this.boolean_one >= $this.boolean_one) && ($this.boolean_zeroOne >= $this.boolean_zeroOne)}:Boolean[1];
+   greaterThanEqualDate(){($this.date_zeroOne >= $this.date_one) && ($this.date_one >= $this.date_zeroOne) && ($this.date_one >= $this.date_one) && ($this.date_zeroOne >= $this.date_zeroOne)}:Boolean[1];
+   greaterThanEqualNumber(){($this.number_zeroOne >= $this.number_one) && ($this.number_one >= $this.number_zeroOne) && ($this.number_one >= $this.number_one) && ($this.number_zeroOne >= $this.number_zeroOne)}:Boolean[1];
+   greaterThanEqualString(){($this.string_zeroOne >= $this.string_one) && ($this.string_one >= $this.string_zeroOne) && ($this.string_one >= $this.string_one) && ($this.string_zeroOne >= $this.string_zeroOne)}:Boolean[1];
+   greaterThanEqualFloat(){($this.float_zeroOne >= $this.float_one) && ($this.float_one >= $this.float_zeroOne) && ($this.float_one >= $this.float_one) && ($this.float_zeroOne >= $this.float_zeroOne)}:Boolean[1];
+   greaterThanEqualInteger(){($this.integer_zeroOne >= $this.integer_one) && ($this.integer_one >= $this.integer_zeroOne) && ($this.integer_one >= $this.integer_one) && ($this.integer_zeroOne >= $this.integer_zeroOne)}:Boolean[1];
+   greaterThanEqualStrictDate(){($this.strictDate_zeroOne >= $this.strictDate_one) && ($this.strictDate_one >= $this.strictDate_zeroOne) && ($this.strictDate_one >= $this.strictDate_one) && ($this.strictDate_zeroOne >= $this.strictDate_zeroOne)}:Boolean[1];
+   greaterThanEqualDateTime(){($this.dateTime_zeroOne >= $this.dateTime_one) && ($this.dateTime_one >= $this.dateTime_zeroOne) && ($this.dateTime_one >= $this.dateTime_one) && ($this.dateTime_zeroOne >= $this.dateTime_zeroOne)}:Boolean[1];
+}
+
+Class meta::legend::test::handlers::model::TestMaxMin
+{
+   numbers : Number[*];
+   numbersMinOne : Number[1..*];
+   number : Number[1];
+   floats : Float[*];
+   floatsMinOne : Float[1..*];
+   float : Float[1];
+   integers : Integer[*];
+   integersMinOne : Integer[1..*];
+   integer : Integer[1];
+   dates : Date[*];
+   date : Date[1];
+   strictDates : StrictDate[*];
+   strictDate : StrictDate[1];
+   dateTimes : DateTime[*];
+   dateTime : DateTime[1];
+
+   maxNumbers() {$this.numbers->max()}:Number[0..1];
+   maxTwoNumbers() {$this.number->max($this.number)}:Number[1];
+   maxNumbersMinOne() {$this.numbersMinOne->max()}:Number[1];
+
+   maxFloats() {$this.floats->max()}:Float[0..1];
+   maxTwoFloats() {$this.float->max($this.float)}:Float[1];
+   maxFloatsMinOne() {$this.floatsMinOne->max()}:Float[1];
+
+   maxIntegers() {$this.integers->max()}:Integer[0..1];
+   maxTwoIntegers() {$this.integer->max($this.integer)}:Integer[1];
+   maxIntegersMinOne() {$this.integersMinOne->max()}:Integer[1];
+   
+   maxDates() {$this.dates->max()}:Date[0..1];
+   maxTwoDates() {$this.date->max($this.date)}:Date[1];
+   
+   maxStrictDates() {$this.strictDates->max()}:StrictDate[0..1];
+   maxTwoStrictDates() {$this.strictDate->max($this.strictDate)}:StrictDate[1];
+   
+   maxDateTime() {$this.dateTimes->max()}:DateTime[0..1];
+   maxTwoDateTime() {$this.dateTime->max($this.dateTime)}:DateTime[1];
+
+
+   minNumbers() {$this.numbers->min()}:Number[0..1];
+   minTwoNumbers() {$this.number->min($this.number)}:Number[1];
+   minNumbersMinOne() {$this.numbersMinOne->min()}:Number[1];
+
+   minFloats() {$this.floats->min()}:Float[0..1];
+   minTwoFloats() {$this.float->min($this.float)}:Float[1];
+   minFloatsMinOne() {$this.floatsMinOne->min()}:Float[1];
+
+   minIntegers() {$this.integers->min()}:Integer[0..1];
+   minTwoIntegers() {$this.integer->min($this.integer)}:Integer[1];
+   minIntegersMinOne() {$this.integersMinOne->min()}:Integer[1];
+   
+   minDates() {$this.dates->min()}:Date[0..1];
+   minTwoDates() {$this.date->min($this.date)}:Date[1];
+   
+   minStrictDates() {$this.strictDates->min()}:StrictDate[0..1];
+   minTwoStrictDates() {$this.strictDate->min($this.strictDate)}:StrictDate[1];
+   
+   minDateTime() {$this.dateTimes->min()}:DateTime[0..1];
+   minTwoDateTime() {$this.dateTime->min($this.dateTime)}:DateTime[1];
+}
+
+Class meta::legend::test::handlers::model::TestAlgebra
+{
+   number : Number[1];
+   float : Float[1];
+   integer : Integer[1];
+
+   minusNumbers() {$this.number-$this.number}:Number[1];
+   minusFloats() {$this.float-$this.float}:Float[1];
+   minusIntegers() {$this.integer-$this.integer}:Integer[1];
+
+   plusNumbers() {$this.number+$this.number}:Number[1];
+   plusFloats() {$this.float+$this.float}:Float[1];
+   plusIntegers() {$this.integer+$this.integer}:Integer[1];
+
+   timesNumbers() {$this.number*$this.number}:Number[1];
+   timesFloats() {$this.float*$this.float}:Float[1];
+   timesIntegers() {$this.integer*$this.integer}:Integer[1];
+
+   divNumbers() {$this.number/$this.number}:Float[1];
+   divFloats() {$this.float/$this.float}:Float[1];
+   divIntegers() {$this.integer/$this.integer}:Float[1];
+   
+   absNumber(){$this.number->abs()}:Number[1];
+   absFloat(){$this.float->abs()}:Float[1];
+   absInteger(){$this.integer->abs()}:Integer[1];
+   
+   ceilingNumber(){$this.number->ceiling()}:Number[1];
+   ceilingFloat(){$this.float->ceiling()}:Number[1];
+   ceilingInteger(){$this.integer->ceiling()}:Number[1];
+   
+   expNumber(){$this.number->exp()}:Float[1];
+   expFloat(){$this.float->exp()}:Float[1];  
+   expInteger(){$this.integer->exp()}:Float[1];   
+   
+   floorNumber(){$this.number->floor()}:Integer[1];
+   floorFloat(){$this.float->floor()}:Integer[1];
+   floorInteger(){$this.integer->floor()}:Integer[1];
+   
+   logNumber(){$this.number->log()}:Float[1];
+   logFloat(){$this.float->log()}:Float[1];
+   logInteger(){$this.integer->log()}:Float[1];
+
+    mod(){$this.integer->mod($this.integer)}:Integer[1];
+    pow(){$this.number->pow($this.number)}:Number[1];
+    rem(){$this.number->rem($this.number)}:Number[1];
+   
+    roundNumber(){$this.number->round()}:Integer[1];
+    roundFloat(){$this.float->round()}:Integer[1];
+    roundInteger(){$this.integer->round()}:Integer[1];
+   
+    sqrtNumbe(){$this.number->sqrt()}:Float[1];
+    sqrtFloat(){$this.float->sqrt()}:Float[1];
+    sqrtInteger(){$this.integer->sqrt()}:Float[1];
+}
+
+Class meta::legend::test::handlers::model::TestAggregation
+{
+   numbers : Number[*];
+   floats : Float[*];
+   integers : Integer[*];
+
+   averageNumbers() {$this.numbers->average()}:Float[1];
+   averageFloats() {$this.floats->average()}:Float[1];
+   averageIntegers() {$this.integers->average()}:Float[1];
+
+   meanNumbers() {$this.numbers->mean()}:Float[1];
+   meanFloats() {$this.floats->mean()}:Float[1];
+   meanIntegers() {$this.integers->mean()}:Float[1];
+
+   sumNumbers() {$this.numbers->sum()}:Number[1];
+   sumFloats() {$this.floats->sum()}:Float[1];
+   sumIntegers() {$this.integers->sum()}:Integer[1];
+}
+
+Class meta::legend::test::handlers::model::StdDev
+{
+   numbers : Number[*];
+   numbersMinOne : Number[1..*];
+   floats : Float[*];
+   floatsMinOne : Float[1..*];
+   integers : Integer[*];
+   integersMinOne: Integer[1..*];
+
+   stdDevPopulationNumber() {$this.numbers->stdDevPopulation()}:Number[1];
+   stdDevPopulationNumberMinOne() {$this.numbersMinOne->stdDevPopulation()}:Number[1];
+   stdDevPopulationFloat() {$this.floats->stdDevPopulation()}:Number[1];
+   stdDevPopulationFloatMinOne() {$this.floatsMinOne->stdDevPopulation()}:Number[1];
+   stdDevPopulationInteger() {$this.integers->stdDevPopulation()}:Number[1];
+   stdDevPopulationIntegerMinOne() {$this.integersMinOne->stdDevPopulation()}:Number[1];
+
+   stdDevSampleNumber() {$this.numbers->stdDevSample()}:Number[1];
+   stdDevSampleNumberMinOne() {$this.numbersMinOne->stdDevSample()}:Number[1];
+   stdDevSampleFloat() {$this.floats->stdDevSample()}:Number[1];
+   stdDevSampleFloatMinOne() {$this.floatsMinOne->stdDevSample()}:Number[1];
+   stdDevSampleInteger() {$this.integers->stdDevSample()}:Number[1];
+   stdDevSampleIntegerMinOne() {$this.integersMinOne->stdDevSample()}:Number[1];
+}
+
+Class meta::legend::test::handlers::model::Trigo
+{
+   number : Number[1];
+   float : Float[1];
+   integer : Integer[1];
+
+   cosNumber() {$this.number->cos()}:Float[1];
+   cosFloat() {$this.float->cos()}:Float[1];
+   cosInteger() {$this.integer->cos()}:Float[1];
+
+   sinNumber() {$this.number->sin()}:Float[1];
+   sinFloat() {$this.float->sin()}:Float[1];
+   sinInteger() {$this.integer->sin()}:Float[1];
+
+   tanNumber() {$this.number->tan()}:Float[1];
+   tanFloat() {$this.float->tan()}:Float[1];
+   tanInteger() {$this.integer->tan()}:Float[1];
+
+   acosNumber() {$this.number->acos()}:Float[1];
+   acosFloat() {$this.float->acos()}:Float[1];
+   acosInteger() {$this.integer->acos()}:Float[1];
+   
+   asinNumber() {$this.number->asin()}:Float[1];
+   asinFloat() {$this.float->asin()}:Float[1];
+   asinInteger() {$this.integer->asin()}:Float[1];
+   
+   atanNumber() {$this.number->atan()}:Float[1];
+   atanFloat() {$this.float->atan()}:Float[1];
+   atanInteger() {$this.integer->atan()}:Float[1];
+   
+   atan2NumberNumber() {$this.number->atan2($this.number)}:Float[1];
+   atan2FloatFloat() {$this.float->atan2($this.float)}:Float[1];
+   atan2FloatInteger() {$this.float->atan2($this.integer)}:Float[1];
+   atan2IntegerInteger() {$this.integer->atan2($this.integer)}:Float[1];
+   atan2IntegerFloat() {$this.integer->atan2($this.float)}:Float[1];
+   
+   toDegreeNumber(){$this.number->toDegrees()}:Float[1];
+   toDegreeFloat(){$this.float->toDegrees()}:Float[1];
+   toDegreeInteger(){$this.integer->toDegrees()}:Float[1];
+
+   toRadianNumber(){$this.number->toRadians()}:Float[1];
+   toRadianFloat(){$this.float->toRadians()}:Float[1];
+   toRadianInteger(){$this.integer->toRadians()}:Float[1];
+   
+   pi(){pi()}:Float[1];
+
+   earthRadius(){earthRadius()}:Float[1];
+   distanceHaversineDegrees(){distanceHaversineDegrees($this.number, $this.number, $this.number, $this.number)}:Number[1];
+   distanceHaversineRadians(){distanceHaversineRadians($this.number, $this.number, $this.number, $this.number)}:Number[1];
+   distanceSphericalLawOfCosinesDegrees(){distanceSphericalLawOfCosinesDegrees($this.number, $this.number, $this.number, $this.number)}:Number[1];
+   distanceSphericalLawOfCosinesRadians(){distanceSphericalLawOfCosinesRadians($this.number, $this.number, $this.number, $this.number)}:Number[1];
+}
+
+
+Class meta::legend::test::handlers::model::TestString
+{
+   strings : String[*];
+   string : String[1];
+   stringZeroOne : String[0..1];
+
+   plus() {$this.string+$this.string}:String[1];
+   
+   containsZeroOne() {$this.stringZeroOne->contains($this.string)}:Boolean[1];
+   containsOne() {$this.string->contains($this.string)}:Boolean[1];
+   
+   endsWithZeroOne() {$this.stringZeroOne->endsWith($this.string)}:Boolean[1];
+   endsWithOne() {$this.string->endsWith($this.string)}:Boolean[1];
+   
+   equalIgnoreCase() {$this.string->equalIgnoreCase($this.string)}:Boolean[1];
+   
+   humanize() {$this.string->humanize()}:String[1];
+
+   isUpperCase() {$this.string->isUpperCase()}:Boolean[1];
+   isLowerCase() {$this.string->isLowerCase()}:Boolean[1];
+   
+   joinStrings() {$this.strings->joinStrings()}:String[1];
+   joinStringsSep() {$this.strings->joinStrings($this.string)}:String[1];
+
+   lasIndexOf() {$this.string->lastIndexOf($this.string)}:Integer[1];
+
+   makeCamelCaseParam() {$this.string->makeCamelCase(true)}:String[1];
+   makeCamelCase() {$this.string->makeCamelCase()}:String[1];
+   
+   makeString(){$this.strings->makeString()}:String[1];
+   makeStringSep(){$this.strings->makeString($this.string)}:String[1];
+   makeStringPreSepSuff(){$this.strings->makeString($this.string, $this.string, $this.string)}:String[1];
+//    makeStringPairs(){makeString([pair($this.string,$this.string),pair($this.string,$this.string)])}:String[1];
+   
+   splitOnCamelCase(){$this.string->splitOnCamelCase()}:String[*];
+
+   substringAfter(){$this.string->substringAfter($this.string)}:String[1];
+   substringBefore(){$this.string->substringBefore($this.string)}:String[1];
+
+   chunk(){$this.string->chunk(10)}:String[*];
+
+   format(){$this.string->format([1,2])}:String[*];
+   
+   indexOf(){indexOf($this.string, $this.string)}:Integer[1];
+   indexOfFromIndex(){indexOf($this.string, $this.string, 10)}:Integer[1];
+   
+   length(){$this.string->length()}:Integer[1];
+   
+   parseBoolean(){$this.string->parseBoolean()}:Boolean[1];
+   parseDate(){$this.string->parseDate()}:Date[1];
+   parseFloat(){$this.string->parseFloat()}:Float[1];
+   parseInteger(){$this.string->parseInteger()}:Integer[1];
+   
+   replace(){$this.string->replace($this.string, $this.string)}:String[1];
+   split(){$this.string->split($this.string)}:String[*];
+   substringTwo(){$this.string->substring(1,2)}:String[1];
+   substring(){$this.string->substring(1)}:String[1];
+   toLower(){$this.string->toLower()}:String[1];
+   toString(){3->toString()}:String[1];
+   toUpper(){$this.string->toUpper()}:String[1];
+   trim(){$this.string->trim()}:String[1];
+
+}
+
+Class meta::legend::test::handlers::model::TestDate
+{
+   date : Date[1];
+   date_ZeroOne : Date[0..1];
+   dateTime : DateTime[1];
+   dateTime_ZeroOne : DateTime[0..1];
+   strictDate : StrictDate[1];
+   strictDate_ZeroOne : StrictDate[0..1];
+   
+   dateDiff(){$this.date->dateDiff($this.date, DurationUnit.YEARS)+
+              $this.dateTime->dateDiff($this.dateTime, DurationUnit.YEARS)+
+              $this.strictDate->dateDiff($this.strictDate, DurationUnit.YEARS)+
+              $this.date_ZeroOne->dateDiff($this.date_ZeroOne, DurationUnit.YEARS)->toOne()+
+              $this.dateTime_ZeroOne->dateDiff($this.dateTime_ZeroOne, DurationUnit.YEARS)->toOne()+
+              $this.strictDate_ZeroOne->dateDiff($this.strictDate_ZeroOne, DurationUnit.YEARS)->toOne()}:Integer[1];
+   
+   datePart(){[$this.date->datePart(),
+              $this.dateTime->datePart(),
+              $this.strictDate->datePart(),
+              $this.date_ZeroOne->datePart()->toOne(),
+              $this.dateTime_ZeroOne->datePart()->toOne(),
+              $this.strictDate_ZeroOne->datePart()->toOne()]}:Date[*];
+
+   dayOfWeek(){[$this.date->dayOfWeek(),
+               $this.dateTime->dayOfWeek(),
+               $this.strictDate->dayOfWeek()]
+              }:DayOfWeek[*];
+
+   daysOfMonth(){$this.date->daysOfMonth()->concatenate($this.dateTime->daysOfMonth())->concatenate($this.strictDate->daysOfMonth())}:Integer[*];
+
+   firstDays(){[$this.date->firstDayOfMonth(), $this.dateTime->firstDayOfMonth(), $this.strictDate->firstDayOfMonth(),
+                $this.date->firstDayOfQuarter(), $this.dateTime->firstDayOfQuarter(), $this.strictDate->firstDayOfQuarter(),
+                firstDayOfThisMonth(),
+                firstDayOfThisQuarter(),
+                firstDayOfThisWeek(),
+                firstDayOfThisYear(),
+                $this.date->firstDayOfWeek(), $this.dateTime->firstDayOfWeek(), $this.strictDate->firstDayOfWeek(),
+                $this.date->firstDayOfYear(), $this.dateTime->firstDayOfYear(), $this.strictDate->firstDayOfYear()
+               ]
+              }:Date[*];
+
+   hasYear(){$this.date->hasYear() && $this.dateTime->hasYear() && $this.strictDate->hasYear()}:Boolean[1];
+   
+   isAfterDay(){$this.date_ZeroOne->isAfterDay($this.date_ZeroOne) && $this.date_ZeroOne->isAfterDay($this.date) && $this.date->isAfterDay($this.date_ZeroOne) && $this.date->isAfterDay($this.date) &&
+                $this.dateTime_ZeroOne->isAfterDay($this.dateTime_ZeroOne) && $this.dateTime_ZeroOne->isAfterDay($this.dateTime) && $this.dateTime->isAfterDay($this.dateTime_ZeroOne) && $this.dateTime->isAfterDay($this.dateTime) &&
+                $this.strictDate_ZeroOne->isAfterDay($this.strictDate_ZeroOne) && $this.strictDate_ZeroOne->isAfterDay($this.strictDate) && $this.strictDate->isAfterDay($this.strictDate_ZeroOne) && $this.strictDate->isAfterDay($this.strictDate)
+               }:Boolean[1];
+
+   isBeforeDay(){$this.date_ZeroOne->isBeforeDay($this.date_ZeroOne) && $this.date_ZeroOne->isBeforeDay($this.date) && $this.date->isBeforeDay($this.date_ZeroOne) && $this.date->isBeforeDay($this.date) &&
+                $this.dateTime_ZeroOne->isBeforeDay($this.dateTime_ZeroOne) && $this.dateTime_ZeroOne->isBeforeDay($this.dateTime) && $this.dateTime->isBeforeDay($this.dateTime_ZeroOne) && $this.dateTime->isBeforeDay($this.dateTime) &&
+                $this.strictDate_ZeroOne->isBeforeDay($this.strictDate_ZeroOne) && $this.strictDate_ZeroOne->isBeforeDay($this.strictDate) && $this.strictDate->isBeforeDay($this.strictDate_ZeroOne) && $this.strictDate->isBeforeDay($this.strictDate)
+               }:Boolean[1];
+
+   isOnDay(){$this.date_ZeroOne->isOnDay($this.date_ZeroOne) && $this.date_ZeroOne->isOnDay($this.date) && $this.date->isOnDay($this.date_ZeroOne) && $this.date->isOnDay($this.date) &&
+                $this.dateTime_ZeroOne->isOnDay($this.dateTime_ZeroOne) && $this.dateTime_ZeroOne->isOnDay($this.dateTime) && $this.dateTime->isOnDay($this.dateTime_ZeroOne) && $this.dateTime->isOnDay($this.dateTime) &&
+                $this.strictDate_ZeroOne->isOnDay($this.strictDate_ZeroOne) && $this.strictDate_ZeroOne->isOnDay($this.strictDate) && $this.strictDate->isOnDay($this.strictDate_ZeroOne) && $this.strictDate->isOnDay($this.strictDate)
+               }:Boolean[1];
+
+   isOnOrAfterDay(){$this.date_ZeroOne->isOnOrAfterDay($this.date_ZeroOne) && $this.date_ZeroOne->isOnOrAfterDay($this.date) && $this.date->isOnOrAfterDay($this.date_ZeroOne) && $this.date->isOnOrAfterDay($this.date) &&
+                $this.dateTime_ZeroOne->isOnOrAfterDay($this.dateTime_ZeroOne) && $this.dateTime_ZeroOne->isOnOrAfterDay($this.dateTime) && $this.dateTime->isOnOrAfterDay($this.dateTime_ZeroOne) && $this.dateTime->isOnOrAfterDay($this.dateTime) &&
+                $this.strictDate_ZeroOne->isOnOrAfterDay($this.strictDate_ZeroOne) && $this.strictDate_ZeroOne->isOnOrAfterDay($this.strictDate) && $this.strictDate->isOnOrAfterDay($this.strictDate_ZeroOne) && $this.strictDate->isOnOrAfterDay($this.strictDate)
+               }:Boolean[1];
+
+   isOnOrBeforeDay(){$this.date_ZeroOne->isOnOrBeforeDay($this.date_ZeroOne) && $this.date_ZeroOne->isOnOrBeforeDay($this.date) && $this.date->isOnOrBeforeDay($this.date_ZeroOne) && $this.date->isOnOrBeforeDay($this.date) &&
+                $this.dateTime_ZeroOne->isOnOrBeforeDay($this.dateTime_ZeroOne) && $this.dateTime_ZeroOne->isOnOrBeforeDay($this.dateTime) && $this.dateTime->isOnOrBeforeDay($this.dateTime_ZeroOne) && $this.dateTime->isOnOrBeforeDay($this.dateTime) &&
+                $this.strictDate_ZeroOne->isOnOrBeforeDay($this.strictDate_ZeroOne) && $this.strictDate_ZeroOne->isOnOrBeforeDay($this.strictDate) && $this.strictDate->isOnOrBeforeDay($this.strictDate_ZeroOne) && $this.strictDate->isOnOrBeforeDay($this.strictDate)
+               }:Boolean[1];
+
+   monthNumber(){$this.date_ZeroOne->monthNumber()->toOne() + $this.dateTime_ZeroOne->monthNumber()->toOne() + $this.strictDate_ZeroOne->monthNumber()->toOne() +
+                 $this.date->monthNumber()->toOne() + $this.dateTime->monthNumber()->toOne() + $this.strictDate->monthNumber()->toOne()}:Integer[1];
+
+   month(){let m = 1->month(); [$this.date->month(), $this.dateTime->month(), $this.strictDate->month()];}:Month[*];
+
+   mostRecentDayOfWeek(){[$this.date->mostRecentDayOfWeek(DayOfWeek.Monday),$this.strictDate->mostRecentDayOfWeek(DayOfWeek.Monday), $this.dateTime->mostRecentDayOfWeek(DayOfWeek.Monday),
+                          mostRecentDayOfWeek(DayOfWeek.Monday), mostRecentDayOfWeek(DayOfWeek.Monday), mostRecentDayOfWeek(DayOfWeek.Monday)]}:Date[*];
+
+   previousDayOfWeek(){[$this.date->previousDayOfWeek(DayOfWeek.Monday),$this.strictDate->previousDayOfWeek(DayOfWeek.Monday), $this.dateTime->previousDayOfWeek(DayOfWeek.Monday),
+                          previousDayOfWeek(DayOfWeek.Monday), previousDayOfWeek(DayOfWeek.Monday), previousDayOfWeek(DayOfWeek.Monday)]}:Date[*];
+
+   quarterNumber(){$this.date->quarterNumber()+$this.strictDate->quarterNumber()+$this.dateTime->quarterNumber()}:Integer[1];
+
+   quarter(){[$this.date->mostRecentDayOfWeek(DayOfWeek.Monday),$this.strictDate->mostRecentDayOfWeek(DayOfWeek.Monday), $this.dateTime->mostRecentDayOfWeek(DayOfWeek.Monday),
+                          mostRecentDayOfWeek(DayOfWeek.Monday), mostRecentDayOfWeek(DayOfWeek.Monday), mostRecentDayOfWeek(DayOfWeek.Monday)]}:Date[*];
+
+   weekOfYear(){$this.date->weekOfYear()->toOne()+$this.strictDate->weekOfYear()->toOne()+$this.dateTime->weekOfYear()->toOne()}:Integer[1];
+
+   year(){$this.date->year()->toOne()+$this.strictDate->year()->toOne()+$this.dateTime->year()->toOne()+$this.date_ZeroOne->year()->toOne()+$this.strictDate_ZeroOne->year()->toOne()+$this.dateTime_ZeroOne->year()->toOne()}:Integer[1];
+
+   adjust(){adjust($this.date, 10, DurationUnit.YEARS)}:Date[1];
+
+   date(){[date(1), date(1, 2), date(1,2,3), date(1,2,3,4), date(1,2,3,4,5), date(1,2,3,4,5,6)]}:Date[*];
+
+   dayOfMOnth(){dayOfMonth($this.date)+dayOfMonth($this.strictDate)+dayOfMonth($this.dateTime)}:Integer[1];
+
+   dayOfWeekNumber(){$this.date->dayOfWeekNumber()+ $this.dateTime->dayOfWeekNumber()+$this.strictDate->dayOfWeekNumber()}:Integer[1];
+
+   has(){hasDay($this.date) && hasDay($this.dateTime) && hasDay($this.strictDate) &&
+         hasHour($this.date) && hasHour($this.dateTime) && hasHour($this.strictDate) &&
+         hasMinute($this.date) && hasMinute($this.dateTime) && hasMinute($this.strictDate) &&
+         hasMonth($this.date) && hasMonth($this.dateTime) && hasMonth($this.strictDate) &&
+         hasSecond($this.date) && hasSecond($this.dateTime) && hasSecond($this.strictDate) &&
+         hasSubsecondWithAtLeastPrecision($this.date, 1) && hasSubsecondWithAtLeastPrecision($this.dateTime, 2) && hasSubsecondWithAtLeastPrecision($this.strictDate, 3) &&
+         hasSubsecond($this.date) && hasSubsecond($this.dateTime) && hasSubsecond($this.strictDate)
+   }:Boolean[1];
+
+   part(){hour($this.date)+hour($this.strictDate)+hour($this.dateTime)+
+         minute($this.date)+minute($this.strictDate)+minute($this.dateTime)+
+         second($this.date)+second($this.strictDate)+second($this.dateTime)
+   }:Integer[1];
+
+   pointInTime(){[now(),today()]}:Date[*];
+}
+
+function <<test.Test>> meta::legend::test::handlers::testAlloyHandlers():Boolean[1]
+{
+   meta::legend::test::mayExecuteLegendTest(
+       {clientVersion, serverVersion, serializationKind, host, port|
+                   let fStr = 'meta::protocols::pure::'+$clientVersion+'::invocation::testLoadModel::legendTestLoadModel_Package_1__String_1__Integer_1__String_1__Boolean_1_';
+                   let xf = $fStr->pathToElement()->cast(@Function<{Package[1], String[1], Integer[1], String[1]->Boolean[1]}>);
+                   $xf->evaluate([meta::legend::test::handlers::model, $host, $port, $serverVersion]->map(v|list($v)))->toOne()->cast(@Boolean);},
+       |true
+    )->toOne();
+}
+
+
+###Pure
+Class meta::legend::test::model::model::ClassWithConstraint
+[
+   $this.a == 'ok'
+]
+{
+   a:String[1];
+}
+
+function <<test.Test>> meta::legend::test::model::testLoadModel():Boolean[1]
+{
+   meta::legend::test::mayExecuteLegendTest(
+       {clientVersion, serverVersion, serializationKind, host, port|
+                   let fStr = 'meta::protocols::pure::'+$clientVersion+'::invocation::testLoadModel::legendTestLoadModel_Package_1__String_1__Integer_1__String_1__Boolean_1_';
+                   let xf = $fStr->pathToElement()->cast(@Function<{Package[1], String[1], Integer[1], String[1]->Boolean[1]}>);
+                   $xf->evaluate([meta::legend::test::model::model, $host, $port, $serverVersion]->map(v|list($v)))->toOne()->cast(@Boolean);},
+       |true
+    )->toOne();
+}

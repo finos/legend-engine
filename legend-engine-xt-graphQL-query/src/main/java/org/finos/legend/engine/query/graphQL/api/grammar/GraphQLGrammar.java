@@ -59,7 +59,8 @@ public class GraphQLGrammar extends GrammarAPI
                                   @DefaultValue("true") @QueryParam("returnSourceInformation") boolean returnSourceInformation,
                                   @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
-        return grammarToJson(text, (a) -> {
+        return grammarToJson(text, (a) ->
+        {
             try
             {
                 return GraphQLGrammarParser.newInstance().parseDocument(a);
@@ -73,7 +74,8 @@ public class GraphQLGrammar extends GrammarAPI
 
     // Required so that Jackson properly includes _type for the top level element
     static class TypedMap extends UnifiedMap<String, Document>
-    {}
+    {
+    }
 
     @POST
     @Path("grammarToJson/batch")
@@ -82,7 +84,8 @@ public class GraphQLGrammar extends GrammarAPI
     @Produces(MediaType.APPLICATION_JSON)
     public Response grammarToJsonBatch(Map<String, ParserInput> input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
-        return grammarToJsonBatch(input, (a, b, c, d, e) -> {
+        return grammarToJsonBatch(input, (a, b, c, d, e) ->
+        {
             try
             {
                 return GraphQLGrammarParser.newInstance().parseDocument(a);
