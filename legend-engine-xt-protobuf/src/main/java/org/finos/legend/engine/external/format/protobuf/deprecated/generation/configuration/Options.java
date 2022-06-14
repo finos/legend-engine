@@ -15,7 +15,7 @@
 package org.finos.legend.engine.external.format.protobuf.deprecated.generation.configuration;
 
 import java.util.Collections;
-import java.util.List;
+import java.util.Map;
 
 @Deprecated
 public class Options
@@ -24,5 +24,5 @@ public class Options
     public String javaOuterClassname;
     public Boolean javaMultipleFiles;
     public OptimizeMode optimizeFor;
-    public List<CustomOption> customOptions = Collections.EMPTY_LIST;
+    public Map<String,Object> customOptions = Collections.EMPTY_MAP;
 }

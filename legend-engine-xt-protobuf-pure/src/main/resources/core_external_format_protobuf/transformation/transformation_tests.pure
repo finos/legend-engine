@@ -240,8 +240,8 @@ function <<test.Test>> {serverVersion.start='v1_23_0'} meta::external::format::p
                                javaOuterClassname='TestClass', 
                                javaMultipleFiles=true, 
                                optimizeFor=OptimizeMode.SPEED,
-                               customOptions=[^ProtobufOption(name='aString', value='stuff'),
-                                              ^ProtobufOption(name='aBool', value=true)]);                              
+                               customOptions=[pair('aString', 'stuff'),
+                                              pair('aBool', true)]->newMap());                              
 
   let binding = meta::external::format::protobuf::binding::fromPure::transform($config)->map(o|pair($o.location, $o.content));
   transform_testToProtoBufWithOptions_assert($binding);
@@ -261,8 +261,8 @@ function meta::external::format::protobuf::binding::fromPure::tests::transform_t
                 'option java_outer_classname = "TestClass";\n'+
                 'option java_multiple_files = true;\n'+
                 'option optimize_for = SPEED;\n'+
-                'option aString = "stuff";\n'+
                 'option aBool = true;\n'+
+                'option aString = "stuff";\n'+
                 '\n' +
                 'message Circle {\n'+
                 '  double radius = 1;\n'+
@@ -362,13 +362,14 @@ function <<test.Test>> meta::external::format::protobuf::binding::fromPure::test
                          javaOuterClassname='TestClass', 
                          javaMultipleFiles=true, 
                          optimizeFor=OptimizeMode.SPEED,
-                         customOptions=[^ProtobufOption(name='aString', value='stuff'),
-                                        ^ProtobufOption(name='aBool', value=true)]);
+                         customOptions=[pair('aString', 'stuff'),
+                                        pair('aBool', true)]->newMap());
   let options = meta::external::format::protobuf::binding::fromPure::configToOptions($config);
   assertEquals('option java_package = "com.gs.mymodel";\n'
     + 'option java_outer_classname = "TestClass";\n'
     + 'option java_multiple_files = true;\n'
     + 'option optimize_for = SPEED;\n'
+    + 'option aBool = true;\n'
     + 'option aString = "stuff";\n'
-    + 'option aBool = true;\n', $options->map( o | $o->toString())->joinStrings());                       
+    , $options->map( o | $o->toString())->joinStrings());                       
 }
