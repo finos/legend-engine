@@ -26,6 +26,7 @@ import meta::pure::router::extension::*;
 import meta::pure::router::routing::*;
 import meta::pure::runtime::*;
 import meta::relational::functions::pureToSqlQuery::*;
+import meta::relational::functions::pureToSqlQuery::metamodel::*;
 import meta::relational::functions::sqlQueryToString::*;
 import meta::relational::functions::typeInference::*;
 import meta::relational::graphFetch::executionPlan::*;

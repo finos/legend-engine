@@ -126,7 +126,7 @@ function meta::relational::functions::typeInference::inferRelationalType(rop: Re
          d: Float[1]   |  ^meta::relational::metamodel::datatype::Float(),
          d: StrictDate[1]   |  ^meta::relational::metamodel::datatype::Date(),
          d: Date[1]   |  ^meta::relational::metamodel::datatype::Timestamp(),
-         d: meta::relational::functions::pureToSqlQuery::VarPlaceHolder[1]   |  
+         d: meta::relational::functions::pureToSqlQuery::metamodel::VarPlaceHolder[1]   |  
             if($d.type == String,
                | ^meta::relational::metamodel::datatype::Varchar(size = 4000),
                | if($d.type == Integer,

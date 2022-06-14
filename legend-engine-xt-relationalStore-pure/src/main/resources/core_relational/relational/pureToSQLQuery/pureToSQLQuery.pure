@@ -17,6 +17,7 @@ import meta::pure::router::extension::*;
 import meta::alloy::objectReference::*;
 import meta::relational::runtime::*;
 import meta::relational::functions::pureToSqlQuery::union::*;
+import meta::relational::functions::pureToSqlQuery::metamodel::*;
 import meta::relational::functions::pureToSqlQuery::*;
 import meta::pure::metamodel::valuespecification::*;
 import meta::relational::mapping::*;
@@ -58,15 +59,6 @@ Class meta::relational::functions::pureToSqlQuery::SelectWithCursor extends Rela
    savedRoot : Pair<RootJoinTreeNode,RelationalTreeNode>[0..1];
    milestoningContext: meta::relational::milestoning::TemporalMilestoningContext[0..1];
    alias(){if($this.currentTreeNode->isEmpty(),|[],|$this.currentTreeNode.alias)}:TableAlias[0..1];
-}
-
-Class meta::relational::functions::pureToSqlQuery::FreeMarkerOperationHolder extends RelationalOperationElement
-[
-   parameterType : $this.parameters->forAll(param| $param->instanceOf(Literal) || $param->instanceOf(FreeMarkerOperationHolder) || $param->instanceOf(DynaFunction))
-]
-{
-   name : String[1];
-   parameters : RelationalOperationElement[*];
 }
 
 Class meta::relational::functions::pureToSqlQuery::PureFunctionToRelationalFunctionPair extends Pair<meta::pure::metamodel::function::Function<Any>, meta::pure::metamodel::function::Function<{FunctionExpression[1], PropertyMapping[0..1], SelectWithCursor[1], Map<VariableExpression, ValueSpecification>[1], State[1], JoinType[1], String[1], List<ColumnGroup>[1], DebugContext[1], RouterExtension[*]->RelationalOperationElement[1]}>>
@@ -3558,27 +3550,6 @@ function meta::relational::functions::pureToSqlQuery::isGetAll(v:ValueSpecificat
    $extracted->instanceOf(FunctionExpression) && $extracted->cast(@FunctionExpression).functionName == 'getAll';
 }
 
-Class meta::relational::functions::pureToSqlQuery::VarPlaceHolder extends RelationalOperationElement
-{
-   name : String[1];
-   propertyPath : Property<Nil,Any|*>[*];
-   type: Type[1];
-   multiplicity: Multiplicity [0..1];
-}
-
-
-Class meta::relational::functions::pureToSqlQuery::VarSetPlaceHolder extends TdsSelectSqlQuery
-{
-   varName:String[1];
-}
-
-Class meta::relational::functions::pureToSqlQuery::VarCrossSetPlaceHolder extends Table
-{
-   varName:String[1];
-   crossSetImplementation: CrossSetImplementation[1];
-}
-
-
 function meta::relational::functions::pureToSqlQuery::addPlaceHoldersForLambdaOpenVariables(fn:FunctionDefinition<Any>[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1]):State[1]
 {
    let inScopeVars = $state.inScopeVars;
@@ -6846,7 +6817,7 @@ function meta::relational::functions::pureToSqlQuery::extractTableAliasColumns(e
                               r:RelationalOperationElementWithJoin[1]|$r.relationalOperationElement->extractTableAliasColumns()->concatenate($r.joinTreeNode->extractTableAliasColumns()),
                               wc: WindowColumn[1]| $wc.window->extractTableAliasColumns()->concatenate($wc.func->extractTableAliasColumns()),
                               w:meta::relational::metamodel::Window[1]| $w.partition->extractTableAliasColumns()->concatenate($w.sortBy->extractTableAliasColumns()),
-                              f:meta::relational::functions::pureToSqlQuery::FreeMarkerOperationHolder[1]| $f.parameters->map(p|$p->extractTableAliasColumns());,
+                              f:meta::relational::functions::pureToSqlQuery::metamodel::FreeMarkerOperationHolder[1]| $f.parameters->map(p|$p->extractTableAliasColumns());,
                               s:SemiStructuredObjectNavigation[1]|$s.operand->extractTableAliasColumns(),
                               s:SemiStructuredArrayFlattenOutput[1]|$s.tableAliasColumn->extractTableAliasColumns()
                           ]

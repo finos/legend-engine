@@ -279,7 +279,7 @@ function <<access.private>> meta::pure::router::extension::relationalExtension(t
                                        d:DatabaseConnection[1]|
                                              let dbConfig         = createDbConfig($d.type, $d.timeZone, $d.quoteIdentifiers);
                                              let varMultiplicity  = if($parameterVal->instanceOf(List), |ZeroMany, |PureOne);
-                                             convertPlaceHolderToSQLString(^meta::relational::functions::pureToSqlQuery::VarPlaceHolder(name = $name, type=$type, multiplicity=$varMultiplicity), $dbConfig.dbExtension.literalProcessor, $d.timeZone);
+                                             convertPlaceHolderToSQLString(^meta::relational::functions::pureToSqlQuery::metamodel::VarPlaceHolder(name = $name, type=$type, multiplicity=$varMultiplicity), $dbConfig.dbExtension.literalProcessor, $d.timeZone);
                               },
       executionPlan_generation_updateConnection =
                      [
