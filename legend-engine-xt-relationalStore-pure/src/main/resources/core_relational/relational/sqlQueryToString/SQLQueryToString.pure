@@ -1563,23 +1563,25 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::array
 {
     let delimiter = if($p->size() == 1, |',', |$p->at(1));
     let values = if($p->at(0)->size() == 1, |'array('+$p->at(0)+')', |$p->at(0));
-    let cmd = 'array_join('+ $values + ',' + $p->at(1) +')';
+    let cmd = 'array_join('+ $values + ', ' + $p->at(1) +')';
     [$cmd];
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::dateDiffDatabricks(p:String[2..3]):String[1]
 {
+    // dateDiff(d1: Date[1], d2: Date[1], du: DurationUnit[1]): Integer[1]
+    // This returns an integer, hence a need to round results to int
     let interval = if($p->size() == 2, |'DAY', |$p->at(2)->mapToDBUnitType());
     let cmd = if ($interval == 'YEAR',
         | 'year('+ $p->at(1) +') - year('+ $p->at(0) +')',
         | if ($interval == 'MONTH',
-             | 'ROUND(months_between('+ $p->at(1) +', '+ $p->at(0) +'))',
+             | 'cast(round(months_between('+ $p->at(1) +', '+ $p->at(0) +')) AS INT)',
              | if ($interval == 'DAY',
                   | 'datediff('+ $p->at(1) +', '+ $p->at(0) +')',
                   | if ($interval == 'HOUR',
-                       | 'ROUND((unix_timestamp('+ $p->at(1) +') - unix_timestamp('+ $p->at(0) +')) / 3600)',
+                       | 'cast(round((unix_timestamp('+ $p->at(1) +') - unix_timestamp('+ $p->at(0) +')) / 3600) AS INT)',
                        | if ($interval == 'MINUTE',
-                            | 'ROUND((unix_timestamp('+ $p->at(1) +') - unix_timestamp('+ $p->at(0) +')) / 60)',
+                            | 'cast(round((unix_timestamp('+ $p->at(1) +') - unix_timestamp('+ $p->at(0) +')) / 60) AS INT)',
                             | if ($interval == 'SECOND',
                                  | 'unix_timestamp('+ $p->at(1) +') - unix_timestamp('+ $p->at(0) +')',
                                  | if ($interval == 'MILLISECOND',
@@ -2078,7 +2080,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::getDy
     dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
     dynaFnToSql('today',                  $allStates,            ^ToSql(format='current_date')),
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as string)')),
-    dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='WEEKOFYEAR(%s)')),
+    dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='weekofyear(%s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)'))
   ];
 }

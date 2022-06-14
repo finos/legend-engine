@@ -137,7 +137,7 @@ function <<test.Test>> meta::relational::databricks::tests::joinStrings():Boolea
       meta::relational::tests::simpleRelationalMapping,
       DatabaseType.Databricks,
       meta::pure::router::extension::defaultRelationalExtensions());
-   assertSameSQL('select `root`.FIRSTNAME as `firstName`, array_join(`root`.LASTNAME, \'*\') as `lastNames` from personTable as `root` group by `firstName`', $result);
+   assertSameSQL('select `root`.FIRSTNAME as `firstName`, array_join(array(`root`.LASTNAME), \'*\') as `lastNames` from personTable as `root` group by `firstName`', $result);
 }
 
 function <<test.Test>> meta::relational::databricks::tests::atan2():Boolean[1]
@@ -188,7 +188,7 @@ function <<test.Test>> meta::relational::databricks::tests::dateDiffDays():Boole
     meta::relational::databricks::tests::mapping::simpleRelationalMappingPersonForDelta,
     DatabaseType.Databricks,
     meta::pure::router::extension::defaultRelationalExtensions());
-   assertEquals('select datediff(`root`.createdAt, `root`.activeDate) as `deltaDays` from test_schema.test_table as `root`', $result);
+   assertEquals('select datediff(`root`.activeDate, `root`.createdAt) as `deltaDays` from test_schema.test_table as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::databricks::tests::dateDiffMonths():Boolean[1]
@@ -198,7 +198,7 @@ function <<test.Test>> meta::relational::databricks::tests::dateDiffMonths():Boo
     meta::relational::databricks::tests::mapping::simpleRelationalMappingPersonForDelta,
     DatabaseType.Databricks,
     meta::pure::router::extension::defaultRelationalExtensions());
-   assertEquals('select months_between(`root`.createdAt, `root`.activeDate) as `deltaDays` from test_schema.test_table as `root`', $result);
+   assertEquals('select cast(round(months_between(`root`.activeDate, `root`.createdAt)) AS INT) as `deltaDays` from test_schema.test_table as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::databricks::tests::dateDiffYears():Boolean[1]
@@ -208,7 +208,7 @@ function <<test.Test>> meta::relational::databricks::tests::dateDiffYears():Bool
     meta::relational::databricks::tests::mapping::simpleRelationalMappingPersonForDelta,
     DatabaseType.Databricks,
     meta::pure::router::extension::defaultRelationalExtensions());
-   assertEquals('select year(`root`.createdAt) - year(`root`.activeDate) as `deltaDays` from test_schema.test_table as `root`', $result);
+   assertEquals('select year(`root`.activeDate) - year(`root`.createdAt) as `deltaDays` from test_schema.test_table as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::databricks::tests::avg():Boolean[1]
@@ -308,7 +308,7 @@ function <<test.Test>> meta::relational::databricks::tests::weekOfYear():Boolean
     meta::relational::databricks::tests::mapping::simpleRelationalMappingPersonForDelta,
     DatabaseType.Databricks,
     meta::pure::router::extension::defaultRelationalExtensions());
-   assertEquals('select WEEKOFYEAR(`root`.createdAt) as `week` from test_schema.test_table as `root`', $result);
+   assertEquals('select weekofyear(`root`.createdAt) as `week` from test_schema.test_table as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::databricks::tests::cast():Boolean[1]
@@ -418,7 +418,7 @@ function <<test.Test>> meta::relational::databricks::tests::position():Boolean[1
         meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMapping,
         DatabaseType.Databricks,
         meta::pure::router::extension::defaultRelationalExtensions());
-    assertEquals('select substring(`root`.FULLNAME, 0, array_position(\',\', `root`.FULLNAME)-1) as `firstName` from personTable as `root`', $result);
+    assertEquals('select substring(`root`.FULLNAME, 0, position(\',\', `root`.FULLNAME)-1) as `firstName` from personTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::databricks::tests::mod():Boolean[1]
