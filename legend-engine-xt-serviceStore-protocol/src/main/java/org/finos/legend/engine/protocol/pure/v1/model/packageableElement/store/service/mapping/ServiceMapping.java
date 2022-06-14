@@ -27,8 +27,5 @@ public class ServiceMapping
     public Path pathOffset;
     public ServiceRequestBuildInfo requestBuildInfo;
 
-    @Deprecated
-    public List<ServiceParameterMapping> parameterMappings;
-
     public SourceInformation sourceInformation;
 }
