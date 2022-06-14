@@ -310,7 +310,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::generateMap
                                                        mergeProjects(
                                                           $common
                                                              ->concatenate($methods)
-                                                             ->concatenate(if($createConstraintChecking,|$withAssocs->createConstraintCheckingForClass($setImplementation.class, $context, $debug),|[]))
+                                                             ->concatenate(if($createConstraintChecking,|$withAssocs->createConstraintCheckingForClass($setImplementation.class, $tree.constraintsExclusions, $context, $debug),|[]))
                                                              ->concatenate($withAssocs->createQualifiedPropertiesForClass($nonMilestonedProperties, $context, $debug))
                                                              ->concatenate($methodsForMilestonedProperties)
                                                              ->concatenate($alloyStoreObjectReferenceMethods)
@@ -701,7 +701,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::generateExp
    mergeProjects(
       $common
       ->concatenate($methods)
-      ->concatenate($withAssocs->createConstraintCheckingForClass($setImplementation.class, $context, $debug))
+      ->concatenate($withAssocs->createConstraintCheckingForClass($setImplementation.class, $tree.constraintsExclusions, $context, $debug))
       ->concatenate($withAssocs->createQualifiedPropertiesForClass($nonMilestonedProperties, $context, $debug))
       ->concatenate($methodsForMilestonedProperties)
       ->concatenate($alloyStoreObjectReferenceMethods)

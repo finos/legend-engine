@@ -38,6 +38,8 @@ import meta::relational::tests::*;
 import meta::relational::tests::model::simple::*;
 import meta::pure::runtime::*;
 import meta::pure::mapping::modelToModel::test::shared::src::*;
+import meta::pure::graphFetch::executionPlan::*;
+import meta::pure::graphFetch::routing::*;
 
 function meta::pure::executionPlan::tests::templateFunctionsList():String[*]
 {
@@ -2496,4 +2498,65 @@ function <<test.Test>> meta::pure::executionPlan::tests::datetime::testPlanWithL
   assertEquals(['a','b'], $plan.rootExecutionNode.executionNodes->cast(@meta::relational::mapping::SQLExecutionNode).connection->cast(@meta::pure::alloy::connections::RelationalDatabaseConnection).datasourceSpecification->cast(@meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification).testDataSetupSqls);
   let transformedPlan = meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformPlan($plan, meta::pure::router::extension::defaultRelationalExtensions());
   assertEquals(['a','b'], $transformedPlan.rootExecutionNode.executionNodes->cast(@meta::protocols::pure::vX_X_X::metamodel::executionPlan::SQLExecutionNode).connection->cast(@meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::RelationalDatabaseConnection).datasourceSpecification->cast(@meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::LocalH2DatasourceSpecification).testDataSetupSqls);
+}
+
+function <<test.Test>> meta::pure::executionPlan::tests::testSupportGraphFetchWithCircularConstraint():Boolean[1]
+{
+  let tree = #{
+    meta::pure::executionPlan::constraints::tests::Person {
+        firstName,
+        firm {
+          legalName
+        }
+    }
+  }#;
+
+  let query = {|meta::pure::executionPlan::constraints::tests::Person.all()->graphFetchChecked($tree)->serialize($tree)};
+  let mapping = meta::pure::executionPlan::constraints::tests::simpleRel;
+  let runtime = meta::relational::tests::testRuntime();
+
+  let plan = executionPlan($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions());
+  let withJava = $plan->generatePlatformCode(^PlatformCodeGenerationConfig(platform=Platform.JAVA), defaultRelationalExtensions());
+   
+ 
+  let generatedTree = $withJava.rootExecutionNode->cast(@PureExpressionPlatformExecutionNode).executionNodes->at(0)->cast(@GlobalGraphFetchExecutionNode).graphFetchTree.tree;
+  let firmTree = $generatedTree.subTrees->filter(g | $g->cast(@RoutedPropertyGraphFetchTree).property.name->toOne()->equal('firm'))->toOne();
+  let employeesTree = $firmTree.subTrees->filter(g | $g->cast(@RoutedPropertyGraphFetchTree).property.name->toOne()->equal('employees'))->toOne()->cast(@RoutedPropertyGraphFetchTree);
+
+  // toFix: after fixing isDistinct related bug this test should expect ['titleNotEmpty'] result
+  assertSameElements(['0', '1', 'titleNotEmpty'], $employeesTree.constraintsExclusions);
+
+}
+
+function <<test.Test>> meta::pure::executionPlan::tests::testSupportGraphFetchWithCircularConstraint2():Boolean[1]
+{
+  let tree = #{
+    meta::pure::executionPlan::constraints::tests::Person {
+        firstName,
+        firm {
+          legalName,
+          employees {
+            lastName
+          }
+        }
+    }
+  }#;
+
+  let query = {|meta::pure::executionPlan::constraints::tests::Person.all()->graphFetchChecked($tree)->serialize($tree)};
+  let mapping = meta::pure::executionPlan::constraints::tests::simpleRel;
+  let runtime = meta::relational::tests::testRuntime();
+
+  let plan = executionPlan($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions());
+  let withJava = $plan->generatePlatformCode(^PlatformCodeGenerationConfig(platform=Platform.JAVA), defaultRelationalExtensions());
+   
+ 
+  let generatedTree = $withJava.rootExecutionNode->cast(@PureExpressionPlatformExecutionNode).executionNodes->at(0)->cast(@GlobalGraphFetchExecutionNode).graphFetchTree.tree;
+  let firmTree = $generatedTree.subTrees->filter(g | $g->cast(@RoutedPropertyGraphFetchTree).property.name->toOne()->equal('firm'))->toOne();
+  let employeesTree = $firmTree.subTrees->filter(g | $g->cast(@RoutedPropertyGraphFetchTree).property.name->toOne()->equal('employees'))->toOne()->cast(@RoutedPropertyGraphFetchTree);
+  let innerFirmTree = $employeesTree.subTrees->filter(g | $g->cast(@RoutedPropertyGraphFetchTree).property.name->toOne()->equal('firm'))->toOne()->cast(@RoutedPropertyGraphFetchTree);
+
+
+  assertSameElements([], $employeesTree.constraintsExclusions);
+  assertSameElements(['duplicateEmployee'], $innerFirmTree.constraintsExclusions);
+
 }
