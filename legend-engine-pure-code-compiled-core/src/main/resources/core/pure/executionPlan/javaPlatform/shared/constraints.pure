@@ -118,7 +118,7 @@ function meta::pure::executionPlan::engine::java::createConstraintCheckingForCla
                        ->concatenate(
                           if($constraintsEnabled,
                              {|
-                                $allConstraints->filter(c | $c.constraint.name->in($constraintsToExclude))->toNumbered()
+                                $allConstraints->filter(c | !$c.constraint.name->in($constraintsToExclude))->toNumbered()
                                   ->map(nc| j_this($cls)->j_invoke(constraintMethodName($nc.second, $nc.first, $class), [], javaOptional($defect))->j_invoke('ifPresent', $result->j_methodReference('add', javaFunctionType($defect, javaVoid())), javaVoid()))
                                   ->concatenate($propertyConstraintCalls->sortBy(pc | $pc->codeToString($cls)))
                              },
@@ -260,7 +260,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::generatePro
 function <<access.private>> meta::pure::executionPlan::engine::java::generateConstraintMethods(infos:ConstraintInfo[*], javaClass:meta::external::language::java::metamodel::Class[1], class:meta::pure::metamodel::type::Class<Any>[1], constraintsToExclude: String[*], conventions:Conventions[1], debug:DebugContext[1]): Project[1]
 {
    print(if($debug.debug,|$debug.space+'generateConstraintMethods\n',|''));
-   $infos->filter(c | $c.constraint.name->in($constraintsToExclude))->toNumbered()->fold(
+   $infos->filter(c | !$c.constraint.name->in($constraintsToExclude))->toNumbered()->fold(
       {ni, project|
          let n           = $ni.first;
          let info        = $ni.second;         
