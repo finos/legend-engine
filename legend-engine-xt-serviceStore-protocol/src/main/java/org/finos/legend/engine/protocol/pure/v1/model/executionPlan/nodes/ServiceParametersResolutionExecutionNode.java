@@ -14,8 +14,10 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.mapping.ServiceRequestParametersBuildInfo;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ServiceParametersResolutionExecutionNode extends ExecutionNode
 {
     public ServiceRequestParametersBuildInfo requestParametersBuildInfo;
