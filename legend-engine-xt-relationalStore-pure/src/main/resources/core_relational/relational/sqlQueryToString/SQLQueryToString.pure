@@ -1559,16 +1559,36 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::mapTo
    ]->filter(p | $p.first == $day).second->toOne();
 }
 
+function <<access.private>> meta::relational::functions::sqlQueryToString::arrayJoinDatabricks(p:String[1..2]):String[1]
+{
+    let delimiter = if($p->size() == 1, |',', |$p->at(1));
+    let values = if($p->at(0)->size() == 1, |'array('+$p->at(0)+')', |$p->at(0));
+    let cmd = 'array_join('+ $values + ',' + $p->at(1) +')';
+    [$cmd];
+}
+
 function <<access.private>> meta::relational::functions::sqlQueryToString::dateDiffDatabricks(p:String[2..3]):String[1]
 {
     let interval = if($p->size() == 2, |'DAY', |$p->at(2)->mapToDBUnitType());
     let cmd = if ($interval == 'YEAR',
-        | 'year('+ $p->at(0) +') - year('+ $p->at(1) +')',
+        | 'year('+ $p->at(1) +') - year('+ $p->at(0) +')',
         | if ($interval == 'MONTH',
-             | 'months_between('+ $p->at(0) +', '+ $p->at(1) +')',
+             | 'ROUND(months_between('+ $p->at(1) +', '+ $p->at(0) +'))',
              | if ($interval == 'DAY',
-                  | 'datediff('+ $p->at(0) +', '+ $p->at(1) +')',
-                  | ''
+                  | 'datediff('+ $p->at(1) +', '+ $p->at(0) +')',
+                  | if ($interval == 'HOUR',
+                       | 'ROUND((unix_timestamp('+ $p->at(1) +') - unix_timestamp('+ $p->at(0) +')) / 3600)',
+                       | if ($interval == 'MINUTE',
+                            | 'ROUND((unix_timestamp('+ $p->at(1) +') - unix_timestamp('+ $p->at(0) +')) / 60)',
+                            | if ($interval == 'SECOND',
+                                 | 'unix_timestamp('+ $p->at(1) +') - unix_timestamp('+ $p->at(0) +')',
+                                 | if ($interval == 'MILLISECOND',
+                                      | '(unix_timestamp('+ $p->at(1) +') - unix_timestamp('+ $p->at(0) +')) * 1000',
+                                      | ''
+                                 )
+                            )
+                       )
+                  )
              )
         )
     );
@@ -2012,9 +2032,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::getDy
     dynaFnToSql('atan2',                  $allStates,            ^ToSql(format='atan2(%s,%s)')),
     dynaFnToSql('concat',                 $allStates,            ^ToSql(format='concat%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('convertDate',            $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateDatabricks()})),
-    dynaFnToSql('convertDateTime',        $allStates,            ^ToSql(format='%s' , transform={p:String[*] | $p->convertToDateTimeDatabricks()})),
-    dynaFnToSql('convertVarchar128',      $allStates,            ^ToSql(format='case(%s as STRING)')),
-    dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='%s' , transform={p:String[2..3] | $p->dateDiffDatabricks()})),
+    dynaFnToSql('convertDateTime',        $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateTimeDatabricks()})),
+    dynaFnToSql('convertVarchar128',      $allStates,            ^ToSql(format='cast(%s as STRING)')),
+    dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='%s', transform={p:String[2..3] | $p->dateDiffDatabricks()})),
     dynaFnToSql('datePart',               $allStates,            ^ToSql(format='to_date(%s)')),
     dynaFnToSql('dayOfMonth',             $allStates,            ^ToSql(format='dayofmonth(%s)')),
     dynaFnToSql('dayOfWeekNumber',        $allStates,            ^ToSql(format='dayofweek(%s)')),
@@ -2026,10 +2046,10 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::getDy
     dynaFnToSql('firstDayOfWeek',         $allStates,            ^ToSql(format='trunc(%s, \'WEEK\')')),
     dynaFnToSql('firstDayOfYear',         $allStates,            ^ToSql(format='trunc(%s, \'YEAR\')')),
     dynaFnToSql('hour',                   $allStates,            ^ToSql(format='hour(%s)')),
-    dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='locate(%s)', transform={p:String[2] | $p->at(0) + ', ' + $p->at(1)})),
+    dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='locate(%s)', transform={p:String[2] | $p->at(1) + ', ' + $p->at(0)})),
     dynaFnToSql('isNumeric',              $allStates,            ^ToSql(format='(lower(%s) = upper(%s))')),
     dynaFnToSql('isAlphaNumeric',         $allStates,            ^ToSql(format='rlike(%s)', transform={p:String[1]|$p->transformAlphaNumericParamsDefault()})),
-    dynaFnToSql('joinStrings',            $allStates,            ^ToSql(format='array_join(%s, %s)')),
+    dynaFnToSql('joinStrings',            $allStates,            ^ToSql(format='%s', transform={p:String[1..2] | $p->arrayJoinDatabricks()})),
     dynaFnToSql('left',                   $allStates,            ^ToSql(format='left(%s,%s)')),
     dynaFnToSql('length',                 $allStates,            ^ToSql(format='length(%s)')),
     dynaFnToSql('ltrim',                  $allStates,            ^ToSql(format='ltrim(%s)')),
@@ -2044,7 +2064,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::getDy
     dynaFnToSql('parseDecimal',           $allStates,            ^ToSql(format='cast(%s as double)')),
     dynaFnToSql('parseFloat',             $allStates,            ^ToSql(format='cast(%s as float)')),
     dynaFnToSql('parseInteger',           $allStates,            ^ToSql(format='cast(%s as int)')),
-    dynaFnToSql('position',               $allStates,            ^ToSql(format='array_position(%s, %s)')),
+    dynaFnToSql('position',               $allStates,            ^ToSql(format='position(%s, %s)')),
     dynaFnToSql('previousDayOfWeek',      $allStates,            ^ToSql(format='date_sub(%s, case when dayofweek(%s) = %s then 7 else dayofweek(%s) - %s end)', transform={p:String[1..2] | $p->formatMostRecentDatabricks('current_date()')}, parametersWithinWhenClause = [false, false])),
     dynaFnToSql('quarter',                $allStates,            ^ToSql(format='quarter(%s)')),
     dynaFnToSql('quarterNumber',          $allStates,            ^ToSql(format='quarter(%s)')),
@@ -2058,7 +2078,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::getDy
     dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
     dynaFnToSql('today',                  $allStates,            ^ToSql(format='current_date')),
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as string)')),
-    dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='WEEKOFYEAR(%s)'))
+    dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='WEEKOFYEAR(%s)')),
+    dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)'))
   ];
 }
 
