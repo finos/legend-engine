@@ -48,6 +48,7 @@ public class PureIDELight extends PureIDEServer
                     .<RepositoryCodeStorage>with(new ClassLoaderCodeStorage(CodeRepository.newPlatformCodeRepository()))
                     .with(this.buildCore("legend-engine-xt-persistence-pure", "persistence"))
                     .with(this.buildCore("legend-engine-xt-relationalStore-pure", "relational"))
+                    .with(this.buildCore("legend-engine-xt-relationalStore-sqlserver", "relational_sqlserver"))
                     .with(this.buildCore("legend-engine-xt-serviceStore-pure", "servicestore"))
                     .with(this.buildCore("legend-engine-xt-flatdata-pure", "external-format-flatdata"))
                     .with(this.buildCore("legend-engine-xt-json-pure", "external-format-json"))
