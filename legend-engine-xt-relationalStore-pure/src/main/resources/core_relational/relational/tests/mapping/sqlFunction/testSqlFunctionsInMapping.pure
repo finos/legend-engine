@@ -178,10 +178,6 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::trim::test
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.DB2, meta::pure::router::extension::defaultRelationalExtensions());
 
-   let sSqlServer = toSQLString(|SqlFunctionDemo.all()->project([s | $s.trimResult], ['trim']),
-                                                testMapping,
-                                                meta::relational::runtime::DatabaseType.SqlServer, meta::pure::router::extension::defaultRelationalExtensions());
-
    let sPostgre = toSQLString(|SqlFunctionDemo.all()->project([s | $s.trimResult], ['trim']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.Postgres, meta::pure::router::extension::defaultRelationalExtensions());
@@ -202,7 +198,6 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::trim::test
    assertEquals('select trim("root".string2) as "trim" from dataTable as "root"',$sH2);
    assertEquals('select trim(`root`.string2) as `trim` from dataTable as `root`',$sMemsql);
    assertEquals('select trim("root".string2) as "trim" from dataTable as "root"',$sDB2);
-   assertEquals('select trim("root".string2) as "trim" from dataTable as "root"',$sSqlServer);
    assertEquals('select trim("root".string2) as "trim" from dataTable as "root"',$sPostgre);
    assertEquals('select trim("root".string2) as "trim" from dataTable as "root"',$sHive);
    assertEquals('select trim("root".string2) as "trim" from dataTable as "root"',$sSnowflake);
@@ -797,14 +792,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseInteg
    assertEquals('select cast("root".string2Integer as integer) as "parseInteger" from dataTable as "root"',$s);
 
 }
-function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseInteger::testToSQLStringParseIntegerinSqlServer():Boolean[1]
-{
-   let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2Integer], ['parseInteger']),
-                                                testMapping,
-                                                meta::relational::runtime::DatabaseType.SqlServer, meta::pure::router::extension::defaultRelationalExtensions());
-   assertEquals('select cast("root".string2Integer as integer) as "parseInteger" from dataTable as "root"',$s);
 
-}
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseInteger::testToSQLStringParseIntegerinDB2():Boolean[1]
 {
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2Integer], ['parseInteger']),

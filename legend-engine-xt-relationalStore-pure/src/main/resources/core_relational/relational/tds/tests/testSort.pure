@@ -160,7 +160,7 @@ function <<test.Test>> meta::relational::tests::tds::sort::testDoubleSortMixedCh
 
 function <<test.Test>> meta::relational::tests::tds::sort::testSortQuotes():Boolean[1]
 {
-   DatabaseType->enumValues()->filter(e|$e-> in ([   DatabaseType.DB2, DatabaseType.H2, DatabaseType.MemSQL, DatabaseType.Sybase, DatabaseType.SybaseIQ, DatabaseType.Composite, DatabaseType.Postgres, DatabaseType.SqlServer]  )  )->forAll(type | 
+   DatabaseType->enumValues()->filter(e|$e-> in ([   DatabaseType.DB2, DatabaseType.H2, DatabaseType.MemSQL, DatabaseType.Sybase, DatabaseType.SybaseIQ, DatabaseType.Composite, DatabaseType.Postgres]  )  )->forAll(type | 
       let query = toSQLString(|Person.all()->project([#/Person/firstName!name#, #/Person/address/name!address#])->sort(desc('address'))->sort('name');, simpleRelationalMapping, $type, meta::pure::router::extension::defaultRelationalExtensions());
       if ($type == DatabaseType.MemSQL,
          | assertEquals('select `root`.FIRSTNAME as `name`, `addressTable_d#3_1_d#3_m2`.NAME as `address` from personTable as `root` left outer join addressTable as `addressTable_d#3_1_d#3_m2` on (`addressTable_d#3_1_d#3_m2`.ID = `root`.ADDRESSID) order by `name`,`address` desc', $query),
