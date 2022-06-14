@@ -15,7 +15,6 @@
 import meta::pure::executionPlan::connection::*;
 import meta::relational::translation::*;
 import meta::relational::functions::typeInference::*;
-import meta::pure::deepfetch::execution::*;
 import meta::pure::router::extension::*;
 import meta::relational::functions::reportDelta::*;
 import meta::relational::mapping::*;
@@ -550,7 +549,6 @@ Class meta::relational::mapping::KeyInformation extends MappingInstanceData
 {
    pk : Any[*];
    sourceConnection : Connection[1];
-   deepFetchCache : DeepFetchCache[0..1];
    buildMethod : BuildMethod[1];
 }
 

@@ -17,8 +17,6 @@ import meta::pure::executionPlan::toString::*;
 import meta::pure::executionPlan::*;
 import meta::pure::mapping::*;
 import meta::pure::runtime::*;
-import meta::pure::deepfetch::execution::*;
-import meta::pure::deepfetch::builder::*;
 
 
 function meta::pure::executionPlan::execute(plan:ExecutionPlan[1], parametersValues:Any[*], extensions:meta::pure::router::extension::RouterExtension[*]):Result<Any|*>[1]
