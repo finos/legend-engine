@@ -17,8 +17,6 @@ package org.finos.legend.engine.protocol.pure.v1;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
-import org.eclipse.collections.impl.list.mutable.FastList;
-import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
@@ -44,45 +42,33 @@ public class ServiceStoreProtocolExtension implements PureProtocolExtension
     @Override
     public List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()
     {
-        return Lists.mutable.with(() -> Lists.mutable.with(
+        return Lists.fixedSize.with(() -> Lists.fixedSize.with(
                 // Class mapping
-                ProtocolSubTypeInfo.Builder
-                        .newInstance(ClassMapping.class)
-                        .withSubtypes(FastList.newListWith(
-                                Tuples.pair(RootServiceStoreClassMapping.class, "serviceStore")
-                        )).build(),
+                ProtocolSubTypeInfo.newBuilder(ClassMapping.class)
+                        .withSubtype(RootServiceStoreClassMapping.class, "serviceStore")
+                        .build(),
                 // Connection
-                ProtocolSubTypeInfo.Builder
-                        .newInstance(Connection.class)
-                        .withSubtypes(FastList.newListWith(
-                                Tuples.pair(ServiceStoreConnection.class, "serviceStore")
-                        )).build(),
+                ProtocolSubTypeInfo.newBuilder(Connection.class)
+                        .withSubtype(ServiceStoreConnection.class, "serviceStore")
+                        .build(),
                 // Content pattern
-                ProtocolSubTypeInfo.Builder
-                        .newInstance(ContentPattern.class)
-                        .withSubtypes(FastList.newListWith(
-                                Tuples.pair(EqualToPattern.class, "equalTo"),
-                                Tuples.pair(EqualToJsonPattern.class, "equalToJson")
-                        )).build(),
+                ProtocolSubTypeInfo.newBuilder(ContentPattern.class)
+                        .withSubtype(EqualToPattern.class, "equalTo")
+                        .withSubtype(EqualToJsonPattern.class, "equalToJson")
+                        .build(),
                 // Embedded Data
-                ProtocolSubTypeInfo.Builder
-                        .newInstance(EmbeddedData.class)
-                        .withSubtypes(FastList.newListWith(
-                                Tuples.pair(ServiceStoreEmbeddedData.class, "serviceStore")
-                        )).build(),
+                ProtocolSubTypeInfo.newBuilder(EmbeddedData.class)
+                        .withSubtype(ServiceStoreEmbeddedData.class, "serviceStore")
+                        .build(),
                 // Execution Nodes
-                ProtocolSubTypeInfo.Builder
-                        .newInstance(ExecutionNode.class)
-                        .withSubtypes(FastList.newListWith(
-                                Tuples.pair(RestServiceExecutionNode.class, "restService"),
-                                Tuples.pair(ServiceParametersResolutionExecutionNode.class, "serviceParametersResolution")
-                        )).build(),
+                ProtocolSubTypeInfo.newBuilder(ExecutionNode.class)
+                        .withSubtype(RestServiceExecutionNode.class, "restService")
+                        .withSubtype(ServiceParametersResolutionExecutionNode.class, "serviceParametersResolution")
+                        .build(),
                 // Packageable element
-                ProtocolSubTypeInfo.Builder
-                        .newInstance(PackageableElement.class)
-                        .withSubtypes(FastList.newListWith(
-                                Tuples.pair(ServiceStore.class, "serviceStore")
-                        )).build()
+                ProtocolSubTypeInfo.newBuilder(PackageableElement.class)
+                        .withSubtype(ServiceStore.class, "serviceStore")
+                        .build()
         ));
     }
 

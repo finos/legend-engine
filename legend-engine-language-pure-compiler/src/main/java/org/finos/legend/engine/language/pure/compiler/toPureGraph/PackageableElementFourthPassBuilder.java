@@ -99,7 +99,7 @@ public class PackageableElementFourthPassBuilder implements PackageableElementVi
                 throw new EngineException(e.getMessage(), property.sourceInformation, EngineErrorType.COMPILATION);
             }
             ctx.flushVariable("this");
-            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty<?> prop = targetClass._qualifiedProperties().select(o -> HelperModelBuilder.isCompatibleDerivedProperty(o, property)).getFirst();
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty<?> prop = targetClass._qualifiedProperties().detect(o -> HelperModelBuilder.isCompatibleDerivedProperty(o, property));
             HelperModelBuilder.checkCompatibility(this.context, body.getLast()._genericType()._rawType(), body.getLast()._multiplicity(), prop._genericType()._rawType(), prop._multiplicity(), "Error in derived property '" + srcClass.name + "." + property.name + "'", property.body.get(property.body.size() - 1).sourceInformation);
             ctx.pop();
             return prop._expressionSequence(body);

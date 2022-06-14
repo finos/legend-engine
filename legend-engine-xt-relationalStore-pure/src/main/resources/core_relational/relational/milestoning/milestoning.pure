@@ -19,6 +19,7 @@ import meta::pure::functions::meta::*;
 import meta::pure::mapping::*;
 import meta::pure::milestoning::*;
 import meta::relational::functions::pureToSqlQuery::*;
+import meta::relational::functions::pureToSqlQuery::metamodel::*;
 import meta::relational::mapping::*;
 import meta::relational::metamodel::*;
 import meta::relational::metamodel::execute::*;

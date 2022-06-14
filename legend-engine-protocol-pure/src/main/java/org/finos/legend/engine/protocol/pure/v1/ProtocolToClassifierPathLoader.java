@@ -23,7 +23,6 @@ import java.util.Map;
 
 public class ProtocolToClassifierPathLoader
 {
-
     public static Map<Class<? extends PackageableElement>, String> getProtocolClassToClassifierMap()
     {
         Map<Class<? extends PackageableElement>, String> protocolToClassifierMap = Maps.mutable.empty();
@@ -40,5 +39,4 @@ public class ProtocolToClassifierPathLoader
         }
         return protocolToClassifierMap;
     }
-
 }

@@ -17,7 +17,6 @@ package org.finos.legend.engine.protocol.pure.v1;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
-import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
@@ -32,9 +31,8 @@ public class PersistenceProtocolExtension implements PureProtocolExtension
     public List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()
     {
         return Lists.fixedSize.of(() -> Lists.fixedSize.of(
-                ProtocolSubTypeInfo.Builder
-                        .newInstance(PackageableElement.class)
-                        .withSubtypes(Lists.fixedSize.of(Tuples.pair(Persistence.class, "persistence")))
+                ProtocolSubTypeInfo.newBuilder(PackageableElement.class)
+                        .withSubtype(Persistence.class, "persistence")
                         .build()
         ));
     }
@@ -42,7 +40,6 @@ public class PersistenceProtocolExtension implements PureProtocolExtension
     @Override
     public Map<Class<? extends PackageableElement>, String> getExtraProtocolToClassifierPathMap()
     {
-        return Maps.mutable.with(
-                Persistence.class, "meta::pure::persistence::metamodel::Persistence");
+        return Maps.mutable.with(Persistence.class, "meta::pure::persistence::metamodel::Persistence");
     }
 }

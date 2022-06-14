@@ -1,0 +1,31 @@
+import meta::relational::metamodel::*;
+import meta::relational::metamodel::relation::*;
+import meta::pure::router::clustering::*;
+
+Class meta::relational::functions::pureToSqlQuery::metamodel::VarPlaceHolder extends RelationalOperationElement
+{
+   name : String[1];
+   propertyPath : Property<Nil,Any|*>[*];
+   type: Type[1];
+   multiplicity: Multiplicity [0..1];
+}
+
+Class meta::relational::functions::pureToSqlQuery::metamodel::VarSetPlaceHolder extends TdsSelectSqlQuery
+{
+   varName:String[1];
+}
+
+Class meta::relational::functions::pureToSqlQuery::metamodel::VarCrossSetPlaceHolder extends Table
+{
+   varName:String[1];
+   crossSetImplementation: CrossSetImplementation[1];
+}
+
+Class meta::relational::functions::pureToSqlQuery::metamodel::FreeMarkerOperationHolder extends RelationalOperationElement
+[
+   parameterType : $this.parameters->forAll(param| $param->instanceOf(Literal) || $param->instanceOf(meta::relational::functions::pureToSqlQuery::metamodel::FreeMarkerOperationHolder) || $param->instanceOf(DynaFunction))
+]
+{
+   name : String[1];
+   parameters : RelationalOperationElement[*];
+}

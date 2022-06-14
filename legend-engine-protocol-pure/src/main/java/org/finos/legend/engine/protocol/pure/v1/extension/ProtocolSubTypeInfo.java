@@ -15,16 +15,18 @@
 package org.finos.legend.engine.protocol.pure.v1.extension;
 
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.tuple.Tuples;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class ProtocolSubTypeInfo<T>
 {
     private final Class<T> superType;
     private final Class<? extends T> defaultSubType;
-    private final List<Pair<Class<? extends T>, String>> subTypes;
+    private final MutableList<Pair<Class<? extends T>, String>> subTypes;
 
     private ProtocolSubTypeInfo(ProtocolSubTypeInfo.Builder<T> builder)
     {
@@ -35,17 +37,17 @@ public class ProtocolSubTypeInfo<T>
 
     public Class<T> getSuperType()
     {
-        return superType;
+        return this.superType;
     }
 
     public Class<? extends T> getDefaultSubType()
     {
-        return defaultSubType;
+        return this.defaultSubType;
     }
 
     public List<Pair<Class<? extends T>, String>> getSubTypes()
     {
-        return subTypes;
+        return this.subTypes.asUnmodifiable();
     }
 
     public SimpleModule registerDefaultSubType()
@@ -57,11 +59,16 @@ public class ProtocolSubTypeInfo<T>
         return new SimpleModule().addAbstractTypeMapping(this.superType, this.defaultSubType);
     }
 
+    public static <T> Builder<T> newBuilder(Class<T> superType)
+    {
+        return Builder.newInstance(superType);
+    }
+
     public static class Builder<T>
     {
         private final Class<T> superType;
         private Class<? extends T> defaultSubType;
-        private List<Pair<Class<? extends T>, String>> subTypes = new ArrayList<>();
+        private final MutableList<Pair<Class<? extends T>, String>> subTypes = Lists.mutable.empty();
 
         private Builder(Class<T> superType)
         {
@@ -84,9 +91,15 @@ public class ProtocolSubTypeInfo<T>
             return this;
         }
 
-        public Builder<T> withSubtypes(List<Pair<Class<? extends T>, String>> subTypes)
+        public Builder<T> withSubtypes(Iterable<? extends Pair<Class<? extends T>, String>> subTypes)
         {
-            this.subTypes = subTypes;
+            this.subTypes.addAllIterable(subTypes);
+            return this;
+        }
+
+        public Builder<T> withSubtype(Class<? extends T> type, String name)
+        {
+            this.subTypes.add(Tuples.pair(type, name));
             return this;
         }
     }

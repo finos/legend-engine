@@ -58,7 +58,7 @@ function meta::pure::executionPlan::engine::java::graphFetch::common::localGraph
 function meta::pure::executionPlan::engine::java::graphFetch::common::generateCodeForLocalGraphFetchNode(node: LocalGraphFetchExecutionNode[1], path:String[1], context:GenerationContext[1], extensions:RouterExtension[*], debug:DebugContext[1]):GeneratedCode[1]
 {
    let implProject   = if($node.resultType->instanceOf(ClassResultType)  &&!$node->meta::pure::graphFetch::executionPlan::nodeIsMerged() ,| generateGraphNodeImplementation($node, $context, $path, $extensions, $debug), | []);
-   let globalProject = generateTypes($context, $debug);
+   let globalProject = if($node.parentIndex->isNotEmpty(), | newProject(), | generateTypes($context, $debug)); // Avoid generating interfaces and enums multiple times and merging later. Do it only at root nodes (which do not have parent index)
    let storeProject  = $node->match([
       i : meta::pure::mapping::modelToModel::graphFetch::executionPlan::InMemoryGraphFetchExecutionNode[1] | $i->meta::pure::executionPlan::engine::java::graphFetch::inMemory::generateInMemoryStoreGraphFetchProject($path, $context, $extensions, $debug)
    ]->concatenate(
