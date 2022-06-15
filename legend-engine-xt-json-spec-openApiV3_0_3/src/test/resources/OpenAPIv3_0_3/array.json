@@ -1,0 +1,39 @@
+{
+  "tests": [
+    {
+      "$schema": "https://spec.openapis.org/oas/v3.0.3#specification",
+      "type": "array"
+    },
+    {
+      "$schema": "https://spec.openapis.org/oas/v3.0.3#specification",
+      "type": "array",
+      "uniqueItems": true
+    },
+    {
+      "$schema": "https://spec.openapis.org/oas/v3.0.3#specification",
+      "type": "array",
+      "uniqueItems": false,
+      "items": {
+        "type": "string"
+      }
+    },
+    {
+      "$schema": "https://spec.openapis.org/oas/v3.0.3#specification",
+      "type": "array",
+      "items": [
+        {},
+        {},
+        true
+      ],
+      "additionalItems": {
+        "type": "integer"
+      }
+    },
+    {
+      "$schema": "https://spec.openapis.org/oas/v3.0.3#specification",
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 3
+    }
+  ]
+}

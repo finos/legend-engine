@@ -172,6 +172,14 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-json-protocol</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-json-spec-draftV7</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-json-spec-openApiV3_0_3</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

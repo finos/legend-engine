@@ -26,7 +26,7 @@ import meta::json::schema::generation::*;
 import meta::pure::model::unit::*;
 
 /// ========================================================================================================================================================
-// Entry points 
+// Entry points
 // ========================================================================================================================================================
 
 Class meta::external::format::json::binding::fromPure::ModelToJsonSchemaConfiguration extends meta::external::shared::format::binding::fromPure::ModelToSchemaConfiguration
@@ -47,7 +47,7 @@ function meta::external::format::json::binding::fromPure::pureToJsonSchema(confi
 {
    let generatedSchemaSet = generate($config, $debug);
    let result             = createBinding($generatedSchemaSet, $config);
-      
+
    $debug->log(|'\nGenerated the following:\n\n'+$result->bindingToString());
    $result;
 }
@@ -60,16 +60,16 @@ function <<access.private>> meta::external::format::json::binding::fromPure::gen
 {
    let jsonConfig        = ^JSONSchemaConfig(scopeElements = $config.sourceModel);
    let jsonSchemaOutputs = generateJsonSchemaFromPureWithScope($jsonConfig);
-   
+
    let schemaSetSepPos  = $config.targetSchemaSet->lastIndexOf('::');
    let schemaSetPkgName = $config.targetSchemaSet->substring(0, $schemaSetSepPos);
-   
+
    let schemaSet = ^SchemaSet(
       package = pathToPackage($schemaSetPkgName, true),
       name    = $config.targetSchemaSet->substring($schemaSetSepPos+2),
       format  = 'JSON'
    );
-   $jsonSchemaOutputs->map(o | $o->jsonSchemaOutputToSchema($schemaSet));   
+   $jsonSchemaOutputs->map(o | $o->jsonSchemaOutputToSchema($schemaSet));
    $schemaSet;
 }
 
@@ -77,11 +77,11 @@ function <<access.private>> meta::external::format::json::binding::fromPure::cre
 {
    let opSepPos  = $config.targetBinding->lastIndexOf('::');
    let opPkgName = $config.targetBinding->substring(0, $opSepPos);
-   
+
    ^Binding(
       package     = pathToPackage($opPkgName, true),
       name        = $config.targetBinding->substring($opSepPos+2),
-      schemaSet   = $schemaSet, 
+      schemaSet   = $schemaSet,
       contentType = 'application/json',
       modelUnit   = newModelUnit()->include($config.sourceModel)
    );
@@ -97,6 +97,6 @@ function <<access.private>> meta::external::format::json::binding::fromPure::jso
       set = $schemaSet,
       id = $output.fileName->refToFileName(),
       location = $output.fileName,
-      detail = ^JsonSchema(content = $output.content)
+      detail = ^JSONSchema(content = $output.content)
    )
 }

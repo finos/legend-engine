@@ -42,7 +42,7 @@ Class meta::external::format::json::executionPlan::test::Firm
 function <<meta::pure::profiles::test.Test>> meta::external::format::json::executionPlan::test::planGenerationForSimpleJsonSchema(): Boolean[1]
 {
    let extensions = meta::external::shared::format::routerExtensions('externalFormat', meta::external::format::json::jsonFormatExtension());
-   
+
    let schemaSet = ^SchemaSet(
       name    = 'TestSchema',
       package = meta::external::format::json::executionPlan::test,
@@ -50,7 +50,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::json::execu
       schemas = ^Schema(
          id = 'Person',
          location = 'meta/external/format/json/executionPlan/test/Person.json',
-         detail  = ^JsonSchema(
+         detail  = ^JSONSchema(
             content = '{\n'+
                         '  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n'+
                         '  \"title\": \"meta::external::format::json::executionPlan::test::Person\",\n'+
@@ -90,7 +90,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::json::execu
          )
       )
    );
-   
+
    let binding = ^Binding(
       name        = 'TestBinding',
       package     = meta::external::format::json::executionPlan::test,
@@ -98,7 +98,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::json::execu
       contentType = 'application/json',
       modelUnit   = newModelUnit()->include([Person, Firm])
    );
-   
+
    let tree = #{Person {firstName, lastName, firm {legalName}}}#;
 
    let plan = executionPlan(
@@ -116,9 +116,9 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::json::execu
    );
 //    let boundPlan = $plan->generatePlatformCode(^meta::pure::executionPlan::PlatformCodeGenerationConfig(platform=meta::pure::executionPlan::Platform.JAVA), $extensions);
 //    $boundPlan->planToString(true, $extensions)->println();
-   
+
    let planString = $plan->planToString(false, $extensions);
-   
+
    let expected = 'JSON_Serialize\n'+
                   '(\n'+
                   '  type = String\n'+
@@ -188,7 +188,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::json::execu
                   '  )\n'+
                   ')\n';
 
-   assertEquals($expected, $planString);   
+   assertEquals($expected, $planString);
 }
 
 ###Mapping
@@ -200,16 +200,16 @@ Mapping meta::external::format::json::executionPlan::test::SelfMapping
    Person: Pure
    {
       ~src Person
-      
+
       firstName   : $src.firstName,
       lastName    : $src.lastName,
       firm        : $src.firm
    }
-   
+
    Firm: Pure
    {
       ~src Firm
-      
+
       legalName   : $src.legalName
    }
 )

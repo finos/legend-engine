@@ -19,6 +19,9 @@ import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.impl.utility.Iterate;
+import org.finos.legend.engine.external.format.json.JSONSchemaSpecificationExtension;
+import org.finos.legend.engine.external.format.json.specifications.draftv7.DraftV7SchemaSpecificationExtension;
+import org.finos.legend.engine.external.format.json.specifications.openapiv3_0_3.OpenAPIv3_0_3SchemaSpecificationExtension;
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
@@ -86,6 +89,15 @@ public class TestExtensions
     public void testExpectedExternalFormatExtensionsArePresent()
     {
         assertHasExtensions(getExpectedExternalFormatExtensions(), ExternalFormatExtension.class);
+    }
+
+    @Test
+    public void testJsonSchemaSpecificationExtensions()
+    {
+        MutableList<Class<? extends JSONSchemaSpecificationExtension>> expectedExtensions = Lists.mutable.<Class<? extends JSONSchemaSpecificationExtension>>empty()
+                .with(DraftV7SchemaSpecificationExtension.class)
+                .with(OpenAPIv3_0_3SchemaSpecificationExtension.class);
+        assertHasExtensions(expectedExtensions, JSONSchemaSpecificationExtension.class);
     }
 
     @Test

@@ -1,0 +1,12 @@
+{
+  "tests": [
+    {
+      "$schema": "https://spec.openapis.org/oas/v3.0.3#specification",
+      "type": "string",
+      "xml": {
+        "namespace": "http://example.com/schema/sample",
+        "prefix": "sample"
+      }
+    }
+  ]
+}

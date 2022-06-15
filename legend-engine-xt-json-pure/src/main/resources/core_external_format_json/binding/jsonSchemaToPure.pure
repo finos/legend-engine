@@ -33,7 +33,7 @@ import meta::pure::model::unit::*;
 import meta::pure::generation::metamodel::*;
 
 /// ========================================================================================================================================================
-// Entry points 
+// Entry points
 // ========================================================================================================================================================
 
 Class meta::external::format::json::binding::toPure::JsonSchemaToModelConfiguration extends meta::external::shared::format::binding::toPure::SchemaToModelConfiguration
@@ -55,7 +55,7 @@ function meta::external::format::json::binding::toPure::jsonSchemaToPure(schemaS
    let context           = createGenerationContext($schemaSet, $config);
    let generatedElements = generate($context, $debug);
    let result            = createOperation($generatedElements, $context);
-   
+
    $debug->log(|'\nGenerated the following:\n\n'+$result->bindingToString()+'\n\n'+$result->modelToString());
    $result;
 }
@@ -66,7 +66,7 @@ function meta::external::format::json::binding::toPure::defaultConfig(): JsonSch
 }
 
 function <<Generation.Configuration>>  meta::external::format::json::binding::toPure::describeConfiguration(): GenerationParameter[*]
-{  
+{
   meta::pure::generation::describeConfiguration(JsonSchemaToModelConfiguration, meta::external::format::json::binding::toPure::defaultConfig__JsonSchemaToModelConfiguration_1_, []);
 }
 
@@ -81,7 +81,7 @@ Class <<access.private>> meta::external::format::json::binding::toPure::Generati
 
    package()
    {
-      if($this.config.targetPackage->endsWith('::'), 
+      if($this.config.targetPackage->endsWith('::'),
          |$this.config.targetPackage->substring(0, $this.config.targetPackage->length() - 2),
          |$this.config.targetPackage)
    }: String[1];
@@ -90,7 +90,7 @@ Class <<access.private>> meta::external::format::json::binding::toPure::Generati
 function <<access.private>> meta::external::format::json::binding::toPure::createGenerationContext(schemaSet:SchemaSet[1], config:JsonSchemaToModelConfiguration[1]): GenerationContext[1]
 {
    let context = ^GenerationContext(
-      config    = $config, 
+      config    = $config,
       schemaSet = $schemaSet
    );
 }
@@ -103,7 +103,7 @@ function <<access.private>> meta::external::format::json::binding::toPure::gener
 {
    let schemas      = $context.schemaSet.schemas;
    let schemaInputs = $schemas->map(s | $s->schemaToSchemaInput($context));
-   
+
    JSONSchemaToPure($schemaInputs);
 }
 
@@ -111,11 +111,11 @@ function <<access.private>> meta::external::format::json::binding::toPure::creat
 {
    let sepPos  = $context.config.targetBinding->lastIndexOf('::');
    let pkgName = $context.config.targetBinding->substring(0, $sepPos);
-   
+
    ^Binding(
       package     = pathToPackage($pkgName, true),
       name        = $context.config.targetBinding->substring($sepPos+2),
-      schemaSet   = $context.schemaSet, 
+      schemaSet   = $context.schemaSet,
       contentType = 'application/json',
       modelUnit   = newModelUnit()->include($model)
    );
@@ -129,7 +129,7 @@ function <<access.private>> meta::external::format::json::binding::toPure::schem
 {
    ^SchemaInput(
       fileName   = $schema.location->toOne(),
-      schema     = $schema.detail->toOne()->cast(@JsonSchema).content,
+      schema     = $schema.detail->toOne()->cast(@JSONSchema).content,
       pathPrefix = $context.package
    )
 }

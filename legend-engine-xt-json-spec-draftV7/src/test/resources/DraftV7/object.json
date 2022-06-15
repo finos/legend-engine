@@ -1,0 +1,791 @@
+{
+  "tests": [
+    {
+      "type": "object",
+      "maxProperties": 5,
+      "minProperties": 1
+    },
+    {
+      "title": "Person",
+      "type": "object",
+      "properties": {
+        "firstName": {
+          "type": "string",
+          "description": "The person's first name."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "The person's last name."
+        },
+        "age": {
+          "description": "Age in years which must be equal to or greater than zero.",
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    {
+      "title": "Longitude and Latitude Values",
+      "description": "A geographical coordinate.",
+      "required": [
+        "latitude",
+        "longitude"
+      ],
+      "type": "object",
+      "properties": {
+        "latitude": {
+          "type": "number",
+          "minimum": -90,
+          "maximum": 90
+        },
+        "longitude": {
+          "type": "number",
+          "minimum": -180,
+          "maximum": 180
+        }
+      }
+    },
+    {
+      "type": "object",
+      "id": "#",
+      "properties": {
+        "a": {
+          "type": "string",
+          "id": "a"
+        },
+        "b": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "id": "name"
+              },
+              "f": {
+                "type": "array",
+                "id": "f",
+                "items": {
+                  "type": "object",
+                  "id": "0",
+                  "properties": {
+                    "date": {
+                      "type": "string",
+                      "id": "date"
+                    },
+                    "val": {
+                      "type": "string",
+                      "id": "val"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "address": {
+          "type": "string"
+        },
+        "telephone": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "email"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "street_address": {
+          "type": "string"
+        },
+        "country": {
+          "default": "United States of America",
+          "enum": [
+            "United States of America",
+            "Canada"
+          ]
+        }
+      },
+      "if": {
+        "properties": {
+          "country": {
+            "const": "United States of America"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "postal_code": {
+            "type": "string",
+            "pattern": "[0-9]{5}(-[0-9]{4})?"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "postal_code": {
+            "type": "string",
+            "pattern": "[A-Z][0-9][A-Z] [0-9][A-Z][0-9]"
+          }
+        }
+      }
+    },
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "readOnly": true,
+      "properties": {
+        "readOnlyId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "inLineEnum": {
+          "type": "string",
+          "default": "defaultValue",
+          "enum": [
+            "defaultValue"
+          ]
+        },
+        "formatWriteOnly": {
+          "type": "string",
+          "format": "date",
+          "writeOnly": true
+        },
+        "stringConstraints": {
+          "description": "A description",
+          "type": "string",
+          "example": "bleh bleh",
+          "minLength": 10,
+          "maxLength": 300,
+          "pattern": "^[a-z]{10,300}$"
+        },
+        "dateTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "int64": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "int32": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "byte": {
+          "type": "string",
+          "format": "byte"
+        },
+        "binary": {
+          "type": "string",
+          "format": "binary"
+        },
+        "uuid": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "double": {
+          "type": "number",
+          "format": "double"
+        },
+        "float": {
+          "type": "number",
+          "format": "float"
+        },
+        "minMaxNumber": {
+          "type": "number",
+          "minimum": 18,
+          "maximum": 150
+        },
+        "anyOfConstraint": {
+          "description": "any of",
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-z]*$",
+              "maxLength": 32
+            },
+            {
+              "type": "number",
+              "maximum": 5
+            },
+            {
+              "type": "string",
+              "pattern": "^[a-z]*$",
+              "maxLength": 256
+            }
+          ]
+        },
+        "oneOfConstraint": {
+          "description": "one of",
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-z]*$",
+              "maxLength": 32
+            },
+            {
+              "type": "number",
+              "maximum": 10
+            },
+            {
+              "type": "string",
+              "pattern": "^[a-z]*$",
+              "maxLength": 256
+            }
+          ]
+        },
+        "arrayFeatures": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 300,
+            "example": "array example",
+            "pattern": "^[a-z]{10,300}$"
+          },
+          "uniqueItems": true,
+          "minItems": 4,
+          "maxItems": 20
+        },
+        "optionalArrayWithMax": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z]{10,300}$"
+          },
+          "maxItems": 20
+        },
+        "arrayMaxItemOne": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 1
+        },
+        "arrayWithFeaturesOutsideOfItems": {
+          "type": "array",
+          "readOnly": true,
+          "example": [
+            "array",
+            "example"
+          ],
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "requiredArrayWithMax": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "uniqueItems": true,
+          "maxItems": 20
+        },
+        "enumType": {
+          "$ref": "ExampleEnum.json"
+        },
+        "simpleTypeReference": {
+          "$ref": "SimpleObject.json"
+        },
+        "objectType": {
+          "type": "object"
+        },
+        "constant": {
+          "type": "string",
+          "const": "my constant"
+        }
+      },
+      "required": [
+        "enumType",
+        "requiredArrayWithMax"
+      ]
+    },
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "description": "A simple description",
+      "allOf": [
+        {
+          "$ref": "SuperType"
+        }
+      ],
+      "properties": {
+        "simpleString": {
+          "type": "string"
+        },
+        "simpleReference": {
+          "$ref": "simpleReference.json"
+        },
+        "arrayMaxItemOne": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "maxItems": 10
+        }
+      }
+    },
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "description": "a Super Type Object",
+      "type": "object"
+    },
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "description": "A simple description",
+      "javaInterfaces": [
+        "org.example.myInterface"
+      ],
+      "properties": {
+        "simpleString": {
+          "type": "string"
+        }
+      }
+    },
+    {
+      "title": "Big Cat",
+      "allOf": [
+        {
+          "$ref": "Cat.json"
+        }
+      ],
+      "type": "object",
+      "properties": {
+        "harRoar": {
+          "type": "boolean"
+        }
+      }
+    },
+    {
+      "title": "Dog",
+      "allOf": [
+        {
+          "$ref": "/shared/Pet.json"
+        }
+      ],
+      "type": "object",
+      "properties": {
+        "hasBark": {
+          "type": "boolean"
+        },
+        "friends": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "friendsNoMap.json"
+          }
+        },
+        "friendsMaxThree": {
+          "type": "array",
+          "maxItems": 3,
+          "minItems": 1,
+          "items": {
+            "$ref": "friendsNoMap.json"
+          }
+        },
+        "bestFriend": {
+          "$ref": "friendsNoMap.json"
+        },
+        "siblings": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "Dog.json"
+          }
+        }
+      }
+    },
+    {
+      "title": "Pet",
+      "type": "object",
+      "properties": {
+        "petType": {
+          "type": "string",
+          "enum": [
+            "Feline",
+            "Canine",
+            "woof"
+          ]
+        }
+      },
+      "discriminator": {
+        "propertyName": "petType",
+        "mapping": {
+          "Feline": "Cat.json",
+          "Canine": "Dog.json",
+          "woof": "Dog.json",
+          "bigCat": "BigCat.json"
+        }
+      },
+      "required": [
+        "petType"
+      ]
+    },
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "a custom title",
+      "type": "object",
+      "properties": {
+        "one": {
+          "$ref": "functionWithStringType.json"
+        },
+        "many": {
+          "type": "array",
+          "items": {
+            "$ref": "functionWithStringType.json"
+          }
+        },
+        "optional": {
+          "$ref": "functionWithStringType.json"
+        }
+      },
+      "required": [
+        "one"
+      ]
+    },
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "meta::json::schema::tests::parent::parentClass",
+      "type": "object",
+      "properties": {
+        "childClass": {
+          "$ref": "level1/childClass.json"
+        },
+        "childClass2": {
+          "$ref": "../parent2/level1/level2/childClass2.json"
+        }
+      },
+      "required": [
+        "childClass",
+        "childClass2"
+      ]
+    },
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "meta::json::schema::tests::parent::level1::childClass",
+      "type": "object"
+    },
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "meta::json::schema::tests::parent::parent::levela::parentClass2",
+      "type": "object",
+      "properties": {
+        "childClass3": {
+          "$ref": "../../level1/level2/childClass3.json"
+        },
+        "childClass4": {
+          "$ref": "../../level1/levela/childClass4.json"
+        }
+      },
+      "required": [
+        "childClass3"
+      ]
+    },
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "meta::json::schema::tests::parent2::level1::level2::childClass2",
+      "type": "object",
+      "properties": {
+        "parentClass": {
+          "$ref": "../../../parent/parentClass.json"
+        }
+      },
+      "required": [
+        "parentClass"
+      ]
+    },
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "meta::json::schema::tests::parent::level1::level2::childClass3",
+      "type": "object"
+    },
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "meta::json::schema::tests::parent::level1::levela::childClass4",
+      "type": "object"
+    },
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "meta::json::schema::tests::parent::parent::levela::parentClass2",
+      "type": "object",
+      "properties": {
+        "childClass4": {
+          "$ref": "#/definitions/meta::json::schema::tests::parent::level1::levela::childClass4"
+        },
+        "childClass3": {
+          "$ref": "#/definitions/meta::json::schema::tests::parent::level1::level2::childClass3"
+        }
+      },
+      "required": [
+        "childClass3"
+      ],
+      "definitions": {
+        "meta::json::schema::tests::parent::level1::level2::childClass3": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "title": "meta::json::schema::tests::parent::level1::level2::childClass3",
+          "type": "object"
+        },
+        "meta::json::schema::tests::parent::level1::levela::childClass4": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "title": "meta::json::schema::tests::parent::level1::levela::childClass4",
+          "type": "object"
+        }
+      }
+    },
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "meta::json::schema::tests::BiTemporalPerson",
+      "x-legendTemporal": "bitemporal",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "company": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/meta::json::schema::tests::BiTemporalFirm"
+          }
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "definitions": {
+        "meta::json::schema::tests::BiTemporalFirm": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "title": "meta::json::schema::tests::BiTemporalFirm",
+          "x-legendTemporal": "bitemporal",
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "name"
+          ]
+        }
+      }
+    },
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "meta::json::schema::tests::BiTemporalPerson",
+      "x-legendTemporal": "bitemporal",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "processingDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "businessDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "milestoning": {
+          "$ref": "../../../pure/milestoning/BiTemporalMilestoning.json"
+        },
+        "companyAllVersions": {
+          "type": "array",
+          "items": {
+            "$ref": "BiTemporalFirm.json"
+          }
+        }
+      },
+      "required": [
+        "name",
+        "processingDate",
+        "businessDate"
+      ]
+    },
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "meta::json::schema::tests::RecursiveTestClass",
+      "description": "A Recursive Test Class",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "#"
+          }
+        },
+        "others": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/meta::json::schema::tests::SomeOtherClass"
+          }
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "definitions": {
+        "meta::json::schema::tests::SomeOtherClass": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "title": "meta::json::schema::tests::SomeOtherClass",
+          "description": "Some Other Class",
+          "type": "object",
+          "properties": {
+            "items": {
+              "type": "array",
+              "items": {
+                "$ref": "#"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "description": "Class With Constraints",
+      "title": "meta::json::schema::tests::constraints::ClassWithConstraints",
+      "type": "object",
+      "properties": {
+        "requiredMax": {
+          "minItems": 1,
+          "writeOnly": true,
+          "maxItems": 20,
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "constant": {
+          "type": "string",
+          "enum": [
+            "constantValue"
+          ]
+        },
+        "inLine": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "manyNumeric": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "uuidProperty": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "simple": {
+          "$ref": "constraintFunctionSimpleNumber.json"
+        },
+        "forcedArrayRequired": {
+          "maxItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "forcedArrayOptional": {
+          "maxItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "objectType": {
+          "type": "object"
+        },
+        "manyString": {
+          "uniqueItems": true,
+          "type": "array",
+          "items": {
+            "minLength": 4,
+            "$ref": "constraintRegEXFn.json",
+            "maxLength": 10
+          }
+        },
+        "number": {
+          "anyOf": [
+            {
+              "exclusiveMaximum": 15,
+              "exclusiveMinimum": 10
+            },
+            {
+              "maximum": 2,
+              "minimum": 0
+            }
+          ],
+          "readOnly": true,
+          "type": "number"
+        },
+        "dateOrString": {
+          "writeOnly": true,
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "format": "date",
+              "type": "string"
+            }
+          ]
+        },
+        "complex": {
+          "minLength": 4,
+          "$ref": "constraintFunctionComplex.json"
+        },
+        "requiredMinItem": {
+          "minItems": 3,
+          "maxItems": 20,
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "duplicateConstraint": {
+          "type": "string"
+        },
+        "optionalMax": {
+          "maxItems": 5,
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        }
+      },
+      "required": [
+        "number",
+        "requiredMax",
+        "requiredMinItem"
+      ]
+    }
+  ]
+}

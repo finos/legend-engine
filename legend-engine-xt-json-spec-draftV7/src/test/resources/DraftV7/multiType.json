@@ -1,0 +1,10 @@
+{
+  "tests": [
+    {
+      "type": ["string", "array"]
+    },
+    {
+      "type": ["string", "array", "null"]
+    }
+  ]
+}

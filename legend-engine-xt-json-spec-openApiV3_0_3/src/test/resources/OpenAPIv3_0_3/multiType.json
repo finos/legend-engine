@@ -1,0 +1,15 @@
+{
+  "tests": [
+    {
+      "$schema": "https://spec.openapis.org/oas/v3.0.3#specification",
+      "title": "meta::json::schema::tests::NullableEnum",
+      "nullable": true,
+      "enum": [
+        "one",
+        "two",
+        null
+      ],
+      "type": "string"
+    }
+  ]
+}

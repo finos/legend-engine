@@ -162,6 +162,11 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-json-spec-draftV7</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-external-shared-format-model</artifactId>
             <scope>test</scope>
         </dependency>

@@ -1,0 +1,156 @@
+{
+  "tests": [
+    {
+      "$schema": "https://spec.openapis.org/oas/v3.0.3#specification"
+    },
+    {
+      "$schema": "https://spec.openapis.org/oas/v3.0.3#specification",
+      "title": "Accept all"
+    },
+    {
+      "$schema": "https://spec.openapis.org/oas/v3.0.3#specification",
+      "type": "object",
+      "properties" : {
+        "test" : {
+          "oneOf" : [
+            { "$ref" : "#/components/schemas/model::test::hello" }
+          ]
+        }
+      },
+      "components" : {
+        "schemas" : {
+          "model::test::hello" : {
+            "type": "object"
+          }
+        }
+      }
+    },
+    {
+      "$schema": "https://spec.openapis.org/oas/v3.0.3#specification",
+      "title": "Cat",
+      "allOf": [
+        {
+          "$ref": "/shared/Pet.json"
+        }
+      ],
+      "type": "object",
+      "properties": {
+        "hasMeow": {
+          "type": "boolean"
+        },
+        "friend": {
+          "$ref": "friends.json"
+        }
+      }
+    },
+    {
+      "$schema": "https://spec.openapis.org/oas/v3.0.3#specification",
+      "title": "Dog",
+      "allOf": [
+        {
+          "$ref": "/shared/Pet.json"
+        }
+      ],
+      "type": "object",
+      "properties": {
+        "hasBark": {
+          "type": "boolean"
+        },
+        "friends": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "friendsNoMap.json"
+          }
+        },
+        "friendsMaxThree": {
+          "type": "array",
+          "maxItems": 3,
+          "minItems": 1,
+          "items": {
+            "$ref": "friendsNoMap.json"
+          }
+        },
+        "bestFriend": {
+          "$ref": "friendsNoMap.json"
+        },
+        "siblings": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "Dog.json"
+          }
+        }
+      }
+    },
+    {
+      "$schema": "https://spec.openapis.org/oas/v3.0.3#specification",
+      "title": "Big Cat",
+      "allOf": [
+        {
+          "$ref": "Cat.json"
+        }
+      ],
+      "type": "object",
+      "properties": {
+        "harRoar": {
+          "type": "boolean"
+        }
+      }
+    },
+    {
+      "$schema": "https://spec.openapis.org/oas/v3.0.3#specification",
+      "oneOf": [
+        {
+          "$ref": "Cat.json"
+        },
+        {
+          "$ref": "Dog.json"
+        }
+      ],
+      "discriminator": {
+        "propertyName": "petType",
+        "mapping": {
+          "Feline": "Cat.json",
+          "Canine": "Dog.json",
+          "woof": "Dog.json",
+          "bigCat": "BigCat.json"
+        }
+      }
+    },
+    {
+      "$schema": "https://spec.openapis.org/oas/v3.0.3#specification",
+      "oneOf": [
+        {
+          "$ref": "Cat.json"
+        },
+        {
+          "$ref": "Dog.json"
+        }
+      ],
+      "discriminator": {
+        "propertyName": "petType",
+        "mapping": {
+          "Feline": "Cat.json",
+          "Canine": "Dog.json",
+          "woof": "Dog.json",
+          "bigCat": "BigCat.json"
+        }
+      }
+    },
+    {
+      "$schema": "https://spec.openapis.org/oas/v3.0.3#specification",
+      "anyOf": [
+        {
+          "$ref": "Cat.json"
+        },
+        {
+          "$ref": "Dog.json"
+        },
+        {
+          "$ref": "BigCat.json"
+        }
+      ]
+    }
+  ]
+}
