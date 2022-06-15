@@ -1,0 +1,103 @@
+{
+  "tests": [
+    {
+      "type": "array"
+    },
+    {
+      "type": "array",
+      "uniqueItems": true
+    },
+    {
+      "type": "array",
+      "items": [
+        {},
+        true
+      ],
+      "additionalItems": {
+        "type": "integer"
+      }
+    },
+    {
+      "type": "array",
+      "uniqueItems": false,
+      "items": {
+        "type": "string"
+      }
+    },
+    {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 3
+    },
+    {
+      "type": "array",
+      "contains": {
+        "type": "number"
+      },
+      "minContains": 2,
+      "maxContains": 3
+    },
+    {
+      "definitions": {
+        "item": {
+          "type": "array",
+          "additionalItems": false,
+          "items": [
+            {
+              "$ref": "#/definitions/sub-item"
+            },
+            {
+              "$ref": "#/definitions/sub-item"
+            }
+          ]
+        },
+        "sub-item": {
+          "type": "object",
+          "required": [
+            "foo"
+          ]
+        }
+      },
+      "type": "array",
+      "additionalItems": false,
+      "items": [
+        {
+          "$ref": "#/definitions/item"
+        },
+        {
+          "$ref": "#/definitions/item"
+        },
+        {
+          "$ref": "#/definitions/item"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "prefixItems": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "enum": [
+            "Street",
+            "Avenue",
+            "Boulevard"
+          ]
+        },
+        {
+          "enum": [
+            "NW",
+            "NE",
+            "SW",
+            "SE"
+          ]
+        }
+      ],
+      "items": false
+    }
+  ]
+}

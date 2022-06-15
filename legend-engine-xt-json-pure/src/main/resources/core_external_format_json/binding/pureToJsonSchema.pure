@@ -97,6 +97,6 @@ function <<access.private>> meta::external::format::json::binding::fromPure::jso
       set = $schemaSet,
       id = $output.fileName->refToFileName(),
       location = $output.fileName,
-      detail = ^JsonSchema(content = $output.content)
+      detail = ^JSONSchema(content = $output.content)
    )
 }

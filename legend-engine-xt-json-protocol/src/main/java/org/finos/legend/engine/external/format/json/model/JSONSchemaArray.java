@@ -1,0 +1,120 @@
+//  Copyright 2022 Goldman Sachs
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+
+package org.finos.legend.engine.external.format.json.model;
+
+import org.finos.legend.engine.external.format.json.visitor.JSONSchemaVisitor;
+
+import java.util.List;
+
+public class JSONSchemaArray extends JSONSchema
+{
+    public final Integer minItems;
+    public final Integer maxItems;
+    public final Boolean uniqueItems;
+    public final Object itemSchemas;
+    public final List<JSONSchema> prefixItems;
+    public final JSONSchema containedItemSchema;
+    public final Integer maxContains;
+    public final Integer minContains;
+
+    protected JSONSchemaArray(JSONSchemaArray.JSONSchemaArrayBuilder b)
+    {
+        super(b);
+        this.minItems = b.minItems;
+        this.maxItems = b.maxItems;
+        this.uniqueItems = b.uniqueItems;
+        this.itemSchemas = b.itemSchemas;
+        this.prefixItems = b.prefixItems;
+        this.containedItemSchema = b.containedItemSchema;
+        this.maxContains = b.maxContains;
+        this.minContains = b.minContains;
+    }
+
+    public static class JSONSchemaArrayBuilder extends JSONSchema.JSONSchemaBuilder<JSONSchemaArray.JSONSchemaArrayBuilder>
+    {
+        private Integer minItems;
+        private Integer maxItems;
+        private Boolean uniqueItems;
+        private Object itemSchemas;
+        private List<JSONSchema> prefixItems;
+        private JSONSchema containedItemSchema;
+        private Integer maxContains;
+        private Integer minContains;
+
+        public JSONSchemaArray build()
+        {
+            return new JSONSchemaArray(this);
+        }
+
+        public JSONSchemaArrayBuilder minItems(Integer minItems)
+        {
+            this.minItems = minItems;
+            return this;
+        }
+
+        public JSONSchemaArrayBuilder maxItems(Integer maxItems)
+        {
+            this.maxItems = maxItems;
+            return this;
+        }
+
+        public JSONSchemaArrayBuilder uniqueItems(Boolean uniqueItems)
+        {
+            this.uniqueItems = uniqueItems;
+            return this;
+        }
+
+        public JSONSchemaArrayBuilder itemSchemas(Object itemSchemas)
+        {
+            this.itemSchemas = itemSchemas;
+            return this;
+        }
+
+        public JSONSchemaArrayBuilder prefixItems(List<JSONSchema> prefixItems)
+        {
+            this.prefixItems = prefixItems;
+            return this;
+        }
+
+        public JSONSchemaArrayBuilder containedItemSchema(JSONSchema containedItemSchema)
+        {
+            this.containedItemSchema = containedItemSchema;
+            return this;
+        }
+
+        public JSONSchemaArrayBuilder maxContains(Integer maxContains)
+        {
+            this.maxContains = maxContains;
+            return this;
+        }
+
+        public JSONSchemaArrayBuilder minContains(Integer minContains)
+        {
+            this.minContains = minContains;
+            return this;
+        }
+    }
+
+    public <T> T accept(JSONSchemaVisitor<T> visitor)
+    {
+        return visitor.visit(this);
+    }
+
+    public static JSONSchemaArray.JSONSchemaArrayBuilder builder()
+    {
+        return new JSONSchemaArrayBuilder();
+    }
+
+}

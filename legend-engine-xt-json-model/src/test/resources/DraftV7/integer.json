@@ -1,0 +1,25 @@
+{
+  "tests": [
+    {
+      "type": "integer"
+    },
+    {
+      "type": "integer",
+      "minimum": 10,
+      "exclusiveMaximum": 20.5
+    },
+    {
+      "type": "number",
+      "exclusiveMinimum": 5,
+      "maximum": 10
+    },
+    {
+      "type": "integer",
+      "maximum": 10
+    },
+    {
+      "type": "integer",
+      "minimum": 10
+    }
+  ]
+}

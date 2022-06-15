@@ -23,23 +23,23 @@ import org.finos.legend.engine.external.shared.format.model.ExternalSchemaCompil
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
-import org.finos.legend.pure.generated.core_external_format_json_binding_validation;
-import org.finos.legend.pure.generated.core_external_format_json_binding_jsonSchemaToPure;
-import org.finos.legend.pure.generated.core_external_format_json_binding_pureToJsonSchema;
 import org.finos.legend.pure.generated.Root_meta_external_format_json_binding_fromPure_ModelToJsonSchemaConfiguration;
 import org.finos.legend.pure.generated.Root_meta_external_format_json_binding_fromPure_ModelToJsonSchemaConfiguration_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_format_json_binding_toPure_JsonSchemaToModelConfiguration;
 import org.finos.legend.pure.generated.Root_meta_external_format_json_binding_toPure_JsonSchemaToModelConfiguration_Impl;
-import org.finos.legend.pure.generated.Root_meta_external_format_json_metamodel_JsonSchema;
+import org.finos.legend.pure.generated.Root_meta_external_format_json_metamodel_JSONSchema;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_validation_BindingDetail;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_SchemaSet;
+import org.finos.legend.pure.generated.core_external_format_json_binding_jsonSchemaToPure;
+import org.finos.legend.pure.generated.core_external_format_json_binding_pureToJsonSchema;
+import org.finos.legend.pure.generated.core_external_format_json_binding_validation;
 
 import java.lang.management.ManagementFactory;
 import java.util.Collections;
 import java.util.List;
 
-public class JsonExternalFormatExtension implements ExternalFormatExtension<Root_meta_external_format_json_metamodel_JsonSchema, JsonSchemaToModelConfiguration, ModelToJsonSchemaConfiguration>
+public class JsonExternalFormatExtension implements ExternalFormatExtension<Root_meta_external_format_json_metamodel_JSONSchema, JsonSchemaToModelConfiguration, ModelToJsonSchemaConfiguration>
 {
     public static final String TYPE = "JSON";
     private static final boolean IN_DEBUG = ManagementFactory.getRuntimeMXBean().getInputArguments().toString().contains(":jdwp");
@@ -57,7 +57,7 @@ public class JsonExternalFormatExtension implements ExternalFormatExtension<Root
     }
 
     @Override
-    public Root_meta_external_format_json_metamodel_JsonSchema compileSchema(ExternalSchemaCompileContext context)
+    public Root_meta_external_format_json_metamodel_JSONSchema compileSchema(ExternalSchemaCompileContext context)
     {
         return new JsonSchemaCompiler(context).compile();
     }
@@ -69,7 +69,7 @@ public class JsonExternalFormatExtension implements ExternalFormatExtension<Root
     }
 
     @Override
-    public String metamodelToText(Root_meta_external_format_json_metamodel_JsonSchema schemaDetail, PureModel pureModel)
+    public String metamodelToText(Root_meta_external_format_json_metamodel_JSONSchema schemaDetail, PureModel pureModel)
     {
         return schemaDetail._content();
     }

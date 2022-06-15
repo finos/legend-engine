@@ -1,0 +1,278 @@
+{
+  "tests": [
+    {
+      "description": "Example Enum Doc",
+      "type": "string",
+      "readOnly": true,
+      "javaType": {
+        "hello": "world"
+      },
+      "enum": [
+        "",
+        "simpleEnum",
+        "enum::withcolon",
+        "enum withspace",
+        "123numberstart",
+        "() /other characters",
+        "true"
+      ],
+      "myCustomTitle": "amazingTitle"
+    },
+    {
+      "description": "Example Enum Doc",
+      "type": "string",
+      "readOnly": true,
+      "javaType": "org.example.ExampleEnum",
+      "enum": [
+        "",
+        "simpleEnum",
+        "enum::withcolon",
+        "enum withspace",
+        "123numberstart",
+        "() /other characters",
+        "true"
+      ]
+    },
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "readOnly": true,
+      "properties": {
+        "readOnlyId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "inLineEnum": {
+          "type": "string",
+          "default": "defaultValue",
+          "enum": [
+            "defaultValue"
+          ]
+        },
+        "formatWriteOnly": {
+          "type": "string",
+          "format": "date",
+          "writeOnly": true
+        },
+        "stringConstraints": {
+          "description": "A description",
+          "type": "string",
+          "example": "bleh bleh",
+          "minLength": 10,
+          "maxLength": 300,
+          "pattern": "^[a-z]{10,300}$"
+        },
+        "dateTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "int64": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "int32": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "byte": {
+          "type": "string",
+          "format": "byte"
+        },
+        "binary": {
+          "type": "string",
+          "format": "binary"
+        },
+        "uuid": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "double": {
+          "type": "number",
+          "format": "double"
+        },
+        "float": {
+          "type": "number",
+          "format": "float"
+        },
+        "minMaxNumber": {
+          "type": "number",
+          "minimum": 18,
+          "maximum": 150
+        },
+        "anyOfConstraint": {
+          "description": "any of",
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-z]*$",
+              "maxLength": 32
+            },
+            {
+              "type": "number",
+              "maximum": 5
+            },
+            {
+              "type": "string",
+              "pattern": "^[a-z]*$",
+              "maxLength": 256
+            }
+          ]
+        },
+        "oneOfConstraint": {
+          "description": "one of",
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-z]*$",
+              "maxLength": 32
+            },
+            {
+              "type": "number",
+              "maximum": 10
+            },
+            {
+              "type": "string",
+              "pattern": "^[a-z]*$",
+              "maxLength": 256
+            }
+          ]
+        },
+        "arrayFeatures": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 300,
+            "example": "array example",
+            "pattern": "^[a-z]{10,300}$"
+          },
+          "uniqueItems": true,
+          "minItems": 4,
+          "maxItems": 20
+        },
+        "optionalArrayWithMax": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z]{10,300}$"
+          },
+          "maxItems": 20
+        },
+        "arrayMaxItemOne": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 1
+        },
+        "arrayWithFeaturesOutsideOfItems": {
+          "type": "array",
+          "readOnly": true,
+          "example": [
+            "array",
+            "example"
+          ],
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "requiredArrayWithMax": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "uniqueItems": true,
+          "maxItems": 20
+        },
+        "enumType": {
+          "$ref": "ExampleEnum.json"
+        },
+        "simpleTypeReference": {
+          "$ref": "SimpleObject.json"
+        },
+        "objectType": {
+          "type": "object"
+        },
+        "constant": {
+          "type": "string",
+          "const": "my constant"
+        }
+      },
+      "required": [
+        "enumType",
+        "requiredArrayWithMax"
+      ]
+    },
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "description": "A simple description",
+      "allOf": [
+        {
+          "$ref": "SuperType"
+        }
+      ],
+      "properties": {
+        "simpleString": {
+          "type": "string"
+        },
+        "simpleReference": {
+          "$ref": "simpleReference.json"
+        },
+        "arrayMaxItemOne": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "maxItems": 10
+        }
+      }
+    },
+    {
+      "readOnly": true,
+      "type": "string",
+      "format": "uuid"
+    },
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "description": "a Super Type Object",
+      "type": "object"
+    },
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "description": "complex Fragment",
+      "writeOnly": true,
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 32
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "string",
+          "pattern": "^*",
+          "maxLength": 256
+        }
+      ]
+    },
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "description": "A simple description",
+      "javaInterfaces": [
+        "org.example.myInterface"
+      ],
+      "properties": {
+        "simpleString": {
+          "type": "string"
+        }
+      }
+    }
+  ]
+}

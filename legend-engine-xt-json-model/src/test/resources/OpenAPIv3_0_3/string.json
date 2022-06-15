@@ -1,0 +1,42 @@
+{
+  "tests": [
+    {
+      "$schema": "https://spec.openapis.org/oas/v3.0.3#specification",
+      "type": "string"
+    },
+    {
+      "$schema": "https://spec.openapis.org/oas/v3.0.3#specification",
+      "type": "string",
+      "format": "date-time"
+    },
+    {
+      "$schema": "https://spec.openapis.org/oas/v3.0.3#specification",
+      "type": "string",
+      "maxLength": 10,
+      "minLength": 1
+    },
+    {
+      "$schema": "https://spec.openapis.org/oas/v3.0.3#specification",
+      "type": "string",
+      "pattern": "^*"
+    },
+    {
+      "$schema": "https://spec.openapis.org/oas/v3.0.3#specification",
+      "type": "string",
+      "pattern": "^*",
+      "minLength": 1,
+      "readOnly": false
+    },
+    {
+      "$schema": "https://spec.openapis.org/oas/v3.0.3#specification",
+      "type": "string",
+      "readOnly": true,
+      "enum": [
+        "enum withspace",
+        "123numberstart",
+        "() /other characters",
+        "true"
+      ]
+    }
+  ]
+}

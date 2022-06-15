@@ -129,7 +129,7 @@ function <<access.private>> meta::external::format::json::binding::toPure::schem
 {
    ^SchemaInput(
       fileName   = $schema.location->toOne(),
-      schema     = $schema.detail->toOne()->cast(@JsonSchema).content,
+      schema     = $schema.detail->toOne()->cast(@JSONSchema).content->toOne(),
       pathPrefix = $context.package
    )
 }

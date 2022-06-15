@@ -12,8 +12,94 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//TODO: Currently this metamodel is hacky and would be improved upon in successive commits
-Class meta::external::format::json::metamodel::JsonSchema extends meta::external::shared::format::metamodel::SchemaDetail
+import meta::external::format::json::metamodel::*;
+import meta::json::*;
+
+Class meta::external::format::json::metamodel::JSONSchemaInteger extends meta::external::format::json::metamodel::JSONSchemaNumber
 {
-   content : String[1];  
+}
+
+Class meta::external::format::json::metamodel::JSONSchemaArray extends meta::external::format::json::metamodel::JSONSchema
+{
+  minItems: Integer[0..1];
+  maxItems: Integer[0..1];
+  uniqueItems: Boolean[0..1];
+  itemSchemas: Any[*];
+  prefixItems: meta::external::format::json::metamodel::JSONSchema[*];
+  containedItemSchema: meta::external::format::json::metamodel::JSONSchema[0..1];
+  maxContains: Integer[0..1];
+  minContains: Integer[0..1];
+}
+
+Class meta::external::format::json::metamodel::JSONSchemaBoolean extends meta::external::format::json::metamodel::JSONSchema
+{
+}
+
+Class meta::external::format::json::metamodel::JSONSchemaNull extends meta::external::format::json::metamodel::JSONSchema
+{
+}
+
+Class meta::external::format::json::metamodel::JSONSchemaEmpty extends meta::external::format::json::metamodel::JSONSchema
+{
+}
+
+Class meta::external::format::json::metamodel::JSONSchemaDiscriminator
+{
+  propertyName: String[0..1];
+  mapping: Map<String, String>[0..1];
+}
+
+Class meta::external::format::json::metamodel::JSONSchemaString extends meta::external::format::json::metamodel::JSONSchema
+{
+  minLength: Integer[0..1];
+  maxLength: Integer[0..1];
+  pattern: String[0..1];
+  format: String[0..1];
+}
+
+Class meta::external::format::json::metamodel::JSONSchemaNumber extends meta::external::format::json::metamodel::JSONSchema
+{
+  minimum: Integer[0..1];
+  maximum: Integer[0..1];
+  multipleOf: Integer[0..1];
+  exclusiveMinimum: Boolean[0..1];
+  exclusiveMaximum: Boolean[0..1];
+  format: String[0..1];
+}
+
+Class meta::external::format::json::metamodel::JSONSchema extends meta::external::shared::format::metamodel::SchemaDetail
+{
+  <<doc.deprecated>> content : String[0..1]; //TODO: migrate over to JsonSchema metamodel
+  allOf: meta::external::format::json::metamodel::JSONSchema[*];
+  oneOf: meta::external::format::json::metamodel::JSONSchema[*];
+  anyOf: meta::external::format::json::metamodel::JSONSchema[*];
+  mustNotMatch: meta::external::format::json::metamodel::JSONSchema[0..1];
+  title: String[0..1];
+  description: String[0..1];
+  id: String[0..1];
+  schema: String[0..1];
+  defaultValue: JSONElement[0..1];
+  constantValue: JSONElement[0..1];
+  readOnly: Boolean[0..1];
+  writeOnly: Boolean[0..1];
+  nullable: Boolean[0..1];
+  definitions: Map<String, JSONSchema>[0..1];
+  ifCondition: meta::external::format::json::metamodel::JSONSchema[0..1];
+  elseCondition: meta::external::format::json::metamodel::JSONSchema[0..1];
+  thenCondition: meta::external::format::json::metamodel::JSONSchema[0..1];
+  refValue: String[0..1];
+  possibleValues: JSONArray[0..1];
+  example: Any[0..1];
+  customProperties: Map<String, JSONElement>[0..1];
+  discriminator: meta::external::format::json::metamodel::JSONSchemaDiscriminator[0..1];
+}
+
+Class meta::external::format::json::metamodel::JSONSchemaObject extends meta::external::format::json::metamodel::JSONSchema
+{
+  minProperties: Integer[0..1];
+  maxProperties: Integer[0..1];
+  propertyNames: JSONSchemaString[0..1];
+  properties: Map<String, JSONSchema>[0..1];
+  requiredProperties: String[*];
+  additionalProperties: Any[*];
 }

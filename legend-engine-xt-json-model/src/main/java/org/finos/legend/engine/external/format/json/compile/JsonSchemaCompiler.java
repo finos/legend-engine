@@ -15,11 +15,12 @@
 package org.finos.legend.engine.external.format.json.compile;
 
 import org.eclipse.collections.api.factory.Lists;
+import org.finos.legend.engine.external.format.json.model.JSONSchema;
+import org.finos.legend.engine.external.format.json.toModel.JSONSchemaParser;
 import org.finos.legend.engine.external.shared.format.model.ExternalSchemaCompileContext;
+import org.finos.legend.pure.generated.Root_meta_external_format_json_metamodel_JSONSchema;
 import org.finos.legend.pure.generated.Root_meta_json_schema_fromSchema_SchemaInput;
 import org.finos.legend.pure.generated.Root_meta_json_schema_fromSchema_SchemaInput_Impl;
-import org.finos.legend.pure.generated.Root_meta_external_format_json_metamodel_JsonSchema;
-import org.finos.legend.pure.generated.Root_meta_external_format_json_metamodel_JsonSchema_Impl;
 import org.finos.legend.pure.generated.core_json_fromJSONSchema;
 
 public class JsonSchemaCompiler
@@ -31,11 +32,13 @@ public class JsonSchemaCompiler
         this.context = context;
     }
 
-    public Root_meta_external_format_json_metamodel_JsonSchema compile()
+
+    public Root_meta_external_format_json_metamodel_JSONSchema compile()
     {
         String content = context.getContent();
         String location = context.getLocation();
 
+        // TODO: this step will not be needed moving forward as we now have JsonSchema metamodel to validate
         // validation step
         Root_meta_json_schema_fromSchema_SchemaInput schemaInput =
                 new Root_meta_json_schema_fromSchema_SchemaInput_Impl("")
@@ -43,7 +46,7 @@ public class JsonSchemaCompiler
                         ._schema(content);
         core_json_fromJSONSchema.Root_meta_json_schema_fromSchema_JSONSchemaToPure_SchemaInput_MANY__PackageableElement_MANY_(Lists.mutable.with(schemaInput), context.getPureModel().getExecutionSupport());
 
-        return new Root_meta_external_format_json_metamodel_JsonSchema_Impl("")
-                ._content(content);
+        JSONSchema jsonSchema = new JSONSchemaParser(content).parse();
+        return jsonSchema.accept(new JSONSchemaCompilerVisitor())._content(content);
     }
 }

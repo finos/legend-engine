@@ -1,0 +1,36 @@
+{
+  "tests": [
+    {
+      "if": {
+        "const": 0
+      }
+    },
+    {
+      "then": {
+        "const": 0
+      }
+    },
+    {
+      "if": {
+        "type": "number",
+        "exclusiveMaximum": 0
+      },
+      "then": {
+        "type": "number",
+        "minimum": -10
+      }
+    },
+    {
+      "then": {
+        "const": "yes"
+      },
+      "else": {
+        "const": "other"
+      },
+      "if": {
+        "type": "string",
+        "maxLength": 4
+      }
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "tests": [
+    {
+      "type": "string"
+    },
+    {
+      "type": "string",
+      "format": "date-time"
+    },
+    {
+      "type": "string",
+      "maxLength": 10,
+      "minLength": 1
+    },
+    {
+      "type": "string",
+      "pattern": "^*"
+    },
+    {
+      "type": "string",
+      "pattern": "^*",
+      "minLength": 1,
+      "readOnly": false
+    },
+    {
+      "type": "string",
+      "readOnly": true,
+      "enum": [
+        "enum withspace",
+        "123numberstart",
+        "() /other characters",
+        "true"
+      ]
+    }
+  ]
+}
