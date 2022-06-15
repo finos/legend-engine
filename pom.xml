@@ -88,7 +88,10 @@
         <module>legend-engine-xt-morphir</module>
         <module>legend-engine-xt-morphir-pure</module>
 
-
+        <module>legend-engine-xt-text-grammar</module>
+        <module>legend-engine-xt-text-compiler</module>
+        <module>legend-engine-xt-text-protocol</module>
+        <module>legend-engine-xt-text-pure</module>
 
 
         <module>legend-engine-pure-code-compiled-core</module>
@@ -114,7 +117,6 @@
         <module>legend-engine-language-pure-grammar</module>
         <module>legend-engine-language-pure-grammar-api</module>
         <module>legend-engine-language-pure-dsl-diagram</module>
-        <module>legend-engine-language-pure-dsl-text</module>
         <module>legend-engine-language-pure-dsl-data-space</module>
         <module>legend-engine-language-pure-dsl-generation</module>
         <module>legend-engine-language-pure-dsl-service</module>
@@ -822,6 +824,28 @@
 
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-text-compiler</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-text-grammar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-text-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-text-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-query-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -942,11 +966,6 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-language-pure-dsl-diagram</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-language-pure-dsl-text</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

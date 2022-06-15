@@ -48,11 +48,6 @@
             <artifactId>legend-engine-language-pure-dsl-diagram</artifactId>
             <scope>runtime</scope>
         </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-language-pure-dsl-text</artifactId>
-            <scope>runtime</scope>
-        </dependency>
         <!-- ENGINE -->
 
         <!-- JACKSON -->
@@ -150,6 +145,11 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-shared-core</artifactId>
             <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-text-grammar</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- TEST -->
