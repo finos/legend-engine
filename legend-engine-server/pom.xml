@@ -100,7 +100,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-sqlserver</artifactId>
+            <artifactId>legend-engine-xt-relationalStore-sqlserver-pure</artifactId>
             <scope>runtime</scope>
         </dependency>
         <!-- PURE -->

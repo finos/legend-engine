@@ -23,9 +23,9 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>legend-engine-xt-relationalStore-sqlserver</artifactId>
+    <artifactId>legend-engine-xt-relationalStore-sqlserver-pure</artifactId>
     <packaging>jar</packaging>
-    <name>Legend Engine - XT - Relational Store - SqlServer</name>
+    <name>Legend Engine - XT - Relational Store - SqlServer - Pure</name>
 
     <build>
         <plugins>

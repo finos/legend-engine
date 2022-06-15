@@ -74,7 +74,7 @@
         <module>legend-engine-xt-relationalStore-executionPlan-connection-api</module>
         <module>legend-engine-xt-relationalStore-executionPlan-connection-tests-api</module>
         <module>legend-engine-xt-relationalStore-pure</module>
-        <module>legend-engine-xt-relationalStore-sqlserver</module>
+        <module>legend-engine-xt-relationalStore-sqlserver-pure</module>
         <module>legend-engine-xt-relationalStore-api</module>
         <module>legend-engine-xt-relationalStore-grammar</module>
         <module>legend-engine-xt-relationalStore-protocol</module>
@@ -641,7 +641,7 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-relationalStore-sqlserver</artifactId>
+                <artifactId>legend-engine-xt-relationalStore-sqlserver-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
