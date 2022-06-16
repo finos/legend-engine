@@ -14,33 +14,60 @@
 
 package org.finos.legend.engine.language.pure.dsl.diagram.compiler.toPureGraph;
 
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.diagram.ClassView;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.diagram.Diagram;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.diagram.GeneralizationView;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.diagram.PropertyView;
 import org.finos.legend.engine.shared.core.operational.Assert;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_diagram_ClassView;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_diagram_ClassView_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_diagram_Diagram;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_diagram_GeneralizationView;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_diagram_GeneralizationView_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_diagram_Point_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_diagram_PropertyView;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_diagram_PropertyView_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_diagram_Rectangle_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_diagram_RelationshipViewEnd_Impl;
 
 public class HelperDiagramBuilder
 {
-    public static void processClassView(ClassView classView, CompileContext context)
+    public static Root_meta_pure_metamodel_diagram_ClassView buildClassView(ClassView classView, CompileContext context)
     {
-        context.resolveClass(classView._class, classView.classSourceInformation);
+        return new Root_meta_pure_metamodel_diagram_ClassView_Impl("")
+                ._id(classView.id)
+                ._class(context.resolveClass(classView._class, classView.classSourceInformation))
+                ._hideProperties(classView.hideProperties)
+                ._hideStereotypes(classView.hideStereotypes)
+                ._hideTaggedValues(classView.hideTaggedValues)
+                ._rectangle(new Root_meta_pure_metamodel_diagram_Rectangle_Impl("")._width(classView.rectangle.width)._height(classView.rectangle.height))
+                ._position(new Root_meta_pure_metamodel_diagram_Point_Impl("")._x(classView.position.x)._y(classView.position.y));
     }
 
-    public static void processPropertyView(PropertyView propertyView, CompileContext context, Diagram diagram)
+    public static Root_meta_pure_metamodel_diagram_PropertyView buildPropertyView(PropertyView propertyView, CompileContext context, Root_meta_pure_metamodel_diagram_Diagram diagram)
     {
-        // Property Views can hold either class properties or qualified property views
-        HelperModelBuilder.getOwnedAppliedProperty(context.resolveClass(propertyView.property._class, propertyView.property.sourceInformation), propertyView.property.property, propertyView.property.sourceInformation, context.pureModel.getExecutionSupport());
-        Assert.assertTrue(diagram.classViews.stream().anyMatch(view -> view.id.equals(propertyView.sourceView)), () -> "Can't find source class view '" + propertyView.sourceView + "'", propertyView.sourceViewSourceInformation, EngineErrorType.COMPILATION);
-        Assert.assertTrue(diagram.classViews.stream().anyMatch(view -> view.id.equals(propertyView.targetView)), () -> "Can't find target class view '" + propertyView.targetView + "'", propertyView.targetViewSourceInformation, EngineErrorType.COMPILATION);
+        Root_meta_pure_metamodel_diagram_ClassView from = diagram._classViews().select(view -> view._id().equals(propertyView.sourceView)).getAny();
+        Assert.assertTrue(from != null, () -> "Can't find source class view '" + propertyView.sourceView + "'", propertyView.sourceViewSourceInformation, EngineErrorType.COMPILATION);
+        Root_meta_pure_metamodel_diagram_ClassView to = diagram._classViews().select(view -> view._id().equals(propertyView.targetView)).getAny();
+        Assert.assertTrue(to != null, () -> "Can't find target class view '" + propertyView.targetView + "'", propertyView.targetViewSourceInformation, EngineErrorType.COMPILATION);
+        return new Root_meta_pure_metamodel_diagram_PropertyView_Impl("")
+                // Property Views can hold either class properties or qualified property views
+                ._property(HelperModelBuilder.getOwnedAppliedProperty(context.resolveClass(propertyView.property._class, propertyView.property.sourceInformation), propertyView.property.property, propertyView.property.sourceInformation, context.pureModel.getExecutionSupport()))
+                ._from(new Root_meta_pure_metamodel_diagram_RelationshipViewEnd_Impl("")._classView(from))
+                ._to(new Root_meta_pure_metamodel_diagram_RelationshipViewEnd_Impl("")._classView(to))._path(ListIterate.collect(propertyView.line.points, point -> new Root_meta_pure_metamodel_diagram_Point_Impl("")._x(point.x)._y(point.y)));
     }
 
-    public static void processGeneralizationView(GeneralizationView generalizationView, Diagram diagram)
+    public static Root_meta_pure_metamodel_diagram_GeneralizationView buildGeneralizationView(GeneralizationView generalizationView, Root_meta_pure_metamodel_diagram_Diagram diagram)
     {
-        Assert.assertTrue(diagram.classViews.stream().anyMatch(view -> view.id.equals(generalizationView.sourceView)), () -> "Can't find source class view '" + generalizationView.sourceView + "'", generalizationView.sourceViewSourceInformation, EngineErrorType.COMPILATION);
-        Assert.assertTrue(diagram.classViews.stream().anyMatch(view -> view.id.equals(generalizationView.targetView)), () -> "Can't find target class view '" + generalizationView.targetView + "'", generalizationView.targetViewSourceInformation, EngineErrorType.COMPILATION);
+        Root_meta_pure_metamodel_diagram_ClassView from = diagram._classViews().select(view -> view._id().equals(generalizationView.sourceView)).getAny();
+        Assert.assertTrue(from != null, () -> "Can't find source class view '" + generalizationView.sourceView + "'", generalizationView.sourceViewSourceInformation, EngineErrorType.COMPILATION);
+        Root_meta_pure_metamodel_diagram_ClassView to = diagram._classViews().select(view -> view._id().equals(generalizationView.targetView)).getAny();
+        Assert.assertTrue(to != null, () -> "Can't find target class view '" + generalizationView.targetView + "'", generalizationView.targetViewSourceInformation, EngineErrorType.COMPILATION);
+        return new Root_meta_pure_metamodel_diagram_GeneralizationView_Impl("")
+                ._from(new Root_meta_pure_metamodel_diagram_RelationshipViewEnd_Impl("")._classView(from))
+                ._to(new Root_meta_pure_metamodel_diagram_RelationshipViewEnd_Impl("")._classView(to))._path(ListIterate.collect(generalizationView.line.points, point -> new Root_meta_pure_metamodel_diagram_Point_Impl("")._x(point.x)._y(point.y)));
     }
 }

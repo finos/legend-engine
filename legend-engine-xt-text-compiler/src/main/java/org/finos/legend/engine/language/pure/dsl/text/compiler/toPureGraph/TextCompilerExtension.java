@@ -26,6 +26,7 @@ public class TextCompilerExtension implements CompilerExtension
     @Override
     public Iterable<? extends Processor<?>> getExtraProcessors()
     {
-        return Collections.singletonList(Processor.newProcessor(Text.class, (text, context) -> new Root_meta_pure_metamodel_text_Text_Impl("")._type(text.type)._content(text.content)));
+        return Collections.singletonList(Processor.newProcessor(Text.class,
+                (text, context) -> new Root_meta_pure_metamodel_text_Text_Impl(text.name)._type(text.type)._content(text.content)));
     }
 }
