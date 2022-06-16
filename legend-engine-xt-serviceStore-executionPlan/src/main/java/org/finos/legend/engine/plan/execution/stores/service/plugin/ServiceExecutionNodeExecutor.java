@@ -21,10 +21,12 @@ import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.plan.dependencies.store.serviceStore.IServiceParametersResolutionExecutionNodeSpecifics;
+import org.finos.legend.engine.plan.execution.nodes.ExecutionNodeExecutor;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.ExecutionNodeJavaPlatformHelper;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.Result;
+import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResult;
 import org.finos.legend.engine.plan.execution.stores.service.ServiceExecutor;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.AggregationAwareExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.AllocationExecutionNode;
@@ -35,6 +37,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.Execut
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.FreeMarkerConditionalExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.FunctionParametersValidationNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.GraphFetchM2MExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.LimitExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.MultiResultSequenceExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.PureExpressionPlatformExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RestServiceExecutionNode;
@@ -97,6 +100,26 @@ public class ServiceExecutionNodeExecutor implements ExecutionNodeVisitor<Result
                 throw new RuntimeException("Error resolving service store parameters.\n" + e);
             }
             return new ConstantResult("success");
+        }
+        else if (executionNode instanceof LimitExecutionNode)
+        {
+            LimitExecutionNode limitExecutionNode = (LimitExecutionNode) executionNode;
+
+            Result childResult = limitExecutionNode.executionNodes.get(0).accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
+
+            Result result;
+            if (childResult instanceof StreamingObjectResult)
+            {
+                StreamingObjectResult<?> streamingChildResult = (StreamingObjectResult<?>) childResult;
+                result = new StreamingObjectResult<>(streamingChildResult.getObjectStream().limit(limitExecutionNode.limit), streamingChildResult.getResultBuilder(), streamingChildResult.getChildResult());
+            }
+            else
+            {
+                childResult.close();
+                throw new UnsupportedOperationException("Expected StreamingObjectResult. Found - " + childResult.getClass());
+            }
+
+            return result;
         }
         else
         {

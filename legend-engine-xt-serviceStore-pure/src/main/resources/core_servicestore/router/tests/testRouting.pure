@@ -136,3 +136,18 @@ function <<meta::pure::profiles::test.Test>> meta::external::store::service::rou
    let routed = $query->routeFunction(serviceStoreMapping(), serviceStoreRuntime(), ^meta::pure::runtime::ExecutionContext(), defaultServiceStoreExtensions(), noDebug());
    assertEquals(' | {Platform> {meta::external::store::service::tests::store::TradeProductServiceStore> [1 s_trade_set/[1 s_trade_set/[1 s_trade_set/[1 s_trade_set/Class S_Trade].all()] -> toOne()] -> graphFetch({meta::external::store::service::tests::store::TradeProductServiceStore> [s_trade_set / meta::external::store::service::tests::domain::S_Trade] {@(s_trade_set->)@ [ / s_tradeId], @(s_trade_set->)@ [ / s_traderDetails], @(s_trade_set->)@ [ / s_tradeDetails]}})]} -> serialize(#{meta::external::store::service::tests::domain::S_Trade {s_tradeId, s_traderDetails, s_tradeDetails}}#)};', $routed.functions->at(0)->meta::pure::router::printer::asString());
 }
+
+function <<meta::pure::profiles::test.Test>> meta::external::store::service::router::test::testServiceStoreRoutingWithTake():Boolean[1]
+{
+   let tree = #{
+      S_Trade {
+         s_tradeId,
+         s_traderDetails,
+         s_tradeDetails
+      }
+   }#;
+
+   let query  = {|S_Trade.all()->take(10)->graphFetch($tree)->serialize($tree)};
+   let routed = $query->routeFunction(serviceStoreMapping(), serviceStoreRuntime(), ^meta::pure::runtime::ExecutionContext(), defaultServiceStoreExtensions(), noDebug());
+   assertEquals(' | {Platform> {meta::external::store::service::tests::store::TradeProductServiceStore> [1 s_trade_set/[1 s_trade_set/[1 s_trade_set/[1 s_trade_set/Class S_Trade].all()] -> take(10)] -> graphFetch({meta::external::store::service::tests::store::TradeProductServiceStore> [s_trade_set / meta::external::store::service::tests::domain::S_Trade] {@(s_trade_set->)@ [ / s_tradeId], @(s_trade_set->)@ [ / s_traderDetails], @(s_trade_set->)@ [ / s_tradeDetails]}})]} -> serialize(#{meta::external::store::service::tests::domain::S_Trade {s_tradeId, s_traderDetails, s_tradeDetails}}#)};', $routed.functions->at(0)->meta::pure::router::printer::asString());
+}

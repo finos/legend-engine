@@ -71,6 +71,58 @@
     {
       "request": {
         "method": "GET",
+        "url": "/products/getAllProducts"
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": [
+          {
+            "s_productId": "30",
+            "s_productName": "Product 30",
+            "s_description": "Product 30 description",
+            "s_synonyms": [
+              {
+                "s_name": "product 30 synonym 1",
+                "s_type": "isin"
+              },
+              {
+                "s_name": "product 30 synonym 2",
+                "s_type": "cusip"
+              }
+            ]
+          },
+          {
+            "s_productId": "31",
+            "s_productName": "Product 31",
+            "s_description": "Product 31 description",
+            "s_synonyms": [
+              {
+                "s_name": "product 31 synonym 1",
+                "s_type": "isin"
+              },
+              {
+                "s_name": "product 31 synonym 2",
+                "s_type": "cusip"
+              }
+            ]
+          },
+          {
+            "s_productId": "32",
+            "s_productName": "Product 32",
+            "s_description": "Product 32 description",
+            "s_synonyms": [
+              {
+                "s_name": "product 32 synonym 1",
+                "s_type": "isin"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
         "url": "/products/getProductById/30"
       },
       "response": {
