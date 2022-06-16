@@ -260,6 +260,7 @@ public class TestExtensions
         // DO NOT DELETE ITEMS FROM THIS LIST (except when replacing them with something equivalent)
         return Lists.mutable.<String>empty()
                 .with("core")
+                .with("core_diagram")
                 .with("core_external_format_avro")
                 .with("core_external_format_rosetta")
                 .with("core_external_language_morphir")
@@ -270,6 +271,7 @@ public class TestExtensions
                 .with("core_external_shared")
                 .with("core_persistence")
                 .with("core_relational")
-                .with("core_servicestore");
+                .with("core_servicestore")
+                .with("core_text");
     }
 }
