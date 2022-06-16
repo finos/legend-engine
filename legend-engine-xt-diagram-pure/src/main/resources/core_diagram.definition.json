@@ -1,0 +1,5 @@
+{
+    "name" : "core_diagram",
+    "pattern" : "(meta::pure::metamodel::diagram)(::.*)?",
+    "dependencies" : ["platform", "core"]
+}

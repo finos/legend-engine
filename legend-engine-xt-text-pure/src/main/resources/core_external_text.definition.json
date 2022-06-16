@@ -1,5 +1,0 @@
-{
-    "name" : "core_external_text",
-    "pattern" : "(meta::pure::metamodel::text)(::.*)?",
-    "dependencies" : ["platform", "core"]
-}

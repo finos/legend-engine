@@ -7,9 +7,9 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>legend-engine-xt-text-pure</artifactId>
+    <artifactId>legend-engine-xt-diagram-pure</artifactId>
     <packaging>jar</packaging>
-    <name>Legend Engine - XT - Text - PAR/JAVA</name>
+    <name>Legend Engine - XT - Diagram - PAR/JAVA</name>
 
     <build>
         <plugins>
@@ -22,10 +22,10 @@
                     <repositories>
                         <repository>platform</repository>
                         <repository>core</repository>
-                        <repository>core_text</repository>
+                        <repository>core_diagram</repository>
                     </repositories>
                     <extraRepositories>
-                        <extraRepository>${project.basedir}/src/main/resources/core_text.definition.json</extraRepository>
+                        <extraRepository>${project.basedir}/src/main/resources/core_diagram.definition.json</extraRepository>
                     </extraRepositories>
                 </configuration>
                 <executions>
@@ -64,7 +64,7 @@
                             <generationType>modular</generationType>
                             <useSingleDir>true</useSingleDir>
                             <repositories>
-                                <repository>core_text</repository>
+                                <repository>core_diagram</repository>
                             </repositories>
                         </configuration>
                     </execution>
