@@ -1,0 +1,98 @@
+###Pure
+import meta::pure::executionPlan::constraints::tests::*;
+
+Enum meta::pure::executionPlan::constraints::tests::FirmType
+{
+  CORPORATION,
+  PARTNERSHIP,
+  LLC
+}
+
+Class meta::pure::executionPlan::constraints::tests::Person
+[
+   $this.firstName->isNotEmpty(),
+   $this.lastName->isNotEmpty(),
+   titleNotEmpty : ($this.firm.type->isNotEmpty() && ($this.firm.type == FirmType.CORPORATION)) || $this.title->isNotEmpty()
+]
+{
+  firstName : String[1];
+  lastName  : String[1];
+  title: String[0..1];
+}
+
+Class meta::pure::executionPlan::constraints::tests::Firm
+[
+ typeNotEmpty: $this.type->isNotEmpty(),
+ duplicateEmployee: ($this.type->isNotEmpty() && ($this.type == FirmType.CORPORATION)) || $this.employees->isDistinct(#{Person{firstName,lastName}}#)
+]
+{
+  legalName: String[1];
+  type: FirmType[1];
+}
+
+Association meta::pure::executionPlan::constraints::tests::Person_Firm
+{
+  employees: Person[*];
+  firm: Firm[1];
+}
+
+###Relational
+Database meta::pure::executionPlan::constraints::tests::db
+(
+  Schema simple
+  (
+    Table personTable
+    (
+      ID INTEGER PRIMARY KEY,
+      FIRSTNAME VARCHAR(200),
+      LASTNAME VARCHAR(200),
+      FIRMID INTEGER,
+      TITLE VARCHAR(200)
+    )
+    Table firmTable
+    (
+      ID INTEGER PRIMARY KEY,
+      LEGALNAME VARCHAR(200),
+      TYPE VARCHAR(200)
+    )
+  )
+
+  Join Firm_Person(simple.firmTable.ID = simple.personTable.FIRMID)
+)
+
+###Mapping
+import meta::pure::executionPlan::constraints::tests::*;
+
+Mapping meta::pure::executionPlan::constraints::tests::simpleRel
+(
+   meta::pure::executionPlan::constraints::tests::FirmType: EnumerationMapping fType
+  {
+    CORPORATION: ['CORPORATION'],
+    PARTNERSHIP: ['PARTNERSHIP'],
+    LLC: ['LLC']
+  }
+
+   meta::pure::executionPlan::constraints::tests::Person: Relational
+  {
+    ~primaryKey
+    (
+      [db]simple.personTable.ID
+    )
+    ~mainTable [db]simple.personTable
+    firstName: [db]simple.personTable.FIRSTNAME,
+    lastName: [db]simple.personTable.LASTNAME,
+    title: [db]simple.personTable.TITLE,
+    firm[meta_pure_executionPlan_constraints_tests_Firm]: [db]@Firm_Person
+  }
+  meta::pure::executionPlan::constraints::tests::Firm: Relational
+  {
+    ~primaryKey
+    (
+      [db]simple.firmTable.ID
+    )
+    ~mainTable [db]simple.firmTable
+    legalName: [db]simple.firmTable.LEGALNAME,
+    employees[meta_pure_executionPlan_constraints_tests_Person]: [db]@Firm_Person,
+    type: EnumerationMapping fType : [db]simple.firmTable.TYPE
+  }
+)

@@ -1179,7 +1179,23 @@ function meta::relational::tests::createTablesAndFillDb():Boolean[1]
    executeInDb('insert into otherNamesTable (PERSON_ID, OTHER_NAME) values (1, \'ghi\');', $connection);
    executeInDb('insert into otherNamesTable (PERSON_ID, OTHER_NAME) values (2, \'jkl\');', $connection);
    executeInDb('insert into otherNamesTable (PERSON_ID, OTHER_NAME) values (2, \'mno\');', $connection);
-    
+
+   //Data for circular constraints check
+   executeInDb('Drop schema if exists simple cascade;', $connection);
+   executeInDb('Create schema simple;', $connection);
+
+   executeInDb('Drop table if exists simple.personTable;', $connection);
+   executeInDb('Create Table simple.personTable(ID INT,FIRSTNAME VARCHAR(200),LASTNAME VARCHAR(200),FIRMID INT,TITLE VARCHAR(200));', $connection);
+   executeInDb('insert into simple.personTable (ID, FIRSTNAME, LASTNAME, FIRMID, TITLE) values (1, \'Peter\', \'Smith\', 2, \'Analyst\');', $connection);
+   executeInDb('insert into simple.personTable (ID, FIRSTNAME, LASTNAME, FIRMID, TITLE) values (2, \'John\', \'Johnson\', 2, \'Analyst\');', $connection);
+   executeInDb('insert into simple.personTable (ID, FIRSTNAME, LASTNAME, FIRMID, TITLE) values (3, \'Ann\', \'Smith\', 1, \'Associate\');', $connection);
+   executeInDb('insert into simple.personTable (ID, FIRSTNAME, LASTNAME, FIRMID, TITLE) values (4, \'Carol\', \'Johnson\', 1, \'VP\');', $connection);
+
+   executeInDb('Drop table if exists simple.firmTable;', $connection);
+   executeInDb('Create Table simple.firmTable(ID INT,LEGALNAME VARCHAR(200),TYPE VARCHAR(200));', $connection);
+   executeInDb('insert into simple.firmTable (ID, LEGALNAME, TYPE) values (1, \'Firm X\', \'LLC\');', $connection);
+   executeInDb('insert into simple.firmTable (ID, LEGALNAME, TYPE) values (2, \'Firm Y\', \'CORPORATION\');', $connection);
+
    true;
 }
 

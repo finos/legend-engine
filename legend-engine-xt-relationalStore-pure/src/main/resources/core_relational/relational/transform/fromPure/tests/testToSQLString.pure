@@ -80,16 +80,6 @@ function meta::relational::tests::functions::sqlstring::testCasesForDocGeneratio
       ),
       
       ^TestCase(
-         id ='testToSQLStringTodaySQLServer',
-         query = |Trade.all()->filter(t|datePart($t.settlementDateTime) == today())
-                                   ->project(t|$t.id, 'tradeId'),
-         mapping = meta::relational::tests::simpleRelationalMapping,
-         dbType = meta::relational::runtime::DatabaseType.SqlServer,
-         expectedSql = 'select "root".ID as "tradeId" from tradeTable as "root" where cast("root".settlementDateTime as date) = cast(getdate() as date)',
-         generateUsageFor = [meta::pure::functions::date::today__StrictDate_1_]
-      ),
-      
-      ^TestCase(
          id ='testTakePostgres',
          query = |Person.all()->project([#/Person/firstName!name#])->take(0),
          mapping = meta::relational::tests::simpleRelationalMapping,
@@ -272,22 +262,6 @@ function meta::relational::tests::functions::sqlstring::filterReportDates<T>(x:T
    $x->map($path)->toOne() <= $end;
 }
 
-function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringSQLServer():Boolean[1]
-{
-   let s = toSQLString(|Person.all()->filter(p|$p.firstName == 'John'), meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.SqlServer, meta::pure::router::extension::defaultRelationalExtensions());
-   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME = \'John\'', $s);
-}
-
-function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringConcatSQLServer():Boolean[1]
-{
-   let s = toSQLString(|Person.all()->filter(p|$p.firstName == 'John')
-                                    ->project(p|$p.firstName + ' ' + $p.lastName, 'fullName'),
-                                    meta::relational::tests::simpleRelationalMapping,
-                                    meta::relational::runtime::DatabaseType.SqlServer, meta::pure::router::extension::defaultRelationalExtensions());
-
-   assertEquals('select "root".FIRSTNAME+\' \'+"root".LASTNAME as "fullName" from personTable as "root" where "root".FIRSTNAME = \'John\'', $s);
-}
-
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringConcatPostgres():Boolean[1]
 {
    let s = toSQLString(|Person.all()->filter(p|$p.firstName == 'John')
@@ -296,11 +270,6 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLS
                                     meta::relational::runtime::DatabaseType.Postgres, meta::pure::router::extension::defaultRelationalExtensions());
 
    assertEquals('select concat(Text\'\', "root".FIRSTNAME, Text\' \', "root".LASTNAME, Text\'\') as "fullName" from personTable as "root" where "root".FIRSTNAME = Text\'John\'', $s);
-}
-
-function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringTodaySQLServer():Boolean[1]
-{
-   meta::relational::tests::functions::sqlstring::runTestCaseById('testToSQLStringTodaySQLServer');
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testNonExecutableSQLString():Boolean[1]
@@ -409,9 +378,6 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLS
    let memsql = toSQLString(|Person.all()->project(p|length($p.firstName), 'nameLength'), simpleRelationalMapping, DatabaseType.MemSQL, meta::pure::router::extension::defaultRelationalExtensions());
    assertEquals('select char_length(`root`.FIRSTNAME) as `nameLength` from personTable as `root`', $memsql);
 
-   let mssql = toSQLString(|Person.all()->project(p|length($p.firstName), 'nameLength'), simpleRelationalMapping, DatabaseType.SqlServer, meta::pure::router::extension::defaultRelationalExtensions());
-   assertEquals('select len("root".FIRSTNAME) as "nameLength" from personTable as "root"', $mssql);
-
    let presto = toSQLString(|Person.all()->project(p|length($p.firstName), 'nameLength'), simpleRelationalMapping, DatabaseType.Presto, meta::pure::router::extension::defaultRelationalExtensions());
    assertEquals('select length("root".FIRSTNAME) as "nameLength" from personTable as "root"', $presto);
 }
@@ -453,12 +419,6 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLS
 
    assertEquals('select substring(`root`.FULLNAME, 0, LOCATE(\',\', `root`.FULLNAME)-1) as `firstName` from personTable as `root`', $memsql);
 
-   let mssql = toSQLString(
-              |meta::relational::tests::mapping::propertyfunc::model::domain::Person.all()->project(p|$p.firstName, 'firstName'),
-               meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMapping, DatabaseType.SqlServer, meta::pure::router::extension::defaultRelationalExtensions());
-
-   assertEquals('select substring("root".FULLNAME, 0, charindex(\',\', "root".FULLNAME)-1) as "firstName" from personTable as "root"', $mssql);
-   
    let db2sql = toSQLString(
               |meta::relational::tests::mapping::propertyfunc::model::domain::Person.all()->project(p|$p.firstName, 'firstName'),
                meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMapping, DatabaseType.DB2, meta::pure::router::extension::defaultRelationalExtensions());
@@ -491,14 +451,6 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLS
             meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping, DatabaseType.MemSQL, meta::pure::router::extension::defaultRelationalExtensions());
 
    assertEquals('select stddev_samp(`root`.int1) as `stdDevSample` from dataTable as `root`', $s1);
-   
-   let s2 = toSQLString(
-           |meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionDemo.all()->project(p|$p.float1StdDevSample, 'stdDevSample'),
-            meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping, DatabaseType.SqlServer, meta::pure::router::extension::defaultRelationalExtensions());
-
-   assertEquals('select stdev("root".int1) as "stdDevSample" from dataTable as "root"', $s2);
-
-   true;
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringWithStdDevPopulation():Boolean[1]
@@ -516,14 +468,6 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLS
             meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping, DatabaseType.MemSQL, meta::pure::router::extension::defaultRelationalExtensions());
             
    assertEquals('select stddev_pop(`root`.int1) as `stdDevPopulation` from dataTable as `root`', $s1);
-   
-   let s2 = toSQLString(
-           |meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionDemo.all()->project(p|$p.float1StdDevPopulation, 'stdDevPopulation'),
-            meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping, DatabaseType.SqlServer, meta::pure::router::extension::defaultRelationalExtensions());
-
-   assertEquals('select stdevp("root".int1) as "stdDevPopulation" from dataTable as "root"', $s2);
-
-   true;
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForH2ForDifferenceInYears():Boolean[1]
@@ -1538,8 +1482,6 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testSqlGen
    assertSameSQL($expectedMemSQL, $resultMemSQL);
    let resultPostgresSQL = meta::relational::functions::sqlstring::toSQLString($query, simpleRelationalMapping, DatabaseType.Postgres, meta::pure::router::extension::defaultRelationalExtensions());
    assertSameSQL($expectedSQL, $resultPostgresSQL);
-   let resultSqlServer = meta::relational::functions::sqlstring::toSQLString($query, simpleRelationalMapping, DatabaseType.SqlServer, meta::pure::router::extension::defaultRelationalExtensions());
-   assertSameSQL($expectedSQL, $resultSqlServer);
    let resultComposite = meta::relational::functions::sqlstring::toSQLString($query, simpleRelationalMapping, DatabaseType.Composite, meta::pure::router::extension::defaultRelationalExtensions());
    assertSameSQL($expectedSQL, $resultComposite);
 }

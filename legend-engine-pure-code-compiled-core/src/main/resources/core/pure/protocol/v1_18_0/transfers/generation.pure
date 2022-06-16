@@ -1,22 +1,4 @@
 
-###Pure
-
-import meta::external::format::avro::generation::*;
-
-function meta::protocols::pure::v1_18_0::invocation::generation::avro::transformAvroGenerationConfig(input:AvroConfig[1]):meta::protocols::pure::v1_18_0::metamodel::invocation::generation::avro::AvroConfig[1]
-{
-   ^meta::protocols::pure::v1_18_0::metamodel::invocation::generation::avro::AvroConfig(
-      package = $input.package,
-      class = $input.class,
-      includeNamespace=$input.includeNamespace ,
-      includeSuperTypes=$input.includeSuperTypes,
-      includeAssociations=$input.includeAssociations,
-      includeGeneratedMilestoning=$input.includeGeneratedMilestoning,
-      timestampLogicalType=$input.timestampLogicalType,
-      propertyProfile=$input.propertyProfile,
-      namespaceOverride=$input.namespaceOverride
-   )
-}
 
 ###Pure
 

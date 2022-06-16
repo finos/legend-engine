@@ -32,6 +32,7 @@ Class meta::pure::graphFetch::routing::RoutedGraphFetchTree extends GraphFetchTr
 {
    sets : SetImplementation[*];
    requiredQualifiedProperties: QualifiedProperty<Any>[*];
+   constraintsExclusions: String[*];
 }
 
 Class meta::pure::graphFetch::routing::RoutedRootGraphFetchTree<T> extends RoutedGraphFetchTree, RootGraphFetchTree<T>

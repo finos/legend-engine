@@ -1,0 +1,5 @@
+{
+    "name" : "core_external_format_avro",
+    "pattern" : "(meta::external::format::avro|meta::protocols::pure)(::.*)?",
+    "dependencies" : ["platform", "core"]
+}

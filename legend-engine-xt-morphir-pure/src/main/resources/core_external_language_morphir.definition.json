@@ -1,0 +1,5 @@
+{
+    "name" : "core_external_language_morphir",
+    "pattern" : "(meta::external::language::morphir)(::.*)?",
+    "dependencies" : ["platform", "core"]
+}
