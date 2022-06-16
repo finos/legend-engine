@@ -14,6 +14,6 @@
 
 Class meta::pure::metamodel::text::Text extends PackageableElement
 {
-    type : String[1];
+    type : String[0..1];
     content : String[1];
 }

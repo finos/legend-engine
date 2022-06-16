@@ -33,6 +33,11 @@ public class TestTextGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammarRo
                 "{\n" +
                 "  type: HTML;\n" +
                 "  content: '<div>Inside Div</div>';\n" +
+                "}\n" +
+                "\n" +
+                "Text meta::pure::anotherText2\n" +
+                "{\n" +
+                "  content: '<div>Inside Div</div>';\n" +
                 "}\n"
         );
     }

@@ -48,11 +48,6 @@ public class TestTextGrammarParser extends TestGrammarParser.TestGrammarParserTe
         test("###Text\n" +
                 "Text meta::pure::myText\n" +
                 "{\n" +
-                "  content: 'this is just for context';\n" +
-                "}\n", "PARSER error at [2:1-5:1]: Field 'type' is required");
-        test("###Text\n" +
-                "Text meta::pure::myText\n" +
-                "{\n" +
                 "  type: STRING;\n" +
                 "}\n", "PARSER error at [2:1-5:1]: Field 'content' is required");
         // Duplicated fields

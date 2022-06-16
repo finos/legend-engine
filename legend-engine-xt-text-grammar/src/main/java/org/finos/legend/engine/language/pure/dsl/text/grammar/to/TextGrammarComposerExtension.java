@@ -66,7 +66,7 @@ public class TextGrammarComposerExtension implements PureGrammarComposerExtensio
     {
         return "Text " + PureGrammarComposerUtility.convertPath(text.getPath()) + "\n" +
             "{\n" +
-            getTabString() + "type: " + text.type + ";\n" +
+            (text.type != null ? (getTabString() + "type: " + text.type + ";\n") : "") +
             getTabString() + "content: " + convertString(text.content, true) + ";\n" +
             "}";
     }

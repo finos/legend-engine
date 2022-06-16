@@ -48,8 +48,8 @@ public class TextParseTreeWalker
         text._package = ctx.qualifiedName().packagePath() == null ? "" : PureGrammarParserUtility.fromPath(ctx.qualifiedName().packagePath().identifier());
         text.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
         // type
-        TextParserGrammar.TextTypeContext textTypeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.textType(), "type", text.sourceInformation);
-        text.type = PureGrammarParserUtility.fromIdentifier(textTypeContext.identifier());
+        TextParserGrammar.TextTypeContext textTypeContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.textType(), "type", text.sourceInformation);
+        text.type = textTypeContext != null ? PureGrammarParserUtility.fromIdentifier(textTypeContext.identifier()) : null;
         // content
         TextParserGrammar.TextContentContext textContentContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.textContent(), "content", text.sourceInformation);
         text.content = PureGrammarParserUtility.fromGrammarString(textContentContext.STRING().getText(), true);
