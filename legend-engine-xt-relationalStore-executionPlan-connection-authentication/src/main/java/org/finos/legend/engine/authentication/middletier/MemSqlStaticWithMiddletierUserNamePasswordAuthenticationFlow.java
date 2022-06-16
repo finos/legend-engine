@@ -86,8 +86,9 @@ public class MemSqlStaticWithMiddletierUserNamePasswordAuthenticationFlow implem
         Optional<String> matches = Arrays.stream(middleTierUserPasswordCredential.getUsageContexts()).filter(usageContext -> usageContext.equals(runtimeContext)).findAny();
         if (!matches.isPresent())
         {
-            LOGGER.warn(String.format("Use of credential with reference '%s' not authorized. Mismatch between runtime context '%s' and credential contexts '%s'", vaultReference, runtimeContext, Arrays.toString(middleTierUserPasswordCredential.getUsageContexts())));
-            throw new Exception(String.format("Use of credential with reference '%s' not authorized. Mismatch between runtime context and credential contexts", vaultReference));
+            String message = String.format("Use of credential with reference '%s' not authorized. Mismatch between runtime context '%s' and credential contexts '%s'", vaultReference, runtimeContext, Arrays.toString(middleTierUserPasswordCredential.getUsageContexts()));
+            LOGGER.warn(message);
+            throw new Exception(message);
         }
     }
 

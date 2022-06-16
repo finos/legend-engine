@@ -56,14 +56,14 @@ public class TestMiddleTierUserNamePasswordFlow {
             new MemSqlStaticWithMiddletierUserNamePasswordAuthenticationFlow().makeCredential(null, null, authenticationStrategy, runtimeContext);
             fail("failed to throw");
         } catch (Exception e) {
-            assertEquals("Use of credential with reference 'reference1' not authorized. Mismatch between runtime context and credential contexts", e.getMessage());
+            assertEquals("Use of credential with reference 'reference1' not authorized. Mismatch between runtime context 'context1' and credential contexts '[service1]'", e.getMessage());
         }
     }
 
     private String toJSON(MiddleTierUserPasswordCredential credential) throws JsonProcessingException {
         return new ObjectMapper().writeValueAsString(credential);
     }
-
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
     @Test
     public void testUseCredentialWithoutRuntimeContext() throws Exception {
         this.vault.add("reference1", toJSON(new MiddleTierUserPasswordCredential("user", "password", new String[]{"service1"})));
