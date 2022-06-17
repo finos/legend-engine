@@ -110,7 +110,6 @@ function meta::protocols::pure::v1_23_0::invocation::execution::execute::process
                            static = $preca.staticMappingInstanceData,
                            pk = $pks,
                            sourceConnection = $preca.sourceConnection,
-                           deepFetchCache = [],
                            buildMethod = BuildMethod.TypeQuery
                         );
 
