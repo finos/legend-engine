@@ -1150,7 +1150,6 @@ function meta::external::language::java::transform::defaultProhibitedFunctions(e
 
    let manipulatesPackagesBlacklist = [
       'meta::pure::codestore',
-      'meta::pure::deepfetch',
       'meta::pure::diagram',
       'meta::pure::executionPlan',
       'meta::pure::functions::io',

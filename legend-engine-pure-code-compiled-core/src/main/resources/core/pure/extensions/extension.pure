@@ -87,7 +87,6 @@ Class meta::pure::router::extension::RouterExtension
    executionPlan_generation_updateConnection : Function<{Nil[1] -> Connection[1]}>[*];
    executionPlan_generation_isConnectionForClass : Function<{meta::pure::metamodel::type::Class<Any>[1] -> Function<{Nil[1]->Boolean[1]}>[*]}>[0..1];
    executionPlan_generation_nodeFromConnection : Function<{RootGraphFetchTree<Any>[0..1], Boolean[1], Boolean[1] -> Function<{Nil[1]->ExecutionNode[1]}>[*]}>[0..1];
-   executionPlan_generation_nodeFromConnectionWithChildren : Function<{RootGraphFetchTree<Any>[0..1], ExecutionNode[1], Boolean[1], Boolean[1] -> Function<{Nil[1]->ExecutionNode[1]}>[*]}>[0..1];
    executionPlan_generation_executionOptionParameters : Function<{Nil[1] -> PlanVarPlaceHolder[*]}>[*];
    executionPlan_generation_sourceSupportsBatching : Function<{SetImplementation[*], Map<String, List<Any>>[1]-> Function<{Nil[1]->Boolean[1]}>[*]}>[0..1];
    

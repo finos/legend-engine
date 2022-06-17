@@ -16,38 +16,10 @@ import meta::pure::executionPlan::*;
 import meta::external::language::java::metamodel::project::*;
 import meta::pure::executionPlan::toString::*;
 import meta::pure::router::clustering::*;
-import meta::pure::deepfetch::builder::*;
 import meta::pure::runtime::*;
 import meta::pure::mapping::*;
 import meta::pure::router::*;
 import meta::pure::functions::tracing::*;
-
-function meta::pure::router::executeWithDeepFetch<T|m>(f:FunctionDefinition<{->T[m]}>[1], d:LambdaFunction<{T[1]->Any[*]}>[*], m:Mapping[1], runtime:Runtime[1], extensions:meta::pure::router::extension::RouterExtension[*]):Result<T|m>[1]
-{
-   $f->executeWithDeepFetch($d, $m, $runtime, $extensions, noDebug());
-}
-
-function meta::pure::router::executeWithDeepFetch<T|m>(f:FunctionDefinition<{->T[m]}>[1], d:LambdaFunction<{T[1]->Any[*]}>[*], m:Mapping[1], runtime:Runtime[1], extensions:meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]):Result<T|m>[1]
-{
-   assert($d->fold({df,a|$df->openVariableValues()->values()->isEmpty() && $a}, true),' open variables are not allowed in deep fetch functions');
-
-   let exeCtx = ^ExecutionContext();
-   let shiftedDebug = ^$debug(space = $debug.space+'  ');
-
-   let routedQuery = $f->routeFunction($m, $runtime, $exeCtx, $extensions, $shiftedDebug);
-
-   print(if(!$debug.debug, |'', | $debug.space+'>Route Deep Fetch Paths:\n'));
-
-   let routedDfPaths = getDeepFetchFunction($d)->routeFunction($m, $runtime, $exeCtx, $extensions, $shiftedDebug);
-
-   let rootCVS = $routedQuery.functions->evaluateAndDeactivate().expressionSequence->at(0)->cast(@ClusteredValueSpecification);
-   let dfTrees = buildDeepFetchTrees($rootCVS, $routedDfPaths.functions->evaluateAndDeactivate().expressionSequence, $f, $debug);
-
-   print(if(!$debug.debug, |'', | $debug.space+'>Deep Fetch Tree(s): '+$dfTrees->map(t|$t->toJSON())->makeString('[',',\n',']')+'\n'));
-
-   execute(^RoutingQuery<T|m>(fn=$f, deepFetchTreeNode=$dfTrees->at(0)), $m, $runtime, $exeCtx, $extensions, $debug);
-}
-
 
 function meta::pure::router::execute<T|y>(f:FunctionDefinition<{->T[y]}>[1], m:Mapping[1], runtime:Runtime[1], extensions:meta::pure::router::extension::RouterExtension[*]):Result<T|y>[1]
 {

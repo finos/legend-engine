@@ -42,6 +42,7 @@ import meta::external::store::service::metamodel::*;
 import meta::external::store::service::metamodel::runtime::*;
 import meta::external::store::service::metamodel::mapping::*;
 import meta::external::store::service::functions::pureToServiceStoreQuery::*;
+import meta::external::store::service::router::systemMapping::*;
 import meta::external::store::service::utils::helperFunction::*;
 
 function meta::external::store::service::executionPlan::generation::planRootGraphFetchExecutionServiceStore(sq: StoreQuery[1], ext: RoutedValueSpecification[0..1], clusteredTree: ClusteredGraphFetchTree[1], orderedPaths: String[*], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], enableConstraints: Boolean[1], checked: Boolean[1], extensions: meta::pure::router::extension::RouterExtension[*], debug: DebugContext[1]): InMemoryRootGraphFetchExecutionNode[1]
@@ -63,8 +64,25 @@ function meta::external::store::service::executionPlan::generation::planRootGrap
    
    let setsProcessed   = if($ext->isNotEmpty() && $ext->toOne()->instanceOf(ExtendedRoutedValueSpecification), | $ext->cast(@ExtendedRoutedValueSpecification).processedChainSets, |[]);
    let map             = resolveParamMapForChainProcessing($setsProcessed, $sq.inScopeVars, $debug);
-   let nodeAndParamMap = $sq->nodeAndParamMapFromQuery($map, $debug);
-   
+   let serviceStoreQueryProcessedState = $sq->processServiceStoreQuery($map, $debug);
+
+   let sourceNode          = $connection->meta::external::store::service::executionPlan::generation::nodeFromServiceStoreConnection($sourceTreeExtended, $serviceSetImpl, $serviceStoreQueryProcessedState, $enableConstraints, $checked, $extensions);
+   let sourceNodeDecorator = {sourceNode:ExecutionNode[1] | if($serviceStoreQueryProcessedState.recordsToBeRead->isEmpty(),
+                                                               |$sourceNode,
+                                                               |assert($setsProcessed->cast(@PureInstanceSetImplementation).filter->isEmpty(), | 'Service Store does not support ->take when filters added in chained M2m mapping');
+                                                                let fromCluster = ^meta::pure::router::clustering::ClusteredValueSpecification(
+                                                                                      val = $fe, 
+                                                                                      store = $store, 
+                                                                                      s = serviceStoreSystemMapping(), 
+                                                                                      executable=true, 
+                                                                                      multiplicity = $fe.multiplicity, 
+                                                                                      genericType  = $fe.genericType, 
+                                                                                      openVars = $sq.inScopeVars
+                                                                                  );
+                                                                ^LimitExecutionNode(limit          = $serviceStoreQueryProcessedState.recordsToBeRead->toOne(),
+                                                                                    resultType     = $sourceNode.resultType,
+                                                                                    executionNodes = ^$sourceNode(fromCluster = $fromCluster));)};
+
    ^InMemoryRootGraphFetchExecutionNode
    (
       resultType        = $rootTree->resultTypeFromGraphFetchTree(),
@@ -73,7 +91,7 @@ function meta::external::store::service::executionPlan::generation::planRootGrap
       batchSize         = $batchSize,
       checked           = $checked,
       children          = $rootTree->generateInMemoryChildGraphNodes($rootTree->nodePathName(), $orderedPaths, $debug),
-      executionNodes    = $connection->meta::external::store::service::executionPlan::generation::nodeFromServiceStoreConnection($sourceTreeExtended, $serviceSetImpl, $nodeAndParamMap, $enableConstraints, $checked, $extensions)
+      executionNodes    = $sourceNodeDecorator->eval($sourceNode)
    );
 }
 
@@ -81,7 +99,7 @@ function meta::external::store::service::executionPlan::generation::planCrossSto
 {
    let store            = $clusteredTree.store;
    assert($store->instanceOf(ServiceStore), | 'Expected a ServiceStore. Found - ' + $store->cast(@Store)->elementToPath());
-   
+
    let rootTree         = $clusteredTree->byPassClusteringInfo()->cast(@RoutedPropertyGraphFetchTree);
    let updatedRootTree  = ^RoutedRootGraphFetchTree<Any>
                            (
@@ -91,27 +109,27 @@ function meta::external::store::service::executionPlan::generation::planCrossSto
                               requiredQualifiedProperties = $rootTree.requiredQualifiedProperties
                            );
    let rootPath         = $parentPath + '.' + $rootTree->nodePathName();
-   
+
    /* Assertions */
    assert($parentPath->in($orderedPaths), | 'Unknown path ' + $parentPath + '; known are: ' + $orderedPaths->joinStrings('[', '; ', ']'));
    assert($rootPath->in($orderedPaths),   | 'Unknown path ' + $rootPath   + '; known are: ' + $orderedPaths->joinStrings('[', '; ', ']'));
    assertFalse($checked, | 'graphFetchChecked is not supported with Service Store');
-   
+
    let parentIdx             = $orderedPaths->indexOf($parentPath);
    let currentIdx            = $orderedPaths->indexOf($rootPath);
-   
+
    let xStorePropertyMapping = $rootTree.propertyMapping->toOne()->cast(@XStorePropertyMapping);
-   
+
    let connection            = $runtime->connectionByElement($store);
-   
+
    let sourceTree            = calculateSourceTree($updatedRootTree, $mapping, $extensions);
    let sourceTreeExtended    = if($enableConstraints, | $sourceTree->ensureConstraintsRequirements(), | $sourceTree);
-   
+
    let xStorePropInScope     = $xStorePropertyMapping->getPopulatedXStorePropertiesInScope($rootTree->typeFromGraphFetchTree()->cast(@Class<Any>));
    assert($xStorePropInScope->forAll(prop | $prop.multiplicity->hasToOneUpperBound()), 'All properties in XStore relationship should have 1 as multiplicty upper bound for service store.');
    let paramMap              = $xStorePropInScope->getParamMapFromXStoreProperties($rootTree->typeFromGraphFetchTree()->cast(@Class<Any>));
    let serviceSetImpl        = $rootTree.sets->toOne()->cast(@RootServiceInstanceSetImplementation);
-   
+
    ^InMemoryCrossStoreGraphFetchExecutionNode
    (
       resultType        = $rootTree->resultTypeFromGraphFetchTree(),
@@ -122,7 +140,7 @@ function meta::external::store::service::executionPlan::generation::planCrossSto
       xStorePropertyMapping = $xStorePropertyMapping,
       supportsBatching  = $xStorePropInScope->querySupportsBatching($paramMap, $serviceSetImpl),
       children          = $rootTree->generateInMemoryChildGraphNodes($rootPath, $orderedPaths, $debug),
-      executionNodes    = $connection->meta::external::store::service::executionPlan::generation::nodeFromServiceStoreConnection($sourceTreeExtended, $serviceSetImpl, ^NodeAndParamMap(paramMap = $paramMap), $enableConstraints, $checked, $extensions)
+      executionNodes    = $connection->meta::external::store::service::executionPlan::generation::nodeFromServiceStoreConnection($sourceTreeExtended, $serviceSetImpl, ^ServiceStoreQueryProcessedState(paramMap = $paramMap), $enableConstraints, $checked, $extensions)
    );
 }
 
@@ -138,7 +156,7 @@ function meta::external::store::service::executionPlan::generation::getParamMapF
 function meta::external::store::service::executionPlan::generation::resolveParamMapForChainProcessing(setsProcessed:SetImplementation[*], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1]):Map<String, String>[1]
 {
    let populatedXStorePropertiesInScope = $inScopeVars->keyValues()->filter(kv | $kv.second.values->size() == 1 && $kv.second.values->toOne()->instanceOf(AbstractProperty)).second.values->cast(@AbstractProperty<Any>);
-   
+
    assert($populatedXStorePropertiesInScope->forAll(prop | $prop.multiplicity->hasToOneUpperBound()), 'All properties in XStore relationship should have 1 as multiplicty upper bound for service store.');
    $populatedXStorePropertiesInScope->map(p | let targetPath  = $p->propertyToVarName();
                                               let srcProperty = resolveSourcePropertyFromTargetProperty($p, $setsProcessed->cast(@PureInstanceSetImplementation));
@@ -159,38 +177,40 @@ function meta::external::store::service::executionPlan::generation::resolveSourc
    );
 }
 
-Class <<access.private>> meta::external::store::service::executionPlan::generation::NodeAndParamMap
+Class <<access.private>> meta::external::store::service::executionPlan::generation::ServiceStoreQueryProcessedState
 {
-   executionNodes : ExecutionNode[*];
-   paramMap       : Map<String, String>[1];
+   executionNodes  : ExecutionNode[*];
+   paramMap        : Map<String, String>[1];
+   recordsToBeRead : Integer[0..1];
 }
 
-function meta::external::store::service::executionPlan::generation::nodeAndParamMapFromQuery(sq:StoreQuery[1], initialMap:Map<String, String>[1], debug: DebugContext[1]):NodeAndParamMap[1]
+function meta::external::store::service::executionPlan::generation::processServiceStoreQuery(sq:StoreQuery[1], initialMap:Map<String, String>[1], debug: DebugContext[1]):ServiceStoreQueryProcessedState[1]
 {
    let serviceStoreQuery = $sq.fe->toServiceStoreQuery($sq.inScopeVars, $debug);
    let paramValues       = $serviceStoreQuery.processedParamValueMap->keyValues();
-   
+
    let literalParams     = $paramValues->filter(p | $p.second->instanceOf(meta::external::store::service::functions::pureToServiceStoreQuery::LiteralValue));
    let varParams         = $paramValues->filter(p | $p.second->instanceOf(meta::external::store::service::functions::pureToServiceStoreQuery::VariableValue));
-   
+
    let allocationNodes   = $literalParams->map(param | ^AllocationExecutionNode(varName        = $param.first,
                                                                                 executionNodes = ^ConstantExecutionNode(
-                                                                                                     //TODO: This is valid now because we don't support in for service store but would need to be fixed when in is supported. 
+                                                                                                     //TODO: This is valid now because we don't support in for service store but would need to be fixed when in is supported.
                                                                                                      //When value is a list it get translated to CList with CString values which cause issues in parsing at execution time.
                                                                                                      values     = $param.second->cast(@meta::external::store::service::functions::pureToServiceStoreQuery::LiteralValue).value->toOne(),
                                                                                                      resultType = ^ResultType(type = Any)
                                                                                                   ),
                                                                                 resultType     = ^ResultType(type = Any)
                                                                              ));
-   
+
    let paramMap          = $paramValues->map(p | let varName = $p.second->match([
                                                                   v:VariableValue[1] | $v.var.name,
                                                                   l:LiteralValue[1]  | $p.first
                                                                ]);
                                                  pair($p.first, $varName);)->newMap();
-   
-   ^NodeAndParamMap(executionNodes = $allocationNodes,
-                    paramMap = $initialMap->putAll($paramMap));
+
+   ^ServiceStoreQueryProcessedState(executionNodes = $allocationNodes,
+                                    paramMap = $initialMap->putAll($paramMap),
+                                    recordsToBeRead = $serviceStoreQuery.recordsToBeRead);
 }
 
 // Helper Functions to analyze query supports batching
@@ -200,50 +220,50 @@ function meta::external::store::service::executionPlan::generation::querySupport
    let xStorePropertyIsLocal = $xStorePropInScope->exists(prop | $prop.owner->instanceOf(MappingClass));
    let serviceMappingInScope = $serviceSetImpl->getServiceMappingForParameters($paramMap->keys());
    let serParamForXStoreProp = $serviceMappingInScope.requestBuildInfo.requestParametersBuildInfo.parameterBuildInfoList->filter(pm | $pm.transform.expressionSequence->evaluateAndDeactivate()->toOne()->findPropertiesInValueSpecification()->exists(p | $p->in($xStorePropInScope))).serviceParameter;
-   
+
    !$xStorePropertyIsLocal && $serParamForXStoreProp.type->forAll(t | $t.list);
 }
 
 // Helper Functions to generate node for connection with query context
 
-function meta::external::store::service::executionPlan::generation::nodeFromServiceStoreConnection(c:Connection[1], tree:RootGraphFetchTree<Any>[0..1], serviceSetImpl:RootServiceInstanceSetImplementation[1], nodeAndParamMap:NodeAndParamMap[1], enableConstraints:Boolean[1], checked:Boolean[1], extensions:meta::pure::router::extension::RouterExtension[*]):ExecutionNode[1]
+function meta::external::store::service::executionPlan::generation::nodeFromServiceStoreConnection(c:Connection[1], tree:RootGraphFetchTree<Any>[0..1], serviceSetImpl:RootServiceInstanceSetImplementation[1], serviceStoreQueryProcessedState:ServiceStoreQueryProcessedState[1], enableConstraints:Boolean[1], checked:Boolean[1], extensions:meta::pure::router::extension::RouterExtension[*]):ExecutionNode[1]
 {
-   let serviceMapping = $serviceSetImpl->getServiceMappingForParameters($nodeAndParamMap.paramMap->keys());
+   let serviceMapping = $serviceSetImpl->getServiceMappingForParameters($serviceStoreQueryProcessedState.paramMap->keys());
    $c->match([
-      s:ServiceStoreConnection[1] | 
-                  let serviceParamResolutionNode = getServiceParametersResolutionExecutionNode($serviceMapping.requestBuildInfo.requestParametersBuildInfo, $nodeAndParamMap.paramMap);
+      s:ServiceStoreConnection[1] |
+                  let serviceParamResolutionNode = getServiceParametersResolutionExecutionNode($serviceMapping.requestBuildInfo.requestParametersBuildInfo, $serviceStoreQueryProcessedState.paramMap);
 
                   assert($serviceMapping.service.requestBody->isEmpty() || $serviceMapping.service.requestBody->toOne()->instanceOf(ComplexTypeReference), | 'Request Body with primitive type not supported yet!!');
-                  let serviceBodyResolutionNode  = getServiceRequestBodyResolutionExecutionNode($serviceMapping, $nodeAndParamMap.paramMap, $extensions);
-                  let requestBodyDescription     = if($serviceBodyResolutionNode->isEmpty(), 
+                  let serviceBodyResolutionNode  = getServiceRequestBodyResolutionExecutionNode($serviceMapping, $serviceStoreQueryProcessedState.paramMap, $extensions);
+                  let requestBodyDescription     = if($serviceBodyResolutionNode->isEmpty(),
                                                       | [],
-                                                      |^RequestBodyDescription(mimeType = $serviceMapping.service.requestBody->cast(@ComplexTypeReference).binding.contentType->toOne(), 
+                                                      |^RequestBodyDescription(mimeType = $serviceMapping.service.requestBody->cast(@ComplexTypeReference).binding.contentType->toOne(),
                                                                                resultKey = $serviceBodyResolutionNode->toOne()->cast(@AllocationExecutionNode).varName));
 
-                  let serviceStoreNode           = ^RestServiceExecutionNode(url             = $s.baseUrl + $serviceMapping.service.resolveFullPathRecursively(), 
+                  let serviceStoreNode           = ^RestServiceExecutionNode(url             = $s.baseUrl + $serviceMapping.service.resolveFullPathRecursively(),
                                                                              method          = $serviceMapping.service.method,
                                                                              mimeType        = $serviceMapping.service.response.binding.contentType,
                                                                              params          = $serviceMapping.service.parameters,
                                                                              securitySchemes = $serviceMapping.service.security,
                                                                              requestBodyDescription = $requestBodyDescription,
                                                                              resultType      = ^DataTypeResultType(type = String));
-                  
-                  let allNodes = $nodeAndParamMap.executionNodes->concatenate($serviceParamResolutionNode)
-                                                                ->concatenate($serviceBodyResolutionNode)
-                                                                ->concatenate($serviceStoreNode);
-                  let node     = if($allNodes->size() > 1, 
-                                    | ^SequenceExecutionNode(executionNodes = $allNodes, resultType = $serviceStoreNode.resultType), 
+
+                  let allNodes = $serviceStoreQueryProcessedState.executionNodes->concatenate($serviceParamResolutionNode)
+                                                                                ->concatenate($serviceBodyResolutionNode)
+                                                                                ->concatenate($serviceStoreNode);
+                  let node     = if($allNodes->size() > 1,
+                                    | ^SequenceExecutionNode(executionNodes = $allNodes, resultType = $serviceStoreNode.resultType),
                                     | $allNodes)->toOne();
-      
+
                   let pathOffset               = if($serviceMapping.pathOffset->isNotEmpty(),
                                                     |$extensions.moduleExtension('externalFormat')->cast(@ExternalFormatModuleExtension).generatePathReference->toOne()->eval($serviceMapping.service.response.binding, $serviceMapping.pathOffset->toOne()),
                                                     |[]);
-             
+
                   let externalFormatConnection = ^ExternalFormatConnection(element        = $serviceMapping.service.response.binding,
-                                                                           externalSource = ^UrlStreamExternalSource(url = 'dummy url'),
+                                                                           externalSource = ^ExecutionNodeExternalSource(node = $node),
                                                                            pathOffset     = $pathOffset);
-      
-                  $externalFormatConnection->meta::pure::executionPlan::nodeFromConnection($tree, $node, $enableConstraints, $checked, $extensions);,
+
+                  $externalFormatConnection->meta::pure::executionPlan::nodeFromConnection($tree, $enableConstraints, $checked, $extensions);,
       c: Connection[1]            | fail('Expected ServiceStoreConnection for Service Store execution. Found : ' + $c->meta::pure::executionPlan::toString::connectionToString($extensions)); @ExecutionNode;
    ]);
 }

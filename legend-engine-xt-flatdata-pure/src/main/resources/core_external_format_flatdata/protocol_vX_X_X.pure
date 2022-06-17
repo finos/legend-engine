@@ -21,21 +21,21 @@ import meta::pure::router::extension::*;
 function meta::protocols::pure::vX_X_X::external::format::flatdata::serializerExtension(type:String[1]): meta::pure::router::extension::SerializerExtension[1]
 {
    ^meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X(
-      transfers_executionPlan_transformNode = 
+      transfers_executionPlan_transformNode =
          {mapping:Mapping[1], extensions:RouterExtension[*] |
             [
                s:meta::external::format::flatdata::executionPlan::FlatDataSerializeExecutionNode[1]   | transformSerializeNode($s, $mapping, $extensions),
                d:meta::external::format::flatdata::executionPlan::FlatDataDeserializeExecutionNode[1] | transformDeserializeNode($d, $mapping, $extensions)
             ]
-         }   
+         }
    );
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::external::format::flatdata::executionPlan::FlatDataSerializeExecutionNode extends meta::protocols::pure::vX_X_X::metamodel::external::shared::format::executionPlan::ExternalFormatSerializeExecutionNode
-{   
+{
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::external::format::flatdata::executionPlan::FlatDataDeserializeExecutionNode extends ExecutionNode
+Class meta::protocols::pure::vX_X_X::metamodel::external::format::flatdata::executionPlan::FlatDataDeserializeExecutionNode extends meta::protocols::pure::vX_X_X::metamodel::external::shared::format::executionPlan::ExternalFormatDeserializeExecutionNode
 {
    binding : String[1];
    tree    : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::RootGraphFetchTree[0..1];

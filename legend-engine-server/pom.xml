@@ -72,6 +72,7 @@
                         <!-- Exclude Base class also for db specific tests -->
                         <exclude>**/Test_Relational_DbSpecific_UsingPureClientTestSuite.java</exclude>
                         <exclude>**/Test_Relational_DbSpecific_SqlServer_UsingPureClientTestSuite.java</exclude>
+                        <exclude>**/Test_Relational_DbSpecific_Databricks_UsingPureClientTestSuite.java</exclude>
                         <exclude>**/Test_Relational_DbSpecific_Redshift_UsingPureClientTestSuite.java</exclude>
                         <exclude>**/Test_Relational_DbSpecific_Snowflake_UsingPureClientTestSuite.java</exclude>
                     </excludes>

@@ -15,8 +15,6 @@
 import meta::pure::executionPlan::*;
 import meta::pure::router::extension::*;
 import meta::pure::router::systemMapping::*;
-import meta::pure::deepfetch::execution::*;
-import meta::pure::deepfetch::builder::*;
 import meta::pure::metamodel::serialization::grammar::*;
 import meta::pure::mapping::*;
 import meta::pure::runtime::*;
@@ -31,7 +29,6 @@ import meta::pure::router::store::platform::*;
 Class meta::pure::router::RoutingQuery<T|m>
 {
    fn : FunctionDefinition<{->T[m]}>[1];
-   deepFetchTreeNode : DeepFetchTreeNode[0..1];
 }
 
 Class meta::pure::router::RoutingResult
@@ -285,11 +282,10 @@ function <<access.private>> meta::pure::router::execute<X|n>(rq:RoutingQuery<X|n
    let routed = $rq.fn->routeFunction($m, $runtime, $exeCtx, $extensions, $debug);
    let routingElapsedTimeInNanoSecond = ($routingStarted->dateDiff(now(),DurationUnit.MILLISECONDS)) * 1000000;
    let routingActivity = ^meta::pure::mapping::RoutingActivity(routingTimeInNanoSecond = $routingElapsedTimeInNanoSecond);
-   let deepFetchCache = if(!$rq.deepFetchTreeNode->isEmpty(),|createDeepFetchCache(),|[]);
    print(if($debug.debug,|'\nExecuting:\n',|''));
    let results = $routed.functions->evaluateAndDeactivate()->fold({f:FunctionDefinition<Any>[1],a:Result<X|*>[1]|
                       let clusterVS = $f.expressionSequence->evaluateAndDeactivate()->cast(@ClusteredValueSpecification);
-                      let res = $clusterVS->executeExpression($clusterVS->at(0).openVars, [], $rq.deepFetchTreeNode, $deepFetchCache, $exeCtx, $routed.advancedRouting, $extensions, $debug);
+                      let res = $clusterVS->executeExpression($clusterVS->at(0).openVars, [], $exeCtx, $routed.advancedRouting, $extensions, $debug);
                       let values = if ($a.values->isEmpty(),
                                         |$res.values,
                                         |if($a.values->at(0)->instanceOf(TabularDataSet),
@@ -369,8 +365,7 @@ function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], mapping
 
 function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], mapping:Mapping[1], runtime:Runtime[1], exeCtx: ExecutionContext[1], inScopeVars:Map<String, List<Any>>[0..1], extensions:meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]):RoutingResult[1]
 {
-   let isDeepFetch =  $f->isDeepFetchFunction();
-   let expectedFuncParamSize = if($isDeepFetch,| 1,| 0);
+   let expectedFuncParamSize = 0;
    //assertEquals($expectedFuncParamSize, $f->functionType().parameters->size(), 'Error'+$f->functionType().parameters->size()->toString());
 
    let fOpenVariables = $f->openVariableValues();
@@ -380,7 +375,7 @@ function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], mapping
    
    // Mapping allocation
    print(if($debug.debug,|$debug.space+'Processing Mappings:\n',|''));
-   let processedCollection = processCollection( ^RoutingState(isDeepFetchRouting = $isDeepFetch, shouldBeRouted=$isDeepFetch, lambdaContext=if($isDeepFetch,|$f->id(),|[]), counter=0, depth='', isParentMap=false, propertyMap = ^PropertyMap(), setsByDepth=^Map<String, PermutationSet>(), classMappingsByClass=$mapping->buildClassMappingsByClassMap()),
+   let processedCollection = processCollection( ^RoutingState(shouldBeRouted=false, lambdaContext=[], counter=0, depth='', isParentMap=false, propertyMap = ^PropertyMap(), setsByDepth=^Map<String, PermutationSet>(), classMappingsByClass=$mapping->buildClassMappingsByClassMap()),
                                                 $f.expressionSequence->evaluateAndDeactivate(),
                                                 $mapping,
                                                 $runtime,

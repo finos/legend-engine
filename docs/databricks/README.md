@@ -56,20 +56,6 @@ accordingly through the legend studio interface (or its underlying pure model).
 databricks.api.token = dapibd0d233ddaXXXXXXXXXXXXXXX
 ```
 
-### Server configuration
-
-Spark JDBC driver is not OSS and as such not available through maven central. Please download JDBC driver from Databricks
-[website](https://databricks.com/spark/jdbc-drivers-download) and extract jar file to a specific location.
-Start the legend engine by appending classpath with `SparkJDBC42.jar`.
-
-```shell script
-java -cp \
-  SparkJDBC42.jar:legend-engine-server-shaded.jar \
-  org.finos.legend.engine.server.Server \
-  server \
-  config.json
-```
-
 ### Frontend
 
 Create a new database source of type `Databricks`, and report information of your newly created cluster as follows. 
