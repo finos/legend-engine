@@ -42,8 +42,7 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Datab
     private ConnectionManagerSelector connectionManagerSelector;
     private static final ResourceBundle env = ResourceBundle.getBundle("environment");
 
-    // To make test work, please ensure connection details are specified in /environment.properties
-    // and environment variable DATABRICKS_API_TOKEN with a valid API token
+    // To make test work, please enable environment variable DATABRICKS_API_TOKEN with a valid API token
 
     @Override
     protected Subject getSubject()
@@ -86,10 +85,10 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Datab
     private RelationalDatabaseConnection databricksSpec() throws Exception
     {
         DatabricksDatasourceSpecification dsSpecs = new DatabricksDatasourceSpecification();
-        dsSpecs.hostname = env.getString("databricks.hostname");
-        dsSpecs.port = env.getString("databricks.port");
-        dsSpecs.protocol = env.getString("databricks.protocol");
-        dsSpecs.httpPath = env.getString("databricks.httpPath");
+        dsSpecs.hostname = "dbc-f0687849-717f.cloud.databricks.com";
+        dsSpecs.port = "443";
+        dsSpecs.protocol = "https";
+        dsSpecs.httpPath = "sql/protocolv1/o/448477574000404/0228-234110-ve0xbrtk";
         ApiTokenAuthenticationStrategy authSpec = new ApiTokenAuthenticationStrategy();
         authSpec.apiToken = "DATABRICKS_API_TOKEN";
         return new RelationalDatabaseConnection(dsSpecs, authSpec, DatabaseType.Databricks);

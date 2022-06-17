@@ -18,11 +18,9 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.drive
 
 public class DatabricksDriver extends DriverWrapper
 {
-    public static String DRIVER_CLASSNAME = "org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.databricks.DatabricksDriverWrapper";
-
     @Override
     protected String getClassName()
     {
-        return DRIVER_CLASSNAME;
+        return "com.databricks.client.jdbc.Driver";
     }
 }
