@@ -46,7 +46,7 @@ import meta::relational::tests::mapping::extend::model::*;
 
 function <<test.Test>> meta::relational::tests::mapping::extend::filter::testFilterForB():Any[*]
 {
-   let result = execute(|B.all(), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|B.all(), testMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let expectedSQL = 'select "root".id as "pk_0", "root".bName as "bName", "root".id as "id", "root".aName as "aName" from ABC as "root" where "root".aName = \'aName1\'';
    assertEquals($expectedSQL, $result->sqlRemoveFormatting());
    assertSameElements([1, 3], $result.values.id);
@@ -54,7 +54,7 @@ function <<test.Test>> meta::relational::tests::mapping::extend::filter::testFil
 
 function <<test.Test>> meta::relational::tests::mapping::extend::filter::testFilterForC():Any[*]
 {
-   let result = execute(|C.all(), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|C.all(), testMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let expectedSQL = 'select "root".id as "pk_0", "root".cName as "cName", "root".bName as "bName", "root".id as "id", "root".aName as "aName" from ABC as "root" where "root".cName = \'cName1\'';
    assertEquals($expectedSQL, $result->sqlRemoveFormatting());
    assertSameElements([1, 3], $result.values.id);

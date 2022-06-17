@@ -23,7 +23,7 @@ function <<test.Test>> meta::relational::tests::milestoning::otherwise::testAsso
 {
    let result = execute(|meta::relational::tests::milestoning::StockProduct.all(%latest)->project(p|$p.classification(%latest).description, 'ok'),
                         meta::relational::tests::milestoning::otherwiseMapping, 
-                        meta::relational::tests::testRuntime(), meta::pure::router::extension::defaultRelationalExtensions(), noDebug());
+                        meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions(), noDebug());
    assertSameSQL('select "productclassificationtable_0".type_description as "ok" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".type = \'STOCK\' and "productclassificationtable_0".thru_z = \'9999-12-31 00:00:00.0000\') where "root".type = \'STOCK\' and "root".thru_z = \'9999-12-31 00:00:00.0000\'', $result);
 }
 
@@ -31,6 +31,6 @@ function <<test.Test>> meta::relational::tests::milestoning::otherwise::testAsso
 {
    let result = execute(|meta::relational::tests::milestoning::StockProduct.all(%latest)->project(p|$p.classification(%2008-10-10).exchange(%2009-12-10).name, 'ok'),
                         meta::relational::tests::milestoning::otherwiseMapping, 
-                        meta::relational::tests::testRuntime(), meta::pure::router::extension::defaultRelationalExtensions(), noDebug());
+                        meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions(), noDebug());
    assertSameSQL('select "productexchangetable_0".name as "ok" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".type = \'STOCK\' and "productclassificationtable_0".from_z <= \'2008-10-10\' and "productclassificationtable_0".thru_z > \'2008-10-10\') left outer join (select "productexchangetable_1".name as name from ProductExchangeTable as "productexchangetable_1" where "productexchangetable_1".from_z <= \'2009-12-10\' and "productexchangetable_1".thru_z > \'2009-12-10\') as "productexchangetable_0" on ("productclassificationtable_0".exchange = "productexchangetable_0".name) where "root".type = \'STOCK\' and "root".thru_z = \'9999-12-31 00:00:00.0000\'', $result);
 }

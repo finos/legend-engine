@@ -13,7 +13,8 @@
 // limitations under the License.
 
 import meta::relational::functions::pureToSqlQuery::metamodel::*;
-import meta::pure::router::extension::*;
+import meta::pure::extension::*;
+import meta::relational::extension::*;
 import meta::relational::functions::sqlQueryToString::*;
 import meta::relational::metamodel::*;
 import meta::relational::metamodel::operation::*;
@@ -144,7 +145,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::proce
                     ,| $dateParameter);
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::processFreeMarkerOperationHolder(freeMarkerOp:FreeMarkerOperationHolder[1], dbConfig : DbConfig[1], format:Format[1], generationState:GenerationState[1], config: Config[1], nestedFreeMarkerOperationHolder: Boolean[1], extensions:RouterExtension[*]):String[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::processFreeMarkerOperationHolder(freeMarkerOp:FreeMarkerOperationHolder[1], dbConfig : DbConfig[1], format:Format[1], generationState:GenerationState[1], config: Config[1], nestedFreeMarkerOperationHolder: Boolean[1], extensions:Extension[*]):String[1]
 {
    let freeMarkerOpMap = getFreeMarkerOperationMap();
    let res = $freeMarkerOpMap->get($freeMarkerOp.name);

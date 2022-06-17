@@ -39,7 +39,7 @@ function <<test.Test>> meta::relational::tests::advanced::contractmoneyscenario:
                                                     'rate',
                                                     'value'
                                                  ]
-                                                 ), ContractMoney, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                                                 ), ContractMoney, testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertEquals('select "root".id as "id", "root".price as "amount", "fx_0".rate as "rate", case when "currency_0".value = \'USD\' then "root".price else ("root".price * "fx_0".rate) end as "value" from Contract as "root" left outer join Currency as "currency_0" on ("root".id = "currency_0".contractId) left outer join FX as "fx_0" on ("root".currency = "fx_0".currency and ("fx_0".date = \'2003-10-10\' and "fx_0".tenor = 1))', $result->sqlRemoveFormatting());
 }
@@ -59,7 +59,7 @@ function <<test.Test>> meta::relational::tests::advanced::contractmoneyscenario:
                                                     'rate',
                                                     'value'
                                                  ]
-                                                 ), ContractMoney, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                                                 ), ContractMoney, testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertEquals('select "root".id as "id", "root".price as "amount", "fx_0".rate as "rate", case when "currency_0".value = \'USD\' then "root".price else ("root".price * "fx_0".rate) end as "value" from Contract as "root" left outer join Currency as "currency_0" on ("root".id = "currency_0".contractId) left outer join FX as "fx_0" on ("root".currency = "fx_0".currency and ("fx_0".date = \'2003-10-10\' and "fx_0".tenor = 1))', $result->sqlRemoveFormatting());
 }

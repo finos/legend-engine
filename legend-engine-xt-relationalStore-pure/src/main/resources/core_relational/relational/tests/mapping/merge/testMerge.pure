@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import meta::relational::tests::mapping::merge::*;
-import meta::csv::*;
+import meta::relational::tests::csv::*;
 import meta::relational::metamodel::*;
 import meta::pure::runtime::*;
 import meta::relational::tests::model::simple::*;
@@ -78,7 +78,7 @@ function meta::relational::tests::mapping::merge::createRuntime(db:Database[1]):
 function <<test.Test>> meta::relational::tests::mapping::merge::testDynafunctionMerge():Boolean[1]
 {
   let runtime = createRuntime(MergeAliasDb);
-  let result = execute(|Person.all()->project([f|$f.lastName, f| $f.extraInformation],['Employee Name','Ayco Certified Americas?']), MergeAliasMapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions());
+  let result = execute(|Person.all()->project([f|$f.lastName, f| $f.extraInformation],['Employee Name','Ayco Certified Americas?']), MergeAliasMapping, $runtime, meta::relational::extension::relationalExtensions());
   assertSameSQL('select "root".lastName as "Employee Name", concat(\'Ayco Certified: \', case when (\'Ayco\' = "organizationset_0".name and (\'30 Hudson\' = "addressset_0".name or \'200 W\' = "addressset_1".name or \'200 W\' = "addressset_0".name or \'30 Hudson\' = "addressset_1".name)) then \'Yes\' else \'No\' end) as "Ayco Certified Americas?" from personSet as "root" left outer join organizationSet as "organizationset_0" on ("organizationset_0".name = "root".orgName) left outer join FirmSet1 as "firmset1_0" on ("organizationset_0".parentId = "firmset1_0".ID) left outer join addressSet as "addressset_0" on ("firmset1_0".LegalName = "addressset_0".ownerName) left outer join FirmSet2 as "firmset2_0" on ("organizationset_0".parentId = "firmset2_0".ID) left outer join addressSet as "addressset_1" on ("firmset2_0".LegalName = "addressset_1".ownerName)',$result);
 
 }

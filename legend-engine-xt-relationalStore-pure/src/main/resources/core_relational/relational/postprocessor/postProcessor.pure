@@ -15,7 +15,8 @@
 import meta::relational::functions::pureToSqlQuery::*;
 import meta::relational::functions::pureToSqlQuery::metamodel::*;
 import meta::pure::store::*;
-import meta::pure::router::extension::*;
+import meta::pure::extension::*;
+import meta::relational::extension::*;
 import meta::relational::transform::fromPure::*;
 import meta::relational::functions::sqlQueryToString::*;
 import meta::pure::executionPlan::*;
@@ -40,7 +41,7 @@ Class meta::relational::mapping::PostProcessorResult
 }
 
 //Execution Plan
-function meta::relational::mapping::postProcessSQLQuery(query: SQLQuery[1], store:Database[1], ext:RoutedValueSpecification[0..1], m:Mapping[0..1], runtime:Runtime[1], exeCtx:ExecutionContext[1], extensions:RouterExtension[*]):PostProcessorResult[1]
+function meta::relational::mapping::postProcessSQLQuery(query: SQLQuery[1], store:Database[1], ext:RoutedValueSpecification[0..1], m:Mapping[0..1], runtime:Runtime[1], exeCtx:ExecutionContext[1], extensions:Extension[*]):PostProcessorResult[1]
 {
    let postProcessorResult = $query->defaultPlanPostProcessors($runtime,$ext,$m,$store,$exeCtx, $extensions)
                                    ->userPlanPostProcessors($runtime,$ext,$m,$store,$exeCtx);
@@ -49,7 +50,7 @@ function meta::relational::mapping::postProcessSQLQuery(query: SQLQuery[1], stor
 }
 
 //Execution
-function meta::relational::mapping::postProcessQuery(exeCtx:ExecutionContext[1], query:SQLQuery[1], runtime: Runtime[1], store:Database[0..1], extensions:meta::pure::router::extension::RouterExtension[*]):PostProcessorResult[1]
+function meta::relational::mapping::postProcessQuery(exeCtx:ExecutionContext[1], query:SQLQuery[1], runtime: Runtime[1], store:Database[0..1], extensions:meta::pure::extension::Extension[*]):PostProcessorResult[1]
 {
    let defaultPostProcessors = sqlQueryDefaultPostProcessors();
    let postProcesedQuery = if($defaultPostProcessors->isEmpty(), | $query, | $defaultPostProcessors->fold({pp,q|$pp->eval($q, $extensions).values->toOne()}, $query->cast(@SelectSQLQuery)));

@@ -13,7 +13,8 @@
 // limitations under the License.
 
 import meta::json::*;
-import meta::pure::router::extension::*;
+import meta::pure::extension::*;
+import meta::relational::extension::*;
 import meta::pure::router::execution::*;
 import meta::pure::router::execution::*;
 import meta::pure::router::clustering::*;
@@ -28,42 +29,42 @@ import meta::relational::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::mapping::*;
 
-function meta::relational::validation::validate<T>(func: FunctionDefinition<{->T[*]}>[1], m:Mapping[1], runtime:Runtime[1], extensions: RouterExtension[*]):Result<TabularDataSet|1>[1]
+function meta::relational::validation::validate<T>(func: FunctionDefinition<{->T[*]}>[1], m:Mapping[1], runtime:Runtime[1], extensions: Extension[*]):Result<TabularDataSet|1>[1]
 {
    validate($func, [], [], $m, $runtime, ^RelationalExecutionContext(), [], [], $extensions)
 }
 
-function meta::relational::validation::validate<T>(func: FunctionDefinition<{->T[*]}>[1], m:Mapping[1], runtime:Runtime[1], constraintIds: String[*], extensions: RouterExtension[*]):Result<TabularDataSet|1>[1]
+function meta::relational::validation::validate<T>(func: FunctionDefinition<{->T[*]}>[1], m:Mapping[1], runtime:Runtime[1], constraintIds: String[*], extensions: Extension[*]):Result<TabularDataSet|1>[1]
 {
    validate($func, [], [], $m, $runtime, ^RelationalExecutionContext(), $constraintIds, [], $extensions)
 }
 
-function meta::relational::validation::validate<T>(func: FunctionDefinition<{->T[*]}>[1], m:Mapping[1], runtime:Runtime[1], constraintInformation : ConstraintContextInformation<Any>[*], extensions: RouterExtension[*]):Result<TabularDataSet|1>[1]
+function meta::relational::validation::validate<T>(func: FunctionDefinition<{->T[*]}>[1], m:Mapping[1], runtime:Runtime[1], constraintInformation : ConstraintContextInformation<Any>[*], extensions: Extension[*]):Result<TabularDataSet|1>[1]
 {
    validate($func, [], [], $m, $runtime, ^RelationalExecutionContext(), [], $constraintInformation, $extensions)
 }
 
-function meta::relational::validation::validate<T>(func: FunctionDefinition<{->T[*]}>[1], m:Mapping[1], runtime:Runtime[1], constraintIds: String[*], constraintInformation : ConstraintContextInformation<Any>[*], extensions: RouterExtension[*]):Result<TabularDataSet|1>[1]
+function meta::relational::validation::validate<T>(func: FunctionDefinition<{->T[*]}>[1], m:Mapping[1], runtime:Runtime[1], constraintIds: String[*], constraintInformation : ConstraintContextInformation<Any>[*], extensions: Extension[*]):Result<TabularDataSet|1>[1]
 {
    validate($func, [], [], $m, $runtime, ^RelationalExecutionContext(), $constraintIds, $constraintInformation, $extensions)
 }
 
-function meta::relational::validation::validate<T>(func: FunctionDefinition<{->T[*]}>[1], m:Mapping[1], runtime:Runtime[1], exeCtx : RelationalExecutionContext[1], extensions: RouterExtension[*]):Result<TabularDataSet|1>[1]
+function meta::relational::validation::validate<T>(func: FunctionDefinition<{->T[*]}>[1], m:Mapping[1], runtime:Runtime[1], exeCtx : RelationalExecutionContext[1], extensions: Extension[*]):Result<TabularDataSet|1>[1]
 {
    validate($func, [], [], $m, $runtime, $exeCtx, [], [], $extensions)
 }
 
-function meta::relational::validation::validate<T>(func: FunctionDefinition<{->T[*]}>[1], m:Mapping[1], runtime:Runtime[1], exeCtx : RelationalExecutionContext[1], constraintIds: String[*], extensions: RouterExtension[*]):Result<TabularDataSet|1>[1]
+function meta::relational::validation::validate<T>(func: FunctionDefinition<{->T[*]}>[1], m:Mapping[1], runtime:Runtime[1], exeCtx : RelationalExecutionContext[1], constraintIds: String[*], extensions: Extension[*]):Result<TabularDataSet|1>[1]
 {
    validate($func, [], [], $m, $runtime, $exeCtx, $constraintIds, [], $extensions)
 }
 
-function meta::relational::validation::validate<T>(func: FunctionDefinition<{->T[*]}>[1], m:Mapping[1], runtime:Runtime[1], exeCtx : RelationalExecutionContext[1], constraintInformation : ConstraintContextInformation<Any>[*], extensions: RouterExtension[*]):Result<TabularDataSet|1>[1]
+function meta::relational::validation::validate<T>(func: FunctionDefinition<{->T[*]}>[1], m:Mapping[1], runtime:Runtime[1], exeCtx : RelationalExecutionContext[1], constraintInformation : ConstraintContextInformation<Any>[*], extensions: Extension[*]):Result<TabularDataSet|1>[1]
 {
    validate($func, [], [], $m, $runtime, $exeCtx, [], $constraintInformation, $extensions)
 }
 
-function meta::relational::validation::validate<T>(func: FunctionDefinition<{->T[*]}>[1], m:Mapping[1], runtime:Runtime[1], exeCtx : RelationalExecutionContext[1], constraintIds: String[*], constraintInformation : ConstraintContextInformation<Any>[*], extensions: RouterExtension[*]):Result<TabularDataSet|1>[1]
+function meta::relational::validation::validate<T>(func: FunctionDefinition<{->T[*]}>[1], m:Mapping[1], runtime:Runtime[1], exeCtx : RelationalExecutionContext[1], constraintIds: String[*], constraintInformation : ConstraintContextInformation<Any>[*], extensions: Extension[*]):Result<TabularDataSet|1>[1]
 {
    validate($func, [], [], $m, $runtime, $exeCtx, $constraintIds, $constraintInformation, $extensions)
 }
@@ -77,7 +78,7 @@ function meta::relational::validation::validate<T>(
    exeCtx : RelationalExecutionContext[1], // Relational Execution Context - Batch Query Contexts
    constraintIds: String[*], // Subset of constraints to run (If empty - runs all constraints)
    constraintInformation : ConstraintContextInformation<Any>[*], // Constraint Informations - Containing enforcemnt level of constraint and messages associated with it
-   extensions: RouterExtension[*]
+   extensions: Extension[*]
 ):Result<TabularDataSet|1>[1]
 {
    let class = $func->functionType().returnType.rawType->toOne()->cast(@Class<Any>);

@@ -22,7 +22,7 @@ import meta::relational::functions::sqlstring::*;
 
 function <<test.Test>> meta::relational::tests::query::function::testFilterUsingPlusFunction():Boolean[1]
 {
-   let result = execute(|Person.all()->filter({p | ($p.firm->toOne().legalName + ' Great') == 'Firm X Great'}), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->filter({p | ($p.firm->toOne().legalName + ' Great') == 'Firm X Great'}), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 6);
    assertSameElements(['Allen', 'Smith', 'Johnson', 'New York', 'Hill', 'York'], $result.values.lastName);
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where concat("firmtable_0".LEGALNAME, \' Great\') = \'Firm X Great\'', $result->sqlRemoveFormatting());
@@ -30,7 +30,7 @@ function <<test.Test>> meta::relational::tests::query::function::testFilterUsing
 
 function <<test.Test>> meta::relational::tests::query::function::testFilterThroughAssociationUsingPlusFunction():Boolean[1]
 {
-   let result = execute(|Firm.all()->filter(f|$f.employees->exists(e | ($e.firstName->toOne() + $e.lastName->toOne()) == 'PeterSmith')), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Firm.all()->filter(f|$f.employees->exists(e | ($e.firstName->toOne() + $e.lastName->toOne()) == 'PeterSmith')), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 1);
    assertEquals('Firm X', $result.values->toOne().legalName);
    assertSameSQL('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join (select distinct "persontable_1".FIRMID from personTable as "persontable_1" where concat("persontable_1".FIRSTNAME, "persontable_1".LASTNAME) = \'PeterSmith\') as "persontable_0" on ("root".ID = "persontable_0".FIRMID) where "persontable_0".FIRMID is not null', $result);
@@ -39,12 +39,12 @@ function <<test.Test>> meta::relational::tests::query::function::testFilterThrou
 
 function <<test.Test>> meta::relational::tests::query::function::testFilterUsingStartsWithFunction():Boolean[1]
 {
-   let result = execute(|Person.all()->filter({p | ($p.firm->toOne().legalName->startsWith('Fir'))}), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->filter({p | ($p.firm->toOne().legalName->startsWith('Fir'))}), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 11);
    assertSameElements(['Allen', 'Firm B', 'Harris', 'Hill', 'Hill', 'Johnson', 'New York', 'Roberts', 'Smith', 'Smith', 'York'], $result.values.lastName);
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where "firmtable_0".LEGALNAME like \'Fir%\'', $result->sqlRemoveFormatting());
    
-   let result_escape= execute(|Person.all()->filter({p | ($p.firm->toOne().legalName->startsWith('\\%'))}), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result_escape= execute(|Person.all()->filter({p | ($p.firm->toOne().legalName->startsWith('\\%'))}), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result_escape.values, 0);  
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where "firmtable_0".LEGALNAME like \'\\\\%%\'', $result_escape->sqlRemoveFormatting());
    
@@ -52,14 +52,14 @@ function <<test.Test>> meta::relational::tests::query::function::testFilterUsing
 
 function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::query::function::testFilterUsingIsAlphaNumericFunction():Boolean[1]
 {
-   let result = execute(|Person.all()->filter({p | ($p.firm->toOne().legalName->replace(' X', 'X')->isAlphaNumeric())}), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->filter({p | ($p.firm->toOne().legalName->replace(' X', 'X')->isAlphaNumeric())}), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 6);
    assertSameElements(['Allen', 'Smith', 'Johnson', 'New York', 'Hill', 'York'], $result.values.lastName);
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where replace("firmtable_0".LEGALNAME, \' X\', \'X\') regexp \'^[a-zA-Z0-9]*$\'', $result->sqlRemoveFormatting());
 
    let result_next = execute(|Person.all()
                         ->filter({p | ($p.firm->toOne().legalName->replace(' X', 'X')->isAlphaNumeric()->not())}),
-                        simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                        simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($result_next.values,5);
    assertSameElements(['Hill', 'Harris', 'Firm B', 'Roberts', 'Smith'], $result_next.values.lastName);
@@ -70,7 +70,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::query::functi
 {
 
    let fn = {|Person.all()->filter(p | $p.firm->toOne().legalName->isAlphaNumeric())};
-   let s = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   let s = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmTable_d#2_dy0_d#3_d_m1" on ("firmTable_d#2_dy0_d#3_d_m1".ID = "root".FIRMID) where "firmTable_d#2_dy0_d#3_d_m1".LEGALNAME not like \'%[^a-zA-Z0-9]%\'',$s);
 }
 
@@ -78,7 +78,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::query::functi
 {
 
    let fn = {|Person.all()->filter(p | $p.firm->toOne().legalName->isAlphaNumeric())};
-   let s = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::pure::router::extension::defaultRelationalExtensions());
+   let s = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmTable_d#2_dy0_d#3_d_m1" on ("firmTable_d#2_dy0_d#3_d_m1".ID = "root".FIRMID) where "firmTable_d#2_dy0_d#3_d_m1".LEGALNAME regexp \'^[a-zA-Z0-9]*$\'',$s);
 }
 
@@ -86,7 +86,7 @@ function <<test.Test>> meta::relational::tests::query::function::testFilterUsing
 {
    let result = execute(|Person.all()
                         ->filter({p | ($p.firm->toOne().legalName->replace(' X', 'X')->matches('[A-Za-z0-9]*'))}),
-                        simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                        simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($result.values,6);
    assertSameElements(['Allen', 'Smith', 'Johnson', 'New York', 'Hill', 'York'], $result.values.lastName);
@@ -94,7 +94,7 @@ function <<test.Test>> meta::relational::tests::query::function::testFilterUsing
 
    let result_next = execute(|Person.all()
                         ->filter({p | ($p.firm->toOne().legalName->replace(' X', 'X')->matches('[A-Za-z0-9]*')->not())}),
-                        simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                        simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($result_next.values, 5);
    assertSameElements(['Hill', 'Harris', 'Firm B', 'Roberts', 'Smith'], $result_next.values.lastName);
@@ -106,7 +106,7 @@ function <<test.Test>> meta::relational::tests::query::function::testFilterUsing
 
    let fn = {|Person.all()->filter(p | $p.firm->toOne().legalName->matches('[A-Za-z0-9]*'))};
 
-   let s = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   let s = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmTable_d#2_dy0_d#3_d_m1" on ("firmTable_d#2_dy0_d#3_d_m1".ID = "root".FIRMID) where "firmTable_d#2_dy0_d#3_d_m1".LEGALNAME regexp \'^[A-Za-z0-9]*$\'',$s);
 }
 
@@ -116,7 +116,7 @@ function <<test.Test>> meta::relational::tests::query::function::testFilterUsing
 
    let fn = {|Person.all()->filter(p | $p.firm->toOne().legalName->matches('[A-Za-z0-9]*'))};
 
-   let s = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.Presto, meta::pure::router::extension::defaultRelationalExtensions());
+   let s = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmTable_d#2_dy0_d#3_d_m1" on ("firmTable_d#2_dy0_d#3_d_m1".ID = "root".FIRMID) where REGEXP_LIKE("firmTable_d#2_dy0_d#3_d_m1".LEGALNAME, \'^[A-Za-z0-9]*$\')',$s);
 }
 
@@ -125,13 +125,13 @@ function <<test.Test>> meta::relational::tests::query::function::testFilterUsing
 
    let fn = {|Person.all()->filter(p | $p.firm->toOne().legalName->matches('[A-Za-z0-9]*'))};
 
-   let s = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::pure::router::extension::defaultRelationalExtensions());
+   let s = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmTable_d#2_dy0_d#3_d_m1" on ("firmTable_d#2_dy0_d#3_d_m1".ID = "root".FIRMID) where "firmTable_d#2_dy0_d#3_d_m1".LEGALNAME regexp \'^[A-Za-z0-9]*$\'',$s);
 }
 
 function <<test.Test>> meta::relational::tests::query::function::testFilterUsingSubstringFunction():Boolean[1]
 {
-   let result = execute(|Person.all()->filter(p|$p.firstName->substring(1, 5) == 'John'), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->filter(p|$p.firstName->substring(1, 5) == 'John'), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 2);
    assertSameElements(['Johnson', 'Hill'], $result.values.lastName);
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where substring("root".FIRSTNAME, 1, 5) = \'John\'', $result->sqlRemoveFormatting());
@@ -139,7 +139,7 @@ function <<test.Test>> meta::relational::tests::query::function::testFilterUsing
 
 function <<test.Test>> meta::relational::tests::query::function::testFilterUsingLengthFunction():Boolean[1]
 {
-   let result = execute(|Person.all()->filter(p|$p.firstName->length() == 4), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->filter(p|$p.firstName->length() == 4), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 2);
    assertSameElements(['Johnson', 'Hill'], $result.values.lastName);
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where char_length("root".FIRSTNAME) = 4', $result->sqlRemoveFormatting());
@@ -148,7 +148,7 @@ function <<test.Test>> meta::relational::tests::query::function::testFilterUsing
 function <<test.Test>> meta::relational::tests::query::function::testFilterUsingFunctionWithVariable():Boolean[1]
 {
    let input = 'X';
-   let result = execute(|Person.all()->filter({p | ($p.firm->toOne().legalName->endsWith($input))}), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->filter({p | ($p.firm->toOne().legalName->endsWith($input))}), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 6);
    assertSameElements(['Allen', 'Smith', 'Johnson', 'New York', 'Hill', 'York'], $result.values.lastName);
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where "firmtable_0".LEGALNAME like \'%X\'', $result->sqlRemoveFormatting());
@@ -158,7 +158,7 @@ function <<test.Test>> meta::relational::tests::query::function::testFilterUsing
 function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::query::function::testFilterUsingFunctionWithClassAttribute():Boolean[1]
 {
    let input = ^Firm(legalName='Firm A');
-   let result = execute(|Person.all()->filter({p | ($p.firm->toOne().legalName->startsWith($input.legalName))}), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->filter({p | ($p.firm->toOne().legalName->startsWith($input.legalName))}), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 1);
    assertSameElements(['Roberts'], $result.values.lastName);
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where "firmtable_0".LEGALNAME like \'Firm A%\'', $result->sqlRemoveFormatting());
@@ -166,24 +166,24 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::query::functi
 
 function <<test.Test>> meta::relational::tests::query::function::testFilterUsingContainsFunction():Boolean[1]
 {
-   let result = execute(|Person.all()->filter({p | ($p.firm->toOne().legalName->contains('X'))}), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->filter({p | ($p.firm->toOne().legalName->contains('X'))}), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 6);
    assertSameElements(['Allen', 'Smith', 'Johnson', 'New York', 'Hill', 'York'], $result.values.lastName);
    assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where "firmtable_0".LEGALNAME like \'%X%\'', $result->sqlRemoveFormatting());
    
-   let result_escape = execute(|Person.all()->filter({p | ($p.firm->toOne().legalName->contains('\\%BoA'))}), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result_escape = execute(|Person.all()->filter({p | ($p.firm->toOne().legalName->contains('\\%BoA'))}), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result_escape.values, 0);
    assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where "firmtable_0".LEGALNAME like \'%\\\\%BoA%\'', $result_escape->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::query::function::testFilterUsingEndsWithFunction():Boolean[1]
 {
-   let result = execute(|Person.all()->filter({p | ($p.firm->toOne().legalName->endsWith('X'))}), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->filter({p | ($p.firm->toOne().legalName->endsWith('X'))}), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 6);
    assertSameElements(['Allen', 'Smith', 'Johnson', 'New York', 'Hill', 'York'], $result.values.lastName);
    assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where "firmtable_0".LEGALNAME like \'%X\'', $result->sqlRemoveFormatting());
    
-   let result_escape = execute(|Person.all()->filter({p | ($p.firm->toOne().legalName->endsWith('\\%'))}), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result_escape = execute(|Person.all()->filter({p | ($p.firm->toOne().legalName->endsWith('\\%'))}), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result_escape.values, 0);
    assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where "firmtable_0".LEGALNAME like \'%\\\\%\'', $result_escape->sqlRemoveFormatting());
 }
@@ -191,7 +191,7 @@ function <<test.Test>> meta::relational::tests::query::function::testFilterUsing
 
 function <<test.Test>> meta::relational::tests::query::function::testFilterUsingIsEmptyFunction():Boolean[1]
 {
-   let result = execute(|Product.all()->filter({f | $f.synonyms->isEmpty()}), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Product.all()->filter({f | $f.synonyms->isEmpty()}), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 1);
    assertSameElements(['Firm D'], $result.values.name);
    assertSameSQL('select "root".ID as "pk_0", "root".NAME as "name" from productSchema.productTable as "root" left outer join (select distinct "synonymtable_0".PRODID from productSchema.productTable as "root" left outer join productSchema.synonymTable as "synonymtable_0" on ("synonymtable_0".PRODID = "root".ID)) as "producttable_1" on ("producttable_1".PRODID = "root".ID) where "producttable_1".PRODID is null', $result);
@@ -206,7 +206,7 @@ function <<test.Test>> meta::relational::tests::query::function::testFilterUsing
                                                 |($p.firm->toOne().legalName->startsWith('Firm X') || $p.firm->toOne().legalName->startsWith('Firm C'))
                                             )
                                          )
-                                    }), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                                    }), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 7);
    assertSameElements(['Allen', 'Smith', 'Johnson', 'New York', 'Smith', 'Hill', 'York'], $result.values.lastName);
    assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where case when "root".LASTNAME = \'Harris\' then "firmtable_0".LEGALNAME like \'%X\' else ("firmtable_0".LEGALNAME like \'Firm X%\' or "firmtable_0".LEGALNAME like \'Firm C%\') end', $result->sqlRemoveFormatting());
@@ -221,27 +221,27 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::query::functi
       Trade.all()->filter(d | $d.date == $startDate);
    };
    
-   let result = execute($fn,simpleRelationalMapping,testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute($fn,simpleRelationalMapping,testRuntime(), meta::relational::extension::relationalExtensions());
    assert($result->sqlRemoveFormatting(0)->startsWith('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".tradeDate as "date", "root".settlementDateTime as "settlementDateTime", "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id) where "root".tradeDate ='));
 }
 
 function <<test.Test>> meta::relational::tests::query::function::testFilterUsingParseIntegerFunction():Boolean[1]
 {
-   let result = execute(|Account.all()->filter(a|$a.name->substring(9,1)->parseInteger() ==1), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Account.all()->filter(a|$a.name->substring(9,1)->parseInteger() ==1), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
     assertSameElements(['Account 1'], $result.values.name);
     assertEquals( 'select "root".ID as "pk_0", "root".name as "name", "root".createDate as "createDate" from accountTable as "root" where cast(substring("root".name, 9, 1) as integer) = 1', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::query::function::testFilterUsingParseDecimalFunction():Boolean[1]
 {
-   let result = execute(|Account.all()->filter(a|$a.name->substring(9,1)->parseDecimal() ==1), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Account.all()->filter(a|$a.name->substring(9,1)->parseDecimal() ==1), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
     assertSameElements(['Account 1'], $result.values.name);
     assertEquals( 'select "root".ID as "pk_0", "root".name as "name", "root".createDate as "createDate" from accountTable as "root" where cast(substring("root".name, 9, 1) as decimal) = 1', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::query::function::testFilterUsingToUpperFunction():Boolean[1]
 {
-   let result = execute(|Person.all()->filter({p|$p.lastName->toUpper() =='HARRIS'}), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->filter({p|$p.lastName->toUpper() =='HARRIS'}), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values,1);
    assertSameElements(['Harris'], $result.values.lastName);
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where upper("root".LASTNAME) = \'HARRIS\'', $result->sqlRemoveFormatting());
@@ -249,7 +249,7 @@ function <<test.Test>> meta::relational::tests::query::function::testFilterUsing
 
 function <<test.Test>> meta::relational::tests::query::function::testFilterUsingToLowerFunction():Boolean[1]
 {
-   let result = execute(|Person.all()->filter({p|$p.lastName->toLower() =='harris'}), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->filter({p|$p.lastName->toLower() =='harris'}), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values,1);
    assertSameElements(['Harris'], $result.values.lastName);
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where lower("root".LASTNAME) = \'harris\'', $result->sqlRemoveFormatting());   
@@ -257,7 +257,7 @@ function <<test.Test>> meta::relational::tests::query::function::testFilterUsing
 
 function <<test.Test>> meta::relational::tests::query::function::toString::testFilterUsingToStringFunction():Boolean[1]
 {
-   let result = execute(|Trade.all()->filter(t | $t.id->toString() == '1'), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Trade.all()->filter(t | $t.id->toString() == '1'), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements([1], $result.values.id);
    assertSameSQL('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".tradeDate as "date", "root".settlementDateTime as "settlementDateTime", "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id) where cast("root".ID as varchar) = \'1\'', $result);
 }
@@ -265,7 +265,7 @@ function <<test.Test>> meta::relational::tests::query::function::toString::testF
 // Alloy exclusion reason: 5. Should recurse in system functions
 function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::query::function::dates::testFilterUsingFirstDayOfThisYearH2():Boolean[1]
 {
-   let result = execute(|Trade.all()->filter(t | $t.date >= firstDayOfThisYear()), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Trade.all()->filter(t | $t.date >= firstDayOfThisYear()), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".tradeDate as "date", "root".settlementDateTime as "settlementDateTime", "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id) where "root".tradeDate >= dateadd(DAY, -(dayofyear(current_date()) - 1), current_date())', $result->sqlRemoveFormatting(0));
 
 }
@@ -274,7 +274,7 @@ function <<test.ToFix>> meta::relational::tests::query::function::dates::testCha
 {
    let today = now();
    let result = execute(|Trade.all()->filter(t | $t.date == $today)
-                                    ->filter(t | $t.date >= firstDayOfThisYear()), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                                    ->filter(t | $t.date >= firstDayOfThisYear()), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".tradeDate as "date", "root".settlementDateTime as "settlementDateTime", "tradeEventTable_d#2_d#2_m5".max_eventDate as "latestEventDate" from tradeTable as "root" left outer join (select "tradeEventTable".trade_id, max("tradeEventTable".eventDate) as max_eventDate from tradeEventTable as "tradeEventTable" group by "tradeEventTable".trade_id) as "tradeEventTable_d#2_d#2_m5" on ("root".ID = "tradeEventTable_d#2_d#2_m5".trade_id) where "root".tradeDate >= dateadd(DAY, -(dayofyear(current_date()) - 1), current_date())',$result->sqlRemoveFormatting(0));
 
 }
@@ -283,7 +283,7 @@ function <<test.Test>> meta::relational::tests::query::function::dates::testFilt
 {
    let fn = {|Trade.all()->filter(t | $t.date >= firstDayOfThisYear())};
    
-   let s = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   let s = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".tradeDate as "date", "root".settlementDateTime as "settlementDateTime", "tradeEventViewMaxTradeEventDate_d#2_d#2_m5".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeEventViewMaxTradeEventDate_d#2_d#2_m5" on ("root".ID = "tradeEventViewMaxTradeEventDate_d#2_d#2_m5".trade_id) where "root".tradeDate >= dateadd(DAY, -(datepart(dayofyear, today()) - 1), today())',$s);
 
 }
@@ -292,7 +292,7 @@ function <<test.Test>> meta::relational::tests::query::function::dates::testFilt
 {
    let fn = {|Trade.all()->filter(t | $t.date >= firstDayOfThisQuarter())};
    
-   let s = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   let s = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".tradeDate as "date", "root".settlementDateTime as "settlementDateTime", "tradeEventViewMaxTradeEventDate_d#2_d#2_m5".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeEventViewMaxTradeEventDate_d#2_d#2_m5" on ("root".ID = "tradeEventViewMaxTradeEventDate_d#2_d#2_m5".trade_id) where "root".tradeDate >= dateadd(QUARTER, quarter(today()) - 1, dateadd(DAY, -(datepart(dayofyear, today()) - 1), today()))',$s);
 
 }
@@ -300,7 +300,7 @@ function <<test.Test>> meta::relational::tests::query::function::dates::testFilt
 // Alloy exclusion reason: 5. Should recurse in system functions
 function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::query::function::dates::testFilterUsingFirstDayOfThisQuarter():Boolean[1]
 {
-   let result = execute(|Trade.all()->filter(t | $t.date >= firstDayOfThisQuarter()), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Trade.all()->filter(t | $t.date >= firstDayOfThisQuarter()), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".tradeDate as "date", "root".settlementDateTime as "settlementDateTime", "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id) where "root".tradeDate >= dateadd(MONTH, 3 * quarter(current_date) - 3, dateadd(DAY, -(dayofyear(current_date()) - 1), current_date()))', $result->sqlRemoveFormatting(0));
 
 }
@@ -309,11 +309,11 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::query::functi
 function <<test.Test>> meta::relational::tests::query::function::dates::testFilterUsingIndexOfSybase():Boolean[1]
 {
    let fn = {|Person.all()->filter({p | ($p.firm->toOne().legalName->indexOf('S')== 9)})}; 
-   let s = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   let s = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmTable_d#3_dy0_d#3_d_m1" on ("firmTable_d#3_dy0_d#3_d_m1".ID = "root".FIRMID) where LOCATE("firmTable_d#3_dy0_d#3_d_m1".LEGALNAME, \'S\') = 9',$s);
    
    let fun = {|Address.all()->filter({p | ($p.comments->toOne()->indexOf('%')== 17)})}; 
-   let p = toSQLString($fun, simpleRelationalMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   let p = toSQLString($fun, simpleRelationalMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".ID as "pk_0", "root".NAME as "name", "root".STREET as "street", "root".TYPE as "type", "root".COMMENTS as "comments" from addressTable as "root" where LOCATE("root".COMMENTS, \'%\') = 17',$p);
    
 
@@ -322,33 +322,33 @@ function <<test.Test>> meta::relational::tests::query::function::dates::testFilt
 
 function <<test.Test>> meta::relational::tests::query::function::round::testFilterUsingRoundFunction():Boolean[1]
 {
-   let result = execute(|Trade.all()->filter(t | $t.id->round() == 1), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Trade.all()->filter(t | $t.id->round() == 1), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements([1], $result.values.id);
    assertSameSQL('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".tradeDate as "date", "root".settlementDateTime as "settlementDateTime", "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id) where round("root".ID, 0) = 1', $result);
 }
 
 function <<test.Test>> meta::relational::tests::query::function::round::testFilterUsingRoundFunctionWithScale():Boolean[1]
 {
-   let result = execute(|Trade.all()->filter(t | round($t.quantity/3, 2) > 10)->project([t | round($t.quantity/3, 2)], 'roundedQuantity'), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Trade.all()->filter(t | round($t.quantity/3, 2) > 10)->project([t | round($t.quantity/3, 2)], 'roundedQuantity'), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals('roundedQuantity\n' +
                       '106.67\n'+
                       '10.67\n'+
                       '14.67\n'+
                       '15.0\n'+
-                      '12.67\n', $result.values->meta::csv::toCSV());
+                      '12.67\n', $result.values->meta::relational::tests::csv::toCSV());
    assertSameSQL('select round(((1.0 * "root".quantity) / 3), 2) as "roundedQuantity" from tradeTable as "root" where round(((1.0 * "root".quantity) / 3), 2) > 10', $result);
 }
 
 function <<test.Test>> meta::relational::tests::query::function::ceiling::testFilterUsingCeilingFunction():Boolean[1]
 {
-   let result = execute(|Trade.all()->filter(t | $t.id->ceiling() == 1), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Trade.all()->filter(t | $t.id->ceiling() == 1), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements([1], $result.values.id);
    assertSameSQL('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".tradeDate as "date", "root".settlementDateTime as "settlementDateTime", "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id) where ceiling("root".ID) = 1', $result);
 }
 
 function <<test.Test>> meta::relational::tests::query::function::floor::testFilterUsingFloorFunction():Boolean[1]
 {
-   let result = execute(|Trade.all()->filter(t | $t.id->floor() == 1), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Trade.all()->filter(t | $t.id->floor() == 1), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements([1], $result.values.id);
    assertSameSQL('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".tradeDate as "date", "root".settlementDateTime as "settlementDateTime", "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id) where floor("root".ID) = 1', $result);
 }
@@ -357,107 +357,107 @@ function <<test.Test>> meta::relational::tests::query::function::trim::testSuppo
 {
 let result = toSQLString(|Person.all()
       ->filter({row| $row.firstName->trim() != ''})
-      ->project([#/Person/firstName#, #/Person/firm/legalName#]), simpleRelationalMapping, DatabaseType.Postgres, meta::pure::router::extension::defaultRelationalExtensions());
+      ->project([#/Person/firstName#, #/Person/firm/legalName#]), simpleRelationalMapping, DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
  assertEquals('select "root".FIRSTNAME as "firstName", "firmTable_d_1_d_m2".LEGALNAME as "legalName" from personTable as "root" left outer join firmTable as "firmTable_d_1_d_m2" on ("firmTable_d_1_d_m2".ID = "root".FIRMID) where (trim("root".FIRSTNAME) <> Text\'\' OR trim("root".FIRSTNAME) is null)', $result);
 }
 
 function <<test.Test>> meta::relational::tests::query::function::pow::testFilterUsingPowFunction():Boolean[1]
 {
-   let result = execute(|Trade.all()->filter(t | $t.id->pow(2) == 1), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Trade.all()->filter(t | $t.id->pow(2) == 1), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements([1], $result.values.id);
    assertSameSQL('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".tradeDate as "date", "root".settlementDateTime as "settlementDateTime", "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id) where power("root".ID, 2) = 1', $result);
 }
 
 function <<test.Test>> meta::relational::tests::query::function::exp::testFilterUsingExpFunction():Boolean[1]
 {
-   let result = execute(|Trade.all()->filter(t | $t.id->exp() < 2.719), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Trade.all()->filter(t | $t.id->exp() < 2.719), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements([1], $result.values.id);
    assertSameSQL('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".tradeDate as "date", "root".settlementDateTime as "settlementDateTime", "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id) where exp("root".ID) < 2.719', $result);
 }
 
 function <<test.Test>> meta::relational::tests::query::function::log::testFilterUsingLogFunction():Boolean[1]
 {
-   let result = execute(|Trade.all()->filter(t | $t.id->log() == 0), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Trade.all()->filter(t | $t.id->log() == 0), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements([1], $result.values.id);
    assertSameSQL('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".tradeDate as "date", "root".settlementDateTime as "settlementDateTime", "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id) where ln("root".ID) = 0', $result);
 }
 
 function <<test.Test>> meta::relational::tests::query::function::sin::testFilterUsingsinFunction():Boolean[1]
 {
-   let result = execute(|Trade.all()->filter(t | $t.id->sin() < 0.5), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Trade.all()->filter(t | $t.id->sin() < 0.5), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements([3, 4, 5, 6, 9, 10, 11], $result.values.id);
    assertSameSQL('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".tradeDate as "date", "root".settlementDateTime as "settlementDateTime", "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id) where sin("root".ID) < 0.5', $result);
 }
 
 function <<test.Test>> meta::relational::tests::query::function::cos::testFilterUsingCosFunction():Boolean[1]
 {
-   let result = execute(|Trade.all()->filter(t | $t.id->cos() < 0.5), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Trade.all()->filter(t | $t.id->cos() < 0.5), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements([2, 3, 4, 5, 8, 9, 10, 11], $result.values.id);
    assertSameSQL('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".tradeDate as "date", "root".settlementDateTime as "settlementDateTime", "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id) where cos("root".ID) < 0.5', $result);
 }
 
 function <<test.Test>> meta::relational::tests::query::function::tan::testFilterUsingTanFunction():Boolean[1]
 {
-   let result = execute(|Trade.all()->filter(t | $t.id->tan() < 0.5), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Trade.all()->filter(t | $t.id->tan() < 0.5), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements([2, 3, 5, 6, 8, 9, 11], $result.values.id);
    assertSameSQL('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".tradeDate as "date", "root".settlementDateTime as "settlementDateTime", "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id) where tan("root".ID) < 0.5', $result);
 }
 
 function <<test.Test>> meta::relational::tests::query::function::asin::testFilterUsingArcSinFunction():Boolean[1]
 {
-   let result = execute(|Trade.all()->filter(t | $t.id->divide(10)->asin() < 0.5), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Trade.all()->filter(t | $t.id->divide(10)->asin() < 0.5), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements([1, 2, 3, 4], $result.values.id);
    assertSameSQL('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".tradeDate as "date", "root".settlementDateTime as "settlementDateTime", "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id) where asin(((1.0 * "root".ID) / 10)) < 0.5', $result);
 }
 
 function <<test.Test>> meta::relational::tests::query::function::acos::testFilterUsingArcCosFunction():Boolean[1]
 {
-   let result = execute(|Trade.all()->filter(t | $t.id->divide(10)->acos() < 0.5), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Trade.all()->filter(t | $t.id->divide(10)->acos() < 0.5), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements([9, 10], $result.values.id);
    assertSameSQL('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".tradeDate as "date", "root".settlementDateTime as "settlementDateTime", "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id) where acos(((1.0 * "root".ID) / 10)) < 0.5', $result);
 }
 
 function <<test.Test>> meta::relational::tests::query::function::atan::testFilterUsingArcTanFunction():Boolean[1]
 {
-   let result = execute(|Trade.all()->filter(t | $t.id->atan() < 1), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Trade.all()->filter(t | $t.id->atan() < 1), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements([1], $result.values.id);
    assertSameSQL('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".tradeDate as "date", "root".settlementDateTime as "settlementDateTime", "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id) where atan("root".ID) < 1', $result);
 }
 
 function <<test.Test>> meta::relational::tests::query::function::atan2::testFilterUsingArcTan2Function():Boolean[1]
 {
-   let result = execute(|Trade.all()->filter(t | atan2($t.id, $t.quantity) < 0.2), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Trade.all()->filter(t | atan2($t.id, $t.quantity) < 0.2), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements([1, 2, 4, 5, 7, 9], $result.values.id);
    assertSameSQL('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".tradeDate as "date", "root".settlementDateTime as "settlementDateTime", "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id) where atan2("root".ID,"root".quantity) < 0.2', $result);
 }
 
 function <<test.Test>> meta::relational::tests::query::function::sqrt::testFilterUsingSqrtFunction():Boolean[1]
 {
-   let result = execute(|Trade.all()->filter(t | $t.id->sqrt() < 3), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Trade.all()->filter(t | $t.id->sqrt() < 3), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements([1, 2, 3, 4, 5, 6, 7, 8], $result.values.id);
    assertSameSQL('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".tradeDate as "date", "root".settlementDateTime as "settlementDateTime", "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id) where sqrt("root".ID) < 3', $result);
 }
 
 function <<test.Test>> meta::relational::tests::query::function::mod::testFilterUsingModFunction():Boolean[1]
 {
-   let result = execute(|Trade.all()->filter(t | mod($t.quantity->floor(), $t.id) > 2), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Trade.all()->filter(t | mod($t.quantity->floor(), $t.id) > 2), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements([4, 6, 8, 10, 11], $result.values.id);
    assertSameSQL('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".tradeDate as "date", "root".settlementDateTime as "settlementDateTime", "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id) where mod(floor("root".quantity),"root".ID) > 2', $result);
 }
 
 function <<test.Test>> meta::relational::tests::query::function::rem::testFilterUsingRemFunction():Boolean[1]
 {
-   let result = execute(|Trade.all()->filter(t | rem($t.quantity, $t.id) > 2), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Trade.all()->filter(t | rem($t.quantity, $t.id) > 2), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements([4, 6, 8, 10, 11], $result.values.id);
    assertSameSQL('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".tradeDate as "date", "root".settlementDateTime as "settlementDateTime", "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id) where mod("root".quantity,"root".ID) > 2', $result);
 }
 
 function <<test.Test>> meta::relational::tests::query::function::testFilterTimesWithManyOperands():Boolean[1]
 {
-   let result = execute(|Person.all()->project([p| $p.lastName, p|$p.age->toOne() * 2 * $p.firm->toOne().sumEmployeesAge() ],['name','ages']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->project([p| $p.lastName, p|$p.age->toOne() * 2 * $p.firm->toOne().sumEmployeesAge() ],['name','ages']), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameSQL('select "root".LASTNAME as "name", ("root".AGE * 2 * "firmtable_1".aggCol) as "ages" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) left outer join (select "firmtable_2".ID as ID, sum("persontable_1".AGE) as aggCol from firmTable as "firmtable_2" left outer join personTable as "persontable_1" on ("firmtable_2".ID = "persontable_1".FIRMID) group by "firmtable_2".ID) as "firmtable_1" on ("firmtable_0".ID = "firmtable_1".ID)', $result);
    
-   let result2= execute(|Person.all()->project([p| $p.lastName,p | times([$p.age->toOne() , 2 , $p.firm->toOne().sumEmployeesAge(), 100]) ],['name','ages']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result2= execute(|Person.all()->project([p| $p.lastName,p | times([$p.age->toOne() , 2 , $p.firm->toOne().sumEmployeesAge(), 100]) ],['name','ages']), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameSQL('select "root".LASTNAME as "name", ("root".AGE * 2 * "firmtable_1".aggCol * 100) as "ages" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) left outer join (select "firmtable_2".ID as ID, sum("persontable_1".AGE) as aggCol from firmTable as "firmtable_2" left outer join personTable as "persontable_1" on ("firmtable_2".ID = "persontable_1".FIRMID) group by "firmtable_2".ID) as "firmtable_1" on ("firmtable_0".ID = "firmtable_1".ID)', $result2);
      
 }
@@ -465,47 +465,47 @@ function <<test.Test>> meta::relational::tests::query::function::testFilterTimes
 
 function <<test.Test>> meta::relational::tests::query::function::testFilterUsingQuarterNumberFunction():Boolean[1]
 {
-   let result = execute(|Trade.all()->filter(t | $t.date->quarterNumber() == 4), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Trade.all()->filter(t | $t.date->quarterNumber() == 4), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], $result.values.id->sort());
    assertSameSQL('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".tradeDate as "date", "root".settlementDateTime as "settlementDateTime", "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id) where quarter("root".tradeDate) = 4', $result);
    
-   let result2 = execute(|Trade.all()->filter(t | $t.date->quarterNumber() == 2), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result2 = execute(|Trade.all()->filter(t | $t.date->quarterNumber() == 2), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements([], $result2.values.id->sort());   
 }
 
 function <<test.Test>> meta::relational::tests::query::function::distinct::testCollectionDistinctFunction():Boolean[1]
 {
-   let result = execute(|Trade.all()->filter(t | $t.account.name == 'Account 2')->map(t | $t.product.name)->distinct(), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Trade.all()->filter(t | $t.account.name == 'Account 2')->map(t | $t.product.name)->distinct(), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertEq(1, $result.values->filter(s | $s == 'Firm C')->size());
    assertSameSQL('select distinct "producttable_0".NAME from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id) left outer join accountTable as "accounttable_0" on ("root".accountID = "accounttable_0".ID) left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) where "accounttable_0".name = \'Account 2\'', $result);
 }
 
 function <<test.Test>> meta::relational::tests::query::function::divide::testDivideFunctionPrecision():Boolean[1]
 {
-   let result = execute(|Trade.all()->filter(t | $t.id == 2)->map(t | [$t.quantity, 32147678342]->times()->divide(1000)), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Trade.all()->filter(t | $t.id == 2)->map(t | [$t.quantity, 32147678342]->times()->divide(1000)), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameSQL('select ((1.0 * ("root".quantity * 32147678342)) / 1000) from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id and "tradeeventviewmaxtradeeventdate_0".trade_id = 2) where "root".ID = 2', $result);
    assertEq(10287257069.44, $result.values->at(0));
    // 8 decimal places
-   let result2 = execute(|Trade.all()->filter(t | $t.id == 2)->map(t | [$t.quantity, 32147678342]->times()->divide(1000000000)), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result2 = execute(|Trade.all()->filter(t | $t.id == 2)->map(t | [$t.quantity, 32147678342]->times()->divide(1000000000)), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertEq(10287.25706944, $result2.values->at(0));
    //12 decimal places
-   let result3 = execute(|Trade.all()->filter(t | $t.id == 2)->map(t | [$t.quantity, 32147678342]->times()->divide(10000000000000)), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result3 = execute(|Trade.all()->filter(t | $t.id == 2)->map(t | [$t.quantity, 32147678342]->times()->divide(10000000000000)), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertEq(1.028725706944, $result3.values->at(0));
 }
 
 
 function <<test.Test>> meta::relational::tests::query::function::testJoinStringFunction():Boolean[1]
 {
-   let res1 = toSQLString(|Person.all()->filter(p|$p.firstName == 'John')->map(m|[$m.firstName, $m.lastName]->joinStrings('#') + ' ' + [$m.firstName, $m.lastName]->joinStrings()), simpleRelationalMapping, DatabaseType.DB2, meta::pure::router::extension::defaultRelationalExtensions());
+   let res1 = toSQLString(|Person.all()->filter(p|$p.firstName == 'John')->map(m|[$m.firstName, $m.lastName]->joinStrings('#') + ' ' + [$m.firstName, $m.lastName]->joinStrings()), simpleRelationalMapping, DatabaseType.DB2, meta::relational::extension::relationalExtensions());
    assertEquals('select (("root".FIRSTNAME concat \'#\' concat "root".LASTNAME) concat \' \' concat ("root".FIRSTNAME concat "root".LASTNAME)) from personTable as "root" where "root".FIRSTNAME = \'John\'', $res1);
    
-   let res2 = toSQLString(|Person.all()->filter(p|$p.firstName == 'John')->map(m|[$m.firstName, $m.lastName]->joinStrings('#') + ' ' + [$m.firstName, $m.lastName]->joinStrings()), simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   let res2 = toSQLString(|Person.all()->filter(p|$p.firstName == 'John')->map(m|[$m.firstName, $m.lastName]->joinStrings('#') + ' ' + [$m.firstName, $m.lastName]->joinStrings()), simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".FIRSTNAME+\'#\'+"root".LASTNAME+\' \'+"root".FIRSTNAME+"root".LASTNAME from personTable as "root" where "root".FIRSTNAME = \'John\'', $res2);
    
-   let res3 = toSQLString(|Person.all()->filter(p|$p.firstName == 'John')->map(m|[$m.firstName, $m.lastName]->joinStrings('#') + ' ' + [$m.firstName, $m.lastName]->joinStrings()), simpleRelationalMapping, DatabaseType.MemSQL, meta::pure::router::extension::defaultRelationalExtensions());
+   let res3 = toSQLString(|Person.all()->filter(p|$p.firstName == 'John')->map(m|[$m.firstName, $m.lastName]->joinStrings('#') + ' ' + [$m.firstName, $m.lastName]->joinStrings()), simpleRelationalMapping, DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
    assertEquals('select concat(concat(`root`.FIRSTNAME,\'#\',`root`.LASTNAME), \' \', concat(`root`.FIRSTNAME, `root`.LASTNAME)) from personTable as `root` where `root`.FIRSTNAME = \'John\'', $res3);
    
-   let result = execute(|Person.all()->filter(p|$p.firstName == 'John')->map(m|[$m.firstName, $m.lastName]->joinStrings('#') + ' ' + [$m.firstName, $m.lastName]->joinStrings()), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->filter(p|$p.firstName == 'John')->map(m|[$m.firstName, $m.lastName]->joinStrings('#') + ' ' + [$m.firstName, $m.lastName]->joinStrings()), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements(['John#Johnson JohnJohnson', 'John#Hill JohnHill'], $result.values);
    assertSameSQL('select concat(concat("root".FIRSTNAME,\'#\',"root".LASTNAME), \' \', concat("root".FIRSTNAME, "root".LASTNAME)) from personTable as "root" where "root".FIRSTNAME = \'John\'', $result);
 }
@@ -514,6 +514,6 @@ function <<test.Test>> meta::relational::tests::query::function::testWrapReserve
 {
 
    let fn = {|Person.all()->project([s | $s.age], ['KEY'])};
-   let s = toSQLString($fn, simpleRelationalMappingPersonForMemSQL, meta::relational::runtime::DatabaseType.MemSQL, meta::pure::router::extension::defaultRelationalExtensions());
+   let s = toSQLString($fn, simpleRelationalMappingPersonForMemSQL, meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
    assertEquals('select `personTable_d#2_d_m1`.`key` as `KEY` from personTable as `root` left outer join personTable as `personTable_d#2_d_m1` on (`root`.`key` = `personTable_d#2_d_m1`.`key`)',$s);
 }

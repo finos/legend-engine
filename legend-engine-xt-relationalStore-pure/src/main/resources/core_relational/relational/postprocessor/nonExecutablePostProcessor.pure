@@ -17,17 +17,18 @@ import meta::relational::metamodel::operation::*;
 import meta::relational::postProcessor::*;
 import meta::relational::metamodel::join::*;
 import meta::relational::metamodel::*;
-import meta::pure::router::extension::*;
+import meta::pure::extension::*;
+import meta::relational::extension::*;
 import meta::relational::metamodel::relation::*;
 
-function meta::relational::postProcessor::nonExecutable(selectSQLQuery:SelectSQLQuery[1], extensions:RouterExtension[*]):Result<SelectSQLQuery|1>[1]
+function meta::relational::postProcessor::nonExecutable(selectSQLQuery:SelectSQLQuery[1], extensions:Extension[*]):Result<SelectSQLQuery|1>[1]
 {
    ^Result<SelectSQLQuery|1>(values=$selectSQLQuery->processRelationalOperationForNonExecutable($extensions)->cast(@SelectSQLQuery))
 }
 
 
 
-function meta::relational::postProcessor::processRelationalOperationForNonExecutable(relationalOperationElement:RelationalOperationElement[1], extensions:RouterExtension[*]):RelationalOperationElement[1]
+function meta::relational::postProcessor::processRelationalOperationForNonExecutable(relationalOperationElement:RelationalOperationElement[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
    $relationalOperationElement->match([
                     u:Union[1] | ^$u(queries = $u.queries->map(q|$q->processRelationalOperationForNonExecutable($extensions))->cast(@SelectSQLQuery)),
@@ -55,7 +56,7 @@ function meta::relational::postProcessor::processRelationalOperationForNonExecut
                   ]);
 }
 
-function meta::relational::postProcessor::joinNonExecutable(r:RelationalTreeNode[1], extensions:RouterExtension[*]):RelationalTreeNode[1]
+function meta::relational::postProcessor::joinNonExecutable(r:RelationalTreeNode[1], extensions:Extension[*]):RelationalTreeNode[1]
 {
    ^$r
    (

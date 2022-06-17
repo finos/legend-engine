@@ -20,30 +20,30 @@ import meta::relational::tests::model::simple::*;
 
 function <<test.Test>> meta::relational::tests::mapping::union::partial::testSimpleQueryTo():Boolean[1]
 {
-   let result1 = execute(|Firm.all()->filter(f|$f.employees->exists(e|$e.lastName == 'Wright')), unionMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result1 = execute(|Firm.all()->filter(f|$f.employees->exists(e|$e.lastName == 'Wright')), unionMapping, testRuntime(), meta::relational::extension::relationalExtensions()).values;
    assertEquals(1, $result1->size());
    assertSameElements('Firm X', $result1.legalName);
-   let result2 = execute(|Firm.all()->filter(f|$f.employees->exists(e|$e.lastName == 'Roberts')), unionMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result2 = execute(|Firm.all()->filter(f|$f.employees->exists(e|$e.lastName == 'Roberts')), unionMapping, testRuntime(), meta::relational::extension::relationalExtensions()).values;
    assertEquals(0, $result2->size());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::union::partial::testProject():Boolean[1]
 {
-   let result1 = execute(|Firm.all()->project([f|$f.legalName, f|$f.employees->map(l|$l.lastName)], ['legalName', 'name']), unionMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   let result1 = execute(|Firm.all()->project([f|$f.legalName, f|$f.employees->map(l|$l.lastName)], ['legalName', 'name']), unionMapping, testRuntime(), meta::relational::extension::relationalExtensions()).values->at(0);
    assertEquals(3, $result1.rows->size());
    assertSameElements(['Taylor Firm X', 'Wright Firm X', 'TDSNull Firm A'], $result1.rows->map(r|$r.get('name')->toString()+' '+$r.getString('legalName')));
 }
 
 function <<test.Test>> meta::relational::tests::mapping::union::partial::testProjectShareSet():Boolean[1]
 {
-   let result1 = execute(|Firm.all()->project([f|$f.legalName, f|$f.employees->map(l|$l.lastName), f|$f.employees->map(l|$l.lastName)], ['legalName', 'firstName', 'lastName']), unionMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   let result1 = execute(|Firm.all()->project([f|$f.legalName, f|$f.employees->map(l|$l.lastName), f|$f.employees->map(l|$l.lastName)], ['legalName', 'firstName', 'lastName']), unionMapping, testRuntime(), meta::relational::extension::relationalExtensions()).values->at(0);
    assertEquals(3, $result1.rows->size());
    assertSameElements(['Taylor Firm X', 'Wright Firm X', 'TDSNull Firm A'], $result1.rows->map(r|$r.get('lastName')->toString()+' '+$r.getString('legalName')));
 }
 
 function <<test.Test>> meta::relational::tests::mapping::union::partial::testProjectAutoMap():Boolean[1]
 {
-   let result1 = execute(|Firm.all()->project([f|$f.legalName, f|$f.employees.lastName], ['legalName', 'name']), unionMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   let result1 = execute(|Firm.all()->project([f|$f.legalName, f|$f.employees.lastName], ['legalName', 'name']), unionMapping, testRuntime(), meta::relational::extension::relationalExtensions()).values->at(0);
    assertEquals(3, $result1.rows->size());
    assertSameElements(['Taylor Firm X', 'Wright Firm X', 'TDSNull Firm A'], $result1.rows->map(r|$r.get('name')->toString()+' '+$r.getString('legalName')));
 }

@@ -579,12 +579,12 @@ function <<access.private>> meta::pure::lineage::scanProperties::recurse_inlineQ
    $newTrees->map(t| ^$t(children=$t.children->map(c| $c->recurse_inlineQualifiedPropertyNodes())));
 }
 
-function meta::pure::lineage::scanProperties::propertyTree::buildMultiLevelPropertyTrees(vs:ValueSpecification[1], mappings:Mapping[*], extensions:meta::pure::router::extension::RouterExtension[*]):PropertyPathTree[*]
+function meta::pure::lineage::scanProperties::propertyTree::buildMultiLevelPropertyTrees(vs:ValueSpecification[1], mappings:Mapping[*], extensions:meta::pure::extension::Extension[*]):PropertyPathTree[*]
 {
     $vs->buildMultiLevelPropertyTrees($mappings, $extensions, noDebug())
 }
 
-function meta::pure::lineage::scanProperties::propertyTree::buildMultiLevelPropertyTrees(vs:ValueSpecification[1], mappings:Mapping[*], extensions:meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]):PropertyPathTree[*]
+function meta::pure::lineage::scanProperties::propertyTree::buildMultiLevelPropertyTrees(vs:ValueSpecification[1], mappings:Mapping[*], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):PropertyPathTree[*]
 {
    let res = ^Pair<ValueSpecification, List<PropertyPathTree>>(first=$vs, second=^List<PropertyPathTree>(values=[$vs->scanProperties($debug).result->buildPropertyTree()]));
 

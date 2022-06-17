@@ -14,13 +14,7 @@
 
 function <<meta::pure::profiles::test.Test>> meta::pure::executionPlan::tests::testAllNodesForGraphNode() : Boolean[1]
 {
-   let sysMapping = ^meta::pure::router::systemMapping::SystemMapping(
-      executeFunctionAsString='',
-      supportsFunctionAsString='',
-      planExecutionAsString='',
-      localGetterOverrideMappedAsString='',
-      localGetterOverrideNonMappedAsString=''
-   );
+   let sysMapping = meta::pure::store::platform::contract::platformStoreContract();
    
    let tree = ^meta::pure::graphFetch::GraphFetchTree();
    let routedTree = ^meta::pure::graphFetch::routing::RoutedGraphFetchTree();

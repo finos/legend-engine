@@ -16,9 +16,9 @@ import meta::external::language::java::transform::*;
 import meta::pure::executionPlan::engine::*;
 import meta::pure::executionPlan::engine::java::*;
 import meta::pure::executionPlan::engine::java::platform::*;
-import meta::pure::router::extension::*;
+import meta::pure::extension::*;
 
-function meta::pure::executionPlan::engine::java::engineConventions(extensions:meta::pure::router::extension::RouterExtension[*]): Conventions[1]
+function meta::pure::executionPlan::engine::java::engineConventions(extensions:meta::pure::extension::Extension[*]): Conventions[1]
 {
    newConventions($extensions)
       ->applyJavaEngineDependencies($extensions)

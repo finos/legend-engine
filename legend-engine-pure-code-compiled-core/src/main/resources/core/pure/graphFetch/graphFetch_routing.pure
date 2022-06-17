@@ -18,7 +18,7 @@ import meta::pure::lineage::scanProperties::propertyTree::*;
 import meta::pure::mapping::*;
 import meta::pure::router::clustering::*;
 import meta::pure::router::routing::*;
-import meta::pure::router::systemMapping::*;
+import meta::pure::store::*;
 import meta::pure::graphFetch::routing::*;
 import meta::pure::graphFetch::*;
 import meta::pure::runtime::*;
@@ -60,7 +60,7 @@ function meta::pure::graphFetch::routing::propertyMappingInfo(prop: PropertyGrap
                                                                                                 ^PropertyMappingInfo(property=$property, propertyMappings=$resolvedPropertyMappings, sets=$sets););
 }
 
-function meta::pure::graphFetch::routing::clusterRoutedGraphFetchTree(r: RoutedGraphFetchTree[1], parentStore: Store[0..1], mapping:Mapping[1], runtime: Runtime[0..1], openVariables:Map<String, List<Any>>[1], exeCtx:ExecutionContext[1], extensions:meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]):GraphFetchTree[1]
+function meta::pure::graphFetch::routing::clusterRoutedGraphFetchTree(r: RoutedGraphFetchTree[1], parentStore: Store[0..1], mapping:Mapping[1], runtime: Runtime[0..1], openVariables:Map<String, List<Any>>[1], exeCtx:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):GraphFetchTree[1]
 {
    let currentTreeStores = $r.sets->map(x | $x->getStoreFromSet($mapping, $extensions));
    let currentTreeStoresWithouDuplicates = $currentTreeStores->filter(x | !$x->instanceOf(meta::pure::router::store::embedded::EmbeddedStore))->removeDuplicatesBy(x | $x->elementToPath());
@@ -69,10 +69,11 @@ function meta::pure::graphFetch::routing::clusterRoutedGraphFetchTree(r: RoutedG
 
    let subTreeClusters = $r.subTrees->map(x | if($x->instanceOf(RoutedGraphFetchTree), | $x->cast(@RoutedGraphFetchTree)->clusterRoutedGraphFetchTree($singleStore, $mapping, $runtime, $openVariables, $exeCtx, $extensions, $debug), | $x));
 
-   let systemMapping = $singleStore->getSystemMappingFromStore($extensions);
+   let systemMapping = $extensions->meta::pure::extension::storeContractFromStore($singleStore);
+
    ^ClusteredGraphFetchTree
    (
-      s  = $systemMapping,
+      s = $systemMapping,
       store = $singleStore,
       tree = ^$r(subTrees = $subTreeClusters->map(x | $x->match([c:ClusteredGraphFetchTree[1] | let storeSupportNativeJoinsAmongElements = $c.store->match($extensions.cluster_storeSupportsNativeJoinAmongElements->concatenate([
                                                                                                                                                               m:ModelStore[1] | false,
@@ -90,13 +91,6 @@ function meta::pure::graphFetch::routing::clusterRoutedGraphFetchTree(r: RoutedG
    );
 }
 
-
-function <<access.private>> meta::pure::graphFetch::routing::getSystemMappingFromStore(s: Store[1], extensions:meta::pure::router::extension::RouterExtension[*]):SystemMapping[1]
-{
-   $s->match([
-      m : meta::pure::mapping::modelToModel::ModelStore[1] | meta::pure::router::systemMapping::pureMappingSystemMapping()
-   ]->concatenate($extensions.graphFetch_getSystemMappingFromStore)->toOneMany())
-}
 
 function <<access.private>> meta::pure::graphFetch::routing::createGetAllApplicationForRootGraphFetchTree(root: RootGraphFetchTree<Any>[1], set: SetImplementation[1]):FunctionExpression[1]
 {
@@ -196,7 +190,7 @@ function meta::pure::graphFetch::routing::byPassClusteringInfoDeep(r: GraphFetch
  ]); 
 }
 
-function meta::pure::graphFetch::routing::routeRootGraphFetchTree(root: RootGraphFetchTree<Any>[1], set: SetImplementation[1], mapping: Mapping[1], exeCtx: ExecutionContext[1], extensions:meta::pure::router::extension::RouterExtension[*]):RoutedRootGraphFetchTree<Any>[1]
+function meta::pure::graphFetch::routing::routeRootGraphFetchTree(root: RootGraphFetchTree<Any>[1], set: SetImplementation[1], mapping: Mapping[1], exeCtx: ExecutionContext[1], extensions:meta::pure::extension::Extension[*]):RoutedRootGraphFetchTree<Any>[1]
 {
    let rootGetAllExpression = createGetAllApplicationForRootGraphFetchTree($root, $set);
    
@@ -303,7 +297,7 @@ function <<access.private>> meta::pure::graphFetch::routing::requiredPropertiesA
 }
 
 
-function meta::pure::graphFetch::routing::routePropertyGraphFetchTree(prop: PropertyGraphFetchTree[1], functionExpression: ValueSpecification[1], mapping: Mapping[1], extensions:meta::pure::router::extension::RouterExtension[*]):RoutedPropertyGraphFetchTree[0..1]
+function meta::pure::graphFetch::routing::routePropertyGraphFetchTree(prop: PropertyGraphFetchTree[1], functionExpression: ValueSpecification[1], mapping: Mapping[1], extensions:meta::pure::extension::Extension[*]):RoutedPropertyGraphFetchTree[0..1]
 {
    let propertyApplicationExporession = createFunctionApplicationForPropertyGraphFetchTree($prop, $functionExpression);
    

@@ -191,12 +191,12 @@ function <<access.private>> meta::relational::functions::toDDL::getSemiStructure
    )
 }
 
-function meta::relational::functions::toDDL::buildInsertSQLQueryResultIntoTable(tableName: String[1], s:SelectSQLQuery[1], connection: DatabaseConnection[1], extensions:meta::pure::router::extension::RouterExtension[*], context:DebugContext[1]) : String[1]
+function meta::relational::functions::toDDL::buildInsertSQLQueryResultIntoTable(tableName: String[1], s:SelectSQLQuery[1], connection: DatabaseConnection[1], extensions:meta::pure::extension::Extension[*], context:DebugContext[1]) : String[1]
 {
    'insert into '+ $tableName+' ( '+sqlQueryToString($s, $connection.type, $connection.timeZone, $connection.quoteIdentifiers, $extensions)+' )';
 }
 
-function meta::relational::functions::toDDL::insertSQLQueryResultIntoTable(tableName: String[1], s:SelectSQLQuery[1], connection: DatabaseConnection[1], extensions:meta::pure::router::extension::RouterExtension[*], context:DebugContext[1]) : Any[0..1]
+function meta::relational::functions::toDDL::insertSQLQueryResultIntoTable(tableName: String[1], s:SelectSQLQuery[1], connection: DatabaseConnection[1], extensions:meta::pure::extension::Extension[*], context:DebugContext[1]) : Any[0..1]
 {
    let stmt = buildInsertSQLQueryResultIntoTable($tableName, $s, $connection, $extensions, $context);
 

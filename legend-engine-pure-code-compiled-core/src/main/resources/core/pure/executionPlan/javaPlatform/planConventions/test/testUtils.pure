@@ -24,7 +24,7 @@ import meta::pure::executionPlan::engine::java::tests::*;
 import meta::pure::executionPlan::engine::java::typeInfo::*;
 import meta::pure::executionPlan::toString::*;
 import meta::pure::mapping::*;
-import meta::pure::router::extension::*;
+import meta::pure::extension::*;
 import meta::pure::runtime::*;
 
 Class meta::pure::executionPlan::engine::java::tests::JavaExpressionTest
@@ -112,7 +112,7 @@ function meta::pure::executionPlan::engine::java::tests::runTests(tests:JavaExpr
    runTests($tests, [], noDebug());
 }
 
-function meta::pure::executionPlan::engine::java::tests::runTests(tests:JavaExpressionTest[*], extensions:RouterExtension[*], debug:DebugContext[1]): Boolean[1]
+function meta::pure::executionPlan::engine::java::tests::runTests(tests:JavaExpressionTest[*], extensions:Extension[*], debug:DebugContext[1]): Boolean[1]
 {
    let failures = j_variable(javaStringBuilder(), 'failures');  
    let result   = j_variable(javaStringBuilder(), 'result');  
@@ -209,7 +209,7 @@ function meta::pure::executionPlan::engine::java::tests::runTests(tests:JavaPure
    runTests($tests, [], noDebug());
 }
 
-function meta::pure::executionPlan::engine::java::tests::runTests(tests:JavaPureTestSet[1], extensions:RouterExtension[*], debug:DebugContext[1]): Boolean[1]
+function meta::pure::executionPlan::engine::java::tests::runTests(tests:JavaPureTestSet[1], extensions:Extension[*], debug:DebugContext[1]): Boolean[1]
 {
    let generatedTestCalls = $tests.pureTests->map(
       {t|
@@ -276,7 +276,7 @@ function meta::pure::executionPlan::engine::java::tests::runTests(tests:JavaPure
    executeTests($merged, [], $debug);
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::tests::executeTests(tests:Project[1], extensions:meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]): Boolean[1]
+function <<access.private>> meta::pure::executionPlan::engine::java::tests::executeTests(tests:Project[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]): Boolean[1]
 {
    let node = ^PureExpressionPlatformExecutionNode(
       expression     = ^InstanceValue(genericType = ^GenericType(rawType = String), multiplicity = PureOne, values = ''),
@@ -305,8 +305,8 @@ function <<access.private>> meta::pure::executionPlan::engine::java::tests::exec
 
    meta::legend::test::mayExecuteLegendTest(
       {clientVersion, serverVersion, serializationKind, host, port |
-         let fStr = 'meta::protocols::pure::'+$clientVersion+'::invocation::execution::execute::executePlan_ExecutionPlan_1__String_1__Integer_1__RouterExtension_MANY__String_1_';
-         let xf   = $fStr->pathToElement()->cast(@Function<{ExecutionPlan[1], String[1], Integer[1], meta::pure::router::extension::RouterExtension[1] ->String[1]}>);
+         let fStr = 'meta::protocols::pure::'+$clientVersion+'::invocation::execution::execute::executePlan_ExecutionPlan_1__String_1__Integer_1__Extension_MANY__String_1_';
+         let xf   = $fStr->pathToElement()->cast(@Function<{ExecutionPlan[1], String[1], Integer[1], meta::pure::extension::Extension[1] ->String[1]}>);
          let r = $xf->eval($plan, $host, $port, $extensions)->toOne()->cast(@String);
          let lines = $r->replace('\\n', '\n');
          $lines->println();

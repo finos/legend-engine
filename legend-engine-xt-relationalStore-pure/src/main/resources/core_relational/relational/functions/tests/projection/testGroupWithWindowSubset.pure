@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::csv::*;
+import meta::relational::tests::csv::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::advanced::contractmoneyscenario::*;
 import meta::relational::tests::model::simple::*;
@@ -36,7 +36,7 @@ function <<test.Test>> meta::relational::tests::projection::testGroupByWithWindo
                                                  , [ 'Contract ID' , 'Amount' , 'Rate' , 'Value' , 'Amount-Sum' , 'Rate-Average']                  
                                                  , [ 'Amount'  ]
                                                  ,[ 'Amount-Sum' ]                                                                  
-                                                 ) , ContractMoney, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                                                 ) , ContractMoney, testRuntime(), meta::relational::extension::relationalExtensions());
       
    assertEquals( 'select "root".price as "Amount", sum("root".price) as "Amount-Sum" from Contract as "root" group by "Amount"' , $results->sqlRemoveFormatting() ) ;
    assertEquals( $results.values.rows->filter ( x| $x.getFloat('Amount-Sum') == 10.0 )->size() , 1 );
@@ -57,7 +57,7 @@ function <<test.Test>> meta::relational::tests::projection::testGroupByWithWindo
                                                  , [ 'Contract ID' , 'Amount' , 'Rate' , 'Value' , 'Amount-Sum' , 'Rate-Average']                  
                                                  , [ 'Amount' , 'Rate' ]
                                                  ,[  'Amount-Sum', 'Rate-Average' ]                                                                  
-                                                 ) , ContractMoney, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                                                 ) , ContractMoney, testRuntime(), meta::relational::extension::relationalExtensions());
 
    //check for base table attributes are being selected only 
    assertEquals( 'select "root".price as "Amount", "fx_0".rate as "Rate", sum("root".price) as "Amount-Sum", avg(1.0 * case when "currency_0".value = \'USD\' then "root".price else ("root".price * "fx_0".rate) end) as "Rate-Average" from Contract as "root" left outer join Currency as "currency_0" on ("root".id = "currency_0".contractId) left outer join FX as "fx_0" on ("root".currency = "fx_0".currency and ("fx_0".date = \'2003-10-10\' and "fx_0".tenor = 1)) group by "Amount","Rate"', $results2->sqlRemoveFormatting() );      
@@ -79,7 +79,7 @@ function <<test.Test>> meta::relational::tests::projection::testGroupByWithWindo
                                                  , [ 'Contract ID' , 'Amount' , 'Rate' , 'Value' , 'Amount-Sum' , 'Rate-Average']                  
                                                  , [  'Rate', 'Amount'  ]
                                                  , ['Rate-Average',  'Amount-Sum'  ]                                                                  
-                                                 ) , ContractMoney, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                                                 ) , ContractMoney, testRuntime(), meta::relational::extension::relationalExtensions());
 
    //check for attributes that are in different order than the input parmeters    
    assertEquals( 'select "fx_0".rate as "Rate", "root".price as "Amount", avg(1.0 * case when "currency_0".value = \'USD\' then "root".price else ("root".price * "fx_0".rate) end) as "Rate-Average", sum("root".price) as "Amount-Sum" from Contract as "root" left outer join Currency as "currency_0" on ("root".id = "currency_0".contractId) left outer join FX as "fx_0" on ("root".currency = "fx_0".currency and ("fx_0".date = \'2003-10-10\' and "fx_0".tenor = 1)) group by "Rate","Amount"', $results3->sqlRemoveFormatting() );

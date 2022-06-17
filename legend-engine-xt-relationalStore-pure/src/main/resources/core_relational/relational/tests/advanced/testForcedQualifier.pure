@@ -40,7 +40,7 @@ function <<test.Test>> meta::relational::tests::advanced::forced::qualifier::tes
 
 function meta::relational::tests::advanced::forced::qualifier::testDerivedWithFilteringTwoProperties(isolation:IsolationStrategy[1]):Result<Any|*>[1]
 {
-   let result = execute(|Product.all()->project([#/Product/name#, #/Product/cusip#, #/Product/isin#]), simpleRelationalMapping, testRuntime(),  meta::pure::router::extension::defaultRelationalExtensions(),^RelationalDebugContext(debug=false, space='', forcedIsolation = $isolation));
+   let result = execute(|Product.all()->project([#/Product/name#, #/Product/cusip#, #/Product/isin#]), simpleRelationalMapping, testRuntime(),  meta::relational::extension::relationalExtensions(),^RelationalDebugContext(debug=false, space='', forcedIsolation = $isolation));
    assertSize($result.values.rows, 4);
    assertEquals('CUSIP1,CUSIP2,CUSIP3,Firm A,Firm C,Firm D,Firm X,ISIN1,ISIN2,ISIN3,TDSNull,TDSNull', $result.values.rows->map(r|$r.values)->sort()->makeString(','));
    $result;

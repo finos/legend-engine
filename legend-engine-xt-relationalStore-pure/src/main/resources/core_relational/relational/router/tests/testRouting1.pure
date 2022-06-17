@@ -26,7 +26,7 @@ function meta::relational::tests::query::routing::mapNestedInUserFunction(value:
 
 function <<test.Test>> meta::relational::tests::query::routing::testNoRoutingWhenTraversingFunction():Boolean[1]
 {
-   let result = execute(|Person.all()->filter(p|($p.firstName == 'John' && $p.lastName == 'Johnson') || $p.lastName == 'Allen')->mapNestedInUserFunction(e|$e.lastName), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->filter(p|($p.firstName == 'John' && $p.lastName == 'Johnson') || $p.lastName == 'Allen')->mapNestedInUserFunction(e|$e.lastName), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 2);
    assertSameElements(['Allen', 'Johnson'], $result.values);
    assertEquals('select "root".LASTNAME from personTable as "root" where (("root".FIRSTNAME = \'John\' and "root".LASTNAME = \'Johnson\') or "root".LASTNAME = \'Allen\')', $result->sqlRemoveFormatting());
@@ -35,7 +35,7 @@ function <<test.Test>> meta::relational::tests::query::routing::testNoRoutingWhe
 // Alloy exclusion reason: 8. Routing not supported yet
 function <<test.Test, test.ExcludeAlloy>>  meta::relational::tests::query::routing::testSimpleRouting():Boolean[1]
 {
-   let result = execute(|Person.all()->filter(p|($p.firstName == 'John' && $p.lastName == 'Johnson') || $p.lastName == 'Allen').lastName->makeString(', '), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->filter(p|($p.firstName == 'John' && $p.lastName == 'Johnson') || $p.lastName == 'Allen').lastName->makeString(', '), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 1);
    assertEquals('Johnson, Allen', $result.values);
    assertEquals('select "root".LASTNAME from personTable as "root" where (("root".FIRSTNAME = \'John\' and "root".LASTNAME = \'Johnson\') or "root".LASTNAME = \'Allen\')', $result->sqlRemoveFormatting());
@@ -44,7 +44,7 @@ function <<test.Test, test.ExcludeAlloy>>  meta::relational::tests::query::routi
 // Alloy exclusion reason: 8. Routing not supported yet
 function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::query::routing::testRoutedFunctionAdvanced():Boolean[1]
 {
-   let result = execute(|Person.all()->filter(p|$p.firstName == 'John')->mapNestedInUserFunction(e|$e.lastName)->makeString(', ') + ' | ' + Person.all()->filter(p|$p.firstName == 'Anthony')->toOne().lastName->toOne(), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->filter(p|$p.firstName == 'John')->mapNestedInUserFunction(e|$e.lastName)->makeString(', ') + ' | ' + Person.all()->filter(p|$p.firstName == 'Anthony')->toOne().lastName->toOne(), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 1);
    assertEquals('Johnson, Hill | Allen', $result.values->first());
    assertEquals('select "root".LASTNAME from personTable as "root" where "root".FIRSTNAME = \'John\'', $result->sqlRemoveFormatting(0));
@@ -57,7 +57,7 @@ function <<test.Test>> meta::relational::tests::query::routing::testRoutingTwoEx
                Person.all()->filter(p|$p.firstName == $personName);};
                
                
-   let result = execute($fn, simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute($fn, simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 2);
    assertEquals(['Johnson', 'Hill'], $result.values.lastName);
 }
@@ -72,7 +72,7 @@ function <<test.Test, test.ExcludeAlloy>> {test.excludePlatform = 'Java compiled
                };
                
                
-   let result = execute($fn, simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute($fn, simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 1);
    assertEquals(['Roberts'], $result.values.lastName);
    assertSize($result.activities, 3);
@@ -88,7 +88,7 @@ function <<test.Test, test.ExcludeAlloy>> {test.excludePlatform = 'Java compiled
                };
                
                
-   let result = execute($fn, simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute($fn, simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 1);
    assertEquals('Firm X,Firm A', $result.values);
    assertSize($result.activities, 2);
@@ -104,7 +104,7 @@ function <<test.ToFix>>   meta::relational::tests::query::routing::testRoutingUs
                };
                
                
-   let result = execute($fn, simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute($fn, simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 1);
    assertEquals('Firm X,Firm A', $result.values);
    assertSize($result.activities, 1);
@@ -118,7 +118,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::query::routin
                ['Johnson', 'Smith']->filter(p|$p == $name2);
                };
                               
-   let result = execute($fn, simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute($fn, simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 1);
    assertEquals('Smith', $result.values);
 }
@@ -131,7 +131,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::query::routin
                };
                
                
-   let result = execute($fn, simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute($fn, simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 1);
    assertEquals(['Roberts'], $result.values.lastName);
    assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join (select distinct "firmtable_1".ID from firmTable as "firmtable_1" where "firmtable_1".LEGALNAME = \'Firm A\') as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where "firmtable_0".ID is not null', $result);
@@ -145,7 +145,7 @@ function <<test.ToFix>> meta::relational::tests::query::routing::testRoutingTwoF
                };
                
                
-   let result = execute($fn, simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute($fn, simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 1);
    assertEquals(['Roberts'], $result.values.lastName);
    assertEquals('select root.ID as "pk_0", root.LEGALNAME as "legalName" from firmTable as root where root.LEGALNAME like \'Firm A%\'', $result->sqlRemoveFormatting(0));
@@ -159,7 +159,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::query::routin
                Person.all()->project([p | $p.nameWithTitle($firm.legalName)], 'title');
                };
                
-   let result = execute($fn, simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute($fn, simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 1);
    assertEquals(['Firm A Peter Smith', 'Firm A John Johnson', 'Firm A John Hill', 'Firm A Anthony Allen', 'Firm A Fabrice Roberts', 'Firm A Oliver Hill', 'Firm A David Harris', 'Firm A No address Smith', 'Firm A No firm no Firm', 'Firm A New York', 'Firm A Elena Firm B', 'Firm A Don New York'], $result.values->toOne().rows.values);
    assertEquals('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" where "root".LEGALNAME = \'Firm A\'', $result->sqlRemoveFormatting(0));
@@ -171,7 +171,7 @@ function <<test.Test>> meta::relational::tests::query::routing::testRoutingWithC
    let class = Person;
    let fn = {| getAll($class)->filter(p|$p.lastName == 'Johnson')};
 
-   let result = execute($fn, simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute($fn, simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 1);
    assertEquals('John', $result.values.firstName);
 }
@@ -179,7 +179,7 @@ function <<test.Test>> meta::relational::tests::query::routing::testRoutingWithC
 function <<test.Test>> meta::relational::tests::query::routing::testRoutingOfSimpleQualifiedProperty():Boolean[1]
 {
    let f = {|Firm.all()->project([f | $f.nameAndAddress()],'nameAndAddress')};
-   let routed = $f->routeFunction(simpleRelationalMapping, testRuntime(), ^meta::pure::runtime::ExecutionContext(), meta::pure::router::extension::defaultRelationalExtensions(), noDebug());
+   let routed = $f->routeFunction(simpleRelationalMapping, testRuntime(), ^meta::pure::runtime::ExecutionContext(), meta::relational::extension::relationalExtensions(), noDebug());
   
    let wrappedFunc = $routed.functions.expressionSequence->evaluateAndDeactivate()->cast(@meta::pure::router::clustering::ClusteredValueSpecification).val->cast(@SimpleFunctionExpression)->toOne();
    let lambda = $wrappedFunc.parametersValues->at(1)->byPassRouterInfo()->cast(@InstanceValue).values->at(0)->cast(@LambdaFunction<Any>);
@@ -197,7 +197,7 @@ function <<test.Test>> meta::relational::tests::query::routing::testRoutingOfSim
 
 function <<test.Test>> meta::relational::tests::projection::simple::testRoutingWithSubtypePropagation():Boolean[1]
 {
-   let result = execute(|Firm.all()->project(col(x|$x.employees->subType(@meta::relational::tests::model::simple::PersonExtension).manager->subType(@meta::relational::tests::model::simple::PersonExtension).name, 'managerName')), meta::relational::tests::TestMappingOfSubtypeClass, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Firm.all()->project(col(x|$x.employees->subType(@meta::relational::tests::model::simple::PersonExtension).manager->subType(@meta::relational::tests::model::simple::PersonExtension).name, 'managerName')), meta::relational::tests::TestMappingOfSubtypeClass, testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals('select concat("persontable_1".FIRSTNAME, \' \', "persontable_1".LASTNAME) as "managerName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) left outer join personTable as "persontable_1" on ("persontable_0".MANAGERID = "persontable_1".ID)',$result->sqlRemoveFormatting());
 }
 
@@ -205,7 +205,7 @@ function <<test.ToFix>> meta::relational::tests::query::routing::testRoutingPure
 {
    let fn = {| doSomething(3)};
    
-   let result = execute($fn, simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute($fn, simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals('A chicken', $result.values);
 }
 

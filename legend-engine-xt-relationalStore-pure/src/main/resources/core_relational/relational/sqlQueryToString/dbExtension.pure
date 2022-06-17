@@ -5,7 +5,8 @@ import meta::relational::metamodel::*;
 import meta::relational::metamodel::datatype::*;
 import meta::relational::metamodel::operation::*;
 import meta::relational::metamodel::relation::*;
-import meta::pure::router::extension::*;
+import meta::pure::extension::*;
+import meta::relational::extension::*;
 
 Enum meta::relational::functions::sqlQueryToString::GenerationSide
 {
@@ -208,7 +209,7 @@ Class meta::relational::functions::sqlQueryToString::SqlGenerationContext
    format: Format[1];
    generationState: GenerationState[1];
    config: Config[1];
-   extensions: RouterExtension[*];
+   extensions: Extension[*];
 }
 
 function meta::relational::functions::sqlQueryToString::literalTransform<K>(t: meta::pure::metamodel::function::Function<{K[1] -> String[1]}>[1]): meta::pure::metamodel::function::Function<{K[1], String[0..1] -> String[1]}>[1]
@@ -255,52 +256,52 @@ function meta::relational::functions::sqlQueryToString::getDbExtensionLoaders():
     ->map(f| $f->eval())->sortBy(l| $l.dbType.name);
 }
 
-function meta::relational::functions::sqlQueryToString::sqlQueryToString(sqlQuery:SQLQuery[1], dbType:DatabaseType[1], extensions:RouterExtension[*]):String[1]
+function meta::relational::functions::sqlQueryToString::sqlQueryToString(sqlQuery:SQLQuery[1], dbType:DatabaseType[1], extensions:Extension[*]):String[1]
 {
    sqlQueryToString($sqlQuery, $dbType, [], [], $extensions);
 }
 
-function meta::relational::functions::sqlQueryToString::sqlQueryToString(sqlQuery:SQLQuery[1], dbType:DatabaseType[1], dbTimeZone:String[0..1], quoteIdentifiers:Boolean[0..1], extensions:RouterExtension[*]):String[1]
+function meta::relational::functions::sqlQueryToString::sqlQueryToString(sqlQuery:SQLQuery[1], dbType:DatabaseType[1], dbTimeZone:String[0..1], quoteIdentifiers:Boolean[0..1], extensions:Extension[*]):String[1]
 {
    sqlQueryToString($sqlQuery, $dbType, $dbTimeZone, $quoteIdentifiers, ^Format(newLine='', indent=''), $extensions);
 }
 
-function meta::relational::functions::sqlQueryToString::sqlQueryToStringPretty(sqlQuery:SQLQuery[1], dbType:DatabaseType[1], dbTimeZone:String[0..1], quoteIdentifiers:Boolean[0..1], extensions:RouterExtension[*]):String[1]
+function meta::relational::functions::sqlQueryToString::sqlQueryToStringPretty(sqlQuery:SQLQuery[1], dbType:DatabaseType[1], dbTimeZone:String[0..1], quoteIdentifiers:Boolean[0..1], extensions:Extension[*]):String[1]
 {
    sqlQueryToString($sqlQuery, $dbType, $dbTimeZone, $quoteIdentifiers, ^Format(newLine='\n', indent='\t'), $extensions);
 }
 
-function meta::relational::functions::sqlQueryToString::sqlQueryToString(sqlQuery:SQLQuery[1], dbType:DatabaseType[1], dbTimeZone:String[0..1], quoteIdentifiers:Boolean[0..1], format:Format[1], extensions:RouterExtension[*]):String[1]
+function meta::relational::functions::sqlQueryToString::sqlQueryToString(sqlQuery:SQLQuery[1], dbType:DatabaseType[1], dbTimeZone:String[0..1], quoteIdentifiers:Boolean[0..1], format:Format[1], extensions:Extension[*]):String[1]
 {
    processOperation($sqlQuery, createDbConfig($dbType, $dbTimeZone, $quoteIdentifiers), $format, ^Config(), $extensions);
 }
 
-function meta::relational::functions::sqlQueryToString::processOperation(relationalOperationElement:RelationalOperationElement[1], dbType:DatabaseType[1], extensions:RouterExtension[*]):String[1]
+function meta::relational::functions::sqlQueryToString::processOperation(relationalOperationElement:RelationalOperationElement[1], dbType:DatabaseType[1], extensions:Extension[*]):String[1]
 {
    processOperation($relationalOperationElement, createDbConfig($dbType, []), ^Format(newLine='', indent=''), ^Config(), $extensions);
 }
 
-function meta::relational::functions::sqlQueryToString::processOperation(relationalOperationElement:RelationalOperationElement[1], dbType:DatabaseType[1], dbTimeZone:String[0..1], quoteIdentifiers:Boolean[0..1], extensions:RouterExtension[*]):String[1]
+function meta::relational::functions::sqlQueryToString::processOperation(relationalOperationElement:RelationalOperationElement[1], dbType:DatabaseType[1], dbTimeZone:String[0..1], quoteIdentifiers:Boolean[0..1], extensions:Extension[*]):String[1]
 {
    processOperation($relationalOperationElement, createDbConfig($dbType, $dbTimeZone, $quoteIdentifiers), ^Format(newLine='', indent=''), ^Config(), $extensions);
 }
 
-function meta::relational::functions::sqlQueryToString::processOperation(relationalOperationElement:RelationalOperationElement[1], dbType:DatabaseType[1], config:Config[1], extensions:RouterExtension[*]):String[1]
+function meta::relational::functions::sqlQueryToString::processOperation(relationalOperationElement:RelationalOperationElement[1], dbType:DatabaseType[1], config:Config[1], extensions:Extension[*]):String[1]
 {
    processOperation($relationalOperationElement, createDbConfig($dbType, []), ^Format(newLine='', indent=''), $config, $extensions);
 }
 
-function meta::relational::functions::sqlQueryToString::processOperation(relationalOperationElement:RelationalOperationElement[1], dbConfig : DbConfig[1], format:Format[1], extensions:RouterExtension[*]):String[1]
+function meta::relational::functions::sqlQueryToString::processOperation(relationalOperationElement:RelationalOperationElement[1], dbConfig : DbConfig[1], format:Format[1], extensions:Extension[*]):String[1]
 {
    processOperation($relationalOperationElement, $dbConfig, $format, ^GenerationState(generationSide = GenerationSide.Where, withinWhenClause = false), ^Config(), $extensions);
 }
 
-function meta::relational::functions::sqlQueryToString::processOperation(relationalOperationElement:RelationalOperationElement[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], extensions:RouterExtension[*]):String[1]
+function meta::relational::functions::sqlQueryToString::processOperation(relationalOperationElement:RelationalOperationElement[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], extensions:Extension[*]):String[1]
 {
    processOperation($relationalOperationElement, $dbConfig, $format, ^GenerationState(generationSide = GenerationSide.Where, withinWhenClause = false), $config, $extensions);
 }
 
-function meta::relational::functions::sqlQueryToString::processOperation(relationalOperationElement:RelationalOperationElement[1], dbConfig : DbConfig[1], format:Format[1], generationState:GenerationState[1], extensions:RouterExtension[*]):String[1]
+function meta::relational::functions::sqlQueryToString::processOperation(relationalOperationElement:RelationalOperationElement[1], dbConfig : DbConfig[1], format:Format[1], generationState:GenerationState[1], extensions:Extension[*]):String[1]
 {
    processOperation($relationalOperationElement, $dbConfig, $format, $generationState, ^Config(), $extensions);
 }
@@ -310,7 +311,7 @@ function meta::relational::functions::sqlQueryToString::processOperation(relatio
    $relationalOperationElement->processOperation($sgc.dbConfig, $sgc.format, $sgc.generationState, $sgc.config, $sgc.extensions);
 }
 
-function meta::relational::functions::sqlQueryToString::processOperation(relationalOperationElement:RelationalOperationElement[1], dbConfig : DbConfig[1], format:Format[1], generationState:GenerationState[1], config:Config[1], extensions:RouterExtension[*]):String[1]
+function meta::relational::functions::sqlQueryToString::processOperation(relationalOperationElement:RelationalOperationElement[1], dbConfig : DbConfig[1], format:Format[1], generationState:GenerationState[1], config:Config[1], extensions:Extension[*]):String[1]
 {
    let sgc = ^SqlGenerationContext(dbConfig=$dbConfig, format=$format, generationState=$generationState, config=$config, extensions=$extensions);
    $relationalOperationElement->match($extensions->map(e|$e.moduleExtension('relational')->cast(@RelationalExtension).sqlQueryToString_processOperation)->map(f | $f->eval($dbConfig, $format, $generationState, $config, $extensions))->concatenate(
@@ -412,12 +413,12 @@ function meta::relational::functions::sqlQueryToString::maybeWrapAsBooleanOperat
    if ($sgc.dbConfig.dbExtension.isBooleanLiteralSupported, |$e, |$e->wrapAsBooleanOperation($sgc.extensions));
 }
 
-function meta::relational::functions::sqlQueryToString::wrapAsBooleanOperation(e:RelationalOperationElement[1], extensions:RouterExtension[*]):RelationalOperationElement[1]
+function meta::relational::functions::sqlQueryToString::wrapAsBooleanOperation(e:RelationalOperationElement[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
    if ($e->isBooleanOperation($extensions), | $e, | ^DynaFunction(name ='equal', parameters=[$e, ^Literal(value=true)]));
 }
 
-function meta::relational::functions::sqlQueryToString::isBooleanOperation(relationalElement:RelationalOperationElement[1], extensions:RouterExtension[*]):Boolean[1]
+function meta::relational::functions::sqlQueryToString::isBooleanOperation(relationalElement:RelationalOperationElement[1], extensions:Extension[*]):Boolean[1]
 {
    $relationalElement->match($extensions.moduleExtension('relational')->cast(@RelationalExtension).sqlQueryToString_isBooleanOperation->concatenate([
       d:DynaFunction[1] | $d.name->in(['or', 'and', 'lessThan', 'lessThanEqual', 'greaterThan', 'greaterThanEqual', 'equal', 'notEqual', 'notEqualAnsi', 'startsWith', 'endsWith', 'contains', 'isEmpty', 'isNotEmpty', 'isNull', 'isNotNull','isAlphaNumeric', 'exists', 'not', 'in', 'isNumeric', 'matches', 'isDistinct'])

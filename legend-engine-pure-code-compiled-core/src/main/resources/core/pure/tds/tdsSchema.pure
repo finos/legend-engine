@@ -14,7 +14,7 @@
 
 import meta::pure::tds::schema::*;
 
-function meta::pure::tds::schema::resolveSchema(f : FunctionDefinition<{->TabularDataSet[1]}>[1], extensions:meta::pure::router::extension::RouterExtension[*]) : TDSColumn[*]
+function meta::pure::tds::schema::resolveSchema(f : FunctionDefinition<{->TabularDataSet[1]}>[1], extensions:meta::pure::extension::Extension[*]) : TDSColumn[*]
 {
    let es = $f->evaluateAndDeactivate().expressionSequence;
    assertEquals(1, $es->size());
@@ -22,7 +22,7 @@ function meta::pure::tds::schema::resolveSchema(f : FunctionDefinition<{->Tabula
    resolveSchema($es->toOne(), $f->openVariableValues(), $extensions);
 }
 
-function meta::pure::tds::schema::resolveSchema(vs : ValueSpecification[1], openVars : Map<String, List<Any>>[1], extensions:meta::pure::router::extension::RouterExtension[*]) : TDSColumn[*]
+function meta::pure::tds::schema::resolveSchema(vs : ValueSpecification[1], openVars : Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*]) : TDSColumn[*]
 {
    resolveSchemaImpl($vs, $openVars, $extensions).columns;
 }
@@ -161,7 +161,7 @@ Class meta::pure::tds::schema::SchemaState[
    } : SchemaState[1];
 }
 
-function meta::pure::tds::schema::resolveSchemaImpl(vs : ValueSpecification[1], openVars : Map<String, List<Any>>[1], extensions:meta::pure::router::extension::RouterExtension[*]) : SchemaState[1]
+function meta::pure::tds::schema::resolveSchemaImpl(vs : ValueSpecification[1], openVars : Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*]) : SchemaState[1]
 {
    $vs->match([
       iv:InstanceValue[1]|$iv.values->match([
@@ -176,7 +176,7 @@ function meta::pure::tds::schema::resolveSchemaImpl(vs : ValueSpecification[1], 
 }
 
 
-function <<access.private>> meta::pure::tds::schema::resolveSchemaImpl(fe : FunctionExpression[1], openVars : Map<String, List<Any>>[1], extensions:meta::pure::router::extension::RouterExtension[*]) : SchemaState[1]
+function <<access.private>> meta::pure::tds::schema::resolveSchemaImpl(fe : FunctionExpression[1], openVars : Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*]) : SchemaState[1]
 {
    let handlers = [
          drop_TabularDataSet_1__Integer_1__TabularDataSet_1_,

@@ -498,15 +498,10 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
     {
         return Collections.singletonList(registerElementForPathToElement ->
         {
-            registerElementForPathToElement.value("meta::relational::mapping", Lists.mutable.with(
+            registerElementForPathToElement.value("meta::relational::contract", Lists.mutable.with(
                     "supports_FunctionExpression_1__Boolean_1_",
                     "supportsStream_FunctionExpression_1__Boolean_1_",
-                    "planExecution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__RouterExtension_MANY__DebugContext_1__ExecutionNode_1_"
-            ));
-            registerElementForPathToElement.value("meta::pure::mapping::aggregationAware", Lists.mutable.with(
-                    "supports_FunctionExpression_1__Boolean_1_",
-                    "planExecution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__RouterExtension_MANY__DebugContext_1__ExecutionNode_1_",
-                    "execution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_1__Runtime_1__ExecutionContext_1__RouterExtension_MANY__DebugContext_1__Result_1_"
+                    "planExecution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__Extension_MANY__DebugContext_1__ExecutionNode_1_"
             ));
 
             ImmutableList<String> versions = PureClientVersions.versionsSince("v1_20_0");

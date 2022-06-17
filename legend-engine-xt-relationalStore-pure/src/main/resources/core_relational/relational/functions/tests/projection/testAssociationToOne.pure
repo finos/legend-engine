@@ -20,7 +20,7 @@ import meta::pure::metamodel::tds::*;
 
 function <<test.Test>> meta::relational::tests::projection::association::toOne::testAssociationToOne():Boolean[1]
 {
-   let result = execute(|Person.all()->project([#/Person/firstName#, #/Person/firm/legalName#]), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->project([#/Person/firstName#, #/Person/firm/legalName#]), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 7);
    assertEquals('Anthony,David,Fabrice,Firm A,Firm B,Firm C,Firm X,Firm X,Firm X,Firm X,John,John,Oliver,Peter', $result.values.rows->map(r|$r.values)->sort()->makeString(','));
    assertEquals('select "root".FIRSTNAME as "firstName", "firmtable_0".LEGALNAME as "legalName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID)', $result->sqlRemoveFormatting());
@@ -28,7 +28,7 @@ function <<test.Test>> meta::relational::tests::projection::association::toOne::
 
 function <<test.Test>> meta::relational::tests::projection::association::toOne::testAssociationToOneWithQuery():Boolean[1]
 {
-   let result = execute(|Person.all()->filter(p|$p.firm.legalName == 'Firm X')->project([#/Person/firstName#, #/Person/firm/legalName#]), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->filter(p|$p.firm.legalName == 'Firm X')->project([#/Person/firstName#, #/Person/firm/legalName#]), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 4);
    assertEquals('Anthony,Firm X,Firm X,Firm X,Firm X,John,John,Peter', $result.values.rows->map(r|$r.values)->sort()->makeString(','));
    assertEquals('select "root".FIRSTNAME as "firstName", "firmtable_0".LEGALNAME as "legalName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where "firmtable_0".LEGALNAME = \'Firm X\'', $result->sqlRemoveFormatting());
@@ -36,7 +36,7 @@ function <<test.Test>> meta::relational::tests::projection::association::toOne::
 
 function <<test.Test>> meta::relational::tests::projection::association::toOne::testTwoAssociationsToOneBranchWithQuery():Boolean[1]
 {
-   let result = execute(|Person.all()->filter(p|$p.firm->toOne().legalName == 'Firm X' && $p.address->toOne().name == 'Hoboken')->project([#/Person/lastName#, #/Person/firm/legalName#, #/Person/address/name#]), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->filter(p|$p.firm->toOne().legalName == 'Firm X' && $p.address->toOne().name == 'Hoboken')->project([#/Person/lastName#, #/Person/firm/legalName#, #/Person/address/name#]), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values->at(0), 1);
    assertEquals(['Smith', 'Firm X', 'Hoboken'], $result.values->toOne().rows.values);
    assertEquals('select "root".LASTNAME as "lastName", "firmtable_0".LEGALNAME as "legalName", "addresstable_0".NAME as "name" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "root".ADDRESSID) where ("firmtable_0".LEGALNAME = \'Firm X\' and "addresstable_0".NAME = \'Hoboken\')', $result->sqlRemoveFormatting());

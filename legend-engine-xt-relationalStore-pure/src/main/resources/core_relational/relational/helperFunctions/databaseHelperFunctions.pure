@@ -51,7 +51,7 @@ meta::relational::functions::database::constructDb(connection:DatabaseConnection
    ^$db(joins=$joins);
 }
 
-function meta::relational::functions::database::constructDb::joinFunctions::alwaysJoinColumnsWithNameTo(sourceTable:Table[1], database:Database[1], targetTableName:String[1], sourceToTargetColumnNamePairs:Pair<String,String>[1..*], extensions:meta::pure::router::extension::RouterExtension[*]):Join[0..1]
+function meta::relational::functions::database::constructDb::joinFunctions::alwaysJoinColumnsWithNameTo(sourceTable:Table[1], database:Database[1], targetTableName:String[1], sourceToTargetColumnNamePairs:Pair<String,String>[1..*], extensions:meta::pure::extension::Extension[*]):Join[0..1]
 {
    let operations = $sourceToTargetColumnNamePairs->map(p |
       let sourceColumnName = $p.first;

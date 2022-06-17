@@ -1,0 +1,55 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::mapping::*;
+import meta::pure::router::systemMapping::tests::*;
+import meta::pure::extension::*;
+import meta::pure::mapping::modelToModel::*;
+import meta::pure::store::*;
+import meta::pure::runtime::*;
+import meta::pure::executionPlan::*;
+import meta::pure::router::execution::*;
+import meta::pure::extension::*;
+
+function meta::pure::store::platform::contract::platformStoreContract():StoreContract[1]
+{
+   ^StoreContract
+   (
+     id = 'platformStore',
+     executeStoreQuery = meta::pure::store::platform::contract::execution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__Extension_MANY__DebugContext_1__Result_1_,
+     supports = meta::pure::store::platform::contract::supports_FunctionExpression_1__Boolean_1_,
+     planExecution = meta::pure::store::platform::contract::planExecution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__Extension_MANY__DebugContext_1__ExecutionNode_1_,
+     
+     supportsSetImplementation = s:SetImplementation[1]|false
+   )
+}
+
+// Platform Store Execution
+function meta::pure::store::platform::contract::execution(sq:meta::pure::mapping::StoreQuery[1], ext:RoutedValueSpecification[0..1], m:Mapping[0..1], runtime:Runtime[0..1], exeCtx:ExecutionContext[1], extensions:Extension[*], debug:DebugContext[1]):Result<Any|*>[1]
+{
+  let newOne = ^Container(value = $sq.fe)->resolve($sq.inScopeVars, $sq.advancedRouting->toOne(), $extensions, $debug);
+  ^Result<Any|*>(activities = $newOne.activities, values=$newOne.value->reactivate($sq.inScopeVars));
+}
+
+// Platform Store Execution Plan Generation Flow
+function meta::pure::store::platform::contract::planExecution(sq:meta::pure::mapping::StoreQuery[1], ext:RoutedValueSpecification[0..1], m:Mapping[0..1], runtime:Runtime[0..1], exeCtx:ExecutionContext[1], extensions : Extension[*], debug:DebugContext[1]):ExecutionNode[1]
+{
+   $sq.fe->meta::pure::store::platform::executionPlan::generation::processValueSpecification($runtime, $sq.inScopeVars, $sq.advancedRouting, $exeCtx, $extensions, $debug)->toOne();
+}
+
+// Functions supported by platform store
+function meta::pure::store::platform::contract::supports(f:FunctionExpression[1]):Boolean[1]
+{
+   true;
+}

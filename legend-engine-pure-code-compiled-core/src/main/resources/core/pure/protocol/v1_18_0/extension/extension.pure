@@ -19,17 +19,17 @@ import meta::json::*;
 
 import meta::protocols::pure::v1_18_0::extension::*;
 
-Class meta::protocols::pure::v1_18_0::extension::SerializerExtension_v1_18_0 extends meta::pure::router::extension::SerializerExtension
+Class meta::protocols::pure::v1_18_0::extension::SerializerExtension_v1_18_0 extends meta::pure::extension::SerializerExtension
 {
    transfers_mapping_transformMapping : Function<{SetImplementation[1]->Boolean[1]}>[*];
    transfers_mapping_transformSetImplementation : Function<{Mapping[1]->Function<{Nil[1]->meta::protocols::pure::v1_18_0::metamodel::mapping::ClassMapping[1]}>[*]}>[0..1];
-   transfers_mapping_transformAssociationImplementation : Function<{Mapping[1], meta::pure::router::extension::RouterExtension[*] -> Function<{Nil[1]->meta::protocols::pure::v1_18_0::metamodel::mapping::AssociationMapping[1]}>[*]}>[0..1];
+   transfers_mapping_transformAssociationImplementation : Function<{Mapping[1], meta::pure::extension::Extension[*] -> Function<{Nil[1]->meta::protocols::pure::v1_18_0::metamodel::mapping::AssociationMapping[1]}>[*]}>[0..1];
    
-   transfers_valueSpecification_transformAny : Function<{String[*],Map<String,List<Any>>[1], Multiplicity[1], FunctionExpression[0..1], Boolean[1], meta::pure::router::extension::RouterExtension[*]->Function<{Nil[1]->meta::protocols::pure::v1_18_0::metamodel::valueSpecification::ValueSpecification[1]}>[*]}>[0..1];
+   transfers_valueSpecification_transformAny : Function<{String[*],Map<String,List<Any>>[1], Multiplicity[1], FunctionExpression[0..1], Boolean[1], meta::pure::extension::Extension[*]->Function<{Nil[1]->meta::protocols::pure::v1_18_0::metamodel::valueSpecification::ValueSpecification[1]}>[*]}>[0..1];
    
-   transfers_executionPlan_transformNode : Function<{Mapping[1], meta::pure::router::extension::RouterExtension[*] -> Function<{Nil[1]->meta::protocols::pure::v1_18_0::metamodel::executionPlan::ExecutionNode[1]}>[*]}>[0..1];
+   transfers_executionPlan_transformNode : Function<{Mapping[1], meta::pure::extension::Extension[*] -> Function<{Nil[1]->meta::protocols::pure::v1_18_0::metamodel::executionPlan::ExecutionNode[1]}>[*]}>[0..1];
    transfers_executionPlan_transformNode_GraphFetchM2MExecutionNode : Function<{Nil[1]->meta::protocols::pure::v1_18_0::metamodel::store::Store[1]}>[*];
-   transfers_executionPlan_transformResultType : Function<{Mapping[1], meta::pure::router::extension::RouterExtension[*] -> Function<{Nil[1]->meta::protocols::pure::v1_18_0::metamodel::executionPlan::ResultType[1]}>[*]}>[0..1];
+   transfers_executionPlan_transformResultType : Function<{Mapping[1], meta::pure::extension::Extension[*] -> Function<{Nil[1]->meta::protocols::pure::v1_18_0::metamodel::executionPlan::ResultType[1]}>[*]}>[0..1];
    transfers_executionPlan_transformSetImplementation : Pair<Function<{PropertyMapping[1]->Boolean[1]}>, Function<{PropertyMapping[1]->Map<String,List<String>>[1]}>>[0..1];
    
    transfers_store_transformStore : Function<{Nil[1]->meta::protocols::pure::v1_18_0::metamodel::store::Store[1]}>[*];
@@ -39,8 +39,8 @@ Class meta::protocols::pure::v1_18_0::extension::SerializerExtension_v1_18_0 ext
    scan_buildBasePureModel_buildPureModelFromMapping2 : Store[*];
    
    scan_buildBasePureModel_findAllTypesFromMapping : Function<{Nil[1]->Type[*]}>[*];
-   scan_buildBasePureModel_extractStores : Function<{Mapping[1], meta::pure::router::extension::RouterExtension[*] -> Function<{Nil[1]->meta::pure::store::Store[*]}>[*]}>[0..1];
-   scan_buildBasePureModel_processProperties : Function<{Mapping[1], meta::pure::router::extension::RouterExtension[*] -> Function<{Nil[1]->meta::pure::store::Store[*]}>[*]}>[0..1];
+   scan_buildBasePureModel_extractStores : Function<{Mapping[1], meta::pure::extension::Extension[*] -> Function<{Nil[1]->meta::pure::store::Store[*]}>[*]}>[0..1];
+   scan_buildBasePureModel_processProperties : Function<{Mapping[1], meta::pure::extension::Extension[*] -> Function<{Nil[1]->meta::pure::store::Store[*]}>[*]}>[0..1];
    
    invocation_execution_execute1 : Function<{ExecutionContext[1]->Boolean[1]}>[*];
    invocation_execution_execute2_pre : Pair<Function<{String[1]->Boolean[1]}>, Function<{String[1], JSONObject[1], Mapping[1], Runtime[1],ExtendedJSONDeserializationConfig[1],ExecutionContext[0..1]->Pair<List<Any>,List<Activity>>[1]}>>[*];

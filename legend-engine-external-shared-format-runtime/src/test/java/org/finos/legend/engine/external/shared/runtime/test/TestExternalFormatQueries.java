@@ -36,7 +36,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lam
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_ExternalFormatExtension;
-import org.finos.legend.pure.generated.Root_meta_pure_router_extension_RouterExtension;
+import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_ExecutionContext_Impl;
 import org.finos.legend.pure.generated.core_external_shared_extension;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
@@ -99,7 +99,7 @@ public abstract class TestExternalFormatQueries
             ExecutionContext context = new Root_meta_pure_runtime_ExecutionContext_Impl(" ")._enableConstraints(true);
 
             RichIterable<Root_meta_external_shared_format_ExternalFormatExtension> planGenerationExtensions = LazyIterate.collect(ExternalFormatPlanGenerationExtensionLoader.extensions().values(), ext -> ext.getPureExtension(model.getExecutionSupport()));
-            RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions = core_external_shared_extension.Root_meta_external_shared_format_routerExtensions_String_1__ExternalFormatExtension_MANY__RouterExtension_MANY_("externalFormat", planGenerationExtensions, model.getExecutionSupport());
+            RichIterable<? extends Root_meta_pure_extension_Extension> extensions = core_external_shared_extension.Root_meta_external_shared_format_routerExtensions_String_1__ExternalFormatExtension_MANY__Extension_MANY_("externalFormat", planGenerationExtensions, model.getExecutionSupport());
 
             Mapping mapping = model.getMapping(mappingPath);
             Runtime runtime = model.getRuntime(runtimePath);

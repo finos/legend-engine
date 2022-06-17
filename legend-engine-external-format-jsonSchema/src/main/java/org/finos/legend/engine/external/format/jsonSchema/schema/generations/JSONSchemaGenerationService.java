@@ -30,7 +30,7 @@ import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
-import org.finos.legend.pure.generated.core_json_jsonSchema;
+import org.finos.legend.pure.generated.core_external_format_json_jsonSchema;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
@@ -88,7 +88,7 @@ public class JSONSchemaGenerationService
 
     public static List<GenerationOutput> generate(JSONSchemaConfig jsonSchemaConfig, PureModel pureModel)
     {
-        return core_json_jsonSchema.Root_meta_json_schema_generation_generateJsonSchemaFromPureWithScope_JSONSchemaConfig_1__JSONSchemaOutput_MANY_(jsonSchemaConfig.process(pureModel), pureModel.getExecutionSupport()).collect(v -> new GenerationOutput(v._content(), v._fileName(), v._format())).toList();
+        return core_external_format_json_jsonSchema.Root_meta_json_schema_generation_generateJsonSchemaFromPureWithScope_JSONSchemaConfig_1__JSONSchemaOutput_MANY_(jsonSchemaConfig.process(pureModel), pureModel.getExecutionSupport()).collect(v -> new GenerationOutput(v._content(), v._fileName(), v._format())).toList();
     }
 
     private Response exec(JSONSchemaConfig jsonSchemaConfig, Function0<PureModel> pureModelFunc, boolean interactive, MutableList<CommonProfile> profiles)

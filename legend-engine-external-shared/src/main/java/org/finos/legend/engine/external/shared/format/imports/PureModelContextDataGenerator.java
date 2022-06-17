@@ -65,7 +65,7 @@ public class PureModelContextDataGenerator
             {
                 if ("vX_X_X".equals(pureVersion))
                 {
-                    return java.lang.Class.forName("org.finos.legend.pure.generated.core_pure_protocol_vX_X_X_transfers_metamodel").getMethod("Root_meta_protocols_pure_" + pureVersion + "_transformation_fromPureGraph_domain_transformClass_Class_1__RouterExtension_MANY__Class_1_", org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class.class, RichIterable.class, ExecutionSupport.class);
+                    return java.lang.Class.forName("org.finos.legend.pure.generated.core_pure_protocol_vX_X_X_transfers_metamodel").getMethod("Root_meta_protocols_pure_" + pureVersion + "_transformation_fromPureGraph_domain_transformClass_Class_1__Extension_MANY__Class_1_", org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class.class, RichIterable.class, ExecutionSupport.class);
                 }
                 else
                 {
@@ -82,7 +82,7 @@ public class PureModelContextDataGenerator
         {
             try
             {
-                builder.addElement(objectMapper.readValue(org.finos.legend.pure.generated.core_pure_protocol_protocol.Root_meta_alloy_metadataServer_alloyToJSON_Any_1__String_1_("vX_X_X".equals(pureVersion) ? transformMethod.invoke(null, aClass, core_pure_extensions_extension.Root_meta_pure_router_extension_defaultExtensions__RouterExtension_MANY_(compiledExecutionSupport), compiledExecutionSupport) : transformMethod.invoke(null, aClass, compiledExecutionSupport), compiledExecutionSupport), Class.class));
+                builder.addElement(objectMapper.readValue(org.finos.legend.pure.generated.core_pure_protocol_protocol.Root_meta_alloy_metadataServer_alloyToJSON_Any_1__String_1_("vX_X_X".equals(pureVersion) ? transformMethod.invoke(null, aClass, core_pure_extensions_extension.Root_meta_pure_extension_defaultExtensions__Extension_MANY_(compiledExecutionSupport), compiledExecutionSupport) : transformMethod.invoke(null, aClass, compiledExecutionSupport), compiledExecutionSupport), Class.class));
             }
             catch (Exception ignored)
             {
@@ -99,7 +99,7 @@ public class PureModelContextDataGenerator
             {
                 if ("vX_X_X".equals(pureVersion))
                 {
-                    return java.lang.Class.forName("org.finos.legend.pure.generated.core_pure_protocol_vX_X_X_transfers_metamodel").getMethod("Root_meta_protocols_pure_" + pureVersion + "_transformation_fromPureGraph_domain_transformClass_Class_1__Boolean_1__RouterExtension_MANY__Class_1_", org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class.class, boolean.class, RichIterable.class, ExecutionSupport.class);
+                    return java.lang.Class.forName("org.finos.legend.pure.generated.core_pure_protocol_vX_X_X_transfers_metamodel").getMethod("Root_meta_protocols_pure_" + pureVersion + "_transformation_fromPureGraph_domain_transformClass_Class_1__Boolean_1__Extension_MANY__Class_1_", org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class.class, boolean.class, RichIterable.class, ExecutionSupport.class);
                 }
                 else
                 {
@@ -116,7 +116,7 @@ public class PureModelContextDataGenerator
         {
             try
             {
-                Object functionDef = "vX_X_X".equals(pureVersion) ? transformMethod.invoke(null, f, true, core_pure_extensions_extension.Root_meta_pure_router_extension_defaultExtensions__RouterExtension_MANY_(compiledExecutionSupport), compiledExecutionSupport) : transformMethod.invoke(null, f, true, compiledExecutionSupport);
+                Object functionDef = "vX_X_X".equals(pureVersion) ? transformMethod.invoke(null, f, true, core_pure_extensions_extension.Root_meta_pure_extension_defaultExtensions__Extension_MANY_(compiledExecutionSupport), compiledExecutionSupport) : transformMethod.invoke(null, f, true, compiledExecutionSupport);
                 builder.addElement(objectMapper.readValue(org.finos.legend.pure.generated.core_pure_protocol_protocol.Root_meta_alloy_metadataServer_alloyToJSON_Any_1__String_1_(functionDef, compiledExecutionSupport), Class.class));
             }
             catch (Exception e)
@@ -170,7 +170,7 @@ public class PureModelContextDataGenerator
             {
                 if ("vX_X_X".equals(pureVersion))
                 {
-                    return java.lang.Class.forName("org.finos.legend.pure.generated.core_pure_protocol_vX_X_X_transfers_metamodel").getMethod("Root_meta_protocols_pure_" + pureVersion + "_transformation_fromPureGraph_transformFunction_FunctionDefinition_1__RouterExtension_MANY__Function_1_", org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition.class, RichIterable.class, ExecutionSupport.class);
+                    return java.lang.Class.forName("org.finos.legend.pure.generated.core_pure_protocol_vX_X_X_transfers_metamodel").getMethod("Root_meta_protocols_pure_" + pureVersion + "_transformation_fromPureGraph_transformFunction_FunctionDefinition_1__Extension_MANY__Function_1_", org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition.class, RichIterable.class, ExecutionSupport.class);
                 }
                 else
                 {
@@ -188,7 +188,7 @@ public class PureModelContextDataGenerator
             try
             {
                 Object functionDef = "vX_X_X".equals(pureVersion) ?
-                        transformMethod.invoke(null, f, core_pure_extensions_extension.Root_meta_pure_router_extension_defaultExtensions__RouterExtension_MANY_(compiledExecutionSupport), compiledExecutionSupport)
+                        transformMethod.invoke(null, f, core_pure_extensions_extension.Root_meta_pure_extension_defaultExtensions__Extension_MANY_(compiledExecutionSupport), compiledExecutionSupport)
                         : transformMethod.invoke(null, f, compiledExecutionSupport);
                 Function func = objectMapper.readValue(org.finos.legend.pure.generated.core_pure_protocol_protocol.Root_meta_alloy_metadataServer_alloyToJSON_Any_1__String_1_(functionDef, compiledExecutionSupport), Function.class);
                 func.name = func.name.split("_")[0];
@@ -211,11 +211,11 @@ public class PureModelContextDataGenerator
             {
                 if ("vX_X_X".equals(pureVersion) || PureClientVersions.versionAGreaterThanOrEqualsVersionB(pureVersion, "v1_18_0"))
                 {
-                    return java.lang.Class.forName("org.finos.legend.pure.generated.core_pure_protocol_" + pureVersion + "_transfers_metamodel").getMethod("Root_meta_protocols_pure_" + pureVersion + "_transformation_fromPureGraph_transformProfile_Profile_1__RouterExtension_MANY__Profile_1_", org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile.class, RichIterable.class, ExecutionSupport.class);
+                    return java.lang.Class.forName("org.finos.legend.pure.generated.core_pure_protocol_" + pureVersion + "_transfers_metamodel").getMethod("Root_meta_protocols_pure_" + pureVersion + "_transformation_fromPureGraph_transformProfile_Profile_1__Extension_MANY__Profile_1_", org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile.class, RichIterable.class, ExecutionSupport.class);
                 }
                 else
                 {
-                    return loadTransClass(pureVersion).getMethod("Root_meta_protocols_pure_" + pureVersion + "_transformation_fromPureGraph_transformProfile_Profile_1__RouterExtension_MANY__Profile_1_", org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile.class, ExecutionSupport.class);
+                    return loadTransClass(pureVersion).getMethod("Root_meta_protocols_pure_" + pureVersion + "_transformation_fromPureGraph_transformProfile_Profile_1__Extension_MANY__Profile_1_", org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile.class, ExecutionSupport.class);
                 }
             }
             catch (Exception e)
@@ -231,7 +231,7 @@ public class PureModelContextDataGenerator
                 Object profile;
                 if ("vX_X_X".equals(pureVersion) || PureClientVersions.versionAGreaterThanOrEqualsVersionB(pureVersion, "v1_18_0"))
                 {
-                    profile = transformMethod.invoke(null, f, core_pure_extensions_extension.Root_meta_pure_router_extension_defaultExtensions__RouterExtension_MANY_(compiledExecutionSupport), compiledExecutionSupport);
+                    profile = transformMethod.invoke(null, f, core_pure_extensions_extension.Root_meta_pure_extension_defaultExtensions__Extension_MANY_(compiledExecutionSupport), compiledExecutionSupport);
                 }
                 else
                 {

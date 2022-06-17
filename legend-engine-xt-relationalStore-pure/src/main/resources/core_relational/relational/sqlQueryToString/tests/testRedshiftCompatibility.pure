@@ -92,7 +92,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
     |meta::relational::functions::sqlQueryToString::tests::redshift::testQuoting::domain::Person.all()->project([s | $s.age], ['KEY']),
     meta::relational::functions::sqlQueryToString::tests::redshift::testQuoting::mapping::simpleRelationalMappingPersonForBQ,
     meta::relational::runtime::DatabaseType.Redshift,
-    meta::pure::router::extension::defaultRelationalExtensions());
+    meta::relational::extension::relationalExtensions());
    assertEquals('select "person_table_d#2_d_m1".key as "KEY" from "person table" as "root" left outer join "person table" as "person_table_d#2_d_m1" on ("root".key = "person_table_d#2_d_m1".key)', $result);
 }
 
@@ -102,7 +102,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
     |meta::relational::functions::sqlQueryToString::tests::redshift::testQuoting::domain::Thing.all()->project([s | $s.id], ['ID']),
     meta::relational::functions::sqlQueryToString::tests::redshift::testQuoting::mapping::simpleRelationalMappingPersonForBQ,
     meta::relational::runtime::DatabaseType.Redshift,
-    meta::pure::router::extension::defaultRelationalExtensions());
+    meta::relational::extension::relationalExtensions());
    assertEquals('select "root".ID as "ID" from dataset1."thing table" as "root"', $result);
 }
 
@@ -118,7 +118,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
      $func,
      meta::relational::tests::simpleRelationalMappingInc,
      DatabaseType.Redshift,
-     meta::pure::router::extension::defaultRelationalExtensions());
+     meta::relational::extension::relationalExtensions());
    assertEquals('select "root".LASTNAME as "lastName", avg(1.0 * "root".AGE) OVER (Partition By "root".FIRSTNAME Order By "root".LASTNAME ASC) as "ageAverageWindow" from personTable as "root"', $result);
 }
 
@@ -129,7 +129,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
     |Trade.all()->project(t | $t.settlementDateTime, 'settlementDateTime')->filter(r | $r.getDateTime('settlementDateTime') < $dt),
     meta::relational::tests::simpleRelationalMapping,
     DatabaseType.Redshift,
-    meta::pure::router::extension::defaultRelationalExtensions());
+    meta::relational::extension::relationalExtensions());
    assertEquals('select "root".settlementDateTime as "settlementDateTime" from tradeTable as "root" where "root".settlementDateTime < Timestamp\'2015-01-01 00:00:00.000\'', $result);
 }
 
@@ -140,7 +140,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
     |Trade.all()->project(t | $t.date, 'date')->filter(r | $r.getDate('date') < $dt),
     meta::relational::tests::simpleRelationalMapping,
      DatabaseType.Redshift,
-     meta::pure::router::extension::defaultRelationalExtensions());
+     meta::relational::extension::relationalExtensions());
    assertEquals('select "root".tradeDate as "date" from tradeTable as "root" where "root".tradeDate < Timestamp\'2015-01-01 00:00:00.000\'', $result);
 }
 
@@ -151,7 +151,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
      |Person.all()->groupBy([p|$p.firstName], agg( x|$x.lastName, y|$y->joinStrings('*')),['firstName', 'lastNames']),
       meta::relational::tests::simpleRelationalMapping,
       DatabaseType.Redshift,
-      meta::pure::router::extension::defaultRelationalExtensions());
+      meta::relational::extension::relationalExtensions());
    assertSameSQL('select "root".FIRSTNAME as "firstName", listagg("root".LASTNAME, \'*\') as "lastNames" from personTable as "root" group by "firstName"', $result);
 }
 
@@ -162,7 +162,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
     |Person.all()->project([p|$p.name, p|$p.addresses.name], ['name','address']),
     meta::relational::tests::simpleRelationalMapping,
     DatabaseType.Redshift,
-    meta::pure::router::extension::defaultRelationalExtensions());
+    meta::relational::extension::relationalExtensions());
    assertSameSQL('select concat("root".FIRSTNAME, \' \', "root".LASTNAME) as "name", "union_d#5_d_m2"."addressTableNAME" as "address" from personTable as "root" left outer join (select "addressTable_d#6".ID as ID, null as ADDRESSID, "addressTable_d#6".NAME as "addressTableNAME" from addressTable as "addressTable_d#6" UNION ALL select "firmTable_d#8".ID as ID, "firmTable_d#8".ADDRESSID as ADDRESSID, "addressTable_d#6_f_d".NAME as "addressTableNAME" from firmTable as "firmTable_d#8" left outer join addressTable as "addressTable_d#6_f_d" on ("addressTable_d#6_f_d".ID = "firmTable_d#8".ADDRESSID)) as "union_d#5_d_m2" on ("union_d#5_d_m2".ID = "root".FIRMID or "union_d#5_d_m2".ID = "root".ADDRESSID)', $result);
 
 }
@@ -173,7 +173,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
     |SqlFunctionDemo.all()->project([s | $s.floatATan2Result], ['atan2']),
       meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
       DatabaseType.Redshift,
-      meta::pure::router::extension::defaultRelationalExtensions());
+      meta::relational::extension::relationalExtensions());
    assertSameSQL('select atan2("root".float1,"root".int1) as "atan2" from dataTable as "root"', $result);
 }
 
@@ -183,7 +183,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
      |Person.all()->project([p|$p.name] ,['name']),
       meta::relational::tests::simpleRelationalMapping,
       DatabaseType.Redshift,
-      meta::pure::router::extension::defaultRelationalExtensions());
+      meta::relational::extension::relationalExtensions());
    assertSameSQL('select concat("root".FIRSTNAME, \' \', "root".LASTNAME) as "name" from personTable as "root"', $result);
 }
 
@@ -193,7 +193,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
         |SqlFunctionDemo.all()->project([s | $s.hour], ['hour']),
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         meta::relational::runtime::DatabaseType.Redshift,
-        meta::pure::router::extension::defaultRelationalExtensions());
+        meta::relational::extension::relationalExtensions());
     assertEquals('select date_part(hour, "root".dateTime) as "hour" from dataTable as "root"', $result);
 }
 
@@ -203,7 +203,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
         |SqlFunctionDemo.all()->project([s | $s.week], ['weekofyear']),
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         meta::relational::runtime::DatabaseType.Redshift,
-        meta::pure::router::extension::defaultRelationalExtensions());
+        meta::relational::extension::relationalExtensions());
     assertEquals('select extract(week from "root".dateTime) as "weekofyear" from dataTable as "root"', $result);
 }
 
@@ -213,7 +213,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
         |SqlFunctionDemo.all()->project([s | $s.string3Integer], ['string3Integer']),
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         meta::relational::runtime::DatabaseType.Redshift,
-        meta::pure::router::extension::defaultRelationalExtensions());
+        meta::relational::extension::relationalExtensions());
     assertEquals('select cast("root".string3 as integer) as "string3Integer" from dataTable as "root"', $result);
 }
 
@@ -223,7 +223,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
         |SqlFunctionDemo.all()->project([s | $s.int1String], ['int1String']),
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         meta::relational::runtime::DatabaseType.Redshift,
-        meta::pure::router::extension::defaultRelationalExtensions());
+        meta::relational::extension::relationalExtensions());
     assertEquals('select cast("root".int1 as varchar) as "int1String" from dataTable as "root"', $result);
 }
 
@@ -233,7 +233,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
         |Trade.all()->filter(d | $d.date == today())->project(x | $x.date, 'date'),
         meta::relational::tests::simpleRelationalMapping,
         meta::relational::runtime::DatabaseType.Redshift,
-        meta::pure::router::extension::defaultRelationalExtensions());
+        meta::relational::extension::relationalExtensions());
     assertEquals('select "root".tradeDate as "date" from tradeTable as "root" where "root".tradeDate = current_date', $result);
 }
 
@@ -243,7 +243,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
         |SqlFunctionDemo.all()->project([s | $s.float1StdDevSample], 'stdDevSample'),
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         meta::relational::runtime::DatabaseType.Redshift,
-        meta::pure::router::extension::defaultRelationalExtensions());
+        meta::relational::extension::relationalExtensions());
     assertEquals('select stddev_samp("root".int1) as "stdDevSample" from dataTable as "root"', $result);
 }
 
@@ -254,7 +254,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
         |SqlFunctionDemo.all()->project([s | $s.float1StdDevPopulation], 'float1StdDevPopulation'),
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         meta::relational::runtime::DatabaseType.Redshift,
-        meta::pure::router::extension::defaultRelationalExtensions());
+        meta::relational::extension::relationalExtensions());
     assertEquals('select stddev_pop("root".int1) as "float1StdDevPopulation" from dataTable as "root"', $result);
 }
 
@@ -264,7 +264,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
         |Person.all()->filter(p|$p.firstName->substring(1, 5) == 'John'),
         meta::relational::tests::simpleRelationalMapping,
         DatabaseType.Redshift,
-        meta::pure::router::extension::defaultRelationalExtensions());
+        meta::relational::extension::relationalExtensions());
     assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where substring("root".FIRSTNAME, 1, 5) = \'John\'', $result);
 }
 
@@ -274,7 +274,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
         |Trade.all()->project([ t | $t.settlementDateTime->cast(@Date)->toOne()->second()], ['second']),
         meta::relational::tests::simpleRelationalMapping,
         DatabaseType.Redshift,
-        meta::pure::router::extension::defaultRelationalExtensions());
+        meta::relational::extension::relationalExtensions());
     assertEquals('select extract( second from "root".settlementDateTime) as "second" from tradeTable as "root"', $result);
 }
 
@@ -284,7 +284,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
         |SqlFunctionDemo.all()->project([s | $s.rtrimResult], ['rtrim']),
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         DatabaseType.Redshift,
-        meta::pure::router::extension::defaultRelationalExtensions());
+        meta::relational::extension::relationalExtensions());
     assertEquals('select rtrim("root".string2) as "rtrim" from dataTable as "root"', $result);
 }
 
@@ -294,7 +294,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
         |SqlFunctionDemo.all()->project([s | $s.float1Round], ['round']),
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         DatabaseType.Redshift,
-        meta::pure::router::extension::defaultRelationalExtensions());
+        meta::relational::extension::relationalExtensions());
     assertEquals('select round("root".float1, 0) as "round" from dataTable as "root"', $result);
 }
 
@@ -304,7 +304,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
         |SqlFunctionDemo.all()->project([s | $s.string1Right], ['right']),
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         DatabaseType.Redshift,
-        meta::pure::router::extension::defaultRelationalExtensions());
+        meta::relational::extension::relationalExtensions());
     assertEquals('select right("root".string1,2) as "right" from dataTable as "root"', $result);
 }
 
@@ -314,7 +314,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
         |Trade.all()->project([t| rem($t.quantity, $t.id)], ['rem']),
         meta::relational::tests::simpleRelationalMapping,
         DatabaseType.Redshift,
-        meta::pure::router::extension::defaultRelationalExtensions());
+        meta::relational::extension::relationalExtensions());
     assertEquals('select mod("root".quantity,"root".ID) as "rem" from tradeTable as "root"', $result);
 }
 
@@ -324,7 +324,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
         |meta::relational::tests::mapping::propertyfunc::model::domain::Person.all()->project(p|$p.firstName, 'firstName'),
         meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMapping,
         DatabaseType.Redshift,
-        meta::pure::router::extension::defaultRelationalExtensions());
+        meta::relational::extension::relationalExtensions());
     assertEquals('select substring("root".FULLNAME, 0, position(\',\' in "root".FULLNAME)-1) as "firstName" from personTable as "root"', $result);
 }
 
@@ -334,7 +334,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
         |SqlFunctionDemo.all()->project([s | $s.string2Integer], ['parseInteger']),
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         DatabaseType.Redshift,
-        meta::pure::router::extension::defaultRelationalExtensions());
+        meta::relational::extension::relationalExtensions());
     assertEquals('select cast("root".string2Integer as integer) as "parseInteger" from dataTable as "root"', $result);
 }
 
@@ -344,7 +344,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
         |SqlFunctionDemo.all()->project([s | $s.string2Float], ['string2Float']),
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         DatabaseType.Redshift,
-        meta::pure::router::extension::defaultRelationalExtensions());
+        meta::relational::extension::relationalExtensions());
     assertEquals('select cast("root".string2float as float) as "string2Float" from dataTable as "root"', $result);
 }
 
@@ -354,7 +354,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
         |SqlFunctionDemo.all()->project([s | $s.string2Decimal], ['string2Decimal']),
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         DatabaseType.Redshift,
-        meta::pure::router::extension::defaultRelationalExtensions());
+        meta::relational::extension::relationalExtensions());
     assertEquals('select cast("root".string2Decimal as decimal) as "string2Decimal" from dataTable as "root"', $result);
 }
 
@@ -364,7 +364,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
         |Trade.all()->filter(d | $d.date == now())->project(x | $x.date, 'date'),
         meta::relational::tests::simpleRelationalMapping,
         DatabaseType.Redshift,
-        meta::pure::router::extension::defaultRelationalExtensions());
+        meta::relational::extension::relationalExtensions());
     assertEquals('select "root".tradeDate as "date" from tradeTable as "root" where "root".tradeDate = now()', $result);
 }
 
@@ -375,7 +375,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
         |Trade.all()->project([t| monthNumber($t.settlementDateTime)], ['settlementMonthNumber']),
         meta::relational::tests::simpleRelationalMapping,
         DatabaseType.Redshift,
-        meta::pure::router::extension::defaultRelationalExtensions());
+        meta::relational::extension::relationalExtensions());
     assertEquals('select extract(month from "root".settlementDateTime) as "settlementMonthNumber" from tradeTable as "root"', $result);
 }
 
@@ -385,7 +385,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
         |SqlFunctionDemo.all()->project([s | $s.floatModResult ], ['mod']),
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         DatabaseType.Redshift,
-        meta::pure::router::extension::defaultRelationalExtensions());
+        meta::relational::extension::relationalExtensions());
     assertEquals('select mod("root".int1,2) as "mod" from dataTable as "root"', $result);
 }
 
@@ -395,6 +395,6 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
         |Trade.all()->project([t | $t.settlementDateTime->cast(@Date)->toOne()->minute()],['settlementDateTimeMinute']),
         meta::relational::tests::simpleRelationalMapping,
         DatabaseType.Redshift,
-        meta::pure::router::extension::defaultRelationalExtensions());
+        meta::relational::extension::relationalExtensions());
     assertEquals('select extract(minute from "root".settlementDateTime) as "settlementDateTimeMinute" from tradeTable as "root"', $result);
 }

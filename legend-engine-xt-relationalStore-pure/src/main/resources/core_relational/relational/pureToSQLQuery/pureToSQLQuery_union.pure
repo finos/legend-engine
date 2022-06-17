@@ -13,7 +13,8 @@
 // limitations under the License.
 
 import meta::relational::functions::pureToSqlQuery::union::*;
-import meta::pure::router::extension::*;
+import meta::pure::extension::*;
+import meta::relational::extension::*;
 import meta::relational::functions::pureToSqlQuery::*;
 import meta::pure::metamodel::valuespecification::*;
 import meta::relational::mapping::*;
@@ -35,7 +36,7 @@ import meta::pure::router::printer::*;
 import meta::pure::router::routing::*;
 import meta::pure::router::store::embedded::*;
 
-function meta::relational::functions::pureToSqlQuery::union::addMissingColumnToUnion(oldSrcOperation:SelectWithCursor[1], l:LambdaFunction<{SelectSQLQuery[1], Integer[1]->SelectSQLQuery[1]}>[1], nested:Boolean[1], propNames:String[*], extensions:RouterExtension[*]):SelectWithCursor[1]
+function meta::relational::functions::pureToSqlQuery::union::addMissingColumnToUnion(oldSrcOperation:SelectWithCursor[1], l:LambdaFunction<{SelectSQLQuery[1], Integer[1]->SelectSQLQuery[1]}>[1], nested:Boolean[1], propNames:String[*], extensions:Extension[*]):SelectWithCursor[1]
 {
    let currentTreeNode = $oldSrcOperation.currentTreeNode->toOne();
    let currentAlias = $currentTreeNode.alias;
@@ -153,7 +154,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::union::
   ^Literal(value=$value);
 }
 
-function meta::relational::functions::pureToSqlQuery::union::buildUnion(setImpls:RootRelationalInstanceSetImplementation[*], relationalPropertyMappings:RelationalPropertyMapping[*], inAsso:Boolean[1], inProject:Boolean[1], milestoningContext: TemporalMilestoningContext[0..1], nodeId:String[1], state:State[1], context:DebugContext[1], extensions:RouterExtension[*]):Union[1]
+function meta::relational::functions::pureToSqlQuery::union::buildUnion(setImpls:RootRelationalInstanceSetImplementation[*], relationalPropertyMappings:RelationalPropertyMapping[*], inAsso:Boolean[1], inProject:Boolean[1], milestoningContext: TemporalMilestoningContext[0..1], nodeId:String[1], state:State[1], context:DebugContext[1], extensions:Extension[*]):Union[1]
 {
    let fullGet = !($inAsso || $inProject) || ($state.insertDriverTablePkInTempTable->isNotEmpty());
    let simpleAllQueries = $setImpls->map(r| processGetAll($r, $r.class, $nodeId, $fullGet || $state.importDataFlow == true, $setImpls->indexOf($r), $fullGet, $milestoningContext, ^$state(importDataFlowAddFks=false), $context, $extensions));
@@ -332,7 +333,7 @@ function meta::relational::functions::pureToSqlQuery::union::buildColumnToNameMa
 }
 
 //XY
-function meta::relational::functions::pureToSqlQuery::union::buildSQLQueryOutManySetImplementations(srcOperation:SelectWithCursor[1], relationalPropertyMappings:RelationalPropertyMapping[*], sourceClass:Class<Any>[1], targetClass:Class<Any>[1], nodeId:String[1], state:State[1], context:DebugContext[1], extensions:RouterExtension[*]):Pair<JoinTreeNode, Pair<SelectWithCursor,Relation>>[1]
+function meta::relational::functions::pureToSqlQuery::union::buildSQLQueryOutManySetImplementations(srcOperation:SelectWithCursor[1], relationalPropertyMappings:RelationalPropertyMapping[*], sourceClass:Class<Any>[1], targetClass:Class<Any>[1], nodeId:String[1], state:State[1], context:DebugContext[1], extensions:Extension[*]):Pair<JoinTreeNode, Pair<SelectWithCursor,Relation>>[1]
 {
    print(if(!$context.debug, |'', | $context.space+'*>Build SQL query out many set implementations (and join) (propertyMappings:'+$relationalPropertyMappings->size()->toString()+'):\n'));
 
@@ -422,7 +423,7 @@ function meta::relational::functions::pureToSqlQuery::union::buildSQLQueryOutMan
    pair($unionJoin.second, pair($updatedSrcOperation, $newTargetOperation));
 }
 
-function meta::relational::functions::pureToSqlQuery::union::buildUnionJoin(relationalPropertyMappings:RelationalPropertyMapping[*], mapping:Mapping[1], srcMap:Map<Column, String>[1], targetMap:Map<Column, String>[1], sourceAlias:TableAlias[1], targetAlias:TableAlias[1], parentSourceOperation:SelectWithCursor[0..1], nodeId:String[1], state:State[0..1], context:DebugContext[1], extensions:RouterExtension[*]):Pair<TableAlias, JoinTreeNode>[1]
+function meta::relational::functions::pureToSqlQuery::union::buildUnionJoin(relationalPropertyMappings:RelationalPropertyMapping[*], mapping:Mapping[1], srcMap:Map<Column, String>[1], targetMap:Map<Column, String>[1], sourceAlias:TableAlias[1], targetAlias:TableAlias[1], parentSourceOperation:SelectWithCursor[0..1], nodeId:String[1], state:State[0..1], context:DebugContext[1], extensions:Extension[*]):Pair<TableAlias, JoinTreeNode>[1]
 {
    let sourceSetImplementationIds = $relationalPropertyMappings.sourceSetImplementationId->removeDuplicates();
    let targetSetImplementationIds = $relationalPropertyMappings.targetSetImplementationId->removeDuplicates();
@@ -471,7 +472,7 @@ function meta::relational::functions::pureToSqlQuery::union::buildUnionJoin(rela
    pair($reprocessedSourceAlias, $updatedJoinTreeNodes->simplyMergeJoinTreeNodeUsingOrOperation($extensions)->toOne());
 }
 
-function <<access.private>> meta::relational::functions::pureToSqlQuery::union::simplyMergeJoinTreeNodeUsingOrOperation(j:JoinTreeNode[*], extensions:RouterExtension[*]):JoinTreeNode[0..1]
+function <<access.private>> meta::relational::functions::pureToSqlQuery::union::simplyMergeJoinTreeNodeUsingOrOperation(j:JoinTreeNode[*], extensions:Extension[*]):JoinTreeNode[0..1]
 {
     if($j->isEmpty(),
        |[],
@@ -503,7 +504,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::union::
     );
 }
 
-function meta::relational::functions::pureToSqlQuery::union::addPkForAggregationInUnion(currentQuery: SelectWithCursor[1], setImpls: RootRelationalInstanceSetImplementation[*], state: State[1], extensions:RouterExtension[*]):SelectWithCursor[1]
+function meta::relational::functions::pureToSqlQuery::union::addPkForAggregationInUnion(currentQuery: SelectWithCursor[1], setImpls: RootRelationalInstanceSetImplementation[*], state: State[1], extensions:Extension[*]):SelectWithCursor[1]
 {
    let currentTreeNode = $currentQuery.currentTreeNode->toOne();
    let currentAlias = $currentTreeNode.alias;
@@ -551,7 +552,7 @@ function meta::relational::functions::pureToSqlQuery::union::addPkForAggregation
    $result;
 }
 
-function <<access.private>> meta::relational::functions::pureToSqlQuery::union::pushChainedJoinsIntoSourceUnion(relationalPropertyMappings:RelationalPropertyMapping[*], mapping:Mapping[1], sourceAlias:TableAlias[1], sourceSetImplementationIds:String[*], parentSourceOperation:SelectWithCursor[0..1], nodeId:String[1], state:State[1], debugContext:DebugContext[1], extensions:RouterExtension[*]):Pair<TableAlias, List<RelationalPropertyMapping>>[1]
+function <<access.private>> meta::relational::functions::pureToSqlQuery::union::pushChainedJoinsIntoSourceUnion(relationalPropertyMappings:RelationalPropertyMapping[*], mapping:Mapping[1], sourceAlias:TableAlias[1], sourceSetImplementationIds:String[*], parentSourceOperation:SelectWithCursor[0..1], nodeId:String[1], state:State[1], debugContext:DebugContext[1], extensions:Extension[*]):Pair<TableAlias, List<RelationalPropertyMapping>>[1]
 {
    let sourceRelationalElement = $sourceAlias.relationalElement;
    let updatedRelationalPropertyMappings = $relationalPropertyMappings->map(x | $x->replaceJoinTreeNodeWithLeafNode());
@@ -582,7 +583,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::union::
    pair($sourceAliasWithJoinsAppliedAndMissingColumnsAddedToQueries, $updatedRelationalPropertyMappings->list());
 }
 
-function <<access.private>> meta::relational::functions::pureToSqlQuery::union::applyChainedJoinsToUnionQueries(union:Union[1], relationalPropertyMappings:RelationalPropertyMapping[*], mapping:Mapping[1], missingColumns:List<TableAliasColumn>[*], parentSourceOperation:SelectWithCursor[0..1], nodeId:String[1], state:State[1], debugContext:DebugContext[1], extensions:RouterExtension[*]):Union[1]
+function <<access.private>> meta::relational::functions::pureToSqlQuery::union::applyChainedJoinsToUnionQueries(union:Union[1], relationalPropertyMappings:RelationalPropertyMapping[*], mapping:Mapping[1], missingColumns:List<TableAliasColumn>[*], parentSourceOperation:SelectWithCursor[0..1], nodeId:String[1], state:State[1], debugContext:DebugContext[1], extensions:Extension[*]):Union[1]
 {
    let zippedInformation = $union.queries->zip($union.currentTreeNodes)->zip($relationalPropertyMappings)->zip($missingColumns);
    let selectWithCursorsWithJoinsApplied = $zippedInformation->map(x | let selectWithCursor = ^SelectWithCursor(select = $x.first.first.first, currentTreeNode = $x.first.first.second);

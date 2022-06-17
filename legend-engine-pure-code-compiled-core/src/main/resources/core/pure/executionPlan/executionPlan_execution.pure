@@ -19,7 +19,7 @@ import meta::pure::mapping::*;
 import meta::pure::runtime::*;
 
 
-function meta::pure::executionPlan::execute(plan:ExecutionPlan[1], parametersValues:Any[*], extensions:meta::pure::router::extension::RouterExtension[*]):Result<Any|*>[1]
+function meta::pure::executionPlan::execute(plan:ExecutionPlan[1], parametersValues:Any[*], extensions:meta::pure::extension::Extension[*]):Result<Any|*>[1]
 {
    let parameters = $plan.func->functionType().parameters->evaluateAndDeactivate();
    validateParams($plan.func->functionType().parameters->evaluateAndDeactivate(), $parametersValues);
@@ -36,7 +36,7 @@ function meta::pure::executionPlan::validateParams(v:VariableExpression[*], para
    assert($oneParams->size()==$oneParamsValues->size(),'Not Enough or too many One params. Function params: ['+ $v.name->joinStrings(', ')+']');
 }
 
-function meta::pure::executionPlan::processNode(node:ExecutionNode[1], mapping:Mapping[1], runtime: Runtime[1], parametersValues:Pair<VariableExpression, Any>[*], extensions:meta::pure::router::extension::RouterExtension[*]):Result<Any|*>[1]
+function meta::pure::executionPlan::processNode(node:ExecutionNode[1], mapping:Mapping[1], runtime: Runtime[1], parametersValues:Pair<VariableExpression, Any>[*], extensions:meta::pure::extension::Extension[*]):Result<Any|*>[1]
 {
    $node->match(
       [
@@ -50,7 +50,7 @@ function meta::pure::executionPlan::processNode(node:ExecutionNode[1], mapping:M
    );
 }
 
-function meta::pure::executionPlan::buildVariableTemplateString(name:String[1], parameterVal:Any[1], type:meta::pure::metamodel::type::Type[1], runtime:Runtime[1], extensions:meta::pure::router::extension::RouterExtension[*]): String[1]
+function meta::pure::executionPlan::buildVariableTemplateString(name:String[1], parameterVal:Any[1], type:meta::pure::metamodel::type::Type[1], runtime:Runtime[1], extensions:meta::pure::extension::Extension[*]): String[1]
 {
    if ($extensions.executionPlan_execution_buildVariableTemplateString->isEmpty(),
        | '',
@@ -66,7 +66,7 @@ function meta::pure::executionPlan::buildVariableCollectionSizeString(name:Strin
    '${collectionSize('+$name+')}'
 }
 
-function meta::pure::executionPlan::allNodes(node: ExecutionNode[1], extensions:meta::pure::router::extension::RouterExtension[*]): ExecutionNode[*]
+function meta::pure::executionPlan::allNodes(node: ExecutionNode[1], extensions:meta::pure::extension::Extension[*]): ExecutionNode[*]
 {
    $node->match(
       $extensions.executionPlan_execution_allNodes->map(e|$e->eval($extensions))->concatenate(

@@ -17,7 +17,7 @@ package org.finos.legend.engine.plan.platform;
 import org.eclipse.collections.api.RichIterable;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionPlan;
-import org.finos.legend.pure.generated.Root_meta_pure_router_extension_RouterExtension;
+import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 
 public enum PlanPlatform
 {
@@ -30,12 +30,12 @@ public enum PlanPlatform
         this.platformBinder = platformBinder;
     }
 
-    public Root_meta_pure_executionPlan_ExecutionPlan bindPlan(Root_meta_pure_executionPlan_ExecutionPlan plan, PureModel pureModel, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions)
+    public Root_meta_pure_executionPlan_ExecutionPlan bindPlan(Root_meta_pure_executionPlan_ExecutionPlan plan, PureModel pureModel, RichIterable<? extends Root_meta_pure_extension_Extension> extensions)
     {
         return bindPlan(plan, null, pureModel, extensions);
     }
 
-    public Root_meta_pure_executionPlan_ExecutionPlan bindPlan(Root_meta_pure_executionPlan_ExecutionPlan plan, String planId, PureModel pureModel, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions)
+    public Root_meta_pure_executionPlan_ExecutionPlan bindPlan(Root_meta_pure_executionPlan_ExecutionPlan plan, String planId, PureModel pureModel, RichIterable<? extends Root_meta_pure_extension_Extension> extensions)
     {
         return this.platformBinder.bindPlanToPlatform(plan, planId, pureModel, extensions);
     }

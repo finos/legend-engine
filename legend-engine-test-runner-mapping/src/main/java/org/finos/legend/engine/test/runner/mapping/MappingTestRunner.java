@@ -50,7 +50,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lam
 import org.finos.legend.engine.shared.core.url.DataProtocolHandler;
 import org.finos.legend.engine.test.runner.shared.ComparisonError;
 import org.finos.legend.engine.test.runner.shared.JsonNodeComparator;
-import org.finos.legend.pure.generated.Root_meta_pure_router_extension_RouterExtension;
+import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_Runtime_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 
@@ -78,11 +78,11 @@ public class MappingTestRunner
     private final String mappingPath;
     public final MappingTest mappingTest;
     private final MutableList<PlanTransformer> planTransformers;
-    private final RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions;
+    private final RichIterable<? extends Root_meta_pure_extension_Extension> extensions;
     private final Root_meta_pure_runtime_Runtime_Impl runtime;
     private final String pureVersion;
 
-    public MappingTestRunner(PureModel pureModel, String mappingPath, MappingTest mappingTest, PlanExecutor executor, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, MutableList<PlanTransformer> transformers, String pureVersion)
+    public MappingTestRunner(PureModel pureModel, String mappingPath, MappingTest mappingTest, PlanExecutor executor, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, MutableList<PlanTransformer> transformers, String pureVersion)
     {
         this.pureModel = pureModel;
         this.executor = executor;
@@ -94,7 +94,7 @@ public class MappingTestRunner
         this.pureVersion = pureVersion;
     }
 
-    public MappingTestRunner(PureModel pureModel, String mappingPath, MappingTest mappingTest, PlanExecutor executor, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, MutableList<PlanTransformer> transformers)
+    public MappingTestRunner(PureModel pureModel, String mappingPath, MappingTest mappingTest, PlanExecutor executor, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, MutableList<PlanTransformer> transformers)
     {
         this(pureModel, mappingPath, mappingTest, executor, extensions, transformers, null);
     }

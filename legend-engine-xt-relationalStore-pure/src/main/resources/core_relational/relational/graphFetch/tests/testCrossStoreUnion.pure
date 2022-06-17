@@ -272,7 +272,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pur
    let dbRuntime = meta::relational::tests::testRuntime();
    let runtime = ^$dbRuntime(connections = $dbRuntime.connections->concatenate($jsonConnection));
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[{"quantity":100,"traderKerb":"abc","tradeId":1},'+
@@ -319,7 +319,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pur
    let dbRuntime = meta::relational::tests::testRuntime();
    let runtime = ^$dbRuntime(connections = $dbRuntime.connections->concatenate($jsonConnection));
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[{"product":{"productId":"30","description":"Product 1 description","productName":"Prod_1"},"quantity":100,"traderKerb":"abc","tradeId":1},'+
@@ -393,7 +393,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pur
    let dbRuntime = meta::relational::tests::testRuntime();
    let runtime = ^$dbRuntime(connections = $dbRuntime.connections->concatenate([$jsonConnection, $jsonConnection2, $jsonConnection3, $jsonConnection4]));
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[{"quantity":100,"traderKerb":"abc","tradeId":1},'+
@@ -486,7 +486,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pur
    let dbRuntime = meta::relational::tests::testRuntime();
    let runtime = ^$dbRuntime(connections = $dbRuntime.connections->concatenate([$jsonConnection, $jsonConnection2, $jsonConnection3, $jsonConnection4]));
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[{"product":{"productId":"30","description":"Product 1 description","productName":"Prod_1"},"quantity":100,"traderKerb":"abc","tradeId":1},'+

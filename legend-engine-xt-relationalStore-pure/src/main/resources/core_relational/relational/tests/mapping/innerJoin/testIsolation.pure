@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import meta::relational::mapping::*;
-import meta::csv::*;
+import meta::relational::tests::csv::*;
 import meta::relational::tests::mapping::innerjoin::isolation::*;
 function <<test.BeforePackage>> meta::relational::tests::mapping::innerjoin::isolation::setUp():Any[*]
 {
@@ -25,7 +25,7 @@ function <<test.Test>> meta::relational::tests::mapping::innerjoin::isolation::t
                                    && $c.org.publicAncestor.name->contains('GSorg')
                                    && $c.org.publicAncestor.name->contains('toReturn')
                                 )->project([col(c|$c.id, 'Id'), col(c|$c.type, 'type')])};
-   let result = execute($func,AutoMapping,autoMobileRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute($func,AutoMapping,autoMobileRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals([ 3, 'Mercedes3'],$result.values.rows->map(r|$r.values));
    assertSize($result.values.rows, 1);
    assertEquals('select "root".vehicleId as "Id", "root".type as "type" from AutomobileTable as "root" left outer join AutomobileTable as "automobiletable_1" on ("root".vehicleId = "automobiletable_1".vehicleId and "root".orgId < 100) left outer join (select "autoancestor_1".childId as childId, "autoancestor_2".orgName as orgName from AutoAncestor as "autoancestor_1" left outer join (select "autoancestor_2".parentId as parentId, "automobiletable_2".orgName as orgName from AutoAncestor as "autoancestor_2" inner join AutomobileTable as "automobiletable_2" on ("autoancestor_2".parentId = "automobiletable_2".orgId and case when "automobiletable_2".orgtype = \'public\' then \'N\' else \'Y\' end = \'Y\')) as "autoancestor_2" on ("autoancestor_1".parentId = "autoancestor_2".parentId)) as "autoancestor_0" on ("automobiletable_1".orgId = "autoancestor_0".childId) left outer join (select "autoancestor_4".childId as childId, "automobiletable_3".orgName as orgName from AutoAncestor as "autoancestor_4" inner join AutomobileTable as "automobiletable_3" on ("autoancestor_4".parentId = "automobiletable_3".orgId) where case when "automobiletable_3".orgtype = \'public\' then \'N\' else \'Y\' end = \'Y\') as "autoancestor_3" on ("automobiletable_1".orgId = "autoancestor_3".childId) where ((("autoancestor_3".orgName <> \'GSorg2\' OR "autoancestor_3".orgName is null) and ("autoancestor_0".orgName is not null and "autoancestor_3".orgName like \'%GSorg%\')) and ("autoancestor_0".orgName is not null and "autoancestor_3".orgName like \'%toReturn%\'))',$result->sqlRemoveFormatting());

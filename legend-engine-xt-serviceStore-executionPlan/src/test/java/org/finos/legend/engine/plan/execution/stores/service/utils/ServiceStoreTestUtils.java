@@ -35,7 +35,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
-import org.finos.legend.pure.generated.Root_meta_pure_router_extension_RouterExtension;
+import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.core_external_shared_extension;
 import org.finos.legend.pure.generated.core_servicestore_router_router_extension;
 import org.finos.legend.pure.generated.core_external_format_flatdata_extension;
@@ -82,9 +82,9 @@ public class ServiceStoreTestUtils
         PureModelContextData contextData = PureGrammarParser.newInstance().parseModel(grammar);
         PureModel pureModel = Compiler.compile(contextData, null, null);
 
-        List<Root_meta_pure_router_extension_RouterExtension> extensions = Lists.mutable.empty();
-        extensions.addAll(Lists.mutable.with(core_servicestore_router_router_extension.Root_meta_external_store_service_router_extension_defaultServiceStoreExtensions__RouterExtension_1_(pureModel.getExecutionSupport())));
-        extensions.addAll(core_external_shared_extension.Root_meta_external_shared_format_routerExtensions_String_1__ExternalFormatExtension_MANY__RouterExtension_MANY_("externalFormat", Lists.mutable.with(core_external_format_flatdata_extension.Root_meta_external_format_flatdata_flatDataFormatExtension__ExternalFormatExtension_1_(pureModel.getExecutionSupport()), core_external_format_json_extension.Root_meta_external_format_json_jsonFormatExtension__ExternalFormatExtension_1_(pureModel.getExecutionSupport())), pureModel.getExecutionSupport()).toList());
+        List<Root_meta_pure_extension_Extension> extensions = Lists.mutable.empty();
+        extensions.addAll(Lists.mutable.with(core_servicestore_router_router_extension.Root_meta_external_store_service_extension_serviceStoreExtensions__Extension_1_(pureModel.getExecutionSupport())));
+        extensions.addAll(core_external_shared_extension.Root_meta_external_shared_format_routerExtensions_String_1__ExternalFormatExtension_MANY__Extension_MANY_("externalFormat", Lists.mutable.with(core_external_format_flatdata_extension.Root_meta_external_format_flatdata_flatDataFormatExtension__ExternalFormatExtension_1_(pureModel.getExecutionSupport()), core_external_format_json_extension.Root_meta_external_format_json_jsonFormatExtension__ExternalFormatExtension_1_(pureModel.getExecutionSupport())), pureModel.getExecutionSupport()).toList());
 
         Function queryFunctionExpressions = contextData.getElementsOfType(Function.class).get(0);
 

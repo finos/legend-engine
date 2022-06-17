@@ -20,7 +20,7 @@ import meta::pure::metamodel::tds::*;
 
 function <<test.Test>> meta::relational::tests::projection::function::testSimpleFunction():Boolean[1]
 {
-   let result = execute(|Person.all()->project(p|$p.firstName, 'firstName'), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->project(p|$p.firstName, 'firstName'), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 7);
    assertEquals('Anthony,David,Fabrice,John,John,Oliver,Peter', $result.values.rows->map(r|$r.getString('firstName'))->sort()->makeString(','));
    assertEquals('select "root".FIRSTNAME as "firstName" from personTable as "root"', $result->sqlRemoveFormatting());
@@ -28,7 +28,7 @@ function <<test.Test>> meta::relational::tests::projection::function::testSimple
 
 function <<test.Test>> meta::relational::tests::projection::function::testFunctionAndPathOneSide():Boolean[1]
 {
-   let result = execute(|Person.all()->project([#/Person/lastName#, p|$p.firstName], ['lastName','firstName']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->project([#/Person/lastName#, p|$p.firstName], ['lastName','firstName']), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 7);
    assertEquals('Anthony Allen,David Harris,Fabrice Roberts,John Hill,John Johnson,Oliver Hill,Peter Smith', $result.values.rows->map(r|$r.getString('firstName')+' '+$r.getString('lastName'))->sort()->makeString(','));
    assertEquals('select "root".LASTNAME as "lastName", "root".FIRSTNAME as "firstName" from personTable as "root"', $result->sqlRemoveFormatting());
@@ -36,7 +36,7 @@ function <<test.Test>> meta::relational::tests::projection::function::testFuncti
 
 function <<test.Test>> meta::relational::tests::projection::function::testFunctionAndPathOtherSide():Boolean[1]
 {
-   let result = execute(|Person.all()->project([p|$p.firstName, #/Person/lastName#], ['firstName','lastName']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->project([p|$p.firstName, #/Person/lastName#], ['firstName','lastName']), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 7);
    assertEquals('Anthony Allen,David Harris,Fabrice Roberts,John Hill,John Johnson,Oliver Hill,Peter Smith', $result.values.rows->map(r|$r.getString('firstName')+' '+$r.getString('lastName'))->sort()->makeString(','));
    assertEquals('select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root"', $result->sqlRemoveFormatting());
@@ -44,7 +44,7 @@ function <<test.Test>> meta::relational::tests::projection::function::testFuncti
 
 function <<test.Test>> meta::relational::tests::projection::function::testSimpleRealFunction():Boolean[1]
 {
-   let result = execute(|Person.all()->project([#/Person/lastName#, p|$p.firstName+'|'+$p.lastName], ['lastName','fullName']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->project([#/Person/lastName#, p|$p.firstName+'|'+$p.lastName], ['lastName','fullName']), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 7);
    assertEquals('Allen Anthony|Allen,Harris David|Harris,Hill John|Hill,Hill Oliver|Hill,Johnson John|Johnson,Roberts Fabrice|Roberts,Smith Peter|Smith', $result.values.rows->map(r|$r.getString('lastName')+' '+$r.getString('fullName'))->sort()->makeString(','));
    assertEquals('select "root".LASTNAME as "lastName", concat("root".FIRSTNAME, \'|\', "root".LASTNAME) as "fullName" from personTable as "root"', $result->sqlRemoveFormatting());
@@ -52,7 +52,7 @@ function <<test.Test>> meta::relational::tests::projection::function::testSimple
 
 function <<test.Test>> meta::relational::tests::projection::function::testSimpleFunctionWithToOne():Boolean[1]
 {
-   let result = execute(|Person.all()->project([#/Person/lastName#, p|$p.address.name], ['lastName','addressName']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->project([#/Person/lastName#, p|$p.address.name], ['lastName','addressName']), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 7);
    assertEquals('Allen New York,Harris New York,Hill Hong Kong,Hill New York,Johnson New York,Roberts San Fransisco,Smith Hoboken', $result.values.rows->map(r|$r.getString('lastName')+' '+$r.getString('addressName'))->sort()->makeString(','));
    assertEquals('select "root".LASTNAME as "lastName", "addresstable_0".NAME as "addressName" from personTable as "root" left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "root".ADDRESSID)', $result->sqlRemoveFormatting());
@@ -60,7 +60,7 @@ function <<test.Test>> meta::relational::tests::projection::function::testSimple
 
 function <<test.Test>> meta::relational::tests::projection::function::testSimpleFunctionWithToManyMap():Boolean[1]
 {
-   let result = execute(|Firm.all()->project([#/Firm/legalName#, f|$f.employees.lastName], ['legalName','lastName']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Firm.all()->project([#/Firm/legalName#, f|$f.employees.lastName], ['legalName','lastName']), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 7);
    assertEquals('Firm A Roberts,Firm B Hill,Firm C Harris,Firm X Allen,Firm X Hill,Firm X Johnson,Firm X Smith', $result.values.rows->map(r|$r.getString('legalName')+' '+$r.getString('lastName'))->sort()->makeString(','));
    assertEquals('select "root".LEGALNAME as "legalName", "persontable_0".LASTNAME as "lastName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID)', $result->sqlRemoveFormatting());
@@ -68,7 +68,7 @@ function <<test.Test>> meta::relational::tests::projection::function::testSimple
 
 function <<test.Test>> meta::relational::tests::projection::function::testSimpleFunctionWithTwoToManyMap():Boolean[1]
 {
-   let result = execute(|Firm.all()->project([#/Firm/legalName#, f|$f.employees.firstName, f|$f.employees.lastName], ['legalName', 'firstName', 'lastName']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Firm.all()->project([#/Firm/legalName#, f|$f.employees.firstName, f|$f.employees.lastName], ['legalName', 'firstName', 'lastName']), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 7);
    assertEquals('Firm A Fabrice Roberts,Firm B Oliver Hill,Firm C David Harris,Firm X Anthony Allen,Firm X John Hill,Firm X John Johnson,Firm X Peter Smith', $result.values.rows->map(r|$r.getString('legalName')+' '+$r.getString('firstName')+' '+$r.getString('lastName'))->sort()->makeString(','));
    assertEquals('select "root".LEGALNAME as "legalName", "persontable_0".FIRSTNAME as "firstName", "persontable_0".LASTNAME as "lastName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID)', $result->sqlRemoveFormatting());
@@ -77,7 +77,7 @@ function <<test.Test>> meta::relational::tests::projection::function::testSimple
 
 function <<test.Test>> meta::relational::tests::projection::function::abs::testAbs():Boolean[1]
 {
-   let result = execute(|Trade.all()->filter(t|$t.quantity <= 45)->project([t| abs($t.quantity)], ['quantity']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Trade.all()->filter(t|$t.quantity <= 45)->project([t| abs($t.quantity)], ['quantity']), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 10);
    assertEquals([25.0, 11.0, 23.0, 32.0, 27.0, 44.0, 22.0, 45.0, 38.0, 5.0], $result.values.rows.values);
    assertEquals('select abs("root".quantity) as "quantity" from tradeTable as "root" where "root".quantity <= 45', $result->sqlRemoveFormatting());
@@ -86,7 +86,7 @@ function <<test.Test>> meta::relational::tests::projection::function::abs::testA
 // Alloy exclusion reason: 11. Timezone issue
 function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::projection::function::date::testDatePartWithZeroToOne():Boolean[1]
 {
-   let result = execute(|Trade.all()->filter(f| $f.id->in([9,10]))->project([t| datePart($t.settlementDateTime)], ['settlementDateTime']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Trade.all()->filter(f| $f.id->in([9,10]))->project([t| datePart($t.settlementDateTime)], ['settlementDateTime']), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 2);
    assertEquals([%2014-12-05, ^TDSNull()], $result.values.rows.values);
    assertEquals('select cast(truncate("root".settlementDateTime) as date) as "settlementDateTime" from tradeTable as "root" where "root".ID in (9, 10)', $result->sqlRemoveFormatting());
@@ -94,7 +94,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::projection::f
 
 function <<test.Test>> meta::relational::tests::projection::function::date::testWeekOfYearWithZeroToOne():Boolean[1]
 {
-   let result = execute(|Trade.all()->filter(f| $f.id->in([9,10]))->project([t| weekOfYear($t.settlementDateTime)], ['settlementWeekOfYear']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Trade.all()->filter(f| $f.id->in([9,10]))->project([t| weekOfYear($t.settlementDateTime)], ['settlementWeekOfYear']), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 2);
    assertEquals([49,^TDSNull()], $result.values.rows.values);
    assertEquals('select week("root".settlementDateTime) as "settlementWeekOfYear" from tradeTable as "root" where "root".ID in (9, 10)', $result->sqlRemoveFormatting());
@@ -103,7 +103,7 @@ function <<test.Test>> meta::relational::tests::projection::function::date::test
 
 function <<test.Test>> meta::relational::tests::projection::function::date::testMonthNumberZeroToOne():Boolean[1]
 {
-   let result = execute(|Trade.all()->filter(f| $f.id->in([9,10]))->project([t| monthNumber($t.settlementDateTime)], ['settlementMonthNumber']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Trade.all()->filter(f| $f.id->in([9,10]))->project([t| monthNumber($t.settlementDateTime)], ['settlementMonthNumber']), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 2);
    assertEquals([12,^TDSNull()], $result.values.rows.values);
    assertEquals('select month("root".settlementDateTime) as "settlementMonthNumber" from tradeTable as "root" where "root".ID in (9, 10)', $result->sqlRemoveFormatting());
@@ -111,7 +111,7 @@ function <<test.Test>> meta::relational::tests::projection::function::date::test
 
 function <<test.Test>> meta::relational::tests::projection::function::date::testDayOfMonth():Boolean[1]
 {
-   let result = execute(|Trade.all()->filter(f| $f.id->in([9]))->project([t| $t.settlementDateTime->toOne(), t| $t.settlementDateTime->toOne()->dayOfMonth()], ['Date', 'Settlement Day Of Month']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Trade.all()->filter(f| $f.id->in([9]))->project([t| $t.settlementDateTime->toOne(), t| $t.settlementDateTime->toOne()->dayOfMonth()], ['Date', 'Settlement Day Of Month']), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 1);
    assertEquals([%2014-12-05T21:00:00.000000000+0000, 5], $result.values.rows.values);
    assertEquals('select "root".settlementDateTime as "Date", DAY_OF_MONTH("root".settlementDateTime) as "Settlement Day Of Month" from tradeTable as "root" where "root".ID = 9', $result->sqlRemoveFormatting());
@@ -119,7 +119,7 @@ function <<test.Test>> meta::relational::tests::projection::function::date::test
 
 function <<test.Test>> meta::relational::tests::projection::function::date::testYearZeroToOne():Boolean[1]
 {
-   let result = execute(|Trade.all()->filter(f| $f.id->in([9,10]))->project([t| year($t.settlementDateTime)], ['year']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Trade.all()->filter(f| $f.id->in([9,10]))->project([t| year($t.settlementDateTime)], ['year']), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 2);
    assertEquals([2014,^TDSNull()], $result.values.rows.values);
    assertEquals('select year("root".settlementDateTime) as "year" from tradeTable as "root" where "root".ID in (9, 10)', $result->sqlRemoveFormatting());
@@ -127,12 +127,12 @@ function <<test.Test>> meta::relational::tests::projection::function::date::test
 
 function <<test.Test>> meta::relational::tests::projection::function::date::testDateDiffZeroToOne():Boolean[1]
 {
-   let dayResult = execute(|Trade.all()->filter(f| $f.id->in([9,10]))->project([t| dateDiff($t.date, $t.settlementDateTime, DurationUnit.DAYS )], ['daysDiff']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let dayResult = execute(|Trade.all()->filter(f| $f.id->in([9,10]))->project([t| dateDiff($t.date, $t.settlementDateTime, DurationUnit.DAYS )], ['daysDiff']), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($dayResult.values->at(0).rows, 2);
    assertEquals([1,^TDSNull()], $dayResult.values->at(0).rows.values);
    assertEquals('select datediff(day,"root".tradeDate,"root".settlementDateTime) as "daysDiff" from tradeTable as "root" where "root".ID in (9, 10)', $dayResult->sqlRemoveFormatting());
    
-   let hourResult = execute(|Trade.all()->filter(f| $f.id->in([9,10]))->project([t| dateDiff($t.date, $t.settlementDateTime, DurationUnit.HOURS )], ['hoursDiff']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let hourResult = execute(|Trade.all()->filter(f| $f.id->in([9,10]))->project([t| dateDiff($t.date, $t.settlementDateTime, DurationUnit.HOURS )], ['hoursDiff']), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($hourResult.values->at(0).rows, 2);
    assertEquals([45,^TDSNull()], $hourResult.values->at(0).rows.values);
    assertEquals('select datediff(hour,"root".tradeDate,"root".settlementDateTime) as "hoursDiff" from tradeTable as "root" where "root".ID in (9, 10)', $hourResult->sqlRemoveFormatting());
@@ -140,21 +140,21 @@ function <<test.Test>> meta::relational::tests::projection::function::date::test
 
 function <<test.Test>> meta::relational::tests::projection::function::testNestedPlusFunctionAndMappingDynaFunction():Boolean[1]
 {
-   let resultForAdd = execute(|Order.all()->filter(o|$o.pnl->plus() > 0), simpleRelationalMappingWithPlus, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let resultForAdd = execute(|Order.all()->filter(o|$o.pnl->plus() > 0), simpleRelationalMappingWithPlus, testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals('select "root".ID as "pk_0", "root".ID as "id", ("root".quantity + "root".quantity) as "pnl" from orderTable as "root" where ("root".quantity + "root".quantity) > 0', $resultForAdd->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::projection::function::testNestedPlusFunctionAndNestedMappingDynaFunction():Boolean[1]
 {
-   let resultForAdd = execute(|Order.all()->filter(o|$o.pnl->plus() > 0), simpleRelationalMappingWithNestedPlus, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let resultForAdd = execute(|Order.all()->filter(o|$o.pnl->plus() > 0), simpleRelationalMappingWithNestedPlus, testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", ("root".quantity + ("root".quantity + 3)) as "pnl" from orderTable as "root" where ("root".quantity + ("root".quantity + 3)) > 0', $resultForAdd->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::projection::function::testSameBehaviorForNestedAddAndPlus():Boolean[1]
 {
-    let resultForAdd = execute(|Order.all()->project([o|$o.pnl, o|$o.pnl->toOne() * 3], ['pnl', 'scaledPnl']), simpleRelationalMappingWithNestedAdd, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let resultForAdd = execute(|Order.all()->project([o|$o.pnl, o|$o.pnl->toOne() * 3], ['pnl', 'scaledPnl']), simpleRelationalMappingWithNestedAdd, testRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals('select ("root".quantity + ("root".quantity + 3)) as "pnl", (("root".quantity + ("root".quantity + 3)) * 3) as "scaledPnl" from orderTable as "root"', $resultForAdd->sqlRemoveFormatting());
    
-    let resultForPlus = execute(|Order.all()->project([o|$o.pnl->toOne(), o|$o.pnl->toOne() * 3], ['pnl', 'scaledPnl']), simpleRelationalMappingWithNestedPlus, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let resultForPlus = execute(|Order.all()->project([o|$o.pnl->toOne(), o|$o.pnl->toOne() * 3], ['pnl', 'scaledPnl']), simpleRelationalMappingWithNestedPlus, testRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals('select ("root".quantity + ("root".quantity + 3)) as "pnl", (("root".quantity + ("root".quantity + 3)) * 3) as "scaledPnl" from orderTable as "root"', $resultForPlus->sqlRemoveFormatting());   
 }

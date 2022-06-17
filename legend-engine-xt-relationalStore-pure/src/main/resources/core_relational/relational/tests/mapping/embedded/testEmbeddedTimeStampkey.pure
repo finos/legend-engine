@@ -83,7 +83,7 @@ function <<test.ToFix>> meta::relational::tests::mapping::embedded::testTimeStam
               -> filter(x|$x.id2  == $stringDate )
              ,EmbeddedWithTimstampKeys
              ,testDataTypeMappingRuntimeWithTz()
-          , meta::pure::router::extension::defaultRelationalExtensions());
+          , meta::relational::extension::relationalExtensions());
 
  
    assertNotEmpty($res.values);    
@@ -107,7 +107,7 @@ function <<test.ToFix>> meta::relational::tests::mapping::embedded::testTimeStam
    let res2 = execute(| ClassWithTimeStampKey.all() 
                -> filter(x|$x.id2  == $date )
              ,EmbeddedWithTimstampKeys
-             ,testDataTypeMappingRuntimeWithTz(), meta::pure::router::extension::defaultRelationalExtensions());
+             ,testDataTypeMappingRuntimeWithTz(), meta::relational::extension::relationalExtensions());
 
    assertNotEmpty($res2.values);
    

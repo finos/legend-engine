@@ -18,7 +18,7 @@ import meta::pure::profiles::*;
 import meta::pure::runtime::*;
 import meta::relational::metamodel::execute::*;
 import meta::relational::mapping::*;
-import meta::csv::*;
+import meta::relational::tests::csv::*;
 
 import meta::relational::tests::mapping::groupBy::model::store::*;
 import meta::relational::tests::mapping::groupBy::model::domain::*;
@@ -27,7 +27,7 @@ import meta::relational::tests::mapping::groupBy::model::mapping::*;
 
 function <<test.Test>> meta::relational::tests::mapping::groupBy::testGroupByMapping():Boolean[1]
 {
-   let result = execute(|Position.all(), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Position.all(), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements([7900002, 7900003], $result.values.acctNum);
    assertSameElements(['YU2EF5', 'EA4GNY'], $result.values.gsn);
    assertSameElements([8, 300], $result.values.quantity);
@@ -36,7 +36,7 @@ function <<test.Test>> meta::relational::tests::mapping::groupBy::testGroupByMap
 
 function <<test.Test>> meta::relational::tests::mapping::groupBy::testGroupByMappingWithFilter():Boolean[1]
 {
-   let result = execute(|Position.all()->filter(i|$i.gsn  == 'YU2EF5'), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Position.all()->filter(i|$i.gsn  == 'YU2EF5'), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements([7900002], $result.values.acctNum);
    assertSameElements(['YU2EF5'], $result.values.gsn);
    assertSameElements([8], $result.values.quantity);
@@ -45,7 +45,7 @@ function <<test.Test>> meta::relational::tests::mapping::groupBy::testGroupByMap
 
 function <<test.Test>> meta::relational::tests::mapping::groupBy::testGroupByMappingWithFilterOnAggregate():Boolean[1]
 {
-   let result = execute(|Position.all()->filter(i|$i.quantity > 0), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Position.all()->filter(i|$i.quantity > 0), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements([7900002, 7900003], $result.values.acctNum);
    assertSameElements(['YU2EF5', 'EA4GNY'], $result.values.gsn);
    assertSameElements([8, 300], $result.values.quantity);
@@ -54,7 +54,7 @@ function <<test.Test>> meta::relational::tests::mapping::groupBy::testGroupByMap
 
 function <<test.Test>> meta::relational::tests::mapping::groupBy::testGroupByMappingWithFilterOnAggregateWithJoin():Boolean[1]
 {
-   let result = execute(|Position.all()->filter(i|and($i.quantity > 8, $i.product.description->in(['Gold']))), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Position.all()->filter(i|and($i.quantity > 8, $i.product.description->in(['Gold']))), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements([7900003], $result.values.acctNum);
    assertSameElements(['EA4GNY'], $result.values.gsn);
    assertSameElements([300], $result.values.quantity);
@@ -63,7 +63,7 @@ function <<test.Test>> meta::relational::tests::mapping::groupBy::testGroupByMap
 
 function <<test.Test>> meta::relational::tests::mapping::groupBy::testGroupByMappingWithFilterOnAggregateWithProject():Boolean[1]
 {
-   let result = execute(|Position.all()->filter(i|or(and($i.quantity > 100, $i.quantity<1000),$i.gsn->in(['EA4GNY'])))->project([#/Position/gsn#,#/Position/quantity#]), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Position.all()->filter(i|or(and($i.quantity > 100, $i.quantity<1000),$i.gsn->in(['EA4GNY'])))->project([#/Position/gsn#,#/Position/quantity#]), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals(1, $result.values->first().rows->size());
    assertEquals('EA4GNY',$result.values->first().rows->first()->toOne().getString('gsn'));
    assertEquals(300,$result.values->first().rows->first()->toOne().getInteger('quantity'));
@@ -72,7 +72,7 @@ function <<test.Test>> meta::relational::tests::mapping::groupBy::testGroupByMap
 
 function <<test.Test>> meta::relational::tests::mapping::groupBy::testGroupByMappingProject():Boolean[1]
 {
-   let result = execute(|Position.all()->project([#/Position/gsn#,#/Position/quantity#])->sort('gsn'), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Position.all()->project([#/Position/gsn#,#/Position/quantity#])->sort('gsn'), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements(['gsn,quantity\nEA4GNY,300\nYU2EF5,8\n'], $result.values->at(0)->toCSV());
    assertEquals('select "root".GSN as "gsn", sum("root".QTY) as "quantity" from TRADE as "root" group by "root".ACC_NUM,"root".PRODUCT_ID,"root".GSN order by "gsn"', $result->sqlRemoveFormatting());
 }
@@ -80,21 +80,21 @@ function <<test.Test>> meta::relational::tests::mapping::groupBy::testGroupByMap
 
 function <<test.Test>> meta::relational::tests::mapping::groupBy::testGroupByMappingProjectWithJoin():Boolean[1]
 {
-   let result = execute(|Position.all()->project([#/Position/gsn#, #/Position/product/description#])->sort('gsn'), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Position.all()->project([#/Position/gsn#, #/Position/product/description#])->sort('gsn'), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements(['gsn,description\nEA4GNY,Gold\nYU2EF5,Firm D\n'], $result.values->at(0)->toCSV());
    assertEquals('select "root".GSN as "gsn", "product_0".DESCRIPTION as "description" from TRADE as "root" left outer join PRODUCT as "product_0" on ("root".PRODUCT_ID = "product_0".ID) group by "root".ACC_NUM,"root".PRODUCT_ID,"root".GSN order by "gsn"', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::groupBy::testGroupByMappingProjectWithJoinAndTableFilter():Boolean[1]
 {
-   let result = execute(|Position.all()->project([#/Position/gsn#, #/Position/product/description#]), testMappingWithFilter, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Position.all()->project([#/Position/gsn#, #/Position/product/description#]), testMappingWithFilter, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements(['gsn,description\nYU2EF5,Firm D\n'], $result.values->at(0)->toCSV());
    assertEquals('select "root".GSN as "gsn", "product_0".DESCRIPTION as "description" from TRADE as "root" left outer join PRODUCT as "product_0" on ("root".PRODUCT_ID = "product_0".ID and "product_0".ID = 1) where "root".PRODUCT_ID = 1 group by "root".ACC_NUM,"root".PRODUCT_ID,"root".GSN', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::groupBy::testGroupByMappingProjectWithGroupByInJoin():Boolean[1]
 {
-   let result = execute(|Product.all()->project([#/Product/positions/gsn#, #/Product/description#]), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Product.all()->project([#/Product/positions/gsn#, #/Product/description#]), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements(['gsn,description\nYU2EF5,Firm D\nEA4GNY,Gold\n'], $result.values->at(0)->toCSV());
 
    //TODO, remove some columns from the group by
@@ -103,7 +103,7 @@ function <<test.Test>> meta::relational::tests::mapping::groupBy::testGroupByMap
 
 function <<test.ToFix>> meta::relational::tests::mapping::groupBy::testGroupByMappingProjectAggregateWithGroupByInJoin():Boolean[1]
 {
-   let result = execute(|Product.all()->project([#/Product/positions/quantity#, #/Product/description#]), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Product.all()->project([#/Product/positions/quantity#, #/Product/description#]), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements(['quantity,description\nYU2EF5,Firm D\nEA4GNY,Gold\n'], $result.values->at(0)->toCSV());
 
 
@@ -112,7 +112,7 @@ function <<test.ToFix>> meta::relational::tests::mapping::groupBy::testGroupByMa
 
 // function <<test.Test>> {test.excludePlatform = 'Java compiled'} meta::relational::tests::mapping::groupBy::testGroupByMappingProjectWithSelfJoinDisplayNonGroupByColumn():Boolean[1]
 // {
-//    let result = execute(|Position.all()->project([#/Position/gsn#, #/Position/trades/id#]), testMappingWithFilter, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+//    let result = execute(|Position.all()->project([#/Position/gsn#, #/Position/trades/id#]), testMappingWithFilter, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
 //    assertSameElements(['gsn,description\nYU2EF5,Firm D\nEA4GNY,Gold\n'], $result.values->toCSV());
 //    assertEquals('select root.GSN as "gsn", PRODUCT_d_1_d_m2.DESCRIPTION as "description" from TRADE as root left outer join PRODUCT as PRODUCT_d_1_d_m2 on (root.PRODUCT_ID = PRODUCT_d_1_d_m2.ID) group by ACC_NUM,PRODUCT_ID', $result->sqlRemoveFormatting());
 // }
@@ -120,7 +120,7 @@ function <<test.ToFix>> meta::relational::tests::mapping::groupBy::testGroupByMa
 
 function <<test.Test>> meta::relational::tests::mapping::groupBy::testGroupByMappingProjectWithMultipleGroupBys():Boolean[1]
 {
-   let result = execute(|Position.all()->project([#/Position/gsn#, #/Position/product/description#]), testMappingWithTwoGroupBysAndFilters, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Position.all()->project([#/Position/gsn#, #/Position/product/description#]), testMappingWithTwoGroupBysAndFilters, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements(['gsn,description\nYU2EF5,Firm D\n'], $result.values->at(0)->toCSV());
    assertEquals('select "root".GSN as "gsn", "product_exploded_0".DESCRIPTION as "description" from TRADE as "root" left outer join (select "root".DESCRIPTION, "root".PRODUCT_ID from PRODUCT_EXPLODED as "root" where "root".ACTIVE = 1 group by "root".PRODUCT_ID,"root".DESCRIPTION) as "product_exploded_0" on ("root".PRODUCT_ID = "product_exploded_0".PRODUCT_ID and "product_exploded_0".PRODUCT_ID = 1) where "root".PRODUCT_ID = 1 group by "root".ACC_NUM,"root".PRODUCT_ID,"root".GSN', $result->sqlRemoveFormatting());
 }

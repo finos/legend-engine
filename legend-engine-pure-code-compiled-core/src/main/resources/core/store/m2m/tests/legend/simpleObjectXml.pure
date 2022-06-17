@@ -1,0 +1,489 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::executionPlan::engine::java::roadmap::*;
+import meta::pure::mapping::modelToModel::test::xmlStore::simple::*;
+import meta::pure::mapping::modelToModel::test::alloy::simple::objects::src::*;
+import meta::pure::mapping::modelToModel::test::alloy::simple::objects::dest::*;
+import meta::pure::mapping::modelToModel::test::alloy::simple::*;
+import meta::json::*;
+import meta::pure::mapping::modelToModel::test::shared::src::*;
+import meta::pure::mapping::modelToModel::*;
+import meta::pure::runtime::*;
+import meta::pure::mapping::modelToModel::test::simple::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::mapping::modelToModel::test::shared::dest::*;
+import meta::pure::executionPlan::profiles::*;
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
+{
+   serverVersion.start='v1_19_0',
+   doc.doc='Given: a single XML object that matches a source defintion, and an M2M mapping',
+   doc.doc='When:  the mapping is executed using graphFetch and serialize.',
+   doc.doc='Then:  the mapping is applied and the result of the mapping is serialized.'
+} 
+meta::pure::mapping::modelToModel::test::xmlStore::simple::xmlSerializeOfOneObject() : Boolean[1]
+{
+   let tree = #{Person {firstName,lastName,type} }#;
+
+   let result = execute(
+      |Person.all()->graphFetch($tree)->serialize($tree),
+      simpleModelMapping,
+      ^Runtime(connections = ^XmlModelConnection(
+                                element=^ModelStore(), 
+                                class=_S_Person, 
+                                url='data:application/xml,' +                                     
+                                       '<_S_Person version=\'1.1\' type=\'md\'>\n' +
+                                            '<FullName>Pierre DeBelen</FullName>\n' +
+                                            '<address/>\n' +  
+                                       '</_S_Person>'
+                             )
+      ),
+      meta::pure::extension::defaultExtensions()
+   );
+
+   assert(jsonEquivalent('{"firstName":"Pierre","lastName":"DeBelen","type":"md"}'->parseJSON(), $result.values->toOne()->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
+{
+   serverVersion.start='v1_19_0',
+   doc.doc='Parse a multiple xml object, process it through an M2M mapping and serialize the result as JSON.'
+} 
+meta::pure::mapping::modelToModel::test::xmlStore::simple::xmlSerializeOfMultipleObjects() : Boolean[1]
+{
+   let tree = #{Person {firstName,lastName} }#;
+
+   let result = execute(
+      |Person.all()->graphFetch($tree)->serialize($tree),
+      simpleModelMapping,
+      ^Runtime(connections = ^XmlModelConnection(
+                                element=^ModelStore(), 
+                                class=_S_Person, 
+                                    url='data:application/xml,' +  
+                                       '<S_PersonList>\n' +
+                                       '<_S_Person>\n' +
+                                            '<fullName>Pierre DeBelen</fullName>\n' +    
+                                       '</_S_Person>' +
+                                       '<_S_Person>\n' +
+                                            '<fullName>Dave Wathen</fullName>\n' +    
+                                       '</_S_Person>' +
+                                       '</S_PersonList>\n'
+                             )
+      ),
+      meta::pure::extension::defaultExtensions()
+   );
+
+   assert(jsonEquivalent('[{"firstName":"Pierre","lastName":"DeBelen"},{"firstName":"Dave","lastName":"Wathen"}]'->parseJSON(), $result.values->toOne()->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
+{
+   serverVersion.start='v1_19_0',
+   doc.doc='Parse a multiple xml object, process it through an M2M mapping and serialize the result as JSON with defects.'
+} 
+meta::pure::mapping::modelToModel::test::xmlStore::simple::xmlSerializeOfMultipleObjectsChecked() : Boolean[1]
+{
+   let tree = #{Person {firstName,lastName} }#;
+
+   let result = execute(
+      |Person.all()->graphFetchChecked($tree)->serialize($tree),
+      simpleModelMapping,
+      ^Runtime(connections = ^XmlModelConnection(
+                                element=^ModelStore(), 
+                                class=_S_Person, 
+                                    url='data:application/xml,' +  
+                                       '<S_PersonList>\n' +
+                                       '<_S_Person>\n' +
+                                            '<fullName>Pierre DeBelen</fullName>\n' +    
+                                       '</_S_Person>' +
+                                       '<_S_Person>\n' +
+                                            '<fullName>Dave Wathen</fullName>\n' +    
+                                       '</_S_Person>' +
+                                       '</S_PersonList>\n'
+                             )
+      ),
+      meta::pure::extension::defaultExtensions()
+   );
+
+   let expected = '[' +
+			'  {' +
+			'    "defects": [],' +
+			'    "source": {' +
+			'      "defects": [],' +
+			'      "source": {' +
+			'        "number": 1,' +
+			'        "record": "<_S_Person><fullName>Pierre DeBelen<\/fullName><\/_S_Person>"' +
+			'      },' +
+			'      "value": {' +
+			'        "fullName": "Pierre DeBelen"' +
+			'      }' +
+			'    },' +
+			'    "value": {' +
+			'      "firstName": "Pierre",' +
+			'      "lastName": "DeBelen"' +
+			'    }' +
+			'  },' +
+			'  {' +
+			'    "defects": [],' +
+			'    "source": {' +
+			'      "defects": [],' +
+			'      "source": {' +
+			'        "number": 2,' +
+			'        "record": "<_S_Person><fullName>Dave Wathen<\/fullName><\/_S_Person>"' +
+			'      },' +
+			'      "value": {' +
+			'        "fullName": "Dave Wathen"' +
+			'      }' +
+			'    },' +
+			'    "value": {' +
+			'      "firstName": "Dave",' +
+			'      "lastName": "Wathen"' +
+			'    }' +
+			'  }' +
+			']';
+   
+   assert(jsonEquivalent($expected->parseJSON(), $result.values->toOne()->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
+{  
+   serverVersion.start='v1_19_0',
+   doc.doc='Parse a simple Xml object, process it through an M2M mapping and serialize the result as JSON.'
+} 
+meta::pure::mapping::modelToModel::test::xmlStore::simple::xmlSerializeOneObjectReverse() : Boolean[1]
+{
+   let tree = #{_S_Person {fullName} }#;
+
+   let result = execute(
+      |_S_Person.all()->graphFetch($tree)->serialize($tree),
+      simpleModelMappingReverse,
+      ^Runtime(connections = ^XmlModelConnection(
+                                element=^ModelStore(), 
+                                class=Person,
+                                url='data:application/xml,' +                                     
+                                       '<Person>\n' +
+                                            '<firstName>Pierre</firstName>\n' +  
+                                            '<lastName>DeBelen</lastName>\n' +  
+                                       '</Person>'
+                             )
+      ),
+      meta::pure::extension::defaultExtensions()
+   );
+
+   assert(jsonEquivalent('{"fullName":"Pierre DeBelen"}'->parseJSON(), $result.values->toOne()->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
+{
+   serverVersion.start='v1_19_0',
+   doc.doc='Given: a Xml object (matching a source class) that contains data for all primitive data types and an enumeration, and an M2M mapping',
+   doc.doc='When:  the mapping is executed using graphFetch and serialize.',
+   doc.doc='Then:  the mapping is applied and the result of the mapping is serialized handling all datatypes appropriately.'
+} 
+meta::pure::mapping::modelToModel::test::xmlStore::simple::xmlSupportForPrimitivesAndEnumerations() : Boolean[1]
+{
+   let tree = #{SomeData {i, f, d, sd, dt, b, c, c2, c3} }#;
+
+   let result = execute(
+      |SomeData.all()->graphFetch($tree)->serialize($tree),
+      simpleDataMapping,
+      ^Runtime(connections = ^XmlModelConnection(
+                                element=^ModelStore(), 
+                                class=_SomeData,
+                                url='data:application/xml,' +
+                                    '<_SomeData>' +
+                                        '<i>2</i>'+
+                                        '<f>2.5</f>'+
+                                        '<d>0.1</d>'+
+                                        '<d>0.2</d>'+
+                                        '<sd>2018-03-12</sd>'+
+                                        '<sd>2019-05-30</sd>'+
+                                        '<dt>2018-03-12T13:20:21.000</dt>'+
+                                        '<dt>2019-05-30T04:29:01.234</dt>'+
+                                        '<b>true</b>'+
+                                        '<b>false</b>'+
+                                        '<b>true</b>'+
+                                        '<c>ROUGE</c>'+
+                                        '<s>BLEU</s>'+
+                                        '<s>VERT</s>'+
+                                    '</_SomeData>'                   
+                             )
+      ),
+      meta::pure::extension::defaultExtensions()
+   );
+
+   assert(jsonEquivalent('{"i":4, "f": 0.4, "d": [0.2, 0.4],"sd": ["2018-03-13", "2019-05-31"], "dt": ["2018-03-12T15:20:21.000", "2019-05-30T06:29:01.234"], "b": [false, true, false], "c":"RED", "c2":"BLUE", "c3":["BLUE", "GREEN"]}'->parseJSON(), $result.values->toOne()->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
+{
+   serverVersion.start='v1_19_0',
+   doc.doc='Given: a Xml object (matching a source class) that contains an empty tags, and an M2M mapping',
+   doc.doc='When:  the mapping is executed using graphFetch and serialize.',
+   doc.doc='Then:  the mapping is applied and the result of the mapping is serialized demonstrating support for empty properties.'
+} 
+meta::pure::mapping::modelToModel::test::xmlStore::simple::xmlSupportForEmptyValues() : Boolean[1]
+{
+   let tree = #{SomeData {i, f, d} }#;
+
+   let result = execute(
+      |SomeData.all()->graphFetch($tree)->serialize($tree),
+      simpleDataMapping,
+      ^Runtime(connections = ^XmlModelConnection(
+                                element=^ModelStore(), 
+                                class=_SomeData,                               
+                                url='data:application/xml,' +
+                                    '<_SomeData>' +
+                                        '<i/>'+
+                                        '<f>2.5</f>'+
+                                        '<d/>'+
+                                        '<b>false</b>'+
+                                        '<b>true</b>'+
+                                        '<c>ROUGE</c>'+
+                                    '</_SomeData>'        
+                             )
+      ),
+      meta::pure::extension::defaultExtensions()
+   );
+
+   assert(jsonEquivalent('{"i":null, "f": 0.4, "d": []}'->parseJSON(), $result.values->toOne()->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
+{
+   serverVersion.start='v1_19_0',
+   doc.doc='Given: a Xml object (matching a source class) that contains properties with hyphen/preriod, and an M2M mapping',
+   doc.doc='When:  the mapping is executed using graphFetch and serialize.',
+   doc.doc='Then:  the mapping is applied and the result of the mapping is serialized demonstrating support for reserver characters being removed.'
+} 
+meta::pure::mapping::modelToModel::test::xmlStore::simple::xmlSupportForReplacementUnsupportedCharactersInNames() : Boolean[1]
+{
+   let tree = #{SomeData {i, f, d} }#;
+
+   let result = execute(
+      |SomeData.all()->graphFetch($tree)->serialize($tree),
+      simpleDataMapping,
+      ^Runtime(connections = ^XmlModelConnection(
+                                element=^ModelStore(), 
+                                class=_SomeData,                               
+                                url='data:application/xml,' +
+                                    '<_.SomeData>' +
+                                        '<i/>'+
+                                        '<f-.->2.5</f-.->'+
+                                        '<d/>'+
+                                        '<b>false</b>'+
+                                        '<b>true</b>'+
+                                        '<c>ROUGE</c>'+
+                                    '</_.SomeData>'        
+                             )
+      ),
+      meta::pure::extension::defaultExtensions()
+   );
+ 
+   assert(jsonEquivalent('{"i":null, "f": 0.4, "d": []}'->parseJSON(), $result.values->toOne()->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
+{
+   serverVersion.start='v1_19_0',
+   doc.doc='Given: a source class',
+   doc.doc='Given: data with unused fields',
+   doc.doc='When:  a mapping is executed.',
+   doc.doc='Then:  the additional fields should be ignored.'
+} 
+meta::pure::mapping::modelToModel::test::xmlStore::simple::xmlIgnoresUnwantedValues() : Boolean[1]
+{
+   let tree = #{Person {firstName,lastName} }#;
+
+   let result = execute(
+      |Person.all()->graphFetch($tree)->serialize($tree),
+      simpleModelMapping,
+      ^Runtime(connections = ^XmlModelConnection(
+                                element=^ModelStore(), 
+                                class=_S_Person,                               
+                                url='data:application/xml,' +
+                                       '<_S_Person>\n' +
+                                            '<fullName>Dave Wathen</fullName>\n' +    
+                                            '<likes>skiing</likes>' +
+                                            '<likes>books</likes>' +
+                                             '<Address>' +
+                                                '<city>London</city>' +
+                                             '</Address>' +
+                                       '</_S_Person>' 
+                       )      
+      ),
+      meta::pure::extension::defaultExtensions()
+   );
+
+   let json = $result.values->toOne();
+   let expected= '{"firstName":"Dave", "lastName":"Wathen"}';
+   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
+{
+   serverVersion.start='v1_19_0',
+   doc.doc='Parse a complex XML object, process it through an M2M mapping and serialize the result as JSON.'   
+} 
+meta::pure::mapping::modelToModel::test::xmlStore::simple::xmlDeserializeComplexObject() : Boolean[1]
+{
+   let tree = #{Person {firstName, lastName, addresses {street}} }#;
+
+   let result = execute(
+      |Person.all()->graphFetch($tree)->serialize($tree),
+      complexModelMapping,
+      ^Runtime(connections = ^XmlModelConnection(
+                                element=^ModelStore(), 
+                                class=_Person,
+                                url='data:application/xml,' +                                     
+                                       '<_Person version="1.1">\n' +
+                                            '<fullName>Pierre DeBelen</fullName>\n' +  
+                                            '<addresses>' +
+                                                '<street>Digby</street>' +
+                                            '</addresses>' +
+                                            '<addresses>' +
+                                                '<street>Highbury</street>' +
+                                            '</addresses>' +
+                                       '</_Person>'
+                             )
+      ),
+      meta::pure::extension::defaultExtensions()
+   );
+
+   assert(jsonEquivalent('{"firstName":"Pierre","lastName":"DeBelen","addresses":[{"street":"Digby"},{"street":"Highbury"}]}'->parseJSON(), $result.values->toOne()->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
+{
+   serverVersion.start='v1_19_0',
+   doc.doc='Parse a complex XML object, process it through an M2M mapping and serialize the result as checked JSON.'
+} 
+meta::pure::mapping::modelToModel::test::xmlStore::simple::xmlDeserializeComplexObjectChecked() : Boolean[1]
+{
+   let tree = #{Person {firstName, lastName, addresses {street}} }#;
+
+   let result = execute(
+      |Person.all()->graphFetchChecked($tree)->serialize($tree),
+      complexModelMapping,
+      ^Runtime(connections = ^XmlModelConnection(
+                                element=^ModelStore(), 
+                                class=_Person,
+                                url='data:application/xml,' +                                     
+                                       '<_Person version="1.1">\n' +
+                                            '<fullName>Pierre DeBelen</fullName>\n' +  
+                                            '<addresses>' +
+                                                '<street>Digby</street>' +
+                                            '</addresses>' +
+                                            '<addresses>' +
+                                                '<street>Highbury</street>' +
+                                            '</addresses>' +
+                                       '</_Person>'
+                             )
+      ),
+      meta::pure::extension::defaultExtensions()
+   );
+   let expected = '{' +
+			'  "defects": [],' +
+			'  "source": {' +
+			'    "defects": [],' +
+			'    "source": {' +
+			'      "number": 1,' +
+			'      "record": "<_Person version=\\"1.1\\"><fullName>Pierre DeBelen<\/fullName><addresses><street>Digby<\/street><\/addresses><addresses><street>Highbury<\/street><\/addresses><\/_Person>"' +
+			'    },' +
+			'    "value": {' +
+			'      "addresses": [' +
+			'        {' +
+			'          "street": "Digby"' +
+			'        },' +
+			'        {' +
+			'          "street": "Highbury"' +
+			'        }' +
+			'      ],' +
+			'      "fullName": "Pierre DeBelen"' +
+			'    }' +
+			'  },' +
+			'  "value": {' +
+			'    "firstName": "Pierre",' +
+			'    "lastName": "DeBelen",' +
+			'    "addresses": [' +
+			'      {' +
+			'        "street": "Digby"' +
+			'      },' +
+			'      {' +
+			'        "street": "Highbury"' +
+			'      }' +
+			'    ]' +
+			'  }' +
+			'}';
+
+   assert(jsonEquivalent($expected->parseJSON(), $result.values->toOne()->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
+{
+   serverVersion.start='v1_19_0',
+   doc.doc='Given: a single XML object that matches a source defintion, and an M2M mapping',
+   doc.doc='When:  the mapping is executed using graphFetch and serialize.',
+   doc.doc='Then:  the mapping is applied and the result of the mapping is serialized.'
+} 
+meta::pure::mapping::modelToModel::test::xmlStore::simple::xmlSerializeOfObjectWithAttributes() : Boolean[1]
+{  
+   let tree = #{Person {firstName,lastName,alternateName{value, lang}} }#;
+
+   let pureRuntime = ^Runtime(connections = ^XmlModelConnection(
+                                element=^ModelStore(), 
+                                class=_S_Person, 
+                                url='data:application/xml,' +                                     
+                                       '<_S_Person version=\'1.1\' type=\'md\'>\n' +
+                                            '<FullName>Pierre Doe</FullName>\n' +
+                                            '<AlternateName lang=\'en\'>John Doe</AlternateName>\n' +
+                                       '</_S_Person>'
+                             )
+      );
+   
+   let result = execute(
+      {|Person.all()->graphFetch($tree)->serialize($tree)},
+      simpleModelMapping,
+      $pureRuntime,
+      meta::pure::extension::defaultExtensions()
+   );
+
+  let actual = $result.values->toOne();   
+  assert(jsonEquivalent('{"firstName":"Pierre","lastName":"Doe","alternateName":{"value":"John Doe","lang":"en"}}'->parseJSON(), $actual->parseJSON()));
+}
+
+###Mapping
+import meta::pure::mapping::modelToModel::test::shared::src::*;
+import meta::pure::mapping::modelToModel::test::shared::dest::*;
+import meta::pure::mapping::modelToModel::test::*;
+
+Mapping meta::pure::mapping::modelToModel::test::xmlStore::simple::complexModelMapping
+(
+   Person : Pure
+            {
+               ~src _Person
+               firstName : $src.fullName->substring(0, $src.fullName->indexOf(' ')),
+               lastName : $src.fullName->substring($src.fullName->indexOf(' ')+1, $src.fullName->length()),
+               addresses : $src.addresses
+            }
+   Address : Pure
+            {
+               ~src Address
+               street : $src.street
+            }
+
+)
+
+

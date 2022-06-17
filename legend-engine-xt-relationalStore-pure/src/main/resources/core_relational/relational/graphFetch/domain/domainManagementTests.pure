@@ -44,7 +44,7 @@ import meta::relational::graphFetch::domain::tests::*;
 //                         )
 //                       );
 
-//   let plans =  meta::external::query::graphQL::transformation::queryToPure::getPlansFromGraphQL(Domain, TestMapping, testRuntime(), $graphQLQuery, meta::pure::router::extension::defaultRelationalExtensions());
+//   let plans =  meta::external::query::graphQL::transformation::queryToPure::getPlansFromGraphQL(Domain, TestMapping, testRuntime(), $graphQLQuery, meta::relational::extension::relationalExtensions());
 
 //   checkPlans($plans.second);
 // }
@@ -78,7 +78,7 @@ function <<test.Test>> meta::relational::graphFetch::domain::tests::testGraphFet
                 $r.second,
                 TestMapping,
                 testRuntime(),
-                meta::pure::router::extension::defaultRelationalExtensions()
+                meta::relational::extension::relationalExtensions()
               );
         );
 
@@ -136,7 +136,7 @@ function <<access.private>> meta::relational::graphFetch::domain::tests::checkPl
       '      ]\n' +
       '    )\n' +
       '  )\n' +
-      ')\n', $plans->at(0)->meta::pure::executionPlan::toString::planToString(meta::pure::router::extension::defaultRelationalExtensions()));
+      ')\n', $plans->at(0)->meta::pure::executionPlan::toString::planToString(meta::relational::extension::relationalExtensions()));
 
     assertEquals(
       'PureExp\n' +
@@ -171,7 +171,7 @@ function <<access.private>> meta::relational::graphFetch::domain::tests::checkPl
       '      ]\n' +
       '    )\n' +
       '  )\n' +
-      ')\n', $plans->at(1)->meta::pure::executionPlan::toString::planToString(meta::pure::router::extension::defaultRelationalExtensions()));
+      ')\n', $plans->at(1)->meta::pure::executionPlan::toString::planToString(meta::relational::extension::relationalExtensions()));
 }
 
 function meta::relational::graphFetch::domain::tests::testRuntime():meta::pure::runtime::Runtime[1]

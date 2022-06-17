@@ -35,7 +35,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let mapping = meta::relational::tests::mapping::embedded::model::mapping::testMappingEmbedded;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[{"firstName":"Peter","firm":{"legalName":"Firm X"}},{"firstName":"John","firm":{"legalName":"Firm X"}},{"firstName":"Fabrice","firm":{"legalName":"Firm A"}}]',
@@ -60,7 +60,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let mapping = meta::relational::tests::mapping::embedded::model::mapping::testMappingEmbedded;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[{"firstName":"Peter","firm":{"legalName":"Firm X","address":{"name":"200 west"}}},{"firstName":"John","firm":{"legalName":"Firm X","address":{"name":"200 west"}}},{"firstName":"Fabrice","firm":{"legalName":"Firm A","address":{"name":"3 somewhere"}}}]',
@@ -85,7 +85,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let mapping = meta::relational::tests::mapping::embedded::model::mapping::testMappingEmbedded;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[{"firstName":"Peter","firm":{"legalName":"Firm X","employees":[{"firstName":"Peter"},{"firstName":"John"}]}},{"firstName":"John","firm":{"legalName":"Firm X","employees":[{"firstName":"Peter"},{"firstName":"John"}]}},{"firstName":"Fabrice","firm":{"legalName":"Firm A","employees":[{"firstName":"Fabrice"}]}}]',
@@ -108,7 +108,7 @@ function <<test.Test, test.ToFix, test.AlloyOnly>> {serverVersion.start='v1_19_0
    let mapping = meta::relational::tests::mapping::embedded::model::mapping::testMappingEmbedded;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[{"firstName":"Peter","firm":{"legalName":"Firm X","employeeByLastNameFirstName":"Peter"}},' +

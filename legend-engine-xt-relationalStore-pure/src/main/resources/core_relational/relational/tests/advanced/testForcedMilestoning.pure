@@ -39,7 +39,7 @@ function meta::relational::tests::advanced::forced::milestoning::testMilestoning
    let runtime = initDatabase();
    let result = execute(|Product.all(%2015-10-16)->filter(p|$p.classification(%2015-10-16).type=='STOCK' && $p.exchange(%2015-10-17).name=='LNSE')
                                       ->project([p|$p.name, p|$p.classification(%2015-10-16).description],['name','classificationDescription']), milestoningmap, $runtime
-                                      ,  meta::pure::router::extension::defaultRelationalExtensions(),^RelationalDebugContext(debug=false, space='', forcedIsolation = $isolation));
+                                      ,  meta::relational::extension::relationalExtensions(),^RelationalDebugContext(debug=false, space='', forcedIsolation = $isolation));
    let tds = $result.values->at(0);
    assertEquals(['ProductName2,STOCK DESC-V3'],$tds.rows->map(r|$r.values->makeString(',')));
    $result;
@@ -62,7 +62,7 @@ function meta::relational::tests::advanced::forced::milestoning::testNonMileston
 {
    let runtime = initDatabase();
    let result = execute(|Order.all()->filter(o|$o.product(%2015-10-15)->exists(p|$p.id==2))
-                            ->project([o|$o.id,o|$o.product(%2015-10-15).name],['orderId','productName']), milestoningmap, $runtime, meta::pure::router::extension::defaultRelationalExtensions(),
+                            ->project([o|$o.id,o|$o.product(%2015-10-15).name],['orderId','productName']), milestoningmap, $runtime, meta::relational::extension::relationalExtensions(),
                             ^RelationalDebugContext(debug=false, space='', forcedIsolation = $isolation));
    let tds = $result.values->at(0);
    assertEquals(['2,ProductName1'],$tds.rows->map(r|$r.values->makeString(',')));

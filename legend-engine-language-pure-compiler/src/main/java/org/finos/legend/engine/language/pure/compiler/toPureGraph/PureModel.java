@@ -340,27 +340,26 @@ public class PureModel implements IPureModel
      */
     private void registerElementsForPathToElement()
     {
-        registerElementForPathToElement("meta::pure::mapping::modelToModel", Lists.mutable.with(
+        registerElementForPathToElement("meta::pure::mapping::modelToModel::contract", Lists.mutable.with(
                 "supports_FunctionExpression_1__Boolean_1_",
-                "planExecution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__RouterExtension_MANY__DebugContext_1__ExecutionNode_1_",
-                "execution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_1__Runtime_1__ExecutionContext_1__RouterExtension_MANY__DebugContext_1__Result_1_"
-        ));
-        registerElementForPathToElement("meta::pure::mapping::modelToModel::inMemory", Lists.mutable.with(
+                "planExecution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__Extension_MANY__DebugContext_1__ExecutionNode_1_",
+                "execution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_1__Runtime_1__ExecutionContext_1__Extension_MANY__DebugContext_1__Result_1_",
                 "getterOverrideMapped_Any_1__PropertyMapping_1__Any_MANY_",
                 "getterOverrideNonMapped_Any_1__Property_1__Any_MANY_"
         ));
-        registerElementForPathToElement("meta::pure::store::platform", Lists.mutable.with(
-                "supports_FunctionExpression_1__Boolean_1_"
+        registerElementForPathToElement("meta::pure::store::platform::contract", Lists.mutable.with(
+                "supports_FunctionExpression_1__Boolean_1_",
+                "execution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__Extension_MANY__DebugContext_1__Result_1_",
+                "planExecution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__Extension_MANY__DebugContext_1__ExecutionNode_1_"
         ));
-        registerElementForPathToElement("meta::pure::store::platform::execution", Lists.mutable.with(
-                "execution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__RouterExtension_MANY__DebugContext_1__Result_1_"
-        ));
-        registerElementForPathToElement("meta::pure::store::platform::executionPlan::generation", Lists.mutable.with(
-                "planExecution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__RouterExtension_MANY__DebugContext_1__ExecutionNode_1_"
+        registerElementForPathToElement("meta::pure::mapping::aggregationAware::contract", Lists.mutable.with(
+                "supports_FunctionExpression_1__Boolean_1_",
+                "planExecution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__Extension_MANY__DebugContext_1__ExecutionNode_1_",
+                "execution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_1__Runtime_1__ExecutionContext_1__Extension_MANY__DebugContext_1__Result_1_"
         ));
         registerElementForPathToElement("meta::protocols::pure::vX_X_X::invocation::execution::execute", Lists.mutable.with(
-                "alloyExecute_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__String_1__Integer_1__String_1__String_1__RouterExtension_MANY__Result_1_",
-                "executePlan_ExecutionPlan_1__String_1__Integer_1__RouterExtension_MANY__String_1_"
+                "alloyExecute_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__String_1__Integer_1__String_1__String_1__Extension_MANY__Result_1_",
+                "executePlan_ExecutionPlan_1__String_1__Integer_1__Extension_MANY__String_1_"
         ));
         registerElementForPathToElement("meta::pure::tds", Lists.mutable.with(
                 "TDSRow"

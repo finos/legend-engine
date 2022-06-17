@@ -24,7 +24,7 @@ import meta::relational::mapping::*;
 import meta::pure::mapping::*;
 import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::*;
 
-function meta::protocols::pure::vX_X_X::extension::getRelationalExtension(type:String[1]):meta::pure::router::extension::SerializerExtension[1]
+function meta::protocols::pure::vX_X_X::extension::getRelationalExtension(type:String[1]):meta::pure::extension::SerializerExtension[1]
 {
    let res = [
       pair('relational', | getRelationalExtension())
@@ -39,14 +39,14 @@ function meta::protocols::pure::vX_X_X::extension::getRelationalExtension():meta
    ^meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X
    (
        transfers_mapping_transformMapping = x:SetImplementation[1] | !$x->instanceOf(EmbeddedRelationalInstanceSetImplementation),
-       transfers_mapping_transformSetImplementation2 = {mapping:Mapping[1], extensions:meta::pure::router::extension::RouterExtension[*] | [
+       transfers_mapping_transformSetImplementation2 = {mapping:Mapping[1], extensions:meta::pure::extension::Extension[*] | [
                   r:RootRelationalInstanceSetImplementation[1]| $r->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::relational::transformRootRelationalInstanceSetImplementation($mapping, $extensions),
                   a:meta::pure::mapping::aggregationAware::AggregationAwareSetImplementation[1]| $a->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::relational::transformAggregationAwareSetImplementation($mapping, $extensions);
             ]},
-       transfers_mapping_transformAssociationImplementation = {mapping:Mapping[1], extensions:meta::pure::router::extension::RouterExtension[*] | a:RelationalAssociationImplementation[1] | $a->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::relational::transformRelationalAssociationImplementation($mapping, $extensions)},
+       transfers_mapping_transformAssociationImplementation = {mapping:Mapping[1], extensions:meta::pure::extension::Extension[*] | a:RelationalAssociationImplementation[1] | $a->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::relational::transformRelationalAssociationImplementation($mapping, $extensions)},
 
        transfers_valueSpecification_transformAny = {
-          inScope:String[*], open:Map<String,List<Any>>[1], m:Multiplicity[1], fe:FunctionExpression[0..1],useAppliedFunction:Boolean[1], extensions:meta::pure::router::extension::RouterExtension[*] |
+          inScope:String[*], open:Map<String,List<Any>>[1], m:Multiplicity[1], fe:FunctionExpression[0..1],useAppliedFunction:Boolean[1], extensions:meta::pure::extension::Extension[*] |
           [
                 r:meta::pure::runtime::Runtime[1]|
                  ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::RuntimeInstance
@@ -68,7 +68,7 @@ function meta::protocols::pure::vX_X_X::extension::getRelationalExtension():meta
                   )
           ]
        },
-       transfers_executionPlan_transformNode = {mapping:Mapping[1], extensions:meta::pure::router::extension::RouterExtension[*] |
+       transfers_executionPlan_transformNode = {mapping:Mapping[1], extensions:meta::pure::extension::Extension[*] |
           [
                      rb:meta::pure::executionPlan::RelationalBlockExecutionNode[1]|
                                ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::RelationalBlockExecutionNode( _type = 'relationalBlock',
@@ -170,7 +170,7 @@ function meta::protocols::pure::vX_X_X::extension::getRelationalExtension():meta
                         )
           ]
        },
-       transfers_executionPlan_transformResultType =  {mapping:Mapping[1], extensions:meta::pure::router::extension::RouterExtension[*] |
+       transfers_executionPlan_transformResultType =  {mapping:Mapping[1], extensions:meta::pure::extension::Extension[*] |
          [
             tds:meta::pure::executionPlan::TDSResultType[1]|^meta::protocols::pure::vX_X_X::metamodel::executionPlan::TDSResultType
                                                             (
@@ -202,7 +202,7 @@ function meta::protocols::pure::vX_X_X::extension::getRelationalExtension():meta
          ]
      },
      transfers_executionPlan_transformSetImplementation = pair(p:meta::pure::mapping::PropertyMapping[1]|$p->instanceOf(meta::relational::mapping::RelationalPropertyMapping) && !$p->cast(@meta::relational::mapping::RelationalPropertyMapping).transformer->isEmpty(), p:meta::pure::mapping::PropertyMapping[1]|$p->cast(@meta::relational::mapping::RelationalPropertyMapping).transformer->cast(@meta::pure::mapping::EnumerationMapping<Any>)->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformEnumMapping()),
-      scan_buildBasePureModel_extractStores = {m:Mapping[1], extensions:meta::pure::router::extension::RouterExtension[*] |
+      scan_buildBasePureModel_extractStores = {m:Mapping[1], extensions:meta::pure::extension::Extension[*] |
                                                 [
                                                    rsi: RootRelationalInstanceSetImplementation[1] |
                                                                      // Main Store
@@ -221,14 +221,14 @@ function meta::protocols::pure::vX_X_X::extension::getRelationalExtension():meta
                                                    ag:	meta::pure::mapping::aggregationAware::AggregationAwareSetImplementation[1]| $ag.mainSetImplementation->extractStores($m, $extensions)->concatenate($ag.aggregateSetImplementations->map(a|$a.setImplementation->extractStores($m, $extensions)))
                                                 ]
                                               },
-      scan_buildBasePureModel_processProperties ={m:Mapping[1], extensions:meta::pure::router::extension::RouterExtension[*] |
+      scan_buildBasePureModel_processProperties ={m:Mapping[1], extensions:meta::pure::extension::Extension[*] |
                                                   [
                                                      r:RelationalPropertyMapping[1]|$r.relationalOperationElement->map(o|$o->meta::relational::functions::pureToSqlQuery::extractStore()),
                                                      e:EmbeddedRelationalInstanceSetImplementation[1]|extractStores($e, $m, $extensions)
                                                   ]
                                                  },
       scan_buildBasePureModel_buildPureModelFromMapping1 = {d:meta::relational::metamodel::Database[1]|$d.joins->map(j|$j.operation->meta::relational::functions::pureToSqlQuery::extractStore())},
-      invocation_execution_execute2_pre2 = {extensions:meta::pure::router::extension::RouterExtension[*] | [
+      invocation_execution_execute2_pre2 = {extensions:meta::pure::extension::Extension[*] | [
                pair ( builderType:String[1]| $builderType->isNotEmpty() && $builderType->toOne()=='tdsBuilder',
                       {resultJSON:String[1], result:JSONObject[1], m:Mapping[1], r:Runtime[1],extendedJSONDeserializationConfig:ExtendedJSONDeserializationConfig[1], context:ExecutionContext[0..1]|
                             let rv = $resultJSON->fromJSON(meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalTDSResult, $extendedJSONDeserializationConfig);
@@ -241,7 +241,7 @@ function meta::protocols::pure::vX_X_X::extension::getRelationalExtension():meta
                             processRelationalClassResult($r, $m, $pureRuntime, $context, $extensions);}
                     )
       ]},
-      invocation_execution_execute2_post2 = {extensions:meta::pure::router::extension::RouterExtension[*] | [
+      invocation_execution_execute2_post2 = {extensions:meta::pure::extension::Extension[*] | [
                pair(builderType:String[1]|true,
                     {resultJSON:String[1], result:JSONObject[1], m:Mapping[1], runtime:Runtime[1],extendedJSONDeserializationConfig:ExtendedJSONDeserializationConfig[1], context:ExecutionContext[0..1]|
                             let r = $resultJSON->fromJSON(meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalDataTypeResult, $extendedJSONDeserializationConfig); // Assume dataTypeBuilder is resultType
@@ -274,11 +274,11 @@ function meta::protocols::pure::vX_X_X::extension::getRelationalExtension():meta
              );
 
       ],
-      transfers_store_transformStore2 = {extensions:meta::pure::router::extension::RouterExtension[*] | 
+      transfers_store_transformStore2 = {extensions:meta::pure::extension::Extension[*] |
       [
          d:meta::relational::metamodel::Database[1] | $d->transformDatabase($extensions)
       ]},
-      transfers_store_transformConnection2 = {extensions:meta::pure::router::extension::RouterExtension[*] | 
+      transfers_store_transformConnection2 = {extensions:meta::pure::extension::Extension[*] |
       [
          db:meta::relational::runtime::DatabaseConnection[1] | $db->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::transformDatabaseConnection($extensions)
       ]},

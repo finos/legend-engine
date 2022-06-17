@@ -49,13 +49,13 @@ function <<test.BeforePackage>> meta::relational::tests::mapping::sqlFunction::s
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::concat::testProject():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->project([s | $s.concatResult], ['concat']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->project([s | $s.concatResult], ['concat']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals(['Joe Bloggs ', 'MrsSmith'], $result.values->at(0).rows.values);
     assertEquals('select concat("root".string1, "root".string2) as "concat" from dataTable as "root"',$result->sqlRemoveFormatting());
    
     let snowflakeSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.concatResult], ['concat']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.Snowflake, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
     assertEquals('select concat("root".string1, "root".string2) as "concat" from dataTable as "root"',$snowflakeSql);
 }
 
@@ -63,7 +63,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::concat::te
 {
    let prestoSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.concatResult], ['concat']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.Presto, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
    assertEquals('select concat("root".string1, "root".string2) as "concat" from dataTable as "root"',$prestoSql);
 }
 
@@ -71,7 +71,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::concat::te
 {
    let snowflakeSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.concatResult], ['concat']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.Snowflake, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
    assertEquals('select concat("root".string1, "root".string2) as "concat" from dataTable as "root"',$snowflakeSql);
 }
 
@@ -79,25 +79,25 @@ function  <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::
 {
    let snowflakeSql = toSQLString(|SqlFunctionDemo.all()->project([s | length($s.concatResult)], ['len']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.Snowflake, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
    assertEquals('select length(concat("root".string1, "root".string2)) as "len" from dataTable as "root"',$snowflakeSql);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::concat::testFilter():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.concatResult == 'Joe Bloggs ')->project([s | $s.concatResult], ['concat']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.concatResult == 'Joe Bloggs ')->project([s | $s.concatResult], ['concat']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals(['Joe Bloggs '], $result.values->at(0).rows.values);
     assertEquals('select concat("root".string1, "root".string2) as "concat" from dataTable as "root" where concat("root".string1, "root".string2) = \'Joe Bloggs \'',$result->sqlRemoveFormatting());
     
     let snowflakeSql = toSQLString(|SqlFunctionDemo.all()->filter(s | $s.concatResult == 'Joe Bloggs ')->project([s | $s.concatResult], ['concat']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.Snowflake, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
     assertEquals('select concat("root".string1, "root".string2) as "concat" from dataTable as "root" where concat("root".string1, "root".string2) = \'Joe Bloggs \'',$snowflakeSql);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::joinStrings::testToSQLStringjoinStringsMappingSnowflake():Boolean[1]
 {
-    let snowflakeSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.joinStringsResult], ['aggregatedCol']), testMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::pure::router::extension::defaultRelationalExtensions());
+    let snowflakeSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.joinStringsResult], ['aggregatedCol']), testMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
     assertEquals('select listagg("root".string1, \':\') as "aggregatedCol" from dataTable as "root"',$snowflakeSql);
 }
 
@@ -105,13 +105,13 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::joinString
 {
     let stringVals = ['Joe Bloggs', 'Mrs.Smith', 'John'];
     let separator = ':';
-    let snowflakeSql = toSQLString(|SqlFunctionDemo.all()->project([s|joinStrings($stringVals, $separator)], ['concatenatedCOL']),testMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::pure::router::extension::defaultRelationalExtensions());
+    let snowflakeSql = toSQLString(|SqlFunctionDemo.all()->project([s|joinStrings($stringVals, $separator)], ['concatenatedCOL']),testMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
     assertEquals('select concat(\'Joe Bloggs\', \':\', \'Mrs.Smith\', \':\', \'John\') as "concatenatedCOL" from dataTable as "root"',$snowflakeSql);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::rtrim::testProject():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->project([s | $s.rtrimResult], ['rtrim']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->project([s | $s.rtrimResult], ['rtrim']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([' Bloggs', 'Smith'], $result.values->at(0).rows.values);
     assertEquals('select rtrim("root".string2) as "rtrim" from dataTable as "root"',$result->sqlRemoveFormatting());
 }
@@ -120,7 +120,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::rtrim::tes
 {
    let prestoSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.rtrimResult], ['rtrim']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.Presto, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
    assertEquals('select rtrim("root".string2) as "rtrim" from dataTable as "root"',$prestoSql);
 }
 
@@ -128,20 +128,20 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::rtrim::tes
 {
    let memSQLSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.rtrimResult], ['rtrim']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.MemSQL, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
    assertEquals('select rtrim(`root`.string2) as `rtrim` from dataTable as `root`',$memSQLSql);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::rtrim::testFilter():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.rtrimResult == ' Bloggs')->project([s | $s.rtrimResult], ['rtrim']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.rtrimResult == ' Bloggs')->project([s | $s.rtrimResult], ['rtrim']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([' Bloggs'], $result.values->at(0).rows.values);
     assertEquals('select rtrim("root".string2) as "rtrim" from dataTable as "root" where rtrim("root".string2) = \' Bloggs\'',$result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::ltrim::testProject():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->project([s | $s.ltrimResult], ['ltrim']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->project([s | $s.ltrimResult], ['ltrim']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals(['Bloggs ', 'Smith'], $result.values->at(0).rows.values);
     assertEquals('select ltrim("root".string2) as "ltrim" from dataTable as "root"',$result->sqlRemoveFormatting());
 }
@@ -150,13 +150,13 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::ltrim::tes
 {
    let prestoSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.ltrimResult], ['ltrim']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.Presto, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
    assertEquals('select ltrim("root".string2) as "ltrim" from dataTable as "root"',$prestoSql);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::ltrim::testFilter():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.ltrimResult == 'Bloggs ')->project([s | $s.ltrimResult], ['ltrim']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.ltrimResult == 'Bloggs ')->project([s | $s.ltrimResult], ['ltrim']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals(['Bloggs '], $result.values->at(0).rows.values);
     assertEquals('select ltrim("root".string2) as "ltrim" from dataTable as "root" where ltrim("root".string2) = \'Bloggs \'',$result->sqlRemoveFormatting());
 }
@@ -164,35 +164,35 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::ltrim::tes
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::trim::testTriminNotSybaseASE():Boolean[1]{
    let sIQ = toSQLString(|SqlFunctionDemo.all()->project([s | $s.trimResult], ['trim']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
 
    let sH2 = toSQLString(|SqlFunctionDemo.all()->project([s | $s.trimResult], ['trim']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.H2, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
 
    let sMemsql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.trimResult], ['trim']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.MemSQL, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
 
    let sDB2 = toSQLString(|SqlFunctionDemo.all()->project([s | $s.trimResult], ['trim']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.DB2, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.DB2, meta::relational::extension::relationalExtensions());
 
    let sPostgre = toSQLString(|SqlFunctionDemo.all()->project([s | $s.trimResult], ['trim']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.Postgres, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
 
    let sHive = toSQLString(|SqlFunctionDemo.all()->project([s | $s.trimResult], ['trim']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.Hive, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.Hive, meta::relational::extension::relationalExtensions());
 
    let sSnowflake = toSQLString(|SqlFunctionDemo.all()->project([s | $s.trimResult], ['trim']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.Snowflake, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
 
    let sPresto = toSQLString(|SqlFunctionDemo.all()->project([s | $s.trimResult], ['trim']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.Presto, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
 
    assertEquals('select trim("root".string2) as "trim" from dataTable as "root"',$sIQ);
    assertEquals('select trim("root".string2) as "trim" from dataTable as "root"',$sH2);
@@ -209,14 +209,14 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::trim::test
 {
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.trimResult], ['trim']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.Sybase, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.Sybase, meta::relational::extension::relationalExtensions());
    assertEquals('select rtrim(ltrim("root".string2)) as "trim" from dataTable as "root"',$s);
 
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::left::testProject():Boolean[1]
 {
-   let result = execute(|SqlFunctionDemo.all()->project([s | $s.string1Left], ['left']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|SqlFunctionDemo.all()->project([s | $s.string1Left], ['left']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals(['Jo', 'Mr'], $result.values->at(0).rows.values);
    assertEquals('select left("root".string1,2) as "left" from dataTable as "root"',$result->sqlRemoveFormatting());
 }
@@ -225,20 +225,20 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::left::test
 {
    let prestoSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string1Left], ['left']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.Presto, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
    assertEquals('select substr("root".string1,1,2) as "left" from dataTable as "root"',$prestoSql);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::left::testFilter():Boolean[1]
 {
-   let result = execute(|SqlFunctionDemo.all()->filter(s | $s.string1Left == 'Jo')->project([s | $s.string1Left], ['left']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|SqlFunctionDemo.all()->filter(s | $s.string1Left == 'Jo')->project([s | $s.string1Left], ['left']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals(['Jo'], $result.values->at(0).rows.values);
    assertEquals('select left("root".string1,2) as "left" from dataTable as "root" where left("root".string1,2) = \'Jo\'',$result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::right::testProject():Boolean[1]
 {
-   let result = execute(|SqlFunctionDemo.all()->project([s | $s.string1Right], ['right']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|SqlFunctionDemo.all()->project([s | $s.string1Right], ['right']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals(['oe', 'rs'], $result.values->at(0).rows.values);
    assertEquals('select right("root".string1,2) as "right" from dataTable as "root"',$result->sqlRemoveFormatting());
 }
@@ -247,76 +247,76 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::right::tes
 {
    let prestoSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string1Right], ['right']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.Presto, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
    assertEquals('select substr("root".string1,-1,2) as "right" from dataTable as "root"',$prestoSql);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::right::testFilter():Boolean[1]
 {
-   let result = execute(|SqlFunctionDemo.all()->filter(s | $s.string1Right == 'oe')->project([s | $s.string1Right], ['right']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|SqlFunctionDemo.all()->filter(s | $s.string1Right == 'oe')->project([s | $s.string1Right], ['right']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals(['oe'], $result.values->at(0).rows.values);
    assertEquals('select right("root".string1,2) as "right" from dataTable as "root" where right("root".string1,2) = \'oe\'',$result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::castInteger::testProject():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->project([s | $s.string3Integer], ['castInteger']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->project([s | $s.string3Integer], ['castInteger']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([10,11], $result.values->at(0).rows.values);
     assertEquals('select cast("root".string3 as integer) as "castInteger" from dataTable as "root"',$result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::castInteger::testFilter():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.string3Integer == 10)->project([s | $s.string3Integer], ['castInteger']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.string3Integer == 10)->project([s | $s.string3Integer], ['castInteger']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([10], $result.values->at(0).rows.values);
     assertEquals('select cast("root".string3 as integer) as "castInteger" from dataTable as "root" where cast("root".string3 as integer) = 10',$result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::lower::testProject():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->project([s | $s.string1Lower], ['lower']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->project([s | $s.string1Lower], ['lower']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals(['joe', 'mrs'], $result.values->at(0).rows.values);
     assertEquals('select lower("root".string1) as "lower" from dataTable as "root"',$result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::lower::testFilter():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.string1Lower == 'joe')->project([s | $s.string1Lower], ['lower']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.string1Lower == 'joe')->project([s | $s.string1Lower], ['lower']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals(['joe'], $result.values->at(0).rows.values);
     assertEquals('select lower("root".string1) as "lower" from dataTable as "root" where lower("root".string1) = \'joe\'',$result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::upper::testProject():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->project([s | $s.string1Upper], ['upper']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->project([s | $s.string1Upper], ['upper']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals(['JOE', 'MRS'], $result.values->at(0).rows.values);
     assertEquals('select upper("root".string1) as "upper" from dataTable as "root"',$result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::upper::testFilter():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.string1Upper == 'JOE')->project([s | $s.string1Upper], ['upper']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.string1Upper == 'JOE')->project([s | $s.string1Upper], ['upper']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals(['JOE'], $result.values->at(0).rows.values);
     assertEquals('select upper("root".string1) as "upper" from dataTable as "root" where upper("root".string1) = \'JOE\'',$result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::toString::testProject():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->project([s | $s.int1String], ['toString']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->project([s | $s.int1String], ['toString']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals(['1','2'], $result.values->at(0).rows.values);
     assertEquals('select cast("root".int1 as varchar) as "toString" from dataTable as "root"',$result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::toString::testFilter():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.int1String == '1')->project([s | $s.int1String], ['toString']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.int1String == '1')->project([s | $s.int1String], ['toString']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals(['1'], $result.values->at(0).rows.values);
     assertEquals('select cast("root".int1 as varchar) as "toString" from dataTable as "root" where cast("root".int1 as varchar) = \'1\'',$result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::round::testProject():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->project([s | $s.float1Round ], ['round']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->project([s | $s.float1Round ], ['round']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([1.0,2.0], $result.values->at(0).rows.values);
     assertEquals('select round("root".float1, 0) as "round" from dataTable as "root"',$result->sqlRemoveFormatting());
 }
@@ -325,48 +325,48 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::round::tes
 {
    let prestoSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.float1Round], ['round']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.Presto, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
    assertEquals('select round("root".float1, 0) as "round" from dataTable as "root"',$prestoSql);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::round::testFilter():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.float1Round == 1)->project([s | $s.float1Round], ['round']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.float1Round == 1)->project([s | $s.float1Round], ['round']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([1.0], $result.values->at(0).rows.values);
     assertEquals('select round("root".float1, 0) as "round" from dataTable as "root" where round("root".float1, 0) = 1',$result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::ceiling::testProject():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->project([s | $s.float1Ceiling ], ['ceiling']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->project([s | $s.float1Ceiling ], ['ceiling']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([2.0,2.0], $result.values->at(0).rows.values);
     assertEquals('select ceiling("root".float1) as "ceiling" from dataTable as "root"',$result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::ceiling::testFilter():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.float1Ceiling == 2)->project([s | $s.float1Ceiling], ['ceiling']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.float1Ceiling == 2)->project([s | $s.float1Ceiling], ['ceiling']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([2.0,2.0], $result.values->at(0).rows.values);
     assertEquals('select ceiling("root".float1) as "ceiling" from dataTable as "root" where ceiling("root".float1) = 2',$result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::floor::testProject():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->project([s | $s.float1Floor ], ['floor']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->project([s | $s.float1Floor ], ['floor']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([1.0,1.0], $result.values->at(0).rows.values);
     assertEquals('select floor("root".float1) as "floor" from dataTable as "root"',$result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::floor::testFilter():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.float1Floor == 1)->project([s | $s.float1Floor], ['floor']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.float1Floor == 1)->project([s | $s.float1Floor], ['floor']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([1.0,1.0], $result.values->at(0).rows.values);
     assertEquals('select floor("root".float1) as "floor" from dataTable as "root" where floor("root".float1) = 1',$result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stddev::sample::testProject():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->project([s | $s.float1StdDevSample], 'stdDevSample'), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->project([s | $s.float1StdDevSample], 'stdDevSample'), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([0.7071067811865476], $result.values->at(0).rows.values);
     assertEquals('select stddev_samp("root".int1) as "stdDevSample" from dataTable as "root"',$result->sqlRemoveFormatting());
 }
@@ -375,97 +375,97 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stddev::sa
 {
    let prestoSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.float1StdDevSample], ['stdDevSample']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.Presto, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
    assertEquals('select stddev_samp("root".int1) as "stdDevSample" from dataTable as "root"',$prestoSql);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::sin::testProject():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->project([s | $s.floatSinResult ], ['sin']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->project([s | $s.floatSinResult ], ['sin']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([0.8912073600614354, 0.9738476308781951], $result.values->at(0).rows.values);
     assertEquals('select sin("root".float1) as "sin" from dataTable as "root"',$result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::sin::testFilter():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.floatSinResult  > 0.9)->project([s | $s.floatSinResult], ['sin']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.floatSinResult  > 0.9)->project([s | $s.floatSinResult], ['sin']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([0.9738476308781951], $result.values->at(0).rows.values);
     assertEquals('select sin("root".float1) as "sin" from dataTable as "root" where sin("root".float1) > 0.9',$result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::cos::testProject():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->project([s | $s.floatCosResult ], ['cos']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->project([s | $s.floatCosResult ], ['cos']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([0.4535961214255773, -0.2272020946930871], $result.values->at(0).rows.values);
     assertEquals('select cos("root".float1) as "cos" from dataTable as "root"',$result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::cos::testFilter():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.floatCosResult  < 0)->project([s | $s.floatCosResult], ['cos']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.floatCosResult  < 0)->project([s | $s.floatCosResult], ['cos']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([-0.2272020946930871], $result.values->at(0).rows.values);
     assertEquals('select cos("root".float1) as "cos" from dataTable as "root" where cos("root".float1) < 0',$result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::tan::testProject():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->project([s | $s.floatTanResult ], ['tan']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->project([s | $s.floatTanResult ], ['tan']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([1.9647596572486523, -4.286261674628062], $result.values->at(0).rows.values);
     assertEquals('select tan("root".float1) as "tan" from dataTable as "root"',$result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::tan::testFilter():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.floatTanResult  > 0)->project([s | $s.floatTanResult], ['tan']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.floatTanResult  > 0)->project([s | $s.floatTanResult], ['tan']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([1.9647596572486523], $result.values->at(0).rows.values);
     assertEquals('select tan("root".float1) as "tan" from dataTable as "root" where tan("root".float1) > 0',$result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::asin::testProject():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->project([s | $s.floatASinResult ], ['asin']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->project([s | $s.floatASinResult ], ['asin']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([0.5235987755982989, 1.5707963267948966], $result.values->at(0).rows.values);
     assertEquals('select asin(((1.0 * "root".int1) / 2)) as "asin" from dataTable as "root"',$result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::asin::testFilter():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.floatASinResult  > 1)->project([s | $s.floatASinResult], ['asin']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.floatASinResult  > 1)->project([s | $s.floatASinResult], ['asin']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([1.5707963267948966], $result.values->at(0).rows.values);
     assertEquals('select asin(((1.0 * "root".int1) / 2)) as "asin" from dataTable as "root" where asin(((1.0 * "root".int1) / 2)) > 1',$result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::acos::testProject():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->project([s | $s.floatACosResult ], ['acos']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->project([s | $s.floatACosResult ], ['acos']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([1.0471975511965979, 0.0], $result.values->at(0).rows.values);
     assertEquals('select acos(((1.0 * "root".int1) / 2)) as "acos" from dataTable as "root"',$result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::acos::testFilter():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.floatACosResult  == 0)->project([s | $s.floatACosResult], ['acos']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.floatACosResult  == 0)->project([s | $s.floatACosResult], ['acos']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([0.0], $result.values->at(0).rows.values);
     assertEquals('select acos(((1.0 * "root".int1) / 2)) as "acos" from dataTable as "root" where acos(((1.0 * "root".int1) / 2)) = 0',$result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::atan::testProject():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->project([s | $s.floatATanResult ], ['atan']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->project([s | $s.floatATanResult ], ['atan']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([0.8329812666744317, 1.0636978224025597], $result.values->at(0).rows.values);
     assertEquals('select atan("root".float1) as "atan" from dataTable as "root"',$result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::atan::testFilter():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.floatATanResult  > 1)->project([s | $s.floatATanResult], ['atan']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.floatATanResult  > 1)->project([s | $s.floatATanResult], ['atan']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([1.0636978224025597], $result.values->at(0).rows.values);
     assertEquals('select atan("root".float1) as "atan" from dataTable as "root" where atan("root".float1) > 1',$result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::atan2::testProject():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->project([s | $s.floatATan2Result ], ['atan2']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->project([s | $s.floatATan2Result ], ['atan2']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([0.8329812666744317, 0.7328151017865066], $result.values->at(0).rows.values);
     assertEquals('select atan2("root".float1,"root".int1) as "atan2" from dataTable as "root"',$result->sqlRemoveFormatting());
 }
@@ -474,34 +474,34 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::atan2::tes
 {
    let prestoSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.floatATan2Result], ['atan2']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.Presto, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
    assertEquals('select atan2("root".float1,"root".int1) as "atan2" from dataTable as "root"',$prestoSql);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::atan2::testFilter():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.floatATan2Result  > 0.8)->project([s | $s.floatATan2Result], ['atan2']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.floatATan2Result  > 0.8)->project([s | $s.floatATan2Result], ['atan2']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([0.8329812666744317], $result.values->at(0).rows.values);
     assertEquals('select atan2("root".float1,"root".int1) as "atan2" from dataTable as "root" where atan2("root".float1,"root".int1) > 0.8',$result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::sqrt::testProject():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->project([s | $s.floatSqrtResult ], ['sqrt']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->project([s | $s.floatSqrtResult ], ['sqrt']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([1.0, 1.4142135623730951], $result.values->at(0).rows.values);
     assertEquals('select sqrt("root".int1) as "sqrt" from dataTable as "root"',$result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::sqrt::testFilter():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.floatSqrtResult == 1)->project([s | $s.floatSqrtResult], ['sqrt']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.floatSqrtResult == 1)->project([s | $s.floatSqrtResult], ['sqrt']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([1.0], $result.values->at(0).rows.values);
     assertEquals('select sqrt("root".int1) as "sqrt" from dataTable as "root" where sqrt("root".int1) = 1',$result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::mod::testProject():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->project([s | $s.floatModResult ], ['mod']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->project([s | $s.floatModResult ], ['mod']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([1, 0], $result.values->at(0).rows.values);
     assertEquals('select mod("root".int1,2) as "mod" from dataTable as "root"',$result->sqlRemoveFormatting());
 }
@@ -510,34 +510,34 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::mod::testT
 {
    let prestoSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.floatModResult], ['mod']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.Presto, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
    assertEquals('select mod("root".int1,2) as "mod" from dataTable as "root"',$prestoSql);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::mod::testFilter():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.floatModResult  > 0)->project([s | $s.floatModResult], ['mod']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.floatModResult  > 0)->project([s | $s.floatModResult], ['mod']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([1], $result.values->at(0).rows.values);
     assertEquals('select mod("root".int1,2) as "mod" from dataTable as "root" where mod("root".int1,2) > 0',$result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::rem::testProject():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->project([s | $s.floatRemResult ], ['rem']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->project([s | $s.floatRemResult ], ['rem']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([1, 0], $result.values->at(0).rows.values);
     assertEquals('select mod("root".int1,2) as "rem" from dataTable as "root"',$result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::rem::testFilter():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.floatRemResult  == 0)->project([s | $s.floatRemResult], ['rem']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.floatRemResult  == 0)->project([s | $s.floatRemResult], ['rem']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([0], $result.values->at(0).rows.values);
     assertEquals('select mod("root".int1,2) as "rem" from dataTable as "root" where mod("root".int1,2) = 0',$result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stddev::population::testProject():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->project([s | $s.float1StdDevPopulation], 'stdDevPopulation'), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->project([s | $s.float1StdDevPopulation], 'stdDevPopulation'), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([0.5], $result.values->at(0).rows.values);
     assertEquals('select stddev_pop("root".int1) as "stdDevPopulation" from dataTable as "root"',$result->sqlRemoveFormatting());
 }
@@ -546,13 +546,13 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stddev::po
 {
    let prestoSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.float1StdDevPopulation], ['stdDevPopulation']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.Presto, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
    assertEquals('select stddev_pop("root".int1) as "stdDevPopulation" from dataTable as "root"',$prestoSql);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stringToFloat::testProject():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->project([s | $s.string2Float], ['string2Float']),  testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->project([s | $s.string2Float], ['string2Float']),  testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([123.456, 100.001], $result.values->at(0).rows.values);
     assertEquals('select cast("root".string2float as float) as "string2Float" from dataTable as "root"',$result->sqlRemoveFormatting());
 }
@@ -562,18 +562,18 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stringToFl
 {
    let memSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2Float], ['string2Float']),
                          testMapping,
-                         meta::relational::runtime::DatabaseType.MemSQL, meta::pure::router::extension::defaultRelationalExtensions());
+                         meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
    assertEquals('select cast(`root`.string2float as decimal) as `string2Float` from dataTable as `root`',$memSql);
 
    let prestoSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2Float], ['string2Float']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.Presto, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
    assertEquals('select cast("root".string2float as double) as "string2Float" from dataTable as "root"',$prestoSql);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stringToFloat::testFilter():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.string2Float == 123.456)->project([s | $s.string2Float], ['string2Float']),  testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.string2Float == 123.456)->project([s | $s.string2Float], ['string2Float']),  testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([123.456], $result.values->at(0).rows.values);
     //assertEquals('select cast("root".string1 as float) as "string2Date" from testDataTable as "root" where cast("root".string1 as float) = 123.456',$result->sqlRemoveFormatting());
 }
@@ -582,7 +582,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stringToDa
 {
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2Date], ['string2Date']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
    assertEquals('select cast("root".string2date as timestamp) as "string2Date" from dataTable as "root"',$s);
 
 }
@@ -591,7 +591,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::toString::
 {
     let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.int1String], ['toString']),
                                                  testMapping,
-                                                 meta::relational::runtime::DatabaseType.MemSQL, meta::pure::router::extension::defaultRelationalExtensions());
+                                                 meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
     assertEquals('select cast(`root`.int1 as char) as `toString` from dataTable as `root`',$s);
 }
 
@@ -599,7 +599,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::toString::
 {
     let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.int1String], ['toString']),
                                                  testMapping,
-                                                 meta::relational::runtime::DatabaseType.DB2, meta::pure::router::extension::defaultRelationalExtensions());
+                                                 meta::relational::runtime::DatabaseType.DB2, meta::relational::extension::relationalExtensions());
     assertEquals('select cast("root".int1 as varchar(16000)) as "toString" from dataTable as "root"',$s);
 }
 
@@ -607,7 +607,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::toString::
 {
    let prestoSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.int1String], ['toString']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.Presto, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
    assertEquals('select cast("root".int1 as varchar) as "toString" from dataTable as "root"',$prestoSql);
 }
 
@@ -615,7 +615,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::toString::
 {
     let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.concatResult], ['concatResult']),
                                                  testMapping,
-                                                 meta::relational::runtime::DatabaseType.DB2, meta::pure::router::extension::defaultRelationalExtensions());
+                                                 meta::relational::runtime::DatabaseType.DB2, meta::relational::extension::relationalExtensions());
     assertEquals('select ("root".string1 concat "root".string2) as "concatResult" from dataTable as "root"',$s);
 }
 
@@ -624,7 +624,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseDecim
 
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2Decimal], ['parseDecimal']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
    assertEquals('select cast("root".string2Decimal as decimal) as "parseDecimal" from dataTable as "root"',$s);
 
 }
@@ -633,7 +633,7 @@ function <<test.Test>> {serverVersion.start='v1_20_0'} meta::relational::tests::
 {
    let result = execute(|SqlFunctionDemo.all()->project([s | $s.string2Decimal], ['parseDecimal']),
                                                 testMapping,
-                                                testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                                                testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals([123.450021D, 100.009D], $result.values->at(0).rows.values);
    assertEquals('select cast("root".string2Decimal as decimal) as "parseDecimal" from dataTable as "root"',$result->sqlRemoveFormatting());
 }
@@ -642,7 +642,7 @@ function <<test.Test>> {serverVersion.start='v1_20_0'} meta::relational::tests::
 {
    let result = execute(|SqlFunctionDemo.all()->project([s | $s.string2decimal->parseDecimal()], ['parseDecimal']),
                                                 testMapping,
-                                                testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                                                testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals([123.450021D, 100.009D], $result.values->at(0).rows.values);
    assertEquals('select cast(trim("root".string2Decimal) as decimal) as "parseDecimal" from dataTable as "root"',$result->sqlRemoveFormatting());
 }
@@ -651,7 +651,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseInteg
 {
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2Integer], ['parseInteger']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
    assertEquals('select cast("root".string2Integer as integer) as "parseInteger" from dataTable as "root"',$s);
 
 }
@@ -660,7 +660,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseInteg
 {
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2Integer], ['parseInteger']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.H2, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
    assertEquals('select cast("root".string2Integer as integer) as "parseInteger" from dataTable as "root"',$s);
 
 }
@@ -668,7 +668,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseInteg
 {
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2Integer], ['parseInteger']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.MemSQL, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
    assertEquals('select cast(`root`.string2Integer as signed integer) as `parseInteger` from dataTable as `root`',$s);
 
 }
@@ -677,7 +677,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseInteg
 {
    let prestoSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2Integer], ['parseInteger']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.Presto, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
    assertEquals('select cast("root".string2Integer as integer) as "parseInteger" from dataTable as "root"',$prestoSql);
 }
 
@@ -688,7 +688,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseInteg
    let db = meta::pure::functions::date::date(2017,4,1);
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | dateDiff($da, $db, DurationUnit.DAYS)], ['dateDiff']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.MemSQL, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
    assertEquals('select (datediff(\'2017-04-01\' , \'2017-03-01\')) as `dateDiff` from dataTable as `root`',$s);
 }
 
@@ -699,7 +699,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseInteg
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | dateDiff($da, $db, DurationUnit.SECONDS)], ['dateDiff']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.MemSQL,
-                                                meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::extension::relationalExtensions());
    assertEquals('select (time_to_sec(timediff(\'2017-03-01 20:08:08\' , \'2017-03-01 19:09:20\'))) as `dateDiff` from dataTable as `root`',$s);
 }
 
@@ -710,7 +710,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseInteg
    let db = meta::pure::functions::date::date(2017,4,1);
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | dateDiff($da, $db, DurationUnit.DAYS)], ['dateDiff']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.Presto, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
    assertEquals('select date_diff(\'day\',Date(\'2017-03-01\'),Date(\'2017-04-01\')) as "dateDiff" from dataTable as "root"',$s);
 }
 
@@ -729,7 +729,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseInteg
                                                            ['dateDiffYears','dateDiffMonths','dateDiffWeeks','dateDiffDays','dateDiffHours','dateDiffMinutes','dateDiffSeconds']),
                                                    testMapping,
                                                    meta::relational::runtime::DatabaseType.Snowflake,
-                                                   meta::pure::router::extension::defaultRelationalExtensions());
+                                                   meta::relational::extension::relationalExtensions());
    assertEquals('select datediff(year,\'2013-03-01 19:09:20\',\'2017-03-01 20:08:08\') as "dateDiffYears",'+
                 ' datediff(month,\'2013-03-01 19:09:20\',\'2017-03-01 20:08:08\') as "dateDiffMonths",'+
                 ' datediff(week,\'2013-03-01 19:09:20\',\'2017-03-01 20:08:08\') as "dateDiffWeeks",'+
@@ -745,7 +745,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseInteg
 
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertVarchar128], ['convertVarchar128']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.MemSQL, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
    assertEquals('select convert(`root`.int1, CHAR) as `convertVarchar128` from dataTable as `root`',$s);
 
 }
@@ -755,7 +755,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseInteg
 
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertVarchar128], ['convertVarchar128']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.Snowflake, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
    assertEquals('select to_char("root".int1) as "convertVarchar128" from dataTable as "root"', $s);
 
 }
@@ -764,7 +764,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseInteg
 {
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertVarchar128], ['convertVarchar128']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.Presto, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
    assertEquals('select cast("root".int1 as VARCHAR(128)) as "convertVarchar128" from dataTable as "root"',$s);
 }
 
@@ -772,7 +772,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseInteg
 {
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2Integer], ['parseInteger']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.Sybase, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.Sybase, meta::relational::extension::relationalExtensions());
    assertEquals('select cast("root".string2Integer as integer) as "parseInteger" from dataTable as "root"',$s);
 
 }
@@ -780,7 +780,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseInteg
 {
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2Integer], ['parseInteger']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.Composite, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.Composite, meta::relational::extension::relationalExtensions());
    assertEquals('select cast("root".string2Integer as integer) as "parseInteger" from dataTable as "root"',$s);
 
 }
@@ -788,7 +788,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseInteg
 {
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2Integer], ['parseInteger']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.Postgres, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
    assertEquals('select cast("root".string2Integer as integer) as "parseInteger" from dataTable as "root"',$s);
 
 }
@@ -797,7 +797,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseInteg
 {
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2Integer], ['parseInteger']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.DB2, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.DB2, meta::relational::extension::relationalExtensions());
    assertEquals('select cast("root".string2Integer as integer) as "parseInteger" from dataTable as "root"',$s);
 
 }
@@ -807,7 +807,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stringToDa
 {
 
    let result = execute(|SqlFunctionDemo.all()->project([s | $s.convertToDate], ['convertToDate']),
-                                                           testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                                                           testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
 
    assertEquals('select cast( parseDateTime("root".stringDateFormat,\'yyyy-MM-dd\') as date) as "convertToDate" from dataTable as "root"',$result->sqlRemoveFormatting());
    assertEquals([%2016-06-23, %2016-02-23], $result.values->at(0).rows.values);
@@ -817,7 +817,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stringToDa
 {
 
    let result = execute(|SqlFunctionDemo.all()->project([s | $s.convertToDateUserDefinedFormat], ['convertToDateUserDefinedFormat']),
-                                                           testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                                                           testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    println($result.values->meta::json::toJSON());
    assertEquals('select cast( parseDateTime("root".stringUserDefinedDateFormat,\'MMMyyyy\') as date) as "convertToDateUserDefinedFormat" from dataTable as "root"',$result->sqlRemoveFormatting());
    assertEquals([%1995-11-01, %1995-11-01], $result.values->at(0).rows.values);
@@ -828,7 +828,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stringToDa
 
    let s =toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertToDate1], ['convertToDate']),
                                                        testMapping,
-                                                       meta::relational::runtime::DatabaseType.MemSQL, meta::pure::router::extension::defaultRelationalExtensions());
+                                                       meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
 
    assertEquals('select cast( to_date(`root`.stringDateFormat,\'YYYY-MM-DD\') as date) as `convertToDate` from dataTable as `root`', $s);
 }
@@ -838,7 +838,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stringToDa
 
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertToDateUserDefinedFormat1], ['convertToDateUserDefinedFormat']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.MemSQL, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
    assertEquals('select cast( to_date(`root`.stringUserDefinedDateFormat,\'MMMYYYY\') as date) as `convertToDateUserDefinedFormat` from dataTable as `root`', $s);
 }
 
@@ -847,7 +847,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stringToDa
 
    let s =toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertToDate], ['convertToDate']),
                                                        testMapping,
-                                                       meta::relational::runtime::DatabaseType.Snowflake, meta::pure::router::extension::defaultRelationalExtensions());
+                                                       meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
 
    assertEquals('select to_date("root".stringDateFormat,\'yyyy-MM-dd\') as "convertToDate" from dataTable as "root"', $s);
 }
@@ -857,7 +857,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stringToDa
 
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertToDateUserDefinedFormat2], ['convertToDateUserDefinedFormat']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.Snowflake, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
    assertEquals('select to_date("root".stringUserDefinedDateFormat,\'YYYY/MM/DD\') as "convertToDateUserDefinedFormat" from dataTable as "root"', $s);
 }
 
@@ -866,7 +866,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stringToDa
 
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertToDateUserDefinedFormat3], ['convertToDateUserDefinedFormat']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.Snowflake, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
    assertEquals('select to_date("root".stringUserDefinedDateFormat,\'DD/MM/YYYY\') as "convertToDateUserDefinedFormat" from dataTable as "root"', $s);
 }
 
@@ -875,7 +875,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stringToDa
 
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertToDate1], ['convertToDate']),
                                                        testMapping,
-                                                       meta::relational::runtime::DatabaseType.Presto, meta::pure::router::extension::defaultRelationalExtensions());
+                                                       meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
 
    assertEquals('select date( date_parse("root".stringDateFormat,\'%Y-%m-%d\') ) as "convertToDate" from dataTable as "root"', $s);
 }
@@ -885,7 +885,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stringToDa
 
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertToDateUserDefinedFormat1], ['convertToDateUserDefinedFormat']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.Presto, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
    assertEquals('select date( date_parse("root".stringUserDefinedDateFormat,\'MMMYYYY\') ) as "convertToDateUserDefinedFormat" from dataTable as "root"', $s);
 }
 
@@ -894,7 +894,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stringToDa
 
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertToDateUserDefinedFormat], ['convertToDateUserDefinedFormat']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.Sybase, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.Sybase, meta::relational::extension::relationalExtensions());
    assertEquals('select convert ( date,(\'01 \' + substring("root".stringUserDefinedDateFormat,1,3) + \' \' + substring("root".stringUserDefinedDateFormat,4,4)),106) as "convertToDateUserDefinedFormat" from dataTable as "root"', $s);
 }
 
@@ -902,7 +902,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stringToDa
 {
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertToDate], ['convertToDate']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.DB2, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.DB2, meta::relational::extension::relationalExtensions());
    assertEquals('select to_date("root".stringDateFormat,\'yyyy-MM-dd\') as "convertToDate" from dataTable as "root"',$s);
 }
 
@@ -910,14 +910,14 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stringToDa
 {
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertToDate], ['convertToDate']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
    assertEquals('select convert ( date,"root".stringDateFormat,120) as "convertToDate" from dataTable as "root"',$s);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stringToDate::testToSQLStringconvertToDateTimeinH2():Boolean[1]
 {
     let result = execute(|SqlFunctionDemo.all()->project([s | $s.convertToDateTime], ['convertToDateTime']),
-                                                           testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                                                           testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
 
    assertEquals([%2016-06-23T15:03:00.000000000+0000, %2016-02-24T21:25:00.000000000+0000], $result.values->at(0).rows.values);
    assertEquals('select parseDateTime("root".stringDateTimeFormat,\'yyyy-MM-dd hh:mm:ss.mmm\') as "convertToDateTime" from dataTable as "root"',$result->sqlRemoveFormatting());
@@ -927,7 +927,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stringToDa
 {
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertToDateTime], ['convertToDateTime']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.DB2, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.DB2, meta::relational::extension::relationalExtensions());
    assertEquals('select timestamp_format("root".stringDateTimeFormat,\'yyyy-MM-dd hh:mm:ss.mmm\') as "convertToDateTime" from dataTable as "root"',$s);
 }
 
@@ -935,7 +935,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stringToDa
 {
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertToDateTime], ['convertToDateTime']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.Presto, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
    assertEquals('select date_parse("root".stringDateTimeFormat,\'yyyy-MM-dd hh:mm:ss.mmm\') as "convertToDateTime" from dataTable as "root"',$s);
 }
 
@@ -943,7 +943,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stringToDa
 {
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertToDateTime], ['convertToDateTime']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
    assertEquals('select convert( timestamp,"root".stringDateTimeFormat,121) as "convertToDateTime" from dataTable as "root"',$s);
 }
 
@@ -951,7 +951,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stringToDa
 {
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertToDateTimeUserDefinedFormat], ['convertToDateTime']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.Snowflake, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
    assertEquals('select to_timestamp("root".stringDateTimeFormat,\'YYYY-MM-DDTHH:MI:SS\') as "convertToDateTime" from dataTable as "root"',$s);
 }
 
@@ -959,69 +959,69 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stringToDa
 {
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertToDateTimeUserDefinedFormat1], ['convertToDateTime']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.Snowflake, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
    assertEquals('select to_timestamp("root".stringDateTimeFormat,\'YYYY-MM-DDTHH:MI:SS.FF\') as "convertToDateTime" from dataTable as "root"',$s);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::replace::testProject():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->project([s | $s.replaceResult], ['replace']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->project([s | $s.replaceResult], ['replace']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals(['Poe', 'Mrs'], $result.values->at(0).rows.values);
     assertEquals('select replace("root".string1, \'J\', \'P\') as "replace" from dataTable as "root"',$result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::replace::testFilter():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.replaceResult == 'Poe')->project([s | $s.replaceResult], ['replace']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.replaceResult == 'Poe')->project([s | $s.replaceResult], ['replace']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals(['Poe'], $result.values->at(0).rows.values);
     assertEquals('select replace("root".string1, \'J\', \'P\') as "replace" from dataTable as "root" where replace("root".string1, \'J\', \'P\') = \'Poe\'',$result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::pow::testProject():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->project([s | $s.powerResult], ['power']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->project([s | $s.powerResult], ['power']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([1.3310000000000004, 5.832000000000001], $result.values->at(0).rows.values);
     assertEquals('select power("root".float1, 3) as "power" from dataTable as "root"',$result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::pow::testFilter():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.powerResult < 1.4)->project([s | $s.powerResult], ['power']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.powerResult < 1.4)->project([s | $s.powerResult], ['power']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([1.3310000000000004], $result.values->at(0).rows.values);
     assertEquals('select power("root".float1, 3) as "power" from dataTable as "root" where power("root".float1, 3) < 1.4',$result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::exp::testProject():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->project([s | $s.expResult], ['exp']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->project([s | $s.expResult], ['exp']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([3.0041660239464334, 6.0496474644129465], $result.values->at(0).rows.values);
     assertEquals('select exp("root".float1) as "exp" from dataTable as "root"',$result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::exp::testFilter():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.expResult < 4)->project([s | $s.expResult], ['exp']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.expResult < 4)->project([s | $s.expResult], ['exp']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([3.0041660239464334], $result.values->at(0).rows.values);
     assertEquals('select exp("root".float1) as "exp" from dataTable as "root" where exp("root".float1) < 4',$result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::log::testProject():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->project([s | $s.logResult], ['log']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->project([s | $s.logResult], ['log']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([0.09531017980432493, 0.5877866649021191], $result.values->at(0).rows.values);
     assertEquals('select ln("root".float1) as "log" from dataTable as "root"',$result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::log::testFilter():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.logResult < 0.1)->project([s | $s.logResult], ['log']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.logResult < 0.1)->project([s | $s.logResult], ['log']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([0.09531017980432493], $result.values->at(0).rows.values);
     assertEquals('select ln("root".float1) as "log" from dataTable as "root" where ln("root".float1) < 0.1',$result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::indexOf::testProject():Boolean[1]
 {
-    let result = execute(|SqlFunctionDemo.all()->project([s | $s.indexOfResult], ['indexOf']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|SqlFunctionDemo.all()->project([s | $s.indexOfResult], ['indexOf']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([12,12], $result.values->at(0).rows.values);
     assertEquals('select LOCATE(\'o\', \'String Random\') as "indexOf" from dataTable as "root"',$result->sqlRemoveFormatting());
 }
@@ -1030,7 +1030,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::indexOf::t
 {
     let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.indexOfResult], ['indexOf']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.MemSQL, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
     assertEquals('select LOCATE(\'o\', \'String Random\') as `indexOf` from dataTable as `root`',$s);
 }
 
@@ -1038,7 +1038,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::indexOf::t
 {
     let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.indexOfResult], ['indexOf']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.Presto, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
     assertEquals('select strpos(\'String Random\', \'o\') as "indexOf" from dataTable as "root"',$s);
 }
 
@@ -1046,22 +1046,22 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::position::
 {
     let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.indexOfResult], ['position']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.MemSQL, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
     assertEquals('select LOCATE(\'o\', \'String Random\') as `position` from dataTable as `root`',$s);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::isNumeric::testProject():Boolean[1]
 {
-    let result1 = execute(|SqlFunctionDemo.all()->project([s | $s.isNumericResult1], ['isNumeric']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
-    let result2 = execute(|SqlFunctionDemo.all()->project([s | $s.isNumericResult2], ['isNumeric']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result1 = execute(|SqlFunctionDemo.all()->project([s | $s.isNumericResult1], ['isNumeric']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
+    let result2 = execute(|SqlFunctionDemo.all()->project([s | $s.isNumericResult2], ['isNumeric']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([true, true], $result1.values->at(0).rows.values);
     assertEquals([false, false], $result2.values->at(0).rows.values);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::isNumeric::testFilter():Boolean[1]
 {
-    let result1 = execute(|SqlFunctionDemo.all()->filter(s | $s.isNumericResult1 == true)->project([s | $s.isNumericResult1], ['isNumeric']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
-    let result2 = execute(|SqlFunctionDemo.all()->filter(s | $s.isNumericResult2 == false)->project([s | $s.isNumericResult2], ['isNumeric']), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result1 = execute(|SqlFunctionDemo.all()->filter(s | $s.isNumericResult1 == true)->project([s | $s.isNumericResult1], ['isNumeric']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
+    let result2 = execute(|SqlFunctionDemo.all()->filter(s | $s.isNumericResult2 == false)->project([s | $s.isNumericResult2], ['isNumeric']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([true, true], $result1.values->at(0).rows.values);
     assertEquals([false, false], $result2.values->at(0).rows.values);
 }
@@ -1070,7 +1070,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::hour::test
 {
     let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.hour], ['hour']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.Presto, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
     assertEquals('select hour("root".dateTime) as "hour" from dataTable as "root"',$s);
 }
 
@@ -1078,7 +1078,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::month::tes
 {
     let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.month], ['month']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.Presto, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
     assertEquals('select month("root".dateTime) as "month" from dataTable as "root"',$s);
 }
 
@@ -1086,7 +1086,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::week::test
 {
     let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.week], ['week']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.Presto, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
     assertEquals('select week("root".dateTime) as "week" from dataTable as "root"',$s);
 }
 
@@ -1094,7 +1094,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::date::test
 {
     let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.date], ['date']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.Presto, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
     assertEquals('select Date("root".dateTime) as "date" from dataTable as "root"',$s);
 }
 
@@ -1102,7 +1102,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::date::test
 {
     let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertToDateMemSQL], ['date']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.H2, meta::pure::router::extension::defaultRelationalExtensions());
+                                                meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
     assertEquals('select cast( parseDateTime("root".stringDateFormat,\'yyyy-MM-dd\') as date) as "date" from dataTable as "root"',$s);
 }
 

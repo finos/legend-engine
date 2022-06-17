@@ -62,7 +62,7 @@ function <<test.Test>> meta::relational::tests::database::testRoutingWithDbsIncl
 {
    let res = execute({|testJoinTDS_Person.all()->project([p|$p.lastName, p|$p.personID, p|$p.employerID], ['LastName', 'PersonID', 'FirmID'])
                                              ->join(testJoinTDS_Firm.all()->project([f|$f.legalName, f|$f.firmID], ['LegalName', 'ID']), JoinType.INNER, {a,b|$a.getInteger('FirmID') == $b.getInteger('ID')})},
-                      meta::relational::tests::database::mainMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+                      meta::relational::tests::database::mainMapping, testRuntime(), meta::relational::extension::relationalExtensions()).values->at(0);
    assertSize($res.rows, 7);
    assertSameElements(['Smith,1,1,Firm X,1', 'Johnson,2,1,Firm X,1', 'Hill,3,1,Firm X,1', 'Allen,4,1,Firm X,1',
                        'Roberts,5,2,Firm A,2', 'Hill,6,3,Firm B,3', 'Harris,7,4,Firm C,4'], $res.rows->map(r|$r.values->makeString(',')));

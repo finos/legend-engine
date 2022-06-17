@@ -13,8 +13,8 @@
 // limitations under the License.
 
 import meta::pure::executionPlan::*;
-import meta::pure::router::extension::*;
-import meta::pure::router::systemMapping::*;
+import meta::pure::extension::*;
+import meta::pure::store::*;
 import meta::pure::metamodel::serialization::grammar::*;
 import meta::pure::mapping::*;
 import meta::pure::runtime::*;
@@ -276,7 +276,7 @@ function meta::pure::functions::collection::buildConcatenate(v:ValueSpecificatio
 
 
 
-function <<access.private>> meta::pure::router::execute<X|n>(rq:RoutingQuery<X|n>[1], m:Mapping[1], runtime:Runtime[1], exeCtx:ExecutionContext[1], extensions:meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]):Result<X|n>[1]
+function <<access.private>> meta::pure::router::execute<X|n>(rq:RoutingQuery<X|n>[1], m:Mapping[1], runtime:Runtime[1], exeCtx:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):Result<X|n>[1]
 { 
    let routingStarted = now();
    let routed = $rq.fn->routeFunction($m, $runtime, $exeCtx, $extensions, $debug);
@@ -307,19 +307,19 @@ function <<access.private>> meta::pure::router::execute<X|n>(rq:RoutingQuery<X|n
     $resultsWithRoutingActivity;
 }
 
-function meta::pure::router::storeEquals(a:Any[1], b:Any[1], extensions:meta::pure::router::extension::RouterExtension[*]):Boolean[1]
+function meta::pure::router::storeEquals(a:Any[1], b:Any[1], extensions:meta::pure::extension::Extension[*]):Boolean[1]
 {
    !$extensions.main_storeEquals->isEmpty() && $a->getHiddenPayload()->match(
       $extensions.main_storeEquals->map(x|$x->eval($a,$b))->toOneMany()
    )
 }
 
-function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], extensions:meta::pure::router::extension::RouterExtension[*]):RoutingResult[1]
+function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], extensions:meta::pure::extension::Extension[*]):RoutingResult[1]
 {
    $f->routeFunction(^ExecutionContext(), $extensions, noDebug());
 }
 
-function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], exeCtx: ExecutionContext[1], extensions:meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]):RoutingResult[1]
+function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], exeCtx: ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingResult[1]
 {
    //validate ::execute(..) not present
    let l = {|[]};
@@ -353,17 +353,17 @@ function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], exeCtx:
                                                         }, pair(^RoutingResult(advancedRouting=false), $f->openVariableValues())).first;
 }
 
-function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], mapping:Mapping[1], runtime:Runtime[1], extensions:meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]):RoutingResult[1]
+function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], mapping:Mapping[1], runtime:Runtime[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingResult[1]
 {
    routeFunction($f, $mapping, $runtime, ^ExecutionContext(), $extensions, $debug);
 }
 
-function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], mapping:Mapping[1], runtime:Runtime[1], exeCtx: ExecutionContext[1], extensions:meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]):RoutingResult[1]
+function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], mapping:Mapping[1], runtime:Runtime[1], exeCtx: ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingResult[1]
 {
    routeFunction($f, $mapping, $runtime, $exeCtx, [], $extensions, $debug)
 }
 
-function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], mapping:Mapping[1], runtime:Runtime[1], exeCtx: ExecutionContext[1], inScopeVars:Map<String, List<Any>>[0..1], extensions:meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]):RoutingResult[1]
+function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], mapping:Mapping[1], runtime:Runtime[1], exeCtx: ExecutionContext[1], inScopeVars:Map<String, List<Any>>[0..1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingResult[1]
 {
    let expectedFuncParamSize = 0;
    //assertEquals($expectedFuncParamSize, $f->functionType().parameters->size(), 'Error'+$f->functionType().parameters->size()->toString());

@@ -395,7 +395,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pur
    let mapping = meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMapping1;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
    
    assertJsonStringsEqual(
       '[{"product":{"productName":"Prod_1"},"tradeId":1},'+
@@ -422,7 +422,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pur
    let mapping = meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMapping1;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
    
    assertJsonStringsEqual(
       '[{"product":{"productId":"30","description":"Product 1 description","productName":"Prod_1"},"tradeId":1},'+
@@ -454,7 +454,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pur
    let mapping = meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMapping1;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
    
    assertJsonStringsEqual(
       '[{"product":{"productId":"30","description":"Product 1 description","productName":"Prod_1"},"tradeEvents":[{"eventId":"1","description":"Event_1","timestamp":"2018-01-01T00:00:00.000000000"},{"eventId":"2","description":"Event_2","timestamp":"2019-01-01T00:00:00.000000000"}],"tradeId":1},' +
@@ -495,7 +495,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pur
    let mapping = meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMapping1;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
    
    assertJsonStringsEqual(
       '[' +
@@ -561,7 +561,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pur
    let mapping = meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMapping1;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
    
    assertJsonStringsEqual(
       '[' +
@@ -636,7 +636,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pur
    let mapping = meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMapping1;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
    
    assertJsonStringsEqual(
       '[' +
@@ -714,7 +714,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pur
    let mapping = meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMapping1;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
    
    assertJsonStringsEqual(
       '[' +
@@ -763,7 +763,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pur
    let mapping = meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMapping2;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
    
    assertJsonStringsEqual(
       '[{"tradeEvents":[{"eventId":"2","description":"Event_2","timestamp":"2019-01-01T00:00:00.000000000"}],"tradeId":1},'+
@@ -812,7 +812,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pur
    let mapping = meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMapping3;
    let runtime = ^$dbRuntime(connections = $dbRuntime.connections->concatenate($jsonConnection));
    
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
    
    assertJsonStringsEqual(
       '[' +
@@ -879,7 +879,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pur
    let mapping = meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMapping4;
    let runtime = ^$dbRuntime(connections = $dbRuntime.connections->concatenate($jsonConnection));
    
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
    
    assertJsonStringsEqual(
       '[' +
@@ -941,7 +941,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pur
    let mapping = meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMapping5;
    let runtime = ^$dbRuntime(connections = $dbRuntime.connections->concatenate($jsonConnection));
    
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
    
    assertJsonStringsEqual(
       '[' +

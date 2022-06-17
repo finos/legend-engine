@@ -17,7 +17,7 @@ import meta::alloy::metadataServer::*;
 import meta::pure::functions::io::http::*;
 import meta::protocols::pure::vX_X_X::invocation::execution::executeInRelationalDb::*;
 
-function meta::protocols::pure::vX_X_X::invocation::execution::executeInRelationalDb::executeInRelationalDb(sqls:String[*], conn:RelationalDatabaseConnection[1], host:String[1], port:Integer[1], extensions:meta::pure::router::extension::RouterExtension[*]):Boolean[1]
+function meta::protocols::pure::vX_X_X::invocation::execution::executeInRelationalDb::executeInRelationalDb(sqls:String[*], conn:RelationalDatabaseConnection[1], host:String[1], port:Integer[1], extensions:meta::pure::extension::Extension[*]):Boolean[1]
 {
   let conn1= $conn->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::transformDatabaseConnection($extensions)
                   ->cast(@meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::RelationalDatabaseConnection);

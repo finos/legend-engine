@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::csv::*;
+import meta::relational::tests::csv::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::mapping::*;
 import meta::relational::runtime::*;
@@ -27,7 +27,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testRenameColum
          ->renameColumns([^Pair<String,String>(first = 'firstName', second = 'First Name'), ^Pair<String,String>(first = 'hello', second = 'Other')])
          ,
       simpleRelationalMapping, 
-      testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+      testRuntime(), meta::relational::extension::relationalExtensions());
    
    assertSize($result.values.columns, 2);   
    
@@ -52,7 +52,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testRenameColum
          ->renameColumns([^Pair<String,String>(first = 'firstName', second = 'First Name'), ^Pair<String,String>(first = 'count', second = 'People Count')])
          ,
       simpleRelationalMapping, 
-      testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+      testRuntime(), meta::relational::extension::relationalExtensions());
    
    assertSize($result.values.columns, 2);   
    
@@ -74,7 +74,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testRenameColum
          ->renameColumns([^Pair<String,String>(first = 'firstName', second = 'First Name')])
          ,
       simpleRelationalMapping, 
-      testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+      testRuntime(), meta::relational::extension::relationalExtensions());
    
    assertSize($result.values.columns, 1);   
    
@@ -100,7 +100,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testRenameColum
    let mapping = meta::relational::tests::tds::tabletds::EmptyMapping;
    let runtime = meta::relational::tests::testRuntime();
 
-   let resWithoutQuotes = execute($queryWithoutQuotes, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions());
+   let resWithoutQuotes = execute($queryWithoutQuotes, $mapping, $runtime, meta::relational::extension::relationalExtensions());
    
    let expected = 'select "tablewithquotedcolumns_0"."FIRST NAME" as "firstName", "tablewithquotedcolumns_0"."LAST NAME" as "LAST NAME", "tablewithquotedcolumns_0"."1columnStartsWithNumber" as "1columnStartsWithNumber" from (select "root"."FIRST NAME" as "FIRST NAME", "root"."LAST NAME" as "LAST NAME", "root"."1columnStartsWithNumber" as "1columnStartsWithNumber" from tableWithQuotedColumns as "root") as "tablewithquotedcolumns_0"';
    
@@ -116,7 +116,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testRenameColum
                  ->renameColumns([^Pair<String,String>(first = '"FIRST NAME"', second = 'firstName')])
    };
    
-   let resWithQuotes = execute($queryWithQuotes, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions());
+   let resWithQuotes = execute($queryWithQuotes, $mapping, $runtime, meta::relational::extension::relationalExtensions());
 
    assertEquals($expected, $resWithQuotes->sqlRemoveFormatting());   
 }

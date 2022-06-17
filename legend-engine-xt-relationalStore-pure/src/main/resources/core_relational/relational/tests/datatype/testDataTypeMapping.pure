@@ -49,7 +49,7 @@ function <<test.BeforePackage>> meta::relational::tests::mapping::dataType::setU
 
 function <<test.Test>> meta::relational::tests::mapping::dataType::testSimpleTypeMapping():Boolean[1]
 {
-    let result = execute(|DataDBTypes.all(), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|DataDBTypes.all(), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertSize($result.values, 3);
     let populatedRow = $result.values->filter(e | $e.tinyInt == 1)->toOne();
     assertEquals(1, $populatedRow.tinyInt);
@@ -90,7 +90,7 @@ function <<test.Test>> meta::relational::tests::mapping::dataType::testSimpleTyp
                                                        col( p | $p.numeric, 'numeric'),
                                                        col( p | $p.floatAsDecimal, 'floatAsDecimal')
                                                       ]
-                                                ), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                                                ), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertSize($result.values, 1);
     let populatedRow = $result.values.rows;
     assertEquals(1, $populatedRow.getInteger('tinyInt'));
@@ -114,7 +114,7 @@ function <<test.Test>> meta::relational::tests::mapping::dataType::testSimpleTyp
 
 function <<test.Test>> meta::relational::tests::mapping::dataType::testSimpleTypeMappingNulls():Boolean[1]
 {
-    let result = execute(|DataDBTypes.all(), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|DataDBTypes.all(), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertSize($result.values, 3);
 
     let nullRow = $result.values->filter(e | $e.tinyInt != 1 && $e.tinyInt != 2)->toOne();
@@ -138,7 +138,7 @@ function <<test.Test>> meta::relational::tests::mapping::dataType::testSimpleTyp
 
 function <<test.Test>> meta::relational::tests::mapping::dataType::testSimpleTypeMappingBooleanFalse():Boolean[1]
 {
-    let result = execute(|DataDBTypes.all(), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|DataDBTypes.all(), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertSize($result.values, 3);
     let populatedRow = $result.values->filter(e | $e.tinyInt == 2)->toOne();
     assertEquals(false, $populatedRow.bit);
@@ -147,7 +147,7 @@ function <<test.Test>> meta::relational::tests::mapping::dataType::testSimpleTyp
 function <<test.Test>> meta::relational::tests::mapping::dataType::testSimpleTypeMappingProjectNulls():Boolean[1]
 {
    let result = execute(|DataDBTypes.all()->project([d|$d.tinyInt, d|$d.smallInt], ['ti', 'si'])
-                              , testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                              , testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
 
    let tds = $result.values->at(0);
    assertEquals([^TDSNull(),^TDSNull()], $tds.rows->at(1).values);

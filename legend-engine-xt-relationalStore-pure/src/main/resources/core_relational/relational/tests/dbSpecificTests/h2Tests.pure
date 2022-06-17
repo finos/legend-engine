@@ -20,7 +20,7 @@ import meta::pure::test::*;
 
 function <<test.TestCollection>> meta::relational::tests::dbSpecificTests::H2::runSQLQueryTestsParam(): PureTestCollection[1]
 {
-  let connection = meta::relational::dbTestRunner::getTestConnection(DatabaseType.H2, meta::pure::router::extension::defaultRelationalExtensions());
+  let connection = meta::relational::dbTestRunner::getTestConnection(DatabaseType.H2, meta::relational::extension::relationalExtensions());
   
   meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions
           ->collectParameterizedTests('H2',

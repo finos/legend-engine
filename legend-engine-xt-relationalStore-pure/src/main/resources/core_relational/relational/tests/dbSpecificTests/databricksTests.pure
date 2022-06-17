@@ -21,7 +21,7 @@ import meta::pure::test::*;
 
 function <<test.TestCollection>> meta::relational::tests::dbSpecificTests::databricks::runSQLQueryTestsParam(): PureTestCollection[1]
 {
-  let connection = meta::relational::dbTestRunner::getTestConnection(DatabaseType.Databricks, meta::pure::router::extension::defaultRelationalExtensions());
+  let connection = meta::relational::dbTestRunner::getTestConnection(DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
   
   meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions
           ->collectParameterizedTests('Databricks',

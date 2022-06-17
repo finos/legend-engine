@@ -18,7 +18,7 @@ import meta::relational::mapping::*;
 
 function <<test.Test>> meta::protocols::pure::v1_21_0::transformation::fromPureGraph::tests::testGetAllElementsFromMapping():Boolean[1]
 {
-  let result = meta::pure::mapping::modelToModel::test::alloy::qualifiedProperties::dataToBookWithFunction->getAllElementsFromMapping(meta::pure::router::extension::defaultExtensions());
+  let result = meta::pure::mapping::modelToModel::test::alloy::qualifiedProperties::dataToBookWithFunction->getAllElementsFromMapping(meta::pure::extension::defaultExtensions());
    
   let expected = ['meta::pure::mapping::modelToModel::test::alloy::qualifiedProperties::dataToBookWithFunction', 
                   'meta::pure::mapping::modelToModel::test::alloy::qualifiedProperties::printBook__String_1_', 
@@ -39,7 +39,7 @@ function <<test.Test>> meta::protocols::pure::v1_21_0::transformation::fromPureG
 
 function <<test.Test>> meta::protocols::pure::v1_21_0::transformation::fromPureGraph::tests::testParsingOneLinerMapping():Boolean[1]
 {
-  let result = meta::protocols::pure::v1_21_0::transformation::fromPureGraph::tests::dummyMapping->buildPureModelContextTextFromMapping(meta::pure::router::extension::defaultExtensions());
+  let result = meta::protocols::pure::v1_21_0::transformation::fromPureGraph::tests::dummyMapping->buildPureModelContextTextFromMapping(meta::pure::extension::defaultExtensions());
 
   let actual = $result.code->replace('\r\n', '\n');
   let expected = '###Mapping\nMapping meta::protocols::pure::v1_21_0::transformation::fromPureGraph::tests::dummyMapping ()';

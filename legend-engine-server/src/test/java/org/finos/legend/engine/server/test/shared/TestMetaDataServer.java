@@ -28,7 +28,6 @@ import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.finos.legend.engine.server.test.shared.execute.PureFunctions;
 import org.finos.legend.engine.shared.core.operational.Assert;
-import org.finos.legend.pure.generated.core_relational_relational_router_router_extension;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProviderHelper;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.CodeStorage;
@@ -41,11 +40,14 @@ import org.finos.legend.pure.runtime.java.compiled.execution.ConsoleCompiled;
 import org.finos.legend.pure.runtime.java.compiled.metadata.ClassCache;
 import org.finos.legend.pure.runtime.java.compiled.metadata.FunctionCache;
 import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataLazy;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+
+import static org.finos.legend.pure.generated.core_relational_relational_extensions_router_extension.Root_meta_relational_extension_relationalExtensions__Extension_MANY_;
 
 public class TestMetaDataServer
 {
@@ -201,7 +203,7 @@ public class TestMetaDataServer
         AbstractHandler mappingHandle = registerService(
                 "/alloy/pureModelFromMapping",
                 messageFromPureJAR ?
-                        (_package, version) -> PureFunctions.alloy_metadataServer_pureModelFromMapping(_package, version, core_relational_relational_router_router_extension.Root_meta_pure_router_extension_defaultRelationalExtensions__RouterExtension_MANY_(executionSupport), executionSupport) :
+                        (_package, version) -> PureFunctions.alloy_metadataServer_pureModelFromMapping(_package, version, Root_meta_relational_extension_relationalExtensions__Extension_MANY_(executionSupport), executionSupport) :
                         (_package, version) ->
                         {
                             String key = "" + _package + version;
@@ -215,7 +217,7 @@ public class TestMetaDataServer
         AbstractHandler storeHandle = registerService(
                 "/alloy/pureModelFromStore",
                 messageFromPureJAR ?
-                        (_package, version) -> PureFunctions.alloy_metadataServer_pureModelFromStore(_package, version, core_relational_relational_router_router_extension.Root_meta_pure_router_extension_defaultRelationalExtensions__RouterExtension_MANY_(executionSupport), executionSupport) :
+                        (_package, version) -> PureFunctions.alloy_metadataServer_pureModelFromStore(_package, version, Root_meta_relational_extension_relationalExtensions__Extension_MANY_(executionSupport), executionSupport) :
                         (_package, version) ->
                         {
                             String key = "" + _package + version;

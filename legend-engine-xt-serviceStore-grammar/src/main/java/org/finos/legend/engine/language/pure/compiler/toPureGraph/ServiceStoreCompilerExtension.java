@@ -115,12 +115,9 @@ public class ServiceStoreCompilerExtension implements IServiceStoreCompilerExten
     {
         return Collections.singletonList(registerElementForPathToElement ->
         {
-            registerElementForPathToElement.value("meta::external::store::service", Lists.mutable.with(
-                    "supports_FunctionExpression_1__Boolean_1_"
-            ));
-
-            registerElementForPathToElement.value("meta::external::store::service::executionPlan::generation", Lists.mutable.with(
-                    "planExecution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__RouterExtension_MANY__DebugContext_1__ExecutionNode_1_"
+            registerElementForPathToElement.value("meta::external::store::service::contract", Lists.mutable.with(
+                    "supports_FunctionExpression_1__Boolean_1_",
+                    "planExecution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__Extension_MANY__DebugContext_1__ExecutionNode_1_"
             ));
 
             ImmutableList<String> versions = PureClientVersions.versionsSince("v1_21_0");

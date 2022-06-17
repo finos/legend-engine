@@ -16,11 +16,12 @@ import meta::relational::mapping::*;
 import meta::pure::mapping::*;
 import meta::relational::metamodel::relation::*;
 import meta::relational::runtime::*;
-import meta::pure::router::extension::*;
+import meta::pure::extension::*;
+import meta::relational::extension::*;
 import meta::pure::runtime::*;
 import meta::relational::metamodel::*;
 
-function meta::relational::mapping::connectionAwareProcessors(query:SQLQuery[1], runtime:Runtime[1], store:Database[0..1], exeCtx:ExecutionContext[1], extensions:RouterExtension[*]): PostProcessorResult[1]
+function meta::relational::mapping::connectionAwareProcessors(query:SQLQuery[1], runtime:Runtime[1], store:Database[0..1], exeCtx:ExecutionContext[1], extensions:Extension[*]): PostProcessorResult[1]
 {
    let connection = if($store->isNotEmpty(),|let connection =$runtime->connectionByElement($store->toOne()),|$runtime.connections->at(0));
    let connectionAwarePostProcessors =  if($connection->instanceOf(DatabaseConnection), | $connection->cast(@DatabaseConnection).sqlQueryPostProcessorsConnectionAware, | []);

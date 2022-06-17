@@ -45,7 +45,6 @@ import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.finos.legend.pure.generated.Root_meta_external_query_graphQL_transformation_queryToPure_GraphFetchResult;
 import org.finos.legend.pure.generated.core_external_query_graphql_transformation;
 import org.finos.legend.pure.generated.core_pure_protocol_generation_builder_generation;
-import org.finos.legend.pure.generated.core_relational_relational_router_router_extension;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.graphFetch.GraphFetchTree;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Any;
@@ -68,6 +67,7 @@ import java.lang.reflect.Method;
 
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
 import static org.finos.legend.pure.generated.core_pure_protocol_protocol.Root_meta_alloy_metadataServer_alloyToJSON_Any_1__String_1_;
+import static org.finos.legend.pure.generated.core_relational_relational_extensions_router_extension.Root_meta_relational_extension_relationalExtensions__Extension_MANY_;
 
 @Api(tags = "GraphQL - Debug")
 @Path("graphQL/v1/debug")
@@ -105,8 +105,8 @@ public class GraphQLDebug extends GraphQL
             // Serialize the tree to production protocol
             String version = PureClientVersions.production;
             Class cl = Class.forName("org.finos.legend.pure.generated.core_pure_protocol_" + version + "_transfers_valueSpecification");
-            Method graphFetchProtocolMethod = cl.getMethod("Root_meta_protocols_pure_" + version + "_transformation_fromPureGraph_valueSpecification_transformGraphFetchTree_GraphFetchTree_1__String_MANY__Map_1__RouterExtension_MANY__GraphFetchTree_1_", GraphFetchTree.class, RichIterable.class, PureMap.class, RichIterable.class, org.finos.legend.pure.m3.execution.ExecutionSupport.class);
-            Object res = graphFetchProtocolMethod.invoke(null, graphFetch._graphFetchTree(), Lists.mutable.empty(), new PureMap(Maps.mutable.empty()), core_relational_relational_router_router_extension.Root_meta_pure_router_extension_defaultRelationalExtensions__RouterExtension_MANY_(pureModel.getExecutionSupport()), pureModel.getExecutionSupport());
+            Method graphFetchProtocolMethod = cl.getMethod("Root_meta_protocols_pure_" + version + "_transformation_fromPureGraph_valueSpecification_transformGraphFetchTree_GraphFetchTree_1__String_MANY__Map_1__Extension_MANY__GraphFetchTree_1_", GraphFetchTree.class, RichIterable.class, PureMap.class, RichIterable.class, org.finos.legend.pure.m3.execution.ExecutionSupport.class);
+            Object res = graphFetchProtocolMethod.invoke(null, graphFetch._graphFetchTree(), Lists.mutable.empty(), new PureMap(Maps.mutable.empty()), Root_meta_relational_extension_relationalExtensions__Extension_MANY_(pureModel.getExecutionSupport()), pureModel.getExecutionSupport());
             String asJSON = Root_meta_alloy_metadataServer_alloyToJSON_Any_1__String_1_(res, pureModel.getExecutionSupport());
             RootGraphFetchTree protocolSerializedTree = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().readValue(asJSON, RootGraphFetchTree.class);
 
@@ -117,8 +117,8 @@ public class GraphQLDebug extends GraphQL
                         ValueSpecification val = null;
                         try
                         {
-                            Method functionProtocolMethod = cl.getMethod("Root_meta_protocols_pure_" + version + "_transformation_fromPureGraph_valueSpecification_transformFunctionBody_FunctionDefinition_1__RouterExtension_MANY__ValueSpecification_MANY_", FunctionDefinition.class, RichIterable.class, ExecutionSupport.class);
-                            Object res2 = functionProtocolMethod.invoke(null, c._second(), core_relational_relational_router_router_extension.Root_meta_pure_router_extension_defaultRelationalExtensions__RouterExtension_MANY_(pureModel.getExecutionSupport()), pureModel.getExecutionSupport());
+                            Method functionProtocolMethod = cl.getMethod("Root_meta_protocols_pure_" + version + "_transformation_fromPureGraph_valueSpecification_transformFunctionBody_FunctionDefinition_1__Extension_MANY__ValueSpecification_MANY_", FunctionDefinition.class, RichIterable.class, ExecutionSupport.class);
+                            Object res2 = functionProtocolMethod.invoke(null, c._second(), Root_meta_relational_extension_relationalExtensions__Extension_MANY_(pureModel.getExecutionSupport()), pureModel.getExecutionSupport());
                             String asJSON2 = Root_meta_alloy_metadataServer_alloyToJSON_Any_1__String_1_(res2, pureModel.getExecutionSupport());
                             val = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().readValue(asJSON2, ValueSpecification.class);
                         }

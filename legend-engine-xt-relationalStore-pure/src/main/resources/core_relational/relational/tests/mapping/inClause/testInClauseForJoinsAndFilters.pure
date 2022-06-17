@@ -14,7 +14,7 @@
 
 ###Pure
 import meta::relational::tests::model::simple::*;
-import meta::csv::*;
+import meta::relational::tests::csv::*;
 import meta::relational::functions::asserts::*;
 import meta::relational::mapping::*;
 import meta::pure::runtime::*;
@@ -25,7 +25,7 @@ function <<test.Test, meta::pure::profiles::test.AlloyOnly>>
 { meta::pure::executionPlan::profiles::serverVersion.start='v1_13_0' }
 meta::relational::tests::mapping::in::testJoinWithInClause0():Boolean[1]
 {
-   let result = execute(|Person.all()->project([p|$p.lastName, p|$p.firm.legalName], ['person', 'firm']), inClauseMapping0, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->project([p|$p.lastName, p|$p.firm.legalName], ['person', 'firm']), inClauseMapping0, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameSQL('select "root".LASTNAME as "person", "firmtable_0".LEGALNAME as "firm" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID and ("firmtable_0".ID = 2 or "firmtable_0".ID = 3 or "firmtable_0".ID = 4))', $result->sqlRemoveFormatting());
 }
 
@@ -33,7 +33,7 @@ function <<test.Test, meta::pure::profiles::test.AlloyOnly>>
 { meta::pure::executionPlan::profiles::serverVersion.start='v1_13_0' }
 meta::relational::tests::mapping::in::testJoinWithPrefixInClauseContainingNumberLiterals():Boolean[1]
 {
-   let result = execute(|Person.all()->project([p|$p.lastName, p|$p.firm.legalName], ['person', 'firm']), inClausePrefixMapping1, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->project([p|$p.lastName, p|$p.firm.legalName], ['person', 'firm']), inClausePrefixMapping1, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameSQL('select "root".LASTNAME as "person", "firmtable_0".LEGALNAME as "firm" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID and "firmtable_0".ID in (2, 3, 4))', $result->sqlRemoveFormatting());
 }
 
@@ -41,7 +41,7 @@ function <<test.Test, meta::pure::profiles::test.AlloyOnly>>
 { meta::pure::executionPlan::profiles::serverVersion.start='v1_13_0' }
 meta::relational::tests::mapping::in::testJoinWithPrefixInClauseContainingStringLiterals():Boolean[1]
 {
-   let result = execute(|Person.all()->project([p|$p.lastName, p|$p.firm.legalName], ['person', 'firm']), inClausePrefixMapping2, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->project([p|$p.lastName, p|$p.firm.legalName], ['person', 'firm']), inClausePrefixMapping2, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameSQL('select "root".LASTNAME as "person", "firmtable_0".LEGALNAME as "firm" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID and "firmtable_0".LEGALNAME in (\'Firm C\', \'Firm A\'))', $result->sqlRemoveFormatting());
 }
 
@@ -49,7 +49,7 @@ function <<test.Test, meta::pure::profiles::test.AlloyOnly>>
 { meta::pure::executionPlan::profiles::serverVersion.start='v1_13_0' }
 meta::relational::tests::mapping::in::testFilterMappingWithPrefixInClause():Boolean[1]
 {
-   let result = execute(|Firm.all(), filterMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Firm.all(), filterMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    // assertSameElements(['ROOT', 'Firm X', 'Firm A', 'Securities', 'Banking', 'Federation'], $result.values.name);
    assertEquals('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" where "root".LEGALNAME in (\'Firm C\', \'Firm A\')', $result->sqlRemoveFormatting());
 }

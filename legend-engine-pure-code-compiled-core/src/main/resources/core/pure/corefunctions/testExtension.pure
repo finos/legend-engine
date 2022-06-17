@@ -452,17 +452,17 @@ function meta::pure::functions::asserts::assert<T>(collection : T[*], func:Funct
     assert($r);
 }
 
-function meta::pure::functions::test::findTestPackagesFor(elements:PackageableElement[*], extensions:meta::pure::router::extension::RouterExtension[*]): Package[*]
+function meta::pure::functions::test::findTestPackagesFor(elements:PackageableElement[*], extensions:meta::pure::extension::Extension[*]): Package[*]
 {
    $elements->findTestsFor($extensions).package->distinct();
 }
 
-function meta::pure::functions::test::findTestsFor(elements:PackageableElement[*], extensions:meta::pure::router::extension::RouterExtension[*]): Function<Any>[*]
+function meta::pure::functions::test::findTestsFor(elements:PackageableElement[*], extensions:meta::pure::extension::Extension[*]): Function<Any>[*]
 {
    findTestsFor($elements, 25, 10000, $extensions);
 }
 
-function meta::pure::functions::test::findTestsFor(elements:PackageableElement[*], maxDepth:Integer[1], maxVisited:Integer[1], extensions:meta::pure::router::extension::RouterExtension[*]): Function<Any>[*]
+function meta::pure::functions::test::findTestsFor(elements:PackageableElement[*], maxDepth:Integer[1], maxVisited:Integer[1], extensions:meta::pure::extension::Extension[*]): Function<Any>[*]
 {
    $elements->fold({pe, result| let testedByResult = $pe->testedBy($result, $extensions);
                                 assertFalse($testedByResult.maxDepthExceeded(), 'Exceeded maxDepth %d.', $testedByResult.maxDepth);
@@ -527,7 +527,7 @@ Class meta::pure::functions::test::TestedByResult
    }:Boolean[1];
 }
 
-function meta::pure::functions::test::testedBy(pe:PackageableElement[1], soFar:TestedByResult[1], extensions:meta::pure::router::extension::RouterExtension[*]):TestedByResult[1]
+function meta::pure::functions::test::testedBy(pe:PackageableElement[1], soFar:TestedByResult[1], extensions:meta::pure::extension::Extension[*]):TestedByResult[1]
 {
    let epath = $pe->elementPath();
    let named = $epath->size() > 0 && ($epath->size() > 1 || $epath->at(0).name->size() == 1);
@@ -570,7 +570,7 @@ function <<access.private>> meta::pure::functions::test::addResult(f:Function<An
    );
 }
 
-function <<access.private>> meta::pure::functions::test::testedBy(vs:ValueSpecification[1], soFar:TestedByResult[1], extensions:meta::pure::router::extension::RouterExtension[*]):TestedByResult[1]
+function <<access.private>> meta::pure::functions::test::testedBy(vs:ValueSpecification[1], soFar:TestedByResult[1], extensions:meta::pure::extension::Extension[*]):TestedByResult[1]
 {
    $vs.usageContext->match([
       es:ExpressionSequenceValueSpecificationContext[1] | $es.functionDefinition->testedBy($soFar, $extensions),

@@ -1,0 +1,170 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::mapping::modelToModel::*;
+import meta::pure::mapping::modelToModel::test::delta::v1::*;
+import meta::pure::runtime::*;
+import meta::pure::mapping::modelToModel::test::delta::*;
+
+function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::test::delta::testSimpleDelta():Any[*]
+{
+    let res = execute(
+            |meta::pure::mapping::modelToModel::test::delta::v2::Firm.all()->filter(f|$f.newLegalName == 'GS'),
+            simpleDeltaMapping,
+            ^Runtime(connections = ^ModelConnection(element=^ModelStore(), instances= newMap(
+                                                                                                      pair(meta::pure::mapping::modelToModel::test::delta::v1::Firm , list([
+                                                                                                                        ^meta::pure::mapping::modelToModel::test::delta::v1::Firm (legalName='GS',
+                                                                                                                                                                                   region = meta::pure::mapping::modelToModel::test::delta::v1::RegionEnumToString.NewYork,
+                                                                                                                                                                                   region2 = 'NewYork',
+                                                                                                                                                                                   count=10,
+                                                                                                                                                                                   nameNoSubsume='empty',
+                                                                                                                                                                                   employees=^meta::pure::mapping::modelToModel::test::delta::v1::Person(
+                                                                                                                                                                                                           region = meta::pure::mapping::modelToModel::test::delta::v1::RegionEnumToString.NewYork,
+                                                                                                                                                                                                           region2 = 'NewYork',
+                                                                                                                                                                                                           nameNoSubsume='empty',
+                                                                                                                                                                                                           name='ok',
+                                                                                                                                                                                                           address= ^meta::pure::mapping::modelToModel::test::delta::v1::Address(add='bla'),
+                                                                                                                                                                                                           more = ^meta::pure::mapping::modelToModel::test::delta::v1::More(name='aaa')
+                                                                                                                                                                                             )
+                                                                                                                                                                             )
+                                                                                                                    ])
+                                                                                                      )
+                                                                                            )
+                                                   )
+             ),
+             meta::pure::extension::defaultExtensions()
+          );
+   
+   assertSameElements(10, $res.values->at(0).count);
+   assertSameElements([], $res.values->at(0).useless);
+   assertSameElements([], $res.values->at(0).nameNoSubsume);
+   assertSameElements([], $res.values->at(0).region);
+   assertSameElements([], $res.values->at(0).region2);
+
+   assertSameElements('ok', $res.values->at(0).employees.name);
+
+   assertSameElements('ok', $res.values->at(0).employees.name);
+   assertSameElements([], $res.values->at(0).employees.useless);
+   assertSameElements([], $res.values->at(0).employees.nameNoSubsume);
+   assertSameElements([], $res.values->at(0).employees.region);
+   assertSameElements([], $res.values->at(0).employees.region2);
+   assertSameElements('blaok', $res.values->at(0).employees.address.newAdd);
+   assertSameElements('aaa', $res.values->at(0).employees.more.name);
+}
+
+
+Class meta::pure::mapping::modelToModel::test::delta::v1::Firm
+{
+   legalName : String[1];
+   nameNoSubsume : String[0..1];
+   employees : meta::pure::mapping::modelToModel::test::delta::v1::Person[*];
+   count : Integer[1];
+   region: meta::pure::mapping::modelToModel::test::delta::v1::RegionEnumToString[1];
+   region2: String[1];
+   
+}
+
+Class meta::pure::mapping::modelToModel::test::delta::v1::Person
+{
+   name : String[1];
+   nameNoSubsume : String[0..1];
+   address : meta::pure::mapping::modelToModel::test::delta::v1::Address[1];
+   more : meta::pure::mapping::modelToModel::test::delta::v1::More[1];
+   region: meta::pure::mapping::modelToModel::test::delta::v1::RegionEnumToString[1];
+   region2: String[1];
+
+}
+
+Enum meta::pure::mapping::modelToModel::test::delta::v1::RegionEnumToString
+{
+        NewYork
+}
+
+Enum meta::pure::mapping::modelToModel::test::delta::v2::RegionEnumToString
+{
+        NewYork
+}
+
+
+Class meta::pure::mapping::modelToModel::test::delta::v1::Address
+{
+   add : String[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::delta::v1::More
+{
+   name : String[1];
+}
+
+
+Class meta::pure::mapping::modelToModel::test::delta::v2::Firm
+{
+   newLegalName : String[1];
+   nameNoSubsume : String[1];
+   employees : meta::pure::mapping::modelToModel::test::delta::v2::Person[*];
+   count : Number[1];
+   new : Integer[0..1];
+   useless : meta::pure::mapping::modelToModel::test::delta::v2::Useless[0..1];
+   region: String[1];
+   region2: meta::pure::mapping::modelToModel::test::delta::v2::RegionEnumToString[1];
+
+}
+
+Class meta::pure::mapping::modelToModel::test::delta::v2::Person
+{
+   name : String[1];
+   nameNoSubsume : String[1];
+   address : meta::pure::mapping::modelToModel::test::delta::v2::Address[1];
+   more : meta::pure::mapping::modelToModel::test::delta::v2::More[1];
+   useless : meta::pure::mapping::modelToModel::test::delta::v2::Useless[0..1];
+   region: String[1];
+   region2: meta::pure::mapping::modelToModel::test::delta::v2::RegionEnumToString[1];
+
+
+}
+
+Class meta::pure::mapping::modelToModel::test::delta::v2::Address
+{
+   newAdd : String[1];
+   useless : meta::pure::mapping::modelToModel::test::delta::v2::Useless[0..1];
+}
+
+Class meta::pure::mapping::modelToModel::test::delta::v2::More
+{
+   name : String[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::delta::v2::Useless
+{
+}
+
+###Mapping
+import meta::pure::mapping::modelToModel::test::src::*;
+import meta::pure::mapping::modelToModel::test::dest::*;
+import meta::pure::mapping::modelToModel::test::*;
+
+Mapping meta::pure::mapping::modelToModel::test::delta::simpleDeltaMapping
+(
+   meta::pure::mapping::modelToModel::test::delta::v2::Firm : Pure
+   {
+      ~src meta::pure::mapping::modelToModel::test::delta::v1::Firm
+      newLegalName : $src.legalName
+   }
+   
+   meta::pure::mapping::modelToModel::test::delta::v2::Address : Pure
+   {
+      ~src meta::pure::mapping::modelToModel::test::delta::v1::Address
+      newAdd : $src.add+'ok'
+   }
+)

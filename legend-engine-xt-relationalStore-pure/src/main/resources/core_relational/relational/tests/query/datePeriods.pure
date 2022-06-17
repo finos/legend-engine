@@ -20,7 +20,7 @@ import meta::relational::runtime::*;
 import meta::relational::metamodel::execute::*;
 import meta::pure::runtime::*;
 import meta::relational::mapping::*;
-import meta::csv::*;
+import meta::relational::tests::csv::*;
 
 // Alloy exclusion reason: 15. Variables types should be inferred Encoding doesn't currently support generics (issue if the variable if of type Path for example)
 function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::groupBy::datePeriods::testGroupBy():Boolean[1]
@@ -50,7 +50,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::groupBy::date
    };
    
    
-   let result = execute($fn,myMapping,testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute($fn,myMapping,testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values;
    
    assertEquals('Sales Division,Income Function,YTD Gross Credits,WTD Gross Credits\n' + 
@@ -64,7 +64,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::groupBy::date
    assertEquals('select "org_chart_entity_0".name as "Sales Division", "income_function_0".code as "Income Function", sum(case when "calendar_0"."fiscal day" <= 37 then "root".credits else 0.0 end) as "YTD Gross Credits", sum(case when ("calendar_0"."fiscal week" = 9 and "calendar_0"."fiscal day of week" <= 3) then "root".credits else 0.0 end) as "WTD Gross Credits" from SALES_GCS as "root" left outer join ORG_CHART_ENTITY as "org_chart_entity_0" on ("root".division_id = "org_chart_entity_0".oe_id) left outer join INCOME_FUNCTION as "income_function_0" on ("root".if_code = "income_function_0".code) left outer join calendar as "calendar_0" on ("root".tradeDate = "calendar_0"."date") where ("calendar_0"."date" > \'2015-02-01\' and "calendar_0"."date" <= \'2015-02-25\') group by "Sales Division","Income Function" order by "Sales Division" desc,"Income Function" desc',$result->sqlRemoveFormatting(1));               
                                  
    assertEquals('select "root"."date" as "pk_0", "root"."calendar name" as "pk_1", "root"."date" as "date", "root"."fiscal week start" as "weekStart", "root"."fiscal week end" as "weekEnd", "root"."fiscal day" as "day", "root"."fiscal week" as "week", "root"."fiscal day of week" as "dayOfWeekNumber", "root"."fiscal year end" as "yearEnd", "root"."fiscal year start" as "yearStart" from calendar as "root" where "root"."date" = \'2015-02-25\'\nWarning: Results only shown for first relational query. Other SQL statements could not be computed because they require results from the execution of the previous expression.',
-                  meta::relational::functions::sqlstring::toSQLString($fn, myMapping, DatabaseType.H2, meta::pure::router::extension::defaultRelationalExtensions()));
+                  meta::relational::functions::sqlstring::toSQLString($fn, myMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions()));
 }
 
 function <<test.Test>> meta::relational::tests::groupBy::datePeriods::testGroupBy_noDatePath():Boolean[1]
@@ -92,7 +92,7 @@ function <<test.Test>> meta::relational::tests::groupBy::datePeriods::testGroupB
    };
 
 
-   let result = execute($fn,myMapping,testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute($fn,myMapping,testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values;
 
    assertEquals('Sales Division,Income Function,YTD Gross Credits,WTD Gross Credits\n' +
@@ -106,7 +106,7 @@ function <<test.Test>> meta::relational::tests::groupBy::datePeriods::testGroupB
    assertEquals('select "org_chart_entity_0".name as "Sales Division", "income_function_0".code as "Income Function", sum(case when "calendar_0"."fiscal day" <= 37 then "root".credits else 0.0 end) as "YTD Gross Credits", sum(case when ("calendar_0"."fiscal week" = 9 and "calendar_0"."fiscal day of week" <= 3) then "root".credits else 0.0 end) as "WTD Gross Credits" from SALES_GCS as "root" left outer join ORG_CHART_ENTITY as "org_chart_entity_0" on ("root".division_id = "org_chart_entity_0".oe_id) left outer join INCOME_FUNCTION as "income_function_0" on ("root".if_code = "income_function_0".code) left outer join calendar as "calendar_0" on ("root".tradeDate = "calendar_0"."date") where ("calendar_0"."date" > \'2015-02-01\' and "calendar_0"."date" <= \'2015-02-25\') group by "Sales Division","Income Function" order by "Sales Division" desc,"Income Function" desc',$result->sqlRemoveFormatting(1));
 
    assertEquals('select "root"."date" as "pk_0", "root"."calendar name" as "pk_1", "root"."date" as "date", "root"."fiscal week start" as "weekStart", "root"."fiscal week end" as "weekEnd", "root"."fiscal day" as "day", "root"."fiscal week" as "week", "root"."fiscal day of week" as "dayOfWeekNumber", "root"."fiscal year end" as "yearEnd", "root"."fiscal year start" as "yearStart" from calendar as "root" where "root"."date" = \'2015-02-25\'\nWarning: Results only shown for first relational query. Other SQL statements could not be computed because they require results from the execution of the previous expression.',
-                  meta::relational::functions::sqlstring::toSQLString($fn, myMapping, DatabaseType.H2, meta::pure::router::extension::defaultRelationalExtensions()));}
+                  meta::relational::functions::sqlstring::toSQLString($fn, myMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions()));}
 
 function <<test.Test>> meta::relational::tests::groupBy::datePeriods::testGroupByWithFilterFunction_noDatePath():Boolean[1]
 {
@@ -133,7 +133,7 @@ function <<test.Test>> meta::relational::tests::groupBy::datePeriods::testGroupB
    };
    
    
-   let result = execute($fn,myMapping,testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute($fn,myMapping,testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values;
    
    assertEquals('Sales Division,Income Function,YTD Gross Credits,WTD Gross Credits\n' + 
@@ -148,7 +148,7 @@ function <<test.Test>> meta::relational::tests::groupBy::datePeriods::testGroupB
                   $result->sqlRemoveFormatting(1));               
                                  
    assertEquals('select "root"."date" as "pk_0", "root"."calendar name" as "pk_1", "root"."date" as "date", "root"."fiscal week start" as "weekStart", "root"."fiscal week end" as "weekEnd", "root"."fiscal day" as "day", "root"."fiscal week" as "week", "root"."fiscal day of week" as "dayOfWeekNumber", "root"."fiscal year end" as "yearEnd", "root"."fiscal year start" as "yearStart" from calendar as "root" where "root"."date" = \'2015-02-25\'\nWarning: Results only shown for first relational query. Other SQL statements could not be computed because they require results from the execution of the previous expression.',
-                  meta::relational::functions::sqlstring::toSQLString($fn, myMapping, DatabaseType.H2, meta::pure::router::extension::defaultRelationalExtensions()));
+                  meta::relational::functions::sqlstring::toSQLString($fn, myMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions()));
 }
 
 // Alloy exclusion reason: 15. Variables types should be inferred Encoding doesn't currently support generics (issue if the variable if of type Path for example)
@@ -179,7 +179,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::groupBy::date
    };
    
    
-   let result = execute($fn,myMapping,testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute($fn,myMapping,testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values;
    
    assertEquals('Sales Division,Income Function,YTD Gross Credits,WTD Gross Credits\n' + 
@@ -194,7 +194,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::groupBy::date
                   $result->sqlRemoveFormatting(1));               
                                  
    assertEquals('select "root"."date" as "pk_0", "root"."calendar name" as "pk_1", "root"."date" as "date", "root"."fiscal week start" as "weekStart", "root"."fiscal week end" as "weekEnd", "root"."fiscal day" as "day", "root"."fiscal week" as "week", "root"."fiscal day of week" as "dayOfWeekNumber", "root"."fiscal year end" as "yearEnd", "root"."fiscal year start" as "yearStart" from calendar as "root" where "root"."date" = \'2015-02-25\'\nWarning: Results only shown for first relational query. Other SQL statements could not be computed because they require results from the execution of the previous expression.',
-                  meta::relational::functions::sqlstring::toSQLString($fn, myMapping, DatabaseType.H2, meta::pure::router::extension::defaultRelationalExtensions()));
+                  meta::relational::functions::sqlstring::toSQLString($fn, myMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions()));
 }
 
 function meta::relational::tests::groupBy::datePeriods::dateFilter(gc:SalesCredit[1], startDate:Date[1], endDate:Date[1]):Boolean[1]
@@ -229,7 +229,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::groupBy::date
    };
    
    
-   let result = execute($fn,myMapping,testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute($fn,myMapping,testRuntime(), meta::relational::extension::relationalExtensions());
                         
    assertEquals('select "root"."date" as "pk_0", "root"."calendar name" as "pk_1", "root"."date" as "date", "root"."fiscal week start" as "weekStart", "root"."fiscal week end" as "weekEnd", "root"."fiscal day" as "day", "root"."fiscal week" as "week", "root"."fiscal day of week" as "dayOfWeekNumber", "root"."fiscal year end" as "yearEnd", "root"."fiscal year start" as "yearStart" from calendar as "root" where "root"."date" = \'2015-02-25\'',
                   $result->sqlRemoveFormatting(0));
@@ -237,7 +237,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::groupBy::date
    assertEquals('select "org_chart_entity_0".name as "Sales Division", "income_function_0".code as "Income Function", sum(case when "calendar_0"."fiscal day" <= 37 then "root".credits else 0.0 end) as "YTD Gross Credits", sum(case when ("calendar_0"."fiscal week" = 9 and "calendar_0"."fiscal day of week" <= 3) then "root".credits else 0.0 end) as "WTD Gross Credits" from SALES_GCS as "root" left outer join ORG_CHART_ENTITY as "org_chart_entity_0" on ("root".division_id = "org_chart_entity_0".oe_id) left outer join INCOME_FUNCTION as "income_function_0" on ("root".if_code = "income_function_0".code) left outer join calendar as "calendar_0" on ("root".tradeDate = "calendar_0"."date") where ("calendar_0"."date" > \'2015-02-01\' and "calendar_0"."date" <= \'2015-02-25\') group by "Sales Division","Income Function"', $result->sqlRemoveFormatting(1));               
                                  
    assertEquals('select "root"."date" as "pk_0", "root"."calendar name" as "pk_1", "root"."date" as "date", "root"."fiscal week start" as "weekStart", "root"."fiscal week end" as "weekEnd", "root"."fiscal day" as "day", "root"."fiscal week" as "week", "root"."fiscal day of week" as "dayOfWeekNumber", "root"."fiscal year end" as "yearEnd", "root"."fiscal year start" as "yearStart" from calendar as "root" where "root"."date" = \'2015-02-25\'\nWarning: Results only shown for first relational query. Other SQL statements could not be computed because they require results from the execution of the previous expression.',
-                  meta::relational::functions::sqlstring::toSQLString($fn, myMapping, DatabaseType.H2, meta::pure::router::extension::defaultRelationalExtensions()));
+                  meta::relational::functions::sqlstring::toSQLString($fn, myMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions()));
 }
 
 // Alloy exclusion reason: 16. Alloy doesn't support platform functions
@@ -265,7 +265,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::groupBy::date
    };
    
    
-   let result = execute($fn,myMapping,testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute($fn,myMapping,testRuntime(), meta::relational::extension::relationalExtensions());
                         
    assertEquals('select "root"."date" as "pk_0", "root"."calendar name" as "pk_1", "root"."date" as "date", "root"."fiscal week start" as "weekStart", "root"."fiscal week end" as "weekEnd", "root"."fiscal day" as "day", "root"."fiscal week" as "week", "root"."fiscal day of week" as "dayOfWeekNumber", "root"."fiscal year end" as "yearEnd", "root"."fiscal year start" as "yearStart" from calendar as "root" where "root"."date" = \'2015-02-25\'',
                   $result->sqlRemoveFormatting(0));
@@ -273,7 +273,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::groupBy::date
    assertEquals('select "org_chart_entity_0".name as "Sales Division", "income_function_0".code as "Income Function", sum(case when "calendar_0"."fiscal day" <= 37 then "root".credits else 0.0 end) as "YTD Gross Credits", sum(case when ("calendar_0"."fiscal week" = 9 and "calendar_0"."fiscal day of week" <= 3) then "root".credits else 0.0 end) as "WTD Gross Credits" from SALES_GCS as "root" left outer join ORG_CHART_ENTITY as "org_chart_entity_0" on ("root".division_id = "org_chart_entity_0".oe_id) left outer join INCOME_FUNCTION as "income_function_0" on ("root".if_code = "income_function_0".code) left outer join calendar as "calendar_0" on ("root".tradeDate = "calendar_0"."date") where ("calendar_0"."date" > \'2015-02-01\' and "calendar_0"."date" <= \'2015-02-25\') group by "Sales Division","Income Function"', $result->sqlRemoveFormatting(1));               
                                  
    assertEquals('select "root"."date" as "pk_0", "root"."calendar name" as "pk_1", "root"."date" as "date", "root"."fiscal week start" as "weekStart", "root"."fiscal week end" as "weekEnd", "root"."fiscal day" as "day", "root"."fiscal week" as "week", "root"."fiscal day of week" as "dayOfWeekNumber", "root"."fiscal year end" as "yearEnd", "root"."fiscal year start" as "yearStart" from calendar as "root" where "root"."date" = \'2015-02-25\'\nWarning: Results only shown for first relational query. Other SQL statements could not be computed because they require results from the execution of the previous expression.',
-                  meta::relational::functions::sqlstring::toSQLString($fn, myMapping, DatabaseType.H2, meta::pure::router::extension::defaultRelationalExtensions()));
+                  meta::relational::functions::sqlstring::toSQLString($fn, myMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions()));
 }
 
 // Alloy exclusion reason: 15. Variables types should be inferred Encoding doesn't currently support generics (issue if the variable if of type Path for example)
@@ -304,7 +304,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::groupBy::date
    };
    
    
-   let result = execute($fn,myMapping,testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute($fn,myMapping,testRuntime(), meta::relational::extension::relationalExtensions());
                         
    assertEquals('select "root"."date" as "pk_0", "root"."calendar name" as "pk_1", "root"."date" as "date", "root"."fiscal week start" as "weekStart", "root"."fiscal week end" as "weekEnd", "root"."fiscal day" as "day", "root"."fiscal week" as "week", "root"."fiscal day of week" as "dayOfWeekNumber", "root"."fiscal year end" as "yearEnd", "root"."fiscal year start" as "yearStart" from calendar as "root" where "root"."date" = \'2015-02-25\'',
                   $result->sqlRemoveFormatting(0));
@@ -313,7 +313,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::groupBy::date
    assertEquals('select "org_chart_entity_0".name as "Sales Division", "income_function_0".code as "Income Function", sum(case when "calendar_0"."fiscal day" <= 37 then "root".credits else 0.0 end) as "YTD Gross Credits", sum(case when ("calendar_0"."fiscal week" = 9 and "calendar_0"."fiscal day of week" <= 3) then "root".credits else 0.0 end) as "WTD Gross Credits" from SALES_GCS as "root" left outer join ORG_CHART_ENTITY as "org_chart_entity_0" on ("root".division_id = "org_chart_entity_0".oe_id) left outer join INCOME_FUNCTION as "income_function_0" on ("root".if_code = "income_function_0".code) left outer join calendar as "calendar_0" on ("root".tradeDate = "calendar_0"."date") where ("calendar_0"."date" > \'2015-02-01\' and "calendar_0"."date" <= \'2015-02-25\') group by "Sales Division","Income Function"',$result->sqlRemoveFormatting(1));               
                                  
    assertEquals('select "root"."date" as "pk_0", "root"."calendar name" as "pk_1", "root"."date" as "date", "root"."fiscal week start" as "weekStart", "root"."fiscal week end" as "weekEnd", "root"."fiscal day" as "day", "root"."fiscal week" as "week", "root"."fiscal day of week" as "dayOfWeekNumber", "root"."fiscal year end" as "yearEnd", "root"."fiscal year start" as "yearStart" from calendar as "root" where "root"."date" = \'2015-02-25\'\nWarning: Results only shown for first relational query. Other SQL statements could not be computed because they require results from the execution of the previous expression.',
-                  meta::relational::functions::sqlstring::toSQLString($fn, myMapping, DatabaseType.H2, meta::pure::router::extension::defaultRelationalExtensions()));
+                  meta::relational::functions::sqlstring::toSQLString($fn, myMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions()));
 }
 
 function meta::relational::tests::groupBy::datePeriods::filterReportDates<T>(x:T[1], start:Date[1], end:Date[1], path:Function<{T[1]->Date[0..1]}>[1]):Boolean[1]
@@ -350,7 +350,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::groupBy::date
                                        [agg('YTD Gross Credits', r | $r.getFloat('isYtd') * $r.getFloat('credits'), x | $x->sum()),
                                        agg('WTD Gross Credits', r | $r.getFloat('isWtd') * $r.getFloat('credits'), x | $x->sum())])
                         ->sort([desc('Sales Division'), desc('Income Function')])
-                         ,myMapping,testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                         ,myMapping,testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values;
    
    assertEquals('Sales Division,Income Function,YTD Gross Credits,WTD Gross Credits\n' + 
@@ -375,7 +375,7 @@ function meta::relational::tests::groupBy::datePeriods::wtd(value:Float[1], repo
 function meta::relational::tests::groupBy::datePeriods::getReportingEndDateAsFiscalDate():FiscalCalendarDate[1]
 {
    let endDate = getReportingEndDate();
-   let reportDate = execute(|FiscalCalendarDate.all()->filter(d | $d.date == $endDate),myMapping,testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let reportDate = execute(|FiscalCalendarDate.all()->filter(d | $d.date == $endDate),myMapping,testRuntime(), meta::relational::extension::relationalExtensions());
    $reportDate.values->first()->toOne();
 }
 
@@ -383,7 +383,7 @@ function meta::relational::tests::groupBy::datePeriods::getReportingEndDateAsFis
 function meta::relational::tests::groupBy::datePeriods::getReportingStartDateAsFiscalDate():FiscalCalendarDate[1]
 {
    let endDate = getReportingStartDate();
-   let reportDate = execute(|FiscalCalendarDate.all()->filter(d | $d.date == $endDate),myMapping,testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let reportDate = execute(|FiscalCalendarDate.all()->filter(d | $d.date == $endDate),myMapping,testRuntime(), meta::relational::extension::relationalExtensions());
    $reportDate.values->first()->toOne();
 }
 

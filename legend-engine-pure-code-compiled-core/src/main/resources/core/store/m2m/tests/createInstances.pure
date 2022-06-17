@@ -1,0 +1,193 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::mapping::modelToModel::test::createInstances::*;
+import meta::pure::mapping::modelToModel::test::filter::*;
+import meta::pure::mapping::modelToModel::*;
+import meta::pure::mapping::modelToModel::test::*;
+import meta::pure::runtime::*;
+import meta::pure::mapping::modelToModel::test::shared::src::*;
+import meta::pure::mapping::modelToModel::test::shared::dest::*;
+
+function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::test::createInstances::testCreateInstances():Any[*]
+{
+    let res = execute(
+            |Firm.all()->filter(f|$f.employees->exists(e|$e.lastName == 'efgh')),
+            createInstancesModelMapping,
+            ^Runtime(connections = ^ModelConnection(element=^ModelStore(), instances= newMap(
+                                                                                                      pair(_Firm , list([
+                                                                                                                        ^_Firm (name='A')
+                                                                                                                    ])
+                                                                                                      )
+                                                                                            )
+                                                   )
+             ),
+             meta::pure::extension::defaultExtensions()
+          );
+   assertSameElements(['abcd','efgh'], $res.values->at(0).employees.lastName);
+}
+
+
+
+function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::test::simple::testCartesianOnAssociation():Any[*]
+{
+    let res = execute(
+            |FirmEmployee.all() ,
+            createInstancesModelMappingOneMany,
+            ^Runtime(connections = ^ModelConnection(element=^ModelStore(), instances= newMap(
+                                                                                               pair(_Firm , list([
+                                                                                                              ^_Firm (name='Firm Name', employees = [^_Person(fullName='Person 1'),^_Person(fullName='Person 2')] )
+                                                                                                                 ])
+                                                                                               )
+                                                                                            )
+                                                   )
+             ),
+             meta::pure::extension::defaultExtensions()
+          );
+   assert(size($res.values)==2);
+   assertSameElements($res.values.fullName, ['Person 1','Person 2'] );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::test::simple::testCartesianOnAssociationMultiProperty():Any[*]
+{
+    let res = execute(
+            |FirmEmployee.all() ,
+            createInstancesModelMappingOneManyMultiProperty,
+            ^Runtime(connections = ^ModelConnection(element=^ModelStore(), instances= newMap(
+                                                                                               pair(_Firm , list([
+                                                                                                              ^_Firm (name='Firm Name', employees = [^_Person(fullName='Person 1',addresses=^Address(street='first')),^_Person(fullName='Person 2',addresses=^Address(street='second'))] )
+                                                                                                                 ])
+                                                                                               )
+                                                                                            )
+                                                   )
+             ),
+             meta::pure::extension::defaultExtensions()
+          );
+   assert(size($res.values)==2);
+   assertSameElements(['Person 1','Person 2'],$res.values.fullName );
+   assertSameElements(['first','second'] ,$res.values.streetAddress );
+
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::test::simple::testCartesianOnAssociationMultiPropertyOptional():Any[*]
+{
+    let res = execute(
+            |FirmEmployee.all() ,
+            createInstancesModelMappingOneManyMultiProperty,
+            ^Runtime(connections = ^ModelConnection(element=^ModelStore(), instances= newMap(
+                                                                                               pair(_Firm , list([
+                                                                                                              ^_Firm (name='Firm Name', employees = [^_Person(fullName='Person 1', addresses=^Address(street='first')),^_Person(fullName='Person 2')] )
+                                                                                                                 ])
+                                                                                               )
+                                                                                            )
+                                                   )
+             ),
+             meta::pure::extension::defaultExtensions()
+          );
+   assert(size($res.values)==2);
+   assertSameElements(['Person 1','Person 2'],$res.values.fullName );
+   assertSameElements(['first'] ,$res.values.streetAddress );
+}
+
+function meta::pure::mapping::modelToModel::test::createInstances::getName(src : _Firm[1]) : String[1]
+{
+   $src.name;
+}
+
+function meta::pure::mapping::modelToModel::test::createInstances::getFullName(src : _Firm[1]) : String[*]
+{
+   let employees = $src.employees;
+   if($employees->isNotEmpty(),
+       |$employees.fullName,
+       | [] );
+}
+
+###Mapping
+import meta::pure::mapping::modelToModel::test::union::*;
+import meta::pure::mapping::modelToModel::test::shared::src::*;
+import meta::pure::mapping::modelToModel::test::shared::dest::*;
+import meta::pure::mapping::modelToModel::test::*;
+
+Mapping meta::pure::mapping::modelToModel::test::createInstances::createInstancesModelMapping
+(
+   *Person : Operation
+           {
+              	meta::pure::router::operations::special_union_OperationSetImplementation_1__SetImplementation_MANY_(p1,p2)
+           }
+
+   Person[p1] : Pure
+   {
+      ~src _Firm
+      lastName : 'abcd'
+   }
+   
+   Person[p2] : Pure
+   {
+      ~src _Firm
+      lastName : 'efgh'
+   }
+   
+   Firm : Pure
+            {
+               ~src _Firm
+               legalName : $src.name,
+               employees[p1] : $src,
+               employees[p2] : $src
+            }
+   
+)
+
+
+###Mapping
+import meta::pure::mapping::modelToModel::*;
+import meta::pure::mapping::modelToModel::test::createInstances::*;
+import meta::pure::mapping::modelToModel::test::union::*;
+import meta::pure::mapping::modelToModel::test::shared::src::*;
+import meta::pure::mapping::modelToModel::test::shared::dest::*;
+import meta::pure::mapping::modelToModel::test::*;
+
+Mapping meta::pure::mapping::modelToModel::test::createInstances::createInstancesModelMappingOneMany
+(
+   
+   FirmEmployee : Pure
+            {
+               ~src _Firm
+               firmName : getName($src),
+               fullName* : getFullName($src)
+            }
+   
+)
+
+
+
+###Mapping
+import meta::pure::mapping::modelToModel::*;
+import meta::pure::mapping::modelToModel::test::union::*;
+import meta::pure::mapping::modelToModel::test::shared::src::*;
+import meta::pure::mapping::modelToModel::test::shared::dest::*;
+import meta::pure::mapping::modelToModel::test::*;
+
+Mapping meta::pure::mapping::modelToModel::test::createInstances::createInstancesModelMappingOneManyMultiProperty
+(
+   
+   FirmEmployee : Pure
+            {
+               ~src _Firm
+               firmName : $src.name,
+               fullName* : $src.employees.fullName,
+               streetAddress* : $src.employees.addresses.street
+
+            }
+   
+)
