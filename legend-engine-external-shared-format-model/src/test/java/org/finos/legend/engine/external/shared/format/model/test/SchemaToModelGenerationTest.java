@@ -121,7 +121,9 @@ public class SchemaToModelGenerationTest
         {
             if (element instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class
                     || element instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Enumeration
-                    || element instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Association)
+                    || element instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Association
+                    || element instanceof  org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Profile
+                    || element instanceof  org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function)
             {
                 PureModelContextData subContext = PureModelContextData.newBuilder().withElement(element).build();
                 PureGrammarComposer grammarTransformer = PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().build());

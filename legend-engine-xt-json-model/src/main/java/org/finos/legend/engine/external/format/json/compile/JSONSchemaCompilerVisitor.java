@@ -20,8 +20,9 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.external.format.json.model.JSONSchema;
 import org.finos.legend.engine.external.format.json.model.JSONSchemaArray;
 import org.finos.legend.engine.external.format.json.model.JSONSchemaBoolean;
-import org.finos.legend.engine.external.format.json.model.JSONSchemaEmpty;
+import org.finos.legend.engine.external.format.json.model.JSONSchemaFragment;
 import org.finos.legend.engine.external.format.json.model.JSONSchemaInteger;
+import org.finos.legend.engine.external.format.json.model.JSONSchemaMultiType;
 import org.finos.legend.engine.external.format.json.model.JSONSchemaNull;
 import org.finos.legend.engine.external.format.json.model.JSONSchemaNumber;
 import org.finos.legend.engine.external.format.json.model.JSONSchemaObject;
@@ -35,10 +36,11 @@ import org.finos.legend.pure.generated.Root_meta_external_format_json_metamodel_
 import org.finos.legend.pure.generated.Root_meta_external_format_json_metamodel_JSONSchemaBoolean_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_format_json_metamodel_JSONSchemaDiscriminator;
 import org.finos.legend.pure.generated.Root_meta_external_format_json_metamodel_JSONSchemaDiscriminator_Impl;
-import org.finos.legend.pure.generated.Root_meta_external_format_json_metamodel_JSONSchemaEmpty;
-import org.finos.legend.pure.generated.Root_meta_external_format_json_metamodel_JSONSchemaEmpty_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_format_json_metamodel_JSONSchemaFragment;
+import org.finos.legend.pure.generated.Root_meta_external_format_json_metamodel_JSONSchemaFragment_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_format_json_metamodel_JSONSchemaInteger;
 import org.finos.legend.pure.generated.Root_meta_external_format_json_metamodel_JSONSchemaInteger_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_format_json_metamodel_JSONSchemaMultiType_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_format_json_metamodel_JSONSchemaNull;
 import org.finos.legend.pure.generated.Root_meta_external_format_json_metamodel_JSONSchemaNull_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_format_json_metamodel_JSONSchemaNumber;
@@ -53,13 +55,13 @@ import org.finos.legend.pure.generated.Root_meta_json_JSONBoolean_Impl;
 import org.finos.legend.pure.generated.Root_meta_json_JSONElement;
 import org.finos.legend.pure.generated.Root_meta_json_JSONKeyValue_Impl;
 import org.finos.legend.pure.generated.Root_meta_json_JSONNumber_Impl;
+import org.finos.legend.pure.generated.Root_meta_json_JSONObject;
 import org.finos.legend.pure.generated.Root_meta_json_JSONObject_Impl;
 import org.finos.legend.pure.generated.Root_meta_json_JSONString;
 import org.finos.legend.pure.generated.Root_meta_json_JSONString_Impl;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.map.PureMap;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -81,7 +83,7 @@ public class JSONSchemaCompilerVisitor implements JSONSchemaVisitor<Root_meta_ex
         {
             if (schemaObject.itemSchemas instanceof Boolean)
             {
-                metaSchemaBuilder._itemSchemas(Lists.mutable.with(schemaObject.itemSchemas));
+                metaSchemaBuilder = metaSchemaBuilder._itemSchemas(Lists.mutable.with(schemaObject.itemSchemas));
             }
             else if (schemaObject.itemSchemas instanceof JSONSchema)
             {
@@ -122,21 +124,9 @@ public class JSONSchemaCompilerVisitor implements JSONSchemaVisitor<Root_meta_ex
         {
             metaSchemaBuilder = metaSchemaBuilder._uniqueItems(schemaObject.uniqueItems);
         }
-        if (schemaObject.prefixItems != null)
-        {
-            metaSchemaBuilder = metaSchemaBuilder._prefixItems(listToPure(schemaObject.prefixItems));
-        }
         if (schemaObject.containedItemSchema != null)
         {
             metaSchemaBuilder = metaSchemaBuilder._containedItemSchema(schemaObject.containedItemSchema.accept(this));
-        }
-        if (schemaObject.minContains != null)
-        {
-            metaSchemaBuilder = metaSchemaBuilder._minContains(Long.valueOf(schemaObject.minContains));
-        }
-        if (schemaObject.maxContains != null)
-        {
-            metaSchemaBuilder = metaSchemaBuilder._maxContains(Long.valueOf(schemaObject.maxContains));
         }
         return metaSchemaBuilder;
     }
@@ -148,9 +138,16 @@ public class JSONSchemaCompilerVisitor implements JSONSchemaVisitor<Root_meta_ex
     }
 
     @Override
-    public Root_meta_external_format_json_metamodel_JSONSchemaEmpty visit(JSONSchemaEmpty schemaObject)
+    public Root_meta_external_format_json_metamodel_JSONSchemaFragment visit(JSONSchemaFragment schemaObject)
     {
-        return (Root_meta_external_format_json_metamodel_JSONSchemaEmpty) loadCommonProperties(new Root_meta_external_format_json_metamodel_JSONSchemaEmpty_Impl(""), schemaObject);
+        return (Root_meta_external_format_json_metamodel_JSONSchemaFragment) loadCommonProperties(new Root_meta_external_format_json_metamodel_JSONSchemaFragment_Impl(""), schemaObject);
+    }
+
+    @Override
+    public Root_meta_external_format_json_metamodel_JSONSchema visit(JSONSchemaMultiType schemaObject)
+    {
+        // Multiple types via an array are not supported. Hence, we are not adding any properties to the JSONSchemaMultiType metamodel instance
+        return new Root_meta_external_format_json_metamodel_JSONSchemaMultiType_Impl("");
     }
 
     @Override
@@ -177,11 +174,11 @@ public class JSONSchemaCompilerVisitor implements JSONSchemaVisitor<Root_meta_ex
         Root_meta_external_format_json_metamodel_JSONSchemaObject metaSchemaBuilder = (Root_meta_external_format_json_metamodel_JSONSchemaObject) loadCommonProperties(new Root_meta_external_format_json_metamodel_JSONSchemaObject_Impl(""), schemaObject);
         if (schemaObject.minProperties != null)
         {
-            metaSchemaBuilder = metaSchemaBuilder._minProperties(Long.valueOf(schemaObject.minProperties));
+            metaSchemaBuilder = metaSchemaBuilder._minProperties(schemaObject.minProperties.longValue());
         }
         if (schemaObject.maxProperties != null)
         {
-            metaSchemaBuilder = metaSchemaBuilder._maxProperties(Long.valueOf(schemaObject.maxProperties));
+            metaSchemaBuilder = metaSchemaBuilder._maxProperties(schemaObject.maxProperties.longValue());
         }
         if (schemaObject.propertyNames != null)
         {
@@ -193,7 +190,7 @@ public class JSONSchemaCompilerVisitor implements JSONSchemaVisitor<Root_meta_ex
         }
         if (schemaObject.requiredProperties != null)
         {
-            metaSchemaBuilder = metaSchemaBuilder._requiredProperties(ListIterate.collect(schemaObject.requiredProperties, x -> x));
+            metaSchemaBuilder = metaSchemaBuilder._requiredProperties(Lists.mutable.withAll(schemaObject.requiredProperties));
         }
         if (schemaObject.additionalProperties != null)
         {
@@ -209,6 +206,10 @@ public class JSONSchemaCompilerVisitor implements JSONSchemaVisitor<Root_meta_ex
             {
                 throw new EngineException("Unable to compile additionalProperties. Supported types for additionalProperties are Boolean, JSONSchema. Received: " + schemaObject.additionalProperties.getClass().getName());
             }
+        }
+        if (schemaObject.patternProperties != null)
+        {
+            metaSchemaBuilder = metaSchemaBuilder._patternProperties(schemaObject.patternProperties);
         }
         return metaSchemaBuilder;
     }
@@ -239,15 +240,19 @@ public class JSONSchemaCompilerVisitor implements JSONSchemaVisitor<Root_meta_ex
 
     private Root_meta_external_format_json_metamodel_JSONSchema loadCommonProperties(Root_meta_external_format_json_metamodel_JSONSchema pureModel, JSONSchema parsedSchema)
     {
-        if (parsedSchema.allOf != null)
+        if (parsedSchema.allOf != null && parsedSchema.allOf.size() != 0)
         {
             pureModel = pureModel._allOf(listToPure(parsedSchema.allOf));
         }
-        if (parsedSchema.oneOf != null)
+        if ((parsedSchema.oneOf != null && parsedSchema.oneOf.size() != 0) && (parsedSchema.anyOf != null && parsedSchema.anyOf.size() != 0))
+        {
+            throw new EngineException("Cannot have both fields, anyOf and oneOf, in the same Schema");
+        }
+        if (parsedSchema.oneOf != null && parsedSchema.oneOf.size() != 0)
         {
             pureModel = pureModel._oneOf(listToPure(parsedSchema.oneOf));
         }
-        if (parsedSchema.anyOf != null)
+        if (parsedSchema.anyOf != null && parsedSchema.anyOf.size() != 0)
         {
             pureModel = pureModel._anyOf(listToPure(parsedSchema.anyOf));
         }
@@ -317,11 +322,11 @@ public class JSONSchemaCompilerVisitor implements JSONSchemaVisitor<Root_meta_ex
         }
         if (parsedSchema.example != null)
         {
-            pureModel = pureModel._example(null);
+            pureModel = pureModel._example(convertToJSONElement(parsedSchema.example));
         }
-        if (parsedSchema.customProperties != null)
+        if (!parsedSchema.customProperties.isEmpty())
         {
-            pureModel = pureModel._customProperties(new PureMap(parsedSchema.customProperties));
+            pureModel = pureModel._customProperties(Lists.mutable.with((Root_meta_json_JSONObject) convertToJSONElement(parsedSchema.customProperties)));
         }
         if (parsedSchema.discriminator != null)
         {
@@ -335,6 +340,14 @@ public class JSONSchemaCompilerVisitor implements JSONSchemaVisitor<Root_meta_ex
                 discriminator = discriminator._propertyName(parsedSchema.discriminator.propertyName);
             }
             pureModel = pureModel._discriminator(discriminator);
+        }
+        if (parsedSchema.contentMediaType != null)
+        {
+            pureModel = pureModel._contentMediaType(parsedSchema.contentMediaType);
+        }
+        if (parsedSchema.contentEncoding != null)
+        {
+            pureModel = pureModel._contentEncoding(parsedSchema.contentEncoding);
         }
         return pureModel;
     }
@@ -359,13 +372,21 @@ public class JSONSchemaCompilerVisitor implements JSONSchemaVisitor<Root_meta_ex
 
     private Root_meta_json_JSONElement convertToJSONElement(Object valueToConvert)
     {
-        if (valueToConvert instanceof Boolean)
+        if (valueToConvert == null)
+        {
+            return null;
+        }
+        else if (valueToConvert instanceof Boolean)
         {
             return new Root_meta_json_JSONBoolean_Impl("")._value((Boolean) valueToConvert);
         }
         else if (valueToConvert instanceof String)
         {
             return new Root_meta_json_JSONString_Impl("")._value((String) valueToConvert);
+        }
+        else if (valueToConvert instanceof Integer)
+        {
+            return new Root_meta_json_JSONNumber_Impl("")._value(((Integer) valueToConvert).longValue());
         }
         else if (valueToConvert instanceof Number)
         {
@@ -375,9 +396,9 @@ public class JSONSchemaCompilerVisitor implements JSONSchemaVisitor<Root_meta_ex
         {
             return new Root_meta_json_JSONArray_Impl("")._values(Lists.mutable.withAll(((ArrayList<?>) valueToConvert).stream().map(this::convertToJSONElement).collect(Collectors.toList())));
         }
-        else if (valueToConvert instanceof LinkedHashMap)
+        else if (valueToConvert instanceof Map)
         {
-            return new Root_meta_json_JSONObject_Impl("")._keyValuePairs(Lists.mutable.withAll(((LinkedHashMap<?, ?>) valueToConvert).entrySet().stream().map(e -> new Root_meta_json_JSONKeyValue_Impl("")._key((Root_meta_json_JSONString) convertToJSONElement(e.getKey()))._value(convertToJSONElement(e.getValue()))).collect(Collectors.toList())));
+            return new Root_meta_json_JSONObject_Impl("")._keyValuePairs(Lists.mutable.withAll(((Map<?, ?>) valueToConvert).entrySet().stream().map(e -> new Root_meta_json_JSONKeyValue_Impl("")._key((Root_meta_json_JSONString) convertToJSONElement(e.getKey()))._value(convertToJSONElement(e.getValue()))).collect(Collectors.toList())));
         }
         throw new EngineException("Unable to convert " + valueToConvert.getClass().getName() + " to Root_meta_json_JSONElement. Allowed Java types are Boolean, String, Number, ArrayList, LinkedHashMap.");
     }
@@ -386,47 +407,44 @@ public class JSONSchemaCompilerVisitor implements JSONSchemaVisitor<Root_meta_ex
     {
         if (typedSchema.minimum != null)
         {
-            metaSchemaBuilder = metaSchemaBuilder._minimum((Long) typedSchema.minimum);
+            if (typedSchema.minimum instanceof Integer)
+            {
+                metaSchemaBuilder = metaSchemaBuilder._minimum(typedSchema.minimum.longValue());
+            }
+            else
+            {
+                metaSchemaBuilder = metaSchemaBuilder._minimum(typedSchema.minimum);
+            }
         }
         if (typedSchema.maximum != null)
         {
-            metaSchemaBuilder = metaSchemaBuilder._maximum((Long) typedSchema.maximum);
+            if (typedSchema.maximum instanceof Integer)
+            {
+                metaSchemaBuilder = metaSchemaBuilder._maximum(typedSchema.maximum.longValue());
+            }
+            else
+            {
+                metaSchemaBuilder = metaSchemaBuilder._maximum(typedSchema.maximum);
+            }
         }
         if (typedSchema.exclusiveMaximum != null)
         {
-            if (typedSchema.exclusiveMaximum instanceof Number)
-            {
-                metaSchemaBuilder = metaSchemaBuilder._minimum((Long) typedSchema.exclusiveMaximum);
-                metaSchemaBuilder = metaSchemaBuilder._exclusiveMaximum(true);
-            }
-            else if (typedSchema.exclusiveMaximum instanceof Boolean)
-            {
-                metaSchemaBuilder = metaSchemaBuilder._exclusiveMinimum((Boolean) typedSchema.exclusiveMaximum);
-            }
-            else
-            {
-                throw new EngineException("exclusiveMaximum can only be of instance Number or Boolean");
-            }
+            metaSchemaBuilder = metaSchemaBuilder._exclusiveMaximum(typedSchema.exclusiveMaximum);
         }
         if (typedSchema.exclusiveMinimum != null)
         {
-            if (typedSchema.exclusiveMinimum instanceof Number)
-            {
-                metaSchemaBuilder = metaSchemaBuilder._minimum((Long) typedSchema.exclusiveMinimum);
-                metaSchemaBuilder = metaSchemaBuilder._exclusiveMinimum(true);
-            }
-            else if (typedSchema.exclusiveMinimum instanceof Boolean)
-            {
-                metaSchemaBuilder = metaSchemaBuilder._exclusiveMinimum((Boolean) typedSchema.exclusiveMinimum);
-            }
-            else
-            {
-                throw new EngineException("exclusiveMinimum can only be of instance Number or Boolean");
-            }
+            metaSchemaBuilder = metaSchemaBuilder._exclusiveMinimum(typedSchema.exclusiveMinimum);
         }
         if (typedSchema.multipleOf != null)
         {
-            metaSchemaBuilder = metaSchemaBuilder._multipleOf((Long) typedSchema.multipleOf);
+            if (typedSchema.multipleOf instanceof Integer)
+            {
+                metaSchemaBuilder = metaSchemaBuilder._multipleOf(typedSchema.multipleOf.longValue());
+            }
+            else
+            {
+                metaSchemaBuilder = metaSchemaBuilder._multipleOf(typedSchema.multipleOf);
+            }
         }
         if (typedSchema.format != null)
         {

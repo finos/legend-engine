@@ -19,7 +19,10 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.impl.factory.Sets;
 import org.finos.legend.engine.external.format.flatdata.FlatDataExecutionExtension;
+import org.finos.legend.engine.external.format.json.JSONSchemaSpecificationExtension;
 import org.finos.legend.engine.external.format.json.JsonExecutionExtension;
+import org.finos.legend.engine.external.format.json.specifications.draftv7.DraftV7SchemaSpecificationExtension;
+import org.finos.legend.engine.external.format.json.specifications.openapiv3_0_3.OpenAPIv3_0_3SchemaSpecificationExtension;
 import org.finos.legend.engine.external.format.xml.XmlExecutionExtension;
 import org.finos.legend.engine.external.shared.runtime.ExternalFormatExecutionExtension;
 import org.finos.legend.engine.language.pure.dsl.service.execution.AbstractServicePlanExecutor;
@@ -70,6 +73,15 @@ public class TestExtensions
     private <T> void assertHasExtensions(Iterable<? extends Class<? extends T>> expectedExtensionClasses, Class<T> extensionClass)
     {
         assertHasExtensions(expectedExtensionClasses, extensionClass, true);
+    }
+
+    @Test
+    public void testJsonSchemaSpecificationExtensions()
+    {
+        MutableList<Class<? extends JSONSchemaSpecificationExtension>> expectedExtensions = Lists.mutable.<Class<? extends JSONSchemaSpecificationExtension>>empty()
+                .with(DraftV7SchemaSpecificationExtension.class)
+                .with(OpenAPIv3_0_3SchemaSpecificationExtension.class);
+        assertHasExtensions(expectedExtensions, JSONSchemaSpecificationExtension.class);
     }
 
     private <T> void assertHasExtensions(Iterable<? extends Class<? extends T>> expectedExtensionClasses, Class<T> extensionClass, boolean failOnAdditional)

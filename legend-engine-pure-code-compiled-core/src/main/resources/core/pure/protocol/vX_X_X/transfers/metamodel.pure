@@ -38,7 +38,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::t
    (
       _type = 'class',
       name = $class.name->toOne(),
-      constraints = $class.constraints->map(c|$c->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformConstraint($useAppliedFunction, $extensions)),
+      constraints = $class.constraints->map(c|$c->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformConstraint(true, $extensions)),
       package = if($class.package->isEmpty(),|[],|$class.package->toOne()->elementToPath()),
       superTypes = $class.generalizations->map(g | $g.general.rawType->toOne()->elementToPath()),
       properties = $properties->map(p | $p->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformProperty($extensions)),

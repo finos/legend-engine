@@ -23,10 +23,11 @@ public class JSONSchemaObject extends JSONSchema
 {
     public final Integer minProperties;
     public final Integer maxProperties;
-    public final JSONSchema propertyNames;
+    public final JSONSchemaString propertyNames;
     public final Map<String, JSONSchema> properties;
     public final List<String> requiredProperties;
     public final Object additionalProperties;
+    public final Object patternProperties;
 
     protected JSONSchemaObject(JSONSchemaObject.JSONSchemaObjectBuilder b)
     {
@@ -37,16 +38,18 @@ public class JSONSchemaObject extends JSONSchema
         this.properties = b.properties;
         this.requiredProperties = b.requiredProperties;
         this.additionalProperties = b.additionalProperties;
+        this.patternProperties = b.patternProperties;
     }
 
     public static class JSONSchemaObjectBuilder extends JSONSchemaBuilder<JSONSchemaObject.JSONSchemaObjectBuilder>
     {
         private Integer minProperties;
         private Integer maxProperties;
-        private JSONSchema propertyNames;
+        private JSONSchemaString propertyNames;
         private Map<String, JSONSchema> properties;
         private List<String> requiredProperties;
         private Object additionalProperties;
+        private Object patternProperties;
 
         public JSONSchemaObject build()
         {
@@ -66,7 +69,7 @@ public class JSONSchemaObject extends JSONSchema
             return this;
         }
 
-        public JSONSchemaObjectBuilder propertyNames(JSONSchema propertyNames)
+        public JSONSchemaObjectBuilder propertyNames(JSONSchemaString propertyNames)
         {
             this.propertyNames = propertyNames;
             return this;
@@ -89,6 +92,13 @@ public class JSONSchemaObject extends JSONSchema
             this.additionalProperties = additionalProperties;
             return this;
         }
+
+        public JSONSchemaObjectBuilder patternProperties(Object patternProperties)
+        {
+            this.patternProperties = patternProperties;
+            return this;
+        }
+
     }
 
     public <T> T accept(JSONSchemaVisitor<T> visitor)

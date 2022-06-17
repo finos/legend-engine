@@ -19,7 +19,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.finos.legend.engine.external.format.json.JSONSchemaSpecificationExtension;
 import org.finos.legend.engine.external.format.json.JSONSchemaSpecificationExtensionLoader;
 import org.finos.legend.engine.external.format.json.model.JSONSchema;
-import org.finos.legend.engine.external.format.json.specifications.draftv7.DraftV7SchemaSpecificationExtension;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.Map;
@@ -28,7 +27,7 @@ import static org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperF
 
 public class JSONSchemaParser
 {
-    private static final String DEFAULT_PARSER = DraftV7SchemaSpecificationExtension.SCHEMA_URI;
+    private static final String DEFAULT_PARSER = "http://json-schema.org/draft-07/schema#"; // DraftV7 will be considered as the default schema specification for parsing
     final Map<String, JSONSchemaSpecificationExtension> extensions = JSONSchemaSpecificationExtensionLoader.extensions();
     private final JSONSchemaSpecificationExtension inferredSchema;
     private final JsonNode jsonSchema;

@@ -1,0 +1,191 @@
+{
+  "tests": [
+    {
+      "$schema": "https://spec.openapis.org/oas/v3.0.3#specification",
+      "type": "object",
+      "maxProperties": 5,
+      "minProperties": 1
+    },
+    {
+      "$schema": "https://spec.openapis.org/oas/v3.0.3#specification",
+      "title": "Person",
+      "type": "object",
+      "properties": {
+        "firstName": {
+          "type": "string",
+          "description": "The person's first name."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "The person's last name."
+        },
+        "age": {
+          "description": "Age in years which must be equal to or greater than zero.",
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    {
+      "$schema": "https://spec.openapis.org/oas/v3.0.3#specification",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "address": {
+          "type": "string"
+        },
+        "telephone": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "email"
+      ]
+    },
+    {
+      "$schema": "https://spec.openapis.org/oas/v3.0.3#specification",
+      "type": "object",
+      "description": "A simple description",
+      "allOf": [
+        {
+          "$ref": "SuperType"
+        }
+      ],
+      "properties": {
+        "simpleString": {
+          "type": "string",
+          "nullable": true
+        },
+        "arrayMaxItemOne": {
+          "type": "array",
+          "description": "description",
+          "items": {
+            "type": "string",
+            "nullable": true,
+            "description": "A combined"
+          },
+          "maxItems": 10
+        }
+      }
+    },
+    {
+      "$schema": "https://spec.openapis.org/oas/v3.0.3#specification",
+      "title": "Pet",
+      "type": "object",
+      "properties": {
+        "petType": {
+          "type": "string",
+          "enum": [
+            "Feline",
+            "Canine",
+            "woof"
+          ]
+        }
+      },
+      "discriminator": {
+        "propertyName": "petType",
+        "mapping": {
+          "Feline": "Cat.json",
+          "Canine": "Dog.json",
+          "woof": "Dog.json",
+          "bigCat": "BigCat.json"
+        }
+      },
+      "required": [
+        "petType"
+      ]
+    },
+    {
+      "$schema": "https://spec.openapis.org/oas/v3.0.3#specification",
+      "x-customStereoType1": true,
+      "description": "A simple description",
+      "title": "meta::json::schema::tests::ClassWithCustomProfiles",
+      "x-customTag2": [
+        "first",
+        "second"
+      ],
+      "type": "object",
+      "properties": {
+        "simpleString": {
+          "x-customStereoType1": true,
+          "type": "string"
+        },
+        "arrayMaxItemOne": {
+          "x-customStereoType2": true,
+          "maxItems": 10,
+          "type": "array",
+          "x-customTag3": "false",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "x-customTag1": 10
+    },
+    {
+      "$schema": "https://spec.openapis.org/oas/v3.0.3#specification",
+      "components": {
+        "schemas": {
+          "meta::json::schema::tests::ClassWithFunctionReferences": {
+            "title": "a custom title",
+            "type": "object",
+            "properties": {
+              "one": {
+                "$ref": "#/components/schemas/meta::json::schema::tests::functionWithStringType"
+              },
+              "optional": {
+                "$ref": "#/components/schemas/meta::json::schema::tests::functionWithStringType"
+              },
+              "many": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/meta::json::schema::tests::functionWithStringType"
+                }
+              }
+            },
+            "required": [
+              "one"
+            ]
+          },
+          "meta::json::schema::tests::SimpleClass": {
+            "title": "meta::json::schema::tests::SimpleClass",
+            "type": "object",
+            "properties": {
+              "p": {
+                "type": "string"
+              },
+              "a": {
+                "$ref": "#/components/schemas/meta::json::schema::tests::SimpleClass2"
+              }
+            },
+            "required": [
+              "p"
+            ]
+          },
+          "meta::json::schema::tests::SimpleClass2": {
+            "title": "meta::json::schema::tests::SimpleClass2",
+            "type": "object",
+            "properties": {
+              "p": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "p"
+            ]
+          },
+          "meta::json::schema::tests::functionWithStringType": {
+            "pattern": "test",
+            "type": "string"
+          }
+        }
+      }
+    }
+  ]
+}

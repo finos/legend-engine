@@ -43,6 +43,8 @@ public class JSONSchema
     public final Object example;
     public final Map<String, Object> customProperties;
     public final JSONSchemaDiscriminator discriminator;
+    public final String contentMediaType;
+    public final String contentEncoding;
 
     protected JSONSchema(JSONSchemaBuilder<?> b)
     {
@@ -68,6 +70,8 @@ public class JSONSchema
         this.example = b.example;
         this.customProperties = b.customProperties;
         this.discriminator = b.discriminator;
+        this.contentMediaType = b.contentMediaType;
+        this.contentEncoding = b.contentEncoding;
     }
 
     public static class JSONSchemaBuilder<B extends JSONSchema.JSONSchemaBuilder<B>>
@@ -94,6 +98,8 @@ public class JSONSchema
         private Object example;
         private Map<String, Object> customProperties;
         private JSONSchemaDiscriminator discriminator;
+        private String contentMediaType;
+        private String contentEncoding;
 
         @SuppressWarnings("unchecked")
         protected B self()
@@ -235,6 +241,18 @@ public class JSONSchema
         public B discriminator(JSONSchemaDiscriminator discriminator)
         {
             this.discriminator = discriminator;
+            return this.self();
+        }
+
+        public B contentMediaType(String contentMediaType)
+        {
+            this.contentMediaType = contentMediaType;
+            return this.self();
+        }
+
+        public B contentEncoding(String contentEncoding)
+        {
+            this.contentEncoding = contentEncoding;
             return this.self();
         }
     }

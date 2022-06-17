@@ -67,6 +67,8 @@
         <module>legend-engine-external-format-jsonSchema</module>
         <module>legend-engine-xt-json-protocol</module>
         <module>legend-engine-xt-json-pure</module>
+        <module>legend-engine-xt-json-spec-draftV7</module>
+        <module>legend-engine-xt-json-spec-openApiV3_0_3</module>
 
         <module>legend-engine-xt-relationalStore-executionPlan</module>
         <module>legend-engine-xt-relationalStore-executionPlan-connection</module>
@@ -761,6 +763,16 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-json-runtime</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-json-spec-draftV7</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-json-spec-openApiV3_0_3</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

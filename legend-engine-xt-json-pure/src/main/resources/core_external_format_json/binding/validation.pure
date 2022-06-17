@@ -106,10 +106,13 @@ function <<access.private>> meta::external::format::json::binding::validation::u
 {
    if($binding.schemaSet->isNotEmpty(),
       | $binding,
-      | let modelToJsonSchemaConfig = ^ModelToJsonSchemaConfiguration( format = 'JSON',
-                                                                      targetBinding   = $binding->elementToPath() + '_Gen',
-                                                                      targetSchemaSet = $binding->elementToPath() + '_GenSchemaSet',
-                                                                      sourceModel     = $binding.modelUnit->resolve().classes);
+      | let defaultConfig = meta::external::format::json::binding::fromPure::defaultConfig();
+        let modelToJsonSchemaConfig = ^$defaultConfig(
+                                          format = 'JSON',
+                                          targetBinding   = $binding->elementToPath() + '_Gen',
+                                          targetSchemaSet = $binding->elementToPath() + '_GenSchemaSet',
+                                          sourceModel     = $binding.modelUnit->resolve().classes
+                                        );
         pureToJsonSchema($modelToJsonSchemaConfig);
    );
 }

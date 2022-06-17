@@ -14,21 +14,16 @@
 
 package org.finos.legend.engine.external.format.json.fromModel;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import org.finos.legend.engine.external.format.json.JSONSchemaSpecificationExtension;
 import org.finos.legend.engine.external.format.json.JSONSchemaSpecificationExtensionLoader;
 import org.finos.legend.engine.external.format.json.model.JSONSchema;
-import org.finos.legend.engine.external.format.json.specifications.draftv7.DraftV7SchemaSpecificationExtension;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.Map;
 
-import static org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory.getNewObjectMapper;
-
 public class JSONSchemaComposer
 {
-    private static final String DEFAULT_COMPOSER = DraftV7SchemaSpecificationExtension.SCHEMA_URI;
+    public static final String DEFAULT_COMPOSER = "http://json-schema.org/draft-07/schema#"; // DraftV7 will be considered as the default schema specification for composing
     final Map<String, JSONSchemaSpecificationExtension> extensions = JSONSchemaSpecificationExtensionLoader.extensions();
     private final JSONSchemaSpecificationExtension inferredSchema;
     private final JSONSchema protocolModel;
@@ -50,18 +45,6 @@ public class JSONSchemaComposer
         }
 
         inferredSchema = userSchemaSpec;
-    }
-
-    private static JsonNode getJsonNode(String jsonSchema)
-    {
-        try
-        {
-            return getNewObjectMapper().readTree(jsonSchema);
-        }
-        catch (JsonProcessingException e)
-        {
-            throw new EngineException(e.getMessage());
-        }
     }
 
     public String compose()

@@ -16,18 +16,13 @@ package org.finos.legend.engine.external.format.json.model;
 
 import org.finos.legend.engine.external.format.json.visitor.JSONSchemaVisitor;
 
-import java.util.List;
-
 public class JSONSchemaArray extends JSONSchema
 {
     public final Integer minItems;
     public final Integer maxItems;
     public final Boolean uniqueItems;
     public final Object itemSchemas;
-    public final List<JSONSchema> prefixItems;
     public final JSONSchema containedItemSchema;
-    public final Integer maxContains;
-    public final Integer minContains;
 
     protected JSONSchemaArray(JSONSchemaArray.JSONSchemaArrayBuilder b)
     {
@@ -36,10 +31,7 @@ public class JSONSchemaArray extends JSONSchema
         this.maxItems = b.maxItems;
         this.uniqueItems = b.uniqueItems;
         this.itemSchemas = b.itemSchemas;
-        this.prefixItems = b.prefixItems;
         this.containedItemSchema = b.containedItemSchema;
-        this.maxContains = b.maxContains;
-        this.minContains = b.minContains;
     }
 
     public static class JSONSchemaArrayBuilder extends JSONSchema.JSONSchemaBuilder<JSONSchemaArray.JSONSchemaArrayBuilder>
@@ -48,10 +40,7 @@ public class JSONSchemaArray extends JSONSchema
         private Integer maxItems;
         private Boolean uniqueItems;
         private Object itemSchemas;
-        private List<JSONSchema> prefixItems;
         private JSONSchema containedItemSchema;
-        private Integer maxContains;
-        private Integer minContains;
 
         public JSONSchemaArray build()
         {
@@ -82,39 +71,21 @@ public class JSONSchemaArray extends JSONSchema
             return this;
         }
 
-        public JSONSchemaArrayBuilder prefixItems(List<JSONSchema> prefixItems)
-        {
-            this.prefixItems = prefixItems;
-            return this;
-        }
-
         public JSONSchemaArrayBuilder containedItemSchema(JSONSchema containedItemSchema)
         {
             this.containedItemSchema = containedItemSchema;
             return this;
         }
-
-        public JSONSchemaArrayBuilder maxContains(Integer maxContains)
-        {
-            this.maxContains = maxContains;
-            return this;
-        }
-
-        public JSONSchemaArrayBuilder minContains(Integer minContains)
-        {
-            this.minContains = minContains;
-            return this;
-        }
-    }
-
-    public <T> T accept(JSONSchemaVisitor<T> visitor)
-    {
-        return visitor.visit(this);
     }
 
     public static JSONSchemaArray.JSONSchemaArrayBuilder builder()
     {
         return new JSONSchemaArrayBuilder();
+    }
+
+    public <T> T accept(JSONSchemaVisitor<T> visitor)
+    {
+        return visitor.visit(this);
     }
 
 }

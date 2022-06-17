@@ -20,8 +20,8 @@ public class JSONSchemaNumber extends JSONSchema
 {
     public final Number minimum;
     public final Number maximum;
-    public final Object exclusiveMinimum;
-    public final Object exclusiveMaximum;
+    public final Number exclusiveMinimum;
+    public final Number exclusiveMaximum;
     public final Number multipleOf;
     public final String format;
 
@@ -40,8 +40,8 @@ public class JSONSchemaNumber extends JSONSchema
     {
         private Number minimum;
         private Number maximum;
-        private Object exclusiveMinimum;
-        private Object exclusiveMaximum;
+        private Number exclusiveMinimum;
+        private Number exclusiveMaximum;
         private Number multipleOf;
         private String format;
 
@@ -62,13 +62,13 @@ public class JSONSchemaNumber extends JSONSchema
             return this.self();
         }
 
-        public B exclusiveMinimum(Object exclusiveMinimum)
+        public B exclusiveMinimum(Number exclusiveMinimum)
         {
             this.exclusiveMinimum = exclusiveMinimum;
             return this.self();
         }
 
-        public B exclusiveMaximum(Object exclusiveMaximum)
+        public B exclusiveMaximum(Number exclusiveMaximum)
         {
             this.exclusiveMaximum = exclusiveMaximum;
             return this.self();

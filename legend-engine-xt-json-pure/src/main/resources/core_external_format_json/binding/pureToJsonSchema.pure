@@ -19,11 +19,22 @@ import meta::external::shared::format::utils::*;
 
 import meta::external::format::json::metamodel::*;
 import meta::external::format::json::binding::fromPure::*;
+import meta::external::format::json::binding::toPure::*;
 
-import meta::json::schema::fromSchema::*;
-import meta::json::schema::generation::*;
+import meta::json::*;
 
 import meta::pure::model::unit::*;
+import meta::pure::mapping::*;
+import meta::pure::metamodel::constraint::*;
+import meta::pure::generation::metamodel::*;
+import meta::pure::functions::tools::*;
+
+Class meta::external::format::json::binding::fromPure::JSONSchemaOutput
+{
+  schema: JSONSchema[1];
+  fileName: String[1];
+  format: String[1];
+}
 
 /// ========================================================================================================================================================
 // Entry points 
@@ -31,16 +42,26 @@ import meta::pure::model::unit::*;
 
 Class meta::external::format::json::binding::fromPure::ModelToJsonSchemaConfiguration extends meta::external::shared::format::binding::fromPure::ModelToSchemaConfiguration
 {
+  {doc.doc='URL to the specification which your schema should be compatible with'} specificationUrl: String[1];
+  {doc.doc='Generate JSON schema constraints from class constraints, unsupported functions will not generate'} useConstraints:Boolean[1];  //defaults false
+  {doc.doc='Include related types in a definitions element on the schema, ignored if generating openAPI'}  includeAllRelatedTypes:Boolean[1];  // defaults true - if true , dependencies generate to definitions elements
+  {doc.doc='If true,An additional schema will be generated that can be used as a collection of subTypes' }generateAnyOfSubType:Boolean[1];  // defaults true - if true , SupertTypes generate an additional anyOf for all the subTypes.
+  {doc.doc='If true, constraint functions generate as schema files, if false constraint function content is in-lined with the parent schema' }generateConstraintFunctionSchemas:Boolean[1];  // defaults false - if true , functions generate seperate schemas.
+  {doc.doc='Generate a components or definitions collection, if true, only one file will generate with a collection of related elements in scope for execution and there will be no root element in the schema' }createSchemaCollection:Boolean[1];
+  {doc.doc='Generate milestoned properties on schemas' }generateMilestoneProperties:Boolean[1]; //defaults false - If true - the auto-gen milestoned properties will be included on generated schemas
+  rootLevel:Boolean[1];//indicates if we are on first pass of generation
+  useDefinitions:Boolean[1];  //defaults to value of includeAllRelatedTypes - used for second pass
+  rootElement:PackageableElement[0..1]; //root element for correct reletiveReferences
 }
 
 function meta::external::format::json::binding::fromPure::pureToJsonSchema(config:ModelToJsonSchemaConfiguration[1]): Binding[1]
 {
-   pureToJsonSchema($config, noDebug());
+  pureToJsonSchema($config, noDebug());
 }
 
 function meta::external::format::json::binding::fromPure::pureToJsonSchemaWithDebug(config:ModelToJsonSchemaConfiguration[1]): Binding[1]
 {
-   pureToJsonSchema($config, debug());
+ pureToJsonSchema($config, debug());
 }
 
 function meta::external::format::json::binding::fromPure::pureToJsonSchema(config:ModelToJsonSchemaConfiguration[1], debug:DebugContext[1]): Binding[1]
@@ -52,14 +73,36 @@ function meta::external::format::json::binding::fromPure::pureToJsonSchema(confi
    $result;
 }
 
+function meta::external::format::json::binding::fromPure::defaultConfig(): ModelToJsonSchemaConfiguration[1]
+{
+  ^ModelToJsonSchemaConfiguration(
+    format='JSONSchema', 
+    targetSchemaSet='target::package::GeneratedSchemaSet', 
+    targetBinding='target::package::GeneratedBinding',
+    specificationUrl = '',
+    useConstraints = false,
+    includeAllRelatedTypes = true,
+    generateAnyOfSubType = true,
+    generateConstraintFunctionSchemas = false,
+    createSchemaCollection = false,
+    generateMilestoneProperties = false,
+    rootLevel = true,
+    useDefinitions =  true
+  );
+}
+
+function <<Generation.Configuration>>  meta::external::format::json::binding::fromPure::describeConfiguration(): GenerationParameter[*]
+{  
+  meta::pure::generation::describeConfiguration(ModelToJsonSchemaConfiguration, meta::external::format::json::binding::fromPure::defaultConfig__ModelToJsonSchemaConfiguration_1_, []);
+}
+
 // ========================================================================================================================================================
 // generation
 // ========================================================================================================================================================
 
 function <<access.private>> meta::external::format::json::binding::fromPure::generate(config:ModelToJsonSchemaConfiguration[1], debug:DebugContext[1]): SchemaSet[1]
 {
-   let jsonConfig        = ^JSONSchemaConfig(scopeElements = $config.sourceModel);
-   let jsonSchemaOutputs = generateJsonSchemaFromPureWithScope($jsonConfig);
+   let jsonSchemaOutputs = generateJsonSchemaFromPureWithScope($config);
    
    let schemaSetSepPos  = $config.targetSchemaSet->lastIndexOf('::');
    let schemaSetPkgName = $config.targetSchemaSet->substring(0, $schemaSetSepPos);
@@ -69,7 +112,7 @@ function <<access.private>> meta::external::format::json::binding::fromPure::gen
       name    = $config.targetSchemaSet->substring($schemaSetSepPos+2),
       format  = 'JSON'
    );
-   $jsonSchemaOutputs->map(o | $o->jsonSchemaOutputToSchema($schemaSet));   
+   $jsonSchemaOutputs->map(o | $o->jsonSchemaOutputToSchema($schemaSet, $config));   
    $schemaSet;
 }
 
@@ -91,12 +134,1225 @@ function <<access.private>> meta::external::format::json::binding::fromPure::cre
 // helper functions
 // ========================================================================================================================================================
 
-function <<access.private>> meta::external::format::json::binding::fromPure::jsonSchemaOutputToSchema(output:JSONSchemaOutput[1], schemaSet: SchemaSet[1]): Schema[*]
+function <<access.private>> meta::external::format::json::binding::fromPure::jsonSchemaOutputToSchema(output:JSONSchemaOutput[1], schemaSet: SchemaSet[1], config:ModelToJsonSchemaConfiguration[1]): Schema[*]
 {
+  let schema = $output.schema;
+  let schemaWithSpec = ^$schema(schema = $config.specificationUrl->toOne());
    ^Schema(
       set = $schemaSet,
       id = $output.fileName->refToFileName(),
       location = $output.fileName,
-      detail = ^JSONSchema(content = $output.content)
-   )
+      detail = $schemaWithSpec
+   );
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::generateJsonSchemaFromPureWithScope(config:ModelToJsonSchemaConfiguration[1]):JSONSchemaOutput[*]
+{
+   $config.sourceModel->filter(e| !$e->instanceOf(Package))->map(e|assert($e->instanceOf(Type) || $e->instanceOf(ConcreteFunctionDefinition ) ||$e->instanceOf(Profile)  || $e->instanceOf(Association ) ,' JsonSchema generation of ' + $e->type().name->toOne()+ ' is not currently supported. Tried to generate json schema for '+ $e->elementToPath()) ;);
+   let scopeElements = $config.resolveSourceModel()->filter(e| $e->instanceOf(Type) || $e->instanceOf(FunctionDefinition) );
+
+   if($config.createSchemaCollection,
+         | $scopeElements->schemaCollectionOutput($config),
+         | $scopeElements->map(e|$e->match(
+                                            [ 
+                                             t:Type[1]| $config->generateJsonSchemaFromPure($t),
+                                             f:FunctionDefinition<Any>[1] | $config->generateFunctionSchema($f)
+                                            ]
+                                           );
+                               );
+       );
+}
+
+function <<access.protected>> meta::external::format::json::binding::fromPure::generateJsonSchemaFromPure(config:ModelToJsonSchemaConfiguration[1], element: Type[1]) : JSONSchemaOutput[1]
+{
+   let schemaResult = $element->toJSONSchema([],$config);
+   ^JSONSchemaOutput(
+      schema    = $schemaResult.schema,
+      fileName  = $element->elementName($config,true,true,[]),
+      format    = 'json'
+    );
+}
+
+function <<access.private>>meta::external::format::json::binding::fromPure::elementName( element:Type[1],config:ModelToJsonSchemaConfiguration[1],includePackage:Boolean[1],convertToPath:Boolean[1],newName:String[0..1] ) : String[1]
+{
+    $element->cast(@PackageableElement)->meta::external::format::json::binding::fromPure::elementName($config, $includePackage, $convertToPath, $newName);
+}
+
+function <<access.private>>meta::external::format::json::binding::fromPure::elementName( element:PackageableElement[1],config:ModelToJsonSchemaConfiguration[1],includePackage:Boolean[1],convertToPath:Boolean[1],newName:String[0..1] ) : String[1]
+{
+  let package = if($includePackage,|$element.package->toOne()-> elementToPath()+'::',|'');
+  let path = if($element->instanceOf(FunctionDefinition),
+                    | let funcName = $element->cast(@FunctionDefinition<Any>).functionName->toOne()->split('::')->last()->toOne();
+                      $package + $funcName;,
+                    | let name = if($newName->isNotEmpty(),|$newName->toOne(),|$element.name->toOne());
+                      $package + $name;
+               );
+
+   if($convertToPath ,| $path->meta::pure::generation::pathToFileName('json'), | $path);
+}
+
+function <<access.protected>> meta::external::format::json::binding::fromPure::schemaCollectionOutput(elements:PackageableElement[*],config:ModelToJsonSchemaConfiguration[1]) : JSONSchemaOutput[1]
+{
+   let schemaResult =  $elements->schemaCollection($config);
+   ^JSONSchemaOutput(schema = $schemaResult, fileName='model.json', format='json');
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::schemaCollection(elements:PackageableElement[*],config:ModelToJsonSchemaConfiguration[1]):JSONSchema[1]
+{
+    let updatedConfig =  ^$config(useDefinitions=false,includeAllRelatedTypes=false);
+    let updatedElements = $elements->map(e|$e->getReferencedElements([],$updatedConfig,false));
+
+
+   let generatedSchemas = $updatedElements->distinct()->sortBy(e|$e->elementToPath())->map( p | let keyName=$p->elementName($updatedConfig,true,false,[]);
+                                                                                                let generated =  $p->toOne()->match([ 
+                                                                                                                                      t:Type[1]                     |  $t->toJSONSchema([],$updatedConfig).schema ,
+                                                                                                                                      f:FunctionDefinition<Any>[1]  | let schema = $f->toJSONSchemaFromFunctionDefinition($updatedConfig);
+                                                                                                                                                                      if($schema.constraint->isNotEmpty(),|$schema.constraint->toOne(),|^JSONSchemaFragment());
+                                                                                                                                     ])->cast(@JSONSchema)->toOne();
+                                                                                                pair($keyName, $generated);
+                                                                                          )->newMap();
+
+  ^JSONSchemaFragment(definitions=$generatedSchemas);
+}
+
+function <<access.protected>> meta::external::format::json::binding::fromPure::generateFunctionSchema(config:ModelToJsonSchemaConfiguration[1], element:FunctionDefinition<Any>[1]) : JSONSchemaOutput[1]
+{
+  let functionDef = $element->toJSONSchemaFromFunctionDefinition($config);
+
+  let schema = if($functionDef.constraint->isNotEmpty(),
+                    | $functionDef.constraint->toOne(),
+                    | []
+                  );
+
+  let objectTag = if($element->hasStereotype('object',JSONSchemaTypeExtension),
+                      | ^JSONSchemaObject(),
+                      | []
+                    );
+
+  let elementTags = $element->elementTags($config);
+
+  let updatedSchema = [^JSONSchemaFragment(title=$element->title())]->concatenate($objectTag)->concatenate($elementTags)->concatenate($schema)->mergeMetamodelArray()->toOne();
+
+  ^JSONSchemaOutput(schema = $updatedSchema, fileName = $element->elementName($config,true,true,[]), format = 'json');
+}
+function <<access.protected>> meta::external::format::json::binding::fromPure::toJSONSchema( type:Type[1], root:Type[0..1], config:ModelToJsonSchemaConfiguration[1] ) : JsonSchemaGenerationResult[1]
+{
+  let javaType = $type->javaTypeReference();
+  let javaInterfaces = $type->javaInterfaceReference();
+  let titleField = $type->title(); // fetch values for $schema, title
+
+  let metaschema = if( $type->isEnum(),
+                            |   let default = $type->cast(@ElementWithTaggedValues)->value4Tag('defaultValue',JSONSchemaGeneration);
+                                let defaultTag = $default->first()->toJSONRepresentation('default', []);
+                                let enumSchema = $type->cast(@Enumeration<Any>)->enumToMetamodel();
+                                let nullable = if(addNullType($type) ,| true ,| []);
+                                ^$enumSchema(defaultValue=$defaultTag.value, nullable = $nullable);
+                            ,|
+                              let class = $type->cast(@Class<Any>);
+                              let constraints = if($config.useConstraints ,| $class.constraints->map(c|$c->meta::external::format::json::binding::fromPure::toJSONSchemaFromConstraint(^$config(rootElement=$class))),|[]);
+
+                              let constraintsNoRef = if($config.useConstraints && $config.generateConstraintFunctionSchemas,| $class.constraints->map(c|$c->meta::external::format::json::binding::fromPure::jsonSchemaConstraintsWithoutRef($config)),|$constraints);
+
+                              let rootClass = $root->cast(@Class<Any>);
+                              let required = $class->required($config);
+                              let properties = properties($class,$rootClass,$constraints,$constraintsNoRef,$config);
+                              let allOfFields = $class->generalizations($config);
+                              ^JSONSchemaObject(
+                                allOf = $allOfFields,
+                                properties = $properties,
+                                additionalProperties = if($type->hasStereotype('noAdditionalProperties',JSONSchemaGeneration) ,| false, | [] ),
+                                discriminator = $class->addDiscriminator($config),
+                                definitions = if($config.includeAllRelatedTypes && $config.rootLevel->toOne() ,| $class->definitions($rootClass,$config) ,| []),
+                                requiredProperties = $required
+                              );
+                          );
+
+  let finalSchema = ^$metaschema(
+                                  title=$titleField,
+                                  customProperties=newJSONObject([]->concatenate($javaInterfaces)->concatenate($javaType))
+                                );
+
+^JsonSchemaGenerationResult(schema = mergeTwoMetamodels($finalSchema, $type->cast(@AnnotatedElement)->elementTags($config)));
+}
+
+
+function  <<access.private>> meta::external::format::json::binding::fromPure::definitions( class:Class<Any>[1], root:Class<Any>[0..1], config:ModelToJsonSchemaConfiguration[1] ) : Map<String, JSONSchema>[0..1]
+{
+   let updatedConfig = ^$config(rootLevel=false);
+   let values = $class->getReferencedElements( [],$config, true)->filter( element |   $element != $class )->sortBy(e|$e->elementToPath())->map( p | pair( $p->elementName($config,true,false,[]), $p->match([
+                                                                                                                                                          t:Type[1]|$t->toJSONSchema($root,$updatedConfig).schema,
+                                                                                                                                                          f:FunctionDefinition<Any>[1] | $f->toJSONSchemaFromFunctionDefinition($updatedConfig).constraint->toOne()
+                                                                                                                                                        ])
+                                                                                                    )
+                                                                                            )->newMap();
+
+  if( $values->isEmpty(),
+     | [],
+     | $values
+  );
+}
+
+
+function <<access.private>> meta::external::format::json::binding::fromPure::allNonPrimitivePropertiesOfClass( class:Class<Any>[1],visited:PackageableElement[*],config:ModelToJsonSchemaConfiguration[1] ) : PackageableElement[*]
+{
+   let myPropertyPackagableElements =
+      $class->inscopeProperties($config)->map( property |
+         let type = $property.genericType.rawType->toOne();
+         let packagableElement = $type->match([ p:PrimitiveType[1]    | [],
+                                                e:Enumeration<Any>[1] | $type->cast(@PackageableElement);,
+                                                c:Class<Any>[*]       | if($c->isAnyClass(),|[],|$type->cast(@PackageableElement))
+                                              ]);
+         $packagableElement;
+   );
+$myPropertyPackagableElements;
+}
+
+function meta::external::format::json::binding::fromPure::isClass( rawType:PackageableElement[*] ) : Boolean[1]
+{
+   let type = $rawType->toOne();
+   $type->match([
+      p:PrimitiveType[1]    | false,
+      e:Enumeration<Any>[1] | false,
+      c:Class<Any>[1]       | !$c->isAnyClass()
+   ]);
+}
+
+
+function <<access.private>> meta::external::format::json::binding::fromPure::getReferencedElements(element: PackageableElement[1], processed: PackageableElement[*], config:ModelToJsonSchemaConfiguration[1], includeSubTypes: Boolean[1]) : PackageableElement[*]
+{
+   $element->match([
+              class: Class<Any>[1]|
+                     if(meta::pure::functions::collection::contains($processed,$class) || $class->instanceOf(meta::pure::mapping::MappingClass),
+                        | $processed,
+                        |
+                          let generalisations = $class.generalizations->map( g |
+                                                                      let rawType = $g.general.rawType;
+
+                                                                      if( $rawType->isEmpty() || $rawType->isAnyClass(),
+                                                                          | [],
+                                                                          | $rawType->cast( @Class<Any> )->toOne()
+                                                                        );
+                                                                    );
+
+                          let specialisations = if($includeSubTypes,|$class.specializations->map( spec | $spec.specific)->filter( oclass | !$oclass->instanceOf(MappingClass) )->cast(@Class<Any>) ,| []);
+
+                          let myPropertyElements = $class->allNonPrimitivePropertiesOfClass([],$config);
+
+                          let specialisedPropertyElements =  $myPropertyElements->map( p |
+                                                                    if( !$p->isClass(),
+                                                                        | [],
+                                                                        | $p->cast(@Class<Any>).specializations->map( class | $class.specific->cast(@Class<Any>) )
+                                                                    );
+                                                    )
+                                                    -> concatenate( $myPropertyElements );
+
+                          let constraints = if($config.useConstraints,|$class.constraints->map(c |$c.functionDefinition.expressionSequence->evaluateAndDeactivate()->at(0)->meta::external::format::json::binding::fromPure::allFunctionElements([],$config))->removeDuplicates(),|[]);
+
+                          let currentLevelDeps = $generalisations->concatenate($specialisations)->concatenate($constraints)->concatenate($specialisedPropertyElements)->removeDuplicates();
+                          
+                          $currentLevelDeps->fold(
+                                                  {
+                                                    currentLevelDep, levelState |
+                                                      $currentLevelDep->getReferencedElements($levelState, $config, $includeSubTypes);
+                                                  }, $processed->concatenate($class)
+                                                )->removeDuplicates();
+                     ),
+            a:Any[1]|        
+                      if(meta::pure::functions::collection::contains($processed, $a) ,
+                        | $processed,
+                        | let result = $a->allFunctionElements([],$config);
+                          if($result->isEmpty(),| $a->cast(@PackageableElement)->concatenate($processed) ,| $result->concatenate($processed));
+                      )
+                  ]);
+
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::allFunctionElements(any:Any[1], seen:PackageableElement[*],config:ModelToJsonSchemaConfiguration[0..1]):Function<Any>[*]
+{
+   $any->match([
+      {
+        sfe:SimpleFunctionExpression[1] |
+
+         if($sfe.func->in($seen) || $sfe.func->instanceOf(Property),
+            | [],
+            |  let newElements = if($sfe.func->isWithinPackage(meta) &&!$sfe.func->meta::alloy::isMetaAlloyTestDependencyForGeneration(),|[];,|$sfe.func);
+               $newElements->concatenate($sfe.parametersValues->evaluateAndDeactivate()->map(p| $p->allFunctionElements($seen->concatenate($newElements),$config);));
+         );
+      },
+      lam:LambdaFunction<Any>[1]      | $lam.expressionSequence->evaluateAndDeactivate()->map(vs| $vs->allFunctionElements($seen,$config)),
+      val:InstanceValue[1]            | $val.values->map(v| $v->allFunctionElements($seen,$config)),
+      a  :Any[1]                      | [];
+   ]);
+}
+
+
+function <<access.private>> meta::external::format::json::binding::fromPure::addDiscriminator(pureElement:Class<Any>[1],config:ModelToJsonSchemaConfiguration[1]):JSONSchemaDiscriminator[0..1]
+{
+   //class has a property with discriminator stereotype
+  let dProperty = $pureElement.properties->filter(p|$p->hasStereotype('discriminatorProperty',JSONSchemaOpenAPIExtension));
+  if($dProperty->isEmpty(),
+      |[],
+      | 
+      assert($dProperty->size()==1,'You can only specify one discriminator property per class, found '+ $dProperty.name->joinStrings(',') + ' on class ' +$pureElement->elementToPath() );
+      let dKeyValue = ^JSONSchemaDiscriminator(propertyName=$dProperty.name->toOne());
+      let mappingTags = $pureElement->findAllSpecializations()->map(s |let tag = $s->cast(@Class<Any>)->toOne()->value4Tag('discriminatorName',JSONSchemaOpenAPIExtension);
+                                                                          if($tag->isNotEmpty(),
+                                                                                | $tag->map(t| pair($t.value->toOne(), calculateJSONRef( $s->cast(@Class<Any>)->toOne(), $pureElement,$config.useDefinitions->toOne(),$pureElement, $config )   )),
+                                                                                | []
+                                                                            );
+                                                                    )->newMap();
+
+        ^$dKeyValue(mapping=$mappingTags);
+  );
+}
+
+
+function <<access.private>> meta::external::format::json::binding::fromPure::required( class:Class<Any>[1],config:ModelToJsonSchemaConfiguration[1] ) : String[0..*]
+{
+  let values = $class->inscopeProperties($config)->map( p |
+        if( $p.multiplicity->getLowerBound()>0,
+           | $p.name->toOne(),
+           | []
+        )
+  );
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::generalizations( class:Class<Any>[1], config:ModelToJsonSchemaConfiguration[1] ) : JSONSchema[*]
+{
+   $class.generalizations->map(g |
+      if($g.general.rawType->isEmpty(),
+       | [],
+       | let extended = $g.general.rawType->cast(@Class<Any>)->toOne();
+         if (!$extended->isAnyClass(),
+         |  ^JSONSchemaFragment(refValue = $extended->calculateJSONRef([],$config.useDefinitions->toOne(),$class,$config) ),
+         | []
+       );
+      );
+   );
+}
+
+Class <<access.private>> meta::external::format::json::binding::fromPure::JsonSchemaGenerationResult
+{
+ schema:JSONSchema[1];
+ message:meta::pure::generation::metamodel::GenerationMessage[*];
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::javaInterfaceReference( type:Type[1]) : JSONKeyValue[0..1]
+{
+   if($type->value4Tag('javaInterface',JSONSchemaJavaExtension )->isNotEmpty(),
+      | newJSONKeyValue('javaInterfaces',   ^JSONArray(values= $type->value4Tag('javaInterface',JSONSchemaJavaExtension ).value->map(v | ^JSONString(value=$v->toOne())))),
+      | []
+      );
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::javaTypeReference( type:Type[1]) : JSONKeyValue[0..1]
+{
+   if($type->value4Tag('javaType',JSONSchemaJavaExtension )->isNotEmpty(),|newJSONKeyStringValue('javaType',$type->value4Tag('javaType',JSONSchemaJavaExtension ).value->toOne()),|[]  );
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::title( element:Type[1] ) : String[1]
+{
+    $element->cast(@PackageableElement)->title();
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::title( element:PackageableElement[1] ) : String[1]
+{
+   let titleTag = $element->value4Tag('title',JSONSchemaGeneration);
+
+  if($titleTag->isNotEmpty(),
+      | $titleTag->first()->toOne().value,
+      | $element->titleValue();
+  );
+
+}
+
+function <<access.private>>  meta::external::format::json::binding::fromPure::toJSONRepresentation( values:TaggedValue[0..*],JSONTagName:String[1],type:Type[0..1]) : JSONKeyValue[0..1]
+{
+
+  let jsonValues = $values->map(v| if($type->isNotEmpty(),
+                                       |$v.value->parsePureStringtoJSONValue($type->toOne()),
+                                       |if($v.value->toOne()->isDigit(),
+                                             |if($v.value->contains('.'),
+                                                 |^JSONNumber(value=$v.value->toOne()->parseFloat()),
+                                                 |^JSONNumber(value=$v.value->toOne()->parseInteger())
+                                                 ),
+                                                 |^JSONString(value=$v.value->toOne());));
+                                 );
+
+
+let value = if($jsonValues->size()>1,
+                |^JSONArray(values=$jsonValues),
+                    | $jsonValues );
+
+
+if($value->isNotEmpty(),|  newJSONKeyValue($JSONTagName,$value->toOne()),|[]);
+}
+
+function <<access.private>>  meta::external::format::json::binding::fromPure::parsePureStringtoJSONValue(value:String[1],type:Type[1]):JSONElement[1]
+{
+   if($type==String,
+        | ^JSONString(value=$value),
+        |if($type==Integer,
+            |^JSONNumber(value=$value->parseInteger()),
+            |  if($type->in(Number.specializations.specific->concatenate(Number)),
+                 | ^JSONNumber(value=$value->parseFloat());,
+                 | if($type==Boolean,
+                    |^JSONBoolean(value=$value->parseBoolean()),
+                    |   ^JSONString(value=$value->toOne())));));
+
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::isEnum( rawType:Type[*] ) : Boolean[1]
+{
+    $rawType->cast(@PackageableElement)->isEnum();
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::isEnum( rawType:PackageableElement[*] ) : Boolean[1]
+{
+   let type = $rawType->toOne();
+   $type->match([
+      p:PrimitiveType[1]    | false,
+      e:Enumeration<Any>[1] | true,
+      c:Class<Any>[1]       | false
+   ]);
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::enumToMetamodel( type:Enumeration<Any>[1] ) : JSONSchema[1]
+{
+    let nullValue = if($type->hasStereotype('null',JSONSchemaTypeExtension),|^JSONNull(),|[]);
+
+    let enumValues = $type->enumValues()->map(s|  let enumTagValue = $s->cast(@ElementWithTaggedValues)->value4Tag('name',JSONSchemaGeneration);
+                                                     let value = if($enumTagValue->isNotEmpty(),
+                                                                      |assert($enumTagValue->size()==1,'can only have 1 enumTagValue per enumValue');
+                                                                       $enumTagValue.value->toOne();,
+                                                                      |$s->cast(@Enum).name
+                                                                        );
+
+                                                     ^JSONString(value=$value);
+                                                )->concatenate($nullValue);
+
+
+    ^JSONSchemaString(possibleValues=^JSONArray(values=$enumValues));
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::newJSONKeyStringValueAsObject( key:String[1], value:String[1] ) : JSONObject[1]
+{
+   newJSONObject( [ newJSONKeyStringValue( $key, $value) ] );
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::newJSONKeyStringValue( key:String[1], value:String[1] ) : JSONKeyValue[1]
+{
+   newJSONKeyValue( $key, ^JSONString( value = $value ));
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::properties( class:Class<Any>[1], root:Class<Any>[0..1],constraint: SchemaConstraint[*],constraintNoRef: SchemaConstraint[*], config:ModelToJsonSchemaConfiguration[1]) : Map<String, JSONSchema>[1]
+{
+    let properties = $class->inscopeProperties($config);
+    $properties->map( p | let propertyConstraint = $constraint->filter(c| $c.property.name==$p.name).constraint;
+                                       let propertyConstraintNoRef = $constraintNoRef->filter(c| $c.property.name==$p.name).constraint;
+                                       let constraintHasRef = if($propertyConstraint->isNotEmpty(),|  $propertyConstraint->map(c|$c->constraintHasRef())->toOneMany()->or() &&  $config.generateConstraintFunctionSchemas, |false);
+                                       let constraintHasType =  if($propertyConstraintNoRef->isNotEmpty(),
+                                                                   |$propertyConstraintNoRef->map(c|$c->constraintHasType())->toOneMany()->or() ,
+                                                                   | false
+                                                                  );
+                                       if($p->shouldCreateArrayProperty(),
+                                                                         | $p->createArrayProperty($root,$constraintHasType, $propertyConstraint,$constraintHasRef,$config),
+                                                                          | $p->createProperty($root,$constraintHasType, $propertyConstraint,$constraintHasRef,$config)
+                                       );
+                                  )->newMap();
+
+}
+
+function  <<access.private>>  meta::external::format::json::binding::fromPure::createProperty( property : Property<Nil,Any|*>[1], root:Class<Any>[0..1],constraintHasType:Boolean[1] , constraint:JSONSchema[*], constraintHasRef:Boolean[1], config:ModelToJsonSchemaConfiguration[1]) : Pair<String, JSONSchema>[1]
+{
+   let format = $property->propertyFormatValue();
+   assert($property.genericType.rawType!=Any || $constraintHasType ||  $property->hasStereotype('object',JSONSchemaTypeExtension) , 'Unable to generate schema for propery '+$property.name->toOne() + ' on class '+  $property.owner->elementToPath() +'. Found pure type Any: Change the data type or specify an instanceOf constraint. If using constraints, ensure useConstraints is enabled in the config' );
+
+   let type = if($constraintHasRef, | ^JSONSchemaFragment() ,|$property->propertyType($root,$constraintHasType, $config));
+
+   let elementTags = $property->elementTags($config);
+   let propertyMetamodel = [$type]->concatenate($elementTags)->concatenate($format)->concatenate($constraint)->mergeMetamodelArray()->toOne();
+   pair( $property.name->toOne(), $propertyMetamodel );
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::propertyFormatValue( property:Property<Nil,Any|*>[1]): JSONSchema[0..1]
+{
+  let type = $property.genericType.rawType->toOne();
+  let lookupMap =  newMap([
+    pair('byte', ^JSONSchemaString(format='byte')),
+    pair('binary', ^JSONSchemaString(format='binary')),
+    pair('int32', ^JSONSchemaInteger(format='int32')),
+    pair('int64', ^JSONSchemaInteger(format='int64')),
+    pair('double', ^JSONSchemaNumber(format='double'))
+  ]);
+
+  if($type == StrictDate,
+       | ^JSONSchemaString(format= 'date'),
+       |  if( $type == DateTime || $type == Date,
+              |  ^JSONSchemaString(format='date-time'),
+              |  if($property.stereotypes->filter(s |$s.profile==JSONSchemaTypeExtension && $s.value->in(['int64','int32','byte','double','binary']))->isNotEmpty() ,
+                    |  let st =  $property.stereotypes->filter(s |$s.profile==JSONSchemaTypeExtension)->at(0);
+                        $lookupMap->get($st.value);,
+                      | []
+                  );
+            )
+    );
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::inscopeProperties( class:Class<Any>[1], config:ModelToJsonSchemaConfiguration[1]) : Property<Nil,Any|*>[*]
+{
+   if($config.generateMilestoneProperties,
+      | $class.properties->concatenate($class.propertiesFromAssociations)->filter(p|$p.owner->in($config.sourceModel)),
+      |  $class.properties->concatenate($class.propertiesFromAssociations->concatenate($class.originalMilestonedProperties)->filter(p|$p.owner->in($config.sourceModel)))->filter(p|!$p->meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype());
+      );
+
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::shouldCreateArrayProperty( property:Property<Nil,Any|*>[1] ) : Boolean[1]
+{
+   ( !$property.multiplicity->meta::pure::functions::multiplicity::isZeroOne()
+   && !$property.multiplicity->meta::pure::functions::multiplicity::isToOne()  || $property->hasStereotype('array',JSONSchemaTypeExtension) );
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::elementTags( element:AnnotatedElement[1],config: ModelToJsonSchemaConfiguration[1]):JSONSchemaFragment[1]
+{
+  let type = if($element->instanceOf(Property),|$element->cast(@Property<Nil,Any|*>).genericType.rawType->toOne(),|[]);
+  let titleTag = $element->value4Tag('title',JSONSchemaGeneration);
+  let default = $element->value4Tag('defaultValue',JSONSchemaGeneration)->toJSONRepresentation('default',$type).value;
+  let hasReadOnly = if($element->cast(@ElementWithStereotypes)->hasStereotype('readOnly',JSONSchemaGeneration) ,| true ,| []);
+  let hasWriteOnly = if($element->cast(@ElementWithStereotypes)->hasStereotype('writeOnly',JSONSchemaGeneration) ,| true ,| []);
+  let examples  =  $element->value4Tag('example',JSONSchemaGeneration)->toJSONRepresentation('example',$type).value ;
+  let nullable = if($element->cast(@ElementWithStereotypes)->hasStereotype('null',JSONSchemaTypeExtension) ,| true ,| []);
+  let description =    $element->cast(@PackageableElement)->description();
+
+  let milestoning = $element->addMilestoningTag();
+
+
+  let customTags = if( $config.sourceModel->filter(e|$e->instanceOf(Profile))->isNotEmpty(),
+                        |  let allProfiles = $config.sourceModel->filter(e|$e->instanceOf(Profile));
+                          assert($allProfiles->size()==1,'Found multiple in scope Profiles, only one profile can be in scope for custom tag generation: '+ $allProfiles->map(e|$e->elementToPath())->joinStrings(', '));
+                          let profile = $allProfiles->toOne()->cast(@Profile);
+                          let tags =  $profile.p_tags->map(t | $element->value4Tag($t.value,$t.profile)->toJSONRepresentation($t.value, []));
+                          let st =  $profile.p_stereotypes->map(s |if( $element->hasStereotype($s.value,$s.profile),| newJSONKeyValue($s.value, ^JSONBoolean(value=true)),|[]) );
+                         $tags->concatenate($st);,
+                        |[]);
+
+
+  ^JSONSchemaFragment(
+    title = if($titleTag->first()->isNotEmpty() ,| $titleTag->first()->toOne().value ,| []),
+    readOnly = $hasReadOnly,
+    defaultValue = $default,
+    writeOnly = $hasWriteOnly,
+    example = $examples,
+    description = $description,
+    nullable = $nullable,
+    customProperties = ^JSONObject(
+                          keyValuePairs = []->concatenate($customTags)->concatenate($milestoning)
+                        )
+  );
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::createArrayProperty( property:Property<Nil,Any|*>[1],root:Class<Any>[0..1],constraintHasType:Boolean[1], constraint:JSONSchema[*],constraintHasRef:Boolean[1],config: ModelToJsonSchemaConfiguration[1] ) : Pair<String, JSONSchemaArray>[1]
+{
+   let propertyTypeValue = if($constraintHasRef,|[],|$property->propertyType($root,$constraintHasType,$config)); 
+   let elementTags = $property->elementTags($config);
+   let constraintsMetamodel = mergeMetamodelArray($constraint);
+
+   let finalArraySchema = [^JSONSchemaArray(
+                              itemSchemas = $propertyTypeValue, 
+                              minItems = if($property.multiplicity->hasLowerBound(),| $property.multiplicity->getLowerBound(),| []),
+                              maxItems = if($property.multiplicity->hasUpperBound(),| $property.multiplicity->getUpperBound(),| [])
+                            )]->concatenate($elementTags)->concatenate($constraintsMetamodel)->mergeMetamodelArray()->toOne();
+
+   pair( $property.name->toOne(), $finalArraySchema->cast(@JSONSchemaArray));
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::propertyType( property:Property<Nil,Any|*>[1],root:Class<Any>[0..1] ,constraintHasType:Boolean[1],config:ModelToJsonSchemaConfiguration[1]) : JSONSchema[0..1]
+{
+   if($constraintHasType,
+        | [],
+        | meta::external::format::json::binding::fromPure::propertyTypeValue( $property,$root, false, $config);
+      );
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::propertyTypeValue(property:Property<Nil,Any|*>[1],root:Class<Any>[0..1], constraintHasType:Boolean[1] ,config:ModelToJsonSchemaConfiguration[1] ) : JSONSchema[1]
+{
+   let type = $property.genericType.rawType->toOne();
+   let propertyOwner = $property->ownerClass();
+   $type->match([
+      p:PrimitiveType[1]    | $p->cast(@PrimitiveType)->convertPrimitiveType(),
+      e:Enumeration<Any>[1] | ^JSONSchemaFragment(refValue = calculateJSONRef( $e,[], $config.includeAllRelatedTypes,$propertyOwner,$config)),
+      c:Class<Any>[1]       | createObjectProperty( $c,$root,$config.includeAllRelatedTypes ,$property,$config)
+   ]);
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::createObjectProperty( class:Class<Any>[1], root:Class<Any>[0..1],useDefinitions:Boolean[1],property:Property<Nil,Any|*>[0..1] ,config:ModelToJsonSchemaConfiguration[1] ) : JSONSchema[1]
+{
+    let specializations = $class->allSpecializations()->filter(c|!$c->isAbstract()&& !$c->instanceOf(meta::pure::mapping::MappingClass))->sortBy(v|$v->elementToPath());
+    let propertyOwner = if($property->isNotEmpty(),|$property->toOne()->ownerClass()->toOne(),|[]);
+
+   let objProperty =
+      if( $specializations->isEmpty(),
+        | if($property->isNotEmpty() &&  $property->toOne()->hasStereotype('object',JSONSchemaTypeExtension),
+               | ^JSONSchemaObject(),
+               | ^JSONSchemaFragment(refValue = $class->calculateJSONRef( $root,$useDefinitions,$propertyOwner,$config ))
+            ),
+        | if( size( $specializations ) == 1,
+              | ^JSONSchemaFragment(refValue = $specializations->toOne()->calculateJSONRef($root,$useDefinitions,$propertyOwner,$config)),
+              |
+                 let specialisedObjectRefs = $specializations->map(specialisedClass | ^JSONSchemaFragment(refValue = $specialisedClass->calculateJSONRef($root,$useDefinitions,$propertyOwner,$config) ) );
+                 ^JSONSchemaFragment(oneOf = $specialisedObjectRefs );
+          )
+     );
+
+     $objProperty;
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::convertPrimitiveType( type:PrimitiveType[1] ) : JSONSchema[1]
+{
+   let name = $type.name;
+
+      if ($name == 'String',     | ^JSONSchemaString(),
+    | if ($name == 'Date',       | ^JSONSchemaString(),
+    | if ($name == 'DateTime',   | ^JSONSchemaString(format='date'),
+    | if ($name == 'StrictDate', | ^JSONSchemaString(format='date-time'),
+    | if ($name == 'Integer',    | ^JSONSchemaInteger(),
+    | if ($name == 'Float',      | ^JSONSchemaNumber(),
+    | if ($name == 'Boolean',    | ^JSONSchemaBoolean(),
+    | if ($name == 'Number',     | ^JSONSchemaNumber(),
+    | if ($name == 'Decimal',    | ^JSONSchemaNumber(),
+    | if ($name == 'Binary',    |  ^JSONSchemaString(format='binary'),
+
+    | ^JSONSchemaObject()) ) ) ) ) ) ))));
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::convertPrimitiveTypeToFormat( type:PrimitiveType[1] ) : String[0..1]
+{
+
+   let name = $type.name;
+   
+     if ($name == 'Date',       | 'date',
+    | if ($name == 'DateTime',   | 'date-time',
+    | if ($name == 'StrictDate', | 'date',
+    | []) ) );
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::description( element:PackageableElement[1] ) : String[0..1]
+{
+   if( meta::pure::functions::doc::hasDoc( $element ),
+        |  meta::pure::functions::doc::getDocs( $element )->at(0) ,
+        | [] 
+      );
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::calculateJSONRef( element:PackageableElement[1], root:PackageableElement[0..1],useDefinitions:Boolean[1],referenceParent:PackageableElement[0..1], config:ModelToJsonSchemaConfiguration[1] ) : String[1]
+{
+
+   if( ( !$root->isEmpty() ) && $element == $root,
+          | '#',
+          | if($useDefinitions || $referenceParent->isEmpty() || $config.createSchemaCollection,
+                  | $config->JSONRefPrefix() + $element->elementName($config,true,false,[]),
+                  |    
+                    let parentPath = $referenceParent->toOne()->elementPath().name->tail()->init();
+                    let elementPath = $element->elementPath().name->tail()->init();
+
+                    let parentWithIndex=  $parentPath->fold({p,a:Integer[1..*]| let next= $a->last()->toOne()+1;
+                                                            $a->concatenate($next);},0)->zip($parentPath  );
+
+                    let elementWithIndex=  $elementPath->fold({p,a:Integer[1..*]| let next= $a->last()->toOne()+1;
+                                                            $a->concatenate($next);},0)->zip($elementPath  );
+
+                    let parentParts = $parentWithIndex->map( parentPart |  
+                                                                let parentIndex = $parentPart.first;
+                                                                if($elementPath->size()>$parentIndex,
+                                                                    |  let elementPart = $elementPath->at($parentIndex);
+                                                                       if($elementPath->take($parentIndex+1)==$parentPath->take($parentIndex+1),
+                                                                            | [];,
+                                                                            | '..'
+                                                                          );,
+                                                                    | '..'
+                                                                  );
+                                                            );
+
+                    let elemntParts = $elementWithIndex->map( elementPart |
+                                                                let elementIndex = $elementPart.first;
+                                                                if($parentPath->size()>$elementIndex,
+                                                                      | let parentPart = $parentPath->at($elementIndex);
+                                                                        if($elementPath->take($elementIndex+1)==$parentPath->take($elementIndex+1),
+                                                                            | [],
+                                                                            | $elementPart.second
+                                                                          );,
+                                                                      | $elementPart.second
+                                                                  );
+                                                            );
+
+                    let allParts =  $parentParts->concatenate($elemntParts);
+                    let result = if($allParts->isNotEmpty(),
+                                    | $allParts->joinStrings('/')+'/',
+                                    | ''
+                                   ) + $element->elementName($config,false,true,[]);
+
+              );
+      );
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::JSONRefPrefix(config:ModelToJsonSchemaConfiguration[1] ):String[1]
+{
+    '#/definitions/';
+}
+
+function  <<access.private>>  meta::external::format::json::binding::fromPure::addMilestoningTag(type:AnnotatedElement[1]):JSONKeyValue[0..1]
+{
+ let temporalKey = 'x-legendTemporal';
+
+  if($type->hasStereotype('businesstemporal', temporal),
+        | newJSONKeyValue($temporalKey, ^JSONString(value='businesstemporal'))  ,
+        | if($type->hasStereotype('bitemporal', temporal),
+              |newJSONKeyValue($temporalKey, ^JSONString(value='bitemporal'))  ,
+              |if($type->hasStereotype('processingtemporal', temporal),
+                    |newJSONKeyValue($temporalKey, ^JSONString(value='processingtemporal')),
+                    |[]
+                  );
+              );
+  );
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::toJSONSchemaFromConstraint( constraint: Constraint[1],config:ModelToJsonSchemaConfiguration[1] ) : SchemaConstraint[1]
+{
+  $constraint.functionDefinition->toJSONSchemaFromFunctionDefinition($config);
+}
+
+
+function <<access.private>> meta::external::format::json::binding::fromPure::jsonSchemaConstraintsWithoutRef( constraint:Constraint[1],config:ModelToJsonSchemaConfiguration[1] ) : SchemaConstraint[1]
+{
+   let updatedConfig = ^$config(generateConstraintFunctionSchemas=false);
+   $constraint.functionDefinition->toJSONSchemaFromFunctionDefinition($updatedConfig);
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::toJSONSchemaFromFunctionDefinition(def:FunctionDefinition<Any>[1],config:ModelToJsonSchemaConfiguration[1] ) : SchemaConstraint[1]
+{
+  let updatedConfig = if($config.rootElement->isEmpty() , | ^$config(rootElement=$def),|$config);
+  $def->evaluateAndDeactivate().expressionSequence->at(0)->toJSONSchemaFromValueSpecification($updatedConfig);
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::toJSONSchemaFromValueSpecification( fn:ValueSpecification[1],config:ModelToJsonSchemaConfiguration[1] ) : SchemaConstraint[1]
+{
+  let property = $fn->match([
+                              s:SimpleFunctionExpression[1] | $s.parametersValues->at(0)->meta::external::format::json::binding::fromPure::getSchemaProperty(),
+                              v:ValueSpecification[1]       | []
+                            ]);
+
+  ^SchemaConstraint(property = $property, constraint = toJSONSchemaFromValueSpecification_internal($fn,$property,$config).constraint->toOne() );
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::getSchemaPropertyName( fn:ValueSpecification[1] ) :String[1]
+{
+   // should only  be parameter  or a simple function like cast/toOne/toString
+  let res = $fn->match([s:SimpleFunctionExpression[1]|if($s.func->instanceOf(Property),
+                                                        |$s.func.name,
+                                                        |$s.parametersValues->at(0)->getSchemaPropertyName()
+                                                     ),
+                         v:VariableExpression[1]|$v.name;
+                     ])->toOne();
+   $res;
+
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::getSchemaProperty( fn:ValueSpecification[1] ) :Property<Nil,Any|*>[0..1]
+{
+   // should only  be parameter  or a simple function like cast/toOne/toString
+  let res = $fn->match([s:SimpleFunctionExpression[1]|if($s.func->instanceOf(Property),
+                                                        |$s.func->cast(@Property<Nil,Any|*>);,
+                                                        |$s.parametersValues->at(0)->getSchemaProperty()
+                                                     ),
+                       i:InstanceValue[1]| [],
+                       v:VariableExpression[1]    |[];
+             ]);
+   $res;
+
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::createType(type:Any[1] ) : JSONSchema[0..1]
+{
+   if($type->instanceOf(PrimitiveType),
+    | $type->cast(@PrimitiveType)->convertPrimitiveType(),
+    | []);
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::toJSONSchemaFromValueSpecification_internal( fn:ValueSpecification[1],rootProperty:Property<Nil,Any|*>[0..1],config:ModelToJsonSchemaConfiguration[1] ) : SchemaConstraint[1]
+{
+
+
+   let FunctionConstraintMap = newMap([pair('meta::pure::functions::string::isNoLongerThan_String_$0_1$__Integer_1__Boolean_1_', meta::external::format::json::binding::fromPure::buildMaxLength_SimpleFunctionExpression_1__ModelToJsonSchemaConfiguration_1__SchemaConstraint_1_),
+                                       pair('meta::pure::functions::string::isNoShorterThan_String_$0_1$__Integer_1__Boolean_1_', meta::external::format::json::binding::fromPure::buildMinLength_SimpleFunctionExpression_1__ModelToJsonSchemaConfiguration_1__SchemaConstraint_1_),
+                                       pair('meta::pure::functions::string::matches_String_1__String_1__Boolean_1_', meta::external::format::json::binding::fromPure::buildPattern_SimpleFunctionExpression_1__ModelToJsonSchemaConfiguration_1__SchemaConstraint_1_),
+                                       pair('meta::pure::functions::boolean::and_Boolean_1__Boolean_1__Boolean_1_', meta::external::format::json::binding::fromPure::buildAnd_SimpleFunctionExpression_1__ModelToJsonSchemaConfiguration_1__SchemaConstraint_1_),
+                                       pair('meta::pure::functions::boolean::or_Boolean_1__Boolean_1__Boolean_1_', meta::external::format::json::binding::fromPure::buildOr_SimpleFunctionExpression_1__ModelToJsonSchemaConfiguration_1__SchemaConstraint_1_),
+                                       pair('meta::pure::functions::collection::oneOf_Boolean_MANY__Boolean_1_', meta::external::format::json::binding::fromPure::buildOneOf_SimpleFunctionExpression_1__ModelToJsonSchemaConfiguration_1__SchemaConstraint_1_),
+                                       pair('meta::pure::functions::meta::instanceOf_Any_1__Type_1__Boolean_1_', meta::external::format::json::binding::fromPure::buildInstanceOf_SimpleFunctionExpression_1__ModelToJsonSchemaConfiguration_1__SchemaConstraint_1_),
+                                       pair('meta::pure::functions::boolean::equal_Any_MANY__Any_MANY__Boolean_1_', meta::external::format::json::binding::fromPure::buildEqual_SimpleFunctionExpression_1__ModelToJsonSchemaConfiguration_1__SchemaConstraint_1_),
+                                       pair('meta::pure::functions::boolean::greaterThanEqual_Number_1__Number_1__Boolean_1_', meta::external::format::json::binding::fromPure::buildMinimum_SimpleFunctionExpression_1__ModelToJsonSchemaConfiguration_1__SchemaConstraint_1_),
+                                       pair('meta::pure::functions::boolean::greaterThan_Number_1__Number_1__Boolean_1_', meta::external::format::json::binding::fromPure::buildExMinimum_SimpleFunctionExpression_1__ModelToJsonSchemaConfiguration_1__SchemaConstraint_1_),
+                                       pair('meta::pure::functions::boolean::lessThanEqual_Number_1__Number_1__Boolean_1_', meta::external::format::json::binding::fromPure::buildMaximum_SimpleFunctionExpression_1__ModelToJsonSchemaConfiguration_1__SchemaConstraint_1_),
+                                       pair('meta::pure::functions::boolean::lessThan_Number_1__Number_1__Boolean_1_', meta::external::format::json::binding::fromPure::buildExMaximum_SimpleFunctionExpression_1__ModelToJsonSchemaConfiguration_1__SchemaConstraint_1_),
+                                       pair('meta::pure::functions::collection::in_Any_1__Any_MANY__Boolean_1_', meta::external::format::json::binding::fromPure::buildIn_SimpleFunctionExpression_1__ModelToJsonSchemaConfiguration_1__SchemaConstraint_1_),
+                                       pair('meta::pure::functions::collection::forAll_T_MANY__Function_1__Boolean_1_', meta::external::format::json::binding::fromPure::buildForAll_SimpleFunctionExpression_1__ModelToJsonSchemaConfiguration_1__SchemaConstraint_1_ ),
+                                       pair('meta::pure::functions::collection::isDistinct_T_MANY__Boolean_1_', meta::external::format::json::binding::fromPure::buildDistinct_SimpleFunctionExpression_1__ModelToJsonSchemaConfiguration_1__SchemaConstraint_1_ ),
+                                       pair('meta::external::format::json::binding::fromPure::discriminateOneOf_Any_1__Any_1__Type_MANY__DiscriminatorMapping_MANY__Boolean_1_',meta::external::format::json::binding::fromPure::buildSubTypeDiscriminator_SimpleFunctionExpression_1__ModelToJsonSchemaConfiguration_1__SchemaConstraint_1_),
+                                       pair('meta::pure::functions::string::isUUID_String_$0_1$__Boolean_1_',meta::external::format::json::binding::fromPure::buildUUID_SimpleFunctionExpression_1__ModelToJsonSchemaConfiguration_1__SchemaConstraint_1_),
+                                       pair('meta::pure::functions::collection::or_Boolean_$1_MANY$__Boolean_1_', meta::external::format::json::binding::fromPure::buildOr_SimpleFunctionExpression_1__ModelToJsonSchemaConfiguration_1__SchemaConstraint_1_),
+                                       pair('meta::pure::functions::math::rem_Number_1__Number_1__Number_1_', meta::external::format::json::binding::fromPure::builtMultipleOf_SimpleFunctionExpression_1__ModelToJsonSchemaConfiguration_1__SchemaConstraint_1_)
+                                      ]);
+   let value = $fn->match([
+                          f:SimpleFunctionExpression[1] |  if($f.functionName=='if' || $f.functionName=='meta::pure::functions::lang::if',
+                                                              |$f->processedIf($rootProperty,$config);,
+                                                              |let mapGet = $FunctionConstraintMap->get($f.func->elementToPath());
+                                                                if($mapGet->isNotEmpty() ,
+                                                                      |
+                                                                        $FunctionConstraintMap->get($f.func->elementToPath())->toOne()->eval($f->cast(@SimpleFunctionExpression),$config);,
+                                                                      | if($f.func->functionReturnType().rawType == Boolean && $f.func.classifierGenericType.typeArguments.rawType->cast(@FunctionType).parameters->size()==1 && ( !$f.func->elementToPath()->startsWith('meta')||$f.func->elementToPath()->startsWith('meta::json') )  ,
+                                                                            |if($config.generateConstraintFunctionSchemas,
+                                                                                  | ^SchemaConstraint(constraint=^JSONSchemaFragment(refValue = $f.func->cast(@FunctionDefinition<Any>)->calculateJSONRef($config.rootElement,$config.useDefinitions,$config.rootElement,$config )));, // if we are creating a ref here
+                                                                                  | $f.func->cast(@FunctionDefinition<Any>)->toJSONSchemaFromFunctionDefinition($config)
+                                                                                  ),
+                                                                            | fail('Unsupported function found : '+ $f->buildValueSpecMessage($config)); ^SchemaConstraint(constraint=^JSONSchema());
+                                                                          )
+                                                                  );
+                                                              );,
+                          a:ValueSpecification[1]       |  fail('Unsupported function found : '+ $a->buildValueSpecMessage($config)); ^SchemaConstraint(constraint=^JSONSchema());
+                        ]);
+  if($rootProperty->isNotEmpty(),
+      | ^SchemaConstraint(property=$rootProperty, constraint=$value.constraint);,
+      | $value
+    );
+
+}
+
+function meta::external::format::json::binding::fromPure::discriminateOneOf(sourceInstance:Any[1],propertyValue:Any[1],classSelection:Type[*],mapping:DiscriminatorMapping[*] ):Boolean[1]
+{
+   let PropertyValue = if($propertyValue->instanceOf(Enum),|$propertyValue->cast(@Enum).name,|$propertyValue->toString());
+
+   oneOf($classSelection->map(t| $t.name==$propertyValue ))  || $propertyValue->in($mapping.value);
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::buildForAll( fn:SimpleFunctionExpression[1],config:ModelToJsonSchemaConfiguration[1] ) : SchemaConstraint[1]
+{
+  ^SchemaConstraint(constraint=^JSONSchemaArray(itemSchemas = $fn.parametersValues->at(1)->cast(@InstanceValue).values->cast(@FunctionDefinition<Any>)->toOne()->toJSONSchemaFromFunctionDefinition($config).constraint));
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::processAtZeroParameter( fn:SimpleFunctionExpression[1],config:ModelToJsonSchemaConfiguration[1] ) : SchemaConstraint[1]
+{
+    $fn.parametersValues->at(0)->cast(@InstanceValue).values->at(0)->cast(@ValueSpecification)->toJSONSchemaFromValueSpecification_internal([],$config);
+}
+
+
+function <<access.private>> meta::external::format::json::binding::fromPure::processedIf( fn:SimpleFunctionExpression[1],rootProperty:Property<Nil,Any|*>[0..1],config:ModelToJsonSchemaConfiguration[1] ) : SchemaConstraint[1]
+{
+
+ let value = $fn.parametersValues->at(1)->cast(@InstanceValue).values->at(0)->cast(@LambdaFunction<Any>).expressionSequence->at(0)->toJSONSchemaFromValueSpecification_internal($rootProperty,$config);
+}
+
+
+function <<access.private>> meta::external::format::json::binding::fromPure::buildAnd( fn:SimpleFunctionExpression[1],config:ModelToJsonSchemaConfiguration[1] ) : SchemaConstraint[1] // TODO: how do I merge properties
+{
+  let constraints = $fn.parametersValues->map( p | $p-> cast(@SimpleFunctionExpression)->toJSONSchemaFromValueSpecification_internal([],$config));
+  
+  let res = $constraints->init()->fold({ lhs, a | 
+                                          if(($lhs->isNotEmpty() && $lhs.constraint->isNotEmpty()) && ($a->isNotEmpty() && $a.constraint->isNotEmpty()) ,
+                                              | 
+                                                let d = $a->toOne();
+                                                ^$d(constraint=mergeTwoMetamodels($a.constraint->toOne(), $lhs.constraint->toOne()));,
+                                              | if($lhs->isNotEmpty() && $lhs.constraint->isNotEmpty(),| $lhs , | $a)
+                                            );
+                              },$constraints->last());
+
+  if($res->isEmpty() ,| ^SchemaConstraint() ,| $res->toOne());
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::mergeMetamodelArray( arr: JSONSchema[*] ) : JSONSchema[0..1] // TODO: how do I merge properties
+{
+  if($arr->isEmpty() ,
+      | [] ,
+      | if($arr->size() == 1,
+            | $arr->toOne(),
+            |
+              $arr->init()->fold({ lhs, a | 
+                                            if($lhs->isNotEmpty() && $a->isNotEmpty() ,
+                                                | 
+                                                  mergeTwoMetamodels($a->toOne(), $lhs);,
+                                                | if($lhs->isNotEmpty(),
+                                                        | $lhs,
+                                                        | $a
+                                                    )
+                                              );
+                                  }, $arr->last()
+                                ); 
+          )
+    );
+
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::mergeTwoMetamodels( a: JSONSchema[1], b: JSONSchema[1]) : JSONSchema[1]
+{
+  $a->match([
+      s: JSONSchemaString[1] | 
+                                if(!$b->instanceOf(JSONSchemaString),
+                                    | mergeTwoMetamodelCommonProperties($s, $b),
+                                    | let c = mergeTwoMetamodelCommonProperties($s, $b)->cast(@JSONSchemaString);
+                                      let t = $b->cast(@JSONSchemaString);
+                                      ^$c(
+                                          minLength = oneOfAandB($s.minLength, $t.minLength)->cast(@Integer),
+                                          maxLength = oneOfAandB($s.maxLength, $t.maxLength)->cast(@Integer),
+                                          pattern = oneOfAandB($s.pattern, $t.pattern)->cast(@String),
+                                          format = oneOfAandB($s.format, $t.format)->cast(@String)
+                                        );
+                                  );,
+
+      s: JSONSchemaNumber[1] | 
+                                if(!$b->instanceOf(JSONSchemaNumber),
+                                    | mergeTwoMetamodelCommonProperties($s, $b),
+                                    | let c = mergeTwoMetamodelCommonProperties($s, $b)->cast(@JSONSchemaNumber);
+                                      let t = $b->cast(@JSONSchemaNumber);
+                                      ^$c(
+                                          minimum = oneOfAandB($s.minimum, $t.minimum)->cast(@Number),
+                                          maximum = oneOfAandB($s.maximum, $t.maximum)->cast(@Number),
+                                          multipleOf = oneOfAandB($s.multipleOf, $t.multipleOf)->cast(@Number),
+                                          exclusiveMinimum = oneOfAandB($s.exclusiveMinimum, $t.exclusiveMinimum)->cast(@Number),
+                                          exclusiveMaximum = oneOfAandB($s.exclusiveMaximum, $t.exclusiveMaximum)->cast(@Number),
+                                          format = oneOfAandB($s.format, $t.format)->cast(@String)
+                                        );
+                                  );,              
+
+      s: JSONSchemaInteger[1] | 
+                                if(!$b->instanceOf(JSONSchemaInteger),
+                                    | mergeTwoMetamodelCommonProperties($s, $b),
+                                    | let c = mergeTwoMetamodelCommonProperties($s, $b)->cast(@JSONSchemaInteger);
+                                      let t = $b->cast(@JSONSchemaInteger);
+                                      ^$c(
+                                          minimum = oneOfAandB($s.minimum, $t.minimum)->cast(@Number),
+                                          maximum = oneOfAandB($s.maximum, $t.maximum)->cast(@Number),
+                                          multipleOf = oneOfAandB($s.multipleOf, $t.multipleOf)->cast(@Number),
+                                          exclusiveMinimum = oneOfAandB($s.exclusiveMinimum, $t.exclusiveMinimum)->cast(@Number),
+                                          exclusiveMaximum = oneOfAandB($s.exclusiveMaximum, $t.exclusiveMaximum)->cast(@Number),
+                                          format = oneOfAandB($s.format, $t.format)->cast(@String)
+                                        );
+                                  );,
+
+      s: JSONSchemaArray[1] | 
+                              if(!$b->instanceOf(JSONSchemaArray),
+                                  | mergeTwoMetamodelCommonProperties($s, $b),
+                                  | let c = mergeTwoMetamodelCommonProperties($s, $b)->cast(@JSONSchemaArray);
+                                    let t = $b->cast(@JSONSchemaArray);
+                                    ^$c(
+                                        uniqueItems = oneOfAandB($s.uniqueItems, $t.uniqueItems)->cast(@Boolean),
+                                        itemSchemas = []->concatenate($s.itemSchemas->cast(@JSONSchema))->concatenate($t.itemSchemas->cast(@JSONSchema))->mergeMetamodelArray()
+                                      );
+                                );,
+
+      s: JSONSchemaObject[1]   | mergeTwoMetamodelCommonProperties($s, $b)->cast(@JSONSchemaObject),
+      s: JSONSchemaBoolean[1]  | mergeTwoMetamodelCommonProperties($s, $b)->cast(@JSONSchemaBoolean),
+      s: JSONSchemaFragment[1] |                               
+                                  if(!$b->instanceOf(JSONSchemaFragment),
+                                    | mergeTwoMetamodels($b, $s),
+                                    | mergeTwoMetamodelCommonProperties($s, $b)
+                                  );
+  ]);
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::mergeTwoMetamodelCommonProperties(a: JSONSchema[1], b: JSONSchema[1]) : JSONSchema[1]
+{
+  ^$a(
+    allOf = $a.allOf->concatenate($b.allOf),
+    anyOf = $a.anyOf->concatenate($b.anyOf),
+    oneOf = $a.oneOf->concatenate($b.oneOf),
+    title = oneOfAandB($a.title, $b.title)->cast(@String),
+    description = oneOfAandB($a.description, $b.description)->cast(@String),
+    defaultValue = oneOfAandB($a.defaultValue, $b.defaultValue)->cast(@JSONElement),
+    constantValue = oneOfAandB($a.constantValue, $b.constantValue)->cast(@JSONElement),
+    readOnly = oneOfAandB($a.readOnly, $b.readOnly)->cast(@Boolean),
+    writeOnly = oneOfAandB($a.writeOnly, $b.writeOnly)->cast(@Boolean),
+    nullable = oneOfAandB($a.nullable, $b.nullable)->cast(@Boolean),
+    refValue = oneOfAandB($a.refValue, $b.refValue)->cast(@String),
+    possibleValues = ^JSONArray(values = $a.possibleValues.values->concatenate($b.possibleValues.values)),
+    example = oneOfAandB($a.example, $b.example)->cast(@JSONElement),
+    customProperties = newJSONObject($a.customProperties.keyValuePairs->concatenate($b.customProperties.keyValuePairs)),
+    discriminator = oneOfAandB($a.discriminator, $b.discriminator)->cast(@JSONSchemaDiscriminator)
+  )
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::oneOfAandB(a: Any[0..1], b: Any[0..1]): Any[0..1]
+{
+  if($a->isNotEmpty(),
+      | $a->toOne(),
+      | if($b->isNotEmpty(),
+            | $b->toOne(),
+            | []
+          )
+    )
+}
+
+
+function <<access.private>> meta::external::format::json::binding::fromPure::buildEqual( fn:SimpleFunctionExpression[1],config:ModelToJsonSchemaConfiguration[1] ) : SchemaConstraint[1]
+{
+  
+   if( $fn.parametersValues->at(0)->instanceOf(SimpleFunctionExpression) && !$fn.parametersValues->at(0)->cast(@SimpleFunctionExpression).func->instanceOf(Property) ,
+      | $fn.parametersValues->at(0)->toJSONSchemaFromValueSpecification_internal([],$config)->toOne();,
+      | let value = $fn.parametersValues->at(1)->match([
+                                                        i:InstanceValue[1]  | let v = $i.values->toOne();
+                                                                              let jsonElement = if($v->instanceOf(Number),    
+                                                                                                    | ^JSONNumber(value=$v->cast(@Number)),
+                                                                                                    | ^JSONString(value=$v->makeString());
+                                                                                                  );
+                                                                              ^SchemaConstraint(constraint=^JSONSchemaFragment(constantValue = $jsonElement ));,
+                                                                              
+                                                        a:Any[1]            | fail('only direct assignment supported e.g. $this.value == 1235' ); ^SchemaConstraint(constraint=^JSONSchema());
+                                                      ])
+    );
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::builtMultipleOf( fn:SimpleFunctionExpression[1],config:ModelToJsonSchemaConfiguration[1] ) : SchemaConstraint[1]
+{
+
+ let value = $fn.parametersValues->at(1)->match([
+                                                  i:InstanceValue[1]| let value = $i.values->toOne();
+                                                                      ^SchemaConstraint(constraint=^JSONSchemaNumber(multipleOf = $value->cast(@Number)));,
+                                                  a:Any[1] | fail('Use rem in the following format to specify a multiple rem(value,multiple)==0' ); ^SchemaConstraint(constraint=^JSONSchema());
+                                                ]);
+
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::buildIn( fn:SimpleFunctionExpression[1],config:ModelToJsonSchemaConfiguration[1] ) : SchemaConstraint[1]
+{
+   let value = $fn.parametersValues->at(1)->match([i:InstanceValue[1] | let value = $i.values->map( v|  if($v->instanceOf(Number),    
+                                                                                                         | ^JSONNumber(value=$v->cast(@Number)),
+                                                                                                         | ^JSONString(value=$v->makeString());
+                                                                                                         );
+                                                                                                     );
+                                                                                                     
+                                                                       ^JSONSchemaFragment(possibleValues = ^JSONArray(values=  $value));,
+                                                   a:Any[1]           | fail('only direct assignment supported e.g. $this.value == 1235 or $this.value->in(12345)' ); ^JSONSchema();
+                                                  ]);
+  ^SchemaConstraint(constraint=$value);                                                  
+}
+
+
+function <<access.private>> meta::external::format::json::binding::fromPure::buildOneOf( fn:SimpleFunctionExpression[1],config:ModelToJsonSchemaConfiguration[1]) : SchemaConstraint[1]
+{
+  let constraints = $fn.parametersValues->map(p|$p->match([
+                                                          i:InstanceValue[1]| $i.values->map(v|$v->cast(@ValueSpecification)->toJSONSchemaFromValueSpecification_internal([],$config)),
+                                                          s:SimpleFunctionExpression[1] | $s->toJSONSchemaFromValueSpecification_internal([],$config);
+                                                        ])
+                                            );
+
+  let constraintArray = $constraints->map(m | if($m.constraint->toOne().oneOf->isNotEmpty(),
+                            | $m.constraint->toOne()->extractOneOf(),
+                            | $m.constraint
+                          )
+                  );
+
+  ^SchemaConstraint(constraint=^JSONSchemaFragment(oneOf = $constraintArray));
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::buildOr( fn:SimpleFunctionExpression[1],config:ModelToJsonSchemaConfiguration[1] ) : SchemaConstraint[1]
+{
+    let constraints = $fn.parametersValues->map(p|$p->match([
+                                                          i:InstanceValue[1]| $i.values->map(v|$v->cast(@ValueSpecification)->toJSONSchemaFromValueSpecification_internal([],$config)),
+                                                          s:SimpleFunctionExpression[1] | $s->toJSONSchemaFromValueSpecification_internal([],$config);
+                                                        ])
+                                            );
+    let constraintArray = $constraints->map(m | if($m.constraint->toOne().anyOf->isNotEmpty(),
+                            | $m.constraint->toOne()->extractAnyOf(),
+                            | $m.constraint
+                          )
+                  );
+^SchemaConstraint(constraint=^JSONSchemaFragment(anyOf = $constraintArray));
+}
+
+
+function <<access.private>> meta::external::format::json::binding::fromPure::extractAnyOf(schema: JSONSchema[1]): JSONSchema[*]
+{
+  if($schema.anyOf->isNotEmpty(), 
+        | $schema.anyOf->map(s | $s->extractAnyOf()),
+        | $schema
+    );
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::extractOneOf(schema: JSONSchema[1]): JSONSchema[*]
+{
+  if($schema.oneOf->isNotEmpty(), 
+        | $schema.oneOf->map(s | $s->extractOneOf()),
+        | $schema
+    );
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::buildDistinct( fn:SimpleFunctionExpression[1],config:ModelToJsonSchemaConfiguration[1] ) : SchemaConstraint[1]
+{
+  ^SchemaConstraint(constraint=^JSONSchemaArray(uniqueItems=true));
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::buildMaxLength( fn:SimpleFunctionExpression[1],config:ModelToJsonSchemaConfiguration[1] ) : SchemaConstraint[1]
+{
+  ^SchemaConstraint(constraint=^JSONSchemaString(maxLength=$fn->getNumericValueFromConstraint()->cast(@Integer)));
+}
+function <<access.private>> meta::external::format::json::binding::fromPure::buildMinLength( fn:SimpleFunctionExpression[1],config:ModelToJsonSchemaConfiguration[1] ) : SchemaConstraint[1]
+{
+  ^SchemaConstraint(constraint=^JSONSchemaString(minLength=$fn->getNumericValueFromConstraint()->cast(@Integer)));
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::buildMinimum( fn:SimpleFunctionExpression[1],config:ModelToJsonSchemaConfiguration[1] ) : SchemaConstraint[1]
+{
+  ^SchemaConstraint(constraint=^JSONSchemaNumber(minimum=$fn->getNumericValueFromConstraint()));
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::buildMaximum( fn:SimpleFunctionExpression[1],config:ModelToJsonSchemaConfiguration[1] ) : SchemaConstraint[1]
+{
+  ^SchemaConstraint(constraint=^JSONSchemaNumber(maximum=$fn->getNumericValueFromConstraint()));
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::buildExMinimum( fn:SimpleFunctionExpression[1],config:ModelToJsonSchemaConfiguration[1] ) : SchemaConstraint[1]
+{
+  ^SchemaConstraint(constraint=^JSONSchemaNumber(exclusiveMinimum=$fn->getNumericValueFromConstraint()));
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::buildExMaximum( fn:SimpleFunctionExpression[1],config:ModelToJsonSchemaConfiguration[1] ) : SchemaConstraint[1]
+{
+  ^SchemaConstraint(constraint=^JSONSchemaNumber(exclusiveMaximum=$fn->getNumericValueFromConstraint()));
+}
+
+
+function <<access.private>> meta::external::format::json::binding::fromPure::buildPattern( fn:SimpleFunctionExpression[1] ,config:ModelToJsonSchemaConfiguration[1]) : SchemaConstraint[1]
+{
+  ^SchemaConstraint(constraint=^JSONSchemaString(pattern= $fn->getStringValueFromConstraint()));
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::buildUUID( fn:SimpleFunctionExpression[1] ,config:ModelToJsonSchemaConfiguration[1]) : SchemaConstraint[1]
+{
+ ^SchemaConstraint(constraint=^JSONSchemaString(format = 'uuid'));
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::buildInstanceOf( fn:SimpleFunctionExpression[1],config:ModelToJsonSchemaConfiguration[1] ) : SchemaConstraint[1]
+{
+   let property = $fn.parametersValues->at(0)->meta::external::format::json::binding::fromPure::getSchemaPropertyName();
+   //Property should be Pure type Any for instanceOf
+   let type = $fn.parametersValues->at(1)->cast(@InstanceValue).values->toOne();
+   let constraint = if(!$type->instanceOf(PrimitiveType),
+                        |  ^JSONSchemaFragment(refValue = $type->cast(@PackageableElement)->calculateJSONRef($config.rootElement,$config.useDefinitions->toOne(),$config.rootElement,$config ));,
+                        |
+                            let schema = $type->cast(@PrimitiveType)->convertPrimitiveType();
+                            let format = $type->cast(@PrimitiveType)->convertPrimitiveTypeToFormat();
+                            if($schema->instanceOf(JSONSchemaNumber),
+                                | 
+                                  if($schema->instanceOf(JSONSchemaInteger),
+                                      | let intSchema = $schema->cast(@JSONSchemaInteger);
+                                        ^$intSchema(format = $format);,
+                                      | let numSchema = $schema->cast(@JSONSchemaNumber);
+                                        ^$numSchema(format = $format);
+                                    ),
+                                | if($schema->instanceOf(JSONSchemaString),
+                                      | let stringSchema = $schema->cast(@JSONSchemaString);
+                                        ^$stringSchema(format = $format);,
+                                      | $schema
+                                    )
+                              );
+                      );
+  ^SchemaConstraint(constraint=$constraint);
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::getNumericValueFromConstraint( fn:SimpleFunctionExpression[1] ) : Number[1]
+{
+  $fn.parametersValues->at(1)->cast(@InstanceValue).values->toOne()->cast(@Number);
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::getStringValueFromConstraint( fn:SimpleFunctionExpression[1]) : String[1]
+{
+   let value = $fn.parametersValues->at(1)->match([
+                                                    s:SimpleFunctionExpression[1] | 
+                                                                                    let ex = $s.func->cast(@ConcreteFunctionDefinition<Any>).expressionSequence;
+                                                                                    if($ex->size()==1 && $ex->toOne()->instanceOf(InstanceValue),
+                                                                                          | [],
+                                                                                          | fail('only a simple string expression supported with no let. Check: ' + $s.func->elementToPath())
+                                                                                      );
+                                                                                    $ex->cast(@InstanceValue).values->at(0)->cast(@String);,
+
+                                                    i:InstanceValue[1]            | $i.values->toOne()->cast(@String)
+                                                   ]);
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::buildSubTypeDiscriminator( fn:SimpleFunctionExpression[1],config:ModelToJsonSchemaConfiguration[1] ) : SchemaConstraint[1]
+{
+
+  let discriminator = ^JSONSchemaDiscriminator(propertyName=$fn.parametersValues->at(1)->cast(@SimpleFunctionExpression).func->cast(@Property<Nil,Any|*>).name->toOne());
+
+  let subTypes =   $fn.parametersValues->at(2)->cast(@InstanceValue).values->map(v|$v->match([i:InstanceValue[1]|$i.values,c:Class<Any>[1]|$c])->cast(@Class<Any>));
+
+  let mapping = $fn.parametersValues->at(3)->match([
+                                                      s:SimpleFunctionExpression[1]|$s,
+                                                      i:InstanceValue[1]|$i.values->cast(@SimpleFunctionExpression)
+                                                  ])->map(m|   
+                                                              let pair = $m->evaluateAndDeactivate()->cast(@SimpleFunctionExpression);
+                                                              let first =$pair.parametersValues->at(0)->match([
+                                                                                                                s:SimpleFunctionExpression[1] |$s.parametersValues->at(1)->cast(@InstanceValue).values,
+                                                                                                                i:InstanceValue[1]|$i.values
+                                                                                                              ])->toOne()->toString();
+
+                                                              let second =$pair.parametersValues->at(1)->cast(@InstanceValue).values->toOne()->cast(@PackageableElement)->calculateJSONRef($config.rootElement,$config.useDefinitions,$config.rootElement,$config);
+                                                              pair($first, $second);
+                                                          )->newMap();
+
+  ^SchemaConstraint(constraint=^JSONSchemaFragment(discriminator = ^$discriminator(mapping = $mapping), oneOf = $subTypes->map(s | ^JSONSchemaFragment(refValue = $s->calculateJSONRef($config.rootElement,$config.useDefinitions,$config.rootElement,$config)))));
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::buildValueSpecMessage(valueSpec:ValueSpecification[1] ,config:ModelToJsonSchemaConfiguration[1])  : String[1]
+{
+  let prop = if($config.rootElement->isNotEmpty(),
+                  | ' at ' + $config.rootElement->toOne()->match([ 
+                                                                    c:Class<Any>[1]                       | $c->elementToPath(),
+                                                                    f:ConcreteFunctionDefinition<Any>[1]  | $f->elementToPath();,
+                                                                    a:Any[1]                              | ''        
+                                                                  ]);,
+                  |''
+               );
+   $valueSpec->meta::pure::metamodel::serialization::grammar::printValueSpecification(' ') + $prop;
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::constraintHasRef( constrantObject:JSONSchema[0..*]) : Boolean[1]
+{
+ let res = if($constrantObject->isNotEmpty(),
+              |  $constrantObject->match([
+                                            a:JSONSchema[2..*] | $a->map( v |$v-> constraintHasRef())->toOneMany()->or(),
+                                            a:JSONSchema[1] | $a.allOf->constraintHasRef() || $a.anyOf->constraintHasRef() || $a.oneOf->constraintHasRef() || $a.refValue->isNotEmpty(),
+                                            a:Any[1]        | false 
+                                          ])->toOneMany()->or();,
+              | false
+             );
+   $res;
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::constraintHasType( constrantObject:JSONSchema[0..*]) : Boolean[1]
+{
+ let res = if($constrantObject->isNotEmpty(),
+              |  $constrantObject->match([
+                                            a:JSONSchema[2..*] | $a->map( v |$v-> constraintHasType())->toOneMany()->or(),
+                                            a:JSONSchema[1] |  $a.allOf->constraintHasType() || $a.anyOf->constraintHasType() || $a.oneOf->constraintHasType() || $a.refValue->isNotEmpty() || !$a->instanceOf(JSONSchemaFragment),
+                                            a:Any[1]        | false 
+                                          ])->toOneMany()->or();,
+              | false
+             );
+   $res;
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::addNullType(element:Type[1]):Boolean[1]
+{
+  addNullType($element->cast(@AnnotatedElement));
+}
+
+function <<access.private>> meta::external::format::json::binding::fromPure::addNullType(element:AnnotatedElement[1]):Boolean[1]
+{
+  $element->cast(@ElementWithStereotypes)->hasStereotype('null',JSONSchemaTypeExtension)
+}
+
+Class meta::external::format::json::binding::fromPure::SchemaConstraint
+{
+  property:Property<Nil,Any|*>[0..1];
+  constraint:JSONSchema[0..1];
 }

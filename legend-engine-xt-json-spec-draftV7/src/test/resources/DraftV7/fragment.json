@@ -1,0 +1,194 @@
+{
+  "tests": [
+    {
+      "type": ["string", "array"]
+    },
+    {},
+    {
+      "title": "Accept all"
+    },
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "description": "complex Fragment",
+      "writeOnly": true,
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 32
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "string",
+          "pattern": "^*",
+          "maxLength": 256
+        }
+      ]
+    },
+    {
+      "title": "Cat",
+      "allOf": [
+        {
+          "$ref": "/shared/Pet.json"
+        }
+      ],
+      "type": "object",
+      "properties": {
+        "hasMeow": {
+          "type": "boolean"
+        },
+        "friend": {
+          "$ref": "friends.json"
+        }
+      }
+    },
+    {
+      "oneOf": [
+        {
+          "$ref": "Cat.json"
+        },
+        {
+          "$ref": "Dog.json"
+        }
+      ],
+      "discriminator": {
+        "propertyName": "petType"
+      }
+    },
+    {
+      "$schema": "http:\/\/json-schema.org\/draft-07\/schema#",
+      "anyOf": [
+        {
+          "$ref": "Cat.json"
+        },
+        {
+          "$ref": "Dog.json"
+        },
+        {
+          "$ref": "BigCat.json"
+        }
+      ]
+    },
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "definitions": {
+        "meta::json::schema::tests::ClassWithFunctionReferences": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "title": "a custom title",
+          "type": "object",
+          "properties": {
+            "one": {
+              "$ref": "#/definitions/meta::json::schema::tests::functionWithStringType"
+            },
+            "optional": {
+              "$ref": "#/definitions/meta::json::schema::tests::functionWithStringType"
+            },
+            "many": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/meta::json::schema::tests::functionWithStringType"
+              }
+            }
+          },
+          "required": [
+            "one"
+          ]
+        },
+        "meta::json::schema::tests::SimpleClass": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "title": "meta::json::schema::tests::SimpleClass",
+          "type": "object",
+          "properties": {
+            "p": {
+              "type": "string"
+            },
+            "a": {
+              "$ref": "#/definitions/meta::json::schema::tests::SimpleClass2"
+            }
+          },
+          "required": [
+            "p"
+          ]
+        },
+        "meta::json::schema::tests::SimpleClass2": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "title": "meta::json::schema::tests::SimpleClass2",
+          "type": "object",
+          "properties": {
+            "p": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "p"
+          ]
+        },
+        "meta::json::schema::tests::functionWithStringType": {
+          "pattern": "test",
+          "type": "string"
+        }
+      }
+    },
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "definitions": {
+        "ClassWithFunctionReferences": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "title": "a custom title",
+          "type": "object",
+          "properties": {
+            "one": {
+              "$ref": "#/definitions/functionWithStringType"
+            },
+            "optional": {
+              "$ref": "#/definitions/functionWithStringType"
+            },
+            "many": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/functionWithStringType"
+              }
+            }
+          },
+          "required": [
+            "one"
+          ]
+        },
+        "SimpleClass": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "title": "meta::json::schema::tests::SimpleClass",
+          "type": "object",
+          "properties": {
+            "p": {
+              "type": "string"
+            },
+            "a": {
+              "$ref": "#/definitions/SimpleClass2"
+            }
+          },
+          "required": [
+            "p"
+          ]
+        },
+        "SimpleClass2": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "title": "meta::json::schema::tests::SimpleClass2",
+          "type": "object",
+          "properties": {
+            "p": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "p"
+          ]
+        },
+        "functionWithStringType": {
+          "pattern": "test",
+          "type": "string"
+        }
+      }
+    }
+  ]
+}

@@ -31,6 +31,7 @@ import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamode
 import org.finos.legend.pure.generated.Root_meta_pure_model_unit_ResolvedModelUnit;
 import org.finos.legend.pure.generated.core_pure_model_modelUnit;
 import org.finos.legend.pure.generated.core_pure_protocol_protocol;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -46,6 +47,8 @@ public class SchemaToModelGenerator extends Generator
     private final Method classTransform;
     private final Method associationTransform;
     private final Method enumTransform;
+    private final Method profileTransform;
+    private final Method functionTransform;
 
     public SchemaToModelGenerator(PureModel pureModel, String pureVersion)
     {
@@ -58,6 +61,8 @@ public class SchemaToModelGenerator extends Generator
             this.classTransform = cls.getMethod("Root_meta_protocols_pure_" + pureVersion + "_transformation_fromPureGraph_domain_transformClass_Class_1__RouterExtension_MANY__Class_1_", org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class.class, RichIterable.class, org.finos.legend.pure.m3.execution.ExecutionSupport.class);
             this.associationTransform = cls.getMethod("Root_meta_protocols_pure_" + pureVersion + "_transformation_fromPureGraph_domain_transformAssociation_Association_1__RouterExtension_MANY__Association_1_", org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association.class, RichIterable.class, org.finos.legend.pure.m3.execution.ExecutionSupport.class);
             this.enumTransform = cls.getMethod("Root_meta_protocols_pure_" + pureVersion + "_transformation_fromPureGraph_domain_transformEnum_Enumeration_1__Enumeration_1_", org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enumeration.class, org.finos.legend.pure.m3.execution.ExecutionSupport.class);
+            this.profileTransform = cls.getMethod("Root_meta_protocols_pure_" + pureVersion + "_transformation_fromPureGraph_transformProfile_Profile_1__RouterExtension_MANY__Profile_1_", org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile.class, RichIterable.class, org.finos.legend.pure.m3.execution.ExecutionSupport.class);
+            this.functionTransform = cls.getMethod("Root_meta_protocols_pure_" + pureVersion + "_transformation_fromPureGraph_transformFunction_FunctionDefinition_1__RouterExtension_MANY__Function_1_", FunctionDefinition.class, RichIterable.class, org.finos.legend.pure.m3.execution.ExecutionSupport.class);
         }
         catch (Exception e)
         {
@@ -101,6 +106,14 @@ public class SchemaToModelGenerator extends Generator
             else if (e instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enumeration)
             {
                 return transformEnumeration((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enumeration<?>) e);
+            }
+            else if (e instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile)
+            {
+                return transformProfile((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile) e);
+            }
+            else if (e instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition)
+            {
+                return transformFunction((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition<?>) e);
             }
             else
             {
@@ -146,6 +159,35 @@ public class SchemaToModelGenerator extends Generator
             Object result = enumTransform.invoke(null, enumeration, pureModel.getExecutionSupport());
             String json = core_pure_protocol_protocol.Root_meta_alloy_metadataServer_alloyToJSON_Any_1__String_1_(result, pureModel.getExecutionSupport());
             return objectMapper.readValue(json, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Enumeration.class);
+        }
+        catch (IOException | ReflectiveOperationException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    private org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Profile transformProfile(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile profile)
+    {
+        try
+        {
+            Object result = profileTransform.invoke(null, profile, Lists.mutable.empty(),pureModel.getExecutionSupport());
+            String json = core_pure_protocol_protocol.Root_meta_alloy_metadataServer_alloyToJSON_Any_1__String_1_(result, pureModel.getExecutionSupport());
+            return objectMapper.readValue(json, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Profile.class);
+        }
+        catch (IOException | ReflectiveOperationException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function transformFunction(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition<?> function)
+    {
+        try
+        {
+            Object result = functionTransform.invoke(null, function, Lists.mutable.empty(),pureModel.getExecutionSupport());
+            String json = core_pure_protocol_protocol.Root_meta_alloy_metadataServer_alloyToJSON_Any_1__String_1_(result, pureModel.getExecutionSupport());
+            return objectMapper.readValue(json, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function.class);
         }
         catch (IOException | ReflectiveOperationException e)
         {

@@ -1,0 +1,172 @@
+{
+  "tests": [
+    {
+      "type": "string"
+    },
+    {
+      "type": "string",
+      "format": "date-time"
+    },
+    {
+      "type": "string",
+      "maxLength": 10,
+      "minLength": 1
+    },
+    {
+      "type": "string",
+      "pattern": "^*"
+    },
+    {
+      "type": "string",
+      "pattern": "^*",
+      "minLength": 1,
+      "readOnly": false
+    },
+    {
+      "type": "string",
+      "readOnly": true,
+      "enum": [
+        "enum withspace",
+        "123numberstart",
+        "() /other characters",
+        "true"
+      ]
+    },
+    {
+      "description": "Example Enum Doc",
+      "type": "string",
+      "readOnly": true,
+      "javaType": {
+        "hello": "world"
+      },
+      "enum": [
+        "",
+        "simpleEnum",
+        "enum::withcolon",
+        "enum withspace",
+        "123numberstart",
+        "() /other characters",
+        "true"
+      ],
+      "myCustomTitle": "amazingTitle"
+    },
+    {
+      "description": "Example Enum Doc",
+      "type": "string",
+      "readOnly": true,
+      "javaType": "org.example.ExampleEnum",
+      "enum": [
+        "",
+        "simpleEnum",
+        "enum::withcolon",
+        "enum withspace",
+        "123numberstart",
+        "() /other characters",
+        "true"
+      ]
+    },
+    {
+      "readOnly": true,
+      "type": "string",
+      "format": "uuid"
+    },
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "pattern": "test",
+      "type": "string",
+      "title": "meta::json::schema::tests::functionWithStringType"
+    },
+    {
+      "customStereoType1": true,
+      "description": "A simple description",
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "meta::json::schema::tests::ClassWithCustomProfiles",
+      "customTag2": [
+        "first",
+        "second"
+      ],
+      "type": "object",
+      "properties": {
+        "simpleString": {
+          "customStereoType1": true,
+          "type": "string"
+        },
+        "arrayMaxItemOne": {
+          "customStereoType2": true,
+          "maxItems": 10,
+          "type": "array",
+          "customTag3": "false",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "customTag1": 10
+    },
+    {
+      "anyOf": [
+        {
+          "$ref": "Cat.json"
+        },
+        {
+          "$ref": "Dog.json"
+        }
+      ],
+      "title": "meta::json::schema::tests::functionForcedToObject",
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "description": "Generate an object tag where there typically would not be any"
+    },
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "meta::json::schema::tests::ClassWithInLineFunctions",
+      "type": "object",
+      "properties": {
+        "number": {
+          "type": "number",
+          "enum": [
+            1,
+            2
+          ]
+        },
+        "string": {
+          "type": "string",
+          "enum": [
+            "a",
+            "b"
+          ]
+        },
+        "stringOptional": {
+          "type": "string",
+          "enum": [
+            "a",
+            "b"
+          ]
+        },
+        "integer": {
+          "type": "integer",
+          "enum": [
+            1,
+            2
+          ]
+        },
+        "numberOptional": {
+          "type": "number",
+          "enum": [
+            1,
+            2
+          ]
+        },
+        "multipleOf": {
+          "type": "number",
+          "multipleOf": 0.1
+        }
+      },
+      "required": [
+        "number",
+        "string",
+        "integer"
+      ]
+    }
+  ]
+}

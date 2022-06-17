@@ -17,8 +17,9 @@ package org.finos.legend.engine.external.format.json.visitor;
 import org.finos.legend.engine.external.format.json.model.JSONSchema;
 import org.finos.legend.engine.external.format.json.model.JSONSchemaArray;
 import org.finos.legend.engine.external.format.json.model.JSONSchemaBoolean;
-import org.finos.legend.engine.external.format.json.model.JSONSchemaEmpty;
+import org.finos.legend.engine.external.format.json.model.JSONSchemaFragment;
 import org.finos.legend.engine.external.format.json.model.JSONSchemaInteger;
+import org.finos.legend.engine.external.format.json.model.JSONSchemaMultiType;
 import org.finos.legend.engine.external.format.json.model.JSONSchemaNull;
 import org.finos.legend.engine.external.format.json.model.JSONSchemaNumber;
 import org.finos.legend.engine.external.format.json.model.JSONSchemaObject;
@@ -32,7 +33,9 @@ public interface JSONSchemaVisitor<T>
 
     T visit(JSONSchemaBoolean schemaObject);
 
-    T visit(JSONSchemaEmpty schemaObject);
+    T visit(JSONSchemaFragment schemaObject);
+
+    T visit(JSONSchemaMultiType schemaObject);
 
     T visit(JSONSchemaInteger schemaObject);
 

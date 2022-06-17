@@ -14,8 +14,11 @@
 
 package org.finos.legend.engine.external.format.json;
 
+import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.ImmutableList;
+import org.finos.legend.engine.external.format.json.compile.JSONSchemaMetamodelParserVisitor;
 import org.finos.legend.engine.external.format.json.compile.JsonSchemaCompiler;
+import org.finos.legend.engine.external.format.json.fromModel.JSONSchemaComposer;
 import org.finos.legend.engine.external.format.json.fromModel.ModelToJsonSchemaConfiguration;
 import org.finos.legend.engine.external.format.json.toModel.JsonSchemaToModelConfiguration;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
@@ -31,9 +34,9 @@ import org.finos.legend.pure.generated.Root_meta_external_format_json_metamodel_
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_validation_BindingDetail;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_SchemaSet;
+import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationParameter;
 import org.finos.legend.pure.generated.core_external_format_json_binding_jsonSchemaToPure;
 import org.finos.legend.pure.generated.core_external_format_json_binding_pureToJsonSchema;
-import org.finos.legend.pure.generated.core_external_format_json_binding_validation;
 
 import java.lang.management.ManagementFactory;
 import java.util.Collections;
@@ -43,6 +46,30 @@ public class JsonExternalFormatExtension implements ExternalFormatExtension<Root
 {
     public static final String TYPE = "JSON";
     private static final boolean IN_DEBUG = ManagementFactory.getRuntimeMXBean().getInputArguments().toString().contains(":jdwp");
+
+    @Override
+    public boolean supportsModelGeneration()
+    {
+        return true;
+    }
+
+    @Override
+    public RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationParameter> getModelGenerationProperties(PureModel pureModel)
+    {
+        return core_external_format_json_binding_jsonSchemaToPure.Root_meta_external_format_json_binding_toPure_describeConfiguration__GenerationParameter_MANY_(pureModel.getExecutionSupport());
+    }
+
+    @Override
+    public boolean supportsSchemaGeneration()
+    {
+        return true;
+    }
+
+    @Override
+    public RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationParameter> getSchemaGenerationProperties(PureModel pureModel)
+    {
+        return core_external_format_json_binding_pureToJsonSchema.Root_meta_external_format_json_binding_fromPure_describeConfiguration__GenerationParameter_MANY_(pureModel.getExecutionSupport());
+    }
 
     @Override
     public String getFormat()
@@ -65,13 +92,14 @@ public class JsonExternalFormatExtension implements ExternalFormatExtension<Root
     @Override
     public Root_meta_external_shared_format_binding_validation_BindingDetail bindDetails(Root_meta_external_shared_format_binding_Binding binding, CompileContext context)
     {
-        return core_external_format_json_binding_validation.Root_meta_external_format_json_binding_validation_bindDetails_Binding_1__BindingDetail_1_(binding, context.getExecutionSupport());
+        // TODO: current binding validation flow fails when the input schema is just a collection
+        return null;
     }
 
     @Override
     public String metamodelToText(Root_meta_external_format_json_metamodel_JSONSchema schemaDetail, PureModel pureModel)
     {
-        return schemaDetail._content();
+        return new JSONSchemaComposer(new JSONSchemaMetamodelParserVisitor().visit(schemaDetail)).compose();
     }
 
     @Override
@@ -91,7 +119,16 @@ public class JsonExternalFormatExtension implements ExternalFormatExtension<Root
     {
         Root_meta_external_format_json_binding_fromPure_ModelToJsonSchemaConfiguration configuration = new Root_meta_external_format_json_binding_fromPure_ModelToJsonSchemaConfiguration_Impl("")
                 ._targetBinding(config.targetBinding)
-                ._targetSchemaSet(config.targetSchemaSet);
+                ._targetSchemaSet(config.targetSchemaSet)
+                ._specificationUrl(config.specificationUrl != null ? config.specificationUrl : JSONSchemaComposer.DEFAULT_COMPOSER)
+                ._useConstraints(config.useConstraints != null ? config.useConstraints : true)
+                ._includeAllRelatedTypes(config.includeAllRelatedTypes != null ? config.includeAllRelatedTypes : true)
+                ._generateAnyOfSubType(config.generateAnyOfSubType != null ? config.generateAnyOfSubType : true)
+                ._generateConstraintFunctionSchemas(config.useConstraints != null ? config.useConstraints : false)
+                ._createSchemaCollection(config.createSchemaCollection != null ? config.createSchemaCollection : false)
+                ._generateMilestoneProperties(config.generateMilestoneProperties != null ? config.generateMilestoneProperties : false)
+                ._rootLevel(true)
+                ._useDefinitions(config.includeAllRelatedTypes != null ? config.includeAllRelatedTypes : true);
 
         config.sourceModel.forEach(pe -> configuration._sourceModelAdd(pureModel.getPackageableElement(pe)));
 

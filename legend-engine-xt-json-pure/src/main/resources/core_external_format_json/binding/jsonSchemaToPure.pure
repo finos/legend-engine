@@ -13,7 +13,6 @@
 // limitations under the License.
 
 import meta::external::shared::*;
-import meta::external::shared::generation::*;
 import meta::external::shared::format::binding::*;
 import meta::external::shared::format::binding::toString::*;
 import meta::external::shared::format::metamodel::*;
@@ -22,15 +21,59 @@ import meta::external::format::json::binding::toPure::*;
 import meta::external::format::json::metamodel::*;
 
 import meta::json::*;
-import meta::json::schema::fromSchema::*;
 
 import meta::pure::functions::collection::*;
 import meta::pure::functions::meta::*;
 import meta::pure::functions::tests::collection::*;
-import meta::pure::graphFetch::*;
+import meta::pure::functions::string::*;
 import meta::pure::metamodel::serialization::grammar::*;
 import meta::pure::model::unit::*;
 import meta::pure::generation::metamodel::*;
+
+Class meta::external::format::json::binding::toPure::SchemaInput
+{
+   fileName:String[1];
+   schema:SchemaDetail[1];
+   pathPrefix:String[0..1];
+}
+
+Profile meta::external::format::json::binding::toPure::JSONSchemaGeneration
+{
+    stereotypes:[noAdditionalProperties,readOnly,writeOnly];
+    tags:[defaultValue,name,example,title];
+}
+
+//Stereotypes to support schema generation of types that do not exist in Pure or to force generation of a specific schema type
+Profile meta::external::format::json::binding::toPure::JSONSchemaTypeExtension
+{
+    stereotypes:[int64,int32,byte,double,binary,array,null,object];
+}
+
+//Profile to support schema generation of commonly used tags not officially part of JSON Specifications
+Profile meta::external::format::json::binding::toPure::JSONSchemaJavaExtension
+{
+    tags:[javaType,javaInterface];
+}
+
+Profile meta::external::format::json::binding::toPure::JSONSchemaOpenAPIExtension
+{
+   stereotypes:[discriminatorProperty];
+   tags:[discriminatorName];
+
+}
+
+Enum meta::external::format::json::binding::toPure::SchemaType
+{
+   enum,
+   object,
+   fragment,
+   collection
+}
+Class meta::external::format::json::binding::toPure::DiscriminatorMapping
+{
+   value:String[1];
+   class:Type[1];
+}
 
 /// ========================================================================================================================================================
 // Entry points 
@@ -102,9 +145,48 @@ function <<access.private>> meta::external::format::json::binding::toPure::creat
 function <<access.private>> meta::external::format::json::binding::toPure::generate(context:GenerationContext[1], debug:DebugContext[1]): PackageableElement[*]
 {
    let schemas      = $context.schemaSet.schemas;
+
    let schemaInputs = $schemas->map(s | $s->schemaToSchemaInput($context));
-   
-   JSONSchemaToPure($schemaInputs);
+
+   let subSchemas = $schemaInputs->filter(s | $s.schema->cast(@JSONSchema).definitions->isNotEmpty())->map(s | $s->extractSubschemas());
+
+   let allSchemas = $schemaInputs->concatenate($subSchemas)->filter(s|$s.schema->getSchemaType() != SchemaType.collection);
+
+   let mapSchemaInputs = $allSchemas->map(s | pair($s.fileName->refToFullPath([]), $s->toOne());)->newMap();
+
+   let prefix = if($mapSchemaInputs->keyValues()->at(0).second.pathPrefix->isEmpty() ,| 'generated' ,| $mapSchemaInputs->keyValues()->at(0).second.pathPrefix->toOne());
+
+   let extendedProfile = $allSchemas.schema->cast(@JSONSchema).customProperties.keyValuePairs->distinct()->createProfile($prefix);
+
+   $mapSchemaInputs->values()->map(s | 
+                                      let parsedFileName = $s.fileName->refToFullPath([]);  
+                                      if( JSONSchemaIsObject($s.schema),
+                                            | jsonSchemaObjectToPure($s.schema->cast(@JSONSchemaObject), $parsedFileName, $s.pathPrefix, $mapSchemaInputs, $extendedProfile, false),
+                                            | if(JSONSchemaIsEnum($s.schema->toOne()),
+                                                  | JSONSchemaToEnum($parsedFileName,$s.schema->cast(@JSONSchema),$s.pathPrefix,$extendedProfile)->cast(@PackageableElement),
+                                                  | fragmentToFunction($parsedFileName,$s.schema->cast(@JSONSchema),$s.pathPrefix,$mapSchemaInputs,$extendedProfile);
+                                                )
+                                        );
+                                  )->concatenate($extendedProfile);
+}
+
+function <<access.private>> meta::external::format::json::binding::toPure::extractSubschemas(schema: SchemaInput[1]): SchemaInput[*]
+{
+  $schema.schema->cast(@JSONSchema).definitions->toOne()->keyValues()->map(kv | 
+                                                                            let fileName=if($schema.pathPrefix->isEmpty(),
+                                                                                              | '',
+                                                                                              | if($kv.first->contains('::'),
+                                                                                                  | '';,
+                                                                                                  | $schema.pathPrefix->toOne() ->replace('::','/') + '/' + $schema.fileName->packageFromPath([])->replace('::','/') + $schema.fileName->refToFileName()  
+                                                                                                  )
+                                                                                              );
+                                                                            let final =  $fileName + $kv.first->refToFullPath([]);
+                                                                            ^SchemaInput(
+                                                                                fileName   = $final,
+                                                                                schema     = $kv.second,
+                                                                                pathPrefix = []
+                                                                            );
+                                                                          );
 }
 
 function <<access.private>> meta::external::format::json::binding::toPure::createOperation(model:PackageableElement[*], context:GenerationContext[1]): Binding[1]
@@ -125,11 +207,1217 @@ function <<access.private>> meta::external::format::json::binding::toPure::creat
 // helper functions
 // ========================================================================================================================================================
 
+
+function <<access.private>> meta::external::format::json::binding::toPure::typeLookupMap(): Map<String, Type>[1]
+{
+  newMap([
+    pair('string', String),
+    pair('uuid', String),
+    pair('byte', String),
+    pair('binary', String),
+    pair('integer', Integer),
+    pair('int32', Integer),
+    pair('int64', Integer),
+    pair('number', Float),
+    pair('double', Float),
+    pair('float', Float),
+    pair('boolean', Boolean),
+    pair('date', StrictDate),
+    pair('date-time', DateTime)
+  ]);
+}
+
 function <<access.private>> meta::external::format::json::binding::toPure::schemaToSchemaInput(schema:Schema[1], context:GenerationContext[1]): SchemaInput[1]
 {
-   ^SchemaInput(
-      fileName   = $schema.location->toOne(),
-      schema     = $schema.detail->toOne()->cast(@JSONSchema).content->toOne(),
-      pathPrefix = $context.package
-   )
+  $schema.detail->cast(@JSONSchema)->validateMetamodel();
+
+  ^SchemaInput(
+    fileName   = $schema.location->toOne(),
+    schema     = $schema.detail,
+    pathPrefix = $context.package
+  );
+}
+
+function <<access.private>> meta::external::format::json::binding::toPure::validateMetamodel(schema:JSONSchema[1]): Boolean[1]
+{
+  assert(!$schema->instanceOf(JSONSchemaMultiType), 'Cannot convert JSONSchemaMultiType to PURE model');
+  assert($schema.mustNotMatch->isEmpty(), 'Cannot convert not field to PURE model');
+  assert($schema.id->isEmpty(), 'Cannot convert id field to PURE model');
+  assert($schema.ifCondition->isEmpty(), 'Cannot convert if field to PURE model');
+  assert($schema.elseCondition->isEmpty(), 'Cannot convert else field to PURE model');
+  assert($schema.thenCondition->isEmpty(), 'Cannot convert then field to PURE model');
+  assert($schema.contentMediaType->isEmpty(), 'Cannot convert contentMediaType field to PURE model');
+  assert($schema.contentEncoding->isEmpty(), 'Cannot convert contentEncoding field to PURE model');
+  assert(!$schema->instanceOf(JSONSchemaObject) || ($schema->instanceOf(JSONSchemaObject) && $schema->cast(@JSONSchemaObject).propertyNames->isEmpty()), 'Cannot convert propertyNames field to PURE model');
+  assert(!$schema->instanceOf(JSONSchemaObject) || ($schema->instanceOf(JSONSchemaObject) && $schema->cast(@JSONSchemaObject).patternProperties->isEmpty()), 'Cannot convert patternProperties field to PURE model');
+  assert(!$schema->instanceOf(JSONSchemaObject) || ($schema->instanceOf(JSONSchemaObject) && $schema->cast(@JSONSchemaObject).additionalProperties->isEmpty() || ($schema->cast(@JSONSchemaObject).additionalProperties->isNotEmpty() && $schema->cast(@JSONSchemaObject).additionalProperties->toOne()->instanceOf(Boolean))), 'Only Boolean value supported for additionalProperties field');
+  assert(!$schema->instanceOf(JSONSchemaArray) || ($schema->instanceOf(JSONSchemaArray) && $schema->cast(@JSONSchemaArray).containedItemSchema->isEmpty()), 'Cannot convert contains field to PURE model');
+
+true;
+}
+
+function meta::external::format::json::binding::toPure::refToFileName(ref:String[1]):String[1]
+{ 
+  $ref->split('/')->last()->toOne()->split('.')->init()->joinStrings()->toOne();
+}
+
+function {doc.doc='This function calculates the fully qualified path from a $ref and the parent schema file'}
+meta::external::format::json::binding::toPure::refToFullPath(ref:String[1],parentPath:String[0..1]):String[1]
+{    
+  //References that are a Pure Path (my::class) are taken as is and considered to already be fully qualified
+  //References to an embedded  component or definition schema will use the calculated path of the file of the reference if the pure path is not specified in the reference
+  let schemaRef = 'definitions';
+  let isSelfReference = $ref->equal('#') ;
+  let isRoot = $ref->startsWith('#'); 
+  let hasPath = $ref->contains('::');
+  let firstFileName = $ref->indexOf('.json');
+  let definitionDifferentFile =  $ref->indexOf($schemaRef) > $firstFileName;
+  let refNoPath = if($hasPath,|$ref->replace('::','/'),| $ref);
+
+  let updatedRef = if($isSelfReference,
+                        |  if($parentPath->isNotEmpty(),
+                              | $parentPath->toOne();,
+                              | 'UNKNOWN'
+                            ),
+                      
+                      |if($isRoot ,
+                          | $refNoPath->substring($refNoPath->indexOf($schemaRef)+length($schemaRef)), 
+                          | if($definitionDifferentFile,
+                                | let init = $refNoPath->substring(0,$refNoPath->indexOf($schemaRef)-1)->split('/')->init()->joinStrings('/');
+                                  $init + $refNoPath->substring($refNoPath->indexOf($schemaRef)+$schemaRef->length());,
+                                | $refNoPath
+                              )
+                          )
+                    );  
+  let refWithSlash = if($updatedRef->startsWith('/'),|$updatedRef,| '/'+$updatedRef);
+  let splitRef = $refWithSlash->split('/');
+  let rootDots = if($splitRef->size()==1,|0,|$refWithSlash->split('/')->at(0)->chunk(1)->filter(d|$d=='.')->size());
+  let doubleDotCount = $splitRef->filter(r|$r=='..')->size();
+  let parentFolder = $rootDots==2;
+  let refNoDots = $refWithSlash->substring($doubleDotCount*3 + if($rootDots==1,|2,|0));
+  let cleanRef = if($refNoDots->startsWith('/'),|$refNoDots,|'/'+$refNoDots);
+  let refWithFileType = if($cleanRef->endsWith('.json'),|$cleanRef,|$cleanRef+'.json');
+
+  let updatedParentPath = if($hasPath,|[],|$parentPath);
+  let parentName = if($updatedParentPath->isNotEmpty(),|$updatedParentPath->toOne()->split('/')->last(),|[]);
+  let parentPathElements = if($updatedParentPath->isNotEmpty() && !$isSelfReference,|$updatedParentPath->toOne()->split('/')->init(),|[]); 
+  let parentOffset = if($parentFolder ,|$doubleDotCount,|0);
+  let fullRefelments = $parentPathElements->take(max($parentPathElements->size()-$parentOffset,0));
+      
+  if($fullRefelments->isEmpty(),
+      | $refWithFileType,
+      | '/'+$fullRefelments->joinStrings('/')+$refWithFileType
+    );     
+
+}
+
+function <<access.private>> meta::external::format::json::binding::toPure::packageFromPath(path:String[1],pathPrefix:String[0..1]):String[1]
+{
+  let slash ='/';
+  let updatedPath = if( $path->startsWith($slash),|$path->substringAfter($slash),|if($path->startsWith('..'),|$path->substringAfter('..'+$slash),|$path));
+  let hasFileName = if($path ->matches('^.*\.(json|JSON)$'),|1,|0);
+  let splitPath= $updatedPath->split($slash)->map(v|$v->sanitizePackagePart());
+  let prefix = if($pathPrefix->isNotEmpty() && $pathPrefix != '',|$pathPrefix->toOne()+'::',|''); 
+  let pathParts = $splitPath->take($splitPath->size()-$hasFileName);  
+  $prefix+ if($pathParts->isNotEmpty(),|$pathParts->joinStrings('::')+'::',|'');
+}
+
+function <<access.private>>  meta::external::format::json::binding::toPure::pureIdentifierFromFilenameAndPathPrefix(fileName:String[1],pathPrefix:String[0..1]):String[1]
+{
+  let package = $fileName->packageFromPath($pathPrefix); 
+  let name = $fileName->refToFileName();
+  $package+$name;
+}
+
+function  <<access.private>> meta::external::format::json::binding::toPure::sanitizePackagePart(value:String[1]):String[1]
+{
+   $value->chunk(1)->map(s|if($s->matches('[A-Za-z0-9_]'),|$s,|'_'))->joinStrings();
+   
+}
+
+function <<access.private>> meta::external::format::json::binding::toPure::jsonSchemaObjectToPure(schema: JSONSchemaObject[1], fileName:String[1], pathPrefix: String[0..1], pathSchemas: Map<String, SchemaInput>[1], extendedProfile: Profile[0..1], strict: Boolean[1]): PackageableElement[*]
+{
+  let class = newClass($fileName->pureIdentifierFromFilenameAndPathPrefix($pathPrefix));
+  let javaType = $schema.customProperties.keyValuePairs->filter(k|$k.key.value=='javaType').value->cast(@JSONString).value->first();
+
+  // calculate sub types from anyOf, oneOf
+  let subTypeRefs =  if($schema.anyOf->isNotEmpty(),
+                          | $schema.anyOf,
+                          | if($schema.oneOf->isNotEmpty(),
+                                |$schema.oneOf,
+                                |[]
+                              )
+                        );
+
+  let subTypes = if($subTypeRefs->isNotEmpty(),
+                    | let refs = $subTypeRefs->map(v |$v.refValue);
+                      if($refs->isNotEmpty(),
+                          | $refs->map(r|$r->refToFullPath($fileName));,
+                          | []
+                        );,
+                    | [] 
+                   );
+
+  // collect all $refs from allOf field
+   let superTypes = if($schema.allOf->isNotEmpty(),
+                        | let a = $schema.allOf->filter(a | $a.refValue->isNotEmpty())->map(a | $a.refValue->toOne()->refToFullPath($fileName)),
+                        | [] 
+                      )->distinct();
+    
+  let superTypeGenerals = $superTypes->map(g |^Generalization(general = ^GenericType(rawType=newClass($g->packageFromPath($pathPrefix)+$g->refToFileName() )),specific= $class));
+
+  let discriminatorPropertyName = if($schema.discriminator->isNotEmpty(),
+                                    | let property = $schema.discriminator->toOne()->cast(@JSONSchemaDiscriminator).propertyName;
+                                      if($property->isNotEmpty(),
+                                          | $property->toOne(),
+                                          | []);,
+                                    | []
+                                    );
+
+  let DiscriminatorNames = $superTypes->concatenate(if($superTypes->isNotEmpty() ,| $superTypes->toOne()->getRootSuperTypes($fileName, $pathSchemas, []),|[]))->distinct() 
+                              ->map(s|
+                                       let superTypeSchema = $pathSchemas->get($s);         
+                                       if($superTypeSchema->isNotEmpty(),
+                                            | let superTypeDiscriminator = $superTypeSchema.schema->cast(@JSONSchema).discriminator;
+                                              if($superTypeDiscriminator->isNotEmpty() && $superTypeDiscriminator->toOne().mapping->isNotEmpty(),
+                                                  | 
+                                                    let mapping  = $superTypeDiscriminator->toOne().mapping;         // find all the mapping key for all the discriminators this class is associated with
+                                                    let keysForThisClass = $mapping->toOne()->keyValues()->filter(m | $m.second->toOne()->refToFullPath($fileName) == $fileName).first;,
+                                                  | []
+                                                );,
+                                            | []
+                                         ););
+
+  let updatedGeneralizations = if($superTypeGenerals->isEmpty(),|$class.generalizations,|$superTypeGenerals);
+
+  let propertiesOfClass = if($schema.properties->isNotEmpty() ,
+                                | $schema.properties->toOne()->keyValues()->map( kv | 
+                                                                              propertyToPure($kv.first, $kv.second, $kv.first->in($schema.requiredProperties), $class, $pathSchemas, $fileName, $pathPrefix, $extendedProfile, $kv.first==$discriminatorPropertyName);
+                                                                              ),
+                                | []
+                            );
+
+  let zippedPropertes = if($schema.properties->isNotEmpty() && $propertiesOfClass->isNotEmpty() ,
+                            | $schema.properties->toOne()->keys()->zip($propertiesOfClass),
+                            | []
+                          );
+
+  let keysForInLine = functionConstraintMap(true)->keys()->filter(f|!$f->in(['refValue','type','itemSchemas']));
+
+  let constraints =$zippedPropertes->map( zipped | 
+                                         let p = $zipped.first;  // property name
+                                         let propertyObject = $schema.properties->toOne()->get($p)->cast(@JSONSchema)->toOne()->propertyObject($class,$strict);
+                                         if( $schema.properties->toOne()->get($p)->toOne()->instanceOf(JSONSchema) && $propertyObject.refValue->isNotEmpty() && 
+                                             ( $zipped.second.genericType.rawType->toOne()->instanceOf(PrimitiveType)  || $zipped.second.genericType.rawType->toOne()==Any),
+                                          | 
+                                            let refSchema = $pathSchemas->get($propertyObject.refValue->toOne()->refToFullPath($fileName)); 
+                                            if($refSchema->isNotEmpty() && $refSchema.schema->toOne()->getSchemaType() == SchemaType.fragment && !$schema.properties->toOne()->get($p)->containsAny($keysForInLine),   
+                                               | 
+                                                 let lambda = newLambdaFunction(
+                                                                                  ^FunctionType(
+                                                                                              returnMultiplicity = PureOne, 
+                                                                                              returnType         = ^GenericType(rawType = Boolean),
+                                                                                              parameters         = ^VariableExpression(name='this',multiplicity=PureOne,genericType=^GenericType(rawType=Any))
+                                                                                   )
+                                                                                );    
+                                                  let lambdaWithDef = ^$lambda(
+                                                                            expressionSequence = createConstraintFunctionExpression(
+                                                                                                      $fileName, 
+                                                                                                      $refSchema.fileName->toOne()->pureIdentifierFromFilenameAndPathPrefix($pathPrefix),
+                                                                                                      Any, 
+                                                                                                      $pathPrefix, 
+                                                                                                      $zipped.second, 
+                                                                                                      $schema.properties->toOne()->get($p)->cast(@JSONSchema)->toOne(), 
+                                                                                                      $pathSchemas
+                                                                                                  )
+                                                                      );
+                                                 ^meta::pure::metamodel::constraint::Constraint(
+                                                      functionDefinition = $lambdaWithDef,name=$p
+                                                  );,
+                                               | []                   
+                                             );  
+                                         ,| [];
+                                          );
+                                        );
+
+  let constraintFormats = 'uuid';
+  let inLineConstraints = $zippedPropertes->filter(f|
+                                                      let schemaKVP =  $schema.properties->toOne()->get($f.first)->toOne()->getAllNonNullMetamodelProperties();
+                                                      let propertySchema = $schema.properties->toOne()->get($f.first)->toOne();
+                                                      $schemaKVP->keys()->containsAny($keysForInLine)
+                                                        ||   
+                                                            $schemaKVP->get('format')->isNotEmpty() && $schemaKVP->get('format')->toOne()->eval($propertySchema)->toOne()->in($constraintFormats)  
+                                                        ||   
+                                                            (
+                                                                $schemaKVP->get('itemSchemas')->isNotEmpty() && $schemaKVP->get('itemSchemas')->toOne()->eval($propertySchema)->toOne()->instanceOf(JSONSchema) 
+                                                              &&
+                                                                $schemaKVP->get('itemSchemas')->toOne()->eval($propertySchema)->toOne()->cast(@JSONSchema)->toOne()->getAllNonNullMetamodelProperties()->keys()->containsAny($keysForInLine) 
+                                                            )
+                                                        || 
+                                                          (
+                                                            $propertySchema->propertyObject($class,$strict)->toOne()->propertyHasDiscriminatorRef($fileName,$pathSchemas)
+                                                          );
+                                                   )
+                                                ->map(p| 
+                                                         let schemaKVP =  $schema.properties->toOne()->get($p.first)->toOne()->getAllNonNullMetamodelProperties()->keyValues();
+                                                         let propertySchema = $schema.properties->toOne()->get($p.first)->toOne();
+                                                         let lambda = newLambdaFunction( 
+                                                                                          ^FunctionType(
+                                                                                            returnMultiplicity = PureOne,
+                                                                                            returnType         = ^GenericType(rawType = Boolean),
+                                                                                            parameters         = ^VariableExpression(name='this',multiplicity=PureOne,genericType=^GenericType(rawType=Any))
+                                                                                          )
+                                                                                       ); 
+                                                         let property = $p.second->propertyParameter('this');
+                                                         let isDiscriminatorRef = $propertySchema->propertyObject($class,$strict)->toOne()->propertyHasDiscriminatorRef($fileName,$pathSchemas);
+                                                         let lambdaWithDef= ^$lambda(
+                                                                                expressionSequence=$propertySchema->fragmentToValueSpecifcation([], $fileName, $pathPrefix, $property, [], [], $property, $pathSchemas)->toOneMany()->cast(@SimpleFunctionExpression)->wrapWithIF($p.second->propertyParameter('this'), $p.first->in($schema.requiredProperties), $isDiscriminatorRef)->evaluateAndDeactivate()->toOneMany()
+                                                                            );
+
+                                                         ^meta::pure::metamodel::constraint::Constraint(functionDefinition=$lambdaWithDef, name=$p.first +'_inLine' );
+                                                      );
+  
+  let classWithTags = ^$class(properties=$propertiesOfClass,generalizations=$updatedGeneralizations,constraints=$constraints->concatenate($inLineConstraints))
+                        ->addSchemaTagsToPure($schema,$extendedProfile)
+                        ->cast(@ElementWithTaggedValues)
+                        ->addTag(JSONSchemaJavaExtension,'javaType',$javaType)
+                        ->addTag(JSONSchemaOpenAPIExtension,'discriminatorName',  $DiscriminatorNames)
+                        ->cast(@Class<Any>)
+                        ->cast(@PackageableElement);
+
+   let result = if($schema.additionalProperties->isNotEmpty() && $schema.additionalProperties->toOne()->instanceOf(Boolean) && $schema.additionalProperties->toOne()->cast(@Boolean),
+        | $classWithTags->cast(@ElementWithStereotypes)->addStereoType(JSONSchemaGeneration,'noAdditionalProperties'),
+        | $classWithTags
+       )->cast(@Class<Any>);
+      $result;
+}
+
+function <<access.private>> meta::external::format::json::binding::toPure::propertyHasDiscriminatorRef(property:JSONSchema[1],fileName:String[1],pathSchemas:Map<String,SchemaInput>[1]):Boolean[1]
+{
+   $property.refValue->isNotEmpty() && $pathSchemas->get($property.refValue->toOne()->refToFullPath($fileName)).schema->cast(@JSONSchema)->isDiscriminator();
+}
+
+function  <<access.private>> meta::external::format::json::binding::toPure::createConstraintFunctionExpression(fileName:String[1],functionName:String[1],valueType:Type[1],pathPrefix:String[0..1],property:Property<Nil, Any|*>[1],JSONFragment:JSONSchema[1],pathSchemas:Map<String,SchemaInput>[1]):SimpleFunctionExpression[1]
+{
+   let propertyParam = propertyParameter($property,'this');
+   let name= $functionName+'_'+ $valueType->toString()+'_$0_1$__Boolean_1_';
+   let updatedPropertyParam = ^$propertyParam(multiplicity=ZeroOne);
+   let constraintVS = fragmentToValueSpecifcation($JSONFragment,[],$fileName,$pathPrefix,$updatedPropertyParam,[],[],$updatedPropertyParam,$pathSchemas)->cast(@SimpleFunctionExpression)->toOne();
+  ^$constraintVS(functionName = $functionName);
+ }
+
+function <<access.private>> meta::external::format::json::binding::toPure::JSONSchemaToEnum(path:String[1],schema:JSONSchema[1],pathPrefix:String[0..1],extendedProfile:Profile[0..1]):Enumeration<Any>[1]
+{
+   
+   let name = $path->refToFileName();
+
+   let javaType = $schema.customProperties.keyValuePairs->filter(k|$k.key.value=='javaType').value->cast(@JSONString).value->first();
+  
+   let package = $path->packageFromPath($pathPrefix);
+
+   let values = $schema.possibleValues->cast(@JSONArray).values->filter(e|$e->instanceOf(JSONString))->cast(@JSONString).value->filter(v|$v!='');
+   
+   let santizedValues = $values->map(v| 
+                                        let sanitized = $v-> sanitizeValue(); 
+                                        if($sanitized == $v,
+                                            | $v,
+                                            | $sanitized 
+                                          );
+                                    ) ;
+  let valuesMap = $santizedValues->zip($values)->newMap();
+
+  let enum =  newEnumeration($package+$name,$santizedValues);
+
+  let enumValues = $enum->enumValues()->map( v:Enum[1] | 
+                                              let original = $valuesMap->get($v->id())->toOne();
+                                              if($original!=$v->id(),
+                                                | let e = $v->cast(@ElementWithTaggedValues)->addTag(JSONSchemaGeneration,'name',$original)->cast(@Enum);
+                                                  ^$e(name=$v->id()); ,
+                                                | ^$v(name=$v->id())
+                                                );
+                                           )->toOneMany();   
+   
+  
+  let result = ^$enum(values=$enumValues)
+                ->cast(@ElementWithTaggedValues)
+                ->addTag(JSONSchemaJavaExtension,'javaType',$javaType)
+                ->cast(@PackageableElement)
+                ->addSchemaTagsToPure($schema,$extendedProfile)
+                ->cast(@Enumeration<Any>);
+}
+
+function <<access.private>> meta::external::format::json::binding::toPure::propertyToPure(propertyName: String[1], propertyValue: JSONSchema[1], required: Boolean[1], class: Class<Any>[1], pathSchemas: Map<String, SchemaInput>[1], fileName:String[1], pathPrefix: String[0..1], extendedProfile: Profile[0..1], isDiscriminator: Boolean[1]): Property<Nil,Any|*>[1]
+{
+  let minMult= ^MultiplicityValue(value=if($propertyValue->instanceOf(JSONSchemaArray),
+                                            | if($propertyValue->cast(@JSONSchemaArray).minItems->isNotEmpty() ,
+                                                      | $propertyValue->cast(@JSONSchemaArray).minItems,
+                                                      | if($required,
+                                                            |1,
+                                                            |0
+                                                    )
+                                              ),
+                                            | if($required,
+                                                      |1,
+                                                      |0
+                                                    )
+                                        )   
+                              );              
+  let maxMult= ^MultiplicityValue(value=if($propertyValue->instanceOf(JSONSchemaArray),
+                                            | if($propertyValue->cast(@JSONSchemaArray).maxItems->isNotEmpty() ,| $propertyValue->cast(@JSONSchemaArray).maxItems ,| []),
+                                            | 1
+                                          )     
+                                );
+
+  let propertyObj = $propertyValue->propertyObject($class, false);
+
+  let type = if($propertyValue.allOf->isNotEmpty() && $propertyValue.allOf->filter(a | $a.refValue->isNotEmpty())->isNotEmpty(), //if the property schema has an allOf field, pick the first one which has a ref field as the corresponding Class for this property will be generated as part of SchemaSet
+                          | $propertyValue.allOf->filter(a | $a.refValue->isNotEmpty())->first().refValue->toOne()->refToPath($fileName,$pathSchemas,$pathPrefix),
+                          | if($propertyObj.refValue->isNotEmpty(), //if the property has a ref field, then property will have corresponding type
+                                  | $propertyObj.refValue->toOne()->refToPath($fileName,$pathSchemas,$pathPrefix),
+                                  | $propertyObj->getTypeFromMetamodel())); // if the property has a type and format field, get the corresponding type else Any
+
+  let arrayST = if($propertyValue->instanceOf(JSONSchemaArray)  &&  $maxMult.value==1 ,
+                      | stereotype(JSONSchemaTypeExtension,'array'),
+                      | []
+                  );
+
+  let typeExtension = $propertyValue->match([
+        s:JSONSchemaString[1] | if($s.format->isNotEmpty() && $s.format->toOne()->isValidFormatTag(),| $s.format->toOne() ,| 'string'),
+        s:JSONSchemaInteger[1] | if($s.format->isNotEmpty() && $s.format->toOne()->isValidFormatTag(),| $s.format->toOne() ,| 'integer'),
+        s:JSONSchemaNumber[1] | if($s.format->isNotEmpty() && $s.format->toOne()->isValidFormatTag(),| $s.format->toOne() ,| 'number'),
+        s:JSONSchemaBoolean[1] | 'boolean',
+        s: JSONSchemaObject[1] | 'object',
+        s: Any[1] | 'placeholder'
+      ]);
+
+  let formatSt =if($typeExtension->in(JSONSchemaTypeExtension.p_stereotypes.value),
+                    | stereotype(JSONSchemaTypeExtension, $typeExtension->toOne()),
+                    | []
+                  );
+
+  let discriminatorSt = if($isDiscriminator,
+                            | stereotype( JSONSchemaOpenAPIExtension, 'discriminatorProperty') ,
+                            | []
+                          ); 
+
+  let pureProperty =  newProperty($propertyName, ^GenericType(rawType=$class), ^GenericType(rawType=$type), ^Multiplicity(lowerBound=$minMult, upperBound=$maxMult))
+                        ->cast(@ElementWithTaggedValues)
+                        ->cast(@ElementWithStereotypes)
+                        ->addStereoType($formatSt)
+                        ->addStereoType($discriminatorSt)
+                        ->addStereoType($arrayST)
+                        ->cast(@Property<Nil,Any|*>)
+                        ->toOne();
+
+  if($propertyValue->instanceOf(JSONSchemaArray) , // if it's an array, we'll have to fetch the tags from the item schema as well
+        | $pureProperty->addSchemaTagsToPure($propertyObj->toOne(),$extendedProfile)->addSchemaTagsToPure($propertyValue,$extendedProfile)->cast(@AnnotatedElement)->mergeDocTags()->cast(@Property<Nil,Any|*>);,
+        | $pureProperty->addSchemaTagsToPure($propertyValue,$extendedProfile)->cast(@Property<Nil,Any|*>);
+    );
+      
+}
+
+function <<access.private>> meta::external::format::json::binding::toPure::createProfile(values:JSONKeyValue[*],pathPrefix:String[1]):Profile[0..1]
+{
+  let profile =  ^Profile()->updatePackagableElementWithPackage($pathPrefix+'::profile::GeneratedProfile')->cast(@Profile);
+
+  let tags = $values->filter(v|$v.value->match([
+                                              b:JSONBoolean[1]|!$b.value,
+                                              e:JSONElement[1] | true
+                                            ])
+                          ).key.value->distinct()->sort()->map(t | ^Tag(value= $t->extendedTagToPure() ,profile =$profile));
+
+  let sts =  $values->filter(v|$v.value->instanceOf(JSONBoolean) && $v.value->cast(@JSONBoolean).value && !$v.key.value->in($tags) ).key.value->distinct()->sort()->map(s | ^Stereotype(profile=$profile,value= $s->extendedTagToPure()));
+
+  if($tags->size()+$sts->size()>0,
+      | ^$profile(p_stereotypes=$sts,p_tags=$tags);,
+      | []
+    );         
+
+}
+function <<access.private>> meta::external::format::json::binding::toPure::extendedTagToPure(tag:String[1]):String[1]
+{
+if($tag->startsWith('x-'),
+   | $tag->split('-')->tail()->joinStrings('_'),
+   | $tag->split('-')->joinStrings('_')
+  ); 
+}
+
+function  <<access.private>> meta::external::format::json::binding::toPure::fragmentToFunction(fileName:String[1],functionSchema:JSONSchema[1],pathPrefix:String[0..1],pathSchemas:Map<String, SchemaInput>[1],extendedProfile:Profile[0..1]):PackageableElement[1]
+{  
+  let functionName = $fileName->refToFileName();
+
+  let isDiscriminator = $functionSchema->isDiscriminator();
+
+  let objectST = if($functionSchema->instanceOf(JSONSchemaObject),
+                      | stereotype(JSONSchemaTypeExtension,'object'),
+                      | []
+                    );
+
+  let rawType = if($isDiscriminator,
+                    | let rootType = $functionSchema->getSubTypes($fileName)->map(s | getRootSuperTypes($s, $fileName, $pathSchemas, []))->first(); 
+                      $rootType->toOne()->newClassfromReference([],$pathPrefix);,
+                    | $functionSchema->fragmentType();
+                  );
+
+  let multiplicity = if($functionSchema->instanceOf(JSONSchemaArray),
+                          | ZeroMany,
+                          | if($isDiscriminator,
+                              | PureOne,
+                              | ZeroOne)
+                        );
+
+  let multiplicityString  = if($multiplicity==ZeroMany,
+                              | 'MANY',
+                              | if($multiplicity==ZeroOne,
+                                    |'$0_1$',
+                                    |'1')
+                              );
+
+  let name = $functionName+'_'+$rawType->toString()+ '_'+$multiplicityString+'__Boolean_1_';
+
+  let type = ^GenericType(rawType=$rawType);
+
+  let functionDef = meta::external::format::json::binding::toPure::fragmentPlaceHolder_Any_$0_1$__Boolean_1_;
+
+  let ft =$functionDef->functionType();
+
+  let ftparam =$ft.parameters->at(0);
+
+  let property = if($isDiscriminator,
+                      | let pname =  $functionSchema.discriminator->toOne()->cast(@JSONSchemaDiscriminator).propertyName->toOne();
+                        let p =  newProperty($pname, ^GenericType(rawType=$rawType), ^GenericType(rawType=String),PureOne);
+                        $p->propertyParameter('value') ;,
+                      | $ft.parameters->at(0)
+                   );
+
+  let updatedFT = ^$ft(parameters=^$ftparam(multiplicity=$multiplicity,genericType=$type)); 
+
+  let expressionSequenceInit = $functionSchema->fragmentToValueSpecifcation([],$fileName,$pathPrefix,$property,[],[],$property,$pathSchemas);
+
+  if($expressionSequenceInit->isEmpty(),|fail('Unable to import schema, please check that it is correctly specified:\n'+ $fileName),|[]);
+
+  let expressionSequence  = $expressionSequenceInit->toOneMany()->cast(@SimpleFunctionExpression)->wrapWithIF($ftparam,false,false)->evaluateAndDeactivate();
+
+  let def =^$functionDef(
+                stereotypes           = [],
+                expressionSequence    = $expressionSequence,
+                functionName          = $functionName,
+                name                  = $name,
+                classifierGenericType = ^GenericType(typeArguments=^GenericType(rawType=$updatedFT),rawType=ConcreteFunctionDefinition)
+            )->updatePackagableElementWithPackage($fileName->packageFromPath($pathPrefix)+$name);
+  
+  $def->addSchemaTagsToPure($functionSchema,$extendedProfile)->cast(@ElementWithStereotypes)->addStereoType($objectST)->cast(@PackageableElement);
+}
+
+function <<access.private>> meta::external::format::json::binding::toPure::propertyObject(property:JSONSchema[1],ownerClass:Class<Any>[1],strict:Boolean[1]):JSONSchema[1]
+{
+    let propertyObject = if ( $property->instanceOf(JSONSchemaArray), 
+                               | let items = $property->cast(@JSONSchemaArray).itemSchemas;
+                                  //if items is empty then it's an unspecifed type and will be Any - add a placeholder to handle this
+                                  if($items->isEmpty(),
+                                                | $property,
+                                                | if($items->toOne()->instanceOf(JSONSchema),
+                                                    | $items->toOne()->cast(@JSONSchema),
+                                                    | if($strict,
+                                                         |fail('Found an unsupported items property on class ' + $ownerClass->elementToPath() + '- tuple  array validation is not supported'  );  [];,                
+                                                         | []
+                                                        )
+                                                   )
+                                                 );,    
+                                | $property
+                             )->toOne();
+}
+
+function <<access.private>> meta::external::format::json::binding::toPure::mergeDocTags(element:AnnotatedElement[1]):AnnotatedElement[1]
+
+{  
+  let docs = $element->meta::pure::functions::doc::getDocs();
+  if( $docs->size()>1,
+      | let tag = doc->tag('doc');
+        let newValue = $docs->joinStrings(' ');
+        let updatedTaggedValues =   $element.taggedValues->filter(t | $t.tag != $tag)->concatenate(^TaggedValue(tag=$tag,value = $newValue->toOne()));
+        ^$element(taggedValues=$updatedTaggedValues);,
+      | $element 
+    ) ;
+}
+
+function <<access.private>> meta::external::format::json::binding::toPure::addSchemaTagsToPure(element:PackageableElement[1],schema:JSONSchema[1],extendedProfile:Profile[0..1]):PackageableElement[1]
+{
+    //common tags that get go on properties and functions
+    let readOnlyValue = $schema.readOnly;
+    let writeOnlyValue = $schema.writeOnly; 
+    let title =  $schema.title;
+    let nullableTag =  $schema.nullable;
+    let defaultValue = $schema.defaultValue;
+
+    let exampleTags = if($schema.example->isNotEmpty(),| $schema.example->toOne()->getJSONElementAsString()->map(t|^TaggedValue(tag=tag(JSONSchemaGeneration,'example'),value=$t)) ,| []);
+
+    let titleTag = if($title->isNotEmpty() && $title!=$element->titleValue(),
+                      | $title,
+                      | []);
+
+    let nullST = if($nullableTag->isNotEmpty() && $nullableTag->toOne(),| stereotype(JSONSchemaTypeExtension,'null'),|[]);  // if there is a nullable field or if there is null in types list, add null stereotype
+   
+    let description = if($schema.description->isNotEmpty(),| $schema.description->toOne()->replace('\n',' '),|[]);
+
+    let default =  if($defaultValue->isNotEmpty(),
+                     | $defaultValue->toOne()->  match([s:JSONString[1]|$s.value,
+                                                        n:JSONNumber[1] |$n.value,
+                                                        b:JSONBoolean[1]|$b.value ])->makeString();,
+                     | []
+                     );
+
+   let javaInterfaces = if($schema.customProperties->isNotEmpty(),
+                            | $schema.customProperties->toOne().keyValuePairs->filter(k|$k.key.value=='javaInterfaces').value->cast(@JSONElement)->match([
+                                                                                                                                                          a:JSONArray[1]  | $a.values->cast(@JSONString).value,
+                                                                                                                                                          s:JSONString[1] | $s.value,
+                                                                                                                                                          a:Any[0..1]     | [] 
+                                                                                                                                                        ]),
+                            | []
+                          );
+
+   let elementWithreadWrite = if($readOnlyValue->isNotEmpty() && $readOnlyValue->toOne(),  
+                                  | $element->cast(@ElementWithStereotypes)->addStereoType(JSONSchemaGeneration,'readOnly'),
+                                  | if($writeOnlyValue->isNotEmpty() && $writeOnlyValue->toOne(),
+                                        | $element->cast(@ElementWithStereotypes)->addStereoType(JSONSchemaGeneration,'writeOnly'),
+                                        | $element)
+                                  );
+   
+   let extendedSteroetypes =  if($schema.customProperties->isNotEmpty(),
+                                  | $schema.customProperties.keyValuePairs->filter(kv|$extendedProfile->isNotEmpty() && $kv.key.value->extendedTagToPure()->in($extendedProfile.p_stereotypes.value))->sortBy(s|$s.key.value)->map(kv|stereotype($extendedProfile->toOne(),$kv.key.value->extendedTagToPure()->toOne())), 
+                                  | []
+                                );
+
+   let extendedTaggedValues =  if($schema.customProperties->isNotEmpty(),
+                                  | $schema.customProperties.keyValuePairs->filter(kv|$extendedProfile->isNotEmpty() && $kv.key.value->extendedTagToPure()->in($extendedProfile.p_tags.value))->sortBy(s|$s.key.value)->map(kv| $kv.value->getJSONElementAsString()->sort()->map(v | ^TaggedValue(tag=tag($extendedProfile->toOne(),$kv.key.value->extendedTagToPure()),value=$v))),
+                                  | []
+                                 ); 
+
+   let milestoneKey =    if($schema.customProperties->isNotEmpty(),
+                              |$schema.customProperties.keyValuePairs->filter(k|$k.key.value=='x-legendTemporal').value,
+                              |[]
+                            );
+
+   let milestoneSt =if($milestoneKey->isNotEmpty() && $milestoneKey->cast(@JSONString).value->toOne()->in(['businesstemporal','bitemporal','processingtemporal']),
+                        | stereotype(temporal,$milestoneKey->cast(@JSONString).value->toOne()),
+                        | []
+                      );
+
+   $elementWithreadWrite
+      ->cast(@ElementWithTaggedValues)  
+      ->addTag(JSONSchemaGeneration,'defaultValue',$default)
+      ->addTag(JSONSchemaGeneration,'title',$titleTag)   
+      ->addTag($exampleTags)
+      ->addTag(doc,'doc',$description)
+      ->addTag(JSONSchemaJavaExtension,'javaInterface',$javaInterfaces)
+      ->addTag($extendedTaggedValues)
+      ->cast(@ElementWithStereotypes)
+      ->addStereoType($milestoneSt)
+      ->addStereoType($nullST)
+      ->addStereoType($extendedSteroetypes)
+      ->cast(@PackageableElement);
+}
+
+function <<access.private>> meta::external::format::json::binding::toPure::getJSONElementAsString(value :JSONElement[0..1]):String[*]
+{
+   
+   if($value->isNotEmpty(),
+        | $value->toOne()->  match([
+                                    s:JSONString[1]  | $s.value,
+                                    n:JSONNumber[1]  | $n.value,
+                                    b:JSONBoolean[1] | $b.value,
+                                    a:JSONArray[1]   | $a.values->map(v| $v->getJSONElementAsString()),
+                                    a:Any[1]         | []      
+                                    ])->map(s|$s->makeString());,
+        | []
+      ); 
+   
+}
+
+function <<access.private>> meta::external::format::json::binding::toPure::isValidFormatTag(value:String[0..1]):Boolean[1]
+{
+ $value->isNotEmpty() && ( $value->toOne()->in(JSONSchemaTypeExtension.p_stereotypes.value ) || $value->toOne()->in(['uuid','date-time','date']));
+}
+
+function <<access.private>> meta::external::format::json::binding::toPure::getTypeFromMetamodel(schema: Any[*]): Type[1]
+{
+  let type = $schema->match([
+                            s:JSONSchemaString[1]  | if($s.format->isNotEmpty() && $s.format->toOne()->isValidFormatTag(),| $s.format->toOne() ,| 'string'),
+                            s:JSONSchemaInteger[1] | if($s.format->isNotEmpty() && $s.format->toOne()->isValidFormatTag(),| $s.format->toOne() ,| 'integer'),
+                            s:JSONSchemaNumber[1]  | if($s.format->isNotEmpty() && $s.format->toOne()->isValidFormatTag(),| $s.format->toOne() ,| 'number'),
+                            s:JSONSchemaBoolean[1] | 'boolean',
+                            s: Any[1]              | 'placeholder'
+                          ]);
+  if(typeLookupMap()->get($type)->isNotEmpty(),| typeLookupMap()->get($type)->toOne(),|Any);
+}
+
+function <<access.private>>  meta::external::format::json::binding::toPure::JSONToPUREType(type:String[1],format:String[0..1]):Type[1]
+{
+  let typeLookup = if($format->isNotEmpty() && $format->toOne()->isValidFormatTag() ,|$format->toOne(),|$type);
+
+  if(typeLookupMap()->get($type)->isNotEmpty(),| typeLookupMap()->get($type)->toOne(),|Any);
+}
+function <<access.private>> meta::external::format::json::binding::toPure::extractObjectFromCollection(array:JSONSchema[*]):JSONSchema[*] // get only the values which is of type object and does not have anyOf, oneOf
+{
+  $array->filter(v|$v->instanceOf(JSONSchemaObject))->filter(v|$v->JSONSchemaIsObject());
+}
+
+function <<access.private>> meta::external::format::json::binding::toPure::extractEmbeddedSchema(rootSchema:JSONSchema[1]):Map<String, meta::external::format::json::metamodel::JSONSchema>[0..1]
+{   
+      let definitions = $rootSchema.definitions;
+
+      if($definitions->isNotEmpty(),
+           | $definitions,
+           | []
+        );
+}
+
+function <<access.private>> meta::external::format::json::binding::toPure::JSONSchemaIsObject(schema:SchemaDetail[1]):Boolean[1]
+{
+  ($schema->instanceOf(JSONSchemaObject)) && !$schema->cast(@JSONSchemaObject).anyOf->isNotEmpty() && !$schema->cast(@JSONSchemaObject).oneOf->isNotEmpty();
+}
+
+function <<access.private>> meta::external::format::json::binding::toPure::JSONSchemaIsEnum(schema:SchemaDetail[1]):Boolean[1]
+{
+  $schema->cast(@JSONSchema).possibleValues->isNotEmpty();
+}
+function  <<access.private>> meta::external::format::json::binding::toPure::isDiscriminator(functionSchema:JSONSchema[0..1]):Boolean[1]
+{
+  $functionSchema->isNotEmpty() && $functionSchema->toOne().discriminator->isNotEmpty();
+}
+function  <<access.private>> meta::external::format::json::binding::toPure::sanitizeValue(value:String[1]):String[1]
+{
+   //TODO: This may not be good enough if two different enums santize to the same value
+   let alphaNumeric = $value->chunk(1)->map(s|if($s->matches('[A-Za-z0-9]'),|$s,|'_'))->joinStrings();
+    if( ['0','1','2','3','4','5','6','7','8','9']->contains($alphaNumeric->substring(0, 1)) || $alphaNumeric=='true' ||  $alphaNumeric=='false',
+          |'_'+$alphaNumeric,
+          |$alphaNumeric
+      );
+}
+
+function <<access.private>> meta::external::format::json::binding::toPure::addTag(e:ElementWithTaggedValues[1],profile:Profile[1],tag:String[1],value:String[*]):ElementWithTaggedValues[1]
+{
+   if($value->isNotEmpty(),
+      | $value-> fold({v,ele |   ^$ele(taggedValues+=^TaggedValue(tag=tag($profile,$tag),value = $v->toOne()))},$e);,
+      | $e);
+}
+
+function <<access.private>> meta::external::format::json::binding::toPure::addTag(e:ElementWithTaggedValues[1],tags:TaggedValue[*]):ElementWithTaggedValues[1]
+{
+   if($tags->isNotEmpty(),
+        | $tags-> fold({v,ele |   ^$ele(taggedValues+=$v)},$e);,
+        | $e
+      );
+}
+
+function <<access.private>> meta::external::format::json::binding::toPure::addStereoType(e:ElementWithStereotypes[1],profile:Profile[1],stereoType:String[1]):ElementWithStereotypes[1]
+{
+   ^$e(stereotypes+=stereotype($profile,$stereoType));
+}
+
+function <<access.private>> meta::external::format::json::binding::toPure::addStereoType(e:ElementWithStereotypes[1],st:Stereotype[*]):ElementWithStereotypes[1]
+{ 
+     if($st->isNotEmpty(),
+          | $st-> fold({v,ele |   ^$ele(stereotypes+=$v)},$e);,
+          | $e
+       );
+}
+function <<access.private>> meta::external::format::json::binding::toPure::refToPath(ref:String[1],parentPath:String[1],pathSchemas:Map<String,SchemaInput>[1],pathPrefix:String[0..1]):Type[1]
+{ 
+   let fullPath = $ref->refToFullPath($parentPath); 
+   let schemaForPath= $pathSchemas->get($fullPath);
+   if($schemaForPath->isEmpty(),
+      | Any,
+      | let parsed = $schemaForPath.schema->toOne();
+          if($parsed->JSONSchemaIsEnum(),
+              |JSONSchemaToEnum($fullPath,$parsed->cast(@JSONSchema),$schemaForPath.pathPrefix,[]),
+              | if($parsed->JSONSchemaIsObject(),
+                   | newClass( $fullPath->pureIdentifierFromFilenameAndPathPrefix($schemaForPath.pathPrefix));,
+                   |   if($parsed->cast(@JSONSchema)->isDiscriminator(),
+                         | 
+                           let rootType = $parsed->toOne()->cast(@JSONSchema)->getSubTypes($parentPath)->map(s | getRootSuperTypes($s, $parentPath, $pathSchemas, []))->first(); 
+                           $rootType->toOne()->newClassfromReference([],$pathPrefix);,
+                         | $parsed->getTypeFromMetamodel();
+                      );  
+                 );
+            );       
+      );             
+                 
+}
+
+function meta::external::format::json::binding::toPure::titleValue( element:PackageableElement[1] ) : String[1]
+{
+  if($element->instanceOf(FunctionDefinition),
+      | $element.package->toOne()-> elementToPath()+ '::' + $element->cast(@FunctionDefinition<Any>).functionName->toOne()->split('::')->last()->toOne();,
+      | $element->elementToPath();
+    );
+}
+
+function <<access.private>> meta::external::format::json::binding::toPure::getAllNonNullMetamodelProperties(x: JSONSchema[1]): Map<String, Property<JSONSchema, Any|*>>[1]
+{
+  JSONSchema->getNonNullProperties($x, false)->concatenate($x->match([
+                                                                      s:JSONSchemaString[1]  | JSONSchemaString->getNonNullProperties($x, true),
+                                                                      s:JSONSchemaInteger[1] | JSONSchemaInteger->getNonNullProperties($x, true),
+                                                                      s:JSONSchemaNumber[1]  | JSONSchemaNumber->getNonNullProperties($x,true),
+                                                                      s:JSONSchemaBoolean[1] | JSONSchemaBoolean->getNonNullProperties($x,true),
+                                                                      s:JSONSchemaArray[1]   | JSONSchemaArray->getNonNullProperties($x, true),
+                                                                      s:JSONSchemaObject[1]  | JSONSchemaObject->getNonNullProperties($x, true),
+                                                                      s:Any[1] | []
+                                                                    ]))->newMap();
+}
+
+function <<access.private>>meta::external::format::json::binding::toPure::getNonNullProperties(c: Class<Any>[1], x: JSONSchema[1], includeType: Boolean[1]): Pair<String, Property<JSONSchema, Any|*>>[*]
+{
+  let props = $c.properties->filter(p| $p->eval($x)->isNotEmpty())->map(p | pair($p.name->toOne(), $p->cast(@Property<JSONSchema, Any|*>)));
+  if($includeType,| $props->concatenate(pair('type', newProperty('customProperties', ^GenericType(rawType=JSONSchema), ^GenericType(rawType=String),PureOne)->cast(@Property<JSONSchema,Any|*>))),| $props);
+}
+
+function <<access.private>>meta::external::format::json::binding::toPure::functionConstraintMap(addToOne:Boolean[1]):Map<String,LambdaFunction<Any>>[1]
+{
+ let shared   =newMap(  [
+                         pair('anyOf', {value:Boolean[1..*]| or($value)}),
+                         pair('refValue', {value:Any[0..1]| $value }),
+                         pair('oneOf', {value :Boolean[*]| oneOf($value)}),
+                         pair('and', {value:Boolean[1],value2:Boolean[1]| $value ->and($value2)}),
+                         pair('mapping', {value:String[1],value2:Type[1]| $value->meta::external::format::json::binding::toPure::mapSchema($value2)}),
+                         pair('discriminator', {value:Any[1],value1:Any[1],value2:Type[*]| $value->discriminateOneOf($value,$value2,[])}),
+                         pair('itemSchemas', {value :Any[*]| $value->forAll(value|true)}),
+                         pair('uniqueItems', {value:Any[*]| $value->isDistinct()})
+                        ]);
+   
+   
+ let zeroOne=  newMap([ pair('pattern', {value:Any[0..1]| $value->makeString()->matches('placeholder')}),
+                         pair('type', {value:Any[0..1],value2:Type[1]| $value->toOne()->instanceOf($value2)}),
+                         pair('minLength', {value:Any[0..1],value2:Integer[1]| $value ->makeString()->isNoShorterThan($value2)}),
+                         pair('maxLength', {value:Any[0..1],value2:Integer[1]| $value->makeString()->isNoLongerThan($value2)}),
+                         pair('maximum', {value:Number[0..1],value2:Number[1]| $value->toOne()->cast(@Number)->lessThanEqual($value2)}),
+                         pair('minimum', {value:Number[0..1],value2:Number[1]| $value->toOne()->cast(@Number)->greaterThanEqual($value2)}),
+                         pair('exclusiveMaximum', {value:Number[0..1],value2:Number[1]| $value->toOne()->cast(@Number)->lessThan($value2)}),
+                         pair('exclusiveMinimum', {value:Number[0..1],value2:Number[1]| $value->toOne()->cast(@Number)->greaterThan($value2)}),
+                         pair('possibleValues', {value:Any[0..1]|$value ->toOne()->in(['placeholder'])  } ), 
+                         pair('uuid', {value:String[0..1]| $value->isUUID()}),
+                         pair('multipleOf', {value:Number[0..1],value2:Number[1]| $value->toOne()->rem($value2)==0}),
+                         pair('constantValue', {value:Any[0..1],value2:Any[1]| $value->toOne() == $value2})
+                        ])->putAll($shared);
+   
+ let one=  newMap([ pair('pattern', {value:Any[1]| $value->makeString()->matches('placeholder')}),
+                   pair('type', {value:Any[1],value2:Type[1]| $value->instanceOf($value2)}),
+                   pair('minLength', {value:Any[1],value2:Integer[1]| $value ->makeString()->isNoShorterThan($value2)}),
+                   pair('maxLength', {value:Any[1],value2:Integer[1]| $value->makeString()->isNoLongerThan($value2)}),
+                   pair('maximum', {value:Number[1],value2:Number[1]| $value->cast(@Number)->lessThanEqual($value2)}),
+                   pair('minimum', {value:Number[1],value2:Number[1]| $value->cast(@Number)->greaterThanEqual($value2)}),
+                   pair('exclusiveMaximum', {value:Number[1],value2:Number[1]| $value->cast(@Number)->lessThan($value2)}),
+                   pair('exclusiveMinimum', {value:Number[1],value2:Number[1]| $value->cast(@Number)->greaterThan($value2)}),
+                   pair('possibleValues', {value:Any[1]|$value ->in(['placeholder'])  } ) ,  
+                   pair('uuid', {value:String[1]| $value->isUUID()}),
+                   pair('multipleOf', {value:Number[1],value2:Number[1]| $value->rem($value2)==0}),
+                   pair('constantValue', {value:Any[1],value2:Any[1]| $value == $value2})
+                        ])->putAll($shared);
+   assertSameElements($zeroOne->keys(),$one->keys()); 
+   if($addToOne,|$zeroOne,|$one);
+}   
+
+function <<access.private>> meta::external::format::json::binding::toPure::getSchemaType(updatedSchema:SchemaDetail[1]):SchemaType[1]
+{
+  if(JSONSchemaIsObject($updatedSchema),
+                          | SchemaType.object,
+                          |  if(JSONSchemaIsEnum($updatedSchema),
+                               | SchemaType.enum,
+                               | if($updatedSchema->cast(@JSONSchema).definitions->isNotEmpty(),
+                                    | SchemaType.collection,
+                                    | SchemaType.fragment
+                               ));
+                        ); 
+}
+
+// discriminator mapping
+function meta::external::format::json::binding::toPure::mapSchema(value:String[1],class:Type[1]):DiscriminatorMapping[1]
+{
+  ^DiscriminatorMapping(value=$value,class=$class);
+}
+
+// discriminator value into respective type
+function meta::external::format::json::binding::toPure::discriminateOneOf(sourceInstance:Any[1],propertyValue:Any[1],classSelection:Type[*],mapping:DiscriminatorMapping[*] ):Boolean[1]
+{
+   let PropertyValue = if($propertyValue->instanceOf(Enum),|$propertyValue->cast(@Enum).name,|$propertyValue->toString());
+   oneOf($classSelection->map(t| $t.name==$propertyValue ))  || $propertyValue->in($mapping.value);
+}
+
+function <<access.private>> meta::external::format::json::binding::toPure::getRootSuperTypes(superTypes:String[*], fileName: String[1],schemas:Map<String,SchemaInput>[1],processed:String[*]):String[*]
+{
+
+  $superTypes->map(s | let superSchema = $schemas->get($s);
+                       if($superSchema->isNotEmpty() && !$s->in($processed),
+                            | let schema = $superSchema.schema->cast(@JSONSchema);
+                              let superAllOf = if($schema.allOf->isNotEmpty(),
+                                                    | let a = $schema.allOf->filter(a | $a.refValue->isNotEmpty())->map(a | $a.refValue->toOne()->refToFullPath($s)),
+                                                    | [] 
+                                                  )->distinct();
+                              if($superAllOf->isEmpty(),
+                                  |$s,
+                                  | $superAllOf->getRootSuperTypes($s,$schemas,$processed->concatenate($s));
+                                );,
+                            | $s
+                          );
+                  );
+}
+function <<access.private>> meta::external::format::json::binding::toPure::getSubTypes(schema:JSONSchema[1], fileName: String[1]):String[*]
+{
+  let subTypeRefs =  if($schema.anyOf->isNotEmpty(),
+                          | $schema.anyOf,
+                          | if($schema.oneOf->isNotEmpty(),
+                                | $schema.oneOf,
+                                | []
+                              )
+                        );
+
+  if($subTypeRefs->isNotEmpty(),
+        | let refs = $subTypeRefs->map(v |$v.refValue);
+          if($refs->isNotEmpty(),
+              | $refs->map(r|$r->refToFullPath($fileName));,
+              | []
+            );,
+        | [] 
+    );
+}
+function <<access.private>> meta::external::format::json::binding::toPure::newClassfromReference(ref:String[1],parentPath:String[0..1],pathPrefix:String[0..1]):Type[1]
+{
+  newClass($ref->refToFullPath($parentPath)->pureIdentifierFromFilenameAndPathPrefix($pathPrefix));
+}
+
+function <<access.private>> meta::external::format::json::binding::toPure::propertyParameter(property:Property<Nil, Any|*>[1],varExpressionName:String[1]):SimpleFunctionExpression[1]
+{
+   ^SimpleFunctionExpression(
+        func              = $property,
+        genericType       = $property.genericType,
+        multiplicity      = $property.multiplicity,
+        importGroup       = system::imports::coreImport,
+        parametersValues  = ^VariableExpression(name=$varExpressionName,multiplicity=PureOne,genericType=^GenericType(rawType=Any)),
+        propertyName      = ^InstanceValue(values=$property.name->toOne(),multiplicity=PureOne,genericType=^GenericType(rawType=String))
+    )
+}
+
+function  <<access.private>> meta::external::format::json::binding::toPure::fragmentToValueSpecifcation(value:Any[*],key:String[0..1],ownerFileName:String[1],pathPrefix:String[0..1],property:ValueSpecification[1],genInstanceOf:Boolean[0..1],format:String[0..1],rootProperty:ValueSpecification[1],pathSchemas:Map<String,SchemaInput>[1]):ValueSpecification[*]
+{  
+   let generateInstance = if($genInstanceOf->isEmpty(),|$value->getTypeFromMetamodel()==Any,|$genInstanceOf->toOne());
+   let  FunctionConstraintMap = functionConstraintMap($property->evaluateAndDeactivate().multiplicity.lowerBound.value==0);
+   let res = if($value->isNotEmpty(),
+                 |  
+                  let r  = if($key=='oneOf' || $key =='anyOf', 
+                                | let lambdaParams = $value->map( v |$v-> fragmentToValueSpecifcation([],$ownerFileName,$pathPrefix,$property,$generateInstance,$format,$rootProperty,$pathSchemas))->evaluateAndDeactivate();
+                                  let lambda = $FunctionConstraintMap->get($key->toOne()).expressionSequence->toOne()->evaluateAndDeactivate()->cast(@FunctionExpression);
+                                  ^$lambda(parametersValues=^InstanceValue(values=$lambdaParams,genericType=$lambdaParams.genericType->at(0),multiplicity=$lambdaParams->multiplicityFromCollection()));,
+                                | $value->map(f|$f->match([
+                                                e:JSONArray[1]| 
+                                                                let lambdaParams = $e.values->map( v |$v->fragmentToValueSpecifcation([],$ownerFileName,$pathPrefix,$property,$generateInstance,$format,$rootProperty,$pathSchemas))->evaluateAndDeactivate();
+                                                                if( $key =='possibleValues',
+                                                                      |
+                                                                        if($lambdaParams.genericType.rawType->distinct()->size() == 1,| [],| fail('enum values must be of same type'));
+                                                                        let lambda = $FunctionConstraintMap->get($key->toOne()).expressionSequence->toOne()->evaluateAndDeactivate()->cast(@FunctionExpression); 
+                                                                        let initialParam = replaceFirstParameter($lambda.parametersValues->at(0),$property);
+                                                                        ^$lambda(parametersValues=[$initialParam->concatenate(^InstanceValue(values=$e->getJSONElementValue(),genericType=$lambdaParams.genericType->at(0),multiplicity=$e.values->multiplicityFromCollection()))]);
+                                                                      ,|
+                                                                        $lambdaParams
+                                                                  );,
+
+                                              o:JSONSchema[1]| let discriminator = $o.discriminator;
+                                                                if($discriminator->isNotEmpty(),
+                                                                    |
+                                                                      //TODO: Add support for enum type discriminators and other collection flavors besides oneOf
+                                                                      let fn = $FunctionConstraintMap->get('discriminator').expressionSequence->toOne()->evaluateAndDeactivate()->cast(@FunctionExpression);
+                                                                      let classValues = $o.oneOf->map(v|^InstanceValue(genericType=^GenericType(rawType=Type),values=$v.refValue->toOne()->newClassfromReference($ownerFileName,$pathPrefix),multiplicity=PureOne););
+                                                                      let oneOf = ^InstanceValue(genericType=^GenericType(rawType=Class),multiplicity=$classValues->multiplicityFromCollection(),values=$classValues);
+                                                                      let mapping = $discriminator->cast(@JSONSchemaDiscriminator).mapping;
+                                                                      let mappingfn = if($mapping->isNotEmpty(),
+                                                                                          | let mappingValues = $mapping->toOne()->keyValues()->map(kv | 
+                                                                                                                                                      let first =^InstanceValue(genericType=^GenericType(rawType=String), values=$kv.first, multiplicity=PureOne);
+                                                                                                                                                      let second = ^InstanceValue(genericType=^GenericType(rawType=Type),values=$kv.second->newClassfromReference($ownerFileName,$pathPrefix),multiplicity=PureOne);
+                                                                                                                                                      let fn = $FunctionConstraintMap->get('mapping').expressionSequence->toOne()->evaluateAndDeactivate()->cast(@FunctionExpression);
+                                                                                                                                                      ^$fn(parametersValues=$first->concatenate($second)); 
+                                                                                                                                                  );
+                                                                                            ^InstanceValue(genericType=^GenericType(rawType=DiscriminatorMapping),multiplicity=$mappingValues->multiplicityFromCollection(),values=$mappingValues);,  
+                                                                                          | ^InstanceValue(genericType=^GenericType(rawType=Nil),multiplicity=PureZero )->cast(@ValueSpecification);
+                                                                                        );
+                                                                      let sourceInstance = ^VariableExpression(name='value',multiplicity=PureOne,genericType=^GenericType(rawType=$property->cast(@SimpleFunctionExpression)->evaluateAndDeactivate().func->cast(@Property<Nil,Any|*>).owner->toOne()->cast(@Type)));
+                                                                      ^$fn(parametersValues=$sourceInstance->concatenate($property)->concatenate($oneOf)->concatenate($mappingfn));
+                                                                    ,|
+                                                                      let instanceValues = $o->getAllNonNullMetamodelProperties()->keyValues();
+
+                                                                      let formatElement =  if($instanceValues->filter(o|$o.first=='format')->isNotEmpty(),
+                                                                                                |$instanceValues->filter(o|$o.first=='format')->first().second->toOne()->eval($o)->toOne()->toString(),
+                                                                                                | []
+                                                                                              );
+
+                                                                      let formatConstraint =   if($formatElement->isNotEmpty() ,
+                                                                                                    | $FunctionConstraintMap->get($formatElement->toOne()),                                      
+                                                                                                    | []
+                                                                                                  ); 
+
+                                                                      let onlyHasType = $instanceValues->filter(k|$k.first->in($FunctionConstraintMap->keys()))->size()==1 && $formatConstraint->isEmpty();
+
+                                                                      let filteredKVPInit = $instanceValues->filter(k|$k.first->in($FunctionConstraintMap->keys()->remove('type') ) 
+                                                                                                                        || ( $generateInstance && $k.first=='type'  ) 
+                                                                                                                        || ( $onlyHasType && $k.first=='type'  )
+                                                                                                                        ||  $formatConstraint->isNotEmpty() && $k.first=='format' )->newMap();// filter out what we don't handle here
+
+                                                                      let filteredKVP = if($filteredKVPInit->keys()->containsAll(['type','anyOf']) &&  $filteredKVPInit->get('anyOf')->toOne()->fragmentType()==Any ,
+                                                                                              | $filteredKVPInit->keyValues()->filter(k|$k.first=='anyOf')->newMap(),
+                                                                                              | if($o->instanceOf(JSONSchemaArray) || $key=='itemSchemas',
+                                                                                                  |$filteredKVPInit->keyValues()->filter(k|!$k.first=='type')->newMap(),
+                                                                                                  |$filteredKVPInit;
+                                                                                                )
+                                                                                          );
+                                                                    if($filteredKVP->keyValues()->isNotEmpty(),
+                                                                          | if($filteredKVP->keyValues()->size()>1,
+                                                                                |
+                                                                                  let lambdaES = $FunctionConstraintMap->get('and').expressionSequence->toOne()->evaluateAndDeactivate()->cast(@FunctionExpression);
+                                                                                  let processedKVP = $filteredKVP->keyValues()->map( kvp | 
+                                                                                                                                      let nextKey = if($kvp.first=='itemSchemas',
+                                                                                                                                                    |^JSONSchemaArray(itemSchemas=$kvp.second->eval($o)),
+                                                                                                                                                    | if($kvp.first=='type',
+                                                                                                                                                            | $o->getType(),
+                                                                                                                                                            | $kvp.second->eval($o)
+                                                                                                                                                        )
+                                                                                                                                                );
+
+                                                                                                                                      $nextKey->fragmentToValueSpecifcation($kvp.first,$ownerFileName,$pathPrefix,$property,$generateInstance,$formatElement,$rootProperty,$pathSchemas)->evaluateAndDeactivate();
+                                                                                                                                )->cast(@ValueSpecification);
+                                                                                  
+                                                                                  if($processedKVP->size()>1, 
+                                                                                        |
+                                                                                          $processedKVP->init()->fold({ lhs,a:ValueSpecification[1]|let params = $lhs->concatenate($a->toOne());
+                                                                                                                                              ^$lambdaES(parametersValues=$params); 
+                                                                                                                      },$processedKVP->last());,
+                                                                                        | $processedKVP);,
+                                                                                |  
+                                                                                  let kvp = $filteredKVP->keyValues()->first()->cast(@Pair<String, Property<JSONSchema,Any|*>>);
+                                                                                  if($kvp.first=='refValue' || $kvp.first=='format',
+                                                                                          | $kvp.second->toOne()->eval($o)->fragmentToValueSpecifcation($kvp.first,$ownerFileName,$pathPrefix,$property,$generateInstance,$formatElement,$rootProperty,$pathSchemas),
+
+                                                                                          | let lambda = $FunctionConstraintMap->get($kvp.first->toOne());
+                                                                                            let lambdaEs = $lambda.expressionSequence->toOne()->evaluateAndDeactivate()->cast(@FunctionExpression);
+                                                                                            let lambdaParam = $kvp.second->toOne()->eval($o)->fragmentToValueSpecifcation($kvp.first,$ownerFileName,$pathPrefix,$property,$generateInstance,$formatElement,$rootProperty,$pathSchemas);
+                                                                                            if($kvp.first=='itemSchemas',  
+                                                                                                    | 
+                                                                                                      let forAllproperty = ^VariableExpression(name='value',multiplicity=PureOne,genericType=^GenericType(rawType=Any));
+                                                                                                      let lambdaParam = $kvp.second->toOne()->eval($o)->fragmentToValueSpecifcation($kvp.first,$ownerFileName,$pathPrefix,$forAllproperty,$generateInstance,$formatElement,$rootProperty,$pathSchemas);
+                                                                                                      if ($lambdaParam->isNotEmpty(),
+                                                                                                          | 
+                                                                                                            let IV = $lambdaEs.parametersValues->at(1)->cast(@InstanceValue); 
+                                                                                                            let forAllLambda = $IV.values->cast(@LambdaFunction<Any>)->toOne();
+                                                                                                            let initialParam = replaceFirstParameter($lambdaEs.parametersValues->at(0),$property);
+                                                                                                            let lambdaWithParam =  ^$forAllLambda(expressionSequence=^InstanceValue(multiplicity=PureOne,genericType=^GenericType(rawType=Boolean),values=$lambdaParam->toOne()));
+                                                                                                            ^$lambdaEs(parametersValues=$initialParam->concatenate(^$IV(values=$lambdaWithParam)));,
+                                                                                                          | []
+                                                                                                          );,
+                                                                                                          
+                                                                                                    | let fragmentValue = if($kvp.first == 'type',|  $o->getType(),|$kvp.second->toOne()->eval($o));
+                                                                                                      let lambdaParam = $fragmentValue->fragmentToValueSpecifcation($kvp.first,$ownerFileName,$pathPrefix,$property,$generateInstance,$formatElement,$rootProperty,$pathSchemas);
+                                                                                                        if($lambdaParam->size()>1,
+                                                                                                              |  $lambdaParam->init()->fold({ fn,rhs|let lhs = $fn;
+                                                                                                                                      ^$lambdaEs(parametersValues=$lhs->cast(@ValueSpecification)->concatenate($rhs));
+                                                                                                                                },$lambdaParam->last()->cast(@ValueSpecification) );,
+                                                                                                              |  $lambdaParam;
+                                                                                                          );
+                                                                                              );              
+                                                                                    );   
+                                                                              );,
+                                                                          | []
+                                                                      ); 
+                                                                );,                 
+                                              s:String[1]|            
+                                                                if($key=='refValue',  
+                                                                    | let refFullPath = $s->refToFullPath($ownerFileName); 
+                                                                      let refSchema =$pathSchemas->get($refFullPath); 
+                                                                      if( $rootProperty->evaluateAndDeactivate().genericType.rawType->toOne()==Any
+                                                                          || $rootProperty->evaluateAndDeactivate().genericType.rawType->toOne()->instanceOf(PrimitiveType) 
+                                                                          || $refSchema.schema->cast(@JSONSchema)->isDiscriminator()
+                                                                          ,
+                                                                            | 
+                                                                              let refType = if($refSchema.schema->isNotEmpty(),|$refSchema.schema->toOne()->getSchemaType(),|[]);  
+                                                                              if($refType==SchemaType.fragment,
+                                                                                      | 
+                                                                                        let lambda =$FunctionConstraintMap->get('refValue')->evaluateAndDeactivate();
+                                                                                        let name = $s->refToFileName();   
+                                                                                        let func = createConstraintFunctionDefinition($refFullPath,$name,Any,$pathPrefix,$property->evaluateAndDeactivate().multiplicity)->evaluateAndDeactivate();
+                                                                                        ^SimpleFunctionExpression(
+                                                                                          func             = $func, 
+                                                                                          importGroup      = system::imports::coreImport,
+                                                                                          genericType      = $func->toOne()->functionReturnType(),
+                                                                                          multiplicity     = $func->toOne()->functionReturnMultiplicity(),
+                                                                                          functionName     = $refFullPath->pureIdentifierFromFilenameAndPathPrefix($pathPrefix),
+                                                                                          parametersValues = replaceFirstParameter($lambda.expressionSequence->at(0),$property)
+                                                                                        );,
+                                                                                      |
+                                                                                        let lambda =$FunctionConstraintMap->get('type')->evaluateAndDeactivate();
+                                                                                        let lambdaEs = $lambda.expressionSequence->toOne()->evaluateAndDeactivate()->cast(@FunctionExpression);
+                                                                                        let parameters = replaceFirstParameter($lambdaEs.parametersValues->at(0),$property)->concatenate(^InstanceValue(multiplicity = PureOne, genericType = ^GenericType(rawType=Type), values = newClass($refFullPath->pureIdentifierFromFilenameAndPathPrefix($pathPrefix)))) ;
+                                                                                        ^$lambdaEs(parametersValues=$parameters);
+                                                                                );  ,
+                                                                            |  [];
+                                                                        );,   
+                                                                        
+                                                                    |  let IV =  if($key=='type',
+                                                                                    |^InstanceValue(multiplicity=PureOne,genericType=^GenericType(rawType=Type),values=$s->JSONToPUREType($format));,
+                                                                                    |^InstanceValue(multiplicity=PureOne,genericType=^GenericType(rawType=String),values=$s)
+                                                                                  );
+                                                                      if($key->isNotEmpty() ,
+                                                                              |  
+                                                                                  let lookup =  if($key=='format', |$s,| $key);
+                                                                                  let lambdaES = $FunctionConstraintMap->get($lookup->toOne()).expressionSequence->evaluateAndDeactivate()->toOne()->cast(@FunctionExpression); 
+                                                                                  let initialParam = replaceFirstParameter($lambdaES.parametersValues->at(0),$property);
+                                                                                  let params =if($lambdaES.parametersValues->size()>1,
+                                                                                                  | [$initialParam->concatenate($IV)],
+                                                                                                  | [$initialParam]
+                                                                                                );
+                                                                                  ^$lambdaES(parametersValues=$params);,
+                                                                            |   $IV
+                                                                        );
+                                                                  );,
+                                              s: JSONString[1]| $s.value->fragmentToValueSpecifcation($key,$ownerFileName,$pathPrefix,$property,$generateInstance,$format,$rootProperty,$pathSchemas),
+                                              s: JSONNumber[1]| $s.value->fragmentToValueSpecifcation($key,$ownerFileName,$pathPrefix,$property,$generateInstance,$format,$rootProperty,$pathSchemas),
+
+                                              s:Number[1]| 
+                                                                  let IV = ^InstanceValue(genericType=^GenericType(rawType=Float),values=$s,multiplicity=PureOne);
+                                                                  if($key->isNotEmpty(),
+                                                                      | let lambdaES = $FunctionConstraintMap->get($key->toOne()).expressionSequence->evaluateAndDeactivate()->toOne()->cast(@FunctionExpression); 
+                                                                        let UpdatedSecondParams =  $lambdaES->replaceSecondParameter($IV)->cast(@FunctionExpression);
+                                                                        let initialParam = replaceFirstParameter($UpdatedSecondParams.parametersValues->at(0),$property);
+                                                                        ^$UpdatedSecondParams(parametersValues=[$initialParam->concatenate($UpdatedSecondParams.parametersValues->tail())]);,
+                                                                      |   $IV
+                                                                    );,
+
+                                              b:Boolean[1] |   let IV = ^InstanceValue(genericType=^GenericType(rawType=Boolean),values=$b,multiplicity=PureOne);
+                                                                  if($key->isNotEmpty(),
+                                                                      |
+                                                                          let lambdaES = $FunctionConstraintMap->get($key->toOne()).expressionSequence->evaluateAndDeactivate()->toOne()->cast(@FunctionExpression); 
+                                                                          let initialParam = replaceFirstParameter($lambdaES.parametersValues->at(0),$property);
+                                                                          let additionalParam = if($lambdaES.parametersValues->size()>1,|$IV,|[]);
+                                                                          ^$lambdaES(parametersValues=[$initialParam->concatenate($additionalParam)]);,
+                                                                      |   $IV
+                                                                    );,
+                                        
+                                              a:Any[1]|^InstanceValue(genericType=^GenericType(rawType=String),values='any',multiplicity=PureOne);
+                                        
+                                      ]
+                                  );)),
+                 | ^InstanceValue(genericType=^GenericType(rawType=String),values='blank',multiplicity=PureOne);
+            ); 
+$res;
+}
+function <<access.private>> meta::external::format::json::binding::toPure::fragmentType(fragment: Any[*]):Type[1]
+{
+  let types = $fragment->map(f | $f->getTypeFromMetamodel())->distinct();
+  if($types->size()>1||$types->isEmpty(),|Any,|$types->toOne());
+}
+function  <<access.private>> meta::external::format::json::binding::toPure::replaceSecondParameter(expression:ValueSpecification[1],instanceValue:InstanceValue[1]):ValueSpecification[1]
+{
+   $expression->match([
+                        s:SimpleFunctionExpression[1] | ^$s(parametersValues=$s.parametersValues->map(p|$p->replaceSecondParameter($instanceValue))),
+                        v:VariableExpression[1]       | if($v.name=='value2',| $instanceValue,| $v);,
+                        a:ValueSpecification[1]       | $expression->toOne() 
+                      ]);
+}
+
+function  <<access.private>> meta::external::format::json::binding::toPure::replaceFirstParameter(expression:ValueSpecification[1],property:ValueSpecification[0..1]):ValueSpecification[1]
+{
+   if($property->isNotEmpty(),
+      | $expression->match([
+                            s:SimpleFunctionExpression[1] | ^$s(parametersValues=$s.parametersValues->at(0)->replaceFirstParameter($property)->concatenate($s.parametersValues->tail())),
+                            a:ValueSpecification[1]       | $property->toOne() 
+                            ]),
+      | $expression
+      );
+}
+function  <<access.private>> meta::external::format::json::binding::toPure::multiplicityFromCollection(collection:Any[*]):Multiplicity[1]
+{
+  let size = $collection->size();
+  ^Multiplicity(lowerBound=^MultiplicityValue(value=$size), upperBound=^MultiplicityValue(value=$size));
+}
+
+function  <<access.private>> meta::external::format::json::binding::toPure::wrapWithIF(vs:SimpleFunctionExpression[1..*],property:ValueSpecification[1],required:Boolean[1],addToOne:Boolean[1]):ValueSpecification[1..*]
+{
+  let lambdaMany =  {this :Any[*] |if($this ->isNotEmpty(),|$this,|true)};
+  let lambdaOne =  {this :Any[0..1] |if($this ->isNotEmpty(),|$this,|true)};
+  let lambdsES =    if( $property->evaluateAndDeactivate().multiplicity->hasToOneUpperBound(),
+                       | $lambdaOne.expressionSequence->evaluateAndDeactivate()->cast(@SimpleFunctionExpression)->toOne();,
+                       | $lambdaMany.expressionSequence->evaluateAndDeactivate()->cast(@SimpleFunctionExpression)->toOne();
+                      );
+   
+   let functionName = $vs->evaluateAndDeactivate().functionName->first();  
+   if($required || $functionName->in( ['discriminateOneOf' ,'forAll' ,'isDistinct']) || ($property->evaluateAndDeactivate().multiplicity.lowerBound.value->toOne()>1) ,
+      |  $vs;,   
+      | let isNotEmpty =   $lambdsES.parametersValues->at(0)->cast(@SimpleFunctionExpression);
+        let updatedNotEmpty= ^$isNotEmpty(parametersValues=$property)->toOne();
+        let updatedVS = if($addToOne,|$vs->evaluateAndDeactivate()->toOne()->addToOne(),|$vs);
+        let firsParam = $lambdsES.parametersValues->at(1)->cast(@InstanceValue);
+        let firsParamValue = $firsParam.values->toOne()->cast(@LambdaFunction<Any>);
+        let updatedFirstParam= ^$firsParam(values=^$firsParamValue(expressionSequence=$updatedVS));
+     
+        ^$lambdsES(parametersValues=[$updatedNotEmpty,$updatedFirstParam,$lambdsES.parametersValues->at(2)]);
+   );
+}
+
+function  <<access.private>> meta::external::format::json::binding::toPure::addToOne(func:SimpleFunctionExpression[1]):SimpleFunctionExpression[1]
+{
+  let lambdaToOne =  {this :Any[0..1] |$this->toOne()};
+  let lambdaES = $lambdaToOne.expressionSequence->evaluateAndDeactivate()->cast(@SimpleFunctionExpression)->toOne();
+  let updatedEs = $func.parametersValues->evaluateAndDeactivate()->map(x | ^$lambdaES(parametersValues=$x)) ;
+  ^$func(parametersValues  =$updatedEs );
+}
+
+function  <<access.private>> meta::external::format::json::binding::toPure::createConstraintFunctionDefinition(fileName:String[1],functionName:String[1],valueType:Type[1],pathPrefix:String[0..1],propertyMultiplicity:Multiplicity[1]):ConcreteFunctionDefinition<Any>[1]
+{
+     let functionDef =  meta::external::format::json::binding::toPure::fragmentPlaceHolder_Any_$0_1$__Boolean_1_;
+     let ft =$functionDef->functionType();
+     let ftparam =$ft.parameters->at(0);
+     let name= $functionName+'_'+ $valueType->toString()+'_$0_1$__Boolean_1_';
+     
+     let updatedFT = ^$ft(parameters=^$ftparam(genericType=^GenericType(rawType=$valueType)));
+     ^$functionDef(stereotypes=[],functionName=$functionName,name=$name,classifierGenericType=^GenericType(typeArguments=^GenericType(rawType=$updatedFT),rawType=ConcreteFunctionDefinition))-> updatePackagableElementWithPackage($fileName->packageFromPath($pathPrefix)+$name)->cast(@ConcreteFunctionDefinition<Any>);
+}
+
+function <<access.private>> meta::external::format::json::binding::toPure::updatePackagableElementWithPackage(pack:PackageableElement[1],path:String[1]):PackageableElement[1]
+{
+   let pathParts = $path->split('::'); 
+   let elementName = if($pack.name->isNotEmpty(),|' for element ' +$pack.name->toOne(),|'');
+   assert($pathParts->size()>0,'your path must have both a package and a name specified as MyPackage::name found ' +$path +$elementName);
+   
+   let package = $pathParts->init()->fold({str:String[1], pkg:Package[1] |^Package(name = $str, package = $pkg);},^Package());
+  ^$pack(package=$package, name = $pathParts->last());
+
+}
+
+function <<access.private>> meta::external::format::json::binding::toPure::fragmentPlaceHolder(value:Any[0..1]):Boolean[1]
+{
+  true;   
+}
+
+function <<access.private>> meta::external::format::json::binding::toPure::getJSONElementValue(value :JSONElement[0..1]):Any[*]
+{
+   
+   if($value->isNotEmpty(),
+      | $value->toOne()->  match([
+                                  s:JSONString[1]   | $s.value,
+                                  n:JSONNumber[1]   | $n.value,
+                                  b:JSONBoolean[1]  | $b.value,
+                                  a:JSONArray[1]    | $a.values->map(v| $v->getJSONElementValue()),
+                                  a:Any[1]          | []        
+                                ]);,
+      | []
+    ); 
+   
+}
+
+function <<access.private>> meta::external::format::json::binding::toPure::getType(o :JSONSchema[1]):Any[*]
+{
+  $o->match([
+              s:JSONSchemaString[1]  | 'string',
+              s:JSONSchemaInteger[1] | 'integer',
+              s:JSONSchemaNumber[1]  | 'number',
+              s:JSONSchemaBoolean[1] | 'boolean',
+              s:JSONSchemaArray[1]   | 'array',
+              s:JSONSchemaObject[1]  | 'object',
+              s:Any[1] | []
+            ])
 }

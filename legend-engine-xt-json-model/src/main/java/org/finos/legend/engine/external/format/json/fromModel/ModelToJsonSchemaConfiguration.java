@@ -19,6 +19,33 @@ import org.finos.legend.engine.external.shared.format.model.fromModel.ModelToSch
 
 public class ModelToJsonSchemaConfiguration extends ModelToSchemaConfiguration
 {
+    // URL to the specification which your schema should be compatible with
+    public String specificationUrl;
+
+    //Generate JSON schema constraints from class constraints, unsupported functions will not generate
+    public Boolean useConstraints;
+
+    // Include related types in a definitions element on the schema, ignored if generating openAPI. if true , dependencies generate to definitions elements
+    public Boolean includeAllRelatedTypes;
+
+    // If true, an additional schema will be generated that can be used as a collection of subTypes
+    public Boolean generateAnyOfSubType;
+
+    // If true, constraint functions generate as schema files, if false constraint function content is in-lined with the parent schema
+    public Boolean generateConstraintFunctionSchemas;
+
+    // Generate a components or definitions collection, if true, only one file will generate with a collection of related elements in scope for execution and there will be no root element in the schema
+    public Boolean createSchemaCollection;
+
+    // Generate milestoned properties on schemas. If true - the auto-gen milestoned properties will be included on generated schemas
+    public Boolean generateMilestoneProperties;
+
+    public ModelToJsonSchemaConfiguration(String specificationUrl)
+    {
+        super(JsonExternalFormatExtension.TYPE);
+        this.specificationUrl = specificationUrl;
+    }
+
     public ModelToJsonSchemaConfiguration()
     {
         super(JsonExternalFormatExtension.TYPE);
