@@ -42,7 +42,6 @@ import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Servic
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_extension_TaggedValue_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_test_AtomicTest;
-import org.finos.legend.pure.generated.Root_meta_pure_test_Test;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
 
@@ -104,7 +103,7 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
     }
 
     @Override
-    public List<Function3<Test, CompileContext, ProcessingContext, Root_meta_pure_test_Test>> getExtraTestProcessors()
+    public List<Function3<Test, CompileContext, ProcessingContext, org.finos.legend.pure.m3.coreinstance.meta.pure.test.Test>> getExtraTestProcessors()
     {
         return Collections.singletonList((test, context, processingContext) ->
         {

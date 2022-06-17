@@ -28,9 +28,9 @@ import org.finos.legend.engine.testable.model.DoTestsInput;
 import org.finos.legend.engine.testable.model.DoTestsResult;
 import org.finos.legend.engine.testable.model.DoTestsTestableInput;
 import org.finos.legend.pure.generated.Root_meta_pure_test_AtomicTest;
-import org.finos.legend.pure.generated.Root_meta_pure_test_Test;
 import org.finos.legend.pure.generated.Root_meta_pure_test_TestSuite;
-import org.finos.legend.pure.generated.Root_meta_pure_test_Testable;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.test.Test;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.test.Testable;
 import org.pac4j.core.profile.CommonProfile;
 
 import java.util.List;
@@ -56,13 +56,13 @@ public class TestableRunner
         DoTestsResult doTestsResult = new DoTestsResult();
         for (DoTestsTestableInput testableInput : input.testables)
         {
-            Root_meta_pure_test_Testable testable = (Root_meta_pure_test_Testable) pureModel.getPackageableElement(testableInput.testable);
+            Testable testable = (Testable) pureModel.getPackageableElement(testableInput.testable);
             List<AtomicTestId> testIds = testableInput.unitTestIds;
             List<String> atomicTestIds = ListIterate.collect(testIds, id -> id.atomicTestId);
             Map<String, List<AtomicTestId>> testIdsBySuiteId = testIds.stream().collect(groupingBy(testId -> testId.testSuiteId));
 
             TestRunner testRunner = TestableRunnerExtensionLoader.forTestable(testable);
-            for (Root_meta_pure_test_Test test : testable._tests())
+            for (Test test : testable._tests())
             {
                 if ((test instanceof Root_meta_pure_test_AtomicTest) && (testIds.isEmpty() || atomicTestIds.contains(test._id())))
                 {

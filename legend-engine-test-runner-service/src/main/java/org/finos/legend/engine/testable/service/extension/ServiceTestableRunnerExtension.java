@@ -24,7 +24,7 @@ import org.finos.legend.engine.testable.extension.TestRunner;
 import org.finos.legend.engine.testable.extension.TestableRunnerExtension;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
 import org.finos.legend.pure.generated.Root_meta_pure_test_TestSuite;
-import org.finos.legend.pure.generated.Root_meta_pure_test_Testable;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.test.Testable;
 
 import java.util.List;
 
@@ -39,7 +39,7 @@ public class ServiceTestableRunnerExtension implements TestableRunnerExtension
     }
 
     @Override
-    public TestRunner getTestRunner(Root_meta_pure_test_Testable testable)
+    public TestRunner getTestRunner(Testable testable)
     {
         if (testable instanceof Root_meta_legend_service_metamodel_Service)
         {
@@ -48,7 +48,7 @@ public class ServiceTestableRunnerExtension implements TestableRunnerExtension
         return null;
     }
 
-    public List<TestResult> executeAllTest(Root_meta_pure_test_Testable testable, PureModel pureModel, PureModelContextData pureModelContextData)
+    public List<TestResult> executeAllTest(Testable testable, PureModel pureModel, PureModelContextData pureModelContextData)
     {
         if (!(testable instanceof Root_meta_legend_service_metamodel_Service))
         {
