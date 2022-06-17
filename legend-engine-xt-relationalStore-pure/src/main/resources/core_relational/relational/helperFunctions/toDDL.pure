@@ -81,8 +81,7 @@ function <<doc.deprecated>> meta::relational::functions::toDDL::createSchemaStat
 
 function meta::relational::functions::toDDL::createSchemaStatement(schemaName:String[1], dbConfig:DbConfig[1]) : String[1]
 {
-  ^meta::relational::commands::CreateSchemaSQL(schema= ^Schema(name= $schemaName,
-                                                               database=^Database(name='dummy')))->translateCreateSchemaStatement($dbConfig)->toOne();
+  $dbConfig.translateCreateSchema(^CreateSchemaSQL(schema= ^Schema(name= $schemaName, database=^Database(name='dummy'))))->toOne();
 }
 
 function <<doc.deprecated>> meta::relational::functions::toDDL::dropSchemaStatement(schema:String[1]) : String[1]
@@ -92,8 +91,7 @@ function <<doc.deprecated>> meta::relational::functions::toDDL::dropSchemaStatem
 
 function meta::relational::functions::toDDL::dropSchemaStatement(schemaName:String[1], dbConfig:DbConfig[1]) : String[1]
 {
-   ^meta::relational::commands::DropSchemaSQL(schema= ^Schema(name= $schemaName,
-                                                               database=^Database(name='dummy')))->translateDropSchemaStatement($dbConfig)->toOne();
+   $dbConfig.translateDropSchema(^DropSchemaSQL(schema= ^Schema(name= $schemaName, database=^Database(name='dummy'))))->toOne();
 }
 
 function <<doc.deprecated>> meta::relational::functions::toDDL::dropTableStatement(database:Database[1], tableName: String[1]) : String[1]
@@ -139,7 +137,7 @@ function meta::relational::functions::toDDL::dropTableStatement(database:Databas
 
 function meta::relational::functions::toDDL::dropTableStatement(t:Table[1], dbConfig:DbConfig[1]) : String[1]
 {
-   ^meta::relational::commands::DropTableSQL(table=$t)->translateDropTableStatement($dbConfig)->toOne();
+   $dbConfig.translateDropTable(^DropTableSQL(table=$t))->toOne();
 }
 
 function <<doc.deprecated>>  meta::relational::functions::toDDL::createTableStatement(database:Database[1], schema: String[1], tableName: String[1]) : String[1]
@@ -172,8 +170,7 @@ function <<access.private>> meta::relational::functions::toDDL::createTableState
 
 function meta::relational::functions::toDDL::createTableStatement(t:Table[1], applyConstraints:Boolean[1], dbConfig:DbConfig[1]) : String[1]
 {
-   ^meta::relational::commands::CreateTableSQL(table= $t,
-                                               applyConstraints= $applyConstraints)->translateCreateTableStatement($dbConfig)->toOne();
+   $dbConfig.translateCreateTable(^CreateTableSQL(table= $t, applyConstraints= $applyConstraints))->toOne();
 }
 
 //deprecated

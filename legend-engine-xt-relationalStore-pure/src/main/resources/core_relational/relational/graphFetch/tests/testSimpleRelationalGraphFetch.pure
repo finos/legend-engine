@@ -1219,3 +1219,28 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_21_0'} meta::rel
       $result
    );
 }
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_21_0'} meta::relational::graphFetch::tests::simple::testCheckedWithCircularConstraints(): Boolean[1]
+{
+  let tree = #{
+    meta::pure::executionPlan::constraints::tests::Person {
+        firstName,
+        firm {
+          legalName
+        }
+    }
+  }#;
+
+  let query = {|meta::pure::executionPlan::constraints::tests::Person.all()->graphFetchChecked($tree)->serialize($tree)};
+  let mapping = meta::pure::executionPlan::constraints::tests::simpleRel;
+  let runtime = meta::relational::tests::testRuntime(meta::pure::executionPlan::constraints::tests::db);
+
+  let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+
+  //  toFix: after fixing isDistinct related bug this test should expect:
+  // '[{"defects":[],"value":{"firstName":"Peter","firm":{"legalName": "Firm Y"}}},{"defects":[],"value":{"firstName":"John","firm":{"legalName": "Firm Y"}}},{"defects":[],"value":{"firstName":"Ann","firm":{"legalName": "Firm X"}}},{"defects":[],"value":{"firstName":"Carol","firm":{"legalName": "Firm X"}}}]',
+  assertJsonStringsEqual(
+    '[{"defects":[],"value":{"firstName":"Peter","firm":{"legalName":"Firm Y"}}},{"defects":[],"value":{"firstName":"John","firm":{"legalName":"Firm Y"}}},{"defects":[{"path":[{"propertyName":"firm","index":null}],"enforcementLevel":"Error","ruleType":"ClassConstraint","externalId":null,"id":"duplicateEmployee","ruleDefinerPath":"meta::pure::executionPlan::constraints::tests::Firm","message":"Unable to evaluate constraint [duplicateEmployee]: data not available - check your mappings"}],"value":{"firstName":"Ann","firm":{"legalName":"Firm X"}}},{"defects":[{"path":[{"propertyName":"firm","index":null}],"enforcementLevel":"Error","ruleType":"ClassConstraint","externalId":null,"id":"duplicateEmployee","ruleDefinerPath":"meta::pure::executionPlan::constraints::tests::Firm","message":"Unable to evaluate constraint [duplicateEmployee]: data not available - check your mappings"}],"value":{"firstName":"Carol","firm":{"legalName":"Firm X"}}}]',
+    $result
+  );
+}

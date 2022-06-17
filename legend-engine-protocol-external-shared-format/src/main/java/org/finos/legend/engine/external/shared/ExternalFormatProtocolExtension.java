@@ -16,8 +16,6 @@ package org.finos.legend.engine.external.shared;
 
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.impl.list.mutable.FastList;
-import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
@@ -38,27 +36,21 @@ public class ExternalFormatProtocolExtension implements PureProtocolExtension
     @Override
     public List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()
     {
-        return Lists.mutable.with(() -> Lists.mutable.with(
-                ProtocolSubTypeInfo.Builder.newInstance(PackageableElement.class)
-                        .withSubtypes(FastList.newListWith(
-                                Tuples.pair(ExternalFormatSchemaSet.class, "externalFormatSchemaSet"),
-                                Tuples.pair(Binding.class, "binding")
-                        )).build(),
-                ProtocolSubTypeInfo.Builder.newInstance(Connection.class)
-                        .withSubtypes(FastList.newListWith(
-                                Tuples.pair(ExternalFormatConnection.class, "ExternalFormatConnection")
-                        )).build(),
-
-                ProtocolSubTypeInfo.Builder.newInstance(ExternalSource.class)
-                        .withSubtypes(FastList.newListWith(
-                                Tuples.pair(UrlStreamExternalSource.class, "urlStream")
-                        )).build(),
-                ProtocolSubTypeInfo.Builder.newInstance(ExecutionNode.class)
-                        .withSubtypes(FastList.newListWith(
-                                Tuples.pair(DataQualityExecutionNode.class, "dataQuality"),
-                                Tuples.pair(UrlStreamExecutionNode.class, "urlStream")
-                        )).build()
-
+        return Lists.fixedSize.with(() -> Lists.fixedSize.with(
+                ProtocolSubTypeInfo.newBuilder(PackageableElement.class)
+                        .withSubtype(ExternalFormatSchemaSet.class, "externalFormatSchemaSet")
+                        .withSubtype(Binding.class, "binding")
+                        .build(),
+                ProtocolSubTypeInfo.newBuilder(Connection.class)
+                        .withSubtype(ExternalFormatConnection.class, "ExternalFormatConnection")
+                        .build(),
+                ProtocolSubTypeInfo.newBuilder(ExternalSource.class)
+                        .withSubtype(UrlStreamExternalSource.class, "urlStream")
+                        .build(),
+                ProtocolSubTypeInfo.newBuilder(ExecutionNode.class)
+                        .withSubtype(DataQualityExecutionNode.class, "dataQuality")
+                        .withSubtype(UrlStreamExecutionNode.class, "urlStream")
+                        .build()
         ));
     }
 }

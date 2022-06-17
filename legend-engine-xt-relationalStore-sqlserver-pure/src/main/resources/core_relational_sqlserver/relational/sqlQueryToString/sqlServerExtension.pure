@@ -1,0 +1,94 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::functions::sqlQueryToString::sqlServer::*;
+import meta::relational::functions::sqlQueryToString::default::*;
+import meta::relational::functions::sqlQueryToString::*;
+import meta::relational::metamodel::operation::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::metamodel::*;
+import meta::relational::runtime::*;
+import meta::pure::router::extension::*;
+
+function <<db.ExtensionLoader>> meta::relational::functions::sqlQueryToString::sqlServer::dbExtensionLoaderForSqlServer():DbExtensionLoader[1]
+{
+  ^DbExtensionLoader(dbType = DatabaseType.SqlServer, loader = createDbExtensionForSqlServer__DbExtension_1_);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sqlServer::createDbExtensionForSqlServer():DbExtension[1]
+{
+   let reservedWords = defaultReservedWords();
+   let literalProcessors = getDefaultLiteralProcessors();
+   let literalProcessor = {type:Type[1]| $literalProcessors->get(if($type->instanceOf(Enumeration), | Enum, | $type))->toOne()};
+   let dynaFuncDispatch = getDynaFunctionToSqlDefault($literalProcessor)->groupBy(d| $d.funcName)->putAll(
+     getDynaFunctionToSqlForSqlServer()->groupBy(d| $d.funcName))->getDynaFunctionDispatcher();
+
+   ^DbExtension(
+      isBooleanLiteralSupported = true,
+      isDbReservedIdentifier = {str:String[1]| $str->in($reservedWords)},
+      literalProcessor = $literalProcessor,
+      joinStringsProcessor = processJoinStringsOperationForSqlServer_JoinStrings_1__SqlGenerationContext_1__String_1_,
+      selectSQLQueryProcessor = processSelectSQLQueryDefault_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
+      columnNameToIdentifier = columnNameToIdentifierDefault_String_1__DbConfig_1__String_1_,
+      identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
+      dynaFuncDispatch = $dynaFuncDispatch
+   );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sqlServer::getDynaFunctionToSqlForSqlServer(): DynaFunctionToSql[*]
+{
+  let allStates = allGenerationStates();
+
+  [
+    dynaFnToSql('atan2',                  $allStates,            ^ToSql(format='atn2(%s,%s)')),
+    dynaFnToSql('concat',                 $allStates,            ^ToSql(format='%s', transform={p:String[*]|$p->joinStrings(' + ')})),
+    dynaFnToSql('datePart',               $allStates,            ^ToSql(format='cast(%s as date)')),
+    dynaFnToSql('dayOfWeekNumber',        $allStates,            ^ToSql(format='datepart(dw, %s)')),
+    dynaFnToSql('firstDayOfMonth',        $allStates,            ^ToSql(format='dateadd(day, -(day(cast(%s as date)) - 1), cast(%s as date))', transform={p:String[1] | $p->repeat(2)})),
+    dynaFnToSql('firstDayOfQuarter',      $allStates,            ^ToSql(format='dateadd(qq, datediff(qq, 0, %s), 0)')),
+    dynaFnToSql('firstDayOfThisMonth',    $allStates,            ^ToSql(format='dateadd(day, -(day(cast(getdate() as date)) - 1), cast(getdate() as date))')),
+    dynaFnToSql('firstDayOfThisQuarter',  $allStates,            ^ToSql(format='dateadd(qq, datediff(qq, 0, getdate()), 0)')),
+    dynaFnToSql('firstDayOfThisYear',     $allStates,            ^ToSql(format='dateadd(yy, datediff(yy, 0, getdate()), 0)')),
+    dynaFnToSql('firstDayOfYear',         $allStates,            ^ToSql(format='dateadd(yy, datediff(yy, 0, %s), 0)')),
+    dynaFnToSql('hour',                   $allStates,            ^ToSql(format='hour(%s)')),
+    dynaFnToSql('left',                   $allStates,            ^ToSql(format='left(%s,%s)')),
+    dynaFnToSql('length',                 $allStates,            ^ToSql(format='len(%s)')),
+    dynaFnToSql('ltrim',                  $allStates,            ^ToSql(format='ltrim(%s)')),
+    dynaFnToSql('minute',                 $allStates,            ^ToSql(format='minute(%s)')),
+    dynaFnToSql('month',                  $allStates,            ^ToSql(format='month(%s)')),
+    dynaFnToSql('monthNumber',            $allStates,            ^ToSql(format='month(%s)')),
+    dynaFnToSql('now',                    $allStates,            ^ToSql(format='getdate()')),
+    dynaFnToSql('parseFloat',             $allStates,            ^ToSql(format='cast(%s as float)')),
+    dynaFnToSql('parseInteger',           $allStates,            ^ToSql(format='cast(%s as integer)')),
+    dynaFnToSql('position',               $allStates,            ^ToSql(format='charindex(%s, %s)')),
+    dynaFnToSql('quarter',                $allStates,            ^ToSql(format='quarter(%s)')),
+    dynaFnToSql('quarterNumber',          $allStates,            ^ToSql(format='quarter(%s)')),
+    dynaFnToSql('right',                  $allStates,            ^ToSql(format='right(%s,%s)')),
+    dynaFnToSql('round',                  $allStates,            ^ToSql(format='round(%s, 0)')),
+    dynaFnToSql('rtrim',                  $allStates,            ^ToSql(format='rtrim(%s)')),
+    dynaFnToSql('second',                 $allStates,            ^ToSql(format='second(%s)')),
+    dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
+    dynaFnToSql('stdDevPopulation',       $allStates,            ^ToSql(format='stdevp(%s)')),
+    dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stdev(%s)')),
+    dynaFnToSql('today',                  $allStates,            ^ToSql(format='cast(getdate() as date)')),
+    dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as varchar)')),
+    dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='datepart(wk, %s)')),
+    dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(wk, %s)'))
+  ];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sqlServer::processJoinStringsOperationForSqlServer(js:JoinStrings[1], sgc:SqlGenerationContext[1]): String[1]
+{
+   processJoinStringsOperation($js, $sgc, [], {strs, sep| $strs->joinStrings(if('\'\'' == $sep, |'+', |'+' + $sep + '+'))});
+}

@@ -109,10 +109,11 @@ function meta::pure::executionPlan::engine::java::graphFetch::inMemory::enrichFo
 {
    let conventions  = $context.conventions;
    let currentClass = $node->typeFromStoreLocalNode();
+   let constraintsToExclude = $node.graphFetchTree.constraintsExclusions;
 
    let allQualifiers        = $context.typeInfos->allQualifiedProperties($currentClass);
    let qualifiersProject    = $class->createQualifiedPropertiesForClass($allQualifiers, $conventions, $debug->indent());
-   let constraintsProject   = $class->createConstraintCheckingForClass($currentClass, $context, $debug->indent());
+   let constraintsProject   = $class->createConstraintCheckingForClass($currentClass, $constraintsToExclude, $context, $debug->indent());
    let sourceReferenceClass = $class
                                  ->addPropertyWithGetterAndSetter('setId$', javaString(), $conventions)
                                  ->addPropertyWithGetterAndSetter(inMemorySource(), javaObject(), $conventions)

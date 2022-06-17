@@ -15,7 +15,7 @@
 package org.finos.legend.engine.language.pure.dsl.dataSpace.grammar.to;
 
 import org.eclipse.collections.api.block.function.Function3;
-import org.eclipse.collections.impl.factory.Lists;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.dsl.dataSpace.grammar.from.DataSpaceParserExtension;
@@ -39,7 +39,7 @@ public class DataSpaceGrammarComposerExtension implements PureGrammarComposerExt
     @Override
     public List<Function3<List<PackageableElement>, PureGrammarComposerContext, String, String>> getExtraSectionComposers()
     {
-        return Lists.mutable.with((elements, context, sectionName) ->
+        return Lists.fixedSize.with((elements, context, sectionName) ->
         {
             if (!DataSpaceParserExtension.NAME.equals(sectionName))
             {
@@ -59,7 +59,7 @@ public class DataSpaceGrammarComposerExtension implements PureGrammarComposerExt
     @Override
     public List<Function3<List<PackageableElement>, PureGrammarComposerContext, List<String>, PureFreeSectionGrammarComposerResult>> getExtraFreeSectionComposers()
     {
-        return Lists.mutable.with((elements, context, composedSections) ->
+        return Lists.fixedSize.with((elements, context, composedSections) ->
         {
             List<DataSpace> composableElements = ListIterate.selectInstancesOf(elements, DataSpace.class);
             return composableElements.isEmpty() ? null : new PureFreeSectionGrammarComposerResult(LazyIterate.collect(composableElements, DataSpaceGrammarComposerExtension::renderDataSpace).makeString("###" + DataSpaceParserExtension.NAME + "\n", "\n\n", ""), composableElements);

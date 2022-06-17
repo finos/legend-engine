@@ -88,7 +88,7 @@ public class PackageableElementThirdPassBuilder implements PackageableElementVis
             ctx.push("Qualified Property " + property.name);
             ListIterate.collect(property.parameters, expression -> expression.accept(new ValueSpecificationBuilder(this.context, Lists.mutable.empty(), ctx)));
             MutableList<ValueSpecification> body = ListIterate.collect(property.body, expression -> expression.accept(new ValueSpecificationBuilder(this.context, Lists.mutable.empty(), ctx)));
-            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty prop = association._qualifiedProperties().select(o -> o._name().equals(property.name)).getFirst();
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty<?> prop = association._qualifiedProperties().detect(o -> o._name().equals(property.name));
             ctx.pop();
             ctx.flushVariable("this");
             return prop._expressionSequence(body);

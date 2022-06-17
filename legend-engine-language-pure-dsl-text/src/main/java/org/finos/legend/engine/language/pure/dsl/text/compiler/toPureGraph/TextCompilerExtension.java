@@ -17,7 +17,7 @@ package org.finos.legend.engine.language.pure.dsl.text.compiler.toPureGraph;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.text.Text;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_PackageableElement_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_text_Text_Impl;
 
 import java.util.Collections;
 
@@ -26,7 +26,6 @@ public class TextCompilerExtension implements CompilerExtension
     @Override
     public Iterable<? extends Processor<?>> getExtraProcessors()
     {
-        // NOTE: we stub out since this element doesn't have an equivalent packageable element form in PURE metamodel
-        return Collections.singletonList(Processor.newProcessor(Text.class, (text, context) -> new Root_meta_pure_metamodel_PackageableElement_Impl("")));
+        return Collections.singletonList(Processor.newProcessor(Text.class, (text, context) -> new Root_meta_pure_metamodel_text_Text_Impl("")._type(text.type)._content(text.content)));
     }
 }

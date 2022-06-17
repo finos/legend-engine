@@ -25,24 +25,3 @@ function meta::protocols::pure::vX_X_X::invocation::generation::json::transformJ
         useConstraints = $input.useConstraints
    )
 }
-
-
-###Pure
-
-import meta::external::format::avro::generation::*;
-
-function meta::protocols::pure::vX_X_X::invocation::generation::avro::transformAvroGenerationConfig(input:AvroConfig[1]):meta::protocols::pure::vX_X_X::metamodel::invocation::generation::avro::AvroConfig[1]
-{
-   ^meta::protocols::pure::vX_X_X::metamodel::invocation::generation::avro::AvroConfig(
-      package = $input.package,
-      class = $input.class,
-      includeNamespace=$input.includeNamespace ,
-      includeSuperTypes=$input.includeSuperTypes,
-      includeAssociations=$input.includeAssociations,
-      includeGeneratedMilestoning=$input.includeGeneratedMilestoning,
-      timestampLogicalType=$input.timestampLogicalType,
-      propertyProfile=$input.propertyProfile,
-      namespaceOverride=$input.namespaceOverride,
-      generateLogicalTypes = $input.generateLogicalTypes
-   )
-}

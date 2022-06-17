@@ -1,0 +1,76 @@
+import meta::relational::functions::sqlQueryToString::redshift::*;
+import meta::relational::functions::sqlQueryToString::default::*;
+import meta::relational::functions::sqlQueryToString::*;
+import meta::relational::metamodel::operation::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::metamodel::*;
+import meta::relational::runtime::*;
+import meta::pure::router::extension::*;
+
+function <<db.ExtensionLoader>> meta::relational::functions::sqlQueryToString::redshift::dbExtensionLoaderForRedshift():DbExtensionLoader[1]
+{
+  ^DbExtensionLoader(dbType = DatabaseType.Redshift, loader = createDbExtensionForRedshift__DbExtension_1_);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::redshift::createDbExtensionForRedshift():DbExtension[1]
+{
+   let reservedWords = defaultReservedWords();
+   let literalProcessors = getDefaultLiteralProcessors()->putAll(getLiteralProcessorsForRedshift());
+   let literalProcessor = {type:Type[1]| $literalProcessors->get(if($type->instanceOf(Enumeration), | Enum, | $type))->toOne()};
+   let dynaFuncDispatch = getDynaFunctionToSqlDefault($literalProcessor)->groupBy(d| $d.funcName)->putAll(
+     getDynaFunctionToSqlForRedshift()->groupBy(d| $d.funcName))->getDynaFunctionDispatcher();
+     
+   ^DbExtension(
+      isBooleanLiteralSupported = true,
+      isDbReservedIdentifier = {str:String[1]| $str->in($reservedWords)},
+      literalProcessor = $literalProcessor,
+      windowColumnProcessor = processWindowColumn_WindowColumn_1__SqlGenerationContext_1__String_1_,
+      joinStringsProcessor = processJoinStringsOperationWithConcatCall_JoinStrings_1__SqlGenerationContext_1__String_1_,
+      selectSQLQueryProcessor = processSelectSQLQueryDefault_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
+      columnNameToIdentifier = columnNameToIdentifierDefault_String_1__DbConfig_1__String_1_,
+      identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
+      dynaFuncDispatch = $dynaFuncDispatch
+   );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::redshift::getLiteralProcessorsForRedshift():Map<Type,LiteralProcessor>[1]
+{
+   newMap([
+      pair(StrictDate,     ^LiteralProcessor(format = 'Date\'%s\'',      transform = {d:StrictDate[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(DateTime,       ^LiteralProcessor(format = 'Timestamp\'%s\'', transform = {d:DateTime[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(Date,           ^LiteralProcessor(format = 'Timestamp\'%s\'', transform = {d:Date[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)}))
+   ])
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::redshift::getDynaFunctionToSqlForRedshift(): DynaFunctionToSql[*]
+{
+  let allStates = allGenerationStates();
+
+  [
+    dynaFnToSql('atan2',                  $allStates,            ^ToSql(format='atan2(%s,%s)')),
+    dynaFnToSql('concat',                 $allStates,            ^ToSql(format='%s', transform={p:String[*]|$p->joinStrings(' + ')})),
+    dynaFnToSql('hour',                   $allStates,            ^ToSql(format='date_part(hour, %s)')),
+    dynaFnToSql('joinStrings',            $allStates,            ^ToSql(format='listagg(%s, %s)')),
+    dynaFnToSql('minute',                 $allStates,            ^ToSql(format='extract(minute from %s)')),
+    dynaFnToSql('mod',                    $allStates,            ^ToSql(format='mod(%s,%s)')),
+    dynaFnToSql('month',                  $allStates,            ^ToSql(format='extract(month from %s)')),
+    dynaFnToSql('monthNumber',            $allStates,            ^ToSql(format='extract(month from %s)')),
+    dynaFnToSql('now',                    $allStates,            ^ToSql(format='now()')),
+    dynaFnToSql('parseDecimal',           $allStates,            ^ToSql(format='cast(%s as decimal)')),
+    dynaFnToSql('parseFloat',             $allStates,            ^ToSql(format='cast(%s as float)')),
+    dynaFnToSql('parseInteger',           $allStates,            ^ToSql(format='cast(%s as integer)')),
+    dynaFnToSql('position',               $allStates,            ^ToSql(format='position(%s in %s)')),
+    dynaFnToSql('rem',                    $allStates,            ^ToSql(format='mod(%s,%s)')),
+    dynaFnToSql('right',                  $allStates,            ^ToSql(format='right(%s,%s)')),
+    dynaFnToSql('round',                  $allStates,            ^ToSql(format='round(%s, %s)', transform=transformRound_String_MANY__String_MANY_)),
+    dynaFnToSql('rtrim',                  $allStates,            ^ToSql(format='rtrim(%s)')),
+    dynaFnToSql('second',                 $allStates,            ^ToSql(format='extract( second from %s)')),
+    dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
+    dynaFnToSql('stdDevPopulation',       $allStates,            ^ToSql(format='stddev_pop(%s)')),
+    dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
+    dynaFnToSql('today',                  $allStates,            ^ToSql(format='current_date')),
+    dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as varchar)')),
+    dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='extract(week from %s)')),
+    dynaFnToSql('year',                   $allStates,            ^ToSql(format='extract(year from %s)'))
+  ];
+}

@@ -80,6 +80,7 @@ public class PackageableElementSecondPassBuilder implements PackageableElementVi
         return null;
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public PackageableElement visit(Class srcClass)
     {
@@ -136,8 +137,8 @@ public class PackageableElementSecondPassBuilder implements PackageableElementVi
 
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association association = this.context.pureModel.getAssociation(this.context.pureModel.buildPackageString(srcAssociation._package, srcAssociation.name), srcAssociation.sourceInformation);
 
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class class1 = this.context.resolveClass(property0Ref, srcAssociation.properties.get(0).sourceInformation);
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class class2 = this.context.resolveClass(property1Ref, srcAssociation.properties.get(1).sourceInformation);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> class1 = this.context.resolveClass(property0Ref, srcAssociation.properties.get(0).sourceInformation);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> class2 = this.context.resolveClass(property1Ref, srcAssociation.properties.get(1).sourceInformation);
 
         MutableList<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?>> properties = association._properties().toList();
         MutableList<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?>> originalMilestonedProperties = association._originalMilestonedProperties().toList();

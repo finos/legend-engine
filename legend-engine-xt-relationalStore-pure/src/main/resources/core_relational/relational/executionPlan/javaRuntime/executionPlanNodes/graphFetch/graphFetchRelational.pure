@@ -988,8 +988,9 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
 
 function meta::pure::executionPlan::engine::java::graphFetch::relational::enrichForRelationalGraphExecution(cl: meta::external::language::java::metamodel::Class[1], node: RelationalGraphFetchExecutionNode[1], context: GenerationContext[1], extensions: meta::pure::router::extension::RouterExtension[*], debug: DebugContext[1]):Project[1]
 {
+   let constraintsToExclude = $node.graphFetchTree.constraintsExclusions;
    let qualifiersProject  = $cl->updateImplementationClassWithQualifiedProperties($node->typeFromStoreLocalNode(), $context);
-   let constraintsProject = $cl->createConstraintCheckingForClass($node->typeFromStoreLocalNode(), $context, $debug->indent());
+   let constraintsProject = $cl->createConstraintCheckingForClass($node->typeFromStoreLocalNode(), $constraintsToExclude, $context, $debug->indent());
    let primaryKeyProject  = $cl->updateImplementationClassWithPrimaryKeys($node, $context);
    let additionalProject  = $cl->updateImplementationClassWithSetConnectionAndReference($node, $context);
    mergeProjects([$qualifiersProject, $constraintsProject, $primaryKeyProject, $additionalProject]);
