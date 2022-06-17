@@ -14,20 +14,13 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes;
 
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.mapping.ServiceParameterMapping;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.mapping.ServiceRequestParametersBuildInfo;
 
-import java.util.List;
-import java.util.Map;
-
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ServiceParametersResolutionExecutionNode extends ExecutionNode
 {
     public ServiceRequestParametersBuildInfo requestParametersBuildInfo;
-
-    @Deprecated
-    public Map<String, String> propertyInputMap;
-    @Deprecated
-    public List<ServiceParameterMapping> parameterMappings;
 
     @Override
     public <T> T accept(ExecutionNodeVisitor<T> executionNodeVisitor)
