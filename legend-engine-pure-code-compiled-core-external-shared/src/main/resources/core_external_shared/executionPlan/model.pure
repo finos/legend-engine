@@ -62,3 +62,8 @@ Class meta::external::shared::format::executionPlan::UrlStreamExternalSource ext
 {
    url : String[1];
 }
+
+Class meta::external::shared::format::executionPlan::ExecutionNodeExternalSource extends ExternalSource
+{
+   node : ExecutionNode[1];
+}

@@ -32,7 +32,6 @@ import meta::external::store::service::executionPlan::engine::java::*;
 import meta::external::store::service::executionPlan::nodes::*;
 import meta::external::store::service::executionPlan::generation::*;
 import meta::external::store::service::executionPlan::toString::*;
-
 import meta::external::store::service::metamodel::*;
 import meta::external::store::service::metamodel::mapping::*;
 import meta::external::store::service::metamodel::runtime::*;
@@ -114,8 +113,9 @@ function <<access.private>> meta::external::store::service::router::extension::s
       executionPlan_print_planNodeToString = 
                                 {space : String[1], extensions:meta::pure::router::extension::RouterExtension[*]|
                                        [
-                                          s:RestServiceExecutionNode[1]| serviceStoreExecutionNodeToString($s, $space, $extensions);,
-                                          sp:ServiceParametersResolutionExecutionNode[1] | serviceParametersResolutionExecutionNodeToString($sp, $space, $extensions);
+                                          s:RestServiceExecutionNode[1] | serviceStoreExecutionNodeToString($s, $space, $extensions);,
+                                          sp:ServiceParametersResolutionExecutionNode[1] | serviceParametersResolutionExecutionNodeToString($sp, $space, $extensions);,
+                                          l:LimitExecutionNode[1] | limitExecutionNodeToString($l, $space, $extensions);
                                        ]},
       graphExtension_calculateSourceTree = {tree:RootGraphFetchTree<Any>[1] | 
          {rsi: RootServiceInstanceSetImplementation[1] |
@@ -195,9 +195,15 @@ function <<access.private>> meta::external::store::service::router::extension::s
               e: EmbeddedServiceStoreSetImplementation[1] | $e.class
             ],
       plan_javaRuntime_main_generatePlatformCode1 =
-            {path:String[1], context:GenerationContext[1], extendsion:RouterExtension[*], debug:DebugContext[1] |
+            {path:String[1], context:GenerationContext[1], extensions:RouterExtension[*], debug:DebugContext[1] |
                [
-                  s:ServiceParametersResolutionExecutionNode[1]   | $s->generateImplementationForServiceParametersResolutionNode($path, $context, $debug)
+                  s:ServiceParametersResolutionExecutionNode[1] | $s->generateImplementationForServiceParametersResolutionNode($path, $context, $debug)
+               ]
+            },
+      plan_javaRuntime_main_prepare2 =
+            {path:String[1], contextFromOtherNodes:GenerationContext[1], extensions:RouterExtension[*], debug:DebugContext[1] |
+               [
+                  l:LimitExecutionNode[1] | $l->prepareForLimitExecutionNode($path, $contextFromOtherNodes, $debug)
                ]
             },
       systemMapping_systemForSetImplementation = r:RootServiceInstanceSetImplementation[1]|serviceStoreSystemMapping()

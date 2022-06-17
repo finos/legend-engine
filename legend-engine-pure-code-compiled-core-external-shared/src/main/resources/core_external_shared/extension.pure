@@ -56,17 +56,6 @@ function meta::external::shared::format::routerExtensions(type:String[1], extern
                }
             ]
          },
-      executionPlan_generation_nodeFromConnectionWithChildren = 
-         {tree:RootGraphFetchTree<Any>[0..1], children:ExecutionNode[1], enableConstraints:Boolean[1], checked:Boolean[1] |
-            [
-               {x:ExternalFormatConnection[1] | 
-                  let binding         = $x.element->cast(@Binding);
-                  let formatExtension = $externalFormatExtensions->getExtensionForContentType($binding.contentType);
-                  let deserializeNode = $formatExtension.generateDeserializeNode->eval($x, $children, $tree);
-                  generateDataQualityNode($deserializeNode, $enableConstraints, $checked);
-               }
-            ]
-         },
       executionPlan_print_connectionToString = meta::external::shared::format::executionPlan::printConnection_RouterExtension_MANY__Function_MANY_,
       executionPlan_print_planNodeToString =
          {space:String[1], extensions:RouterExtension[*] |

@@ -38,3 +38,9 @@ Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::service::S
 {
    requestParametersBuildInfo : ServiceRequestParametersBuildInfo[1];
 }
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::service::LimitExecutionNode extends meta::protocols::pure::vX_X_X::metamodel::executionPlan::ExecutionNode
+{
+   limit : Integer[1];
+}
+

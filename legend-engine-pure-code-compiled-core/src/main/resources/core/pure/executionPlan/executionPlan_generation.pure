@@ -263,16 +263,6 @@ function meta::pure::executionPlan::nodeFromConnection(c:Connection[1], tree:Roo
    $c->match($extensions.executionPlan_generation_nodeFromConnection->map(x| $x->eval($tree, $enableConstraints, $checked))->concatenate($dflt)->toOneMany())->toOne();
 }
 
-function meta::pure::executionPlan::nodeFromConnection(c:Connection[1], tree:RootGraphFetchTree<Any>[0..1], childNode: ExecutionNode[1], enableConstraints:Boolean[1], checked:Boolean[1], extensions:meta::pure::router::extension::RouterExtension[*]):ExecutionNode[1]
-{
-   $c->nodeFromConnection($tree, $childNode, $enableConstraints, $checked, $extensions, {c:Connection[1] | fail('No node available for connection'); @ExecutionNode;});
-}
-
-function meta::pure::executionPlan::nodeFromConnection(c:Connection[1], tree:RootGraphFetchTree<Any>[0..1], childNode: ExecutionNode[1], enableConstraints:Boolean[1], checked:Boolean[1], extensions:meta::pure::router::extension::RouterExtension[*], dflt:Function<{Nil[1]->ExecutionNode[1]}>[*]):ExecutionNode[1]
-{
-   $c->match($extensions.executionPlan_generation_nodeFromConnectionWithChildren->map(x| $x->eval($tree, $childNode, $enableConstraints, $checked))->concatenate($dflt)->toOneMany())->toOne();
-}
-
 function meta::pure::executionPlan::updateConnection(c:Connection[1], extensions:meta::pure::router::extension::RouterExtension[*]):Connection[1]
 {
    $c->match($extensions.executionPlan_generation_updateConnection->concatenate([

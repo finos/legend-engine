@@ -25,6 +25,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.data.contentPattern.Conten
 import org.finos.legend.engine.protocol.pure.v1.model.data.contentPattern.EqualToJsonPattern;
 import org.finos.legend.engine.protocol.pure.v1.model.data.contentPattern.EqualToPattern;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.LimitExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RestServiceExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ServiceParametersResolutionExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
@@ -63,6 +64,7 @@ public class ServiceStoreProtocolExtension implements PureProtocolExtension
                 // Execution Nodes
                 ProtocolSubTypeInfo.newBuilder(ExecutionNode.class)
                         .withSubtype(RestServiceExecutionNode.class, "restService")
+                        .withSubtype(LimitExecutionNode.class, "limit")
                         .withSubtype(ServiceParametersResolutionExecutionNode.class, "serviceParametersResolution")
                         .build(),
                 // Packageable element
