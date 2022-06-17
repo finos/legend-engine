@@ -16,6 +16,7 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.s
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.map.ConcurrentMutableMap;
 import org.eclipse.collections.api.tuple.Pair;
@@ -121,7 +122,10 @@ public class ConnectionStateManager implements Closeable
 
     static
     {
-        ThreadFactory threadFactory = r -> new Thread(r, "ConnectionStateManager.Housekeeper");
+        ThreadFactory threadFactory = new BasicThreadFactory.Builder()
+                .namingPattern("ConnectionStateManager.Housekeeper")
+                .daemon(true)
+                .build();
         long evictionDurationInSeconds = resolveEvictionDuration();
         ConnectionStateHousekeepingTask connectionStateHousekeepingTask = new ConnectionStateHousekeepingTask(evictionDurationInSeconds);
         EXECUTOR_SERVICE = Executors.newScheduledThreadPool(1, threadFactory);
