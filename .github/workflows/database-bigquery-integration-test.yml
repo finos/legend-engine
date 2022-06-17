@@ -62,11 +62,11 @@ jobs:
         run: "gcloud info"
       - name: Build
         env:
-          MAVEN_OPTS: -Xmx4000m
+          MAVEN_OPTS: -Xmx4g
         run: mvn clean install -DskipTests=true
       - name: Run Connection Protocol Integration Tests
         env:
-          MAVEN_OPTS: -Xmx4000m
+          MAVEN_OPTS: -Xmx4g
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_INTEGRATION_USER1_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_INTEGRATION_USER1_SECRET_ACCESS_KEY }}
         run: |
