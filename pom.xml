@@ -97,6 +97,7 @@
         <module>legend-engine-xt-diagram-compiler</module>
         <module>legend-engine-xt-diagram-protocol</module>
         <module>legend-engine-xt-diagram-pure</module>
+        <module>legend-engine-xt-diagram-query</module>
 
         <module>legend-engine-pure-code-compiled-core</module>
         <module>legend-engine-pure-code-compiled-core-external-shared</module>
@@ -864,6 +865,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-diagram-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-diagram-query</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

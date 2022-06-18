@@ -27,7 +27,7 @@ import java.util.Collections;
 
 public class DiagramCompilerExtension implements CompilerExtension
 {
-    private final MutableMap<String, Root_meta_pure_metamodel_diagram_Diagram_Impl> diagramsIndex = Maps.mutable.empty();
+    protected final MutableMap<String, Root_meta_pure_metamodel_diagram_Diagram_Impl> diagramsIndex = Maps.mutable.empty();
 
     @Override
     public Iterable<? extends Processor<?>> getExtraProcessors()

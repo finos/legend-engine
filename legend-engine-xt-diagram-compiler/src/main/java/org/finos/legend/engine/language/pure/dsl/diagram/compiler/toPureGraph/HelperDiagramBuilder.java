@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.dsl.diagram.compiler.toPureGraph;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.diagram.ClassView;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.diagram.GeneralizationView;
@@ -33,8 +34,23 @@ import org.finos.legend.pure.generated.Root_meta_pure_metamodel_diagram_Property
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_diagram_Rectangle_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_diagram_RelationshipViewEnd_Impl;
 
+import java.util.Objects;
+
 public class HelperDiagramBuilder
 {
+
+    private static DiagramCompilerExtension getDiagramCompilerExtensionInstance(CompileContext context)
+    {
+        return Objects.requireNonNull(ListIterate.selectInstancesOf(context.getCompilerExtensions().getExtensions(), DiagramCompilerExtension.class).getAny(), "Diagram extension is not in scope");
+    }
+
+    public static Root_meta_pure_metamodel_diagram_Diagram getDiagram(String fullPath, SourceInformation sourceInformation, CompileContext context)
+    {
+        Root_meta_pure_metamodel_diagram_Diagram diagram = getDiagramCompilerExtensionInstance(context).diagramsIndex.get(fullPath);
+        Assert.assertTrue(diagram != null, () -> "Can't find diagram '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
+        return diagram;
+    }
+
     public static Root_meta_pure_metamodel_diagram_ClassView buildClassView(ClassView classView, CompileContext context)
     {
         return new Root_meta_pure_metamodel_diagram_ClassView_Impl("")
@@ -71,3 +87,4 @@ public class HelperDiagramBuilder
                 ._to(new Root_meta_pure_metamodel_diagram_RelationshipViewEnd_Impl("")._classView(to))._path(ListIterate.collect(generalizationView.line.points, point -> new Root_meta_pure_metamodel_diagram_Point_Impl("")._x(point.x)._y(point.y)));
     }
 }
+
