@@ -30,6 +30,10 @@
     <dependencies>
         <!-- Pure -->
         <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m3-core</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-diagram-pure</artifactId>
         </dependency>
@@ -85,12 +89,20 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
         <!-- JACKSON -->
 
         <!-- ECLIPSE COLLECTIONS -->
         <dependency>
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections</artifactId>
         </dependency>
         <!-- ECLIPSE COLLECTIONS -->
 

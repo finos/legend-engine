@@ -20,6 +20,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.eclipse.collections.api.list.MutableList;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.query.diagram.api.analytics.model.DiagramModelCoverageAnalysisInput;
@@ -74,9 +75,9 @@ public class DiagramAnalytics
             {
                 Root_meta_pure_metamodel_diagram_analytics_modelCoverage_DiagramModelCoverageAnalysisResult result = core_diagram_analytics_analytics.Root_meta_pure_metamodel_diagram_analytics_modelCoverage_getDiagramModelCoverage_Diagram_1__DiagramModelCoverageAnalysisResult_1_(diagram, pureModel.getExecutionSupport());
                 return ManageConstantResult.manageResult(profiles, new DiagramModelCoverageAnalysisResult(
-                        result._profiles().collect(Any::getFullSystemPath).toList(),
-                        result._enumerations().collect(Any::getFullSystemPath).toList(),
-                        result._classes().collect(Any::getFullSystemPath).toList()));
+                        result._profiles().collect(profile -> HelperModelBuilder.getElementFullPath(profile, pureModel.getExecutionSupport())).toList(),
+                        result._enumerations().collect(enumeration -> HelperModelBuilder.getElementFullPath(enumeration, pureModel.getExecutionSupport())).toList(),
+                        result._classes().collect(_class -> HelperModelBuilder.getElementFullPath(_class, pureModel.getExecutionSupport())).toList()));
             }
             catch (Exception e)
             {

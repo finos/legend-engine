@@ -18,9 +18,9 @@ import java.util.List;
 
 public class DiagramModelCoverageAnalysisResult
 {
-    List<String> profiles;
-    List<String> enumerations;
-    List<String> classes;
+    public List<String> profiles;
+    public List<String> enumerations;
+    public List<String> classes;
 
     public DiagramModelCoverageAnalysisResult(List<String> profiles, List<String> enumerations, List<String> classes)
     {
