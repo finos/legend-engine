@@ -36,8 +36,11 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Proc
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionHandler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handlers;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.UserDefinedFunctionHandler;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.AssociationValidator;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.ClassValidator;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.EnumerationValidator;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.MappingValidator;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.ProfileValidator;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.PureModelContextDataValidator;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
@@ -269,7 +272,10 @@ public class PureModel implements IPureModel
             long processingFinished = System.currentTimeMillis();
 
             // Post Validation
+            new ProfileValidator().validate(this, pureModelContextData);
+            new EnumerationValidator().validate(this, pureModelContextData);
             new ClassValidator().validate(this, pureModelContextData);
+            new AssociationValidator().validate(this, pureModelContextData);
             new MappingValidator().validate(this, pureModelContextData);
             extraPostValidators.forEach(validator -> validator.value(this, pureModelContextData));
             long postValidationFinished = System.currentTimeMillis();

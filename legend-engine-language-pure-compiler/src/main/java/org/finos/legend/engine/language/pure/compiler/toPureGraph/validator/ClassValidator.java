@@ -49,8 +49,9 @@ public class ClassValidator
     {
         classes.values().forEach(c ->
         {
+            // TODO: check for derived properties as well?
             MutableMultimap<String, Property> prop = Iterate.groupBy(c.properties, p -> p.name);
-            pureModel.addWarnings(prop.multiValuesView().flatCollect(a -> a.size() > 1 ? Lists.mutable.with(new Warning(a.getFirst().sourceInformation, "Duplicate property '" + a.getFirst().name + "' in the Class " + pureModel.buildPackageString(c._package, c.name))) : Lists.mutable.empty()));
+            pureModel.addWarnings(prop.multiValuesView().flatCollect(a -> a.size() > 1 ? Lists.mutable.with(new Warning(a.getFirst().sourceInformation, "Found duplicated property '" + a.getFirst().name + "' in class '" + pureModel.buildPackageString(c._package, c.name) + "'")) : Lists.mutable.empty()));
         });
     }
 
