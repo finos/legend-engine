@@ -33,7 +33,6 @@ import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_diagram_Diagram;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_diagram_analytics_modelCoverage_DiagramModelCoverageAnalysisResult;
 import org.finos.legend.pure.generated.core_diagram_analytics_analytics;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Any;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
@@ -45,7 +44,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import static org.finos.legend.engine.language.pure.dsl.diagram.compiler.toPureGraph.HelperDiagramBuilder.getDiagram;
+import static org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperDiagramBuilder.getDiagram;
 
 @Api(tags = "Analytics - Model")
 @Path("pure/v1/analytics/diagram")

@@ -22,7 +22,13 @@ import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.language.pure.grammar.from.DataSpaceParserExtension;
+import org.finos.legend.engine.language.pure.grammar.from.DiagramParserExtension;
+import org.finos.legend.engine.language.pure.grammar.from.TextParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
+import org.finos.legend.engine.language.pure.grammar.to.DataSpaceGrammarComposerExtension;
+import org.finos.legend.engine.language.pure.grammar.to.DiagramGrammarComposerExtension;
+import org.finos.legend.engine.language.pure.grammar.to.TextGrammarComposerExtension;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
@@ -210,8 +216,8 @@ public class TestExtensions
         // DO NOT DELETE ITEMS FROM THIS LIST (except when replacing them with something equivalent)
         return Lists.mutable.<Class<? extends PureGrammarParserExtension>>empty()
                 .with(org.finos.legend.engine.language.pure.grammar.from.CorePureGrammarParser.class)
-                .with(org.finos.legend.engine.language.pure.dsl.dataSpace.grammar.from.DataSpaceParserExtension.class)
-                .with(org.finos.legend.engine.language.pure.dsl.diagram.grammar.from.DiagramParserExtension.class)
+                .with(DataSpaceParserExtension.class)
+                .with(DiagramParserExtension.class)
                 .with(org.finos.legend.engine.language.pure.grammar.from.ExternalFormatConnectionGrammarParserExtension.class)
                 .with(org.finos.legend.engine.language.pure.grammar.from.ExternalFormatGrammarParserExtension.class)
                 .with(org.finos.legend.engine.language.pure.dsl.generation.grammar.from.GenerationParserExtension.class)
@@ -219,7 +225,7 @@ public class TestExtensions
                 .with(org.finos.legend.engine.language.pure.grammar.from.RelationalGrammarParserExtension.class)
                 .with(org.finos.legend.engine.language.pure.dsl.service.grammar.from.ServiceParserExtension.class)
                 .with(org.finos.legend.engine.language.pure.grammar.from.ServiceStoreGrammarParserExtension.class)
-                .with(org.finos.legend.engine.language.pure.dsl.text.grammar.from.TextParserExtension.class);
+                .with(TextParserExtension.class);
     }
 
     protected Iterable<? extends Class<? extends PureGrammarComposerExtension>> getExpectedGrammarComposerExtensions()
@@ -227,15 +233,15 @@ public class TestExtensions
         // DO NOT DELETE ITEMS FROM THIS LIST (except when replacing them with something equivalent)
         return Lists.mutable.<Class<? extends PureGrammarComposerExtension>>empty()
                 .with(org.finos.legend.engine.language.pure.grammar.to.CorePureGrammarComposer.class)
-                .with(org.finos.legend.engine.language.pure.dsl.dataSpace.grammar.to.DataSpaceGrammarComposerExtension.class)
-                .with(org.finos.legend.engine.language.pure.dsl.diagram.grammar.to.DiagramGrammarComposerExtension.class)
+                .with(DataSpaceGrammarComposerExtension.class)
+                .with(DiagramGrammarComposerExtension.class)
                 .with(org.finos.legend.engine.language.pure.grammar.to.ExternalFormatGrammarComposerExtension.class)
                 .with(org.finos.legend.engine.language.pure.dsl.generation.grammar.to.GenerationGrammarComposerExtension.class)
                 .with(org.finos.legend.engine.language.pure.dsl.persistence.grammar.to.PersistenceGrammarComposerExtension.class)
                 .with(org.finos.legend.engine.language.pure.grammar.to.RelationalGrammarComposerExtension.class)
                 .with(org.finos.legend.engine.language.pure.dsl.service.grammar.to.ServiceGrammarComposerExtension.class)
                 .with(org.finos.legend.engine.language.pure.grammar.to.ServiceStoreGrammarComposerExtension.class)
-                .with(org.finos.legend.engine.language.pure.dsl.text.grammar.to.TextGrammarComposerExtension.class);
+                .with(TextGrammarComposerExtension.class);
     }
 
     protected Iterable<? extends Class<? extends PlanGeneratorExtension>> getExpectedPlanGeneratorExtensions()
