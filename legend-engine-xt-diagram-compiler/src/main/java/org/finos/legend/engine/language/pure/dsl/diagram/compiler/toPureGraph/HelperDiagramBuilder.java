@@ -51,6 +51,11 @@ public class HelperDiagramBuilder
         return diagram;
     }
 
+    public static Root_meta_pure_metamodel_diagram_Diagram resolveDiagram(String fullPath, SourceInformation sourceInformation, CompileContext context)
+    {
+        return context.resolve(fullPath, sourceInformation, path -> getDiagram(path, sourceInformation, context));
+    }
+
     public static Root_meta_pure_metamodel_diagram_ClassView buildClassView(ClassView classView, CompileContext context)
     {
         return new Root_meta_pure_metamodel_diagram_ClassView_Impl("")

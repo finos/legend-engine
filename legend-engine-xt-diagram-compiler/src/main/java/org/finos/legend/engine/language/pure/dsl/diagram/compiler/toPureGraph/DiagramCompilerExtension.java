@@ -16,18 +16,18 @@ package org.finos.legend.engine.language.pure.dsl.diagram.compiler.toPureGraph;
 
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.map.MutableMap;
-import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.diagram.Diagram;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_diagram_Diagram;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_diagram_Diagram_Impl;
 
 import java.util.Collections;
 
 public class DiagramCompilerExtension implements CompilerExtension
 {
-    protected final MutableMap<String, Root_meta_pure_metamodel_diagram_Diagram_Impl> diagramsIndex = Maps.mutable.empty();
+    protected final MutableMap<String, Root_meta_pure_metamodel_diagram_Diagram> diagramsIndex = Maps.mutable.empty();
 
     @Override
     public Iterable<? extends Processor<?>> getExtraProcessors()
@@ -35,13 +35,13 @@ public class DiagramCompilerExtension implements CompilerExtension
         return Collections.singletonList(Processor.newProcessor(Diagram.class,
                 (diagram, context) ->
                 {
-                    Root_meta_pure_metamodel_diagram_Diagram_Impl metamodel = new Root_meta_pure_metamodel_diagram_Diagram_Impl(diagram.name);
+                    Root_meta_pure_metamodel_diagram_Diagram metamodel = new Root_meta_pure_metamodel_diagram_Diagram_Impl("")._name(diagram.name);
                     this.diagramsIndex.put(context.pureModel.buildPackageString(diagram._package, diagram.name), metamodel);
                     return metamodel;
                 },
                 (diagram, context) ->
                 {
-                    Root_meta_pure_metamodel_diagram_Diagram_Impl metamodel = this.diagramsIndex.get(context.pureModel.buildPackageString(diagram._package, diagram.name));
+                    Root_meta_pure_metamodel_diagram_Diagram metamodel = this.diagramsIndex.get(context.pureModel.buildPackageString(diagram._package, diagram.name));
                     metamodel._classViews(ListIterate.collect(diagram.classViews, view -> HelperDiagramBuilder.buildClassView(view, context)));
                     metamodel._propertyViews(ListIterate.collect(diagram.propertyViews, view -> HelperDiagramBuilder.buildPropertyView(view, context, metamodel)));
                     metamodel._generalizationViews(ListIterate.collect(diagram.generalizationViews, view -> HelperDiagramBuilder.buildGeneralizationView(view, metamodel)));
