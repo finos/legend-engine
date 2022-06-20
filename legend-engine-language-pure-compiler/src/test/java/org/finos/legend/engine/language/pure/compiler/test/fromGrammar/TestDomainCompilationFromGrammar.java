@@ -254,8 +254,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     {
         Pair<PureModelContextData, PureModel> res = test("Profile test::A\n" +
                 "{\n" +
-                "   stereotypes : [modifier, modifier, accessorType, accessorType];\n" +
                 "   tags : [doc, doc];\n" +
+                "   stereotypes : [modifier, modifier, accessorType, accessorType];\n" +
                 "}\n");
         MutableList<Warning> warnings = res.getTwo().getWarnings();
         Assert.assertEquals(3, warnings.size());

@@ -145,9 +145,16 @@ public class DomainParseTreeWalker
         Profile profile = new Profile();
         profile.name = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName().identifier());
         profile._package = ctx.qualifiedName().packagePath() == null ? "" : PureGrammarParserUtility.fromPath(ctx.qualifiedName().packagePath().identifier());
-        profile.stereotypes = ctx.stereotypeDefinitions() == null ? Lists.mutable.empty() : ListIterate.collect(ctx.stereotypeDefinitions().identifier(), PureGrammarParserUtility::fromIdentifier);
-        profile.tags = ctx.tagDefinitions() == null ? Lists.mutable.empty() : ListIterate.collect(ctx.tagDefinitions().identifier(), PureGrammarParserUtility::fromIdentifier);
         profile.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+
+        // stereotypes
+        DomainParserGrammar.StereotypeDefinitionsContext stereotypeDefinitionsContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.stereotypeDefinitions(), "stereotypes", profile.sourceInformation);
+        profile.stereotypes = stereotypeDefinitionsContext != null ? ListIterate.collect(stereotypeDefinitionsContext.identifier(), PureGrammarParserUtility::fromIdentifier) : Lists.mutable.empty();
+
+        // tags
+        DomainParserGrammar.TagDefinitionsContext tagDefinitionsContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.tagDefinitions(), "tags", profile.sourceInformation);
+        profile.tags = tagDefinitionsContext != null ? ListIterate.collect(tagDefinitionsContext.identifier(), PureGrammarParserUtility::fromIdentifier) : Lists.mutable.empty();
+
         return profile;
     }
 
