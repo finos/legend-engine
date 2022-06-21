@@ -1,0 +1,5 @@
+{
+    "name" : "core_mastery",
+    "pattern" : "(meta::pure::mastery|meta::external::mastery)(::.*)?",
+    "dependencies" : ["platform", "core", "core_external_shared"]
+}

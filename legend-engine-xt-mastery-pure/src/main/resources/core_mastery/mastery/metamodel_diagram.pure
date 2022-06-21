@@ -1,0 +1,81 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Diagram
+Diagram meta::pure::mastery::Mastery_Core_Diagram(width=0.0, height=0.0)
+{
+    TypeView cview_4(
+        type=meta::pure::mastery::metamodel::resolution::IdentityResolution,
+        position=(509.11963, 186.00000),
+        width=227.78516,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_3(
+        type=meta::pure::mastery::metamodel::resolution::ResolutionQuery,
+        position=(505.55957, 22.00000),
+        width=227.12891,
+        height=100.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_1(
+        type=meta::pure::mastery::metamodel::MasterRecordDefinition,
+        position=(509.00000, 313.00000),
+        width=237.11914,
+        height=86.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    PropertyView pview_0(
+        property=meta::pure::mastery::metamodel::resolution::IdentityResolution.queries,
+        source=cview_4,
+        target=cview_3
+,        points=[(623.01221,215.00000),(619.12402,72.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_1(
+        property=meta::pure::mastery::metamodel::MasterRecordDefinition.identityResolution,
+        source=cview_1,
+        target=cview_4
+,        points=[(627.55957,356.00000),(623.01221,215.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+}
