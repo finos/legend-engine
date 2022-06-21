@@ -97,13 +97,13 @@
         <module>legend-engine-xt-diagram-compiler</module>
         <module>legend-engine-xt-diagram-protocol</module>
         <module>legend-engine-xt-diagram-pure</module>
-        <module>legend-engine-xt-diagram-query</module>
+        <module>legend-engine-xt-diagram-api</module>
 
         <module>legend-engine-xt-data-space-grammar</module>
         <module>legend-engine-xt-data-space-compiler</module>
         <module>legend-engine-xt-data-space-protocol</module>
         <module>legend-engine-xt-data-space-pure</module>
-        <module>legend-engine-xt-data-space-query</module>
+        <module>legend-engine-xt-data-space-api</module>
 
         <module>legend-engine-pure-code-compiled-core</module>
         <module>legend-engine-pure-code-compiled-core-external-shared</module>
@@ -874,7 +874,7 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-diagram-query</artifactId>
+                <artifactId>legend-engine-xt-diagram-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -900,7 +900,7 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-data-space-query</artifactId>
+                <artifactId>legend-engine-xt-data-space-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
