@@ -639,9 +639,9 @@ function <<access.private>> meta::pure::lineage::scanRelations::isNull(d:DynaFun
 function <<access.private>> meta::pure::lineage::scanRelations::extractSourceColumn(tableAliasColumn:TableAliasColumn[1], sourceOperation:RelationalOperationElement[1], relationIdentifiers:String[*], sourceTree:RelationTree[1]):Column[0..1]
 {
    $sourceOperation->match([
-                              v:ViewSelectSQLQuery[1]| if(getRelationName($v.view)->in($relationIdentifiers), |$tableAliasColumn.column, |[]),
+                              // v:ViewSelectSQLQuery[1]| if(getRelationName($v.view)->in($relationIdentifiers), |$tableAliasColumn.column, |[]), // Need not handle views in generated SQL query (as they should have been converted to subqueries)
                               t:Table[1]             | if(getRelationName($t)->in($relationIdentifiers), |$tableAliasColumn.column, |[]),
-                              v:View[1]              | if(getRelationName($v)->in($relationIdentifiers), |$tableAliasColumn.column, |[]),
+                              // v:View[1]              | if(getRelationName($v)->in($relationIdentifiers), |$tableAliasColumn.column, |[]), // Need not handle views in generated SQL query (as they should have been converted to subqueries)
                               ta:TableAlias[1]       | if($tableAliasColumn.alias.name == $ta.name,| $tableAliasColumn->extractSourceColumn($ta.relation, $relationIdentifiers, $sourceTree), | []);,
                               s:SelectSQLQuery[1]    | $s->extractSourceColumnFromSelectSQLQuery($tableAliasColumn, $relationIdentifiers, $sourceTree);,
                               u:Union[1]             | let colNames = $u.queries->map(query | $query->extractSourceColumnFromSelectSQLQuery($tableAliasColumn, $relationIdentifiers, $sourceTree))->removeDuplicates()->filter(c | $c.name->in($sourceTree.columns.name));
