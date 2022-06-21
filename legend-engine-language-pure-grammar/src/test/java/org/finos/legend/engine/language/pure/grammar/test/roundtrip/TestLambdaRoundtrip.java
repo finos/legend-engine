@@ -27,6 +27,16 @@ public class TestLambdaRoundtrip
     private static final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
 
     @Test
+    public void testLambdaWithINFIXoperations()
+    {
+        testLambda("|eq($this.var2 / $this.var1, $this.var4 / $this.var3)");
+        testLambda("|eq($this.var2 / $this.var1, 3)");
+        testLambda("|3->eq($this.var2 / $this.var1)");
+        testLambda("|3->eq(3) && 3->eq($this.var2 / $this.var1)");
+        testLambda("|isNotEmpty($this.var1 / 3)");
+    }
+
+    @Test
     public void testLambdaWithBodyWithNonStringTokenOnly()
     {
         testLambda("|a::X");
