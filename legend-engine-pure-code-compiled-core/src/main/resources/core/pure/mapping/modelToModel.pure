@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import meta::pure::metamodel::treepath::*;
-import meta::pure::router::extension::*;
+import meta::pure::extension::*;
 import meta::pure::dataQuality::*;
 import meta::pure::graphFetch::routing::*;
 import meta::pure::graphFetch::execution::*;
@@ -153,18 +153,9 @@ function <<access.protected>> meta::pure::mapping::modelToModel::findMainClassIn
 
 
 
-function meta::pure::mapping::modelToModel::execution(sq:meta::pure::mapping::StoreQuery[1], ext:RoutedValueSpecification[0..1], m:Mapping[1], runtime:Runtime[1], exeCtx:ExecutionContext[1], extensions:RouterExtension[*], debug:DebugContext[1]):Result<Any|*>[1]
-{
-   let connection = $runtime->connectionByElement($sq.store);
-   $connection->match(
-                        [
-                           mc:ModelConnection[1]| executeInMemory($sq.fe, $ext->cast(@ExtendedRoutedValueSpecification), $m, $mc, $runtime, $sq.advancedRouting->toOne(), $exeCtx, $extensions, $debug),
-                           mcc:ModelChainConnection[1]| executeChain($sq, $ext->cast(@ExtendedRoutedValueSpecification), $m, $mcc, $runtime, $exeCtx, $extensions, $debug)
-                        ]
-               );
-}
 
-function <<access.private>> meta::pure::mapping::modelToModel::planExecutionPure(sq:meta::pure::mapping::StoreQuery[1], ext:RoutedValueSpecification[0..1], m:Mapping[0..1], runtime:Runtime[0..1], exeCtx:ExecutionContext[1], extensions:meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]):ExecutionNode[1]
+
+function meta::pure::mapping::modelToModel::planExecutionPure(sq:meta::pure::mapping::StoreQuery[1], ext:RoutedValueSpecification[0..1], m:Mapping[0..1], runtime:Runtime[0..1], exeCtx:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ExecutionNode[1]
 {
    let connection = $runtime->toOne()->connectionByElement($sq.store);
    $connection->match([
@@ -173,27 +164,15 @@ function <<access.private>> meta::pure::mapping::modelToModel::planExecutionPure
    ]);
 }
 
-function meta::pure::mapping::modelToModel::planExecution(sq:meta::pure::mapping::StoreQuery[1], ext:RoutedValueSpecification[0..1], m:Mapping[0..1], runtime:Runtime[0..1], exeCtx:ExecutionContext[1], extension:RouterExtension[*], debug:DebugContext[1]):ExecutionNode[1]
-{
-   let fe = $sq.fe->evaluateAndDeactivate()->cast(@FunctionExpression);
-   if ($fe->meta::pure::router::isUnionOnGraphFetch(true) || $fe.func->in(graphFetchFunctions()) || $fe->meta::pure::router::isMergeOnGraphFetch() ,
-       | planInMemoryGraphFetchExecution($sq, $ext, $m->toOne(), $runtime->toOne(), $exeCtx, $extension, $debug),
-       | planExecutionPure($sq, $ext, $m, $runtime, $exeCtx, $extension, $debug)
-   );
-}
 
-function meta::pure::mapping::modelToModel::supports(f:FunctionExpression[1]):Boolean[1]
-{
-   $f.func == meta::json::toJSON_T_MANY__LambdaFunction_MANY__String_1_
-      || ($f.func->isWithinPackage(meta::pure) && !($f->isSerialize() || $f->isLetFunction()));
-}
 
-function meta::pure::mapping::modelToModel::plan::modelToModelPlanNodeToString(c:ModelToModelExecutionNode[1], space:String[1], extensions:meta::pure::router::extension::RouterExtension[*]):String[1]
+
+function meta::pure::mapping::modelToModel::plan::modelToModelPlanNodeToString(c:ModelToModelExecutionNode[1], space:String[1], extensions:meta::pure::extension::Extension[*]):String[1]
 {
    'M2M\n'+$space+'('+header($c, $space, $extensions)+'\n'+$space+ '  connection = '+$c.connection->meta::pure::executionPlan::toString::connectionToString($extensions)+'\n' + if($c.jsonPropertyPaths->isNotEmpty(),| '  propertyPath = '+$c.jsonPropertyPaths->buildPropertyPathTree()->toJSON()+'\n',|'') + $space+')\n'
 }
 
-function meta::pure::mapping::modelToModel::modelToModelConnectionToString(c:Connection[1], extensions:meta::pure::router::extension::RouterExtension[*]):String[1]
+function meta::pure::mapping::modelToModel::modelToModelConnectionToString(c:Connection[1], extensions:meta::pure::extension::Extension[*]):String[1]
 {
    $c->match([mc:ModelConnection[1] | 'instances = "' +  $mc.instances->keyValues()->map(p|$p.second.values->map(v|pair($p.first->elementToPath(), $v->toJSON())))->makeString('{',',','}'),
               jmc:JsonModelConnection[1] | 'url = ' + $jmc.url + ', class = ' + $jmc.class->elementToPath(),
@@ -220,7 +199,7 @@ import meta::pure::mapping::modelToModel::graphFetch::executionPlan::*;
 import meta::pure::mapping::xStore::*;
 import meta::pure::milestoning::*;
 import meta::pure::router::clustering::*;
-import meta::pure::router::extension::*;
+import meta::pure::extension::*;
 import meta::pure::router::routing::*;
 import meta::pure::runtime::*;
 import meta::pure::store::*;
@@ -255,7 +234,7 @@ Class meta::pure::mapping::modelToModel::graphFetch::executionPlan::InMemoryCros
    xStorePropertyMapping : meta::pure::mapping::xStore::XStorePropertyMapping[1];
 }
 
-function meta::pure::mapping::modelToModel::graphFetch::executionPlan::planInMemoryGraphFetchExecution(sq: StoreQuery[1], ext: RoutedValueSpecification[0..1], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], extensions: RouterExtension[*], debug: DebugContext[1]): ExecutionNode[1]
+function meta::pure::mapping::modelToModel::graphFetch::executionPlan::planInMemoryGraphFetchExecution(sq: StoreQuery[1], ext: RoutedValueSpecification[0..1], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], extensions: Extension[*], debug: DebugContext[1]): ExecutionNode[1]
 {
    let fe = $sq.fe->evaluateAndDeactivate();
    if ($fe->meta::pure::router::isUnionOnGraphFetch(true),
@@ -276,7 +255,7 @@ function meta::pure::mapping::modelToModel::graphFetch::executionPlan::planInMem
          );
    );
 }
-function meta::pure::mapping::modelToModel::graphFetch::executionPlan::planRootGraphFetchExecutionInMemory(sq: StoreQuery[1], ext: RoutedValueSpecification[0..1], clusteredTree: ClusteredGraphFetchTree[1], orderedPaths: String[*], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], enableConstraints: Boolean[1], checked: Boolean[1], extensions: meta::pure::router::extension::RouterExtension[*], debug: DebugContext[1]): InMemoryRootGraphFetchExecutionNode[1]
+function meta::pure::mapping::modelToModel::graphFetch::executionPlan::planRootGraphFetchExecutionInMemory(sq: StoreQuery[1], ext: RoutedValueSpecification[0..1], clusteredTree: ClusteredGraphFetchTree[1], orderedPaths: String[*], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], enableConstraints: Boolean[1], checked: Boolean[1], extensions: meta::pure::extension::Extension[*], debug: DebugContext[1]): InMemoryRootGraphFetchExecutionNode[1]
 {
    let store       = $sq.store;
    let fe          = $sq.fe->evaluateAndDeactivate();
@@ -339,7 +318,7 @@ function meta::pure::mapping::modelToModel::graphFetch::executionPlan::planRootG
    );
 }
 
-function meta::pure::mapping::modelToModel::graphFetch::executionPlan::planCrossStoreGraphFetchExecutionInMemory(clusteredTree: ClusteredGraphFetchTree[1], orderedPaths: String[*], parentPath: String[1], inScopeVars: Map<String, List<Any>>[1], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], enableConstraints: Boolean[1], checked: Boolean[1], extensions: RouterExtension[*], debug: DebugContext[1]): InMemoryCrossStoreGraphFetchExecutionNode[1]
+function meta::pure::mapping::modelToModel::graphFetch::executionPlan::planCrossStoreGraphFetchExecutionInMemory(clusteredTree: ClusteredGraphFetchTree[1], orderedPaths: String[*], parentPath: String[1], inScopeVars: Map<String, List<Any>>[1], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], enableConstraints: Boolean[1], checked: Boolean[1], extensions: Extension[*], debug: DebugContext[1]): InMemoryCrossStoreGraphFetchExecutionNode[1]
 {
    let store      = $clusteredTree.store;
    let rootTree   = $clusteredTree->byPassClusteringInfo()->cast(@RoutedPropertyGraphFetchTree);
@@ -441,7 +420,7 @@ function meta::pure::mapping::modelToModel::graphFetch::executionPlan::getPopula
     $pm.crossExpression.expressionSequence->evaluateAndDeactivate()->toOne()->findPropertiesInValueSpecification()->filter(p | $p.owner == $rootClass || $p.owner->cast(@Class<Any>)->meta::pure::functions::meta::_subTypeOf($rootClass));
 }
 
-function <<access.private>> meta::pure::mapping::modelToModel::graphFetch::executionPlan::planModelChainConnectionGraphFetchExecution(fe: FunctionExpression[1], mcc: ModelChainConnection[1], sourceTreeExtended: RootGraphFetchTree<Any>[1], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], ext: RoutedValueSpecification[0..1], inScopeVars: Map<String, List<Any>>[1], populatedXStorePropertiesInScope:AbstractProperty<Any>[*], enableConstraints: Boolean[1], checked: Boolean[1], extensions: RouterExtension[*], debug: DebugContext[1]): ExecutionNode[1]
+function <<access.private>> meta::pure::mapping::modelToModel::graphFetch::executionPlan::planModelChainConnectionGraphFetchExecution(fe: FunctionExpression[1], mcc: ModelChainConnection[1], sourceTreeExtended: RootGraphFetchTree<Any>[1], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], ext: RoutedValueSpecification[0..1], inScopeVars: Map<String, List<Any>>[1], populatedXStorePropertiesInScope:AbstractProperty<Any>[*], enableConstraints: Boolean[1], checked: Boolean[1], extensions: Extension[*], debug: DebugContext[1]): ExecutionNode[1]
 {
    let functionParams    = $fe.parametersValues->evaluateAndDeactivate();
    let leftExpr          = $functionParams->at(0)->byPassRouterInfo()->cast(@FunctionExpression);
@@ -520,7 +499,7 @@ function meta::pure::mapping::modelToModel::graphFetch::executionPlan::generateI
    })
 }
 
-function <<access.private>> meta::pure::mapping::modelToModel::graphFetch::executionPlan::planInMemoryStoreMergeGraphFetchExecution(sq: StoreQuery[1], ext: RoutedValueSpecification[0..1], sets: InstanceSetImplementation[*], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], extensions: meta::pure::router::extension::RouterExtension[*], debug: DebugContext[1]): ExecutionNode[1]
+function <<access.private>> meta::pure::mapping::modelToModel::graphFetch::executionPlan::planInMemoryStoreMergeGraphFetchExecution(sq: StoreQuery[1], ext: RoutedValueSpecification[0..1], sets: InstanceSetImplementation[*], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], extensions: meta::pure::extension::Extension[*], debug: DebugContext[1]): ExecutionNode[1]
 {
    $mapping->validateMergeMapping();
    let fe     = $sq.fe->evaluateAndDeactivate();
@@ -560,7 +539,7 @@ function <<access.protected>> meta::pure::mapping::modelToModel::validateMergeMa
 }
 
 
-function <<access.private>> meta::pure::mapping::modelToModel::graphFetch::executionPlan::planInMemoryRouterMergeGraphFetchExecution(sq: StoreQuery[1], ext: RoutedValueSpecification[0..1], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], extensions: RouterExtension[*], debug: DebugContext[1],rootSQ:StoreQuery[1],rootTree:ClusteredGraphFetchTree[1]): ExecutionNode[1]
+function <<access.private>> meta::pure::mapping::modelToModel::graphFetch::executionPlan::planInMemoryRouterMergeGraphFetchExecution(sq: StoreQuery[1], ext: RoutedValueSpecification[0..1], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], extensions: Extension[*], debug: DebugContext[1],rootSQ:StoreQuery[1],rootTree:ClusteredGraphFetchTree[1]): ExecutionNode[1]
 {
    let fe = $sq.fe->evaluateAndDeactivate();
   let subClusters  = $fe.parametersValues->at(0)->evaluateAndDeactivate()->cast(@InstanceValue).values->cast(@ValueSpecification)->map({p | $p->cluster($mapping, $runtime, $sq.inScopeVars, $exeCtx, $extensions, $debug).cluster->evaluateAndDeactivate()})->cast(@ClusteredValueSpecification);
@@ -608,7 +587,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::graphFetch::execu
    )
 }
 
-function meta::pure::mapping::modelToModel::graphFetch::executionPlan::sourceSupportsBatching(c:Connection[1], rootClass:Class<Any>[1], mapping:Mapping[1], populatedXStorePropertiesInScope:AbstractProperty<Any>[*], extensions:meta::pure::router::extension::RouterExtension[*]):Boolean[1]
+function meta::pure::mapping::modelToModel::graphFetch::executionPlan::sourceSupportsBatching(c:Connection[1], rootClass:Class<Any>[1], mapping:Mapping[1], populatedXStorePropertiesInScope:AbstractProperty<Any>[*], extensions:meta::pure::extension::Extension[*]):Boolean[1]
 {
    $c->match([mcc:ModelChainConnection[1] | 
                      let chainedMappings             = $mapping->concatenate($mcc.mappings->take($mcc.mappings->size() - 1));
@@ -635,7 +614,7 @@ function meta::pure::mapping::modelToModel::graphFetch::executionPlan::propertyT
       |$property.owner.name->toOne()) + '_' + $property.name->toOne();
 }
 
-function meta::pure::mapping::modelToModel::graphFetch::executionPlan::inMemoryGraphFetchExecutionNodeToString(node: InMemoryGraphFetchExecutionNode[1], space: String[1], extensions:meta::pure::router::extension::RouterExtension[*]):String[1]
+function meta::pure::mapping::modelToModel::graphFetch::executionPlan::inMemoryGraphFetchExecutionNodeToString(node: InMemoryGraphFetchExecutionNode[1], space: String[1], extensions:meta::pure::extension::Extension[*]):String[1]
 {
    $node->match([
       g : InMemoryCrossStoreGraphFetchExecutionNode[1] |
@@ -676,7 +655,7 @@ function meta::pure::mapping::modelToModel::graphFetch::executionPlan::inMemoryG
    ])
 }
 
-function meta::pure::mapping::modelToModel::graphFetch::executionPlan::storeStreamReadingExecutionNodeToString(node: StoreStreamReadingExecutionNode[1], space: String[1], extensions:meta::pure::router::extension::RouterExtension[*]):String[1]
+function meta::pure::mapping::modelToModel::graphFetch::executionPlan::storeStreamReadingExecutionNodeToString(node: StoreStreamReadingExecutionNode[1], space: String[1], extensions:meta::pure::extension::Extension[*]):String[1]
 {
    'StoreStreamReading\n' + 
    $space + '(' + header($node, $space, $extensions) + '\n'+

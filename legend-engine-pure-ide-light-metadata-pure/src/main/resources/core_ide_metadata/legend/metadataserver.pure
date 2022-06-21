@@ -25,7 +25,7 @@ function {service.url='/alloy/pureModelFromMapping/{version}/{mappingPathStr}'} 
 
 function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::buildBasePureModelFromMappingStr(mappingStr:String[1]):String[1]
 {
-  meta::protocols::pure::vX_X_X::transformation::fromPureGraph::buildBasePureModelFromMappingStr($mappingStr, meta::pure::router::extension::defaultRelationalExtensions());
+  meta::protocols::pure::vX_X_X::transformation::fromPureGraph::buildBasePureModelFromMappingStr($mappingStr, meta::relational::extension::relationalExtensions());
 }
 
 function {service.url='/alloy/pureModelFromStore/{version}/{storePath}'} meta::alloy::metadataServer::pureModelFromStoreStr(storePath:String[1], version:String[1]):String[1]
@@ -37,7 +37,7 @@ function {service.url='/alloy/pureModelFromStore/{version}/{storePath}'} meta::a
 
 function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::buildBasePureModelFromStoreStr(mappingStr:String[1]):String[1]
 {
-  meta::protocols::pure::vX_X_X::transformation::fromPureGraph::buildBasePureModelFromStoreStr($mappingStr, meta::pure::router::extension::defaultRelationalExtensions());
+  meta::protocols::pure::vX_X_X::transformation::fromPureGraph::buildBasePureModelFromStoreStr($mappingStr, meta::relational::extension::relationalExtensions());
 }
 
 function {service.url='/alloy/pureServerBaseVersion'} meta::alloy::metadataServer::pureServerBaseVersion():String[1]

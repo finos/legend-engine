@@ -36,8 +36,8 @@ function meta::protocols::pure::v1_23_0::invocation::externalFormat::protobuf::l
                                  '  "config":'+$input->meta::protocols::pure::v1_23_0::transformation::fromPureGraph::external::format::protobuf::transformModelToProtobufDataConfiguration()->alloyToJSON()+','+
                                  '  "model":'+$input.sourceModel->match(
                                                     [
-                                                      p:Package[1]|$p->buildPureModelFromPackage(meta::pure::router::extension::defaultExtensions())->alloyToJSON(),
-                                                      c:Type[1]|$c->buildPureModelFromType(meta::pure::router::extension::defaultExtensions())->alloyToJSON()
+                                                      p:Package[1]|$p->buildPureModelFromPackage(meta::pure::extension::defaultExtensions())->alloyToJSON(),
+                                                      c:Type[1]|$c->buildPureModelFromType(meta::pure::extension::defaultExtensions())->alloyToJSON()
                                                     ]
                                                   )+
                                  '}'
@@ -74,13 +74,13 @@ function meta::protocols::pure::v1_23_0::invocation::generation::protobuf::legen
                                  '  "config":'+$input->meta::protocols::pure::v1_23_0::transformation::fromPureGraph::external::format::protobuf::transformProtobufConfig()->alloyToJSON()+','+
                                  '  "model":'+if ($input.package->isEmpty(),
                                                   |if (!$input.class->isEmpty(),
-                                                      |$input.class->toOne()->pathToElement()->toOne()->cast(@Type)->buildPureModelFromType(meta::pure::router::extension::defaultExtensions())->alloyToJSON(),
+                                                      |$input.class->toOne()->pathToElement()->toOne()->cast(@Type)->buildPureModelFromType(meta::pure::extension::defaultExtensions())->alloyToJSON(),
                                                       | if ($input.scopeElements->at(0)->instanceOf(Class),
-                                                          |$input.scopeElements->at(0)->cast(@Class<Any>)->buildPureModelFromType(meta::pure::router::extension::defaultExtensions())->alloyToJSON(),
-                                                          |$input.scopeElements->at(0)->cast(@Package)->buildPureModelFromPackage(meta::pure::router::extension::defaultExtensions())->alloyToJSON()
+                                                          |$input.scopeElements->at(0)->cast(@Class<Any>)->buildPureModelFromType(meta::pure::extension::defaultExtensions())->alloyToJSON(),
+                                                          |$input.scopeElements->at(0)->cast(@Package)->buildPureModelFromPackage(meta::pure::extension::defaultExtensions())->alloyToJSON()
                                                       )
                                                    ),
-                                                  |$input.package->toOne()->pathToElement()->toOne()->cast(@Package)->buildPureModelFromPackage(meta::pure::router::extension::defaultExtensions())->alloyToJSON()
+                                                  |$input.package->toOne()->pathToElement()->toOne()->cast(@Package)->buildPureModelFromPackage(meta::pure::extension::defaultExtensions())->alloyToJSON()
                                               )+
                                  '}'
                                 );

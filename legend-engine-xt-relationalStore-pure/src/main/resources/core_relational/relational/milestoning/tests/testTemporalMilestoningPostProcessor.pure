@@ -13,7 +13,8 @@
 // limitations under the License.
 
 import meta::relational::mapping::*;
-import meta::pure::router::extension::*;
+import meta::pure::extension::*;
+import meta::relational::extension::*;
 import meta::relational::tests::milestoning::multi::*;
 import meta::pure::store::*;
 import meta::pure::runtime::*;
@@ -26,7 +27,7 @@ import meta::relational::tests::milestoning::temporalpostprocessor::*;
 import meta::relational::milestoning::*;
 import meta::relational::metamodel::operation::*;
 import meta::relational::metamodel::*;
-import meta::csv::metamodel::execute::*;
+import meta::relational::tests::csv::metamodel::execute::*;
 import meta::relational::metamodel::relation::*;
 import meta::relational::runtime::*;
 import meta::relational::tests::model::simple::*;
@@ -43,11 +44,11 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::milestoning::
    let ignoredDate = %2015-10-16T00:00:00;
    let runtime = meta::relational::tests::testRuntime();
 
-   let latestDatePP = dateEqualityTemporalMilestoningProcessor(meta::relational::tests::db, 'thru_z', %9999-12-31T00:00:00.000, defaultRelationalExtensions());
+   let latestDatePP = dateEqualityTemporalMilestoningProcessor(meta::relational::tests::db, 'thru_z', %9999-12-31T00:00:00.000, relationalExtensions());
 
    let updatedRuntime = $runtime->addPostProcessors([], $latestDatePP);
 
-   let result = execute(|Product.all()->project([p|$p.name, p|$p.synonyms.name],['name','synonym']), simpleRelationalMapping, $updatedRuntime, meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Product.all()->project([p|$p.name, p|$p.synonyms.name],['name','synonym']), simpleRelationalMapping, $updatedRuntime, meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(['Firm A,ISIN1', 'Firm D,ISIN2'],$tds.rows->map(r|$r.values->makeString(',')));
    assertSameSQL('select "root".NAME as "name", "synonymtable_0".NAME as "synonym" from productSchema.productTable as "root" left outer join productSchema.synonymTable as "synonymtable_0" on ("synonymtable_0".PRODID = "root".ID and "synonymtable_0".thru_z = \'9999-12-31 00:00:00.000\') where "root".thru_z = \'9999-12-31 00:00:00.000\'', $result);

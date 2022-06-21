@@ -13,10 +13,10 @@
 // limitations under the License.
 
 import meta::pure::executionPlan::toString::*;
-import meta::pure::router::extension::*;
+import meta::pure::extension::*;
 import meta::pure::router::printer::*;
 
-import meta::external::store::service::router::extension::*;
+import meta::external::store::service::extension::*;
 
 import meta::external::store::service::executionPlan::nodes::*;
 import meta::external::store::service::executionPlan::toString::*;
@@ -25,7 +25,7 @@ import meta::external::store::service::metamodel::*;
 import meta::external::store::service::metamodel::mapping::*;
 import meta::external::store::service::metamodel::runtime::*;
 
-function meta::external::store::service::executionPlan::toString::serviceStoreExecutionNodeToString(s:RestServiceExecutionNode[1], space:String[1], extensions:meta::pure::router::extension::RouterExtension[*]):String[1]
+function meta::external::store::service::executionPlan::toString::serviceStoreExecutionNodeToString(s:RestServiceExecutionNode[1], space:String[1], extensions:meta::pure::extension::Extension[*]):String[1]
 {
    'RestServiceExecutionNode\n'+
    $space+'('+header($s, $space, $extensions)+'\n'+
@@ -39,7 +39,7 @@ function meta::external::store::service::executionPlan::toString::serviceStoreEx
    $space+')\n'
 }
 
-function meta::external::store::service::executionPlan::toString::serviceParametersResolutionExecutionNodeToString(s:ServiceParametersResolutionExecutionNode[1], space:String[1], extensions:meta::pure::router::extension::RouterExtension[*]):String[1]
+function meta::external::store::service::executionPlan::toString::serviceParametersResolutionExecutionNodeToString(s:ServiceParametersResolutionExecutionNode[1], space:String[1], extensions:meta::pure::extension::Extension[*]):String[1]
 {
    'ServiceParametersResolutionExecutionNode\n'+
    $space+'('+header($s, $space, $extensions)+'\n'+
@@ -48,7 +48,7 @@ function meta::external::store::service::executionPlan::toString::serviceParamet
    $space+')\n'
 }
 
-function meta::external::store::service::executionPlan::toString::limitExecutionNodeToString(l:LimitExecutionNode[1], space:String[1], extensions:meta::pure::router::extension::RouterExtension[*]):String[1]
+function meta::external::store::service::executionPlan::toString::limitExecutionNodeToString(l:LimitExecutionNode[1], space:String[1], extensions:meta::pure::extension::Extension[*]):String[1]
 {
    'LimitExecutionNode\n'+
    $space+'('+header($l, $space, $extensions)+'\n'+
@@ -65,7 +65,7 @@ function meta::external::store::service::executionPlan::toString::serviceStoreCo
    [$store, $baseUrl]->joinStrings(', ');
 }
 
-function meta::external::store::service::executionPlan::toString::securitySchemeToString(sec:SecurityScheme[1], extensions:meta::pure::router::extension::RouterExtension[*]):String[1]
+function meta::external::store::service::executionPlan::toString::securitySchemeToString(sec:SecurityScheme[1], extensions:meta::pure::extension::Extension[*]):String[1]
 {
    $sec->match($extensions->map(e|$e.moduleExtension('serviceStore')->cast(@ServiceStoreExtension).executionPlan_print_securitySchemeToString)->concatenate([
       sec:SecurityScheme[1] | fail('Security Scheme to String translator not found for ' + $sec->toString()); '';

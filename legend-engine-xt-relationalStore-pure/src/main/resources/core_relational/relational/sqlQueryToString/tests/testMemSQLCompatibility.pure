@@ -26,7 +26,7 @@ function meta::relational::memsql::tests::db::testReservedKeywords() : Boolean[1
     | meta::relational::memsql::tests::db::A.all()->project([s | $s.window], ['WINDOW']), 
       meta::relational::memsql::tests::db::simpleRelationalMappingForMemSQLWindowKeyword,
       meta::relational::runtime::DatabaseType.MemSQL, 
-      meta::pure::router::extension::defaultRelationalExtensions());
+      meta::relational::extension::relationalExtensions());
 
   assertEquals('select `root`.`window` as `WINDOW` from `test table` as `root`', $result);
 }

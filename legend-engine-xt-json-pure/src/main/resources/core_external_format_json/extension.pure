@@ -25,10 +25,10 @@ function meta::external::format::json::jsonFormatExtension(): meta::external::sh
       generateSerializeNode     = generateSerializeNode_Boolean_1__Binding_1__ExecutionNode_MANY__ExternalFormatSerializeExecutionNode_1_,
       generateDeserializeNode   = generateDeserializeNode_Connection_1__ExecutionNode_1__RootGraphFetchTree_$0_1$__ExecutionNode_1_,
       generatePathReference     = generatePathReference_Path_1__PathReference_1_,
-      printPlanNodeToString     = printPlanNodeToString_String_1__RouterExtension_MANY__Function_MANY_,
+      printPlanNodeToString     = printPlanNodeToString_String_1__Extension_MANY__Function_MANY_,
       
-      planJavaPrepare           = planJavaPrepare_String_1__GenerationContext_1__RouterExtension_MANY__DebugContext_1__Function_MANY_,
-      planJavaGenerate          = planJavaGenerate_String_1__GenerationContext_1__RouterExtension_MANY__DebugContext_1__Function_MANY_,
+      planJavaPrepare           = planJavaPrepare_String_1__GenerationContext_1__Extension_MANY__DebugContext_1__Function_MANY_,
+      planJavaGenerate          = planJavaGenerate_String_1__GenerationContext_1__Extension_MANY__DebugContext_1__Function_MANY_,
       plan_javaRuntime_enginePlatformDependencies_conventions = meta::external::format::json::executionPlan::engine::extendJavaEngineDependencies_Conventions_1__Conventions_1_,
       
       serializerExtension       = meta::external::format::json::serializerExtensionName_String_1__String_1_      

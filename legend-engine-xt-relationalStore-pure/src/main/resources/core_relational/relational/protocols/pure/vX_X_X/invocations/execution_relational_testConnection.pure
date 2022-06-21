@@ -29,7 +29,7 @@ import meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::
 import meta::protocols::pure::vX_X_X::metamodel::store::relational::element::*;
 import meta::protocols::pure::vX_X_X::transformation::toPureGraph::model::*;
 
-function meta::protocols::pure::vX_X_X::invocation::execution::testConnection::getTestConnection(dbType:DatabaseType[1], host:String[1], port:Integer[1], extensions:meta::pure::router::extension::RouterExtension[*]):meta::pure::alloy::connections::RelationalDatabaseConnection[0..1]
+function meta::protocols::pure::vX_X_X::invocation::execution::testConnection::getTestConnection(dbType:DatabaseType[1], host:String[1], port:Integer[1], extensions:meta::pure::extension::Extension[*]):meta::pure::alloy::connections::RelationalDatabaseConnection[0..1]
 {
    let resp= executeHTTPRaw(^URL(host=$host, port=$port , path='/api/pure/v1/utilities/tests/connections/'+ $dbType->toString()),
                              HTTPMethod.GET ,
@@ -46,7 +46,7 @@ function meta::protocols::pure::vX_X_X::invocation::execution::testConnection::g
 }
 
 
-function meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection::buildRelationalDatabaseConnection(connectionJSON:String[1], extensions:meta::pure::router::extension::RouterExtension[*]):meta::pure::alloy::connections::RelationalDatabaseConnection[0..1]
+function meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection::buildRelationalDatabaseConnection(connectionJSON:String[1], extensions:meta::pure::extension::Extension[*]):meta::pure::alloy::connections::RelationalDatabaseConnection[0..1]
 {
   let protocolConn = meta::json::fromJSON($connectionJSON, 
                   meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::RelationalDatabaseConnection ,
@@ -79,7 +79,7 @@ function meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection:
 }
 
 
-function meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection::transformRelationalDatabaseConnection(conn : meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::RelationalDatabaseConnection[1] , extensions:meta::pure::router::extension::RouterExtension[*]):meta::pure::alloy::connections::RelationalDatabaseConnection[1]
+function meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection::transformRelationalDatabaseConnection(conn : meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::RelationalDatabaseConnection[1] , extensions:meta::pure::extension::Extension[*]):meta::pure::alloy::connections::RelationalDatabaseConnection[1]
 {
   let element = if($conn.element=='',                       // legend test server sends '' as element for testConnections , as store is not known before hand
                   | ^Database(name='dummyDB'),
@@ -99,7 +99,7 @@ function meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection:
             );
 }
 
-function meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection::transformAuthenticationStrategy(a: meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::authentication::AuthenticationStrategy[1], extensions:meta::pure::router::extension::RouterExtension[*]):meta::pure::alloy::connections::alloy::authentication::AuthenticationStrategy[1]
+function meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection::transformAuthenticationStrategy(a: meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::authentication::AuthenticationStrategy[1], extensions:meta::pure::extension::Extension[*]):meta::pure::alloy::connections::alloy::authentication::AuthenticationStrategy[1]
 {  
   // TODO - deserializer extensions ?
 
@@ -149,7 +149,7 @@ function meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection:
    ]);
 }
 
-function meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection::transformDatasourceSpecification(ds: meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::DatasourceSpecification[1], extensions:meta::pure::router::extension::RouterExtension[*]):meta::pure::alloy::connections::alloy::specification::DatasourceSpecification[1]
+function meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection::transformDatasourceSpecification(ds: meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::DatasourceSpecification[1], extensions:meta::pure::extension::Extension[*]):meta::pure::alloy::connections::alloy::specification::DatasourceSpecification[1]
 {
    $ds->match([
       s:meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::StaticDatasourceSpecification[1] |
@@ -216,7 +216,7 @@ function meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection:
    ]);
 }
 
-function meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection::transformPostProcessors(processors:meta::protocols::pure::vX_X_X::metamodel::store::relational::postProcessor::PostProcessor[*], extensions:meta::pure::router::extension::RouterExtension[*]):meta::pure::alloy::connections::PostProcessor[*]
+function meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection::transformPostProcessors(processors:meta::protocols::pure::vX_X_X::metamodel::store::relational::postProcessor::PostProcessor[*], extensions:meta::pure::extension::Extension[*]):meta::pure::alloy::connections::PostProcessor[*]
 {
    $processors->map(processor |
       $processor->match([

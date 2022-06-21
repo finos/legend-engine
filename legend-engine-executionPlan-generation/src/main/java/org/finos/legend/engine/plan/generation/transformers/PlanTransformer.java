@@ -16,12 +16,12 @@ package org.finos.legend.engine.plan.generation.transformers;
 
 import org.eclipse.collections.api.RichIterable;
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionPlan;
-import org.finos.legend.pure.generated.Root_meta_pure_router_extension_RouterExtension;
+import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
 
 public interface PlanTransformer
 {
     boolean supports(String version);
 
-    Object transformToVersionedModel(Root_meta_pure_executionPlan_ExecutionPlan purePlan, String version, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, ExecutionSupport executionSupport);
+    Object transformToVersionedModel(Root_meta_pure_executionPlan_ExecutionPlan purePlan, String version, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, ExecutionSupport executionSupport);
 }

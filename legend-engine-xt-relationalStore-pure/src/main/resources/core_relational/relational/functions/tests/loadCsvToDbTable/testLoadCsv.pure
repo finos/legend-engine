@@ -24,7 +24,7 @@ function <<test.Test>> meta::relational::tests::loadCsv::testLoadCsv():Boolean[1
    loadCsvToDbTable('/core_relational/relational/functions/tests/loadCsvToDbTable/employees.csv', db.schema('default')->toOne().table('personCsvTable')->toOne(),
                      $connection);
                      
-   let res = execute(|Person.all(), csvMapping, meta::relational::tests::testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let res = execute(|Person.all(), csvMapping, meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
                      
    assertEquals('Joe', $res.values->at(0).firstName);
    assertEquals('Bloggs', $res.values->at(0).lastName);

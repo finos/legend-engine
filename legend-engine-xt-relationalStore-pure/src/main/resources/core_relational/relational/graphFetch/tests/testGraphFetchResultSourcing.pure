@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import meta::pure::runtime::*;
-import meta::csv::*;
+import meta::relational::tests::csv::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::mapping::modelToModel::*;
 import meta::pure::executionPlan::profiles::*;
@@ -59,7 +59,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
    let result = meta::pure::router::execute({|
       let x = meta::relational::graphFetch::tests::resultSourcing::Firm.all()->toOne()->graphFetch(#{meta::relational::graphFetch::tests::resultSourcing::Firm {name} }#);
       meta::relational::tests::model::simple::Person.all()->filter(y|$y.firm.legalName == $x->toOne().name)->project([col(y|$y.firstName,'firstName')])->sort(['firstName']);
-   }, mappingWithoutFilters, ^Runtime(connections = [$jsonConnection, createDbAndGetConnection()]),meta::pure::router::extension::defaultRelationalExtensions());
+   }, mappingWithoutFilters, ^Runtime(connections = [$jsonConnection, createDbAndGetConnection()]),meta::relational::extension::relationalExtensions());
    let expectedValue = 'firstName\n'+
                         'Anthony\n'+
                         'John\n'+
@@ -79,7 +79,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
    let result = meta::pure::router::execute({|
       let x = meta::relational::graphFetch::tests::resultSourcing::Firm.all()->toOne()->graphFetch(#{meta::relational::graphFetch::tests::resultSourcing::Firm {name} }#);
       meta::relational::tests::model::simple::Person.all()->filter(y|$y.firm.legalName == $x->toOne().name)->project([col(y|$y.firstName,'firstName')])->sort(['firstName']);
-   }, mappingWithFilters, ^Runtime(connections = [$jsonConnection, createDbAndGetConnection()]),meta::pure::router::extension::defaultRelationalExtensions());
+   }, mappingWithFilters, ^Runtime(connections = [$jsonConnection, createDbAndGetConnection()]),meta::relational::extension::relationalExtensions());
    let expectedValue = 'firstName\n'+
                         'Fabrice\n';
    assertSameElements($expectedValue,$result.values->toCSV());
@@ -97,7 +97,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
       let firmName = 'Apple';
       let x = meta::relational::graphFetch::tests::resultSourcing::Firm.all()->toOne()->graphFetch(#{meta::relational::graphFetch::tests::resultSourcing::Firm {name} }#);
       meta::relational::tests::model::simple::Person.all()->filter(y|$y.firm.legalName == $x->toOne().name)->project([col(y|$y.firstName,'firstName')])->sort(['firstName']);
-   }, mappingWithFilters, ^Runtime(connections = [$jsonConnection, createDbAndGetConnection()]),meta::pure::router::extension::defaultRelationalExtensions());
+   }, mappingWithFilters, ^Runtime(connections = [$jsonConnection, createDbAndGetConnection()]),meta::relational::extension::relationalExtensions());
    let expectedValue = 'firstName\n'+
                         'Fabrice\n';
    assertSameElements($expectedValue,$result.values->toCSV());
@@ -114,7 +114,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
    let result = meta::pure::router::execute({|
       let x = meta::relational::graphFetch::tests::resultSourcing::SettlementDateClass.all()->toOne()->graphFetch(#{meta::relational::graphFetch::tests::resultSourcing::SettlementDateClass {settlementDate} }#);
       meta::relational::tests::model::simple::Trade.all()->filter(y|$y.settlementDateTime == $x->toOne().settlementDate)->project([col(y|$y.id,'id')])->sort(['id']);
-   }, meta::relational::graphFetch::tests::resultSourcing::identityMappingForDate, ^Runtime(connections = [$jsonConnection, createDbAndGetConnection()]), meta::pure::router::extension::defaultRelationalExtensions());
+   }, meta::relational::graphFetch::tests::resultSourcing::identityMappingForDate, ^Runtime(connections = [$jsonConnection, createDbAndGetConnection()]), meta::relational::extension::relationalExtensions());
    let expectedValue = 'id\n'+
                         '8\n'+
                         '9\n';

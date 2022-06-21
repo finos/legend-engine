@@ -20,8 +20,8 @@ function meta::protocols::pure::v1_20_0::invocation::generation::avro::legendGen
                                  '{ "clientVersion":"v1_20_0",'+
                                  '  "config":'+$avroConfig->meta::protocols::pure::v1_20_0::invocation::generation::avro::transformAvroGenerationConfig()->alloyToJSON()+','+
                                  '  "model":'+if ($avroConfig.package->isEmpty(),
-                                                  |$avroConfig.class->toOne()->pathToElement()->toOne()->cast(@Type)->buildPureModelFromType(meta::pure::router::extension::defaultExtensions())->alloyToJSON(),
-                                                  |$avroConfig.package->toOne()->pathToElement()->toOne()->cast(@Package)->buildPureModelFromPackage(meta::pure::router::extension::defaultExtensions())->alloyToJSON())+
+                                                  |$avroConfig.class->toOne()->pathToElement()->toOne()->cast(@Type)->buildPureModelFromType(meta::pure::extension::defaultExtensions())->alloyToJSON(),
+                                                  |$avroConfig.package->toOne()->pathToElement()->toOne()->cast(@Package)->buildPureModelFromPackage(meta::pure::extension::defaultExtensions())->alloyToJSON())+
                                  '}'
                                 );
    assertEq(200, $resp.statusCode, | $resp.entity);

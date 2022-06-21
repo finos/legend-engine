@@ -19,7 +19,7 @@ import meta::relational::metamodel::operation::*;
 import meta::relational::metamodel::relation::*;
 import meta::relational::metamodel::*;
 import meta::relational::runtime::*;
-import meta::pure::router::extension::*;
+import meta::pure::extension::*;
 
 function <<db.ExtensionLoader>> meta::relational::functions::sqlQueryToString::sqlServer::dbExtensionLoaderForSqlServer():DbExtensionLoader[1]
 {

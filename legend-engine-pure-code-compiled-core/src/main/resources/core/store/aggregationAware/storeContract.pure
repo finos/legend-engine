@@ -1,0 +1,60 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::mapping::*;
+import meta::pure::router::systemMapping::tests::*;
+import meta::pure::extension::*;
+import meta::pure::mapping::modelToModel::*;
+import meta::pure::store::*;
+import meta::pure::runtime::*;
+import meta::pure::executionPlan::*;
+import meta::pure::mapping::aggregationAware::*;
+import meta::pure::router::printer::*;
+
+
+function meta::pure::mapping::aggregationAware::contract::aggregationAwareStoreContract():StoreContract[1]
+{
+   ^StoreContract
+   (
+     id = 'aggregationAwareStore',
+     executeStoreQuery = meta::pure::mapping::aggregationAware::contract::execution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_1__Runtime_1__ExecutionContext_1__Extension_MANY__DebugContext_1__Result_1_,
+     supports = meta::pure::mapping::aggregationAware::contract::supports_FunctionExpression_1__Boolean_1_,
+     planExecution = meta::pure::mapping::aggregationAware::contract::planExecution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__Extension_MANY__DebugContext_1__ExecutionNode_1_,
+
+     supportsSetImplementation = s:SetImplementation[1]|$s->instanceOf(AggregationAwareSetImplementation)
+   )
+}
+
+function meta::pure::mapping::aggregationAware::contract::planExecution(f:meta::pure::mapping::StoreQuery[1], e:RoutedValueSpecification[0..1], m:Mapping[0..1], runtime:Runtime[0..1], exeCtx:ExecutionContext[1], extensions:Extension[*], debug:DebugContext[1]):ExecutionNode[1]
+{
+   let reprocessedFunction = reprocessFunction($f.fe->evaluateAndDeactivate(), $f.inScopeVars, $e, $m->toOne(), $debug);
+   let node = meta::pure::executionPlan::executionPlan($reprocessedFunction, $m->toOne(), $runtime->toOne(), $exeCtx, $extensions, $debug).rootExecutionNode;
+   ^AggregationAwareExecutionNode(executionNodes = $node, resultType = $node.resultType, aggregationAwareActivity = $reprocessedFunction->asString());
+}
+
+function meta::pure::mapping::aggregationAware::contract::execution(f:meta::pure::mapping::StoreQuery[1], e:RoutedValueSpecification[0..1], m:Mapping[1], runtime:Runtime[1], exeCtx:ExecutionContext[1],  extensions:Extension[*], debug:DebugContext[1]):Result<Any|*>[1]
+{
+   let reprocessedFunction = reprocessFunction($f.fe->evaluateAndDeactivate(), $f.inScopeVars, $e, $m, $debug);
+   let result = execute($reprocessedFunction, $m, $runtime, $exeCtx, $extensions, $debug);
+   let aggregationAwareActivity = ^AggregationAwareActivity(rewrittenQuery = $reprocessedFunction->asString());
+   ^$result
+    (
+       activities = $result.activities->add($aggregationAwareActivity)
+    );
+}
+
+function meta::pure::mapping::aggregationAware::contract::supports(f:FunctionExpression[1]):Boolean[1]
+{
+   true;
+}

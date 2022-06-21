@@ -19,7 +19,7 @@ function meta::relational::tests::routing::testColumnSpecificationRouting():Bool
 {
    let list = ['firstname'];
    let str='a';
-   let res = execute(|Person.all()->projectWithColumnSubset(if($str=='a',| columnListA(),|columnListB()),$list),simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let res = execute(|Person.all()->projectWithColumnSubset(if($str=='a',| columnListA(),|columnListB()),$list),simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    true;
 }
 

@@ -13,7 +13,8 @@
 // limitations under the License.
 
 import meta::pure::mapping::*;
-import meta::pure::router::extension::*;
+import meta::pure::extension::*;
+import meta::relational::extension::*;
 import meta::pure::mapping::modelToModel::*;
 import meta::pure::graphFetch::execution::*;
 import meta::relational::validation::functions::*;
@@ -33,13 +34,13 @@ Class meta::relational::validation::alloy::ClassValidationException
    classId : String[0..1];
 }
 
-function <<doc.deprecated>> meta::relational::validation::alloy::alloyClassValidation<T, U>(classToValidate:Class<T>[1], constraintName:String[1], sourceMapping:Mapping[1], sourceRuntime:Runtime[1], exceptionMapping:Mapping[1], execptionTree:RootGraphFetchTree<U>[1], extensions:RouterExtension[*]):Result<String|1>[1]
+function <<doc.deprecated>> meta::relational::validation::alloy::alloyClassValidation<T, U>(classToValidate:Class<T>[1], constraintName:String[1], sourceMapping:Mapping[1], sourceRuntime:Runtime[1], exceptionMapping:Mapping[1], execptionTree:RootGraphFetchTree<U>[1], extensions:Extension[*]):Result<String|1>[1]
 {
    let fd = alloyClassValidationFunction($classToValidate, $constraintName, $sourceMapping, $sourceRuntime, $exceptionMapping, $execptionTree);
    execute($fd, ^Mapping(), ^Runtime(), ^ExecutionContext(enableConstraints=false), $extensions);
 }
 
-function <<doc.deprecated>> meta::relational::validation::alloy::alloyClassValidationExecutionPlan<T, U>(classToValidate:Class<T>[1], constraintName:String[1], sourceMapping:Mapping[1], sourceRuntime:Runtime[1], exceptionMapping:Mapping[1], execptionTree:RootGraphFetchTree<U>[1], extensions:RouterExtension[*]):ExecutionPlan[1]
+function <<doc.deprecated>> meta::relational::validation::alloy::alloyClassValidationExecutionPlan<T, U>(classToValidate:Class<T>[1], constraintName:String[1], sourceMapping:Mapping[1], sourceRuntime:Runtime[1], exceptionMapping:Mapping[1], execptionTree:RootGraphFetchTree<U>[1], extensions:Extension[*]):ExecutionPlan[1]
 {
    let fd = alloyClassValidationFunction($classToValidate, $constraintName, $sourceMapping, $sourceRuntime, $exceptionMapping, $execptionTree);
    executionPlan($fd, ^ExecutionContext(enableConstraints=false), $extensions);

@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::pure::router::extension::*;
+import meta::pure::extension::*;
 
-Class meta::external::store::service::router::extension::ServiceStoreExtension extends ModuleExtension
+Class meta::external::store::service::extension::ServiceStoreExtension extends ModuleExtension
 {
    executionPlan_print_securitySchemeToString : Function<{Nil[1] -> String[1]}>[*];
 }

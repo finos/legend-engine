@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::csv::*;
+import meta::relational::tests::csv::*;
 import meta::relational::functions::asserts::*;
 import meta::relational::validation::*;
 import meta::relational::functions::toDDL::*;
@@ -25,7 +25,7 @@ import meta::relational::validation::showcase::standalone::*;
 
 function <<test.Test>> meta::relational::validation::showcase::standalone::validateAllConstraints():Boolean[1]
 {
-   let validationResult = validate({|Trade.all()}, validationShowcaseMapping, getRuntime(), getConstraintsContextInformation(), meta::pure::router::extension::defaultRelationalExtensions());
+   let validationResult = validate({|Trade.all()}, validationShowcaseMapping, getRuntime(), getConstraintsContextInformation(), meta::relational::extension::relationalExtensions());
    
    assertEquals('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
                 'etiNotEmpty,Error,External Trade ID is not valid,2\n'+
@@ -43,7 +43,7 @@ function <<test.Test>> meta::relational::validation::showcase::standalone::valid
 
 function <<test.Test>> meta::relational::validation::showcase::standalone::validateSingleConstraint():Boolean[1]
 {
-   let validationResult = validate({|Trade.all()}, validationShowcaseMapping, getRuntime(), ['etiNotEmpty'], meta::pure::router::extension::defaultRelationalExtensions());
+   let validationResult = validate({|Trade.all()}, validationShowcaseMapping, getRuntime(), ['etiNotEmpty'], meta::relational::extension::relationalExtensions());
    assertSameSQL('select \'etiNotEmpty\' as "CONSTRAINT_ID", '+
                          '\'Error\' as "ENFORCEMENT_LEVEL", '+
                          '\'External Trade ID is not valid\' as "MESSAGE", '+
@@ -57,7 +57,7 @@ function <<test.Test>> meta::relational::validation::showcase::standalone::valid
 
 function <<test.Test>> meta::relational::validation::showcase::standalone::validateMultipleConstraints():Boolean[1]
 {
-   let validationResult = validate({|Trade.all()}, validationShowcaseMapping, getRuntime(), ['etiNotEmpty', 'validLocation'], meta::pure::router::extension::defaultRelationalExtensions());
+   let validationResult = validate({|Trade.all()}, validationShowcaseMapping, getRuntime(), ['etiNotEmpty', 'validLocation'], meta::relational::extension::relationalExtensions());
    assertSameSQL('select "unionalias_0"."CONSTRAINT_ID" as "CONSTRAINT_ID", '+
                          '"unionalias_0"."ENFORCEMENT_LEVEL" as "ENFORCEMENT_LEVEL", '+
                          '"unionalias_0"."MESSAGE" as "MESSAGE", '+
@@ -80,7 +80,7 @@ function <<test.Test>> meta::relational::validation::showcase::standalone::valid
 
 function <<test.Test>> meta::relational::validation::showcase::standalone::validateMultiplesConstraintWithConstraintInformation():Boolean[1]
 {
-   let validationResult = validate({|Trade.all()}, validationShowcaseMapping, getRuntime(), ['etiNotEmpty', 'validLocation'], getConstraintsContextInformation(), meta::pure::router::extension::defaultRelationalExtensions());
+   let validationResult = validate({|Trade.all()}, validationShowcaseMapping, getRuntime(), ['etiNotEmpty', 'validLocation'], getConstraintsContextInformation(), meta::relational::extension::relationalExtensions());
    assertSameSQL('select "unionalias_0"."CONSTRAINT_ID" as "CONSTRAINT_ID", '+
                          '"unionalias_0"."ENFORCEMENT_LEVEL" as "ENFORCEMENT_LEVEL", '+
                          '"unionalias_0"."MESSAGE" as "MESSAGE", '+
@@ -103,7 +103,7 @@ function <<test.Test>> meta::relational::validation::showcase::standalone::valid
 
 function <<test.Test>> meta::relational::validation::showcase::standalone::validateMultiplesConstraintWithAdditionalProjections():Boolean[1]
 {
-   let validationResult = validate({|Trade.all()}, [col(x:Trade[1] | $x.tradeId, 'Trade ID'), col(x:Trade[1] | $x.externalTradeId, 'Ext Trade ID'), col(x:Trade[1] | $x.location, 'Location')], [], validationShowcaseMapping, getRuntime(), ^RelationalExecutionContext(), ['etiNotEmpty', 'validLocation'], getConstraintsContextInformation(), meta::pure::router::extension::defaultRelationalExtensions());
+   let validationResult = validate({|Trade.all()}, [col(x:Trade[1] | $x.tradeId, 'Trade ID'), col(x:Trade[1] | $x.externalTradeId, 'Ext Trade ID'), col(x:Trade[1] | $x.location, 'Location')], [], validationShowcaseMapping, getRuntime(), ^RelationalExecutionContext(), ['etiNotEmpty', 'validLocation'], getConstraintsContextInformation(), meta::relational::extension::relationalExtensions());
    
    assertEquals('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,Trade ID,Ext Trade ID,Location\n'+
                 'etiNotEmpty,Error,External Trade ID is not valid,2,,Americas\n'+
@@ -114,7 +114,7 @@ function <<test.Test>> meta::relational::validation::showcase::standalone::valid
 function <<test.Test>> meta::relational::validation::showcase::standalone::validateMultiplesConstraintWithPostTDSOperation1():Boolean[1]
 {
    let validationResult = validate({|Trade.all()}, [col(x:Trade[1] | $x.tradeId, 'Trade ID'), col(x:Trade[1] | $x.externalTradeId, 'Ext Trade ID'), col(x:Trade[1] | $x.location, 'Location')], {t:TabularDataSet[1]|$t->groupBy(['CONSTRAINT_ID'],agg('COUNT', x|$x.getInteger('Trade ID'), y|$y->count()))}, 
-                                    validationShowcaseMapping, getRuntime(), ^RelationalExecutionContext(), ['etiNotEmpty', 'validLocation'], getConstraintsContextInformation(), meta::pure::router::extension::defaultRelationalExtensions());
+                                    validationShowcaseMapping, getRuntime(), ^RelationalExecutionContext(), ['etiNotEmpty', 'validLocation'], getConstraintsContextInformation(), meta::relational::extension::relationalExtensions());
    
    assertEquals('CONSTRAINT_ID,COUNT\n'+
                 'validLocation,2\n'+
@@ -124,7 +124,7 @@ function <<test.Test>> meta::relational::validation::showcase::standalone::valid
 function <<test.Test>> meta::relational::validation::showcase::standalone::validateAllConstraintsWithPostTDSOperation2():Boolean[1]
 {
    let validationResult = validate({|Trade.all()}, [col(x:Trade[1] | $x.tradeId, 'Trade ID'), col(x:Trade[1] | $x.externalTradeId, 'Ext Trade ID'), col(x:Trade[1] | $x.location, 'Location')], {t:TabularDataSet[1]|$t->restrict(['Trade ID', 'Ext Trade ID', 'CONSTRAINT_ID', 'MESSAGE'])->sort([asc('Trade ID'),asc('CONSTRAINT_ID')])}, 
-                                    validationShowcaseMapping, getRuntime(), ^RelationalExecutionContext(), [], getConstraintsContextInformation(), meta::pure::router::extension::defaultRelationalExtensions());
+                                    validationShowcaseMapping, getRuntime(), ^RelationalExecutionContext(), [], getConstraintsContextInformation(), meta::relational::extension::relationalExtensions());
    
    assertEquals('Trade ID,Ext Trade ID,CONSTRAINT_ID,MESSAGE\n'+
                 '1,100,isATypeAccount,Account is not Type A : \n'+
@@ -142,7 +142,7 @@ function <<test.Test>> meta::relational::validation::showcase::standalone::valid
 
 function <<test.Test>> meta::relational::validation::showcase::standalone::validateAllConstraintsWithInnerJoinInFilter():Boolean[1]
 {
-   let validationResult = validate({|Trade.all()}, validationShowcaseMappingWithInnerJoinsInFilter, getRuntime(), getConstraintsContextInformation(), meta::pure::router::extension::defaultRelationalExtensions());
+   let validationResult = validate({|Trade.all()}, validationShowcaseMappingWithInnerJoinsInFilter, getRuntime(), getConstraintsContextInformation(), meta::relational::extension::relationalExtensions());
    
    assertEquals('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
                 'knownAccount,Error,Account unknown,1\n'+

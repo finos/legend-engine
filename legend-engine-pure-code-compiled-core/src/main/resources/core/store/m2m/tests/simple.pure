@@ -1,0 +1,425 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::executionPlan::*;
+import meta::protocols::pure::vX_X_X::metamodel::valueSpecification::application::*;
+import meta::pure::executionPlan::profiles::*;
+import meta::pure::mapping::*;
+import meta::pure::mapping::modelToModel::test::shared::*;
+import meta::pure::mapping::modelToModel::test::simple::*;
+import meta::pure::mapping::modelToModel::test::primitives::*;
+import meta::pure::mapping::modelToModel::test::filter::*;
+import meta::pure::mapping::modelToModel::*;
+import meta::pure::mapping::modelToModel::test::*;
+import meta::pure::runtime::*;
+import meta::pure::mapping::modelToModel::test::shared::src::*;
+import meta::pure::mapping::modelToModel::test::shared::dest::*;
+import meta::pure::mapping::modelToModel::test::pmcd::models::*;
+
+// Simple ------------------
+function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::test::simple::testSimple():Any[*]
+{
+    let res = execute(
+            |Person.all(),
+            simpleModelMapping,
+            ^Runtime(connections = ^ModelConnection(element=^ModelStore(), instances= newMap(
+                                                                                                      pair(_S_Person, list([
+                                                                                                                        ^_S_Person(fullName='Pierre Doe'),
+                                                                                                                        ^_S_Person(fullName='Pierre XE'),
+                                                                                                                        ^_S_Person(fullName='_Hey Yo')
+                                                                                                                    ])
+                                                                                                      )
+                                                                                            )
+                                                   )
+             ),
+             meta::pure::extension::defaultExtensions()
+          );
+   testSimpleAsserts($res);
+}
+
+function meta::pure::mapping::modelToModel::test::simple::testSimpleAsserts(res:Result<Person|*>[1]):Boolean[1]
+{
+   assertEquals(['Doe', 'XE', 'Yo'], $res.values.lastName);
+}
+
+
+// Simple Filter ------------------
+
+function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::test::simple::testSimpleFilter():Any[*]
+{
+    let res = execute(
+            |Person.all()->filter(p|$p.lastName == 'Yo'),
+            simpleModelMapping,
+            ^Runtime(connections = ^ModelConnection(element=^ModelStore(), instances= newMap(
+                                                                                                      pair(_S_Person, list([
+                                                                                                                        ^_S_Person(fullName='Pierre Doe'),
+                                                                                                                        ^_S_Person(fullName='Pierre XE'),
+                                                                                                                        ^_S_Person(fullName='_Hey Yo')
+                                                                                                                    ])
+                                                                                                      )
+                                                                                            )
+                                                   )
+             ),
+             meta::pure::extension::defaultExtensions()
+          );
+   testSimpleFilterAsserts($res);
+}
+
+function meta::pure::mapping::modelToModel::test::simple::testSimpleFilterAsserts(res:Result<Person|*>[1]):Boolean[1]
+{
+   assertEquals(['Yo'], $res.values.lastName);
+}
+
+
+
+// SimpleAssociation ---------------------
+
+function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::test::simple::testSimpleAssociation():Any[*]
+{
+    let res = execute(
+            |Firm.all(),
+            simpleModelMappingWithAssociation,
+            ^Runtime(connections = ^ModelConnection(element=^ModelStore(), instances= newMap(
+                                                                                               pair(_Firm , list([
+                                                                                                              ^_Firm (name='A', employees = [^_Person(fullName='Pierre Doe'),^_Person(fullName='A. Only One')] )
+                                                                                                                 ])
+                                                                                               )
+                                                                                            )
+                                                   )
+             ),
+             meta::pure::extension::defaultExtensions()
+          );
+   testSimpleAssociationAsserts($res);
+}
+
+function meta::pure::mapping::modelToModel::test::simple::testSimpleAssociationAsserts(res:Result<Firm|*>[1]):Boolean[1]
+{
+   let f = $res.values->toOne();
+   assertEquals('A', $f.legalName);
+   assertEquals('Doe, Only One', $f.employees.lastName->sort()->joinStrings(', '));
+}
+
+
+
+// SimpleProject ---------------------
+
+function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::test::simple::testSimpleProjectAsso():Any[*]
+{
+    let res = execute(
+            |Firm.all()->project([f|$f.legalName, f|$f.employees.lastName], ['legalName','lastName']),
+            simpleModelMappingWithAssociation,
+            ^Runtime(connections = ^ModelConnection(element=^ModelStore(), instances= newMap(
+                                                                                                      pair(_Firm , list([
+                                                                                                                        ^_Firm (name='A', employees = [^_Person(fullName='Pierre Doe'),^_Person(fullName='A. Only One')] )
+                                                                                                                    ]))
+                                                                                            )
+                                                   )
+             ),
+             meta::pure::extension::defaultExtensions()
+          );
+   testSimpleProjectAssoAsserts($res);
+}
+
+
+
+
+function meta::pure::mapping::modelToModel::test::simple::testSimpleProjectAssoAsserts(res:Result<TabularDataSet|1>[1]):Boolean[1]
+{
+   let tds = $res.values->at(0);
+   let rows = $tds.rows->sortBy(r|$r.getString('lastName'));
+   assertSize($rows, 2);
+   assertEquals('A', $rows->at(0).getString('legalName'));
+   assertEquals('Doe', $rows->at(0).getString('lastName'));
+   assertEquals('A', $rows->at(1).getString('legalName'));
+   assertEquals('Only One', $rows->at(1).getString('lastName'));
+}
+
+
+
+function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::test::simple::testSimpleProject():Any[*]
+{
+    let res = execute(
+            |Person.all()->project([p|$p.firstName, p|$p.lastName], ['firstName','lastName']),
+            meta::pure::mapping::modelToModel::test::simple::simpleModelMapping,
+            ^Runtime(connections = [
+                                       ^ModelConnection(element = ^ModelStore(), instances= newMap(
+                                                                                                      pair(_S_Person, list([
+                                                                                                                        ^_S_Person(fullName='Pierre Doe'),
+                                                                                                                        ^_S_Person(fullName='Pierre XE'),
+                                                                                                                        ^_S_Person(fullName='_Hey Yo')
+                                                                                                                    ])
+                                                                                                      )
+                                                                                            )
+                                       )
+                                   ]
+             ),
+             meta::pure::extension::defaultExtensions()
+          );
+   testSimpleProjectAsserts($res);
+}
+
+function meta::pure::mapping::modelToModel::test::simple::testSimpleProjectAsserts(res:Result<TabularDataSet|1>[1]):Boolean[1]
+{
+   let tds = $res.values->at(0);
+   let rows = $tds.rows->sortBy(r|$r.getString('lastName'));
+   assertSize($rows, 3);
+   assertEquals('Doe', $rows->at(0).getString('lastName'));
+   assertEquals('XE', $rows->at(1).getString('lastName'));
+   assertEquals('Yo', $rows->at(2).getString('lastName'));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::test::simple::testPropertyMappingWithFunctions(): Boolean[1]
+{
+   let theMapping = meta::pure::mapping::modelToModel::test::createInstances::createInstancesModelMappingOneMany;
+   let extensions = meta::pure::extension::defaultExtensions();
+   let domainElements = $theMapping->map(m|$m->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::transformMapping($extensions));
+   let transform = $domainElements.classMappings->cast(@meta::protocols::pure::vX_X_X::metamodel::mapping::modelToModel::PureInstanceClassMapping).propertyMappings->map(m | $m.transform.body); 
+   assertEmpty($transform->filter(t | $t->instanceOf(UnknownAppliedFunction)));
+   assert($transform->map(t | $t->cast(@AppliedFunction).function)->contains('meta::pure::mapping::modelToModel::test::createInstances::getFullName'), 'meta::pure::mapping::modelToModel::test::createInstances::createInstancesModelMappingOneMany');
+}
+
+###Mapping
+import meta::pure::mapping::modelToModel::test::shared::src::*;
+import meta::pure::mapping::modelToModel::test::shared::dest::*;
+import meta::pure::mapping::modelToModel::test::*;
+
+Mapping meta::pure::mapping::modelToModel::test::simple::simpleModelMappingO
+(
+   Person : Pure
+            {
+               ~src Person
+               firstName : $src.firstName + 'XX',
+               lastName : $src.lastName +'ZZ'
+            }
+
+)
+
+###Mapping
+import meta::pure::mapping::modelToModel::test::shared::src::*;
+import meta::pure::mapping::modelToModel::test::shared::dest::*;
+import meta::pure::mapping::modelToModel::test::*;
+
+Mapping meta::pure::mapping::modelToModel::test::simple::simpleModelMappingOConstant
+(
+   Person : Pure
+            {
+               ~src Person
+               firstName : $src.firstName + 'XX',
+               lastName : 'ZZ'
+            }
+
+)
+
+###Mapping
+import meta::pure::mapping::modelToModel::test::shared::src::*;
+import meta::pure::mapping::modelToModel::test::shared::dest::*;
+import meta::pure::mapping::modelToModel::test::*;
+
+Mapping meta::pure::mapping::modelToModel::test::simple::simpleModelMapping
+(
+   Person : Pure
+            {
+               ~src _S_Person
+               firstName     : $src.fullName->substring(0, $src.fullName->indexOf(' ')),
+               lastName      : $src.fullName->substring($src.fullName->indexOf(' ')+1, $src.fullName->length()),
+               type          : $src._type,
+               alternateName : $src.alternateName->toOne() 
+               
+            }
+  NameWithLang : Pure
+            {
+              ~src _NameWithLang
+              lang: $src._lang,
+              value: $src.value__
+            }
+
+   Product2Simple : Pure
+            {
+               ~src _Product2
+               name: $src.name,
+               region: $src.region
+            }
+)
+
+###Mapping
+import meta::pure::mapping::modelToModel::test::shared::src::*;
+import meta::pure::mapping::modelToModel::test::shared::dest::*;
+import meta::pure::mapping::modelToModel::test::*;
+
+Mapping meta::pure::mapping::modelToModel::test::simple::simpleModelMappingWithSubType
+(
+   meta::pure::mapping::modelToModel::test::shared::dest::Firm : Pure
+            {
+               ~src meta::pure::mapping::modelToModel::test::shared::src::_S_Firm
+               
+               legalName        : $src.name,
+               employees[A]     : $src.employees->filter(e | $e->instanceOf(_S_PersonA))->cast(@_S_PersonA)
+            }
+   
+   Person[A]  : Pure
+   {
+      ~src _S_PersonA      
+      firstName : $src.fullName->substring(0, $src.fullName->indexOf(' ')) + $src.aName,
+      lastName : $src.fullName->substring($src.fullName->indexOf(' ') + 1, $src.fullName->length())
+      
+   }
+)
+
+###Mapping
+import meta::pure::mapping::modelToModel::test::shared::src::*;
+import meta::pure::mapping::modelToModel::test::shared::dest::*;
+import meta::pure::mapping::modelToModel::test::*;
+
+Mapping meta::pure::mapping::modelToModel::test::simple::simpleModelMappingWithSubTypeWithNestedAssociation
+(
+   meta::pure::mapping::modelToModel::test::shared::dest::Firm : Pure
+            {
+               ~src meta::pure::mapping::modelToModel::test::shared::src::_S_Firm
+               
+               legalName        : $src.name,
+               employees[A]     : $src.employees->filter(e | $e->instanceOf(_S_PersonA))->cast(@_S_PersonA)
+            }
+   
+   Person[A]  : Pure
+   {
+      ~src _S_PersonA
+      firstName   : $src.fullName->substring(0, $src.fullName->indexOf(' ')),
+      lastName    : $src.fullName->substring($src.fullName->indexOf(' ') + 1, $src.fullName->length()),
+      description : 'aName:' + $src.aName + ' lives at ' + $src.address->toOne().street + ' and has road vehicle with wheel count:' + $src.vehicle.wheelCount->toString()
+   }
+)
+
+
+
+###Mapping
+import meta::pure::mapping::modelToModel::test::shared::src::*;
+import meta::pure::mapping::modelToModel::test::shared::dest::*;
+import meta::pure::mapping::modelToModel::test::*;
+
+Mapping meta::pure::mapping::modelToModel::test::simple::simpleModelMappingWithAssociation
+(
+   Person : Pure
+            {
+               ~src _Person
+               firstName : $src.fullName->substring(0, $src.fullName->indexOf(' ')),
+               lastName : $src.fullName->substring($src.fullName->indexOf(' ')+1, $src.fullName->length())
+            }
+
+   Firm : Pure
+   {
+      ~src _Firm
+      legalName : $src.name,
+      employees : $src.employees
+   }
+
+)
+
+Mapping meta::pure::mapping::modelToModel::test::simple::simpleModelMappingWithMultipleClassMappings
+(
+   *Person : Pure
+            {
+               ~src _Person
+               firstName : $src.fullName->substring(0, $src.fullName->indexOf(' ')),
+               lastName : $src.fullName->substring($src.fullName->indexOf(' ')+1, $src.fullName->length())
+            }
+
+   Person[p1] : Pure
+   {
+       ~src _Person
+       firstName : $src.fullName->substring(0, $src.fullName->indexOf(' ')),
+       lastName : $src.fullName->substring($src.fullName->indexOf(' ')+1, $src.fullName->length())
+   }
+
+   Firm : Pure
+   {
+      ~src _Firm
+      legalName : $src.name,
+      employees[p1] : $src.employees
+   }
+
+)
+
+###Mapping
+import meta::pure::mapping::modelToModel::test::shared::src::*;
+import meta::pure::mapping::modelToModel::test::shared::dest::*;
+import meta::pure::mapping::modelToModel::test::*;
+
+Mapping meta::pure::mapping::modelToModel::test::simple::ModelMappingWithJoinToExtendedProperty
+(
+   Trade : Pure
+            {
+               ~src _Trade
+                  side: if($src.side == 0, |Side.Buy, |Side.Sell),
+                  productName: $src.product.name,
+                  productRegion: $src.product.region
+
+            }
+
+   Product : Pure
+   {
+      ~src _Product
+      name : $src.name,
+      region : $src.region
+   }
+
+)
+
+
+###Mapping
+import meta::pure::mapping::modelToModel::test::shared::src::*;
+import meta::pure::mapping::modelToModel::test::shared::dest::*;
+import meta::pure::mapping::modelToModel::test::*;
+
+Mapping meta::pure::mapping::modelToModel::test::crossStore::crossStoreModelMappingWithLocalMappingProperty
+(
+   _SimplePerson[person_Set] : Pure
+   {
+      ~src FirmEmployee
+      fullName : $src.fullName,
+      +firmName: String[1] : $src.firmName
+   }
+
+   _SimpleFirm[firm_set] : Pure
+   {
+      ~src Firm
+      name : $src.legalName
+   }
+   
+   meta::pure::mapping::modelToModel::test::shared::src::_SimpleFirm_SimplePerson: XStore
+   {
+      simpleEmployees[firm_set, person_Set] : $this.name == $that.firmName,
+      firm[person_Set, firm_set]            : $that.name == $this.firmName
+   }
+)
+
+Mapping meta::pure::mapping::modelToModel::test::crossStore::crossStoreModelMapping
+(
+   _SimplePerson[person_Set] : Pure
+   {
+      ~src FirmEmployee
+      fullName : $src.fullName
+   }
+
+   _SimpleFirm[firm_set] : Pure
+   {
+      ~src Firm
+      name : $src.legalName
+   }
+   
+   meta::pure::mapping::modelToModel::test::shared::src::_SimpleFirm_SimplePerson: XStore
+   {
+      simpleEmployees[firm_set, person_Set] : $this.name == $that.fullName,
+      firm[person_Set, firm_set]            : $that.name == $this.fullName
+   }
+)

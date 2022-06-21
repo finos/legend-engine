@@ -229,7 +229,7 @@ Database meta::relational::validation::complex::db
 import meta::relational::validation::complex::*;
 import meta::relational::metamodel::execute::*;
 import meta::relational::runtime::*;
-import meta::csv::*;
+import meta::relational::tests::csv::*;
 import meta::relational::validation::*;
 import meta::relational::metamodel::*;
 import meta::pure::runtime::*;
@@ -320,7 +320,7 @@ function <<test.Test>> meta::relational::validation::complex::validateComplexVal
                                    validationComplexMappingWithInnerJoins,
                                    getRuntime(),
                                    ^RelationalExecutionContext(),
-                                   ['constraint1'], meta::pure::router::extension::defaultRelationalExtensions());
+                                   ['constraint1'], meta::relational::extension::relationalExtensions());
 
    assertEquals('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
                 'constraint1,Error,,1\n'+
@@ -336,7 +336,7 @@ function <<test.Test>> meta::relational::validation::complex::validateComplexVal
                                    validationComplexMapping,
                                    getRuntime(),
                                    ^RelationalExecutionContext(),
-                                   ['constraint2'], meta::pure::router::extension::defaultRelationalExtensions());
+                                   ['constraint2'], meta::relational::extension::relationalExtensions());
 
    assertEquals('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
                 'constraint2,Error,,3\n', $validationResult.values->toCSV());
@@ -355,7 +355,7 @@ function <<test.Test>> meta::relational::validation::complex::validateComplexVal
                                    getRuntime(),
                                    ^RelationalExecutionContext(),
                                    ['constraint1'],
-                                   [], meta::pure::router::extension::defaultRelationalExtensions());
+                                   [], meta::relational::extension::relationalExtensions());
 
    assertEquals('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,addressId,personId\n'+
                 'constraint1,Error,,12,Peter\n'+
@@ -369,7 +369,7 @@ function <<test.Test>> meta::relational::validation::complex::validateComplexVal
    let validationResult = validate({|Firm.all()},
                                    validationComplexMappingWithInnerJoins,
                                    getRuntime(),
-                                   ['constraint2'], meta::pure::router::extension::defaultRelationalExtensions());
+                                   ['constraint2'], meta::relational::extension::relationalExtensions());
 
    assertEquals('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
                 'constraint2,Error,,4\n', $validationResult.values->toCSV());
@@ -381,7 +381,7 @@ function <<test.Test>> meta::relational::validation::complex::validateComplexVal
    let validationResult = validate({|Firm.all()},
                                    validationComplexMappingWithInnerJoins,
                                    getRuntime(),
-                                   ['constraint3'], meta::pure::router::extension::defaultRelationalExtensions());
+                                   ['constraint3'], meta::relational::extension::relationalExtensions());
 
    assertEquals('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
                 'constraint3,Error,,4\n', $validationResult.values->toCSV());
@@ -393,7 +393,7 @@ function <<test.Test>> meta::relational::validation::complex::validateComplexVal
    let validationResult = validate({|Firm.all()},
                                    validationComplexMapping2,
                                    getRuntime(),
-                                   ['constraint4'], meta::pure::router::extension::defaultRelationalExtensions());
+                                   ['constraint4'], meta::relational::extension::relationalExtensions());
 
    assertEquals('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
                 'constraint4,Error,,2\n', $validationResult.values->toCSV());
@@ -405,7 +405,7 @@ function <<test.Test>> meta::relational::validation::complex::validateComplexVal
    let validationResult = validate({|Firm.all()},
                                    validationComplexMappingWithInnerJoins,
                                    getRuntime(),
-                                   ['constraint5'], meta::pure::router::extension::defaultRelationalExtensions());
+                                   ['constraint5'], meta::relational::extension::relationalExtensions());
 
    assertEquals('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
                 'constraint5,Error,,1\n'+
@@ -418,7 +418,7 @@ function <<test.Test>> meta::relational::validation::complex::validateComplexVal
    let validationResult = validate({|Firm.all()},
                                    validationComplexMapping2,
                                    getRuntime(),
-                                   ['constraint6'], meta::pure::router::extension::defaultRelationalExtensions());
+                                   ['constraint6'], meta::relational::extension::relationalExtensions());
 
    assertEquals('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
                 'constraint6,Error,,3\n'+
@@ -431,7 +431,7 @@ function <<test.Test>> meta::relational::validation::complex::validateComplexVal
    let validationResult = validate({|Firm.all()},
                                    validationComplexMapping,
                                    getRuntime(),
-                                   ['constraint7'], meta::pure::router::extension::defaultRelationalExtensions());
+                                   ['constraint7'], meta::relational::extension::relationalExtensions());
 
    assertEquals('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
                 'constraint7,Error,,1\n'+
@@ -445,7 +445,7 @@ function <<test.Test>> meta::relational::validation::complex::validateComplexVal
    let validationResult = validate({|Firm.all()},
                                    validationComplexMapping,
                                    getRuntime(),
-                                   ['constraint8'], meta::pure::router::extension::defaultRelationalExtensions());
+                                   ['constraint8'], meta::relational::extension::relationalExtensions());
 
    assertEquals('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
                 'constraint8,Error,,1\n'+

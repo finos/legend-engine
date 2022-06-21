@@ -41,7 +41,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testSimple():Boolean[1]
                                   )->sort(desc('prodName'))
              ,simpleRelationalMapping
              ,meta::relational::tests::testRuntime()
-          , meta::pure::router::extension::defaultRelationalExtensions());
+          , meta::relational::extension::relationalExtensions());
           
    assertEquals(['Firm X', 345.0, 'Firm C', 176.0, 'Firm A', 66.0, ^TDSNull(), 5.0], $result.values.rows.values);
 
@@ -61,7 +61,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testStdDevSample():Bool
                                   )->sort(desc('prodName'))
              ,simpleRelationalMapping
              ,meta::relational::tests::testRuntime()
-          , meta::pure::router::extension::defaultRelationalExtensions());
+          , meta::relational::extension::relationalExtensions());
    assertEquals(['Firm X', 208.59650045003153, 'Firm C', 10.2810505299799, 'Firm A', 10.535653752852738, ^TDSNull(), ^TDSNull()], $result.values.rows.values);
 
    assertSameSQL('select "producttable_0".NAME as "prodName", stddev_samp("root".quantity) as "stdDevSample" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result);
@@ -80,7 +80,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testStdDevPopulation():
                                   )->sort(desc('prodName'))
              ,simpleRelationalMapping
              ,meta::relational::tests::testRuntime()
-          , meta::pure::router::extension::defaultRelationalExtensions());
+          , meta::relational::extension::relationalExtensions());
    assertEquals(['Firm X', 147.5, 'Firm C', 9.19565114605812, 'Firm A', 8.602325267042627, ^TDSNull(), 0.0], $result.values.rows.values);
 
    assertSameSQL('select "producttable_0".NAME as "prodName", stddev_pop("root".quantity) as "stdDevPopulation" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result);
@@ -96,7 +96,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testSimpleOneAggInAnArr
                                   )->sort(desc('prodName'))
              ,simpleRelationalMapping
              ,meta::relational::tests::testRuntime()
-          , meta::pure::router::extension::defaultRelationalExtensions());
+          , meta::relational::extension::relationalExtensions());
           
    assertEquals(['Firm X', 345.0, 'Firm C', 176.0, 'Firm A', 66.0, ^TDSNull(), 5.0], $result.values.rows.values);
 
@@ -116,7 +116,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testSimpleTwoAggs():Boo
                                   )->sort(desc('prodName'))
              ,simpleRelationalMapping
              ,meta::relational::tests::testRuntime()
-          , meta::pure::router::extension::defaultRelationalExtensions());
+          , meta::relational::extension::relationalExtensions());
    
    assertEquals(['Firm X', 345.0, 690.0, 'Firm C', 176.0, 352.0, 'Firm A', 66.0, 132.0, ^TDSNull(), 5.0, 10.0], $result.values.rows.values);
 
@@ -136,7 +136,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testMax():Boolean[1]
                                   )->sort(desc('prodName'))
              ,simpleRelationalMapping
              ,meta::relational::tests::testRuntime()
-          , meta::pure::router::extension::defaultRelationalExtensions());
+          , meta::relational::extension::relationalExtensions());
           
    assertEquals(['Firm X', 320.0, 'Firm C', 45.0, 'Firm A', 32.0, ^TDSNull(), 5.0], $result.values.rows.values);
    assertSameSQL('select "producttable_0".NAME as "prodName", max("root".quantity) as "max" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result);
@@ -155,7 +155,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testMin():Boolean[1]
                                   )->sort(desc('prodName'))
              ,simpleRelationalMapping
              ,meta::relational::tests::testRuntime()
-          , meta::pure::router::extension::defaultRelationalExtensions());
+          , meta::relational::extension::relationalExtensions());
           
    assertEquals(['Firm X', 25.0, 'Firm C', 22.0, 'Firm A', 11.0, ^TDSNull(), 5.0], $result.values.rows.values);
    assertSameSQL('select "producttable_0".NAME as "prodName", min("root".quantity) as "min" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result);
@@ -174,7 +174,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testUsingAMultiplyInThe
                                   )->sort(desc('prodName'))
              ,simpleRelationalMapping
              ,meta::relational::tests::testRuntime()
-          , meta::pure::router::extension::defaultRelationalExtensions());
+          , meta::relational::extension::relationalExtensions());
           
    assertEquals(['Firm X', 690.0, 'Firm C', 352.0, 'Firm A', 132.0, ^TDSNull(), 10.0], $result.values.rows.values);
 
@@ -195,7 +195,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testUsingAFunctionInThe
                                   )->sort(desc('prodName'))
              ,simpleRelationalMapping
              ,meta::relational::tests::testRuntime()
-          , meta::pure::router::extension::defaultRelationalExtensions());
+          , meta::relational::extension::relationalExtensions());
           
    assertEquals(['Firm X', 690.0, 'Firm C', 352.0, 'Firm A', 0.0, ^TDSNull(), 0.0], $result.values.rows.values);
 
@@ -222,7 +222,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testUsingAnAssociationI
                                   )->sort(desc('prodName'))
              ,simpleRelationalMapping
              ,meta::relational::tests::testRuntime()
-          , meta::pure::router::extension::defaultRelationalExtensions());
+          , meta::relational::extension::relationalExtensions());
    
    assertEquals(['Firm X', 50.0, 'Firm C', 142.0, 'Firm A', 86.0, ^TDSNull(), 0.0], $result.values.rows.values);
           
@@ -246,7 +246,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testUsingAnAssociationI
                                  )->sort('legalName')
              ,simpleRelationalMapping
              ,meta::relational::tests::testRuntime()
-          , meta::pure::router::extension::defaultRelationalExtensions());
+          , meta::relational::extension::relationalExtensions());
    
    assertEquals(['Firm A', 'Cupertino', 68.0, 'Firm B', 'Tokyo', 64.0, 'Firm C', 'Mountain View', 70.0, 'Firm X', 'New York', 39.5], $result.values.rows.values);
           
@@ -274,7 +274,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testUsingFunctionInMapL
                                  )->sort('legalName')
              ,simpleRelationalMapping
              ,meta::relational::tests::testRuntime()
-          , meta::pure::router::extension::defaultRelationalExtensions());
+          , meta::relational::extension::relationalExtensions());
    
    assertEquals(['Firm A', 'Cupertino', 68.0, 'Firm B', 'Tokyo', 64.0, 'Firm C', 'Mountain View', 70.0, 'Firm X', 'New York', 39.5], $result.values.rows.values);
           
@@ -303,7 +303,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::groupBy::test
                                  )->sort('legalName')
              ,simpleRelationalMapping
              ,meta::relational::tests::testRuntime()
-          , meta::pure::router::extension::defaultRelationalExtensions());
+          , meta::relational::extension::relationalExtensions());
 
    assertEquals(['Firm A', 'Cupertino', 68.0, 'Firm B', 'Tokyo', 64.0, 'Firm C', 'Mountain View', 70.0, 'Firm X', 'New York', 39.5], $result.values.rows.values);
 
@@ -327,7 +327,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::groupBy::test
                                  )->sort('legalName')
              ,simpleRelationalMapping
              ,meta::relational::tests::testRuntime()
-          , meta::pure::router::extension::defaultRelationalExtensions());
+          , meta::relational::extension::relationalExtensions());
 
    assertEquals(['Firm A', 'Cupertino', 136.0, 'Firm B', 'Tokyo', 128.0, 'Firm C', 'Mountain View', 140.0, 'Firm X', 'New York', 79.0], $result.values.rows.values);
 
@@ -352,7 +352,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testUsingFunctionInMapL
                                   )->sort(desc('prodName'))
              ,simpleRelationalMapping
              ,meta::relational::tests::testRuntime()
-          , meta::pure::router::extension::defaultRelationalExtensions());
+          , meta::relational::extension::relationalExtensions());
 
    assertEquals(['Firm X', 1380.0, 'Firm C', 704.0, 'Firm A', 264.0, ^TDSNull(), 20.0], $result.values.rows.values);
 
@@ -379,7 +379,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testSimpleWithFilter():
                                   )->sort([asc('prodName'), asc('qt')])
              ,simpleRelationalMapping
              ,meta::relational::tests::testRuntime()
-          , meta::pure::router::extension::defaultRelationalExtensions());
+          , meta::relational::extension::relationalExtensions());
 
    assertEquals(['Firm A', 23.0, 23.0, 'Firm C', 22.0, 22.0, 'Firm C', 38.0, 38.0, 'Firm C', 45.0, 45.0, 'Firm X', 320.0, 320.0], $result.values.rows.values);
 
@@ -408,7 +408,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testUsingFunctionInMapL
                                  )->sort('legalName')
              ,simpleRelationalMapping
              ,meta::relational::tests::testRuntime()
-          , meta::pure::router::extension::defaultRelationalExtensions());
+          , meta::relational::extension::relationalExtensions());
 
    assertEquals(['Firm A', 'Cupertino', 68.0, 'Firm B', 'Tokyo', 64.0, 'Firm C', 'Mountain View', 70.0, 'Firm X', 'New York', 39.5], $result.values.rows.values);
 
@@ -431,7 +431,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testUsingFunctionInMapL
                                  )->sort('legalName')
              ,simpleRelationalMapping
              ,meta::relational::tests::testRuntime()
-          , meta::pure::router::extension::defaultRelationalExtensions());
+          , meta::relational::extension::relationalExtensions());
 
    assertEquals(['Firm A', 'Cupertino', 68.0, 'Firm B', 'Tokyo', 64.0, 'Firm C', 'Mountain View', 70.0, 'Firm X', 'New York', 39.5], $result.values.rows.values);
 
@@ -454,7 +454,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testFilterWithQualified
                          ->sort(desc('prodName'))
              ,simpleRelationalMapping
              ,meta::relational::tests::testRuntime()
-          , meta::pure::router::extension::defaultRelationalExtensions());
+          , meta::relational::extension::relationalExtensions());
 
 
    assertEquals(['Firm X', -25.0, 'Firm C', -71.0, 'Firm A', -43.0], $result.values.rows.values);
@@ -468,7 +468,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testGroupByOnRootLevelP
                           ->groupBy([t|$t.date],
                                   agg(x|$x.quantity, y|$y->sum()),
                                     ['Date', 'Total Quantity']);
-                          , simpleRelationalMapping, meta::relational::tests::testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                          , simpleRelationalMapping, meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 1);
    assertEquals([%2014-12-01, 356.0], $result.values.rows.values);
 
@@ -488,7 +488,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testSimpleJoinStrings()
                                   )
              ,simpleRelationalMapping
              ,meta::relational::tests::testRuntime()
-          , meta::pure::router::extension::defaultRelationalExtensions());
+          , meta::relational::extension::relationalExtensions());
    assertEquals(['Smith'], $result.values->first().rows->filter(r | $r.getString('firstName') == 'Peter')->first()->toOne().getString('lastNames'));
    assertEquals(['Johnson*Hill'], $result.values->first().rows->filter(r | $r.getString('firstName') == 'John')->first()->toOne().getString('lastNames'));
    assertEquals([], $result.values->first().rows->filter(r | $r.getString('firstName') == 'Unknown'));
@@ -509,7 +509,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testJoinStringsWithAsso
                         ->sort([asc('legalName')])
              ,simpleRelationalMapping
              ,meta::relational::tests::testRuntime()
-          , meta::pure::router::extension::defaultRelationalExtensions());
+          , meta::relational::extension::relationalExtensions());
 
    assertEquals(4, $result.values->first().rows->size());
    assertEquals(['Firm A', 'Fabrice'], $result.values->first().rows->at(0).values);
@@ -532,7 +532,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testJoinStringsTwiceWit
                                   )
              ,simpleRelationalMapping
              ,meta::relational::tests::testRuntime()
-          , meta::pure::router::extension::defaultRelationalExtensions());
+          , meta::relational::extension::relationalExtensions());
 
    assertEquals(1, $result.values->first().rows->size());
    assertEquals([GeographicEntityType.CITY, 'Peter*John*John*Anthony-Fabrice-Oliver-David'], $result.values->first().rows.values);
@@ -554,7 +554,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testUsingSameAggFunctio
                                  )->sort('legalName')
              ,simpleRelationalMapping
              ,meta::relational::tests::testRuntime()
-          , meta::pure::router::extension::defaultRelationalExtensions());
+          , meta::relational::extension::relationalExtensions());
 
    // We need to support IDE and TeamCity
    assert(['Firm A', 34.0, 'Firm B', 32.0, 'Firm C', 35.0, 'Firm X', 79.0] == $result.values.rows.values ||
@@ -580,7 +580,7 @@ function <<test.ToFix>> meta::relational::tests::groupBy::testUsingSameAggFuncti
                                  )
              ,simpleRelationalMapping
              ,meta::relational::tests::testRuntime()
-          , meta::pure::router::extension::defaultRelationalExtensions());
+          , meta::relational::extension::relationalExtensions());
 
    assertEquals(['Firm X', 34.0], $result.values.rows.values);
 
@@ -603,7 +603,7 @@ function <<test.ToFix>> meta::relational::tests::groupBy::testUsingSameAggFuncti
                                  )
              ,simpleRelationalMapping
              ,meta::relational::tests::testRuntime()
-          , meta::pure::router::extension::defaultRelationalExtensions());
+          , meta::relational::extension::relationalExtensions());
 
    assertEquals(['Firm X', 12.0], $result.values.rows.values);
 
@@ -624,7 +624,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testUsingSameAggFunctio
                                  )->sort('legalName')
              ,simpleRelationalMapping
              ,meta::relational::tests::testRuntime()
-          , meta::pure::router::extension::defaultRelationalExtensions());
+          , meta::relational::extension::relationalExtensions());
 
    // We need to support IDE and TeamCity
    assert(['Firm A', 34.0, 'Firm B', 32.0, 'Firm C', 35.0, 'Firm X', 79.0] == $result.values.rows.values ||
@@ -650,7 +650,7 @@ function meta::relational::tests::groupBy::testAggToManyWithAverageAndTimesExter
                                  )
              ,meta::relational::tests::simpleRelationalMapping
              ,meta::relational::tests::testRuntime()
-          , meta::pure::router::extension::defaultRelationalExtensions());
+          , meta::relational::extension::relationalExtensions());
 
    assertEquals([GeographicEntityType.CITY, 7, 25], $result.values.rows.values);
 
@@ -690,7 +690,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testAggToManyWithAverag
                                  )
              ,meta::relational::tests::simpleRelationalMapping
              ,meta::relational::tests::testRuntime()
-          , meta::pure::router::extension::defaultRelationalExtensions());
+          , meta::relational::extension::relationalExtensions());
 
    assertSize($result.values.rows, 1);
    let row = $result.values.rows->toOne();
@@ -721,7 +721,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testAggToManyWithMaxInt
                                  )
              ,meta::relational::tests::simpleRelationalMapping
              ,meta::relational::tests::testRuntime()
-          , meta::pure::router::extension::defaultRelationalExtensions());
+          , meta::relational::extension::relationalExtensions());
 
    assertSameElements([GeographicEntityType.CITY, 35], $result.values.rows.values);
 
@@ -744,7 +744,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testAggToManyWithMinInt
                                  )
              ,meta::relational::tests::simpleRelationalMapping
              ,meta::relational::tests::testRuntime()
-          , meta::pure::router::extension::defaultRelationalExtensions());
+          , meta::relational::extension::relationalExtensions());
 
 
    assertSameElements([GeographicEntityType.CITY, 12], $result.values.rows.values);
@@ -768,7 +768,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testAggToManyWithMaxDat
                                  )
              ,meta::relational::tests::simpleRelationalMapping
              ,meta::relational::tests::testRuntime()
-          , meta::pure::router::extension::defaultRelationalExtensions());
+          , meta::relational::extension::relationalExtensions());
 
    assertSameElements(['Account 1', 'Account 2', %2014-12-03, %2014-12-04], $result.values.rows.values);
    assertSameSQL('select "root".name as "Account", max("tradetable_0".tradeDate) as "Max Trade Date" from accountTable as "root" left outer join tradeTable as "tradetable_0" on ("tradetable_0".accountID = "root".ID) group by "Account"', $result);
@@ -790,7 +790,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testAggToManyWithMinDat
                                  )
              ,meta::relational::tests::simpleRelationalMapping
              ,meta::relational::tests::testRuntime()
-          , meta::pure::router::extension::defaultRelationalExtensions());
+          , meta::relational::extension::relationalExtensions());
 
    assertSameElements(['Account 1', 'Account 2', %2014-12-01, %2014-12-01], $result.values.rows.values);
    assertSameSQL('select "root".name as "Account", min("tradetable_0".tradeDate) as "Min Trade Date" from accountTable as "root" left outer join tradeTable as "tradetable_0" on ("tradetable_0".accountID = "root".ID) group by "Account"', $result);
@@ -813,7 +813,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testAggToManyWithFilter
                                  )
              ,meta::relational::tests::simpleRelationalMapping
              ,meta::relational::tests::testRuntime()
-          , meta::pure::router::extension::defaultRelationalExtensions());
+          , meta::relational::extension::relationalExtensions());
    let tds = $result.values;
    assertSize($tds.rows, 1);
    let row = $tds.rows->toOne();
@@ -840,7 +840,7 @@ function <<test.ToFix>> meta::relational::tests::groupBy::testAggToManyWithFilte
                                  )
              ,meta::relational::tests::simpleRelationalMapping
              ,meta::relational::tests::testRuntime()
-          , meta::pure::router::extension::defaultRelationalExtensions());
+          , meta::relational::extension::relationalExtensions());
 
    assertEquals([GeographicEntityType.CITY, 19.75], $result.values.rows.values);
 
@@ -868,7 +868,7 @@ function <<test.ToFix>> meta::relational::tests::groupBy::testAggToManyWithAvera
                                  )
              ,meta::relational::tests::simpleRelationalMapping
              ,meta::relational::tests::testRuntime()
-          , meta::pure::router::extension::defaultRelationalExtensions());
+          , meta::relational::extension::relationalExtensions());
 
    assertEquals([GeographicEntityType.CITY, 7, 25, 60], $result.values.rows.values);
 
@@ -895,7 +895,7 @@ function <<test.ToFix>> meta::relational::tests::groupBy::testAggToManyWithAvera
                                  )
              ,meta::relational::tests::simpleRelationalMapping
              ,meta::relational::tests::testRuntime()
-          , meta::pure::router::extension::defaultRelationalExtensions());
+          , meta::relational::extension::relationalExtensions());
 
    assertEquals([GeographicEntityType.CITY, 7, 25, 60], $result.values.rows.values);
 
@@ -910,7 +910,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testGroupByAndFilterIso
                           ->groupBy([t|$t.product.cusipSynonym.name],
                                   agg(x|$x.quantity, y|$y->sum()),
                                     ['Cusip', 'Total Quantity']);
-                          , simpleRelationalMapping, meta::relational::tests::testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                          , simpleRelationalMapping, meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 1);
    assertEquals(['CUSIP1', 345.0], $result.values.rows.values);
 
@@ -924,7 +924,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testGroupByWithJoinH2()
          [f|$f.legalName, f|$f.employees.firstName],
          agg(x|1,y|$y->sum()),
          ['legalName', 'employeesFirstName', 'sum'])
-      ->sort([asc('legalName'),asc('employeesFirstName')]), meta::relational::tests::simpleRelationalMapping, meta::relational::tests::testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+      ->sort([asc('legalName'),asc('employeesFirstName')]), meta::relational::tests::simpleRelationalMapping, meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($result.values, 1);
    assertEquals(['Firm A', 'Fabrice', 1, 'Firm B', 'Oliver', 1, 'Firm C', 'David', 1, 'Firm X', 'Anthony', 1, 'Firm X', 'John', 2, 'Firm X', 'Peter', 1], $result.values.rows.values);
@@ -940,7 +940,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testGroupByWithJoinDB2(
          agg(x|1,y|$y->sum()),
          ['legalName', 'employeesFirstName', 'sum']
       )};
-   let sql = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.DB2, meta::pure::router::extension::defaultRelationalExtensions());
+   let sql = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.DB2, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".LEGALNAME as "legalName", "personTable_d#4_d_m1".FIRSTNAME as "employeesFirstName", sum(1) as "sum" from firmTable as "root" left outer join personTable as "personTable_d#4_d_m1" on ("root".ID = "personTable_d#4_d_m1".FIRMID) group by "root".LEGALNAME,"personTable_d#4_d_m1".FIRSTNAME', $sql);
 }
 
@@ -955,7 +955,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testObjectLevelGroupByW
                                      , | 10, | $x.getFloat('Average Age 1')*0.9), 'Case Column'))
             ->groupBy(['FirstName','Case Column'], agg('Joined Last Name'
                                                     , x|$x.getString('LastName'), y| $y->joinStrings(',')) )
-           , simpleRelationalMapping, meta::relational::tests::testRuntime() , meta::pure::router::extension::defaultRelationalExtensions());
+           , simpleRelationalMapping, meta::relational::tests::testRuntime() , meta::relational::extension::relationalExtensions());
 
 
 
@@ -968,7 +968,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testReprocessGroupByAli
 {
    let result  = execute({|meta::relational::tests::model::simple::Order.all()
                  ->groupBy([x | $x.pnlContact.lastName,x | $x.pnlContact.firm.legalName],[agg(x | $x.quantity, y | $y->sum())],['last name','legal name','quantity'])},
-                 MappingWithInnerJoinAndEmbeddedMapping, meta::relational::tests::testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                 MappingWithInnerJoinAndEmbeddedMapping, meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals('select "salespersontable_0".lastName as "last name", "salespersontable_0".firm_name as "legal name", sum("root".quantity) as "quantity" from orderTable as "root" left outer join (select "salespersontable_0".ACCOUNT_ID as ACCOUNT_ID, "personfirmview_0".lastName as lastName, "personfirmview_0".firm_name as firm_name from salesPersonTable as "salespersontable_0" inner join (select "root".ID as PERSON_ID, "root".LASTNAME as lastName, "firmtable_0".LEGALNAME as firm_name from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID)) as "personfirmview_0" on ("salespersontable_0".PERSON_ID = "personfirmview_0".PERSON_ID)) as "salespersontable_0" on ("root".accountID = "salespersontable_0".ACCOUNT_ID) group by "last name","legal name"', $result->sqlRemoveFormatting());
 }
 
@@ -991,7 +991,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testUniqueValueOnly1():
                                   )
              ,simpleRelationalMapping
              ,meta::relational::tests::testRuntime()
-          , meta::pure::router::extension::defaultRelationalExtensions());
+          , meta::relational::extension::relationalExtensions());
 
    assertEquals(['Firm C', 1, 45.0], $result.values.rows.values);
 
@@ -1017,7 +1017,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testUniqueValueOnly2():
                                   )
              ,simpleRelationalMapping
              ,meta::relational::tests::testRuntime()
-          , meta::pure::router::extension::defaultRelationalExtensions());
+          , meta::relational::extension::relationalExtensions());
 
    assertEquals(['Firm C', 1, 45.0], $result.values.rows.values);
 
@@ -1043,7 +1043,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testUniqueValueOnly3():
                                   )
              ,simpleRelationalMapping
              ,meta::relational::tests::testRuntime()
-          , meta::pure::router::extension::defaultRelationalExtensions());
+          , meta::relational::extension::relationalExtensions());
 
    assertEquals(['Firm C', 5, ^TDSNull()], $result.values.rows.values);
 
@@ -1070,7 +1070,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testUniqueValueOnly4():
                                   )
              ,simpleRelationalMapping
              ,meta::relational::tests::testRuntime()
-          , meta::pure::router::extension::defaultRelationalExtensions());
+          , meta::relational::extension::relationalExtensions());
 
    assertEquals(['Firm C', 5, -1.0], $result.values.rows.values);
 
@@ -1090,7 +1090,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testAggFunctionUsingMul
                             'placeCount'])
                          ->sort(asc('firstName'))},
                      simpleRelationalMapping,
-                     meta::relational::tests::testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                     meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
     
    assertEquals(['Anthony', 0, 2, 'David', 0, 1, 'Fabrice', 0, 2, 'John', 0, 4, 'Oliver', 0, 2, 'Peter', 0, 2], $result.values.rows.values);
 }
@@ -1103,8 +1103,8 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::groupBy::test
                                   [agg(x|$x.quantity,y|$y->distinct()->count()),agg(x|$x.quantity,y|$y->uniqueValueOnly())],
                                   ['prodName', 'count', 'uniqueValue']
                                   ) };
-   let result = execute($query,simpleRelationalMapping,meta::relational::tests::testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
-   let resultWithJoinOrderRespected = execute($query,simpleRelationalMapping,meta::relational::tests::testRuntime(),^RelationalExecutionContext(preserveJoinOrder=true), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute($query,simpleRelationalMapping,meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   let resultWithJoinOrderRespected = execute($query,simpleRelationalMapping,meta::relational::tests::testRuntime(),^RelationalExecutionContext(preserveJoinOrder=true), meta::relational::extension::relationalExtensions());
    //should produce same results;
    assertEquals(['Account 1', 2, ^TDSNull(),  'Account 2', 3,^TDSNull()], $result.values.rows.values);
    assertEquals(['Account 1', 2, ^TDSNull(),  'Account 2', 3,^TDSNull()], $resultWithJoinOrderRespected.values.rows.values);
@@ -1127,7 +1127,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::groupBy::testGro
                                   )->sort(desc('prodName')),
              simpleRelationalMapping,
              meta::relational::tests::testRuntime(),
-             meta::pure::router::extension::defaultRelationalExtensions());
+             meta::relational::extension::relationalExtensions());
    
    assertEquals(['Firm X|290.5|320.0|246.25', 'Firm C|44.6|38.0|44.0', 'Firm A|30.2|23.0|27.5', 'TDSNull|5.0|5.0|5.0'], $result.values.rows->map(r|$r.values->makeString('|')));
    assertSameSQL('select "producttable_0".NAME as "prodName", percentile_cont(0.9) within group (order by "root".quantity asc) as "p1", percentile_disc(0.5) within group (order by "root".quantity desc) as "p2", percentile_cont(0.75) within group (order by "root".quantity asc) as "p3" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result);
@@ -1150,7 +1150,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testGroupByIsDistinct()
                                   )->sort(desc('LegalName')),
              simpleRelationalMapping,
              meta::relational::tests::testRuntime(),
-             meta::pure::router::extension::defaultRelationalExtensions());
+             meta::relational::extension::relationalExtensions());
    
    assertEquals(['Firm X|3|4|false|4|4|true', 'Firm C|1|1|true|1|1|true', 'Firm B|1|1|true|1|1|true', 'Firm A|1|1|true|1|1|true'], $result.values.rows->map(r|$r.values->makeString('|')));
    assertSameSQL('select "root".LEGALNAME as "LegalName", count(distinct("persontable_0".FIRSTNAME)) as "FirstNameDistinctCount", count("persontable_0".FIRSTNAME) as "FirstNameCount", count(distinct("persontable_0".FIRSTNAME)) = count("persontable_0".FIRSTNAME) as "IsDistinctFirstName", count(distinct("persontable_0".LASTNAME)) as "LastNameDistinctCount", count("persontable_0".LASTNAME) as "LastNameCount", count(distinct("persontable_0".LASTNAME)) = count("persontable_0".LASTNAME) as "IsDistinctLastName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) group by "LegalName" order by "LegalName" desc', $result);

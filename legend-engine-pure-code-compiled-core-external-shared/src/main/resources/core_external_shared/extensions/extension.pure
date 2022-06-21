@@ -16,7 +16,7 @@ import meta::external::shared::format::binding::*;
 import meta::pure::executionPlan::*;
 import meta::external::shared::format::executionPlan::*;
 import meta::pure::metamodel::path::*;
-import meta::pure::router::extension::*;
+import meta::pure::extension::*;
 
 Class meta::external::shared::format::router::extension::ExternalFormatModuleExtension extends ModuleExtension
 {

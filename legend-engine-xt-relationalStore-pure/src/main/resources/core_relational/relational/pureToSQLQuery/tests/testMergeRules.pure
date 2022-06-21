@@ -27,14 +27,14 @@ function <<test.BeforePackage>> meta::relational::tests::mergerules::setUp():Any
 //Then when it comes time to project from the Synonym then all Synonyms will meet this criteria. 
 function <<test.Test>> meta::relational::tests::mergerules::testToOneJoinTreeNodesForFilterAndProjectMerge():Boolean[1]
 {
-   let result = execute(|Synonym.all()->filter(s| $s.product.name == 'Firm C')->project([s|$s.name, s|$s.product.name],['synonymName','productName']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Synonym.all()->filter(s| $s.product.name == 'Firm C')->project([s|$s.name, s|$s.product.name],['synonymName','productName']), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals(['CUSIP3~Firm C', 'ISIN3~Firm C'], $result.values.rows->map(r|$r.getString('synonymName')+'~'+$r.getString('productName')));
    assertSameSQL('select "root".NAME as "synonymName", "producttable_0".NAME as "productName" from productSchema.synonymTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".PRODID = "producttable_0".ID) where "producttable_0".NAME = \'Firm C\'', $result);
 }
 
 function <<test.Test>> meta::relational::tests::mergerules::testZeroToOneJoinTreeNodesForFilterAndProjectMerge():Boolean[1]
 {
-   let result = execute(|Firm.all()->filter(f| $f.address.name == 'Tokyo')->project([f|$f.legalName,f|$f.address.name],['legalName','firmAddress']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Firm.all()->filter(f| $f.address.name == 'Tokyo')->project([f|$f.legalName,f|$f.address.name],['legalName','firmAddress']), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals(['Firm B~Tokyo'], $result.values.rows->map(r|$r.getString('legalName')+'~'+$r.getString('firmAddress')));
    assertSameSQL('select "root".LEGALNAME as "legalName", "addresstable_0".NAME as "firmAddress" from firmTable as "root" left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "root".ADDRESSID) where "addresstable_0".NAME = \'Tokyo\'', $result);
 }
@@ -42,7 +42,7 @@ function <<test.Test>> meta::relational::tests::mergerules::testZeroToOneJoinTre
 //The exists here will force the filter expression to isolate ensuring that it only merges with the project expression if it is indeed equal via the calculated JoinTreeNode.join.joinName
 function <<test.Test>> meta::relational::tests::mergerules::testToManyJoinTreeNodesForFilterAndProjectDoNotMerge():Boolean[1]
 {
-   let result = execute(|Firm.all()->filter(f| $f.employees->exists(e | $e.lastName->toOne() == 'Smith'))->project([f|$f.legalName,f|$f.employees.lastName],['legalName', 'lastName']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Firm.all()->filter(f| $f.employees->exists(e | $e.lastName->toOne() == 'Smith'))->project([f|$f.legalName,f|$f.employees.lastName],['legalName', 'lastName']), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals(['Firm X~Smith', 'Firm X~Johnson', 'Firm X~Hill', 'Firm X~Allen'], $result.values.rows->map(r|$r.getString('legalName')+'~'+$r.getString('lastName')));
    assertSameSQL('select "root".LEGALNAME as "legalName", "persontable_2".LASTNAME as "lastName" from firmTable as "root" left outer join (select distinct "persontable_1".FIRMID from personTable as "persontable_1" where "persontable_1".LASTNAME = \'Smith\') as "persontable_0" on ("root".ID = "persontable_0".FIRMID) left outer join personTable as "persontable_2" on ("root".ID = "persontable_2".FIRMID) where "persontable_0".FIRMID is not null', $result);
 }
@@ -52,7 +52,7 @@ function <<test.Test>> meta::relational::tests::mergerules::testToManyJoinTreeNo
 //compare with test testToManyJoinTreeNodesForFilterAndProjectDoNotMerge which is the right way to express this.
 function <<test.Test, test.ToFix>> meta::relational::tests::mergerules::testToManyJoinTreeNodesForInvalidUsageOfFilterAndProjectDoMergeGivingWrongResults():Boolean[1]
 {
-   let result = execute(|Firm.all()->filter(f| $f.employees.lastName->toOne() == 'Smith')->project([f|$f.legalName,f|$f.employees.lastName],['legalName', 'lastName']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Firm.all()->filter(f| $f.employees.lastName->toOne() == 'Smith')->project([f|$f.legalName,f|$f.employees.lastName],['legalName', 'lastName']), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals(['Firm X~Smith', 'Firm X~Johnson', 'Firm X~Hill', 'Firm X~Allen'], $result.values.rows->map(r|$r.getString('legalName')+'~'+$r.getString('lastName')));
    assertSameSQL('select "root".LEGALNAME as "legalName", "personTable_d#4_d_m2".LASTNAME as "lastName" from firmTable as "root" left outer join (select distinct "personTable_d#4".FIRMID from personTable as "personTable_d#4" where "personTable_d#4".LASTNAME = \'Smith\') as "personTable_d#4_ecq_d#2_m1" on ("root".ID = "personTable_d#4_ecq_d#2_m1".FIRMID) left outer join personTable as "personTable_d#4_d_m2" on ("root".ID = "personTable_d#4_d_m2".FIRMID) where "personTable_d#4_ecq_d#2_m1".FIRMID is not null', $result);
 }
@@ -65,7 +65,7 @@ function <<test.BeforePackage>> meta::relational::tests::mergerules::milestoning
 // Alloy exclusion reason: 12. Milestoning not supported
 function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::mergerules::milestoning::testToOneJoinTreeNodesForMilestoningFilterAndProjectMerge():Boolean[1]
 {
-   let result = execute(|meta::relational::tests::milestoning::Product.all(%2015-10-16)->filter(p|$p.classification(%2015-10-16).type=='STOCK')->project([p|$p.name, p|$p.classification(%2015-10-16).type],['productName','productClassificationType']), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|meta::relational::tests::milestoning::Product.all(%2015-10-16)->filter(p|$p.classification(%2015-10-16).type=='STOCK')->project([p|$p.name, p|$p.classification(%2015-10-16).type],['productName','productClassificationType']), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals(['ProductName2~STOCK'], $result.values.rows->map(r|$r.getString('productName')+'~'+$r.getString('productClassificationType')));
    assertSameSQL('select "root".name as "productName", "productclassificationtable_0".type as "productClassificationType" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= \'2015-10-16\' and "productclassificationtable_0".thru_z > \'2015-10-16\') where "productclassificationtable_0".type = \'STOCK\' and "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\'', $result);
 }
@@ -73,7 +73,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::mergerules::m
 // Alloy exclusion reason: 12. Milestoning not supported
 function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::mergerules::milestoning::testToManyJoinTreeNodesForMilestoningFilterAndProjectDoNotMerge():Boolean[1]
 {
-   let result = execute(|meta::relational::tests::milestoning::Product.all(%2015-10-16)->filter(p|$p.synonyms(%2015-10-16)->exists(s|$s.synonym=='GS-Mod-S1'))->project([p|$p.name, p|$p.synonyms(%2015-10-16).synonym],['productName','productSynonymsName']), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|meta::relational::tests::milestoning::Product.all(%2015-10-16)->filter(p|$p.synonyms(%2015-10-16)->exists(s|$s.synonym=='GS-Mod-S1'))->project([p|$p.name, p|$p.synonyms(%2015-10-16).synonym],['productName','productSynonymsName']), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals(['ProductName2~GS-Mod-S1', 'ProductName2~GS-Mod-S2'], $result.values.rows->map(r|$r.getString('productName')+'~'+$r.getString('productSynonymsName')));
    assertSameSQL('select "root".name as "productName", "productsynonymtable_2".synonym as "productSynonymsName" from ProductTable as "root" left outer join (select distinct "productsynonymtable_1".name from ProductSynonymTable as "productsynonymtable_1" where "productsynonymtable_1".from_z <= \'2015-10-16\' and "productsynonymtable_1".thru_z > \'2015-10-16\' and "productsynonymtable_1".synonym = \'GS-Mod-S1\') as "productsynonymtable_0" on ("root".name = "productsynonymtable_0".name) left outer join ProductSynonymTable as "productsynonymtable_2" on ("root".name = "productsynonymtable_2".name and "productsynonymtable_2".from_z <= \'2015-10-16\' and "productsynonymtable_2".thru_z > \'2015-10-16\') where "productsynonymtable_0".name is not null and "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\'', $result);
 }

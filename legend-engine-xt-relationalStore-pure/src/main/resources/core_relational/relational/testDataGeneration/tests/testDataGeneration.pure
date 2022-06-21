@@ -38,7 +38,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    meta::relational::tests::mapping::inheritance::createTablesAndFillDb();
 
    let tableRowIdentifiers = createTableRowIdentifiers($db, 'default', 'Person', createRowIdentifier(['name'], ['Atul Anand']));
-   let testData = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::pure::router::extension::defaultRelationalExtensions())->toOne();
+   let testData = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::relational::extension::relationalExtensions())->toOne();
 
    assertSize($testData.sqls, 1);
    assertEquals('\n' +
@@ -64,7 +64,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    meta::relational::tests::mapping::inheritance::createTablesAndFillDb();
 
    let tableRowIdentifiers = createTableRowIdentifiers($db, 'default', 'Person', createRowIdentifier(['name'], ['Atul Anand']));
-   let testData = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::pure::router::extension::defaultRelationalExtensions())->toOne();
+   let testData = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::relational::extension::relationalExtensions())->toOne();
    assertSize($testData.sqls, 1);
    assertEquals('\n' +
                 'select top 20 \n' +
@@ -91,7 +91,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    meta::relational::tests::mapping::inheritance::createTablesAndFillDb();
 
    let tableRowIdentifiers = createTableRowIdentifiers($db, 'default', 'Person', createRowIdentifier(['name'], ['Atul Anand']));
-   let testData = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::pure::router::extension::defaultRelationalExtensions())->toOne();
+   let testData = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::relational::extension::relationalExtensions())->toOne();
 
    assertSize($testData.sqls, 2);
    assertSqlEquals('\n' +
@@ -130,7 +130,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    meta::relational::tests::mapping::inheritance::createTablesAndFillDb();
 
    let tableRowIdentifiers = createTableRowIdentifiers($db, 'default', 'Person', [createRowIdentifier(['name'], ['Atul Anand']), createRowIdentifier(['ID'], ['1']) ]);
-   let testData = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::pure::router::extension::defaultRelationalExtensions())->toOne();
+   let testData = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::relational::extension::relationalExtensions())->toOne();
 
    assertSize($testData.sqls, 2);
    assertSqlEquals('\n' +
@@ -170,7 +170,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    meta::relational::tests::mapping::inheritance::createTablesAndFillDb();
 
    let tableRowIdentifiers = createTableRowIdentifiers($db, 'default', 'Person', createRowIdentifier(['name'], ['No Name']));
-   let testData = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::pure::router::extension::defaultRelationalExtensions())->toOne();
+   let testData = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::relational::extension::relationalExtensions())->toOne();
    assertSize($testData.sqls, 1);
    assertEquals('\n' +
                 'select top 20 \n' +
@@ -195,7 +195,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    meta::relational::tests::mapping::inheritance::createTablesAndFillDb();
 
    let tableRowIdentifiers = createTableRowIdentifiers($db, 'default', 'Person', [createRowIdentifier(['name'], ['Atul Anand']), createRowIdentifier(['ID'], ['1']) ]);
-   let testData = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::pure::router::extension::defaultRelationalExtensions())->toOne();
+   let testData = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::relational::extension::relationalExtensions())->toOne();
 
    assertSize($testData.sqls, 3);
    assertSqlEquals('\n' +
@@ -254,7 +254,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    meta::relational::tests::mapping::inheritance::createTablesAndFillDb();
 
    let tableRowIdentifiers = createTableRowIdentifiers($db, 'default', 'Person', [createRowIdentifier(['name'], ['Atul Anand']), createRowIdentifier(['ID'], ['1']) ]);
-   let testData = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::pure::router::extension::defaultRelationalExtensions())->toOne();
+   let testData = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::relational::extension::relationalExtensions())->toOne();
 
    assertSize($testData.sqls, 4);
    assertSqlEquals('\n' +
@@ -316,7 +316,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    meta::relational::tests::createTablesAndFillDb();
 
    let tableRowIdentifiers = createTableRowIdentifiers($db, 'default', 'tradeTable', [createRowIdentifier(['prodId'], [2]), createRowIdentifier(['tradeDate'], [%2014-12-04]) ]);
-   let testData = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::pure::router::extension::defaultRelationalExtensions())->toOne();
+   let testData = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::relational::extension::relationalExtensions())->toOne();
 
    assertSize($testData.sqls, 3);
    assertSqlEquals('\n' +
@@ -376,7 +376,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    meta::relational::tests::createTablesAndFillDb();
 
    let tableRowIdentifiers = createTableRowIdentifiers($db, 'default', 'personTable', [createRowIdentifier(['ID'], [1]), createRowIdentifier(['ID'], 5)]);
-   let testData = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::pure::router::extension::defaultRelationalExtensions())->toOne();
+   let testData = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::relational::extension::relationalExtensions())->toOne();
 
    assertSize($testData.sqls, 3);
    assertSqlEquals('\n' +
@@ -423,7 +423,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
       createTableRowIdentifiers($db, 'default', 'FirmSet1', [createRowIdentifier(['name'], ['Firm X'])]),
       createTableRowIdentifiers($db, 'default', 'FirmSet2', [createRowIdentifier(['name'], ['Firm A'])])
    ];
-   let testData = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::pure::router::extension::defaultRelationalExtensions())->toOne();
+   let testData = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::relational::extension::relationalExtensions())->toOne();
 
    assertSize($testData.sqls, 6);
    assertSqlEquals('\n' +
@@ -497,7 +497,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
       createTableRowIdentifiers($db, 'default', 'FirmSet1', [createRowIdentifier(['name'], ['Firm X'])]),
       createTableRowIdentifiers($db, 'default', 'FirmSet2', [createRowIdentifier(['name'], ['Firm A'])])
    ];
-   let testData = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::pure::router::extension::defaultRelationalExtensions())->toOne();
+   let testData = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::relational::extension::relationalExtensions())->toOne();
 
    assertSize($testData.sqls, 6);
    assertSqlEquals('\n' +
@@ -578,7 +578,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
       createTableRowIdentifiers($db, 'default', 'PersonSet1', [createRowIdentifier(['FirmID'], [2])]),
       createTableRowIdentifiers($db, 'default', 'PersonSet2', [createRowIdentifier(['FirmID'], [1])])
    ];
-   let testData = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::pure::router::extension::defaultRelationalExtensions())->toOne();
+   let testData = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::relational::extension::relationalExtensions())->toOne();
 
    assertSize($testData.sqls, 18);
 
@@ -633,7 +633,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
          meta::relational::testDataGeneration::createRowIdentifier(['ORDER_ID'], [2])
       ])
    ];
-   let testData = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::pure::router::extension::defaultRelationalExtensions())->toOne();
+   let testData = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::relational::extension::relationalExtensions())->toOne();
 
    assertSize($testData.sqls, 5);
 
@@ -679,7 +679,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
          meta::relational::testDataGeneration::createRowIdentifier(['ORDER_ID'], [2])
       ])
    ];
-   let testData = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::pure::router::extension::defaultRelationalExtensions())->toOne();
+   let testData = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::relational::extension::relationalExtensions())->toOne();
 
    assertSize($testData.sqls, 6);
 
@@ -730,7 +730,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
          meta::relational::testDataGeneration::createRowIdentifier(['ID'], [2])
       ])
    ];
-   let testData = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::pure::router::extension::defaultRelationalExtensions())->toOne();
+   let testData = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::relational::extension::relationalExtensions())->toOne();
 
    assertSize($testData.sqls, 6);
 
@@ -776,7 +776,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
          meta::relational::testDataGeneration::createRowIdentifier(['ORDER_ID'], [4])
       ])
    ];
-   let testData = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::pure::router::extension::defaultRelationalExtensions())->toOne();
+   let testData = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::relational::extension::relationalExtensions())->toOne();
 
    assertSize($testData.sqls, 14);
 
@@ -828,7 +828,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
          meta::relational::testDataGeneration::createRowIdentifier(['ID'], [5])
       ])
    ];
-   let testData = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::pure::router::extension::defaultRelationalExtensions())->toOne();
+   let testData = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::relational::extension::relationalExtensions())->toOne();
 
    assertSize($testData.sqls, 5);
 
@@ -873,7 +873,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
       createTableRowIdentifiers($db, 'default', 'PersonSet1', [createRowIdentifier(['FirmID'], [2])]),
       createTableRowIdentifiers($db, 'default', 'PersonSet2', [createRowIdentifier(['FirmID'], [1])])
    ];
-   let testData = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, true, meta::pure::router::extension::defaultRelationalExtensions())->toOne();
+   let testData = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, true, meta::relational::extension::relationalExtensions())->toOne();
 
    assertSize($testData.sqls, 18);
 
@@ -927,7 +927,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
          meta::relational::testDataGeneration::createRowIdentifier(['id'], [2])
       ])
    ];
-   let testData = generateTestData($query, $mapping, $runtime, ^ExecutionContext(), $tableRowIdentifiers, false, meta::pure::router::extension::defaultRelationalExtensions())->toOne();
+   let testData = generateTestData($query, $mapping, $runtime, ^ExecutionContext(), $tableRowIdentifiers, false, meta::relational::extension::relationalExtensions())->toOne();
 
    assertTestData( 'default\n' +
                    'ProductTable\n' +
@@ -959,7 +959,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
          meta::relational::testDataGeneration::createRowIdentifier(['kerberos'], ['ggekko'])
       ])
    ];
-   let testData = generateTestData($query, $mapping, $runtime, ^ExecutionContext(), $tableRowIdentifiers, false, meta::pure::router::extension::defaultRelationalExtensions())->toOne();
+   let testData = generateTestData($query, $mapping, $runtime, ^ExecutionContext(), $tableRowIdentifiers, false, meta::relational::extension::relationalExtensions())->toOne();
 
    assertTestData( 'default\n' +
                    'TraderTable\n' +
@@ -989,7 +989,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
          meta::relational::testDataGeneration::createRowIdentifier(['id'], ['3'])
       ])
    ];
-   let testData = generateTestData($query, $mapping, $runtime, ^ExecutionContext(), $tableRowIdentifiers, false, meta::pure::router::extension::defaultRelationalExtensions())->toOne();
+   let testData = generateTestData($query, $mapping, $runtime, ^ExecutionContext(), $tableRowIdentifiers, false, meta::relational::extension::relationalExtensions())->toOne();
 
    assertTestData( 'default\n' +
                    'ProductTableWithBusinessSnapshotMilestoning\n' +
@@ -1024,7 +1024,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
       ])
    ];
    let milestoningDates = createTemporalMilestoningDates(%9999-12-30, [], []);
-   let testData = generateTestData($query, $mapping, $runtime, ^ExecutionContext(), $tableRowIdentifiers, false, $milestoningDates, meta::pure::router::extension::defaultRelationalExtensions())->toOne();
+   let testData = generateTestData($query, $mapping, $runtime, ^ExecutionContext(), $tableRowIdentifiers, false, $milestoningDates, meta::relational::extension::relationalExtensions())->toOne();
 
    assertTestData( 'default\n' +
                    'ProductTable\n' +
@@ -1041,7 +1041,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
 
    meta::relational::testDataGeneration::tests::initDatabase();
    let milestoningDates2 = createTemporalMilestoningDates(%2015-10-15, [], []);
-   let testData2 = generateTestData($query, $mapping, $runtime, ^ExecutionContext(), $tableRowIdentifiers, false, $milestoningDates2, meta::pure::router::extension::defaultRelationalExtensions())->toOne();
+   let testData2 = generateTestData($query, $mapping, $runtime, ^ExecutionContext(), $tableRowIdentifiers, false, $milestoningDates2, meta::relational::extension::relationalExtensions())->toOne();
 
    assertTestData( 'default\n' +
                    'ProductTable\n' +
@@ -1071,7 +1071,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
       ])
    ];
    let milestoningDates = createTemporalMilestoningDates(%9999-12-01, %9999-12-30, []);
-   let testData = generateTestData($query, $mapping, $runtime, ^ExecutionContext(), $tableRowIdentifiers, false, $milestoningDates, meta::pure::router::extension::defaultRelationalExtensions())->toOne();
+   let testData = generateTestData($query, $mapping, $runtime, ^ExecutionContext(), $tableRowIdentifiers, false, $milestoningDates, meta::relational::extension::relationalExtensions())->toOne();
 
    assertTestData( 'default\n' +
                    'TraderTable\n' +
@@ -1101,7 +1101,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
       ])
    ];
    let milestoningDates = createTemporalMilestoningDates([], [], %2015-8-26);
-   let testData = generateTestData($query, $mapping, $runtime, ^ExecutionContext(), $tableRowIdentifiers, false, $milestoningDates, meta::pure::router::extension::defaultRelationalExtensions())->toOne();
+   let testData = generateTestData($query, $mapping, $runtime, ^ExecutionContext(), $tableRowIdentifiers, false, $milestoningDates, meta::relational::extension::relationalExtensions())->toOne();
 
    assertTestData( 'default\n' +
                    'ProductTableWithBusinessSnapshotMilestoning\n' +
@@ -1130,7 +1130,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
                                                                                                                                                      meta::relational::testDataGeneration::createRowIdentifier(['ID'], [2]),
                                                                                                                                                      meta::relational::testDataGeneration::createRowIdentifier(['ID'], [3]),
                                                                                                                                                      meta::relational::testDataGeneration::createRowIdentifier(['ID'], [4])]);
-   let testData  = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::pure::router::extension::defaultRelationalExtensions())->toOne();
+   let testData  = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::relational::extension::relationalExtensions())->toOne();
 
    assertSize($testData.sqls, 1);
    assertSqlEquals('select top 20 "root".ADDRESSID, "root".AGE, "root".FIRMID, "root".FIRSTNAME, "root".ID, "root".LASTNAME, "root".MANAGERID from personTable as "root" where "root".ID = 4 or "root".ID = 3 or "root".ID = 2 or "root".ID = 1', $testData.sqls->at(0));
@@ -1162,7 +1162,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
                                                                                                                                                      meta::relational::testDataGeneration::createRowIdentifier(['ID'], [2]),
                                                                                                                                                      meta::relational::testDataGeneration::createRowIdentifier(['ID'], [3]),
                                                                                                                                                      meta::relational::testDataGeneration::createRowIdentifier(['ID'], [4])]);
-   let testData  = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::pure::router::extension::defaultRelationalExtensions())->toOne();
+   let testData  = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::relational::extension::relationalExtensions())->toOne();
 
    assertSize($testData.sqls, 1);
    assertSqlEquals('select top 20 "root".FIRSTNAME, "root".ID, "root".LASTNAME from personTable as "root" where "root".ID = 4 or "root".ID = 3 or "root".ID = 2 or "root".ID = 1', $testData.sqls->at(0));
@@ -1192,7 +1192,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
                                                                                                                                                      meta::relational::testDataGeneration::createRowIdentifier(['ID'], [2]),
                                                                                                                                                      meta::relational::testDataGeneration::createRowIdentifier(['ID'], [3]),
                                                                                                                                                      meta::relational::testDataGeneration::createRowIdentifier(['ID'], [4])]);
-   let testData  = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::pure::router::extension::defaultRelationalExtensions())->toOne();
+   let testData  = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::relational::extension::relationalExtensions())->toOne();
 
    assertSize($testData.sqls, 1);
    assertSqlEquals('select top 20 "root".FIRSTNAME, "root".ID, "root".LASTNAME from personTable as "root" where "root".ID = 4 or "root".ID = 3 or "root".ID = 2 or "root".ID = 1', $testData.sqls->at(0));
@@ -1231,7 +1231,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
                                                                                                                                                        meta::relational::testDataGeneration::createRowIdentifier(['ID'], [4])])
                              ];
 
-   let testData  = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::pure::router::extension::defaultRelationalExtensions())->toOne();
+   let testData  = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::relational::extension::relationalExtensions())->toOne();
 
    assertSize($testData.sqls, 2);
    assertSqlEquals('select top 20 "root".ID, "root".LEGALNAME from firmTable as "root" where "root".ID = 4 or "root".ID = 3 or "root".ID = 2 or "root".ID = 1', $testData.sqls->at(0));
@@ -1274,7 +1274,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
                                                                                                                                                       meta::relational::testDataGeneration::createRowIdentifier(['ID'], [4])])
                              ];
 
-   let testData  = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::pure::router::extension::defaultRelationalExtensions())->toOne();
+   let testData  = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::relational::extension::relationalExtensions())->toOne();
 
    assertSize($testData.sqls, 2);
    assertSqlEquals('select top 20 "root".ADDRESSID, "root".AGE, "root".FIRMID, "root".FIRSTNAME, "root".ID, "root".LASTNAME, "root".MANAGERID from personTable as "root" where "root".ID = 4 or "root".ID = 3 or "root".ID = 2 or "root".ID = 1', $testData.sqls->at(0));
@@ -1305,7 +1305,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
 
    let tableRowIdentifiers = meta::relational::testDataGeneration::createTableRowIdentifiers(meta::relational::tests::db, 'default', 'personTable', [meta::relational::testDataGeneration::createRowIdentifier(['ID'], [1]),
                                                                                                                                                      meta::relational::testDataGeneration::createRowIdentifier(['ID'], [2])]);
-   let testData  = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::pure::router::extension::defaultRelationalExtensions())->toOne();
+   let testData  = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::relational::extension::relationalExtensions())->toOne();
 
    assertSize($testData.sqls, 4);
    assertSqlEquals('select top 20 "root".ID from personTable as "root" where "root".ID = 2 or "root".ID = 1', $testData.sqls->at(0));
@@ -1366,7 +1366,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
                                                                                                                                                        meta::relational::testDataGeneration::createRowIdentifier(['ID'], [4])])
                              ];
 
-   let testData  = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::pure::router::extension::defaultRelationalExtensions())->toOne();
+   let testData  = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::relational::extension::relationalExtensions())->toOne();
 
    assertSize($testData.sqls, 4);
    assertSqlEquals('select top 20 "root".ID from firmTable as "root" where "root".ID = 4 or "root".ID = 3 or "root".ID = 2 or "root".ID = 1', $testData.sqls->at(0));
@@ -1421,7 +1421,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
                                                                                                                                                       meta::relational::testDataGeneration::createRowIdentifier(['ID'], [4])])
                              ];
 
-   let testData  = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::pure::router::extension::defaultRelationalExtensions())->toOne();
+   let testData  = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::relational::extension::relationalExtensions())->toOne();
 
    assertSize($testData.sqls, 2);
    assertSqlEquals('select top 20 "root".ADDRESSID, "root".AGE, "root".FIRMID, "root".FIRSTNAME, "root".ID, "root".LASTNAME, "root".MANAGERID from personTable as "root" where "root".ID = 4 or "root".ID = 3 or "root".ID = 2 or "root".ID = 1', $testData.sqls->at(0));
@@ -1455,7 +1455,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    let db = meta::relational::tests::dbInc;
    meta::relational::tests::createTablesAndFillDb();
 
-   let seedDataString = meta::relational::testDataGeneration::generateSeedDataString($query, $mapping, $runtime, ^ExecutionContext(), [], meta::pure::router::extension::defaultRelationalExtensions());
+   let seedDataString = meta::relational::testDataGeneration::generateSeedDataString($query, $mapping, $runtime, ^ExecutionContext(), [], meta::relational::extension::relationalExtensions());
 
    assertEquals( '\n'+
                  'meta::relational::testDataGeneration::createTableRowIdentifiers(meta::relational::tests::db, \'default\', \'tableWithQuotedColumns\', [\n'+
@@ -1754,8 +1754,8 @@ function <<access.private>> meta::relational::testDataGeneration::tests::loadAnd
    let testConnection = $runtime.connections->toOne()->cast(@TestDatabaseConnection);
    let setUpSQLs = meta::alloy::service::execution::setUpDataSQLs($data, $db);
    $setUpSQLs->map(sql | executeInDb($sql, $testConnection));
-   let plan = executionPlan($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions());
-   let result = $plan->execute($parametersValues, meta::pure::router::extension::defaultRelationalExtensions());
+   let plan = executionPlan($query, $mapping, $runtime, meta::relational::extension::relationalExtensions());
+   let result = $plan->execute($parametersValues, meta::relational::extension::relationalExtensions());
    $result.values->isNotEmpty() && (!$result.values->at(0)->instanceOf(TabularDataSet) || $result.values->at(0)->cast(@TabularDataSet).rows->isNotEmpty());
 }
 
@@ -1789,7 +1789,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
    meta::relational::tests::mapping::inheritance::createTablesAndFillDb();
 
    let tableRowIdentifiers = createTableRowIdentifiers($db, 'default', 'Person', createRowIdentifier(['name'], ['Atul Anand']));
-   let plan =  meta::relational::testDataGeneration::executionPlan::planTestDataGeneration($query, $mapping, $runtime, ^ExecutionContext(), $tableRowIdentifiers, false, meta::pure::router::extension::defaultRelationalExtensions());
+   let plan =  meta::relational::testDataGeneration::executionPlan::planTestDataGeneration($query, $mapping, $runtime, ^ExecutionContext(), $tableRowIdentifiers, false, meta::relational::extension::relationalExtensions());
 
    assertEquals(
       'MultiResultSequence\n'+
@@ -1814,7 +1814,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
       '        )\n'+
       '    )\n'+
       '  )\n'+
-      ')\n', $plan->meta::pure::executionPlan::toString::planToString(meta::pure::router::extension::defaultRelationalExtensions()));
+      ')\n', $plan->meta::pure::executionPlan::toString::planToString(meta::relational::extension::relationalExtensions()));
 
    meta::alloy::test::mayExecuteAlloyTest({clientVersion, serverVersion, host, port |
       let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__TableRowIdentifiers_MANY__Boolean_$0_1$__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],ExecutionContext[0..1],TableRowIdentifiers[*],Boolean[0..1],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^ExecutionContext()), list($tableRowIdentifiers), list(false), list($host), list($port), list($serverVersion)]);
@@ -2313,7 +2313,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
 
    let tableRowIdentifiers = [];
 
-   let plan =  meta::relational::testDataGeneration::executionPlan::planTestDataGeneration($query, $mapping, $runtime, ^ExecutionContext(), $tableRowIdentifiers, false, meta::pure::router::extension::defaultRelationalExtensions());
+   let plan =  meta::relational::testDataGeneration::executionPlan::planTestDataGeneration($query, $mapping, $runtime, ^ExecutionContext(), $tableRowIdentifiers, false, meta::relational::extension::relationalExtensions());
    assertEquals(
       'MultiResultSequence\n'+
       '(\n'+
@@ -2335,7 +2335,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
       '      )\n'+
       '    )\n'+
       '  )\n'+
-      ')\n', $plan->meta::pure::executionPlan::toString::planToString(meta::pure::router::extension::defaultRelationalExtensions()));
+      ')\n', $plan->meta::pure::executionPlan::toString::planToString(meta::relational::extension::relationalExtensions()));
 }
 
 function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta::relational::testDataGeneration::tests::alloy::testViewRootWithDefaultSeed_Alloy():Boolean[1]
@@ -2393,7 +2393,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
       ])
    ];
 
-   let plan =  meta::relational::testDataGeneration::executionPlan::planTestDataGeneration($query, $mapping, $runtime, ^ExecutionContext(), $tableRowIdentifiers, false, meta::pure::router::extension::defaultRelationalExtensions());
+   let plan =  meta::relational::testDataGeneration::executionPlan::planTestDataGeneration($query, $mapping, $runtime, ^ExecutionContext(), $tableRowIdentifiers, false, meta::relational::extension::relationalExtensions());
 
    meta::alloy::test::mayExecuteAlloyTest({clientVersion, serverVersion, host, port |
       let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__TableRowIdentifiers_MANY__Boolean_$0_1$__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],ExecutionContext[0..1],TableRowIdentifiers[*],Boolean[0..1],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^ExecutionContext()), list($tableRowIdentifiers), list(false), list($host), list($port), list($serverVersion)]);
@@ -2507,7 +2507,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
       ])
    ];
    let milestoningDates = createTemporalMilestoningDates(%9999-12-30, [], []);
-   let plan =  meta::relational::testDataGeneration::executionPlan::planTestDataGeneration($query, $mapping, $runtime, ^ExecutionContext(), $tableRowIdentifiers, false, $milestoningDates, meta::pure::router::extension::defaultRelationalExtensions());
+   let plan =  meta::relational::testDataGeneration::executionPlan::planTestDataGeneration($query, $mapping, $runtime, ^ExecutionContext(), $tableRowIdentifiers, false, $milestoningDates, meta::relational::extension::relationalExtensions());
    assertEquals(
       'MultiResultSequence\n' +
       '(\n' +
@@ -2548,7 +2548,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
       '        )\n' +
       '    )\n' +
       '  )\n' +
-      ')\n', $plan->meta::pure::executionPlan::toString::planToString(meta::pure::router::extension::defaultRelationalExtensions()));
+      ')\n', $plan->meta::pure::executionPlan::toString::planToString(meta::relational::extension::relationalExtensions()));
 }
 
 function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneration::tests::alloy::testDataGenerationWithBiTemporalMilestoning_WithMilestoningDates_Alloy():Boolean[1]
@@ -2565,7 +2565,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
       ])
    ];
    let milestoningDates = createTemporalMilestoningDates(%9999-12-01, %9999-12-30, []);
-   let plan =  meta::relational::testDataGeneration::executionPlan::planTestDataGeneration($query, $mapping, $runtime, ^ExecutionContext(), $tableRowIdentifiers, false, $milestoningDates, meta::pure::router::extension::defaultRelationalExtensions());
+   let plan =  meta::relational::testDataGeneration::executionPlan::planTestDataGeneration($query, $mapping, $runtime, ^ExecutionContext(), $tableRowIdentifiers, false, $milestoningDates, meta::relational::extension::relationalExtensions());
    assertEquals(
       'MultiResultSequence\n' +
       '(\n' +
@@ -2606,7 +2606,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
       '        )\n' +
       '    )\n' +
       '  )\n' +
-      ')\n', $plan->meta::pure::executionPlan::toString::planToString(meta::pure::router::extension::defaultRelationalExtensions()));
+      ')\n', $plan->meta::pure::executionPlan::toString::planToString(meta::relational::extension::relationalExtensions()));
 }
 
 function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneration::tests::alloy::testDataGenerationWithSnapshotMilestoning_WithMilestoningDates_Alloy():Boolean[1]
@@ -2624,7 +2624,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
       ])
    ];
    let milestoningDates = createTemporalMilestoningDates([], [], %2015-8-26);
-   let plan =  meta::relational::testDataGeneration::executionPlan::planTestDataGeneration($query, $mapping, $runtime, ^ExecutionContext(), $tableRowIdentifiers, false, $milestoningDates, meta::pure::router::extension::defaultRelationalExtensions());
+   let plan =  meta::relational::testDataGeneration::executionPlan::planTestDataGeneration($query, $mapping, $runtime, ^ExecutionContext(), $tableRowIdentifiers, false, $milestoningDates, meta::relational::extension::relationalExtensions());
    assertEquals(
       'MultiResultSequence\n' +
       '(\n' +
@@ -2665,7 +2665,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
       '        )\n' +
       '    )\n' +
       '  )\n' +
-      ')\n', $plan->meta::pure::executionPlan::toString::planToString(meta::pure::router::extension::defaultRelationalExtensions()));
+      ')\n', $plan->meta::pure::executionPlan::toString::planToString(meta::relational::extension::relationalExtensions()));
 }
 
 function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta::relational::testDataGeneration::tests::alloy::testTableToTDSSimple():Boolean[1]

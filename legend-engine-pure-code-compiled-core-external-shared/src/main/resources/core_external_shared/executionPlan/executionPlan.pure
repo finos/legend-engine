@@ -28,7 +28,7 @@ import meta::pure::executionPlan::engine::java::naming::*;
 import meta::pure::executionPlan::engine::java::typeInfo::*;
 import meta::pure::executionPlan::toString::*;
 import meta::pure::metamodel::serialization::grammar::*;
-import meta::pure::router::extension::*;
+import meta::pure::extension::*;
 
 function meta::external::shared::format::executionPlan::createDataClassesProject(classes:meta::pure::metamodel::type::Class<Any>[*], path:String[1], context:GenerationContext[1], debug:DebugContext[1]): Project[1]
 {
@@ -60,7 +60,7 @@ function meta::external::shared::format::executionPlan::generateDataQualityNode(
    );
 }
 
-function meta::external::shared::format::executionPlan::planPrepareDataQuality(path:String[1], context:GenerationContext[1], extensions:RouterExtension[*], debug:DebugContext[1]): Function<{Nil[1]->GenerationContext[1]}>[*]
+function meta::external::shared::format::executionPlan::planPrepareDataQuality(path:String[1], context:GenerationContext[1], extensions:Extension[*], debug:DebugContext[1]): Function<{Nil[1]->GenerationContext[1]}>[*]
 {
    {node:DataQualityExecutionNode[1] | 
       print(if($debug.debug,|$debug.space+'('+$path+') prepare DataQualityExecutionNode\n', |''));
@@ -88,7 +88,7 @@ function meta::external::shared::format::executionPlan::generateUrlStreamExecuti
    );
 }
 
-function meta::external::shared::format::executionPlan::printPlanNodeToString(space:String[1], extensions:RouterExtension[*]): Function<{Nil[1]->String[1]}>[*]
+function meta::external::shared::format::executionPlan::printPlanNodeToString(space:String[1], extensions:Extension[*]): Function<{Nil[1]->String[1]}>[*]
 {
    [
       {node:DataQualityExecutionNode[1] |
@@ -407,7 +407,7 @@ function meta::external::shared::format::executionPlan::occursFromMultiplicity(m
    )));
 }
 
-function meta::external::shared::format::executionPlan::printConnection(extensions:RouterExtension[*]): Function<{Nil[1]->String[1]}>[*]
+function meta::external::shared::format::executionPlan::printConnection(extensions:Extension[*]): Function<{Nil[1]->String[1]}>[*]
 {
    [
       {ext:ExternalFormatConnection[1] |

@@ -6,7 +6,8 @@ import meta::relational::metamodel::operation::*;
 import meta::relational::metamodel::join::*;
 import meta::relational::metamodel::*;
 import meta::relational::runtime::*;
-import meta::pure::router::extension::*;
+import meta::pure::extension::*;
+import meta::relational::extension::*;
 
 function meta::relational::functions::sqlQueryToString::default::defaultReservedWords():String[*]
 {
@@ -213,7 +214,7 @@ function meta::relational::functions::sqlQueryToString::default::processSelectSQ
    $s->processSelectSQLQueryDefault($sgc.dbConfig, $sgc.format, $sgc.config, $isSubSelect, $sgc.extensions);
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::default::processSelectSQLQueryDefault(s:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:RouterExtension[*]):String[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::default::processSelectSQLQueryDefault(s:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:Extension[*]):String[1]
 {
   let opStr = if($s.filteringOperation->isEmpty(), |'', |$s.filteringOperation->map(s|$s->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
   let havingStr = if($s.havingOperation->isEmpty(), |'', |$s.havingOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
@@ -234,7 +235,7 @@ function meta::relational::functions::sqlQueryToString::default::processTop(s:Se
          |'top '+$s.toRow->toOne()->getValueForTake()+' ', |'');
 }
 
-function meta::relational::functions::sqlQueryToString::default::processSelectColumns(s:RelationalOperationElement[*], dbConfig : DbConfig[1], format:Format[1], conditionalExprAllowed:Boolean[1], extensions:RouterExtension[*]):String[1]
+function meta::relational::functions::sqlQueryToString::default::processSelectColumns(s:RelationalOperationElement[*], dbConfig : DbConfig[1], format:Format[1], conditionalExprAllowed:Boolean[1], extensions:Extension[*]):String[1]
 {
    if ($s->size() == 0,
          |'*',
@@ -251,7 +252,7 @@ function meta::relational::functions::sqlQueryToString::default::processSelectCo
        );
 }
 
-function meta::relational::functions::sqlQueryToString::default::processJoinTreeNode(joinTreeNode:RelationalTreeNode[1], parent:TableAlias[0..1], dbConfig : DbConfig[1], format:Format[1], joinOrder:JoinType[*], extensions:RouterExtension[*]):String[1]
+function meta::relational::functions::sqlQueryToString::default::processJoinTreeNode(joinTreeNode:RelationalTreeNode[1], parent:TableAlias[0..1], dbConfig : DbConfig[1], format:Format[1], joinOrder:JoinType[*], extensions:Extension[*]):String[1]
 {
    let tableAlias = $joinTreeNode->match(
                                     [
@@ -281,7 +282,7 @@ function meta::relational::functions::sqlQueryToString::default::processJoinTree
    $children->map(child | processJoinTreeNode($child, $tableAlias->cast(@TableAlias), $dbConfig, $format, $joinOrder, $extensions))->joinStrings($val, '', '');
 }
 
-function meta::relational::functions::sqlQueryToString::default::processGroupByColumns(columns:RelationalOperationElement[*], dbConfig : DbConfig[1], format:Format[1], supportsAliasInGroupBy:Boolean[1], extensions:RouterExtension[*]):String[*]
+function meta::relational::functions::sqlQueryToString::default::processGroupByColumns(columns:RelationalOperationElement[*], dbConfig : DbConfig[1], format:Format[1], supportsAliasInGroupBy:Boolean[1], extensions:Extension[*]):String[*]
 {
    $columns->map(c | $c->match([
                                 a:Alias[1] | if($supportsAliasInGroupBy == true, | $dbConfig.identifierProcessor($a->cast(@Alias).name)
@@ -290,7 +291,7 @@ function meta::relational::functions::sqlQueryToString::default::processGroupByC
                                 ]));
 }
 
-function meta::relational::functions::sqlQueryToString::default::processOrderBy(orderBy:OrderBy[*], dbConfig : DbConfig[1], format:Format[1], config:Config[1], extensions:RouterExtension[*]):String[*]
+function meta::relational::functions::sqlQueryToString::default::processOrderBy(orderBy:OrderBy[*], dbConfig : DbConfig[1], format:Format[1], config:Config[1], extensions:Extension[*]):String[*]
 {
    $orderBy->map(o | $o.column->match([
         a:Alias[1]|$dbConfig.identifierProcessor($a.name),

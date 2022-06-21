@@ -1,0 +1,118 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::mapping::*;
+import meta::pure::executionPlan::profiles::*;
+import meta::pure::mapping::modelToModel::test::filter::*;
+import meta::pure::mapping::modelToModel::test::shared::*;
+import meta::pure::mapping::modelToModel::*;
+import meta::pure::mapping::modelToModel::test::*;
+import meta::pure::mapping::modelToModel::test::shared::src::*;
+import meta::pure::mapping::modelToModel::test::shared::dest::*;
+import meta::pure::runtime::*;
+
+function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::test::filter::testTypeFilterThoughGetter():Any[*]
+{
+    let res = execute(
+            |Firm.all(),
+            filterMapping,
+            ^Runtime(connections = ^ModelConnection(element=^ModelStore(), instances= newMap(
+                                                                                                      pair(_Firm , list([
+                                                                                                                        ^_Firm (name='A', employees = [^_Person(fullName='Pierre Doe'),
+                                                                                                                                                       ^_Person(fullName='A. Only One')] )
+                                                                                                                    ]))
+                                                                                            )
+                                                   )
+             ),
+             meta::pure::extension::defaultExtensions()
+          );
+   testTypeFilterThoughGetterAsserts($res);
+}
+
+function meta::pure::mapping::modelToModel::test::filter::testTypeFilterThoughGetterAsserts(res:Result<Firm|*>[1]):Boolean[1]
+{
+   assertEquals(['A. Only One'], $res.values->at(0).employees.lastName);
+}
+
+
+function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::test::filter::testTypeFilterThoughProject():Any[*]
+{
+    let res = execute(
+            |Firm.all()->project([f|$f.legalName, f|$f.employees.lastName],['legalName','employeeNames']),
+            filterMapping,
+            ^Runtime(connections = ^ModelConnection(element=^ModelStore(), instances= newMap(
+                                                                                                      pair(_Firm , list([
+                                                                                                                        ^_Firm (name='A', employees = [^_Person(fullName='Pierre Doe'),
+                                                                                                                                                       ^_Person(fullName='A. Only One')] )
+                                                                                                                    ]))
+                                                                                            )
+                                                   )
+             ),
+             meta::pure::extension::defaultExtensions()
+          );
+   testTypeFilterThoughProjectAsserts($res);
+}
+
+
+function meta::pure::mapping::modelToModel::test::filter::testTypeFilterThoughProjectAsserts(res:Result<TabularDataSet|1>[1]):Boolean[1]
+{
+   assertEquals(1, $res.values->at(0).rows->size());
+   assertEquals('A', $res.values->at(0).rows->at(0).get('legalName'));
+   assertEquals('A. Only One', $res.values->at(0).rows->at(0).get('employeeNames'));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::test::filter::testTypeFilter():Any[*]
+{
+    let res = execute(
+            |Person.all()->project([f|$f.lastName],['lastName']),
+            filterMapping,
+            ^Runtime(connections = ^ModelConnection(element=^ModelStore(), instances= newMap(
+                                                                                                      pair(_Person , list([^_Person(fullName='Pierre Doe', firm=^_Firm(name='X')),
+                                                                                                                           ^_Person(fullName='A. Only One', firm=^_Firm(name='X'))]
+                                                                                                                          )
+                                                                                                      )
+                                                                                            )
+                                                   )
+             ),
+             meta::pure::extension::defaultExtensions()
+          );
+   testTypeFilterAsserts($res);
+}
+
+function meta::pure::mapping::modelToModel::test::filter::testTypeFilterAsserts(res:Result<TabularDataSet|1>[1]):Boolean[1]
+{
+   assertEquals(1, $res.values->at(0).rows->size());
+   assertEquals('A. Only One', $res.values->at(0).rows->at(0).get('lastName'));
+}
+###Mapping
+import meta::pure::mapping::modelToModel::test::shared::src::*;
+import meta::pure::mapping::modelToModel::test::shared::dest::*;
+import meta::pure::mapping::modelToModel::test::*;
+
+Mapping meta::pure::mapping::modelToModel::test::filter::filterMapping
+(
+   Person : Pure
+   {
+      ~src _Person
+      ~filter $src.fullName->startsWith('A')
+      lastName : $src.fullName
+   }
+   
+   Firm : Pure
+   {
+      ~src _Firm
+      legalName : $src.name,
+      employees : $src.employees
+   }
+)

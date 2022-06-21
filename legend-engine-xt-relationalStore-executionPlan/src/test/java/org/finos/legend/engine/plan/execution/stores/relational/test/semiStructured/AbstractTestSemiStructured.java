@@ -30,17 +30,18 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionPlan;
-import org.finos.legend.pure.generated.Root_meta_pure_router_extension_RouterExtension;
+import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.core_external_format_json_extension;
 import org.finos.legend.pure.generated.core_external_shared_extension;
 import org.finos.legend.pure.generated.core_pure_executionPlan_executionPlan_print;
-import org.finos.legend.pure.generated.core_relational_relational_router_router_extension;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
+import static org.finos.legend.pure.generated.core_relational_relational_extensions_router_extension.Root_meta_relational_extension_relationalExtensions__Extension_MANY_;
 
 public abstract class AbstractTestSemiStructured
 {
@@ -58,7 +59,7 @@ public abstract class AbstractTestSemiStructured
 
     protected String buildExecutionPlanString(String function, String mapping, String runtime)
     {
-        MutableList<Root_meta_pure_router_extension_RouterExtension> extensions = getRouterExtensions();
+        MutableList<Root_meta_pure_extension_Extension> extensions = getExtensions();
 
         Function functionObject = Objects.requireNonNull(contextData.getElementsOfType(Function.class).stream().filter(x -> function.equals(x._package + "::" + x.name)).findFirst().orElse(null));
 
@@ -73,7 +74,7 @@ public abstract class AbstractTestSemiStructured
                 extensions
         );
 
-        return core_pure_executionPlan_executionPlan_print.Root_meta_pure_executionPlan_toString_planToString_ExecutionPlan_1__Boolean_1__RouterExtension_MANY__String_1_(executionPlan, true, extensions, pureModel.getExecutionSupport());
+        return core_pure_executionPlan_executionPlan_print.Root_meta_pure_executionPlan_toString_planToString_ExecutionPlan_1__Boolean_1__Extension_MANY__String_1_(executionPlan, true, extensions, pureModel.getExecutionSupport());
     }
 
     protected String executeFunction(String function, String mapping, String runtime)
@@ -89,7 +90,7 @@ public abstract class AbstractTestSemiStructured
                 "vX_X_X",
                 PlanPlatform.JAVA,
                 null,
-                getRouterExtensions(),
+                getExtensions(),
                 LegendPlanTransformers.transformers
         );
 
@@ -97,11 +98,11 @@ public abstract class AbstractTestSemiStructured
         return new String(new RelationalResultToCSVSerializer(result).flush().toByteArray(), StandardCharsets.UTF_8);
     }
 
-    private MutableList<Root_meta_pure_router_extension_RouterExtension> getRouterExtensions()
+    private MutableList<Root_meta_pure_extension_Extension> getExtensions()
     {
-        MutableList<Root_meta_pure_router_extension_RouterExtension> extensions = Lists.mutable.empty();
-        extensions.addAll(Lists.mutable.withAll(core_relational_relational_router_router_extension.Root_meta_pure_router_extension_defaultRelationalExtensions__RouterExtension_MANY_(pureModel.getExecutionSupport())));
-        extensions.addAll(core_external_shared_extension.Root_meta_external_shared_format_routerExtensions_String_1__ExternalFormatExtension_MANY__RouterExtension_MANY_("externalFormat", Lists.mutable.with(core_external_format_json_extension.Root_meta_external_format_json_jsonFormatExtension__ExternalFormatExtension_1_(pureModel.getExecutionSupport())), pureModel.getExecutionSupport()).toList());
+        MutableList<Root_meta_pure_extension_Extension> extensions = Lists.mutable.empty();
+        extensions.addAll(Lists.mutable.withAll(Root_meta_relational_extension_relationalExtensions__Extension_MANY_(pureModel.getExecutionSupport())));
+        extensions.addAll(core_external_shared_extension.Root_meta_external_shared_format_routerExtensions_String_1__ExternalFormatExtension_MANY__Extension_MANY_("externalFormat", Lists.mutable.with(core_external_format_json_extension.Root_meta_external_format_json_jsonFormatExtension__ExternalFormatExtension_1_(pureModel.getExecutionSupport())), pureModel.getExecutionSupport()).toList());
         return extensions;
     }
 

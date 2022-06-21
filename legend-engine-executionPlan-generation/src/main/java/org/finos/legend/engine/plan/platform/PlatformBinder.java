@@ -19,14 +19,14 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionPlan;
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_PlatformCodeGenerationConfig;
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_PlatformCodeGenerationConfig_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_router_extension_RouterExtension;
+import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.core_pure_executionPlan_executionPlan_generation;
 
 abstract class PlatformBinder
 {
-    Root_meta_pure_executionPlan_ExecutionPlan bindPlanToPlatform(Root_meta_pure_executionPlan_ExecutionPlan plan, String planId, PureModel pureModel, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions)
+    Root_meta_pure_executionPlan_ExecutionPlan bindPlanToPlatform(Root_meta_pure_executionPlan_ExecutionPlan plan, String planId, PureModel pureModel, RichIterable<? extends Root_meta_pure_extension_Extension> extensions)
     {
-        return core_pure_executionPlan_executionPlan_generation.Root_meta_pure_executionPlan_generatePlatformCode_ExecutionPlan_1__PlatformCodeGenerationConfig_1__RouterExtension_MANY__ExecutionPlan_1_(plan, getPlatformCodeGenerationConfig(planId, pureModel), extensions, pureModel.getExecutionSupport());
+        return core_pure_executionPlan_executionPlan_generation.Root_meta_pure_executionPlan_generatePlatformCode_ExecutionPlan_1__PlatformCodeGenerationConfig_1__Extension_MANY__ExecutionPlan_1_(plan, getPlatformCodeGenerationConfig(planId, pureModel), extensions, pureModel.getExecutionSupport());
     }
 
     protected abstract PlanPlatform getPlatform();

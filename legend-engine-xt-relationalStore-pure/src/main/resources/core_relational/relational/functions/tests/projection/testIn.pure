@@ -21,7 +21,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::in::testIn()
    let result = execute(|Person.all()->filter(p|$p.firstName->in(['John', 'Peter']))
                                      ->project(#/Person/lastName#),
                         simpleRelationalMapping,
-                        testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                        testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 3);
    assertSameElements(['Johnson', 'Hill', 'Smith'], $result.values.rows->map(r | $r.values->at(0)));
    assertEquals('select "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME in (\'John\', \'Peter\')', $result->sqlRemoveFormatting());
@@ -32,7 +32,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::in::testCont
    let result = execute(|Person.all()->filter(p|['John', 'Peter']->contains($p.firstName))
                                      ->project(#/Person/lastName#),
                         simpleRelationalMapping,
-                        testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                        testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 3);
    assertSameElements(['Johnson', 'Hill', 'Smith'], $result.values.rows->map(r | $r.values->at(0)));
    assertEquals('select "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME in (\'John\', \'Peter\')', $result->sqlRemoveFormatting());
@@ -43,7 +43,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::in::testDeep
    let result = execute(|Person.all()->filter(p|$p.firm.address.name->toOne()->in(['New York', 'Tokyo']))
                                      ->project(#/Person/lastName#),
                         simpleRelationalMapping,
-                        testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                        testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 5);
    assertSameElements(['Allen', 'Hill', 'Smith', 'Johnson', 'Hill'], $result.values.rows->map(r | $r.values->at(0)));
    assertEquals('select "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "firmtable_0".ADDRESSID) where "addresstable_0".NAME in (\'New York\', \'Tokyo\')', $result->sqlRemoveFormatting());
@@ -54,7 +54,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::in::testDeep
    let result = execute(|Person.all()->filter(p|$p.firm.address.name->toOne()->in(['New York', 'Tokyo']))
                                      ->project([#/Person/lastName#, #/Person/firstName#]),
                         simpleRelationalMapping,
-                        testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                        testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 5);
    assertSameElements(['Anthony Allen', 'Oliver Hill', 'Peter Smith', 'John Johnson', 'John Hill'], $result.values.rows->map(r | $r.getString('firstName') + ' ' + $r.getString('lastName')));
    assertEquals('select "root".LASTNAME as "lastName", "root".FIRSTNAME as "firstName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "firmtable_0".ADDRESSID) where "addresstable_0".NAME in (\'New York\', \'Tokyo\')', $result->sqlRemoveFormatting());
@@ -65,7 +65,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::in::testDeep
    let result = execute(|Person.all()->filter(p|['New York', 'Tokyo']->contains($p.firm.address.name->toOne()))
                                      ->project(#/Person/lastName#),
                         simpleRelationalMapping,
-                        testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                        testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 5);
    assertSameElements(['Allen', 'Hill', 'Smith', 'Johnson', 'Hill'], $result.values.rows->map(r | $r.values->at(0)));
    assertEquals('select "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "firmtable_0".ADDRESSID) where "addresstable_0".NAME in (\'New York\', \'Tokyo\')', $result->sqlRemoveFormatting());
@@ -76,7 +76,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::in::testDeep
    let result = execute(|Person.all()->filter(p|['New York', 'Tokyo']->contains($p.firm.address.name->toOne()))
                                      ->project([#/Person/lastName#, #/Person/firstName#]),
                         simpleRelationalMapping,
-                        testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                        testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 5);
    assertSameElements(['Anthony Allen', 'Oliver Hill', 'Peter Smith', 'John Johnson', 'John Hill'], $result.values.rows->map(r | $r.getString('firstName') + ' ' + $r.getString('lastName')));
    assertEquals('select "root".LASTNAME as "lastName", "root".FIRSTNAME as "firstName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "firmtable_0".ADDRESSID) where "addresstable_0".NAME in (\'New York\', \'Tokyo\')', $result->sqlRemoveFormatting());
@@ -88,7 +88,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::in::testInWi
    let result = execute(|Person.all()->filter(p|$p.firstName->in($names))
                                      ->project(#/Person/lastName#),
                         simpleRelationalMapping,
-                        testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                        testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 2);
    assertSameElements(['Johnson', 'Hill'], $result.values.rows->map(r | $r.values->at(0)));
    assertEquals('select "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME = \'John\'', $result->sqlRemoveFormatting());
@@ -101,7 +101,7 @@ function <<test.Test, test.ExcludeAlloy>>  meta::relational::tests::projection::
    let result = execute(|Person.all()->filter(p|$names->contains($p.firstName))
                                      ->project(#/Person/lastName#),
                         simpleRelationalMapping,
-                        testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                        testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 2);
    assertSameElements(['Johnson', 'Hill'], $result.values.rows->map(r | $r.values->at(0)));
    assertEquals('select "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME = \'John\'', $result->sqlRemoveFormatting());
@@ -113,7 +113,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::in::testInWi
    let result = execute(|Person.all()->filter(p|$p.firstName->in([$john, 'Peter']))
                                      ->project(#/Person/lastName#),
                         simpleRelationalMapping,
-                        testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                        testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 3);
    assertSameElements(['Johnson', 'Hill', 'Smith'], $result.values.rows->map(r | $r.values->at(0)));
    assertEquals('select "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME in (\'John\', \'Peter\')', $result->sqlRemoveFormatting());
@@ -125,7 +125,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::in::testCont
    let result = execute(|Person.all()->filter(p|[$john, 'Peter']->contains($p.firstName))
                                      ->project(#/Person/lastName#),
                         simpleRelationalMapping,
-                        testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                        testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 3);
    assertSameElements(['Johnson', 'Hill', 'Smith'], $result.values.rows->map(r | $r.values->at(0)));
    assertEquals('select "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME in (\'John\', \'Peter\')', $result->sqlRemoveFormatting());
@@ -137,7 +137,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::in::testInWi
    let result = execute(|Person.all()->filter(p|$p.firstName->in($names))
                                      ->project(#/Person/lastName#),
                         simpleRelationalMapping,
-                        testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                        testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 3);
    assertSameElements(['Johnson', 'Hill', 'Smith'], $result.values.rows->map(r | $r.values->at(0)));
    assertEquals('select "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME in (\'John\', \'Peter\')', $result->sqlRemoveFormatting());
@@ -149,7 +149,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::in::testCont
    let result = execute(|Person.all()->filter(p|$names->contains($p.firstName))
                                      ->project(#/Person/lastName#),
                         simpleRelationalMapping,
-                        testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                        testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 3);
    assertSameElements(['Johnson', 'Hill', 'Smith'], $result.values.rows->map(r | $r.values->at(0)));
    assertEquals('select "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME in (\'John\', \'Peter\')', $result->sqlRemoveFormatting());
@@ -160,7 +160,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::in::testNotI
    let result = execute(|Person.all()->filter(p|!$p.firstName->in(['John', 'Peter']))
                                      ->project(#/Person/lastName#),
                         simpleRelationalMapping,
-                        testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                        testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 4);
    assertSameElements(['Allen', 'Roberts', 'Harris', 'Hill'], $result.values.rows->map(r | $r.values->at(0)));
    assertEquals('select "root".LASTNAME as "lastName" from personTable as "root" where ("root".FIRSTNAME not in (\'John\', \'Peter\') OR "root".FIRSTNAME is null)', $result->sqlRemoveFormatting());
@@ -171,7 +171,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::in::testNotC
    let result = execute(|Person.all()->filter(p|!['John', 'Peter']->contains($p.firstName))
                                      ->project(#/Person/lastName#),
                         simpleRelationalMapping,
-                        testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                        testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 4);
    assertSameElements(['Allen', 'Roberts', 'Harris', 'Hill'], $result.values.rows->map(r | $r.values->at(0)));
    assertEquals('select "root".LASTNAME as "lastName" from personTable as "root" where ("root".FIRSTNAME not in (\'John\', \'Peter\') OR "root".FIRSTNAME is null)', $result->sqlRemoveFormatting());
@@ -181,7 +181,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::in::testInWi
 {
    let result = execute(|Interaction.all()->filter(i| $i.active->in(['false', 'something']) && $i.id == 4)->project([i | $i.id, i | $i.active], ['id', 'active']),
                         simpleRelationalMapping,
-                        testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                        testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 1);
    println($result.values.rows.values);
    assertSameElements([false, '4'], $result.values.rows.values);
@@ -192,7 +192,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::in::testQual
 {
    let result = execute(|Trade.all()->filter(t | $t.id == 10 || $t.id == 11)->project([i | $i.account.name, i | $i.account.accountCategory], ['name', 'cat']),
                         simpleRelationalMapping,
-                        testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                        testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 2);
    assertSameElements(['A', 'Account 2', 'B', ^TDSNull()], $result.values.rows.values);
    assertEquals('select "accounttable_0".name as "name", case when "accounttable_0".name in (\'Account 1\', \'Account 2\') then \'A\' else \'B\' end as "cat" from tradeTable as "root" left outer join accountTable as "accounttable_0" on ("root".accountID = "accounttable_0".ID) where ("root".ID = 10 or "root".ID = 11)', $result->sqlRemoveFormatting());

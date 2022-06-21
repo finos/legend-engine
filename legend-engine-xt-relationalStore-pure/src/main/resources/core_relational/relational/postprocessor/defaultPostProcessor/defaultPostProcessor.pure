@@ -16,13 +16,14 @@ import meta::relational::mapping::*;
 import meta::relational::metamodel::join::*;
 import meta::relational::runtime::*;
 import meta::relational::metamodel::relation::*;
-import meta::pure::router::extension::*;
+import meta::pure::extension::*;
+import meta::relational::extension::*;
 import meta::pure::mapping::*;
 import meta::pure::runtime::*;
 import meta::relational::metamodel::*;
 
 
-function meta::relational::mapping::defaultPlanPostProcessors(query: SQLQuery[1], runtime:Runtime[1], ext:RoutedValueSpecification[0..1], m:Mapping[0..1],store:Database[0..1], exeCtx:ExecutionContext[1], extensions:RouterExtension[*]): PostProcessorResult[1]
+function meta::relational::mapping::defaultPlanPostProcessors(query: SQLQuery[1], runtime:Runtime[1], ext:RoutedValueSpecification[0..1], m:Mapping[0..1],store:Database[0..1], exeCtx:ExecutionContext[1], extensions:Extension[*]): PostProcessorResult[1]
 {
    let postProcessors = postProcessorList();
    let result = $postProcessors->fold({pp,queryHolder| let result = $pp->eval($queryHolder.query,$runtime->toOne(),$store,$exeCtx,$extensions);
@@ -32,18 +33,18 @@ function meta::relational::mapping::defaultPlanPostProcessors(query: SQLQuery[1]
 
 }
 
-function meta::relational::mapping::postProcessorList():meta::pure::metamodel::function::Function<{SQLQuery[1], Runtime[1], Database[0..1], ExecutionContext[1], RouterExtension[*]->PostProcessorResult[1]}>[*]
+function meta::relational::mapping::postProcessorList():meta::pure::metamodel::function::Function<{SQLQuery[1], Runtime[1], Database[0..1], ExecutionContext[1], Extension[*]->PostProcessorResult[1]}>[*]
 {
    [
-      meta::relational::postProcessor::processInOperation_SQLQuery_1__Runtime_1__Database_$0_1$__ExecutionContext_1__RouterExtension_MANY__PostProcessorResult_1_,
-      meta::relational::postProcessor::processObjectReferenceInOperation_SQLQuery_1__Runtime_1__Database_$0_1$__ExecutionContext_1__RouterExtension_MANY__PostProcessorResult_1_,
-      meta::relational::mapping::defaultProcessors_SQLQuery_1__Runtime_1__Database_$0_1$__ExecutionContext_1__RouterExtension_MANY__PostProcessorResult_1_,
-      meta::relational::mapping::connectionAwareProcessors_SQLQuery_1__Runtime_1__Database_$0_1$__ExecutionContext_1__RouterExtension_MANY__PostProcessorResult_1_,
-      meta::relational::mapping::dbSpecificProcessor_SQLQuery_1__Runtime_1__Database_$0_1$__ExecutionContext_1__RouterExtension_MANY__PostProcessorResult_1_
+      meta::relational::postProcessor::processInOperation_SQLQuery_1__Runtime_1__Database_$0_1$__ExecutionContext_1__Extension_MANY__PostProcessorResult_1_,
+      meta::relational::postProcessor::processObjectReferenceInOperation_SQLQuery_1__Runtime_1__Database_$0_1$__ExecutionContext_1__Extension_MANY__PostProcessorResult_1_,
+      meta::relational::mapping::defaultProcessors_SQLQuery_1__Runtime_1__Database_$0_1$__ExecutionContext_1__Extension_MANY__PostProcessorResult_1_,
+      meta::relational::mapping::connectionAwareProcessors_SQLQuery_1__Runtime_1__Database_$0_1$__ExecutionContext_1__Extension_MANY__PostProcessorResult_1_,
+      meta::relational::mapping::dbSpecificProcessor_SQLQuery_1__Runtime_1__Database_$0_1$__ExecutionContext_1__Extension_MANY__PostProcessorResult_1_
    ]
 }
 
-function meta::relational::mapping::defaultProcessors(query:SQLQuery[1], runtime:Runtime[1], store:Database[0..1], exeCtx:ExecutionContext[1], extensions:RouterExtension[*]): PostProcessorResult[1]
+function meta::relational::mapping::defaultProcessors(query:SQLQuery[1], runtime:Runtime[1], store:Database[0..1], exeCtx:ExecutionContext[1], extensions:Extension[*]): PostProcessorResult[1]
 {
    let connection = if($store->isNotEmpty(),|let connection =$runtime->connectionByElement($store->toOne()),|$runtime.connections->at(0));
    let connectionProcessors =  if($connection->instanceOf(DatabaseConnection), | $connection->cast(@DatabaseConnection).sqlQueryPostProcessors, | []);
@@ -53,11 +54,11 @@ function meta::relational::mapping::defaultProcessors(query:SQLQuery[1], runtime
    ^PostProcessorResult(query = $connectionPostProcessorOutput,resultPostProcessor = {result:Result<Any|*>[1] | $result});
 }
 
-function meta::relational::mapping::sqlQueryDefaultPostProcessors():meta::pure::metamodel::function::Function<{SelectSQLQuery[1], RouterExtension[*]->Result<SelectSQLQuery|1>[1]}>[*]
+function meta::relational::mapping::sqlQueryDefaultPostProcessors():meta::pure::metamodel::function::Function<{SelectSQLQuery[1], Extension[*]->Result<SelectSQLQuery|1>[1]}>[*]
 {
    [
-      meta::relational::postProcessor::filterPushDown::pushFiltersDownToJoins_SelectSQLQuery_1__RouterExtension_MANY__Result_1_,
-      meta::relational::postProcessor::reAlias::replaceAliasName_SelectSQLQuery_1__RouterExtension_MANY__Result_1_
+      meta::relational::postProcessor::filterPushDown::pushFiltersDownToJoins_SelectSQLQuery_1__Extension_MANY__Result_1_,
+      meta::relational::postProcessor::reAlias::replaceAliasName_SelectSQLQuery_1__Extension_MANY__Result_1_
    ]
 }
 

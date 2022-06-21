@@ -30,28 +30,28 @@ function <<test.BeforePackage>> meta::relational::tests::mapping::association::s
 
 function <<test.Test>> meta::relational::tests::mapping::association::testPersonToFirm():Boolean[1]
 {
-   let result1 = execute(|Person.all()->project([p|$p.firstName, p|$p.firm.legalName], ['name', 'firm']), associationMappingWithIds, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   let result1 = execute(|Person.all()->project([p|$p.firstName, p|$p.firm.legalName], ['name', 'firm']), associationMappingWithIds, testRuntime(), meta::relational::extension::relationalExtensions()).values->at(0);
    assertEquals(7, $result1.rows->size());
    assertSameElements(['Anthony Firm X', 'David Firm C', 'Fabrice Firm A', 'John Firm X', 'John Firm X', 'Oliver Firm B', 'Peter Firm X'], $result1.rows->map(r|$r.getString('name')+' '+$r.getString('firm')->toString()));
 }
 
 function <<test.Test>> meta::relational::tests::mapping::association::testFirmToEmployees():Boolean[1]
 {
-   let result1 = execute(|Firm.all()->project([f|$f.legalName, f|$f.employees.firstName], ['legalName', 'employee']), associationMappingWithIds, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   let result1 = execute(|Firm.all()->project([f|$f.legalName, f|$f.employees.firstName], ['legalName', 'employee']), associationMappingWithIds, testRuntime(), meta::relational::extension::relationalExtensions()).values->at(0);
    assertEquals(7, $result1.rows->size());
    assertSameElements(['Firm A Fabrice', 'Firm X Anthony', 'Firm X John', 'Firm X John', 'Firm X Peter', 'Firm C David', 'Firm B Oliver'], $result1.rows->map(r|$r.getString('legalName')+' '+$r.getString('employee')->toString()));
 }
 
 function <<test.Test>> meta::relational::tests::mapping::association::testPersonToFirmWithDefaults():Boolean[1]
 {
-   let result1 = execute(|Person.all()->project([p|$p.firstName, p|$p.firm.legalName], ['name', 'firm']), associationMappingWithDefaultIds, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   let result1 = execute(|Person.all()->project([p|$p.firstName, p|$p.firm.legalName], ['name', 'firm']), associationMappingWithDefaultIds, testRuntime(), meta::relational::extension::relationalExtensions()).values->at(0);
    assertEquals(7, $result1.rows->size());
    assertSameElements(['Anthony Firm X', 'David Firm C', 'Fabrice Firm A', 'John Firm X', 'John Firm X', 'Oliver Firm B', 'Peter Firm X'], $result1.rows->map(r|$r.getString('name')+' '+$r.getString('firm')->toString()));
 }
 
 function <<test.Test>> meta::relational::tests::mapping::association::testFirmToEmployeesWithDefaults():Boolean[1]
 {
-   let result1 = execute(|Firm.all()->project([f|$f.legalName, f|$f.employees.firstName], ['legalName', 'employee']), associationMappingWithDefaultIds, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   let result1 = execute(|Firm.all()->project([f|$f.legalName, f|$f.employees.firstName], ['legalName', 'employee']), associationMappingWithDefaultIds, testRuntime(), meta::relational::extension::relationalExtensions()).values->at(0);
    assertEquals(7, $result1.rows->size());
    assertSameElements(['Firm A Fabrice', 'Firm X Anthony', 'Firm X John', 'Firm X John', 'Firm X Peter', 'Firm C David', 'Firm B Oliver'], $result1.rows->map(r|$r.getString('legalName')+' '+$r.getString('employee')->toString()));
 }
@@ -59,21 +59,21 @@ function <<test.Test>> meta::relational::tests::mapping::association::testFirmTo
 
 function <<test.Test>> meta::relational::tests::mapping::association::testFirmToEmployeesIncludes():Boolean[1]
 {
-   let result1 = execute(|Firm.all()->project([f|$f.legalName, f|$f.employees.firstName], ['legalName', 'employee']), associationMappingWithIncludes, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   let result1 = execute(|Firm.all()->project([f|$f.legalName, f|$f.employees.firstName], ['legalName', 'employee']), associationMappingWithIncludes, testRuntime(), meta::relational::extension::relationalExtensions()).values->at(0);
    assertEquals(7, $result1.rows->size());
    assertSameElements(['Firm A Fabrice', 'Firm X Anthony', 'Firm X John', 'Firm X John', 'Firm X Peter', 'Firm C David', 'Firm B Oliver'], $result1.rows->map(r|$r.getString('legalName')+' '+$r.getString('employee')->toString()));
 }
 
 function <<test.Test>> meta::relational::tests::mapping::association::testPersonToFirmIncludes():Boolean[1]
 {
-   let result1 = execute(|Person.all()->project([p|$p.firstName, p|$p.firm.legalName], ['name', 'firm']), associationMappingWithIncludes, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   let result1 = execute(|Person.all()->project([p|$p.firstName, p|$p.firm.legalName], ['name', 'firm']), associationMappingWithIncludes, testRuntime(), meta::relational::extension::relationalExtensions()).values->at(0);
    assertEquals(7, $result1.rows->size());
    assertSameElements(['Anthony Firm X', 'David Firm C', 'Fabrice Firm A', 'John Firm X', 'John Firm X', 'Oliver Firm B', 'Peter Firm X'], $result1.rows->map(r|$r.getString('name')+' '+$r.getString('firm')->toString()));
 }
 
 function <<test.Test>> meta::relational::tests::mapping::association::testPersonToFirmWithDifferentRootMapping():Boolean[1]
 {
-   let result1 = execute(|Person.all()->project([p|$p.firstName, p|$p.firm.legalName, p|$p.firm.ceo.firstName], ['name', 'firm', 'ceo']), associationMappingWithDifferentRoot, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   let result1 = execute(|Person.all()->project([p|$p.firstName, p|$p.firm.legalName, p|$p.firm.ceo.firstName], ['name', 'firm', 'ceo']), associationMappingWithDifferentRoot, testRuntime(), meta::relational::extension::relationalExtensions()).values->at(0);
    assertEquals(7, $result1.rows->size());
 }
 

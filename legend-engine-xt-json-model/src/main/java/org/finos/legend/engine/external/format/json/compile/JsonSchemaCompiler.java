@@ -20,7 +20,7 @@ import org.finos.legend.pure.generated.Root_meta_json_schema_fromSchema_SchemaIn
 import org.finos.legend.pure.generated.Root_meta_json_schema_fromSchema_SchemaInput_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_format_json_metamodel_JsonSchema;
 import org.finos.legend.pure.generated.Root_meta_external_format_json_metamodel_JsonSchema_Impl;
-import org.finos.legend.pure.generated.core_json_fromJSONSchema;
+import org.finos.legend.pure.generated.core_external_format_json_fromJSONSchema;
 
 public class JsonSchemaCompiler
 {
@@ -41,7 +41,7 @@ public class JsonSchemaCompiler
                 new Root_meta_json_schema_fromSchema_SchemaInput_Impl("")
                         ._fileName(location)
                         ._schema(content);
-        core_json_fromJSONSchema.Root_meta_json_schema_fromSchema_JSONSchemaToPure_SchemaInput_MANY__PackageableElement_MANY_(Lists.mutable.with(schemaInput), context.getPureModel().getExecutionSupport());
+        core_external_format_json_fromJSONSchema.Root_meta_json_schema_fromSchema_JSONSchemaToPure_SchemaInput_MANY__PackageableElement_MANY_(Lists.mutable.with(schemaInput), context.getPureModel().getExecutionSupport());
 
         return new Root_meta_external_format_json_metamodel_JsonSchema_Impl("")
                 ._content(content);

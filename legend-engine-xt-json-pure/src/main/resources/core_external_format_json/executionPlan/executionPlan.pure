@@ -24,7 +24,7 @@ import meta::pure::executionPlan::*;
 import meta::pure::executionPlan::engine::java::*;
 import meta::pure::executionPlan::toString::*;
 import meta::pure::graphFetch::*;
-import meta::pure::router::extension::*;
+import meta::pure::extension::*;
 import meta::pure::runtime::*;
 
 Class meta::external::format::json::executionPlan::JsonSerializeExecutionNode extends ExternalFormatSerializeExecutionNode
@@ -81,7 +81,7 @@ function meta::external::format::json::executionPlan::generatePathReference(path
    );
 }
 
-function meta::external::format::json::executionPlan::printPlanNodeToString(space:String[1], extensions:RouterExtension[*]): Function<{Nil[1]->String[1]}>[*]
+function meta::external::format::json::executionPlan::printPlanNodeToString(space:String[1], extensions:Extension[*]): Function<{Nil[1]->String[1]}>[*]
 {
    [
       {node:JsonSerializeExecutionNode[1] |
@@ -105,7 +105,7 @@ function meta::external::format::json::executionPlan::printPlanNodeToString(spac
    ]
 }
 
-function meta::external::format::json::executionPlan::planJavaPrepare(path:String[1], context:GenerationContext[1], extensions:RouterExtension[*], debug:DebugContext[1]): Function<{Nil[1]->GenerationContext[1]}>[*]
+function meta::external::format::json::executionPlan::planJavaPrepare(path:String[1], context:GenerationContext[1], extensions:Extension[*], debug:DebugContext[1]): Function<{Nil[1]->GenerationContext[1]}>[*]
 {
    [
       node:JsonSerializeExecutionNode[1]   | prepareForJsonSerialize($node, $path, $context, $extensions, $debug),
@@ -113,7 +113,7 @@ function meta::external::format::json::executionPlan::planJavaPrepare(path:Strin
    ]
 }
 
-function meta::external::format::json::executionPlan::planJavaGenerate(path:String[1], context:GenerationContext[1], extensions:RouterExtension[*], debug:DebugContext[1]): Function<{Nil[1]->GeneratedCode[1]}>[*]
+function meta::external::format::json::executionPlan::planJavaGenerate(path:String[1], context:GenerationContext[1], extensions:Extension[*], debug:DebugContext[1]): Function<{Nil[1]->GeneratedCode[1]}>[*]
 {
    [
        node:JsonSerializeExecutionNode[1]   | generateForJsonSerialize($node, $path, $context, $extensions, $debug),

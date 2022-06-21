@@ -33,7 +33,7 @@ import meta::pure::executionPlan::engine::java::naming::*;
 import meta::pure::executionPlan::engine::java::typeInfo::*;
 import meta::pure::executionPlan::toString::*;
 import meta::pure::graphFetch::*;
-import meta::pure::router::extension::*;
+import meta::pure::extension::*;
 import meta::pure::runtime::*;
 
 Class meta::external::format::xml::executionPlan::XmlSerializeExecutionNode extends ExternalFormatSerializeExecutionNode
@@ -74,7 +74,7 @@ function meta::external::format::xml::executionPlan::generateDeserializeNode(con
    );
 }
 
-function meta::external::format::xml::executionPlan::printPlanNodeToString(space:String[1], extensions:RouterExtension[*]): Function<{Nil[1]->String[1]}>[*]
+function meta::external::format::xml::executionPlan::printPlanNodeToString(space:String[1], extensions:Extension[*]): Function<{Nil[1]->String[1]}>[*]
 {
    [
       {node:XmlSerializeExecutionNode[1] |
@@ -97,7 +97,7 @@ function meta::external::format::xml::executionPlan::printPlanNodeToString(space
    ]
 }
 
-function meta::external::format::xml::executionPlan::planJavaPrepare(path:String[1], context:GenerationContext[1], extensions:RouterExtension[*], debug:DebugContext[1]): Function<{Nil[1]->GenerationContext[1]}>[*]
+function meta::external::format::xml::executionPlan::planJavaPrepare(path:String[1], context:GenerationContext[1], extensions:Extension[*], debug:DebugContext[1]): Function<{Nil[1]->GenerationContext[1]}>[*]
 {
    [
       node:XmlSerializeExecutionNode[1]   | prepareForSerialize($node, $path, $context, $extensions, $debug),
@@ -105,7 +105,7 @@ function meta::external::format::xml::executionPlan::planJavaPrepare(path:String
    ]
 }
 
-function meta::external::format::xml::executionPlan::planJavaGenerate(path:String[1], context:GenerationContext[1], extensions:RouterExtension[*], debug:DebugContext[1]): Function<{Nil[1]->GeneratedCode[1]}>[*]
+function meta::external::format::xml::executionPlan::planJavaGenerate(path:String[1], context:GenerationContext[1], extensions:Extension[*], debug:DebugContext[1]): Function<{Nil[1]->GeneratedCode[1]}>[*]
 {
    [
        node:XmlSerializeExecutionNode[1]   | generateForSerialize($node, $path, $context, $extensions, $debug),
@@ -113,14 +113,14 @@ function meta::external::format::xml::executionPlan::planJavaGenerate(path:Strin
    ]
 }
 
-function <<access.private>> meta::external::format::xml::executionPlan::prepareForSerialize(node:XmlSerializeExecutionNode[1], path:String[1], context:GenerationContext[1], extensions:RouterExtension[*], debug:DebugContext[1]): GenerationContext[1]
+function <<access.private>> meta::external::format::xml::executionPlan::prepareForSerialize(node:XmlSerializeExecutionNode[1], path:String[1], context:GenerationContext[1], extensions:Extension[*], debug:DebugContext[1]): GenerationContext[1]
 {
    print(if($debug.debug,|$debug.space+'('+$path+') prepare XmlSerializeExecutionNode\n', |''));
 
    $context;
 }
 
-function <<access.private>> meta::external::format::xml::executionPlan::prepareForDeserialize(node:XmlDeserializeExecutionNode[1], path:String[1], context:GenerationContext[1], extensions:RouterExtension[*], debug:DebugContext[1]): GenerationContext[1]
+function <<access.private>> meta::external::format::xml::executionPlan::prepareForDeserialize(node:XmlDeserializeExecutionNode[1], path:String[1], context:GenerationContext[1], extensions:Extension[*], debug:DebugContext[1]): GenerationContext[1]
 {
    print(if($debug.debug,|$debug.space+'('+$path+') prepare XmlDeserializeExecutionNode\n', |''));
 
@@ -139,7 +139,7 @@ function <<access.private>> meta::external::format::xml::executionPlan::prepareF
       ->addNodeInfo(^NodeInfo(path=$path, returnType=$returnType, graphFetchTrees=#{XmlDataRecord {number, record}}#));
 }
 
-function <<access.private>> meta::external::format::xml::executionPlan::generateForDeserialize(node:XmlDeserializeExecutionNode[1], path:String[1], context:GenerationContext[1], extensions:RouterExtension[*], debug:DebugContext[1]): GeneratedCode[1]
+function <<access.private>> meta::external::format::xml::executionPlan::generateForDeserialize(node:XmlDeserializeExecutionNode[1], path:String[1], context:GenerationContext[1], extensions:Extension[*], debug:DebugContext[1]): GeneratedCode[1]
 {
    print(if($debug.debug,|$debug.space+'('+$path+') generate XmlDeserializeExecutionNode\n', |''));
 
@@ -358,7 +358,7 @@ function meta::external::format::xml::executionPlan::readerClass(conventions:Con
 }
 
 
-function <<access.private>> meta::external::format::xml::executionPlan::generateForSerialize(node:XmlSerializeExecutionNode[1], path:String[1], context:GenerationContext[1], extensions:RouterExtension[*], debug:DebugContext[1]): GeneratedCode[1]
+function <<access.private>> meta::external::format::xml::executionPlan::generateForSerialize(node:XmlSerializeExecutionNode[1], path:String[1], context:GenerationContext[1], extensions:Extension[*], debug:DebugContext[1]): GeneratedCode[1]
 {
    print(if($debug.debug,|$debug.space+'('+$path+') generate XmlSerializeExecutionNode\n', |''));
    // TODO Serialization

@@ -75,7 +75,7 @@ import org.finos.legend.engine.shared.javaCompiler.StringJavaSource;
 import org.finos.legend.engine.test.runner.shared.TestResult;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_SingleExecutionTest;
-import org.finos.legend.pure.generated.Root_meta_pure_router_extension_RouterExtension;
+import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.core_relational_relational_helperFunctions_helperFunctions;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
@@ -102,12 +102,12 @@ public class ServiceTestRunner
     private final PureModel pureModel;
     private final ObjectMapper objectMapper;
     private final PlanExecutor executor;
-    private final RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions;
+    private final RichIterable<? extends Root_meta_pure_extension_Extension> extensions;
     private final MutableList<PlanTransformer> transformers;
     private final String pureVersion;
     private final String metricsContext;
 
-    public ServiceTestRunner(Service service, Root_meta_legend_service_metamodel_Service pureService, PureModelContextData pureModelContextData, PureModel pureModel, ObjectMapper objectMapper, PlanExecutor executor, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, MutableList<PlanTransformer> transformers, String pureVersion, String metricsContext)
+    public ServiceTestRunner(Service service, Root_meta_legend_service_metamodel_Service pureService, PureModelContextData pureModelContextData, PureModel pureModel, ObjectMapper objectMapper, PlanExecutor executor, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, MutableList<PlanTransformer> transformers, String pureVersion, String metricsContext)
     {
         this.service = service;
         this.pureService = (pureService == null) ? findPureService(service, pureModel) : pureService;
@@ -122,19 +122,19 @@ public class ServiceTestRunner
         this.metricsContext = metricsContext;
     }
 
-    public ServiceTestRunner(Service service, Root_meta_legend_service_metamodel_Service pureService, PureModelContextData pureModelContextData, PureModel pureModel, ObjectMapper objectMapper, PlanExecutor executor, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, MutableList<PlanTransformer> transformers, String pureVersion)
+    public ServiceTestRunner(Service service, Root_meta_legend_service_metamodel_Service pureService, PureModelContextData pureModelContextData, PureModel pureModel, ObjectMapper objectMapper, PlanExecutor executor, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, MutableList<PlanTransformer> transformers, String pureVersion)
     {
         this(service, pureService, pureModelContextData, pureModel, objectMapper, executor, extensions, transformers, pureVersion, null);
     }
 
     @Deprecated
-    public ServiceTestRunner(Pair<Service, Root_meta_legend_service_metamodel_Service> pureServicePairs, Pair<PureModelContextData, PureModel> pureModelPairs, ObjectMapper objectMapper, PlanExecutor executor, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, MutableList<PlanTransformer> transformers, String pureVersion)
+    public ServiceTestRunner(Pair<Service, Root_meta_legend_service_metamodel_Service> pureServicePairs, Pair<PureModelContextData, PureModel> pureModelPairs, ObjectMapper objectMapper, PlanExecutor executor, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, MutableList<PlanTransformer> transformers, String pureVersion)
     {
         this(pureServicePairs.getOne(), pureServicePairs.getTwo(), pureModelPairs.getOne(), pureModelPairs.getTwo(), objectMapper, executor, extensions, transformers, pureVersion);
     }
 
     @Deprecated
-    public ServiceTestRunner(Service service, Pair<PureModelContextData, PureModel> pureModelPairs, PlanExecutor executor, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, MutableList<PlanTransformer> transformers, String pureVersion)
+    public ServiceTestRunner(Service service, Pair<PureModelContextData, PureModel> pureModelPairs, PlanExecutor executor, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, MutableList<PlanTransformer> transformers, String pureVersion)
     {
         this(service, null, pureModelPairs.getOne(), pureModelPairs.getTwo(), null, executor, extensions, transformers, pureVersion);
     }
@@ -395,7 +395,7 @@ public class ServiceTestRunner
         Object value = pureResult._values().getAny();
         if (value instanceof org.finos.legend.pure.generated.Root_meta_pure_tds_TabularDataSet)
         {
-            return core_relational_relational_helperFunctions_helperFunctions.Root_meta_csv_toCSV_TabularDataSet_1__Boolean_1__String_1_((org.finos.legend.pure.generated.Root_meta_pure_tds_TabularDataSet) value, true, executionSupport);
+            return core_relational_relational_helperFunctions_helperFunctions.Root_meta_relational_tests_csv_toCSV_TabularDataSet_1__Boolean_1__String_1_((org.finos.legend.pure.generated.Root_meta_pure_tds_TabularDataSet) value, true, executionSupport);
         }
         if (value instanceof String)
         {

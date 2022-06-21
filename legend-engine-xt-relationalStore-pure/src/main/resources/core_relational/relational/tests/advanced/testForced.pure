@@ -51,7 +51,7 @@ function meta::relational::tests::advanced::forced::filter::testFilterMappingWit
                                              #/Org/parent/parent/name!p_p_name#]
                                            ), meta::relational::tests::mapping::filter::model::mapping::orgTestMapping
                                             , testDataTypeMappingRuntime()
-                                            ,  meta::pure::router::extension::defaultRelationalExtensions(), ^RelationalDebugContext(debug=false, space='', forcedIsolation = $isolation));
+                                            ,  meta::relational::extension::relationalExtensions(), ^RelationalDebugContext(debug=false, space='', forcedIsolation = $isolation));
    assertEquals(6, $result.values.rows->size());
    assertEquals(['ROOT',^TDSNull(),^TDSNull()], $result.values.rows->at(0).values);
    assertEquals(['Firm X','ROOT',^TDSNull()], $result.values.rows->at(1).values);

@@ -103,7 +103,7 @@ function <<test.Test>> meta::relational::tests::mapping::enumeration::testEnumTh
 function <<test.Test>> meta::relational::tests::mapping::enumeration::testMapping():Boolean[1]
 {
  
-    let result = execute(|Employee.all(), employeeTestMapping, enumTestRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|Employee.all(), employeeTestMapping, enumTestRuntime(), meta::relational::extension::relationalExtensions());
     assertSize($result.values, 3);
     assertSameElements(['Alice', 'Bob', 'Curtis'], $result.values->map(e | $e.name));
 
@@ -123,7 +123,7 @@ function <<test.Test>> meta::relational::tests::mapping::enumeration::testMappin
     assertEquals([], $curtis.active);
     
     //Test null mappings
-    let newResult = execute(|Employee.all(), employeeTestMappingWithFunction, enumTestRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let newResult = execute(|Employee.all(), employeeTestMappingWithFunction, enumTestRuntime(), meta::relational::extension::relationalExtensions());
     let newBob = $newResult.values->filter(e | $e.name == 'Bob')->toOne();
     assertEquals([], $newBob.type);
 }
@@ -131,19 +131,19 @@ function <<test.Test>> meta::relational::tests::mapping::enumeration::testMappin
 function <<test.Test>> meta::relational::tests::query::enumeration::testQueryWithEnum():Boolean[1]
 {
     
-    let fteResult = execute(|Employee.all()->filter(e | $e.type == EmployeeType.FULL_TIME), employeeTestMapping, enumTestRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let fteResult = execute(|Employee.all()->filter(e | $e.type == EmployeeType.FULL_TIME), employeeTestMapping, enumTestRuntime(), meta::relational::extension::relationalExtensions());
     assertSize($fteResult.values, 1);
     assertSameElements(['Bob'], $fteResult.values->map(e | $e.name));
 
-    let fteResult2 = execute(|Employee.all()->filter(e | EmployeeType.FULL_TIME == $e.type), employeeTestMapping, enumTestRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let fteResult2 = execute(|Employee.all()->filter(e | EmployeeType.FULL_TIME == $e.type), employeeTestMapping, enumTestRuntime(), meta::relational::extension::relationalExtensions());
     assertSize($fteResult2.values, 1);
     assertSameElements(['Bob'], $fteResult2.values->map(e | $e.name));
 
-    let ftcResult = execute(|Employee.all()->filter(e | $e.type == EmployeeType.CONTRACT), employeeTestMapping, enumTestRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let ftcResult = execute(|Employee.all()->filter(e | $e.type == EmployeeType.CONTRACT), employeeTestMapping, enumTestRuntime(), meta::relational::extension::relationalExtensions());
     assertSize($ftcResult.values, 2);
     assertSameElements(['Alice', 'Curtis'], $ftcResult.values->map(e | $e.name));
 
-    let ftcResult2 = execute(|Employee.all()->filter(e | EmployeeType.CONTRACT == $e.type), employeeTestMapping, enumTestRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let ftcResult2 = execute(|Employee.all()->filter(e | EmployeeType.CONTRACT == $e.type), employeeTestMapping, enumTestRuntime(), meta::relational::extension::relationalExtensions());
     assertSize($ftcResult2.values, 2);
     assertSameElements(['Alice', 'Curtis'], $ftcResult2.values->map(e | $e.name));
 }
@@ -179,7 +179,7 @@ function <<test.Test>> meta::relational::tests::mapping::enumeration::testEnumMa
 function <<test.Test>> meta::relational::tests::projection::enumeration::testProjectionWithEnum():Boolean[1]
 {
   
-    let result = execute(|Employee.all()->project([#/Employee/name#, #/Employee/dateOfHire#, #/Employee/type#]), employeeTestMapping, enumTestRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|Employee.all()->project([#/Employee/name#, #/Employee/dateOfHire#, #/Employee/type#]), employeeTestMapping, enumTestRuntime(), meta::relational::extension::relationalExtensions());
 
     let tds = $result.values->at(0);
     assertSize($tds.rows, 3);
@@ -189,7 +189,7 @@ function <<test.Test>> meta::relational::tests::projection::enumeration::testPro
 function <<test.Test>> meta::relational::tests::projection::enumeration::testProjectionWithEnumUsingLambda():Boolean[1]
 {
    
-    let result = execute(|Employee.all()->project([#/Employee/name#, #/Employee/dateOfHire#, e|$e.type], ['name', 'doh', 'type']), employeeTestMapping, enumTestRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|Employee.all()->project([#/Employee/name#, #/Employee/dateOfHire#, e|$e.type], ['name', 'doh', 'type']), employeeTestMapping, enumTestRuntime(), meta::relational::extension::relationalExtensions());
 
     let tds = $result.values->at(0);
     assertSize($tds.rows, 3);
@@ -199,7 +199,7 @@ function <<test.Test>> meta::relational::tests::projection::enumeration::testPro
 function <<test.Test>> meta::relational::tests::projection::enumeration::testProjectionWithEnumAndFunctionsUsingLambda():Boolean[1]
 {
   
-    let result = execute(|Employee.all()->project([f|$f.name+'_test', e|$e.type], ['name', 'type']), employeeTestMapping, enumTestRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|Employee.all()->project([f|$f.name+'_test', e|$e.type], ['name', 'type']), employeeTestMapping, enumTestRuntime(), meta::relational::extension::relationalExtensions());
 
     let tds = $result.values->at(0);
     assertSize($tds.rows, 3);
@@ -209,10 +209,10 @@ function <<test.Test>> meta::relational::tests::projection::enumeration::testPro
 function <<test.Test>> meta::relational::tests::query::enumeration::testInQueryWithEnum():Boolean[1]
 {
   
-    let result = execute(|Employee.all()->filter(e|$e.type->toOne()->in([EmployeeType.CONTRACT])), employeeTestMapping, enumTestRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|Employee.all()->filter(e|$e.type->toOne()->in([EmployeeType.CONTRACT])), employeeTestMapping, enumTestRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals(EmployeeType.CONTRACT, $result.values->at(0).type);
     
-    let result2 = execute(|Employee.all()->filter(e|$e.type->toOne()->in([EmployeeType.CONTRACT, EmployeeType.FULL_TIME])), employeeTestMapping, enumTestRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result2 = execute(|Employee.all()->filter(e|$e.type->toOne()->in([EmployeeType.CONTRACT, EmployeeType.FULL_TIME])), employeeTestMapping, enumTestRuntime(), meta::relational::extension::relationalExtensions());
     assertSameElements([EmployeeType.CONTRACT,EmployeeType.FULL_TIME], $result2.values.type->removeDuplicates());
 }
 
@@ -226,7 +226,7 @@ function <<test.Test>> meta::relational::tests::query::enumeration::testAggregat
                                            y|$y->count()
                                          ),
                                      ['Type', 'cnt']
-                                  ), employeeTestMapping, enumTestRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                                  ), employeeTestMapping, enumTestRuntime(), meta::relational::extension::relationalExtensions());
 
     let sorted = $result.values->at(0)->sort(['Type']);
                                   
@@ -239,7 +239,7 @@ function <<test.Test>> meta::relational::tests::query::enumeration::testAggregat
 function <<test.Test>> meta::relational::tests::projection::enumeration::testProjectionWithInheritedEnum():Boolean[1]
 {
     
-    let result = execute(|EquityTrade.all()->project([#/EquityTrade/product#, #/EquityTrade/type#, #/EquityTrade/quantity#]), tradeMapping, enumTestRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|EquityTrade.all()->project([#/EquityTrade/product#, #/EquityTrade/type#, #/EquityTrade/quantity#]), tradeMapping, enumTestRuntime(), meta::relational::extension::relationalExtensions());
 
     let tds = $result.values->at(0);
     assertSize($tds.rows, 4);
@@ -250,7 +250,7 @@ function <<test.Test>> meta::relational::tests::projection::enumeration::testPro
 function <<test.Test>> meta::relational::tests::projection::enumeration::testProjectionWithEnumThroughAssociation():Boolean[1]
 {
   
-    let result = execute(|Product.all()->project([#/Product/synonyms/type#, p|$p.synonyms.type, p|$p.synonyms->map(s|$s.type == ProductSynonymType.CUSIP)], ['a','b','c']), productMapping, enumTestRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|Product.all()->project([#/Product/synonyms/type#, p|$p.synonyms.type, p|$p.synonyms->map(s|$s.type == ProductSynonymType.CUSIP)], ['a','b','c']), productMapping, enumTestRuntime(), meta::relational::extension::relationalExtensions());
 
     let tds = $result.values->at(0);
     assertSize($tds.rows, 3);
@@ -266,7 +266,7 @@ function <<test.Test>> meta::relational::tests::projection::enumeration::testPro
     let result = execute(|Product.all()->project([#/Product/description#, 
                                                   #/Product/synonymsByType(ProductSynonymType.CUSIP)/value!cusip#, 
                                                   #/Product/gsn/value!gsn#]), 
-                                                  productMapping, enumTestRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                                                  productMapping, enumTestRuntime(), meta::relational::extension::relationalExtensions());
 
     let tds = $result.values->at(0);
     assertSize($tds.rows, 2);
@@ -280,7 +280,7 @@ function <<test.Test>> meta::relational::tests::projection::enumeration::testFil
   
     let result = execute(|Product.all()->filter(p | $p.synonymsByType(ProductSynonymType.CUSIP)->toOne().value == '9UF81235F')->project(
                                                   [#/Product/description#]), 
-                                                  productMapping, enumTestRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                                                  productMapping, enumTestRuntime(), meta::relational::extension::relationalExtensions());
 
     let tds = $result.values->at(0);
     assertSize($tds.rows, 1);
@@ -290,7 +290,7 @@ function <<test.Test>> meta::relational::tests::projection::enumeration::testFil
 function <<test.Test>> meta::relational::tests::projection::enumeration::testProjectWithIfWhereOneSideIsEnumLiteral():Boolean[1]
 {
    
-    let result = execute(|Product.all()->project([p|$p.description, p|if($p.description == 'My Product 2',|ProductSynonymType.GS_NUMBER,|$p.synonyms.type)], ['description','type']), productMapping, enumTestRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|Product.all()->project([p|$p.description, p|if($p.description == 'My Product 2',|ProductSynonymType.GS_NUMBER,|$p.synonyms.type)], ['description','type']), productMapping, enumTestRuntime(), meta::relational::extension::relationalExtensions());
    
     let tds = $result.values->at(0);
     assertSize($tds.rows, 3);
@@ -303,7 +303,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::projection::e
 {
    let value = ProductSynonymType.GS_NUMBER;
    
-    let result = execute(|Product.all()->project([p|$p.description, p|if($p.description == 'My Product 2',|$value,|$p.synonyms.type)], ['description','type']), productMapping, enumTestRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|Product.all()->project([p|$p.description, p|if($p.description == 'My Product 2',|$value,|$p.synonyms.type)], ['description','type']), productMapping, enumTestRuntime(), meta::relational::extension::relationalExtensions());
    
     let tds = $result.values->at(0);
     assertSize($tds.rows, 3);
@@ -315,7 +315,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::projection::e
 function <<test.Test>> meta::relational::tests::projection::enumeration::testProjectWithIfWhereBothSidesUseTheSameEnumMapping():Boolean[1]
 {
  
-    let result = execute(|Product.all()->project([p|$p.description, p|if($p.description == 'My Product 2',|$p.synonyms.type,|$p.synonyms.type)], ['description','type']), productMapping, enumTestRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|Product.all()->project([p|$p.description, p|if($p.description == 'My Product 2',|$p.synonyms.type,|$p.synonyms.type)], ['description','type']), productMapping, enumTestRuntime(), meta::relational::extension::relationalExtensions());
    
     let tds = $result.values->at(0);
     assertSize($tds.rows, 3);

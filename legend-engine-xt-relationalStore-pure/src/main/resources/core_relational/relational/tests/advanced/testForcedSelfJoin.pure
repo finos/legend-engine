@@ -64,7 +64,7 @@ Association meta::relational::tests::advanced::forcedselfjoin::OrgPerson
 
 ###Pure
 import meta::relational::mapping::*;
-import meta::csv::*;
+import meta::relational::tests::csv::*;
 import meta::relational::metamodel::execute::*;
 import meta::relational::runtime::*;
 import meta::pure::runtime::*;
@@ -125,7 +125,7 @@ function <<test.Test>> meta::relational::tests::advanced::forcedselfjoin::isolat
                              col(x|$x.employees.name,'employeeProductName'),
                              col(x|$x.employees.group.children->filter(c|$c.coveredProduct.name == $x.employees.product.name).name->toOne() , 'testCol')
                           ])
-                       ,IsolationTestMapping,testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                       ,IsolationTestMapping,testRuntime(), meta::relational::extension::relationalExtensions());
    
    let expectedCSV = 'firmname,employeeProductName,testCol\n'+
                       'Firm X,Peter Smith,NICDev\n'+

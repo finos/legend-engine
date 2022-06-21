@@ -455,7 +455,7 @@ public class GeneratePureConfig
 
         if (extensionName == null)
         {
-            out.lineOut("function " + purePackage + "applyJavaEngineDependencies(conventions:Conventions[1], extensions:meta::pure::router::extension::RouterExtension[*]):Conventions[1]");
+            out.lineOut("function " + purePackage + "applyJavaEngineDependencies(conventions:Conventions[1], extensions:meta::pure::extension::Extension[*]):Conventions[1]");
         }
         else
         {

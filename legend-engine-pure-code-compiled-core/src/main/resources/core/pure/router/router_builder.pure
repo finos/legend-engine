@@ -53,7 +53,7 @@ function meta::pure::router::builder::propagateVoid(v:ValueSpecification[1], ele
    if ($elements->filter(e|$e->isVoid())->isEmpty(),|$v,|^Void(genericType=^GenericType(rawType=Nil), multiplicity=PureOne)->evaluateAndDeactivate())
 }
 
-function meta::pure::router::builder::build(v:ValueSpecification[1], l:List<PermutationSet>[*], last:SetImplementation[0..1], mapping:Mapping[1], exeCtx: ExecutionContext[1], extensions:meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]):ValueSpecification[1]
+function meta::pure::router::builder::build(v:ValueSpecification[1], l:List<PermutationSet>[*], last:SetImplementation[0..1], mapping:Mapping[1], exeCtx: ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ValueSpecification[1]
 {  
     $v->match([
                f:FunctionExpression[1]| if($f->isSerialize($extensions),
@@ -219,13 +219,13 @@ function meta::pure::router::builder::build(v:ValueSpecification[1], l:List<Perm
              ]);
 }
 
-function meta::pure::graphFetch::execution::isSerialize(fe:FunctionExpression[1], extensions:meta::pure::router::extension::RouterExtension[*]):Boolean[1]
+function meta::pure::graphFetch::execution::isSerialize(fe:FunctionExpression[1], extensions:meta::pure::extension::Extension[*]):Boolean[1]
 {
    $fe.func == serialize_T_MANY__RootGraphFetchTree_1__String_1_ || 
    $fe.func == serialize_Checked_MANY__RootGraphFetchTree_1__String_1_ ||
    $fe.func == serialize_T_MANY__RootGraphFetchTree_1__AlloySerializationConfig_1__String_1_ ||
    $fe.func == serialize_Checked_MANY__RootGraphFetchTree_1__AlloySerializationConfig_1__String_1_ ||
-   $extensions.moduleExtension('platform')->cast(@meta::pure::store::platform::router::extension::PlatformStoreExtension).routing_extraIsSerialize->exists(f|$f->eval($fe));
+   $extensions.moduleExtension('platform')->cast(@meta::pure::store::platform::extension::PlatformStoreExtension).routing_extraIsSerialize->exists(f|$f->eval($fe));
 }
 
 

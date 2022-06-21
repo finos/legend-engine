@@ -19,7 +19,7 @@ import meta::pure::mapping::xStore::projection::arguments::*;
 import meta::pure::router::clustering::*;
 import meta::pure::router::execution::*;
 import meta::pure::router::printer::*;
-import meta::pure::router::systemMapping::*;
+import meta::pure::store::*;
 import meta::pure::runtime::*;
 
 function meta::pure::mapping::xStore::crossGetterOverrideToMany(o:Any[1], property:Property<Nil,Any|*>[1]):Any[*]
@@ -38,21 +38,21 @@ function meta::pure::mapping::xStore::crossGetterOverride(o:Any[1], property:Pro
    let dataPayload = $o->getHiddenPayload()->cast(@MappingInstanceData);
    let source = $dataPayload.static.setImplementation;
    if ($source->isEmpty(),
-       | $dataPayload.static.systemMapping.localGetterOverrideNonMapped->eval($o, $property),
-       | let sourceSys = $source->toOne()->systemForSetImplementation($dataPayload.static.extensions);
+       | $dataPayload.static.systemMapping.localGetterOverrideNonMapped->toOne()->eval($o, $property),
+       | let sourceSys = $dataPayload.static.extensions->meta::pure::extension::storeContractForSetImplementation($source->toOne());
          let propertyMappings = $source->toOne()->match([e:EmbeddedSetImplementation[1]|$e->meta::pure::mapping::propertyMappingsByPropertyName($property.name->toOne()),
                                                          s:PropertyMappingsImplementation[1]|$s.propertyMappingsByPropertyName($property.name->toOne())
                                                         ]);
          if ($propertyMappings->isEmpty(),
-             | if($sourceSys.localGetterOverrideNonMappedAsString=='',
+             | if($sourceSys.localGetterOverrideNonMapped->isEmpty(),
                   |fail('The property '+$property.owner->elementToPath()+'.'+$property.name->toOne()+' is not mapped in the mapping '+$dataPayload.static.mapping.name->toOne()),
-                  |$sourceSys.localGetterOverrideNonMapped->eval($o, $property);
+                  |$sourceSys.localGetterOverrideNonMapped->toOne()->eval($o, $property);
                );,
              | $propertyMappings->map(
                                        p|let target = $dataPayload.static.mapping.classMappingById($p.targetSetImplementationId);
-                                         let targetSys = $target->toOne()->systemForSetImplementation($dataPayload.static.extensions);
-                                         if ($sourceSys.supportsFunctionAsString == $targetSys.supportsFunctionAsString,
-                                             |$targetSys.localGetterOverrideMapped->eval($o, $p),
+                                         let targetSys = $dataPayload.static.extensions->meta::pure::extension::storeContractForSetImplementation($target->toOne());
+                                         if ($sourceSys.supports == $targetSys.supports,
+                                             |$targetSys.localGetterOverrideMapped->toOne()->eval($o, $p),
                                              |performXStoreQuery($o, $p, $dataPayload.static.extensions)
                                          );
                                   );
@@ -60,7 +60,7 @@ function meta::pure::mapping::xStore::crossGetterOverride(o:Any[1], property:Pro
    );
 }
 
-function meta::pure::mapping::xStore::performXStoreQuery(o:Any[1], p:PropertyMapping[1], extensions:meta::pure::router::extension::RouterExtension[*]):Any[*]
+function meta::pure::mapping::xStore::performXStoreQuery(o:Any[1], p:PropertyMapping[1], extensions:meta::pure::extension::Extension[*]):Any[*]
 {
    let objectInfo = $o->getHiddenPayload()->cast(@MappingInstanceData);
    let debug = $objectInfo.static.debug;

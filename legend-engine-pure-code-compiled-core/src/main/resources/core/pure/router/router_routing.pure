@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import meta::controlevent::autoactionrule::*;
-import meta::pure::router::systemMapping::*;
+import meta::pure::store::*;
 import meta::pure::graphFetch::routing::*;
 import meta::pure::graphFetch::*;
 import meta::pure::dataQuality::*;
@@ -46,7 +46,7 @@ Class meta::pure::graphFetch::routing::RoutedPropertyGraphFetchTree extends Rout
 
 Class meta::pure::graphFetch::routing::ClusteredGraphFetchTree extends GraphFetchTree
 {
-   s : SystemMapping[1];
+   s : StoreContract[1];
    store : meta::pure::store::Store[1];
    tree : RoutedGraphFetchTree[1];
    openVars : Map<String, List<Any>>[1];
@@ -399,7 +399,7 @@ function meta::pure::router::routing::reprocessRuntimeWithVariablePlaceHolderFun
    ^RuntimeProcessingState(value= ^$f(expressionSequence = $expressions.value->cast(@ValueSpecification)), vState=$expressions.vState );
 }
 
-function meta::pure::router::routing::processProperty(p:AbstractProperty<Any>[1], i:InstanceValue[1], state:RoutingState[1], mapping:Mapping[1], runtime:Runtime[1], executionContext:ExecutionContext[1], extensions:meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]):RoutingState[1]
+function meta::pure::router::routing::processProperty(p:AbstractProperty<Any>[1], i:InstanceValue[1], state:RoutingState[1], mapping:Mapping[1], runtime:Runtime[1], executionContext:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingState[1]
 {
    let s = $state.propertyMap.v->filter(p|$p.first == '__propertyOwner').second->evaluateAndDeactivate();
    let permSets = if($s == 0,|[]->cast(@SetImplementation), |$s->cast(@ExtendedRoutedValueSpecification).sets);
@@ -458,7 +458,7 @@ function meta::pure::router::routing::propToString(v:ValueSpecification[1], vars
    ])->toOne();
 }
 
-function meta::pure::router::routing::propogateSubType(vs:ValueSpecification[1], subTypeId:String[1], subTypeSets:SetImplementation[*], extensions:meta::pure::router::extension::RouterExtension[*]): ValueSpecification[1]
+function meta::pure::router::routing::propogateSubType(vs:ValueSpecification[1], subTypeId:String[1], subTypeSets:SetImplementation[*], extensions:meta::pure::extension::Extension[*]): ValueSpecification[1]
 {
     $vs->evaluateAndDeactivate()->match([
                                            e : ExtendedRoutedValueSpecification[1] | let castClass=$subTypeSets->at(0).class;
@@ -479,7 +479,7 @@ function meta::pure::router::routing::propogateSubType(vs:ValueSpecification[1],
 }
 
 
-function meta::pure::router::routing::shouldStop(f:Function<Any>[1], extensions:meta::pure::router::extension::RouterExtension[*]):Boolean[1]
+function meta::pure::router::routing::shouldStop(f:Function<Any>[1], extensions:meta::pure::extension::Extension[*]):Boolean[1]
 {
    [
       contains_Any_MANY__Any_1__Boolean_1_,
@@ -616,7 +616,7 @@ function meta::pure::router::routing::shouldStop(f:Function<Any>[1], extensions:
 }
 
 
-function meta::pure::router::routing::routeValueSpecification(state:RoutingState[1], mapping:Mapping[1], runtime:Runtime[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]):RoutingState[1]
+function meta::pure::router::routing::routeValueSpecification(state:RoutingState[1], mapping:Mapping[1], runtime:Runtime[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingState[1]
 {
    $state.value->evaluateAndDeactivate()->match(
       [
@@ -661,7 +661,7 @@ function meta::pure::router::routing::routeValueSpecification(state:RoutingState
    );
 }
 
-function meta::pure::router::routing::routePath(state:RoutingState[1], mapping:Mapping[1], runtime:Runtime[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]):RoutingState[1]
+function meta::pure::router::routing::routePath(state:RoutingState[1], mapping:Mapping[1], runtime:Runtime[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingState[1]
 {
    let path = $state.value->evaluateAndDeactivate()->cast(@Path<Nil,Any|*>)->toOne();
    let newPathElements = $path.path->map(p|if ($p->instanceOf(PropertyPathElement) ,
@@ -679,7 +679,7 @@ function meta::pure::router::routing::routePath(state:RoutingState[1], mapping:M
 
 
 
-function meta::pure::router::routing::routeFunctionExpression(fe:FunctionExpression[1], state:RoutingState[1], mapping:Mapping[1], runtime:Runtime[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]):RoutingState[1]
+function meta::pure::router::routing::routeFunctionExpression(fe:FunctionExpression[1], state:RoutingState[1], mapping:Mapping[1], runtime:Runtime[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingState[1]
 {
    $fe.func->match([
                        p:Property<Nil,Any|*>[1]| $p->routeFunctionExpressionProperty($fe, $state, $mapping, $runtime, $executionContext, $vars, $inScopeVars, $extensions, $debug);,
@@ -688,7 +688,7 @@ function meta::pure::router::routing::routeFunctionExpression(fe:FunctionExpress
 }
 
 
-function meta::pure::router::routing::routeFunctionExpressionProperty(p:Property<Nil,Any|*>[1], fe:FunctionExpression[1], v:RoutingState[1], mapping:Mapping[1], runtime:Runtime[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]):RoutingState[1]
+function meta::pure::router::routing::routeFunctionExpressionProperty(p:Property<Nil,Any|*>[1], fe:FunctionExpression[1], v:RoutingState[1], mapping:Mapping[1], runtime:Runtime[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingState[1]
 {
    let results = $v->processCollection($fe.parametersValues->evaluateAndDeactivate(), $mapping, $runtime, $executionContext, $vars, $inScopeVars, v:Any[1]|true, $extensions, $debug)->evaluateAndDeactivate();
    let newPV = $results.value->cast(@ValueSpecification)->toOneMany();
@@ -800,7 +800,7 @@ function meta::pure::router::routing::routeFunctionExpressionProperty(p:Property
 
 
 
-function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(f:Function<Any>[1], fe:FunctionExpression[1], state:RoutingState[1], mapping:Mapping[1], runtime:Runtime[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]):RoutingState[1]
+function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(f:Function<Any>[1], fe:FunctionExpression[1], state:RoutingState[1], mapping:Mapping[1], runtime:Runtime[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingState[1]
 {
    print(if($debug.debug,|$debug.space+if($f->instanceOf(NativeFunction),|'NativeFunction',|'FunctionDefinition')+' : '+$f->asString()+'\n',|''));
    
@@ -1049,7 +1049,7 @@ function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(
   );
 }
 
-function meta::pure::router::routing::processAggregationValueFunction(fn:Function<Any>[1], routed:ExtendedRoutedValueSpecification[*], state:RoutingState[1], mapping:Mapping[1], runtime:Runtime[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]):RoutingState[1]
+function meta::pure::router::routing::processAggregationValueFunction(fn:Function<Any>[1], routed:ExtendedRoutedValueSpecification[*], state:RoutingState[1], mapping:Mapping[1], runtime:Runtime[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingState[1]
 {
    ^InstanceValue(multiplicity=PureOne, genericType=^GenericType(rawType=Function), values=$fn)
       ->evaluateAndDeactivate()
@@ -1065,12 +1065,12 @@ function meta::pure::router::routing::processAggregationValueFunction(fn:Functio
          $debug);
 }
 
-function meta::pure::router::routing::processAggregationFunctionExpression(aggFuncExpr:FunctionExpression[1], routed:ExtendedRoutedValueSpecification[*], v:RoutingState[1], mapping:Mapping[1], runtime:Runtime[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]):RoutingState[1]
+function meta::pure::router::routing::processAggregationFunctionExpression(aggFuncExpr:FunctionExpression[1], routed:ExtendedRoutedValueSpecification[*], v:RoutingState[1], mapping:Mapping[1], runtime:Runtime[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingState[1]
 {
    $aggFuncExpr.func->routeFunctionExpressionFunctionDefinition($aggFuncExpr, ^$v(routed=$routed), $mapping, $runtime, $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+' '));
 }
 
-function meta::pure::router::routing::processColumnSpecification(v:ValueSpecification[1], state:RoutingState[1], mapping:Mapping[1], runtime:Runtime[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]):RoutingState[1]
+function meta::pure::router::routing::processColumnSpecification(v:ValueSpecification[1], state:RoutingState[1], mapping:Mapping[1], runtime:Runtime[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingState[1]
 {
    let i = $v->match([i:InstanceValue[1]| $i,
                       v:VariableExpression[1]|^InstanceValue(genericType=$v.genericType, multiplicity=$v.multiplicity, values=$inScopeVars->get($v.name).values)->evaluateAndDeactivate(),
@@ -1123,7 +1123,7 @@ function meta::pure::router::routing::processColumnSpecification(v:ValueSpecific
                    }, ^$state(value=^$i(values=[])));
 }
 
-function meta::pure::router:: routing::processColSpecParams(fe:FunctionExpression[1], state:RoutingState[1],mapping:Mapping[1], runtime:Runtime[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]):Any[*]
+function meta::pure::router:: routing::processColSpecParams(fe:FunctionExpression[1], state:RoutingState[1],mapping:Mapping[1], runtime:Runtime[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):Any[*]
 {
    let routedFe = ^$state(value=$fe)->routeValueSpecification($mapping, $runtime, $executionContext, $vars, $inScopeVars, $extensions, $debug);
    let params = $routedFe.value->evaluateAndDeactivate()->cast(@FunctionExpression)->toOne().parametersValues->map(p|$p->byPassRouterInfo()->match([r:FunctionRoutedValueSpecification[1]|$r.originalFunction;, v:ValueSpecification[1]|$v]))->cast(@ValueSpecification);
@@ -1132,7 +1132,7 @@ function meta::pure::router:: routing::processColSpecParams(fe:FunctionExpressio
    $nfe->reactivate($inScopeVars)->evaluateAndDeactivate();
 }
 
-function meta::pure::router::routing::processLambda(i:InstanceValue[1], routed:ExtendedRoutedValueSpecification[*], state:RoutingState[1], mapping:Mapping[1], runtime:Runtime[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]):RoutingState[1]
+function meta::pure::router::routing::processLambda(i:InstanceValue[1], routed:ExtendedRoutedValueSpecification[*], state:RoutingState[1], mapping:Mapping[1], runtime:Runtime[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingState[1]
 {
    print(if($debug.debug,|$debug.space+'Processing Lambda\n',|''));
    let func = $i.values->at(0)->cast(@Function<Any>);
@@ -1168,7 +1168,7 @@ function meta::pure::router::routing::processLambda(i:InstanceValue[1], routed:E
    )->routeSubFunction($mapping, $runtime, $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
 }
 
-function meta::pure::router::routing::routeSubFunction(state:RoutingState[1], mapping:Mapping[1], runtime:Runtime[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]):RoutingState[1]
+function meta::pure::router::routing::routeSubFunction(state:RoutingState[1], mapping:Mapping[1], runtime:Runtime[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingState[1]
 {
    let i = $state.value->cast(@InstanceValue)->toOne()->evaluateAndDeactivate();
    $i.values->at(0)->match(
@@ -1201,7 +1201,7 @@ function meta::pure::router::routing::routeSubFunction(state:RoutingState[1], ma
 
 
 
-function meta::pure::router::routing::processCollection(state:RoutingState[1], col:Any[*], mapping:Mapping[1], runtime:Runtime[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], shouldProcess:Function<{Any[1]->Boolean[1]}>[1], extensions:meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]):RoutingState[*]
+function meta::pure::router::routing::processCollection(state:RoutingState[1], col:Any[*], mapping:Mapping[1], runtime:Runtime[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], shouldProcess:Function<{Any[1]->Boolean[1]}>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingState[*]
 {
    $col->fold(
                {c,a| let last = $a->last()->toOne();

@@ -14,9 +14,10 @@
 
 import meta::pure::runtime::*;
 import meta::relational::translation::*;
-import meta::pure::router::extension::*;
+import meta::pure::extension::*;
+import meta::relational::extension::*;
 import meta::relational::runtime::*;
-import meta::csv::*;
+import meta::relational::tests::csv::*;
 import meta::relational::metamodel::execute::*;
 
 

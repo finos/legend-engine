@@ -176,7 +176,7 @@ function meta::pure::graphFetch::tests::XStore::inMemory::JsonCrossStoreRuntime(
 
 ###Pure
 import meta::pure::graphFetch::execution::*;
-import meta::pure::router::extension::*;
+import meta::pure::extension::*;
 import meta::pure::graphFetch::tests::XStore::inMemory::*;
 
 function meta::pure::graphFetch::tests::XStore::inMemory::inMemory::InMemoryCrossStoreServiceTestSimple():Any[*]

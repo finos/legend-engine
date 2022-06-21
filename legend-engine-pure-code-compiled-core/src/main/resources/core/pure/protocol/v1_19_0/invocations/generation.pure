@@ -20,8 +20,8 @@ function meta::protocols::pure::v1_19_0::invocation::generation::json::legendGen
                                  '{ "clientVersion":"v1_19_0",'+
                                  '  "config":'+$jsonConfig->meta::protocols::pure::v1_19_0::invocation::generation::json::transformJSONSchemaConfig()->alloyToJSON()+','+
                                  '  "model":'+if ($jsonConfig.package->isEmpty(),
-                                                  |$jsonConfig.class->toOne()->pathToElement()->toOne()->cast(@Type)->buildPureModelFromType(meta::pure::router::extension::defaultExtensions())->alloyToJSON(),
-                                                  |$jsonConfig.package->toOne()->pathToElement()->toOne()->cast(@Package)->buildPureModelFromPackage(meta::pure::router::extension::defaultExtensions())->alloyToJSON())+
+                                                  |$jsonConfig.class->toOne()->pathToElement()->toOne()->cast(@Type)->buildPureModelFromType(meta::pure::extension::defaultExtensions())->alloyToJSON(),
+                                                  |$jsonConfig.package->toOne()->pathToElement()->toOne()->cast(@Package)->buildPureModelFromPackage(meta::pure::extension::defaultExtensions())->alloyToJSON())+
                                  '}'
                                 );
    assertEq(200, $resp.statusCode, | $resp.entity);

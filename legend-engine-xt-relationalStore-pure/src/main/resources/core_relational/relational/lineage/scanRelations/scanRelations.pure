@@ -13,7 +13,8 @@
 // limitations under the License.
 
 import meta::dsb::domain::config::*;
-import meta::pure::router::extension::*;
+import meta::pure::extension::*;
+import meta::relational::extension::*;
 import meta::relational::metamodel::operation::*;
 import meta::relational::functions::pureToSqlQuery::*;
 import meta::pure::router::clustering::*;
@@ -62,18 +63,18 @@ Class meta::pure::lineage::scanRelations::RelationTree
 }
 
 
-function meta::pure::lineage::scanRelations::scanRelations(f:FunctionDefinition<Any>[1], m:Mapping[1], extensions:meta::pure::router::extension::RouterExtension[*]):RelationTree[1]
+function meta::pure::lineage::scanRelations::scanRelations(f:FunctionDefinition<Any>[1], m:Mapping[1], extensions:meta::pure::extension::Extension[*]):RelationTree[1]
 {
    scanRelations($f, $m, $extensions, noDebug());
 }
 
-function meta::pure::lineage::scanRelations::scanRelations(f:FunctionDefinition<Any>[1], m:Mapping[1], extensions:meta::pure::router::extension::RouterExtension[*], debug: meta::pure::tools::DebugContext[1]):RelationTree[1]
+function meta::pure::lineage::scanRelations::scanRelations(f:FunctionDefinition<Any>[1], m:Mapping[1], extensions:meta::pure::extension::Extension[*], debug: meta::pure::tools::DebugContext[1]):RelationTree[1]
 {
    print(if($debug.debug,|$debug.space+'Function: ' + $f->meta::pure::router::printer::asString() + ' \n',|''));
    scanRelations($f.expressionSequence->evaluateAndDeactivate()->last()->toOne(), $f->openVariableValues(), $m, $extensions, $debug);
 }
 
-function meta::pure::lineage::scanRelations::scanRelations(v:ValueSpecification[1], o:Map<String, List<Any>>[1], m:Mapping[1], extensions:meta::pure::router::extension::RouterExtension[*], debug: meta::pure::tools::DebugContext[1]):RelationTree[1]
+function meta::pure::lineage::scanRelations::scanRelations(v:ValueSpecification[1], o:Map<String, List<Any>>[1], m:Mapping[1], extensions:meta::pure::extension::Extension[*], debug: meta::pure::tools::DebugContext[1]):RelationTree[1]
 {
    let funcBody = $v->inlineQualifiedProperties(newMap([]->cast(@Pair<VariableExpression, ValueSpecification>), VariableExpression->classPropertyByName('name')->cast(@Property<VariableExpression,String|1>)), $o, $extensions);
    print(if($debug.debug,|$debug.space+'Function Expression with inlined qualifiers: ' + $funcBody->meta::pure::router::printer::asString() + ' \n',|''));
@@ -327,17 +328,17 @@ function <<access.private>> meta::pure::lineage::scanRelations::reOrderAndMergeR
    );
 }
 
-function meta::pure::lineage::scanRelations::scanRelations(f:FunctionDefinition<Any>[1], m:Mapping[1], r:Runtime[1], extensions:RouterExtension[*]):RelationTree[1]
+function meta::pure::lineage::scanRelations::scanRelations(f:FunctionDefinition<Any>[1], m:Mapping[1], r:Runtime[1], extensions:Extension[*]):RelationTree[1]
 {
    $f->scanRelations($m, $r, [], noDebug(), $extensions);
 }
 
-function meta::pure::lineage::scanRelations::scanRelations(f:FunctionDefinition<Any>[1], m:Mapping[1], r:Runtime[1], vars:Pair<String, List<Any>>[*], extensions:RouterExtension[*]):RelationTree[1]
+function meta::pure::lineage::scanRelations::scanRelations(f:FunctionDefinition<Any>[1], m:Mapping[1], r:Runtime[1], vars:Pair<String, List<Any>>[*], extensions:Extension[*]):RelationTree[1]
 {
    $f->scanRelations($m, $r, $vars, noDebug(), $extensions);
 }
 
-function meta::pure::lineage::scanRelations::scanRelations(f:FunctionDefinition<Any>[1], m:Mapping[1], r:Runtime[1], vars:Pair<String, List<Any>>[*], debug: meta::pure::tools::DebugContext[1], extensions:RouterExtension[*]):RelationTree[1]
+function meta::pure::lineage::scanRelations::scanRelations(f:FunctionDefinition<Any>[1], m:Mapping[1], r:Runtime[1], vars:Pair<String, List<Any>>[*], debug: meta::pure::tools::DebugContext[1], extensions:Extension[*]):RelationTree[1]
 {
    let sqlQuery   = meta::pure::lineage::scanRelations::generateSQLQuery($f, $m, $r, $vars, $extensions);
    if($debug.debug, | print('Generated SQL Query - ' + sqlQueryToStringPretty($sqlQuery, DatabaseType.H2, 'GMT', [], $extensions) + '\n\n'), |[]);
@@ -355,7 +356,7 @@ function meta::pure::lineage::scanRelations::scanRelations(f:FunctionDefinition<
    $rootTree;
 }
 
-function <<access.private>> meta::pure::lineage::scanRelations::generateSQLQuery(f:FunctionDefinition<Any>[1], m:Mapping[1], r:Runtime[1], vars:Pair<String, List<Any>>[*], extensions:RouterExtension[*]):SQLQuery[1]
+function <<access.private>> meta::pure::lineage::scanRelations::generateSQLQuery(f:FunctionDefinition<Any>[1], m:Mapping[1], r:Runtime[1], vars:Pair<String, List<Any>>[*], extensions:Extension[*]):SQLQuery[1]
 {
    let routed         = $f->routeFunction($m, $r, $extensions, noDebug());
    let routedFunction = $routed.functions->evaluateAndDeactivate()->toOne();
@@ -385,7 +386,7 @@ function <<access.private>> meta::pure::lineage::scanRelations::generateSQLQuery
    let sqlQuery       = $fe->toSQLQuery($m, $inScopeVars, ^RelationalExecutionContext(), noDebug(), $extensions);
 }
 
-function meta::pure::lineage::scanRelations::generateRelationTreeFromRelationalOperationElement(relOp:RelationalOperationElement[1], debug: meta::pure::tools::DebugContext[1], extensions:RouterExtension[*]):RelationTree[*]
+function meta::pure::lineage::scanRelations::generateRelationTreeFromRelationalOperationElement(relOp:RelationalOperationElement[1], debug: meta::pure::tools::DebugContext[1], extensions:Extension[*]):RelationTree[*]
 {   
    if($debug.debug, | print($debug.space + 'Generate Relation Tree From Relational Operation Element\n'), | []);
       
@@ -437,7 +438,7 @@ function meta::pure::lineage::scanRelations::generateRelationTreeFromRelationalO
    ]);
 }
 
-function <<access.private>> meta::pure::lineage::scanRelations::generateRelationTreeFromRelationalTreeNode(r: RelationalTreeNode[1], parentOperation:TableAlias[0..1], parentRelations:NamedRelation[*], parentTree:RelationTree[0..1], columns:TableAliasColumn[*], debug: meta::pure::tools::DebugContext[1], extensions:RouterExtension[*]):RelationTree[*]
+function <<access.private>> meta::pure::lineage::scanRelations::generateRelationTreeFromRelationalTreeNode(r: RelationalTreeNode[1], parentOperation:TableAlias[0..1], parentRelations:NamedRelation[*], parentTree:RelationTree[0..1], columns:TableAliasColumn[*], debug: meta::pure::tools::DebugContext[1], extensions:Extension[*]):RelationTree[*]
 {
    if($debug.debug, | print($debug.space + 'Generate RelationTree from Relational Tree Node\n'), | []);
 
@@ -530,7 +531,7 @@ function meta::pure::lineage::scanRelations::addColumnToRelationTree(tree:Relati
    );
 }
 
-function <<access.private>> meta::pure::lineage::scanRelations::processJoinFromTreeNode(j:JoinTreeNode[1], sourceOperation:TableAlias[1], sourceRelations:NamedRelation[*], targetRelation:NamedRelation[1], targetTree:RelationTree[1], sourceTree:RelationTree[1], debug:meta::pure::tools::DebugContext[1], extensions:RouterExtension[*]):Join[0..1]
+function <<access.private>> meta::pure::lineage::scanRelations::processJoinFromTreeNode(j:JoinTreeNode[1], sourceOperation:TableAlias[1], sourceRelations:NamedRelation[*], targetRelation:NamedRelation[1], targetTree:RelationTree[1], sourceTree:RelationTree[1], debug:meta::pure::tools::DebugContext[1], extensions:Extension[*]):Join[0..1]
 {
    let relationIndentifiers     = $sourceRelations->concatenate($targetRelation)->map(rel | $rel->getRelationName());
    
@@ -626,7 +627,7 @@ function <<access.private>> meta::pure::lineage::scanRelations::processJoinFromT
    ));
 }
 
-function <<access.private>> meta::pure::lineage::scanRelations::isNull(d:DynaFunction[1], extensions:RouterExtension[*]):Boolean[1]
+function <<access.private>> meta::pure::lineage::scanRelations::isNull(d:DynaFunction[1], extensions:Extension[*]):Boolean[1]
 {
    let nullEqualsNullCheck = ^DynaFunction(name = 'equal', parameters = [^Literal(value=^SQLNull()), ^Literal(value=^SQLNull())]);
    if($d.name->in(['equal' ,'or', 'and', 'group']),

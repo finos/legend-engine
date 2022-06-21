@@ -19,7 +19,7 @@ import meta::pure::profiles::*;
 
 function <<test.Test>> meta::relational::tests::query::eval::testAssociationToOneThroughEval():Boolean[1]
 {
-   let result = execute(|Person.all()->filter(p|eval(f|$f.legalName == 'Firm X' || $f.legalName == 'Firm A', $p.firm->toOne())), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->filter(p|eval(f|$f.legalName == 'Firm X' || $f.legalName == 'Firm A', $p.firm->toOne())), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 7);
    assertSameElements(['Allen', 'Smith', 'Johnson', 'New York', 'Roberts', 'Hill', 'York'], $result.values.lastName);
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where ("firmtable_0".LEGALNAME = \'Firm X\' or "firmtable_0".LEGALNAME = \'Firm A\')', $result->sqlRemoveFormatting());
@@ -27,7 +27,7 @@ function <<test.Test>> meta::relational::tests::query::eval::testAssociationToOn
 
 function <<test.Test>> meta::relational::tests::query::eval::testPredicateThroughEval():Boolean[1]
 {
-   let result = execute(|Person.all()->filter(p|eval(f|$p.lastName == 'Johnson' || $p.firstName == 'Fabrice', $p)), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->filter(p|eval(f|$p.lastName == 'Johnson' || $p.firstName == 'Fabrice', $p)), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 2);
    assertSameElements(['Johnson', 'Roberts'], $result.values.lastName);
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where ("root".LASTNAME = \'Johnson\' or "root".FIRSTNAME = \'Fabrice\')', $result->sqlRemoveFormatting());

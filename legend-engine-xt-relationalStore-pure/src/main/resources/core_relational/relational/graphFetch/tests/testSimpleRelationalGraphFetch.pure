@@ -39,7 +39,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[{"firstName":"Peter","lastName":"Smith"},{"firstName":"John","lastName":"Johnson"},'+
@@ -61,7 +61,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'}  meta::re
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '{"firstName":"John","lastName":"Hill"}',
@@ -81,7 +81,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[{"firstName":"John","lastName":"Johnson"},'+
@@ -105,7 +105,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[{"firstName":"Peter","lastName":"Smith","firm":{"legalName":"Firm X"}},'+
@@ -138,7 +138,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '['+
@@ -169,7 +169,7 @@ function <<test.Test, test.AlloyOnly, test.ToFix>> {serverVersion.start='v1_19_0
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[{"lastName":"Johnson","address":{"name":"New York"},"manager":{"lastName":"Allen","address":{"name":"New York"}}},'+
@@ -199,7 +199,7 @@ function <<test.Test, test.AlloyOnly, test.ToFix>> {serverVersion.start='v1_19_0
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertEquals(
       '[{"lastName":"Johnson","address":{"name":"New York"},"manager":{"lastName":"Allen","address":{"name":"New York"}}},'+
@@ -210,7 +210,7 @@ function <<test.Test, test.AlloyOnly, test.ToFix>> {serverVersion.start='v1_19_0
 
    let query2 = {|Person.all()->filter(x | $x.age <= 22)->sortBy(#/Person/lastName#)->graphFetch($tree)->serialize($tree)};
 
-   let result2 = execute($query2, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result2 = execute($query2, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertEquals(
       '[{"lastName":"Allen","address":{"name":"New York"},"manager":null},'+
@@ -237,7 +237,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[{"legalName":"Firm X","address":{"name":"New York"},"employees":[{"lastName":"Smith"},{"lastName":"Johnson"},{"lastName":"Hill"},{"lastName":"Allen"}]},' +
@@ -262,7 +262,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let mapping = meta::relational::tests::simpleRelationalMappingWithFilter;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '{"legalName":"Firm X","address":{"name":"New York"}}',
@@ -285,7 +285,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let mapping = meta::relational::tests::simpleRelationalMappingWithFilter;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[{"firstName":"Peter","lastName":"Smith","firm":{"legalName":"Firm X"}},'+
@@ -314,7 +314,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[{"firstName":"Peter","lastName":"Smith","firm":{"legalName":"Firm X"}},'+
@@ -349,7 +349,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_20_0'} meta::rel
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[{"objectReference":"ASOR:MDAxOjAxMDowMDAwMDAwMDEwOlJlbGF0aW9uYWw6MDAwMDAwMDA1MTptZXRhOjpyZWxhdGlvbmFsOjp0ZXN0czo6c2ltcGxlUmVsYXRpb25hbE1hcHBpbmdJbmM6MDAwMDAwMDA0MTptZXRhX3JlbGF0aW9uYWxfdGVzdHNfbW9kZWxfc2ltcGxlX1BlcnNvbjowMDAwMDAwMDQxOm1ldGFfcmVsYXRpb25hbF90ZXN0c19tb2RlbF9zaW1wbGVfUGVyc29uOjAwMDAwMDAyNTQ6eyJfdHlwZSI6IlJlbGF0aW9uYWxEYXRhYmFzZUNvbm5lY3Rpb24iLCJhdXRoZW50aWNhdGlvblN0cmF0ZWd5Ijp7Il90eXBlIjoiaDJEZWZhdWx0In0sImRhdGFzb3VyY2VTcGVjaWZpY2F0aW9uIjp7Il90eXBlIjoiaDJMb2NhbCJ9LCJlbGVtZW50IjoibWV0YTo6cmVsYXRpb25hbDo6dGVzdHM6OmRiIiwicG9zdFByb2Nlc3NvcldpdGhQYXJhbWV0ZXIiOltdLCJwb3N0UHJvY2Vzc29ycyI6W10sInRpbWVab25lIjoiR01UIiwidHlwZSI6IkgyIn06MDAwMDAwMDAxMTp7InBrJF8wIjoxfQ","value":{"firstName":"Peter","lastName":"Smith","firm":{"legalName":"Firm X","address":{"@type":"meta::relational::tests::model::simple::Address","type":"meta::relational::tests::model::simple::GeographicEntityType.CITY"},"@type":"meta::relational::tests::model::simple::Firm"},"@type":"meta::relational::tests::model::simple::Person","age":23}},{"objectReference":"ASOR:MDAxOjAxMDowMDAwMDAwMDEwOlJlbGF0aW9uYWw6MDAwMDAwMDA1MTptZXRhOjpyZWxhdGlvbmFsOjp0ZXN0czo6c2ltcGxlUmVsYXRpb25hbE1hcHBpbmdJbmM6MDAwMDAwMDA0MTptZXRhX3JlbGF0aW9uYWxfdGVzdHNfbW9kZWxfc2ltcGxlX1BlcnNvbjowMDAwMDAwMDQxOm1ldGFfcmVsYXRpb25hbF90ZXN0c19tb2RlbF9zaW1wbGVfUGVyc29uOjAwMDAwMDAyNTQ6eyJfdHlwZSI6IlJlbGF0aW9uYWxEYXRhYmFzZUNvbm5lY3Rpb24iLCJhdXRoZW50aWNhdGlvblN0cmF0ZWd5Ijp7Il90eXBlIjoiaDJEZWZhdWx0In0sImRhdGFzb3VyY2VTcGVjaWZpY2F0aW9uIjp7Il90eXBlIjoiaDJMb2NhbCJ9LCJlbGVtZW50IjoibWV0YTo6cmVsYXRpb25hbDo6dGVzdHM6OmRiIiwicG9zdFByb2Nlc3NvcldpdGhQYXJhbWV0ZXIiOltdLCJwb3N0UHJvY2Vzc29ycyI6W10sInRpbWVab25lIjoiR01UIiwidHlwZSI6IkgyIn06MDAwMDAwMDAxMTp7InBrJF8wIjoyfQ","value":{"firstName":"John","lastName":"Johnson","firm":{"legalName":"Firm X","address":{"@type":"meta::relational::tests::model::simple::Address","type":"meta::relational::tests::model::simple::GeographicEntityType.CITY"},"@type":"meta::relational::tests::model::simple::Firm"},"@type":"meta::relational::tests::model::simple::Person","age":22}},{"objectReference":"ASOR:MDAxOjAxMDowMDAwMDAwMDEwOlJlbGF0aW9uYWw6MDAwMDAwMDA1MTptZXRhOjpyZWxhdGlvbmFsOjp0ZXN0czo6c2ltcGxlUmVsYXRpb25hbE1hcHBpbmdJbmM6MDAwMDAwMDA0MTptZXRhX3JlbGF0aW9uYWxfdGVzdHNfbW9kZWxfc2ltcGxlX1BlcnNvbjowMDAwMDAwMDQxOm1ldGFfcmVsYXRpb25hbF90ZXN0c19tb2RlbF9zaW1wbGVfUGVyc29uOjAwMDAwMDAyNTQ6eyJfdHlwZSI6IlJlbGF0aW9uYWxEYXRhYmFzZUNvbm5lY3Rpb24iLCJhdXRoZW50aWNhdGlvblN0cmF0ZWd5Ijp7Il90eXBlIjoiaDJEZWZhdWx0In0sImRhdGFzb3VyY2VTcGVjaWZpY2F0aW9uIjp7Il90eXBlIjoiaDJMb2NhbCJ9LCJlbGVtZW50IjoibWV0YTo6cmVsYXRpb25hbDo6dGVzdHM6OmRiIiwicG9zdFByb2Nlc3NvcldpdGhQYXJhbWV0ZXIiOltdLCJwb3N0UHJvY2Vzc29ycyI6W10sInRpbWVab25lIjoiR01UIiwidHlwZSI6IkgyIn06MDAwMDAwMDAxMTp7InBrJF8wIjozfQ","value":{"firstName":"John","lastName":"Hill","firm":{"legalName":"Firm X","address":{"@type":"meta::relational::tests::model::simple::Address","type":"meta::relational::tests::model::simple::GeographicEntityType.CITY"},"@type":"meta::relational::tests::model::simple::Firm"},"@type":"meta::relational::tests::model::simple::Person","age":12}},{"objectReference":"ASOR:MDAxOjAxMDowMDAwMDAwMDEwOlJlbGF0aW9uYWw6MDAwMDAwMDA1MTptZXRhOjpyZWxhdGlvbmFsOjp0ZXN0czo6c2ltcGxlUmVsYXRpb25hbE1hcHBpbmdJbmM6MDAwMDAwMDA0MTptZXRhX3JlbGF0aW9uYWxfdGVzdHNfbW9kZWxfc2ltcGxlX1BlcnNvbjowMDAwMDAwMDQxOm1ldGFfcmVsYXRpb25hbF90ZXN0c19tb2RlbF9zaW1wbGVfUGVyc29uOjAwMDAwMDAyNTQ6eyJfdHlwZSI6IlJlbGF0aW9uYWxEYXRhYmFzZUNvbm5lY3Rpb24iLCJhdXRoZW50aWNhdGlvblN0cmF0ZWd5Ijp7Il90eXBlIjoiaDJEZWZhdWx0In0sImRhdGFzb3VyY2VTcGVjaWZpY2F0aW9uIjp7Il90eXBlIjoiaDJMb2NhbCJ9LCJlbGVtZW50IjoibWV0YTo6cmVsYXRpb25hbDo6dGVzdHM6OmRiIiwicG9zdFByb2Nlc3NvcldpdGhQYXJhbWV0ZXIiOltdLCJwb3N0UHJvY2Vzc29ycyI6W10sInRpbWVab25lIjoiR01UIiwidHlwZSI6IkgyIn06MDAwMDAwMDAxMTp7InBrJF8wIjo0fQ","value":{"firstName":"Anthony","lastName":"Allen","firm":{"legalName":"Firm X","address":{"@type":"meta::relational::tests::model::simple::Address","type":"meta::relational::tests::model::simple::GeographicEntityType.CITY"},"@type":"meta::relational::tests::model::simple::Firm"},"@type":"meta::relational::tests::model::simple::Person","age":22}},{"objectReference":"ASOR:MDAxOjAxMDowMDAwMDAwMDEwOlJlbGF0aW9uYWw6MDAwMDAwMDA1MTptZXRhOjpyZWxhdGlvbmFsOjp0ZXN0czo6c2ltcGxlUmVsYXRpb25hbE1hcHBpbmdJbmM6MDAwMDAwMDA0MTptZXRhX3JlbGF0aW9uYWxfdGVzdHNfbW9kZWxfc2ltcGxlX1BlcnNvbjowMDAwMDAwMDQxOm1ldGFfcmVsYXRpb25hbF90ZXN0c19tb2RlbF9zaW1wbGVfUGVyc29uOjAwMDAwMDAyNTQ6eyJfdHlwZSI6IlJlbGF0aW9uYWxEYXRhYmFzZUNvbm5lY3Rpb24iLCJhdXRoZW50aWNhdGlvblN0cmF0ZWd5Ijp7Il90eXBlIjoiaDJEZWZhdWx0In0sImRhdGFzb3VyY2VTcGVjaWZpY2F0aW9uIjp7Il90eXBlIjoiaDJMb2NhbCJ9LCJlbGVtZW50IjoibWV0YTo6cmVsYXRpb25hbDo6dGVzdHM6OmRiIiwicG9zdFByb2Nlc3NvcldpdGhQYXJhbWV0ZXIiOltdLCJwb3N0UHJvY2Vzc29ycyI6W10sInRpbWVab25lIjoiR01UIiwidHlwZSI6IkgyIn06MDAwMDAwMDAxMTp7InBrJF8wIjo1fQ","value":{"firstName":"Fabrice","lastName":"Roberts","firm":{"legalName":"Firm A","address":{"@type":"meta::relational::tests::model::simple::Address","type":"meta::relational::tests::model::simple::GeographicEntityType.CITY"},"@type":"meta::relational::tests::model::simple::Firm"},"@type":"meta::relational::tests::model::simple::Person","age":34}},{"objectReference":"ASOR:MDAxOjAxMDowMDAwMDAwMDEwOlJlbGF0aW9uYWw6MDAwMDAwMDA1MTptZXRhOjpyZWxhdGlvbmFsOjp0ZXN0czo6c2ltcGxlUmVsYXRpb25hbE1hcHBpbmdJbmM6MDAwMDAwMDA0MTptZXRhX3JlbGF0aW9uYWxfdGVzdHNfbW9kZWxfc2ltcGxlX1BlcnNvbjowMDAwMDAwMDQxOm1ldGFfcmVsYXRpb25hbF90ZXN0c19tb2RlbF9zaW1wbGVfUGVyc29uOjAwMDAwMDAyNTQ6eyJfdHlwZSI6IlJlbGF0aW9uYWxEYXRhYmFzZUNvbm5lY3Rpb24iLCJhdXRoZW50aWNhdGlvblN0cmF0ZWd5Ijp7Il90eXBlIjoiaDJEZWZhdWx0In0sImRhdGFzb3VyY2VTcGVjaWZpY2F0aW9uIjp7Il90eXBlIjoiaDJMb2NhbCJ9LCJlbGVtZW50IjoibWV0YTo6cmVsYXRpb25hbDo6dGVzdHM6OmRiIiwicG9zdFByb2Nlc3NvcldpdGhQYXJhbWV0ZXIiOltdLCJwb3N0UHJvY2Vzc29ycyI6W10sInRpbWVab25lIjoiR01UIiwidHlwZSI6IkgyIn06MDAwMDAwMDAxMTp7InBrJF8wIjo2fQ","value":{"firstName":"Oliver","lastName":"Hill","firm":{"legalName":"Firm B","address":{"@type":"meta::relational::tests::model::simple::Address","type":"meta::relational::tests::model::simple::GeographicEntityType.CITY"},"@type":"meta::relational::tests::model::simple::Firm"},"@type":"meta::relational::tests::model::simple::Person","age":32}},{"objectReference":"ASOR:MDAxOjAxMDowMDAwMDAwMDEwOlJlbGF0aW9uYWw6MDAwMDAwMDA1MTptZXRhOjpyZWxhdGlvbmFsOjp0ZXN0czo6c2ltcGxlUmVsYXRpb25hbE1hcHBpbmdJbmM6MDAwMDAwMDA0MTptZXRhX3JlbGF0aW9uYWxfdGVzdHNfbW9kZWxfc2ltcGxlX1BlcnNvbjowMDAwMDAwMDQxOm1ldGFfcmVsYXRpb25hbF90ZXN0c19tb2RlbF9zaW1wbGVfUGVyc29uOjAwMDAwMDAyNTQ6eyJfdHlwZSI6IlJlbGF0aW9uYWxEYXRhYmFzZUNvbm5lY3Rpb24iLCJhdXRoZW50aWNhdGlvblN0cmF0ZWd5Ijp7Il90eXBlIjoiaDJEZWZhdWx0In0sImRhdGFzb3VyY2VTcGVjaWZpY2F0aW9uIjp7Il90eXBlIjoiaDJMb2NhbCJ9LCJlbGVtZW50IjoibWV0YTo6cmVsYXRpb25hbDo6dGVzdHM6OmRiIiwicG9zdFByb2Nlc3NvcldpdGhQYXJhbWV0ZXIiOltdLCJwb3N0UHJvY2Vzc29ycyI6W10sInRpbWVab25lIjoiR01UIiwidHlwZSI6IkgyIn06MDAwMDAwMDAxMTp7InBrJF8wIjo3fQ","value":{"firstName":"David","lastName":"Harris","firm":{"legalName":"Firm C","address":{"@type":"meta::relational::tests::model::simple::Address","type":"meta::relational::tests::model::simple::GeographicEntityType.CITY"},"@type":"meta::relational::tests::model::simple::Firm"},"@type":"meta::relational::tests::model::simple::Person","age":35}}]',
@@ -369,7 +369,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    }#;
    let alloyConfig = alloyConfig(true, true, true, true, '@type', true, true);
    let query1 = {|Person.all()->graphFetch($tree1)->serialize($tree1, $alloyConfig)};
-   let result1 = execute($query1, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result1 = execute($query1, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
    let references = $result1->meta::json::parseJSON()->cast(@meta::json::JSONArray).values->cast(@meta::json::JSONObject)
                        ->map(x | $x->meta::json::getValue('objectReference')->cast(@meta::json::JSONString).value);
    assertSameElements(
@@ -397,7 +397,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
 
    let referenceSubset = $references->take(3);
    let query2 = {|Person.all()->filter(p | $p->objectReferenceIn($referenceSubset))->graphFetch($tree2)->serialize($tree2)};
-   let result2 = execute($query2, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result2 = execute($query2, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[{"firstName":"Peter","lastName":"Smith","firm":{"legalName":"Firm X"}},'+
@@ -419,7 +419,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let mapping = meta::relational::tests::PersonOtherNamesMapping;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[{"firstName":"Peter","otherNames":["abc","def","ghi"]},' +
@@ -462,7 +462,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let mapping = meta::relational::tests::mapping::dataType::model::mapping::testMapping;
    let runtime = meta::relational::tests::mapping::dataType::model::store::testDataTypeMappingRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[{"date":"2003-07-19","floatAsDecimal":1.1,"double":2.2,"varchar":"Something","numeric":1.23456,"tinyInt":1,"integer":3,"float":1.1,"bit":true,"smallInt":2,"char":"c","numericAsFloat":1.23456,"decimal":1.234,"bigInt":1000,"timestamp":"2003-07-19T00:00:00.000000000","decimalAsFloat":1.234},'+
@@ -489,7 +489,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
                     )
                  );
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[{"legalName":"Firm X","employees":[]},{"legalName":"Firm A","employees":[]},{"legalName":"Firm B","employees":[]},{"legalName":"Firm C","employees":[]}]',
@@ -509,7 +509,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[{"pnl":100.0,"supportContactName":"Peter Smith"},' +
@@ -536,7 +536,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[{"pnl":100.0,"supportContactName":"Peter Smith","order":{"date":"2014-12-01","quantity":25.0,"id":1}},' +
@@ -569,7 +569,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[' +
@@ -694,7 +694,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[{"name":"Account 1","orders":[{"pnlContact":{"name":"Peter Smith"},"id":1,"pnl":100.0},{"pnlContact":null,"id":3,"pnl":null}]},' +
@@ -717,7 +717,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[{"name":"Account 1","accountPnl":{"pnl":100.0}},' +
@@ -738,7 +738,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[{"firstName":"Peter","name()":"Peter Smith"},'+
@@ -765,7 +765,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[{"firstName":"Peter","fullName(false)":"Peter Smith","nameWithTitle(\'Mr\')":"Mr Peter Smith"},'+
@@ -792,7 +792,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[{"firstName":"Peter","fn":"Peter Smith","title":"Mr Peter Smith"},'+
@@ -824,7 +824,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[{"legalName":"Firm X","address":{"name":"New York"},"employees":[{"fn":"Smith, Peter","age":23},{"fn":"Johnson, John","age":22},{"fn":"Hill, John","age":12},{"fn":"Allen, Anthony","age":22}]},' +
@@ -847,7 +847,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[{"name":"Firm X","cusip()":"CUSIP1"},'+
@@ -871,7 +871,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[{"name":"Firm X","cusip()":"CUSIP1", "isin()":"ISIN1"},'+
@@ -896,7 +896,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[{"name":"Firm X","CUSIP":{"name":"CUSIP1"}},'+
@@ -922,7 +922,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[{"legalName":"Firm X","averageEmployeesAge()":39.5,"employees":[{"fn":"Smith, Peter","age":23},{"fn":"Johnson, John","age":22},{"fn":"Hill, John","age":12},{"fn":"Allen, Anthony","age":22}]},' +
@@ -945,7 +945,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[{"id":9,"prod":"Firm C"},'+
@@ -967,7 +967,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[{"id":9,"acc":"Account 2"},'+
@@ -991,7 +991,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[{"id":1,"init":{"firstName":"Peter"}},'+
@@ -1026,7 +1026,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[{"firstName":"Peter","fullName(false)":"Peter Smith","nwt":"Mr Peter Smith"},'+
@@ -1067,7 +1067,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[{"firstName":"Peter","fullName($boolVar)":"Peter Smith","nwt":"Mr Peter Smith"},'+
@@ -1093,7 +1093,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[{"synonyms":[],"name":"Firm X"},{"synonyms":[],"name":"Firm A"},{"synonyms":[],"name":"Firm C"},{"synonyms":[],"name":"Firm D"}]',
@@ -1118,7 +1118,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[{"synonyms":[{"typeAsString":"CUSIP","name":"CUSIP1","type":"CUSIP"}],"name":"Firm X"},'+
@@ -1146,7 +1146,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[{"synonyms":[{"typeAsString":"CUSIP","name":"CUSIP1","type":"CUSIP"},{"typeAsString":"ISIN","name":"ISIN1","type":"ISIN"}],"name":"Firm X"},' +
@@ -1169,7 +1169,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_21_0'} meta::rel
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[ { "defects": [ { "id": "firstNameTest", "externalId": null, "message": "First name has to be test", "enforcementLevel": "Error", "ruleType": "ClassConstraint", "ruleDefinerPath": "meta::relational::tests::model::simple::PersonWithConstraints", "path": [] } ], "value": { "firstName": "Peter", "lastName": "Smith" } }, { "defects": [ { "id": "firstNameTest", "externalId": null, "message": "First name has to be test", "enforcementLevel": "Error", "ruleType": "ClassConstraint", "ruleDefinerPath": "meta::relational::tests::model::simple::PersonWithConstraints", "path": [] } ], "value": { "firstName": "John", "lastName": "Johnson" } }, { "defects": [ { "id": "firstNameTest", "externalId": null, "message": "First name has to be test", "enforcementLevel": "Error", "ruleType": "ClassConstraint", "ruleDefinerPath": "meta::relational::tests::model::simple::PersonWithConstraints", "path": [] } ], "value": { "firstName": "John", "lastName": "Hill" } }, { "defects": [ { "id": "firstNameTest", "externalId": null, "message": "First name has to be test", "enforcementLevel": "Error", "ruleType": "ClassConstraint", "ruleDefinerPath": "meta::relational::tests::model::simple::PersonWithConstraints", "path": [] } ], "value": { "firstName": "Anthony", "lastName": "Allen" } }, { "defects": [ { "id": "firstNameTest", "externalId": null, "message": "First name has to be test", "enforcementLevel": "Error", "ruleType": "ClassConstraint", "ruleDefinerPath": "meta::relational::tests::model::simple::PersonWithConstraints", "path": [] } ], "value": { "firstName": "Fabrice", "lastName": "Roberts" } }, { "defects": [ { "id": "firstNameTest", "externalId": null, "message": "First name has to be test", "enforcementLevel": "Error", "ruleType": "ClassConstraint", "ruleDefinerPath": "meta::relational::tests::model::simple::PersonWithConstraints", "path": [] } ], "value": { "firstName": "Oliver", "lastName": "Hill" } }, { "defects": [ { "id": "firstNameTest", "externalId": null, "message": "First name has to be test", "enforcementLevel": "Error", "ruleType": "ClassConstraint", "ruleDefinerPath": "meta::relational::tests::model::simple::PersonWithConstraints", "path": [] } ], "value": { "firstName": "David", "lastName": "Harris" } }]',
@@ -1189,7 +1189,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_21_0'} meta::rel
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[{"defects":[],"value":{"firstName":"Peter","lastName":"Smith"}},{"defects":[],"value":{"firstName":"John","lastName":"Johnson"}},{"defects":[],"value":{"firstName":"John","lastName":"Hill"}},{"defects":[],"value":{"firstName":"Anthony","lastName":"Allen"}},{"defects":[],"value":{"firstName":"Fabrice","lastName":"Roberts"}},{"defects":[],"value":{"firstName":"Oliver","lastName":"Hill"}},{"defects":[],"value":{"firstName":"David","lastName":"Harris"}}]',
@@ -1212,7 +1212,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_21_0'} meta::rel
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[{"defects":[{"path":[],"enforcementLevel":"Error","ruleType":"ClassConstraint","externalId":null,"id":"firstNameTest","ruleDefinerPath":"meta::relational::tests::model::simple::PersonWithConstraints","message":"First name has to be test"}],"value":{"firstName":"Peter","lastName":"Smith","firm":{"legalName":"Firm X"}}},{"defects":[{"path":[],"enforcementLevel":"Error","ruleType":"ClassConstraint","externalId":null,"id":"firstNameTest","ruleDefinerPath":"meta::relational::tests::model::simple::PersonWithConstraints","message":"First name has to be test"}],"value":{"firstName":"John","lastName":"Johnson","firm":{"legalName":"Firm X"}}},{"defects":[{"path":[],"enforcementLevel":"Error","ruleType":"ClassConstraint","externalId":null,"id":"firstNameTest","ruleDefinerPath":"meta::relational::tests::model::simple::PersonWithConstraints","message":"First name has to be test"}],"value":{"firstName":"John","lastName":"Hill","firm":{"legalName":"Firm X"}}},{"defects":[{"path":[],"enforcementLevel":"Error","ruleType":"ClassConstraint","externalId":null,"id":"firstNameTest","ruleDefinerPath":"meta::relational::tests::model::simple::PersonWithConstraints","message":"First name has to be test"}],"value":{"firstName":"Anthony","lastName":"Allen","firm":{"legalName":"Firm X"}}},{"defects":[{"path":[],"enforcementLevel":"Error","ruleType":"ClassConstraint","externalId":null,"id":"firstNameTest","ruleDefinerPath":"meta::relational::tests::model::simple::PersonWithConstraints","message":"First name has to be test"}],"value":{"firstName":"Fabrice","lastName":"Roberts","firm":{"legalName":"Firm A"}}},{"defects":[{"path":[],"enforcementLevel":"Error","ruleType":"ClassConstraint","externalId":null,"id":"firstNameTest","ruleDefinerPath":"meta::relational::tests::model::simple::PersonWithConstraints","message":"First name has to be test"}],"value":{"firstName":"Oliver","lastName":"Hill","firm":{"legalName":"Firm B"}}},{"defects":[{"path":[],"enforcementLevel":"Error","ruleType":"ClassConstraint","externalId":null,"id":"firstNameTest","ruleDefinerPath":"meta::relational::tests::model::simple::PersonWithConstraints","message":"First name has to be test"}],"value":{"firstName":"David","lastName":"Harris","firm":{"legalName":"Firm C"}}}]',
@@ -1235,7 +1235,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_21_0'} meta::rel
   let mapping = meta::pure::executionPlan::constraints::tests::simpleRel;
   let runtime = meta::relational::tests::testRuntime(meta::pure::executionPlan::constraints::tests::db);
 
-  let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+  let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
   //  toFix: after fixing isDistinct related bug this test should expect:
   // '[{"defects":[],"value":{"firstName":"Peter","firm":{"legalName": "Firm Y"}}},{"defects":[],"value":{"firstName":"John","firm":{"legalName": "Firm Y"}}},{"defects":[],"value":{"firstName":"Ann","firm":{"legalName": "Firm X"}}},{"defects":[],"value":{"firstName":"Carol","firm":{"legalName": "Firm X"}}}]',

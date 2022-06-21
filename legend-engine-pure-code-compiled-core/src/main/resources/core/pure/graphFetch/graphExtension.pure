@@ -78,12 +78,12 @@ function <<access.private>> meta::pure::graphFetch::forSameProperty(t1:PropertyG
 }
 
 
-function meta::pure::graphFetch::addXStoreProperties(node:RoutedRootGraphFetchTree<Any>[1], extensions:meta::pure::router::extension::RouterExtension[*]): RoutedRootGraphFetchTree<Any>[1]
+function meta::pure::graphFetch::addXStoreProperties(node:RoutedRootGraphFetchTree<Any>[1], extensions:meta::pure::extension::Extension[*]): RoutedRootGraphFetchTree<Any>[1]
 {
    $node->addXStorePropertiesInternal($extensions)->cast(@RoutedRootGraphFetchTree<Any>);
 }
 
-function <<access.private>> meta::pure::graphFetch::addXStorePropertiesInternal(node:RoutedGraphFetchTree[1], extensions:meta::pure::router::extension::RouterExtension[*]): RoutedGraphFetchTree[1]
+function <<access.private>> meta::pure::graphFetch::addXStorePropertiesInternal(node:RoutedGraphFetchTree[1], extensions:meta::pure::extension::Extension[*]): RoutedGraphFetchTree[1]
 {
    let currentSubTreeProperties                    = $node.subTrees->cast(@RoutedPropertyGraphFetchTree).property;
    let srcClass                                    = $node->typeFromGraphFetchTree()->cast(@Class<Any>)->toOne();
@@ -327,7 +327,7 @@ function meta::pure::graphFetch::ensureFunctionRequirements(node:GraphFetchTree[
    );
 }
 
-function meta::pure::graphFetch::calculateSourceTree(tree:RootGraphFetchTree<Any>[1], mapping: Mapping[1], extensions:meta::pure::router::extension::RouterExtension[*]): RootGraphFetchTree<Any>[1]
+function meta::pure::graphFetch::calculateSourceTree(tree:RootGraphFetchTree<Any>[1], mapping: Mapping[1], extensions:meta::pure::extension::Extension[*]): RootGraphFetchTree<Any>[1]
 {
    let replaced = $tree->replaceQualifiedPropertiesWithRequiredProperties();
    
@@ -367,7 +367,7 @@ function <<access.private>> meta::pure::graphFetch::mergePropertiesFromBaseSubTr
 }
 
 
-function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForProperty(srcNode:GraphFetchTree[1], setImplementation: PureInstanceSetImplementation[1], tgtPgft:PropertyGraphFetchTree[1], extensions:meta::pure::router::extension::RouterExtension[*]): GraphFetchTree[1]
+function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForProperty(srcNode:GraphFetchTree[1], setImplementation: PureInstanceSetImplementation[1], tgtPgft:PropertyGraphFetchTree[1], extensions:meta::pure::extension::Extension[*]): GraphFetchTree[1]
 {
    let owner = $srcNode->match([
       r:RootGraphFetchTree<Any>[1] | $r.class,
@@ -472,7 +472,7 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForPrope
    );
 }
 
-function <<access.private>> meta::pure::graphFetch::getSubTreeNodesAtPath(srcNode:PropertyGraphFetchTree[1], path:List<PropertyPathNode>[1], setClasses: Class<Any>[*], extensions:meta::pure::router::extension::RouterExtension[*]): PropertyGraphFetchTree[*]
+function <<access.private>> meta::pure::graphFetch::getSubTreeNodesAtPath(srcNode:PropertyGraphFetchTree[1], path:List<PropertyPathNode>[1], setClasses: Class<Any>[*], extensions:meta::pure::extension::Extension[*]): PropertyGraphFetchTree[*]
 {
    let head = $path.values->at(0);
    let tail = $path.values->tail();
@@ -502,7 +502,7 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForPrope
                                                  ->fold({path, gt| $gt->recordQualifiedProperties($path)}, $withFoundProperties);
 }
 
-function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNode(srcNode:GraphFetchTree[1], setImplementation: PureInstanceSetImplementation[1], tgtNode:GraphFetchTree[1], extensions:meta::pure::router::extension::RouterExtension[*]): GraphFetchTree[1]
+function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNode(srcNode:GraphFetchTree[1], setImplementation: PureInstanceSetImplementation[1], tgtNode:GraphFetchTree[1], extensions:meta::pure::extension::Extension[*]): GraphFetchTree[1]
 {
    let setContainsExplodeProperty = $setImplementation.propertyMappings->filter(pm|if($pm->instanceOf(PurePropertyMapping),| $pm->cast(@PurePropertyMapping).explodeProperty->isTrue(), |false))->isNotEmpty();
    let subTreeProperties          = $tgtNode.subTrees->cast(@PropertyGraphFetchTree).property.name;
@@ -521,7 +521,7 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNode(srcNode
    );
 }
 
-function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeAtPath(srcNode:GraphFetchTree[1], path:List<PropertyPathNode>[1], setImplementation: PureInstanceSetImplementation[1], tgtPgft:PropertyGraphFetchTree[1], extensions:meta::pure::router::extension::RouterExtension[*]): GraphFetchTree[1]
+function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeAtPath(srcNode:GraphFetchTree[1], path:List<PropertyPathNode>[1], setImplementation: PureInstanceSetImplementation[1], tgtPgft:PropertyGraphFetchTree[1], extensions:meta::pure::extension::Extension[*]): GraphFetchTree[1]
 {
    let head = $path.values->at(0);
    let tail = $path.values->tail();

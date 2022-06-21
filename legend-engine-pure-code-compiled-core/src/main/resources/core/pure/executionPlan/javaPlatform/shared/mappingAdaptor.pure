@@ -36,13 +36,13 @@ import meta::pure::metamodel::constraint::*;
 import meta::pure::milestoning::*;
 
 // TODO Merge with below
-function <<access.private>> meta::pure::executionPlan::engine::java::generateMappingApplication(tree:RoutedRootGraphFetchTree<Any>[1], context:GenerationContext[1], createConstraintChecking: Boolean[1], extensions : meta::pure::router::extension::RouterExtension[*], debug: DebugContext[1]): Project[1]
+function <<access.private>> meta::pure::executionPlan::engine::java::generateMappingApplication(tree:RoutedRootGraphFetchTree<Any>[1], context:GenerationContext[1], createConstraintChecking: Boolean[1], extensions : meta::pure::extension::Extension[*], debug: DebugContext[1]): Project[1]
 {
    print(if($debug.debug,|$debug.space+'generateMappingApplication\n', |''));
    $tree->generateMappingClasses($context, $createConstraintChecking, $extensions, $debug->indent());
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::generateMappingClasses(tree:RoutedGraphFetchTree[1], context:GenerationContext[1], createConstraintChecking: Boolean[1], extensions : meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]): Project[1]
+function <<access.private>> meta::pure::executionPlan::engine::java::generateMappingClasses(tree:RoutedGraphFetchTree[1], context:GenerationContext[1], createConstraintChecking: Boolean[1], extensions : meta::pure::extension::Extension[*], debug:DebugContext[1]): Project[1]
 {
    print(if($debug.debug,|$debug.space+'generateMappingClasses\n', |''));
 
@@ -60,7 +60,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::generateMap
    ]);
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::generateMapperClass(setImplementation:InstanceSetImplementation[1], context:GenerationContext[1], extensions : meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]): Project[1]
+function <<access.private>> meta::pure::executionPlan::engine::java::generateMapperClass(setImplementation:InstanceSetImplementation[1], context:GenerationContext[1], extensions : meta::pure::extension::Extension[*], debug:DebugContext[1]): Project[1]
 {
    let conventions       = $context.conventions;
 
@@ -96,7 +96,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::generateMap
                                                                             targetMany:meta::external::language::java::metamodel::Type[1],
                                                                             sourceOne:meta::external::language::java::metamodel::Class[1],
                                                                             sourceMany:meta::external::language::java::metamodel::Type[1],
-                                                                            extensions : meta::pure::router::extension::RouterExtension[*],
+                                                                            extensions : meta::pure::extension::Extension[*],
                                                                             debug:DebugContext[1]
                                                                            ):Project[1]
 {
@@ -118,7 +118,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::addMapMetho
                                                                       targetMany:meta::external::language::java::metamodel::Type[1],
                                                                       sourceOne:meta::external::language::java::metamodel::Class[1],
                                                                       sourceMany:meta::external::language::java::metamodel::Type[1],
-                                                                      extensions : meta::pure::router::extension::RouterExtension[*],
+                                                                      extensions : meta::pure::extension::Extension[*],
                                                                       debug:DebugContext[1]
                                                                       ):meta::external::language::java::metamodel::project::Project[1]
 {
@@ -137,7 +137,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::addMapOneMe
                                                                         targetMany:meta::external::language::java::metamodel::Type[1],
                                                                         sourceOne:meta::external::language::java::metamodel::Class[1],
                                                                         sourceMany:meta::external::language::java::metamodel::Type[1],
-                                                                        extensions : meta::pure::router::extension::RouterExtension[*],
+                                                                        extensions : meta::pure::extension::Extension[*],
                                                                         debug:DebugContext[1]
                                                                         ):meta::external::language::java::metamodel::project::Project[1]
 {
@@ -217,7 +217,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::addMapManyM
    );
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::variableName(setImplementation:InstanceSetImplementation[1], extensions : meta::pure::router::extension::RouterExtension[*]): String[1]
+function <<access.private>> meta::pure::executionPlan::engine::java::variableName(setImplementation:InstanceSetImplementation[1], extensions : meta::pure::extension::Extension[*]): String[1]
 {
    $setImplementation->toOne()->match(
             $extensions.java_mappingAdaptor->concatenate([
@@ -226,7 +226,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::variableNam
    );
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::generateMappingAdaptor(tree:RoutedGraphFetchTree[1], context:GenerationContext[1], createConstraintChecking: Boolean[1], extensions : meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]): Project[1]
+function <<access.private>> meta::pure::executionPlan::engine::java::generateMappingAdaptor(tree:RoutedGraphFetchTree[1], context:GenerationContext[1], createConstraintChecking: Boolean[1], extensions : meta::pure::extension::Extension[*], debug:DebugContext[1]): Project[1]
 {
    print(if($debug.debug,|$debug.space+'generateMappingAdaptor: '+$tree.sets.id->joinStrings()+'\n', |''));
    let conventions             = $context.conventions;
@@ -320,7 +320,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::generateMap
    )->toOneMany()->mergeProjects();
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::generateMappingAdaptorPropertyGetter(p:AbstractProperty<Any>[1], setImplementation:InstanceSetImplementation[1], tree:RoutedGraphFetchTree[1], class:meta::external::language::java::metamodel::Class[1], conventions:Conventions[1], extensions : meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]): Project[1]
+function <<access.private>> meta::pure::executionPlan::engine::java::generateMappingAdaptorPropertyGetter(p:AbstractProperty<Any>[1], setImplementation:InstanceSetImplementation[1], tree:RoutedGraphFetchTree[1], class:meta::external::language::java::metamodel::Class[1], conventions:Conventions[1], extensions : meta::pure::extension::Extension[*], debug:DebugContext[1]): Project[1]
 {
    print(if($debug.debug,|$debug.space+'generateMappingAdaptorPropertyGetter: \''+$p.name->toOne()+'\'\n', |''));
 
@@ -446,7 +446,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::generateMap
    );
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::generatePropertyMapping(propertyMapping:PropertyMapping[1], setImplementation:InstanceSetImplementation[1], tree:RoutedGraphFetchTree[1], class:meta::external::language::java::metamodel::Class[1], conventions:Conventions[1], extensions : meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]): Code[1]
+function <<access.private>> meta::pure::executionPlan::engine::java::generatePropertyMapping(propertyMapping:PropertyMapping[1], setImplementation:InstanceSetImplementation[1], tree:RoutedGraphFetchTree[1], class:meta::external::language::java::metamodel::Class[1], conventions:Conventions[1], extensions : meta::pure::extension::Extension[*], debug:DebugContext[1]): Code[1]
 {
    print(if($debug.debug,|$debug.space+'generatePropertyMapping: \''+$propertyMapping.property.name->toOne()+'\'\n', |''));
 
@@ -499,7 +499,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::generatePro
 
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::applyTransformer(expression:Code[1], transformer:ValueTransformer<Any>[1], setImplementation:InstanceSetImplementation[1], conventions:Conventions[1], extensions : meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]):Code[1]
+function <<access.private>> meta::pure::executionPlan::engine::java::applyTransformer(expression:Code[1], transformer:ValueTransformer<Any>[1], setImplementation:InstanceSetImplementation[1], conventions:Conventions[1], extensions : meta::pure::extension::Extension[*], debug:DebugContext[1]):Code[1]
 {
    print(if($debug.debug,|$debug.space+'applyTransformer\n', |''));
 
@@ -512,7 +512,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::applyTransf
       ->dependsOn(newDependency($transformerClass->typeToString(), $transformerClass));
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::generateTransformer(transformer: ValueTransformer<Any>[1], setImplementation:SetImplementation[1], conventions:Conventions[1], extensions : meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]): meta::external::language::java::metamodel::Class[1]
+function <<access.private>> meta::pure::executionPlan::engine::java::generateTransformer(transformer: ValueTransformer<Any>[1], setImplementation:SetImplementation[1], conventions:Conventions[1], extensions : meta::pure::extension::Extension[*], debug:DebugContext[1]): meta::external::language::java::metamodel::Class[1]
 {
    let em = $transformer->cast(@EnumerationMapping<Any>);
    print(if($debug.debug,|$debug.space+'generateTransformer: \''+$em.name->toOne()+'\'\n', |''));
@@ -599,7 +599,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::generateExp
                                                                                    targetMany:meta::external::language::java::metamodel::Type[1],
                                                                                    sourceOne:meta::external::language::java::metamodel::Class[1],
                                                                                    sourceMany:meta::external::language::java::metamodel::Type[1],
-                                                                                   extensions : meta::pure::router::extension::RouterExtension[*],
+                                                                                   extensions : meta::pure::extension::Extension[*],
                                                                                    debug:DebugContext[1]):Project[1]
 {
    let srcOneVar  = javaParam($sourceOne, $setImplementation->variableName($extensions));
@@ -648,7 +648,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::generateExp
                                                                                       milestonedProperties:QualifiedProperty<Any>[*],
                                                                                       nonMilestonedProperties:QualifiedProperty<Any>[*],
                                                                                       context:GenerationContext[1],
-                                                                                      extensions : meta::pure::router::extension::RouterExtension[*],
+                                                                                      extensions : meta::pure::extension::Extension[*],
                                                                                       debug:DebugContext[1]):Project[1]
 {
    let class = $preImportClass->addExplodeTargetField($setImplementation, $conventions);

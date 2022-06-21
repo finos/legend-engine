@@ -34,7 +34,7 @@ Class meta::pure::runtime::ExtendedExecutionContext extends meta::pure::runtime:
 }
 
 
-function meta::pure::runtime::runtimeEquality(a:Runtime[0..1], b:Runtime[0..1], extensions : meta::pure::router::extension::RouterExtension[*]):Boolean[1]
+function meta::pure::runtime::runtimeEquality(a:Runtime[0..1], b:Runtime[0..1], extensions : meta::pure::extension::Extension[*]):Boolean[1]
 {   
    if($a->isEmpty() && $b->isEmpty(), 
        |true,
@@ -45,7 +45,7 @@ function meta::pure::runtime::runtimeEquality(a:Runtime[0..1], b:Runtime[0..1], 
            |false));
 }
 
-function meta::pure::runtime::connectionEquality(a:Connection[1], b:Connection[1], extensions : meta::pure::router::extension::RouterExtension[*]):Boolean[1]
+function meta::pure::runtime::connectionEquality(a:Connection[1], b:Connection[1], extensions : meta::pure::extension::Extension[*]):Boolean[1]
 {
    //TODO  post processors are currently ignored in the equality
    

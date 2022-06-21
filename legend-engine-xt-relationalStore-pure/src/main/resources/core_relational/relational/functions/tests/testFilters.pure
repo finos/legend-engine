@@ -20,7 +20,7 @@ import meta::relational::tests::*;
 
 function <<test.Test>> meta::relational::tests::query::filter::equal::testSelectEqual():Boolean[1]
 {
-   let result = execute(|Person.all()->filter(p|$p.firstName == 'John'), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->filter(p|$p.firstName == 'John'), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 2);
    assertSameElements(['Johnson', 'Hill'], $result.values->map(p|$p.lastName));
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME = \'John\'', $result->sqlRemoveFormatting());
@@ -28,7 +28,7 @@ function <<test.Test>> meta::relational::tests::query::filter::equal::testSelect
 
 function <<test.Test>> meta::relational::tests::query::filter::lessThanEqual::testLessThanEqualString():Boolean[1]
 {
-   let result = execute(|Person.all()->filter(p|$p.firstName <= 'John'), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->filter(p|$p.firstName <= 'John'), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 7);
    assertSameElements(['Allen', 'Johnson', 'Harris', 'New York', 'Firm B', 'Roberts', 'Hill'], $result.values->map(p|$p.lastName));
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME <= \'John\'', $result->sqlRemoveFormatting());
@@ -36,7 +36,7 @@ function <<test.Test>> meta::relational::tests::query::filter::lessThanEqual::te
 
 function <<test.Test>> meta::relational::tests::query::filter::greaterThanEqual::testGreaterThanEqualString():Boolean[1]
 {
-   let result = execute(|Person.all()->filter(p|$p.firstName >= 'John'), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->filter(p|$p.firstName >= 'John'), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 7);
    assertSameElements(['Hill', 'Smith', 'Johnson', 'Smith', 'Hill', 'York', 'no Firm'], $result.values->map(p|$p.lastName));
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME >= \'John\'', $result->sqlRemoveFormatting());
@@ -44,7 +44,7 @@ function <<test.Test>> meta::relational::tests::query::filter::greaterThanEqual:
 
 function <<test.Test>> meta::relational::tests::query::filter::notEqual::testSelectNotEqual():Boolean[1]
 {
-   let result = execute(|Person.all()->filter(p | $p.firstName != 'John'), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->filter(p | $p.firstName != 'John'), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 10);
    assertSameElements(['Allen', 'Hill', 'Smith', 'Harris', 'New York', 'Firm B', 'Roberts', 'Smith', 'York', 'no Firm'], $result.values->map(p|$p.lastName));
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where ("root".FIRSTNAME <> \'John\' OR "root".FIRSTNAME is null)', $result->sqlRemoveFormatting());
@@ -52,7 +52,7 @@ function <<test.Test>> meta::relational::tests::query::filter::notEqual::testSel
 
 function <<test.Test>> meta::relational::tests::query::filter::notEqual::testSelectNotEqualWithEnumMappedToConstant():Boolean[1]
 {
-   let result = execute(|Synonym.all()->filter( s | $s.type != 'ISIN'), simpleRelationalMappingWithEnumConstant, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Synonym.all()->filter( s | $s.type != 'ISIN'), simpleRelationalMappingWithEnumConstant, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 6);
    assertSameElements(['CUSIP2', 'CUSIP1', 'CUSIP3', 'ISIN2', 'ISIN1', 'ISIN3'], $result.values->map(p|$p.name));
    assertEquals('select "root".ID as "pk_0", "root".NAME as "name", \'CUSIP\' as "type" from productSchema.synonymTable as "root" where (\'CUSIP\' <> \'ISIN\')', $result->sqlRemoveFormatting());
@@ -60,18 +60,18 @@ function <<test.Test>> meta::relational::tests::query::filter::notEqual::testSel
 
 function <<test.Test>> meta::relational::tests::query::filter::equal::testSelectConstantPredicate():Boolean[1]
 {
-   let result = execute(|Person.all()->filter({p|'a' == 'a'}), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->filter({p|'a' == 'a'}), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 12);
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where \'a\' = \'a\'', $result->sqlRemoveFormatting());
 
-   let result2 = execute(|Person.all()->filter({p|1 == 1}), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result2 = execute(|Person.all()->filter({p|1 == 1}), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result2.values, 12);
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where 1 = 1', $result2->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::query::filter::combinations::testSelectEqualAnd():Boolean[1]
 {
-   let result = execute(|Person.all()->filter(p|$p.firstName == 'John' && $p.lastName == 'Johnson'), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->filter(p|$p.firstName == 'John' && $p.lastName == 'Johnson'), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 1);
    assertEquals('Johnson', $result.values->toOne().lastName);
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where ("root".FIRSTNAME = \'John\' and "root".LASTNAME = \'Johnson\')', $result->sqlRemoveFormatting());
@@ -79,7 +79,7 @@ function <<test.Test>> meta::relational::tests::query::filter::combinations::tes
 
 function <<test.Test>> meta::relational::tests::query::filter::combinations::testSelectNotEqualNotAnd():Boolean[1]
 {
-   let result = execute(|Person.all()->filter(p | !(($p.firstName == 'John') && ($p.lastName != 'Johnson'))), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->filter(p | !(($p.firstName == 'John') && ($p.lastName != 'Johnson'))), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 11);
    assertSameElements(['Allen', 'Hill', 'Smith', 'Johnson', 'Harris', 'New York', 'Firm B', 'Roberts', 'Smith', 'York', 'no Firm'], $result.values->map(p | $p.lastName));
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where not ("root".FIRSTNAME = \'John\' and ("root".LASTNAME <> \'Johnson\' OR "root".LASTNAME is null))', $result->sqlRemoveFormatting());
@@ -87,12 +87,12 @@ function <<test.Test>> meta::relational::tests::query::filter::combinations::tes
 
 function <<test.Test>> meta::relational::tests::query::filter::combinations::testGrouping():Boolean[1]
 {
-   let result = execute(|Person.all()->filter(p|$p.firstName == 'John' && ($p.lastName == 'Johnson' || $p.lastName == 'Allen')), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->filter(p|$p.firstName == 'John' && ($p.lastName == 'Johnson' || $p.lastName == 'Allen')), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 1);
    assertEquals('Johnson', $result.values->toOne().lastName);
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where ("root".FIRSTNAME = \'John\' and ("root".LASTNAME = \'Johnson\' or "root".LASTNAME = \'Allen\'))', $result->sqlRemoveFormatting());
 
-   let result2 = execute(|Person.all()->filter(p|$p.firstName == 'John' && $p.lastName == 'Johnson' || $p.lastName == 'Allen'), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result2 = execute(|Person.all()->filter(p|$p.firstName == 'John' && $p.lastName == 'Johnson' || $p.lastName == 'Allen'), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result2.values, 2);
    assertSameElements(['Allen', 'Johnson'], $result2.values.lastName);
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where (("root".FIRSTNAME = \'John\' and "root".LASTNAME = \'Johnson\') or "root".LASTNAME = \'Allen\')', $result2->sqlRemoveFormatting());
@@ -100,30 +100,30 @@ function <<test.Test>> meta::relational::tests::query::filter::combinations::tes
 
 function <<test.Test>> meta::relational::tests::query::filter::combinations::testSelectChainOfAndOrOperators():Boolean[1]
 {
-   let result = execute(|Person.all()->filter(p|($p.firstName == 'Peter' && $p.lastName == 'Smith' || $p.firm.legalName == 'Firm A') && $p.firm.address.name == 'Cupertino'), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->filter(p|($p.firstName == 'Peter' && $p.lastName == 'Smith' || $p.firm.legalName == 'Firm A') && $p.firm.address.name == 'Cupertino'), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 1);
    assertSameElements(['Roberts'], $result.values.lastName);
 
    //Explicit precendence using brackets
-   let result2 = execute(|Person.all()->filter(p|$p.firstName == 'Peter' && $p.lastName == 'Smith' || ($p.firm.legalName == 'Firm A' && $p.firm.address.name == 'Cupertino')), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result2 = execute(|Person.all()->filter(p|$p.firstName == 'Peter' && $p.lastName == 'Smith' || ($p.firm.legalName == 'Firm A' && $p.firm.address.name == 'Cupertino')), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result2.values, 2);
    assertSameElements(['Smith','Roberts'], $result2.values.lastName);
 
-   let result3 = execute(|Person.all()->filter(p|(($p.firstName == 'Peter' && $p.lastName == 'Smith' || $p.firm.legalName == 'Firm A') && $p.firm.address.name == 'Cupertino' || $p.address.name == 'Hong Kong' || $p.locations.place == 'New York') && $p.firstName == 'David' && $p.address.name == 'Tokyo'), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result3 = execute(|Person.all()->filter(p|(($p.firstName == 'Peter' && $p.lastName == 'Smith' || $p.firm.legalName == 'Firm A') && $p.firm.address.name == 'Cupertino' || $p.address.name == 'Hong Kong' || $p.locations.place == 'New York') && $p.firstName == 'David' && $p.address.name == 'Tokyo'), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result3.values, 0);
 
-   let result4 = execute(|Person.all()->filter(p|$p.firm.address.comments == 'Tech Hub' || $p.firm.legalName == 'Firm C'), simpleRelationalMappingWithBooleanExpression, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result4 = execute(|Person.all()->filter(p|$p.firm.address.comments == 'Tech Hub' || $p.firm.legalName == 'Firm C'), simpleRelationalMappingWithBooleanExpression, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result4.values, 9);
    assertSameElements(['Allen', 'Smith', 'Johnson', 'Harris', 'New York', 'Roberts', 'Smith', 'Hill', 'York'], $result4.values.lastName);
 
-   let result5 = execute(|Person.all()->filter(p|$p.activeEmployment == true && $p.firstName == 'Peter'), simpleRelationalMappingWithBooleanExpression, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result5 = execute(|Person.all()->filter(p|$p.activeEmployment == true && $p.firstName == 'Peter'), simpleRelationalMappingWithBooleanExpression, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result5.values, 1);
    assertSameElements(['Smith'], $result5.values.lastName);
 }
 
 function <<test.Test>> meta::relational::tests::query::filter::equal::testOtherType():Boolean[1]
 {
-   let result = execute(|Firm.all()->filter(f|$f.legalName == 'Firm A'), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Firm.all()->filter(f|$f.legalName == 'Firm A'), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 1);
    assertEquals('Firm A', $result.values->toOne().legalName);
    assertEquals('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" where "root".LEGALNAME = \'Firm A\'', $result->sqlRemoveFormatting());
@@ -131,7 +131,7 @@ function <<test.Test>> meta::relational::tests::query::filter::equal::testOtherT
 
 function <<test.Test>> meta::relational::tests::query::filter::greaterThan::testGreaterThan():Boolean[1]
 {
-   let result = execute(|Trade.all()->filter(t|$t.quantity > 45), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Trade.all()->filter(t|$t.quantity > 45), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 1);
    assertSameElements(320.0, $result.values->map(t|$t.quantity));
    assertEquals('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".tradeDate as "date", "root".settlementDateTime as "settlementDateTime", "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id) where "root".quantity > 45', $result->sqlRemoveFormatting());
@@ -139,7 +139,7 @@ function <<test.Test>> meta::relational::tests::query::filter::greaterThan::test
 
 function <<test.Test>> meta::relational::tests::query::filter::greaterThan::testGreaterThanDate():Boolean[1]
 {
-   let result = execute(|Account.all()->filter(a|$a.createDate > %2013-12-01), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Account.all()->filter(a|$a.createDate > %2013-12-01), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 1);
    assertSameElements(%2013-12-02, $result.values->at(0).createDate);
    assertEquals('select "root".ID as "pk_0", "root".name as "name", "root".createDate as "createDate" from accountTable as "root" where "root".createDate > \'2013-12-01\'', $result->sqlRemoveFormatting());
@@ -147,7 +147,7 @@ function <<test.Test>> meta::relational::tests::query::filter::greaterThan::test
 
 function <<test.Test>> meta::relational::tests::query::filter::greaterThanEqual::testGreaterThanEqual():Boolean[1]
 {
-   let result = execute(|Trade.all()->filter(t|$t.quantity >= 45), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Trade.all()->filter(t|$t.quantity >= 45), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 2);
    assertSameElements([45.0, 320.0], $result.values->map(t|$t.quantity));
    assertEquals('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".tradeDate as "date", "root".settlementDateTime as "settlementDateTime", "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id) where "root".quantity >= 45', $result->sqlRemoveFormatting());
@@ -155,7 +155,7 @@ function <<test.Test>> meta::relational::tests::query::filter::greaterThanEqual:
 
 function <<test.Test>> meta::relational::tests::query::filter::lessThan::testLessThan():Boolean[1]
 {
-   let result = execute(|Trade.all()->filter(t|$t.quantity < 45), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Trade.all()->filter(t|$t.quantity < 45), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 9);
    assertEquals([25.0, 11.0, 23.0, 32.0, 27.0, 44.0, 22.0, 38.0, 5.0], $result.values->map(t|$t.quantity));
    assertEquals('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".tradeDate as "date", "root".settlementDateTime as "settlementDateTime", "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id) where "root".quantity < 45', $result->sqlRemoveFormatting() );
@@ -163,7 +163,7 @@ function <<test.Test>> meta::relational::tests::query::filter::lessThan::testLes
 
 function <<test.Test>> meta::relational::tests::query::filter::lessThanEqual::testLessThanEqual():Boolean[1]
 {
-   let result = execute(|Trade.all()->filter(t|$t.quantity <= 45), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Trade.all()->filter(t|$t.quantity <= 45), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 10);
    assertEquals([25.0, 11.0, 23.0, 32.0, 27.0, 44.0, 22.0, 45.0, 38.0, 5.0], $result.values->map(t|$t.quantity));
    assertEquals('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".tradeDate as "date", "root".settlementDateTime as "settlementDateTime", "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id) where "root".quantity <= 45', $result->sqlRemoveFormatting());
@@ -171,7 +171,7 @@ function <<test.Test>> meta::relational::tests::query::filter::lessThanEqual::te
 
 function <<test.Test>> meta::relational::tests::query::filter::lessThan::testLessThanWithArithmetic():Boolean[1]
 {
-   let result = execute(|Trade.all()->filter(t|(((($t.quantity - 5) * -3.0) + 4) / 2) > -45), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Trade.all()->filter(t|(((($t.quantity - 5) * -3.0) + 4) / 2) > -45), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 7);
    assertEquals([25.0, 11.0, 23.0, 32.0, 27.0, 22.0, 5.0], $result.values->map(t|$t.quantity));
    assertEquals('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".tradeDate as "date", "root".settlementDateTime as "settlementDateTime", "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id) where ((1.0 * ((("root".quantity - 5) * -3.0) + 4)) / 2) > -45', $result->sqlRemoveFormatting());
@@ -182,7 +182,7 @@ function <<test.Test>> meta::relational::tests::query::filter::lessThan::testLes
 function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::query::filter::equal::testFilterUsingClassAttribute():Boolean[1]
 {
    let firm = ^Firm(legalName='Firm A');
-   let result = execute(|Firm.all()->filter(f|$f.legalName == $firm.legalName), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Firm.all()->filter(f|$f.legalName == $firm.legalName), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 1);
    assertEquals('Firm A', $result.values->toOne().legalName);
    assertEquals('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" where "root".LEGALNAME = \'Firm A\'', $result->sqlRemoveFormatting());
@@ -190,12 +190,12 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::query::filter
 
 function <<test.Test>> meta::relational::tests::query::filter::equal::testBuildFilterWithValueThatCanBeNull():Boolean[1]
 {
-   let result = execute(buildQuery([]), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(buildQuery([]), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 1);  
    assertEquals('Elena', $result.values->toOne().firstName);
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where ("root".LASTNAME like \'F%\' and (null is null or "root".FIRSTNAME = null))', $result->sqlRemoveFormatting());
    
-   let result2 = execute(buildQuery('Peter'), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result2 = execute(buildQuery('Peter'), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result2.values, 0);  
 }
 
@@ -206,7 +206,7 @@ function <<access.private>> meta::relational::tests::query::filter::equal::build
 // Alloy exclusion reason: 9. Function check is not working because of inlining
 function <<test.Test, test.ExcludeAlloy>>  meta::relational::tests::query::filter::equal::testBuildFilterWithValueThatCanBeNullWithInWithEmpty():Boolean[1]
 {
-   let result = execute(buildQueryWithIn([]), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(buildQueryWithIn([]), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 1);  
    assertEquals('Elena', $result.values->toOne().firstName);
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where ("root".LASTNAME like \'F%\' and (null is null or "root".FIRSTNAME = null))', $result->sqlRemoveFormatting());
@@ -214,11 +214,11 @@ function <<test.Test, test.ExcludeAlloy>>  meta::relational::tests::query::filte
 
 function <<test.Test>>  meta::relational::tests::query::filter::equal::testBuildFilterWithValueThatCanBeNullWithIn():Boolean[1]
 {
-   let result2 = execute(buildQueryWithIn(['Peter', 'Jack']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result2 = execute(buildQueryWithIn(['Peter', 'Jack']), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result2.values, 0);
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where ("root".LASTNAME like \'F%\' and (2 is null or "root".FIRSTNAME in (\'Peter\', \'Jack\')))', $result2->sqlRemoveFormatting());
    
-   let result3 = execute(buildQueryWithIn(['Peter', 'Elena']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result3 = execute(buildQueryWithIn(['Peter', 'Elena']), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result3.values, 1);
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where ("root".LASTNAME like \'F%\' and (2 is null or "root".FIRSTNAME in (\'Peter\', \'Elena\')))', $result3->sqlRemoveFormatting());
 }
@@ -230,24 +230,24 @@ function <<access.private>> meta::relational::tests::query::filter::equal::build
 
 function <<test.Test>> meta::relational::tests::query::filter::equal::testConsistencyWithNulls():Boolean[1]
 {
-   let allResult = execute(|Address.all(), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let allResult = execute(|Address.all(), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions()).values;
    
-   let eqResult = execute(|Address.all()->filter(a | $a.street == 'Infinite Loop'), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let eqResult = execute(|Address.all()->filter(a | $a.street == 'Infinite Loop'), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions()).values;
  
-   let eqResult2 = execute(|Address.all(), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->filter(a | $a.street == 'Infinite Loop');
+   let eqResult2 = execute(|Address.all(), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions()).values->filter(a | $a.street == 'Infinite Loop');
    
    assertEquals($eqResult->size(), $eqResult2->size());
    
-   let notEqResult  = execute(|Address.all()->filter(a | ($a.street != 'Infinite Loop')), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let notEqResult  = execute(|Address.all()->filter(a | ($a.street != 'Infinite Loop')), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions()).values;
  
-   let notEqResult2 = execute(|Address.all(), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->filter(a | $a.street != 'Infinite Loop');
+   let notEqResult2 = execute(|Address.all(), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions()).values->filter(a | $a.street != 'Infinite Loop');
    
-   let notEqResult3 = execute(|Address.all()->filter(a | ('Infinite Loop' != $a.street)), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let notEqResult3 = execute(|Address.all()->filter(a | ('Infinite Loop' != $a.street)), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions()).values;
    
    assertEquals($notEqResult->size(), $notEqResult2->size());
    assertEquals($notEqResult->size(), $notEqResult3->size());
    
-   let notEqResult4 = execute(|Address.all()->filter(a | ($a.street->toOne() + ' st') != 'Infinite Loop st'), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let notEqResult4 = execute(|Address.all()->filter(a | ($a.street->toOne() + ' st') != 'Infinite Loop st'), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions()).values;
    
    assertEquals($notEqResult->size(), $notEqResult4->size());
    
@@ -258,18 +258,18 @@ function <<test.Test>> meta::relational::tests::query::filter::equal::testConsis
 // Alloy exclusion reason: 4. Use getter relational protocol
 function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::query::filter::equal::testConsistencyWithNullsInJoin():Boolean[1]
 {
-   let allResult = execute(|Person.all(), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let allResult = execute(|Person.all(), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions()).values;
    println($allResult->size());
    
-   let eqResult = execute(|Person.all()->filter(a | $a.manager.lastName == 'Johnson'), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let eqResult = execute(|Person.all()->filter(a | $a.manager.lastName == 'Johnson'), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions()).values;
    
-   let eqResult2 = execute(|Person.all(), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->filter(a | $a.manager->isNotEmpty() && $a.manager.lastName == 'Johnson');
+   let eqResult2 = execute(|Person.all(), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions()).values->filter(a | $a.manager->isNotEmpty() && $a.manager.lastName == 'Johnson');
    
    assertEquals($eqResult->size(), $eqResult2->size());
    
-   let notEqResult = execute(|Person.all()->filter(a | $a.manager.lastName != 'Johnson'), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let notEqResult = execute(|Person.all()->filter(a | $a.manager.lastName != 'Johnson'), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions()).values;
    
-   let notEqResult2 = execute(|Person.all(), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->filter(a | ($a.manager->isEmpty() || $a.manager.lastName != 'Johnson'));
+   let notEqResult2 = execute(|Person.all(), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions()).values->filter(a | ($a.manager->isEmpty() || $a.manager.lastName != 'Johnson'));
    
    assertEquals($notEqResult->size(), $notEqResult2->size());
   
@@ -280,17 +280,17 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::query::filter
 // Alloy exclusion reason: 4. Use getter relational protocol
 function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::query::filter::startsWith::testConsistencyWithNulls():Boolean[1]
 {
-   let allResult = execute(|Address.all(), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let allResult = execute(|Address.all(), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions()).values;
    
-   let startsWithResult  = execute(|Address.all()->filter(a | $a.street->startsWith('Infinite Loop')), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let startsWithResult  = execute(|Address.all()->filter(a | $a.street->startsWith('Infinite Loop')), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions()).values;
 
-   let startsWithResult2 = execute(|Address.all(), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->filter(a | $a.street->startsWith('Infinite Loop'));
+   let startsWithResult2 = execute(|Address.all(), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions()).values->filter(a | $a.street->startsWith('Infinite Loop'));
     
    assertEquals($startsWithResult->size(), $startsWithResult2->size());
 
-   let notStartsWithResult  = execute(|Address.all()->filter(a | (!$a.street->startsWith('Infinite Loop'))), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let notStartsWithResult  = execute(|Address.all()->filter(a | (!$a.street->startsWith('Infinite Loop'))), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions()).values;
  
-   let notStartsWithResult2 = execute(|Address.all(), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->filter(a | !$a.street->startsWith('Infinite Loop'));
+   let notStartsWithResult2 = execute(|Address.all(), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions()).values->filter(a | !$a.street->startsWith('Infinite Loop'));
    
    assertEquals($notStartsWithResult->size(), $notStartsWithResult2->size());
    
@@ -300,17 +300,17 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::query::filter
 
 function <<test.Test>> meta::relational::tests::query::filter::endsWith::testConsistencyWithNulls():Boolean[1]
 {
-   let allResult = execute(|Address.all(), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let allResult = execute(|Address.all(), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions()).values;
    
-   let endsWithResult  = execute(|Address.all()->filter(a | $a.street->endsWith('Infinite Loop')), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let endsWithResult  = execute(|Address.all()->filter(a | $a.street->endsWith('Infinite Loop')), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions()).values;
 
-   let endsWithResult2 = execute(|Address.all(), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->filter(a | $a.street->endsWith('Infinite Loop'));
+   let endsWithResult2 = execute(|Address.all(), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions()).values->filter(a | $a.street->endsWith('Infinite Loop'));
     
    assertEquals($endsWithResult->size(), $endsWithResult2->size());
 
-   let notEndsWithResult  = execute(|Address.all()->filter(a | (!$a.street->endsWith('Infinite Loop'))), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let notEndsWithResult  = execute(|Address.all()->filter(a | (!$a.street->endsWith('Infinite Loop'))), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions()).values;
  
-   let notEndsWithResult2 = execute(|Address.all(), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->filter(a | !$a.street->endsWith('Infinite Loop'));
+   let notEndsWithResult2 = execute(|Address.all(), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions()).values->filter(a | !$a.street->endsWith('Infinite Loop'));
 
    assertEquals($notEndsWithResult->size(), $notEndsWithResult2->size());
    
@@ -320,17 +320,17 @@ function <<test.Test>> meta::relational::tests::query::filter::endsWith::testCon
 
 function <<test.Test>> meta::relational::tests::query::filter::greaterThan::testConsistencyWithNulls():Boolean[1]
 {
-   let allResult = execute(|Address.all(), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let allResult = execute(|Address.all(), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions()).values;
    
-   let greaterThanResult  = execute(|Address.all()->filter(a | $a.street > 'Infinite Loop'), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let greaterThanResult  = execute(|Address.all()->filter(a | $a.street > 'Infinite Loop'), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions()).values;
 
-   let greaterThanResult2 = execute(|Address.all(), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->filter(a | $a.street > 'Infinite Loop');
+   let greaterThanResult2 = execute(|Address.all(), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions()).values->filter(a | $a.street > 'Infinite Loop');
     
    assertEquals($greaterThanResult->size(), $greaterThanResult2->size());
 
-   let notGreaterThanResult  = execute(|Address.all()->filter(a | !($a.street > 'Infinite Loop')), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let notGreaterThanResult  = execute(|Address.all()->filter(a | !($a.street > 'Infinite Loop')), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions()).values;
 
-   let notGreaterThanResult2 = execute(|Address.all(), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->filter(a | !($a.street > 'Infinite Loop'));
+   let notGreaterThanResult2 = execute(|Address.all(), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions()).values->filter(a | !($a.street > 'Infinite Loop'));
     
    assertEquals($notGreaterThanResult->size(), $notGreaterThanResult2->size());
 
@@ -340,17 +340,17 @@ function <<test.Test>> meta::relational::tests::query::filter::greaterThan::test
 
 function <<test.Test>> meta::relational::tests::query::filter::notEqual::testConsistencyWithNullsInColumnToColumnComparison():Boolean[1]
 {
-   let allResult = execute(|Address.all(), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let allResult = execute(|Address.all(), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions()).values;
 
-   let equalResult  = execute(|Address.all()->filter(a | $a.name == $a.street), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let equalResult  = execute(|Address.all()->filter(a | $a.name == $a.street), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions()).values;
 
-   let equalResult2 = execute(|Address.all(), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->filter(a | $a.name == $a.street);
+   let equalResult2 = execute(|Address.all(), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions()).values->filter(a | $a.name == $a.street);
 
    assertEquals($equalResult->size(), $equalResult2->size());
 
-   let notEqualResult  = execute(|Address.all()->filter(a | $a.name != $a.street), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let notEqualResult  = execute(|Address.all()->filter(a | $a.name != $a.street), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions()).values;
 
-   let notEqualResult2 = execute(|Address.all(), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->filter(a | $a.name != $a.street);
+   let notEqualResult2 = execute(|Address.all(), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions()).values->filter(a | $a.name != $a.street);
 
    assertEquals($notEqualResult->size(), $notEqualResult2->size());
 
@@ -360,21 +360,21 @@ function <<test.Test>> meta::relational::tests::query::filter::notEqual::testCon
 
 function <<test.Test>> meta::relational::tests::query::filter::equal::testConsistencyWithNullsInColumnToColumnComparison():Boolean[1]
 {
-   let allResult = execute(|Address.all(), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let allResult = execute(|Address.all(), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions()).values;
 
-   let eqr = execute(|Address.all()->filter(a | $a.street == $a.street), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let eqr = execute(|Address.all()->filter(a | $a.street == $a.street), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertEquals('select "root".ID as "pk_0", "root".NAME as "name", "root".STREET as "street", "root".TYPE as "type", "root".COMMENTS as "comments" from addressTable as "root" where ("root".STREET = "root".STREET OR ("root".STREET is null AND "root".STREET is null))', $eqr->sqlRemoveFormatting());
 
    let equalResult  = $eqr.values;
 
-   let equalResult2 = execute(|Address.all(), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->filter(a | $a.street == $a.street);
+   let equalResult2 = execute(|Address.all(), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions()).values->filter(a | $a.street == $a.street);
 
    assertEquals($equalResult->size(), $equalResult2->size());
 
-   let notEqualResult  = execute(|Address.all()->filter(a | $a.street != $a.street), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let notEqualResult  = execute(|Address.all()->filter(a | $a.street != $a.street), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions()).values;
 
-   let notEqualResult2 = execute(|Address.all(), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->filter(a | $a.street != $a.street);
+   let notEqualResult2 = execute(|Address.all(), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions()).values->filter(a | $a.street != $a.street);
 
    assertEquals($notEqualResult->size(), $notEqualResult2->size());
 
@@ -384,7 +384,7 @@ function <<test.Test>> meta::relational::tests::query::filter::equal::testConsis
 
 function <<test.Test>> meta::relational::tests::query::filter::or::testOrFilterWithTypeFilter():Boolean[1]
 {
-    let result = execute(|Person.all()->filter(p|$p.firstName == 'David' || $p.firm.address.name=='Timbooktoo'), simpleRelationalMappingWithFilter, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|Person.all()->filter(p|$p.firstName == 'David' || $p.firm.address.name=='Timbooktoo'), simpleRelationalMappingWithFilter, testRuntime(), meta::relational::extension::relationalExtensions());
     assertSize($result.values, 1);
     println( $result.values->map(p|$p.name)->makeString());
     assertEquals(['David Harris'], $result.values->map(p|$p.name)->makeString());
@@ -397,7 +397,7 @@ function <<test.Test>> meta::relational::tests::query::filter::combinations::tes
       |Person.all()
          ->filter(p|$p.firm.address.name == 'New York')
          ->groupBy([p|$p.firstName], [agg(p|$p.age, x|$x->sum())], ['name', 'age'])
-         ->filter(r|$r.getString('name') != 'Hello'), simpleRelationalMappingWithFilter, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+         ->filter(r|$r.getString('name') != 'Hello'), simpleRelationalMappingWithFilter, testRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals('select "root".FIRSTNAME as "name", sum("root".AGE) as "age" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "firmtable_0".ADDRESSID) where "firmtable_0".LEGALNAME = \'Firm X\' and "addresstable_0".NAME = \'New York\' group by "name" having ("root".FIRSTNAME <> \'Hello\' OR "root".FIRSTNAME is null)', $result->sqlRemoveFormatting());
 }
 
@@ -409,20 +409,20 @@ function <<test.Test>> meta::relational::tests::query::filter::combinations::tes
          ->filter(p|$p.firm.address.name == 'New York')
          ->project([p|$p.firstName], ['name'])
          ->filter(r|$r.getString('name') != 'Hello')
-       , simpleRelationalMappingWithFilter, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+       , simpleRelationalMappingWithFilter, testRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals('select "root".FIRSTNAME as "name" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "firmtable_0".ADDRESSID) where ("root".FIRSTNAME <> \'Hello\' OR "root".FIRSTNAME is null) and "firmtable_0".LEGALNAME = \'Firm X\' and "addresstable_0".NAME = \'New York\'', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::query::filter::isolation::testIsolationOfCaseStmtTrueFalseFilters():Boolean[1]
 {
-    let result = execute(|Person.all()->filter(p| $p.firstName == if($p.firstName=='No firm',| $p.firstName,|$p.firm.legalName )), simpleRelationalMappingWithFilter, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|Person.all()->filter(p| $p.firstName == if($p.firstName=='No firm',| $p.firstName,|$p.firm.legalName )), simpleRelationalMappingWithFilter, testRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals(['No firm no Firm'], $result.values->map(p|$p.name)->makeString()); 
     assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID and "firmtable_0".LEGALNAME = \'Firm X\') where "root".FIRSTNAME = case when "root".FIRSTNAME = \'No firm\' then "root".FIRSTNAME else "firmtable_0".LEGALNAME end', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::query::filter::isolation::testIsolationOfClassFiltersOperatingOnParametersReferencedInIf():Boolean[1]
 {
-    let result = execute(|Person.all()->filter(p| $p.firstName == if($p.firm.legalName == 'Firm X',| 'Peter',| '' )), simpleRelationalMappingWithFilter, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|Person.all()->filter(p| $p.firstName == if($p.firm.legalName == 'Firm X',| 'Peter',| '' )), simpleRelationalMappingWithFilter, testRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals(['Peter Smith'], $result.values->map(p|$p.name)->makeString());
     assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID and "firmtable_0".LEGALNAME = \'Firm X\') where "root".FIRSTNAME = case when "firmtable_0".LEGALNAME = \'Firm X\' then \'Peter\' else \'\' end', $result->sqlRemoveFormatting());
 }
@@ -430,7 +430,7 @@ function <<test.Test>> meta::relational::tests::query::filter::isolation::testIs
 /** If the type filter is not isolated early enough then the JTN could have children when isolation occurs resulting in a different join name and the JTN not merging as expected */
 function <<test.Test>> meta::relational::tests::query::filter::isolation::testLateIsolationOfTypeFilterDoesntPreventMerging():Boolean[1]
 {
-    let result = execute(|Person.all()->filter(p| $p.firm.ceo.address.name == 'Hoboken' && $p.firm.address.name == 'New York'), simpleRelationalMappingWithClassFilterAndEmbeddedProperty, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions(), noDebug());
+    let result = execute(|Person.all()->filter(p| $p.firm.ceo.address.name == 'Hoboken' && $p.firm.address.name == 'New York'), simpleRelationalMappingWithClassFilterAndEmbeddedProperty, testRuntime(), meta::relational::extension::relationalExtensions(), noDebug());
     assertEquals(['Peter Smith,John Johnson,John Hill,Anthony Allen,New York,Don New York'], $result.values->map(p|$p.name)->makeString(','));
     assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) left outer join personTable as "persontable_1" on ("firmtable_0".CEOID = "persontable_1".ID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "persontable_1".ADDRESSID) left outer join addressTable as "addresstable_1" on ("addresstable_1".ID = "firmtable_0".ADDRESSID) where "firmtable_0".LEGALNAME = \'Firm X\' and ("addresstable_0".NAME = \'Hoboken\' and "addresstable_1".NAME = \'New York\')', $result->sqlRemoveFormatting());
 }
@@ -440,14 +440,14 @@ function <<test.Test>> meta::relational::tests::query::filter::multipleFilters::
     let result = execute(|Person.all()->filter(p | $p.firstName->startsWith('Peter'))->filter(p | if($p.firstName->length() < 10,
                                                                                                       | $p.firm.address->filter(a | $a.name == 'New York').name->isNotEmpty(), 
                                                                                                       | $p.firm.address->filter(a | $a.name == 'New York').name->isEmpty()))
-                         , simpleRelationalMappingWithFilter, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                         , simpleRelationalMappingWithFilter, testRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals(['Peter Smith'], $result.values->map(p|$p.name)->makeString());
     assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID and "firmtable_0".LEGALNAME = \'Firm X\') left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "firmtable_0".ADDRESSID and "addresstable_0".NAME = \'New York\') where "root".FIRSTNAME like \'Peter%\' and case when char_length("root".FIRSTNAME) < 10 then not "addresstable_0".NAME is null else "addresstable_0".NAME is null end', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::query::filter::multipleFilters::testFilterInWithJoin():Boolean[1]
 {
-    let result = execute(|Person.all()->filter(p | $p.firstName->startsWith('Peter'))->filter(p | 'New York'->in($p.firm.address.name)), simpleRelationalMappingWithFilter, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+    let result = execute(|Person.all()->filter(p | $p.firstName->startsWith('Peter'))->filter(p | 'New York'->in($p.firm.address.name)), simpleRelationalMappingWithFilter, testRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals(['Peter Smith'], $result.values->map(p|$p.name)->makeString());
     assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME like \'Peter%\' and exists(select 1 from firmTable as "firmtable_0" left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "firmtable_0".ADDRESSID) where "addresstable_0".NAME = \'New York\' and "firmtable_0".ID = "root".FIRMID)', $result->sqlRemoveFormatting());
 }

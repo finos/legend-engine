@@ -26,7 +26,7 @@ import meta::relational::tests::mapping::propertyfunc::model::store::*;
 
 function <<test.Test>> meta::relational::tests::mapping::propertyfunc::simple::testSimplePropertyFuncProject():Boolean[1]
 {
-   let result = execute(|Person.all()->project([#/Person/firstName#, #/Person/lastName#, #/Person/fullName#]), meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->project([#/Person/firstName#, #/Person/lastName#, #/Person/fullName#]), meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(6, $tds.rows->size());
    assertEquals(['Peter', 'Smith', 'Smith, Peter'], $tds.rows->at(0).values);
@@ -40,7 +40,7 @@ function <<test.Test>> meta::relational::tests::mapping::propertyfunc::simple::t
 
 function <<test.Test>> meta::relational::tests::mapping::propertyfunc::simple::testSimplePropertyFuncQuery():Boolean[1]
 {
-   let result = execute(|Person.all()->filter(p|$p.firstName == 'John'), meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->filter(p|$p.firstName == 'John'), meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    let res = $result.values->at(0);
    assertEquals('John',$res.firstName);
    assertEquals('Johnson',$res.lastName);
@@ -48,7 +48,7 @@ function <<test.Test>> meta::relational::tests::mapping::propertyfunc::simple::t
 
 function <<test.Test>> meta::relational::tests::mapping::propertyfunc::simple::testSimplePropertyFuncGetAll():Boolean[1]
 {
-   let result = execute(|Person.all(), meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all(), meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    let res = $result.values;
    assertEquals(6, $res->size());
    assertEquals(['Peter', 'Smith'], [$res->at(0).firstName, $res->at(0).lastName]);
@@ -63,7 +63,7 @@ function <<test.Test>> meta::relational::tests::mapping::propertyfunc::simple::t
 
 function <<test.Test>> meta::relational::tests::mapping::propertyfunc::withjoin::testSimplePropertyFuncProjectWithJoin():Boolean[1]
 {
-   let result = execute(|Person.all()->project([#/Person/firstName#, #/Person/lastName#, #/Person/fullName#]), meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMappingWithJoin, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->project([#/Person/firstName#, #/Person/lastName#, #/Person/fullName#]), meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMappingWithJoin, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(6, $tds.rows->size());
    assertEquals(['Peter', 'Smith_p1', 'Smith_p1, Peter'], $tds.rows->at(0).values);
@@ -77,7 +77,7 @@ function <<test.Test>> meta::relational::tests::mapping::propertyfunc::withjoin:
 
 function <<test.Test>> meta::relational::tests::mapping::propertyfunc::withjoin::testSimplePropertyFuncQueryWithJoin():Boolean[1]
 {
-   let result = execute(|Person.all()->filter(p|$p.lastName == 'Roberts_p4'), meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMappingWithJoin, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->filter(p|$p.lastName == 'Roberts_p4'), meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMappingWithJoin, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    let res = $result.values;
    assertEquals(['Fabrice', 'Roberts_p4', 'Roberts_p4, Fabrice'], [$res->at(0).firstName, $res->at(0).lastName, $res->at(0).fullName]);
    assertEquals('select "root".ID as "pk_0", substring("root".FULLNAME, 0, position(\',\', concat("root".FULLNAME, "persontableextension_0".FULLNAME_PART2))-1) as "firstName", "root".FULLNAME as "displayName", substring(concat("root".FULLNAME, "persontableextension_0".FULLNAME_PART2), (position(\',\', concat("root".FULLNAME, "persontableextension_0".FULLNAME_PART2)) + 2)) as "lastName" from personTable as "root" left outer join personTableExtension as "persontableextension_0" on ("root".ID = "persontableextension_0".ID) where substring(concat("root".FULLNAME, "persontableextension_0".FULLNAME_PART2), (position(\',\', concat("root".FULLNAME, "persontableextension_0".FULLNAME_PART2)) + 2)) = \'Roberts_p4\'', $result->sqlRemoveFormatting());
@@ -85,7 +85,7 @@ function <<test.Test>> meta::relational::tests::mapping::propertyfunc::withjoin:
 
 function <<test.Test>> meta::relational::tests::mapping::propertyfunc::withjoin::testSimplePropertyFuncGetAllWithJoin():Boolean[1]
 {
-   let result = execute(|Person.all(), meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMappingWithJoin, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all(), meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMappingWithJoin, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    let res = $result.values;
    assertEquals(['Peter', 'Smith_p1', 'Smith_p1, Peter'], [$res->at(0).firstName, $res->at(0).lastName, $res->at(0).fullName]);
    assertEquals(['John', 'Johnson_p2', 'Johnson_p2, John'], [$res->at(1).firstName, $res->at(1).lastName, $res->at(1).fullName]);

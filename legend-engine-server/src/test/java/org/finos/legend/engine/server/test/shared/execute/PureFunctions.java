@@ -15,19 +15,19 @@
 package org.finos.legend.engine.server.test.shared.execute;
 
 import org.eclipse.collections.api.RichIterable;
-import org.finos.legend.pure.generated.Root_meta_pure_router_extension_RouterExtension;
+import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.core_pure_protocol_vX_X_X_scan_buildBasePureModel;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
 
 public class PureFunctions
 {
-    public static String alloy_metadataServer_pureModelFromMapping(String _package, String version, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, ExecutionSupport executionSupport)
+    public static String alloy_metadataServer_pureModelFromMapping(String _package, String version, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, ExecutionSupport executionSupport)
     {
-        return core_pure_protocol_vX_X_X_scan_buildBasePureModel.Root_meta_protocols_pure_vX_X_X_transformation_fromPureGraph_buildBasePureModelFromMappingStr_String_1__RouterExtension_MANY__String_1_(_package, extensions, executionSupport);
+        return core_pure_protocol_vX_X_X_scan_buildBasePureModel.Root_meta_protocols_pure_vX_X_X_transformation_fromPureGraph_buildBasePureModelFromMappingStr_String_1__Extension_MANY__String_1_(_package, extensions, executionSupport);
     }
 
-    public static String alloy_metadataServer_pureModelFromStore(String _package, String version, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, ExecutionSupport executionSupport)
+    public static String alloy_metadataServer_pureModelFromStore(String _package, String version, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, ExecutionSupport executionSupport)
     {
-        return core_pure_protocol_vX_X_X_scan_buildBasePureModel.Root_meta_protocols_pure_vX_X_X_transformation_fromPureGraph_buildBasePureModelFromStoreStr_String_1__RouterExtension_MANY__String_1_(_package, extensions, executionSupport);
+        return core_pure_protocol_vX_X_X_scan_buildBasePureModel.Root_meta_protocols_pure_vX_X_X_transformation_fromPureGraph_buildBasePureModelFromStoreStr_String_1__Extension_MANY__String_1_(_package, extensions, executionSupport);
     }
 }

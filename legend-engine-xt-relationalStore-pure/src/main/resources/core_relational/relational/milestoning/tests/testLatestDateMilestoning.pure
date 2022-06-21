@@ -24,21 +24,21 @@ function <<test.BeforePackage>> meta::relational::tests::milestoning::latestDate
 
 function <<test.Test>> meta::relational::tests::milestoning::latestDate::testLatestIgnoredForNonMilestonedMappedClassesAllQuery():Boolean[1]
 {
-   let result = execute(|Product.all(%latest), noMilestoningMap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Product.all(%latest), noMilestoningMap, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameSQL('select "root".id as "pk_0", "root".name as "pk_1", "root".id as "id", "root".type as "type" from ProductTableNoMilestoning as "root"',$result);   
 }
 
 
 function <<test.Test>> meta::relational::tests::milestoning::latestDate::testLatestIgnoredForNonMilestonedMappedBiTemporalClassesAllQuery():Boolean[1]
 {
-   let result = execute(|BiTemporalProduct.all(%latest, %latest), noMilestoningMap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|BiTemporalProduct.all(%latest, %latest), noMilestoningMap, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameSQL('select "root".id as "pk_0", "root".name as "pk_1", "root".id as "id", "root".name as "name", "root".type as "type" from ProductTableNoMilestoning as "root"',$result);   
 }
 
 function <<test.Test>> meta::relational::tests::milestoning::latestDate::testLatestIgnoredForNonMilestonedMappedClasses():Boolean[1]
 {
-   let result = execute(|Order.all()->filter(o|or($o.product(%latest).type=='STOCK',$o.product(%latest).type=='OPTION')), noMilestoningMap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
-   let result2 = execute(|Order.all()->filter(o|or($o.product(%2015-08-15).type=='STOCK',$o.product(%2015-10-16).type=='OPTION')), noMilestoningMap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Order.all()->filter(o|or($o.product(%latest).type=='STOCK',$o.product(%latest).type=='OPTION')), noMilestoningMap, testRuntime(), meta::relational::extension::relationalExtensions());
+   let result2 = execute(|Order.all()->filter(o|or($o.product(%2015-08-15).type=='STOCK',$o.product(%2015-10-16).type=='OPTION')), noMilestoningMap, testRuntime(), meta::relational::extension::relationalExtensions());
    
    let orders = $result.values;
    assertEquals(1,$orders->size());
@@ -49,16 +49,16 @@ function <<test.Test>> meta::relational::tests::milestoning::latestDate::testLat
 
 function <<test.Test>> meta::relational::tests::milestoning::latestDate::testLatestIgnoredForNonMilestonedMappedBiTemporalClasses():Boolean[1]
 {
-   let result = execute(|Order.all()->filter(o|or($o.biTemporalProduct(%latest, %latest).type=='STOCK',$o.biTemporalProduct(%latest, %latest).type=='OPTION')), noMilestoningMap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Order.all()->filter(o|or($o.biTemporalProduct(%latest, %latest).type=='STOCK',$o.biTemporalProduct(%latest, %latest).type=='OPTION')), noMilestoningMap, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameSQL('select "root".id as "pk_0", "root".id as "id" from OrderTable as "root" left outer join ProductTableNoMilestoning as "producttablenomilestoning_0" on ("root".prodFk = "producttablenomilestoning_0".id) where ("producttablenomilestoning_0".type = \'STOCK\' or "producttablenomilestoning_0".type = \'OPTION\')', $result);
 }
 
 function <<test.Test>> meta::relational::tests::milestoning::latestDate::testLatestIgnoredForNonMilestonedMappedBiTemporalClassesWithProject():Boolean[1]
 {
-   let result = execute(|Order.all()->project([o|$o.biTemporalProduct(%latest, %latest).type],'productType'), noMilestoningMap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Order.all()->project([o|$o.biTemporalProduct(%latest, %latest).type],'productType'), noMilestoningMap, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameSQL('select "producttablenomilestoning_0".type as "productType" from OrderTable as "root" left outer join ProductTableNoMilestoning as "producttablenomilestoning_0" on ("root".prodFk = "producttablenomilestoning_0".id)', $result);
 
-   let pathResult = execute(|Order.all()->project(#/Order/biTemporalProduct(%latest, %latest)/type#), noMilestoningMap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let pathResult = execute(|Order.all()->project(#/Order/biTemporalProduct(%latest, %latest)/type#), noMilestoningMap, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameSQL('select "producttablenomilestoning_0".type as "type" from OrderTable as "root" left outer join ProductTableNoMilestoning as "producttablenomilestoning_0" on ("root".prodFk = "producttablenomilestoning_0".id)',$pathResult);
 
 

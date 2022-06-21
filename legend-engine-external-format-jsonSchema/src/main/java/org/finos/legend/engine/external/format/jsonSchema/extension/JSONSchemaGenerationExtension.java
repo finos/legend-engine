@@ -30,7 +30,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.Package
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationSpecification;
 import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationConfiguration;
 import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationOutput;
-import org.finos.legend.pure.generated.core_json_jsonSchema;
+import org.finos.legend.pure.generated.core_external_format_json_jsonSchema;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -75,7 +75,7 @@ public class JSONSchemaGenerationExtension implements GenerationExtension
             @Override
             public List<GenerationProperty> getProperties(PureModel pureModel)
             {
-                return FileGenerationDescription.extractGenerationProperties(core_json_jsonSchema
+                return FileGenerationDescription.extractGenerationProperties(core_external_format_json_jsonSchema
                         .Root_meta_json_schema_generation_describeConfiguration__GenerationParameter_MANY_(pureModel.getExecutionSupport()));
             }
         };
@@ -103,7 +103,7 @@ public class JSONSchemaGenerationExtension implements GenerationExtension
     @Override
     public Root_meta_pure_generation_metamodel_GenerationConfiguration defaultConfig(CompileContext compileContext)
     {
-        return core_json_jsonSchema.Root_meta_json_schema_generation_defaultConfig__JSONSchemaConfig_1_(compileContext.pureModel.getExecutionSupport());
+        return core_external_format_json_jsonSchema.Root_meta_json_schema_generation_defaultConfig__JSONSchemaConfig_1_(compileContext.pureModel.getExecutionSupport());
     }
 
     @Override
@@ -119,7 +119,7 @@ public class JSONSchemaGenerationExtension implements GenerationExtension
         {
             FileGenerationSpecification fileGenerationSpecification = (FileGenerationSpecification) packageableElement;
             JSONSchemaConfig jsonSchemaConfig = JSONSchemaGenerationConfigBuilder.build(fileGenerationSpecification);
-            RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationOutput> outputs = core_json_jsonSchema.Root_meta_json_schema_generation_generateJsonSchemaFromPureWithScope_JSONSchemaConfig_1__JSONSchemaOutput_MANY_(jsonSchemaConfig.process(compileContext.pureModel), compileContext.pureModel.getExecutionSupport());
+            RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationOutput> outputs = core_external_format_json_jsonSchema.Root_meta_json_schema_generation_generateJsonSchemaFromPureWithScope_JSONSchemaConfig_1__JSONSchemaOutput_MANY_(jsonSchemaConfig.process(compileContext.pureModel), compileContext.pureModel.getExecutionSupport());
             return new ArrayList<>(outputs.toList());
         }
         return null;

@@ -7,7 +7,7 @@ import meta::pure::graphFetch::routing::*;
 import meta::external::language::java::factory::*;
 import meta::external::language::java::transform::*;
 import meta::pure::executionPlan::engine::java::graphFetch::common::*;
-import meta::pure::router::extension::*;
+import meta::pure::extension::*;
 import meta::pure::executionPlan::engine::java::*;
 import meta::pure::mapping::modelToModel::graphFetch::executionPlan::*;
 import meta::external::language::java::metamodel::*;
@@ -25,7 +25,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
     $instance.parent.classMappings->filter(m|$m->instanceOf(MergeOperationSetImplementation))->cast(@MergeOperationSetImplementation)->filter(o| $instance.id->in($o.parameters.id))->at(0);
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::inMemory::generateMergeFunction(nodes: InMemoryGraphFetchExecutionNode[*],rootPath:String[1] ,rootClass:meta::external::language::java::metamodel::Class[1], childPath: String[0..1], context: GenerationContext[1], extensions: RouterExtension[*], debug: DebugContext[1]):Method[*]
+function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::inMemory::generateMergeFunction(nodes: InMemoryGraphFetchExecutionNode[*],rootPath:String[1] ,rootClass:meta::external::language::java::metamodel::Class[1], childPath: String[0..1], context: GenerationContext[1], extensions: Extension[*], debug: DebugContext[1]):Method[*]
 {
    let updatedChildPath = if($childPath->isNotEmpty(),|$childPath->toOne(),|'');
    let resultPath = $rootPath+'.n1'+$updatedChildPath;

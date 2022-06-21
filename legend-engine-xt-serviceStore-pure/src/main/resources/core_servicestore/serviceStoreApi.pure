@@ -12,27 +12,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::pure::executionPlan::*;
 
-import meta::pure::graphFetch::execution::*;
-import meta::pure::graphFetch::executionPlan::*;
-import meta::pure::mapping::*;
-import meta::pure::router::extension::*;
-import meta::pure::runtime::*;
-
-import meta::external::store::service::functions::pureToServiceStoreQuery::*;
-
-// Execution Plan
-function meta::external::store::service::executionPlan::generation::planExecution(sq:StoreQuery[1], ext:RoutedValueSpecification[0..1], mapping:Mapping[0..1], runtime:Runtime[0..1], exeCtx:ExecutionContext[1], extensions:RouterExtension[*], debug:DebugContext[1]):ExecutionNode[1]
-{
-   let fe = $sq.fe->evaluateAndDeactivate()->cast(@FunctionExpression);
-   assert($fe.func->in(graphFetchFunctions()), 'Service Store supports graphFetch queries only');
-
-   planGraphFetchExecution($sq, $ext, $mapping->toOne(), $runtime->toOne(), $exeCtx, $extensions, $debug);
-}
-
-// Functions supported by serviceStore execution
-function meta::external::store::service::supports(f:FunctionExpression[1]):Boolean[1]
-{
-   !findSupportedFunction($f, getSupportedFunctions())->isEmpty()
-}

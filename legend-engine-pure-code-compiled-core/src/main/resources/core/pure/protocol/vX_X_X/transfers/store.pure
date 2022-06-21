@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::pure::router::extension::*;
+import meta::pure::extension::*;
 import meta::json::*;
 import meta::pure::runtime::*;
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::runtime::transformRuntime(pureRuntime:Runtime[1], extensions:RouterExtension[*]):meta::protocols::pure::vX_X_X::metamodel::Runtime[1]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::runtime::transformRuntime(pureRuntime:Runtime[1], extensions:Extension[*]):meta::protocols::pure::vX_X_X::metamodel::Runtime[1]
 {
    $pureRuntime->match([
       legacy:Runtime[1] | ^meta::protocols::pure::vX_X_X::metamodel::LegacyRuntime(
@@ -26,7 +26,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::runtime::
    ])
 }
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::transformStore(store:meta::pure::store::Store[1], extensions:RouterExtension[*]):meta::protocols::pure::vX_X_X::metamodel::store::Store[1]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::transformStore(store:meta::pure::store::Store[1], extensions:Extension[*]):meta::protocols::pure::vX_X_X::metamodel::store::Store[1]
 {
    let handlers = $extensions.serializerExtension('vX_X_X')->cast(@meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X).transfers_store_transformStore
                   ->concatenate($extensions.serializerExtension('vX_X_X')->cast(@meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X).transfers_store_transformStore2->map(f | $f->eval($extensions)));
@@ -34,7 +34,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::tr
    $store->match($handlers->toOneMany());
 }
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::runtime::transformConnection(connection:Connection[1], extensions:RouterExtension[*]):meta::protocols::pure::vX_X_X::metamodel::runtime::Connection[1]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::runtime::transformConnection(connection:Connection[1], extensions:Extension[*]):meta::protocols::pure::vX_X_X::metamodel::runtime::Connection[1]
 {
    $connection->match($extensions.serializerExtension('vX_X_X')->cast(@meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X).transfers_store_transformConnection->concatenate(
                       $extensions.serializerExtension('vX_X_X')->cast(@meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X).transfers_store_transformConnection2->map(f | $f->eval($extensions)))->concatenate(

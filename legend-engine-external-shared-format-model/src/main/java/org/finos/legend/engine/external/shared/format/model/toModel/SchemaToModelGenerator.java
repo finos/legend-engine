@@ -55,8 +55,8 @@ public class SchemaToModelGenerator extends Generator
         try
         {
             Class<?> cls = Class.forName("org.finos.legend.pure.generated.core_pure_protocol_" + pureVersion + "_transfers_metamodel");
-            this.classTransform = cls.getMethod("Root_meta_protocols_pure_" + pureVersion + "_transformation_fromPureGraph_domain_transformClass_Class_1__RouterExtension_MANY__Class_1_", org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class.class, RichIterable.class, org.finos.legend.pure.m3.execution.ExecutionSupport.class);
-            this.associationTransform = cls.getMethod("Root_meta_protocols_pure_" + pureVersion + "_transformation_fromPureGraph_domain_transformAssociation_Association_1__RouterExtension_MANY__Association_1_", org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association.class, RichIterable.class, org.finos.legend.pure.m3.execution.ExecutionSupport.class);
+            this.classTransform = cls.getMethod("Root_meta_protocols_pure_" + pureVersion + "_transformation_fromPureGraph_domain_transformClass_Class_1__Extension_MANY__Class_1_", org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class.class, RichIterable.class, org.finos.legend.pure.m3.execution.ExecutionSupport.class);
+            this.associationTransform = cls.getMethod("Root_meta_protocols_pure_" + pureVersion + "_transformation_fromPureGraph_domain_transformAssociation_Association_1__Extension_MANY__Association_1_", org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association.class, RichIterable.class, org.finos.legend.pure.m3.execution.ExecutionSupport.class);
             this.enumTransform = cls.getMethod("Root_meta_protocols_pure_" + pureVersion + "_transformation_fromPureGraph_domain_transformEnum_Enumeration_1__Enumeration_1_", org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enumeration.class, org.finos.legend.pure.m3.execution.ExecutionSupport.class);
         }
         catch (Exception e)

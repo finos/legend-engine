@@ -35,7 +35,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let mapping = meta::relational::tests::milestoning::milestoningmap;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[{"name":"ProductName2","classificationTypeStr()":"STOCK","id":2,"type":"STOCK"},'+
@@ -58,7 +58,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let mapping = meta::relational::tests::milestoning::milestoningmap;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[{"name":"ProductName2","classificationExchangeName1()":"LNSE","id":2,"type":"STOCK"},'+
@@ -83,7 +83,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let mapping = meta::relational::tests::milestoning::milestoningmap;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[{"id":1,"product(2015-10-16)":[]},'+
@@ -109,7 +109,7 @@ function <<test.Test, test.AlloyOnly, test.ToFix>> {serverVersion.start='v1_19_0
    let mapping = meta::relational::tests::milestoning::milestoningmap;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[{"id":1,"product(2015-10-16)":[]},'+
@@ -130,7 +130,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let mapping = meta::relational::tests::milestoning::milestoningmap;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '{"name":"ProductName2","id":2}',
@@ -188,7 +188,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let mapping = meta::relational::tests::milestoning::milestoningmap;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[{"product($bd)":[],"id":1,"orderDate":"2015-08-26T00:00:00.000000000"},'+
@@ -236,7 +236,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let mapping = meta::relational::tests::milestoning::milestoningmap;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[{"id":1,"orderDate":"2015-08-26T00:00:00.000000000","product(2019-08-26T00:00:00.000000000+0000)":[]},'+
@@ -266,7 +266,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let mapping = meta::relational::tests::milestoning::milestoningmap;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '{"businessDate":"2017-06-09","processingDate":"2017-06-10","id":1}',
@@ -307,7 +307,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let mapping = meta::relational::tests::milestoning::milestoningmap;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '{"businessDate":"2017-06-10","biTemporalClassification($pd, $bd)":{"businessDate":"2017-06-10","processingDate":"2017-06-11","type":"STOCK"},"processingDate":"2017-06-11","id":1}',
@@ -340,7 +340,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let mapping = meta::relational::tests::milestoning::businessSnapshotMilestoningMap;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '{"name":"ProductName1","classification($bd)":{"type":"STOCK"}}',
@@ -369,7 +369,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let mapping = meta::relational::tests::milestoning::propagationMapping;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[{"cancelProductActivityCreatedBy":null,"id":2},{"cancelProductActivityCreatedBy":null,"id":3}]',
@@ -404,7 +404,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let mapping = meta::relational::tests::milestoning::propagationMapping;
    let runtime = meta::relational::tests::testRuntime();
 
-   let result = execute($query, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
       '[{"product":[],"id":1},{"product":[{"cancelProductActivityCreatedBy":null,"id":2}],"id":2}]',

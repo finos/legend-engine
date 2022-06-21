@@ -27,13 +27,13 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.test.runner.shared.TestResult;
-import org.finos.legend.pure.generated.core_relational_relational_router_router_extension;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.Objects;
 
+import static org.finos.legend.pure.generated.core_relational_relational_extensions_router_extension.Root_meta_relational_extension_relationalExtensions__Extension_MANY_;
 import static org.junit.Assert.assertEquals;
 
 public class TestMappingTestRunner
@@ -282,7 +282,7 @@ public class TestMappingTestRunner
     {
         Mapping mapping = pureModelContextData.getElementsOfType(Mapping.class).get(0);
         MappingTest mappingTest = mapping.tests.get(0);
-        MappingTestRunner mappingTestRunner = new MappingTestRunner(pureModel, mapping.getPath(), mappingTest, planExecutor, core_relational_relational_router_router_extension.Root_meta_pure_router_extension_defaultRelationalExtensions__RouterExtension_MANY_(pureModel.getExecutionSupport()), LegendPlanTransformers.transformers, "vX_X_X");
+        MappingTestRunner mappingTestRunner = new MappingTestRunner(pureModel, mapping.getPath(), mappingTest, planExecutor, Root_meta_relational_extension_relationalExtensions__Extension_MANY_(pureModel.getExecutionSupport()), LegendPlanTransformers.transformers, "vX_X_X");
         return mappingTestRunner.setupAndRunTest();
     }
 
