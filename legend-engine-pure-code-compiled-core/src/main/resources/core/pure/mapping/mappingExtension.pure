@@ -45,7 +45,7 @@ Class meta::pure::mapping::StoreQuery
     inScopeVars : Map<String, List<Any>>[1];
     advancedRouting : Boolean[0..1];
     store : Store[1];
-    //sets : Pair<String, List<Any>>[*]; //inputs to either cross store ( query | deepFetch)
+    //sets : Pair<String, List<Any>>[*]; //inputs to either cross store ( query )
 }
 
 Class meta::pure::mapping::TabularDataSetImplementation extends TabularDataSet
@@ -273,7 +273,7 @@ function meta::pure::router::routing::findMappingsFromProperty(p:AbstractPropert
        // We don't find anything in the old flow (if the source is an operation and the target type is not directly mapped...
        if ($classMapping->isEmpty(),
           |let mappings = $state.classMappingsForClass($p->functionReturnType().rawType->toOne()->cast(@Class<Any>));
-           if ($mappings->isEmpty() || $state.isDeepFetchRouting,
+           if ($mappings->isEmpty(),
                |^EmbeddedSetImplementation(id='embdedded_todo', root=true, class=$p->functionReturnType().rawType->toOne()->cast(@Class<Any>), parent = $mapping, property=$p->cast(@Property<Nil,Any|*>), targetSetImplementationId='todo', sourceSetImplementationId='todo'),
                |$mappings
            );,

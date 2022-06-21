@@ -58,7 +58,7 @@ public class DatabricksManager extends DatabaseManager
                 throw new EngineException("Unsupported protocol [" + protocol + "]");
         }
 
-        return String.format("jdbc:spark://%s:%s/default;transportMode=%s;ssl=%s;AuthMech=3;httpPath=%s;",
+        return String.format("jdbc:databricks://%s:%s/default;transportMode=%s;ssl=%s;AuthMech=3;httpPath=%s;UID=token",
                 hostname,
                 dbport,
                 transportMode,

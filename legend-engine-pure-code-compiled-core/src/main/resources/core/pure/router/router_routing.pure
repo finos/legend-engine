@@ -80,8 +80,6 @@ Class meta::pure::router::routing::RoutingState
 
    //temporary, may move to mapping
    classMappingsByClass:Map<Class<Any>,List<SetImplementation>>[1];
-   
-   isDeepFetchRouting : Boolean[1];
 
    classMappingsForClass(class:Class<Any>[1])
    {

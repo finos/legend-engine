@@ -224,12 +224,25 @@ public class TestServiceRunner
     }
 
     @Test
-    public void testSimpleServiceRunnerWithLetVariablePureExpression()
+    public void testSimpleServiceRunnerWithLetVariablePureExpressionWithParam()
     {
         SimpleServiceRunnerWithLetVariablePureExpression serviceRunnerWithLetVariablePureExpression = new SimpleServiceRunnerWithLetVariablePureExpression();
         ServiceRunnerInput serviceRunnerInput = ServiceRunnerInput
                 .newInstance()
                 .withArgs(Arrays.asList("1982-01-20"))
+                .withSerializationFormat(SerializationFormat.PURE);
+
+        String result = serviceRunnerWithLetVariablePureExpression.run(serviceRunnerInput);
+        Assert.assertEquals("[{\"firstName\":\"Peter\",\"lastName\":\"Smith\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\"},{\"firstName\":\"Bob\",\"lastName\":\"Stevens\"}]", result);
+    }
+
+    @Test
+    public void testSimpleServiceRunnerWithLetVariablePureExpressionWithoutParam()
+    {
+        SimpleServiceRunnerWithLetVariablePureExpression serviceRunnerWithLetVariablePureExpression = new SimpleServiceRunnerWithLetVariablePureExpression();
+        ServiceRunnerInput serviceRunnerInput = ServiceRunnerInput
+                .newInstance()
+                .withArgs(Collections.singletonList(null))
                 .withSerializationFormat(SerializationFormat.PURE);
 
         String result = serviceRunnerWithLetVariablePureExpression.run(serviceRunnerInput);

@@ -41,3 +41,9 @@ Class meta::external::store::service::executionPlan::nodes::ServiceParametersRes
 {
    requestParametersBuildInfo : ServiceRequestParametersBuildInfo[1];
 }
+
+// Currently we are defining this node under service store but in future if we this is needed in broader scope we will move this up the hierarchy
+Class meta::external::store::service::executionPlan::nodes::LimitExecutionNode extends ExecutionNode
+{
+   limit : Integer[1];
+}

@@ -1,0 +1,101 @@
+{
+  "deployment": {
+    "mode": "TEST_IGNORE_FUNCTION_MATCH"
+  },
+  "logging": {
+    "level": "error",
+    "appenders": [
+      {
+        "type": "console",
+        "logFormat": "%msg\r\n"
+      }
+    ]
+  },
+  "pac4j": {
+    "bypassPaths": [
+      "/api/server/v1/info"
+    ],
+    "clients": [
+      {
+        "org.pac4j.core.client.direct.AnonymousClient": {
+        }
+      }
+    ],
+    "mongoSession": {
+      "enabled": false
+    }
+  },
+  "opentracing": {
+    "elastic": "",
+    "zipkin": "",
+    "uri": "",
+    "authenticator": {
+      "principal": "",
+      "keytab": ""
+    }
+  },
+  "swagger": {
+    "title": "Legend Engine",
+    "resourcePackage": "org.finos.legend",
+    "uriPrefix": "/api"
+  },
+  "server": {
+    "type": "simple",
+    "applicationContextPath": "/",
+    "adminContextPath": "/admin",
+    "connector": {
+      "maxRequestHeaderSize": "32KiB",
+      "type": "http",
+      "port": 6060
+    },
+    "requestLog": {
+      "appenders": [
+      ]
+    }
+  },
+  "metadataserver": {
+    "pure": {
+      "host": "127.0.0.1",
+      "port": 8080
+    },
+    "alloy": {
+      "host": "127.0.0.1",
+      "port": 8075
+    }
+  },
+  "temporarytestdb": {
+    "port": 9099
+  },
+  "relationalexecution": {
+    "tempPath": "/tmp/",
+    "temporarytestdb": {
+      "port": 9099
+    },
+    "flowProviderClass": "org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProvider",
+    "flowProviderConfiguration": {
+      "_type": "legendDefault"
+    }
+  },
+  "testConnectionsToEnable" : ["Databricks"],
+  "staticTestConnections" : {
+    "Databricks" : {
+      "_type": "RelationalDatabaseConnection",
+      "datasourceSpecification": {
+        "_type": "databricks",
+        "hostname": "dbc-f0687849-717f.cloud.databricks.com",
+        "port": "443",
+        "protocol": "https",
+        "httpPath": "sql/protocolv1/o/448477574000404/0228-234110-ve0xbrtk"
+      },
+      "authenticationStrategy": {
+        "_type": "apiToken",
+        "apiToken": "DATABRICKS_API_TOKEN"
+      },
+      "type": "Databricks",
+      "element" : "",
+      "databaseType": "Databricks",
+      "postProcessors": [],
+      "postProcessorWithParameter": []
+    }
+  }
+}

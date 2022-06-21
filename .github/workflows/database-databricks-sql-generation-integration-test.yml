@@ -1,4 +1,4 @@
-# Copyright 2022 Goldman Sachs
+# Copyright 2022 Databricks
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,12 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-name: Database Redshift SQL Generation Integration Tests
+name: Database Databricks SQL Generation Integration Tests
 
 env:
   CI_DEPLOY_USERNAME: ${{ secrets.CI_DEPLOY_USERNAME }}
   CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
 on:
   schedule:
@@ -25,13 +26,10 @@ on:
   push:
     branches:
       - master
-      - refactor-integration-tests
 jobs:
   build:
-    name: Build
     # NOTE: we cannot run this action in fork because secrets are not accessible from forks
     # See https://community.sonarsource.com/t/github-action-ci-build-fail-with-set-the-sonar-token-env-variable/38997
-    if: github.repository == 'finos/legend-engine'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
@@ -54,12 +52,11 @@ jobs:
       - name: Download deps and plugins
         run: mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies
       - name: Build
-        run: mvn clean install -DskipTests=true
         env:
           MAVEN_OPTS: -Xmx4g
-      - name: SQL Generation Integration Tests
+        run: |
+          mvn clean install -DskipTests=true
+      - name: Run Sql Generation Tests
         env:
           MAVEN_OPTS: -Xmx4g
-          REDSHIFT_INTEGRATION_USER1_NAME: ${{ secrets.REDSHIFT_INTEGRATION_USER1_NAME }}
-          REDSHIFT_INTEGRATION_USER1_PASSWORD: ${{ secrets.REDSHIFT_INTEGRATION_USER1_PASSWORD }}
-        run: mvn -pl legend-engine-server -Dtest="Test_Relational_DbSpecific_Redshift_UsingPureClientTestSuite" test
+        run: mvn -pl legend-engine-server -Dtest="Test_Relational_DbSpecific_Databricks_UsingPureClientTestSuite" test

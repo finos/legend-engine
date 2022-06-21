@@ -36,7 +36,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::external::format::xml::execution
    
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::external::format::xml::executionPlan::XmlDeserializeExecutionNode extends ExecutionNode
+Class meta::protocols::pure::vX_X_X::metamodel::external::format::xml::executionPlan::XmlDeserializeExecutionNode extends meta::protocols::pure::vX_X_X::metamodel::external::shared::format::executionPlan::ExternalFormatDeserializeExecutionNode
 {
    binding : String[1];
    tree    : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::RootGraphFetchTree[0..1];

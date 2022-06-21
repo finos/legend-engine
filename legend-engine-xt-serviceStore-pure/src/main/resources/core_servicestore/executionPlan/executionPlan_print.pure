@@ -48,6 +48,15 @@ function meta::external::store::service::executionPlan::toString::serviceParamet
    $space+')\n'
 }
 
+function meta::external::store::service::executionPlan::toString::limitExecutionNodeToString(l:LimitExecutionNode[1], space:String[1], extensions:meta::pure::router::extension::RouterExtension[*]):String[1]
+{
+   'LimitExecutionNode\n'+
+   $space+'('+header($l, $space, $extensions)+'\n'+
+   $space+'  limit = '+$l.limit->toString() +'\n'+
+   $l.implementation->printImplementation('implementation', $space+'  ', $extensions) +'\n'+
+   $space+')\n'
+}
+
 function meta::external::store::service::executionPlan::toString::serviceStoreConnectionToString(conn:ServiceStoreConnection[1]):String[1]
 {
    let store   = 'store="'+$conn.element->cast(@ServiceStore)->elementToPath()+'"';

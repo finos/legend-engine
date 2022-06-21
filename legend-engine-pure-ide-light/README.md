@@ -12,17 +12,3 @@ mvn -pl legend-engine-pure-ide-light exec:java -Dexec.mainClass="org.finos.legen
 ```
 
 Then navigate to http://127.0.0.1/ide
-
-## Changing the location of core files from legend-pure
-Some core code lives in [legend-pure](https://github.com/finos/legend-pure).
-By default, Pure IDE Light assumes that legend-pure is checked out as a sibling to legend-engine project in the filesystem.
-This can be overriden by editing the ideLightConfig.json file and adding the following to the end of the configuration file
-
-```
- "sourceLocationConfiguration" : {
-    "coreFilesLocation" : <location of legend-pure directory>
-  }
-```
-
-The core files under legend-pure will now be sourced from the location specified.
-

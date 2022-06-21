@@ -156,7 +156,7 @@ function meta::pure::mapping::xStore::performXStoreQuery(o:Any[1], p:PropertyMap
 
    let cluster = $clustered->at(0).expressionSequence->evaluateAndDeactivate()->cast(@ClusteredValueSpecification);
    
-   let res = $cluster->executeExpression($cluster.openVars->toOne(), [], [], [], $objectInfo.static.exeCtx, false, $extensions, $debug);
+   let res = $cluster->executeExpression($cluster.openVars->toOne(), [], $objectInfo.static.exeCtx, false, $extensions, $debug);
 
    $extensions.logActivities->map(e|$e->eval($res.activities));
 

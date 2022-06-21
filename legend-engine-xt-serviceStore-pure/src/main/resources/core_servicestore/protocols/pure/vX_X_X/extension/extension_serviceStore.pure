@@ -58,6 +58,12 @@ function meta::protocols::pure::vX_X_X::extension::store::service::getServiceSto
                    _type                      = 'serviceParametersResolution',
                    resultType                 = $spr.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
                    requestParametersBuildInfo = $spr.requestParametersBuildInfo->map(p | $p->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::mapping::transformServiceRequestParametersBuildInfo($extensions))
+                ),
+             limit:meta::external::store::service::executionPlan::nodes::LimitExecutionNode[1]|
+                ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::service::LimitExecutionNode(
+                   _type='limit',
+                   resultType=$limit.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
+                   limit = $limit.limit
                 )
           ]},
       transfers_mapping_transformSetImplementation2 = {mapping:Mapping[1], extensions:meta::pure::router::extension::RouterExtension[*] | [

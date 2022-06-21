@@ -73,6 +73,7 @@ function meta::external::shared::format::executionPlan::getSourceNodeFromExterna
 {
    $externalSource->match([
       u:UrlStreamExternalSource[1]     | generateUrlStreamExecutionNode($u),
+      e:ExecutionNodeExternalSource[1] | $e.node,
       e:ExternalSource[1]              | fail('External source format not supported !!'); @ExecutionNode;
    ]);
 }
@@ -411,6 +412,7 @@ function meta::external::shared::format::executionPlan::printConnection(extensio
    [
       {ext:ExternalFormatConnection[1] |
          let source = $ext.externalSource->match([
+            e:ExecutionNodeExternalSource[1] | 'Execution Node Source',
             u:UrlStreamExternalSource[1] | 'url="'+$u.url+'"'
          ]);
          'binding="'+$ext.element->cast(@Binding)->elementToPath()+'", source=('+$source+')';
