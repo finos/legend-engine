@@ -19,7 +19,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DoTestsResult
+public class RunTestsResult
 {
     public List<TestResult> results = new ArrayList<>();
 }

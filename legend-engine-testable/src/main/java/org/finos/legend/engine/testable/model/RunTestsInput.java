@@ -15,15 +15,15 @@
 package org.finos.legend.engine.testable.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.finos.legend.engine.protocol.pure.v1.model.test.AtomicTestId;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class DoTestsTestableInput
+public class RunTestsInput
 {
     @JsonProperty(required = true)
-    public String testable;
+    public PureModelContext model;
 
-    public List<AtomicTestId> unitTestIds = new ArrayList<>();
+    public List<RunTestsTestableInput> testables = new ArrayList<>();
 }

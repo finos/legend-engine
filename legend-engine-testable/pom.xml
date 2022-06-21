@@ -32,6 +32,11 @@
             <artifactId>legend-engine-pure-code-compiled-core</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m3-core</artifactId>
+            <version>${legend.pure.version}</version>
+        </dependency>
 
         <!-- ENGINE -->
         <dependency>
@@ -105,6 +110,10 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
         </dependency>
         <!-- JACKSON -->
 
