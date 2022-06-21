@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import meta::pure::tds::extensions::*;
-import meta::csv::*;
+import meta::relational::tests::csv::*;
 
 function <<test.Test>>
    meta::pure::tds::tests::extensions::iqrClassifyTest() : Boolean[1]
