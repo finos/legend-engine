@@ -57,18 +57,18 @@ jobs:
       - name: Download deps and plugins
         run: mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies
         env:
-          MAVEN_OPTS: -Xmx4000m
+          MAVEN_OPTS: -Xmx4g
       - name: Build + Test
         if: (github.repository != 'finos/legend-engine') || (github.ref != 'refs/heads/master')
         run: mvn install javadoc:javadoc -Dmaven.test.failure.ignore=true
         env:
-          MAVEN_OPTS: -Xmx4000m
+          MAVEN_OPTS: -Xmx4g
       - name: Build + Test + Maven Deploy + Sonar + Docker Snapshot
         if: (github.repository == 'finos/legend-engine') && (github.ref == 'refs/heads/master')
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-          MAVEN_OPTS: -Xmx4000m
+          MAVEN_OPTS: -Xmx4g
         run: mvn javadoc:javadoc deploy -P sonar,docker-snapshot
       - name: Upload Test Results
         if: always()

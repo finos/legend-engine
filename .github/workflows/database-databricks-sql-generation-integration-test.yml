@@ -53,10 +53,10 @@ jobs:
         run: mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies
       - name: Build
         env:
-          MAVEN_OPTS: -Xmx4000m
+          MAVEN_OPTS: -Xmx4g
         run: |
           mvn clean install -DskipTests=true
       - name: Run Sql Generation Tests
         env:
-          MAVEN_OPTS: -Xmx4000m
+          MAVEN_OPTS: -Xmx4g
         run: mvn -pl legend-engine-server -Dtest="Test_Relational_DbSpecific_Databricks_UsingPureClientTestSuite" test
