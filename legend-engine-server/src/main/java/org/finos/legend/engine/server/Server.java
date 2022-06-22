@@ -65,6 +65,8 @@ import org.finos.legend.engine.plan.execution.stores.relational.plugin.Relationa
 import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStore;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
+import org.finos.legend.engine.api.analytics.DataSpaceAnalytics;
+import org.finos.legend.engine.api.analytics.DiagramAnalytics;
 import org.finos.legend.engine.query.graphQL.api.debug.GraphQLDebug;
 import org.finos.legend.engine.query.graphQL.api.execute.GraphQLExecute;
 import org.finos.legend.engine.query.graphQL.api.grammar.GraphQLGrammar;
@@ -217,6 +219,10 @@ public class Server<T extends ServerConfiguration> extends Application<T>
 
         // External Format
         environment.jersey().register(new ExternalFormats(modelManager));
+
+        // Analytics
+        environment.jersey().register(new DiagramAnalytics(modelManager));
+        environment.jersey().register(new DataSpaceAnalytics(modelManager));
 
         enableCors(environment);
     }

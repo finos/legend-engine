@@ -286,4 +286,28 @@ public class TestSectionRoundtrip extends TestGrammarRoundtrip.TestGrammarRoundt
                 "\n" +
                 "\n");
     }
+
+    @Test
+    public void testRenderingSectionWithExtensionsWithoutSectionIndex()
+    {
+        String unformatted = "###Mapping\n" +
+                "Mapping B\n" +
+                "(\n" +
+                ")\n" +
+                "\n" +
+                "\n" +
+                "###Pure\n" +
+                "Class A\n" +
+                "{\n" +
+                "}\n";
+        testFormatWithoutSectionIndex("Class A\n" +
+                "{\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping B\n" +
+                "(\n" +
+                ")\n", unformatted);
+    }
 }

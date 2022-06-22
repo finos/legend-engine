@@ -4,38 +4,6 @@
   "caches": [],
   "connections": [],
   "dataStoreSpecifications": [],
-  "diagrams": [
-    {
-      "_type": "diagram",
-      "classViews": [],
-      "generalizationViews": [],
-      "name": "MyDiagram",
-      "package": "meta::pure",
-      "propertyViews": [],
-      "sourceInformation": {
-        "endColumn": 1,
-        "endLine": 15,
-        "sourceId": "",
-        "startColumn": 1,
-        "startLine": 13
-      }
-    },
-    {
-      "_type": "diagram",
-      "classViews": [],
-      "generalizationViews": [],
-      "name": "AnotherDiagram",
-      "package": "meta::pure",
-      "propertyViews": [],
-      "sourceInformation": {
-        "endColumn": 1,
-        "endLine": 19,
-        "sourceId": "",
-        "startColumn": 1,
-        "startLine": 17
-      }
-    }
-  ],
   "domain": {
     "associations": [
       {
@@ -245,24 +213,6 @@
         {
           "_type": "importAware",
           "elements": [
-            "meta::pure::MyDiagram"
-          ],
-          "imports": [
-            "diag::a::b",
-            "diag::a::e"
-          ],
-          "parserName": "Diagram",
-          "sourceInformation": {
-            "endColumn": 1,
-            "endLine": 22,
-            "sourceId": "",
-            "startColumn": 1,
-            "startLine": 11
-          }
-        },
-        {
-          "_type": "importAware",
-          "elements": [
             "myAssociation",
             "meta::pure::profiles::doc",
             "A",
@@ -296,22 +246,6 @@
             "sourceId": "",
             "startColumn": 1,
             "startLine": 1
-          }
-        },
-        {
-          "_type": "importAware",
-          "elements": [],
-          "imports": [
-            "diag::a::b",
-            "diag::a::e"
-          ],
-          "parserName": "Diagram",
-          "sourceInformation": {
-            "endColumn": 1,
-            "endLine": 22,
-            "sourceId": "",
-            "startColumn": 1,
-            "startLine": 11
           }
         },
         {

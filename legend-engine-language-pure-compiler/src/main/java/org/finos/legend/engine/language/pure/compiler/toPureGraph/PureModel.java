@@ -36,8 +36,11 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Proc
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionHandler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handlers;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.UserDefinedFunctionHandler;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.AssociationValidator;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.ClassValidator;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.EnumerationValidator;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.MappingValidator;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.ProfileValidator;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.PureModelContextDataValidator;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
@@ -66,6 +69,8 @@ import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Class_LazyI
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_FunctionType_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_PrimitiveType_LazyImpl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableConnection;
+import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.PackageableMultiplicity;
@@ -131,7 +136,9 @@ public class PureModel implements IPureModel
     final MutableMap<String, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association> associationsIndex = Maps.mutable.empty();
     final MutableMap<String, Store> storesIndex = Maps.mutable.empty();
     final MutableMap<String, Mapping> mappingsIndex = Maps.mutable.empty();
+    final MutableMap<String, Root_meta_pure_runtime_PackageableConnection> packageableConnectionsIndex = Maps.mutable.empty();
     final MutableMap<String, Connection> connectionsIndex = Maps.mutable.empty();
+    final MutableMap<String, Root_meta_pure_runtime_PackageableRuntime> packageableRuntimesIndex = Maps.mutable.empty();
     final MutableMap<String, Runtime> runtimesIndex = Maps.mutable.empty();
 
     public PureModel(PureModelContextData pure, Iterable<? extends CommonProfile> pm, DeploymentMode deploymentMode)
@@ -265,7 +272,10 @@ public class PureModel implements IPureModel
             long processingFinished = System.currentTimeMillis();
 
             // Post Validation
+            new ProfileValidator().validate(this, pureModelContextData);
+            new EnumerationValidator().validate(this, pureModelContextData);
             new ClassValidator().validate(this, pureModelContextData);
+            new AssociationValidator().validate(this, pureModelContextData);
             new MappingValidator().validate(this, pureModelContextData);
             extraPostValidators.forEach(validator -> validator.value(this, pureModelContextData));
             long postValidationFinished = System.currentTimeMillis();
@@ -834,6 +844,20 @@ public class PureModel implements IPureModel
         Mapping resultMapping = getMapping_safe(fullPath);
         Assert.assertTrue(resultMapping != null, () -> "Can't find mapping '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
         return resultMapping;
+    }
+
+    public Root_meta_pure_runtime_PackageableRuntime getPackageableRuntime(String fullPath, SourceInformation sourceInformation)
+    {
+        Root_meta_pure_runtime_PackageableRuntime metamodel = this.packageableRuntimesIndex.get(packagePrefix(fullPath));
+        Assert.assertTrue(metamodel != null, () -> "Can't find packageable runtime '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
+        return metamodel;
+    }
+
+    public Root_meta_pure_runtime_PackageableConnection getPackageableConnection(String fullPath, SourceInformation sourceInformation)
+    {
+        Root_meta_pure_runtime_PackageableConnection metamodel = this.packageableConnectionsIndex.get(packagePrefix(fullPath));
+        Assert.assertTrue(metamodel != null, () -> "Can't find packageable connection '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
+        return metamodel;
     }
 
     public Mapping getMapping_safe(String fullPath)

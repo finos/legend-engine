@@ -1,0 +1,275 @@
+{
+  "_type": "data",
+  "elements": [
+    {
+      "_type": "class",
+      "name": "Reptile",
+      "sourceInformation": {
+        "sourceId": "",
+        "startLine": 1,
+        "startColumn": 1,
+        "endLine": 4,
+        "endColumn": 1
+      },
+      "superTypes": [],
+      "originalMilestonedProperties": [],
+      "properties": [
+        {
+          "name": "hasFin",
+          "type": "Boolean",
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "stereotypes": [],
+          "taggedValues": []
+        }
+      ],
+      "qualifiedProperties": [],
+      "stereotypes": [],
+      "taggedValues": [],
+      "constraints": [],
+      "package": "model::animal::reptile"
+    },
+    {
+      "_type": "runtime",
+      "name": "dummyRuntime",
+      "runtimeValue": {
+        "_type": "engineRuntime",
+        "mappings": [
+          {
+            "type": "MAPPING",
+            "path": "model::dummyMapping"
+          },
+          {
+            "type": "MAPPING",
+            "path": "model::dummyMapping2"
+          }
+        ],
+        "connections": []
+      },
+      "package": "model"
+    },
+    {
+      "_type": "mapping",
+      "name": "dummyMapping2",
+      "classMappings": [],
+      "includedMappings": [],
+      "associationMappings": [],
+      "enumerationMappings": [],
+      "tests": [],
+      "package": "model"
+    },
+    {
+      "_type": "mapping",
+      "name": "dummyMapping",
+      "classMappings": [],
+      "includedMappings": [],
+      "associationMappings": [],
+      "enumerationMappings": [],
+      "tests": [],
+      "package": "model"
+    },
+    {
+      "_type": "class",
+      "name": "Sword",
+      "superTypes": [],
+      "originalMilestonedProperties": [],
+      "properties": [
+        {
+          "name": "length",
+          "type": "Number",
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "stereotypes": [],
+          "taggedValues": []
+        }
+      ],
+      "qualifiedProperties": [],
+      "stereotypes": [],
+      "taggedValues": [],
+      "constraints": [],
+      "package": "model::weapon"
+    },
+    {
+      "_type": "class",
+      "name": "Mammal",
+      "superTypes": [],
+      "originalMilestonedProperties": [],
+      "properties": [
+        {
+          "name": "noOfLegs",
+          "type": "String",
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "stereotypes": [],
+          "taggedValues": []
+        }
+      ],
+      "qualifiedProperties": [],
+      "stereotypes": [],
+      "taggedValues": [],
+      "constraints": [],
+      "package": "model::animal::mammal"
+    },
+    {
+      "_type": "runtime",
+      "name": "dummyRuntime2",
+      "runtimeValue": {
+        "_type": "engineRuntime",
+        "mappings": [
+          {
+            "type": "MAPPING",
+            "path": "model::dummyMapping2"
+          }
+        ],
+        "connections": []
+      },
+      "package": "model"
+    },
+    {
+      "_type": "diagram",
+      "classViews": [],
+      "generalizationViews": [],
+      "name": "GeneralDiagram",
+      "package": "model",
+      "propertyViews": []
+    },
+    {
+      "_type": "dataSpace",
+      "defaultExecutionContext": "dummyContext",
+      "executionContexts": [
+        {
+          "defaultRuntime": {
+            "path": "model::dummyRuntime",
+            "type": "RUNTIME"
+          },
+          "mapping": { "path": "model::dummyMapping", "type": "MAPPING" },
+          "name": "dummyContext"
+        }
+      ],
+      "name": "Mammal1",
+      "package": "model::animal::mammal",
+      "taggedValues": [
+        {
+          "tag": {
+            "profile": "meta::pure::profiles::enterprise",
+            "value": "taxonomyNodes"
+          },
+          "value": "abcdxyz003,abcdxyz002"
+        }
+      ]
+    },
+    {
+      "_type": "dataSpace",
+      "defaultExecutionContext": "dummyContext",
+      "description": "A really sad data space with no care and diagram",
+      "executionContexts": [
+        {
+          "defaultRuntime": {
+            "path": "model::dummyRuntime",
+            "type": "RUNTIME"
+          },
+          "mapping": { "path": "model::dummyMapping", "type": "MAPPING" },
+          "name": "dummyContext"
+        }
+      ],
+      "name": "NoDiagram",
+      "package": "model"
+    },
+    {
+      "_type": "dataSpace",
+      "defaultExecutionContext": "dummyContext",
+      "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+      "executionContexts": [
+        {
+          "defaultRuntime": {
+            "path": "model::dummyRuntime",
+            "type": "RUNTIME"
+          },
+          "mapping": { "path": "model::dummyMapping", "type": "MAPPING" },
+          "name": "dummyContext"
+        },
+        {
+          "defaultRuntime": {
+            "path": "model::dummyRuntime",
+            "type": "RUNTIME"
+          },
+          "mapping": { "path": "model::dummyMapping2", "type": "MAPPING" },
+          "name": "dummyContext2"
+        },
+        {
+          "defaultRuntime": {
+            "path": "model::dummyRuntime2",
+            "type": "RUNTIME"
+          },
+          "mapping": { "path": "model::dummyMapping2", "type": "MAPPING" },
+          "name": "dummyContext3"
+        }
+      ],
+      "featuredDiagrams": [
+        { "path": "model::animal::AnimalDiagram", "type": "DIAGRAM" },
+        { "path": "model::GeneralDiagram", "type": "DIAGRAM" }
+      ],
+      "name": "Animal",
+      "package": "model::animal",
+      "stereotypes": [{ "profile": "doc", "value": "deprecated" }],
+      "supportInfo": { "_type": "email", "address": "someEmail@test.org" },
+      "taggedValues": [
+        {
+          "tag": {
+            "profile": "meta::pure::profiles::enterprise",
+            "value": "taxonomyNodes"
+          },
+          "value": "abcdxyz005"
+        },
+        { "tag": { "profile": "doc", "value": "doc" }, "value": "Lorem ipsum" },
+        { "tag": { "profile": "doc", "value": "doc" }, "value": "Lorem ipsum2" }
+      ]
+    },
+    {
+      "_type": "dataSpace",
+      "defaultExecutionContext": "dummyContext",
+      "executionContexts": [
+        {
+          "defaultRuntime": {
+            "path": "model::dummyRuntime",
+            "type": "RUNTIME"
+          },
+          "mapping": { "path": "model::dummyMapping", "type": "MAPPING" },
+          "name": "dummyContext"
+        }
+      ],
+      "name": "Reptile1",
+      "package": "model::animal::reptile",
+      "supportInfo": { "_type": "email", "address": "someEmail@test.org" },
+      "taggedValues": [
+        {
+          "tag": {
+            "profile": "meta::pure::profiles::enterprise",
+            "value": "taxonomyNodes"
+          },
+          "value": "abcdxyz006"
+        },
+        { "tag": { "profile": "doc", "value": "doc" }, "value": "Lorem ipsum" },
+        { "tag": { "profile": "doc", "value": "doc" }, "value": "Lorem ipsum2" }
+      ]
+    },
+    {
+      "_type": "diagram",
+      "classViews": [
+        {
+          "class": "model::animal::mammal::Mammal",
+          "id": "641a0336-d4b5-418c-b656-2f52461264e2",
+          "position": { "x": 427, "y": 210 },
+          "rectangle": { "height": 44, "width": 125.1123046875 }
+        },
+        {
+          "class": "model::animal::reptile::Reptile",
+          "id": "b92253d8-0389-4c7d-b5d2-3cdc3bb1ad98",
+          "position": { "x": 787, "y": 216 },
+          "rectangle": { "height": 44, "width": 120.84765625 }
+        }
+      ],
+      "generalizationViews": [],
+      "name": "AnimalDiagram",
+      "package": "model::animal",
+      "propertyViews": []
+    }
+  ]
+}

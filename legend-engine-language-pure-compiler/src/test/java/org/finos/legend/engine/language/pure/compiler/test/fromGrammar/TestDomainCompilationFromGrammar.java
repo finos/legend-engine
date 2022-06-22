@@ -250,7 +250,53 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testDuplicatePropertyWarning() throws Exception
+    public void testDuplicateProfileTagAndStereotypeWarning() throws Exception
+    {
+        Pair<PureModelContextData, PureModel> res = test("Profile test::A\n" +
+                "{\n" +
+                "   tags : [doc, doc];\n" +
+                "   stereotypes : [modifier, modifier, accessorType, accessorType];\n" +
+                "}\n");
+        MutableList<Warning> warnings = res.getTwo().getWarnings();
+        Assert.assertEquals(3, warnings.size());
+        ObjectMapper mapper = new ObjectMapper();
+        Assert.assertEquals("{\"sourceInformation\":{\"sourceId\":\"\",\"startLine\":1,\"startColumn\":1,\"endLine\":5,\"endColumn\":1},\"message\":\"Found duplicated tag 'doc' in profile 'test::A'\"}", mapper.writeValueAsString(warnings.get(0)));
+        Assert.assertEquals("{\"sourceInformation\":{\"sourceId\":\"\",\"startLine\":1,\"startColumn\":1,\"endLine\":5,\"endColumn\":1},\"message\":\"Found duplicated stereotype 'modifier' in profile 'test::A'\"}", mapper.writeValueAsString(warnings.get(1)));
+        Assert.assertEquals("{\"sourceInformation\":{\"sourceId\":\"\",\"startLine\":1,\"startColumn\":1,\"endLine\":5,\"endColumn\":1},\"message\":\"Found duplicated stereotype 'accessorType' in profile 'test::A'\"}", mapper.writeValueAsString(warnings.get(2)));
+    }
+
+    @Test
+    public void testDuplicateEnumValueWarning() throws Exception
+    {
+        Pair<PureModelContextData, PureModel> res = test("Enum test::A\n" +
+                "{\n" +
+                "   TEA,COFFEE,TEA,TEA,COFFEE\n" +
+                "}\n");
+        MutableList<Warning> warnings = res.getTwo().getWarnings();
+        Assert.assertEquals(2, warnings.size());
+        ObjectMapper mapper = new ObjectMapper();
+        Assert.assertEquals("{\"sourceInformation\":{\"sourceId\":\"\",\"startLine\":3,\"startColumn\":8,\"endLine\":3,\"endColumn\":13},\"message\":\"Found duplicated value 'COFFEE' in enumeration 'test::A'\"}", mapper.writeValueAsString(warnings.get(0)));
+        Assert.assertEquals("{\"sourceInformation\":{\"sourceId\":\"\",\"startLine\":3,\"startColumn\":4,\"endLine\":3,\"endColumn\":6},\"message\":\"Found duplicated value 'TEA' in enumeration 'test::A'\"}", mapper.writeValueAsString(warnings.get(1)));
+    }
+
+    @Test
+    public void testDuplicateAssociationPropertyWarning() throws Exception
+    {
+        Pair<PureModelContextData, PureModel> res = test("Class test::A {}\n" +
+                "Class test::B {}\n" +
+                "Association test::C\n" +
+                "{\n" +
+                "   property1: test::A[0..1];\n" +
+                "   property1: test::B[1];\n" +
+                "}\n");
+        MutableList<Warning> warnings = res.getTwo().getWarnings();
+        Assert.assertEquals(1, warnings.size());
+        ObjectMapper mapper = new ObjectMapper();
+        Assert.assertEquals("{\"sourceInformation\":{\"sourceId\":\"\",\"startLine\":5,\"startColumn\":4,\"endLine\":5,\"endColumn\":28},\"message\":\"Found duplicated property 'property1' in association 'test::C'\"}", mapper.writeValueAsString(warnings.get(0)));
+    }
+
+    @Test
+    public void testDuplicateClassPropertyWarning() throws Exception
     {
         Pair<PureModelContextData, PureModel> res = test("Class test::A\n" +
                 "{\n" +
@@ -263,8 +309,8 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
         MutableList<Warning> warnings = res.getTwo().getWarnings();
         Assert.assertEquals(2, warnings.size());
         ObjectMapper mapper = new ObjectMapper();
-        Assert.assertEquals("{\"sourceInformation\":{\"sourceId\":\"\",\"startLine\":5,\"startColumn\":4,\"endLine\":5,\"endColumn\":21},\"message\":\"Duplicate property 'other' in the Class test::A\"}", mapper.writeValueAsString(warnings.get(0)));
-        Assert.assertEquals("{\"sourceInformation\":{\"sourceId\":\"\",\"startLine\":3,\"startColumn\":4,\"endLine\":3,\"endColumn\":28},\"message\":\"Duplicate property 'property' in the Class test::A\"}", mapper.writeValueAsString(warnings.get(1)));
+        Assert.assertEquals("{\"sourceInformation\":{\"sourceId\":\"\",\"startLine\":5,\"startColumn\":4,\"endLine\":5,\"endColumn\":21},\"message\":\"Found duplicated property 'other' in class 'test::A'\"}", mapper.writeValueAsString(warnings.get(0)));
+        Assert.assertEquals("{\"sourceInformation\":{\"sourceId\":\"\",\"startLine\":3,\"startColumn\":4,\"endLine\":3,\"endColumn\":28},\"message\":\"Found duplicated property 'property' in class 'test::A'\"}", mapper.writeValueAsString(warnings.get(1)));
     }
 
     @Test

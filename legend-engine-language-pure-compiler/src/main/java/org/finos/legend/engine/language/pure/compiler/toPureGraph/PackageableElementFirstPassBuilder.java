@@ -50,6 +50,10 @@ import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Enum_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Enumeration_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Measure_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableConnection;
+import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableConnection_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime;
+import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
@@ -276,24 +280,26 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
     @Override
     public PackageableElement visit(PackageableRuntime packageableRuntime)
     {
-        // NOTE: we stub out since this element doesn't have an equivalent packageable element form in PURE metamodel
+        Root_meta_pure_runtime_PackageableRuntime metamodel = new Root_meta_pure_runtime_PackageableRuntime_Impl("");
+        this.context.pureModel.packageableRuntimesIndex.put(this.context.pureModel.buildPackageString(packageableRuntime._package, packageableRuntime.name), metamodel);
         org.finos.legend.pure.m3.coreinstance.Package pack = this.context.pureModel.getOrCreatePackage(packageableRuntime._package);
-        PackageableElement stub = new Root_meta_pure_metamodel_PackageableElement_Impl("")._package(pack)._name(packageableRuntime.name);
-        pack._childrenAdd(stub);
-        return stub;
+        metamodel._name(packageableRuntime.name)._package(pack);
+        pack._childrenAdd(metamodel);
+        return metamodel;
     }
 
     @Override
     public PackageableElement visit(PackageableConnection packageableConnection)
     {
-        // NOTE: we stub out since this element doesn't have an equivalent packageable element form in PURE metamodel
+        Root_meta_pure_runtime_PackageableConnection metamodel = new Root_meta_pure_runtime_PackageableConnection_Impl("");
+        this.context.pureModel.packageableConnectionsIndex.put(this.context.pureModel.buildPackageString(packageableConnection._package, packageableConnection.name), metamodel);
         org.finos.legend.pure.m3.coreinstance.Package pack = this.context.pureModel.getOrCreatePackage(packageableConnection._package);
-        PackageableElement stub = new Root_meta_pure_metamodel_PackageableElement_Impl("")._package(pack)._name(packageableConnection.name);
-        pack._childrenAdd(stub);
+        metamodel._name(packageableConnection.name)._package(pack);
+        pack._childrenAdd(metamodel);
         // NOTE: the whole point of this processing is to put the Pure Connection in an index
         final org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection connection = packageableConnection.connectionValue.accept(new ConnectionFirstPassBuilder(this.context));
         this.context.pureModel.connectionsIndex.put(this.context.pureModel.buildPackageString(packageableConnection._package, packageableConnection.name), connection);
-        return stub;
+        return metamodel;
     }
 
     @Override
