@@ -22,10 +22,8 @@ env:
 
 on:
   schedule:
-    - cron: '0 0 * * 2' # every Tuesday on default/base branch
-  push:
-    branches:
-      - master
+    - cron: "0 0 * * *" # every day at 00:00 on default/base branch
+
 jobs:
   build:
     runs-on: ubuntu-latest
