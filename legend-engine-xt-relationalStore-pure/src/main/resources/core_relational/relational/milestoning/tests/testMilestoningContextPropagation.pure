@@ -29,7 +29,7 @@ function <<test.Test>> meta::relational::tests::milestoning::contextpropagation:
 {
    let businessDate = %2015-8-14;
 
-   let result = execute(|Order.all()->project([o|$o.systemADescription($businessDate).description],['systemADescription']), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Order.all()->project([o|$o.systemADescription($businessDate).description],['systemADescription']), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
 
    let tds = $result.values->at(0);
    assertEquals(['system A order description 1', 'system A order description 2'],$tds.rows->map(r|$r.values->makeString(',')));
@@ -40,7 +40,7 @@ function <<test.Test>> meta::relational::tests::milestoning::contextpropagation:
 {
    let businessDate = %2015-8-15;
 
-   let result = execute(|Order.all()->project([o|$o.product($businessDate).stockProductName],['stockProductName']), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Order.all()->project([o|$o.product($businessDate).stockProductName],['stockProductName']), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
 
    let tds = $result.values->at(0);
    assertEquals(['ProductName', 'TDSNull'],$tds.rows->map(r|$r.values->makeString(',')));
@@ -51,7 +51,7 @@ function <<test.Test>> meta::relational::tests::milestoning::contextpropagation:
 {
    let businessDate = %2015-10-16;
 
-   let result = execute(|StockProduct.all($businessDate)->project([s|$s.classification($businessDate).system.name],['systemName']), milestoningMapWithEmbedded, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|StockProduct.all($businessDate)->project([s|$s.classification($businessDate).system.name],['systemName']), milestoningMapWithEmbedded, testRuntime(), meta::relational::extension::relationalExtensions());
 
    let tds = $result.values->at(0);
    assertEquals(['SYS1', 'SYS1'],$tds.rows->map(r|$r.values->makeString(',')));
@@ -63,7 +63,7 @@ function <<test.Test>> meta::relational::tests::milestoning::contextpropagation:
 {
    let businessDate = %2015-10-16;
 
-   let result = execute(|Product.all($businessDate)->project([p|$p.name, p|$p.classificationType],['name','classificationType']), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Product.all($businessDate)->project([p|$p.name, p|$p.classificationType],['name','classificationType']), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
 
    assertEquals(['ProductName2,STOCK', 'ProductName3,TDSNull'],$tds.rows->map(r|$r.values->makeString(',')));
@@ -72,7 +72,7 @@ function <<test.Test>> meta::relational::tests::milestoning::contextpropagation:
 
 function <<test.Test>> meta::relational::tests::milestoning::contextpropagation::testLatestMilestoningFiltersPropogatedToDataTypePropertiesFromAllInProject():Boolean[1]
 {
-   let result = execute(|Product.all(%latest)->project([p|$p.name, p|$p.classificationType],['name','classificationType']), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Product.all(%latest)->project([p|$p.name, p|$p.classificationType],['name','classificationType']), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameSQL('select "root".name as "name", "productclassificationtable_0".type as "classificationType" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".thru_z = \'9999-12-31 00:00:00.0000\') where "root".thru_z = \'9999-12-31 00:00:00.0000\'', $result);
 }
 
@@ -80,7 +80,7 @@ function <<test.Test>> meta::relational::tests::milestoning::contextpropagation:
 {
    let businessDate = %2015-10-16;
 
-   let result = execute(|Product.all($businessDate)->filter(p|$p.name!='')->project([p|$p.name, p|$p.classificationType],['name','classificationType']), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Product.all($businessDate)->filter(p|$p.name!='')->project([p|$p.name, p|$p.classificationType],['name','classificationType']), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
 
    assertEquals(['ProductName2,STOCK', 'ProductName3,TDSNull'],$tds.rows->map(r|$r.values->makeString(',')));
@@ -91,7 +91,7 @@ function <<test.Test>> meta::relational::tests::milestoning::contextpropagation:
 {
    let businessDate = %2015-10-16;
 
-   let result = execute(|Product.all($businessDate)->filter(p|$p.classificationType == ProductClassificationType.STOCK), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Product.all($businessDate)->filter(p|$p.classificationType == ProductClassificationType.STOCK), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertEquals([ProductClassificationType.STOCK], $result.values->map(p|$p.classificationType));
    assertSameSQL('select "root".id as "pk_0", "root".name as "pk_1", "root".id as "id", "root".name as "name", "root".type as "type", "productdescriptiontable_0".description as "stockProductName", "productclassificationtable_0".type as "classificationType", \'2015-10-16\' as "k_businessDate" from ProductTable as "root" left outer join StockProductTable as "stockproducttable_0" on ("root".id = "stockproducttable_0".id and "stockproducttable_0".from_z <= \'2015-10-16\' and "stockproducttable_0".thru_z > \'2015-10-16\') left outer join ProductDescriptionTable as "productdescriptiontable_0" on ("stockproducttable_0".id = "productdescriptiontable_0".id) left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= \'2015-10-16\' and "productclassificationtable_0".thru_z > \'2015-10-16\') left outer join ProductClassificationTable as "productclassificationtable_1" on ("root".type = "productclassificationtable_1".type and "productclassificationtable_1".from_z <= \'2015-10-16\' and "productclassificationtable_1".thru_z > \'2015-10-16\') where "productclassificationtable_1".type = \'STOCK\' and "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\'', $result);
@@ -101,7 +101,7 @@ function <<test.Test>> meta::relational::tests::milestoning::contextpropagation:
 {
    let businessDate = %2015-10-16;
 
-   let result = execute(|Product.all($businessDate)->project([p|$p.id, p|$p.newActivity.createdBy],['name','classificationType']), propagationMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Product.all($businessDate)->project([p|$p.id, p|$p.newActivity.createdBy],['name','classificationType']), propagationMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
 
    assertEquals(['2,smith', '3,TDSNull'],$tds.rows->map(r|$r.values->makeString(',')));
@@ -112,7 +112,7 @@ function <<test.Test>> meta::relational::tests::milestoning::contextpropagation:
 {
    let businessDate = %2015-10-16;
 
-   let result = execute(|Product.all($businessDate)->project([p|$p.id, p|$p.cancelActivity.createdBy],['name','classificationType']), propagationMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Product.all($businessDate)->project([p|$p.id, p|$p.cancelActivity.createdBy],['name','classificationType']), propagationMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
 
    assertEquals(['2,smith', '3,TDSNull'],$tds.rows->map(r|$r.values->makeString(',')));
@@ -123,7 +123,7 @@ function <<test.Test>> meta::relational::tests::milestoning::contextpropagation:
 {
    let businessDate = %2015-10-16;
 
-   let result = execute(|Product.all($businessDate)->project([p|$p.id, p|$p.cancelProductActivity.createdBy],['name','classificationType']), propagationMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Product.all($businessDate)->project([p|$p.id, p|$p.cancelProductActivity.createdBy],['name','classificationType']), propagationMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
 
    assertEquals(['2,smith', '3,TDSNull'],$tds.rows->map(r|$r.values->makeString(',')));
@@ -133,7 +133,7 @@ function <<test.Test>> meta::relational::tests::milestoning::contextpropagation:
 function <<test.Test>> meta::relational::tests::milestoning::contextpropagation::testIsolationOfMilestoningFiltersUsedOnIntermediateJoinInOR():Boolean[1]
 {
    let businessDate = %2015-10-16;
-   let result = execute(|Product.all($businessDate)->filter(p| $p.cancelProductActivity.createdBy == 'David' || $p.newActivity.createdBy == 'Peter'), propagationMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Product.all($businessDate)->filter(p| $p.cancelProductActivity.createdBy == 'David' || $p.newActivity.createdBy == 'Peter'), propagationMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameSQL('select "root".id as "pk_0", "root".name as "pk_1", "root".id as "id", "cancelactivitiestable_0".created_by as "cancelProductActivityCreatedBy", \'2015-10-16\' as "k_businessDate" from ProductTable as "root" left outer join (select "cancelactivitiestable_0".productId as productId, "cancelactivitiestable_0".from_z as from_z, "cancelactivitiestable_0".thru_z as thru_z, "newactivityinfotable_0".created_by as created_by from CancelActivitiesTable as "cancelactivitiestable_0" inner join NewActivityInfoTable as "newactivityinfotable_0" on ("cancelactivitiestable_0".productId = "newactivityinfotable_0".productId and "newactivityinfotable_0".from_z <= \'2015-10-16\' and "newactivityinfotable_0".thru_z > \'2015-10-16\')) as "cancelactivitiestable_0" on ("root".id = "cancelactivitiestable_0".productId and "cancelactivitiestable_0".from_z <= \'2015-10-16\' and "cancelactivitiestable_0".thru_z > \'2015-10-16\') left outer join (select "cancelactivitiestable_2".productId as productId, "newactivityinfotable_1".created_by as created_by from CancelActivitiesTable as "cancelactivitiestable_2" inner join NewActivityInfoTable as "newactivityinfotable_1" on ("cancelactivitiestable_2".productId = "newactivityinfotable_1".productId) where "newactivityinfotable_1".productId > 0 and "cancelactivitiestable_2".from_z <= \'2015-10-16\' and "cancelactivitiestable_2".thru_z > \'2015-10-16\') as "cancelactivitiestable_1" on ("root".id = "cancelactivitiestable_1".productId) left outer join NewActivityInfoTable as "newactivityinfotable_2" on ("root".id = "newactivityinfotable_2".productId) where ("cancelactivitiestable_1".created_by = \'David\' or "newactivityinfotable_2".created_by = \'Peter\') and "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\'', $result);
 }
 
@@ -141,7 +141,7 @@ function <<test.Test>> meta::relational::tests::milestoning::contextpropagation:
 {
    let businessDate = %2015-10-16;
 
-   let result = execute(|Product.all($businessDate)->project([p|$p.id, p|$p.cancelProductActivityCreatedBy],['name','cancelProductActivityCreatedBy']), propagationMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Product.all($businessDate)->project([p|$p.id, p|$p.cancelProductActivityCreatedBy],['name','cancelProductActivityCreatedBy']), propagationMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
 
    assertEquals(['2,TDSNull', '3,TDSNull'],$tds.rows->map(r|$r.values->makeString(',')));
@@ -152,7 +152,7 @@ function <<test.Test>> meta::relational::tests::milestoning::contextpropagation:
 {
    let businessDate = %2015-10-16;
                                                                           //referenceSystem is a nonTemporal property, systemDescription requires a date or use the EdgePointProperty
-   let result = execute(|Product.all($businessDate)->project([p|$p.id, p|$p.referenceSystem.systemDescriptionAllVersions.description],['name','sysDescription']), propagationMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Product.all($businessDate)->project([p|$p.id, p|$p.referenceSystem.systemDescriptionAllVersions.description],['name','sysDescription']), propagationMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
 
    assertEquals(['2,SYS1 description 1-v1', '2,SYS1 description 1-v2', '3,SYS1 description 1-v1', '3,SYS1 description 1-v2'],$tds.rows->map(r|$r.values->makeString(',')));
@@ -161,7 +161,7 @@ function <<test.Test>> meta::relational::tests::milestoning::contextpropagation:
 
 function <<test.Test>> meta::relational::tests::milestoning::contextpropagation::testMilestoningContextWithLatestDateNotPropogatedThroughNonTemporalPropertiesFromAll():Boolean[1]
 {
-   let result = execute(|Product.all(%latest)->project([p|$p.id, p|$p.referenceSystem.systemDescriptionAllVersions.description],['name','sysDescription']), propagationMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Product.all(%latest)->project([p|$p.id, p|$p.referenceSystem.systemDescriptionAllVersions.description],['name','sysDescription']), propagationMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameSQL('select "root".id as "name", "systemdescriptiontable_0".description as "sysDescription" from ProductTable as "root" left outer join SystemTable as "systemtable_0" on ("root".referenceSystemName = "systemtable_0".name) left outer join SystemDescriptionTable as "systemdescriptiontable_0" on ("systemtable_0".name = "systemdescriptiontable_0".systemName) where "root".thru_z = \'9999-12-31 00:00:00.0000\'', $result);
 }
 
@@ -169,7 +169,7 @@ function <<test.Test>> meta::relational::tests::milestoning::contextpropagation:
 {
    let businessDate = %2015-10-16;
                                                                                   //referenceSystem is a nonTemporal property, systemDescription requires a date or use the EdgePointProperty
-   let result = execute(|Order.all()->project([o|$o.id, o|$o.product($businessDate).referenceSystem.systemDescriptionAllVersions.description],['name','sysDescription']), propagationMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Order.all()->project([o|$o.id, o|$o.product($businessDate).referenceSystem.systemDescriptionAllVersions.description],['name','sysDescription']), propagationMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
 
    assertEquals(['1,TDSNull', '2,SYS1 description 1-v1', '2,SYS1 description 1-v2'],$tds.rows->map(r|$r.values->makeString(',')));
@@ -178,18 +178,18 @@ function <<test.Test>> meta::relational::tests::milestoning::contextpropagation:
 
 function <<test.Test>> meta::relational::tests::milestoning::contextpropagation::testMilestoneDatePropogationThruFilterIsIndenpendentOfDateManipulationWithinTheFilter():Boolean[1]
 {
-   let resultWithDatePropogated = execute(|Product.all(%2015-10-16)->filter(p|$p.classification(%2015-10-15).type=='STOCK')->project([p|$p.id, p|$p.classification.type],['id','classificationType']), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let resultWithDatePropogated = execute(|Product.all(%2015-10-16)->filter(p|$p.classification(%2015-10-15).type=='STOCK')->project([p|$p.id, p|$p.classification.type],['id','classificationType']), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $resultWithDatePropogated.values->at(0);
    assertEquals(['2,STOCK'],$tds.rows->map(r|$r.values->makeString(',')));
    assertSameSQL( 'select "root".id as "id", "productclassificationtable_1".type as "classificationType" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= \'2015-10-15\' and "productclassificationtable_0".thru_z > \'2015-10-15\') left outer join ProductClassificationTable as "productclassificationtable_1" on ("root".type = "productclassificationtable_1".type and "productclassificationtable_1".from_z <= \'2015-10-16\' and "productclassificationtable_1".thru_z > \'2015-10-16\') where "productclassificationtable_0".type = \'STOCK\' and "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\'', $resultWithDatePropogated->sqlRemoveFormatting());
-   let resultWithDateSpecified = execute(|Product.all(%2015-10-16)->filter(p|$p.classification(%2015-10-15).type=='STOCK')->project([p|$p.id, p|$p.classification(%2015-10-16).type],['id','classificationType']), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let resultWithDateSpecified = execute(|Product.all(%2015-10-16)->filter(p|$p.classification(%2015-10-15).type=='STOCK')->project([p|$p.id, p|$p.classification(%2015-10-16).type],['id','classificationType']), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals($resultWithDatePropogated->sqlRemoveFormatting(),$resultWithDateSpecified->sqlRemoveFormatting());
 }
 
 //Product.classification is a business temporal property, businessDate is automatically propogated from Product.all(..)
 function <<test.Test>> meta::relational::tests::milestoning::contextpropagation::testMilestoneDatePropogationFromTypeQueryToNoArgMilestonedQpInFilter():Boolean[1]
 {
-   let result = execute(|Product.all(%2015-10-16)->filter(p|$p.classification.type=='STOCK'), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Product.all(%2015-10-16)->filter(p|$p.classification.type=='STOCK'), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
    let products = $result.values;
    assertEquals(1, $products->size());
    assertEquals(['ProductName2'], $products->map(p|$p.name));
@@ -199,7 +199,7 @@ function <<test.Test>> meta::relational::tests::milestoning::contextpropagation:
 
 function <<test.Test>> meta::relational::tests::milestoning::contextpropagation::testMilestoneDatePropogationFromTypeQueryThroughFilterToNoArgMilestonedQpInProject():Boolean[1]
 {
-   let result = execute(|Product.all(%2015-10-16)->filter(p|$p.classification.type=='STOCK')->project([p|$p.classification.type],['classificationType']), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Product.all(%2015-10-16)->filter(p|$p.classification.type=='STOCK')->project([p|$p.classification.type],['classificationType']), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(['STOCK'],$tds.rows->map(r|$r.values->makeString(',')));
    assertSameSQL( 'select "productclassificationtable_0".type as "classificationType" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= \'2015-10-16\' and "productclassificationtable_0".thru_z > \'2015-10-16\') where "productclassificationtable_0".type = \'STOCK\' and "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\'', $result);
@@ -207,7 +207,7 @@ function <<test.Test>> meta::relational::tests::milestoning::contextpropagation:
 
 function <<test.Test>> meta::relational::tests::milestoning::contextpropagation::testMilestoneDatePropogationFromTypeQueryDoesNotOverrideThatSpecifiedAsArgToMilestonedQpInFilter():Boolean[1]
 {
-   let result = execute(|Product.all(%2015-10-16)->filter(p|$p.classification(%2015-10-17).type=='STOCK'), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Product.all(%2015-10-16)->filter(p|$p.classification(%2015-10-17).type=='STOCK'), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
    let products = $result.values;
    assertEquals(1, $products->size());
    assertEquals(['ProductName2'], $products->map(p|$p.name));
@@ -217,19 +217,19 @@ function <<test.Test>> meta::relational::tests::milestoning::contextpropagation:
 
 function <<test.Test>> meta::relational::tests::milestoning::contextpropagation::testLatestMilestoneDatePropogationFromTypeQueryDoesNotOverrideThatSpecifiedAsArgToMilestonedQpInFilter():Boolean[1]
 {
-   let result = execute(|Product.all(%latest)->filter(p|$p.classification(%2015-10-17).type=='STOCK'), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Product.all(%latest)->filter(p|$p.classification(%2015-10-17).type=='STOCK'), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameSQL('select "root".id as "pk_0", "root".name as "pk_1", "root".id as "id", "root".name as "name", "root".type as "type", "productdescriptiontable_0".description as "stockProductName", "productclassificationtable_0".type as "classificationType", \'9999-12-31T00:00:00.0000+0000\' as "k_businessDate" from ProductTable as "root" left outer join StockProductTable as "stockproducttable_0" on ("root".id = "stockproducttable_0".id and "stockproducttable_0".thru_z = \'9999-12-31 00:00:00.0000\') left outer join ProductDescriptionTable as "productdescriptiontable_0" on ("stockproducttable_0".id = "productdescriptiontable_0".id) left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".thru_z = \'9999-12-31 00:00:00.0000\') left outer join ProductClassificationTable as "productclassificationtable_1" on ("root".type = "productclassificationtable_1".type and "productclassificationtable_1".from_z <= \'2015-10-17\' and "productclassificationtable_1".thru_z > \'2015-10-17\') where "productclassificationtable_1".type = \'STOCK\' and "root".thru_z = \'9999-12-31 00:00:00.0000\'', $result);
 }
 
 function <<test.Test>> meta::relational::tests::milestoning::contextpropagation::testLatestMilestoneDateMappedTableDateDoesNotOverrideLatestDateFromChildPropertyInPropogation():Boolean[1]
 {
-   let result = execute(|Product.all(%latest)->filter(p|$p.classification.type=='STOCK'), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Product.all(%latest)->filter(p|$p.classification.type=='STOCK'), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameSQL('select "root".id as "pk_0", "root".name as "pk_1", "root".id as "id", "root".name as "name", "root".type as "type", "productdescriptiontable_0".description as "stockProductName", "productclassificationtable_0".type as "classificationType", \'9999-12-31T00:00:00.0000+0000\' as "k_businessDate" from ProductTable as "root" left outer join StockProductTable as "stockproducttable_0" on ("root".id = "stockproducttable_0".id and "stockproducttable_0".thru_z = \'9999-12-31 00:00:00.0000\') left outer join ProductDescriptionTable as "productdescriptiontable_0" on ("stockproducttable_0".id = "productdescriptiontable_0".id) left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".thru_z = \'9999-12-31 00:00:00.0000\') left outer join ProductClassificationTable as "productclassificationtable_1" on ("root".type = "productclassificationtable_1".type and "productclassificationtable_1".thru_z = \'9999-12-31 00:00:00.0000\') where "productclassificationtable_1".type = \'STOCK\' and "root".thru_z = \'9999-12-31 00:00:00.0000\'', $result);
 }
 
 function <<test.Test>> meta::relational::tests::milestoning::contextpropagation::testMilestoneDatePropogationFromTypeQueryDoesNotOverrideThatSpecifiedAsArgToMilestonedQpInProject():Boolean[1]
 {
-   let result = execute(|Product.all(%2015-10-16)->filter(p|$p.classification(%2017-10-16).type=='STOCK')->project([p|$p.classification(%2018-10-16).type],['classificationType']), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Product.all(%2015-10-16)->filter(p|$p.classification(%2017-10-16).type=='STOCK')->project([p|$p.classification(%2018-10-16).type],['classificationType']), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(['STOCK'],$tds.rows->map(r|$r.values->makeString(',')));
    assertSameSQL('select "productclassificationtable_1".type as "classificationType" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= \'2017-10-16\' and "productclassificationtable_0".thru_z > \'2017-10-16\') left outer join ProductClassificationTable as "productclassificationtable_1" on ("root".type = "productclassificationtable_1".type and "productclassificationtable_1".from_z <= \'2018-10-16\' and "productclassificationtable_1".thru_z > \'2018-10-16\') where "productclassificationtable_0".type = \'STOCK\' and "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\'', $result);
@@ -237,7 +237,7 @@ function <<test.Test>> meta::relational::tests::milestoning::contextpropagation:
 
 function <<test.Test>> meta::relational::tests::milestoning::contextpropagation::testMilestoneDatePropogationFromTypeQueryToProjectIsNotOverridenBySamePropertyUsedInFilterWithDifferentDateArguments():Boolean[1]
 {
-   let result = execute(|Product.all(%2015-10-16)->filter(p|$p.classification(%2017-10-16).type=='STOCK')->project([p|$p.classification.type],['classificationType']), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Product.all(%2015-10-16)->filter(p|$p.classification(%2017-10-16).type=='STOCK')->project([p|$p.classification.type],['classificationType']), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(['STOCK'],$tds.rows->map(r|$r.values->makeString(',')));
    assertSameSQL('select "productclassificationtable_1".type as "classificationType" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= \'2017-10-16\' and "productclassificationtable_0".thru_z > \'2017-10-16\') left outer join ProductClassificationTable as "productclassificationtable_1" on ("root".type = "productclassificationtable_1".type and "productclassificationtable_1".from_z <= \'2015-10-16\' and "productclassificationtable_1".thru_z > \'2015-10-16\') where "productclassificationtable_0".type = \'STOCK\' and "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\'', $result);
@@ -245,7 +245,7 @@ function <<test.Test>> meta::relational::tests::milestoning::contextpropagation:
 
 function <<test.Test>> meta::relational::tests::milestoning::contextpropagation::testMilestoneDateNotPropogatedThroughNonMilestonedType():Boolean[1]
 {
-   let result = execute(|Product.all(%2015-10-16)->filter(p|$p.referenceSystem->toOne().systemDescription(%2014-10-17).description=='SYS1 description 1-v1')->project([p|$p.id],['id']), propagationMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Product.all(%2015-10-16)->filter(p|$p.referenceSystem->toOne().systemDescription(%2014-10-17).description=='SYS1 description 1-v1')->project([p|$p.id],['id']), propagationMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(['2','3'],$tds.rows->map(r|$r.values->makeString(',')));
    assertSameSQL('select "root".id as "id" from ProductTable as "root" left outer join SystemTable as "systemtable_0" on ("root".referenceSystemName = "systemtable_0".name) left outer join SystemDescriptionTable as "systemdescriptiontable_0" on ("systemtable_0".name = "systemdescriptiontable_0".systemName and "systemdescriptiontable_0".from_z <= \'2014-10-17\' and "systemdescriptiontable_0".thru_z > \'2014-10-17\') where "systemdescriptiontable_0".description = \'SYS1 description 1-v1\' and "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\'', $result);
@@ -254,12 +254,12 @@ function <<test.Test>> meta::relational::tests::milestoning::contextpropagation:
 //we don't support this yet in the Compiler
 // function <<test.Test, test.ToFix>> meta::relational::tests::milestoning::contextpropagation::testMilestoneDatePropogationFromWithinTheMapToProject():Boolean[1]
 // {
-//    let resultWithDatePropagated = execute(|Product.all(%2015-10-16)->map(p|$p.classification(%2015-1-15))->project([c|$c.description, c|$c.exchange.name], ['productClassificationDescription','productClassificationExchangeName']), milestoningmap,testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+//    let resultWithDatePropagated = execute(|Product.all(%2015-10-16)->map(p|$p.classification(%2015-1-15))->project([c|$c.description, c|$c.exchange.name], ['productClassificationDescription','productClassificationExchangeName']), milestoningmap,testRuntime(), meta::relational::extension::relationalExtensions());
 //    let tds = $resultWithDatePropagated.values->at(0);
    
 //    assertEquals(['OPTION DESC-V1,ISE'],$tds.rows->map(r|$r.values->makeString(',')));
 //    assertSameSQL('select "ProductClassificationTable_d#2_f_d#4_d#2_f_d_m1".type_description as "productClassificationDescription", "ProductExchangeTable_d#6_d_m2_md".name as "productClassificationExchangeName" from ProductTable as "root" left outer join ProductClassificationTable as "ProductClassificationTable_d#2_f_d#4_d#2_f_d_m1" on ("root".type = "ProductClassificationTable_d#2_f_d#4_d#2_f_d_m1".type) left outer join (select "ProductExchangeTable_d#6".name as name from ProductExchangeTable as "ProductExchangeTable_d#6" where "ProductExchangeTable_d#6".from_z <= \'2015-01-15\' and "ProductExchangeTable_d#6".thru_z > \'2015-01-15\') as "ProductExchangeTable_d#6_d_m2_md" on ("ProductClassificationTable_d#2_f_d#4_d#2_f_d_m1".exchange = "ProductExchangeTable_d#6_d_m2_md".name) where "ProductClassificationTable_d#2_f_d#4_d#2_f_d_m1".from_z <= \'2015-01-15\' and "ProductClassificationTable_d#2_f_d#4_d#2_f_d_m1".thru_z > \'2015-01-15\' and "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\'',$resultWithDatePropagated->sqlRemoveFormatting());
-//    let resultWithDateSpecified = execute(|Product.all(%2015-10-16)->map(p|$p.classification(%2015-1-15))->project([c|$c.description, c|$c.exchange(%2015-1-15).name], ['productClassificationDescription','productClassificationExchangeName']), milestoningmap,testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+//    let resultWithDateSpecified = execute(|Product.all(%2015-10-16)->map(p|$p.classification(%2015-1-15))->project([c|$c.description, c|$c.exchange(%2015-1-15).name], ['productClassificationDescription','productClassificationExchangeName']), milestoningmap,testRuntime(), meta::relational::extension::relationalExtensions());
 //    assertEquals($resultWithDatePropagated->sqlRemoveFormatting(),$resultWithDateSpecified->sqlRemoveFormatting());
 // }
 
@@ -268,7 +268,7 @@ function <<test.Test>> meta::relational::tests::milestoning::contextpropagation:
 // {
 //    let businessDate = %2015-10-16;
 
-//    let result = execute(|Product.all($businessDate)->project([p|$p.classificationByTestType().exchange.name],['testClassificationExchange']), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+//    let result = execute(|Product.all($businessDate)->project([p|$p.classificationByTestType().exchange.name],['testClassificationExchange']), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
 //    let tds = $result.values->at(0);
 
 //    assertEquals(['1,TDSNull', '2,SYS1 description 1-v1', '2,SYS1 description 1-v2'],$tds.rows->map(r|$r.values->makeString(',')));
@@ -278,7 +278,7 @@ function <<test.Test>> meta::relational::tests::milestoning::contextpropagation:
 //ProductMapping has relational property mapping (property) joins which results in problems in filter && merge, finding the lastJoinTreeNode/commonNode
 function <<test.Test, test.ToFix>> meta::relational::tests::milestoning::contextpropagation::testMilestoningQueryOnATypeWithManyRelationalPropertyMappingChildrenFollowedByMap():Boolean[1]
 {
-   let result = execute(|Product.all(%2015-10-16)->map(p|$p.classification.type), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Product.all(%2015-10-16)->map(p|$p.classification.type), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
    let productTypes = $result.values;
    assertEquals(1, $productTypes->size());
    assertEquals(['ProductName2'], $productTypes);
@@ -287,7 +287,7 @@ function <<test.Test, test.ToFix>> meta::relational::tests::milestoning::context
 
 function <<test.Test, test.ToFix>> meta::relational::tests::milestoning::contextpropagation::testMilestoneDatePropogationFromTypeQueryToNoArgMilestonedQpInMapFollowedByProjectOnDataTypeProperty():Boolean[1]
 {
-   let result = execute(|Product.all(%2015-10-16)->map(p|$p.classification)->project([c|$c.type], ['productClassificationType']), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Product.all(%2015-10-16)->map(p|$p.classification)->project([c|$c.type], ['productClassificationType']), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    
    assertEquals(['STOCK'],$tds.rows->map(r|$r.values->makeString(',')));
@@ -297,7 +297,7 @@ function <<test.Test, test.ToFix>> meta::relational::tests::milestoning::context
 //Not supported in the compiler
 // function <<test.Test>> meta::relational::tests::milestoning::contextpropagation::testMilestoneDatePropogationFromTypeQueryThroughNoArgMilestonedQpInMapThroughToProjectOnComplexDataMilestonedProperty():Boolean[1]
 // {
-//    let result = execute(|Product.all(%2015-10-16)->map(p|$p.classification)->project([c|$c.exchange.name], ['productClassificationExchangeName']), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+//    let result = execute(|Product.all(%2015-10-16)->map(p|$p.classification)->project([c|$c.exchange.name], ['productClassificationExchangeName']), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
 //    let tds = $result.values->at(0);
    
 //    assertEquals(['LNSE'],$tds.rows->map(r|$r.values->makeString(',')));
@@ -306,7 +306,7 @@ function <<test.Test, test.ToFix>> meta::relational::tests::milestoning::context
 
 function <<test.Test, test.ToFix>> meta::relational::tests::milestoning::contextpropagation::testMilestoneDatePropogationFromTypeQueryThroughNoArgMilestonedQpInMapWhereSubsequentProjectOverrides():Boolean[1]
 {
-   let result = execute(|Product.all(%2015-10-16)->map(p|$p.classification)->project([c|$c.description, c|$c.exchange(%2014-1-15).name], ['productClassificationDescription','productClassificationExchangeName']), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Product.all(%2015-10-16)->map(p|$p.classification)->project([c|$c.description, c|$c.exchange(%2014-1-15).name], ['productClassificationDescription','productClassificationExchangeName']), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    
    assertEquals(['STOCK DESC-V3,LNSE'],$tds.rows->map(r|$r.values->makeString(',')));
@@ -315,7 +315,7 @@ function <<test.Test, test.ToFix>> meta::relational::tests::milestoning::context
 
 function <<test.Test, test.ToFix>> meta::relational::tests::milestoning::contextpropagation::testFiltersRemainOnMilestonedRootTypeWhenMappedToNonTemporalTypeDataType():Boolean[1]
 {
-   let result = execute(|ProductClassification.all(%2015-10-16)->map(pc|$pc.system.name), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|ProductClassification.all(%2015-10-16)->map(pc|$pc.system.name), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
    let productTypes = $result.values;
    assertEquals(1, $productTypes->size());
    assertEquals(['SYS1'], $productTypes);
@@ -324,18 +324,18 @@ function <<test.Test, test.ToFix>> meta::relational::tests::milestoning::context
 
 function <<test.Test>> meta::relational::tests::milestoning::contextpropagation::testMilestoneDatePropogationThruExistsIsIndenpendentOfDateManipulationWithinTheFilter():Boolean[1]
 {
-   let resultWithDatePropogated = execute(|Product.all(%2015-10-16)->filter(p|$p.classification(%2015-10-15)->exists(c|$c.type=='STOCK'))->project([p|$p.id, p|$p.classification.type],['id','classificationType']), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let resultWithDatePropogated = execute(|Product.all(%2015-10-16)->filter(p|$p.classification(%2015-10-15)->exists(c|$c.type=='STOCK'))->project([p|$p.id, p|$p.classification.type],['id','classificationType']), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $resultWithDatePropogated.values->at(0);
    assertEquals(['2,STOCK'],$tds.rows->map(r|$r.values->makeString(',')));
    
    assertSameSQL('select "root".id as "id", "productclassificationtable_2".type as "classificationType" from ProductTable as "root" left outer join (select distinct "productclassificationtable_1".type from ProductClassificationTable as "productclassificationtable_1" where "productclassificationtable_1".from_z <= \'2015-10-15\' and "productclassificationtable_1".thru_z > \'2015-10-15\' and "productclassificationtable_1".type = \'STOCK\') as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type) left outer join ProductClassificationTable as "productclassificationtable_2" on ("root".type = "productclassificationtable_2".type and "productclassificationtable_2".from_z <= \'2015-10-16\' and "productclassificationtable_2".thru_z > \'2015-10-16\') where "productclassificationtable_0".type is not null and "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\'', $resultWithDatePropogated);
-   let resultWithDateSpecified = execute(|Product.all(%2015-10-16)->filter(p|$p.classification(%2015-10-15)->exists(c|$c.type=='STOCK'))->project([p|$p.id, p|$p.classification(%2015-10-16).type],['id','classificationType']), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let resultWithDateSpecified = execute(|Product.all(%2015-10-16)->filter(p|$p.classification(%2015-10-15)->exists(c|$c.type=='STOCK'))->project([p|$p.id, p|$p.classification(%2015-10-16).type],['id','classificationType']), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals($resultWithDatePropogated->sqlRemoveFormatting(),$resultWithDateSpecified->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::milestoning::contextpropagation::testMilestoneDatePropogationThruExistsConditionalClause():Boolean[1]
 {
-   let resultWithDatePropogated = execute(|Order.all()->filter(o|$o.product(%2015-10-15)->exists(p|$p.classificationTypeStr=='STOCK'))->project([o|$o.id],['order id']), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let resultWithDatePropogated = execute(|Order.all()->filter(o|$o.product(%2015-10-15)->exists(p|$p.classificationTypeStr=='STOCK'))->project([o|$o.id],['order id']), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $resultWithDatePropogated.values->at(0);
    assertEquals(['2'],$tds.rows->map(r|$r.values->makeString(',')));
 }
@@ -344,7 +344,7 @@ function <<test.Test>> meta::relational::tests::milestoning::contextpropagation:
 {
    let businessDate = %2015-8-15;
 
-   let result = execute(|Order.all()->project([o|$o.id, o|$o.product($businessDate).classification.description],['orderId','classificationDescription']), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Order.all()->project([o|$o.id, o|$o.product($businessDate).classification.description],['orderId','classificationDescription']), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
 
    let tds = $result.values->at(0);
    assertEquals(['1,STOCK DESC-V1', '2,TDSNull'],$tds.rows->map(r|$r.values->makeString(',')));
@@ -355,7 +355,7 @@ function <<test.Test>> meta::relational::tests::milestoning::contextpropagation:
 {
    let businessDate = %2015-8-15;
 
-   let result = execute(|Order.all()->project([o|$o.id, o|$o.product($businessDate)->subType(@Product).classification.description],['orderId','classificationDescription']), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Order.all()->project([o|$o.id, o|$o.product($businessDate)->subType(@Product).classification.description],['orderId','classificationDescription']), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
 
    let tds = $result.values->at(0);
    assertEquals(['1,STOCK DESC-V1', '2,TDSNull'],$tds.rows->map(r|$r.values->makeString(',')));
@@ -366,7 +366,7 @@ function <<test.Test>> meta::relational::tests::milestoning::contextpropagation:
 {
    let businessDate = %2015-8-15;
                         
-   let result = execute(|Product.all(%2015-10-16)->filter(p|$p.name!='')->project([#/Product/name#, #/Product/classification/description#]), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Product.all(%2015-10-16)->filter(p|$p.name!='')->project([#/Product/name#, #/Product/classification/description#]), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
    
    let tds = $result.values->at(0);
    assertEquals(['ProductName2,STOCK DESC-V3', 'ProductName3,TDSNull'],$tds.rows->map(r|$r.values->makeString(',')));
@@ -375,13 +375,13 @@ function <<test.Test>> meta::relational::tests::milestoning::contextpropagation:
 
 function <<test.Test>> meta::relational::tests::milestoning::contextpropagation::testMilestoningContextPropagatedThroughToLeftSideOfQualifiedPropertyFilter():Boolean[1]
 {
-   let result = execute(|ProductClassification.all(%2015-10-16)->project([#/ProductClassification/product/stockProductName#]), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|ProductClassification.all(%2015-10-16)->project([#/ProductClassification/product/stockProductName#]), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(['ProductName2'],$tds.rows->map(r|$r.values->makeString(',')));
    let expectedSQL = 'select "productdescriptiontable_0".description as "stockProductName" from ProductClassificationTable as "root" left outer join ProductTable as "producttable_0" on ("producttable_0".type = "root".type and "producttable_0".from_z <= \'2015-10-16\' and "producttable_0".thru_z > \'2015-10-16\') left outer join (select "stockproducttable_1".id as id from StockProductTable as "stockproducttable_1" where "stockproducttable_1".from_z <= \'2015-10-16\' and "stockproducttable_1".thru_z > \'2015-10-16\') as "stockproducttable_0" on ("producttable_0".id = "stockproducttable_0".id) left outer join ProductDescriptionTable as "productdescriptiontable_0" on ("stockproducttable_0".id = "productdescriptiontable_0".id) where "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\''; 
    assertSameSQL($expectedSQL , $result);
    let businessDate = %2015-8-15;                       
-   let resultWithVar = execute(|ProductClassification.all(%2015-10-16)->project([#/ProductClassification/product/stockProductName#]), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let resultWithVar = execute(|ProductClassification.all(%2015-10-16)->project([#/ProductClassification/product/stockProductName#]), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameSQL($expectedSQL ,$resultWithVar);
 }
 
@@ -389,7 +389,7 @@ function <<test.Test>> meta::relational::tests::milestoning::contextpropagation:
 {
    let businessDate = %2015-8-15;
                         
-   let result = execute(|Product.all(%2015-10-16)->filter(p|$p.name!='')->project([#/Product/name#, #/Product/classification(%2016-10-16)/exchange/name#],['productName','exchangeName']), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Product.all(%2015-10-16)->filter(p|$p.name!='')->project([#/Product/name#, #/Product/classification(%2016-10-16)/exchange/name#],['productName','exchangeName']), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
    
    let tds = $result.values->at(0);
    assertEquals(['ProductName2,LNSE', 'ProductName3,TDSNull'],$tds.rows->map(r|$r.values->makeString(',')));
@@ -400,7 +400,7 @@ function <<test.Test>> meta::relational::tests::milestoning::contextpropagation:
 {
    let businessDate = %2015-10-16;
                         
-   let result = execute(|Product.all($businessDate)->project([#/Product/name#, #/Product/classification/description#]), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Product.all($businessDate)->project([#/Product/name#, #/Product/classification/description#]), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
 
    let tds = $result.values->at(0);
    assertEquals(['ProductName2,STOCK DESC-V3', 'ProductName3,TDSNull'],$tds.rows->map(r|$r.values->makeString(',')));
@@ -411,7 +411,7 @@ function <<test.Test>> meta::relational::tests::milestoning::contextpropagation:
 {
    let businessDate = %2015-10-16;
                         
-   let result = execute(|StockProduct.all($businessDate)->project([#/Product/name#, #/Product/classification/system/name#],['productName','classificationSystemName']), milestoningMapWithEmbeddedSimple, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|StockProduct.all($businessDate)->project([#/Product/name#, #/Product/classification/system/name#],['productName','classificationSystemName']), milestoningMapWithEmbeddedSimple, testRuntime(), meta::relational::extension::relationalExtensions());
 
    let tds = $result.values->at(0);
    assertEquals(['ProductName2,SYS1', 'ProductName3,SYS1'],$tds.rows->map(r|$r.values->makeString(',')));
@@ -422,7 +422,7 @@ function <<test.Test>> meta::relational::tests::milestoning::contextpropagation:
 {
    let businessDate = %2015-10-16;
                         
-   let result = execute(|Product.all($businessDate)->project([p|$p.name, p|$p.classification.description],['name','description']), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Product.all($businessDate)->project([p|$p.name, p|$p.classification.description],['name','description']), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
 
    let tds = $result.values->at(0);
    assertEquals(['ProductName2,STOCK DESC-V3', 'ProductName3,TDSNull'],$tds.rows->map(r|$r.values->makeString(',')));
@@ -432,7 +432,7 @@ function <<test.Test>> meta::relational::tests::milestoning::contextpropagation:
 function <<test.Test>> {meta::pure::executionPlan::profiles::serverVersion.start='V1_7_0'} meta::relational::tests::milestoning::contextpropagation::testMilestoningContextPropagatedUsingVariableInProjectMoveLetInBlock():Boolean[1]
 {
    let result = execute(|let businessDate = now();
-                         Product.all($businessDate)->project([p|$p.name, p|$p.classification.description],['name','description']);, milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                         Product.all($businessDate)->project([p|$p.name, p|$p.classification.description],['name','description']);, milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(['ProductName2,STOCK DESC-V4', 'ProductName3,TDSNull'],$tds.rows->map(r|$r.values->makeString(',')));
 }
@@ -440,7 +440,7 @@ function <<test.Test>> {meta::pure::executionPlan::profiles::serverVersion.start
 function <<test.Test>> meta::relational::tests::milestoning::contextpropagation::testMilestoningContextPropagatedUsingConstantInProjectMoveLetInBlock():Boolean[1]
 {
    let result = execute(|let businessDate = %2015-10-16;
-                         Product.all($businessDate)->project([p|$p.name, p|$p.classification.description],['name','description']);, milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                         Product.all($businessDate)->project([p|$p.name, p|$p.classification.description],['name','description']);, milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(['ProductName2,STOCK DESC-V3', 'ProductName3,TDSNull'],$tds.rows->map(r|$r.values->makeString(',')));
    assertSameSQL('select "root".name as "name", "productclassificationtable_0".type_description as "description" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= \'2015-10-16\' and "productclassificationtable_0".thru_z > \'2015-10-16\') where "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\'', $result);
@@ -449,6 +449,6 @@ function <<test.Test>> meta::relational::tests::milestoning::contextpropagation:
 function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::milestoning::contextpropagation::testDatePropagationWithInheritance():Boolean[1]
 {
    let businessDate = %2015-8-14;
-   let result = execute(|OrderWithProductWithConstraints.all($businessDate)->project([o|$o.getClassificationDescription($businessDate)],['classificationDescription']), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|OrderWithProductWithConstraints.all($businessDate)->project([o|$o.getClassificationDescription($businessDate)],['classificationDescription']), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameSQL('select "ordertable_1".aggCol as "classificationDescription" from OrderTable as "root" left outer join (select "ordertable_2".id as id, group_concat("productclassificationtable_0".type_description ) as aggCol from OrderTable as "ordertable_2" left outer join ProductTable as "producttable_0" on ("ordertable_2".prodFk = "producttable_0".id and "producttable_0".from_z <= \'2015-08-14\' and "producttable_0".thru_z > \'2015-08-14\') left outer join (select "productclassificationtable_0".type as type, "productclassificationtable_0".type_description as type_description from ProductClassificationTable as "productclassificationtable_0" where "productclassificationtable_0".from_z <= \'2015-08-14\' and "productclassificationtable_0".thru_z > \'2015-08-14\') as "productclassificationtable_0" on ("producttable_0".type = "productclassificationtable_0".type) group by "ordertable_2".id) as "ordertable_1" on ("root".id = "ordertable_1".id)',$result);
 }

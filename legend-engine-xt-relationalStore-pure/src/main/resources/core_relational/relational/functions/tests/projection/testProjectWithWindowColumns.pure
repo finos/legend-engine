@@ -27,7 +27,7 @@ function <<test.Test>>meta::relational::tests::projection::window::testWindowWit
          col(p |$p.lastName,'lastName') 
          ,col(window(p |$p.firstName ),sortAsc(p |$p.lastName), func(p |$p.age->toOne(), y| $y->average()),'ageAverageWindow')
       ])};
-   let res= toSQLString($func, simpleRelationalMappingInc, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   let res= toSQLString($func, simpleRelationalMappingInc, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".LASTNAME as "lastName", avg(1.0 * "root".AGE) OVER (Partition By "root".FIRSTNAME Order By "root".LASTNAME ASC) as "ageAverageWindow" from personTable as "root"',$res);
 }
 
@@ -40,7 +40,7 @@ function <<test.Test>>meta::relational::tests::projection::window::testWindowWit
          ,col(window([p |$p.lastName,p |$p.firstName] ),sortAsc(p |$p.lastName), func(p |$p.age->toOne(), y| $y->average()),'ageAverageMultiplePartitions')
       ])};
 
-   let res= toSQLString($func, simpleRelationalMappingInc, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   let res= toSQLString($func, simpleRelationalMappingInc, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".LASTNAME as "lastName", avg(1.0 * "root".AGE) OVER (Partition By "root".LASTNAME,"root".FIRSTNAME Order By "root".LASTNAME ASC) as "ageAverageMultiplePartitions" from personTable as "root"',$res);
 }
 
@@ -55,7 +55,7 @@ function <<test.Test>>meta::relational::tests::projection::window::testwindowWit
 
       ])};
 
-   let res= toSQLString($func, simpleRelationalMappingInc, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   let res= toSQLString($func, simpleRelationalMappingInc, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".LASTNAME as "lastName", avg(1.0 * "root".AGE) OVER (Partition By "root".FIRSTNAME Order By "root".LASTNAME ASC) as "ageAverageWindow", sum("root".AGE) OVER (Partition By "personTable_d#5_d_m1_d_m2_d_m2".LASTNAME Order By "personTable_d#5_d_m1_d_m2_d_m2".FIRSTNAME DESC) as "ageSumWindow" from personTable as "root" left outer join personTable as "personTable_d#5_d_m1_d_m2_d_m2" on ("root".MANAGERID = "personTable_d#5_d_m1_d_m2_d_m2".ID)',$res);
 }
 
@@ -66,7 +66,7 @@ function <<test.Test>>meta::relational::tests::projection::window::testWindowWit
          col(p |$p.lastName,'lastName') 
          ,col(window(p |$p.firstName ), func(p |$p.age->toOne(), y| $y->average()),'ageWindow')
       ])};
-   let res= toSQLString($func, simpleRelationalMappingInc, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   let res= toSQLString($func, simpleRelationalMappingInc, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".LASTNAME as "lastName", avg(1.0 * "root".AGE) OVER (Partition By "root".FIRSTNAME ) as "ageWindow" from personTable as "root"',$res);
 }
 
@@ -78,7 +78,7 @@ function <<test.Test>>meta::relational::tests::projection::window::testWindowWit
          ,col(window(p |$p.firstName ), func(p |$p.age->toOne(), y| $y->max()),'ageMaxWindow')
          ,col(window(p |$p.manager.lastName->toOne() ), func(p |$p.age->toOne(), y| $y->sum()),'ageSumWindow')
       ])};
-   let res= toSQLString($func, simpleRelationalMappingInc, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   let res= toSQLString($func, simpleRelationalMappingInc, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".LASTNAME as "lastName", max("root".AGE) OVER (Partition By "root".FIRSTNAME ) as "ageMaxWindow", sum("root".AGE) OVER (Partition By "personTable_d#5_d_m1_d_m2_d_m2".LASTNAME ) as "ageSumWindow" from personTable as "root" left outer join personTable as "personTable_d#5_d_m1_d_m2_d_m2" on ("root".MANAGERID = "personTable_d#5_d_m1_d_m2_d_m2".ID)',$res);
 }
 
@@ -90,7 +90,7 @@ function <<test.Test>>meta::relational::tests::projection::window::testRankSingl
          ,col(window(p |$p.firstName ),sortAsc(p|$p.lastName),y | $y->rank(),'ageRankWindow')])
          };
 
-         let res= toSQLString($func, simpleRelationalMappingInc, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+         let res= toSQLString($func, simpleRelationalMappingInc, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
          assertEquals('select "root".LASTNAME as "lastName", rank() OVER (Partition By "root".FIRSTNAME Order By "root".LASTNAME ASC) as "ageRankWindow" from personTable as "root"',$res);
 }
 
@@ -103,7 +103,7 @@ function <<test.Test>>meta::relational::tests::projection::window::testRankMulti
          ,col(window(p |$p.manager.lastName->toOne() ),sortDesc(p |$p.lastName), y | $y->rank(),'ageRankWindow2')
 
       ])};
-   let res= toSQLString($func, simpleRelationalMappingInc, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   let res= toSQLString($func, simpleRelationalMappingInc, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".LASTNAME as "lastName", rank() OVER (Partition By "root".FIRSTNAME Order By "root".LASTNAME ASC) as "ageRankWindow1", rank() OVER (Partition By "personTable_d#5_d_m1_d_m2_d_m2".LASTNAME Order By "root".LASTNAME DESC) as "ageRankWindow2" from personTable as "root" left outer join personTable as "personTable_d#5_d_m1_d_m2_d_m2" on ("root".MANAGERID = "personTable_d#5_d_m1_d_m2_d_m2".ID)',$res);
 }
 
@@ -118,7 +118,7 @@ function <<test.Test>>meta::relational::tests::projection::window::testDifferent
 
       ])};
 
-   let res= toSQLString($func, simpleRelationalMappingInc, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   let res= toSQLString($func, simpleRelationalMappingInc, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".LASTNAME as "lastName", avg(1.0 * "root".AGE) OVER (Partition By "root".FIRSTNAME Order By "root".LASTNAME ASC) as "ageAverage", rank() OVER (Partition By "personTable_d#5_d_m1_d_m2_d_m2".LASTNAME Order By "root".LASTNAME DESC) as "lastNameRank" from personTable as "root" left outer join personTable as "personTable_d#5_d_m1_d_m2_d_m2" on ("root".MANAGERID = "personTable_d#5_d_m1_d_m2_d_m2".ID)',$res);
 }
 
@@ -133,7 +133,7 @@ function <<test.Test>>meta::relational::tests::projection::window::testWindowwit
       ])
       ->groupBy('prodName', agg('avg', x|$x.getFloat('cnt'), y| $y->average()))};
 
-   let res= toSQLString($func, simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   let res= toSQLString($func, simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
    assertEquals('select "productTable_d#5_d#2_m2".NAME as "prodName", avg(1.0 * "root".quantity) as "avg" from tradeTable as "root" left outer join productSchema.productTable as "productTable_d#5_d#2_m2" on ("root".prodId = "productTable_d#5_d#2_m2".ID) group by "prodName"',$res);
 }
 
@@ -149,7 +149,7 @@ function <<test.Test>>meta::relational::tests::projection::window::testWindowWit
       ->groupBy('prodName', agg('avg', x|$x.getFloat('cnt'), y| $y->average()))
       ->sort('prodName', SortDirection.DESC)};
 
-   let res= toSQLString($func, simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   let res= toSQLString($func, simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
    assertEquals('select "productTable_d#6_d#3_m2".NAME as "prodName", avg(1.0 * "root".quantity) as "avg" from tradeTable as "root" left outer join productSchema.productTable as "productTable_d#6_d#3_m2" on ("root".prodId = "productTable_d#6_d#3_m2".ID) group by "prodName" order by "prodName" desc',$res);
 }
 
@@ -161,7 +161,7 @@ function <<test.Test>>meta::relational::tests::projection::window::testNoPartiti
                     col(sortAsc(t|$t.id),func(t|$t.quantity, y|$y->sum()), 'testWindow')
                ])};
                
-   let res= toSQLString($func,simpleRelationalMapping,DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   let res= toSQLString($func,simpleRelationalMapping,DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
    assertEquals('select "productTable_d#4_d_m1".NAME as "prodName", sum("root".quantity) OVER (Order By "root".ID ASC) as "testWindow" from tradeTable as "root" left outer join productSchema.productTable as "productTable_d#4_d_m1" on ("root".prodId = "productTable_d#4_d_m1".ID)',$res);   
 }
 
@@ -173,7 +173,7 @@ function <<test.Test>>meta::relational::tests::projection::window::testWindowCol
                     col(sortAsc(t|$t.id),func(t|$t.quantity, y|$y->sum()), 'testWindow')
                ])->distinct()};
                
-   let res= toSQLString($func,simpleRelationalMapping,DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   let res= toSQLString($func,simpleRelationalMapping,DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
    assertEquals('select distinct "productTable_d#5_d#2_m1".NAME as "prodName", sum("root".quantity) OVER (Order By "root".ID ASC) as "testWindow" from tradeTable as "root" left outer join productSchema.productTable as "productTable_d#5_d#2_m1" on ("root".prodId = "productTable_d#5_d#2_m1".ID)',$res);   
 }
 
@@ -189,7 +189,7 @@ function <<test.Test>>meta::relational::tests::projection::window::testProjectWi
                      'age'
                   ])
                ->filter( x| $x.getString('first_name' ) == 'David' )};   
-   let res = toSQLString($func, simpleRelationalMapping,DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   let res = toSQLString($func, simpleRelationalMapping,DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
    assertEquals ('select "root".FIRSTNAME as "first_name", "root".AGE as "age", avg(1.0 * "root".AGE) OVER (Partition By "root".FIRSTNAME Order By "root".LASTNAME ASC) as "ageAverage" from personTable as "root" where "root".FIRSTNAME = \'David\'' , $res);
 
 }
@@ -197,7 +197,7 @@ function <<test.Test>>meta::relational::tests::projection::window::testProjectWi
 function <<test.Test>> meta::relational::tests::projection::window::testDistinctWithWindowColumn():Boolean[1]
 {
    let func = {|IncomeFunction.all()->project([col(c|$c.name,'name'),col(sortAsc(c|$c.IfName->toOne()),y|$y->rank(),'name2')])->distinct()}; //, testDataTypeMappingRuntime(),debug())};
-   let res = toSQLString($func, testMappingWithJoin, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   let res = toSQLString($func, testMappingWithJoin, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
    assertEquals('select distinct "root".IF_NAME as "name", rank() OVER (Order By "IF_OTHER_INFO_d#3_d#3_m3_d#2_m2".IF_OTHER_NAME ASC) as "name2" from (select distinct "_sub_d#2".IF_CODE as IF_CODE, "_sub_d#2".IF_NAME as IF_NAME, "IF_OTHER_INFO_d#3_d#3_m3".IF_OTHER_NAME as IF_OTHER_NAME from ACCOUNT_INFO as "_sub_d#2" left outer join IF_OTHER_INFO as "IF_OTHER_INFO_d#3_d#3_m3" on ("_sub_d#2".IF_CODE = "IF_OTHER_INFO_d#3_d#3_m3".IF_CODE)) as "root" left outer join IF_OTHER_INFO as "IF_OTHER_INFO_d#3_d#3_m3_d#2_m2" on ("root".IF_CODE = "IF_OTHER_INFO_d#3_d#3_m3_d#2_m2".IF_CODE)',$res);
 }
 
@@ -215,7 +215,7 @@ function <<test.Test>> meta::relational::tests::projection::window::testUsingWin
        ->filter(row | $row.getInteger('rank_test') ==1); 
    };
    
-   let res = toSQLString($func, simpleRelationalMappingInc, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   let res = toSQLString($func, simpleRelationalMappingInc, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".LASTNAME as "firstName", "root"."rank_test" as "rank_test" from (select "_subroot".LASTNAME as LASTNAME, rank() OVER (Partition By "_subroot".LASTNAME Order By "_subroot".AGE ASC) as "rank_test" from personTable as "_subroot") as "root" where "root"."rank_test" = 1',$res);
 }
 
@@ -232,7 +232,7 @@ function <<test.Test>> meta::relational::tests::projection::window::testQueryWit
        ->filter(row | $row.getInteger('rank_test') ==1)->filter(row| $row.getInteger('rank_test')==2);
    };
    
-   let res = toSQLString($func, simpleRelationalMappingInc, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   let res = toSQLString($func, simpleRelationalMappingInc, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".LASTNAME as "firstName", "root"."rank_test" as "rank_test" from (select "_subroot".LASTNAME as LASTNAME, rank() OVER (Partition By "_subroot".LASTNAME,"personTable_d#7_d#3_m2_d#3_m1_d#3_m2".LASTNAME Order By "_subroot".AGE ASC) as "rank_test" from personTable as "_subroot" left outer join personTable as "personTable_d#7_d#3_m2_d#3_m1_d#3_m2" on ("_subroot".MANAGERID = "personTable_d#7_d#3_m2_d#3_m1_d#3_m2".ID)) as "root" where "root"."rank_test" = 2 and "root"."rank_test" = 1',$res);
 }
 
@@ -250,14 +250,14 @@ function <<test.Test>> meta::relational::tests::projection::window::testQueryWit
       ->filter(row| $row.getInteger('rank_test')==2);
    };
    
-   let res = toSQLString($func, simpleRelationalMappingInc, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   let res = toSQLString($func, simpleRelationalMappingInc, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".LASTNAME as "firstName", "root".FIRSTNAME as "managerFirstName", "root"."rank_test" as "rank_test" from (select "_subroot".LASTNAME as LASTNAME, "personTable_d#7_d#4_m2".FIRSTNAME as FIRSTNAME, rank() OVER (Partition By "_subroot".LASTNAME,"personTable_d#7_d#4_m2".LASTNAME Order By "_subroot".AGE ASC) as "rank_test" from personTable as "_subroot" left outer join personTable as "personTable_d#7_d#4_m2" on ("_subroot".MANAGERID = "personTable_d#7_d#4_m2".ID) where "personTable_d#7_d#4_m2".FIRSTNAME = \'Scott\' and "_subroot".LASTNAME = \'Mohammed\') as "root" where "root"."rank_test" = 2',$res);
 }
 
 function <<test.Test>> meta::relational::tests::projection::window::testDynaFunctionInWindow():Boolean[1]
 {
    let func = {|Order.all()->project([col(o|$o.id, 'id'), col(window(o|$o.zeroPnl), sortAsc(o|$o.quantity), y|$y->rank(), 'testCol')]) };
-   let result =  toSQLString($func, simpleRelationalMapping, DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   let result =  toSQLString($func, simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".ID as "id", rank() OVER (Partition By case when "orderPnlView_d#2_dy0#2_d_m1_d_m1_d_m2".pnl = 0 then \'true\' else \'false\' end Order By "root".quantity ASC) as "testCol" from orderTable as "root" left outer join (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accountTable_d#2_dy0#2_l_d#2_dy0#2_m3_r".ID as accountId, "salesPersonTable_d#2_dy0#2_l_d#2_dy0#2_m4_md".NAME as supportContact, "salesPersonTable_d#2_dy0#2_l_d#2_dy0#2_m4_md".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "orderTable_d#2_dy0#2_d#2_dy0#2_m3" on ("root".ORDER_ID = "orderTable_d#2_dy0#2_d#2_dy0#2_m3".ID) left outer join accountTable as "accountTable_d#2_dy0#2_l_d#2_dy0#2_m3_r" on ("orderTable_d#2_dy0#2_d#2_dy0#2_m3".accountID = "accountTable_d#2_dy0#2_l_d#2_dy0#2_m3_r".ID) left outer join salesPersonTable as "salesPersonTable_d#2_dy0#2_l_d#2_dy0#2_m4_md" on ("orderTable_d#2_dy0#2_d#2_dy0#2_m3".accountID = "salesPersonTable_d#2_dy0#2_l_d#2_dy0#2_m4_md".ACCOUNT_ID) where "root".pnl > 0) as "orderPnlView_d#2_dy0#2_d_m1_d_m1_d_m2" on ("orderPnlView_d#2_dy0#2_d_m1_d_m1_d_m2".ORDER_ID = "root".ID)', $result);
 }
 
@@ -270,6 +270,6 @@ function <<test.Test>> meta::relational::tests::projection::window::testProjectW
             col(window(p|$p.firstName), sortAsc(p|$p.lastName), func(p|$p.age->toOne(), y|$y->average()), 'ageAverageWindow')
          ])
    };
-   let result = toSQLString($func, simpleRelationalMappingInc, DatabaseType.Snowflake, meta::pure::router::extension::defaultRelationalExtensions());
+   let result = toSQLString($func, simpleRelationalMappingInc, DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".LASTNAME as "lastName", avg(1.0 * "root".AGE) OVER (Partition By "root".FIRSTNAME Order By "root".LASTNAME ASC) as "ageAverageWindow" from personTable as "root"', $result);
 }

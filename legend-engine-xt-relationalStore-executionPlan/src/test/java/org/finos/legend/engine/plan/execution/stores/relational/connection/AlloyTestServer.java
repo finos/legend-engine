@@ -36,7 +36,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
-import org.finos.legend.pure.generated.core_relational_relational_router_router_extension;
 import org.h2.tools.Server;
 import org.junit.After;
 import org.junit.Before;
@@ -53,6 +52,7 @@ import java.util.Enumeration;
 import java.util.Map;
 
 import static org.finos.legend.engine.plan.execution.stores.relational.TestExecutionScope.buildTestExecutor;
+import static org.finos.legend.pure.generated.core_relational_relational_extensions_router_extension.Root_meta_relational_extension_relationalExtensions__Extension_MANY_;
 
 public abstract class AlloyTestServer
 {
@@ -178,7 +178,7 @@ public abstract class AlloyTestServer
                 "vX_X_X",
                 PlanPlatform.JAVA,
                 null,
-                core_relational_relational_router_router_extension.Root_meta_pure_router_extension_defaultRelationalExtensions__RouterExtension_MANY_(pureModel.getExecutionSupport()),
+                Root_meta_relational_extension_relationalExtensions__Extension_MANY_(pureModel.getExecutionSupport()),
                 LegendPlanTransformers.transformers
         );
 

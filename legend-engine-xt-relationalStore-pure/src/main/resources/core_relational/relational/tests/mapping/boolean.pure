@@ -25,7 +25,7 @@ function <<test.BeforePackage>> meta::relational::tests::mapping::boolean::setUp
 
 function <<test.Test>> meta::relational::tests::mapping::boolean::testGet():Boolean[1]
 {
-   let result = execute(|Interaction.all(), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Interaction.all(), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 14);
    assertSize($result.values.active->filter(a|$a),8);
    assert($result.values->at(0).active);
@@ -33,13 +33,13 @@ function <<test.Test>> meta::relational::tests::mapping::boolean::testGet():Bool
 
 function <<test.Test>> meta::relational::tests::mapping::boolean::testQuery():Boolean[1]
 {
-   let result = execute(|Interaction.all()->filter(i|$i.active == true), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Interaction.all()->filter(i|$i.active == true), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 8);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::boolean::testProject():Boolean[1]
 {
-   let result = execute(|Interaction.all()->project([#/Interaction/time#, #/Interaction/active#]), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Interaction.all()->project([#/Interaction/time#, #/Interaction/active#]), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 14);
    assertEquals([4, true, 6, false, 12, false, 14, true, 3, false, 23, true, 11, false, 33, true, 44, true, 55, false, 22, true, 33, true, 14, false, 11, true], $result.values.rows.values);
 }

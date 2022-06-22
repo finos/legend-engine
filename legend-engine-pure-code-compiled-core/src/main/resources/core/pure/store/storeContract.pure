@@ -1,0 +1,32 @@
+import meta::pure::mapping::*;
+import meta::pure::router::systemMapping::tests::*;
+import meta::pure::extension::*;
+import meta::pure::mapping::modelToModel::*;
+import meta::pure::store::*;
+import meta::pure::runtime::*;
+
+Class meta::pure::store::StoreContract
+{
+  id : String[1];
+
+  supports : Function<{FunctionExpression[1]->Boolean[1]}>[0..1];
+
+  supportsStreamFunction : Function<{FunctionExpression[1]->Boolean[1]}>[0..1];
+  supportsStream(){
+      if($this.supportsStreamFunction->isNotEmpty(),
+        |$this.supportsStreamFunction->toOne(),
+        |{f:FunctionExpression[1]|false}
+      );
+    } : Function<{FunctionExpression[1]->Boolean[1]}>[1];
+
+  executeStoreQuery : Function<{StoreQuery[1], RoutedValueSpecification[0..1], Mapping[1], Runtime[1], ExecutionContext[1], Extension[*], DebugContext[1] -> Result<Any|*>[1]}>[0..1];
+
+  planExecution : Function<{StoreQuery[1], RoutedValueSpecification[0..1], Mapping[0..1], Runtime[0..1], ExecutionContext[1], Extension[*], DebugContext[1]->meta::pure::executionPlan::ExecutionNode[1]}>[0..1];
+
+  localGetterOverrideMapped : Function<{Any[1], PropertyMapping[1] -> Any[*]}>[0..1];
+
+  localGetterOverrideNonMapped : Function<{Any[1], Property<Nil,Any|*>[1] -> Any[*]}>[0..1];
+
+
+  supportsSetImplementation : Function<{SetImplementation[1]->Boolean[1]}>[1];
+}

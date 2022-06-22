@@ -19,10 +19,11 @@ import meta::relational::postProcessor::*;
 import meta::relational::postProcessor::filterPushDown::*;
 import meta::relational::metamodel::*;
 import meta::relational::metamodel::join::*;
-import meta::pure::router::extension::*;
+import meta::pure::extension::*;
+import meta::relational::extension::*;
 import meta::relational::metamodel::relation::*;
 
-function meta::relational::postProcessor::filterPushDown::pushFiltersDownToJoins(selectSQLQuery:SelectSQLQuery[1], extensions:RouterExtension[*]):Result<SelectSQLQuery|1>[1]
+function meta::relational::postProcessor::filterPushDown::pushFiltersDownToJoins(selectSQLQuery:SelectSQLQuery[1], extensions:Extension[*]):Result<SelectSQLQuery|1>[1]
 {
    let transformFunction = {r: RelationalOperationElement[1] |
                               $r->match([
@@ -41,7 +42,7 @@ function meta::relational::postProcessor::filterPushDown::pushFiltersDownToJoins
    );
 }
 
-function <<access.private>> meta::relational::postProcessor::filterPushDown::pushFiltersDownToJoins(r: RelationalTreeNode[1], filteringPairs: List<Pair<TableAliasColumn, RelationalOperationElement>>[1], extensions:RouterExtension[*]):RelationalTreeNode[1]
+function <<access.private>> meta::relational::postProcessor::filterPushDown::pushFiltersDownToJoins(r: RelationalTreeNode[1], filteringPairs: List<Pair<TableAliasColumn, RelationalOperationElement>>[1], extensions:Extension[*]):RelationalTreeNode[1]
 {
    $r->match([
       j:JoinTreeNode[1] | let join = $j.join;
@@ -52,7 +53,7 @@ function <<access.private>> meta::relational::postProcessor::filterPushDown::pus
   ]);
 }
 
-function <<access.private>> meta::relational::postProcessor::filterPushDown::addFilterToJoinoperation(filteringPairs : Pair<TableAliasColumn, RelationalOperationElement>[*], left: TableAliasColumn[1], right: TableAliasColumn[1], operation: RelationalOperationElement[1], joinTableAlias: TableAlias[1], extensions:RouterExtension[*]):Pair<RelationalOperationElement, List<Pair<TableAliasColumn, RelationalOperationElement>>>[1]
+function <<access.private>> meta::relational::postProcessor::filterPushDown::addFilterToJoinoperation(filteringPairs : Pair<TableAliasColumn, RelationalOperationElement>[*], left: TableAliasColumn[1], right: TableAliasColumn[1], operation: RelationalOperationElement[1], joinTableAlias: TableAlias[1], extensions:Extension[*]):Pair<RelationalOperationElement, List<Pair<TableAliasColumn, RelationalOperationElement>>>[1]
 {
    let candidatePairs = $filteringPairs->filter(p | $p.first == $left && !($left.alias.name == $joinTableAlias.name && $left.alias.relationalElement->buildUniqueName(true, $extensions) == $joinTableAlias.relationalElement->buildUniqueName(true, $extensions)));
    let tranformFunc = {rel: RelationalOperationElement[1] | if($rel == $left, | $right, | $rel)};
@@ -61,7 +62,7 @@ function <<access.private>> meta::relational::postProcessor::filterPushDown::add
                                                      list($aggregate.second.values->add(pair($right, $transformedElement))));}, pair($operation, list([]->cast(@Pair<TableAliasColumn, RelationalOperationElement>))));
 }
 
-function <<access.private>> meta::relational::postProcessor::filterPushDown::tryAddingFiltersToJoinOperation(operation:RelationalOperationElement[1], filteringPairs: List<Pair<TableAliasColumn, RelationalOperationElement>>[1], joinTableAlias: TableAlias[1], extensions:RouterExtension[*]):Pair<RelationalOperationElement, List<Pair<TableAliasColumn, RelationalOperationElement>>>[1]
+function <<access.private>> meta::relational::postProcessor::filterPushDown::tryAddingFiltersToJoinOperation(operation:RelationalOperationElement[1], filteringPairs: List<Pair<TableAliasColumn, RelationalOperationElement>>[1], joinTableAlias: TableAlias[1], extensions:Extension[*]):Pair<RelationalOperationElement, List<Pair<TableAliasColumn, RelationalOperationElement>>>[1]
 {
    if(($operation->instanceOf(DynaFunction) && $operation->cast(@DynaFunction).name == 'equal'),
       | let left  = $operation->cast(@DynaFunction).parameters->at(0);

@@ -311,7 +311,7 @@ function meta::pure::functions::meta::reverseProperties(class:Class<Any>[1]):Pro
 
 function meta::pure::functions::meta::findExpressionsForFunctionInValueSpecification(vs:ValueSpecification[1], funcs:Function<Any>[*]):FunctionExpression[*]
 {
-   findExpressionsForFunctionInValueSpecification($vs, $funcs, f|!$f->isWithinPackage(meta::pure), []);
+   findExpressionsForFunctionInValueSpecification($vs, $funcs, f|!$f->isWithinPackage(meta::pure) && !$f->functionReturnType().rawType->toOne()->subTypeOf(meta::pure::extension::Extension), []);
 }
 
 function meta::pure::functions::meta::findExpressionsForFunctionInValueSpecification(vs:ValueSpecification[1], funcs:Function<Any>[*], shouldRecurse:Function<{FunctionDefinition<Any>[1]->Boolean[1]}>[1]):FunctionExpression[*]

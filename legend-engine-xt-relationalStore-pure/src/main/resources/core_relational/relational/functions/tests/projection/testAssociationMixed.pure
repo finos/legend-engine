@@ -21,14 +21,14 @@ import meta::pure::metamodel::tds::*;
 
 function <<test.Test>> meta::relational::tests::projection::association::mixed::testAssociationMixed():Boolean[1]
 {
-   let result = execute(|Person.all()->filter(p | $p.firm.employees->exists(e | $e.firstName == 'Oliver'))->project(#/Person/firm/legalName#), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->filter(p | $p.firm.employees->exists(e | $e.firstName == 'Oliver'))->project(#/Person/firm/legalName#), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals(1, $result.values.rows->size());
    assertEquals('Firm B', $result.values.rows->at(0).values);
 }
 
 function <<test.Test>> meta::relational::tests::projection::association::mixed::testAssociationMixedAdvanced():Boolean[1]
 {
-   let result = execute(|Person.all()->filter(p|$p.firm.employees->exists(e|$e.name == 'Peter Smith' && $e.lastName == 'Smith') && $p.firm.legalName == 'Firm X')->project([#/Person/name#, #/Person/firstName#, #/Person/firm/legalName#]), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->filter(p|$p.firm.employees->exists(e|$e.name == 'Peter Smith' && $e.lastName == 'Smith') && $p.firm.legalName == 'Firm X')->project([#/Person/name#, #/Person/firstName#, #/Person/firm/legalName#]), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 4);
    let sortedRows = $result.values.rows->map(a|$a.getString('name')+','+$a.getString('firstName')+','+$a.getString('legalName'))->sort();
    

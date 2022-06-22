@@ -41,7 +41,7 @@ function <<test.BeforePackage>> meta::relational::tests::query::setUp():Boolean[
 
 function <<test.Test>> meta::relational::tests::query::simple::testAll():Boolean[1]
 {
-   let result = execute(|Person.all(), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all(), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 12);
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root"', $result->sqlRemoveFormatting());
 }

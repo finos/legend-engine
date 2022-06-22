@@ -21,7 +21,7 @@ import meta::pure::executionPlan::engine::java::platform::*;
 import meta::pure::executionPlan::engine::java::typeInfo::*;
 
 import meta::pure::mapping::modelToModel::*;
-import meta::pure::router::extension::*;
+import meta::pure::extension::*;
 
 import meta::external::format::json::executionPlan::engine::*;
 
@@ -40,7 +40,7 @@ import meta::external::format::json::executionPlan::*;
 // prepare
 // ========================================================================================================================================================
 
-function meta::external::format::json::executionPlan::engine::java::jsonDeserialize::prepareForJsonDeserialize(node:JsonDeserializeExecutionNode[1], path:String[1], context:GenerationContext[1], extensions:RouterExtension[*], debug:DebugContext[1]): GenerationContext[1]
+function meta::external::format::json::executionPlan::engine::java::jsonDeserialize::prepareForJsonDeserialize(node:JsonDeserializeExecutionNode[1], path:String[1], context:GenerationContext[1], extensions:Extension[*], debug:DebugContext[1]): GenerationContext[1]
 {
    print(if($debug.debug,|$debug.space+'('+$path+') prepare JsonDeserializeExecutionNode\n', |''));
 
@@ -74,7 +74,7 @@ function meta::external::format::json::executionPlan::engine::java::jsonDeserial
 // generate
 // ========================================================================================================================================================
 
-function meta::external::format::json::executionPlan::engine::java::jsonDeserialize::generateForJsonDeserialize(node:JsonDeserializeExecutionNode[1], path:String[1], context:GenerationContext[1], extensions:RouterExtension[*], debug:DebugContext[1]): GeneratedCode[1]
+function meta::external::format::json::executionPlan::engine::java::jsonDeserialize::generateForJsonDeserialize(node:JsonDeserializeExecutionNode[1], path:String[1], context:GenerationContext[1], extensions:Extension[*], debug:DebugContext[1]): GeneratedCode[1]
 {
    print(if($debug.debug,|$debug.space+'('+$path+') generate JsonDeserializeExecutionNode\n', |''));
    

@@ -4,7 +4,8 @@ import meta::relational::functions::sqlQueryToString::*;
 import meta::relational::metamodel::operation::*;
 import meta::relational::metamodel::relation::*;
 import meta::relational::runtime::*;
-import meta::pure::router::extension::*;
+import meta::pure::extension::*;
+import meta::relational::extension::*;
 
 function <<db.ExtensionLoader>> meta::relational::functions::sqlQueryToString::sybaseIQ::dbExtensionLoaderForSybaseIQ():DbExtensionLoader[1]
 {
@@ -198,7 +199,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sybas
    $s->processSelectSQLQueryForSybaseIQ($sgc.dbConfig, $sgc.format, $sgc.config, $isSubSelect, $sgc.extensions);
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseIQ::processSelectSQLQueryForSybaseIQ(sq:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:RouterExtension[*]):String[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseIQ::processSelectSQLQueryForSybaseIQ(sq:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:Extension[*]):String[1]
 {
   // Sybase IQ does not support limit / offset in a subselect, so we need to adjust it, e.g.
   //       select * from (select top 10 "root".id as "ID" from trades as "root" ) as x

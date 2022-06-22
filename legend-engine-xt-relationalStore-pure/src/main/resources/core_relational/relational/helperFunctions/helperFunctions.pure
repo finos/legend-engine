@@ -13,13 +13,14 @@
 // limitations under the License.
 
 import meta::pure::mapping::*;
-import meta::csv::*;
+import meta::relational::tests::csv::*;
 import meta::relational::functions::database::*;
 import meta::relational::runtime::*;
 import meta::pure::runtime::*;
 import meta::relational::functions::pureToSqlQuery::*;
 import meta::pure::router::routing::*;
-import meta::pure::router::extension::*;
+import meta::pure::extension::*;
+import meta::relational::extension::*;
 import meta::relational::metamodel::relation::*;
 import meta::relational::metamodel::*;
 import meta::relational::mapping::*;
@@ -177,38 +178,38 @@ function meta::alloy::service::execution::setUpDataSQLs(records:List<String>[*],
    $schemaAndTableSetup->concatenate(loadCsvDataToDbTable($records, $db, t:Table[1]|$t));
 }
 
-function {service.contentType='text/csv', service.contentDisposition='attachment;filename=result.csv'} meta::csv::toCSV(t:TabularDataSet[1]):String[1]
+function {service.contentType='text/csv', service.contentDisposition='attachment;filename=result.csv'} meta::relational::tests::csv::toCSV(t:TabularDataSet[1]):String[1]
 {
-   $t->meta::csv::toCSV(false);
+   $t->meta::relational::tests::csv::toCSV(false);
 }
 
-function {service.contentType='text/csv', service.contentDisposition='attachment;filename=result.csv'} meta::csv::toCSV(t:TabularDataSet[1], renderTdsNull:Boolean[1]):String[1]
+function {service.contentType='text/csv', service.contentDisposition='attachment;filename=result.csv'} meta::relational::tests::csv::toCSV(t:TabularDataSet[1], renderTdsNull:Boolean[1]):String[1]
 {
    $t->toCSV(SimpleDateTimeFormat(), ISO8601DateFormat(), $renderTdsNull);
 }
 
-function meta::csv::toCSV(t:TabularDataSet[1], dateTimeFormat:String[1], dateFormat:String[1], renderTdsNull:Boolean[1]):String[1]
+function meta::relational::tests::csv::toCSV(t:TabularDataSet[1], dateTimeFormat:String[1], dateFormat:String[1], renderTdsNull:Boolean[1]):String[1]
 {
    $t.columns->map(c | $c.name->toCSVString($dateTimeFormat, $dateFormat, $renderTdsNull))->joinStrings(',') + '\n' +
    $t.rows->map(r | $r.values->map(v | $v->toCSVString($dateTimeFormat, $dateFormat, $renderTdsNull))->joinStrings(','))->joinStrings('', '\n', '\n');
 }
 
-function meta::csv::toCSVString(anything:Any[1]):String[1]
+function meta::relational::tests::csv::toCSVString(anything:Any[1]):String[1]
 {
    $anything->toCSVString(SimpleDateTimeFormat(), ISO8601DateFormat());
 }
 
-function meta::csv::dataValueToCSV(value:Any[0..1], dateTimeFormat:String[1], dateFormat:String[1]):String[1]
+function meta::relational::tests::csv::dataValueToCSV(value:Any[0..1], dateTimeFormat:String[1], dateFormat:String[1]):String[1]
 {
     if($value->isEmpty(), |'', |$value->toOne()->toCSVString($dateTimeFormat, $dateFormat))
 }
 
-function <<access.protected>> meta::csv::toCSVString(anything:Any[1], dateTimeFormat:String[1], dateFormat:String[1]):String[1]
+function meta::relational::tests::csv::toCSVString(anything:Any[1], dateTimeFormat:String[1], dateFormat:String[1]):String[1]
 {
-   meta::csv::toCSVString($anything, $dateTimeFormat, $dateFormat, false)
+   meta::relational::tests::csv::toCSVString($anything, $dateTimeFormat, $dateFormat, false)
 }
 
-function <<access.protected>> meta::csv::toCSVString(anything:Any[1], dateTimeFormat:String[1], dateFormat:String[1], renderTdsNull:Boolean[1]):String[1]
+function meta::relational::tests::csv::toCSVString(anything:Any[1], dateTimeFormat:String[1], dateFormat:String[1], renderTdsNull:Boolean[1]):String[1]
 {
    $anything->match([
                         n:TDSNull[1]|if($renderTdsNull,|'TDSNull',|''),
@@ -217,14 +218,14 @@ function <<access.protected>> meta::csv::toCSVString(anything:Any[1], dateTimeFo
                     ]);
 }
 
-function <<access.private>> meta::csv::formatDateTime(date: Date[1], dateTimeFormat:String[1], dateFormat:String[1]):String[1]
+function <<access.private>> meta::relational::tests::csv::formatDateTime(date: Date[1], dateTimeFormat:String[1], dateFormat:String[1]):String[1]
 {
    if($date->hasHour(),
          |format($dateTimeFormat, $date)->escapeCSVString(),
          |format($dateFormat, $date));
 }
 
-function <<access.private>> meta::csv::escapeCSVString(string:String[1]):String[1]
+function <<access.private>> meta::relational::tests::csv::escapeCSVString(string:String[1]):String[1]
 {
    if($string->contains(',') || $string->contains('"') || $string->contains('\n') || $string->contains('\r'),
       | '"' + $string->replace('"', '""') + '"',
@@ -332,7 +333,7 @@ function meta::relational::mapping::resolveMainRelation(rsi: RelationalInstanceS
    ])
 }
 
-function meta::relational::mapping::resolvePrimaryKeysNames(rsi: RelationalInstanceSetImplementation[1], pkMap:Map<String, Any>[1], setIdx:String[1], transformToPlatformNames:Boolean[1], extensions:RouterExtension[*]):Map<String, Any>[1]
+function meta::relational::mapping::resolvePrimaryKeysNames(rsi: RelationalInstanceSetImplementation[1], pkMap:Map<String, Any>[1], setIdx:String[1], transformToPlatformNames:Boolean[1], extensions:Extension[*]):Map<String, Any>[1]
 {
    let pks = $rsi->resolvePrimaryKey();
 

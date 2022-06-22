@@ -22,23 +22,23 @@ import meta::relational::mapping::*;
 
 function <<test.Test>> meta::relational::tests::mapping::database::testColumnNames():Boolean[1]
 {
-   let result = execute(| MyClass.all(), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(| MyClass.all(), testMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result, 1);
    assertEquals(2, $result.values->first()->cast(@MyClass).a);
    assertEquals(MyEnum.NO, $result.values->first()->cast(@MyClass).d);
    
-   let result2 = execute(| MyClassB.all(), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result2 = execute(| MyClassB.all(), testMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result2, 1);
    assertEquals('Description A', $result2.values->first()->cast(@MyClassB).c);
          
-   let filteredResult = execute(| MyClass.all()->filter(m | $m.a == 2), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let filteredResult = execute(| MyClass.all()->filter(m | $m.a == 2), testMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($filteredResult, 1);
    assertEquals(2, $result.values->first()->cast(@MyClass).a);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::database::testTableNameInJoinAlias():Boolean[1]
 {
-   let result = execute(| MyClass.all()->project([c | $c.b.c], ['c']), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(| MyClass.all()->project([c | $c.b.c], ['c']), testMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result, 1);
    assertEquals('select "test table2_0"."My#Data" as "c" from testTable as "root" left outer join "test Table2" as "test table2_0" on ("root"."Column.ID" = "test table2_0"."Column&ID")', $result->sqlRemoveFormatting());
 }

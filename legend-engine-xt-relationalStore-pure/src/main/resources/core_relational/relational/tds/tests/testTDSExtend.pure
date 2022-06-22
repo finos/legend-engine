@@ -26,7 +26,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsExtend::testStringLitera
          ->project(p|$p.firstName,'firstName')
          ->extend([col({r:TDSRow[1]|'Hello'}, 'hello')]),
       simpleRelationalMapping, 
-      testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+      testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($result.values.columns, 2);   
    
@@ -40,9 +40,9 @@ function <<test.Test>> meta::relational::tests::tds::tdsExtend::testStringLitera
 function <<test.Test>> meta::relational::tests::tds::tdsExtend::testFunctionOnVariable():Boolean[1]
 {
    let plan = executionPlan({ var:String[1]| Person.all()->project(p|$p.firstName,'firstName')
-                                                           ->extend(^BasicColumnSpecification<TDSRow>(func={r:TDSRow[1]|$var}, name='var'))}, simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                                                           ->extend(^BasicColumnSpecification<TDSRow>(func={r:TDSRow[1]|$var}, name='var'))}, simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
 
-   assertEquals('Sequence (   type = TDS[(firstName, String, VARCHAR(200), ""), (var, String, "", "")]   (     FunctionParametersValidationNode     (       functionParameters = [var:String[1]]     )     Relational     (       type = TDS[(firstName, String, VARCHAR(200), ""), (var, String, "", "")]       resultColumns = [("firstName", VARCHAR(200)), ("var", "")]       sql = select "root".FIRSTNAME as "firstName", \'${var}\' as "var" from personTable as "root"       connection = TestDatabaseConnection(type = "H2")     )   ) ) ', $plan->planToString(meta::pure::router::extension::defaultRelationalExtensions())->replace('\n',' '));   
+   assertEquals('Sequence (   type = TDS[(firstName, String, VARCHAR(200), ""), (var, String, "", "")]   (     FunctionParametersValidationNode     (       functionParameters = [var:String[1]]     )     Relational     (       type = TDS[(firstName, String, VARCHAR(200), ""), (var, String, "", "")]       resultColumns = [("firstName", VARCHAR(200)), ("var", "")]       sql = select "root".FIRSTNAME as "firstName", \'${var}\' as "var" from personTable as "root"       connection = TestDatabaseConnection(type = "H2")     )   ) ) ', $plan->planToString(meta::relational::extension::relationalExtensions())->replace('\n',' '));
 }
 
 function <<test.Test>> meta::relational::tests::tds::tdsExtend::testFunctionOnStringLiteral():Boolean[1]
@@ -52,7 +52,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsExtend::testFunctionOnSt
          ->project(p|$p.firstName,'first_name')
          ->extend([col({r:TDSRow[1]|'Hello'->length()}, 'hello_length')]),
       simpleRelationalMapping, 
-      testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+      testRuntime(), meta::relational::extension::relationalExtensions());
    
    assertSize($result.values.columns, 2);
    
@@ -70,7 +70,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsExtend::testStringColumn
          ->project(p|$p.firstName,'first_name')
          ->extend([col({r:TDSRow[1]|$r.getString('first_name')}, 'name_again')]),
       simpleRelationalMapping, 
-      testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+      testRuntime(), meta::relational::extension::relationalExtensions());
    
    assertSize($result.values.columns, 2);  
    
@@ -88,7 +88,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsExtend::testFunctionOnSt
          ->project(p|$p.firstName,'first_name')
          ->extend([col({r:TDSRow[1]| $r.getString('first_name')->length()}, 'name_length')]),
       simpleRelationalMapping, 
-      testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+      testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals([String, Integer], $result.values.columns.type);
    assertSize($result.values.columns, 2);  
    
@@ -106,7 +106,7 @@ function <<test.ToFix>> meta::relational::tests::tds::tdsExtend::testFunctionOnE
          ->project([a|$a.name, a|$a.type],['name', 'type'])
          ->extend([col({r:TDSRow[1]|$r.getEnum('type') == GeographicEntityType.CITY}, 'type_enum')]),
       simpleRelationalMapping,
-      testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+      testRuntime(), meta::relational::extension::relationalExtensions());
    
    assertSize($result.values.columns, 3);   
       
@@ -125,7 +125,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsExtend::testMultipleFunc
          ->extend([col({r:TDSRow[1]|'Hello'}, 'const'),
                    col({r:TDSRow[1]|$r.getString('first_name')->length()}, 'name_length')]),
       simpleRelationalMapping, 
-      testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+      testRuntime(), meta::relational::extension::relationalExtensions());
       
    assertSize($result.values.columns, 3);
    
@@ -144,7 +144,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsExtend::testExtendAndExt
          ->extend([col({r:TDSRow[1]|$r.getString('first_name')->length()}, 'name_length')])
          ->extend([col({r:TDSRow[1]|$r.getInteger('name_length') * 2}, 'double_name_length')]),
       simpleRelationalMapping, 
-      testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+      testRuntime(), meta::relational::extension::relationalExtensions());
    
    assertSize($result.values.columns, 3);  
    
@@ -162,7 +162,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsExtend::testExtendOnDyna
          ->project([p|$p.firstName, p|$p.lastName->toUpper()], ['first', 'LAST'])
          ->extend([col({r:TDSRow[1]|$r.getString('LAST')->length()}, 'name_length')]),
       simpleRelationalMapping, 
-      testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+      testRuntime(), meta::relational::extension::relationalExtensions());
       
    assertSize($result.values.rows, 7);
    
@@ -180,7 +180,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsExtend::testExtendOnMult
          ->project([#/Person/firstName!first_name#, #/Person/lastName!last_name#])
          ->extend([col({r:TDSRow[1]| $r.getString('first_name')->length() + $r.getString('last_name')->length()}, 'combined_length')]),
       simpleRelationalMapping, 
-      testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+      testRuntime(), meta::relational::extension::relationalExtensions());
    
    assertSize($result.values.columns, 3);  
    
@@ -198,7 +198,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsExtend::testDateLiteral(
          ->project(p|$p.firstName,'firstName')
          ->extend([col({r:TDSRow[1]|%2016-08-10}, 'dateLiteral')]),
       simpleRelationalMapping, 
-      testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+      testRuntime(), meta::relational::extension::relationalExtensions());
    
    let tds = $result.values->at(0);
    
@@ -223,7 +223,7 @@ function <<test.Test, test.ExcludeAlloy>> {test.excludePlatform = 'Java compiled
             ->extend([col({r:TDSRow[1]| $r.getString($firstNameColName)->length()}, 'first_name_length')]);
       ,
       simpleRelationalMapping, 
-      testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+      testRuntime(), meta::relational::extension::relationalExtensions());
    
    assertSize($result.values.columns, 3);  
    
@@ -245,7 +245,7 @@ function <<test.ToFix>> meta::relational::tests::tds::tdsExtend::testExtendWithV
             ->extend([col({r:TDSRow[1]| $r.getString('first_name')->length()}, $outColName)]);
       ,
       simpleRelationalMapping, 
-      testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+      testRuntime(), meta::relational::extension::relationalExtensions());
    
    assertSize($result.values.columns, 3);  
    
@@ -266,7 +266,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsExtend::testNull():Boole
             col({r:TDSRow[1]|$r.isNotNull('firstName')}, 'isNotNull')
             ]),
       simpleRelationalMapping, 
-      testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+      testRuntime(), meta::relational::extension::relationalExtensions());
    
    assertSize($result.values.columns, 3);   
    
@@ -287,13 +287,13 @@ function <<test.Test>> meta::relational::tests::tds::tdsExtend::testStringConcat
    
    let mapping = meta::relational::tests::simpleRelationalMapping;
    
-   let sqlResultH2 = meta::relational::functions::sqlstring::toSQLString($func, $mapping, meta::relational::runtime::DatabaseType.H2, meta::pure::router::extension::defaultRelationalExtensions());
+   let sqlResultH2 = meta::relational::functions::sqlstring::toSQLString($func, $mapping, meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
    assertEquals($sqlResultH2, 'select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", concat("root".FIRSTNAME, "root".LASTNAME) as "exprString3" from personTable as "root"');
  
-   let sqlResultSybaseIQ = meta::relational::functions::sqlstring::toSQLString($func, $mapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions());
+   let sqlResultSybaseIQ = meta::relational::functions::sqlstring::toSQLString($func, $mapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
    assertEquals($sqlResultSybaseIQ, 'select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", "root".FIRSTNAME+"root".LASTNAME as "exprString3" from personTable as "root"');  
    
-   let sqlResultDB2 = meta::relational::functions::sqlstring::toSQLString($func, $mapping, meta::relational::runtime::DatabaseType.DB2, meta::pure::router::extension::defaultRelationalExtensions());
+   let sqlResultDB2 = meta::relational::functions::sqlstring::toSQLString($func, $mapping, meta::relational::runtime::DatabaseType.DB2, meta::relational::extension::relationalExtensions());
    assertEquals($sqlResultDB2, 'select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", ("root".FIRSTNAME concat "root".LASTNAME) as "exprString3" from personTable as "root"'
 );
 }
@@ -308,7 +308,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsExtend::testIfWithEmptyE
             col({r:TDSRow[1]|if($r.isNotNull('firstName'), | $r.getString('firstName'), | [])}, 'extended')
             ]),
       simpleRelationalMapping, 
-      testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+      testRuntime(), meta::relational::extension::relationalExtensions());
    
    assertEquals('select "root".FIRSTNAME as "firstName", case when "root".FIRSTNAME is not null then "root".FIRSTNAME else null end as "extended" from personTable as "root"', 
       $result->sqlRemoveFormatting());
@@ -330,7 +330,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsExtend::testExtendWithQu
    let mapping = meta::relational::tests::tds::tabletds::EmptyMapping;
    let runtime = meta::relational::tests::testRuntime();
    
-   let resultWithoutQuotes = execute($queryWithoutQuotes, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions());
+   let resultWithoutQuotes = execute($queryWithoutQuotes, $mapping, $runtime, meta::relational::extension::relationalExtensions());
    
    let queryWithQuotes   = {|tableToTDS(meta::relational::functions::database::tableReference(meta::relational::tests::db,'default','tableWithQuotedColumns'))
       ->project([
@@ -346,7 +346,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsExtend::testExtendWithQu
                          
                             ])};
    
-   let resultWithQuotes = execute($queryWithQuotes, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions());
+   let resultWithQuotes = execute($queryWithQuotes, $mapping, $runtime, meta::relational::extension::relationalExtensions());
    
    let expectedSql = 'select "root"."FIRST NAME" as "FIRST NAME", "root"."LAST NAME" as "LAST NAME", "root"."1columnStartsWithNumber" as "1columnStartsWithNumber", concat("root"."FIRST NAME", \'_hello\') as "name_again", concat("root"."1columnStartsWithNumber", \'_hello\') as "numbercol_again" from tableWithQuotedColumns as "root"';
 
@@ -373,7 +373,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsExtend::testExtendsWithI
             col(r:TDSRow[1] | $r.getBoolean('ageGreaterThan50')->in([true, false]), 'booleanExtends')
          ]),
       simpleRelationalMapping, 
-      testRuntime(), meta::pure::router::extension::defaultRelationalExtensions(), noDebug());
+      testRuntime(), meta::relational::extension::relationalExtensions(), noDebug());
    
    assertEquals('select "root".FIRSTNAME as "firstName", "root".AGE as "age", \'2021-01-01\' as "dt", ("root".AGE is not null and "root".AGE > 50) as "ageGreaterThan50", "root".FIRSTNAME in (\'Peter\') as "stringExtends1", "root".FIRSTNAME in (\'Peter\', \'John\') as "stringExtends2", "root".AGE in (22, 23) as "numberExtends", \'2021-01-01\' in (\'2021-01-01\', \'2021-01-02\') as "dateExtends", ("root".AGE is not null and "root".AGE > 50) in (\'true\', \'false\') as "booleanExtends" from personTable as "root"', $result->sqlRemoveFormatting());
 }

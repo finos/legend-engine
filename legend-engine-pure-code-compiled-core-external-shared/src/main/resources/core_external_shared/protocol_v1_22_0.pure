@@ -15,9 +15,9 @@
 import meta::protocols::pure::v1_22_0::metamodel::executionPlan::*;
 import meta::protocols::pure::v1_22_0::transformation::fromPureGraph::external::shared::format::*;
 import meta::pure::mapping::*;
-import meta::pure::router::extension::*;
+import meta::pure::extension::*;
 
-function meta::protocols::pure::v1_22_0::external::shared::format::serializerExtension(type:String[1]): meta::pure::router::extension::SerializerExtension[1]
+function meta::protocols::pure::v1_22_0::external::shared::format::serializerExtension(type:String[1]): meta::pure::extension::SerializerExtension[1]
 {
    ^meta::protocols::pure::v1_22_0::extension::SerializerExtension_v1_22_0(
       transfers_store_transformConnection = 
@@ -25,7 +25,7 @@ function meta::protocols::pure::v1_22_0::external::shared::format::serializerExt
             extConnection:meta::external::shared::format::executionPlan::ExternalFormatConnection[1] | $extConnection->transformExternalFormatConnection()
          ],
       transfers_executionPlan_transformNode = 
-         {mapping:Mapping[1], extensions:RouterExtension[*] |
+         {mapping:Mapping[1], extensions:Extension[*] |
             [
                d:meta::external::shared::format::executionPlan::DataQualityExecutionNode[1] | transformDataQualityNode($d, $mapping, $extensions),
                u:meta::external::shared::format::executionPlan::UrlStreamExecutionNode[1]   | transformUrlStreamNode($u, $mapping, $extensions)
@@ -76,7 +76,7 @@ Class meta::protocols::pure::v1_22_0::metamodel::external::shared::format::execu
    url : String[1];
 }
 
-function meta::protocols::pure::v1_22_0::transformation::fromPureGraph::external::shared::format::transformDataQualityNode(node:meta::external::shared::format::executionPlan::DataQualityExecutionNode[1], mapping:meta::pure::mapping::Mapping[1], extensions:RouterExtension[*]): ExecutionNode[1]
+function meta::protocols::pure::v1_22_0::transformation::fromPureGraph::external::shared::format::transformDataQualityNode(node:meta::external::shared::format::executionPlan::DataQualityExecutionNode[1], mapping:meta::pure::mapping::Mapping[1], extensions:Extension[*]): ExecutionNode[1]
 {
    ^meta::protocols::pure::v1_22_0::metamodel::external::shared::format::executionPlan::DataQualityExecutionNode(
       _type             = 'dataQuality',
@@ -87,7 +87,7 @@ function meta::protocols::pure::v1_22_0::transformation::fromPureGraph::external
    );
 }
 
-function meta::protocols::pure::v1_22_0::transformation::fromPureGraph::external::shared::format::transformUrlStreamNode(node:meta::external::shared::format::executionPlan::UrlStreamExecutionNode[1], mapping:meta::pure::mapping::Mapping[1], extensions:RouterExtension[*]): ExecutionNode[1]
+function meta::protocols::pure::v1_22_0::transformation::fromPureGraph::external::shared::format::transformUrlStreamNode(node:meta::external::shared::format::executionPlan::UrlStreamExecutionNode[1], mapping:meta::pure::mapping::Mapping[1], extensions:Extension[*]): ExecutionNode[1]
 {
    ^meta::protocols::pure::v1_22_0::metamodel::external::shared::format::executionPlan::UrlStreamExecutionNode(
       _type      = 'urlStream',

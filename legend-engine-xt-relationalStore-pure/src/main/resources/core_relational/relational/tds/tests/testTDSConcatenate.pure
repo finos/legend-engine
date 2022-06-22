@@ -14,7 +14,7 @@
 
 import meta::relational::metamodel::join::*;
 import meta::relational::functions::sqlstring::*;
-import meta::csv::*;
+import meta::relational::tests::csv::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::mapping::*;
 import meta::relational::runtime::*;
@@ -28,7 +28,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsConcatenate::testSimpleC
          ->concatenate(Person.all()->project([col(p|$p.lastName, 'lastName')]))
       ,
       simpleRelationalMapping, 
-      testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+      testRuntime(), meta::relational::extension::relationalExtensions());
    
    let tds = $result.values->toOne()->sort([asc('lastName')]);
    
@@ -50,7 +50,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsConcatenate::testConcate
          ->concatenate(Person.all()->project([col(p|$p.lastName, 'lastName')]))
       ,
       simpleRelationalMapping, 
-      testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+      testRuntime(), meta::relational::extension::relationalExtensions());
    
    let tds = $result.values->toOne()->sort([asc('lastName')]);
    
@@ -71,7 +71,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsConcatenate::testConcate
          ->concatenate(Person.all()->project([col(p|$p.lastName, 'lastName')])->filter(row:TDSRow[1]| $row.getString('lastName') != 'hello'))
       ,
       simpleRelationalMapping, 
-      testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+      testRuntime(), meta::relational::extension::relationalExtensions());
    
    let tds = $result.values->toOne()->sort([asc('lastName')]);
    
@@ -93,7 +93,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsConcatenate::testConcate
          ->concatenate(Person.all()->project([col(p|$p.lastName, 'lastName')]))
       ,
       simpleRelationalMapping, 
-      testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+      testRuntime(), meta::relational::extension::relationalExtensions());
    
    let tds = $result.values->toOne()->sort([asc('lastName')]);
    
@@ -114,7 +114,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsConcatenate::testConcate
          ->concatenate(Person.all()->project([col(p|$p.lastName, 'lastName')])->filter(row:TDSRow[1]| $row.getString('lastName') == 'hello'))
       ,
       simpleRelationalMapping, 
-      testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+      testRuntime(), meta::relational::extension::relationalExtensions());
    
    let tds = $result.values->toOne()->sort([asc('lastName')]);
    
@@ -136,7 +136,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsConcatenate::testConcate
          ->filter(row:TDSRow[1]| $row.getString('lastName') != 'hello')
       ,
       simpleRelationalMapping, 
-      testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+      testRuntime(), meta::relational::extension::relationalExtensions());
    
    let tds = $result.values->toOne()->sort([asc('lastName')]);
    
@@ -158,7 +158,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsConcatenate::testConcate
          ->filter(row:TDSRow[1]| $row.getString('lastName') == 'hello')
       ,
       simpleRelationalMapping, 
-      testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+      testRuntime(), meta::relational::extension::relationalExtensions());
    
    let tds = $result.values->toOne()->sort([asc('lastName')]);
    
@@ -182,7 +182,7 @@ function <<test.Test, test.ToFix>> meta::relational::tests::tds::tdsConcatenate:
          ->restrict(['lhs_lastName', 'rhs_firstName'])
       ,
       simpleRelationalMapping, 
-      testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+      testRuntime(), meta::relational::extension::relationalExtensions());
    
    let tds = $result.values->toOne()->sort([asc('lastName')]);
    
@@ -203,6 +203,6 @@ function <<test.Test>> meta::relational::tests::tds::tdsConcatenate::testConcate
          ->project([col(p|$p.lastName, 'lastName')])
          ->concatenate(Person.all()->project([col(p|$p.lastName, 'lastName')]))->distinct()->groupBy('lastName', agg('count', x|$x, y| $y->count()))};
 
-  let result =  toSQLString($func, simpleRelationalMapping, DatabaseType.Presto, meta::pure::router::extension::defaultRelationalExtensions());
+  let result =  toSQLString($func, simpleRelationalMapping, DatabaseType.Presto, meta::relational::extension::relationalExtensions());
    assertEquals('select "aggreg"."lastName" as "lastName", count(*) as "count" from (select distinct "union"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" UNION ALL select "root".LASTNAME as "lastName" from personTable as "root") as "union") as "aggreg" group by "aggreg"."lastName"', $result);
 }

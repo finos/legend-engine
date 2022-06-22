@@ -17,20 +17,20 @@ import meta::alloy::objectReference::*;
 import meta::pure::runtime::*;
 import meta::pure::mapping::*;
 
-function meta::alloy::objectReference::generateObjectReferences(clientVersion:String[1], pathToMappingElement:String[1], rootSetId:String[1], pathToRuntimeFunction:String[1], pkMaps:Map<String, Any>[*], extensions:meta::pure::router::extension::RouterExtension[*]):String[1]
+function meta::alloy::objectReference::generateObjectReferences(clientVersion:String[1], pathToMappingElement:String[1], rootSetId:String[1], pathToRuntimeFunction:String[1], pkMaps:Map<String, Any>[*], extensions:meta::pure::extension::Extension[*]):String[1]
 {
    generateVersionedObjectReferences($clientVersion, $pathToMappingElement, $rootSetId, $rootSetId, $pathToRuntimeFunction, $pkMaps, $extensions);
 }
 
-function meta::alloy::objectReference::generateObjectReferencesForGivenSetId(clientVersion:String[1], pathToMappingElement:String[1], rootSetId:String[1], setId:String[1], pathToRuntimeFunction:String[1], pkMaps:Map<String, Any>[*], extensions:meta::pure::router::extension::RouterExtension[*]):String[1]
+function meta::alloy::objectReference::generateObjectReferencesForGivenSetId(clientVersion:String[1], pathToMappingElement:String[1], rootSetId:String[1], setId:String[1], pathToRuntimeFunction:String[1], pkMaps:Map<String, Any>[*], extensions:meta::pure::extension::Extension[*]):String[1]
 {
    generateVersionedObjectReferences($clientVersion, $pathToMappingElement, $rootSetId, $setId, $pathToRuntimeFunction, $pkMaps, $extensions);
 }
 
-function <<access.private>> meta::alloy::objectReference::generateVersionedObjectReferences(clientVersion:String[1], pathToMappingElement:String[1], rootSetId:String[1], setId:String[1], pathToRuntimeFunction:String[1], pkMaps:Map<String, Any>[*], extensions:meta::pure::router::extension::RouterExtension[*]):String[1]
+function <<access.private>> meta::alloy::objectReference::generateVersionedObjectReferences(clientVersion:String[1], pathToMappingElement:String[1], rootSetId:String[1], setId:String[1], pathToRuntimeFunction:String[1], pkMaps:Map<String, Any>[*], extensions:meta::pure::extension::Extension[*]):String[1]
 {
-   let versionedFuncString = 'meta::protocols::pure::'+$clientVersion+'::invocation::execution::execute:::generateAlloyObjectReference_Mapping_1__String_1__String_1__Runtime_1__Map_1__RouterExtension_MANY__AlloyObjectReference_1_';
-   let versionedFunc       = $versionedFuncString->pathToElement()->cast(@Function<{Mapping[1], String[1], String[1], Runtime[1], Map<String, Any>[1], meta::pure::router::extension::RouterExtension[*] -> Any[1]}>);
+   let versionedFuncString = 'meta::protocols::pure::'+$clientVersion+'::invocation::execution::execute:::generateAlloyObjectReference_Mapping_1__String_1__String_1__Runtime_1__Map_1__Extension_MANY__AlloyObjectReference_1_';
+   let versionedFunc       = $versionedFuncString->pathToElement()->cast(@Function<{Mapping[1], String[1], String[1], Runtime[1], Map<String, Any>[1], meta::pure::extension::Extension[*] -> Any[1]}>);
 
    let mapping             = $pathToMappingElement->pathToElement()->cast(@Mapping);
    let runtime             = $pathToRuntimeFunction->pathToElement()->cast(@Function<{->Runtime[1]}>)->eval();

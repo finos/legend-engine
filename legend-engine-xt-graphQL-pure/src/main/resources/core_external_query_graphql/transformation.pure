@@ -167,7 +167,7 @@ function meta::external::query::graphQL::transformation::queryToPure::getPlansFr
                                                                           mapping:meta::pure::mapping::Mapping[1],
                                                                           runtime:meta::pure::runtime::Runtime[1],
                                                                           query:meta::external::query::graphQL::metamodel::Document[1],
-                                                                          extensions:meta::pure::router::extension::RouterExtension[*]
+                                                                          extensions:meta::pure::extension::Extension[*]
                                                                       ):Pair<String, meta::pure::executionPlan::ExecutionPlan>[*]
 {
   let graphFetch = meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure($query, $cl);

@@ -141,7 +141,7 @@ function meta::pure::executionPlan::engine::java::createQualifiedPropertiesForCl
    );
 }
 
-function meta::pure::executionPlan::engine::java::createGeneratedMilestonedPropertiesForClass(class: meta::external::language::java::metamodel::Class[1], milestonedProperties:QualifiedProperty<Any>[*], varName: String[1], set: PureInstanceSetImplementation[1], context:GenerationContext[1], extensions : meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]) : Project[1]
+function meta::pure::executionPlan::engine::java::createGeneratedMilestonedPropertiesForClass(class: meta::external::language::java::metamodel::Class[1], milestonedProperties:QualifiedProperty<Any>[*], varName: String[1], set: PureInstanceSetImplementation[1], context:GenerationContext[1], extensions : meta::pure::extension::Extension[*], debug:DebugContext[1]) : Project[1]
 {
    print(if($debug.debug,|$debug.space+'createGeneratedMilestonedPropertiesForClass: \''+$class->typeToString()+'\'\n',|''));
 

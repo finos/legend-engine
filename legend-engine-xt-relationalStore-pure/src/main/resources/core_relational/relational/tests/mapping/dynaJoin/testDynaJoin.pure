@@ -24,7 +24,7 @@ function <<test.BeforePackage>> meta::relational::tests::mapping::dynajoin::setU
 // Alloy exclusion reason: 4. Use getter relational protocol
 function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::mapping::dynajoin::testGet():Boolean[1]
 {
-   let result = execute(|Account.all()->filter(a|$a.name=='Account 1'), meta::relational::tests::simpleRelationalMapping,meta::relational::tests::testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Account.all()->filter(a|$a.name=='Account 1'), meta::relational::tests::simpleRelationalMapping,meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements([%2014-12-03,%2014-12-04],$result.values->at(0).trades.latestEventDate);
 }
 
@@ -32,7 +32,7 @@ function <<test.Test>> meta::relational::tests::mapping::dynajoin::testFilterOnM
 {
     let result = execute(|TradeEvent.all()->project([e|$e.eventType, e|$e.traderAddress],['eventType','traderAddress']),
                                                      meta::relational::tests::simpleRelationalMapping,
-                                                     meta::relational::tests::testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                                                     meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->toOne();
    assertEquals(['New,Hoboken', 'Correct,New York', 'Settle,New York', 'New,New York', 'Cancel,San Fransisco'], $tds.rows->map(r|$r.values->makeString(',')));
    assertEquals('select "root".eventType as "eventType", concat("addresstable_0".NAME, "addresstable_0".STREET) as "traderAddress" from tradeEventTable as "root" left outer join personTable as "persontable_0" on ("root".person_id = "persontable_0".ID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "persontable_0".ADDRESSID)', $result->sqlRemoveFormatting());
@@ -40,7 +40,7 @@ function <<test.Test>> meta::relational::tests::mapping::dynajoin::testFilterOnM
 
 function <<test.Test>> meta::relational::tests::mapping::dynajoin::testJoinWithAggregateFunction():Boolean[1]
 {
-   let result = execute(|Trade.all()->filter(t|$t.id->in([1,6])), meta::relational::tests::simpleRelationalMapping,meta::relational::tests::testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Trade.all()->filter(t|$t.id->in([1,6])), meta::relational::tests::simpleRelationalMapping,meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 2);
    assertSameElements(['1','6'],$result.values->map(r |$r.id->toString()));
    assertSameElements([%2014-12-03,%2014-12-04],$result.values->map(r |$r.latestEventDate));
@@ -49,7 +49,7 @@ function <<test.Test>> meta::relational::tests::mapping::dynajoin::testJoinWithA
 
 function <<test.Test>> meta::relational::tests::mapping::dynajoin::testFilterOnJoinWithAggregateFunction():Boolean[1]
 {
-   let result = execute(|Trade.all()->filter(t|$t.id->in([1,6]) && ($t.latestEventDate == '2014-12-03')), meta::relational::tests::simpleRelationalMapping,meta::relational::tests::testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Trade.all()->filter(t|$t.id->in([1,6]) && ($t.latestEventDate == '2014-12-03')), meta::relational::tests::simpleRelationalMapping,meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 1);
    assertSameElements(['1'],$result.values->map(r |$r.id->toString() ));
    assertSameElements([%2014-12-03],$result.values->map(r |$r.latestEventDate));
@@ -65,7 +65,7 @@ function <<test.Test>> meta::relational::tests::mapping::dynajoin::testFilterOnJ
                                               [
                                                   'id',
                                                   'latestEventDate'
-                           ]), meta::relational::tests::simpleRelationalMapping,meta::relational::tests::testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                           ]), meta::relational::tests::simpleRelationalMapping,meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->toOne();
    assertSize($tds.rows, 2);
    assertEquals([1, %2014-12-03], $tds.rows->at(0).values);
@@ -75,12 +75,12 @@ function <<test.Test>> meta::relational::tests::mapping::dynajoin::testFilterOnJ
 
 function <<test.Test>> meta::relational::tests::mapping::dynajoin::testSelfJoinWithAggregateFunction():Boolean[1]
 {
-   let toManyResult = execute(|Interaction.all()->filter(i|$i.source.firstName == 'Peter' && $i.target.lastName=='Johnson' ), meta::relational::tests::simpleRelationalMapping,meta::relational::tests::testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let toManyResult = execute(|Interaction.all()->filter(i|$i.source.firstName == 'Peter' && $i.target.lastName=='Johnson' ), meta::relational::tests::simpleRelationalMapping,meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($toManyResult.values, 2);
    assertSameElements(['1','2'], $toManyResult.values->map(r |$r.id));
    assertSameElements([6,6], $toManyResult.values->map(r |$r.longestInteractionBetweenSourceAndTarget));
    
-   let toOneResult = execute(|Interaction.all()->filter(i|$i.source.firstName == 'Peter' && $i.target.lastName=='Hill' ), meta::relational::tests::simpleRelationalMapping,meta::relational::tests::testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let toOneResult = execute(|Interaction.all()->filter(i|$i.source.firstName == 'Peter' && $i.target.lastName=='Hill' ), meta::relational::tests::simpleRelationalMapping,meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($toOneResult.values, 1);
    assertSameElements(['2'], $toOneResult.values->map(r |$r.id));
    assertSameElements([12], $toOneResult.values->map(r |$r.longestInteractionBetweenSourceAndTarget));
@@ -89,7 +89,7 @@ function <<test.Test>> meta::relational::tests::mapping::dynajoin::testSelfJoinW
 function <<test.ToFix>> meta::relational::tests::mapping::dynajoin::testJoinWithAggregateFunctionQualifier():Boolean[1]
 {
    let result = execute(|Trade.all()->filter(t|$t.id->in([1,6]))->project([t | $t.id, t | $t.latestEvent.date, t | $t.daysToLastEvent], ['id', 'latestDate', 'daysToLastEvent']), 
-                     meta::relational::tests::simpleRelationalMapping,meta::relational::tests::testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                     meta::relational::tests::simpleRelationalMapping,meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 2);
    assertSameElements(['1','6'],$result.values->toOne().rows.values);
    
@@ -99,7 +99,7 @@ function <<test.ToFix>> meta::relational::tests::mapping::dynajoin::testJoinWith
 function <<test.ToFix>> meta::relational::tests::mapping::dynajoin::testJoinWithAggregateFunctionQualifierWithAssociation():Boolean[1]
 {
    let result = execute(|Trade.all()->filter(t|$t.id->in([1,6]))->project([t | $t.id, t | $t.latestEvent.date, t | $t.latestEvent.eventType], ['id', 'date', 'type']), 
-                     meta::relational::tests::simpleRelationalMapping,meta::relational::tests::testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                     meta::relational::tests::simpleRelationalMapping,meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 2);
    assertSameElements(['1','6'],$result.values->toOne().rows.values);
    

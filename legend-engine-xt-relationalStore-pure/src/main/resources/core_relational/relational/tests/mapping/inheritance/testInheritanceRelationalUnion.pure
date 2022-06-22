@@ -30,42 +30,42 @@ function <<test.BeforePackage>> meta::relational::tests::mapping::inheritance::r
 
 function <<test.Test>> meta::relational::tests::mapping::inheritance::relational::union::testProjectTwoLambdas():Boolean[1]
 {
-   let result1 = execute(|Person.all()->project([p|$p.name, p|$p.roadVehicles->map(r|$r.wheelCount)], ['name', 'wheelCount']), inheritanceUnion, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   let result1 = execute(|Person.all()->project([p|$p.name, p|$p.roadVehicles->map(r|$r.wheelCount)], ['name', 'wheelCount']), inheritanceUnion, testRuntime(), meta::relational::extension::relationalExtensions()).values->at(0);
    assertEquals(5, $result1.rows->size());
    assertSameElements(['Atul Anand 3', 'Atul Anand 4', 'David Scott 2', 'David Scott 4', 'David Scott 4'], $result1.rows->map(r|$r.getString('name')+' '+$r.getInteger('wheelCount')->toString()));
 }
 
 function <<test.Test>> meta::relational::tests::mapping::inheritance::relational::union::testGroupBy():Boolean[1]
 {
-   let result1 = execute(|Person.all()->project([p|$p.name, p|$p.roadVehicles->map(r|$r.wheelCount)], ['name', 'wheelCount'])->groupBy('name', agg('wheelCountSum', r|$r.getInteger('wheelCount'), s|$s->sum())), inheritanceUnion, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   let result1 = execute(|Person.all()->project([p|$p.name, p|$p.roadVehicles->map(r|$r.wheelCount)], ['name', 'wheelCount'])->groupBy('name', agg('wheelCountSum', r|$r.getInteger('wheelCount'), s|$s->sum())), inheritanceUnion, testRuntime(), meta::relational::extension::relationalExtensions()).values->at(0);
    assertEquals(2, $result1.rows->size());
    assertSameElements(['Atul Anand 7', 'David Scott 10'], $result1.rows->map(r|$r.getString('name')+' '+$r.getInteger('wheelCountSum')->toString()));
 }
 
 function <<test.Test>> meta::relational::tests::mapping::inheritance::relational::union::testQuery():Boolean[1]
 {
-   let result1 = execute(|Person.all()->filter(p|$p.roadVehicles->exists(r|$r.id == 1)), inheritanceUnion, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result1 = execute(|Person.all()->filter(p|$p.roadVehicles->exists(r|$r.id == 1)), inheritanceUnion, testRuntime(), meta::relational::extension::relationalExtensions()).values;
    assertEquals(1, $result1->size());
    assertEquals('David Scott', $result1.name);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::inheritance::relational::union::testFilterProject():Boolean[1]
 {
-   let result1 = execute(|Person.all()->filter(p|$p.roadVehicles->exists(r|$r.id == 1))->project([p|$p.name], ['name']), inheritanceUnion, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   let result1 = execute(|Person.all()->filter(p|$p.roadVehicles->exists(r|$r.id == 1))->project([p|$p.name], ['name']), inheritanceUnion, testRuntime(), meta::relational::extension::relationalExtensions()).values->at(0);
    assertEquals(1, $result1->size());
    assertEquals('David Scott', $result1.rows.values);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::inheritance::relational::union::testFilterProjectBooleanInFilter():Boolean[1]
 {
-   let result1 = execute(|Person.all()->filter(p|$p.roadVehicles->exists(r|$r.id == 1 || $r.description->startsWith('Nissan')))->project([p|$p.name], ['name']), inheritanceUnion, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   let result1 = execute(|Person.all()->filter(p|$p.roadVehicles->exists(r|$r.id == 1 || $r.description->startsWith('Nissan')))->project([p|$p.name], ['name']), inheritanceUnion, testRuntime(), meta::relational::extension::relationalExtensions()).values->at(0);
    assertEquals(2, $result1.rows.values->size());
    assertEquals(['Atul Anand','David Scott'], $result1.rows.values->sort());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::inheritance::relational::union::testGetAll():Boolean[1]
 {
-   let result1 = execute(|RoadVehicle.all(), inheritanceUnion, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result1 = execute(|RoadVehicle.all(), inheritanceUnion, testRuntime(), meta::relational::extension::relationalExtensions()).values;
    assertEquals(5, $result1->size());
    assertSameElements([4,4,4,3,2], $result1.wheelCount);
    assertSameElements([Car,Car,Car,Bicycle, Bicycle], $result1->map(r|$r->genericType().rawType));
@@ -77,48 +77,48 @@ function <<test.Test>> meta::relational::tests::mapping::inheritance::relational
 
 function <<test.Test>> meta::relational::tests::mapping::inheritance::relational::union::testGetAllFilter():Boolean[1]
 {
-   let result1 = execute(|RoadVehicle.all()->filter(r|$r.wheelCount > 2), inheritanceUnion, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result1 = execute(|RoadVehicle.all()->filter(r|$r.wheelCount > 2), inheritanceUnion, testRuntime(), meta::relational::extension::relationalExtensions()).values;
    assertEquals(4, $result1->size());
    assertSameElements([4,4,4,3], $result1.wheelCount);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::inheritance::relational::union::testGetAllFilterWithAssociation():Boolean[1]
 {
-   let result1 = execute(|RoadVehicle.all()->filter(r|$r.person.name == 'David Scott'), inheritanceUnion, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result1 = execute(|RoadVehicle.all()->filter(r|$r.person.name == 'David Scott'), inheritanceUnion, testRuntime(), meta::relational::extension::relationalExtensions()).values;
    assertEquals(3, $result1->size());
 
-   let result2 = execute(|RoadVehicle.all()->filter(r|$r.person.name == 'Atul Anand'), inheritanceUnion, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result2 = execute(|RoadVehicle.all()->filter(r|$r.person.name == 'Atul Anand'), inheritanceUnion, testRuntime(), meta::relational::extension::relationalExtensions()).values;
    assertEquals(2, $result2->size());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::inheritance::relational::union::testSubTypeFilter():Boolean[1]
 {
-   let result1 = execute(|Person.all()->filter(p|$p.roadVehicles->subType(@Car)->exists(c|$c.engineType == EngineType.V)), inheritanceUnion, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result1 = execute(|Person.all()->filter(p|$p.roadVehicles->subType(@Car)->exists(c|$c.engineType == EngineType.V)), inheritanceUnion, testRuntime(), meta::relational::extension::relationalExtensions()).values;
    assertEquals(1, $result1->size());
    assertEquals('David Scott', $result1->at(0).name);
 
-   let result2 = execute(|Person.all()->filter(p|$p.roadVehicles->subType(@Bicycle)->exists(c|$c.wheelCount == 3)), inheritanceUnion, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result2 = execute(|Person.all()->filter(p|$p.roadVehicles->subType(@Bicycle)->exists(c|$c.wheelCount == 3)), inheritanceUnion, testRuntime(), meta::relational::extension::relationalExtensions()).values;
    assertEquals(1, $result2->size());
    assertEquals('Atul Anand', $result2->at(0).name);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::inheritance::relational::union::testSubTypeProjectWithAssociation():Boolean[1]
 {
-   let result1 = execute(|Person.all()->project([p|$p.name, p|$p.roadVehicles->subType(@Car).engineType], ['name', 'engine']), inheritanceUnion, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   let result1 = execute(|Person.all()->project([p|$p.name, p|$p.roadVehicles->subType(@Car).engineType], ['name', 'engine']), inheritanceUnion, testRuntime(), meta::relational::extension::relationalExtensions()).values->at(0);
    assertEquals(3, $result1.rows->size());
    assertSameElements(['David Scott V','David Scott U','Atul Anand H'], $result1.rows->map(r|$r.get('name')->toString()+' '+$r.get('engine')->toString()));
 }
 
 function <<test.Test>> meta::relational::tests::mapping::inheritance::relational::union::testSubTypeProjectDirect():Boolean[1]
 {
-   let result1 = execute(|RoadVehicle.all()->project([r|$r.wheelCount, r|$r->subType(@Car).engineType], ['wheels', 'engine']), inheritanceUnion, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   let result1 = execute(|RoadVehicle.all()->project([r|$r.wheelCount, r|$r->subType(@Car).engineType], ['wheels', 'engine']), inheritanceUnion, testRuntime(), meta::relational::extension::relationalExtensions()).values->at(0);
    assertEquals(5, $result1.rows->size());
    assertSameElements(['2 TDSNull', '3 TDSNull', '4 H', '4 U', '4 V'], $result1.rows->map(r|$r.get('wheels')->toString()+' '+$r.get('engine')->toString()));
 }
 
 function <<test.Test>> meta::relational::tests::mapping::inheritance::relational::union::testSubTypeProjectShared():Boolean[1]
 {
-   let result1 = execute(|Person.all()->project([p|$p.name, p|$p.vehicles->map(v|$v->subType(@RoadVehicle).wheelCount)], ['name', 'wheelCount']), inheritanceUnion, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   let result1 = execute(|Person.all()->project([p|$p.name, p|$p.vehicles->map(v|$v->subType(@RoadVehicle).wheelCount)], ['name', 'wheelCount']), inheritanceUnion, testRuntime(), meta::relational::extension::relationalExtensions()).values->at(0);
    assertEquals(5, $result1.rows->size());
    assertSameElements(['Atul Anand 3', 'Atul Anand 4', 'David Scott 2', 'David Scott 4', 'David Scott 4'], $result1.rows->map(r|$r.get('name')->toString()+' '+$r.get('wheelCount')->toString()));
 }
@@ -126,7 +126,7 @@ function <<test.Test>> meta::relational::tests::mapping::inheritance::relational
 
 function <<test.Test>> meta::relational::tests::mapping::inheritance::relational::union::testSubTypeProjectSharedNonDirectlyRouted():Boolean[1]
 {
-   let result1 = execute(|Person.all().roadVehicles->project([p|$p.id, p|$p->subType(@Car).engineType], ['id', 'engine']), inheritanceUnion, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   let result1 = execute(|Person.all().roadVehicles->project([p|$p.id, p|$p->subType(@Car).engineType], ['id', 'engine']), inheritanceUnion, testRuntime(), meta::relational::extension::relationalExtensions()).values->at(0);
    assertEquals(5, $result1.rows->size());
    assertSameElements(['1 TDSNull', '1 V', '2 TDSNull', '2 U', '3 H'], $result1.rows->map(r|$r.get('id')->toString()+' '+$r.get('engine')->toString()));
 }

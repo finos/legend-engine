@@ -18,13 +18,13 @@ import meta::protocols::pure::vX_X_X::metamodel::executionPlan::*;
 import meta::protocols::pure::vX_X_X::metamodel::executionPlan::external::format::json::*;
 import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::external::format::json::*;
 
-import meta::pure::router::extension::*;
+import meta::pure::extension::*;
             
-function meta::protocols::pure::vX_X_X::external::format::json::serializerExtension(type:String[1]): meta::pure::router::extension::SerializerExtension[1]
+function meta::protocols::pure::vX_X_X::external::format::json::serializerExtension(type:String[1]): meta::pure::extension::SerializerExtension[1]
 {
    ^meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X(
       transfers_executionPlan_transformNode = 
-         {mapping:Mapping[1], extensions:RouterExtension[*] |
+         {mapping:Mapping[1], extensions:Extension[*] |
             [
                s:meta::external::format::json::executionPlan::JsonSerializeExecutionNode[1]   | transformSerializeNode($s, $mapping, $extensions),
                d:meta::external::format::json::executionPlan::JsonDeserializeExecutionNode[1] | transformDeserializeNode($d, $mapping, $extensions)

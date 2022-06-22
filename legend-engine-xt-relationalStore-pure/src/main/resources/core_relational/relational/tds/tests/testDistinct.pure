@@ -20,7 +20,7 @@ import meta::pure::metamodel::tds::*;
 
 function <<test.Test>> meta::relational::tests::tds::distinct::testSimpleDistinct():Boolean[1]
 {
-   let result = execute(|Interaction.all()->project([#/Interaction/source/name!sourceName#, #/Interaction/id!id#])->distinct()->sort([asc('sourceName'), desc('id')]), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Interaction.all()->project([#/Interaction/source/name!sourceName#, #/Interaction/id!id#])->distinct()->sort([asc('sourceName'), desc('id')]), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 8);
    assertEquals(['Anthony Allen', '7'], $result.values.rows->at(0).values);
    assertEquals(['Anthony Allen', '6'], $result.values.rows->at(1).values);
@@ -34,20 +34,20 @@ function <<test.Test>> meta::relational::tests::tds::distinct::testSimpleDistinc
 
 function <<test.Test>> meta::relational::tests::tds::distinct::testSimpleDistinctWithTake():Boolean[1]
 {
-   let result = execute(|Interaction.all()->project([#/Interaction/source/name!sourceName#, #/Interaction/id!id#])->distinct()->take(2), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Interaction.all()->project([#/Interaction/source/name!sourceName#, #/Interaction/id!id#])->distinct()->take(2), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 2);
 }
 
 function <<test.Test>> meta::relational::tests::tds::distinct::testSimpleDistinctWithFilter():Boolean[1]
 {
-   let result = execute(|Interaction.all()->filter(i|$i.id == 1)->project([#/Interaction/source/name!sourceName#, #/Interaction/id!id#])->distinct(), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Interaction.all()->filter(i|$i.id == 1)->project([#/Interaction/source/name!sourceName#, #/Interaction/id!id#])->distinct(), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 1);
    assertEquals(['Peter Smith', '1'], $result.values.rows->at(0).values);
 }
 
 function <<test.Test>> meta::relational::tests::tds::distinct::testSimpleDistinctGroupBy():Boolean[1]
 {
-   let result = execute(|Interaction.all()->project([#/Interaction/source/name!sourceName#, #/Interaction/id!id#])->distinct()->groupBy(['sourceName'], agg('count', a|$a, b|$b->count()))->sort([desc('count'), asc('sourceName')]), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Interaction.all()->project([#/Interaction/source/name!sourceName#, #/Interaction/id!id#])->distinct()->groupBy(['sourceName'], agg('count', a|$a, b|$b->count()))->sort([desc('count'), asc('sourceName')]), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 4);
    assertEquals(['Anthony Allen', 3], $result.values.rows->at(0).values);
    assertEquals(['John Hill', 2], $result.values.rows->at(1).values);

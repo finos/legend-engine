@@ -4,7 +4,8 @@ import meta::relational::functions::sqlQueryToString::*;
 import meta::relational::metamodel::operation::*;
 import meta::relational::metamodel::relation::*;
 import meta::relational::runtime::*;
-import meta::pure::router::extension::*;
+import meta::pure::extension::*;
+import meta::relational::extension::*;
 
 function <<db.ExtensionLoader>> meta::relational::functions::sqlQueryToString::db2::dbExtensionLoaderForDB2():DbExtensionLoader[1]
 {
@@ -129,7 +130,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::db2::
    $s->processSelectSQLQueryForDB2($sgc.dbConfig, $sgc.format, $sgc.config, $isSubSelect, $sgc.extensions);
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::db2::processSelectSQLQueryForDB2(s:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:RouterExtension[*]):String[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::db2::processSelectSQLQueryForDB2(s:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:Extension[*]):String[1]
 {
   let opStr = if($s.filteringOperation->isEmpty(), |'', |$s.filteringOperation->map(s|$s->wrapAsBooleanOperation($extensions)->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
   let havingStr = if($s.havingOperation->isEmpty(), |'', |$s.havingOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));

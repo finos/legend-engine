@@ -1,0 +1,52 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::tds::extensions::*;
+import meta::relational::tests::csv::*;
+
+function <<test.Test>>
+   meta::pure::tds::tests::extensions::iqrClassifyTest() : Boolean[1]
+{
+   let scores = [-100, 3, 4, 5, 5, 6, 7, 11, 13, 1, 4, 100, 101];
+   let data = range($scores->size())->map(i|'student_' +toString($i))->zip($scores);
+   
+   let tds = $data->project([col(p|$p.first, 'name'), col(p|$p.second, 'score')]);
+   
+   let result = $tds->iqrClassify([], 'score', 'irq_classification');
+
+   println($result->toCSV());
+
+   let summary = $result->groupBy('irq_classification', agg('count', r:TDSRow[1]|$r, y|$y->count()))->sort(desc('count'));
+   println($summary->toCSV());
+
+   assertEquals([10,2,1], $summary->columnValues('count'));
+}
+
+function <<test.Test>>
+   meta::pure::tds::tests::extensions::zScoreTest() : Boolean[1]
+{
+   let scores = [-1000,-100, 3, 4, 5, 5, 6, 7, 11, 13, 1, 4,6,7,8,3,54,6,2,3,4,5,6,7,8, 100, 1001];
+   let data = range($scores->size())->map(i|'student_' +toString($i))->zip($scores);
+   
+   let tds = $data->project([col(p|$p.first, 'name'), col(p|$p.second, 'score')]);
+   
+   let result = $tds->zScore([], 'score', 'zscore');
+
+   println($result->toCSV());
+
+   let summary = $result->filter(r:TDSRow[1]|abs($r.getFloat('zscore')) >= 3)->sort(asc('score'));
+   println($summary->toCSV());
+
+   assertEquals([-1000, 1001], $summary->columnValues('score'));
+}

@@ -19,7 +19,7 @@ import meta::pure::profiles::*;
 import meta::pure::runtime::*;
 import meta::relational::metamodel::execute::*;
 import meta::relational::mapping::*;
-import meta::csv::*;
+import meta::relational::tests::csv::*;
 import meta::relational::tests::model::simple::*;
 
 import meta::relational::tests::mapping::multigrain::model::*;
@@ -30,7 +30,7 @@ import meta::relational::tests::mapping::multigrain::model::mapping::*;
 
 function <<test.Test>> meta::relational::tests::mapping::multigrain::testProjectPerson():Boolean[1]
 {
-   let result = execute(|Person.all()->project([#/Person/firstName#,#/Person/address/name!address#,#/Person/firm/legalName#,#/Person/firm/address/name!firmAddress#]), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->project([#/Person/firstName#,#/Person/address/name!address#,#/Person/firm/legalName#,#/Person/firm/address/name!firmAddress#]), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    
    assertEquals('firstName,address,legalName,firmAddress\n' + 'Peter,1 the street,Firm X,200 west\n' + 'John,5 Park Ave,Firm X,200 west\n' + 'Fabrice,7 Palo Alto,Firm A,3 somewhere\n', $result.values->toOne()->toCSV());
    assertSameSQL('select "root".PERSON_FIRSTNAME as "firstName", "root".PERSON_ADDRESS_LINE_1 as "address", "root".FIRM_LEGALNAME as "legalName", "root".FIRM_ADDRESS_LINE_1 as "firmAddress" from PERSON_FIRM_ADDRESS_MULTIGRAIN as "root" where "root".DLEVEL = \'P\'', $result);
@@ -39,7 +39,7 @@ function <<test.Test>> meta::relational::tests::mapping::multigrain::testProject
 
 function <<test.Test>> meta::relational::tests::mapping::multigrain::testProjectFirm():Boolean[1]
 {
-   let result = execute(|Firm.all()->project([#/Firm/legalName#, #/Firm/address/name!address#]), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Firm.all()->project([#/Firm/legalName#, #/Firm/address/name!address#]), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    
    assertEquals('legalName,address\n' + 'Firm X,200 west\n' + 'Firm A,3 somewhere\n', $result.values->toOne()->toCSV());
    assertSameSQL('select "root".FIRM_LEGALNAME as "legalName", "root".FIRM_ADDRESS_LINE_1 as "address" from PERSON_FIRM_ADDRESS_MULTIGRAIN as "root" where "root".DLEVEL = \'F\'', $result);
@@ -48,7 +48,7 @@ function <<test.Test>> meta::relational::tests::mapping::multigrain::testProject
 
 function <<test.Test>> meta::relational::tests::mapping::multigrain::testProjectPersonWithJoinToAddress():Boolean[1]
 {
-   let result = execute(|Person.all()->project([#/Person/firstName#,#/Person/address/name!address#,#/Person/address/type!addressType#]), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->project([#/Person/firstName#,#/Person/address/name!address#,#/Person/address/type!addressType#]), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    
    assertEquals('firstName,address,addressType\n' + 'Peter,1 the street,CITY\n' + 'John,5 Park Ave,CITY\n' + 'Fabrice,7 Palo Alto,REGION\n', $result.values->toOne()->toCSV());
    assertSameSQL('select "root".PERSON_FIRSTNAME as "firstName", "root".PERSON_ADDRESS_LINE_1 as "address", "person_firm_address_multigrain_1".ADDRESS_TYPE as "addressType" from PERSON_FIRM_ADDRESS_MULTIGRAIN as "root" left outer join PERSON_FIRM_ADDRESS_MULTIGRAIN as "person_firm_address_multigrain_1" on ("root".PERSON_ADDRESS_OID = "person_firm_address_multigrain_1".OID) where "root".DLEVEL = \'P\'', $result);
@@ -57,7 +57,7 @@ function <<test.Test>> meta::relational::tests::mapping::multigrain::testProject
 // Alloy exclusion reason: 4. Use getter relational protocol
 function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::mapping::multigrain::testGetter():Boolean[1]
 {
-   let result = execute(|Person.all(), testMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all(), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements(['Firm A', 'Firm X', 'Firm X'], $result.values->map(p|$p.firm.legalName));
 }
 
@@ -66,7 +66,7 @@ function <<test.Test>> meta::relational::tests::mapping::multigrain::testToManyW
 {
    let result = execute(|Position.all()->filter(p | $p.account.primaryIncomeFunction.code == 1022)
                                        ->project([s | $s.quantity], ['num'])
-                                       , testMappingFirmAccount, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                                       , testMappingFirmAccount, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements([500], $result.values.rows.values);
    assertSameSQL('select "root".QTY as "num" from POSITION as "root" left outer join FIRM_ACCT_IF_MULTIGRAIN as "firm_acct_if_multigrain_0" on ("root".ACCT_I = "firm_acct_if_multigrain_0".OID) left outer join FIRM_ACCT_IF_MULTIGRAIN as "firm_acct_if_multigrain_1" on ("firm_acct_if_multigrain_0".ACCOUNT_NUM = "firm_acct_if_multigrain_1".ACCOUNT_NUM and "firm_acct_if_multigrain_1".IF_TYPE = \'P\' and "firm_acct_if_multigrain_1".DLEVEL = \'S\') where "firm_acct_if_multigrain_1".IF_NUM = 1022', $result);
 }
@@ -77,7 +77,7 @@ function <<test.Test>> meta::relational::tests::mapping::multigrain::testToManyW
                            ->filter(p | $p.account.incomeFunctionSplits->filter(i | $i.type == 'P')->toOne().incomeFunction.Classification.name == 'IfName1')
                            //->filter(p | $p.account.primaryIncomeFunction.Classification.name == 'IfName1')
                                        ->project([s | $s.quantity], ['num'])
-                                       , testMappingFirmAccount, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                                       , testMappingFirmAccount, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements([500], $result.values.rows.values);
    assertSameSQL('select "root".QTY as "num" from POSITION as "root" left outer join FIRM_ACCT_IF_MULTIGRAIN as "firm_acct_if_multigrain_0" on ("root".ACCT_I = "firm_acct_if_multigrain_0".OID) left outer join FIRM_ACCT_IF_MULTIGRAIN as "firm_acct_if_multigrain_1" on ("firm_acct_if_multigrain_0".ACCOUNT_NUM = "firm_acct_if_multigrain_1".ACCOUNT_NUM and "firm_acct_if_multigrain_1".IF_TYPE = \'P\' and "firm_acct_if_multigrain_1".DLEVEL = \'S\') left outer join IF_OTHER_INFO as "if_other_info_0" on ("firm_acct_if_multigrain_1".IF_NUM = "if_other_info_0".IF_CODE) where "if_other_info_0".IF_NAME = \'IfName1\'', $result);
 }

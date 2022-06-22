@@ -58,7 +58,7 @@ Class meta::pure::executionPlan::engine::IRelationalClassQueryTempTableGraphFetc
 Class meta::pure::executionPlan::engine::IRelationalPrimitiveQueryGraphFetchExecutionNodeSpecifics {}
 Class meta::pure::executionPlan::engine::IServiceParametersResolutionExecutionNodeSpecifics {}
 
-function meta::pure::executionPlan::engine::applyJavaEngineDependencies(conventions:Conventions[1], extensions:meta::pure::router::extension::RouterExtension[*]):Conventions[1]
+function meta::pure::executionPlan::engine::applyJavaEngineDependencies(conventions:Conventions[1], extensions:meta::pure::extension::Extension[*]):Conventions[1]
 {
 
    let jIConstantResult = javaClass('public', 'org.finos.legend.engine.plan.dependencies.store.shared.IConstantResult')

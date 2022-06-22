@@ -25,7 +25,7 @@ import meta::relational::mapping::*;
 
 function <<test.Test>> meta::relational::tests::mapping::selfJoin::testSelfJoinPropertyMapping():Boolean[1]
 {
-   let result = execute(|Org.all()->project([#/Org/name#, #/Org/parent/name!parentName#]), meta::relational::tests::mapping::selfJoin::model::mapping::orgTestMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Org.all()->project([#/Org/name#, #/Org/parent/name!parentName#]), meta::relational::tests::mapping::selfJoin::model::mapping::orgTestMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertSameElements(['name','parentName'], $tds.columns.name);
    assertEquals(9, $tds.rows->size());
@@ -44,7 +44,7 @@ function <<test.Test>> meta::relational::tests::mapping::selfJoin::testSelfJoinP
 
 function <<test.Test>> meta::relational::tests::mapping::selfJoin::testSelfJoinPropertyMappingOverlap():Boolean[1]
 {
-   let result = execute(|Org.all()->project([#/Org/name#, #/Org/parent/name!p_name#, #/Org/parent/parent/name!p_p_name#]), meta::relational::tests::mapping::selfJoin::model::mapping::orgTestMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Org.all()->project([#/Org/name#, #/Org/parent/name!p_name#, #/Org/parent/parent/name!p_p_name#]), meta::relational::tests::mapping::selfJoin::model::mapping::orgTestMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertSameElements(['name', 'p_name', 'p_p_name'], $tds.columns.name);
    assertEquals(9, $tds.rows->size());
@@ -69,7 +69,7 @@ function <<test.Test>> meta::relational::tests::mapping::selfJoin::testSelfJoinP
                                             ['orgName',
                                              '3rd parent',
                                              '4th parent',
-                                             'dyna operation']), meta::relational::tests::mapping::selfJoin::model::mapping::orgTestMapping, testDataTypeMappingRuntime(), meta::pure::router::extension::defaultRelationalExtensions(), debug());
+                                             'dyna operation']), meta::relational::tests::mapping::selfJoin::model::mapping::orgTestMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions(), debug());
    let tds = $result.values->at(0);
    
    assertEquals('select "root".name as "orgName", "orgtable_3".name as "3rd parent", "orgtable_4".name as "4th parent", ("orgtable_4".name is null and "orgtable_3".name is null) as "dyna operation" from orgTable as "root" left outer join orgTable as "orgtable_1" on ("root".parentId = "orgtable_1".id) left outer join orgTable as "orgtable_2" on ("orgtable_1".parentId = "orgtable_2".id) left outer join orgTable as "orgtable_3" on ("orgtable_2".parentId = "orgtable_3".id) left outer join orgTable as "orgtable_4" on ("orgtable_3".parentId = "orgtable_4".id)', $result->sqlRemoveFormatting());

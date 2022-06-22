@@ -20,7 +20,7 @@ import meta::relational::tests::model::simple::*;
 function <<test.Test>> meta::relational::tests::mapping::filter::filterMappingWithJoinInFilterAndPropertyGetAll():Boolean[1]
 {
    let result1 = execute(|Person.all()
-                         , filterMappingWithJoinInFilterAndProperty, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                         , filterMappingWithJoinInFilterAndProperty, testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals(['Peter', 'John', 'John', 'Anthony'], $result1.values.firstName);
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "firmtable_0".LEGALNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where "firmtable_0".LEGALNAME = \'Firm X\'', $result1->sqlRemoveFormatting());
 }

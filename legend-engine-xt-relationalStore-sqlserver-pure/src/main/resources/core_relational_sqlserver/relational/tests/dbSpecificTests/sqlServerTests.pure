@@ -21,7 +21,7 @@ import meta::pure::test::*;
 
 function <<test.TestCollection>> meta::relational::tests::dbSpecificTests::sqlServer::runSQLQueryTestsParam(): PureTestCollection[1]
 {
-  let connection = meta::relational::dbTestRunner::getTestConnection(DatabaseType.SqlServer, meta::pure::router::extension::defaultRelationalExtensions());
+  let connection = meta::relational::dbTestRunner::getTestConnection(DatabaseType.SqlServer, meta::relational::extension::relationalExtensions());
   
   meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions
           ->collectParameterizedTests('SqlServer',

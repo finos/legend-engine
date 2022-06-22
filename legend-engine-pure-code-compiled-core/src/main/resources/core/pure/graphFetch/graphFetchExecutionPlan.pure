@@ -15,7 +15,7 @@
 import meta::pure::dataQuality::*;
 import meta::pure::graphFetch::*;
 import meta::pure::store::*;
-import meta::pure::router::extension::*;
+import meta::pure::extension::*;
 import meta::pure::graphFetch::routing::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::graphFetch::executionPlan::*;
@@ -73,7 +73,7 @@ function meta::pure::graphFetch::executionPlan::nodeIsMerged(node:LocalGraphFetc
    $mergeOp->map(m | assert($m->instanceOf(MergeOperationSetImplementation),'Please specify a merge function for merge operation on class '+ $m.class->elementToPath()));
    $mergeOp->isNotEmpty();
 }
-function meta::pure::graphFetch::executionPlan::planGraphFetchExecution(sq: StoreQuery[1], ext: RoutedValueSpecification[0..1], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], extensions: RouterExtension[*], debug: DebugContext[1]): ExecutionNode[1]
+function meta::pure::graphFetch::executionPlan::planGraphFetchExecution(sq: StoreQuery[1], ext: RoutedValueSpecification[0..1], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], extensions: Extension[*], debug: DebugContext[1]): ExecutionNode[1]
 {
    let fe = $sq.fe->evaluateAndDeactivate();
    let resultSize = $fe.parametersValues->evaluateAndDeactivate()->at(0)->match([rvs:ExtendedRoutedValueSpecification[1] | $rvs.value.multiplicity->toOne(),
@@ -109,7 +109,7 @@ function meta::pure::graphFetch::executionPlan::planGraphFetchExecution(sq: Stor
    $rootGlobalNode->addCrossStoreChildren([], $rootTree, $orderedPaths, $clusterTreesWithParents, $sq.inScopeVars, $mapping, $runtime, $exeCtx, $enableConstraints, $checked, $extensions, $debug);
 }
 
-function meta::pure::graphFetch::executionPlan::planStoreUnionGraphFetchExecution(sq: StoreQuery[1], ext: RoutedValueSpecification[0..1], sets: InstanceSetImplementation[*], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], extensions: meta::pure::router::extension::RouterExtension[*], debug: DebugContext[1]): ExecutionNode[1]
+function meta::pure::graphFetch::executionPlan::planStoreUnionGraphFetchExecution(sq: StoreQuery[1], ext: RoutedValueSpecification[0..1], sets: InstanceSetImplementation[*], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], extensions: meta::pure::extension::Extension[*], debug: DebugContext[1]): ExecutionNode[1]
 {
    let fe     = $sq.fe->evaluateAndDeactivate();
    let params = $fe.parametersValues->evaluateAndDeactivate();
@@ -134,7 +134,7 @@ function meta::pure::graphFetch::executionPlan::planStoreUnionGraphFetchExecutio
    planRouterUnionGraphFetchExecution(^$sq(fe = $newFe), $ext, $mapping, $runtime, $exeCtx, $extensions, $debug);
 }
 
-function meta::pure::graphFetch::executionPlan::planRouterUnionGraphFetchExecution(sq: StoreQuery[1], ext: RoutedValueSpecification[0..1], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], extensions: RouterExtension[*], debug: DebugContext[1]): ExecutionNode[1]
+function meta::pure::graphFetch::executionPlan::planRouterUnionGraphFetchExecution(sq: StoreQuery[1], ext: RoutedValueSpecification[0..1], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], extensions: Extension[*], debug: DebugContext[1]): ExecutionNode[1]
 {
    let fe = $sq.fe->evaluateAndDeactivate();
    assert($fe->isUnionOnGraphFetch(true), | 'Non union graphFetch function encountered');
@@ -152,7 +152,7 @@ function meta::pure::graphFetch::executionPlan::planRouterUnionGraphFetchExecuti
    );
 }
 
-function <<access.private>> meta::pure::graphFetch::executionPlan::addCrossStoreChildren(currentNode: GlobalGraphFetchExecutionNode[1], parentPath: String[0..1], currentTree: ClusteredGraphFetchTree[1], orderedPaths: String[*], clusterNodesWithParents: Pair<ClusteredGraphFetchTree, List<RoutedGraphFetchTree>>[*], inScopeVars: Map<String, List<Any>>[1], m: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], enableConstraints: Boolean[1], checked: Boolean[1], extensions:RouterExtension[*], debug: DebugContext[1]):GlobalGraphFetchExecutionNode[1]
+function <<access.private>> meta::pure::graphFetch::executionPlan::addCrossStoreChildren(currentNode: GlobalGraphFetchExecutionNode[1], parentPath: String[0..1], currentTree: ClusteredGraphFetchTree[1], orderedPaths: String[*], clusterNodesWithParents: Pair<ClusteredGraphFetchTree, List<RoutedGraphFetchTree>>[*], inScopeVars: Map<String, List<Any>>[1], m: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], enableConstraints: Boolean[1], checked: Boolean[1], extensions:Extension[*], debug: DebugContext[1]):GlobalGraphFetchExecutionNode[1]
 {
    let currentNonClusterTrees = $currentTree->recursivelyFindNonClusterTrees();
    let childrenClusterNodes   = $clusterNodesWithParents->filter(x | $x.second.values->isNotEmpty() && $x.second.values->toOne()->in($currentNonClusterTrees));
@@ -256,7 +256,7 @@ function meta::pure::graphFetch::executionPlan::propertyPairsInMultiEqual(v: Val
    ])
 }
 
-function meta::pure::graphFetch::executionPlan::globalGraphFetchExecutionNodeToString(g: GlobalGraphFetchExecutionNode[1], space: String[1], extensions:meta::pure::router::extension::RouterExtension[*]):String[1]
+function meta::pure::graphFetch::executionPlan::globalGraphFetchExecutionNodeToString(g: GlobalGraphFetchExecutionNode[1], space: String[1], extensions:meta::pure::extension::Extension[*]):String[1]
 {
    'GlobalGraphFetch\n' + 
       $space + '(' + header($g, $space, $extensions) + '\n'+
@@ -269,7 +269,7 @@ function meta::pure::graphFetch::executionPlan::globalGraphFetchExecutionNodeToS
       $space + ')\n';
 }
 
-function meta::pure::graphFetch::executionPlan::localGraphFetchExecutionNodeToString(g: LocalGraphFetchExecutionNode[1], space: String[1], extensions:meta::pure::router::extension::RouterExtension[*]):String[1]
+function meta::pure::graphFetch::executionPlan::localGraphFetchExecutionNodeToString(g: LocalGraphFetchExecutionNode[1], space: String[1], extensions:meta::pure::extension::Extension[*]):String[1]
 {  
    $g->match([
       i : InMemoryGraphFetchExecutionNode[1] | $i->inMemoryGraphFetchExecutionNodeToString($space, $extensions)

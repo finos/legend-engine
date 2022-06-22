@@ -60,7 +60,7 @@ Function routing is possible with or without an externally supplied mapping and 
 ``` pure
 function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], 
                                            exeCtx: ExecutionContext[1], 
-                                           extensions:meta::pure::router::extension::RouterExtension[*], 
+                                           extensions:meta::pure::extension::Extension[*], 
                                            debug:DebugContext[1]
                                           ):RoutingResult[1]
 
@@ -70,7 +70,7 @@ function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1],
                                            runtime:Runtime[1], 
                                            exeCtx: ExecutionContext[1], 
                                            inScopeVars:Map<String, List<Any>>[0..1], 
-                                           extensions:meta::pure::router::extension::RouterExtension[*], 
+                                           extensions:meta::pure::extension::Extension[*], 
                                            debug:DebugContext[1]
                                           ):RoutingResult[1]
 ```
@@ -106,7 +106,7 @@ discarded.
 The AST ofthe built functions is now walked to further decorate the ValueSpeciciations.  This time they may be wrapped 
 with a `ClusteredValueSpecification` which identifies whether it is to be satisfied by a `Store` (and if so which one)
 or by the platform.  The capabilities of each functional unit (Store or Platform) is represented by a
-`SystemMapping`.
+`StoreContract`.
 
 ## Query elements
 
@@ -507,7 +507,7 @@ Each cluster function returned is converted into a set of execution nodes (see e
 `SequenceExecutionNode` to form the `ExecutionPlan`.
 (For a single cluster this is optimized so that the `ExecutionPlan` only contains the execution nodes for that one cluster.)
 
-Each cluster is planned using the `planExecution` function from its `SystemMapping`.  These functions will walk the
+Each cluster is planned using the `planExecution` function from its `StoreContract`.  These functions will walk the
 AST for their expressions and generate Execution nodes that fulfil those features on the functional unit (Store or
 Platform) that they represent. 
 
@@ -515,7 +515,7 @@ Entry points are:
 ``` pure
 function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], 
                                                   context:ExecutionContext[1], 
-                                                  extensions:meta::pure::router::extension::RouterExtension[*], 
+                                                  extensions:meta::pure::extension::Extension[*], 
                                                   debugContext:DebugContext[1]
                                                  ):ExecutionPlan[1]
 ```
@@ -526,7 +526,7 @@ function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1],
                                                   m:Mapping[1], 
                                                   runtime:Runtime[1], 
                                                   context:ExecutionContext[1], 
-                                                  extensions:meta::pure::router::extension::RouterExtension[*], 
+                                                  extensions:meta::pure::extension::Extension[*], 
                                                   debugContext:DebugContext[1]
                                                  ):ExecutionPlan[1]
 ```

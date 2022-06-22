@@ -136,22 +136,22 @@ import meta::relational::tests::mapping::extend::model::*;
 
 function <<test.Test>> meta::relational::tests::mapping::extend::propertyMapping::testPropertyMappingsForA():Any[*]
 {
-   let result1 = execute(|A.all()->filter(a|$a.aName == 'aName1'), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result1 = execute(|A.all()->filter(a|$a.aName == 'aName1'), testMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let expectedSQL1 = 'select "root".id as "pk_0", "root".id as "id", "root".aName as "aName" from ABC as "root" where "root".aName = \'aName1\'';
    assertEquals($expectedSQL1, $result1->sqlRemoveFormatting());
    assertSameElements([1, 3], $result1.values.id);
    
-   let result2 = execute(|A.all()->filter(a|$a.e.dName == 'eName_dName1'), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result2 = execute(|A.all()->filter(a|$a.e.dName == 'eName_dName1'), testMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let expectedSQL2 = 'select "root".id as "pk_0", "root".id as "id", "root".aName as "aName" from ABC as "root" left outer join DEF as "def_0" on ("root".id = "def_0".id) where concat(\'eName_\', "def_0".dName) = \'eName_dName1\'';
    assertEquals($expectedSQL2, $result2->sqlRemoveFormatting());
    assertSameElements([1, 3], $result2.values.id);
    
-   let result3 = execute(|A.all()->filter(a|$a.e.eName == 'eName1'), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result3 = execute(|A.all()->filter(a|$a.e.eName == 'eName1'), testMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let expectedSQL3 = 'select "root".id as "pk_0", "root".id as "id", "root".aName as "aName" from ABC as "root" left outer join DEF as "def_0" on ("root".id = "def_0".id) where "def_0".eName = \'eName1\'';
    assertEquals($expectedSQL3, $result3->sqlRemoveFormatting());
    assertSameElements([1, 3], $result3.values.id);
    
-   let result4 = execute(|A.all()->filter(a|$a.e->subType(@F).fName == 'fName1'), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result4 = execute(|A.all()->filter(a|$a.e->subType(@F).fName == 'fName1'), testMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let expectedSQL4 = 'select "root".id as "pk_0", "root".id as "id", "root".aName as "aName" from ABC as "root" left outer join DEF as "def_0" on ("root".id = "def_0".id) where "def_0".fName = \'fName1\'';
    assertEquals($expectedSQL4, $result4->sqlRemoveFormatting());
    assertSameElements([1, 3], $result4.values.id);
@@ -159,42 +159,42 @@ function <<test.Test>> meta::relational::tests::mapping::extend::propertyMapping
 
 function <<test.Test>> meta::relational::tests::mapping::extend::propertyMapping::testPropertyMappingsForB():Any[*]
 {
-   let result1 = execute(|B.all()->filter(b|$b.aName == 'bName_aName1'), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result1 = execute(|B.all()->filter(b|$b.aName == 'bName_aName1'), testMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let expectedSQL1 =  'select "root".id as "pk_0", concat(\'bName_\', "root".aName) as "aName", "root".bName as "bName", "root".id as "id" from ABC as "root" where concat(\'bName_\', "root".aName) = \'bName_aName1\'';
    assertEquals($expectedSQL1, $result1->sqlRemoveFormatting());
    assertSameElements([1, 3], $result1.values.id);
    
-   let result2 = execute(|B.all()->filter(b|$b.e.dName == 'eName_dName1'), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result2 = execute(|B.all()->filter(b|$b.e.dName == 'eName_dName1'), testMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let expectedSQL2 = 'select "root".id as "pk_0", concat(\'bName_\', "root".aName) as "aName", "root".bName as "bName", "root".id as "id" from ABC as "root" left outer join DEF as "def_0" on ("root".id = "def_0".id) where concat(\'eName_\', "def_0".dName) = \'eName_dName1\'';
    assertEquals($expectedSQL2, $result2->sqlRemoveFormatting());
    assertSameElements([1, 3], $result2.values.id);
    
-   let result3 = execute(|B.all()->filter(b|$b.e.eName == 'eName1'), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result3 = execute(|B.all()->filter(b|$b.e.eName == 'eName1'), testMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let expectedSQL3 = 'select "root".id as "pk_0", concat(\'bName_\', "root".aName) as "aName", "root".bName as "bName", "root".id as "id" from ABC as "root" left outer join DEF as "def_0" on ("root".id = "def_0".id) where "def_0".eName = \'eName1\'';
    assertEquals($expectedSQL3, $result3->sqlRemoveFormatting());
    assertSameElements([1, 3], $result3.values.id);
    
-   let result4 = execute(|B.all()->filter(b|$b.e->subType(@F).fName == 'fName1'), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result4 = execute(|B.all()->filter(b|$b.e->subType(@F).fName == 'fName1'), testMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let expectedSQL4 = 'select "root".id as "pk_0", concat(\'bName_\', "root".aName) as "aName", "root".bName as "bName", "root".id as "id" from ABC as "root" left outer join DEF as "def_0" on ("root".id = "def_0".id) where "def_0".fName = \'fName1\'';
    assertEquals($expectedSQL4, $result4->sqlRemoveFormatting());
    assertSameElements([1, 3], $result4.values.id);
    
-   let result5 = execute(|B.all()->filter(b|$b.bName == 'bName1'), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result5 = execute(|B.all()->filter(b|$b.bName == 'bName1'), testMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let expectedSQL5 = 'select "root".id as "pk_0", concat(\'bName_\', "root".aName) as "aName", "root".bName as "bName", "root".id as "id" from ABC as "root" where "root".bName = \'bName1\'';
    assertEquals($expectedSQL5, $result5->sqlRemoveFormatting());
    assertSameElements([1, 3], $result5.values.id);
    
-   let result6 = execute(|B.all()->filter(b|$b.h.gName == 'hName_gName1'), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result6 = execute(|B.all()->filter(b|$b.h.gName == 'hName_gName1'), testMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let expectedSQL6 = 'select "root".id as "pk_0", concat(\'bName_\', "root".aName) as "aName", "root".bName as "bName", "root".id as "id" from ABC as "root" left outer join GHI as "ghi_0" on ("root".id = "ghi_0".id) where concat(\'hName_\', "ghi_0".gName) = \'hName_gName1\'';
    assertEquals($expectedSQL6, $result6->sqlRemoveFormatting());
    assertSameElements([1, 3], $result6.values.id);
    
-   let result7 = execute(|B.all()->filter(b|$b.h.hName == 'hName1'), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result7 = execute(|B.all()->filter(b|$b.h.hName == 'hName1'), testMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let expectedSQL7 = 'select "root".id as "pk_0", concat(\'bName_\', "root".aName) as "aName", "root".bName as "bName", "root".id as "id" from ABC as "root" left outer join GHI as "ghi_0" on ("root".id = "ghi_0".id) where "ghi_0".hName = \'hName1\'';
    assertEquals($expectedSQL7, $result7->sqlRemoveFormatting());
    assertSameElements([1, 3], $result7.values.id);
    
-   let result8 = execute(|B.all()->filter(b|$b.h->subType(@I).iName == 'iName1'), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result8 = execute(|B.all()->filter(b|$b.h->subType(@I).iName == 'iName1'), testMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let expectedSQL8 = 'select "root".id as "pk_0", concat(\'bName_\', "root".aName) as "aName", "root".bName as "bName", "root".id as "id" from ABC as "root" left outer join GHI as "ghi_0" on ("root".id = "ghi_0".id) where "ghi_0".iName = \'iName1\'';
    assertEquals($expectedSQL8, $result8->sqlRemoveFormatting());
    assertSameElements([1, 3], $result8.values.id);
@@ -202,62 +202,62 @@ function <<test.Test>> meta::relational::tests::mapping::extend::propertyMapping
 
 function <<test.Test>> meta::relational::tests::mapping::extend::propertyMapping::testPropertyMappingsForC():Any[*]
 {
-   let result1 = execute(|C.all()->filter(c|$c.aName == 'cName_aName1'), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result1 = execute(|C.all()->filter(c|$c.aName == 'cName_aName1'), testMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let expectedSQL1 = 'select "root".id as "pk_0", concat(\'cName_\', "root".aName) as "aName", concat(\'cName_\', "root".bName) as "bName", "root".cName as "cName", "root".id as "id" from ABC as "root" where concat(\'cName_\', "root".aName) = \'cName_aName1\'';
    assertEquals($expectedSQL1, $result1->sqlRemoveFormatting());
    assertSameElements([1, 3], $result1.values.id);
    
-   let result2 = execute(|C.all()->filter(c|$c.e.dName == 'eName_dName1'), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result2 = execute(|C.all()->filter(c|$c.e.dName == 'eName_dName1'), testMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let expectedSQL2 = 'select "root".id as "pk_0", concat(\'cName_\', "root".aName) as "aName", concat(\'cName_\', "root".bName) as "bName", "root".cName as "cName", "root".id as "id" from ABC as "root" left outer join DEF as "def_0" on ("root".id = "def_0".id) where concat(\'eName_\', "def_0".dName) = \'eName_dName1\'';
    assertEquals($expectedSQL2, $result2->sqlRemoveFormatting());
    assertSameElements([1, 3], $result2.values.id);
    
-   let result3 = execute(|C.all()->filter(c|$c.e.eName == 'eName1'), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result3 = execute(|C.all()->filter(c|$c.e.eName == 'eName1'), testMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let expectedSQL3 = 'select "root".id as "pk_0", concat(\'cName_\', "root".aName) as "aName", concat(\'cName_\', "root".bName) as "bName", "root".cName as "cName", "root".id as "id" from ABC as "root" left outer join DEF as "def_0" on ("root".id = "def_0".id) where "def_0".eName = \'eName1\'';
    assertEquals($expectedSQL3, $result3->sqlRemoveFormatting());
    assertSameElements([1, 3], $result3.values.id);
    
-   let result4 = execute(|C.all()->filter(c|$c.e->subType(@F).fName == 'fName1'), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result4 = execute(|C.all()->filter(c|$c.e->subType(@F).fName == 'fName1'), testMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let expectedSQL4 = 'select "root".id as "pk_0", concat(\'cName_\', "root".aName) as "aName", concat(\'cName_\', "root".bName) as "bName", "root".cName as "cName", "root".id as "id" from ABC as "root" left outer join DEF as "def_0" on ("root".id = "def_0".id) where "def_0".fName = \'fName1\'';
    assertEquals($expectedSQL4, $result4->sqlRemoveFormatting());
    assertSameElements([1, 3], $result4.values.id);
    
-   let result5 = execute(|C.all()->filter(c|$c.bName == 'cName_bName1'), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result5 = execute(|C.all()->filter(c|$c.bName == 'cName_bName1'), testMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let expectedSQL5 = 'select "root".id as "pk_0", concat(\'cName_\', "root".aName) as "aName", concat(\'cName_\', "root".bName) as "bName", "root".cName as "cName", "root".id as "id" from ABC as "root" where concat(\'cName_\', "root".bName) = \'cName_bName1\'';
    assertEquals($expectedSQL5, $result5->sqlRemoveFormatting());
    assertSameElements([1, 3], $result5.values.id);
    
-   let result6 = execute(|C.all()->filter(c|$c.h.gName == 'hName_gName1'), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result6 = execute(|C.all()->filter(c|$c.h.gName == 'hName_gName1'), testMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let expectedSQL6 = 'select "root".id as "pk_0", concat(\'cName_\', "root".aName) as "aName", concat(\'cName_\', "root".bName) as "bName", "root".cName as "cName", "root".id as "id" from ABC as "root" left outer join GHI as "ghi_0" on ("root".id = "ghi_0".id) where concat(\'hName_\', "ghi_0".gName) = \'hName_gName1\'';
    assertEquals($expectedSQL6, $result6->sqlRemoveFormatting());
    assertSameElements([1, 3], $result6.values.id);
    
-   let result7 = execute(|C.all()->filter(c|$c.h.hName == 'hName1'), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result7 = execute(|C.all()->filter(c|$c.h.hName == 'hName1'), testMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let expectedSQL7 = 'select "root".id as "pk_0", concat(\'cName_\', "root".aName) as "aName", concat(\'cName_\', "root".bName) as "bName", "root".cName as "cName", "root".id as "id" from ABC as "root" left outer join GHI as "ghi_0" on ("root".id = "ghi_0".id) where "ghi_0".hName = \'hName1\'';
    assertEquals($expectedSQL7, $result7->sqlRemoveFormatting());
    assertSameElements([1, 3], $result7.values.id);
    
-   let result8 = execute(|C.all()->filter(c|$c.h->subType(@I).iName == 'iName1'), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result8 = execute(|C.all()->filter(c|$c.h->subType(@I).iName == 'iName1'), testMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let expectedSQL8 = 'select "root".id as "pk_0", concat(\'cName_\', "root".aName) as "aName", concat(\'cName_\', "root".bName) as "bName", "root".cName as "cName", "root".id as "id" from ABC as "root" left outer join GHI as "ghi_0" on ("root".id = "ghi_0".id) where "ghi_0".iName = \'iName1\'';
    assertEquals($expectedSQL8, $result8->sqlRemoveFormatting());
    assertSameElements([1, 3], $result8.values.id);
    
-   let result9 = execute(|C.all()->filter(c|$c.cName == 'cName1'), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result9 = execute(|C.all()->filter(c|$c.cName == 'cName1'), testMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let expectedSQL9 = 'select "root".id as "pk_0", concat(\'cName_\', "root".aName) as "aName", concat(\'cName_\', "root".bName) as "bName", "root".cName as "cName", "root".id as "id" from ABC as "root" where "root".cName = \'cName1\'';
    assertEquals($expectedSQL9, $result9->sqlRemoveFormatting());
    assertSameElements([1, 3], $result9.values.id);
    
-   let result10 = execute(|C.all()->filter(c|$c.k.jName == 'kName_jName1'), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result10 = execute(|C.all()->filter(c|$c.k.jName == 'kName_jName1'), testMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let expectedSQL10 = 'select "root".id as "pk_0", concat(\'cName_\', "root".aName) as "aName", concat(\'cName_\', "root".bName) as "bName", "root".cName as "cName", "root".id as "id" from ABC as "root" left outer join JKL as "jkl_0" on ("root".id = "jkl_0".id) where concat(\'kName_\', "jkl_0".jName) = \'kName_jName1\'';
    assertEquals($expectedSQL10, $result10->sqlRemoveFormatting());
    assertSameElements([1, 3], $result10.values.id);
    
-   let result11 = execute(|C.all()->filter(c|$c.k.kName == 'kName1'), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result11 = execute(|C.all()->filter(c|$c.k.kName == 'kName1'), testMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let expectedSQL11 = 'select "root".id as "pk_0", concat(\'cName_\', "root".aName) as "aName", concat(\'cName_\', "root".bName) as "bName", "root".cName as "cName", "root".id as "id" from ABC as "root" left outer join JKL as "jkl_0" on ("root".id = "jkl_0".id) where "jkl_0".kName = \'kName1\'';
    assertEquals($expectedSQL11, $result11->sqlRemoveFormatting());
    assertSameElements([1, 3], $result11.values.id);
    
-   let result12 = execute(|C.all()->filter(c|$c.k->subType(@L).lName == 'lName1'), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result12 = execute(|C.all()->filter(c|$c.k->subType(@L).lName == 'lName1'), testMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let expectedSQL12 = 'select "root".id as "pk_0", concat(\'cName_\', "root".aName) as "aName", concat(\'cName_\', "root".bName) as "bName", "root".cName as "cName", "root".id as "id" from ABC as "root" left outer join JKL as "jkl_0" on ("root".id = "jkl_0".id) where "jkl_0".lName = \'lName1\'';
    assertEquals($expectedSQL12, $result12->sqlRemoveFormatting());
    assertSameElements([1, 3], $result12.values.id);

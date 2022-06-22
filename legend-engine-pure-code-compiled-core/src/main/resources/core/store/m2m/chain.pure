@@ -1,0 +1,514 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::milestoning::*;
+import meta::pure::executionPlan::*;
+import meta::pure::router::routing::*;
+import meta::pure::router::clustering::*;
+import meta::pure::mapping::modelToModel::chain::*;
+import meta::pure::metamodel::serialization::grammar::*;
+import meta::pure::mapping::modelToModel::inMemory::*;
+import meta::pure::runtime::*;
+import meta::pure::mapping::modelToModel::chain::*;
+import meta::pure::mapping::*;
+import meta::pure::mapping::modelToModel::*;
+import meta::pure::router::printer::*;
+
+function meta::pure::mapping::modelToModel::chain::executeChain(f:StoreQuery[1], e:ExtendedRoutedValueSpecification[0..1], mapping:Mapping[1], mcc:ModelChainConnection[1], runtime:Runtime[1], exeCtx:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):Result<Any|*>[1]
+{
+   let returnType = $f.fe.genericType.rawType->toOne();
+   print(if(!$debug.debug, |'',|$debug.space+'Mappings: ['+$mapping->concatenate($mcc.mappings->init())->makeString(', ')+']\n'));
+   let processed = $f.fe->allReprocess($e, $mapping->concatenate($mcc.mappings->init()), $extensions, $debug);
+   let existingsVars =   $f.inScopeVars->keys()->map(k|
+                                                     let inScopeVarValue = $f.inScopeVars->get($k).values;
+                                                     let rightValue = $inScopeVarValue->evaluateAndDeactivate();
+                                                     if($rightValue->genericType().rawType->toOne()->instanceOf(DataType)
+                                                        ,|  let multiplicity =  $inScopeVarValue->genericType()->deactivate().multiplicity;
+                                                            let genericType = $inScopeVarValue->genericType();
+                                                            let keyVS = $k->evaluateAndDeactivate();
+                                                            let rightSide = ^InstanceValue(values = $rightValue,  genericType= $genericType, multiplicity = $multiplicity);
+                                                            let leftSide = ^InstanceValue(values = $keyVS, multiplicity = PureOne, genericType = $keyVS->genericType());
+                                                            let placeholderLet = {| let placeHolder = $rightSide } ->evaluateAndDeactivate().expressionSequence ->cast(@SimpleFunctionExpression)->toOne();
+                                                            ^$placeholderLet( parametersValues = [ $leftSide, $rightSide ] ); 
+                                                        ,| [] ) ;
+
+                                                     );
+   let results = meta::pure::router::execute(^LambdaFunction<{->Any[*]}>(expressionSequence = $existingsVars->concatenate(  $processed.res->cast(@FunctionExpression))->toOneMany()),
+                                             $mcc.mappings->last()->toOne(),
+                                             $runtime,
+                                             $exeCtx,
+                                             $extensions,
+                                             $debug);
+
+   let sets = $processed.ex.sets->cast(@PureInstanceSetImplementation)->reverse();
+
+   let res = $returnType->match(
+      [
+         e : Enumeration<Any>[1] |
+            $results.values->map(v|$e->extractEnumValue($v->cast(@String))),
+         p : PrimitiveType[1]|
+            $results.values,
+         c : Class<Any>[1] |
+            if ($c->_subTypeOf(TabularDataSet),
+                |let tds = $results.values->cast(@TabularDataSet)->toOne();
+                 let enumColumns = $f.fe->identifyTDSColumns($extensions)->filter(t|$t.type->toOne()->instanceOf(Enumeration))->map(t|pair($t.type->toOne()->cast(@Enumeration<Any>), $t.offset->toOne()));
+                  if ($enumColumns->isEmpty(),
+                      |$results.values,
+                      |^$tds(rows = $tds.rows->map(r|$enumColumns->fold({b,a|let val = $a.values;
+                                                                             // May want to optimize that with a native function
+                                                                             ^$a(values = $val->slice(0, $b.second)
+                                                                                          ->concatenate(
+                                                                                             $b.first->extractEnumValue($val->at($b.second)->cast(@String))
+                                                                                          )
+                                                                                          ->concatenate(
+                                                                                             $val->slice($b.second+1, $val->size())
+                                                                                          )
+                                                                             );
+                                                                        }, $r
+                                                                   )
+                                              )
+                        )
+                   );,
+                | assert($e->isNotEmpty(), |'Not supported yet. Not setImpl because of a union in the M2M. Need to dispatch to the right implementation of the union based on type.');
+                  let static = ^StaticMappingInstanceData
+                           (
+                              setImplementation = $e.sets->at(0)->cast(@PureInstanceSetImplementation),
+                              mapping = $mapping,                              runtime = $runtime,
+                              systemMapping = meta::pure::mapping::modelToModel::contract::modelStoreContract(),
+                              exeCtx = $exeCtx,
+                              debug = $debug,
+                              extensions = $extensions
+                           );
+                 $results.values->map(v|$sets->fold({s,v|$v->transformWithMapping($s, $e, $static)}, $v));
+            )
+      ]
+   );
+   ^Result<Any|*>(activities=$results.activities, values=$res);
+}
+
+function meta::pure::mapping::modelToModel::chain::planExecutionChain(sq:StoreQuery[1], e:ExtendedRoutedValueSpecification[0..1], mapping:Mapping[0..1], mcc:ModelChainConnection[1], runtime:Runtime[0..1], exeCtx:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ExecutionNode[1]
+{
+   let returnType = $sq.fe.genericType.rawType->toOne();
+   assert($returnType->_subTypeOf(TabularDataSet), 'Non TDS return type not supported for Model Connections');
+   
+   print(if(!$debug.debug, |'',|$debug.space+'Mappings: ['+$mapping->concatenate($mcc.mappings->init())->makeString(', ')+']\n'));
+   
+   let processed = $sq.fe->allReprocess($e, $mapping->concatenate($mcc.mappings->init()), $extensions, $debug);
+   let f = ^LambdaFunction<{->Any[*]}>(expressionSequence = $processed.res->cast(@FunctionExpression))->toOne()->cast(@FunctionDefinition<Any>);
+   
+   let m = $mcc.mappings->last()->toOne();
+   
+   let routed = $f->routeFunction($m, $runtime->toOne(), $exeCtx, $extensions, $debug);
+   let routedFunction = $routed.functions->evaluateAndDeactivate()->toOne();
+   let clusters = $routedFunction.expressionSequence->evaluateAndDeactivate()->cast(@ClusteredValueSpecification);
+
+   let inScopeVars = $sq.inScopeVars;
+
+   if ($clusters->size() == 1,
+       | $clusters->at(0)->plan($runtime, $inScopeVars, $routed.advancedRouting, $exeCtx, $extensions, $debug),
+       | let allNodes = $clusters->fold({c,a|let x = $a.vars;
+                                             let node = $c->plan($runtime, $x, $routed.advancedRouting, $exeCtx, $extensions, $debug);
+                                             let nVars = $node->match([a:AllocationExecutionNode[1]|let varValues = if($a.resultType.type ==TabularDataSet,
+                                                                                                                       |^PlanSetPlaceHolder(name=$a.varName,tdsColumns = $a.resultType->match([x:TDSResultType[1]|$x.tdsColumns, a:Any[1]|[]])),
+                                                                                                                       |^PlanVarPlaceHolder(name=$a.varName,type = $a.resultType.type, multiplicity=$a.resultSizeRange));
+                                                                                                    $x->put($a.varName, ^List<Any>(values=$varValues));,
+                                                                       a:Any[*]|$x]);
+                                             ^$a(nodes+=$node, vars = $nVars);
+                                        }, ^NodeAndVars(vars = $inScopeVars)).nodes;
+         ^SequenceExecutionNode
+         (
+            resultType = $allNodes->last()->toOne().resultType,
+            resultSizeRange = $allNodes->last()->toOne().resultSizeRange,
+            executionNodes = $allNodes
+         );
+   );
+}
+
+Class meta::pure::mapping::modelToModel::chain::Container
+{
+   res : FunctionExpression[1];
+   ex : ExtendedRoutedValueSpecification[*];
+}
+
+function meta::pure::mapping::modelToModel::chain::allReprocess(f:FunctionExpression[1], r:ExtendedRoutedValueSpecification[0..1], mappings:Mapping[*], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):Container[1]
+{
+   $mappings->fold(
+                     {a,b|
+                        print(if(!$debug.debug, |'', | $debug.space+'  Mapping: '+$a.name->toOne()+'\n'));
+                        let rez = ^LambdaFunction<{->Any[*]}>(expressionSequence = $b.res->cast(@FunctionExpression))->routeFunction($a, ^Runtime(), $extensions, $debug);
+                        print(if(!$debug.debug, |'', | $debug.space+'  Routed: '+$rez.functions->at(0)->asString()+'\n'));
+                        let res = $rez.functions.expressionSequence->evaluateAndDeactivate()->cast(@ClusteredValueSpecification).val->match(
+                           [
+                              e:ExtendedRoutedValueSpecification[1]|pair(list($e), $e.value->cast(@FunctionExpression)->toOne()->reprocess($e, $a, $mappings, []).newExpression);,
+                              f:FunctionExpression[1]|pair(list($r), $f->reprocess($r, $a, $mappings, []).newExpression);
+                           ]
+                        );
+                        print(if(!$debug.debug, |'', | $debug.space+'  Chain Reprocessed Query: '+$res.second->cast(@ValueSpecification)->asString()+'\n'));
+                        ^Container(res=$res.second->cast(@FunctionExpression), ex=$b.ex->concatenate($res.first.values));
+                     },
+                     ^Container(res=$f)
+                   )
+}
+
+Class meta::pure::mapping::modelToModel::chain::Res
+{
+   newExpression : Any[1];
+   vars : Map<String, GenericType>[0..1];
+}
+
+function meta::pure::mapping::modelToModel::chain::reprocess(vs:ValueSpecification[1], e:ExtendedRoutedValueSpecification[0..1], mapping:Mapping[1], mappings:Mapping[*], r:FunctionRoutedValueSpecification[0..1]):Res[1]
+{
+   $vs->match(
+      [ fe:FunctionExpression[1]|let results = $fe.parametersValues->evaluateAndDeactivate()->map(p|$p->reprocess($e, $mapping, $mappings, []));
+                                  let newFunc = if ($fe.func->instanceOf(Property),
+                                                   |let setImpl = $fe.parametersValues->at(0)->cast(@ExtendedRoutedValueSpecification).sets->at(0)->cast(@PureInstanceSetImplementation);
+                                                    let pm = if ($fe.func->functionReturnType().rawType->toOne()->instanceOf(DataType),
+                                                                 |$setImpl.propertyMappingsByPropertyName($fe.func.name->toOne())->cast(@PurePropertyMapping)->toOne(),
+                                                                 |$setImpl.propertyMappingByPropertyNameAndTargetId($fe.func.name->toOne(), $e.sets.id->toOne())->cast(@PurePropertyMapping)->toOne()
+                                                             );
+                                                    
+                                                    let srcValueSpecification = $results.newExpression->at(0)->cast(@ValueSpecification);
+                                                    let modelTransformLambda = $pm.transform->manageEnumeration([]);
+                                                    let modelTransformLambdaEvalExpression = createEvalFunctionExpression($modelTransformLambda, $srcValueSpecification, $fe);
+                                                    let modelTransformerLambda = if ($pm.transformer->isEmpty(),| [],| $pm.transformer->toOne()->manageEnumerationMapping('var' + toString($mappings->indexOf($mapping) + 1)));
+                                                    if ($modelTransformerLambda->isEmpty(),
+                                                        | $modelTransformLambdaEvalExpression,
+                                                        | createEvalFunctionExpression($modelTransformerLambda->toOne(), $modelTransformLambdaEvalExpression, $fe)
+                                                    );,
+                                                  |
+                                                         let newTypeParams =  $fe.genericType.typeArguments->map(t|  let typeParam = $t.rawType->toOne();
+                                                                                                          if( $typeParam->instanceOf(DataType), 
+                                                                                                             | if($typeParam->instanceOf(Enumeration),
+                                                                                                                | ^GenericType(rawType=String),| $t),
+                                                                                                             | 
+                                                                                                             ^GenericType(rawType=sourceClassFromFunction($fe).srcClass);
+                                                                                                            );
+                                                                                                          );
+                                                     let type = $fe.genericType.rawType->toOne();
+                                                    ^$fe(genericType=if($e->isEmpty() || $type->instanceOf(DataType), 
+                                                                        | if($type->instanceOf(Enumeration),
+                                                                            | ^GenericType(rawType=String),
+                                                                            | if($fe.genericType.typeArguments->isNotEmpty(),| ^GenericType(rawType=$fe.genericType.rawType,typeArguments = $newTypeParams),|$fe.genericType);
+                                                                            );,
+                                                                        |^GenericType(rawType=$e.sets->at(0)->cast(@PureInstanceSetImplementation).srcClass);
+                                                                        ),
+                                                        resolvedTypeParameters= if($fe.resolvedTypeParameters->isEmpty(),|[], |$newTypeParams),
+                                                        parametersValues=manageMilestoning($fe.func, $results.newExpression->cast(@ValueSpecification))
+                                                   );
+                                              );
+                                  let newFuncF = if ((
+                                                      ($fe.func->instanceOf(Property) && $fe.func->functionReturnType().rawType->toOne()->instanceOf(Class))
+                                                      || $fe.func->in([getAll_Class_1__T_MANY_, getAllVersions_Class_1__T_MANY_, getAll_Class_1__Date_1__T_MANY_, getAll_Class_1__Date_1__Date_1__T_MANY_, getAllVersionsInRange_Class_1__Date_1__Date_1__T_MANY_])
+                                                     ) && !$e.sets->isEmpty(),
+                                      |$e.sets->toOne()->cast(@PureInstanceSetImplementation)->potentialyApplyFilter($fe->toOne(), $newFunc->toOne());,
+                                      |$newFunc
+                                  );
+                                  ^Res(newExpression=$newFuncF,
+                                       vars=if($results.vars->isEmpty(),|[],|newMap($results.vars->map(r|$r->keyValues())))
+
+                                  );,
+         r:FunctionRoutedValueSpecification[1]|$r.value->reprocess($e, $mapping, $mappings, $r);,
+         e:ExtendedRoutedValueSpecification[1]|$e.value->reprocess($e, $mapping, $mappings, []);,
+         v:VariableExpression[1]|     let newGenericType = if($v.genericType.rawType->toOne()->instanceOf(Class),| ^GenericType(rawType=$e.sets->at(0)->cast(@PureInstanceSetImplementation).srcClass), | $v.genericType);
+                                          ^Res(
+                                       newExpression = ^$v(genericType=$newGenericType),
+                                       vars = newMap(pair($v.name, $newGenericType))
+                                  );,
+         i:InstanceValue[1]|let results = $i.values->map(v|$v->match([a:Class<Any>[1]|$e.sets->at(0)->cast(@PureInstanceSetImplementation).srcClass,
+                                                                      l:FunctionRoutedValueSpecification[1]| $l.value->reprocess($e, $mapping, $mappings, $l),
+                                                                      vs:ValueSpecification[1]|$vs->reprocess($e, $mapping, $mappings, []),
+                                                                      f:LambdaFunction<Any>[1]|let results = $f.expressionSequence->map(vs|$vs->reprocess($e, $mapping, $mappings, []));
+                                                                                               let varMap = if($results.vars->isEmpty(),|[],|newMap($results.vars->map(r|$r->keyValues())));
+                                                                                               ^$f(
+                                                                                                     classifierGenericType=$f->buildLambdaType($varMap, $r),
+                                                                                                     expressionSequence=$results.newExpression->cast(@ValueSpecification)
+                                                                                               );,
+                                                                      agg:meta::pure::functions::collection::AggregateValue<Any,Any,Any>[1]|
+                                                                                                           let f = $agg.mapFn;
+                                                                                                           let results = $f.expressionSequence->map(vs|$vs->reprocess($e, $mapping, $mappings, []));
+                                                                                                           let varMap = if($results.vars->isEmpty(),|[],|newMap($results.vars->map(r|$r->keyValues())));
+                                                                                                           let fType = $f->functionType();
+                                                                                                           
+                                                                                                           let fInputType = ^GenericType(rawType=$agg.mapFn.expressionSequence->cast(@ExtendedRoutedValueSpecification).sets->at(0)->cast(@PureInstanceSetImplementation).srcClass);
+                                                                                                           let dummyLambda = {x:Any[1]| $x};
+                                                                                                           let gen = ^GenericType
+                                                                                                                     (
+                                                                                                                        rawType = LambdaFunction,
+                                                                                                                        typeArguments = ^GenericType
+                                                                                                                                        (
+                                                                                                                                           rawType = ^$fType
+                                                                                                                                                     (
+                                                                                                                                                        parameters = $fType.parameters->map(p|^$p(genericType=$fInputType)), 
+                                                                                                                                                        returnType = $f->functionReturnType(),
+                                                                                                                                                        returnMultiplicity= $f->functionReturnMultiplicity()
+                                                                                                                                                     )
+                                                                                                                                        )
+                                                                                                                     );
+                                                                                                           ^SimpleFunctionExpression
+                                                                                                                    (
+                                                                                                                       func = meta::pure::functions::collection::agg_FunctionDefinition_1__FunctionDefinition_1__AggregateValue_1_,
+                                                                                                                       functionName = 'agg',
+                                                                                                                       importGroup = system.children->at(0)->cast(@Package).children->at(0)->cast(@ImportGroup),
+                                                                                                                       genericType = ^GenericType(rawType=meta::pure::functions::collection::AggregateValue,
+                                                                                                                                                     typeArguments=[$fInputType,
+                                                                                                                                                                    $agg.mapFn->functionReturnType(),
+                                                                                                                                                                    $agg.aggregateFn->functionReturnType()]),
+                                                                                                                       multiplicity = PureOne, 
+                                                                                                                       parametersValues = [
+                                                                                                                                             ^InstanceValue(values=^$dummyLambda(classifierGenericType=$gen,
+                                                                                                                                                                    expressionSequence=$results.newExpression->cast(@ValueSpecification)),
+                                                                                                                                                            multiplicity=PureOne,
+                                                                                                                                                            genericType=$gen),
+                                                                                                                                             ^InstanceValue(values=$agg.aggregateFn,
+                                                                                                                                                            multiplicity=PureOne,
+                                                                                                                                                            genericType=$agg.aggregateFn.classifierGenericType->toOne())
+                                                                                                                                          ],
+                                                                                                                       resolvedTypeParameters = [$fInputType,
+                                                                                                                                                  $agg.mapFn->functionReturnType(),
+                                                                                                                                                  $agg.aggregateFn->functionReturnType()]
+                                                                                                                    )->evaluateAndDeactivate();,
+                                                                      i:Integer[1]|$i,
+                                                                      s:String[1]|$s,
+                                                                      d:Date[1]|$d,
+                                                                      b:Boolean[1]|$b,
+                                                                      f:Float[1]|$f,
+                                                                      e:Enumeration<Any>[1]|$e
+                                                                     ]););
+                            let values = $results->map(r|$r->match([v:Res[1]|$v.newExpression->match([i:InstanceValue[1]|$i.values,a:Any[1]|$a]),k:Any[1]|$k]));
+                            let genericType = if($values->size() == 1,
+                                               | let firstValue = $values->first()->toOne();
+                                                 let firstValueGenericType = $firstValue->genericType();                                                                                                 
+                                                 if($firstValueGenericType->isNotEmpty(),                                                    
+                                                    |if($firstValue->instanceOf(ValueSpecification),
+                                                        |$firstValue->cast(@ValueSpecification).genericType,
+                                                        |$firstValueGenericType
+                                                     );,
+                                                    |^GenericType(rawType=$firstValue->type())
+                                                 );,                                                                                              
+                                               |^GenericType(rawType=Any));
+                              let newInstanceValue = ^$i(genericType = $genericType, values=$values)->evaluateAndDeactivate();
+                            let vars = $results->map(r|$r->match([v:Res[1]|$v.vars,a:Any[1]|[]]));
+                            ^Res(newExpression=$newInstanceValue, vars=if($vars->isEmpty(),|[],|newMap($vars->map(r|$r->keyValues()))));
+      ]
+   );
+}
+
+function meta::pure::mapping::modelToModel::chain::createEvalFunctionExpression(lambdaFunction:LambdaFunction<Any>[1], secondParameter:ValueSpecification[1], functionExpression:FunctionExpression[1]):FunctionExpression[1]
+{
+   let returnType = $lambdaFunction->genericType().typeArguments->at(0).rawType->cast(@FunctionType).returnType->toOne();
+   let lambdaFunctionInstanceValue = ^InstanceValue(genericType = $lambdaFunction->genericType(), multiplicity = PureOne, values = $lambdaFunction);
+   ^$functionExpression(func = meta::pure::functions::lang::eval_Function_1__T_n__V_m_, 
+                        genericType = $returnType, 
+                        parametersValues = [$lambdaFunctionInstanceValue->evaluateAndDeactivate(), $secondParameter->evaluateAndDeactivate()]
+   );
+}
+
+function  meta::pure::mapping::modelToModel::chain::sourceClassFromFunction(fe:FunctionExpression[1]):PureInstanceSetImplementation[1]
+{
+   if($fe.parametersValues->at(0)->instanceOf(FunctionExpression),
+              |meta::pure::mapping::modelToModel::chain::sourceClassFromFunction($fe.parametersValues->at(0)->cast(@FunctionExpression)),
+              |$fe.parametersValues->at(0)->cast(@ExtendedRoutedValueSpecification).sets->at(0)->cast(@PureInstanceSetImplementation););
+}
+
+function meta::pure::mapping::modelToModel::chain::identifyTDSColumns(originalStoreQueryExpression:FunctionExpression[1], extensions:meta::pure::extension::Extension[*]):TDSColumn[*]
+{
+   let functionExpression = if ($originalStoreQueryExpression.func == concatenate_T_MANY__T_MANY__T_MANY_,| $originalStoreQueryExpression.parametersValues->at(0),| $originalStoreQueryExpression);
+   let routerInfoByPassedFunctionExpression = $functionExpression->deepByPassRouterInfo()->cast(@FunctionExpression)->evaluateAndDeactivate();
+   let routerInfoByPassedFunctionDefinition = ^FunctionDefinition<{->TabularDataSet[1]}>(expressionSequence = $routerInfoByPassedFunctionExpression);
+   $routerInfoByPassedFunctionDefinition->meta::pure::tds::schema::resolveSchema($extensions);
+}
+
+function meta::pure::mapping::modelToModel::chain::potentialyApplyFilter(setImpl:PureInstanceSetImplementation[1], fe:FunctionExpression[1], src:ValueSpecification[1]):ValueSpecification[1]
+{
+   let filter = $setImpl.filter;
+   if ($filter->isEmpty(),
+       |$src,
+       |let fType = $filter->genericType();
+        ^$fe(func=meta::pure::functions::collection::filter_T_MANY__Function_1__T_MANY_,
+             functionName='filter',
+             genericType = ^InferredGenericType(rawType=$setImpl.srcClass),
+             parametersValues=[$src,
+                                 ^InstanceValue
+                                 (
+                                    genericType=$fType,
+                                    multiplicity=PureOne,
+                                    values=$filter
+                                 )
+                                ],
+             multiplicity = ZeroMany
+           );
+   );
+}
+
+function meta::pure::mapping::modelToModel::chain::manageEnumeration(l:LambdaFunction<Any>[1], r:FunctionRoutedValueSpecification[0..1]):LambdaFunction<Any>[1]
+{
+   if ($l->functionReturnType().rawType->toOne()->instanceOf(Enumeration),
+       |let newLambda = ^$l(
+                            expressionSequence = $l.expressionSequence->at(0)->manageEnumerationVS($l->functionReturnType().rawType->toOne()->cast(@Enumeration<Any>), $r)
+                        );
+        ^$newLambda(classifierGenericType=$newLambda->buildLambdaType([], $r));,
+       |$l
+   );
+}
+
+function meta::pure::mapping::modelToModel::chain::manageEnumerationVS(vs:ValueSpecification[1], e:Enumeration<Any>[1], r:FunctionRoutedValueSpecification[0..1]):ValueSpecification[1]
+{
+   $vs->match([
+      fe:FunctionExpression[1]|if ($fe.func == extractEnumValue_Enumeration_1__String_1__T_1_,
+                                   |$fe.parametersValues->at(1),
+                                   |^$fe
+                                    (
+                                      genericType = if ($fe.genericType.rawType == $e, |^GenericType(rawType = String), |$fe.genericType),
+                                      parametersValues = $fe.parametersValues->map(p|$p->manageEnumerationVS($e, $r))
+                                    );
+                               ),
+      v:VariableExpression[1]|$v,
+      i:InstanceValue[1]|^$i(values = $i.values->map(v|$v->match([
+                                                                     f:LambdaFunction<Any>[1]|$f->manageEnumeration($r),
+                                                                     i:Integer[1]|$i,
+                                                                     s:String[1]|$s,
+                                                                     d:Date[1]|$d,
+                                                                     b:Boolean[1]|$b,
+                                                                     f:Float[1]|$f
+                                                                 ]
+                                                           )
+                                                )
+                         )
+   ]);
+}
+
+function meta::pure::mapping::modelToModel::chain::manageEnumerationMapping(transformer:ValueTransformer<Any>[1], variableName:String[1]):LambdaFunction<Any>[1]
+{
+   let enumValueMappings = $transformer->cast(@EnumerationMapping<Any>).enumValueMappings;
+   let sourceValuesType = $enumValueMappings.sourceValues->genericType().rawType->toOne();                                                       
+   let inputVariable = createVariableExpression($sourceValuesType, $variableName);
+   createNestedIfElseLambdaFunction($enumValueMappings, $inputVariable, true);
+}
+
+function meta::pure::mapping::modelToModel::chain::buildLambdaType(lambda:LambdaFunction<Any>[1], m:Map<String, GenericType>[0..1], r:FunctionRoutedValueSpecification[0..1]):GenericType[1]
+{
+   let fType = $lambda->toOne()->genericType().typeArguments.rawType->cast(@FunctionType)->toOne();
+   let ret = $lambda.expressionSequence->last().genericType.rawType->toOne();
+   let returnType = if ($ret->instanceOf(DataType), |$ret, |$lambda.expressionSequence->last()->cast(@ExtendedRoutedValueSpecification).sets->at(0)->cast(@PureInstanceSetImplementation).srcClass->toOne());
+   ^GenericType
+   (
+      rawType = LambdaFunction,
+      typeArguments = ^GenericType
+                      (
+                         rawType = ^$fType
+                                   (
+                                      parameters = $fType.parameters->map(p|if($m->isEmpty(),
+                                                                               |if ($r->isEmpty(),
+                                                                                    |// We can find a value for the new type
+                                                                                     // Most likely because the lambda function's body is a constant (or not leveraging the variable)
+                                                                                     // We assume that the type is Any at this point ... because the variable is not used anyway...
+                                                                                     ^$p(genericType=^GenericType(rawType=Any)),
+                                                                                    |let cl = $r.builtPropertyMap->toOne()->get($p.name)->toOne()->cast(@PureInstanceSetImplementation).srcClass;
+                                                                                     ^$p(genericType=^GenericType(rawType=$cl->toOne()));
+                                                                                ),
+                                                                               |^$p(genericType=$m->toOne()->get($p.name)->toOne()))
+                                                                          ),
+                                      returnType = if($fType.returnType.rawType->toOne()->instanceOf(PrimitiveType),|$fType.returnType,|^GenericType(rawType=$returnType)),
+                                      returnMultiplicity= $fType.returnMultiplicity
+                                   )
+                      )
+   );
+}
+
+Class <<temporal.businesstemporal>> meta::pure::mapping::modelToModel::chain::Dummy
+{
+}
+
+function meta::pure::mapping::modelToModel::chain::manageMilestoning(func:Function<Any>[1], vs:ValueSpecification[*]):ValueSpecification[*]
+{
+   if ($func == getAll_Class_1__T_MANY_,
+      |let class = $vs->at(0)->cast(@InstanceValue).values->cast(@Class<Any>)->toOne();
+       if ($class->isTemporal(),
+          |let x = {|Dummy.all(%latest)};
+           let latest = $x->evaluateAndDeactivate().expressionSequence->cast(@SimpleFunctionExpression).parametersValues->at(1);
+           $vs->at(0)
+           ->concatenate(if($class->isProcessingTemporal(),|$latest,|[]))
+           ->concatenate(if($class->isBusinessTemporal(),|$latest,|[]));,
+          |$vs
+       );,
+       |$vs
+   );
+}
+
+function meta::pure::mapping::modelToModel::chain::createNestedIfElseLambdaFunction(enumValueMappings:EnumValueMapping[*], inputVariable:VariableExpression[1], root:Boolean[1]):LambdaFunction<Any>[1]
+{
+   let classifierGenericType = ^GenericType(rawType = LambdaFunction, typeArguments = ^GenericType(rawType = ^FunctionType(returnMultiplicity = PureOne, returnType = ^GenericType(rawType = String), parameters = if ($root,| $inputVariable,| []))));   
+   let expressionSequence = createNestedIfElseFunctionExpression($enumValueMappings, $inputVariable);
+   let lambdaFunction = ^LambdaFunction<Any>(expressionSequence = $expressionSequence, openVariables = if ($root,| [],| $inputVariable.name));
+   ^$lambdaFunction(classifierGenericType = $classifierGenericType);
+}
+    
+function meta::pure::mapping::modelToModel::chain::createNestedIfElseFunctionExpression(enumValueMappings:EnumValueMapping[*], inputVariable:VariableExpression[1]):SimpleFunctionExpression[1]
+{
+   ^SimpleFunctionExpression(func = if_Boolean_1__Function_1__Function_1__T_m_,
+                             functionName = 'if',
+                             importGroup = system::imports::coreImport,
+                             genericType = ^GenericType(rawType = String),
+                             multiplicity = PureOne,
+                             parametersValues = [$enumValueMappings->at(0).sourceValues->match([s1:Any[1] | createEqualFunctionExpression($inputVariable, $s1), sn:Any[*] | createInFunctionExpression($inputVariable, $sn)]),
+                                                 createInstanceValue($enumValueMappings->at(0).enum.name),
+                                                 $enumValueMappings->tail()->match([e0:EnumValueMapping[0] | createInstanceValue(''), en:EnumValueMapping[*] | createNestedIfElseInstanceValue($en, $inputVariable)])]
+   )->evaluateAndDeactivate()
+}
+
+function meta::pure::mapping::modelToModel::chain::createEqualFunctionExpression(inputVariable:VariableExpression[1], sourceValue:Any[1]):SimpleFunctionExpression[1]
+{
+   ^SimpleFunctionExpression(func = equal_Any_MANY__Any_MANY__Boolean_1_,
+                             functionName = 'equal',
+                             importGroup = system::imports::coreImport,
+                             genericType = ^GenericType(rawType = Boolean),
+                             multiplicity = PureOne,
+                             parametersValues = [$inputVariable, createInstanceValue($sourceValue)]
+   )->evaluateAndDeactivate()
+}
+
+function meta::pure::mapping::modelToModel::chain::createInFunctionExpression(inputVariable:VariableExpression[1], sourceValues:Any[*]):SimpleFunctionExpression[1]
+{
+   ^SimpleFunctionExpression(func = in_Any_1__Any_MANY__Boolean_1_,
+                             functionName = 'in',
+                             importGroup = system::imports::coreImport,
+                             genericType = ^GenericType(rawType = Boolean),
+                             multiplicity = PureOne,
+                             parametersValues = [$inputVariable, createInstanceValue($sourceValues)]
+   )->evaluateAndDeactivate()
+}
+    
+function meta::pure::mapping::modelToModel::chain::createNestedIfElseInstanceValue(enumValueMappings:EnumValueMapping[*], inputVariable:VariableExpression[1]):InstanceValue[1]
+{
+   ^InstanceValue(genericType = ^GenericType(rawType = LambdaFunction, typeArguments = ^GenericType(rawType = ^FunctionType(returnMultiplicity = PureOne, returnType = ^GenericType(rawType = String)))),
+                  multiplicity = PureOne,
+                  values = createNestedIfElseLambdaFunction($enumValueMappings, $inputVariable, false)
+   )
+}
+    
+function meta::pure::mapping::modelToModel::chain::createInstanceValue(values:Any[*]):InstanceValue[1]
+{
+   ^InstanceValue(genericType = ^GenericType(rawType = $values->match([e:Enum[*] | String, a:Any[*] | $a->genericType().rawType->toOne()])),
+                  multiplicity = PureOne, 
+                  values = $values->match([e:Enum[*] | $e.name, a:Any[*] | $a])
+   )
+}
+    
+function meta::pure::mapping::modelToModel::chain::createVariableExpression(type:Type[1], name:String[1]):VariableExpression[1]
+{
+   ^VariableExpression(genericType = ^GenericType(rawType = $type->match([e:Enumeration<Any>[1] | String, t:Type[1] | $t])),
+                       multiplicity = PureOne,
+                       name = $name
+   )->evaluateAndDeactivate()
+}

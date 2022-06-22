@@ -1,0 +1,385 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::executionPlan::*;
+import meta::pure::extension::*;
+import meta::pure::metamodel::path::*;
+import meta::pure::router::clustering::*;
+import meta::pure::router::printer::*;
+import meta::pure::mapping::aggregationAware::*;
+import meta::pure::runtime::*;
+import meta::pure::mapping::*;
+
+
+Class meta::pure::mapping::aggregationAware::AggregationAwareStore extends meta::pure::store::Store
+{
+}
+
+Class meta::pure::mapping::aggregationAware::ProjectPath
+{
+   <<equality.Key>> children: ProjectPath[*];
+   <<equality.Key>> thisLevel: String[0..1];
+}
+
+Class meta::pure::mapping::aggregationAware::AggregationAwareActivity extends meta::pure::mapping::Activity
+{
+   rewrittenQuery: String[1];
+}
+
+function meta::pure::mapping::aggregationAware::reprocessFunction(f:FunctionExpression[1], openVars: Map<String, List<Any>>[1], e:RoutedValueSpecification[0..1], m:Mapping[1], debug:DebugContext[1]):LambdaFunction<{->Any[*]}>[1]
+{
+   let existingsVars = $openVars->keyValues()->filter(v|!$v.second.values->at(0)->instanceOf(PlanVarPlaceHolder)).first->map(k|
+                                                let inScopeVarValue = $openVars->get($k).values;
+                                                let rightValue = $inScopeVarValue->evaluateAndDeactivate();
+                                                let multiplicity =  $inScopeVarValue->genericType()->deactivate().multiplicity;
+                                                let genericType = $inScopeVarValue->genericType();
+                                                let keyVS = $k->evaluateAndDeactivate();
+                                                let rightSide = ^InstanceValue(values = $rightValue, genericType= $genericType, multiplicity = $multiplicity);
+                                                let leftSide = ^InstanceValue(values = $keyVS, multiplicity = PureOne, genericType = $keyVS->genericType());
+                                                let placeholderLet = {| let placeHolder = $rightSide } ->evaluateAndDeactivate().expressionSequence ->cast(@SimpleFunctionExpression)->toOne();
+                                                ^$placeholderLet( parametersValues = [ $leftSide, $rightSide ] );
+                                              );
+   let reprocessedFunction = ^LambdaFunction<{->Any[*]}>(expressionSequence =  $existingsVars->concatenate($f->rewriteQuery($openVars, $e, $m, $debug))->toOneMany());
+}
+
+function meta::pure::mapping::aggregationAware::rewriteQuery(f:FunctionExpression[1], inScopeVars: Map<String, List<Any>>[1], r:RoutedValueSpecification[0..1], mappings:Mapping[1], debug:DebugContext[1]):FunctionExpression[1]
+{
+   $f->reprocessVS()->reprocessVSWithInScopeVars($inScopeVars)->rewriteValueSpecification($mappings, ^Map<String, ProjectPath>(), $inScopeVars, $debug)->cast(@FunctionExpression);
+}
+
+function meta::pure::mapping::aggregationAware::reprocessLambda(f:FunctionDefinition<Any>[1]):FunctionDefinition<Any>[1]
+{
+   ^$f(expressionSequence = $f.expressionSequence->map(e|$e->reprocessVS()));
+}
+
+function meta::pure::mapping::aggregationAware::reprocessVS(vs:ValueSpecification[1]):ValueSpecification[1]
+{
+   $vs->match([
+      fe:FunctionExpression[1] | ^$fe
+                                  (
+                                     func=$fe.func->match([
+                                        qp:QualifiedProperty<Any>[1] | $qp->reprocessLambda(),
+                                        f: Function<Any>[1] | $f
+                                     ]),
+                                     parametersValues=$fe.parametersValues->map(v|$v->reprocessVS())
+                                  ),
+      cvs:ClusteredValueSpecification[1] | $cvs.val->reprocessVS(),
+      evs:ExtendedRoutedValueSpecification[1] | $evs.value->reprocessVS(),
+      fvs:FunctionRoutedValueSpecification[1] | $fvs.value->reprocessVS(),
+      i:InstanceValue[1] | ^$i
+                            (
+                               values = $i.values->evaluateAndDeactivate()->map(v|$v->match([
+                                  fvs:FunctionRoutedValueSpecification[1] | $fvs.value->match([
+                                     fd: FunctionDefinition<Any>[1] | $fd->reprocessLambda(),
+                                     iV: InstanceValue[1] | $iV.values->evaluateAndDeactivate()->map(e | $e->match([v: ValueSpecification[1] | $v->reprocessVS(), fd: FunctionDefinition<Any>[1] | $fd->reprocessLambda(), a: Any[1]|$a])),
+                                     val: ValueSpecification[1]|$vs->reprocessVS(),
+                                     a: Any[1] | $a
+                                  ]),
+                                  e:ValueSpecification[1] | $e->reprocessVS(),
+                                  f:FunctionDefinition<Any>[1] | $f->reprocessLambda(),
+                                  colSpec:meta::pure::tds::BasicColumnSpecification<Any>[1]|
+                                     ^$colSpec(func = $colSpec.func->cast(@FunctionDefinition<Any>)->reprocessLambda()->cast($colSpec.func));
+                                     ,
+                                  agg:meta::pure::functions::collection::AggregateValue<Any,Any,Any>[1]|
+                                     ^$agg(mapFn = $agg.mapFn->reprocessLambda()->cast($agg.mapFn), aggregateFn = $agg.aggregateFn->reprocessLambda()->cast($agg.aggregateFn));
+                                     ,
+                                  a:Any[1]|$a
+                               ]))
+                            ),
+      nvs:NoSetRoutedValueSpecification[1] | $nvs.value->reprocessVS(),
+      val:ValueSpecification[1] | $val
+   ])
+}
+
+function meta::pure::mapping::aggregationAware::rewriteValueSpecification(vs: ValueSpecification[1], mapping: Mapping[1], vars: Map<String, ProjectPath>[1], inScopeVars: Map<String, List<Any>>[1], debug:DebugContext[1]): ValueSpecification[1]
+{
+   $vs->reprocessVS()->match([
+      fe: FunctionExpression[1] | if($fe.func == groupBy_K_MANY__Function_MANY__AggregateValue_MANY__String_MANY__TabularDataSet_1_,
+                                    | $fe->potentiallyRewriteObjectGroupBy($mapping, $vars, $inScopeVars, $debug),
+                                    | if($fe.func->in([getAll_Class_1__T_MANY_, getAll_Class_1__Date_1__T_MANY_, getAll_Class_1__Date_1__Date_1__T_MANY_]),
+                                         | let mainClass = $fe.parametersValues->evaluateAndDeactivate()->at(0)->cast(@InstanceValue).values->at(0)->cast(@Class<Any>);
+                                           ^$fe(parametersValues=^ClassSetImplementationHolder(genericType=^GenericType(rawType=$mainClass), multiplicity=PureOne, set = $mapping.rootClassMappingByClass($mainClass)->match([a:AggregationAwareSetImplementation[1]|$a.mainSetImplementation, s:SetImplementation[1]|$s]), value = $fe.parametersValues->evaluateAndDeactivate()->at(0))->concatenate($fe.parametersValues->evaluateAndDeactivate()->tail()));,
+                                         | ^$fe(parametersValues=$fe.parametersValues->evaluateAndDeactivate()->map(v|$v->rewriteValueSpecification($mapping, $vars, $inScopeVars, $debug)))
+                                      );
+                                  ),
+      iv: InstanceValue[1] | ^$iv
+                              (
+                                 values = $iv.values->evaluateAndDeactivate()->map(v | $v->match([
+                                    fd: FunctionDefinition<Any>[1] | ^$fd(expressionSequence =$fd.expressionSequence->evaluateAndDeactivate()->map(e | $e->rewriteValueSpecification($mapping, $vars, $inScopeVars, $debug))),
+                                    val: ValueSpecification[1] | $val->evaluateAndDeactivate()->rewriteValueSpecification($mapping, $vars, $inScopeVars, $debug),
+                                    a : Any[1] | $a
+                                 ]))
+                              ),
+      ve: VariableExpression[1] | $ve
+   ]);
+}
+
+function meta::pure::mapping::aggregationAware::potentiallyRewriteObjectGroupBy(f:FunctionExpression[1], mapping:Mapping[1], vars: Map<String, ProjectPath>[1], inScopeVars: Map<String, List<Any>>[1], debug:DebugContext[1]):FunctionExpression[1]
+{
+   let params = $f->cast(@FunctionExpression).parametersValues->evaluateAndDeactivate();
+   let collection = $params->at(0);
+   let collectionType = $collection.genericType.rawType->toOne();
+   $collectionType->match([
+      c:Class<Any>[1] | $mapping.rootClassMappingByClass($c)->match([
+         agg:AggregationAwareSetImplementation[1] |
+            let aggregateSpecifications = $agg.aggregateSetImplementations;
+            $aggregateSpecifications->fold({aggSpec, agg |
+                if($agg.first,
+                   | $agg,
+                   | let aggSpecGroupByFunctionPaths = $aggSpec.aggregateSpecification.groupByFunctions->map(g | $g.groupByFn.expressionSequence->evaluateAndDeactivate()->toOne()->generateProjectPath(newMap(pair('this', ^ProjectPath(thisLevel=$c->elementToPath()))), ^Map<String, List<Any>>()));
+                     let functions = $params->at(1)->cast(@InstanceValue).values->evaluateAndDeactivate()->cast(@meta::pure::metamodel::function::Function<Any>);
+                     let aggs = $params->at(2)->match([
+                        i: InstanceValue[1] | $i.values->map(x | $x->match([
+                                                               a:meta::pure::functions::collection::AggregateValue<Any,Any,Any>[1]| pair($a.mapFn->cast(@meta::pure::metamodel::function::FunctionDefinition<Any>), $a.aggregateFn->cast(@meta::pure::metamodel::function::FunctionDefinition<Any>));,
+
+                                                               v: Any[*]| $v->evaluateAndDeactivate()->map(agg | pair($agg->cast(@SimpleFunctionExpression).parametersValues->at(0)->evaluateAndDeactivate()->cast(@InstanceValue).values->at(0)->cast(@meta::pure::metamodel::function::FunctionDefinition<Any>),
+                                                                                                 $agg->cast(@SimpleFunctionExpression).parametersValues->at(1)->evaluateAndDeactivate()->cast(@InstanceValue).values->at(0)->cast(@meta::pure::metamodel::function::FunctionDefinition<Any>)))
+                                                               ])),
+                        s: SimpleFunctionExpression[1] | pair($s.parametersValues->at(0)->evaluateAndDeactivate()->cast(@InstanceValue).values->at(0)->cast(@meta::pure::metamodel::function::FunctionDefinition<Any>),
+                                                              $s.parametersValues->at(1)->evaluateAndDeactivate()->cast(@InstanceValue).values->at(0)->cast(@meta::pure::metamodel::function::FunctionDefinition<Any>))
+                     ]);
+                     let ids = $params->at(3)->cast(@InstanceValue).values->cast(@String);
+                     $collection->match([
+                        fe: FunctionExpression[1] | let collectionIsFilteredGetAll = getSupportedTopLevelCollectionOperations()->containsAll($fe->getTopLevelFunctionsInQuery());
+                                                    let canRewriteCollection = $fe->canRewrite($collectionType->cast(@Class<Any>), $aggSpec.setImplementation.mappingClass->toOne(), $aggSpecGroupByFunctionPaths, $vars, $inScopeVars);
+                                                    let checks = $collectionIsFilteredGetAll && $canRewriteCollection;
+                                                    if($checks,
+                                                       | let aggSpecAggValuePaths = $aggSpec.aggregateSpecification.aggregateValues->map(a | pair($a.mapFn.expressionSequence->evaluateAndDeactivate()->toOne()->generateProjectPath(newMap(pair('this', ^ProjectPath(thisLevel=$c->elementToPath()))), ^Map<String, List<Any>>()),
+                                                                                                                                                  $a.aggregateFn.expressionSequence->evaluateAndDeactivate()->toOne()->generateProjectPath(newMap(pair('mapped', ^ProjectPath(thisLevel=$a.mapFn->genericType().typeArguments.rawType->cast(@FunctionType).returnType.rawType->toOne()->elementToPath()))), ^Map<String, List<Any>>())));
+                                                         let queryGroupByPaths = $functions->map(l | $l->cast(@LambdaFunction<Any>).expressionSequence->evaluateAndDeactivate()->toOne()->generateProjectPath($vars->putAll($l->genericType().typeArguments.rawType->cast(@FunctionType).parameters->evaluateAndDeactivate()->map(param | pair($param.name, ^ProjectPath(thisLevel=$param.genericType.rawType->toOne()->elementToPath())))), $inScopeVars));
+                                                         let queryAggValuePaths = $aggs->map(a | pair($a.first.expressionSequence->evaluateAndDeactivate()->toOne()->generateProjectPath($vars->putAll($a.first->genericType().typeArguments.rawType->cast(@FunctionType).parameters->evaluateAndDeactivate()->map(param | pair($param.name, ^ProjectPath(thisLevel=$param.genericType.rawType->toOne()->elementToPath())))), $inScopeVars),
+                                                                                                     $a.second.expressionSequence->evaluateAndDeactivate()->toOne()->generateProjectPath($vars->putAll($a.second->genericType().typeArguments.rawType->cast(@FunctionType).parameters->evaluateAndDeactivate()->map(param | pair($param.name, ^ProjectPath(thisLevel=$param.genericType.rawType->toOne()->elementToPath())))), $inScopeVars)));
+                                                         let groupByMatch  = $functions->forAll(l | $l->cast(@LambdaFunction<Any>).expressionSequence->evaluateAndDeactivate()->toOne()->canRewrite($collectionType->cast(@Class<Any>), $aggSpec.setImplementation.mappingClass->toOne(), $aggSpecGroupByFunctionPaths, $vars->putAll($l->genericType().typeArguments.rawType->cast(@FunctionType).parameters->evaluateAndDeactivate()->map(param | pair($param.name, ^ProjectPath(thisLevel=$param.genericType.rawType->toOne()->elementToPath())))), $inScopeVars)) &&
+                                                                                ($aggSpec.aggregateSpecification.canAggregate == true || $queryAggValuePaths->containsAll($aggSpecGroupByFunctionPaths));
+                                                         let aggValueMatch =  $queryAggValuePaths->forAll({queryAggPath |
+                                                            $aggSpecAggValuePaths->exists({specAggPath |
+                                                               let currentQueryAgg = $aggs->at($queryAggValuePaths->indexOf($queryAggPath));
+                                                               let matchFromGroupByOnly = $currentQueryAgg.first.expressionSequence->evaluateAndDeactivate()->toOne()->canRewrite($collectionType->cast(@Class<Any>), $aggSpec.setImplementation.mappingClass->toOne(), $aggSpecGroupByFunctionPaths, $vars->putAll($currentQueryAgg.first->genericType().typeArguments.rawType->cast(@FunctionType).parameters->evaluateAndDeactivate()->map(param | pair($param.name, ^ProjectPath(thisLevel=$param.genericType.rawType->toOne()->elementToPath())))), $inScopeVars);
+                                                               if($matchFromGroupByOnly,
+                                                                  | true,
+                                                                  | let mapMatch = $currentQueryAgg.first.expressionSequence->evaluateAndDeactivate()->toOne()->canRewrite($collectionType->cast(@Class<Any>), $aggSpec.setImplementation.mappingClass->toOne(), $aggSpecGroupByFunctionPaths->concatenate($specAggPath.first), $vars->putAll($currentQueryAgg.first->genericType().typeArguments.rawType->cast(@FunctionType).parameters->evaluateAndDeactivate()->map(param | pair($param.name, ^ProjectPath(thisLevel=$param.genericType.rawType->toOne()->elementToPath())))), $inScopeVars);
+                                                                    let aggregationMatch = $currentQueryAgg.second.expressionSequence->evaluateAndDeactivate()->toOne()->canRewrite($collectionType->cast(@Class<Any>), $aggSpec.setImplementation.mappingClass->toOne(), $specAggPath.second, $vars->putAll($currentQueryAgg.second->genericType().typeArguments.rawType->cast(@FunctionType).parameters->evaluateAndDeactivate()->map(param | pair($param.name, ^ProjectPath(thisLevel=$param.genericType.rawType->toOne()->elementToPath())) )), $inScopeVars);
+                                                                    $mapMatch && $aggregationMatch;
+                                                               );
+                                                            })
+                                                         }) && ($aggSpec.aggregateSpecification.canAggregate == true || $aggSpecAggValuePaths->containsAll($queryAggValuePaths));
+                                                         let shouldRewrite = $groupByMatch && $aggValueMatch;
+                                                         if($shouldRewrite,
+                                                            | pair(true, $f->doRewrite($collectionType->cast(@Class<Any>), $aggSpec.setImplementation.mappingClass->toOne(), $aggSpec.setImplementation)->cast(@FunctionExpression)),
+                                                            | $agg);,
+                                                       | $agg
+                                                    );,
+                         val: Any[1] | $agg
+                      ]);
+                   );
+            }, pair(false, $f->doRewrite($collectionType->cast(@Class<Any>), $collectionType->cast(@Class<Any>), $agg.mainSetImplementation)->cast(@FunctionExpression))).second;,
+         a: Any[*] | $f]);,
+      a:Any[*] | $f
+   ]);
+}
+
+function meta::pure::mapping::aggregationAware::getSupportedTopLevelCollectionOperations():meta::pure::metamodel::function::Function<Any>[*]
+{
+   [
+      meta::pure::functions::collection::getAll_Class_1__Date_1__Date_1__T_MANY_,
+      meta::pure::functions::collection::getAll_Class_1__Date_1__T_MANY_,
+      meta::pure::functions::collection::getAll_Class_1__T_MANY_,
+      meta::pure::functions::collection::filter_T_MANY__Function_1__T_MANY_
+   ]
+}
+
+function meta::pure::mapping::aggregationAware::getTopLevelFunctionsInQuery(vs: ValueSpecification[1]):meta::pure::metamodel::function::Function<Any>[*]
+{
+   $vs->match([fe: FunctionExpression[1] | $fe.func->concatenate($fe.parametersValues->evaluateAndDeactivate()->map(v | $v->getTopLevelFunctionsInQuery())), val: ValueSpecification[1] | []])
+}
+
+function meta::pure::mapping::aggregationAware::getNoOpFunctions():meta::pure::metamodel::function::Function<Any>[*]
+{
+   [
+      meta::pure::functions::multiplicity::toOne_T_MANY__T_1_,
+      meta::pure::functions::multiplicity::toOneMany_T_MANY__T_$1_MANY$_,
+      meta::pure::functions::collection::first_T_MANY__T_$0_1$_,
+      meta::pure::functions::lang::cast_Any_m__T_1__T_m_,
+      meta::pure::functions::lang::subType_Any_m__T_1__T_m_,
+      meta::pure::functions::lang::whenSubType_Any_1__T_1__T_$0_1$_,
+      meta::pure::functions::lang::whenSubType_Any_$0_1$__T_1__T_$0_1$_,
+      meta::pure::functions::lang::whenSubType_Any_MANY__T_1__T_MANY_
+]
+}
+
+function meta::pure::mapping::aggregationAware::generateProjectPath(f: ValueSpecification[1], vars: Map<String, ProjectPath>[1], inScopeVars: Map<String, List<Any>>[1]) : ProjectPath[1]
+{
+   $f->match([
+      fe: FunctionExpression[1] |
+         let parametersValues = $fe.parametersValues->evaluateAndDeactivate()->cast(@ValueSpecification);
+         $fe.func->match([
+            a: Property<Nil, Any|*>[1] | ^ProjectPath
+                                          (
+                                             children = $parametersValues->map(v | $v->generateProjectPath($vars, $inScopeVars)),
+                                             thisLevel = 'Property->' + $fe.func->elementToPath()
+                                          ),
+            qp: QualifiedProperty<Any>[1] | let paths = $parametersValues->map(p | $p->generateProjectPath($vars, $inScopeVars));
+                                            $qp.expressionSequence->toOne()->cast(@ValueSpecification)->cast(@SimpleFunctionExpression)->generateProjectPath(newMap($qp->genericType().typeArguments.rawType->cast(@FunctionType).parameters->evaluateAndDeactivate().name->zip($paths)), ^Map<String, List<Any>>());,
+            n: NativeFunction<Any>[1] | if($n->in([map_T_m__Function_1__V_m_, map_T_MANY__Function_1__V_MANY_, map_T_$0_1$__Function_1__V_$0_1$_]),
+                                           | let left = $parametersValues->at(0)->generateProjectPath($vars, $inScopeVars);
+                                             $parametersValues->at(1)->match([v: VariableExpression[1]| $v->resolve(^Map<VariableExpression, ValueSpecification>(), $inScopeVars), i: Any[*]|$i])->cast(@InstanceValue).values->at(0)->match([
+                                                mf:FunctionDefinition<Any>[1] | $mf.expressionSequence->toOne()->cast(@ValueSpecification)->cast(@SimpleFunctionExpression)->generateProjectPath($vars->putAll($mf->genericType().typeArguments.rawType->cast(@FunctionType).parameters->evaluateAndDeactivate()->map(param | pair($param.name, $left))), $inScopeVars);,
+                                                pa:Path<Nil,Any|*>[1] | let rightPath = $pa.path->fold({p, projectPath |
+                                                                            ^ProjectPath(children = $p->cast(@PropertyPathElement).parameters->map(v | $v->generateProjectPath($vars, $inScopeVars))->concatenate($projectPath), thisLevel = 'Property->' + $p->cast(@PropertyPathElement).property->elementToPath())
+                                                                         }, ^ProjectPath(thisLevel = $pa.start.rawType->toOne()->cast(@Class<Any>)->elementToPath()));
+                                                                        $rightPath->replaceLeftMostNodeInTree($left);
+                                             ]);,
+                                           | if(getNoOpFunctions()->contains($fe.func),
+                                                | $parametersValues->at(0)->generateProjectPath($vars, $inScopeVars),
+                                                | ^ProjectPath
+                                                   (
+                                                      children = $parametersValues->map(v | $v->generateProjectPath($vars, $inScopeVars)),
+                                                      thisLevel = 'NativeFunction->' + $fe.func->elementToPath()
+                                                   )
+                                              );
+                                        ),
+            a: Any[1] | if(getNoOpFunctions()->contains($fe.func),
+                           | $fe.parametersValues->evaluateAndDeactivate()->at(0)->generateProjectPath($vars, $inScopeVars),
+                           | ^ProjectPath
+                              (
+                                 children = $fe.parametersValues->evaluateAndDeactivate()->map(v | $v->generateProjectPath($vars, $inScopeVars)),
+                                 thisLevel = 'Function->' +$fe.func->elementToPath()
+                              )->postProcessProjectPathForGenericFunctions()
+                        );
+         ]);,
+      i: InstanceValue[1] | ^ProjectPath
+                             (
+                                thisLevel ='InstanceValue',
+                                children = $i.values->map(insV | $insV->match([
+                                   vs: ValueSpecification[1] | $vs->evaluateAndDeactivate()->generateProjectPath($vars, $inScopeVars),
+                                   fd: FunctionDefinition<Any>[1] | $fd.expressionSequence->evaluateAndDeactivate()->toOne()->cast(@ValueSpecification)->generateProjectPath($vars->putAll($fd->genericType().typeArguments.rawType->cast(@FunctionType).parameters->evaluateAndDeactivate()->map(param | pair($param.name, ^ProjectPath(thisLevel=$param.genericType.rawType->toOne()->elementToPath())))), $inScopeVars);,
+                                   a: Any[1] | ^ProjectPath(thisLevel=$a->genericType().rawType.name->toOne() + '->'+$a->toString());
+                                ]))
+                             ),
+      v: VariableExpression[1] | if($vars->keys()->contains($v.name), | $vars->get($v.name)->toOne(), | ^InstanceValue(multiplicity=PureZero, genericType=^GenericType(rawType=Nil), values=$inScopeVars->get($v->evaluateAndDeactivate().name))->evaluateAndDeactivate()->generateProjectPath($vars, $inScopeVars));
+   ]);
+}
+
+function meta::pure::mapping::aggregationAware::postProcessProjectPathForGenericFunctions(p: ProjectPath[1]):ProjectPath[1]
+{
+   let replacementPairs = [
+      pair(^ProjectPath(children = ^ProjectPath(thisLevel='Integer'), thisLevel='Function->meta::pure::functions::math::sum_Integer_MANY__Integer_1_'), ^ProjectPath(children = ^ProjectPath(thisLevel='Number'), thisLevel='Function->meta::pure::functions::math::sum_Number_MANY__Number_1_')),
+      pair(^ProjectPath(children = ^ProjectPath(thisLevel='Float'), thisLevel='Function->meta::pure::functions::math::sum_Float_MANY__Float_1_'), ^ProjectPath(children = ^ProjectPath(thisLevel='Number'), thisLevel='Function->meta::pure::functions::math::sum_Number_MANY__Number_1_')),
+      pair(^ProjectPath(children = ^ProjectPath(thisLevel='Integer'), thisLevel='Function->meta::pure::functions::math::plus_Integer_MANY__Integer_1_'), ^ProjectPath(children = ^ProjectPath(thisLevel='Number'), thisLevel='Function->meta::pure::functions::math::plus_Number_MANY__Number_1_')),
+      pair(^ProjectPath(children = ^ProjectPath(thisLevel='Float'), thisLevel='Function->meta::pure::functions::math::plus_Float_MANY__Float_1_'), ^ProjectPath(children = ^ProjectPath(thisLevel='Number'), thisLevel='Function->meta::pure::functions::math::plus_Number_MANY__Number_1_')),
+      pair(^ProjectPath(children = ^ProjectPath(thisLevel='Integer'), thisLevel='Function->meta::pure::functions::math::max_Integer_MANY__Integer_$0_1$_'), ^ProjectPath(children = ^ProjectPath(thisLevel='Number'), thisLevel='Function->meta::pure::functions::math::max_Number_MANY__Number_$0_1$_')),
+      pair(^ProjectPath(children = ^ProjectPath(thisLevel='Float'), thisLevel='Function->meta::pure::functions::math::max_Float_MANY__Float_$0_1$_'), ^ProjectPath(children = ^ProjectPath(thisLevel='Number'), thisLevel='Function->meta::pure::functions::math::max_Number_MANY__Number_$0_1$_')),
+      pair(^ProjectPath(children = ^ProjectPath(thisLevel='Integer'), thisLevel='Function->meta::pure::functions::math::max_Integer_$1_MANY$__Integer_1_'), ^ProjectPath(children = ^ProjectPath(thisLevel='Number'), thisLevel='Function->meta::pure::functions::math::max_Number_$1_MANY$__Number_1_')),
+      pair(^ProjectPath(children = ^ProjectPath(thisLevel='Float'), thisLevel='Function->meta::pure::functions::math::max_Float_$1_MANY$__Float_1_'), ^ProjectPath(children = ^ProjectPath(thisLevel='Number'), thisLevel='Function->meta::pure::functions::math::max_Number_$1_MANY$__Number_1_')),
+      pair(^ProjectPath(children = ^ProjectPath(thisLevel='Integer'), thisLevel='Function->meta::pure::functions::math::min_Integer_MANY__Integer_$0_1$_'), ^ProjectPath(children = ^ProjectPath(thisLevel='Number'), thisLevel='Function->meta::pure::functions::math::min_Number_MANY__Number_$0_1$_')),
+      pair(^ProjectPath(children = ^ProjectPath(thisLevel='Float'), thisLevel='Function->meta::pure::functions::math::min_Float_MANY__Float_$0_1$_'), ^ProjectPath(children = ^ProjectPath(thisLevel='Number'), thisLevel='Function->meta::pure::functions::math::min_Number_MANY__Number_$0_1$_')),
+      pair(^ProjectPath(children = ^ProjectPath(thisLevel='Integer'), thisLevel='Function->meta::pure::functions::math::min_Integer_$1_MANY$__Integer_1_'), ^ProjectPath(children = ^ProjectPath(thisLevel='Number'), thisLevel='Function->meta::pure::functions::math::min_Number_$1_MANY$__Number_1_')),
+      pair(^ProjectPath(children = ^ProjectPath(thisLevel='Float'), thisLevel='Function->meta::pure::functions::math::min_Float_$1_MANY$__Float_1_'), ^ProjectPath(children = ^ProjectPath(thisLevel='Number'), thisLevel='Function->meta::pure::functions::math::min_Number_$1_MANY$__Number_1_')),
+      pair(^ProjectPath(children = ^ProjectPath(thisLevel='Integer'), thisLevel='Function->meta::pure::functions::math::average_Integer_MANY__Integer_1_'), ^ProjectPath(children = ^ProjectPath(thisLevel='Number'), thisLevel='Function->meta::pure::functions::math::average_Number_MANY__Number_1_')),
+      pair(^ProjectPath(children = ^ProjectPath(thisLevel='Float'), thisLevel='Function->meta::pure::functions::math::average_Float_MANY__Float_1_'), ^ProjectPath(children = ^ProjectPath(thisLevel='Number'), thisLevel='Function->meta::pure::functions::math::average_Number_MANY__Number_1_')),
+      pair(^ProjectPath(children = ^ProjectPath(thisLevel='Integer'), thisLevel='Function->meta::pure::functions::math::mean_Integer_MANY__Integer_1_'), ^ProjectPath(children = ^ProjectPath(thisLevel='Number'), thisLevel='Function->meta::pure::functions::math::mean_Number_MANY__Number_1_')),
+      pair(^ProjectPath(children = ^ProjectPath(thisLevel='Float'), thisLevel='Function->meta::pure::functions::math::mean_Float_MANY__Float_1_'), ^ProjectPath(children = ^ProjectPath(thisLevel='Number'), thisLevel='Function->meta::pure::functions::math::mean_Number_MANY__Number_1_'))
+   ];
+   let toReplace = $replacementPairs->filter(c |$c.first == $p);
+   $toReplace->isEmpty()->if(|$p, |$toReplace->at(0).second);
+}
+
+function meta::pure::mapping::aggregationAware::replaceLeftMostNodeInTree(root: ProjectPath[1], toReplace: ProjectPath[1]): ProjectPath[1]
+{
+   if ($root.children->isEmpty(),
+       | $toReplace,
+       | ^$root(children = $root.children->at(0)->replaceLeftMostNodeInTree($toReplace)->concatenate($root.children->tail()))
+   );
+}
+
+function meta::pure::mapping::aggregationAware::canRewrite(vs: ValueSpecification[1], mainClass: Class<Any>[1], aggregateClass: MappingClass<Any>[1], groupByProjectPaths: ProjectPath[*], vars: Map<String, ProjectPath>[1], inScopeVars: Map<String, List<Any>>[1]): Boolean[1]
+{
+   $vs->match([
+      fe: FunctionExpression[1] | $groupByProjectPaths->contains($fe->generateProjectPath($vars, $inScopeVars)) ||
+                                    $fe.func->match([
+                                       a: Property<Nil,Any|*>[1] | $fe.parametersValues->evaluateAndDeactivate()->forAll(p | canRewrite($p, $mainClass, $aggregateClass, $groupByProjectPaths, $vars, $inScopeVars)),
+                                       qp: QualifiedProperty<Any>[1] | let paths = $fe.parametersValues->evaluateAndDeactivate()->map(p | $p->generateProjectPath($vars, $inScopeVars));
+                                                                       $fe.parametersValues->evaluateAndDeactivate()->at(0)->canRewrite($mainClass, $aggregateClass, $groupByProjectPaths, $vars, $inScopeVars) || $qp.expressionSequence->toOne()->cast(@ValueSpecification)->canRewrite($mainClass, $aggregateClass, $groupByProjectPaths,  newMap($qp->genericType().typeArguments.rawType->cast(@FunctionType).parameters->evaluateAndDeactivate().name->zip($paths)), ^Map<String, List<Any>>());,
+                                       n: NativeFunction<Any>[1] | if($n->in([map_T_m__Function_1__V_m_, map_T_MANY__Function_1__V_MANY_, map_T_$0_1$__Function_1__V_$0_1$_, exists_T_MANY__Function_1__Boolean_1_]),
+                                                                      | let params = $fe.parametersValues->evaluateAndDeactivate();
+                                                                        let left = $params->at(0)->generateProjectPath($vars, $inScopeVars);
+                                                                        $params->at(0)->canRewrite($mainClass, $aggregateClass, $groupByProjectPaths, $vars, $inScopeVars) ||
+                                                                        $params->at(1)->match([v: VariableExpression[1]| $v->resolve(^Map<VariableExpression, ValueSpecification>(), $inScopeVars), i: Any[*]|$i ])->cast(@InstanceValue).values->evaluateAndDeactivate()->at(0)->match([
+                                                                           mf:FunctionDefinition<Any>[1] | $mf.expressionSequence->evaluateAndDeactivate()->at(0)->cast(@ValueSpecification)->canRewrite($mainClass, $aggregateClass, $groupByProjectPaths, $vars->putAll($mf->genericType().typeArguments.rawType->cast(@FunctionType).parameters->evaluateAndDeactivate()->map(param | pair($param.name, $left ) )), $inScopeVars),
+                                                                           pa:Path<Nil,Any|*>[1] | let base =^ProjectPath(thisLevel = $pa.start.rawType->toOne()->cast(@Class<Any>)->elementToPath());
+                                                                                                   $pa.path->fold({p, projectPath |
+                                                                                                      let next = ^ProjectPath(children = $p->cast(@PropertyPathElement).parameters->evaluateAndDeactivate()->map(v | $v->generateProjectPath($vars, $inScopeVars))->concatenate($projectPath.second) ,thisLevel = 'Property->' + $p->cast(@PropertyPathElement).property->elementToPath());
+                                                                                                      pair($projectPath.first || $groupByProjectPaths->contains($next), $next);
+                                                                                                   }, pair(false, $base)).first; ]);,
+                                                                      | $fe.parametersValues->evaluateAndDeactivate()->forAll(pV | canRewrite($pV, $mainClass, $aggregateClass, $groupByProjectPaths, $vars, $inScopeVars))),
+                                       a: Any[1] | $fe.parametersValues->evaluateAndDeactivate()->forAll(pV | canRewrite($pV, $mainClass, $aggregateClass, $groupByProjectPaths, $vars, $inScopeVars))
+                                    ]);,
+      i: InstanceValue[1] | $i.values->evaluateAndDeactivate()->forAll(iV | $iV->match([
+         val: ValueSpecification[1] | canRewrite($val, $mainClass, $aggregateClass, $groupByProjectPaths, $vars, $inScopeVars),
+         fd: FunctionDefinition<Any>[1] | $fd.expressionSequence->evaluateAndDeactivate()->toOne()->cast(@ValueSpecification)->canRewrite($mainClass, $aggregateClass, $groupByProjectPaths, $vars->putAll($fd->genericType().typeArguments.rawType->cast(@FunctionType).parameters->evaluateAndDeactivate()->map(param | pair($param.name, ^ProjectPath(thisLevel=$param.genericType.rawType->toOne()->elementToPath())) )), $inScopeVars);,
+         a: Any[1] | true ])),
+      v: VariableExpression[1] | $inScopeVars->keys()->contains($v.name)
+   ])
+}
+
+function meta::pure::mapping::aggregationAware::doRewrite(vs: ValueSpecification[1], mainClass: Class<Any>[1], aggregateClass: Class<Any>[1], set: SetImplementation[1]): ValueSpecification[1]
+{
+   $vs->match([
+      fe: FunctionExpression[1] |
+         ^$fe
+         (
+            func = $fe.func->match([
+               qp:QualifiedProperty<Any>[1] | ^$qp(expressionSequence = $qp.expressionSequence->evaluateAndDeactivate()->map(e | $e->doRewrite($mainClass, $aggregateClass, $set))),
+               f: Function<Any>[1] | $f
+            ]),
+            parametersValues = if($fe.func->in([getAll_Class_1__T_MANY_, getAll_Class_1__Date_1__T_MANY_, getAll_Class_1__Date_1__Date_1__T_MANY_]) && $fe.parametersValues->at(0)->cast(@InstanceValue).values == $mainClass,
+                                  | ^ClassSetImplementationHolder(genericType=^GenericType(rawType=$aggregateClass), multiplicity=PureOne, set = $set, value = $fe.parametersValues->at(0)->evaluateAndDeactivate()->map(pV | doRewrite($pV, $mainClass, $aggregateClass, $set)));,
+                                  | $fe.parametersValues->head()->evaluateAndDeactivate()->map(pV | doRewrite($pV, $mainClass, $aggregateClass, $set))
+                               )->concatenate($fe.parametersValues->tail()->evaluateAndDeactivate()->map(pV | doRewrite($pV, $mainClass, $aggregateClass, $set)))
+         );,
+      i: InstanceValue[1] | let newValues = $i.values->evaluateAndDeactivate()->map(insV | $insV->match([
+         c: Class<Any>[1] | if($mainClass == $c, | $aggregateClass, | $mainClass),
+         vs: ValueSpecification[1] | $vs->doRewrite($mainClass, $aggregateClass, $set),
+         fd: FunctionDefinition<Any>[1] | ^$fd(expressionSequence = $fd.expressionSequence->evaluateAndDeactivate()->toOne()->cast(@ValueSpecification)->doRewrite($mainClass, $aggregateClass, $set)),
+         p: Path<Nil, Any|*>[1] | if($p.start.rawType->toOne() == $mainClass, |^$p(start=^GenericType(rawType=$aggregateClass)), |$p),
+         a: Any[1] | $a ]));
+         ^$i(values = $newValues);,
+      v: VariableExpression[1] | if($v->evaluateAndDeactivate().genericType.rawType == $mainClass, | ^$v(genericType=^GenericType(rawType=$aggregateClass)), | $v)
+   ])
+}
+
+function meta::pure::mapping::aggregationAware::printProjectPath(s:ProjectPath[1], debug: DebugContext[1]):Any[*]
+{
+   $s->getProjectPathString($debug.space)->println();
+}
+
+function meta::pure::mapping::aggregationAware::printProjectPath(s:ProjectPath[1]):Any[*]
+{
+   $s->getProjectPathString('')->println();
+}
+
+function meta::pure::mapping::aggregationAware::getProjectPathString(s:ProjectPath[1], offset: String[1]):String[1]
+{
+  $offset +  '['+
+   $s.thisLevel->isNotEmpty()->if(
+      | $s.thisLevel->toOne(),
+      | 'InstanceValue'
+   )
+   +
+   $s.children->isNotEmpty()->if(
+      | '\n' + $offset + $s.children->map(c | $c->getProjectPathString($offset+'  '))->joinStrings(',\n'+$offset),
+      | ''
+   )
+    + ']';
+}

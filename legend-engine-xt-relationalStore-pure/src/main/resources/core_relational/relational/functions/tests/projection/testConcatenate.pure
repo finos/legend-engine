@@ -20,7 +20,7 @@ import meta::relational::functions::sqlstring::*;
 
 function <<test.Test, test.ToFix>> meta::relational::tests::projection::concatenate::testSimpleConcatenate():Boolean[1]
 {
-   let result = execute(|Person.all()->concatenate(Person.all())->project([#/Person/firstName#]), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->concatenate(Person.all())->project([#/Person/firstName#]), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 14 );
    //assertEquals('Anthony,David,Fabrice,John,John,Oliver,Peter', $result.values.rows->map(r|$r.values)->sort()->makeString(','));
    //assertEquals('select "root".FIRSTNAME as "firstName" from personTable as "root"', $result->sqlRemoveFormatting());
@@ -69,7 +69,7 @@ function <<test.Test>> meta::relational::tests::projection::concatenate::tdsQuer
    
    let concatLambda = concatenateTemporalTdsQueries($lfs);
    
-   let actualQuery = execute($concatLambda, ProductMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let actualQuery = execute($concatLambda, ProductMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let actualResult = $actualQuery.values->at(0).rows->map(r|$r.values->makeString(','));
    
    let expectedQuery = 'select "unionalias_0"."id" as "id", "unionalias_0"."name" as "name", "unionalias_0"."type" as "type" from (select "root".id as "id", "root".name as "name", "root".type as "type" from ProductTable as "root" UNION ALL select "root".id as "id", "root".name as "name", "root".type as "type" from ProductTable as "root" UNION ALL select "root".id as "id", "root".name as "name", "root".type as "type" from ProductTable as "root") as "unionalias_0"';
@@ -87,7 +87,7 @@ function <<test.Test>> meta::relational::tests::projection::concatenate::tdsQuer
    
    let concatLambda = concatenateTemporalTdsQueries($lfs);
    
-   let actualQuery = execute($concatLambda, ProductMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let actualQuery = execute($concatLambda, ProductMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let actualResult = $actualQuery.values->at(0).rows->map(r|$r.values->makeString(','));
    
    let expectedQuery = 'select "unionalias_0"."id" as "id", "unionalias_0"."name" as "name", "unionalias_0"."type" as "type" from (select "root".id as "id", "root".name as "name", "root".type as "type" from ProductTable as "root" where "root".name = \'name1\' UNION ALL select "root".id as "id", "root".name as "name", "root".type as "type" from ProductTable as "root" where "root".name = \'name2\' UNION ALL select "root".id as "id", "root".name as "name", "root".type as "type" from ProductTable as "root" where "root".name = \'name3\') as "unionalias_0"';
@@ -106,7 +106,7 @@ function <<test.Test>> meta::relational::tests::projection::concatenate::tdsQuer
    
    let concatLambda = concatenateTemporalTdsQueries($lfs);
    
-   let actualQuery = execute($concatLambda, ProductMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let actualQuery = execute($concatLambda, ProductMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let actualResult = $actualQuery.values->at(0)->sort(['type','count']).rows->map(r|$r.values->makeString(','));
    
    let expectedQuery = 'select "unionalias_0"."type" as "type", "unionalias_0"."count" as "count" from (select "root".type as "type", count("root".id) as "count" from ProductTable as "root" group by "type" UNION ALL select "root".type as "type", count("root".id) as "count" from ProductTable as "root" group by "type" UNION ALL select "root".type as "type", count("root".id) as "count" from ProductTable as "root" group by "type") as "unionalias_0"';
@@ -124,7 +124,7 @@ function <<test.Test>> meta::relational::tests::projection::concatenate::tdsQuer
    
    let concatLambda = concatenateTemporalTdsQueries($lfs);
    
-   let actualQuery = execute($concatLambda, ProductMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let actualQuery = execute($concatLambda, ProductMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let actualResult = $actualQuery.values->at(0).rows->map(r|$r.values->makeString(','));
    
    let expectedQuery = 'select "unionalias_0"."type" as "type", "unionalias_0"."count" as "count" from (select "root".type as "type", count("root".id) as "count" from ProductTable as "root" where "root".name = \'name1\' group by "type" UNION ALL select "root".type as "type", count("root".id) as "count" from ProductTable as "root" where "root".name = \'name2\' group by "type" UNION ALL select "root".type as "type", count("root".id) as "count" from ProductTable as "root" where "root".name = \'name3\' group by "type") as "unionalias_0"';

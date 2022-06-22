@@ -39,7 +39,7 @@ public class Test_Pure_Relational
         suite.addTest(PureTestBuilderHelper.buildSuite(TestCollection.collectTests("meta::pure::mapping", executionSupport.getProcessorSupport(), ci -> PureTestBuilderHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
         suite.addTest(PureTestBuilderHelper.buildSuite(TestCollection.collectTests("meta::pure::milestoning", executionSupport.getProcessorSupport(), ci -> PureTestBuilderHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
         suite.addTest(PureTestBuilderHelper.buildSuite(TestCollection.collectTests("meta::protocols::pure", executionSupport.getProcessorSupport(), ci -> PureTestBuilderHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
-        suite.addTest(PureTestBuilderHelper.buildSuite(TestCollection.collectTests("meta::csv", executionSupport.getProcessorSupport(), ci -> PureTestBuilderHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
+        suite.addTest(PureTestBuilderHelper.buildSuite(TestCollection.collectTests("meta::relational::tests::csv", executionSupport.getProcessorSupport(), ci -> PureTestBuilderHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
 
         return suite;
     }

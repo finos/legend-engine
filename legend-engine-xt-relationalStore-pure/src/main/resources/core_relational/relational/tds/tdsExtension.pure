@@ -144,3 +144,62 @@ function meta::pure::tds::extensions::columnValueDifference(tds1 : TabularDataSe
                    ) 
     )
 }
+
+function meta::pure::tds::extensions::zScore(input : TabularDataSet[1], window : String[*], cols : String[1..*], outputCols : String[1..*]) : TabularDataSet[1]
+{
+   $input->joinWithOptionalColumns(
+    $input
+      ->restrict($window->concatenate($cols))
+      ->groupBy(
+         $window, 
+         $cols->map(col|
+            [
+               agg($col + '_zScoreAvg', r:TDSRow[1]|$r.getNumber($col), y|$y->average()), 
+               agg($col + '_zScoreStdDev', r:TDSRow[1]|$r.getNumber($col), y|$y->stdDevPopulation())
+            
+            ])
+         )
+     , JoinType.LEFT_OUTER, $window)
+      ->extend(
+         $cols->zip($outputCols)->map(colPair|$colPair.first->map(col| [
+            col(r:TDSRow[1]|if($r.getNumber($col + '_zScoreStdDev') > 0, | ($r.getNumber($col) - $r.getNumber($col + '_zScoreAvg')) / $r.getNumber($col + '_zScoreStdDev'), |[]->cast(@Float)), $colPair.second)
+            ])))
+      ->restrict($input.columns.name->concatenate($outputCols))
+}
+
+function meta::pure::tds::extensions::iqrClassify(input : TabularDataSet[1], window : String[*], cols : String[1..*], outputCols : String[1..*]) : TabularDataSet[1]
+{
+   $input
+   ->joinWithOptionalColumns(
+     $input
+      ->restrict($window->concatenate($cols))
+      ->groupBy($window, 
+         $cols->map(col| [
+            agg($col + '_irq25', x:TDSRow[1]|$x.getNumber($col), y|$y->percentile(0.25)->toOne()),
+            agg($col + '_irq75', x:TDSRow[1]|$x.getNumber($col), y|$y->percentile(0.75)->toOne())
+         ]))
+      ->extend($cols->map(col| [
+         col(r:TDSRow[1]|$r.getFloat($col + '_irq25') - (1.5* ($r.getFloat($col + '_irq75') - $r.getFloat($col + '_irq25'))), $col + '_iqrLow'), 
+         col(r:TDSRow[1]|$r.getFloat($col + '_irq75') + (1.5* ($r.getFloat($col + '_irq75') - $r.getFloat($col + '_irq25'))), $col + '_iqrHigh')
+         ]))
+      , JoinType.LEFT_OUTER, $window)
+      ->extend($cols->zip($outputCols)->map(colPair|$colPair.first->map(col| [
+         col(r:TDSRow[1]|if($r.getNumber($col) < $r.getNumber($col + '_iqrLow'), 
+                                        | 'negative_outlier', 
+                                        | if($r.getNumber($col) > $r.getNumber($col + '_iqrHigh'), 
+                                             | 'positive_outlier', 
+                                             | 'inlier'
+                                            )
+                                        )
+             , $colPair.second)
+         ])))
+      ->restrict($input.columns.name->concatenate($outputCols))
+}
+
+function <<access.private>> meta::pure::tds::extensions::joinWithOptionalColumns(q1 : TabularDataSet[1], q2 : TabularDataSet[1], joinType : JoinType[1], cols : String[*]) : TabularDataSet[1]
+{
+   if($cols->isEmpty(), 
+       | $q1->join($q2, $joinType, {x,y|true}), 
+       | $q1->join($q2, $joinType, $cols->toOneMany())
+       );
+}

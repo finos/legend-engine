@@ -19,7 +19,7 @@ import meta::relational::tests::*;
 
 function <<test.Test>> meta::relational::tests::milestoning::temporalDate::testBusinessDateForAllVersions():Boolean[1]
 {
-   let result = execute(|ProductSynonym.allVersions(), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|ProductSynonym.allVersions(), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameSQL('select "root".name as "pk_0", "root".synonym as "pk_1", "root".type as "pk_2", "root".synonym as "synonym", "root".type as "type", "root".from_z as "k_businessDate" from ProductSynonymTable as "root"', $result);
    assertSameElements(['CUSIP', 'CUSIP', 'CUSIP', 'CUSIP', 'STOCK', 'STOCK'], $result.values.type);
    assertSameElements([%2015-01-01T00:00:00.000000000+0000, %2015-08-15T00:00:00.000000000+0000, %2015-08-15T00:00:00.000000000+0000, %2015-08-26T00:00:00.000000000+0000, %2015-09-26T00:00:00.000000000+0000, %2015-10-17T00:00:00.000000000+0000], $result.values.businessDate);
@@ -27,7 +27,7 @@ function <<test.Test>> meta::relational::tests::milestoning::temporalDate::testB
 
 function <<test.Test>> meta::relational::tests::milestoning::temporalDate::testProcessingDateForAllVersions():Boolean[1]
 {
-   let result = execute(|Trader.allVersions(), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Trader.allVersions(), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameSQL('select "root".kerberos as "pk_0", "root".kerberos as "kerberos", "root".in_z as "k_processingDate" from TraderTable as "root"', $result);
    assertSameElements(['bfox', 'ggekko'], $result.values.kerberos);
    assertSameElements([%2013-01-01T00:00:00.000000000+0000, %2015-01-01T00:00:00.000000000+0000], $result.values.processingDate);
@@ -35,7 +35,7 @@ function <<test.Test>> meta::relational::tests::milestoning::temporalDate::testP
 
 function <<test.Test>> meta::relational::tests::milestoning::temporalDate::testBusinessSnapshotDateForAllVersions():Boolean[1]
 {
-   let result = execute(|Product.allVersions(), businessSnapshotMilestoningMap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Product.allVersions(), businessSnapshotMilestoningMap, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameSQL('select "root".id as "pk_0", "root".id as "id", "root".name as "name", "root".snapshotDate as "k_businessDate" from ProductTableWithBusinessSnapshotMilestoning as "root"', $result);
    assertSameElements([1, 2, 2, 3], $result.values.id);
    assertSameElements([%2015-08-15, %2015-08-26, %2015-10-16, %2015-08-26], $result.values.businessDate);
@@ -43,7 +43,7 @@ function <<test.Test>> meta::relational::tests::milestoning::temporalDate::testB
 
 function <<test.Test>> meta::relational::tests::milestoning::temporalDate::testTemporalDateForAllVersionsWithInFromInclusive():Boolean[1]
 {
-   let result = execute(|BiTemporalProduct.allVersions(), InFromInclusiveMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|BiTemporalProduct.allVersions(), InFromInclusiveMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameSQL('select "root".id as "pk_0", "root".name as "pk_1", "root".id as "id", "root".name as "name", "root".in_z as "k_processingDate", "root".from_z as "k_businessDate" from BiTemporalProductTable_In_From_Inclusive as "root"', $result);
    assertSameElements([1, 2, 2, 2, 3], $result.values.id);
    assertSameElements([%2018-05-02T00:00:00.000000000+0000, %2018-05-02T00:00:00.000000000+0000, %2018-05-04T00:00:00.000000000+0000, %2018-05-07T00:00:00.000000000+0000, %2018-05-09T00:00:00.000000000+0000], $result.values.processingDate);
@@ -52,7 +52,7 @@ function <<test.Test>> meta::relational::tests::milestoning::temporalDate::testT
 
 function <<test.Test>> meta::relational::tests::milestoning::temporalDate::testTemporalDateForAllVersionsWithInThruInclusive():Boolean[1]
 {
-   let result = execute(|BiTemporalProduct.allVersions(), InThruInclusiveMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|BiTemporalProduct.allVersions(), InThruInclusiveMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameSQL('select "root".id as "pk_0", "root".name as "pk_1", "root".id as "id", "root".name as "name", "root".in_z as "k_processingDate", "root".thru_z as "k_businessDate" from BiTemporalProductTable_In_Thru_Inclusive as "root"', $result);
    assertSameElements([1, 2, 2, 2, 3], $result.values.id);
    assertSameElements([%2018-05-02T00:00:00.000000000+0000, %2018-05-02T00:00:00.000000000+0000, %2018-05-04T00:00:00.000000000+0000, %2018-05-07T00:00:00.000000000+0000, %2018-05-09T00:00:00.000000000+0000], $result.values.processingDate);
@@ -61,7 +61,7 @@ function <<test.Test>> meta::relational::tests::milestoning::temporalDate::testT
 
 function <<test.Test>> meta::relational::tests::milestoning::temporalDate::testTemporalDateForAllVersionsWithOutFromInclusive():Boolean[1]
 {
-   let result = execute(|BiTemporalProduct.allVersions(), OutFromInclusiveMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|BiTemporalProduct.allVersions(), OutFromInclusiveMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameSQL('select "root".id as "pk_0", "root".name as "pk_1", "root".id as "id", "root".name as "name", "root".out_z as "k_processingDate", "root".from_z as "k_businessDate" from BiTemporalProductTable_Out_From_Inclusive as "root"', $result);
    assertSameElements([1, 2, 2, 2, 3], $result.values.id);
    assertSameElements([%9999-12-31T00:00:00.000000000+0000, %2018-05-04T00:00:00.000000000+0000, %2018-05-07T00:00:00.000000000+0000, %9999-12-31T00:00:00.000000000+0000, %9999-12-31T00:00:00.000000000+0000], $result.values.processingDate);
@@ -70,7 +70,7 @@ function <<test.Test>> meta::relational::tests::milestoning::temporalDate::testT
 
 function <<test.Test>> meta::relational::tests::milestoning::temporalDate::testTemporalDateForAllVersionsWithOutThruInclusive():Boolean[1]
 {
-   let result = execute(|BiTemporalProduct.allVersions(), OutThruInclusiveMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|BiTemporalProduct.allVersions(), OutThruInclusiveMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameSQL('select "root".id as "pk_0", "root".name as "pk_1", "root".id as "id", "root".name as "name", "root".out_z as "k_processingDate", "root".thru_z as "k_businessDate" from BiTemporalProductTable_Out_Thru_Inclusive as "root"', $result);
    assertSameElements([1, 2, 2, 2, 3], $result.values.id);
    assertSameElements([%9999-12-31T00:00:00.000000000+0000, %2018-05-04T00:00:00.000000000+0000, %2018-05-07T00:00:00.000000000+0000, %9999-12-31T00:00:00.000000000+0000, %9999-12-31T00:00:00.000000000+0000], $result.values.processingDate);
@@ -79,7 +79,7 @@ function <<test.Test>> meta::relational::tests::milestoning::temporalDate::testT
 
 function <<test.Test>> meta::relational::tests::milestoning::temporalDate::testBusinessDateForAllVersionsInRange():Boolean[1]
 {
-   let result = execute(|ProductSynonym.allVersionsInRange(%2012-1-1, %2016-1-1), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|ProductSynonym.allVersionsInRange(%2012-1-1, %2016-1-1), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameSQL('select "root".name as "pk_0", "root".synonym as "pk_1", "root".type as "pk_2", "root".synonym as "synonym", "root".type as "type", "root".from_z as "k_businessDate" from ProductSynonymTable as "root" where "root".from_z <= \'2016-01-01\' and "root".thru_z > \'2012-01-01\'', $result);
    assertSameElements(['CUSIP', 'CUSIP', 'CUSIP', 'CUSIP', 'STOCK', 'STOCK'], $result.values.type);
    assertSameElements([%2015-01-01T00:00:00.000000000+0000, %2015-08-15T00:00:00.000000000+0000, %2015-08-15T00:00:00.000000000+0000, %2015-08-26T00:00:00.000000000+0000, %2015-09-26T00:00:00.000000000+0000, %2015-10-17T00:00:00.000000000+0000], $result.values.businessDate);
@@ -87,7 +87,7 @@ function <<test.Test>> meta::relational::tests::milestoning::temporalDate::testB
 
 function <<test.Test>> meta::relational::tests::milestoning::temporalDate::testProcessingDateForAllVersionsInRange():Boolean[1]
 {
-   let result = execute(|Trader.allVersionsInRange(%2012-1-1, %2016-1-1), milestoningmap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Trader.allVersionsInRange(%2012-1-1, %2016-1-1), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameSQL('select "root".kerberos as "pk_0", "root".kerberos as "kerberos", "root".in_z as "k_processingDate" from TraderTable as "root" where "root".in_z <= \'2016-01-01\' and "root".out_z > \'2012-01-01\'', $result);
    assertSameElements(['bfox', 'ggekko'], $result.values.kerberos);
    assertSameElements([%2013-01-01T00:00:00.000000000+0000, %2015-01-01T00:00:00.000000000+0000], $result.values.processingDate);

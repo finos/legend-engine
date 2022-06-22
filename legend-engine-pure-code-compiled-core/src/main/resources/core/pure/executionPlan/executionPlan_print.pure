@@ -18,27 +18,27 @@ import meta::pure::mapping::aggregationAware::*;
 import meta::pure::mapping::modelToModel::*;
 import meta::pure::metamodel::serialization::grammar::*;
 import meta::pure::metamodel::treepath::*;
-import meta::pure::router::extension::*;
+import meta::pure::extension::*;
 import meta::pure::router::printer::*;
 import meta::pure::runtime::*;
 import meta::pure::router::clustering::*;
 
-function meta::pure::executionPlan::toString::planToStringWithoutFormatting(e:ExecutionPlan[1], extensions:meta::pure::router::extension::RouterExtension[*]):String[1]
+function meta::pure::executionPlan::toString::planToStringWithoutFormatting(e:ExecutionPlan[1], extensions:meta::pure::extension::Extension[*]):String[1]
 {
    $e->planToString($extensions)->replace('\n', '')->replace(' ', '');
 }
 
-function meta::pure::executionPlan::toString::planToString(e:ExecutionPlan[1], extensions:meta::pure::router::extension::RouterExtension[*]):String[1]
+function meta::pure::executionPlan::toString::planToString(e:ExecutionPlan[1], extensions:meta::pure::extension::Extension[*]):String[1]
 {
    $e.rootExecutionNode->planNodeToString('', $extensions);
 }
 
-function meta::pure::executionPlan::toString::planToString(e:ExecutionPlan[1], showImplementation:Boolean[1], extensions:meta::pure::router::extension::RouterExtension[*]):String[1]
+function meta::pure::executionPlan::toString::planToString(e:ExecutionPlan[1], showImplementation:Boolean[1], extensions:meta::pure::extension::Extension[*]):String[1]
 {
    $e.rootExecutionNode->planNodeToString('', $extensions) + if($showImplementation, |$e.globalImplementationSupport->printImplementation('globalImplementationSupport', '', $extensions), |'');
 }
 
-function <<access.public>> meta::pure::executionPlan::toString::planNodeToString(e:ExecutionNode[1], space:String[1], extensions:meta::pure::router::extension::RouterExtension[*]):String[1]
+function <<access.public>> meta::pure::executionPlan::toString::planNodeToString(e:ExecutionNode[1], space:String[1], extensions:meta::pure::extension::Extension[*]):String[1]
 {
    let root = $e->match(
       $extensions.executionPlan_print_planNodeToString->map(x|$x->eval($space, $extensions))->concatenate(
@@ -61,7 +61,7 @@ function <<access.public>> meta::pure::executionPlan::toString::planNodeToString
    $space + $root;
 }
 
-function <<access.public>> meta::pure::executionPlan::toString::printImplementation(e:PlatformImplementation[0..1], key:String[1], space:String[1], extensions:meta::pure::router::extension::RouterExtension[*]):String[1]
+function <<access.public>> meta::pure::executionPlan::toString::printImplementation(e:PlatformImplementation[0..1], key:String[1], space:String[1], extensions:meta::pure::extension::Extension[*]):String[1]
 {
    if ($e->isEmpty(),
     | '',
@@ -81,7 +81,7 @@ function <<access.public>> meta::pure::executionPlan::toString::printImplementat
    )
 }
 
-function <<access.private>> meta::pure::executionPlan::toString::extractClusters(nodes:ExecutionNode[*], extensions:meta::pure::router::extension::RouterExtension[*]):ClusteredValueSpecification[*]
+function <<access.private>> meta::pure::executionPlan::toString::extractClusters(nodes:ExecutionNode[*], extensions:meta::pure::extension::Extension[*]):ClusteredValueSpecification[*]
 {
    let res = $nodes.fromCluster;
    assertEquals($res->size(), $nodes->size());
@@ -89,19 +89,19 @@ function <<access.private>> meta::pure::executionPlan::toString::extractClusters
 }
 
 
-function meta::pure::executionPlan::toString::header(e:ExecutionNode[1], space:String[1], extensions:meta::pure::router::extension::RouterExtension[*]):String[1]
+function meta::pure::executionPlan::toString::header(e:ExecutionNode[1], space:String[1], extensions:meta::pure::extension::Extension[*]):String[1]
 {
    '\n'+ $space+'  type = '+$e.resultType->typeToString($space, $extensions)+if($e.resultSizeRange->isEmpty(),|'',|'\n'
        + $space+'  resultSizeRange = '+$e.resultSizeRange->toOne()->meta::pure::metamodel::serialization::grammar::printMultiplicity())
        + if($e.requiredVariableInputs->isEmpty(), |'', | '\n' + $space+'  requires = '+$e.requiredVariableInputs->map(source | $source.name + '(' + $source.type->elementToPath() + '[' + $source.multiplicity->meta::pure::metamodel::serialization::grammar::printMultiplicity() +'])')->joinStrings('[',', ',']'));
 }
 
-function meta::pure::executionPlan::toString::childrenToString(e:ExecutionNode[*], space:String[1], extensions:meta::pure::router::extension::RouterExtension[*]):String[1]
+function meta::pure::executionPlan::toString::childrenToString(e:ExecutionNode[*], space:String[1], extensions:meta::pure::extension::Extension[*]):String[1]
 {
    if($e.executionNodes->isEmpty(),|'',|'\n'+$space+'(\n'+$e.executionNodes->map(c|$c->planNodeToString($space+'  ', $extensions))->makeString('')+$space+')');
 }
 
-function <<access.private>> meta::pure::executionPlan::toString::typeToString(e:ResultType[1], space:String[1], extensions:meta::pure::router::extension::RouterExtension[*]):String[1]
+function <<access.private>> meta::pure::executionPlan::toString::typeToString(e:ResultType[1], space:String[1], extensions:meta::pure::extension::Extension[*]):String[1]
 {
    $e->match(
       $extensions.executionPlan_print_typeToString->map(e|$e->eval($space, $extensions))->concatenate(
@@ -113,7 +113,7 @@ function <<access.private>> meta::pure::executionPlan::toString::typeToString(e:
    )
 }
 
-function meta::pure::executionPlan::toString::connectionToString(connection:Connection[1], extensions:meta::pure::router::extension::RouterExtension[*]):String[1]
+function meta::pure::executionPlan::toString::connectionToString(connection:Connection[1], extensions:meta::pure::extension::Extension[*]):String[1]
 {
    $connection->class() ->toString() + '('+
    $connection->match(

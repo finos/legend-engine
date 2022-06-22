@@ -137,7 +137,7 @@ Class meta::pure::executionPlan::engine::java::GeneratedNode
 // --- Plan generation
 // ----------------------------------------------------------------------------------------------------------
 
-function meta::pure::executionPlan::engine::java::generatePlatformCode(e:ExecutionPlan[1], config:PlatformCodeGenerationConfig[1], extensions:meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]):ExecutionPlan[1]
+function meta::pure::executionPlan::engine::java::generatePlatformCode(e:ExecutionPlan[1], config:PlatformCodeGenerationConfig[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ExecutionPlan[1]
 {
    let conventions     = engineConventions($extensions);
    let pathAdjusted    = if($config.planId->isEmpty(), 
@@ -180,7 +180,7 @@ function meta::pure::executionPlan::engine::java::projectToImplementation(projec
 }
 
 
-function meta::pure::executionPlan::engine::java::prepare(node:ExecutionNode[1], path:String[1], context:GenerationContext[1], extensions:meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]):GenerationContext[1]
+function meta::pure::executionPlan::engine::java::prepare(node:ExecutionNode[1], path:String[1], context:GenerationContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):GenerationContext[1]
 {    
    let contextFromChildren = $node.executionNodes->prepareChildNodes(1, $path, $context, $extensions, $debug);
    
@@ -212,7 +212,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::fillNewFunc
    ^$context(conventions = ^$oldConventions(newFunctionProhibitedList = $cls->map(c|$c.class())));
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::prepareChildNodes(nodes:ExecutionNode[*], childNo:Integer[1], parentPath:String[1], context:GenerationContext[1], extensions:meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]):GenerationContext[1]
+function <<access.private>> meta::pure::executionPlan::engine::java::prepareChildNodes(nodes:ExecutionNode[*], childNo:Integer[1], parentPath:String[1], context:GenerationContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):GenerationContext[1]
 {
    $nodes->head()->match([
       {n0:ExecutionNode[0] |
@@ -225,7 +225,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::prepareChil
    ]);
 }
 
-function meta::pure::executionPlan::engine::java::generatePlatformCode(node:ExecutionNode[1], path:String[1], mapping:Mapping[1], context:GenerationContext[1], extensions:meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]):GeneratedNode[1]
+function meta::pure::executionPlan::engine::java::generatePlatformCode(node:ExecutionNode[1], path:String[1], mapping:Mapping[1], context:GenerationContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):GeneratedNode[1]
 {
    let generated = $node->match($extensions.plan_javaRuntime_main_generatePlatformCode1->map(e|$e->eval($path, $context, $extensions, $debug))->concatenate([
       l:LocalGraphFetchExecutionNode[1]              | $l->generateCodeForLocalGraphFetchNode($path, $context, $extensions, $debug),
@@ -258,7 +258,7 @@ function meta::pure::executionPlan::engine::java::generatePlatformCode(node:Exec
    ])->toOneMany());
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::generateChildNodes(nodes:ExecutionNode[*], childNo:Integer[1], parentPath:String[1], mapping:Mapping[1], context:GenerationContext[1], extensions:meta::pure::router::extension::RouterExtension[*], debug:DebugContext[1]):GeneratedNode[*]
+function <<access.private>> meta::pure::executionPlan::engine::java::generateChildNodes(nodes:ExecutionNode[*], childNo:Integer[1], parentPath:String[1], mapping:Mapping[1], context:GenerationContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):GeneratedNode[*]
 {
    $nodes->head()->match([
       n0:ExecutionNode[0] | [],

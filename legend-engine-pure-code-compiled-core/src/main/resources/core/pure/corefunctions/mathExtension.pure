@@ -254,8 +254,39 @@ function meta::pure::functions::math::percentile(numbers: Number[*], percentile:
   ($percentile >= 0) && ($percentile <= 1)
 ]
 {
-   fail('Only supported in store execution flow!');
-   0;
+   //https://commons.apache.org/proper/commons-math/javadocs/api-3.6/org/apache/commons/math3/stat/descriptive/rank/Percentile.html
+   /*
+   There are several commonly used methods for estimating percentiles (a.k.a. quantiles) based on sample data. For large samples, the different methods agree closely, but when sample sizes are small, different methods will give significantly different results. The algorithm implemented here works as follows:
+
+   1. Let n be the length of the (sorted) array and 0 < p <= 100 be the desired percentile.
+   2. If n = 1 return the unique array element (regardless of the value of p); otherwise
+   3. Compute the estimated percentile position pos = p * (n + 1) / 100 and the difference, d between pos and floor(pos) (i.e. the fractional part of pos).
+   4. If pos < 1 return the smallest element in the array.
+   5. Else if pos >= n return the largest element in the array.
+   6. Else let lower be the element in position floor(pos) in the array and let upper be the next element in the array. Return lower + d * (upper - lower)
+   */
+   
+  let data = eval(n|if($ascending, | $n, |$n->reverse()), $numbers->sort());
+  let n = $data->size();
+  if($n <= 1, 
+      | $numbers->first(), 
+      | 
+        let p = $percentile * 100;
+        let pos = ($p * ($n + 1)) / 100;
+        let intPos = $pos->floor();
+        let d = if(!$continuous, | 0, | ($pos - $intPos)) ;
+      
+        if ($pos <= 1, 
+          | $data->first(), 
+          | if ($pos >= $n, 
+                | $data->last(), 
+                | if($d == 0, 
+                    | $data->at($intPos - 1), 
+                    | $data->at($intPos - 1) + (($data->at($intPos - 1) - $data->at($intPos)) * $d)
+                    )
+                )
+          );
+    );
 }
 
 

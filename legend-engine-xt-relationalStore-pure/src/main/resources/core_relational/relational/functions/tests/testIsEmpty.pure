@@ -36,7 +36,7 @@ function <<test.BeforePackage>> meta::relational::tests::query::function::isempt
 
 function <<test.Test>> meta::relational::tests::query::function::isempty::testDerivedWithIsEmpty():Boolean[1]
 {
-   let result = execute(|TestClass.all()->filter(t|$t.isValued()), TestMapping, meta::relational::tests::testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|TestClass.all()->filter(t|$t.isValued()), TestMapping, meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 1);
    assertEquals(1, $result.values->size());
    assertEquals('select "root".id as "pk_0", "root".value as "myValue" from testTable as "root" where "root".value is null', $result->sqlRemoveFormatting());
@@ -44,30 +44,30 @@ function <<test.Test>> meta::relational::tests::query::function::isempty::testDe
 
 function <<test.Test>> meta::relational::tests::query::function::isempty::testDerivedWithIsEmpty2():Boolean[1]
 {
-   let result = execute(|TestClass.all()->project(t|$t.isValued() ,'col'), TestMapping, meta::relational::tests::testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|TestClass.all()->project(t|$t.isValued() ,'col'), TestMapping, meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals('select "root".value is null as "col" from testTable as "root"', $result->sqlRemoveFormatting());
-   assertEquals('select case when ("root".value is null) then \'true\' else \'false\' end as "col" from testTable as "root"', meta::relational::functions::sqlstring::toSQLString(|TestClass.all()->project(t|$t.isValued() ,'col'), TestMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions()));
+   assertEquals('select case when ("root".value is null) then \'true\' else \'false\' end as "col" from testTable as "root"', meta::relational::functions::sqlstring::toSQLString(|TestClass.all()->project(t|$t.isValued() ,'col'), TestMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions()));
 }
 
 function <<test.Test>> meta::relational::tests::query::function::isempty::testDerivedWithIsEmptyNestedInIf():Boolean[1]
 {
-   let result = execute(|TestClass.all()->project(t|$t.isValuedNested() ,'col'), TestMapping, meta::relational::tests::testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|TestClass.all()->project(t|$t.isValuedNested() ,'col'), TestMapping, meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals('select case when "root".value is null then \'true\' else \'false\' end as "col" from testTable as "root"', $result->sqlRemoveFormatting());
-   assertEquals('select case when ("root".value is null) then \'true\' else \'false\' end as "col" from testTable as "root"', meta::relational::functions::sqlstring::toSQLString(|TestClass.all()->project(t|$t.isValued() ,'col'), TestMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions()));
+   assertEquals('select case when ("root".value is null) then \'true\' else \'false\' end as "col" from testTable as "root"', meta::relational::functions::sqlstring::toSQLString(|TestClass.all()->project(t|$t.isValued() ,'col'), TestMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions()));
 }
 
 function <<test.Test>> meta::relational::tests::query::function::isempty::testDerivedCountWithIsEmpty():Boolean[1]
 {
-   let result = execute(|TestClass.all()->groupBy([],[agg(x|$x.isValued(), y | $y->count())],['count']), TestMapping, meta::relational::tests::testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|TestClass.all()->groupBy([],[agg(x|$x.isValued(), y | $y->count())],['count']), TestMapping, meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals('select count("root".value is null) as "count" from testTable as "root"', $result->sqlRemoveFormatting());
-   assertEquals('select count(case when ("root".value is null) then \'true\' else \'false\' end) as "count" from testTable as "root"', meta::relational::functions::sqlstring::toSQLString(|TestClass.all()->groupBy([],[agg(x|$x.isValued(), y | $y->count())],['count']), TestMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions()));
+   assertEquals('select count(case when ("root".value is null) then \'true\' else \'false\' end) as "count" from testTable as "root"', meta::relational::functions::sqlstring::toSQLString(|TestClass.all()->groupBy([],[agg(x|$x.isValued(), y | $y->count())],['count']), TestMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions()));
 }
 
 function <<test.Test>> meta::relational::tests::query::function::isempty::testDerivedCountWithIsEmptyNestedInIf():Boolean[1]
 {
-   let result = execute(|TestClass.all()->groupBy([],[agg(x|$x.isValuedNested(), y | $y->count())],['count']), TestMapping, meta::relational::tests::testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|TestClass.all()->groupBy([],[agg(x|$x.isValuedNested(), y | $y->count())],['count']), TestMapping, meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals('select count(case when "root".value is null then \'true\' else \'false\' end) as "count" from testTable as "root"', $result->sqlRemoveFormatting());
-   assertEquals('select count(case when ("root".value is null) then \'true\' else \'false\' end) as "count" from testTable as "root"', meta::relational::functions::sqlstring::toSQLString(|TestClass.all()->groupBy([],[agg(x|$x.isValued(), y | $y->count())],['count']), TestMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::pure::router::extension::defaultRelationalExtensions()));
+   assertEquals('select count(case when ("root".value is null) then \'true\' else \'false\' end) as "count" from testTable as "root"', meta::relational::functions::sqlstring::toSQLString(|TestClass.all()->groupBy([],[agg(x|$x.isValued(), y | $y->count())],['count']), TestMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions()));
 }
 
 

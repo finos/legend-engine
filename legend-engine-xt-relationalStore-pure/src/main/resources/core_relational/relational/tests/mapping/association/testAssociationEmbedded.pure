@@ -31,14 +31,14 @@ function <<test.BeforePackage>> meta::relational::tests::mapping::association::e
 
 function <<test.Test>> meta::relational::tests::mapping::association::embedded::testPersonToOrganisations():Boolean[1]
 {
-   let result1 = execute(|Person.all()->project([p|$p.lastName,p|$p.firm.legalName, p|$p.firm.organizations.name], ['name', 'firm', 'team']), associationMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   let result1 = execute(|Person.all()->project([p|$p.lastName,p|$p.firm.legalName, p|$p.firm.organizations.name], ['name', 'firm', 'team']), associationMapping, testRuntime(), meta::relational::extension::relationalExtensions()).values->at(0);
    assertEquals(5, $result1.rows->size());
    assertSameElements(['Smith Firm X Team 1', 'Smith Firm X Team 2', 'Johnson Firm X Team 1', 'Johnson Firm X Team 2', 'Roberts Firm A Team 3'], $result1.rows->map(r|$r.getString('name')+' '+$r.getString('firm')->toString()+ ' ' +$r.getString('team')));
 }
 
 function <<test.Test>> meta::relational::tests::mapping::association::embedded::testFirmToOrganisations():Boolean[1]
 {
-   let result1 = execute(|Firm.all()->project([p|$p.legalName, p|$p.organizations.name], ['firm', 'team']), associationMappingInlinedEmbedded, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   let result1 = execute(|Firm.all()->project([p|$p.legalName, p|$p.organizations.name], ['firm', 'team']), associationMappingInlinedEmbedded, testRuntime(), meta::relational::extension::relationalExtensions()).values->at(0);
    assertEquals(5, $result1.rows->size());
    assertSameElements(['Firm A Team 3', 'Firm X Team 1', 'Firm X Team 1', 'Firm X Team 2', 'Firm X Team 2'], $result1.rows->map(r|$r.getString('firm')->toString()+ ' ' +$r.getString('team')));
 }
@@ -46,7 +46,7 @@ function <<test.Test>> meta::relational::tests::mapping::association::embedded::
 
 function <<test.Test>> meta::relational::tests::mapping::association::embedded::testPersonToOrganisationsInlineEmbedded():Boolean[1]
 {
-   let result1 = execute(|Person.all()->project([p|$p.lastName,p|$p.firm.legalName, p|$p.firm.organizations.name], ['name', 'firm', 'team']), associationMappingInlinedEmbedded, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   let result1 = execute(|Person.all()->project([p|$p.lastName,p|$p.firm.legalName, p|$p.firm.organizations.name], ['name', 'firm', 'team']), associationMappingInlinedEmbedded, testRuntime(), meta::relational::extension::relationalExtensions()).values->at(0);
    assertEquals(5, $result1.rows->size());
    assertSameElements(['Smith Firm X Team 1', 'Smith Firm X Team 2', 'Johnson Firm X Team 1', 'Johnson Firm X Team 2', 'Roberts Firm A Team 3'], $result1.rows->map(r|$r.getString('name')+' '+$r.getString('firm')->toString()+ ' ' +$r.getString('team')));
 }
@@ -54,14 +54,14 @@ function <<test.Test>> meta::relational::tests::mapping::association::embedded::
 
 function <<test.Test>> meta::relational::tests::mapping::association::embedded::testPersonToFirmAddressNestedInlineEmbedded():Boolean[1]
 {
-   let result1 = execute(|Person.all()->project([p|$p.lastName,p|$p.firm.legalName, p|$p.firm.address.name], ['name', 'firm', 'add']), associationMappingInlinedEmbedded, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   let result1 = execute(|Person.all()->project([p|$p.lastName,p|$p.firm.legalName, p|$p.firm.address.name], ['name', 'firm', 'add']), associationMappingInlinedEmbedded, testRuntime(), meta::relational::extension::relationalExtensions()).values->at(0);
    assertEquals(3, $result1.rows->size());
    assertSameElements(['Smith Firm X 200 west', 'Johnson Firm X 200 west', 'Roberts Firm A 3 somewhere'], $result1.rows->map(r|$r.getString('name')+' '+$r.getString('firm')->toString()+ ' ' +$r.getString('add')));
 }
 
 function <<test.Test>> meta::relational::tests::mapping::association::embedded::testPersonToFirmLocationsInlineEmbedded():Boolean[1]
 {
-   let result1 = execute(|Person.all()->project([p|$p.lastName,p|$p.firm.legalName, p|$p.firm.address.location.place], ['name', 'firm', 'location']), associationMappingInlinedEmbedded, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   let result1 = execute(|Person.all()->project([p|$p.lastName,p|$p.firm.legalName, p|$p.firm.address.location.place], ['name', 'firm', 'location']), associationMappingInlinedEmbedded, testRuntime(), meta::relational::extension::relationalExtensions()).values->at(0);
    assertEquals(3, $result1.rows->size());
    assertSameElements(['Smith Firm X Loc 1', 'Johnson Firm X Loc 1', 'Roberts Firm A Loc 2'], $result1.rows->map(r|$r.getString('name')+' '+$r.getString('firm')->toString()+ ' ' +$r.getString('location')));
 }

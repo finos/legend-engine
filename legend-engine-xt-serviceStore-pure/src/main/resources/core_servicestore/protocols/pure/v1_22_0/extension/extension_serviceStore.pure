@@ -18,7 +18,7 @@ import meta::external::store::service::metamodel::*;
 import meta::external::store::service::metamodel::mapping::*;
 import meta::external::store::service::metamodel::runtime::*;
 
-function meta::protocols::pure::v1_22_0::extension::store::service::getServiceStoreExtension(type:String[1]):meta::pure::router::extension::SerializerExtension[1]
+function meta::protocols::pure::v1_22_0::extension::store::service::getServiceStoreExtension(type:String[1]):meta::pure::extension::SerializerExtension[1]
 {
    let res = [
       pair('serviceStore', | meta::protocols::pure::v1_22_0::extension::store::service::getServiceStoreExtension())
@@ -35,7 +35,7 @@ function meta::protocols::pure::v1_22_0::extension::store::service::getServiceSt
           [
              serviceStoreConnection:ServiceStoreConnection[1] | $serviceStoreConnection->meta::protocols::pure::v1_22_0::transformation::fromPureGraph::connection::store::service::transformServiceStoreConnection()
           ],
-      transfers_executionPlan_transformNode = {mapping:Mapping[1], extensions:meta::pure::router::extension::RouterExtension[*] |
+      transfers_executionPlan_transformNode = {mapping:Mapping[1], extensions:meta::pure::extension::Extension[*] |
           [
              ser:meta::external::store::service::executionPlan::nodes::RestServiceExecutionNode[1]|
                 ^meta::protocols::pure::v1_22_0::metamodel::executionPlan::store::service::RestServiceExecutionNode(
@@ -55,15 +55,15 @@ function meta::protocols::pure::v1_22_0::extension::store::service::getServiceSt
                    parameterMappings = $spr.requestParametersBuildInfo.parameterBuildInfoList->map(param | $param->meta::protocols::pure::v1_22_0::transformation::fromPureGraph::store::service::mapping::transformServiceStoreParameterMapping($extensions))
                 )
           ]},
-      transfers_mapping_transformSetImplementation2 = {mapping:Mapping[1], extensions:meta::pure::router::extension::RouterExtension[*] | [
+      transfers_mapping_transformSetImplementation2 = {mapping:Mapping[1], extensions:meta::pure::extension::Extension[*] | [
             rsi:RootServiceInstanceSetImplementation[1]  | $rsi->meta::protocols::pure::v1_22_0::transformation::fromPureGraph::store::service::mapping::transformRootServiceInstanceSetImplementation($mapping, $extensions),
             esi:EmbeddedServiceStoreSetImplementation[1] | []
           ]},
-      transfers_store_transformStore2 = {extensions:meta::pure::router::extension::RouterExtension[*] | 
+      transfers_store_transformStore2 = {extensions:meta::pure::extension::Extension[*] |
          [
             s:ServiceStore[1] | $s->meta::protocols::pure::v1_22_0::transformation::fromPureGraph::store::service::transformServiceStore($extensions)
          ]},
-      scan_buildBasePureModel_extractStores = {m:Mapping[1], extensions:meta::pure::router::extension::RouterExtension[*] |
+      scan_buildBasePureModel_extractStores = {m:Mapping[1], extensions:meta::pure::extension::Extension[*] |
          [
             rsi:RootServiceInstanceSetImplementation[1]  | $rsi->meta::protocols::pure::v1_22_0::extension::store::service::extractServiceStore(),
             esi:EmbeddedServiceStoreSetImplementation[1] | $esi->meta::protocols::pure::v1_22_0::extension::store::service::extractServiceStore()

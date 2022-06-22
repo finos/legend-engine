@@ -22,7 +22,7 @@ import meta::relational::functions::sqlstring::*;
 
 function <<test.Test>> meta::relational::tests::tds::sort::testSimpleSortAsc():Boolean[1]
 {
-   let result = execute(|Person.all()->project([#/Person/firstName!name#])->sort('name'), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->project([#/Person/firstName!name#])->sort('name'), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 7 );
    assertEquals('Anthony,David,Fabrice,John,John,Oliver,Peter', $result.values.rows->map(r|$r.values)->makeString(','));
    assertEquals('select "root".FIRSTNAME as "name" from personTable as "root" order by "name"', $result->sqlRemoveFormatting());
@@ -31,7 +31,7 @@ function <<test.Test>> meta::relational::tests::tds::sort::testSimpleSortAsc():B
 function <<test.Test>> meta::relational::tests::tds::sort::testSimpleSortAscInputToProject():Boolean[1]
 {
    let result = execute(|Person.all()->sortBy(#/Person/lastName#)
-                                     ->project(col(p | $p.lastName, 'LASTNAME')), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+                                     ->project(col(p | $p.lastName, 'LASTNAME')), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let sortedLastNames = $result.values->at(0).rows->map(r|$r.values);
    assertEquals(['Allen', 'Harris', 'Hill', 'Hill', 'Johnson', 'Roberts', 'Smith'], $sortedLastNames);
    assertEquals('select "root".LASTNAME as "LASTNAME" from personTable as "root" order by "root".LASTNAME', $result->sqlRemoveFormatting());
@@ -39,7 +39,7 @@ function <<test.Test>> meta::relational::tests::tds::sort::testSimpleSortAscInpu
 
 function <<test.Test>> meta::relational::tests::tds::sort::testSimpleSortAscHelper():Boolean[1]
 {
-   let result = execute(|Person.all()->project([#/Person/firstName!name#])->sort(asc('name')), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->project([#/Person/firstName!name#])->sort(asc('name')), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 7 );
    assertEquals('Anthony,David,Fabrice,John,John,Oliver,Peter', $result.values.rows->map(r|$r.values)->makeString(','));
    assertEquals('select "root".FIRSTNAME as "name" from personTable as "root" order by "name"', $result->sqlRemoveFormatting());
@@ -47,7 +47,7 @@ function <<test.Test>> meta::relational::tests::tds::sort::testSimpleSortAscHelp
 
 function <<test.Test>> meta::relational::tests::tds::sort::testSimpleSortDesc():Boolean[1]
 {
-   let result = execute(|Person.all()->project([#/Person/firstName!name#])->sort('name', SortDirection.DESC), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->project([#/Person/firstName!name#])->sort('name', SortDirection.DESC), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 7 );
    assertEquals('Peter,Oliver,John,John,Fabrice,David,Anthony', $result.values.rows->map(r|$r.values)->makeString(','));
    assertEquals('select "root".FIRSTNAME as "name" from personTable as "root" order by "name" desc', $result->sqlRemoveFormatting());
@@ -55,7 +55,7 @@ function <<test.Test>> meta::relational::tests::tds::sort::testSimpleSortDesc():
 
 function <<test.Test>> meta::relational::tests::tds::sort::testSimpleSortDescHelper():Boolean[1]
 {
-   let result = execute(|Person.all()->project([#/Person/firstName!name#])->sort(desc('name')), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->project([#/Person/firstName!name#])->sort(desc('name')), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 7 );
    assertEquals('Peter,Oliver,John,John,Fabrice,David,Anthony', $result.values.rows->map(r|$r.values)->makeString(','));
    assertEquals('select "root".FIRSTNAME as "name" from personTable as "root" order by "name" desc', $result->sqlRemoveFormatting());
@@ -63,7 +63,7 @@ function <<test.Test>> meta::relational::tests::tds::sort::testSimpleSortDescHel
 
 function <<test.Test>> meta::relational::tests::tds::sort::testDoubleSortAsc1():Boolean[1]
 {
-   let result = execute(|Person.all()->project([#/Person/firstName!name#, #/Person/address/name!address#])->sort(['name','address']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->project([#/Person/firstName!name#, #/Person/address/name!address#])->sort(['name','address']), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 7 );
    assertEquals('Anthony,New York,David,New York,Fabrice,San Fransisco,John,New York,John,New York,Oliver,Hong Kong,Peter,Hoboken', $result.values.rows->map(r|$r.values)->makeString(','));
    assertEquals('select "root".FIRSTNAME as "name", "addresstable_0".NAME as "address" from personTable as "root" left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "root".ADDRESSID) order by "name","address"', $result->sqlRemoveFormatting());
@@ -71,7 +71,7 @@ function <<test.Test>> meta::relational::tests::tds::sort::testDoubleSortAsc1():
 
 function <<test.Test>> meta::relational::tests::tds::sort::testDoubleSortAsc1Helper():Boolean[1]
 {
-   let result = execute(|Person.all()->project([#/Person/firstName!name#, #/Person/address/name!address#])->sort([asc('name'), asc('address')]), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->project([#/Person/firstName!name#, #/Person/address/name!address#])->sort([asc('name'), asc('address')]), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 7 );
    assertEquals('Anthony,New York,David,New York,Fabrice,San Fransisco,John,New York,John,New York,Oliver,Hong Kong,Peter,Hoboken', $result.values.rows->map(r|$r.values)->makeString(','));
    assertEquals('select "root".FIRSTNAME as "name", "addresstable_0".NAME as "address" from personTable as "root" left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "root".ADDRESSID) order by "name","address"', $result->sqlRemoveFormatting());
@@ -79,7 +79,7 @@ function <<test.Test>> meta::relational::tests::tds::sort::testDoubleSortAsc1Hel
 
 function <<test.Test>> meta::relational::tests::tds::sort::testDoubleSortAsc1Chain():Boolean[1]
 {
-   let result = execute(|Person.all()->project([#/Person/firstName!name#, #/Person/address/name!address#])->sort(asc('name'))->sort('address', SortDirection.ASC), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->project([#/Person/firstName!name#, #/Person/address/name!address#])->sort(asc('name'))->sort('address', SortDirection.ASC), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 7 );
    assertEquals('Peter,Hoboken,Oliver,Hong Kong,Anthony,New York,David,New York,John,New York,John,New York,Fabrice,San Fransisco', $result.values.rows->map(r|$r.values)->makeString(','));
    assertEquals('select "root".FIRSTNAME as "name", "addresstable_0".NAME as "address" from personTable as "root" left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "root".ADDRESSID) order by "address","name"', $result->sqlRemoveFormatting());
@@ -87,7 +87,7 @@ function <<test.Test>> meta::relational::tests::tds::sort::testDoubleSortAsc1Cha
 
 function <<test.Test>> meta::relational::tests::tds::sort::testDoubleSortDesc1Helper():Boolean[1]
 {
-   let result = execute(|Person.all()->project([#/Person/firstName!name#, #/Person/address/name!address#])->sort([desc('name'), desc('address')]), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->project([#/Person/firstName!name#, #/Person/address/name!address#])->sort([desc('name'), desc('address')]), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 7 );
    assertEquals('Peter,Hoboken,Oliver,Hong Kong,John,New York,John,New York,Fabrice,San Fransisco,David,New York,Anthony,New York', $result.values.rows->map(r|$r.values)->makeString(','));
    assertEquals('select "root".FIRSTNAME as "name", "addresstable_0".NAME as "address" from personTable as "root" left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "root".ADDRESSID) order by "name" desc,"address" desc', $result->sqlRemoveFormatting());
@@ -95,7 +95,7 @@ function <<test.Test>> meta::relational::tests::tds::sort::testDoubleSortDesc1He
 
 function <<test.Test>> meta::relational::tests::tds::sort::testDoubleSortDesc1Chain():Boolean[1]
 {
-   let result = execute(|Person.all()->project([#/Person/firstName!name#, #/Person/address/name!address#])->sort(desc('name'))->sort('address', SortDirection.DESC), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->project([#/Person/firstName!name#, #/Person/address/name!address#])->sort(desc('name'))->sort('address', SortDirection.DESC), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 7 );
    assertEquals('Fabrice,San Fransisco,John,New York,John,New York,David,New York,Anthony,New York,Oliver,Hong Kong,Peter,Hoboken', $result.values.rows->map(r|$r.values)->makeString(','));
    assertEquals('select "root".FIRSTNAME as "name", "addresstable_0".NAME as "address" from personTable as "root" left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "root".ADDRESSID) order by "address" desc,"name" desc', $result->sqlRemoveFormatting());
@@ -103,7 +103,7 @@ function <<test.Test>> meta::relational::tests::tds::sort::testDoubleSortDesc1Ch
 
 function <<test.Test>> meta::relational::tests::tds::sort::testDoubleSortAsc2():Boolean[1]
 {
-   let result = execute(|Person.all()->project([#/Person/firstName!name#, #/Person/address/name!address#])->sort(['address', 'name']), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->project([#/Person/firstName!name#, #/Person/address/name!address#])->sort(['address', 'name']), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 7 );
    assertEquals('Peter,Hoboken,Oliver,Hong Kong,Anthony,New York,David,New York,John,New York,John,New York,Fabrice,San Fransisco', $result.values.rows->map(r|$r.values)->makeString(','));
    assertEquals('select "root".FIRSTNAME as "name", "addresstable_0".NAME as "address" from personTable as "root" left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "root".ADDRESSID) order by "address","name"', $result->sqlRemoveFormatting());
@@ -111,7 +111,7 @@ function <<test.Test>> meta::relational::tests::tds::sort::testDoubleSortAsc2():
 
 function <<test.Test>> meta::relational::tests::tds::sort::testDoubleSortAsc2Helper():Boolean[1]
 {
-   let result = execute(|Person.all()->project([#/Person/firstName!name#, #/Person/address/name!address#])->sort([asc('address'), asc('name')]), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->project([#/Person/firstName!name#, #/Person/address/name!address#])->sort([asc('address'), asc('name')]), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 7 );
    assertEquals('Peter,Hoboken,Oliver,Hong Kong,Anthony,New York,David,New York,John,New York,John,New York,Fabrice,San Fransisco', $result.values.rows->map(r|$r.values)->makeString(','));
    assertEquals('select "root".FIRSTNAME as "name", "addresstable_0".NAME as "address" from personTable as "root" left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "root".ADDRESSID) order by "address","name"', $result->sqlRemoveFormatting());
@@ -119,7 +119,7 @@ function <<test.Test>> meta::relational::tests::tds::sort::testDoubleSortAsc2Hel
 
 function <<test.Test>> meta::relational::tests::tds::sort::testDoubleSortAsc2Chain():Boolean[1]
 {
-   let result = execute(|Person.all()->project([#/Person/firstName!name#, #/Person/address/name!address#])->sort('address')->sort(asc('name')), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->project([#/Person/firstName!name#, #/Person/address/name!address#])->sort('address')->sort(asc('name')), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 7 );
    assertEquals('Anthony,New York,David,New York,Fabrice,San Fransisco,John,New York,John,New York,Oliver,Hong Kong,Peter,Hoboken', $result.values.rows->map(r|$r.values)->makeString(','));
    assertEquals('select "root".FIRSTNAME as "name", "addresstable_0".NAME as "address" from personTable as "root" left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "root".ADDRESSID) order by "name","address"', $result->sqlRemoveFormatting());
@@ -127,7 +127,7 @@ function <<test.Test>> meta::relational::tests::tds::sort::testDoubleSortAsc2Cha
 
 function <<test.Test>> meta::relational::tests::tds::sort::testDoubleSortDesc2Helper():Boolean[1]
 {
-   let result = execute(|Person.all()->project([#/Person/firstName!name#, #/Person/address/name!address#])->sort([desc('address'), desc('name')]), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->project([#/Person/firstName!name#, #/Person/address/name!address#])->sort([desc('address'), desc('name')]), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 7 );
    assertEquals('Fabrice,San Fransisco,John,New York,John,New York,David,New York,Anthony,New York,Oliver,Hong Kong,Peter,Hoboken', $result.values.rows->map(r|$r.values)->makeString(','));
    assertEquals('select "root".FIRSTNAME as "name", "addresstable_0".NAME as "address" from personTable as "root" left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "root".ADDRESSID) order by "address" desc,"name" desc', $result->sqlRemoveFormatting());
@@ -135,7 +135,7 @@ function <<test.Test>> meta::relational::tests::tds::sort::testDoubleSortDesc2He
 
 function <<test.Test>> meta::relational::tests::tds::sort::testDoubleSortDesc2Chain():Boolean[1]
 {
-   let result = execute(|Person.all()->project([#/Person/firstName!name#, #/Person/address/name!address#])->sort('address', SortDirection.DESC)->sort(desc('name')), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->project([#/Person/firstName!name#, #/Person/address/name!address#])->sort('address', SortDirection.DESC)->sort(desc('name')), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 7 );
    assertEquals('Peter,Hoboken,Oliver,Hong Kong,John,New York,John,New York,Fabrice,San Fransisco,David,New York,Anthony,New York', $result.values.rows->map(r|$r.values)->makeString(','));
    assertEquals('select "root".FIRSTNAME as "name", "addresstable_0".NAME as "address" from personTable as "root" left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "root".ADDRESSID) order by "name" desc,"address" desc', $result->sqlRemoveFormatting());
@@ -143,7 +143,7 @@ function <<test.Test>> meta::relational::tests::tds::sort::testDoubleSortDesc2Ch
 
 function <<test.Test>> meta::relational::tests::tds::sort::testDoubleSortMixed():Boolean[1]
 {
-   let result = execute(|Person.all()->project([#/Person/firstName!name#, #/Person/address/name!address#])->sort([desc('address'), asc('name')]), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->project([#/Person/firstName!name#, #/Person/address/name!address#])->sort([desc('address'), asc('name')]), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 7 );
    assertEquals('Fabrice,San Fransisco,Anthony,New York,David,New York,John,New York,John,New York,Oliver,Hong Kong,Peter,Hoboken', $result.values.rows->map(r|$r.values)->makeString(','));
    assertEquals('select "root".FIRSTNAME as "name", "addresstable_0".NAME as "address" from personTable as "root" left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "root".ADDRESSID) order by "address" desc,"name"', $result->sqlRemoveFormatting());
@@ -151,7 +151,7 @@ function <<test.Test>> meta::relational::tests::tds::sort::testDoubleSortMixed()
 
 function <<test.Test>> meta::relational::tests::tds::sort::testDoubleSortMixedChain():Boolean[1]
 {
-   let result = execute(|Person.all()->project([#/Person/firstName!name#, #/Person/address/name!address#])->sort(desc('address'))->sort('name'), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->project([#/Person/firstName!name#, #/Person/address/name!address#])->sort(desc('address'))->sort('name'), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals('select "root".FIRSTNAME as "name", "addresstable_0".NAME as "address" from personTable as "root" left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "root".ADDRESSID) order by "name","address" desc', $result->sqlRemoveFormatting());
    assertSize($result.values.rows, 7 );
    assertEquals('Anthony,New York,David,New York,Fabrice,San Fransisco,John,New York,John,New York,Oliver,Hong Kong,Peter,Hoboken', $result.values.rows->map(r|$r.values)->makeString(','));
@@ -161,7 +161,7 @@ function <<test.Test>> meta::relational::tests::tds::sort::testDoubleSortMixedCh
 function <<test.Test>> meta::relational::tests::tds::sort::testSortQuotes():Boolean[1]
 {
    DatabaseType->enumValues()->filter(e|$e-> in ([   DatabaseType.DB2, DatabaseType.H2, DatabaseType.MemSQL, DatabaseType.Sybase, DatabaseType.SybaseIQ, DatabaseType.Composite, DatabaseType.Postgres]  )  )->forAll(type | 
-      let query = toSQLString(|Person.all()->project([#/Person/firstName!name#, #/Person/address/name!address#])->sort(desc('address'))->sort('name');, simpleRelationalMapping, $type, meta::pure::router::extension::defaultRelationalExtensions());
+      let query = toSQLString(|Person.all()->project([#/Person/firstName!name#, #/Person/address/name!address#])->sort(desc('address'))->sort('name');, simpleRelationalMapping, $type, meta::relational::extension::relationalExtensions());
       if ($type == DatabaseType.MemSQL,
          | assertEquals('select `root`.FIRSTNAME as `name`, `addressTable_d#3_1_d#3_m2`.NAME as `address` from personTable as `root` left outer join addressTable as `addressTable_d#3_1_d#3_m2` on (`addressTable_d#3_1_d#3_m2`.ID = `root`.ADDRESSID) order by `name`,`address` desc', $query),
          | assertEquals('select "root".FIRSTNAME as "name", "addressTable_d#3_1_d#3_m2".NAME as "address" from personTable as "root" left outer join addressTable as "addressTable_d#3_1_d#3_m2" on ("addressTable_d#3_1_d#3_m2".ID = "root".ADDRESSID) order by "name","address" desc', $query));
@@ -184,7 +184,7 @@ function <<test.Test>> meta::relational::tests::tds::sort::testTableToTDSWithQuo
    let mapping = meta::relational::tests::tds::tabletds::EmptyMapping;
    let runtime = meta::relational::tests::testRuntime();
    
-   let resWithoutQuotes = execute($queryWithoutQuotes, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions());
+   let resWithoutQuotes = execute($queryWithoutQuotes, $mapping, $runtime, meta::relational::extension::relationalExtensions());
    
    let expectedSql = 'select "root"."FIRST NAME" as "FIRST NAME", "root"."LAST NAME" as "LAST NAME", "root"."1columnStartsWithNumber" as "1columnStartsWithNumber" from tableWithQuotedColumns as "root" order by "FIRST NAME" desc';
    
@@ -201,7 +201,7 @@ function <<test.Test>> meta::relational::tests::tds::sort::testTableToTDSWithQuo
                                  ->sort([desc(['"FIRST NAME"'])])
    };
    
-   let resWithQuotes = execute($queryWithoutQuotes, $mapping, $runtime, meta::pure::router::extension::defaultRelationalExtensions());
+   let resWithQuotes = execute($queryWithoutQuotes, $mapping, $runtime, meta::relational::extension::relationalExtensions());
    
    assertEquals($expectedSql, $resWithQuotes->sqlRemoveFormatting());  
 }

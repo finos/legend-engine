@@ -19,7 +19,7 @@ import meta::relational::tests::*;
 
 function <<test.Test>> meta::relational::tests::milestoning::projection::testMilestoningColumnProjectionForRoot():Boolean[1]
 {
-   let result = execute(|Product.allVersions()->project([p|$p.id, p|$p.milestoning.from, p|$p.milestoning.thru],['id', 'from', 'thru']), milestoningMapWithEmbeddedSimple, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Product.allVersions()->project([p|$p.id, p|$p.milestoning.from, p|$p.milestoning.thru],['id', 'from', 'thru']), milestoningMapWithEmbeddedSimple, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameSQL('select "root".id as "id", "root".from_z as "from", "root".thru_z as "thru" from ProductTable as "root"', $result);
    let data = $result.values.rows;
    assertSameElements([1, 2, 2, 3], $data.getInteger('id'));
@@ -29,7 +29,7 @@ function <<test.Test>> meta::relational::tests::milestoning::projection::testMil
 
 function <<test.Test>> meta::relational::tests::milestoning::projection::testMilestoningColumnProjectionForEmbedded():Boolean[1]
 {
-   let result = execute(|Product.allVersions()->project([c|$c.classificationAllVersions.type, c|$c.classificationAllVersions.milestoning.from, c|$c.classificationAllVersions.milestoning.thru],['type', 'from', 'thru']), milestoningMapWithEmbeddedSimple, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Product.allVersions()->project([c|$c.classificationAllVersions.type, c|$c.classificationAllVersions.milestoning.from, c|$c.classificationAllVersions.milestoning.thru],['type', 'from', 'thru']), milestoningMapWithEmbeddedSimple, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameSQL('select "root".type as "type", "root".from_z as "from", "root".thru_z as "thru" from ProductTable as "root"', $result);
    let data = $result.values.rows;
    assertSameElements(['OPTION', 'STOCK', 'STOCK', 'STOCK'], $data.getString('type'));
@@ -39,7 +39,7 @@ function <<test.Test>> meta::relational::tests::milestoning::projection::testMil
 
 function <<test.Test>> meta::relational::tests::milestoning::projection::testMilestoningColumnProjectionForInlineEmbedded():Boolean[1]
 {
-   let result = execute(|Product.allVersions()->project([e|$e.exchangeAllVersions.name, e|$e.exchangeAllVersions.milestoning.from, e|$e.exchangeAllVersions.milestoning.thru],['name', 'from', 'thru']), milestoningMapWithEmbeddedSimple, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Product.allVersions()->project([e|$e.exchangeAllVersions.name, e|$e.exchangeAllVersions.milestoning.from, e|$e.exchangeAllVersions.milestoning.thru],['name', 'from', 'thru']), milestoningMapWithEmbeddedSimple, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameSQL('select "root".exchange as "name", "root".from_z as "from", "root".thru_z as "thru" from ProductTable as "root"', $result);
    let data = $result.values.rows;
    assertSameElements(['ISE', 'ISE', 'LNSE', 'LNSE'], $data.getString('name'));
@@ -49,7 +49,7 @@ function <<test.Test>> meta::relational::tests::milestoning::projection::testMil
 
 function <<test.Test>> meta::relational::tests::milestoning::projection::testMilestoningColumnProjectionWithNonMilestonedTable():Boolean[1]
 {
-   let result = execute(|Product.allVersions()->project([p|$p.id, p|$p.milestoning.from, p|$p.milestoning.thru],['id', 'from', 'thru']), noMilestoningMap, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Product.allVersions()->project([p|$p.id, p|$p.milestoning.from, p|$p.milestoning.thru],['id', 'from', 'thru']), noMilestoningMap, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameSQL('select "root".id as "id", null as "from", null as "thru" from ProductTableNoMilestoning as "root"', $result);
    let data = $result.values.rows;
    assertSameElements([1, 2], $data.getInteger('id'));

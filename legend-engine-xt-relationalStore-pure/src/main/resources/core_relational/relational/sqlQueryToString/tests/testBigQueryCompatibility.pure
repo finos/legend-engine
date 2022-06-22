@@ -95,7 +95,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::tabl
     |meta::relational::sqlQueryToString::tests::bigquery::domain::Person.all()->project([s | $s.age], ['KEY']), 
     meta::relational::sqlQueryToString::tests::bigquery::mapping::simpleRelationalMappingPersonForBQ,
     meta::relational::runtime::DatabaseType.BigQuery, 
-    meta::pure::router::extension::defaultRelationalExtensions());
+    meta::relational::extension::relationalExtensions());
    assertEquals('select `person_table_d#2_d_m1`.key as `KEY` from `person table` as `root` left outer join `person table` as `person_table_d#2_d_m1` on (`root`.key = `person_table_d#2_d_m1`.key)', $result);
 }
 
@@ -105,7 +105,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::tabl
     |meta::relational::sqlQueryToString::tests::bigquery::domain::Thing.all()->project([s | $s.id], ['ID']), 
     meta::relational::sqlQueryToString::tests::bigquery::mapping::simpleRelationalMappingPersonForBQ,
     meta::relational::runtime::DatabaseType.BigQuery, 
-    meta::pure::router::extension::defaultRelationalExtensions());
+    meta::relational::extension::relationalExtensions());
    assertEquals('select `root`.ID as `ID` from dataset1.`thing table` as `root`', $result);
 }
 
@@ -121,7 +121,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::wind
      $func, 
      meta::relational::tests::simpleRelationalMappingInc, 
      DatabaseType.BigQuery, 
-     meta::pure::router::extension::defaultRelationalExtensions());
+     meta::relational::extension::relationalExtensions());
    assertEquals('select `root`.LASTNAME as `lastName`, avg(1.0 * `root`.AGE) OVER (Partition By `root`.FIRSTNAME Order By `root`.LASTNAME ASC) as `ageAverageWindow` from personTable as `root`', $result);
 }
 
@@ -132,7 +132,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::test
     |Trade.all()->project(t | $t.settlementDateTime, 'settlementDateTime')->filter(r | $r.getDateTime('settlementDateTime') < $dt),
     meta::relational::tests::simpleRelationalMapping, 
     DatabaseType.BigQuery, 
-    meta::pure::router::extension::defaultRelationalExtensions());
+    meta::relational::extension::relationalExtensions());
    assertEquals('select `root`.settlementDateTime as `settlementDateTime` from tradeTable as `root` where `root`.settlementDateTime < PARSE_DATETIME(\'%Y-%m-%d %H:%M:%E6S\', \'2015-01-01 00:00:00.000\')', $result);
 }
 
@@ -143,7 +143,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::test
     |Trade.all()->project(t | $t.date, 'date')->filter(r | $r.getDate('date') < $dt),
     meta::relational::tests::simpleRelationalMapping, 
      DatabaseType.BigQuery,
-     meta::pure::router::extension::defaultRelationalExtensions());
+     meta::relational::extension::relationalExtensions());
    assertEquals('select `root`.tradeDate as `date` from tradeTable as `root` where `root`.tradeDate < PARSE_DATETIME(\'%Y-%m-%d %H:%M:%E6S\', \'2015-01-01 00:00:00.000\')', $result);
 }
 
@@ -153,7 +153,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::test
     date:StrictDate[1]|Trade.all()->project(t | $t.date, 'date')->filter(r | $r.getDate('date') < $date),
     meta::relational::tests::simpleRelationalMapping, 
      ^Runtime(connections = ^DatabaseConnection(type=DatabaseType.BigQuery, element = Any)),
-     meta::pure::router::extension::defaultRelationalExtensions());
+     meta::relational::extension::relationalExtensions());
    let expected = 
       'Sequence\n'+
       '(\n'+
@@ -172,7 +172,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::test
       '    )\n'+
       '  )\n'+
       ')\n';
-   assertEquals($expected, $result->meta::pure::executionPlan::toString::planToString(meta::pure::router::extension::defaultRelationalExtensions()));
+   assertEquals($expected, $result->meta::pure::executionPlan::toString::planToString(meta::relational::extension::relationalExtensions()));
 }
 
 function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::testParseDateTimeOnQueryVariable():Boolean[1]
@@ -181,7 +181,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::test
     dateTime:DateTime[1]|Trade.all()->project(t | $t.settlementDateTime, 'settlementDateTime')->filter(r | $r.getDate('settlementDateTime') < $dateTime),
     meta::relational::tests::simpleRelationalMapping, 
      ^Runtime(connections = ^DatabaseConnection(type=DatabaseType.BigQuery, element = Any)),
-     meta::pure::router::extension::defaultRelationalExtensions());
+     meta::relational::extension::relationalExtensions());
    let expected = 
       'Sequence\n'+
       '(\n'+
@@ -200,7 +200,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::test
       '    )\n'+
       '  )\n'+
       ')\n';
-   assertEquals($expected, $result->meta::pure::executionPlan::toString::planToString(meta::pure::router::extension::defaultRelationalExtensions()));
+   assertEquals($expected, $result->meta::pure::executionPlan::toString::planToString(meta::relational::extension::relationalExtensions()));
 }
 
 function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::testGroupByAlias():Boolean[1]
@@ -209,7 +209,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::test
       |Person.all()->groupBy([p|$p.firstName], [agg(p|$p.age, x|$x->sum())], ['name', 'age']),
       meta::relational::tests::simpleRelationalMapping, 
       DatabaseType.BigQuery, 
-      meta::pure::router::extension::defaultRelationalExtensions());
+      meta::relational::extension::relationalExtensions());
     assertEquals('select `root`.FIRSTNAME as `name`, sum(`root`.AGE) as `age` from personTable as `root` group by `name`', $result);
 }
 
@@ -219,7 +219,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::test
      |Person.all()->groupBy([p|$p.firstName], agg( x|$x.lastName, y|$y->joinStrings('*')),['firstName', 'lastNames']),
       meta::relational::tests::simpleRelationalMapping, 
       DatabaseType.BigQuery, 
-      meta::pure::router::extension::defaultRelationalExtensions());
+      meta::relational::extension::relationalExtensions());
    assertSameSQL('select `root`.FIRSTNAME as `firstName`, string_agg(`root`.LASTNAME, \'*\') as `lastNames` from personTable as `root` group by `firstName`', $result);
 }
 
@@ -229,7 +229,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::test
     |Person.all()->project([p|$p.name, p|$p.addresses.name], ['name','address']),
     meta::relational::tests::simpleRelationalMapping, 
     DatabaseType.BigQuery, 
-    meta::pure::router::extension::defaultRelationalExtensions());
+    meta::relational::extension::relationalExtensions());
    assertSameSQL('select concat(`root`.FIRSTNAME, \' \', `root`.LASTNAME) as `name`, `union_d#5_d_m2`.`addressTableNAME` as `address` from personTable as `root` left outer join (select `addressTable_d#6`.ID as ID, null as ADDRESSID, `addressTable_d#6`.NAME as `addressTableNAME` from addressTable as `addressTable_d#6` UNION ALL select `firmTable_d#8`.ID as ID, `firmTable_d#8`.ADDRESSID as ADDRESSID, `addressTable_d#6_f_d`.NAME as `addressTableNAME` from firmTable as `firmTable_d#8` left outer join addressTable as `addressTable_d#6_f_d` on (`addressTable_d#6_f_d`.ID = `firmTable_d#8`.ADDRESSID)) as `union_d#5_d_m2` on (`union_d#5_d_m2`.ID = `root`.FIRMID or `union_d#5_d_m2`.ID = `root`.ADDRESSID)', $result);
 
 }
@@ -240,7 +240,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::atan
     |SqlFunctionDemo.all()->project([s | $s.floatATan2Result], ['atan2']),
       meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
       DatabaseType.BigQuery, 
-      meta::pure::router::extension::defaultRelationalExtensions());
+      meta::relational::extension::relationalExtensions());
    assertSameSQL('select atan2(`root`.float1,`root`.int1) as `atan2` from dataTable as `root`', $result);
 }
 
@@ -250,7 +250,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::conc
      |Person.all()->project([p|$p.name] ,['name']),
       meta::relational::tests::simpleRelationalMapping, 
       DatabaseType.BigQuery, 
-      meta::pure::router::extension::defaultRelationalExtensions());
+      meta::relational::extension::relationalExtensions());
    assertSameSQL('select concat(`root`.FIRSTNAME, \' \', `root`.LASTNAME) as `name` from personTable as `root`', $result);
 }
 
@@ -260,7 +260,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::hour
         |SqlFunctionDemo.all()->project([s | $s.hour], ['hour']),
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         meta::relational::runtime::DatabaseType.BigQuery, 
-        meta::pure::router::extension::defaultRelationalExtensions());  
+        meta::relational::extension::relationalExtensions());
     assertEquals('select extract(hour from `root`.dateTime) as `hour` from dataTable as `root`', $result);
 }
 
@@ -270,7 +270,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::week
         |SqlFunctionDemo.all()->project([s | $s.week], ['weekofyear']),
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         meta::relational::runtime::DatabaseType.BigQuery, 
-        meta::pure::router::extension::defaultRelationalExtensions());  
+        meta::relational::extension::relationalExtensions());
     assertEquals('select extract(week from `root`.dateTime) as `weekofyear` from dataTable as `root`', $result);
 }
 
@@ -280,7 +280,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::cast
         |SqlFunctionDemo.all()->project([s | $s.string3Integer], ['string3Integer']),
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         meta::relational::runtime::DatabaseType.BigQuery, 
-        meta::pure::router::extension::defaultRelationalExtensions());  
+        meta::relational::extension::relationalExtensions());
     assertEquals('select cast(`root`.string3 as int64) as `string3Integer` from dataTable as `root`', $result);
 }
 
@@ -290,7 +290,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::toSt
         |SqlFunctionDemo.all()->project([s | $s.int1String], ['int1String']),
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         meta::relational::runtime::DatabaseType.BigQuery, 
-        meta::pure::router::extension::defaultRelationalExtensions());  
+        meta::relational::extension::relationalExtensions());
     assertEquals('select cast(`root`.int1 as string) as `int1String` from dataTable as `root`', $result);
 }
 
@@ -300,7 +300,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::toda
         |Trade.all()->filter(d | $d.date == today())->project(x | $x.date, 'date'),
         meta::relational::tests::simpleRelationalMapping, 
         meta::relational::runtime::DatabaseType.BigQuery, 
-        meta::pure::router::extension::defaultRelationalExtensions());  
+        meta::relational::extension::relationalExtensions());
     assertEquals('select `root`.tradeDate as `date` from tradeTable as `root` where `root`.tradeDate = CURRENT_DATE()', $result);
 }
 
@@ -310,7 +310,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::stdd
         |SqlFunctionDemo.all()->project([s | $s.float1StdDevSample], 'stdDevSample'),
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         meta::relational::runtime::DatabaseType.BigQuery, 
-        meta::pure::router::extension::defaultRelationalExtensions());  
+        meta::relational::extension::relationalExtensions());
     assertEquals('select stddev_samp(`root`.int1) as `stdDevSample` from dataTable as `root`', $result);
 }
 
@@ -320,7 +320,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::stdd
         |SqlFunctionDemo.all()->project([s | $s.float1StdDevPopulation], 'float1StdDevPopulation'),
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         meta::relational::runtime::DatabaseType.BigQuery, 
-        meta::pure::router::extension::defaultRelationalExtensions());  
+        meta::relational::extension::relationalExtensions());
     assertEquals('select stddev_pop(`root`.int1) as `float1StdDevPopulation` from dataTable as `root`', $result);
 }
 
@@ -330,7 +330,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::subs
         |Person.all()->filter(p|$p.firstName->substring(1, 5) == 'John'),
         meta::relational::tests::simpleRelationalMapping, 
         DatabaseType.BigQuery, 
-        meta::pure::router::extension::defaultRelationalExtensions());  
+        meta::relational::extension::relationalExtensions());
     assertEquals('select `root`.ID as `pk_0`, `root`.FIRSTNAME as `firstName`, `root`.AGE as `age`, `root`.LASTNAME as `lastName` from personTable as `root` where substring(`root`.FIRSTNAME, 1, 5) = \'John\'', $result);
 }
 
@@ -340,7 +340,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::seco
         |Trade.all()->project([ t | $t.settlementDateTime->cast(@Date)->toOne()->second()], ['second']),
         meta::relational::tests::simpleRelationalMapping, 
         DatabaseType.BigQuery, 
-        meta::pure::router::extension::defaultRelationalExtensions());  
+        meta::relational::extension::relationalExtensions());
     assertEquals('select extract( second from `root`.settlementDateTime) as `second` from tradeTable as `root`', $result);
 }
 
@@ -350,7 +350,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::rtri
         |SqlFunctionDemo.all()->project([s | $s.rtrimResult], ['rtrim']),
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         DatabaseType.BigQuery, 
-        meta::pure::router::extension::defaultRelationalExtensions());  
+        meta::relational::extension::relationalExtensions());
     assertEquals('select rtrim(`root`.string2) as `rtrim` from dataTable as `root`', $result);
 }
 
@@ -360,7 +360,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::roun
         |SqlFunctionDemo.all()->project([s | $s.float1Round], ['round']),
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         DatabaseType.BigQuery, 
-        meta::pure::router::extension::defaultRelationalExtensions());  
+        meta::relational::extension::relationalExtensions());
     assertEquals('select round(`root`.float1, 0) as `round` from dataTable as `root`', $result);
 }
 
@@ -370,7 +370,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::righ
         |SqlFunctionDemo.all()->project([s | $s.string1Right], ['right']),
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         DatabaseType.BigQuery, 
-        meta::pure::router::extension::defaultRelationalExtensions());  
+        meta::relational::extension::relationalExtensions());
     assertEquals('select right(`root`.string1,2) as `right` from dataTable as `root`', $result);
 }
 
@@ -380,7 +380,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::rem(
         |Trade.all()->project([t| rem($t.quantity, $t.id)], ['rem']),
         meta::relational::tests::simpleRelationalMapping, 
         DatabaseType.BigQuery, 
-        meta::pure::router::extension::defaultRelationalExtensions());  
+        meta::relational::extension::relationalExtensions());
     assertEquals('select mod(`root`.quantity,`root`.ID) as `rem` from tradeTable as `root`', $result);
 }
 
@@ -390,7 +390,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::posi
         |meta::relational::tests::mapping::propertyfunc::model::domain::Person.all()->project(p|$p.firstName, 'firstName'),
         meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMapping,
         DatabaseType.BigQuery, 
-        meta::pure::router::extension::defaultRelationalExtensions());  
+        meta::relational::extension::relationalExtensions());
     assertEquals('select substring(`root`.FULLNAME, 0, strpos(\',\', `root`.FULLNAME)-1) as `firstName` from personTable as `root`', $result);
 }
 
@@ -400,7 +400,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::pars
         |SqlFunctionDemo.all()->project([s | $s.string2Integer], ['parseInteger']),
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,      
         DatabaseType.BigQuery, 
-        meta::pure::router::extension::defaultRelationalExtensions());  
+        meta::relational::extension::relationalExtensions());
     assertEquals('select cast(`root`.string2Integer as int64) as `parseInteger` from dataTable as `root`', $result);
 }
 
@@ -410,7 +410,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::pars
         |SqlFunctionDemo.all()->project([s | $s.string2Float], ['string2Float']),
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,      
         DatabaseType.BigQuery, 
-        meta::pure::router::extension::defaultRelationalExtensions());  
+        meta::relational::extension::relationalExtensions());
     assertEquals('select cast(`root`.string2float as float64) as `string2Float` from dataTable as `root`', $result);
 }
 
@@ -420,7 +420,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::pars
         |SqlFunctionDemo.all()->project([s | $s.string2Decimal], ['string2Decimal']),
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,      
         DatabaseType.BigQuery, 
-        meta::pure::router::extension::defaultRelationalExtensions());  
+        meta::relational::extension::relationalExtensions());
     assertEquals('select cast(`root`.string2Decimal as decimal) as `string2Decimal` from dataTable as `root`', $result);
 }
 
@@ -430,7 +430,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::now(
         |Trade.all()->filter(d | $d.date == now())->project(x | $x.date, 'date'),
         meta::relational::tests::simpleRelationalMapping, 
         DatabaseType.BigQuery, 
-        meta::pure::router::extension::defaultRelationalExtensions());  
+        meta::relational::extension::relationalExtensions());
     assertEquals('select `root`.tradeDate as `date` from tradeTable as `root` where `root`.tradeDate = current_timestamp()', $result);
 }
 
@@ -441,7 +441,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::mont
         |Trade.all()->project([t| monthNumber($t.settlementDateTime)], ['settlementMonthNumber']),
         meta::relational::tests::simpleRelationalMapping, 
         DatabaseType.BigQuery, 
-        meta::pure::router::extension::defaultRelationalExtensions());  
+        meta::relational::extension::relationalExtensions());
     assertEquals('select extract(month from `root`.settlementDateTime) as `settlementMonthNumber` from tradeTable as `root`', $result);
 }
 
@@ -451,7 +451,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::mod(
         |SqlFunctionDemo.all()->project([s | $s.floatModResult ], ['mod']),
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,      
         DatabaseType.BigQuery,         
-        meta::pure::router::extension::defaultRelationalExtensions());  
+        meta::relational::extension::relationalExtensions());
     assertEquals('select mod(`root`.int1,2) as `mod` from dataTable as `root`', $result);
 }
 
@@ -461,7 +461,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::minu
         |Trade.all()->project([t | $t.settlementDateTime->cast(@Date)->toOne()->minute()],['settlementDateTimeMinute']),
         meta::relational::tests::simpleRelationalMapping, 
         DatabaseType.BigQuery, 
-        meta::pure::router::extension::defaultRelationalExtensions());  
+        meta::relational::extension::relationalExtensions());
     assertEquals('select extract(minute from `root`.settlementDateTime) as `settlementDateTimeMinute` from tradeTable as `root`', $result);
 }
 
@@ -477,7 +477,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::test
                                                       f | false
                                                    ],
                                                    ['a','b','c','d', 'e', 'f'])->take(0),
-                              simpleRelationalMapping, DatabaseType.BigQuery, meta::pure::router::extension::defaultRelationalExtensions());
+                              simpleRelationalMapping, DatabaseType.BigQuery, meta::relational::extension::relationalExtensions());
   assertEquals('select \'String\' as `a`, PARSE_DATE(\'%Y-%m-%d\', \'2016-03-01\') as `b`, PARSE_DATETIME(\'%Y-%m-%d %H:%M:%E6S\', \'2016-03-01 10:18:18.976\') as `c`, 1 as `d`, 1.1 as `e`, \'false\' as `f` from personTable as `root` limit 0', $result);
 }
 
@@ -487,6 +487,6 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::test
        |Order.all()->project([o|$o.id] ,['id']),
         meta::relational::tests::simpleRelationalMappingWithConcat,
         DatabaseType.BigQuery,
-        meta::pure::router::extension::defaultRelationalExtensions());
+        meta::relational::extension::relationalExtensions());
    assertSameSQL('select concat(\'id\', `root`.ID) as `id` from orderTable as `root`', $result);
 }

@@ -43,7 +43,7 @@ function meta::protocols::pure::v1_22_0::invocation::execution::execute::process
    ^Pair<List<Any>, List<Activity>>(first=^List<Any>(values=$values), second = ^List<Activity>(values=$activities));
 }
 
-function meta::protocols::pure::v1_22_0::transformation::fromPureGraph::context::transformContext(context:ExecutionContext[1], extensions:	meta::pure::router::extension::RouterExtension[*]):meta::protocols::pure::v1_22_0::metamodel::ExecutionContext[1]
+function meta::protocols::pure::v1_22_0::transformation::fromPureGraph::context::transformContext(context:ExecutionContext[1], extensions:	meta::pure::extension::Extension[*]):meta::protocols::pure::v1_22_0::metamodel::ExecutionContext[1]
 {
    $context->match($extensions.serializerExtension('v1_22_0')->cast(@meta::protocols::pure::v1_22_0::extension::SerializerExtension_v1_22_0).invocation_execution_transformContext->concatenate([
       a:meta::pure::runtime::ExecutionContext[1]|
@@ -87,7 +87,7 @@ function meta::protocols::pure::v1_22_0::invocation::execution::execute::getPlan
    );
 }
 
-function meta::protocols::pure::v1_22_0::invocation::execution::execute::executePlan(plan:meta::pure::executionPlan::ExecutionPlan[1], host: String[1], port: Integer[1], extensions:meta::pure::router::extension::RouterExtension[*]) : String[1]
+function meta::protocols::pure::v1_22_0::invocation::execution::execute::executePlan(plan:meta::pure::executionPlan::ExecutionPlan[1], host: String[1], port: Integer[1], extensions:meta::pure::extension::Extension[*]) : String[1]
 {
    let alloyPlan = $plan->meta::protocols::pure::v1_22_0::transformation::fromPureGraph::executionPlan::transformPlan($extensions);
    executePlan($alloyPlan->meta::json::toJSON(1000, meta::json::config(false, false, true, true)), $host, $port);
@@ -105,7 +105,7 @@ function meta::protocols::pure::v1_22_0::invocation::execution::execute::execute
    $resp.entity;
 }
 
-function meta::protocols::pure::v1_22_0::invocation::execution::execute::buildExecutionInput<T|m>(f:FunctionDefinition<{->T[m]}>[1], m:Mapping[1], runtime:Runtime[1],  exeCtx:ExecutionContext[0..1], version:String[1], serializationKind:String[1], executionMode:String[1], extensions:meta::pure::router::extension::RouterExtension[*]):String[1]
+function meta::protocols::pure::v1_22_0::invocation::execution::execute::buildExecutionInput<T|m>(f:FunctionDefinition<{->T[m]}>[1], m:Mapping[1], runtime:Runtime[1],  exeCtx:ExecutionContext[0..1], version:String[1], serializationKind:String[1], executionMode:String[1], extensions:meta::pure::extension::Extension[*]):String[1]
 {
          let transformedContext = if($exeCtx->isNotEmpty(), | $exeCtx->toOne()->transformContext($extensions),| []);
          let execMode = ExecutionMode->extractEnumValue($executionMode);
@@ -154,12 +154,12 @@ function meta::protocols::pure::v1_22_0::invocation::execution::execute::buildEx
          )->alloyToJSON();
 }
 
-function meta::protocols::pure::v1_22_0::invocation::execution::execute::alloyExecute<T|m>(f:FunctionDefinition<{->T[m]}>[1], m:Mapping[1], pureRuntime:Runtime[1], context:ExecutionContext[0..1], host:String[1], port:Integer[1], version:String[1], executionMode:String[1], extensions:meta::pure::router::extension::RouterExtension[*]):meta::pure::mapping::Result<T|m>[1]
+function meta::protocols::pure::v1_22_0::invocation::execution::execute::alloyExecute<T|m>(f:FunctionDefinition<{->T[m]}>[1], m:Mapping[1], pureRuntime:Runtime[1], context:ExecutionContext[0..1], host:String[1], port:Integer[1], version:String[1], executionMode:String[1], extensions:meta::pure::extension::Extension[*]):meta::pure::mapping::Result<T|m>[1]
 {
   legendExecute($f, $m, $pureRuntime, $context, $host, $port, $version, 'json', $executionMode, $extensions);
 }
 
-function meta::protocols::pure::v1_22_0::invocation::execution::execute::legendExecute<T|m>(f:FunctionDefinition<{->T[m]}>[1], m:Mapping[1], pureRuntime:Runtime[1], context:ExecutionContext[0..1], host:String[1], port:Integer[1], version:String[1], serializationKind:String[1], executionMode:String[1], extensions:meta::pure::router::extension::RouterExtension[*]):meta::pure::mapping::Result<T|m>[1]
+function meta::protocols::pure::v1_22_0::invocation::execution::execute::legendExecute<T|m>(f:FunctionDefinition<{->T[m]}>[1], m:Mapping[1], pureRuntime:Runtime[1], context:ExecutionContext[0..1], host:String[1], port:Integer[1], version:String[1], serializationKind:String[1], executionMode:String[1], extensions:meta::pure::extension::Extension[*]):meta::pure::mapping::Result<T|m>[1]
 {
    let transformedContext = if($context->isNotEmpty(), | $context->toOne()->transformContext($extensions),| []);
    let execMode = meta::protocols::pure::v1_22_0::invocation::execution::execute::ExecutionMode->extractEnumValue($executionMode);
@@ -227,13 +227,13 @@ function meta::protocols::pure::v1_22_0::invocation::execution::execute::legendE
    ^Result<T|m>(values=$values, activities=$res.second.values);
 }
 
-function meta::protocols::pure::v1_22_0::invocation::execution::execute::generatePlan<T|m>(f: FunctionDefinition<{->T[m]}>[1], m: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[0..1], host: String[1], port: Integer[1], version: String[1], serializationKind:String[1], executionMode: String[1], extensions:meta::pure::router::extension::RouterExtension[*]):String[1]
+function meta::protocols::pure::v1_22_0::invocation::execution::execute::generatePlan<T|m>(f: FunctionDefinition<{->T[m]}>[1], m: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[0..1], host: String[1], port: Integer[1], version: String[1], serializationKind:String[1], executionMode: String[1], extensions:meta::pure::extension::Extension[*]):String[1]
 {
    let resultJSON = buildExecutionInput($f, $m, $runtime, $exeCtx, $version, $serializationKind, $executionMode, $extensions);
    generatePlan($resultJSON, $host, $port);
 }
 
-function meta::protocols::pure::v1_22_0::invocation::execution::execute::alloyExecuteLambda<T|m>(f:FunctionDefinition<{->T[m]}>[1], m:Mapping[1], pureRuntime:Runtime[1], context:ExecutionContext[0..1], host:String[1], port:Integer[1], version:String[1], serializationKind:String[1], executionMode:String[1], extensions:meta::pure::router::extension::RouterExtension[*]) : String[1]
+function meta::protocols::pure::v1_22_0::invocation::execution::execute::alloyExecuteLambda<T|m>(f:FunctionDefinition<{->T[m]}>[1], m:Mapping[1], pureRuntime:Runtime[1], context:ExecutionContext[0..1], host:String[1], port:Integer[1], version:String[1], serializationKind:String[1], executionMode:String[1], extensions:meta::pure::extension::Extension[*]) : String[1]
 {
    let payload = buildExecutionInput($f,$m,$pureRuntime,$context,$version, $serializationKind, $executionMode, $extensions);
 

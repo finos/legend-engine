@@ -254,7 +254,7 @@ import meta::relational::tests::*;
 
 function <<test.Test, test.ToFix>> meta::relational::tests::mapping::union::partialForeignKeyUsage::testUnionWithPartialForeignKeyUsage1():Any[*]
 {
-   let result = execute(|A.all()->project([a|$a.pk, a|$a.b.pk, a|$a.b.c.pk],['a_pk', 'b_pk', 'c_pk']), relationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|A.all()->project([a|$a.pk, a|$a.b.pk, a|$a.b.c.pk],['a_pk', 'b_pk', 'c_pk']), relationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameSQL('', $result);
    assertEquals([], $result.values.rows.get('a_pk'));
    assertEquals([], $result.values.rows.get('b_pk'));
@@ -263,7 +263,7 @@ function <<test.Test, test.ToFix>> meta::relational::tests::mapping::union::part
 
 function <<test.Test, test.ToFix>> meta::relational::tests::mapping::union::partialForeignKeyUsage::testUnionWithPartialForeignKeyUsage2():Any[*]
 {
-   let result = execute(|B.all()->project([b|$b.pk, b|$b.c.pk, b|$b.c.d.pk],['b_pk', 'c_pk', 'd_pk']), relationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|B.all()->project([b|$b.pk, b|$b.c.pk, b|$b.c.d.pk],['b_pk', 'c_pk', 'd_pk']), relationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameSQL('', $result);
    assertEquals([], $result.values.rows.get('b_pk'));
    assertEquals([], $result.values.rows.get('c_pk'));

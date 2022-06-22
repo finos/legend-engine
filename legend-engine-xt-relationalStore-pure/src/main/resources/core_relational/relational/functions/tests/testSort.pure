@@ -19,7 +19,7 @@ import meta::pure::profiles::*;
 
 function <<test.Test>> meta::relational::tests::query::sort::testSortSimple():Boolean[1]
 {
-   let result = execute(|Person.all()->sortBy(#/Person/lastName#), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->sortBy(#/Person/lastName#), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 12);
    assertEquals(['Allen', 'Firm B', 'Harris', 'Hill', 'Hill', 'Johnson', 'New York', 'Roberts', 'Smith', 'Smith', 'York', 'no Firm'], $result.values.lastName);
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName", "root".LASTNAME as "o_lastName" from personTable as "root" order by "root".LASTNAME', $result->sqlRemoveFormatting());
@@ -27,7 +27,7 @@ function <<test.Test>> meta::relational::tests::query::sort::testSortSimple():Bo
 
 function <<test.Test, test.ToFix>> meta::relational::tests::query::sort::testSortDeep():Boolean[1]
 {
-   let result = execute(|Person.all()->sortBy(p | $p.address->toOne().name), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->sortBy(p | $p.address->toOne().name), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 9);
    assertEquals('Smith', $result.values->at(0).lastName);
    assertEquals('Hill', $result.values->at(1).lastName);

@@ -23,12 +23,12 @@ import meta::protocols::alloy::function::*;
 import meta::pure::milestoning::*;
 import meta::json::*;
 
-function meta::protocols::pure::v1_23_0::transformation::fromPureGraph::domain::transformClass(class:Class<Any>[1], extensions:meta::pure::router::extension::RouterExtension[*]):meta::protocols::pure::v1_23_0::metamodel::domain::Class[1]
+function meta::protocols::pure::v1_23_0::transformation::fromPureGraph::domain::transformClass(class:Class<Any>[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_23_0::metamodel::domain::Class[1]
 {
    meta::protocols::pure::v1_23_0::transformation::fromPureGraph::domain::transformClass($class, false, $extensions);
 }
 
-function meta::protocols::pure::v1_23_0::transformation::fromPureGraph::domain::transformClass(class:Class<Any>[1], useAppliedFunction:Boolean[1], extensions:meta::pure::router::extension::RouterExtension[*]):meta::protocols::pure::v1_23_0::metamodel::domain::Class[1]
+function meta::protocols::pure::v1_23_0::transformation::fromPureGraph::domain::transformClass(class:Class<Any>[1], useAppliedFunction:Boolean[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_23_0::metamodel::domain::Class[1]
 {
    let properties = $class.properties->reverseMilestoningTransforms()->cast(@Property<Nil,Any|*>);
    let qualifiedProperties = $class.qualifiedProperties->reverseMilestoningTransforms()->cast(@QualifiedProperty<Any>);
@@ -49,12 +49,12 @@ function meta::protocols::pure::v1_23_0::transformation::fromPureGraph::domain::
    );
 }
 
-function meta::protocols::pure::v1_23_0::transformation::fromPureGraph::domain::transformConstraint(constraint:Constraint[1], extensions:meta::pure::router::extension::RouterExtension[*]):meta::protocols::pure::v1_23_0::metamodel::domain::Constraint[1]
+function meta::protocols::pure::v1_23_0::transformation::fromPureGraph::domain::transformConstraint(constraint:Constraint[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_23_0::metamodel::domain::Constraint[1]
 {
     meta::protocols::pure::v1_23_0::transformation::fromPureGraph::domain::transformConstraint($constraint,false, $extensions);
 }
 
-function meta::protocols::pure::v1_23_0::transformation::fromPureGraph::domain::transformConstraint(constraint:Constraint[1],useAppliedFunction:Boolean[1], extensions:meta::pure::router::extension::RouterExtension[*]):meta::protocols::pure::v1_23_0::metamodel::domain::Constraint[1]
+function meta::protocols::pure::v1_23_0::transformation::fromPureGraph::domain::transformConstraint(constraint:Constraint[1],useAppliedFunction:Boolean[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_23_0::metamodel::domain::Constraint[1]
 {
    ^meta::protocols::pure::v1_23_0::metamodel::domain::Constraint
    (
@@ -78,7 +78,7 @@ function meta::protocols::pure::v1_23_0::transformation::fromPureGraph::domain::
     let updatedMessageFunction = ^$messageFunction(classifierGenericType = $updatedClassifierGenericType);
 }
 
-function meta::protocols::pure::v1_23_0::transformation::fromPureGraph::domain::transformAssociation(association:Association[1], extensions:meta::pure::router::extension::RouterExtension[*]):meta::protocols::pure::v1_23_0::metamodel::domain::Association[1]
+function meta::protocols::pure::v1_23_0::transformation::fromPureGraph::domain::transformAssociation(association:Association[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_23_0::metamodel::domain::Association[1]
 {
    let properties = $association.properties->reverseMilestoningTransforms()->cast(@Property<Nil,Any|*>);
    let qualifiedProperties = $association.qualifiedProperties->reverseMilestoningTransforms()->cast(@QualifiedProperty<Any>);
@@ -97,7 +97,7 @@ function meta::protocols::pure::v1_23_0::transformation::fromPureGraph::domain::
    );
 }
 
-function meta::protocols::pure::v1_23_0::transformation::fromPureGraph::domain::transformMeasure(measure:Measure[1], extensions:meta::pure::router::extension::RouterExtension[*]):meta::protocols::pure::v1_23_0::metamodel::domain::Measure[1]
+function meta::protocols::pure::v1_23_0::transformation::fromPureGraph::domain::transformMeasure(measure:Measure[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_23_0::metamodel::domain::Measure[1]
 {
    let canonicalUnit = $measure.canonicalUnit;
    let nonCanonicalUnits = $measure.nonCanonicalUnits;
@@ -112,7 +112,7 @@ function meta::protocols::pure::v1_23_0::transformation::fromPureGraph::domain::
    );
 }
 
-function meta::protocols::pure::v1_23_0::transformation::fromPureGraph::domain::transformUnit(unit:Unit[1], extensions:meta::pure::router::extension::RouterExtension[*]):meta::protocols::pure::v1_23_0::metamodel::domain::Unit[1]
+function meta::protocols::pure::v1_23_0::transformation::fromPureGraph::domain::transformUnit(unit:Unit[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_23_0::metamodel::domain::Unit[1]
 {
    let measure = $unit.measure;
    let conversionFunction = $unit.conversionFunction;
@@ -127,7 +127,7 @@ function meta::protocols::pure::v1_23_0::transformation::fromPureGraph::domain::
    );
 }
 
-function <<access.private>> meta::protocols::pure::v1_23_0::transformation::fromPureGraph::domain::transformProperty(property:Property<Nil,Any|*>[1], extensions:meta::pure::router::extension::RouterExtension[*]):meta::protocols::pure::v1_23_0::metamodel::domain::Property[1]
+function <<access.private>> meta::protocols::pure::v1_23_0::transformation::fromPureGraph::domain::transformProperty(property:Property<Nil,Any|*>[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_23_0::metamodel::domain::Property[1]
 {
    ^meta::protocols::pure::v1_23_0::metamodel::domain::Property
    (
@@ -140,7 +140,7 @@ function <<access.private>> meta::protocols::pure::v1_23_0::transformation::from
    )
 }
 
-function <<access.private>> meta::protocols::pure::v1_23_0::transformation::fromPureGraph::domain::transformQualifiedProperty(qualifiedProperty:QualifiedProperty<Any>[1], extensions:meta::pure::router::extension::RouterExtension[*]):meta::protocols::pure::v1_23_0::metamodel::domain::QualifiedProperty[1]
+function <<access.private>> meta::protocols::pure::v1_23_0::transformation::fromPureGraph::domain::transformQualifiedProperty(qualifiedProperty:QualifiedProperty<Any>[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_23_0::metamodel::domain::QualifiedProperty[1]
 {
    let fType = $qualifiedProperty->functionType();
 
@@ -171,7 +171,7 @@ function meta::protocols::pure::v1_23_0::transformation::fromPureGraph::domain::
    ^meta::protocols::pure::v1_23_0::metamodel::domain::Multiplicity(lowerBound=$multiplicity.lowerBound.value, upperBound=$multiplicity.upperBound.value)
 }
 
-function <<access.private>> meta::protocols::pure::v1_23_0::transformation::fromPureGraph::domain::transformDefaultValue(d:meta::pure::metamodel::function::property::DefaultValue[1], extensions:meta::pure::router::extension::RouterExtension[*]): meta::protocols::pure::v1_23_0::metamodel::domain::DefaultValue[1]
+function <<access.private>> meta::protocols::pure::v1_23_0::transformation::fromPureGraph::domain::transformDefaultValue(d:meta::pure::metamodel::function::property::DefaultValue[1], extensions:meta::pure::extension::Extension[*]): meta::protocols::pure::v1_23_0::metamodel::domain::DefaultValue[1]
 {
    ^meta::protocols::pure::v1_23_0::metamodel::domain::DefaultValue(
        _type = 'defaultValue',
@@ -209,7 +209,7 @@ function <<access.private>> meta::protocols::pure::v1_23_0::transformation::from
    );
 }
 
-function meta::protocols::pure::v1_23_0::transformation::fromPureGraph::transformFunction(f:FunctionDefinition<Any>[1], extensions:meta::pure::router::extension::RouterExtension[*]):meta::protocols::pure::v1_23_0::metamodel::domain::Function[1]
+function meta::protocols::pure::v1_23_0::transformation::fromPureGraph::transformFunction(f:FunctionDefinition<Any>[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_23_0::metamodel::domain::Function[1]
 {
 
    ^meta::protocols::pure::v1_23_0::metamodel::domain::Function
@@ -230,7 +230,7 @@ function meta::protocols::pure::v1_23_0::transformation::fromPureGraph::transfor
 
    )
 }
-function meta::protocols::pure::v1_23_0::transformation::fromPureGraph::transformProfile(p:Profile[1], extensions:meta::pure::router::extension::RouterExtension[*]):meta::protocols::pure::v1_23_0::metamodel::domain::Profile[1]
+function meta::protocols::pure::v1_23_0::transformation::fromPureGraph::transformProfile(p:Profile[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_23_0::metamodel::domain::Profile[1]
 
 {   ^meta::protocols::pure::v1_23_0::metamodel::domain::Profile(_type = 'profile',
                                                                name = $p.name->toOne(),

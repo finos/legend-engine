@@ -94,7 +94,7 @@ import meta::relational::tests::mapping::extend::*;
 
 function <<test.Test>> meta::relational::tests::mapping::extend::inlineEmbeddedPropertyMapping::testInlineEmbeddedPropertyMappingForB():Any[*]
 {
-   let result = execute(|B.all()->filter(b|$b.m1.id == 1 && $b.m2.id == 3 && $b.n1.id == 1 && $b.n2.id == 2), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|B.all()->filter(b|$b.m1.id == 1 && $b.m2.id == 3 && $b.n1.id == 1 && $b.n2.id == 2), testMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let expectedSQL = 'select "root".id as "pk_0", "root".id as "id" from ABC as "root" where ((("root".m1Id = 1 and "root".m3Id = 3) and "root".n1Id = 1) and "root".n2Id = 2)';
    assertEquals($expectedSQL, $result->sqlRemoveFormatting());
    assertEquals(1, $result.values.id);
@@ -102,7 +102,7 @@ function <<test.Test>> meta::relational::tests::mapping::extend::inlineEmbeddedP
 
 function <<test.Test>> meta::relational::tests::mapping::extend::inlineEmbeddedPropertyMapping::testInlineEmbeddedPropertyMappingForC():Any[*]
 {
-   let result = execute(|C.all()->filter(c|$c.m1.id == 1 && $c.m2.id == 4 && $c.n1.id == 1 && $c.n2.id == 3  && $c.o1.id == 1 && $c.o2.id == 2), testMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|C.all()->filter(c|$c.m1.id == 1 && $c.m2.id == 4 && $c.n1.id == 1 && $c.n2.id == 3  && $c.o1.id == 1 && $c.o2.id == 2), testMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let expectedSQL = 'select "root".id as "pk_0", "root".id as "id" from ABC as "root" where ((((("root".m1Id = 1 and "root".m4Id = 4) and "root".n1Id = 1) and "root".n3Id = 3) and "root".o1Id = 1) and "root".o2Id = 2)';
    assertEquals($expectedSQL, $result->sqlRemoveFormatting());
    assertEquals(1, $result.values.id);

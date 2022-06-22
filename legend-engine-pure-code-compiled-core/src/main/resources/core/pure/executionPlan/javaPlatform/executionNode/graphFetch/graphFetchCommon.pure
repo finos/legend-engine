@@ -31,7 +31,7 @@ import meta::pure::milestoning::*;
 import meta::pure::graphFetch::*;
 import meta::pure::graphFetch::routing::*;
 import meta::pure::graphFetch::executionPlan::*;
-import meta::pure::router::extension::*;
+import meta::pure::extension::*;
 
 function meta::pure::executionPlan::engine::java::graphFetch::common::prepareForGlobalGraphFetchNode(node: GlobalGraphFetchExecutionNode[1], path: String[1], context:GenerationContext[1], debug:DebugContext[1]):GenerationContext[1]
 {
@@ -55,7 +55,7 @@ function meta::pure::executionPlan::engine::java::graphFetch::common::localGraph
    '.localGraph'
 }
 
-function meta::pure::executionPlan::engine::java::graphFetch::common::generateCodeForLocalGraphFetchNode(node: LocalGraphFetchExecutionNode[1], path:String[1], context:GenerationContext[1], extensions:RouterExtension[*], debug:DebugContext[1]):GeneratedCode[1]
+function meta::pure::executionPlan::engine::java::graphFetch::common::generateCodeForLocalGraphFetchNode(node: LocalGraphFetchExecutionNode[1], path:String[1], context:GenerationContext[1], extensions:Extension[*], debug:DebugContext[1]):GeneratedCode[1]
 {
    let implProject   = if($node.resultType->instanceOf(ClassResultType)  &&!$node->meta::pure::graphFetch::executionPlan::nodeIsMerged() ,| generateGraphNodeImplementation($node, $context, $path, $extensions, $debug), | []);
    let globalProject = if($node.parentIndex->isNotEmpty(), | newProject(), | generateTypes($context, $debug)); // Avoid generating interfaces and enums multiple times and merging later. Do it only at root nodes (which do not have parent index)
@@ -94,7 +94,7 @@ function meta::pure::executionPlan::engine::java::graphFetch::common::graphImplC
       ->implements($interface);
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::common::generateGraphNodeImplementation(node: LocalGraphFetchExecutionNode[1], context: GenerationContext[1], path: String[1], extensions:RouterExtension[*], debug: DebugContext[1]):Project[1]
+function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::common::generateGraphNodeImplementation(node: LocalGraphFetchExecutionNode[1], context: GenerationContext[1], path: String[1], extensions:Extension[*], debug: DebugContext[1]):Project[1]
 {
    let resultClass       = $node->typeFromStoreLocalNode();
    let implClass         = graphImplClass($node, $path, $context);
@@ -173,7 +173,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
    newProject()->addClasses($withProperties);
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::common::updateImplementationClassWithStoreSpecificFieldsAndMethods(implClass: meta::external::language::java::metamodel::Class[1], node: LocalGraphFetchExecutionNode[1], context: GenerationContext[1], extensions: RouterExtension[*], debug: DebugContext[1]): Project[1]
+function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::common::updateImplementationClassWithStoreSpecificFieldsAndMethods(implClass: meta::external::language::java::metamodel::Class[1], node: LocalGraphFetchExecutionNode[1], context: GenerationContext[1], extensions: Extension[*], debug: DebugContext[1]): Project[1]
 {
    $node->match([
       i : meta::pure::mapping::modelToModel::graphFetch::executionPlan::InMemoryGraphFetchExecutionNode[1] | $implClass->meta::pure::executionPlan::engine::java::graphFetch::inMemory::enrichForInMemoryGraphExecution($i, $context, $extensions, $debug)

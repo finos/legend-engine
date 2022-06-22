@@ -20,11 +20,11 @@ import meta::pure::profiles::*;
 
 function <<test.Test>> meta::relational::tests::query::association::mixed::testAssociationMixed():Boolean[1]
 {
-   let result = execute(|Person.all()->filter(p | $p.firm.employees->exists(e | $e.firstName == 'Oliver')), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->filter(p | $p.firm.employees->exists(e | $e.firstName == 'Oliver')), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 2);
    assertEquals('Oliver,Elena', $result.values.firstName->makeString(','));
    
-   let result2 = execute(|Person.all()->filter(p | $p.firm.employees->exists(e | $e.firstName == 'Peter')), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result2 = execute(|Person.all()->filter(p | $p.firm.employees->exists(e | $e.firstName == 'Peter')), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result2.values, 6);
    assertEquals('Anthony, Don, John, John, New, Peter', $result2.values.firstName->sort()->makeString(', '));
    
@@ -34,13 +34,13 @@ function <<test.Test>> meta::relational::tests::query::association::mixed::testA
 
 function <<test.Test>> meta::relational::tests::query::association::mixed::testAssociationMixedDeep():Boolean[1]
 {
-   let result = execute(|Person.all()->filter(p | $p.firm.employees->exists(e | $e.address.name == 'Hong Kong')), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->filter(p | $p.firm.employees->exists(e | $e.address.name == 'Hong Kong')), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    println($result.values.firstName);
    assertSize($result.values->removeDuplicates(), 2);
    assertEquals('Elena,Oliver', $result.values->removeDuplicates().firstName->sort()->makeString(','));
    assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) left outer join (select distinct "persontable_2".FIRMID from personTable as "persontable_2" left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "persontable_2".ADDRESSID) where "addresstable_0".NAME = \'Hong Kong\') as "persontable_1" on ("firmtable_0".ID = "persontable_1".FIRMID) where "persontable_1".FIRMID is not null', $result->sqlRemoveFormatting());
   
-   let result2 = execute(|Person.all()->filter(p | $p.firm.employees->exists(e | $e.address.name == 'Hoboken')), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result2 = execute(|Person.all()->filter(p | $p.firm.employees->exists(e | $e.address.name == 'Hoboken')), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result2.values, 6);
    assertEquals( 'Anthony, Don, John, John, New, Peter', $result2.values.firstName->sort()->makeString(', '));
    assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) left outer join (select distinct "persontable_2".FIRMID from personTable as "persontable_2" left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "persontable_2".ADDRESSID) where "addresstable_0".NAME = \'Hoboken\') as "persontable_1" on ("firmtable_0".ID = "persontable_1".FIRMID) where "persontable_1".FIRMID is not null',$result2);

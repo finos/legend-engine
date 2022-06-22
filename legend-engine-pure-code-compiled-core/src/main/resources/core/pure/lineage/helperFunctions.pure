@@ -14,7 +14,7 @@
 
 import meta::pure::lineage::analytics::*;
 
-function meta::pure::lineage::analytics::inlineQualifiedProperties(vs: ValueSpecification[1], vars:Map<VariableExpression, ValueSpecification>[1], openVars:Map<String, List<Any>>[1], extensions:meta::pure::router::extension::RouterExtension[*]):ValueSpecification[1]
+function meta::pure::lineage::analytics::inlineQualifiedProperties(vs: ValueSpecification[1], vars:Map<VariableExpression, ValueSpecification>[1], openVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*]):ValueSpecification[1]
 {
    $vs->match([
       fe : FunctionExpression[1] | if(($fe.func->evaluateAndDeactivate()->instanceOf(QualifiedProperty) && !($fe.func->evaluateAndDeactivate()->cast(@QualifiedProperty<Any>).owner == TDSRow)) || ($fe.func->instanceOf(ConcreteFunctionDefinition) && !($fe.func->evaluateAndDeactivate()->instanceOf(NativeFunction) || $fe.func->evaluateAndDeactivate()->meta::pure::router::routing::shouldStop($extensions))),

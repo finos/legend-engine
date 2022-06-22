@@ -14,7 +14,7 @@
 
 import meta::protocols::pure::v1_22_0::metamodel::executionPlan::*;
 
-function meta::protocols::pure::v1_22_0::transformation::fromPureGraph::external::format::json::transformSerializeNode(node:meta::external::format::json::executionPlan::JsonSerializeExecutionNode[1], mapping:meta::pure::mapping::Mapping[1], extensions:meta::pure::router::extension::RouterExtension[*]): ExecutionNode[1]
+function meta::protocols::pure::v1_22_0::transformation::fromPureGraph::external::format::json::transformSerializeNode(node:meta::external::format::json::executionPlan::JsonSerializeExecutionNode[1], mapping:meta::pure::mapping::Mapping[1], extensions:meta::pure::extension::Extension[*]): ExecutionNode[1]
 {
    ^meta::protocols::pure::v1_22_0::metamodel::external::format::json::executionPlan::JsonSerializeExecutionNode(
       _type           = 'jsonSerialize',
@@ -25,7 +25,7 @@ function meta::protocols::pure::v1_22_0::transformation::fromPureGraph::external
    );
 }
 
-function meta::protocols::pure::v1_22_0::transformation::fromPureGraph::external::format::json::transformDeserializeNode(node:meta::external::format::json::executionPlan::JsonDeserializeExecutionNode[1], mapping:meta::pure::mapping::Mapping[1], extensions:meta::pure::router::extension::RouterExtension[*]): ExecutionNode[1]
+function meta::protocols::pure::v1_22_0::transformation::fromPureGraph::external::format::json::transformDeserializeNode(node:meta::external::format::json::executionPlan::JsonDeserializeExecutionNode[1], mapping:meta::pure::mapping::Mapping[1], extensions:meta::pure::extension::Extension[*]): ExecutionNode[1]
 {
    ^meta::protocols::pure::v1_22_0::metamodel::external::format::json::executionPlan::JsonDeserializeExecutionNode(
       _type           = 'jsonDeserialize',

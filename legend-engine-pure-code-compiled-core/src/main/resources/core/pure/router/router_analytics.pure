@@ -66,12 +66,12 @@ function meta::pure::router::analytics::filterCrossPropertyAccesses(accesses: Pr
 }
 
 
-function meta::pure::router::analytics::getAllPropertyAccesses(v:ValueSpecification[1], mapping:Mapping[1], extensions:meta::pure::router::extension::RouterExtension[*]):PropertyAccess[*]
+function meta::pure::router::analytics::getAllPropertyAccesses(v:ValueSpecification[1], mapping:Mapping[1], extensions:meta::pure::extension::Extension[*]):PropertyAccess[*]
 {
    $v->scanPropertyAccesses(^AnalyticsState(inFilterFunction=false, inProjectFunctions=false, mapping=$mapping), $extensions);
 }
 
-function meta::pure::router::analytics::getAllCrossPropertyAccesses(v:ValueSpecification[1], mapping:Mapping[1], extensions:meta::pure::router::extension::RouterExtension[*]):PropertyAccess[*]
+function meta::pure::router::analytics::getAllCrossPropertyAccesses(v:ValueSpecification[1], mapping:Mapping[1], extensions:meta::pure::extension::Extension[*]):PropertyAccess[*]
 {
    $v->scanPropertyAccesses(^AnalyticsState(inFilterFunction=false, inProjectFunctions=false, mapping=$mapping), $extensions)
       ->filter(a | $a.sourceStore != 'AGGREGATION_AWARE')
@@ -79,7 +79,7 @@ function meta::pure::router::analytics::getAllCrossPropertyAccesses(v:ValueSpeci
       ->filter(a | $a.sourceStore != $a.targetStore);
 }
 
-function meta::pure::router::analytics::scanPropertyAccesses(vs:ValueSpecification[1], state:AnalyticsState[1], extensions:meta::pure::router::extension::RouterExtension[*]):PropertyAccess[*]
+function meta::pure::router::analytics::scanPropertyAccesses(vs:ValueSpecification[1], state:AnalyticsState[1], extensions:meta::pure::extension::Extension[*]):PropertyAccess[*]
 {
    $vs->evaluateAndDeactivate()->match([
       
@@ -133,7 +133,7 @@ function meta::pure::router::analytics::scanPropertyAccesses(vs:ValueSpecificati
 
 
 
-function meta::pure::router::analytics::getStore(setId: String[1], mapping:Mapping[1], extensions:meta::pure::router::extension::RouterExtension[*]):String[1]
+function meta::pure::router::analytics::getStore(setId: String[1], mapping:Mapping[1], extensions:meta::pure::extension::Extension[*]):String[1]
 {
    $mapping.classMappingById($setId)->toOne()->getStoreFromSetImpl($mapping, $extensions)->elementToPath();
 }

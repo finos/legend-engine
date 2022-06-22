@@ -24,59 +24,59 @@ import meta::relational::runtime::*;
 
 function <<test.Test>> meta::relational::tests::mapping::inheritance::cross::testAssociation():Boolean[1]
 {
-   let result1 = execute(|Person.all()->filter(p|$p.roadVehicles->exists(r|$r.id == 1)), inheritanceMappingCross, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result1 = execute(|Person.all()->filter(p|$p.roadVehicles->exists(r|$r.id == 1)), inheritanceMappingCross, testRuntime(), meta::relational::extension::relationalExtensions()).values;
    assertEquals(1, $result1->size());
    assertEquals('David Scott', $result1.name);
-   let result2 = execute(|Person.all()->filter(p|$p.roadVehicles->exists(r|$r.id == 2)), inheritanceMappingCross, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result2 = execute(|Person.all()->filter(p|$p.roadVehicles->exists(r|$r.id == 2)), inheritanceMappingCross, testRuntime(), meta::relational::extension::relationalExtensions()).values;
    assertEquals(2, $result2->size());
    assertSameElements(['David Scott','Atul Anand'], $result2.name);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::inheritance::cross::testGroupBy():Boolean[1]
 {
-   let result1 = execute(|Person.all()->project([p|$p.name, p|$p.roadVehicles->map(r|$r.wheelCount)], ['name', 'wheelCount'])->groupBy('name', agg('wheelCountSum', r|$r.getInteger('wheelCount'), s|$s->sum())), inheritanceMappingCross, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   let result1 = execute(|Person.all()->project([p|$p.name, p|$p.roadVehicles->map(r|$r.wheelCount)], ['name', 'wheelCount'])->groupBy('name', agg('wheelCountSum', r|$r.getInteger('wheelCount'), s|$s->sum())), inheritanceMappingCross, testRuntime(), meta::relational::extension::relationalExtensions()).values->at(0);
    assertEquals(2, $result1.rows->size());
    assertSameElements(['Atul Anand 7', 'David Scott 10'], $result1.rows->map(r|$r.getString('name')+' '+$r.getInteger('wheelCountSum')->toString()));
 }
 
 function <<test.Test>> meta::relational::tests::mapping::inheritance::cross::testProject():Boolean[1]
 {
-   let result1 = execute(|RoadVehicle.all()->project([r|$r.wheelCount], ['wheelCount']), inheritanceMappingCross, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   let result1 = execute(|RoadVehicle.all()->project([r|$r.wheelCount], ['wheelCount']), inheritanceMappingCross, testRuntime(), meta::relational::extension::relationalExtensions()).values->at(0);
    assertEquals(5, $result1.rows->size());
    assertSameElements([4,4,4,3,2], $result1.rows.values);
 }
 
 function <<test.ToFix>> meta::relational::tests::mapping::inheritance::cross::testGetAll():Boolean[1]
 {
-   let result1 = execute(|RoadVehicle.all(), inheritanceMappingCross, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values;
+   let result1 = execute(|RoadVehicle.all(), inheritanceMappingCross, testRuntime(), meta::relational::extension::relationalExtensions()).values;
    assertEquals(5, $result1->size());
    assertSameElements([4,4,4,3,2], $result1.wheelCount);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::inheritance::cross::testProjectAssociation():Boolean[1]
 {
-   let result1 = execute(|Person.all()->project([p|$p.roadVehicles->map(r|$r.wheelCount)], ['wheelCount']), inheritanceMappingCross, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   let result1 = execute(|Person.all()->project([p|$p.roadVehicles->map(r|$r.wheelCount)], ['wheelCount']), inheritanceMappingCross, testRuntime(), meta::relational::extension::relationalExtensions()).values->at(0);
    assertEquals(5, $result1.rows->size());
    assertSameElements([4,4,4,3,2], $result1.rows.values);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::inheritance::cross::testProjectTwoLambdas():Boolean[1]
 {
-   let result1 = execute(|Person.all()->project([p|$p.name, p|$p.roadVehicles->map(r|$r.wheelCount)], ['name', 'wheelCount']), inheritanceMappingCross, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   let result1 = execute(|Person.all()->project([p|$p.name, p|$p.roadVehicles->map(r|$r.wheelCount)], ['name', 'wheelCount']), inheritanceMappingCross, testRuntime(), meta::relational::extension::relationalExtensions()).values->at(0);
    assertEquals(5, $result1.rows->size());
    assertSameElements(['Atul Anand 3', 'Atul Anand 4', 'David Scott 2', 'David Scott 4', 'David Scott 4'], $result1.rows->map(r|$r.getString('name')+' '+$r.getInteger('wheelCount')->toString()));
 }
 
 function <<test.Test, test.ToFix>> meta::relational::tests::mapping::inheritance::cross::testFilterProject():Boolean[1]
 {
-   let result1 = execute(|Person.all()->filter(p|$p.roadVehicles->exists(r|$r.id == 1))->project([p|$p.name], ['name']), inheritanceMappingCross, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   let result1 = execute(|Person.all()->filter(p|$p.roadVehicles->exists(r|$r.id == 1))->project([p|$p.name], ['name']), inheritanceMappingCross, testRuntime(), meta::relational::extension::relationalExtensions()).values->at(0);
    assertEquals(1, $result1->size());
    assertEquals('David Scott', $result1.rows.values);
 }
 
 function <<test.Test, test.ToFix>> meta::relational::tests::mapping::inheritance::cross::testProjectTwoLambdasWithAutomap():Boolean[1]
 {
-   let result1 = execute(|Person.all()->project([p|$p.name, p|$p.roadVehicles.wheelCount], ['name', 'wheelCount']), inheritanceMappingCross, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   let result1 = execute(|Person.all()->project([p|$p.name, p|$p.roadVehicles.wheelCount], ['name', 'wheelCount']), inheritanceMappingCross, testRuntime(), meta::relational::extension::relationalExtensions()).values->at(0);
    assertEquals(5, $result1.rows->size());
    assertSameElements(['Atul Anand 3', 'Atul Anand 4', 'David Scott 2', 'David Scott 4', 'David Scott 4'], $result1.rows->map(r|$r.getString('name')+' '+$r.getInteger('wheelCount')->toString()));
 }

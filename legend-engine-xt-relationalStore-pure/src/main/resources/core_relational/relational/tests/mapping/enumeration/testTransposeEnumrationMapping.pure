@@ -20,7 +20,7 @@ import meta::relational::tests::mapping::enumeration::*;
 function <<test.ToFix>> meta::relational::tests::mapping::enumeration::testMappingWithTranspose():Boolean[1]
 {
  
-    let result = execute(|Employee.all(), employeeTestMappingWithTransposeFunction, enumTestRuntime(), meta::pure::router::extension::defaultRelationalExtensions(),debug());
+    let result = execute(|Employee.all(), employeeTestMappingWithTransposeFunction, enumTestRuntime(), meta::relational::extension::relationalExtensions(),debug());
     assertSize($result.values, 3);
     assertSameElements(['Alice', 'Bob', 'Curtis'], $result.values->map(e | $e.name));
 
@@ -42,7 +42,7 @@ function <<test.ToFix>> meta::relational::tests::mapping::enumeration::testMappi
 function <<test.ToFix>> meta::relational::tests::mapping::enumeration::testMappingTransposeFilter():Boolean[1]
 {
  
-   let result = execute(|Employee.all()->filter(e | $e.skills->contains(Skills.SQL)), employeeTestMappingWithTransposeFunction, enumTestRuntime(), meta::pure::router::extension::defaultRelationalExtensions(),debug());
+   let result = execute(|Employee.all()->filter(e | $e.skills->contains(Skills.SQL)), employeeTestMappingWithTransposeFunction, enumTestRuntime(), meta::relational::extension::relationalExtensions(),debug());
    assertSize($result.values, 2);
    assertSameElements(['Bob', 'Curtis'], $result.values->map(e | $e.name));  
 }
@@ -53,7 +53,7 @@ function <<test.ToFix>> meta::relational::tests::mapping::enumeration::testMappi
 {
  
     let result = execute(|Employee.all()->project([e|$e.name,e|$e.skills],['name','skill'])
-                         , employeeTestMappingWithTransposeFunction, enumTestRuntime(), meta::pure::router::extension::defaultRelationalExtensions(),debug());
+                         , employeeTestMappingWithTransposeFunction, enumTestRuntime(), meta::relational::extension::relationalExtensions(),debug());
    
     assertSize($result.values->at(0), 5);
 

@@ -243,9 +243,9 @@ meta::relational::tests::functions::pureToSqlQuery::simpleFunctionExpressionTran
    let runtime = meta::relational::tests::testRuntime();
    let mapping = meta::relational::tests::simpleRelationalMapping;
 
-   let sql = meta::relational::functions::pureToSqlQuery::toSQLQuery($fe, $mapping, ^Map<String,List<Any>>() , [], noDebug(), meta::pure::router::extension::defaultRelationalExtensions());
+   let sql = meta::relational::functions::pureToSqlQuery::toSQLQuery($fe, $mapping, ^Map<String,List<Any>>() , [], noDebug(), meta::relational::extension::relationalExtensions());
 //    let sql_string = $sql->meta::relational::functions::sqlQueryToString::sqlQueryToString(meta::relational::runtime::DatabaseType.H2, true);
-   let sql_string = $sql->meta::relational::functions::sqlQueryToString::sqlQueryToString(meta::relational::runtime::DatabaseType.H2, meta::pure::router::extension::defaultRelationalExtensions());
+   let sql_string = $sql->meta::relational::functions::sqlQueryToString::sqlQueryToString(meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
 
 
    assertEquals('select current_timestamp()', $sql_string);
@@ -259,8 +259,8 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::simpl
    let runtime = meta::relational::tests::testRuntime();
    let mapping = meta::relational::tests::simpleRelationalMapping;
 
-   let sql = meta::relational::functions::pureToSqlQuery::toSQLQuery($fe, $mapping, ^Map<String,List<Any>>() , [], noDebug(), meta::pure::router::extension::defaultRelationalExtensions());
-   let sql_string = $sql->meta::relational::functions::sqlQueryToString::sqlQueryToString(meta::relational::runtime::DatabaseType.H2, meta::pure::router::extension::defaultRelationalExtensions());
+   let sql = meta::relational::functions::pureToSqlQuery::toSQLQuery($fe, $mapping, ^Map<String,List<Any>>() , [], noDebug(), meta::relational::extension::relationalExtensions());
+   let sql_string = $sql->meta::relational::functions::sqlQueryToString::sqlQueryToString(meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
 
    assertEquals('select dateadd(MONTH, 1, current_timestamp())', $sql_string);
 }
@@ -270,7 +270,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::addDr
    let runtime = meta::relational::tests::testRuntime();
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let debugContext = noDebug();
-   let extensions = meta::pure::router::extension::defaultRelationalExtensions();
+   let extensions = meta::relational::extension::relationalExtensions();
    let context = ^RelationalExecutionContext(enableConstraints=false, addDriverTablePkForProject=true);
 
    let x = {|Firm.all()->project(c | $c.legalName, 'legalName')}->evaluateAndDeactivate();
@@ -295,7 +295,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::testI
    let runtime = meta::relational::tests::testRuntime();
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let debugContext = noDebug();
-   let extensions = meta::pure::router::extension::defaultRelationalExtensions();
+   let extensions = meta::relational::extension::relationalExtensions();
    
    let schema = meta::relational::tests::dbInc.schema('default');
    let personTable = $schema.table('personTable')->toOne();
@@ -319,7 +319,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::testI
    let fe = $clusters.val->toOne()->cast(@FunctionExpression);
 
    let sql = $fe->toSQLQuery($mapping, ^Map<String,List<Any>>(), $context, $debugContext, $extensions)->cast(@TdsSelectSqlQuery);
-   let sqlStr = $sql->meta::relational::functions::sqlQueryToString::sqlQueryToString(meta::relational::runtime::DatabaseType.H2, meta::pure::router::extension::defaultRelationalExtensions());
+   let sqlStr = $sql->meta::relational::functions::sqlQueryToString::sqlQueryToString(meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
 
    assertEquals('select "addressTable_d#4_d_m1".NAME as "personAddress", "addressTable_d#4_f_d_d_m2_r".NAME as "firmAddress", "root".ID as "ID", "root".ADDRESSID as fk_ADDRESSID, "addressTable_d#4_f_d_d_m2_r".STREET as fk_j0_0_STREET, "addressTable_d#4_d_m1".STREET as fk_j0_1_STREET, "firmTable_d#6_d_m2".ADDRESSID as fk_j1_ADDRESSID from personTable as "root" left outer join addressTable as "addressTable_d#4_d_m1" on ("addressTable_d#4_d_m1".ID = "root".ADDRESSID) left outer join firmTable as "firmTable_d#6_d_m2" on ("firmTable_d#6_d_m2".ID = "root".FIRMID) left outer join addressTable as "addressTable_d#4_f_d_d_m2_r" on ("addressTable_d#4_f_d_d_m2_r".ID = "firmTable_d#6_d_m2".ADDRESSID)', $sqlStr);
 }

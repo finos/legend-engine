@@ -26,14 +26,14 @@ import meta::pure::mapping::*;
 import meta::pure::metamodel::path::*;
 import meta::pure::model::binding::*;
 import meta::pure::model::unit::*;
-import meta::pure::router::extension::*;
+import meta::pure::extension::*;
 import meta::pure::runtime::*;
 import meta::pure::store::platform::executionPlan::generation::*;
-import meta::pure::store::platform::router::extension::*;
+import meta::pure::store::platform::extension::*;
 
-function meta::external::shared::format::routerExtensions(type:String[1], externalFormatExtensions:ExternalFormatExtension[*]) : RouterExtension[*]
+function meta::external::shared::format::routerExtensions(type:String[1], externalFormatExtensions:ExternalFormatExtension[*]) : Extension[*]
 {
-   let shared = ^RouterExtension(
+   let shared = ^Extension(
       type = $type,
       plan_javaRuntime_enginePlatformDependencies_conventions = meta::external::shared::format::executionPlan::engine::extendJavaEngineDependencies_Conventions_1__Conventions_1_,
       serializerExtension      = meta::external::shared::format::serializerExtensionName_String_1__String_1_,
@@ -56,19 +56,19 @@ function meta::external::shared::format::routerExtensions(type:String[1], extern
                }
             ]
          },
-      executionPlan_print_connectionToString = meta::external::shared::format::executionPlan::printConnection_RouterExtension_MANY__Function_MANY_,
+      executionPlan_print_connectionToString = meta::external::shared::format::executionPlan::printConnection_Extension_MANY__Function_MANY_,
       executionPlan_print_planNodeToString =
-         {space:String[1], extensions:RouterExtension[*] |
+         {space:String[1], extensions:Extension[*] |
             printPlanNodeToString($space, $extensions)
                ->concatenate($externalFormatExtensions.printPlanNodeToString->map(x|$x->eval($space, $extensions)));
          },
       plan_javaRuntime_main_prepare2 = 
-         {path:String[1], context:GenerationContext[1], extensions:RouterExtension[*], debug:DebugContext[1] |
+         {path:String[1], context:GenerationContext[1], extensions:Extension[*], debug:DebugContext[1] |
             planPrepareDataQuality($path, $context, $extensions, $debug)
                ->concatenate($externalFormatExtensions.planJavaPrepare->map(x|$x->eval($path, $context, $extensions, $debug)));
          },
       plan_javaRuntime_main_generatePlatformCode1 = 
-         {path:String[1], context:GenerationContext[1], extensions:RouterExtension[*], debug:DebugContext[1] |
+         {path:String[1], context:GenerationContext[1], extensions:Extension[*], debug:DebugContext[1] |
             $externalFormatExtensions.planJavaGenerate->map(x|$x->eval($path, $context, $extensions, $debug));
          },
       moduleExtensions = [
@@ -92,7 +92,7 @@ function meta::external::shared::format::routerExtensions(type:String[1], extern
       ]
    );
 
-   let perFormat = $externalFormatExtensions->map(formatExt| ^RouterExtension(type                                                    = $type+':'+$formatExt.externalFormat, 
+   let perFormat = $externalFormatExtensions->map(formatExt| ^Extension(type                                                    = $type+':'+$formatExt.externalFormat,
                                                                               plan_javaRuntime_enginePlatformDependencies_conventions = $formatExt.plan_javaRuntime_enginePlatformDependencies_conventions,
                                                                               serializerExtension                                     = $formatExt.serializerExtension
                                                                              ));
@@ -102,12 +102,12 @@ function meta::external::shared::format::routerExtensions(type:String[1], extern
 
 function <<access.private>> meta::external::shared::format::executionPlan_generation_nodeForPlatformFunctionExpression(externalFormatExtensions:ExternalFormatExtension[*]): PureFunctionToProcessFunctionPair[*]
 {
-   let processor = {fe:FunctionExpression[1], runtime:Runtime[0..1], inScopeVars : Map<String, List<Any>>[1], advancedRouting: Boolean[0..1], exeCtx:ExecutionContext[1], extensions : RouterExtension[*], debug:DebugContext[1] |
+   let processor = {fe:FunctionExpression[1], runtime:Runtime[0..1], inScopeVars : Map<String, List<Any>>[1], advancedRouting: Boolean[0..1], exeCtx:ExecutionContext[1], extensions : Extension[*], debug:DebugContext[1] |
                          externalizeFunctionProcessor($fe, $runtime, $inScopeVars, $advancedRouting, $exeCtx, $extensions, $externalFormatExtensions, $debug);};
    serializeFunctions()->map(func | ^PureFunctionToProcessFunctionPair(first = $func, second = $processor));
 }
 
-function <<access.private>> meta::external::shared::format::externalizeFunctionProcessor(fe:FunctionExpression[1], runtime:Runtime[0..1], inScopeVars : Map<String, List<Any>>[1], advancedRouting: Boolean[0..1], exeCtx:ExecutionContext[1], extensions : RouterExtension[*], externalFormatExtensions:ExternalFormatExtension[*], debug:DebugContext[1]):ExecutionNode[1]
+function <<access.private>> meta::external::shared::format::externalizeFunctionProcessor(fe:FunctionExpression[1], runtime:Runtime[0..1], inScopeVars : Map<String, List<Any>>[1], advancedRouting: Boolean[0..1], exeCtx:ExecutionContext[1], extensions : Extension[*], externalFormatExtensions:ExternalFormatExtension[*], debug:DebugContext[1]):ExecutionNode[1]
 {
    let children        = $fe.parametersValues->evaluateAndDeactivate()->at(0)->meta::pure::store::platform::executionPlan::generation::processValueSpecification($runtime, $inScopeVars, $advancedRouting, $exeCtx, $extensions, $debug)->toOneMany();
 
@@ -146,10 +146,10 @@ Class meta::external::shared::format::ExternalFormatExtension
    generateSerializeNode   : Function<{Boolean[1], Binding[1], ExecutionNode[*] -> ExecutionNode[1]}>[1];  
    generateDeserializeNode : Function<{Connection[1], ExecutionNode[1], RootGraphFetchTree<Any>[0..1] -> ExecutionNode[1]}>[1];
    generatePathReference   : Function<{Path<Nil,Any|*>[1] -> PathReference[1]}>[0..1];
-   printPlanNodeToString   : Function<{String[1], RouterExtension[*] -> Function<{Nil[1] -> String[1]}>[*]}>[1];
+   printPlanNodeToString   : Function<{String[1], Extension[*] -> Function<{Nil[1] -> String[1]}>[*]}>[1];
    
-   planJavaPrepare         : Function<{String[1], GenerationContext[1], RouterExtension[*], DebugContext[1] -> Function<{Nil[1]->GenerationContext[1]}>[*]}>[1];
-   planJavaGenerate        : Function<{String[1], GenerationContext[1], RouterExtension[*], DebugContext[1] -> Function<{Nil[1]->GeneratedCode[1]}>[*]}>[1];
+   planJavaPrepare         : Function<{String[1], GenerationContext[1], Extension[*], DebugContext[1] -> Function<{Nil[1]->GenerationContext[1]}>[*]}>[1];
+   planJavaGenerate        : Function<{String[1], GenerationContext[1], Extension[*], DebugContext[1] -> Function<{Nil[1]->GeneratedCode[1]}>[*]}>[1];
    plan_javaRuntime_enginePlatformDependencies_conventions : Function<{Conventions[1]->Conventions[1]}>[0..1];
 
    serializerExtension     : Function<{String[1]->String[1]}>[1];

@@ -18,7 +18,7 @@ import meta::alloy::objectReference::*;
 import meta::pure::runtime::*;
 import meta::pure::mapping::*;
 
-function meta::alloy::objectReference::decodeObjectReferencesAndGetPkMap(clientVersion:String[1], encodedObjectReferences : String[1], extensions:meta::pure::router::extension::RouterExtension[*]):String[1]
+function meta::alloy::objectReference::decodeObjectReferencesAndGetPkMap(clientVersion:String[1], encodedObjectReferences : String[1], extensions:meta::pure::extension::Extension[*]):String[1]
 {
    let versionedFuncString = 'meta::protocols::pure::'+$clientVersion+'::invocation::execution::execute::getAlloyObjectReferenceAsMap_String_1__Map_1_';
    let versionedFunc       = $versionedFuncString->pathToElement()->cast(@Function<{String[1]->Map<String, Any>[1]}>);
@@ -29,7 +29,7 @@ function meta::alloy::objectReference::decodeObjectReferencesAndGetPkMap(clientV
                     $parsedObjectRef->getPkMapFromObjectReference($extensions);)->toJSON();
 }
 
-function <<access.private>> meta::alloy::objectReference::getPkMapFromObjectReference(parsedObjectRef : Map<String, Any>[1], extensions:meta::pure::router::extension::RouterExtension[*]):Map<String, Any>[1]
+function <<access.private>> meta::alloy::objectReference::getPkMapFromObjectReference(parsedObjectRef : Map<String, Any>[1], extensions:meta::pure::extension::Extension[*]):Map<String, Any>[1]
 {
    let pathToMapping           = $parsedObjectRef->get('pathToMapping')->cast(@String)->toOne();
    let orgPkMap                = $parsedObjectRef->get('pkMap')->cast(@Map<String, Any>)->toOne();

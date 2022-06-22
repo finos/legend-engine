@@ -6,7 +6,8 @@ import meta::relational::metamodel::relation::*;
 import meta::relational::metamodel::join::*;
 import meta::relational::metamodel::*;
 import meta::relational::runtime::*;
-import meta::pure::router::extension::*;
+import meta::pure::extension::*;
+import meta::relational::extension::*;
 
 function <<db.ExtensionLoader>> meta::relational::functions::sqlQueryToString::memSql::dbExtensionLoaderForMemSQL():DbExtensionLoader[1]
 {
@@ -161,7 +162,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memSq
    $s->processSelectSQLQueryForMemSQL($sgc.dbConfig, $sgc.format, $sgc.config, $isSubSelect, $sgc.extensions);
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::memSql::processSelectSQLQueryForMemSQL(sq:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:RouterExtension[*]):String[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::memSql::processSelectSQLQueryForMemSQL(sq:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:Extension[*]):String[1]
 {
   let s = if($sq.fromRow->isNotEmpty() && $sq.toRow->isEmpty(), |$sq->rewriteSliceAsWindowFunction(), |$sq);
   let opStr = if($s.filteringOperation->isEmpty(), |'', |$s.filteringOperation->map(s|$s->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> '));

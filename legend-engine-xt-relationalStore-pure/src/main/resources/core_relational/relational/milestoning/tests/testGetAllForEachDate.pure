@@ -14,7 +14,7 @@
 
 ###Pure
 import meta::relational::functions::asserts::*;
-import meta::csv::*;
+import meta::relational::tests::csv::*;
 import meta::pure::runtime::*;
 import meta::relational::tests::milestoning::businessdate::*;
 import meta::relational::tests::*;
@@ -27,7 +27,7 @@ import meta::relational::tests::milestoning::*;
 function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::milestoning::temporalDateProjectionQuery::testProcessingTemporalQueryWithInnerQuery():Boolean[1]
 {
    let query = {|Product->getAllForEachDate(Calendar.all()->filter(x|($x.calendarDate > %2020-01-02) && ($x.calendarDate < %2020-02-02)).calendarDate)->filter(x|$x.businessDate > %2020-01-07)->project([col(x | $x.name, 'name'),col(x|$x.businessDate,'date')])};
-   let result = execute($query,Calendarmap,^Runtime(connections=meta::relational::tests::milestoning::initDatabaseForCalendar()), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute($query,Calendarmap,^Runtime(connections=meta::relational::tests::milestoning::initDatabaseForCalendar()), meta::relational::extension::relationalExtensions());
    let expectedValue = 'name,date\n'+
                         'ProductName,2020-01-08\n'+
                            'ProductName2,2020-01-08\n'+
@@ -52,7 +52,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::milestoning::
 function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::milestoning::temporalDateProjectionQuery::testProcessingTemporalQueryWithInclusivityBehaviour():Boolean[1]
 {
    let query = {|Product->getAllForEachDate(Calendar.all()->filter(x|($x.calendarDate > %2015-10-13) && ($x.calendarDate < %2015-10-19)).calendarDate)->project([col(x | $x.name, 'name'),col(x|$x.businessDate,'date')])};
-   let result = execute($query,Calendarmap,^Runtime(connections=meta::relational::tests::milestoning::initDatabaseForCalendar()), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute($query,Calendarmap,^Runtime(connections=meta::relational::tests::milestoning::initDatabaseForCalendar()), meta::relational::extension::relationalExtensions());
    let expectedValue = 'name,date\n'+
                        'ProductName1,2015-10-15\n'+
                        'ProductName3,2015-10-15\n'+
@@ -67,7 +67,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::milestoning::
 function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::milestoning::temporalDateProjectionQuery::testProcessingTemporalQueryWithInnerQueryWithFilter():Boolean[1]
 {
    let query = {|Product->getAllForEachDate(Calendar.all()->filter(x|($x.calendarDate > %2020-01-02) && ($x.calendarDate < %2020-01-15)).calendarDate)->filter(x|$x.name == 'ProductName3')->project([col(x | $x.name, 'name'),col(x|$x.businessDate,'date')])};
-   let result = execute($query,Calendarmap,^Runtime(connections=meta::relational::tests::milestoning::initDatabaseForCalendar()), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute($query,Calendarmap,^Runtime(connections=meta::relational::tests::milestoning::initDatabaseForCalendar()), meta::relational::extension::relationalExtensions());
    let expectedValue = 'name,date\n'+
                        'ProductName3,2020-01-03\n'+
                        'ProductName3,2020-01-04\n'+
@@ -83,7 +83,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::milestoning::
 function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::milestoning::temporalDateProjectionQuery::testProcessingTemporalQueryWithInnerQueryWithQualifiedProperty():Boolean[1]
 {
    let query = {|Product->getAllForEachDate(Calendar.all()->filter(x|($x.calendarDate > %2020-01-02) && ($x.calendarDate < %2020-02-02)).calendarDate)->filter(x|$x.classification($x.businessDate).type == 'STOCK')->project([col(x | $x.classification($x.businessDate).type,'type'),col(x|$x.classification($x.businessDate).description, 'type_description'),col(x|$x.businessDate,'date')])->distinct()->sort(['type_description','date'])};
-   let result = execute($query,Calendarmap,^Runtime(connections=meta::relational::tests::milestoning::initDatabaseForCalendar()), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute($query,Calendarmap,^Runtime(connections=meta::relational::tests::milestoning::initDatabaseForCalendar()), meta::relational::extension::relationalExtensions());
    let expectedValue = 'type,type_description,date\n'+
                         'STOCK,STOCK DESC-V1,2020-01-03\n'+
                         'STOCK,STOCK DESC-V1,2020-01-04\n'+
@@ -104,7 +104,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::milestoning::
 function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::milestoning::temporalDateProjectionQuery::testProcessingTemporalQueryWithInnerQueryOnDeepProperty():Boolean[1]
 {
    let query = {|Product->getAllForEachDate(Calendar.all()->filter(x|($x.calendarDate > %2020-01-02) && ($x.calendarDate < %2020-02-02)).calendarDate)->filter(x|$x.classification($x.businessDate).type == 'STOCK')->project([col(x | $x.classification($x.businessDate).exchange.name, 'name'),col(x|$x.classification($x.businessDate).description,'type'),col(x|$x.businessDate,'date')])->distinct()->sort(['date','type'])};
-   let result = execute($query,Calendarmap,^Runtime(connections=meta::relational::tests::milestoning::initDatabaseForCalendar()), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute($query,Calendarmap,^Runtime(connections=meta::relational::tests::milestoning::initDatabaseForCalendar()), meta::relational::extension::relationalExtensions());
    let expectedValue = 'name,type,date\n'+
                         'LNSE,STOCK DESC-V1,2020-01-03\n'+
                         'LNSE,STOCK DESC-V4,2020-01-03\n'+
@@ -125,7 +125,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::milestoning::
 function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::milestoning::temporalDateProjectionQuery::testProcessingTemporalQueryMilestonedThisBusinessDatesInProject():Boolean[1]
 {
    let query = {|Product->getAllForEachDate(Calendar.all()->filter(x|($x.calendarDate > %2020-01-02) && ($x.calendarDate < %2020-01-07)).calendarDate)->filter(x|$x.classification($x.businessDate).type == 'STOCK')->project([col(x | $x.classificationTypeStr,'type'),col(x|$x.classification($x.businessDate).description,'description'),col(x|$x.businessDate,'date')])->distinct()->sort(['date','description'])};
-   let result = execute($query,Calendarmap,^Runtime(connections=meta::relational::tests::milestoning::initDatabaseForCalendar()), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute($query,Calendarmap,^Runtime(connections=meta::relational::tests::milestoning::initDatabaseForCalendar()), meta::relational::extension::relationalExtensions());
    let expectedValue = 'type,description,date\n'+
                         'STOCK,STOCK DESC-V1,2020-01-03\n'+
                         'STOCK,STOCK DESC-V4,2020-01-03\n'+
@@ -138,7 +138,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::milestoning::
 function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::milestoning::temporalDateProjectionQuery::testProcessingTemporalQueryInPosition1InQualfiedPropertySequence():Boolean[1]
 {
    let query = {|Product->getAllForEachDate(Calendar.all()->filter(x|($x.calendarDate > %2020-01-02) && ($x.calendarDate < %2020-01-07)).calendarDate)->filter(x|$x.classification($x.businessDate).type == 'STOCK')->project([col(x | $x.classificationExchangeName1,'type'),col(x|$x.classification($x.businessDate).description,'description'),col(x|$x.businessDate,'date')])->distinct()->sort(['date','description'])};
-   let result = execute($query,Calendarmap,^Runtime(connections=meta::relational::tests::milestoning::initDatabaseForCalendar()), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute($query,Calendarmap,^Runtime(connections=meta::relational::tests::milestoning::initDatabaseForCalendar()), meta::relational::extension::relationalExtensions());
    let expectedValue = 'type,description,date\n'+
                         'LNSE,STOCK DESC-V1,2020-01-03\n'+
                         'LNSE,STOCK DESC-V4,2020-01-03\n'+
@@ -152,7 +152,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::milestoning::
 function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::milestoning::temporalDateProjectionQuery::testProcessingTemporalQueryWithFilterInMapping():Boolean[1]
 {
    let query = {|StockProduct->getAllForEachDate(Calendar.all()->filter(x|($x.calendarDate > %2020-01-02) && ($x.calendarDate <%2020-01-07)).calendarDate)->filter(x|$x.classification($x.businessDate).exchange.name == 'LNSE')->project([col(x | $x.classificationExchangeName1,'type'),col(x|$x.classification($x.businessDate).description,'description'),col(x|$x.businessDate,'date')])->distinct()->sort(['date','description'])};
-   let result = execute($query,Calendarmap,^Runtime(connections=meta::relational::tests::milestoning::initDatabaseForCalendar()), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute($query,Calendarmap,^Runtime(connections=meta::relational::tests::milestoning::initDatabaseForCalendar()), meta::relational::extension::relationalExtensions());
    let expectedValue = 'type,description,date\n'+
                         'LNSE,STOCK DESC-V1,2020-01-03\n'+
                         'LNSE,STOCK DESC-V4,2020-01-03\n'+
@@ -165,7 +165,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::milestoning::
 function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::milestoning::temporalDateProjectionQuery::testProcessingTemporalQueryWithAssociationProperty():Boolean[1]
 {
    let query = {|Product->getAllForEachDate(Calendar.all()->filter(x|($x.calendarDate > %2020-01-02) && ($x.calendarDate < %2020-02-02)).calendarDate)->filter(p|$p.orders->exists(o|$o.id == 1))->project([col(x|$x.businessDate,'date')])};
-   let result = execute($query,Calendarmap,^Runtime(connections=meta::relational::tests::milestoning::initDatabaseForCalendar()), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute($query,Calendarmap,^Runtime(connections=meta::relational::tests::milestoning::initDatabaseForCalendar()), meta::relational::extension::relationalExtensions());
    let expectedValue = 'date\n'+
                         '2020-01-03\n'+
                         '2020-01-04\n'+
@@ -180,7 +180,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::milestoning::
 function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::milestoning::temporalDateProjectionQuery::testProcessingTemporalModelQueryOnRoot():Boolean[1]
 {
    let query = {|Certification->getAllForEachDate(Calendar.all()->filter(x|($x.calendarDate > %2020-01-02) && ($x.calendarDate < %2020-01-07)).calendarDate)->filter(x|$x.name == 'APCE' || $x.name == 'SRCE')->project([x|$x.name, x|$x.processingDate], ['name', 'date'])->distinct()};
-   let result = execute($query,Calendarmap,^Runtime(connections=meta::relational::tests::milestoning::initDatabaseForCalendar()), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute($query,Calendarmap,^Runtime(connections=meta::relational::tests::milestoning::initDatabaseForCalendar()), meta::relational::extension::relationalExtensions());
    let expectedValue = 'name,date\n'+
                         'SRCE,2020-01-03\n'+
                         'SRCE,2020-01-04\n';
@@ -191,7 +191,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::milestoning::
 function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::milestoning::temporalDateProjectionQuery::testProcessingTemporalModelOnPropertyWithPropogatedDate():Boolean[1]
 {
    let query = {|Certification->getAllForEachDate(Calendar.all()->filter(x|($x.calendarDate > %2020-01-02) && ($x.calendarDate < %2020-01-07)).calendarDate)->filter(x|$x.trader($x.processingDate).kerberos == 'ggekko')->project([x|$x.trader($x.processingDate).kerberos, x|$x.processingDate], ['kerberos', 'date'])};
-   let result = execute($query,Calendarmap,^Runtime(connections=meta::relational::tests::milestoning::initDatabaseForCalendar()), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute($query,Calendarmap,^Runtime(connections=meta::relational::tests::milestoning::initDatabaseForCalendar()), meta::relational::extension::relationalExtensions());
    let expectedValue = 'kerberos,date\n'+
                         'ggekko,2020-01-03\n'+
                         'ggekko,2020-01-04\n';
@@ -201,7 +201,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::milestoning::
 
 // function <<test.Test>> meta::relational::tests::milestoning::temporalProjectionQuery::testProcessingTemporalQueryWithListOfDates():Boolean[1]
 // {
-//    let result = execute(|Product->getAllForEachDate([%2020-05-10,%2020-06-10,%2019-02-15]), milestoningmap, testRuntime()), meta::pure::router::extension::defaultRelationalExtensions());
+//    let result = execute(|Product->getAllForEachDate([%2020-05-10,%2020-06-10,%2019-02-15]), milestoningmap, testRuntime()), meta::relational::extension::relationalExtensions());
 //    assertSameSQL();
 // }
 

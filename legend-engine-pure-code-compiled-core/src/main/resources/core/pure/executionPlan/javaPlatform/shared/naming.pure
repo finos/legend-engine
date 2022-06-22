@@ -26,7 +26,7 @@ function meta::pure::executionPlan::engine::java::naming::mappingAdaptorClassNam
    ^$base(simpleName=$base.simpleName+'_Adaptor_'+$toName);
 }
 
-function meta::pure::executionPlan::engine::java::naming::mapperClassName(conventions:Conventions[1], set:SetImplementation[1], extensions : meta::pure::router::extension::RouterExtension[*]): meta::external::language::java::metamodel::Class[1]
+function meta::pure::executionPlan::engine::java::naming::mapperClassName(conventions:Conventions[1], set:SetImplementation[1], extensions : meta::pure::extension::Extension[*]): meta::external::language::java::metamodel::Class[1]
 {
    // Replace $ with __ otehrwise Java compile generates spurious inner class (...$..$1)
    let base     = $conventions->className($set.parent);
@@ -36,7 +36,7 @@ function meta::pure::executionPlan::engine::java::naming::mapperClassName(conven
    ^$base(simpleName=$base.simpleName+'_Mapper_'+$toName);
 }
 
-function meta::pure::executionPlan::engine::java::naming::enumerationMapperClassName(conventions:Conventions[1], set:SetImplementation[1], em:EnumerationMapping<Any>[1], extensions : meta::pure::router::extension::RouterExtension[*]): meta::external::language::java::metamodel::Class[1]
+function meta::pure::executionPlan::engine::java::naming::enumerationMapperClassName(conventions:Conventions[1], set:SetImplementation[1], em:EnumerationMapping<Any>[1], extensions : meta::pure::extension::Extension[*]): meta::external::language::java::metamodel::Class[1]
 {
    let base = $conventions->mapperClassName($set, $extensions);
    ^$base(simpleName=$base.simpleName+'_'+$em.name->toUpperFirstCharacter()->toOne());

@@ -31,7 +31,7 @@ import meta::pure::mapping::modelToModel::*;
 import meta::pure::mapping::modelToModel::graphFetch::executionPlan::*;
 import meta::pure::runtime::*;
 
-function meta::pure::executionPlan::engine::java::graphFetch::storeStreamReading::prepareForStoreStreamReading(node: StoreStreamReadingExecutionNode[1], path: String[1], context: GenerationContext[1], extensions:meta::pure::router::extension::RouterExtension[*], debug: DebugContext[1]):GenerationContext[1]
+function meta::pure::executionPlan::engine::java::graphFetch::storeStreamReading::prepareForStoreStreamReading(node: StoreStreamReadingExecutionNode[1], path: String[1], context: GenerationContext[1], extensions:meta::pure::extension::Extension[*], debug: DebugContext[1]):GenerationContext[1]
 {
    print(if($debug.debug,|$debug.space+'('+$path+') prepareStoreStreamReading\n', |''));
 
@@ -62,7 +62,7 @@ function meta::pure::executionPlan::engine::java::graphFetch::storeStreamReading
    ^$context(typeInfos = $newTypeInfos, nodeInfos = $context.nodeInfos->concatenate($currentNodeInfo));
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::storeStreamReading::sourceTypeFromConnection(connection: Connection[1], conventions: Conventions[1], extensions:meta::pure::router::extension::RouterExtension[*]): JavaType[1]
+function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::storeStreamReading::sourceTypeFromConnection(connection: Connection[1], conventions: Conventions[1], extensions:meta::pure::extension::Extension[*]): JavaType[1]
 {
    let dataRecordClass = $connection->match($extensions.plan_javaRuntime_graphFetchStream_sourceTypeFromConnection->concatenate([
       j : JsonModelConnection[1] | JsonDataRecord,
@@ -73,7 +73,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
    ^SimpleJavaType(pureType = $dataRecordClass, javaType = $conventions->className($dataRecordClass));
 }
 
-function meta::pure::executionPlan::engine::java::graphFetch::storeStreamReading::generateCodeForStoreStreamReadingExecutionNode(node: StoreStreamReadingExecutionNode[1], path: String[1], context: GenerationContext[1], extensions: meta::pure::router::extension::RouterExtension[*], debug: DebugContext[1]):GeneratedCode[1]
+function meta::pure::executionPlan::engine::java::graphFetch::storeStreamReading::generateCodeForStoreStreamReadingExecutionNode(node: StoreStreamReadingExecutionNode[1], path: String[1], context: GenerationContext[1], extensions: meta::pure::extension::Extension[*], debug: DebugContext[1]):GeneratedCode[1]
 {
    print(if($debug.debug,|$debug.space+'('+$path+') generateStoreStreamReading\n', |''));
    

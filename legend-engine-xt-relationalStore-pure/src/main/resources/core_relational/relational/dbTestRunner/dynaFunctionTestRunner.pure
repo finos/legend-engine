@@ -13,7 +13,8 @@
 // limitations under the License.
 
 import meta::pure::executionPlan::*;
-import meta::pure::router::extension::*;
+import meta::pure::extension::*;
+import meta::relational::extension::*;
 import meta::pure::mapping::*;
 import meta::pure::runtime::*;
 import meta::relational::metamodel::relation::*;
@@ -51,7 +52,7 @@ if($testConfig.connection->isEmpty(),
           let newExpectedResultTypes = $newExpectedResult->map(e|$e->inferRelationalType())->toOneMany();
           let plan = wrapSQLStringInExecutionPlan($sqlString, $newExpectedResultTypes, $testConfig.dbType,$conn) ;
           
-          let res = executePlan($plan,defaultRelationalExtensions());
+          let res = executePlan($plan,relationalExtensions());
           if($res->isEmpty(),
               | true ,                                  //legend engine not available 
               | let areEqual = if($equalityComparator->isNotEmpty(),

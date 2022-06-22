@@ -48,21 +48,21 @@ Class meta::relational::tests::injection::model::Product
 
 function <<test.Test>>  meta::relational::tests::injection::testProject():Boolean[1]
 {
-   let tds = execute(|Trade.all()->project([t|$t.name, t|$t.productAtTimeOfTrade.name], ['a','b']), myMapping, meta::relational::tests::injection::testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->toOne();
+   let tds = execute(|Trade.all()->project([t|$t.name, t|$t.productAtTimeOfTrade.name], ['a','b']), myMapping, meta::relational::tests::injection::testRuntime(), meta::relational::extension::relationalExtensions()).values->toOne();
    assertEquals(4, $tds.rows->size());
    assertSameElements(['Trade 1 prod 1 V2','Trade 2 prod 2 V1','Trade 3 prod 3 V1','Trade 4 prod 4 V2'], $tds.rows->map(r|$r.get('a')->toString()+' '+$r.get('b')->toString()));
 }
 
 function <<test.Test>>  meta::relational::tests::injection::testProjectThroughAssociation():Boolean[1]
 {
-   let tds = execute(|Book.all()->project([b|$b.name, b|$b.trades->map(t|$t.productAtTimeOfTrade.name)], ['a','b']), myMapping, meta::relational::tests::injection::testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->toOne();
+   let tds = execute(|Book.all()->project([b|$b.name, b|$b.trades->map(t|$t.productAtTimeOfTrade.name)], ['a','b']), myMapping, meta::relational::tests::injection::testRuntime(), meta::relational::extension::relationalExtensions()).values->toOne();
    assertEquals(4, $tds.rows->size());
    assertSameElements(['Book 1 prod 1 V2','Book 1 prod 2 V1','Book 1 prod 3 V1','Book 2 prod 4 V2'], $tds.rows->map(r|$r.get('a')->toString()+' '+$r.get('b')->toString()));
 }
 
 function <<test.Test>>  meta::relational::tests::injection::testProjectThroughAssociationAutoMap():Boolean[1]
 {
-   let tds = execute(|Book.all()->project([b|$b.name, b|$b.trades.productAtTimeOfTrade.name], ['a','b']), myMapping, meta::relational::tests::injection::testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->toOne();
+   let tds = execute(|Book.all()->project([b|$b.name, b|$b.trades.productAtTimeOfTrade.name], ['a','b']), myMapping, meta::relational::tests::injection::testRuntime(), meta::relational::extension::relationalExtensions()).values->toOne();
    assertEquals(4, $tds.rows->size());
    assertSameElements(['Book 1 prod 1 V2','Book 1 prod 2 V1','Book 1 prod 3 V1','Book 2 prod 4 V2'], $tds.rows->map(r|$r.get('a')->toString()+' '+$r.get('b')->toString()));
 }

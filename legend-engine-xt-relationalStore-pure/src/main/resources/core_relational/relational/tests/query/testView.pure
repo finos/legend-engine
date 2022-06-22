@@ -22,34 +22,34 @@ import meta::relational::tests::*;
 
 function <<test.Test>> meta::relational::tests::query::view::testViewAll():Boolean[1]
 {
-   let result = execute(|OrderPnl.all(), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|OrderPnl.all(), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements(['100.0,Peter Smith', '150.0,John Johnson', '200.0,John Johnson'], $result.values->map(p|[$p.pnl, $p.supportContactName]->makeString(',')));
    assertEquals('select "root".ORDER_ID as "pk_0", "root".pnl as "pnl", "root".supportContact as "supportContactName" from (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accounttable_0".ID as accountId, "salespersontable_0".NAME as supportContact, "salespersontable_0".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "ordertable_0" on ("root".ORDER_ID = "ordertable_0".ID) left outer join accountTable as "accounttable_0" on ("ordertable_0".accountID = "accounttable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("ordertable_0".accountID = "salespersontable_0".ACCOUNT_ID) where "root".pnl > 0) as "root"', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::query::view::testViewWithJoinsAndDistinct():Boolean[1]
 {
-   let result = execute(|Person.all()->project([ x|$x.firstName],['firstname']), TestMappingWithViewJoins, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->project([ x|$x.firstName],['firstname']), TestMappingWithViewJoins, testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals('select "personviewwithdistinct_0".firstName as "firstname" from firmTable as "root" left outer join (select distinct "persontable_1".ID as id, "persontable_1".FIRSTNAME as firstName, "persontable_1".LASTNAME as lastName, "persontable_1".FIRMID as firmId from (select "root".ID as id, max("root".AGE) as maxage from personTable as "root" group by "root".ID) as "root" left outer join personTable as "persontable_1" on ("persontable_1".ID = "root".id and "persontable_1".AGE = "root".maxage)) as "personviewwithdistinct_0" on ("root".ID = "personviewwithdistinct_0".firmId)', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::query::view::testDistinctOnlyIncludesTopLevelColumns():Boolean[1]
 {
-   let result = execute(|Person.all()->filter(x|$x.firstName == 'John')->project([x|$x.firstName, x|$x.address.name],['firstName', 'address']), TestViewWithDistinctAndJoins, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all()->filter(x|$x.firstName == 'John')->project([x|$x.firstName, x|$x.address.name],['firstName', 'address']), TestViewWithDistinctAndJoins, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements('[John, New York]', $result.values.rows->map(r|$r.values->makeString('[',', ',']')));
    assertEquals('select "root".firstName as "firstName", "root".address as "address" from (select distinct "root".FIRSTNAME as firstName, "addresstable_0".NAME as address from personTable as "root" left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "root".ADDRESSID)) as "root" where "root".firstName = \'John\'', $result->sqlRemoveFormatting());      
 }
 
 function <<test.Test>> meta::relational::tests::query::view::testViewSimpleFilter():Boolean[1]
 {
-   let result = execute(|OrderPnl.all()->filter(t|$t.supportContactName == 'John Johnson'), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|OrderPnl.all()->filter(t|$t.supportContactName == 'John Johnson'), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements(['150.0,John Johnson', '200.0,John Johnson'], $result.values->map(p|[$p.pnl, $p.supportContactName]->makeString(',')));
    assertEquals('select "root".ORDER_ID as "pk_0", "root".pnl as "pnl", "root".supportContact as "supportContactName" from (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accounttable_0".ID as accountId, "salespersontable_0".NAME as supportContact, "salespersontable_0".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "ordertable_0" on ("root".ORDER_ID = "ordertable_0".ID) left outer join accountTable as "accounttable_0" on ("ordertable_0".accountID = "accounttable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("ordertable_0".accountID = "salespersontable_0".ACCOUNT_ID) where "root".pnl > 0) as "root" where "root".supportContact = \'John Johnson\'', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::query::view::testAllWithJoinToView():Boolean[1]
 {
-   let result = execute(|Order.all(), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Order.all(), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements(['1,false', '2,false', '3,false','4,false'], $result.values->map(o|[$o.id, $o.zeroPnl]->makeString(',')));
    assertEquals('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".orderDate as "date", "root".settlementDateTime as "settlementDateTime", "orderpnlview_0".pnl as "pnl", case when "orderpnlview_0".pnl = 0 then \'true\' else \'false\' end as "zeroPnl" from orderTable as "root" left outer join (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accounttable_0".ID as accountId, "salespersontable_0".NAME as supportContact, "salespersontable_0".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "ordertable_1" on ("root".ORDER_ID = "ordertable_1".ID) left outer join accountTable as "accounttable_0" on ("ordertable_1".accountID = "accounttable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("ordertable_1".accountID = "salespersontable_0".ACCOUNT_ID) where "root".pnl > 0) as "orderpnlview_0" on ("orderpnlview_0".ORDER_ID = "root".ID)', $result->sqlRemoveFormatting());
 }
@@ -57,7 +57,7 @@ function <<test.Test>> meta::relational::tests::query::view::testAllWithJoinToVi
 // Alloy exclusion reason: 4. Use getter relational protocol
 function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::query::view::testViewWithGroupBy():Boolean[1]
 {
-   let result = execute(|AccountPnl.all(), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|AccountPnl.all(), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements(['Account 1,100.0', 'Account 2,350.0'], $result.values->map(p|[$p.account->toOne().name, $p.pnl]->makeString(',')));
    assertEquals('select "root".accountId as "pk_0", "root".orderPnl as "pnl" from (select "root".accountID as accountId, sum("orderpnltable_0".pnl) as orderPnl from orderTable as "root" left outer join orderPnlTable as "orderpnltable_0" on ("orderpnltable_0".ORDER_ID = "root".ID) group by "root".accountID) as "root"', $result->sqlRemoveFormatting());
 }
@@ -65,7 +65,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::query::view::
 // Alloy exclusion reason: 4. Use getter relational protocol
 function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::query::view::testAssnToViewWithGroupBy():Boolean[1]
 {
-   let result = execute(|Account.all(), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Account.all(), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements(['Account 1,100.0', 'Account 2,350.0'], $result.values->map(a|[$a.name, $a.accountPnl->toOne().pnl]->makeString(',')));
    assertEquals('select "root".ID as "pk_0", "root".name as "name", "root".createDate as "createDate" from accountTable as "root"', $result->sqlRemoveFormatting());
 }
@@ -73,7 +73,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::query::view::
 function <<test.Test>> meta::relational::tests::query::view::testViewSimpleExists():Boolean[1]
 {
    
-  let result = execute(|Order.all()->filter(o|$o.pnlContact->exists( p| $p.firm.legalName == 'Johnson')), relationalMappingWithViewAndInnerJoin, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions(),debug());
+  let result = execute(|Order.all()->filter(o|$o.pnlContact->exists( p| $p.firm.legalName == 'Johnson')), relationalMappingWithViewAndInnerJoin, testRuntime(), meta::relational::extension::relationalExtensions(),debug());
   assertSameSQL('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".orderDate as "date", "root".settlementDateTime as "settlementDateTime" from orderTable as "root" left outer join (select distinct "salespersontable_1".ACCOUNT_ID from (select "salespersontable_1".ACCOUNT_ID as ACCOUNT_ID, "personfirmview_0".firm_name as firm_name from salesPersonTable as "salespersontable_1" inner join (select "root".ID as PERSON_ID, "root".LASTNAME as lastName, "firmtable_0".LEGALNAME as firm_name from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID)) as "personfirmview_0" on ("salespersontable_1".PERSON_ID = "personfirmview_0".PERSON_ID)) as "salespersontable_1" where "salespersontable_1".firm_name = \'Johnson\') as "salespersontable_0" on ("root".accountID = "salespersontable_0".ACCOUNT_ID) where "salespersontable_0".ACCOUNT_ID is not null', $result);
 }
 

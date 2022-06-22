@@ -24,14 +24,14 @@ function <<test.BeforePackage>> meta::relational::tests::getter::setUp():Boolean
 
 function <<test.Test>> meta::relational::tests::getter::testSimpleGetter():Boolean[1]
 {
-   let result = execute(|Person.all(), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Person.all(), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements(['Firm X', 'Firm X', 'Firm X', 'Firm X', 'Firm A', 'Firm B', 'Firm C'], $result.values->map(p|$p.firm.legalName));
 }
 
 
 function <<test.Test>>   meta::relational::tests::getter::testGetterTwice():Boolean[1]
 {
-   let result = execute(|Firm.all()->filter(f | $f.legalName == 'Firm A'), simpleRelationalMapping, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions());
+   let result = execute(|Firm.all()->filter(f | $f.legalName == 'Firm A'), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 1);
    
    let firm = $result.values->at(0);

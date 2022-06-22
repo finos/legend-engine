@@ -29,7 +29,7 @@ function <<test.BeforePackage>> meta::relational::tests::mapping::inheritance::r
 
 function <<test.Test>> meta::relational::tests::mapping::inheritance::relational::selfJoin::testSubTypeProjectSharedNonDirectlyRouted():Boolean[1]
 {
-   let result1 = execute(|Person.all().roadVehicles->project([p|$p.id, p|$p->subType(@Car).engineType], ['id', 'engine']), meta::relational::tests::mapping::inheritance::relational::selfJoin::inheritanceMappingDBSelfJoin, testRuntime(), meta::pure::router::extension::defaultRelationalExtensions()).values->at(0);
+   let result1 = execute(|Person.all().roadVehicles->project([p|$p.id, p|$p->subType(@Car).engineType], ['id', 'engine']), meta::relational::tests::mapping::inheritance::relational::selfJoin::inheritanceMappingDBSelfJoin, testRuntime(), meta::relational::extension::relationalExtensions()).values->at(0);
    assertEquals(5, $result1.rows->size());
    assertSameElements(['1 TDSNull', '1 V', '2 TDSNull', '2 U', '3 H'], $result1.rows->map(r|$r.get('id')->toString()+' '+$r.get('engine')->toString()));
 }

@@ -17,7 +17,7 @@ package org.finos.legend.engine.plan.generation.transformers;
 import org.eclipse.collections.api.RichIterable;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionPlan;
-import org.finos.legend.pure.generated.Root_meta_pure_router_extension_RouterExtension;
+import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
 
 import java.lang.reflect.InvocationTargetException;
@@ -36,12 +36,12 @@ public class VersionPlanTransformer implements PlanTransformer
     }
 
     @Override
-    public Object transformToVersionedModel(Root_meta_pure_executionPlan_ExecutionPlan purePlan, String version, RichIterable<? extends Root_meta_pure_router_extension_RouterExtension> extensions, ExecutionSupport executionSupport)
+    public Object transformToVersionedModel(Root_meta_pure_executionPlan_ExecutionPlan purePlan, String version, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, ExecutionSupport executionSupport)
     {
         try
         {
             Class cl = Class.forName("org.finos.legend.pure.generated.core_pure_protocol_" + version + "_transfers_executionPlan");
-            Method method = cl.getMethod("Root_meta_protocols_pure_" + version + "_transformation_fromPureGraph_executionPlan_transformPlan_ExecutionPlan_1__RouterExtension_MANY__ExecutionPlan_1_", Root_meta_pure_executionPlan_ExecutionPlan.class, RichIterable.class, org.finos.legend.pure.m3.execution.ExecutionSupport.class);
+            Method method = cl.getMethod("Root_meta_protocols_pure_" + version + "_transformation_fromPureGraph_executionPlan_transformPlan_ExecutionPlan_1__Extension_MANY__ExecutionPlan_1_", Root_meta_pure_executionPlan_ExecutionPlan.class, RichIterable.class, org.finos.legend.pure.m3.execution.ExecutionSupport.class);
             return method.invoke(null, purePlan, extensions, executionSupport);
         }
         catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e)

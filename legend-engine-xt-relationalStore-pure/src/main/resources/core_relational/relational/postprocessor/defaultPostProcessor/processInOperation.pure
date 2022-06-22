@@ -21,7 +21,8 @@ import meta::relational::metamodel::relation::*;
 import meta::relational::functions::pureToSqlQuery::*;
 import meta::relational::functions::pureToSqlQuery::metamodel::*;
 import meta::relational::postProcessor::*;
-import meta::pure::router::extension::*;
+import meta::pure::extension::*;
+import meta::relational::extension::*;
 import meta::pure::runtime::*;
 import meta::relational::metamodel::*;
 import meta::relational::mapping::*;
@@ -40,7 +41,7 @@ function <<access.private>> meta::relational::postProcessor::prefixForWrapperAll
    'inFilterClause_';
 }
 
-function meta::relational::postProcessor::processInOperation(query:SQLQuery[1], runtime:Runtime[1], store:Database[0..1], exeCtx:ExecutionContext[1], extensions:RouterExtension[*]):PostProcessorResult[1]
+function meta::relational::postProcessor::processInOperation(query:SQLQuery[1], runtime:Runtime[1], store:Database[0..1], exeCtx:ExecutionContext[1], extensions:Extension[*]):PostProcessorResult[1]
 {
    let connection = $runtime->connectionByElement($store->toOne())->meta::relational::mapping::updateConnection($extensions)->cast(@DatabaseConnection);
    let dbThreshold = $connection.type->getCollectionThresholdLimitForDatabaseType(
@@ -88,7 +89,7 @@ function meta::relational::postProcessor::processInOperation(query:SQLQuery[1], 
    );
 }
 
-function meta::relational::postProcessor::generatePostProcessorResult(changedFunctions:Pair<RelationalOperationElement, RelationalOperationElement>[*], query:SQLQuery[1], connection:DatabaseConnection[1], dbThreshold:Integer[1], runtime:Runtime[1], store:Database[1], exeCtx:ExecutionContext[1], extensions:RouterExtension[*]):PostProcessorResult[1]
+function meta::relational::postProcessor::generatePostProcessorResult(changedFunctions:Pair<RelationalOperationElement, RelationalOperationElement>[*], query:SQLQuery[1], connection:DatabaseConnection[1], dbThreshold:Integer[1], runtime:Runtime[1], store:Database[1], exeCtx:ExecutionContext[1], extensions:Extension[*]):PostProcessorResult[1]
 {
    let getTypeLambda = {val:Any[1] |if($val->instanceOf(VarPlaceHolder), | $val->cast(@VarPlaceHolder).type, | $val->type())};
 

@@ -27,7 +27,7 @@ function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testSingle
       }
    }#;
    
-   let sourceTree = calculateSourceTree($tree, testMapping, meta::pure::router::extension::defaultExtensions())->sortTree();
+   let sourceTree = calculateSourceTree($tree, testMapping, meta::pure::extension::defaultExtensions())->sortTree();
    let expected = #{
       _A {
          a
@@ -73,7 +73,7 @@ function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testSingle
       }
    }#;
    
-   let sourceTree = calculateSourceTree($tree, testMapping, meta::pure::router::extension::defaultExtensions())->sortTree();
+   let sourceTree = calculateSourceTree($tree, testMapping, meta::pure::extension::defaultExtensions())->sortTree();
    let expected = #{
       _A {
          a {
@@ -146,7 +146,7 @@ function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testEquiva
       }
    }#;
    
-   let sourceTree = calculateSourceTree($tree, testMapping, meta::pure::router::extension::defaultExtensions())->sortTree();
+   let sourceTree = calculateSourceTree($tree, testMapping, meta::pure::extension::defaultExtensions())->sortTree();
    let expected = #{
       _A {
          a1,
@@ -295,7 +295,7 @@ function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testDuplic
       }
    }#;
    
-   let sourceTree = calculateSourceTree($tree, testMapping, meta::pure::router::extension::defaultExtensions())->sortTree();
+   let sourceTree = calculateSourceTree($tree, testMapping, meta::pure::extension::defaultExtensions())->sortTree();
    let expected = #{
       _A {
          a {
@@ -361,7 +361,7 @@ function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testWithFu
       }
    }#;
    
-   let sourceTree = calculateSourceTree($tree, testMapping, meta::pure::router::extension::defaultExtensions())->sortTree();
+   let sourceTree = calculateSourceTree($tree, testMapping, meta::pure::extension::defaultExtensions())->sortTree();
    let expected = #{
       _A {
          a1 {
@@ -482,7 +482,7 @@ function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testComple
       }
    }#;
    
-   let sourceTree = calculateSourceTree($tree, testMapping, meta::pure::router::extension::defaultExtensions())->sortTree();
+   let sourceTree = calculateSourceTree($tree, testMapping, meta::pure::extension::defaultExtensions())->sortTree();
    let expected = #{
       A {
          a1,
@@ -596,7 +596,7 @@ function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testWithTa
       }
    }#;
    
-   let sourceTree = calculateSourceTree($tree, testMapping, meta::pure::router::extension::defaultExtensions())->sortTree();
+   let sourceTree = calculateSourceTree($tree, testMapping, meta::pure::extension::defaultExtensions())->sortTree();
    let expected = #{
       _A {
          a1 {
@@ -665,7 +665,7 @@ function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testWithSo
       }
    }#;
    
-   let sourceTree = calculateSourceTree($tree, testMapping, meta::pure::router::extension::defaultExtensions())->sortTree();
+   let sourceTree = calculateSourceTree($tree, testMapping, meta::pure::extension::defaultExtensions())->sortTree();
    let expected = #{
       _A {
          a1 {
@@ -746,7 +746,7 @@ function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testWithMi
       }
    }#;
    
-   let sourceTree = calculateSourceTree($tree, testMapping, meta::pure::router::extension::defaultExtensions())->sortTree();
+   let sourceTree = calculateSourceTree($tree, testMapping, meta::pure::extension::defaultExtensions())->sortTree();
    
    let expected = #{
       _A {
@@ -840,7 +840,7 @@ function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testWithCo
       }
    }#;
    
-   let sourceTree = calculateSourceTree($tree, testMapping, meta::pure::router::extension::defaultExtensions())->ensureConstraintsRequirements()->sortTree();
+   let sourceTree = calculateSourceTree($tree, testMapping, meta::pure::extension::defaultExtensions())->ensureConstraintsRequirements()->sortTree();
    let expected = #{
       _A {
          a1,
@@ -893,7 +893,7 @@ function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testWithCo
       }
    }#;
    
-   let sourceTree = calculateSourceTree($tree, testMapping, meta::pure::router::extension::defaultExtensions())->ensureConstraintsRequirements()->sortTree();
+   let sourceTree = calculateSourceTree($tree, testMapping, meta::pure::extension::defaultExtensions())->ensureConstraintsRequirements()->sortTree();
    let expected = #{
       _A {
          a1,
@@ -960,7 +960,7 @@ function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testWithUn
       }
    }#;
    
-   let sourceTree = calculateSourceTree($tree, testMapping, meta::pure::router::extension::defaultExtensions())->ensureConstraintsRequirements()->sortTree();
+   let sourceTree = calculateSourceTree($tree, testMapping, meta::pure::extension::defaultExtensions())->ensureConstraintsRequirements()->sortTree();
    let expected = #{
       _A {
          a1
@@ -1051,7 +1051,7 @@ function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testWithSi
          targetZipCode
       }
    }#;
-   let sourceTree0 = calculateSourceTree($tree0, meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::testMappingWithSingleSubType, meta::pure::router::extension::defaultExtensions())->sortTree();
+   let sourceTree0 = calculateSourceTree($tree0, meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::testMappingWithSingleSubType, meta::pure::extension::defaultExtensions())->sortTree();
    let expectedSourceTree0 = #{
       Person{
          address{
@@ -1067,7 +1067,7 @@ function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testWithSi
          targetAddress
       }
    }#;
-   let sourceTree = calculateSourceTree($tree, meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::testMappingWithSingleSubType, meta::pure::router::extension::defaultExtensions())->sortTree();
+   let sourceTree = calculateSourceTree($tree, meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::testMappingWithSingleSubType, meta::pure::extension::defaultExtensions())->sortTree();
    let expectedSourceTree = #{
       Person{
          address{
@@ -1087,7 +1087,7 @@ function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testWithSi
          targetAddress
       }
    }#;
-   let sourceTree1 = calculateSourceTree($tree1, meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::testMappingWithSingleSubType, meta::pure::router::extension::defaultExtensions())->sortTree();
+   let sourceTree1 = calculateSourceTree($tree1, meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::testMappingWithSingleSubType, meta::pure::extension::defaultExtensions())->sortTree();
    let expectedSourceTree1 = #{
       Person{
          address->subType(@Street){
@@ -1106,7 +1106,7 @@ function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testWithMu
          targetAddress
       }
    }#;
-   let sourceTree = calculateSourceTree($tree, meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::testMappingWithMultipleSubTypes, meta::pure::router::extension::defaultExtensions())->sortTree();
+   let sourceTree = calculateSourceTree($tree, meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::testMappingWithMultipleSubTypes, meta::pure::extension::defaultExtensions())->sortTree();
    let expectedSourceTree = #{
       Person
       {
@@ -1133,7 +1133,7 @@ function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testWithMu
          targetAddress
       }
    }#;
-   let sourceTree1 = calculateSourceTree($tree1, meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::testMappingWithMultipleSubTypes, meta::pure::router::extension::defaultExtensions())->sortTree();
+   let sourceTree1 = calculateSourceTree($tree1, meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::testMappingWithMultipleSubTypes, meta::pure::extension::defaultExtensions())->sortTree();
    let expectedSourceTree1 = #{
       Person
       {  
@@ -1248,7 +1248,7 @@ function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testNested
 
    let sourceTree = meta::pure::graphFetch::calculateSourceTree($tree, 
                                                                 meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::SourceToTargetMappingWithSubtypeAndSuperTypeAccesses,
-                                                                meta::pure::router::extension::defaultExtensions())->meta::pure::graphFetch::sortTree();
+                                                                meta::pure::extension::defaultExtensions())->meta::pure::graphFetch::sortTree();
    assertEquals($expectedString, $sourceTree->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString());
 }
 
@@ -1274,7 +1274,7 @@ function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testNested
 
    let sourceTree = meta::pure::graphFetch::calculateSourceTree($tree, 
                                                                 meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::SourceToTargetMappingWithSubtypeAndSuperTypeAccesses2,
-                                                                meta::pure::router::extension::defaultExtensions())->meta::pure::graphFetch::sortTree();
+                                                                meta::pure::extension::defaultExtensions())->meta::pure::graphFetch::sortTree();
    assertEquals($expectedString, $sourceTree->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString());
 
 
@@ -1348,7 +1348,7 @@ function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testFilter
 
    let sourceTree = meta::pure::graphFetch::calculateSourceTree($tree, 
                                                                 meta::pure::graphFetch::tests::sourceTreeCalc::withFilters::SourceToTargetMappingWithFilters,
-                                                                meta::pure::router::extension::defaultExtensions());
+                                                                meta::pure::extension::defaultExtensions());
    assertEquals($expectedString, $sourceTree->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString());
 }
 
@@ -1431,7 +1431,7 @@ function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testFlatte
 
    let sourceTree = meta::pure::graphFetch::calculateSourceTree($tree, 
                                                                 meta::pure::graphFetch::tests::sourceTreeCalc::withFlatteningInTransform::SourceToTargetMappingWithFlatteningInTransform,
-                                                                meta::pure::router::extension::defaultExtensions());
+                                                                meta::pure::extension::defaultExtensions());
    assertEquals($expectedString, $sourceTree->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString());
 }
 
