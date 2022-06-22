@@ -14,21 +14,11 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence;
 
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
-import java.util.List;
-
-public class PersistenceContext extends PackageableElement
+public class ServiceParameter
 {
-    public String persistence;
-    public List<ServiceParameter> serviceParameters;
-    public Connection sinkConnection;
-
-    @Override
-    public <T> T accept(PackageableElementVisitor<T> visitor)
-    {
-        return visitor.visit(this);
-    }
+    public String name;
+    public Object value;
+    public SourceInformation sourceInformation;
 }

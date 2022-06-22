@@ -12,11 +12,12 @@ options
 identifier:                                 VALID_STRING | STRING
                                             | ALL | LET | ALL_VERSIONS | ALL_VERSIONS_IN_RANGE      // from M3Parser
                                             | TRUE | FALSE | IMPORT | DERIVATION | NONE | DATE_TIME
+                                            | CONTEXT | CONTEXT_PERSISTENCE | CONTEXT_SERVICE_PARAMETERS | CONTEXT_SINK_CONNECTION
                                             | PERSISTENCE | PERSISTENCE_DOC | PERSISTENCE_TRIGGER | PERSISTENCE_SERVICE | PERSISTENCE_PERSISTER | PERSISTENCE_NOTIFIER
                                             | TRIGGER_MANUAL | TRIGGER_CRON
                                             | PERSISTER_STREAMING | PERSISTER_BATCH | PERSISTER_SINK | PERSISTER_TARGET_SHAPE | PERSISTER_INGEST_MODE
                                             | NOTIFIER | NOTIFIER_NOTIFYEES | NOTIFYEE_EMAIL | NOTIFYEE_EMAIL_ADDRESS | NOTIFYEE_PAGER_DUTY| NOTIFYEE_PAGER_DUTY_URL
-                                            | SINK_RELATIONAL | SINK_OBJECT_STORAGE | SINK_CONNECTION | SINK_BINDING
+                                            | SINK_RELATIONAL | SINK_OBJECT_STORAGE | SINK_STORE | SINK_BINDING
                                             | TARGET_SHAPE_MODEL_CLASS | TARGET_SHAPE_NAME | TARGET_SHAPE_PARTITION_FIELDS | TARGET_SHAPE_DEDUPLICATION
                                             | TARGET_SHAPE_FLAT | TARGET_SHAPE_MULTI | TARGET_SHAPE_MULTI_TXN_SCOPE | TARGET_SHAPE_MULTI_PARTS | TARGET_PART_MODEL_PROPERTY | TXN_SCOPE_SINGLE | TXN_SCOPE_ALL
                                             | DEDUPLICATION_ANY_VERSION | DEDUPLICATION_MAX_VERSION | DEDUPLICATION_MAX_VERSION_FIELD | DEDUPLICATION_DUPLICATE_COUNT | DEDUPLICATION_DUPLICATE_COUNT_NAME
@@ -33,13 +34,60 @@ identifier:                                 VALID_STRING | STRING
 // -------------------------------------- DEFINITION --------------------------------------
 
 definition:                                 imports
-                                                (persistence)*
+                                                elementDefinition*
                                             EOF
 ;
 imports:                                    (importStatement)*
 ;
 importStatement:                            IMPORT packagePath PATH_SEPARATOR STAR SEMI_COLON
 ;
+elementDefinition:                          (
+                                                context
+                                                | persistence
+                                            )
+;
+
+// -------------------------------------- CONTEXT --------------------------------------
+
+context:                                    CONTEXT qualifiedName
+                                                BRACE_OPEN
+                                                    (
+                                                        contextPersistence
+                                                        | contextServiceParameters
+                                                        | contextSinkConnection
+                                                    )*
+                                                BRACE_CLOSE
+;
+contextPersistence:                         CONTEXT_PERSISTENCE COLON qualifiedName SEMI_COLON
+;
+contextServiceParameters:                   CONTEXT_SERVICE_PARAMETERS COLON
+                                                BRACKET_OPEN
+                                                    serviceParameter (COMMA serviceParameter)*
+                                                BRACKET_CLOSE
+                                            SEMI_COLON
+;
+serviceParameter:                           identifier EQUAL
+                                                (
+                                                    primitiveValue
+                                                    | connectionPointer
+                                                    | embeddedConnection
+                                                )
+;
+contextSinkConnection:                      CONTEXT_SINK_CONNECTION COLON
+                                                (
+                                                    connectionPointer
+                                                    | embeddedConnection
+                                                )
+;
+connectionPointer:                          qualifiedName SEMI_COLON
+;
+embeddedConnection:                         ISLAND_OPEN (embeddedConnectionContent)*
+;
+embeddedConnectionContent:                  ISLAND_START | ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_HASH | ISLAND_BRACE_CLOSE | ISLAND_END
+;
+
+// -------------------------------------- PERSISTENCE --------------------------------------
+
 persistence:                                PERSISTENCE qualifiedName
                                                 BRACE_OPEN
                                                     (
@@ -118,30 +166,17 @@ persisterSink:                              PERSISTER_SINK COLON
 ;
 relationalSink:                             SINK_RELATIONAL
                                                 BRACE_OPEN
-                                                    (sinkConnection)*
+                                                    (sinkStore)*
                                                 BRACE_CLOSE
 ;
 objectStorageSink:                          SINK_OBJECT_STORAGE
                                                 BRACE_OPEN
-                                                    (
-                                                        sinkConnection
-                                                        | bindingPointer
-                                                    )*
+                                                    (sinkBinding)*
                                                 BRACE_CLOSE
 ;
-sinkConnection:                             SINK_CONNECTION COLON
-                                                (
-                                                    connectionPointer
-                                                    | embeddedConnection
-                                                )
+sinkStore:                                  SINK_STORE COLON qualifiedName SEMI_COLON
 ;
-connectionPointer:                          qualifiedName SEMI_COLON
-;
-embeddedConnection:                         ISLAND_OPEN (embeddedConnectionContent)*
-;
-embeddedConnectionContent:                  ISLAND_START | ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_HASH | ISLAND_BRACE_CLOSE | ISLAND_END
-;
-bindingPointer:                             SINK_BINDING COLON qualifiedName SEMI_COLON
+sinkBinding:                                SINK_BINDING COLON qualifiedName SEMI_COLON
 ;
 targetShape:                                PERSISTER_TARGET_SHAPE COLON
                                                 (
@@ -226,7 +261,7 @@ deduplicationMaxVersionField:               DEDUPLICATION_MAX_VERSION_FIELD COLO
 duplicateCountDeduplicationStrategy:        DEDUPLICATION_DUPLICATE_COUNT
                                                 BRACE_OPEN
                                                     (
-                                                        deduplicationDuplicateCountName
+                                                      deduplicationDuplicateCountName
                                                     )*
                                                 BRACE_CLOSE
 ;

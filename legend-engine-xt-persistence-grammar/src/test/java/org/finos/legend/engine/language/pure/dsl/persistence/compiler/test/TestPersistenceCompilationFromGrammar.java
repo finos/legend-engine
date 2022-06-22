@@ -58,7 +58,7 @@ import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_pers
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_deduplication_DuplicateCountDeduplicationStrategy;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 import org.junit.Test;
 
 import java.util.List;
@@ -1109,11 +1109,8 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
         assertTrue(sink instanceof Root_meta_pure_persistence_metamodel_persister_sink_RelationalSink);
         Root_meta_pure_persistence_metamodel_persister_sink_RelationalSink relationalSink = (Root_meta_pure_persistence_metamodel_persister_sink_RelationalSink) sink;
 
-        //TODO: ledav -- use a connection applicable for a real use case
-        // connection
-        Connection connection = relationalSink._connection();
-        assertNotNull(connection);
-        assertTrue(connection instanceof Root_meta_pure_mapping_modelToModel_JsonModelConnection);
+        //TODO: ledav -- assert store
+        Store store = relationalSink._store();
 
         // ingest mode
         Root_meta_pure_persistence_metamodel_persister_ingestmode_IngestMode ingestMode = batchPersister._ingestMode();
@@ -1366,12 +1363,6 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
         Root_meta_external_shared_format_binding_Binding binding = objectStorageSink._binding();
         assertNotNull(binding);
         assertEquals("application/json", binding._contentType());
-
-        //TODO: ledav -- use a connection applicable for a real use case
-        // connection
-        Connection connection = objectStorageSink._connection();
-        assertNotNull(connection);
-        assertTrue(connection instanceof Root_meta_pure_mapping_modelToModel_JsonModelConnection);
 
         // ingest mode
         Root_meta_pure_persistence_metamodel_persister_ingestmode_IngestMode ingestMode = batchPersister._ingestMode();

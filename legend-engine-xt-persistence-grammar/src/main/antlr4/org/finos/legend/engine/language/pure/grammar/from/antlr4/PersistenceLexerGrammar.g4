@@ -16,9 +16,15 @@ DATE_TIME:                                  'DateTime';
 // PERSISTENCE
 //**********
 
+// CONTEXT
+CONTEXT:                                    'PersistenceContext';
+CONTEXT_PERSISTENCE:                        'persistence';
+CONTEXT_SERVICE_PARAMETERS:                 'serviceParameters';
+CONTEXT_SINK_CONNECTION:                    'sinkConnection';
+
+// PERSISTENCE
 PERSISTENCE:                                'Persistence';
 PERSISTENCE_DOC:                            'doc';
-
 PERSISTENCE_TRIGGER:                        'trigger';
 PERSISTENCE_SERVICE:                        'service';
 PERSISTENCE_PERSISTER:                      'persister';
@@ -49,7 +55,7 @@ NOTIFYEE_PAGER_DUTY_URL:                    'url';
 
 SINK_RELATIONAL:                            'Relational';
 SINK_OBJECT_STORAGE:                        'ObjectStorage';
-SINK_CONNECTION:                            'connection';
+SINK_STORE:                                 'store';
 SINK_BINDING:                               'binding';
 
 //**********
