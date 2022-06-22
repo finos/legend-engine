@@ -67,4 +67,4 @@ jobs:
         run: mvn -B -DpreparationGoals=clean release:prepare -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ env.DEVELOPMENT_VERSION }} -P release
 
       - name: Perform release
-        run: mvn -B release:perform -P release, docker
+        run: mvn -B release:perform -P release,docker
