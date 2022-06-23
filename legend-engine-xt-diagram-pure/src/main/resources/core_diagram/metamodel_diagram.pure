@@ -63,18 +63,6 @@ Diagram meta::pure::metamodel::diagram::Diagram_Diagram(width=0.0, height=0.0)
         color=#FFFFCC,
         lineWidth=1.0)
 
-    TypeView cview_5(
-        type=meta::pure::metamodel::diagram::GeneralizationView,
-        position=(234.63196, 154.76181),
-        width=129.81641,
-        height=30.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
     TypeView cview_3(
         type=meta::pure::metamodel::diagram::AssociationView,
         position=(265.25871, 327.54943),
@@ -128,6 +116,18 @@ Diagram meta::pure::metamodel::diagram::Diagram_Diagram(width=0.0, height=0.0)
         position=(837.51678, 124.59680),
         width=193.39502,
         height=100.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_5(
+        type=meta::pure::metamodel::diagram::GeneralizationView,
+        position=(234.63196, 154.76181),
+        width=129.81641,
+        height=30.00000,
         stereotypesVisible=true,
         attributesVisible=true,
         attributeStereotypesVisible=true,

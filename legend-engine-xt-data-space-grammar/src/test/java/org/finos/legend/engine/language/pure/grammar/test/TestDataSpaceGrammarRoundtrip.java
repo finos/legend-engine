@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.language.pure.grammar.test;
 
-import org.finos.legend.engine.language.pure.grammar.test.TestGrammarRoundtrip;
 import org.junit.Test;
 
 public class TestDataSpaceGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
@@ -25,6 +24,59 @@ public class TestDataSpaceGrammarRoundtrip extends TestGrammarRoundtrip.TestGram
         test("###DataSpace\n" +
                 "DataSpace <<meta::pure::profiles::typemodifiers.abstract>> {doc.doc = 'bla'} model::dataSpace\n" +
                 "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      description: 'some information about the context';\n" +
+                "      mapping: model::String;\n" +
+                "      defaultRuntime: model::Runtime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  description: 'some description';\n" +
+                "  featuredDiagrams:\n" +
+                "  [\n" +
+                "    model::Diagram,\n" +
+                "    model::Diagram2\n" +
+                "  ];\n" +
+                "  supportInfo: Email {\n" +
+                "    address: 'someEmail@test.org';\n" +
+                "  };\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testDataSpaceParserBackwardCompatibility()
+    {
+        testFormat("###DataSpace\n" +
+                "DataSpace <<meta::pure::profiles::typemodifiers.abstract>> {doc.doc = 'bla'} model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      description: 'some information about the context';\n" +
+                "      mapping: model::String;\n" +
+                "      defaultRuntime: model::Runtime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  description: 'some description';\n" +
+                "  featuredDiagrams:\n" +
+                "  [\n" +
+                "    model::Diagram,\n" +
+                "    model::Diagram2\n" +
+                "  ];\n" +
+                "  supportInfo: Email {\n" +
+                "    address: 'someEmail@test.org';\n" +
+                "  };\n" +
+                "}\n", "###DataSpace\n" +
+                "DataSpace <<meta::pure::profiles::typemodifiers.abstract>> {doc.doc = 'bla'} model::dataSpace\n" +
+                "{\n" +
+                "  groupId: 'test.group';\n" +
+                "  artifactId: 'test-data-space';\n" +
+                "  versionId: '1.0.0';\n" +
                 "  executionContexts:\n" +
                 "  [\n" +
                 "    {\n" +

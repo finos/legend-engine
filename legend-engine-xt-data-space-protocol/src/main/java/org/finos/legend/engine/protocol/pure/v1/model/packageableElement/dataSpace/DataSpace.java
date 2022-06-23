@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
@@ -23,6 +24,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import java.util.Collections;
 import java.util.List;
 
+// NOTE: since we removed artifactId, groupId, versionId, we need this flag
+// once we can truly remove those fields, we will be able to take this out
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class DataSpace extends PackageableElement
 {
     public List<StereotypePtr> stereotypes = Collections.emptyList();

@@ -25,14 +25,10 @@
 
     <artifactId>legend-engine-xt-diagram-api</artifactId>
     <packaging>jar</packaging>
-    <name>Legend Engine - XT - Diagram - Query</name>
+    <name>Legend Engine - XT - Diagram - API</name>
 
     <dependencies>
         <!-- Pure -->
-        <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-m3-core</artifactId>
-        </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-diagram-pure</artifactId>
@@ -55,6 +51,10 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-language-pure-modelManager</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-external-shared</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

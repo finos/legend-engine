@@ -21,19 +21,32 @@ Class <<access.private>> meta::pure::metamodel::diagram::analytics::modelCoverag
   profiles: Profile[*];
 }
 
-function meta::pure::metamodel::diagram::analytics::modelCoverage::getDiagramModelCoverage(diagram:meta::pure::metamodel::diagram::Diagram[1]):DiagramModelCoverageAnalysisResult[1]
+function meta::pure::metamodel::diagram::analytics::modelCoverage::getDiagramModelCoverage(diagrams:meta::pure::metamodel::diagram::Diagram[*]):DiagramModelCoverageAnalysisResult[1]
 {
-  let classes = $diagram.classViews.class->filter(t|$t->instanceOf(Class))->cast(@Class<Any>)->removeDuplicates();
+  let classViews = $diagrams->map(d|$d.classViews)->fold({a, b| $a->concatenate($b)}, []);
+  let generalizationViews = $diagrams->map(d|$d.generalizationViews)->fold({a, b| $a->concatenate($b)}, []);
+  let classes = $classViews.class->filter(t|$t->instanceOf(Class))->cast(@Class<Any>)->removeDuplicates();
   // NOTE: we don't support showing tagged values and stereotypes for properties at the moment
+  // TODO?: prune profile to only used tags and stereotypes
   let profiles = $classes->map(class|$class.taggedValues->map(tv|$tv.tag.profile)->concatenate($class.stereotypes->map(st|$st.profile)))
     ->cast(@Profile)->removeDuplicates();
   let allProperties = $classes->filter(t|$t->instanceOf(Class))->map(t|$t->cast(@Class<Any>).properties->cast(@Property<Nil,Any|*>));
   let allQualifiedProperties = $classes->filter(t|$t->instanceOf(Class))->map(t|$t->cast(@Class<Any>).qualifiedProperties->cast(@QualifiedProperty<Any>));
+  // TODO?: prune enumeration values
   let enumerations = $allProperties->map(p|$p.genericType.rawType)->concatenate($allQualifiedProperties->map(p|$p.genericType.rawType))->filter(t|$t->instanceOf(Enumeration))->cast(@Enumeration<Any>)->removeDuplicates();
+  let prunedClasses = $classes->map(c|^Class<Any>(
+    name = $c.name,
+    package = $c.package,
+    properties = $c.properties,
+    qualifiedProperties = $c.qualifiedProperties,
+    taggedValues = $c.taggedValues,
+    stereotypes = $c.stereotypes,
+    generalizations = $c.generalizations->filter(g|$generalizationViews->exists(gV|$gV.from.classView.class == $c && $gV.to.classView.class == $g.general.rawType))
+  ));
 
   ^DiagramModelCoverageAnalysisResult
   (
-    classes = $classes,
+    classes = $prunedClasses,
     profiles = $profiles,
     enumerations = $enumerations
   );

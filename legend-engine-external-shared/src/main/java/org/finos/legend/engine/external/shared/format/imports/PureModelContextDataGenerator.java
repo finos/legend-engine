@@ -202,7 +202,6 @@ public class PureModelContextDataGenerator
         return builder.build();
     }
 
-
     public static PureModelContextData generatePureModelContextDataFromProfile(RichIterable<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile> pureProfiles, String pureVersion, CompiledExecutionSupport compiledExecutionSupport) throws RuntimeException
     {
         Method transformMethod = profileTransforms.getIfAbsentPut(pureVersion, () ->
@@ -248,5 +247,4 @@ public class PureModelContextDataGenerator
         });
         return builder.build();
     }
-
 }

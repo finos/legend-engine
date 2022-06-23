@@ -22,6 +22,11 @@ identifier:                 VALID_STRING | STRING
                             | DATA_SPACE_SUPPORT_INFO
                             | DATA_SPACE_SUPPORT_EMAIL
                             | DATA_SPACE_SUPPORT_EMAIL_ADDRESS
+
+                            // deprecated
+                            | DATA_SPACE_GROUP_ID
+                            | DATA_SPACE_ARTIFACT_ID
+                            | DATA_SPACE_VERSION_ID
 ;
 
 // -------------------------------------- DEFINITION --------------------------------------
@@ -37,6 +42,11 @@ dataSpaceElement:           DATA_SPACE stereotypes? taggedValues? qualifiedName
                                         | description
                                         | featuredDiagrams
                                         | supportInfo
+
+                                        // deprecated
+                                        | groupId
+                                        | artifactId
+                                        | versionId
                                     )*
                                 BRACE_CLOSE
 ;
@@ -48,6 +58,7 @@ taggedValues:               BRACE_OPEN taggedValue (COMMA taggedValue)* BRACE_CL
 ;
 taggedValue:                qualifiedName DOT identifier EQUAL STRING
 ;
+
 
 executionContexts:          DATA_SPACE_EXECUTION_CONTEXTS COLON BRACKET_OPEN ( executionContext (COMMA executionContext)* )? BRACKET_CLOSE SEMI_COLON
 ;
@@ -84,4 +95,14 @@ supportInfo:                DATA_SPACE_SUPPORT_INFO COLON
                                 BRACE_CLOSE SEMI_COLON
 ;
 supportEmail:               DATA_SPACE_SUPPORT_EMAIL_ADDRESS COLON STRING SEMI_COLON
+;
+
+
+// -------------------------------------- DEPRECATED --------------------------------------
+
+groupId:                    DATA_SPACE_GROUP_ID COLON STRING SEMI_COLON
+;
+artifactId:                 DATA_SPACE_ARTIFACT_ID COLON STRING SEMI_COLON
+;
+versionId:                  DATA_SPACE_VERSION_ID COLON STRING SEMI_COLON
 ;
