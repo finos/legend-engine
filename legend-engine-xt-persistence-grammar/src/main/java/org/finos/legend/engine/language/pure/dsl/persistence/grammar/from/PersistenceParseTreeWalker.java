@@ -426,7 +426,7 @@ public class PersistenceParseTreeWalker
         sink.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
         // store
-        PersistenceParserGrammar.SinkStoreContext sinkStoreContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.sinkStore(), "store", walkerSourceInformation.getSourceInformation(ctx.sinkStore().get(0)));
+        PersistenceParserGrammar.SinkStoreContext sinkStoreContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.sinkStore(), "store", sink.sourceInformation);
         sink.store = sinkStoreContext == null ? null : visitStorePointer(sinkStoreContext, sink.sourceInformation);
 
         return sink;
@@ -438,7 +438,7 @@ public class PersistenceParseTreeWalker
         sink.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
         // binding
-        PersistenceParserGrammar.SinkBindingContext sinkBindingContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.sinkBinding(), "binding", walkerSourceInformation.getSourceInformation(ctx.sinkBinding().get(0)));
+        PersistenceParserGrammar.SinkBindingContext sinkBindingContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.sinkBinding(), "binding", sink.sourceInformation);
         sink.binding = visitBindingPointer(sinkBindingContext, sink.sourceInformation);
 
         return sink;
