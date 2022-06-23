@@ -33,6 +33,7 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
+                "      store: test::Database;\n" +
                 "    }\n" +
                 "    ingestMode: BitemporalSnapshot\n" +
                 "    {\n" +
@@ -76,6 +77,7 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
+                "      store: test::Database;\n" +
                 "    }\n" +
                 "    ingestMode: BitemporalDelta\n" +
                 "    {\n" +
@@ -134,14 +136,7 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      connection:\n" +
-                "      #{\n" +
-                "        JsonModelConnection\n" +
-                "        {\n" +
-                "          class: org::dxl::Animal;\n" +
-                "          url: 'my_url2';\n" +
-                "        }\n" +
-                "      }#\n" +
+                "      store: test::Database;\n" +
                 "    }\n" +
                 "    ingestMode: BitemporalSnapshot\n" +
                 "    {\n" +
@@ -209,14 +204,6 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
                 "    sink: ObjectStorage\n" +
                 "    {\n" +
                 "      binding: test::Binding;\n" +
-                "      connection:\n" +
-                "      #{\n" +
-                "        JsonModelConnection\n" +
-                "        {\n" +
-                "          class: org::dxl::Animal;\n" +
-                "          url: 'my_url2';\n" +
-                "        }\n" +
-                "      }#\n" +
                 "    }\n" +
                 "    ingestMode: BitemporalDelta\n" +
                 "    {\n" +
