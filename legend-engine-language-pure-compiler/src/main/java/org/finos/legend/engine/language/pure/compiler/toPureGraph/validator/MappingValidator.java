@@ -270,9 +270,12 @@ public class MappingValidator
                                                                             Lists.mutable.of(pureModel.getFunction("meta::pure::functions::lang::new_Class_1__String_1__KeyExpression_MANY__T_1_",true)),
                                                                             pureModel.getExecutionSupport());
 
-                                                            for(FunctionExpression fe: feList){
-                                                                if(fe._genericType()._rawType() == ((ValueSpecification) ex)._genericType()._rawType())
+                                                            for (FunctionExpression fe: feList)
+                                                            {
+                                                                if (fe._genericType()._rawType() == ((ValueSpecification) ex)._genericType()._rawType())
+                                                                {
                                                                     throw new EngineException("The new function/operator(^) is unsupported in property mappings, violated in property '" + ppm._transform + "' of mapping '" + mappingPath + "'", mappings.get(mappingPath).sourceInformation, EngineErrorType.COMPILATION);
+                                                                }
                                                             }
                                                         });
                                                     }
