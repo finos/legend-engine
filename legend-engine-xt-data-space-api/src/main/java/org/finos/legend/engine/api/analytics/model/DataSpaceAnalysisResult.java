@@ -14,17 +14,19 @@
 
 package org.finos.legend.engine.api.analytics.model;
 
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+
 import java.util.List;
 import java.util.Map;
 
 public class DataSpaceAnalysisResult
 {
-    public Map<String, DataSpaceDiagramAnalysisResult> diagrams;
+    public PureModelContextData diagramsModel;
     public Map<String, DataSpaceExecutionContextAnalysisResult> executionContexts;
 
-    public DataSpaceAnalysisResult(Map<String, DataSpaceDiagramAnalysisResult> diagrams, Map<String, DataSpaceExecutionContextAnalysisResult> executionContexts)
+    public DataSpaceAnalysisResult(PureModelContextData diagramsModel, Map<String, DataSpaceExecutionContextAnalysisResult> executionContexts)
     {
-        this.diagrams = diagrams;
+        this.diagramsModel = diagramsModel;
         this.executionContexts = executionContexts;
     }
 
@@ -35,20 +37,6 @@ public class DataSpaceAnalysisResult
         public DataSpaceExecutionContextAnalysisResult(List<String> runtimes)
         {
             this.runtimes = runtimes;
-        }
-    }
-
-    public static class DataSpaceDiagramAnalysisResult
-    {
-        public List<String> profiles;
-        public List<String> enumerations;
-        public List<String> classes;
-
-        public DataSpaceDiagramAnalysisResult(List<String> profiles, List<String> enumerations, List<String> classes)
-        {
-            this.profiles = profiles;
-            this.enumerations = enumerations;
-            this.classes = classes;
         }
     }
 }

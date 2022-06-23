@@ -40,8 +40,7 @@ public class TestDiagramAnalyticsApi
     {
         Exception exception = Assert.assertThrows(EngineException.class, () ->
         {
-            Response response = api.analyzeDiagramModelCoverage(new DiagramModelCoverageAnalysisInput("VX_X_X", "model::UnknownDiagram", PureModelContextData.newPureModelContextData(null, null, Lists.immutable.empty())), null);
-            Assert.assertEquals(response.getEntity().toString(), "{\"classes\":[],\"enumerations\":[],\"profiles\":[]}");
+            Response response = api.analyzeDiagramModelCoverage(new DiagramModelCoverageAnalysisInput("vX_X_X", "model::UnknownDiagram", PureModelContextData.newPureModelContextData(null, null, Lists.immutable.empty())), true, null);
         });
         Assert.assertEquals(exception.getMessage(), "Can't find diagram 'model::UnknownDiagram'");
     }
@@ -50,16 +49,16 @@ public class TestDiagramAnalyticsApi
     public void testBlankDiagramAnalysis() throws IOException
     {
         PureModelContextData modelContextData = objectMapper.readValue(Objects.requireNonNull(getClass().getClassLoader().getResource("diagramAnalyticsTestData.json")), PureModelContextData.class);
-        Response response = api.analyzeDiagramModelCoverage(new DiagramModelCoverageAnalysisInput("VX_X_X", "model::BlankDiagram", modelContextData), null);
-        Assert.assertEquals(response.getEntity().toString(), "{\"classes\":[],\"enumerations\":[],\"profiles\":[]}");
+        Response response = api.analyzeDiagramModelCoverage(new DiagramModelCoverageAnalysisInput("vX_X_X", "model::BlankDiagram", modelContextData), true, null);
+        Assert.assertEquals(response.getEntity().toString(), "{\"_type\":\"data\",\"elements\":[{\"_type\":\"Diagram\",\"classViews\":[],\"generalizationViews\":[],\"name\":\"BlankDiagram\",\"package\":\"model\",\"propertyViews\":[]}]}");
     }
 
     @Test
     public void testDiagramAnalysis() throws IOException
     {
         PureModelContextData modelContextData = objectMapper.readValue(Objects.requireNonNull(getClass().getClassLoader().getResource("diagramAnalyticsTestData.json")), PureModelContextData.class);
-        Response response = api.analyzeDiagramModelCoverage(new DiagramModelCoverageAnalysisInput("VX_X_X", "model::animal::AnimalDiagram", modelContextData), null);
-        Assert.assertEquals(response.getEntity().toString(), "{\"classes\":[\"model::animal::mammal::Mammal\",\"model::animal::reptile::Reptile\",\"model::animal::Animal\"],\"enumerations\":[\"model::animal::Family\"],\"profiles\":[\"meta::pure::profiles::doc\",\"meta::pure::profiles::typemodifiers\"]}");
+        Response response = api.analyzeDiagramModelCoverage(new DiagramModelCoverageAnalysisInput("vX_X_X", "model::animal::AnimalDiagram", modelContextData), false, null);
+        Assert.assertEquals(response.getEntity().toString(), "{\"_type\":\"data\",\"elements\":[{\"_type\":\"Profile\",\"name\":\"doc\",\"package\":\"meta::pure::profiles\",\"stereotypes\":[\"deprecated\"],\"tags\":[\"doc\",\"todo\"]},{\"_type\":\"Profile\",\"name\":\"typemodifiers\",\"package\":\"meta::pure::profiles\",\"stereotypes\":[\"abstract\"],\"tags\":[]},{\"_type\":\"Class\",\"constraints\":[],\"name\":\"Animal\",\"originalMilestonedProperties\":[],\"package\":\"model::animal\",\"properties\":[{\"multiplicity\":{\"lowerBound\":1,\"upperBound\":1},\"name\":\"family\",\"stereotypes\":[],\"taggedValues\":[],\"type\":\"model::animal::Family\"},{\"multiplicity\":{\"lowerBound\":0},\"name\":\"children\",\"stereotypes\":[],\"taggedValues\":[],\"type\":\"model::animal::Animal\"}],\"qualifiedProperties\":[],\"stereotypes\":[{\"profile\":\"meta::pure::profiles::typemodifiers\",\"value\":\"abstract\"}],\"superTypes\":[],\"taggedValues\":[]},{\"_type\":\"Enumeration\",\"name\":\"Family\",\"package\":\"model::animal\",\"stereotypes\":[],\"taggedValues\":[],\"values\":[{\"stereotypes\":[],\"taggedValues\":[],\"value\":\"MAMMAL\"},{\"stereotypes\":[],\"taggedValues\":[],\"value\":\"REPTILE\"}]},{\"_type\":\"Class\",\"constraints\":[],\"name\":\"Mammal\",\"originalMilestonedProperties\":[],\"package\":\"model::animal::mammal\",\"properties\":[{\"multiplicity\":{\"lowerBound\":1,\"upperBound\":1},\"name\":\"noOfLegs\",\"stereotypes\":[],\"taggedValues\":[{\"tag\":{\"profile\":\"meta::pure::profiles::doc\",\"value\":\"doc\"},\"value\":\"(TBD)\"}],\"type\":\"String\"}],\"qualifiedProperties\":[],\"stereotypes\":[],\"superTypes\":[\"model::animal::Animal\"],\"taggedValues\":[{\"tag\":{\"profile\":\"meta::pure::profiles::doc\",\"value\":\"doc\"},\"value\":\"a warm-blooded vertebrate animal of a class that is distinguished by the possession of hair or fur\"}]},{\"_type\":\"Class\",\"constraints\":[],\"name\":\"Reptile\",\"originalMilestonedProperties\":[],\"package\":\"model::animal::reptile\",\"properties\":[{\"multiplicity\":{\"lowerBound\":1,\"upperBound\":1},\"name\":\"hasFin\",\"stereotypes\":[],\"taggedValues\":[],\"type\":\"Boolean\"}],\"qualifiedProperties\":[],\"stereotypes\":[],\"superTypes\":[\"model::animal::Animal\"],\"taggedValues\":[]}]}");
     }
 }
 

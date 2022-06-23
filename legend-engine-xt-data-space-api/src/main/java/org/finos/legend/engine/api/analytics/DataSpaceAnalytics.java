@@ -64,14 +64,14 @@ public class DataSpaceAnalytics
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         PureModelContextData pureModelContextData = this.modelManager.loadData(input.model, input.clientVersion, profiles);
-        PureModel pureModel = this.modelManager.loadModel(input.model, input.clientVersion, profiles, null);
+        PureModel pureModel = this.modelManager.loadModel(pureModelContextData, input.clientVersion, profiles, null);
         Root_meta_pure_metamodel_dataSpace_DataSpace dataSpace = getDataSpace(input.dataSpace, null, pureModel.getContext());
 
         try (Scope scope = GlobalTracer.get().buildSpan("Analytics: data space model coverage").startActive(true))
         {
             try
             {
-                return ManageConstantResult.manageResult(profiles, analyzeDataSpace(dataSpace, pureModelContextData, pureModel));
+                return ManageConstantResult.manageResult(profiles, analyzeDataSpace(dataSpace, pureModelContextData, pureModel, input));
             }
             catch (Exception e)
             {

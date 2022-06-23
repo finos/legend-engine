@@ -3,12 +3,6 @@
   "elements": [
     {
       "_type": "Enumeration",
-      "name": "BlankEnum",
-      "package": "model",
-      "values": []
-    },
-    {
-      "_type": "Enumeration",
       "name": "Family",
       "package": "model::animal",
       "values": [
@@ -19,6 +13,12 @@
           "value": "REPTILE"
         }
       ]
+    },
+    {
+      "_type": "Enumeration",
+      "name": "BlankEnum",
+      "package": "model",
+      "values": []
     },
     {
       "_type": "class",
@@ -50,21 +50,59 @@
     },
     {
       "_type": "class",
-      "name": "Reptile",
-      "package": "model::animal::reptile",
+      "name": "Animal2",
+      "package": "model::animal",
       "properties": [
         {
           "multiplicity": {
             "lowerBound": 1,
             "upperBound": 1
           },
-          "name": "hasFin",
-          "type": "Boolean"
+          "name": "name",
+          "type": "String"
         }
       ],
-      "superTypes": [
-        "model::animal::Animal"
+      "qualifiedProperties": [
+        {
+          "body": [
+            {
+              "_type": "string",
+              "multiplicity": {
+                "lowerBound": 1,
+                "upperBound": 1
+              },
+              "sourceInformation": {
+                "endColumn": 15,
+                "endLine": 61,
+                "sourceId": "",
+                "startColumn": 14,
+                "startLine": 61
+              },
+              "values": [
+                ""
+              ]
+            }
+          ],
+          "name": "nameCAP",
+          "parameters": [],
+          "returnMultiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "returnType": "String"
+        }
+      ],
+      "stereotypes": [
+        {
+          "profile": "typemodifiers",
+          "value": "abstract"
+        }
       ]
+    },
+    {
+      "_type": "class",
+      "name": "BlankClass",
+      "package": "model"
     },
     {
       "_type": "class",
@@ -104,16 +142,22 @@
     },
     {
       "_type": "class",
-      "name": "BlankClass",
-      "package": "model"
-    },
-    {
-      "_type": "diagram",
-      "classViews": [],
-      "generalizationViews": [],
-      "name": "BlankDiagram",
-      "package": "model",
-      "propertyViews": []
+      "name": "Reptile",
+      "package": "model::animal::reptile",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "hasFin",
+          "type": "Boolean"
+        }
+      ],
+      "superTypes": [
+        "model::animal::Animal",
+        "model::animal::Animal2"
+      ]
     },
     {
       "_type": "diagram",
@@ -191,6 +235,14 @@
       ],
       "name": "AnimalDiagram",
       "package": "model::animal",
+      "propertyViews": []
+    },
+    {
+      "_type": "diagram",
+      "classViews": [],
+      "generalizationViews": [],
+      "name": "BlankDiagram",
+      "package": "model",
       "propertyViews": []
     }
   ]
