@@ -31,13 +31,23 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_modelToModel_PurePropertyMapping_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_LambdaFunction_Impl;
-import org.finos.legend.pure.generated.core_pure_corefunctions_metaExtension;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.*;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EmbeddedSetImplementation;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.InstanceSetImplementation;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementationAccessor;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.FunctionExpression;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
+import org.finos.legend.pure.generated.core_pure_corefunctions_metaExtension;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.List;
 
 public class MappingValidator
 {
@@ -243,25 +253,26 @@ public class MappingValidator
         {
                 mapping._classMappings().forEach(cm ->
                         {
-                            if(cm instanceof InstanceSetImplementation)
+                            if (cm instanceof InstanceSetImplementation)
                             {
                                 ((InstanceSetImplementation)cm)._propertyMappings().forEach(pm ->
                                         {
-                                            if(pm instanceof Root_meta_pure_mapping_modelToModel_PurePropertyMapping_Impl)
+                                            if (pm instanceof Root_meta_pure_mapping_modelToModel_PurePropertyMapping_Impl)
                                             {
                                                     Root_meta_pure_mapping_modelToModel_PurePropertyMapping_Impl ppm = (Root_meta_pure_mapping_modelToModel_PurePropertyMapping_Impl) pm;
 
-                                                    if(ppm._transform instanceof Root_meta_pure_metamodel_function_LambdaFunction_Impl)
+                                                    if (ppm._transform instanceof Root_meta_pure_metamodel_function_LambdaFunction_Impl)
                                                     {
                                                         (((Root_meta_pure_metamodel_function_LambdaFunction_Impl)ppm._transform)._expressionSequence).forEach(ex ->
                                                         {
-                                                            RichIterable<? extends FunctionExpression> fe = core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_findExpressionsForFunctionInValueSpecification_ValueSpecification_1__Function_MANY__FunctionExpression_MANY_
-                                                                    ((ValueSpecification)ex,
+                                                            RichIterable<? extends FunctionExpression> feList = core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_findExpressionsForFunctionInValueSpecification_ValueSpecification_1__Function_MANY__FunctionExpression_MANY_(
+                                                                            (ValueSpecification)ex,
                                                                             Lists.mutable.of(pureModel.getFunction("meta::pure::functions::lang::new_Class_1__String_1__KeyExpression_MANY__T_1_",true)),
                                                                             pureModel.getExecutionSupport());
-                                                            if(!fe.isEmpty())
-                                                            {
-                                                                throw new EngineException("The new function/operator(^) is unsupported in property mappings, violated in property '" + ppm._transform + "' of mapping '" + mappingPath + "'", mappings.get(mappingPath).sourceInformation, EngineErrorType.COMPILATION);
+
+                                                            for(FunctionExpression fe: feList){
+                                                                if(fe._genericType()._rawType() == ((ValueSpecification) ex)._genericType()._rawType())
+                                                                    throw new EngineException("The new function/operator(^) is unsupported in property mappings, violated in property '" + ppm._transform + "' of mapping '" + mappingPath + "'", mappings.get(mappingPath).sourceInformation, EngineErrorType.COMPILATION);
                                                             }
                                                         });
                                                     }
