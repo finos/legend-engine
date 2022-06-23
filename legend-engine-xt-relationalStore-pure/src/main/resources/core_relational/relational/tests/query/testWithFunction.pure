@@ -74,14 +74,6 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::query::functi
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmTable_d#2_dy0_d#3_d_m1" on ("firmTable_d#2_dy0_d#3_d_m1".ID = "root".FIRMID) where "firmTable_d#2_dy0_d#3_d_m1".LEGALNAME not like \'%[^a-zA-Z0-9]%\'',$s);
 }
 
-function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::query::function::testFilterUsingIsAlphaNumericFunctionSnowFlake():Boolean[1]
-{
-
-   let fn = {|Person.all()->filter(p | $p.firm->toOne().legalName->isAlphaNumeric())};
-   let s = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmTable_d#2_dy0_d#3_d_m1" on ("firmTable_d#2_dy0_d#3_d_m1".ID = "root".FIRMID) where "firmTable_d#2_dy0_d#3_d_m1".LEGALNAME regexp \'^[a-zA-Z0-9]*$\'',$s);
-}
-
 function <<test.Test>> meta::relational::tests::query::function::testFilterUsingMatchesFunction():Boolean[1]
 {
    let result = execute(|Person.all()
@@ -118,15 +110,6 @@ function <<test.Test>> meta::relational::tests::query::function::testFilterUsing
 
    let s = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmTable_d#2_dy0_d#3_d_m1" on ("firmTable_d#2_dy0_d#3_d_m1".ID = "root".FIRMID) where REGEXP_LIKE("firmTable_d#2_dy0_d#3_d_m1".LEGALNAME, \'^[A-Za-z0-9]*$\')',$s);
-}
-
-function <<test.Test>> meta::relational::tests::query::function::testFilterUsingMatchesFunctionSnowflake():Boolean[1]
-{
-
-   let fn = {|Person.all()->filter(p | $p.firm->toOne().legalName->matches('[A-Za-z0-9]*'))};
-
-   let s = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmTable_d#2_dy0_d#3_d_m1" on ("firmTable_d#2_dy0_d#3_d_m1".ID = "root".FIRMID) where "firmTable_d#2_dy0_d#3_d_m1".LEGALNAME regexp \'^[A-Za-z0-9]*$\'',$s);
 }
 
 function <<test.Test>> meta::relational::tests::query::function::testFilterUsingSubstringFunction():Boolean[1]

@@ -158,29 +158,6 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOpt
    assertPlanGenerationForOptionalParameter(DatabaseType.MemSQL, $expectedPlan);
 }
 
-function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOptionalParameter_Snowflake():Boolean[1]      
-{
-   let expectedPlan ='Sequence\n'+
-                     '(\n'+
-                     '  type = TDS[(Time, Integer, INT, "")]\n'+
-                     '  (\n'+
-                     '    FunctionParametersValidationNode\n'+
-                     '    (\n'+
-                     '      functionParameters = [optionalID:String[0..1], optionalActive:Boolean[0..1]]\n'+
-                     '    )\n'+
-                     '    Relational\n'+
-                     '    (\n'+
-                     '      type = TDS[(Time, Integer, INT, "")]\n'+
-                     '      resultColumns = [("Time", INT)]\n'+
-                     '      sql = select "root".time as "Time" from interactionTable as "root" where ((${optionalVarPlaceHolderOperationSelector(optionalID![], \'"root".ID = ${varPlaceHolderToString(optionalID![]  "\\\'" "\\\'" "null")}\', \'"root".ID is null\')}) and (${optionalVarPlaceHolderOperationSelector(optionalActive![], \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end = ${varPlaceHolderToString(optionalActive![]  "\\\'" "\\\'" "null")}\', \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end is null\')}))\n'+
-                     '      connection = DatabaseConnection(type = "Snowflake")\n'+
-                     '    )\n'+
-                     '  )\n'+
-                     ')\n';
-   
-   assertPlanGenerationForOptionalParameter(DatabaseType.Snowflake, $expectedPlan);
-}
-
 function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOptionalParameter_Presto():Boolean[1]      
 {
    let expectedPlan ='Sequence\n'+
@@ -2107,16 +2084,6 @@ function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenera
    assertEquals($expected, $res->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));
 }
 
-function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenerationForNotInWithCollectionInputForSnowflake() : Boolean[1]
-{
-   let res = executionPlan(
-      {name:String[*] |_Person.all()->filter(x | !$x.fullName->in($name))->project([x | $x.fullName], ['fullName']);},
-      meta::pure::mapping::modelToModel::test::shared::relationalMapping, ^Runtime(connections=^DatabaseConnection(element = relationalDB, type=DatabaseType.Snowflake)), meta::relational::extension::relationalExtensions()
-   );
-   let expected = 'RelationalBlockExecutionNode(type=TDS[(fullName,String,VARCHAR(1000),"")](FunctionParametersValidationNode(functionParameters=[name:String[*]])Allocation(type=Stringname=inFilterClause_namevalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(name,"Stream")||((collectionSize(name)?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=meta::pure::router::VoidinputVarNames=[name]tempTableName=tempTableForIn_nametempTableColumns=[(ColumnForStoringInCollection,VARCHAR(200))]connection=DatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"temptableforin_name_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_nameas"temptableforin_name_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(name",""\'""\'""null")}])))))Relational(type=TDS[(fullName,String,VARCHAR(1000),"")]resultColumns=[("fullName",VARCHAR(1000))]sql=select"root".fullnameas"fullName"fromPersonas"root"where("root".fullnamenotin(${inFilterClause_name})OR"root".fullnameisnull)connection=DatabaseConnection(type="Snowflake"))))';
-   assertEquals($expected, $res->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));
-}
-
 function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenerationForInWithIntegerCollection():Boolean[1]
 {
    let res = executionPlan(
@@ -2155,15 +2122,6 @@ function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenera
    );
    let expected = ['RelationalBlockExecutionNode(type=TDS[(fullName,String,VARCHAR(1000),"")](FunctionParametersValidationNode(functionParameters=[name:String[*],name1:String[*]])Allocation(type=Stringname=inFilterClause_name1value=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(name1,"Stream")||((collectionSize(name1)?number)>32767))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=meta::pure::router::VoidinputVarNames=[name1]tempTableName=tempTableForIn_name1tempTableColumns=[(ColumnForStoringInCollection,VARCHAR(200))]connection=DatabaseConnection(type="DB2"))Constant(type=Stringvalues=[select"temptableforin_name1_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_name1as"temptableforin_name1_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(name1",""\'""\'""null")}])))))Allocation(type=Stringname=inFilterClause_namevalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(name,"Stream")||((collectionSize(name)?number)>32767))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=meta::pure::router::VoidinputVarNames=[name]tempTableName=tempTableForIn_nametempTableColumns=[(ColumnForStoringInCollection,VARCHAR(200))]connection=DatabaseConnection(type="DB2"))Constant(type=Stringvalues=[select"temptableforin_name_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_nameas"temptableforin_name_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(name",""\'""\'""null")}])))))Relational(type=TDS[(fullName,String,VARCHAR(1000),"")]resultColumns=[("fullName",VARCHAR(1000))]sql=select"root".fullnameas"fullName"fromPersonas"root"where"root".fullnamein(${inFilterClause_name})and"root".fullnamein(${inFilterClause_name1})connection=DatabaseConnection(type="DB2"))))',
       'RelationalBlockExecutionNode(type=TDS[(fullName,String,VARCHAR(1000),"")](FunctionParametersValidationNode(functionParameters=[name:String[*],name1:String[*]])Allocation(type=Stringname=inFilterClause_namevalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(name,"Stream")||((collectionSize(name)?number)>32767))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=meta::pure::router::VoidinputVarNames=[name]tempTableName=tempTableForIn_nametempTableColumns=[(ColumnForStoringInCollection,VARCHAR(200))]connection=DatabaseConnection(type="DB2"))Constant(type=Stringvalues=[select"temptableforin_name_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_nameas"temptableforin_name_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(name",""\'""\'""null")}])))))Allocation(type=Stringname=inFilterClause_name1value=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(name1,"Stream")||((collectionSize(name1)?number)>32767))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=meta::pure::router::VoidinputVarNames=[name1]tempTableName=tempTableForIn_name1tempTableColumns=[(ColumnForStoringInCollection,VARCHAR(200))]connection=DatabaseConnection(type="DB2"))Constant(type=Stringvalues=[select"temptableforin_name1_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_name1as"temptableforin_name1_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(name1",""\'""\'""null")}])))))Relational(type=TDS[(fullName,String,VARCHAR(1000),"")]resultColumns=[("fullName",VARCHAR(1000))]sql=select"root".fullnameas"fullName"fromPersonas"root"where"root".fullnamein(${inFilterClause_name})and"root".fullnamein(${inFilterClause_name1})connection=DatabaseConnection(type="DB2"))))'];
-   assert($expected->contains($res->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions())));
-}
-
-function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenerationForMultipleInWithTwoCollectionInputsForSnowflake() : Boolean[1]
-{
-   let res = executionPlan({ids:Integer[*], dates:Date[*]|Trade.all()->filter(t|$t.settlementDateTime->in($dates) && $t.id->in($ids))->project([x | $x.id], ['TradeId'])},
-                           simpleRelationalMapping, ^Runtime(connections=^DatabaseConnection(element = relationalDB, type=DatabaseType.Snowflake)), meta::relational::extension::relationalExtensions());
-   let expected = ['RelationalBlockExecutionNode(type=TDS[(TradeId,Integer,INT,"")](FunctionParametersValidationNode(functionParameters=[ids:Integer[*],dates:Date[*]])Allocation(type=Stringname=inFilterClause_datesvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(dates,"Stream")||((collectionSize(dates)?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=meta::pure::router::VoidinputVarNames=[dates]tempTableName=tempTableForIn_datestempTableColumns=[(ColumnForStoringInCollection,TIMESTAMP)]connection=DatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"temptableforin_dates_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_datesas"temptableforin_dates_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(dates",""\'""\'""null")}])))))Allocation(type=Stringname=inFilterClause_idsvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(ids,"Stream")||((collectionSize(ids)?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=meta::pure::router::VoidinputVarNames=[ids]tempTableName=tempTableForIn_idstempTableColumns=[(ColumnForStoringInCollection,INT)]connection=DatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"temptableforin_ids_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_idsas"temptableforin_ids_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(ids",""""""null")}])))))Relational(type=TDS[(TradeId,Integer,INT,"")]resultColumns=[("TradeId",INT)]sql=select"root".IDas"TradeId"fromtradeTableas"root"where("root".settlementDateTimein(${inFilterClause_dates})and"root".IDin(${inFilterClause_ids}))connection=DatabaseConnection(type="Snowflake"))))',
-      'RelationalBlockExecutionNode(type=TDS[(TradeId,Integer,INT,"")](FunctionParametersValidationNode(functionParameters=[ids:Integer[*],dates:Date[*]])Allocation(type=Stringname=inFilterClause_idsvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(ids,"Stream")||((collectionSize(ids)?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=meta::pure::router::VoidinputVarNames=[ids]tempTableName=tempTableForIn_idstempTableColumns=[(ColumnForStoringInCollection,INT)]connection=DatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"temptableforin_ids_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_idsas"temptableforin_ids_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(ids",""""""null")}])))))Allocation(type=Stringname=inFilterClause_datesvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(dates,"Stream")||((collectionSize(dates)?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=meta::pure::router::VoidinputVarNames=[dates]tempTableName=tempTableForIn_datestempTableColumns=[(ColumnForStoringInCollection,TIMESTAMP)]connection=DatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"temptableforin_dates_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_datesas"temptableforin_dates_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(dates",""\'""\'""null")}])))))Relational(type=TDS[(TradeId,Integer,INT,"")]resultColumns=[("TradeId",INT)]sql=select"root".IDas"TradeId"fromtradeTableas"root"where("root".settlementDateTimein(${inFilterClause_dates})and"root".IDin(${inFilterClause_ids}))connection=DatabaseConnection(type="Snowflake"))))'];
    assert($expected->contains($res->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions())));
 }
 

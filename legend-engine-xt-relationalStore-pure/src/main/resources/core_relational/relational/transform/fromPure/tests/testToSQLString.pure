@@ -146,26 +146,6 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLS
    assertEquals('select "root".FIRSTNAME as "firstName", sum("root".AGE) as "age" from personTable as "root" group by "root".FIRSTNAME', $s);
 }
 
-function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringWithAggregationSnowflake():Boolean[1]
-{
-   let s = toSQLString(|Person.all()->groupBy([p:Person[1]|$p.firstName], 
-                                                agg(e|$e.age, y|$y->sum()),
-                                                ['firstName', 'age']), 
-                                                meta::relational::tests::simpleRelationalMapping, 
-                                                meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".FIRSTNAME as "firstName", sum("root".AGE) as "age" from personTable as "root" group by "root".FIRSTNAME', $s);
-}
-
-function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringWithOrderbySnowflake():Boolean[1]
-{
-   let s = toSQLString(|Person.all()->groupBy([p:Person[1]|$p.firstName], 
-                                                agg(e|$e.age, y|$y->sum()),
-                                                ['firstName', 'age'])->sort(asc('age'))->limit(5), 
-                                                meta::relational::tests::simpleRelationalMapping, 
-                                                meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".FIRSTNAME as "firstName", sum("root".AGE) as "age" from personTable as "root" group by "root".FIRSTNAME order by "age" limit 5', $s);
-}
-
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringWithRelativeDateDB2():Boolean[1]
 {
    let s1 = toSQLString(|Trade.all()->filter(t|$t.settlementDateTime > today()->adjust(-1, DurationUnit.MONTHS))->project([t| $t.id, t| $t.settlementDateTime] ,['id', 'settlementDateTime']), 
@@ -424,15 +404,6 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLS
                meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMapping, DatabaseType.DB2, meta::relational::extension::relationalExtensions());
 
    assertEquals('select substr("root".FULLNAME, 0, position(\',\', "root".FULLNAME)-1) as "firstName" from personTable as "root"', $db2sql);
-}
-
-function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringIndexOfSnowflake():Boolean[1]
-{
-   let sql = toSQLString(
-              |meta::relational::tests::model::simple::Person.all()->project(p|$p.firstName->indexOf('Jo'), 'index'),
-               meta::relational::tests::simpleRelationalMapping, DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
-
-   assertEquals('select CHARINDEX(\'Jo\', "root".FIRSTNAME) as "index" from personTable as "root"', $sql);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringWithStdDevSample():Boolean[1]
@@ -1486,32 +1457,6 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testSqlGen
    assertSameSQL($expectedSQL, $resultComposite);
 }
 
-function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringWithQuoteIdentifiersFlag():Boolean[1]
-{
-   let runtime = ^meta::pure::runtime::Runtime(connections = ^TestDatabaseConnection(element = meta::relational::tests::db,
-                                                                                     type = DatabaseType.Snowflake,
-                                                                                     quoteIdentifiers = true
-                                                                                  ));
-
-   let result = toSQLStringPretty(|Synonym.all()->filter(s | $s.type != 'ISIN')->project([s | $s.name],['name']),
-                                  simpleRelationalMappingWithEnumConstant, $runtime, meta::relational::extension::relationalExtensions());
-   
-   assertEquals('select 	"root"."NAME" as "name" from "productSchema"."synonymTable" as "root" where (\'CUSIP\' <> \'ISIN\')', $result->replace('\n', ''));
-}
-
-function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringWithQuoteIdentifiersFlagInColumnName():Boolean[1]
-{
-   let runtime = ^meta::pure::runtime::Runtime(connections = ^TestDatabaseConnection(element = meta::relational::tests::db,
-                                                                                     type = DatabaseType.Snowflake,
-                                                                                     quoteIdentifiers = true
-                                                                                  ));
-
-   let result = toSQLStringPretty(|Product.all()->project([#/Product/name!prodName#])->sort(asc('prodName'))->drop(2)->limit(5),
-                                   simpleRelationalMapping, $runtime, meta::relational::extension::relationalExtensions());
-   
-   assertEquals('select 	"prodName" as "prodName" from (		select 			"root"."NAME" as "prodName" 		from "productSchema"."productTable" as "root" 		order by "prodName"		 limit \'\' offset 2) as "subselect" limit 5', $result->replace('\n', ''));
-}
-
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testMemSQLSubstring() : Boolean[1]
 {
   let runtime = ^meta::pure::runtime::Runtime(connections = ^TestDatabaseConnection(element = meta::relational::tests::db,type = DatabaseType.MemSQL));
@@ -1572,32 +1517,4 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testToStri
    let func = {|Person.all()->project([col(x | $x.firstName, 'FirstName'), col(x | $x.age->toOne()->toString()->toUpper(), 'AgeString')])};
    let sql = toSQLString($func, simpleRelationalMapping, DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
    assertSameSQL('select "root".FIRSTNAME as "FirstName", upper(cast("root".AGE as varchar)) as "AgeString" from personTable as "root"', $sql);
-}
-
-function <<test.Test>> meta::relational::tests::functions::sqlstring::testJoinStringsSnowflake():Boolean[1]
-{
-   let fn = {|Firm.all()->project([f|$f.legalName, f|$f.employees.firstName->joinStrings('')], ['legalName', 'employeesFirstName'])};
-   let snowflakeSql = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".LEGALNAME as "legalName", "gen_root_d_m2".aggCol as "employeesFirstName" from firmTable as "root" left outer join (select "gen_root".ID as ID, listagg("personTable_d#5".FIRSTNAME) as aggCol from firmTable as "gen_root" left outer join personTable as "personTable_d#5" on ("gen_root".ID = "personTable_d#5".FIRMID) group by "gen_root".ID) as "gen_root_d_m2" on ("root".ID = "gen_root_d_m2".ID)', $snowflakeSql);
-}
-
-function <<test.Test>> meta::relational::tests::functions::sqlstring::testJoinStringsSnowflakeWithSeparator():Boolean[1]
-{
-   let fn = {|Firm.all()->project([f|$f.legalName, f|$f.employees.firstName->joinStrings('*')], ['legalName', 'employeesFirstName'])};
-   let snowflakeSql = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".LEGALNAME as "legalName", "gen_root_d_m2".aggCol as "employeesFirstName" from firmTable as "root" left outer join (select "gen_root".ID as ID, listagg("personTable_d#5".FIRSTNAME, \'*\') as aggCol from firmTable as "gen_root" left outer join personTable as "personTable_d#5" on ("gen_root".ID = "personTable_d#5".FIRMID) group by "gen_root".ID) as "gen_root_d_m2" on ("root".ID = "gen_root_d_m2".ID)', $snowflakeSql);
-}
-
-function <<test.Test>> meta::relational::tests::functions::sqlstring::testJoinStringsArray():Boolean[1]
-{
-   let fn = {|Firm.all()->project([f|$f.legalName, f|['A', 'B', 'C']->joinStrings('')], ['legalName', 'employeesFirstName'])};
-   let snowflakeSql = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".LEGALNAME as "legalName", concat(\'A\', \'B\', \'C\') as "employeesFirstName" from firmTable as "root"', $snowflakeSql);
-}
-
-function <<test.Test>> meta::relational::tests::functions::sqlstring::testJoinStringsArrayWithSeparator():Boolean[1]
-{
-   let fn = {|Firm.all()->project([f|$f.legalName, f|['A', 'B', 'C']->joinStrings('*')], ['legalName', 'employeesFirstName'])};
-   let snowflakeSql = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".LEGALNAME as "legalName", concat(\'A\', \'*\', \'B\', \'*\', \'C\') as "employeesFirstName" from firmTable as "root"', $snowflakeSql);
 }

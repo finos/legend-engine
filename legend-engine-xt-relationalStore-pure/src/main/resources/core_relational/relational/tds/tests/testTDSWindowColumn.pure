@@ -205,19 +205,6 @@ function <<test.Test>> meta::relational::tests::tds::tdsWindow::testWindowColumn
    assertEquals('select "firstName" as "firstName", "lastName" as "lastName", "ageSum" as "ageSum", "rowNumber" as "rowNumber" from (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", sum("root".AGE) as "ageSum", row_number() OVER (Order By "root".FIRSTNAME ASC) as "rowNumber" from (select "root".ID as ID, "root".FIRSTNAME as FIRSTNAME, "root".LASTNAME as LASTNAME, "root".AGE as AGE from personTable as "root" where "root".AGE > 110) as "root" where "root".AGE < 200 and "root".LASTNAME like \'David%\' group by "firstName","lastName") as "subselect" where "rowNumber" > 10', $result);
 }
 
-function <<test.Test>> meta::relational::tests::tds::tdsWindow::testOLAPGroupBySnowflake():Boolean[1]
-{
-   let func = {|
-      Person.all()
-         ->filter(p|$p.lastName->startsWith('David'))
-         ->groupBy([p|$p.firstName, p|$p.lastName], [agg(p|$p.age, y|$y->sum())], ['firstName', 'lastName', 'ageSum'])
-         ->olapGroupBy([], asc('firstName'), y|$y->rowNumber(), 'rowNumber')
-         ->filter(r|$r.getInteger('rowNumber') > 10)
-   };
-   let result = toSQLString($func, simpleRelationalMappingIncWithStoreFilter, DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
-   assertEquals('select "firstName" as "firstName", "lastName" as "lastName", "ageSum" as "ageSum", "rowNumber" as "rowNumber" from (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", sum("root".AGE) as "ageSum", row_number() OVER (Order By "root".FIRSTNAME ASC) as "rowNumber" from (select "root".ID as ID, "root".FIRSTNAME as FIRSTNAME, "root".LASTNAME as LASTNAME, "root".AGE as AGE from personTable as "root" where "root".AGE > 110) as "root" where "root".AGE < 200 and "root".LASTNAME like \'David%\' group by "root".FIRSTNAME,"root".LASTNAME) as "subselect" where "rowNumber" > 10', $result);
-}
-
 function <<test.Test, test.AlloyOnly>>
 { meta::pure::executionPlan::profiles::serverVersion.start='v1_16_0' }
 meta::relational::tests::tds::tdsWindow::testSingleWindowWithSortWithDenseRankAlloyOnly():Boolean[1]

@@ -260,16 +260,3 @@ function <<test.Test>> meta::relational::tests::projection::window::testDynaFunc
    let result =  toSQLString($func, simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".ID as "id", rank() OVER (Partition By case when "orderPnlView_d#2_dy0#2_d_m1_d_m1_d_m2".pnl = 0 then \'true\' else \'false\' end Order By "root".quantity ASC) as "testCol" from orderTable as "root" left outer join (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accountTable_d#2_dy0#2_l_d#2_dy0#2_m3_r".ID as accountId, "salesPersonTable_d#2_dy0#2_l_d#2_dy0#2_m4_md".NAME as supportContact, "salesPersonTable_d#2_dy0#2_l_d#2_dy0#2_m4_md".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "orderTable_d#2_dy0#2_d#2_dy0#2_m3" on ("root".ORDER_ID = "orderTable_d#2_dy0#2_d#2_dy0#2_m3".ID) left outer join accountTable as "accountTable_d#2_dy0#2_l_d#2_dy0#2_m3_r" on ("orderTable_d#2_dy0#2_d#2_dy0#2_m3".accountID = "accountTable_d#2_dy0#2_l_d#2_dy0#2_m3_r".ID) left outer join salesPersonTable as "salesPersonTable_d#2_dy0#2_l_d#2_dy0#2_m4_md" on ("orderTable_d#2_dy0#2_d#2_dy0#2_m3".accountID = "salesPersonTable_d#2_dy0#2_l_d#2_dy0#2_m4_md".ACCOUNT_ID) where "root".pnl > 0) as "orderPnlView_d#2_dy0#2_d_m1_d_m1_d_m2" on ("orderPnlView_d#2_dy0#2_d_m1_d_m1_d_m2".ORDER_ID = "root".ID)', $result);
 }
-
-function <<test.Test>> meta::relational::tests::projection::window::testProjectWindowColumnSnowflake():Boolean[1]
-{
-   let func = {|
-      meta::relational::tests::model::simple::Person.all()
-         ->project([
-            col(p|$p.lastName, 'lastName'),
-            col(window(p|$p.firstName), sortAsc(p|$p.lastName), func(p|$p.age->toOne(), y|$y->average()), 'ageAverageWindow')
-         ])
-   };
-   let result = toSQLString($func, simpleRelationalMappingInc, DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".LASTNAME as "lastName", avg(1.0 * "root".AGE) OVER (Partition By "root".FIRSTNAME Order By "root".LASTNAME ASC) as "ageAverageWindow" from personTable as "root"', $result);
-}
