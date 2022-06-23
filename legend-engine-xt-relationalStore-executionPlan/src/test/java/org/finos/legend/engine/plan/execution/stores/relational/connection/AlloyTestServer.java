@@ -52,7 +52,7 @@ import java.util.Enumeration;
 import java.util.Map;
 
 import static org.finos.legend.engine.plan.execution.stores.relational.TestExecutionScope.buildTestExecutor;
-import static org.finos.legend.pure.generated.core_relational_relational_extensions_router_extension.Root_meta_relational_extension_relationalExtensions__Extension_MANY_;
+import static org.finos.legend.pure.generated.core_relational_relational_extensions_extension.Root_meta_relational_extension_relationalExtensions__Extension_MANY_;
 
 public abstract class AlloyTestServer
 {
