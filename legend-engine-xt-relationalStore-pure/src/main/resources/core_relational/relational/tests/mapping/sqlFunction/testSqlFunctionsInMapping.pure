@@ -1106,6 +1106,25 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::date::test
     assertEquals('select cast( parseDateTime("root".stringDateFormat,\'yyyy-MM-dd\') as date) as "date" from dataTable as "root"',$s);
 }
 
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::sqlFunction::date::testBase64H2():Boolean[1]
+{
+    let result = execute(
+      |SqlFunctionDemo.all()->project([s | $s.encodeBase64Result, s | $s.decodeBase64Result], ['res1', 'res2']),
+      testMapping,
+      testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
+    assertEquals(['bG9yZW1pcHN1bTMz', 'loremipsum33', 'bG9yZW00Mmlwc3Vt', 'lorem42ipsum'], $result.values->at(0).rows.values);
+    assertEquals('select legend_h2_extension_base64_encode("root".alphaNumericString) as "res1", legend_h2_extension_base64_decode(legend_h2_extension_base64_encode("root".alphaNumericString)) as "res2" from dataTable as "root"', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::sqlFunction::date::testBase64MemSQL():Boolean[1]
+{
+    let s = toSQLString(
+      |SqlFunctionDemo.all()->project([s | $s.encodeBase64Result, s | $s.decodeBase64Result], ['res1', 'res2']),
+      testMapping,
+      meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
+    assertEquals('select cast(to_base64(`root`.alphaNumericString) as char) as `res1`, cast(from_base64(cast(to_base64(`root`.alphaNumericString) as char)) as char) as `res2` from dataTable as `root`', $s);
+}
+
 Class meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionDemo
 {
    concatResult :String[1];
@@ -1164,6 +1183,9 @@ Class meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionD
    month : Integer[1];
    week : Integer[1];
    date : Date[1];
+
+   decodeBase64Result: String[1];
+   encodeBase64Result: String[1];
 }
 
 Class meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionDemoForPresto
@@ -1262,7 +1284,10 @@ Mapping meta::relational::tests::mapping::sqlFunction::model::mapping::testMappi
           hour : hour(dateTime),
           month : monthNumber(dateTime),
           week : weekOfYear(dateTime),
-          date : datePart(dateTime)
+          date : datePart(dateTime),
+
+          encodeBase64Result : encodeBase64(alphaNumericString),
+          decodeBase64Result : decodeBase64(encodeBase64(alphaNumericString))
        )
 
     }

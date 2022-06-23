@@ -15,6 +15,7 @@
 package org.finos.legend.engine.plan.execution.stores.relational;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.codec.binary.Base64;
 import org.h2.value.Value;
 import org.h2.value.ValueBoolean;
 import org.h2.value.ValueDouble;
@@ -24,6 +25,7 @@ import org.h2.value.ValueLong;
 import org.h2.value.ValueNull;
 import org.h2.value.ValueString;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -87,5 +89,15 @@ public class LegendH2Extensions
 
         throw new RuntimeException("Unsupported value in H2 extension function");
 
+    }
+
+    public static String legend_h2_extension_base64_decode(String string)
+    {
+        return string == null ? null : new String(Base64.decodeBase64(string));
+    }
+
+    public static String legend_h2_extension_base64_encode(String string)
+    {
+        return string == null ? null : Base64.encodeBase64URLSafeString(string.getBytes(StandardCharsets.UTF_8));
     }
 }

@@ -30,7 +30,7 @@ import org.finos.legend.engine.shared.core.identity.credential.PlaintextUserPass
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
@@ -98,8 +98,10 @@ public class DefaultH2AuthenticationStrategy extends AuthenticationStrategy
 
     private static List<String> getLegendH2ExtensionSQLs()
     {
-        return Collections.singletonList(
-                "CREATE ALIAS IF NOT EXISTS legend_h2_extension_json_navigate FOR \"org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions.legend_h2_extension_json_navigate\";"
+        return Arrays.asList(
+                "CREATE ALIAS IF NOT EXISTS legend_h2_extension_json_navigate FOR \"org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions.legend_h2_extension_json_navigate\";",
+                "CREATE ALIAS IF NOT EXISTS legend_h2_extension_base64_decode FOR \"org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions.legend_h2_extension_base64_decode\";",
+                "CREATE ALIAS IF NOT EXISTS legend_h2_extension_base64_encode FOR \"org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions.legend_h2_extension_base64_encode\";"
         );
     }
 }
