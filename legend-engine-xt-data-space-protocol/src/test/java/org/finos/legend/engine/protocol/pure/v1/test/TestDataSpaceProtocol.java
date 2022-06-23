@@ -38,7 +38,7 @@ public class TestDataSpaceProtocol
     @Test
     public void testProtocolBackwardCompatibility() throws Exception
     {
-        PureModelContextData context = objectMapper.readValue(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("dataSpace_DeprecatedModel .json")), PureModelContextData.class);
+        PureModelContextData context = objectMapper.readValue(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("dataSpace_DeprecatedModel.json")), PureModelContextData.class);
         Assert.assertEquals(1, context.getElementsOfType(DataSpace.class).size());
         Assert.assertEquals(1, context.getElements().size());
     }
