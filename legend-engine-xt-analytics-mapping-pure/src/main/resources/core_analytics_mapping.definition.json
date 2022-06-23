@@ -1,0 +1,5 @@
+{
+  "name" : "core_analytics_mapping",
+  "pattern" : "(meta::analytics::mapping)(::.*)?",
+  "dependencies" : ["platform", "core"]
+}

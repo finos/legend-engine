@@ -1,0 +1,383 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::analytics::mapping::modelCoverage::*;
+import meta::pure::mapping::*;
+import meta::pure::mapping::modelToModel::*;
+import meta::analytics::mapping::modelCoverage::utility::*;
+
+function <<access.private>> meta::analytics::mapping::modelCoverage::getPropertyTargetType(p:PropertyMapping[1], rootClassMappings:SetImplementation[*]):Type[1]
+{
+   let targetId = $p.targetSetImplementationId;
+
+   if ($targetId->isEmpty() || $targetId == '',
+      | $p.property.genericType.rawType->toOne(),
+      |
+         $p->toOne()->match([
+            i:InlineEmbeddedSetImplementation[1] |
+               $rootClassMappings->filter(x | $x.id == $i.inlineSetImplementationId)->toOne().class;,
+            p:EmbeddedSetImplementation[1] |
+               $p.property.genericType.rawType->toOne();,
+            e:PropertyMapping[1] |
+               $rootClassMappings->filter(x | $x.id == $targetId)->toOne().class;
+   ]));
+}
+
+function <<access.private>> meta::analytics::mapping::modelCoverage::getPropertyTargetName(p:PropertyMapping[1], type:Type[1], rootClassMappings:SetImplementation[*]):String[0..1]
+{
+   $p->toOne()->match([
+      i:InlineEmbeddedSetImplementation[1] |
+         let root = $rootClassMappings->filter(r | $r.id == $i.inlineSetImplementationId);
+         if ($root->isNotEmpty() && $root->toOne().root,
+             | $root->toOne().class->elementToPath(),
+             | $i.inlineSetImplementationId);,
+      p:EmbeddedSetImplementation[1] |
+         $p.targetSetImplementationId,
+      e:PropertyMapping[1] |
+         let root = $rootClassMappings->filter(r | $r.id == $p.targetSetImplementationId);
+         if ($root->isNotEmpty() && $root->toOne().root,
+             | $root->toOne().class->elementToPath(),
+             | $p.targetSetImplementationId);
+      ,
+      a:Any[1] | []
+   ])
+}
+
+function <<access.private>> meta::analytics::mapping::modelCoverage::buildProperty(
+   p:AbstractProperty<Any>[1],
+   type:Type[1],
+   targetName:String[0..1],
+   propertyInfo:PropertyInfo[1]): MappedProperty[1]
+{
+   $type->match([
+      pt:PrimitiveType[1] |
+         ^MappedProperty(name = $propertyInfo.name, info = ^MappedPropertyInfo(type = $type->mapType(), multiplicity = $propertyInfo.multiplicity)),
+      et:Enumeration<Any>[1] |
+         ^EnumMappedProperty(
+            name = $propertyInfo.name, enumPath = $type->elementToPath(), info = ^MappedPropertyInfo(type = MappedPropertyType.Enumeration, multiplicity = $propertyInfo.multiplicity)),
+      ot:Any[1] |
+         let subType = if ($p.genericType.rawType != $type,
+            | $type->elementToPath(),
+            | []);
+         $p.owner->match([
+            a:Association[1] |
+               ^AssociatedMappedProperty(
+                  name = $propertyInfo.name,
+                  info = ^MappedPropertyInfo(type = MappedPropertyType.Entity, multiplicity = $propertyInfo.multiplicity),
+                  entityPath = $targetName->toOne(),
+                  association = $a->elementToPath(),
+                  subType = $subType),
+            a:Any[*] |
+               ^EntityMappedProperty(
+                  name = $propertyInfo.name,
+                  info = ^MappedPropertyInfo(type = MappedPropertyType.Entity, multiplicity = $propertyInfo.multiplicity),
+                  entityPath = $targetName->toOne(),
+                  subType = $subType)
+            ]);
+      ]);
+}
+
+function <<access.private>> meta::analytics::mapping::modelCoverage::processPropertyMapping(
+   p:PropertyMapping[1],
+   rootClassMappings:SetImplementation[*],
+   propertyMap:Map<AbstractProperty<Any>, PropertyInfo>[1]):MappedProperty[1]
+{
+   let type = getPropertyTargetType($p, $rootClassMappings);
+   let name = getPropertyTargetName($p, $type, $rootClassMappings);
+   $p.property->buildProperty($type, $name, $p.property->getPropertyInfo($propertyMap));
+}
+
+function <<access.private>> meta::analytics::mapping::modelCoverage::processMultiPropertyMapping(
+   p:PropertyMapping[*],
+   inheritanceMap:Map<OperationSetImplementation, List<SetImplementation>>[1],
+   propertyMap:Map<AbstractProperty<Any>, PropertyInfo>[1]):MappedProperty[1]
+{
+   let property = $p->at(0).property;
+
+   let type = $property.genericType.rawType->toOne();
+
+   let dataSetProperty = $property->buildProperty($type, $type->elementToPath(), $property->getPropertyInfo($propertyMap));
+
+   let inheritanceKeyValue = $inheritanceMap->keyValues()->filter(i | $i.first.class == $type)->last();
+
+   if ($inheritanceKeyValue->isNotEmpty(),
+       |
+         let inheritanceMappings = $inheritanceKeyValue.second;
+
+         let implementations = $inheritanceMappings.values->filter(c | $c.id->in($p.targetSetImplementationId)).class->map(c | $c->elementToPath());
+         let entityPath = $p.targetSetImplementationId->sort()->joinStrings(',') + '@' + $type->elementToPath();
+
+         let targetSetImplementationIds = $p->map(pm | $pm->match([
+            o:OtherwiseEmbeddedSetImplementation[1] | $o.otherwisePropertyMapping.targetSetImplementationId,
+            i:InlineEmbeddedSetImplementation[1] | $i.inlineSetImplementationId,
+            p:PropertyMapping[1] | $p.targetSetImplementationId
+         ]));
+
+         //if the inheritance mapping exactly matches the targets then we can just point to that instead of requiring inheritance node to be built as it would be identical
+         let isCorrectInheritanceType = $inheritanceMappings.values.id->containsAll($targetSetImplementationIds) && $targetSetImplementationIds->containsAll($inheritanceMappings.values.id);
+
+         if ($isCorrectInheritanceType,
+            | $dataSetProperty->match([
+                 e:EntityMappedProperty[1] | ^$e(entityPath = $inheritanceKeyValue->toOne().first->buildEntityName()),
+                 d:MappedProperty[1] | $d
+              ]),
+            | $dataSetProperty->match([
+                  a:AssociatedMappedProperty[1] |
+                     ^MultiInheritanceAssociatedMappedProperty(
+                        name = $a.name, entityPath = $entityPath, info = $a.info,
+                        association = $a.association, subClasses = $implementations, inheritanceEntityPath = $type->elementToPath()),
+                  e:EntityMappedProperty[1] |
+                     ^MultiInheritanceEntityMappedProperty(
+                        name = $e.name, info = $e.info, entityPath = $entityPath,
+                        subClasses = $implementations, inheritanceEntityPath = $type->elementToPath()),
+                  d:MappedProperty[1] | $d
+               ])
+         );,
+       |
+          $dataSetProperty
+    );
+}
+
+function <<access.private>> meta::analytics::mapping::modelCoverage::processPropertyMappings(
+   p:PropertyMapping[*],
+   rootClassMappings:SetImplementation[*],
+   inheritanceMap:Map<OperationSetImplementation, List<SetImplementation>>[1],
+   propertyMap:Map<AbstractProperty<Any>, PropertyInfo>[1]): MappedProperty[*]
+{
+   let grouped = $p->groupBy(p | $p.property);
+   $grouped->keyValues()->map(kv |
+      $kv.second.values->match([
+         e:PropertyMapping[1] | $e->processPropertyMapping($rootClassMappings, $propertyMap),
+         e:PropertyMapping[*] | $e->processMultiPropertyMapping($inheritanceMap, $propertyMap)
+      ]);
+   );
+}
+
+function <<access.private>> meta::analytics::mapping::modelCoverage::getQualifiedPropertyTarget(
+   qp:QualifiedProperty<Any>[1], classMappings:SetImplementation[*],
+   currentSetImplementation:SetImplementation[1], currentClass:Class<Any>[1], currentTargetName:String[1],
+   rootClassMappings:SetImplementation[*]):Pair<SetImplementation, String>[0..1]
+{
+   let qualifiedPropertyType = $qp.genericType.rawType->toOne();
+
+   $qualifiedPropertyType->match([
+      p:PrimitiveType[1] | [],
+      e:Enumeration<Enum>[1] | [],
+      c:Class<Any>[1] |
+         //we preference root mapped targets if any exist.
+         let potentialTargets = $classMappings->filter(cm | $cm.class == $qualifiedPropertyType &&
+                                                       $cm->match([
+                                                          e:EmbeddedSetImplementation[1] | false,
+                                                          s:SetImplementation[1] | true
+                                                       ]));
+
+         let potentialRootTarget = $potentialTargets->filter(t | $t.root)->first();
+         let potentialTarget = if ($potentialRootTarget->isEmpty(), | $potentialTargets->first(), | $potentialRootTarget->toOne());
+
+         if ($qualifiedPropertyType == $currentClass,
+                                 | pair($currentSetImplementation, $currentTargetName),
+                                 | if ($potentialTarget->isEmpty() || $currentSetImplementation->instanceOf(OperationSetImplementation) || $potentialTarget->toOne()->instanceOf(OperationSetImplementation),
+                                       | pair($rootClassMappings->filter(cm | $cm.class == $qualifiedPropertyType)->at(0),
+                                              $qualifiedPropertyType->elementToPath());,
+                                       | pair($potentialTarget->toOne(),
+                                              $potentialTarget->toOne()->buildEntityName())
+                                    ));
+   ]);
+}
+
+function <<access.private>> meta::analytics::mapping::modelCoverage::buildEntity(
+   class:Class<Any>[1],
+   path:String[1],
+   properties:MappedProperty[*],
+   isRootEntity:Boolean[1],
+   classInfo:ClassInfo[1]): MappedEntity[1]
+{
+   ^MappedEntity(
+      path = $path,
+      properties = $properties->removeDuplicatesBy(x | $x.name),
+      info = ^MappedEntityInfo(isRootEntity = $isRootEntity)
+   );
+}
+
+function meta::analytics::mapping::modelCoverage::buildEntity(
+   class:Class<Any>[1],
+   target:String[1],
+   setImplementation:SetImplementation[1],
+   propertyMappings:PropertyMapping[*],
+   rootClassMappings:SetImplementation[*],
+   classMap:Map<Class<Any>, ClassInfo>[1],
+   propertiesMap:Map<AbstractProperty<Any>, PropertyInfo>[1],
+   inheritanceMap:Map<OperationSetImplementation, List<SetImplementation>>[1],
+   mappingClassMappings:Map<Mapping, List<SetImplementation>>[1],
+   isRootEntity:Boolean[1]): MappedEntity[1]
+{
+   let classInfo = $class->getClassInfo($classMap);
+
+   let supportedPropertyMappings = $propertyMappings
+      ->filter(pm |
+         !$pm.localMappingProperty->isTrue()
+         && !$pm.property->meta::pure::milestoning::isRangeMilestoningProperty()
+         && (($pm.property->isPrimitiveValueProperty() && !$pm.property.genericType.rawType == Decimal)
+            || $pm->match([rpm:InstanceSetImplementation[1] | true, a: PropertyMapping[1] | false])
+            || $pm.targetSetImplementationId->in($rootClassMappings.id))
+      );
+
+   let properties = $supportedPropertyMappings->processPropertyMappings($rootClassMappings, $inheritanceMap, $propertiesMap);
+
+   //TODO this should take into account how the return type is constructed. this currently would miss out
+   //any qp that returns an embedded type within the class or one which returns a Class type which is
+   //not a root mapped entity. Ideally we should not even look in root mapped entities. We should only look
+   //in property types which have been mapped recursively. In the perfect world we would undertand exactly
+   //how the return type is mapped.
+
+   let qualifiedProperties = $classInfo.qualifiedProperties
+      ->filter(p |
+         let returnType = $p->functionReturnType().rawType->toOne();
+
+         $p->isSupportedProperty()
+         && !$p->meta::pure::milestoning::isRangeMilestoningProperty()
+         && ($rootClassMappings.class->contains($returnType)
+            || $returnType == $class
+            || $returnType->instanceOf(PrimitiveType));
+      )
+      ->map(qp |
+         let qualifiedPropertyType = $qp.genericType.rawType->toOne();
+         let classMappings = $mappingClassMappings->get($setImplementation.parent).values;
+
+         let qpTarget = getQualifiedPropertyTarget($qp, $classMappings, $setImplementation, $class, $target, $rootClassMappings);
+
+         $qp->buildProperty(
+            $qualifiedPropertyType->toOne(), $qpTarget.second, $qp->getPropertyInfo($propertiesMap)
+         ); //TODO check how types work with qp's.we n eed to filter on whether the type is root supported currently
+   );
+
+   let autoMappedProperties = if($setImplementation->instanceOf(PureInstanceSetImplementation),
+                                 |buildAutoMappedProperty($class, $setImplementation->cast(@PureInstanceSetImplementation).srcClass->cast(@Class<Any>)->toOne(), $properties),
+                                 |[]);
+
+     buildEntity(
+      $class,
+      $target,
+      $properties->concatenate($qualifiedProperties)->concatenate($autoMappedProperties),
+      $isRootEntity,
+      $classInfo);
+}
+
+function meta::analytics::mapping::modelCoverage::buildAutoMappedProperty(
+   class:Class<Any>[1], srcClass: Class<Any>[1], mappedProperties: MappedProperty[*]): MappedProperty[*]
+{
+  let autoMappedProperties = $class.properties->filter(p|!$p.name->in($mappedProperties.name))
+                                              ->filter(p|$srcClass.properties->exists(sp|$sp.name == $p.name && $sp.genericType.rawType == $p.genericType.rawType && $sp.multiplicity == $p.multiplicity));
+  let primitiveProperties = $autoMappedProperties->filter(p|$p->isPrimitiveValueProperty());
+
+  $primitiveProperties->map(p|^MappedProperty(name = $p.name->toOne(), info = ^MappedPropertyInfo(type = $p.genericType.rawType->toOne()->mapType(), multiplicity = $p.multiplicity->toOne())));
+}
+
+function meta::analytics::mapping::modelCoverage::buildAutoMappedProperty(
+   class:Class<Any>[1]): MappedEntity[*]
+{
+[]
+}
+
+function <<access.private>> meta::analytics::mapping::modelCoverage::buildInheritanceEntitiesImpl(
+   baseMapping:SetImplementation[1],
+   mapping:SetImplementation[1],
+   seenInheritanceTypes: Class<Any>[*],
+   mappings:SetImplementation[*],
+   namePrefix: String[1],
+   rootClassMappings:SetImplementation[*],
+   classMap:Map<Class<Any>, ClassInfo>[1],
+   propertiesMap:Map<AbstractProperty<Any>, PropertyInfo>[1],
+   inheritanceMap:Map<OperationSetImplementation, List<SetImplementation>>[1],
+   mappingClassMappings:Map<Mapping, List<SetImplementation>>[1],
+   isRootEntity:Boolean[1],
+   isBase:Boolean[1]): MappedEntity[*]
+{
+   let class = $mapping.class;
+   let specs = $class.specializations.specific->cast(@Class<Any>);
+
+   let mappedProperties = $mapping->match([
+      o:OperationSetImplementation[1] |
+         let properties = $mappings
+            ->filter(c | $c->instanceOf(InstanceSetImplementation))
+            ->cast(@InstanceSetImplementation).allPropertyMappings();
+
+         if ($isRootEntity,
+             | $properties->groupBy(p | $p.property)->keyValues()->map(kv |
+                  $kv.second.values->match([
+                     pm:PropertyMapping[1] | $pm,
+                     pm:PropertyMapping[*] | $pm->fold({p, acc |
+                        $p->match([
+                           e:EmbeddedSetImplementation[1] |
+                              if ($acc->exists(a | $a.property == $e.property), | $acc, | $acc->add($p));,
+                           p:PropertyMapping[1] |
+                              let root = $rootClassMappings->exists(rm | $rm.root && $rm.class == $p.property.genericType.rawType);
+                              if (!$root,
+                                 | if ($acc->exists(pm | $pm.property == $p.property), | $acc, | $acc->add($p)),
+                                 | $acc->add($p));
+                        ])
+                     }, []->cast(@PropertyMapping))
+                  ])),
+             | $properties->removeDuplicatesBy(pm | $pm.property));,
+      i:InstanceSetImplementation[1] | $i.allPropertyMappings()
+   ]);
+
+   let inheritanceTypes = $mapping->match([
+      o:OperationSetImplementation[1] | $seenInheritanceTypes->add($o.class),
+      i:InstanceSetImplementation[1] | $seenInheritanceTypes
+   ]);
+
+   let name = $namePrefix + if ($isBase, | $mapping->buildEntityName(),| $class->createInheritanceName());
+
+   let entity = buildEntity($class, $name, $mapping,
+      $mappedProperties, $rootClassMappings, $classMap, $propertiesMap, $inheritanceMap, $mappingClassMappings, $isRootEntity);
+
+   let currentMappings = $mappings->filter(m | $m.class->in($specs));
+
+   let inheritanceEntities = $currentMappings->map(cm |
+      $baseMapping->buildInheritanceEntitiesImpl($cm, $inheritanceTypes, $mappings, $namePrefix, $rootClassMappings, $classMap, $propertiesMap,
+                                                 $inheritanceMap, $mappingClassMappings, false, false);
+   );
+
+   ^$entity(properties = $entity.properties->concatenate($currentMappings->map(cm |
+      let name = $cm.class.name->toOne();
+
+      ^InheritanceMappedProperty(
+         name = $name->substring(0, 1)->toLower() + $name->substring(1),
+         info = ^MappedPropertyInfo(type = MappedPropertyType.Entity, multiplicity = PureOne),
+         entityPath = $namePrefix + $cm.class->createInheritanceName(),
+         subType = $cm.class->elementToPath()
+      );
+   )))->concatenate($inheritanceEntities);
+}
+
+function <<access.private>> meta::analytics::mapping::modelCoverage::buildInheritanceEntities(
+   baseMapping:SetImplementation[1],
+   mapping:SetImplementation[1],
+   seenInheritanceTypes: Class<Any>[*],
+   mappings:SetImplementation[*],
+   namePrefix: String[1],
+   rootClassMappings:SetImplementation[*],
+   classMap:Map<Class<Any>, ClassInfo>[1],
+   propertiesMap:Map<AbstractProperty<Any>, PropertyInfo>[1],
+   inheritanceMap:Map<OperationSetImplementation, List<SetImplementation>>[1],
+   mappingClassMappings:Map<Mapping, List<SetImplementation>>[1],
+   isRootEntity:Boolean[1],
+   isBase:Boolean[1]):MappedEntity[*]
+{
+   let entities = buildInheritanceEntitiesImpl($baseMapping, $mapping, $seenInheritanceTypes, $mappings,
+      $namePrefix, $rootClassMappings, $classMap, $propertiesMap, $inheritanceMap, $mappingClassMappings, $isRootEntity, $isBase);
+
+   $entities->map(e | ^$e(properties = $e.properties->removeDuplicatesBy(x | $x.name)));
+}
