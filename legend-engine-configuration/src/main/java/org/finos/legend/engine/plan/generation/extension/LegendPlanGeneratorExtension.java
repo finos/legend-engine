@@ -26,9 +26,9 @@ import org.finos.legend.engine.plan.generation.transformers.VersionPlanTransform
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_ExternalFormatExtension;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.core_external_shared_extension;
-import org.finos.legend.pure.generated.core_servicestore_router_router_extension;
+import org.finos.legend.pure.generated.core_servicestore_extensions_extension;
 
-import static org.finos.legend.pure.generated.core_relational_relational_extensions_router_extension.Root_meta_relational_extension_relationalExtensions__Extension_MANY_;
+import static org.finos.legend.pure.generated.core_relational_relational_extensions_extension.Root_meta_relational_extension_relationalExtensions__Extension_MANY_;
 
 public class LegendPlanGeneratorExtension implements PlanGeneratorExtension
 {
@@ -47,7 +47,7 @@ public class LegendPlanGeneratorExtension implements PlanGeneratorExtension
         RichIterable<Root_meta_external_shared_format_ExternalFormatExtension> planGenerationExtensions = LazyIterate.collect(ExternalFormatPlanGenerationExtensionLoader.extensions().values(), ext -> ext.getPureExtension(pureModel.getExecutionSupport()));
         pureExtensions.addAll(core_external_shared_extension.Root_meta_external_shared_format_routerExtensions_String_1__ExternalFormatExtension_MANY__Extension_MANY_("externalFormat", planGenerationExtensions, pureModel.getExecutionSupport()).toList());
 
-        pureExtensions.add(core_servicestore_router_router_extension.Root_meta_external_store_service_extension_serviceStoreExtensions__Extension_1_(pureModel.getExecutionSupport()));
+        pureExtensions.add(core_servicestore_extensions_extension.Root_meta_external_store_service_extension_serviceStoreExtensions__Extension_1_(pureModel.getExecutionSupport()));
         pureExtensions.addAll(Root_meta_relational_extension_relationalExtensions__Extension_MANY_(pureModel.getExecutionSupport()).toList());
 
         return pureExtensions.toImmutable();

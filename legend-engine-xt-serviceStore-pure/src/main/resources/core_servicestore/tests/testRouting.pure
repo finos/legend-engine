@@ -19,7 +19,7 @@ import meta::external::store::service::tests::domain::*;
 import meta::external::store::service::tests::mapping::*;
 import meta::external::store::service::tests::runtime::*;
 
-function <<meta::pure::profiles::test.Test>> meta::external::store::service::router::test::testServiceStoreRoutingSimple():Boolean[1]
+function <<meta::pure::profiles::test.Test>> meta::external::store::service::tests::router::testServiceStoreRoutingSimple():Boolean[1]
 {
    let tree = #{
       S_Trade {
@@ -34,7 +34,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::store::service::rou
    assertEquals(' | {Platform> {meta::external::store::service::tests::store::TradeProductServiceStore> [1 s_trade_set/[1 s_trade_set/[1 s_trade_set/Class S_Trade].all()] -> graphFetch({meta::external::store::service::tests::store::TradeProductServiceStore> [s_trade_set / meta::external::store::service::tests::domain::S_Trade] {@(s_trade_set->)@ [ / s_tradeId], @(s_trade_set->)@ [ / s_traderDetails], @(s_trade_set->)@ [ / s_tradeDetails]}})]} -> serialize(#{meta::external::store::service::tests::domain::S_Trade {s_tradeId, s_traderDetails, s_tradeDetails}}#)};', $routed.functions->at(0)->meta::pure::router::printer::asString());
 }
 
-function <<meta::pure::profiles::test.Test>> meta::external::store::service::router::test::testServiceStoreRoutingWithFilter():Boolean[1]
+function <<meta::pure::profiles::test.Test>> meta::external::store::service::tests::router::testServiceStoreRoutingWithFilter():Boolean[1]
 {
    let tree  = #{
       S_Product {
@@ -49,7 +49,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::store::service::rou
    assertEquals(' | {Platform> {meta::external::store::service::tests::store::TradeProductServiceStore> [1 s_prod_set/[1 s_prod_set/[1 s_prod_set/[1 s_prod_set/Class S_Product].all()] -> filter([Routed Func:p:meta::external::store::service::tests::domain::S_Product[1] | [1 @s_productId(s_prod_set->)@ s_prod_set/[1 s_prod_set/$p].s_productId] == \'xyz\';])] -> graphFetch({meta::external::store::service::tests::store::TradeProductServiceStore> [s_prod_set / meta::external::store::service::tests::domain::S_Product] {@(s_prod_set->)@ [ / s_productId], @(s_prod_set->)@ [ / s_productName], @(s_prod_set->)@ [ / s_description]}})]} -> serialize(#{meta::external::store::service::tests::domain::S_Product {s_productId, s_productName, s_description}}#)};', $routed.functions->at(0)->meta::pure::router::printer::asString());
 }
 
-function <<meta::pure::profiles::test.Test>> meta::external::store::service::router::test::testServiceStoreRoutingWithAndFilter():Boolean[1]
+function <<meta::pure::profiles::test.Test>> meta::external::store::service::tests::router::testServiceStoreRoutingWithAndFilter():Boolean[1]
 {
    let tree  = #{
       S_Product {
@@ -64,7 +64,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::store::service::rou
    assertEquals(' | {Platform> {meta::external::store::service::tests::store::TradeProductServiceStore> [1 s_prod_set/[1 s_prod_set/[1 s_prod_set/[1 s_prod_set/Class S_Product].all()] -> filter([Routed Func:p:meta::external::store::service::tests::domain::S_Product[1] | [1 @s_productId(s_prod_set->)@ s_prod_set/[1 s_prod_set/$p].s_productId] == \'xyz\' -> and([1 @s_productName(s_prod_set->)@ s_prod_set/[1 s_prod_set/$p].s_productName] == \'dummy\');])] -> graphFetch({meta::external::store::service::tests::store::TradeProductServiceStore> [s_prod_set / meta::external::store::service::tests::domain::S_Product] {@(s_prod_set->)@ [ / s_productId], @(s_prod_set->)@ [ / s_productName], @(s_prod_set->)@ [ / s_description]}})]} -> serialize(#{meta::external::store::service::tests::domain::S_Product {s_productId, s_productName, s_description}}#)};', $routed.functions->at(0)->meta::pure::router::printer::asString());
 }
 
-function <<meta::pure::profiles::test.Test>> meta::external::store::service::router::test::testServiceStoreRoutingWithFilterOnParam():Boolean[1]
+function <<meta::pure::profiles::test.Test>> meta::external::store::service::tests::router::testServiceStoreRoutingWithFilterOnParam():Boolean[1]
 {
    let tree  = #{
       S_Product {
@@ -79,7 +79,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::store::service::rou
    assertEquals('id:String[1] | {Platform> {meta::external::store::service::tests::store::TradeProductServiceStore> [1 s_prod_set/[1 s_prod_set/[1 s_prod_set/[1 s_prod_set/Class S_Product].all()] -> filter([Routed Func:p:meta::external::store::service::tests::domain::S_Product[1] | [1 @s_productId(s_prod_set->)@ s_prod_set/[1 s_prod_set/$p].s_productId] == $id;])] -> graphFetch({meta::external::store::service::tests::store::TradeProductServiceStore> [s_prod_set / meta::external::store::service::tests::domain::S_Product] {@(s_prod_set->)@ [ / s_productId], @(s_prod_set->)@ [ / s_productName], @(s_prod_set->)@ [ / s_description]}})]} -> serialize(#{meta::external::store::service::tests::domain::S_Product {s_productId, s_productName, s_description}}#)};', $routed.functions->at(0)->meta::pure::router::printer::asString());
 }
 
-function <<meta::pure::profiles::test.Test>> meta::external::store::service::router::test::testServiceStoreRoutingWithComplexProperty():Boolean[1]
+function <<meta::pure::profiles::test.Test>> meta::external::store::service::tests::router::testServiceStoreRoutingWithComplexProperty():Boolean[1]
 {
    let tree  = #{
       S_Product {
@@ -98,7 +98,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::store::service::rou
    assertEquals(' | {Platform> {meta::external::store::service::tests::store::TradeProductServiceStore> [1 s_prod_set/[1 s_prod_set/[1 s_prod_set/Class S_Product].all()] -> graphFetch({meta::external::store::service::tests::store::TradeProductServiceStore> [s_prod_set / meta::external::store::service::tests::domain::S_Product] {@(s_prod_set->)@ [ / s_productId], @(s_prod_set->)@ [ / s_productName], @(s_prod_set->)@ [ / s_description], @(s_prod_set->s_synonym_set)@ [s_synonym_set / s_synonyms] {@(s_synonyms->)@ [ / s_type], @(s_synonyms->)@ [ / s_name]}}})]} -> serialize(#{meta::external::store::service::tests::domain::S_Product {s_productId, s_productName, s_description, s_synonyms {s_type, s_name}}}#)};', $routed.functions->at(0)->meta::pure::router::printer::asString());
 }
 
-function <<meta::pure::profiles::test.Test>> meta::external::store::service::router::test::testServiceStoreRoutingWithCrossStore():Boolean[1]
+function <<meta::pure::profiles::test.Test>> meta::external::store::service::tests::router::testServiceStoreRoutingWithCrossStore():Boolean[1]
 {
    let tree = #{
          S_Trade{
@@ -122,7 +122,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::store::service::rou
    assertEquals(' | {Platform> {meta::external::store::service::tests::store::TradeProductServiceStore> [1 s_trade_set/[1 s_trade_set/[1 s_trade_set/Class S_Trade].all()] -> graphFetch({meta::external::store::service::tests::store::TradeProductServiceStore> [s_trade_set / meta::external::store::service::tests::domain::S_Trade] {@(s_trade_set->)@ [ / s_tradeId], @(s_trade_set->)@ [ / s_traderDetails], @(s_trade_set->)@ [ / s_tradeDetails], {meta::external::store::service::tests::store::TradeProductServiceStore> @(s_trade_set->s_prod_set)@ [s_prod_set / s_product] {@(s_prod_set->)@ [ / s_productId], @(s_prod_set->)@ [ / s_productName], @(s_prod_set->)@ [ / s_description], @(s_prod_set->s_synonym_set)@ [s_synonym_set / s_synonyms] {@(s_synonyms->)@ [ / s_name], @(s_synonyms->)@ [ / s_type]}, @(s_prod_set->)@ [ / s_tradeId]}}}})]} -> serialize(#{meta::external::store::service::tests::domain::S_Trade {s_tradeId, s_traderDetails, s_tradeDetails, s_product {s_productId, s_productName, s_description, s_synonyms {s_name, s_type}}}}#)};', $routed.functions->at(0)->meta::pure::router::printer::asString());
 }
 
-function <<meta::pure::profiles::test.Test>> meta::external::store::service::router::test::testServiceStoreRoutingWithToOne():Boolean[1]
+function <<meta::pure::profiles::test.Test>> meta::external::store::service::tests::router::testServiceStoreRoutingWithToOne():Boolean[1]
 {
    let tree = #{
       S_Trade {
@@ -137,7 +137,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::store::service::rou
    assertEquals(' | {Platform> {meta::external::store::service::tests::store::TradeProductServiceStore> [1 s_trade_set/[1 s_trade_set/[1 s_trade_set/[1 s_trade_set/Class S_Trade].all()] -> toOne()] -> graphFetch({meta::external::store::service::tests::store::TradeProductServiceStore> [s_trade_set / meta::external::store::service::tests::domain::S_Trade] {@(s_trade_set->)@ [ / s_tradeId], @(s_trade_set->)@ [ / s_traderDetails], @(s_trade_set->)@ [ / s_tradeDetails]}})]} -> serialize(#{meta::external::store::service::tests::domain::S_Trade {s_tradeId, s_traderDetails, s_tradeDetails}}#)};', $routed.functions->at(0)->meta::pure::router::printer::asString());
 }
 
-function <<meta::pure::profiles::test.Test>> meta::external::store::service::router::test::testServiceStoreRoutingWithTake():Boolean[1]
+function <<meta::pure::profiles::test.Test>> meta::external::store::service::tests::router::testServiceStoreRoutingWithTake():Boolean[1]
 {
    let tree = #{
       S_Trade {

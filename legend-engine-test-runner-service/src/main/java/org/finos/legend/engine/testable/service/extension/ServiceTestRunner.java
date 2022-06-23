@@ -193,7 +193,7 @@ public class ServiceTestRunner implements TestRunner
         }
         catch (Exception e)
         {
-            throw new RuntimeException("Exception occurred executing service test suites.\n" + e);
+            throw new RuntimeException("Exception occurred executing service test suites.\n", e);
         }
         finally
         {
