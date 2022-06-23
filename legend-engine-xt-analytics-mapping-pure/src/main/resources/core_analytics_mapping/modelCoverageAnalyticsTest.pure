@@ -67,6 +67,17 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::mapping::modelCove
   assertContains($mappedEntityForTargetStreet.properties.name, 'streetName');
 }
 
+function <<meta::pure::profiles::test.Test>> meta::analytics::mapping::modelCoverage::test::testAutoMappedMappingCoverage():Boolean[1]
+{
+  let modelCoverageAnalytics = meta::analytics::mapping::modelCoverage::test::generateModelCoverageAnalytics(meta::analytics::mapping::modelCoverage::test::sampleModelToModelMapping);
+  let mappedEntityForTargetLegalEntity = $modelCoverageAnalytics->filter(mp|$mp.path == 'meta::analytics::mapping::modelCoverage::test::_LegalEntity');
+  println($mappedEntityForTargetLegalEntity);
+  assert($mappedEntityForTargetLegalEntity.properties->size() == 2); 
+  // auto-mapped property
+  assertContains($mappedEntityForTargetLegalEntity.properties.name, 'legalName');
+  assertContains($mappedEntityForTargetLegalEntity.properties.name, 'id');
+}
+
 ###Relational
 Database meta::analytics::mapping::modelCoverage::test::sampleDB
 (
@@ -103,6 +114,7 @@ Enum meta::analytics::mapping::modelCoverage::test::IncType
 
 Class meta::analytics::mapping::modelCoverage::test::LegalEntity
 {
+  id: String[1];
   legalName: String[1];
   address: meta::analytics::mapping::modelCoverage::test::Address[1];
 }
@@ -128,6 +140,13 @@ Class meta::analytics::mapping::modelCoverage::test::Address
 Class meta::analytics::mapping::modelCoverage::test::Street extends meta::analytics::mapping::modelCoverage::test::Address
 {
   streetName: String[1];
+}
+
+Class meta::analytics::mapping::modelCoverage::test::_LegalEntity
+{
+  id: String[1];
+  legalName: String[1];
+  address: meta::analytics::mapping::modelCoverage::test::Address[1];
 }
 
 Class meta::analytics::mapping::modelCoverage::test::_Firm
@@ -213,6 +232,11 @@ Mapping meta::analytics::mapping::modelCoverage::test::sampleModelToModelMapping
   {
     ~src meta::analytics::mapping::modelCoverage::test::Person
     fullName: $src.firstName + ' ' + $src.lastName
+  }
+  meta::analytics::mapping::modelCoverage::test::_LegalEntity: Pure
+  {
+    ~src meta::analytics::mapping::modelCoverage::test::LegalEntity
+    id: $src.id
   }
   meta::analytics::mapping::modelCoverage::test::_Firm: Pure
   {

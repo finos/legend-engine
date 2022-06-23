@@ -14,18 +14,18 @@
 
 package org.finos.legend.engine.analytics.mapping.model.coverage.api;
 
-import org.eclipse.collections.api.list.MutableList;
+import java.util.List;
 
 public class ModelCoverageAnalyticsResult
 {
-    public MutableList<MappedEntity> mappedEntities;
+    public List<MappedEntity> mappedEntities;
 
     public ModelCoverageAnalyticsResult()
     {
         // DO NOT DELETE: this resets the default constructor for Jackson
     }
 
-    public ModelCoverageAnalyticsResult(MutableList<MappedEntity> mappedEntities)
+    public ModelCoverageAnalyticsResult(List<MappedEntity> mappedEntities)
     {
         this.mappedEntities = mappedEntities;
     }

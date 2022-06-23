@@ -10,7 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>legend-engine-xt-analytics-mapping-pure</artifactId>
-    <name>Legend Engine - XT - Analytics Mapping - PAR/JAVA</name>
+    <name>Legend Engine - XT - Analytics - Mapping - PAR/JAVA</name>
     <packaging>jar</packaging>
 
     <build>
@@ -127,6 +127,18 @@
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections-api</artifactId>
         </dependency>
+
+        <!-- TEST -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-code-compiled-tests</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- TEST -->
 
     </dependencies>
 
