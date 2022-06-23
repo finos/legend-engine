@@ -19,13 +19,11 @@ env:
   CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
 on:
   schedule:
-    - cron: "0 0 * * 2" # every Tuesday on default/base branch
-  push:
-    branches:
-      - master
-      - refactor-integration-tests
+    - cron: "0 0 * * *" # every day at 00:00 on default/base branch
+
 jobs:
   build:
     # NOTE: we cannot run this action in fork because secrets are not accessible from forks
