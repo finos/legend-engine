@@ -13,7 +13,7 @@
 // limitations under the License.
 
 ###Pure
-Class meta::relational::functions::sqlQueryToString::tests::redshift::testQuoting::domain::Person
+Class meta::relational::tests::dbSpecificTests::redshift::custom::testQuoting::domain::Person
 {
    firstName: String[1];
    lastName: String[1];
@@ -21,14 +21,14 @@ Class meta::relational::functions::sqlQueryToString::tests::redshift::testQuotin
    key:Integer[1];
 }
 
-Class meta::relational::functions::sqlQueryToString::tests::redshift::testQuoting::domain::Thing
+Class meta::relational::tests::dbSpecificTests::redshift::custom::testQuoting::domain::Thing
 {
    name: String[1];
    id: Integer[1];
 }
 
 ###Relational
-Database meta::relational::functions::sqlQueryToString::tests::redshift::testQuoting::db::rsDb
+Database meta::relational::tests::dbSpecificTests::redshift::custom::testQuoting::db::rsDb
 (
    Table "person table" (ID INT PRIMARY KEY, firstName VARCHAR(200), lastName VARCHAR(200), age INT, key INT)
    Schema dataset1
@@ -40,11 +40,11 @@ Database meta::relational::functions::sqlQueryToString::tests::redshift::testQuo
 )
 
 ###Mapping
-Mapping meta::relational::functions::sqlQueryToString::tests::redshift::testQuoting::mapping::simpleRelationalMappingPersonForBQ
+Mapping meta::relational::tests::dbSpecificTests::redshift::custom::testQuoting::mapping::simpleRelationalMappingPersonForBQ
 (
-   meta::relational::functions::sqlQueryToString::tests::redshift::testQuoting::domain::Person : Relational
+   meta::relational::tests::dbSpecificTests::redshift::custom::testQuoting::domain::Person : Relational
    {
-      scope([meta::relational::functions::sqlQueryToString::tests::redshift::testQuoting::db::rsDb])
+      scope([meta::relational::tests::dbSpecificTests::redshift::custom::testQuoting::db::rsDb])
       (
          firstName : "person table".firstName,
          lastName: "person table".lastName,
@@ -52,15 +52,15 @@ Mapping meta::relational::functions::sqlQueryToString::tests::redshift::testQuot
       )
    }
 
-   meta::relational::functions::sqlQueryToString::tests::redshift::testQuoting::domain::Thing : Relational
+   meta::relational::tests::dbSpecificTests::redshift::custom::testQuoting::domain::Thing : Relational
    {
     ~primaryKey
     (
-      [meta::relational::functions::sqlQueryToString::tests::redshift::testQuoting::db::rsDb]dataset1."thing table".ID
+      [meta::relational::tests::dbSpecificTests::redshift::custom::testQuoting::db::rsDb]dataset1."thing table".ID
     )
-    ~mainTable [meta::relational::functions::sqlQueryToString::tests::redshift::testQuoting::db::rsDb]dataset1."thing table"
-    id: [meta::relational::functions::sqlQueryToString::tests::redshift::testQuoting::db::rsDb]dataset1."thing table".ID,
-    name: [meta::relational::functions::sqlQueryToString::tests::redshift::testQuoting::db::rsDb]dataset1."thing table".NAME
+    ~mainTable [meta::relational::tests::dbSpecificTests::redshift::custom::testQuoting::db::rsDb]dataset1."thing table"
+    id: [meta::relational::tests::dbSpecificTests::redshift::custom::testQuoting::db::rsDb]dataset1."thing table".ID,
+    name: [meta::relational::tests::dbSpecificTests::redshift::custom::testQuoting::db::rsDb]dataset1."thing table".NAME
   }
 
 )
@@ -78,36 +78,36 @@ import meta::relational::tests::mapping::sqlFunction::model::domain::*;
 import meta::relational::tests::mapping::sqlFunction::model::mapping::*;
 import meta::pure::runtime::*;
 import meta::pure::profiles::*;
+import meta::pure::executionPlan::tests::*;
 
 
-
-function meta::relational::functions::sqlQueryToString::tests::redshift::testRuntimeForRedshift():Runtime[1]
+function meta::relational::tests::dbSpecificTests::redshift::custom::testRuntimeForRedshift():Runtime[1]
 {
-   meta::relational::tests::testRuntime(meta::relational::functions::sqlQueryToString::tests::redshift::testQuoting::db::rsDb);
+   meta::relational::tests::testRuntime(meta::relational::tests::dbSpecificTests::redshift::custom::testQuoting::db::rsDb);
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::testQuoting::tableAndColumnNamesAreQuoted():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::redshift::custom::testQuoting::tableAndColumnNamesAreQuoted():Boolean[1]
 {
    let result = toSQLString(
-    |meta::relational::functions::sqlQueryToString::tests::redshift::testQuoting::domain::Person.all()->project([s | $s.age], ['KEY']),
-    meta::relational::functions::sqlQueryToString::tests::redshift::testQuoting::mapping::simpleRelationalMappingPersonForBQ,
+    |meta::relational::tests::dbSpecificTests::redshift::custom::testQuoting::domain::Person.all()->project([s | $s.age], ['KEY']),
+    meta::relational::tests::dbSpecificTests::redshift::custom::testQuoting::mapping::simpleRelationalMappingPersonForBQ,
     meta::relational::runtime::DatabaseType.Redshift,
     meta::relational::extension::relationalExtensions());
    assertEquals('select "person_table_d#2_d_m1".key as "KEY" from "person table" as "root" left outer join "person table" as "person_table_d#2_d_m1" on ("root".key = "person_table_d#2_d_m1".key)', $result);
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::testQuoting::tableWithSchema():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::redshift::custom::testQuoting::tableWithSchema():Boolean[1]
 {
    let result = toSQLString(
-    |meta::relational::functions::sqlQueryToString::tests::redshift::testQuoting::domain::Thing.all()->project([s | $s.id], ['ID']),
-    meta::relational::functions::sqlQueryToString::tests::redshift::testQuoting::mapping::simpleRelationalMappingPersonForBQ,
+    |meta::relational::tests::dbSpecificTests::redshift::custom::testQuoting::domain::Thing.all()->project([s | $s.id], ['ID']),
+    meta::relational::tests::dbSpecificTests::redshift::custom::testQuoting::mapping::simpleRelationalMappingPersonForBQ,
     meta::relational::runtime::DatabaseType.Redshift,
     meta::relational::extension::relationalExtensions());
    assertEquals('select "root".ID as "ID" from dataset1."thing table" as "root"', $result);
 }
 
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::windowFunction():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::redshift::custom::windowFunction():Boolean[1]
 {
    let func = {|meta::relational::tests::model::simple::Person.all()
       ->project([
@@ -122,7 +122,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
    assertEquals('select "root".LASTNAME as "lastName", avg(1.0 * "root".AGE) OVER (Partition By "root".FIRSTNAME Order By "root".LASTNAME ASC) as "ageAverageWindow" from personTable as "root"', $result);
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::testParseDateTime():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::redshift::custom::testParseDateTime():Boolean[1]
 {
    let dt = %2015-01-01T00:00:00.000;
    let result = toSQLString(
@@ -133,7 +133,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
    assertEquals('select "root".settlementDateTime as "settlementDateTime" from tradeTable as "root" where "root".settlementDateTime < Timestamp\'2015-01-01 00:00:00.000\'', $result);
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::testParseDate():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::redshift::custom::testParseDate():Boolean[1]
 {
    let dt = %2015-01-01T00:00:00.000;
    let result = toSQLString(
@@ -145,7 +145,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
 }
 
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::testSimpleJoinStrings():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::redshift::custom::testSimpleJoinStrings():Boolean[1]
 {
    let result = toSQLString(
      |Person.all()->groupBy([p|$p.firstName], agg( x|$x.lastName, y|$y->joinStrings('*')),['firstName', 'lastNames']),
@@ -156,7 +156,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
 }
 
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::testConcat():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::redshift::custom::testConcat():Boolean[1]
 {
    let result = toSQLString(
     |Person.all()->project([p|$p.name, p|$p.addresses.name], ['name','address']),
@@ -167,7 +167,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
 
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::atan2():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::redshift::custom::atan2():Boolean[1]
 {
    let result = toSQLString(
     |SqlFunctionDemo.all()->project([s | $s.floatATan2Result], ['atan2']),
@@ -177,7 +177,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
    assertSameSQL('select atan2("root".float1,"root".int1) as "atan2" from dataTable as "root"', $result);
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::concat():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::redshift::custom::concat():Boolean[1]
 {
    let result = toSQLString(
      |Person.all()->project([p|$p.name] ,['name']),
@@ -187,7 +187,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
    assertSameSQL('select concat("root".FIRSTNAME, \' \', "root".LASTNAME) as "name" from personTable as "root"', $result);
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::hour():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::redshift::custom::hour():Boolean[1]
 {
     let result = toSQLString(
         |SqlFunctionDemo.all()->project([s | $s.hour], ['hour']),
@@ -197,7 +197,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
     assertEquals('select date_part(hour, "root".dateTime) as "hour" from dataTable as "root"', $result);
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::weekofyear():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::redshift::custom::weekofyear():Boolean[1]
 {
     let result = toSQLString(
         |SqlFunctionDemo.all()->project([s | $s.week], ['weekofyear']),
@@ -207,7 +207,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
     assertEquals('select extract(week from "root".dateTime) as "weekofyear" from dataTable as "root"', $result);
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::cast():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::redshift::custom::cast():Boolean[1]
 {
     let result = toSQLString(
         |SqlFunctionDemo.all()->project([s | $s.string3Integer], ['string3Integer']),
@@ -217,7 +217,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
     assertEquals('select cast("root".string3 as integer) as "string3Integer" from dataTable as "root"', $result);
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::toString():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::redshift::custom::toString():Boolean[1]
 {
     let result = toSQLString(
         |SqlFunctionDemo.all()->project([s | $s.int1String], ['int1String']),
@@ -227,7 +227,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
     assertEquals('select cast("root".int1 as varchar) as "int1String" from dataTable as "root"', $result);
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::today():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::redshift::custom::today():Boolean[1]
 {
     let result = toSQLString(
         |Trade.all()->filter(d | $d.date == today())->project(x | $x.date, 'date'),
@@ -237,7 +237,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
     assertEquals('select "root".tradeDate as "date" from tradeTable as "root" where "root".tradeDate = current_date', $result);
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::stddev_samp():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::redshift::custom::stddev_samp():Boolean[1]
 {
     let result = toSQLString(
         |SqlFunctionDemo.all()->project([s | $s.float1StdDevSample], 'stdDevSample'),
@@ -247,7 +247,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
     assertEquals('select stddev_samp("root".int1) as "stdDevSample" from dataTable as "root"', $result);
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::stddev_pop():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::redshift::custom::stddev_pop():Boolean[1]
 {
 
     let result = toSQLString(
@@ -258,7 +258,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
     assertEquals('select stddev_pop("root".int1) as "float1StdDevPopulation" from dataTable as "root"', $result);
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::substring():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::redshift::custom::substring():Boolean[1]
 {
     let result = toSQLString(
         |Person.all()->filter(p|$p.firstName->substring(1, 5) == 'John'),
@@ -268,7 +268,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
     assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where substring("root".FIRSTNAME, 1, 5) = \'John\'', $result);
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::second():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::redshift::custom::second():Boolean[1]
 {
     let result = toSQLString(
         |Trade.all()->project([ t | $t.settlementDateTime->cast(@Date)->toOne()->second()], ['second']),
@@ -278,7 +278,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
     assertEquals('select extract( second from "root".settlementDateTime) as "second" from tradeTable as "root"', $result);
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::rtrim():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::redshift::custom::rtrim():Boolean[1]
 {
     let result = toSQLString(
         |SqlFunctionDemo.all()->project([s | $s.rtrimResult], ['rtrim']),
@@ -288,7 +288,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
     assertEquals('select rtrim("root".string2) as "rtrim" from dataTable as "root"', $result);
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::round():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::redshift::custom::round():Boolean[1]
 {
     let result = toSQLString(
         |SqlFunctionDemo.all()->project([s | $s.float1Round], ['round']),
@@ -298,7 +298,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
     assertEquals('select round("root".float1, 0) as "round" from dataTable as "root"', $result);
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::right():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::redshift::custom::right():Boolean[1]
 {
     let result = toSQLString(
         |SqlFunctionDemo.all()->project([s | $s.string1Right], ['right']),
@@ -308,7 +308,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
     assertEquals('select right("root".string1,2) as "right" from dataTable as "root"', $result);
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::rem():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::redshift::custom::rem():Boolean[1]
 {
     let result = toSQLString(
         |Trade.all()->project([t| rem($t.quantity, $t.id)], ['rem']),
@@ -318,7 +318,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
     assertEquals('select mod("root".quantity,"root".ID) as "rem" from tradeTable as "root"', $result);
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::position():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::redshift::custom::position():Boolean[1]
 {
     let result = toSQLString(
         |meta::relational::tests::mapping::propertyfunc::model::domain::Person.all()->project(p|$p.firstName, 'firstName'),
@@ -328,7 +328,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
     assertEquals('select substring("root".FULLNAME, 0, position(\',\' in "root".FULLNAME)-1) as "firstName" from personTable as "root"', $result);
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::parseInteger():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::redshift::custom::parseInteger():Boolean[1]
 {
     let result = toSQLString(
         |SqlFunctionDemo.all()->project([s | $s.string2Integer], ['parseInteger']),
@@ -338,7 +338,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
     assertEquals('select cast("root".string2Integer as integer) as "parseInteger" from dataTable as "root"', $result);
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::parseFloat():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::redshift::custom::parseFloat():Boolean[1]
 {
     let result = toSQLString(
         |SqlFunctionDemo.all()->project([s | $s.string2Float], ['string2Float']),
@@ -348,7 +348,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
     assertEquals('select cast("root".string2float as float) as "string2Float" from dataTable as "root"', $result);
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::parseDecimal():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::redshift::custom::parseDecimal():Boolean[1]
 {
     let result = toSQLString(
         |SqlFunctionDemo.all()->project([s | $s.string2Decimal], ['string2Decimal']),
@@ -358,7 +358,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
     assertEquals('select cast("root".string2Decimal as decimal) as "string2Decimal" from dataTable as "root"', $result);
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::now():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::redshift::custom::now():Boolean[1]
 {
     let result = toSQLString(
         |Trade.all()->filter(d | $d.date == now())->project(x | $x.date, 'date'),
@@ -369,7 +369,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
 }
 
 // month same as month number
-function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::monthNumber():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::redshift::custom::monthNumber():Boolean[1]
 {
     let result = toSQLString(
         |Trade.all()->project([t| monthNumber($t.settlementDateTime)], ['settlementMonthNumber']),
@@ -379,7 +379,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
     assertEquals('select extract(month from "root".settlementDateTime) as "settlementMonthNumber" from tradeTable as "root"', $result);
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::mod():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::redshift::custom::mod():Boolean[1]
 {
     let result = toSQLString(
         |SqlFunctionDemo.all()->project([s | $s.floatModResult ], ['mod']),
@@ -389,7 +389,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
     assertEquals('select mod("root".int1,2) as "mod" from dataTable as "root"', $result);
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::minute():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::redshift::custom::minute():Boolean[1]
 {
     let result = toSQLString(
         |Trade.all()->project([t | $t.settlementDateTime->cast(@Date)->toOne()->minute()],['settlementDateTimeMinute']),
@@ -397,4 +397,28 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
         DatabaseType.Redshift,
         meta::relational::extension::relationalExtensions());
     assertEquals('select extract(minute from "root".settlementDateTime) as "settlementDateTimeMinute" from tradeTable as "root"', $result);
+}
+
+//executionPlan
+function <<test.Test>> meta::relational::tests::dbSpecificTests::redshift::custom::testFilterEqualsWithOptionalParameter_Redshift():Boolean[1]      
+{
+   let expectedPlan ='Sequence\n'+
+                     '(\n'+
+                     '  type = TDS[(Time, Integer, INT, "")]\n'+
+                     '  (\n'+
+                     '    FunctionParametersValidationNode\n'+
+                     '    (\n'+
+                     '      functionParameters = [optionalID:String[0..1], optionalActive:Boolean[0..1]]\n'+
+                     '    )\n'+
+                     '    Relational\n'+
+                     '    (\n'+
+                     '      type = TDS[(Time, Integer, INT, "")]\n'+
+                     '      resultColumns = [("Time", INT)]\n'+
+                     '      sql = select "root".time as "Time" from interactionTable as "root" where ((${optionalVarPlaceHolderOperationSelector(optionalID![], \'"root".ID = ${varPlaceHolderToString(optionalID![]  "\\\'" "\\\'" "null")}\', \'"root".ID is null\')}) and (${optionalVarPlaceHolderOperationSelector(optionalActive![], \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end = ${varPlaceHolderToString(optionalActive![]  "\\\'" "\\\'" "null")}\', \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end is null\')}))\n'+
+                     '      connection = DatabaseConnection(type = "Redshift")\n'+
+                     '    )\n'+
+                     '  )\n'+
+                     ')\n';
+   
+   assertPlanGenerationForOptionalParameter(DatabaseType.Redshift, $expectedPlan);
 }

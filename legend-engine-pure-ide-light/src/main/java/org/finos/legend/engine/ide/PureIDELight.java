@@ -50,6 +50,7 @@ public class PureIDELight extends PureIDEServer
                     .with(this.buildCore("legend-engine-xt-relationalStore-pure", "relational"))
                     .with(this.buildCore("legend-engine-xt-relationalStore-sqlserver-pure", "relational_sqlserver"))
                     .with(this.buildCore("legend-engine-xt-relationalStore-snowflake-pure", "relational_snowflake"))
+                    .with(this.buildCore("legend-engine-xt-relationalStore-redshift-pure", "relational_redshift"))
                     .with(this.buildCore("legend-engine-xt-serviceStore-pure", "servicestore"))
                     .with(this.buildCore("legend-engine-xt-text-pure", "text"))
                     .with(this.buildCore("legend-engine-xt-data-space-pure", "data-space"))

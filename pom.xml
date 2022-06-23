@@ -76,6 +76,7 @@
         <module>legend-engine-xt-relationalStore-pure</module>
         <module>legend-engine-xt-relationalStore-sqlserver-pure</module>
         <module>legend-engine-xt-relationalStore-snowflake-pure</module>
+        <module>legend-engine-xt-relationalStore-redshift-pure</module>
         <module>legend-engine-xt-relationalStore-api</module>
         <module>legend-engine-xt-relationalStore-grammar</module>
         <module>legend-engine-xt-relationalStore-protocol</module>
@@ -671,6 +672,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-snowflake-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-redshift-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

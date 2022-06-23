@@ -12,7 +12,7 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-package org.finos.legend.pure.code.core.relational.dbSpecific;
+package org.finos.legend.pure.code.core;
 
 import junit.framework.TestSuite;
 import org.finos.legend.pure.code.core.compiled.test.PureTestBuilderHelper;
