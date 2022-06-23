@@ -46,6 +46,14 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAsserti
 
 import java.util.List;
 import java.util.Map;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertFail;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertPass;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertionStatus;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.EqualToJsonAssertFail;
+import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestError;
+import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestFailed;
+import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestPassed;
+import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 
 public class CorePureProtocolExtension implements PureProtocolExtension
 {
@@ -78,10 +86,21 @@ public class CorePureProtocolExtension implements PureProtocolExtension
                         .withSubtype(DataElementReference.class, "reference")
                         .build(),
                 // Test Assertion
-                ProtocolSubTypeInfo.newBuilder(TestAssertion.class)
-                        .withSubtype(EqualTo.class, "equalTo")
-                        .withSubtype(EqualToJson.class, "equalToJson")
-                        .build()
+            ProtocolSubTypeInfo.newBuilder(TestAssertion.class)
+                .withSubtype(EqualTo.class, "equalTo")
+                .withSubtype(EqualToJson.class, "equalToJson")
+                .build(),
+                // Test Result
+                ProtocolSubTypeInfo.newBuilder(TestResult.class)
+                    .withSubtype(TestError.class, "testError")
+                    .withSubtype(TestPassed.class, "testPassed")
+                    .withSubtype(TestFailed.class, "testFailed")
+                        .build(),
+                ProtocolSubTypeInfo.newBuilder(AssertionStatus.class)
+                        .withSubtype(AssertPass.class, "assertPass")
+                        .withSubtype(AssertFail.class, "assertFail")
+                        .withSubtype(EqualToJsonAssertFail.class, "equalToJsonAssertFail")
+                    .build()
         ));
     }
 

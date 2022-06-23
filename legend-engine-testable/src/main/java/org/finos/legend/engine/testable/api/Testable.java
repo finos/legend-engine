@@ -14,22 +14,20 @@
 
 package org.finos.legend.engine.testable.api;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
+import org.finos.legend.engine.shared.core.ObjectMapperFactory;
+import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.finos.legend.engine.testable.TestableRunner;
-import org.finos.legend.engine.testable.model.DoTestsInput;
-import org.finos.legend.engine.testable.model.DoTestsResult;
-import org.pac4j.core.profile.CommonProfile;
-import org.pac4j.core.profile.ProfileManager;
-import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
-import org.slf4j.Logger;
+import org.finos.legend.engine.testable.model.RunTestsInput;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -37,6 +35,14 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import org.finos.legend.engine.testable.model.RunTestsResult;
+import org.pac4j.core.profile.CommonProfile;
+import org.pac4j.core.profile.ProfileManager;
+import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
+import org.slf4j.Logger;
+
+import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
 
 @Api(tags = "Testing")
 @Path("pure/v1/testable")
@@ -47,24 +53,28 @@ public class Testable
 
     private final TestableRunner testableRunner;
 
+    private final ObjectMapper objectMapper;
+
+
     public Testable(ModelManager modelManager)
     {
         this.testableRunner = new TestableRunner(modelManager);
+        this.objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
     }
 
     @POST
-    @Path("doTests")
+    @Path("runTests")
     @ApiOperation(value = "Run tests on testables")
-    @Consumes({MediaType.APPLICATION_JSON})
-    public Response doTests(DoTestsInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager)
+    @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
+    public Response doTests(RunTestsInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(profileManager);
         try
         {
             LOGGER.info(new LogInfo(profiles, LoggingEventType.TESTABLE_DO_TESTS_START, "").toString());
-            DoTestsResult doTestsResult = testableRunner.doTests(input, profiles);
+            RunTestsResult runTestsResult = testableRunner.doTests(input, profiles);
             LOGGER.info(new LogInfo(profiles, LoggingEventType.TESTABLE_DO_TESTS_STOP, "").toString());
-            return Response.ok().entity(doTestsResult).build();
+            return ManageConstantResult.manageResult(profiles, runTestsResult, objectMapper);
         }
         catch (Exception e)
         {
