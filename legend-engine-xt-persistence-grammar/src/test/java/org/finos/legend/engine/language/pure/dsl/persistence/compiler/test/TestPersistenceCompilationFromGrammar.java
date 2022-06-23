@@ -19,7 +19,6 @@ import org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGr
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
-import org.finos.legend.pure.generated.Root_meta_pure_mapping_modelToModel_JsonModelConnection;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_trigger_Trigger;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_Persister;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_notifier_Notifier;
@@ -87,6 +86,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -105,7 +105,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
     @Override
     protected String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [7:1-28:1]: Duplicated element 'test::TestPersistence'";
+        return "COMPILATION error at [7:1-29:1]: Duplicated element 'test::TestPersistence'";
     }
 
     @Test
@@ -125,14 +125,6 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "    sink: ObjectStorage\n" +
                 "    {\n" +
                 "      binding: test::Binding;\n" +
-                "      connection:\n" +
-                "      #{\n" +
-                "        JsonModelConnection\n" +
-                "        {\n" +
-                "          class: test::Person;\n" +
-                "          url: 'my_url2';\n" +
-                "        }\n" +
-                "      }#\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -145,7 +137,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [5:1-35:1]: Persistence refers to a service 'test::Service' that is not defined");
+                "}\n", "COMPILATION error at [5:1-27:1]: Persistence refers to a service 'test::Service' that is not defined");
     }
 
     @Test
@@ -194,14 +186,6 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "    sink: ObjectStorage\n" +
                 "    {\n" +
                 "      binding: test::Binding;\n" +
-                "      connection:\n" +
-                "      #{\n" +
-                "        JsonModelConnection\n" +
-                "        {\n" +
-                "          class: test::ServiceResult;\n" +
-                "          url: 'my_url2';\n" +
-                "        }\n" +
-                "      }#\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -214,16 +198,18 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [41:11-52:5]: Binding 'test::Binding' is not defined");
+                "}\n", "COMPILATION error at [41:11-44:5]: Binding 'test::Binding' is not defined");
     }
 
     @Test
-    public void flatModelClassUndefined()
+    public void storeUndefined()
     {
         test("Class test::Person\n" +
                 "{\n" +
                 "  name: String[1];\n" +
                 "}\n" +
+                "\n" +
+                "Class test::ServiceResult {}\n" +
                 "\n" +
                 "###Mapping\n" +
                 "Mapping test::Mapping ()\n" +
@@ -260,6 +246,77 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
+                "      database: test::Database;" +
+                "    }\n" +
+                "    targetShape: Flat\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ServiceResult;\n" +
+                "    }\n" +
+                "    ingestMode: AppendOnly\n" +
+                "    {\n" +
+                "      auditing: None;\n" +
+                "      filterDuplicates: false;\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "COMPILATION error at [41:11-43:33]: Store 'test::Database' is not defined");
+    }
+
+    @Test
+    public void flatModelClassUndefined()
+    {
+        test("Class test::Person\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::Mapping ()\n" +
+                "\n" +
+                "###Service\n" +
+                "Service test::Service \n" +
+                "{\n" +
+                "  pattern : 'test';\n" +
+                "  documentation : 'test';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: src: test::Person[1]|$src.name;\n" +
+                "    mapping: test::Mapping;\n" +
+                "    runtime:\n" +
+                "    #{\n" +
+                "      connections: [];\n" +
+                "    }#;\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'test';\n" +
+                "    asserts: [];\n" +
+                "  }\n" +
+                "}\n" +
+                "\n" +
+                "###Relational\n" +
+                "Database test::Database\n" +
+                "(\n" +
+                "  Table personTable\n" +
+                "  (\n" +
+                "    ID INTEGER PRIMARY KEY,\n" +
+                "    NAME VARCHAR(100)\n" +
+                "  )\n" +
+                ")" +
+                "\n" +
+                "###Persistence\n" +
+                "\n" +
+                "Persistence test::TestPersistence \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "      database: test::Database;" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -1109,8 +1166,8 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
         assertTrue(sink instanceof Root_meta_pure_persistence_metamodel_persister_sink_RelationalSink);
         Root_meta_pure_persistence_metamodel_persister_sink_RelationalSink relationalSink = (Root_meta_pure_persistence_metamodel_persister_sink_RelationalSink) sink;
 
-        //TODO: ledav -- assert store
-        Store store = relationalSink._store();
+        //TODO: ledav -- assert database
+        Store store = relationalSink._database();
 
         // ingest mode
         Root_meta_pure_persistence_metamodel_persister_ingestmode_IngestMode ingestMode = batchPersister._ingestMode();

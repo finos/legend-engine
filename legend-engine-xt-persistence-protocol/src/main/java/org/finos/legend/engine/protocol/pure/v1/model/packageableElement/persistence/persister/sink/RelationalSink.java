@@ -16,7 +16,7 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persis
 
 public class RelationalSink extends Sink
 {
-    public String store;
+    public String database;
 
     @Override
     public <T> T accept(SinkVisitor<T> visitor)

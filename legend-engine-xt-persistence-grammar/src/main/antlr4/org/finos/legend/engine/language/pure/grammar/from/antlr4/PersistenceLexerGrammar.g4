@@ -55,7 +55,7 @@ NOTIFYEE_PAGER_DUTY_URL:                    'url';
 
 SINK_RELATIONAL:                            'Relational';
 SINK_OBJECT_STORAGE:                        'ObjectStorage';
-SINK_STORE:                                 'store';
+SINK_DATABASE:                              'database';
 SINK_BINDING:                               'binding';
 
 //**********

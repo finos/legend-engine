@@ -299,7 +299,7 @@ public class HelperPersistenceGrammarComposer
         {
             return getTabString(indentLevel) + "sink: Relational\n" +
                     getTabString(indentLevel) + "{\n" +
-                    renderStorePointer(val.store, indentLevel + 1) +
+                    renderDatabasePointer(val.database, indentLevel + 1) +
                     getTabString(indentLevel) + "}\n";
         }
 
@@ -312,9 +312,9 @@ public class HelperPersistenceGrammarComposer
                     getTabString(indentLevel) + "}\n";
         }
 
-        private static String renderStorePointer(String storePath, int indentLevel)
+        private static String renderDatabasePointer(String databasePath, int indentLevel)
         {
-            return getTabString(indentLevel) + "store: " + storePath + ";\n";
+            return getTabString(indentLevel) + "database: " + databasePath + ";\n";
         }
 
         private static String renderBindingPointer(String bindingPointer, int indentLevel)

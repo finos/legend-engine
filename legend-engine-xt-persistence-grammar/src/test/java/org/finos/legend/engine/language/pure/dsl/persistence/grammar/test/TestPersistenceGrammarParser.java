@@ -44,7 +44,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -279,7 +279,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -314,7 +314,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -355,7 +355,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -390,7 +390,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -442,18 +442,18 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "  }\n" +
                 "}\n", "PARSER error at [8:14-18:3]: Field 'sink' should be specified only once");
     }
 
     @Test
-    public void relationalSinkStore()
+    public void relationalSinkDatabase()
     {
         test("###Persistence\n" +
                 "\n" +
@@ -468,7 +468,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "    {\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [10:11-12:5]: Field 'store' is required");
+                "}\n", "PARSER error at [10:11-12:5]: Field 'database' is required");
         test("###Persistence\n" +
                 "\n" +
                 "Persistence test::TestPersistence \n" +
@@ -480,11 +480,11 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "PARSER error at [10:11-14:5]: Field 'store' should be specified only once");
+                "}\n", "PARSER error at [10:11-14:5]: Field 'database' should be specified only once");
     }
 
     @Test
@@ -557,11 +557,11 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -591,7 +591,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "  }\n" +
                 "}\n", "PARSER error at [8:14-14:3]: Field 'targetShape' is required");
@@ -607,7 +607,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -642,7 +642,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -663,7 +663,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -702,7 +702,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -727,7 +727,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -758,7 +758,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -783,7 +783,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -814,7 +814,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -846,7 +846,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -882,7 +882,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: MultiFlat\n" +
                 "    {\n" +
@@ -913,7 +913,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: MultiFlat\n" +
                 "    {\n" +
@@ -951,7 +951,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: MultiFlat\n" +
                 "    {\n" +
@@ -982,7 +982,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: MultiFlat\n" +
                 "    {\n" +
@@ -1020,7 +1020,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: MultiFlat\n" +
                 "    {\n" +
@@ -1040,7 +1040,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: MultiFlat\n" +
                 "    {\n" +
@@ -1090,7 +1090,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -1114,7 +1114,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -1144,7 +1144,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -1168,7 +1168,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -1206,7 +1206,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -1240,7 +1240,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -1292,7 +1292,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -1332,7 +1332,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -1388,7 +1388,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -1417,7 +1417,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -1470,7 +1470,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -1504,7 +1504,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -1554,7 +1554,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -1579,7 +1579,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -1610,7 +1610,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -1635,7 +1635,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -1666,7 +1666,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -1695,7 +1695,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -1730,7 +1730,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -1755,7 +1755,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -1794,7 +1794,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -1829,7 +1829,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -1878,7 +1878,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -1918,7 +1918,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -1972,7 +1972,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -2011,7 +2011,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -2056,7 +2056,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -2086,7 +2086,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -2140,7 +2140,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -2175,7 +2175,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -2228,7 +2228,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -2253,7 +2253,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -2284,7 +2284,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -2309,7 +2309,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +
@@ -2342,7 +2342,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    ingestMode: BitemporalDelta\n" +
                 "    {\n" +

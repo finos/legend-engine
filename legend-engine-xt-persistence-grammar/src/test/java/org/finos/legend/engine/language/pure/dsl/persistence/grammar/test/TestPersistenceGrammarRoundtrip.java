@@ -33,7 +33,7 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    ingestMode: BitemporalSnapshot\n" +
                 "    {\n" +
@@ -77,7 +77,7 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    ingestMode: BitemporalDelta\n" +
                 "    {\n" +
@@ -136,7 +136,7 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      store: test::Database;\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    ingestMode: BitemporalSnapshot\n" +
                 "    {\n" +

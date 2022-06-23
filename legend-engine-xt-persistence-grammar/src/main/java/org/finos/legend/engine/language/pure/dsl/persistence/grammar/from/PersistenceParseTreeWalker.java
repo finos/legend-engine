@@ -425,9 +425,9 @@ public class PersistenceParseTreeWalker
         RelationalSink sink = new RelationalSink();
         sink.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
-        // store
-        PersistenceParserGrammar.SinkStoreContext sinkStoreContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.sinkStore(), "store", sink.sourceInformation);
-        sink.store = sinkStoreContext == null ? null : visitStorePointer(sinkStoreContext, sink.sourceInformation);
+        // database
+        PersistenceParserGrammar.SinkDatabaseContext sinkDatabaseContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.sinkDatabase(), "database", sink.sourceInformation);
+        sink.database = sinkDatabaseContext == null ? null : visitDatabasePointer(sinkDatabaseContext, sink.sourceInformation);
 
         return sink;
     }
@@ -445,10 +445,10 @@ public class PersistenceParseTreeWalker
     }
 
     /**********
-     * store
+     * database
      **********/
 
-    private String visitStorePointer(PersistenceParserGrammar.SinkStoreContext ctx, SourceInformation sourceInformation)
+    private String visitDatabasePointer(PersistenceParserGrammar.SinkDatabaseContext ctx, SourceInformation sourceInformation)
     {
         return PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
     }

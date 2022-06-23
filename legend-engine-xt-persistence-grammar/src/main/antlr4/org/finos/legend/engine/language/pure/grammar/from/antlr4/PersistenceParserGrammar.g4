@@ -17,7 +17,7 @@ identifier:                                 VALID_STRING | STRING
                                             | TRIGGER_MANUAL | TRIGGER_CRON
                                             | PERSISTER_STREAMING | PERSISTER_BATCH | PERSISTER_SINK | PERSISTER_TARGET_SHAPE | PERSISTER_INGEST_MODE
                                             | NOTIFIER | NOTIFIER_NOTIFYEES | NOTIFYEE_EMAIL | NOTIFYEE_EMAIL_ADDRESS | NOTIFYEE_PAGER_DUTY| NOTIFYEE_PAGER_DUTY_URL
-                                            | SINK_RELATIONAL | SINK_OBJECT_STORAGE | SINK_STORE | SINK_BINDING
+                                            | SINK_RELATIONAL | SINK_OBJECT_STORAGE | SINK_DATABASE | SINK_BINDING
                                             | TARGET_SHAPE_MODEL_CLASS | TARGET_SHAPE_NAME | TARGET_SHAPE_PARTITION_FIELDS | TARGET_SHAPE_DEDUPLICATION
                                             | TARGET_SHAPE_FLAT | TARGET_SHAPE_MULTI | TARGET_SHAPE_MULTI_TXN_SCOPE | TARGET_SHAPE_MULTI_PARTS | TARGET_PART_MODEL_PROPERTY | TXN_SCOPE_SINGLE | TXN_SCOPE_ALL
                                             | DEDUPLICATION_ANY_VERSION | DEDUPLICATION_MAX_VERSION | DEDUPLICATION_MAX_VERSION_FIELD | DEDUPLICATION_DUPLICATE_COUNT | DEDUPLICATION_DUPLICATE_COUNT_NAME
@@ -166,7 +166,7 @@ persisterSink:                              PERSISTER_SINK COLON
 ;
 relationalSink:                             SINK_RELATIONAL
                                                 BRACE_OPEN
-                                                    (sinkStore)*
+                                                    (sinkDatabase)*
                                                 BRACE_CLOSE
 ;
 objectStorageSink:                          SINK_OBJECT_STORAGE
@@ -174,7 +174,7 @@ objectStorageSink:                          SINK_OBJECT_STORAGE
                                                     (sinkBinding)*
                                                 BRACE_CLOSE
 ;
-sinkStore:                                  SINK_STORE COLON qualifiedName SEMI_COLON
+sinkDatabase:                               SINK_DATABASE COLON qualifiedName SEMI_COLON
 ;
 sinkBinding:                                SINK_BINDING COLON qualifiedName SEMI_COLON
 ;

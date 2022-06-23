@@ -34,7 +34,8 @@ import meta::pure::persistence::metamodel::target::*;
 import meta::pure::persistence::metamodel::trigger::*;
 
 import meta::pure::runtime::*;
-import meta::pure::store::*;
+
+import meta::relational::metamodel::*;
 
 /**********
  * persistence
@@ -190,7 +191,7 @@ Class
 {doc.doc = 'Specification for relational sinks.'}
 meta::pure::persistence::metamodel::persister::sink::RelationalSink extends Sink
 {
-   store: Store[1];
+   database: Database[1];
 }
 
 Class
