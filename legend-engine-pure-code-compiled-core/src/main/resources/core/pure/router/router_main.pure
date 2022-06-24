@@ -292,7 +292,7 @@ function <<access.private>> meta::pure::router::execute<X|n>(rq:RoutingQuery<X|n
                                            |let one = $a.values->at(0)->cast(@TabularDataSet);
                                             ^$one(rows = $one.rows->concatenate($res.values->at(0)->cast(@TabularDataSet).rows));,
                                            |
-                                            $a.values->concatenate($res.values)->removeDuplicates({a,b|$a->genericType().rawType == $b->genericType().rawType && $a->storeEquals($b, $extensions);});
+                                            $a.values->concatenate($res.values)->removeDuplicates({a,b|$a->genericType().rawType == $b->genericType().rawType && $clusterVS.s.instance_equals->toOne()->eval($a,$b)});
                                            );
                                       )->cast(@X);
                       ^$a
@@ -305,13 +305,6 @@ function <<access.private>> meta::pure::router::execute<X|n>(rq:RoutingQuery<X|n
     let resultsWithRoutingActivity = ^Result<X|n>(values=$results.values, activities=$results.activities->add($routingActivity));
     $extensions.logActivities->map(e|$e->eval($resultsWithRoutingActivity.activities));
     $resultsWithRoutingActivity;
-}
-
-function meta::pure::router::storeEquals(a:Any[1], b:Any[1], extensions:meta::pure::extension::Extension[*]):Boolean[1]
-{
-   !$extensions.main_storeEquals->isEmpty() && $a->getHiddenPayload()->match(
-      $extensions.main_storeEquals->map(x|$x->eval($a,$b))->toOneMany()
-   )
 }
 
 function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], extensions:meta::pure::extension::Extension[*]):RoutingResult[1]

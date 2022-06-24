@@ -13,12 +13,10 @@
 // limitations under the License.
 
 import meta::pure::metamodel::path::*;
+import meta::pure::mapping::*;
 import meta::pure::router::routing::*;
 import meta::pure::router::clustering::*;
 import meta::pure::router::analytics::*;
-import meta::pure::mapping::modelToModel::*;
-import meta::pure::mapping::aggregationAware::*;
-import meta::pure::mapping::*;
 
 Class meta::pure::router::analytics::AnalyticsExecutionContext extends meta::pure::runtime::ExtendedExecutionContext
 {

@@ -12,18 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::pure::mapping::*;
-import meta::pure::mapping::xStore::*;
-import meta::pure::mapping::modelToModel::*;
+
 import meta::pure::metamodel::serialization::grammar::*;
 import meta::pure::metamodel::path::*;
 import meta::pure::router::printer::*;
 import meta::pure::router::clustering::*;
-import meta::pure::store::platform::metamodel::*;
 import meta::pure::router::store::embedded::*;
 import meta::pure::router::analytics::*;
-import meta::pure::store::*;
 import meta::pure::runtime::*;
+import meta::pure::mapping::*;
+import meta::pure::mapping::xStore::*;
+import meta::pure::store::*;
+import meta::pure::store::platform::metamodel::*;
 
 Class meta::pure::router::clustering::AnalyticsDecision
 {
@@ -398,16 +398,22 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
 
 function meta::pure::router::clustering::getClusterVSFromSets(r:ExtendedRoutedValueSpecification[1], setImpl:SetImplementation[*], openVariables:Map<String, List<Any>>[1], mapping:Mapping[1], extensions:meta::pure::extension::Extension[*]):ClusteredValueSpecification[1]
 {
-  $setImpl->match([
+  let res = $setImpl->toOne()->storeContractForSetImplementation($mapping, $extensions);
+  buildCluster($r, $openVariables, $mapping, $res.first, $res.second, $extensions);
+}
+
+function meta::pure::router::clustering::storeContractForSetImplementation(setImpl:SetImplementation[1], mapping:Mapping[1], extensions:meta::pure::extension::Extension[*]):Pair<StoreContract, Store>[1]
+{
+    $setImpl->match([
       i: InstanceSetImplementation[1]|
          let storeContract = $extensions->meta::pure::extension::storeContractForSetImplementation($i->toOne());
          let store = $storeContract.resolveStoreFromSetImplementation->toOne()->eval($i);
-         buildCluster($r, $openVariables, $mapping, $storeContract, $store, $extensions);,
+         pair($storeContract, $mapping.resolveStore($store));,
       o: meta::pure::mapping::OperationSetImplementation[1]|
          let roots = $o->resolveInstanceSetImplementations($extensions);
          let storeContract = $roots->map(r|$extensions->meta::pure::extension::storeContractForSetImplementation($r))->removeDuplicates(x|$x.id,{a,b|$a==$b})->toOne();
          let store = $roots->map(r|$mapping.resolveStore($storeContract.resolveStoreFromSetImplementation->toOne()->eval($r)))->removeDuplicates(x|$x->elementToPath(),{a,b|$a==$b})->toOne();
-         buildCluster($r, $openVariables, $mapping, $storeContract, $store, $extensions);
+         pair($storeContract, $mapping.resolveStore($store));
   ]);
 }
 
