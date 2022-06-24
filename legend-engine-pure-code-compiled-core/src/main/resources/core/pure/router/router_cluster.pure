@@ -234,14 +234,9 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
                                             ^ClusterResponse(cluster=$res,letFunctions=$letFunctions,executableSetOperations=$executables->concatenate($childExecutables));,
                                           |  print(if($debug.debug,|$f->evaluateAndDeactivate()->asString()->debug($debug.space+'Func Expression(non unique: '+$unique->size()->toString()+'): '),|''));
                                              let k = if ($unique->size() == 0,
-                                                | //TODO we could execute here ....
-                                                  ^ClusterResponse(cluster=^$f(parametersValues = $params));,
-//                                                   ^InstanceValue(genericType  = $f.genericType,
-//                                                                  multiplicity = $f.multiplicity,
-//                                                                  values = $f->reactivate($openVariables)->toOne()
-//                                                   );,
-                                                |   let clustersToReplace = clusteredVSToBeReplaced($params);
-                                                    if($clustersToReplace->isNotEmpty(),
+                                                | ^ClusterResponse(cluster=^$f(parametersValues = $params)),
+                                                | let clustersToReplace = clusteredVSToBeReplaced($params);
+                                                  if($clustersToReplace->isNotEmpty(),
                                                       |
                                                             let updatedParams = $params->map(p| if($p->in($clustersToReplace),
                                                                                                        | let varName= $p-> meta::pure::router::clustering::createVarExpName($params,$depth);
@@ -274,10 +269,8 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
                                                                    openVars = $openVariables,
                                                                    exeCtx = $exeCtx,
                                                                    val = ^$f(parametersValues = $params->map(p|if($p->instanceOf(ClusteredValueSpecification) && $p->cast(@ClusteredValueSpecification).val->isOneFunction(),
-                                                                                                                |$p->cast(@ClusteredValueSpecification).val;
-                                                                                                                ,
-                                                                                                                |$p
-                                                                                                               )
+                                                                                                                |$p->cast(@ClusteredValueSpecification).val,
+                                                                                                                |$p)
                                                                                                             )),
                                                                    executable=true));
 
@@ -393,54 +386,35 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
 
 function meta::pure::router::clustering::getClusterVSFromSets(r:ExtendedRoutedValueSpecification[1], setImpl:SetImplementation[*], openVariables:Map<String, List<Any>>[1], mapping:Mapping[1], extensions:meta::pure::extension::Extension[*]):ClusteredValueSpecification[1]
 {
-   $setImpl->match([
-      pure: meta::pure::mapping::modelToModel::PureInstanceSetImplementation[1]|
-         ^ClusteredValueSpecification(
-            genericType  = $r.genericType,
-            multiplicity = $r.multiplicity,
-            s = meta::pure::mapping::modelToModel::contract::modelStoreContract(),
-            store = ^meta::pure::mapping::modelToModel::ModelStore(name='MODEL', package=::),
-            mapping = $r.mapping,
-            runtime = $r.runtime,
-            openVars = $openVariables,
-            val = $r,
-            exeCtx = $r.executionContext,
-            executable = false
-         );,
-      agg: meta::pure::mapping::aggregationAware::AggregationAwareSetImplementation[1]|
-         ^ClusteredValueSpecification(
-            genericType  = $r.genericType,
-            multiplicity = $r.multiplicity,
-            s = meta::pure::mapping::aggregationAware::contract::aggregationAwareStoreContract(),
-            store = ^meta::pure::mapping::aggregationAware::AggregationAwareStore(name='AGGREGATION_AWARE', package=::),
-            mapping = $r.mapping,
-            runtime = $r.runtime,
-            openVars = $openVariables,
-            val = $r,
-            exeCtx = $r.executionContext,
-            executable = false
-         );,
+  $setImpl->match([
+      i: InstanceSetImplementation[1]|
+         let storeContract = $extensions->meta::pure::extension::storeContractForSetImplementation($i->toOne());
+         let store = $storeContract.resolveStoreFromSetImplementation->toOne()->eval($i);
+         buildCluster($r, $openVariables, $mapping, $storeContract, $store, $extensions);,
       o: meta::pure::mapping::OperationSetImplementation[1]|
          let roots = $o->resolveInstanceSetImplementations($extensions);
-         $roots->match(
-            [
-               p:PureInstanceSetImplementation[*]|
-                  ^ClusteredValueSpecification(
-                     genericType  = $r.genericType,
-                     multiplicity = $r.multiplicity,
-                     s = meta::pure::mapping::modelToModel::contract::modelStoreContract(),
-                     store = ^meta::pure::mapping::modelToModel::ModelStore(name='MODEL', package=::),
-                     mapping = $r.mapping,
-                     runtime = $r.runtime,
-                     openVars = $openVariables,
-                     val = $r,
-                     exeCtx = $r.executionContext,
-                     executable = false
-                  );
-            ]->concatenate($extensions.cluster_cluster_ExtendedRoutedValueSpecification_Operation->map(e|$e->eval($r, $openVariables, $mapping)))->toOneMany()
-         );
-   ]->concatenate($extensions.cluster_cluster_ExtendedRoutedValueSpecification->map(e|$e->eval($r, $openVariables, $mapping)))->toOneMany());
+         let storeContract = $roots->map(r|$extensions->meta::pure::extension::storeContractForSetImplementation($r))->removeDuplicates(x|$x.id,{a,b|$a==$b})->toOne();
+         let store = $roots->map(r|$mapping.resolveStore($storeContract.resolveStoreFromSetImplementation->toOne()->eval($r)))->removeDuplicates(x|$x->elementToPath(),{a,b|$a==$b})->toOne();
+         buildCluster($r, $openVariables, $mapping, $storeContract, $store, $extensions);
+  ]);
 }
+
+function <<access.private>> meta::pure::router::clustering::buildCluster(r:ExtendedRoutedValueSpecification[1], openVariables:Map<String, List<Any>>[1], mapping:Mapping[1], storeContract : StoreContract[1], store : Store[1], extensions:meta::pure::extension::Extension[*]):ClusteredValueSpecification[1]
+{
+    ^ClusteredValueSpecification(
+      genericType  = $r.genericType,
+      multiplicity = $r.multiplicity,
+      s = $storeContract,
+      store = $mapping.resolveStore($store),
+      mapping = $r.mapping,
+      runtime = $r.runtime,
+      openVars = $openVariables,
+      val = $r,
+      exeCtx = $r.executionContext,
+      executable = false
+    )
+}
+
 
 function meta::pure::router::clustering::getDistinctClusterVSByStore(params:ValueSpecification[*], extensions:meta::pure::extension::Extension[*]):ClusteredValueSpecification[*]
 {

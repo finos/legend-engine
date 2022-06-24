@@ -88,7 +88,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::testCompress
    let result = execute(|Person.all()->project(  [col( x |$x.name,'Name' ),
    col( x |$x.locations->filter( f| $f.place -> in(['Hoboken', 'New York']) ).place ,'place' ), 
    col( x |$x.locations->filter( f| $f.place -> in(['Hoboken','New York']) ).censusdate ,'CD' )  ]), 
-   meta::relational::tests::simpleRelationalMapping, meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   meta::relational::tests::simpleRelationalMapping, meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions(), debug());
    assertEquals('select concat("root".FIRSTNAME, \' \', "root".LASTNAME) as "Name", "locationtable_0".PLACE as "place", "locationtable_0".date as "CD" from personTable as "root" left outer join locationTable as "locationtable_0" on ("root".ID = "locationtable_0".PERSONID and "locationtable_0".PLACE in (\'Hoboken\', \'New York\'))', $result->sqlRemoveFormatting());
 
 }

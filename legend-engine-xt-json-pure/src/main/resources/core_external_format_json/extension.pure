@@ -22,6 +22,7 @@ function meta::external::format::json::jsonFormatExtension(): meta::external::sh
    ^ExternalFormatExtension(
       contentType               = 'application/json',
       externalFormat            = 'JSON',
+
       generateSerializeNode     = generateSerializeNode_Boolean_1__Binding_1__ExecutionNode_MANY__ExternalFormatSerializeExecutionNode_1_,
       generateDeserializeNode   = generateDeserializeNode_Connection_1__ExecutionNode_1__RootGraphFetchTree_$0_1$__ExecutionNode_1_,
       generatePathReference     = generatePathReference_Path_1__PathReference_1_,

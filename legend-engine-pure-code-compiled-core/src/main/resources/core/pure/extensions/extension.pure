@@ -37,8 +37,11 @@ Class meta::pure::extension::Extension
   analytics_getStoreFromSetImpl : Function<{Mapping[1] -> Function<{Nil[1]->Store[1]}>[1]}>[0..1];
   analytics_getStoreFromSetImpl_Operation : Function<{Mapping[1] -> Function<{Nil[1]->Store[1]}>[1]}>[0..1];
 
-  cluster_cluster_ExtendedRoutedValueSpecification : Function<{ExtendedRoutedValueSpecification[1], Map<String, List<Any>>[1], Mapping[1] -> Function<{Nil[1]->ClusteredValueSpecification[1]}>[*]}>[0..1];
-  cluster_cluster_ExtendedRoutedValueSpecification_Operation : Function<{ExtendedRoutedValueSpecification[1], Map<String, List<Any>>[1], Mapping[1] -> Function<{Nil[1]->ClusteredValueSpecification[1]}>[*]}>[0..1];
+  // cluster_cluster_ExtendedRoutedValueSpecification : Function<{ExtendedRoutedValueSpecification[1], Map<String, List<Any>>[1], Mapping[1] -> Function<{Nil[1]->ClusteredValueSpecification[1]}>[*]}>[0..1];
+  // cluster_cluster_ExtendedRoutedValueSpecification_Operation : Function<{ExtendedRoutedValueSpecification[1], Map<String, List<Any>>[1], Mapping[1] -> Function<{Nil[1]->ClusteredValueSpecification[1]}>[*]}>[0..1];
+  // systemMapping_systemForSetImplementation : Function<{Nil[1] -> StoreContract[1]}>[0..1];
+
+
   cluster_cluster : Function<{Map<String, List<Any>>[1] -> Function<{Nil[1]->ClusterResponse[1]}>[1]}>[0..1];
   cluster_resolveInstanceSetImplementations : Function<{Extension[*] -> Function<{Nil[1]->InstanceSetImplementation[*]}>[1]}>[0..1];
   cluster_resolveRootFromEmbedded : Function<{Nil[1]->InstanceSetImplementation[*]}>[0..1];
@@ -51,8 +54,6 @@ Class meta::pure::extension::Extension
   main_storeEquals : Function<{Any[1], Any[1]-> Function<{Nil[1]->Boolean[1]}>[1]}>[0..1];
 
   entry_execute : Function<{FunctionDefinition<Any>[1], Mapping[1], meta::pure::runtime::Runtime[1] -> String[1]}>[0..1];
-
-  systemMapping_systemForSetImplementation : Function<{Nil[1] -> StoreContract[1]}>[0..1];
 
   unsupportedConnection : Function<{Connection[1]->Boolean[1]}>[0..1];
 
@@ -186,59 +187,4 @@ Class meta::pure::extension::ModuleExtension
 
 Class meta::pure::extension::SerializerExtension
 {
-}
-
-
-
-
-
-
-// Store Extension --------------------------------------------------------------------------
-function meta::pure::extension::storeContractForSetImplementation(extensions: Extension[*], s:SetImplementation[1]):StoreContract[1]
-{
-  $s->match(
-    $extensions.systemMapping_systemForSetImplementation->concatenate([
-      p:meta::pure::mapping::modelToModel::PureInstanceSetImplementation[1]|meta::pure::mapping::modelToModel::contract::modelStoreContract(),
-      o:meta::pure::mapping::OperationSetImplementation[1]|meta::pure::mapping::modelToModel::contract::modelStoreContract()
-    ])->toOneMany()
-  )->unique(|'for the setImplementation ' + $s->class().name->toOne() + '. For the extensions: [' + $extensions.type->joinStrings(',') + ']')
-}
-  
-function meta::pure::extension::storeContractFromStore(extensions: Extension[*], s: Store[1]):StoreContract[1]
-{
-  $s->match([
-        m : meta::pure::mapping::modelToModel::ModelStore[1] | meta::pure::mapping::modelToModel::contract::modelStoreContract()
-      ]->concatenate($extensions.graphFetch_getStoreContractFromStore)->toOneMany())
-  ->unique(|'for the store ' + $s->class().name->toOne() + '. For the extensions: [' + $extensions.type->joinStrings(',') + ']')
-}
-
-function <<access.private>> meta::pure::extension::unique(storeContracts:StoreContract[*], message:Function<{->String[1]}>[1]):meta::pure::store::StoreContract[1]
-{
-  let list = $storeContracts->removeDuplicates(x|$x.id,{a,b|$a==$b});
-  assert($list->isNotEmpty(), |'The system can\'t find the appropriate StoreContract '+$message->eval());
-  assert($list->size() == 1, |'The system found too many StoreContracts ['+$list.id->joinStrings(',')+'] '+$message->eval());
-  $list->toOne();  
-}
-// -------------------------------------------------------------------------- Store Extension
-
-
-
-
-
-
-
-
-function meta::pure::extension::defaultExtensions():Extension[*]
-{
-  [];
-  // ^Extension
-  // (
-  //   type = 'defaultExtensions',    
-  //   availableStores = [
-  //                         meta::pure::store::platform::contract::platformStoreContract(),
-  //                         meta::pure::mapping::modelToModel::contract::modelStoreContract(),
-  //                         meta::pure::mapping::aggregationAware::contract::aggregationAwareStoreContract()
-  //                     ]
-                          
-  // )
 }

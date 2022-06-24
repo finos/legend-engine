@@ -28,5 +28,6 @@ Class meta::pure::store::StoreContract
   localGetterOverrideNonMapped : Function<{Any[1], Property<Nil,Any|*>[1] -> Any[*]}>[0..1];
 
 
-  supportsSetImplementation : Function<{SetImplementation[1]->Boolean[1]}>[1];
+  supportsSetImplementation : Function<{InstanceSetImplementation[1]->Boolean[1]}>[1];
+  resolveStoreFromSetImplementation : Function<{InstanceSetImplementation[1]->Store[1]}>[0..1];
 }

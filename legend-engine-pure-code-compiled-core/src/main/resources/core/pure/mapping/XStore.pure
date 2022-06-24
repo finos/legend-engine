@@ -49,7 +49,7 @@ function meta::pure::mapping::xStore::crossGetterOverride(o:Any[1], property:Pro
                   |$sourceSys.localGetterOverrideNonMapped->toOne()->eval($o, $property);
                );,
              | $propertyMappings->map(
-                                       p|let target = $dataPayload.static.mapping.classMappingById($p.targetSetImplementationId);
+                                       p|let target = $dataPayload.static.mapping.classMappingById($p.targetSetImplementationId)->cast(@InstanceSetImplementation);
                                          let targetSys = $dataPayload.static.extensions->meta::pure::extension::storeContractForSetImplementation($target->toOne());
                                          if ($sourceSys.supports == $targetSys.supports,
                                              |$targetSys.localGetterOverrideMapped->toOne()->eval($o, $p),

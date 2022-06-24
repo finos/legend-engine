@@ -35,6 +35,9 @@ function meta::external::shared::format::routerExtensions(type:String[1], extern
 {
    let shared = ^Extension(
       type = $type,
+
+      availableStores            = meta::pure::extension::defaultExtensions().availableStores,
+
       plan_javaRuntime_enginePlatformDependencies_conventions = meta::external::shared::format::executionPlan::engine::extendJavaEngineDependencies_Conventions_1__Conventions_1_,
       serializerExtension      = meta::external::shared::format::serializerExtensionName_String_1__String_1_,
       routing_extraShouldStop  = serializeFunctions(),
