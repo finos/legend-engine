@@ -38,9 +38,14 @@ function meta::external::shared::format::routerExtensions(type:String[1], extern
 
       availableStores            = meta::pure::extension::defaultExtensions().availableStores,
 
+      availableFeatures          = ^FeatureExtension
+                                   (
+                                     id = 'ExternalFormat',
+                                     shouldStopRouting = serializeFunctions()
+                                   ),
+
       plan_javaRuntime_enginePlatformDependencies_conventions = meta::external::shared::format::executionPlan::engine::extendJavaEngineDependencies_Conventions_1__Conventions_1_,
       serializerExtension      = meta::external::shared::format::serializerExtensionName_String_1__String_1_,
-      routing_extraShouldStop  = serializeFunctions(),
       executionPlan_generation_isConnectionForClass =
          {class:Class<Any>[1] |
             [

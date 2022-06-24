@@ -12,15 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::pure::mapping::*;
 import meta::pure::router::operations::*;
 import meta::pure::router::routing::*;
+import meta::pure::router::clustering::*;
+import meta::pure::mapping::*;
 import meta::pure::mapping::aggregationAware::*;
 import meta::pure::mapping::modelToModel::*;
-import meta::pure::router::clustering::*;
 import meta::pure::store::*;
 import meta::pure::runtime::*;
-import meta::pure::store::*;
 
 Class meta::pure::mapping::StaticMappingInstanceData
 {
@@ -216,19 +215,8 @@ function <<access.private>> meta::pure::graphFetch::routing::getStoreFromSet(s: 
 
 function meta::pure::router::analytics::getStoreFromSetImpl(set: SetImplementation[1], mapping:Mapping[1], extensions:meta::pure::extension::Extension[*]):meta::pure::store::Store[1]
 {
-   $set->match([
-      e   : EmbeddedSetImplementation[1] | ^meta::pure::router::store::embedded::EmbeddedStore(name='EMBEDDED', package=::),
-      agg  : AggregationAwareSetImplementation[1] | ^AggregationAwareStore(name='AGGREGATION_AWARE', package=::),
-      pure : PureInstanceSetImplementation[1]  | ^ModelStore(name='MODEL', package=::),
-      o    : OperationSetImplementation[1] | let roots = $o->resolveOperation($mapping);
-              $roots->match([p : PureInstanceSetImplementation[*] | ^ModelStore(name='MODEL', package=::)]
-                            ->concatenate($extensions.analytics_getStoreFromSetImpl_Operation->map(e|$e->eval($mapping)))->toOneMany()
-                      );
-           ]
-           ->concatenate($extensions.analytics_getStoreFromSetImpl->map(m|$m->eval($mapping)))->toOneMany()
-        )
+  $set->storeContractForSetImplementation($mapping, $extensions).second;
 }
-
 
 
 function meta::pure::router::routing::findMappingsFromProperty(p:AbstractProperty<Any>[1], mapping:Mapping[1], sourceMappings:SetImplementation[*], state:RoutingState[1], extensions:meta::pure::extension::Extension[*]):SetImplementation[*]

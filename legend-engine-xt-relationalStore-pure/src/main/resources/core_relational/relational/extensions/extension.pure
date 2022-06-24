@@ -63,35 +63,19 @@ function meta::relational::extension::relationalExtension(type:String[1]) : meta
    ^Extension
    (
       type = $type,
+
       availableStores = meta::pure::extension::defaultExtensions().availableStores->concatenate(meta::relational::contract::relationalStoreContract()),                         
+
       serializerExtension =  meta::relational::extension::relationalSerializerExtension_String_1__String_1_,
-      analytics_getStoreFromSetImpl = mapping:Mapping[1] | {rsi:meta::relational::mapping::RootRelationalInstanceSetImplementation[1] | let resolvedDb = $rsi->getResolvedStore($mapping)->toOne(); $mapping.resolveStore($resolvedDb);},
-      analytics_getStoreFromSetImpl_Operation = mapping:Mapping[1] | {rr : meta::relational::mapping::RootRelationalInstanceSetImplementation[*] | 
-                                                                                                      let databases = $rr->getResolvedStore($mapping)->removeDuplicates();
-                                                                               assert($databases->size() == 1, | 'Found ' + $databases->size()->toString() + ' stores while trying to resolve Operation Mappings. 1 unique store is required for routing. Stores found were ' + $databases.name->joinStrings('[',',', ']'));
-                                                                               $mapping.resolveStore($databases->at(0));},
+
+
+
       graphFetch_getStoreFromSet = mapping:Mapping[1] | {rsi : meta::relational::mapping::RootRelationalInstanceSetImplementation[1] | $mapping.resolveStore($rsi->getResolvedStore($mapping)->toOne())},
       graphFetch_getStoreFromSet_Operation = mapping:Mapping[1] | {rr : meta::relational::mapping::RootRelationalInstanceSetImplementation[*] | let databases = $rr->getResolvedStore($mapping); 
                                                                                                                        assert($databases->size() == 1, | 'Found ' + $databases->size()->toString() + ' stores while trying to resolve Operation Mappings. 1 unique store is required for routing. Stores found were ' + $databases.name->joinStrings('[',',', ']'));
                                                                                                                        $mapping.resolveStore($databases->at(0));},
       graphFetch_getStoreContractFromStore = db : meta::relational::metamodel::Database[1] | meta::relational::contract::relationalStoreContract(),
-      routing_routeFunctionExpressionFunctionDefinition = pair(
-            fe:FunctionExpression[1] | $fe->evaluateAndDeactivate().genericType.rawType == meta::relational::mapping::TableTDS,
-            {fe:FunctionExpression[1], state:RoutingState[1], runtime : Runtime[1], mapping: Mapping[1], executionContext:ExecutionContext[1] |
-                    let name = $fe.parametersValues->at(0)->cast(@FunctionExpression).functionName;
-                    assert($fe.parametersValues->at(0)->cast(@FunctionExpression).func->in([meta::relational::functions::database::tableReference_Database_1__String_1__String_1__Table_1_, meta::relational::functions::database::viewReference_Database_1__String_1__String_1__View_1_]), 'Must use meta::pure::tds::tableReference / viewReference function to specify table / view ');
-                    let store = $fe.parametersValues->at(0)->cast(@FunctionExpression).parametersValues->at(0)->cast(@InstanceValue).values->cast(@meta::pure::store::Store)->toOne();
-                    ^$state(value = ^TDSRoutedValueSpecification(  genericType = $fe.genericType,
-                                                                 multiplicity = $fe.multiplicity,
-                                                                 id = 'Table TDS',
-                                                                 store = $store,
-                                                                 runtime = $runtime,
-                                                                 mapping = $mapping,
-                                                                 executionContext = $executionContext,
-                                                                 value = $fe
-                                                               ));}
-            ),
-      
+
       graphFetch_executionPlan_planGraphFetchExecution = {
          sq: meta::pure::mapping::StoreQuery[1], ext: RoutedValueSpecification[0..1], clusteredTree: ClusteredGraphFetchTree[1], orderedPaths: String[*], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], enableConstraints: Boolean[1], checked: Boolean[1], extensions: Extension[*], debug: DebugContext[1] |
          {db : meta::relational::metamodel::Database[1] | meta::relational::graphFetch::executionPlan::planRootGraphFetchExecutionRelational($sq, $ext, $clusteredTree, $orderedPaths, $mapping, $runtime, $exeCtx, $enableConstraints, $checked, $extensions, $debug)}
@@ -104,17 +88,7 @@ function meta::relational::extension::relationalExtension(type:String[1]) : meta
       
       graphFetch_executionPlan_localGraphFetchExecutionNodeToString = {space: String[1], extensions:meta::pure::extension::Extension[*] | {r: meta::relational::graphFetch::executionPlan::RelationalGraphFetchExecutionNode[1] | $r->relationalGraphFetchExecutionNodeToString($space, $extensions)}},
       
-      routing_extraShouldStop = [
-                                    project_TableTDS_1__ColumnSpecification_MANY__TabularDataSet_1_,
-                                    tableToTDS_Table_1__TableTDS_1_,
-                                    viewToTDS_View_1__TableTDS_1_,
-                                    meta::relational::functions::database::tableReference_Database_1__String_1__String_1__Table_1_,
-                                    meta::json::toJSON_T_MANY__LambdaFunction_MANY__String_1_,
-                                    meta::pure::tds::join_TabularDataSet_1__TabularDataSet_1__JoinType_1__Function_1__TabularDataSet_1_,
-                                    meta::pure::tds::join_TabularDataSet_1__TabularDataSet_1__JoinType_1__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_,
-                                    meta::relational::functions::columnProjectionsFromRoot_Any_MANY__NamedRelation_1__String_MANY__Boolean_$0_1$__Integer_$0_1$__RelationData_1_
-                                ],
-      main_storeEquals = {a:Any[1], b:Any[1] | {k:meta::relational::mapping::KeyInformation[1] | $a->getHiddenPayload() == $b->getHiddenPayload()->toOne()->cast(@meta::relational::mapping::KeyInformation).pk}},
+
       executionPlan_print_planNodeToString = 
                                 {space : String[1], extensions:meta::pure::extension::Extension[*]|
                                        [

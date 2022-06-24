@@ -23,21 +23,57 @@ import meta::pure::executionPlan::*;
 import meta::relational::runtime::*;
 import meta::relational::metamodel::*;
 import meta::relational::functions::pureToSqlQuery::*;
+import meta::pure::router::routing::*;
 
 function meta::relational::contract::relationalStoreContract():StoreContract[1]
 {
    ^StoreContract
    (
      id = 'relationalStore',
-     executeStoreQuery = meta::relational::contract::execution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_1__Runtime_1__ExecutionContext_1__Extension_MANY__DebugContext_1__Result_1_,
+
+     planExecution = meta::relational::contract::planExecution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__Extension_MANY__DebugContext_1__ExecutionNode_1_,
+    
      supports = meta::relational::contract::supports_FunctionExpression_1__Boolean_1_,
      supportsStreamFunction = meta::relational::contract::supportsStream_FunctionExpression_1__Boolean_1_,
-     planExecution = meta::relational::contract::planExecution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__Extension_MANY__DebugContext_1__ExecutionNode_1_,
-     localGetterOverrideMapped = meta::relational::contract::getterOverrideMapped_Any_1__PropertyMapping_1__Any_MANY_,
+     shouldStopRouting = [
+                            meta::pure::tds::project_TableTDS_1__ColumnSpecification_MANY__TabularDataSet_1_,
+                            meta::pure::tds::tableToTDS_Table_1__TableTDS_1_,
+                            meta::pure::tds::viewToTDS_View_1__TableTDS_1_,
+                            meta::pure::tds::join_TabularDataSet_1__TabularDataSet_1__JoinType_1__Function_1__TabularDataSet_1_,
+                            meta::pure::tds::join_TabularDataSet_1__TabularDataSet_1__JoinType_1__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_,
+                            meta::relational::functions::database::tableReference_Database_1__String_1__String_1__Table_1_,
+                            meta::relational::functions::columnProjectionsFromRoot_Any_MANY__NamedRelation_1__String_MANY__Boolean_$0_1$__Integer_$0_1$__RelationData_1_
+                         ],
+     routeFunctionExpressions = pair(
+            fe:FunctionExpression[1] | $fe->evaluateAndDeactivate().genericType.rawType == meta::relational::mapping::TableTDS,
+            {fe:FunctionExpression[1], state:RoutingState[1], runtime : Runtime[1], mapping: Mapping[1], executionContext:ExecutionContext[1] |
+                    let name = $fe.parametersValues->at(0)->cast(@FunctionExpression).functionName;
+                    assert($fe.parametersValues->at(0)->cast(@FunctionExpression).func->in([meta::relational::functions::database::tableReference_Database_1__String_1__String_1__Table_1_, meta::relational::functions::database::viewReference_Database_1__String_1__String_1__View_1_]), 'Must use meta::pure::tds::tableReference / viewReference function to specify table / view ');
+                    let store = $fe.parametersValues->at(0)->cast(@FunctionExpression).parametersValues->at(0)->cast(@InstanceValue).values->cast(@meta::pure::store::Store)->toOne();
+                    ^$state(value = ^TDSRoutedValueSpecification(
+                                        genericType = $fe.genericType,
+                                        multiplicity = $fe.multiplicity,
+                                        id = 'Table TDS',
+                                        store = $store,
+                                        runtime = $runtime,
+                                        mapping = $mapping,
+                                        executionContext = $executionContext,
+                                        value = $fe
+                                    )
+                    );
+            }
+      ),
+     supportsNativeJoinAmongElements = true,
 
      supportsSetImplementation = s:SetImplementation[1]|$s->instanceOf(RelationalInstanceSetImplementation),   
      resolveStoreFromSetImplementation = s:InstanceSetImplementation[1]|$s->meta::relational::contract::getStore(),
-     supportsNativeJoinAmongElements = true
+
+     executeStoreQuery = meta::relational::contract::execution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_1__Runtime_1__ExecutionContext_1__Extension_MANY__DebugContext_1__Result_1_,
+     localGetterOverrideMapped = meta::relational::contract::getterOverrideMapped_Any_1__PropertyMapping_1__Any_MANY_,
+     instance_equals = {a:Any[1], b:Any[1] |
+                          $a->getHiddenPayload()->cast(@meta::relational::mapping::KeyInformation).pk == $b->getHiddenPayload()->toOne()->cast(@meta::relational::mapping::KeyInformation).pk;
+                       }
+
    )
 }
 
