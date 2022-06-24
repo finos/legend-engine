@@ -33,7 +33,8 @@ function meta::pure::mapping::aggregationAware::contract::aggregationAwareStoreC
      planExecution = meta::pure::mapping::aggregationAware::contract::planExecution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__Extension_MANY__DebugContext_1__ExecutionNode_1_,
 
      supportsSetImplementation = s:InstanceSetImplementation[1]|$s->instanceOf(AggregationAwareSetImplementation),
-     resolveStoreFromSetImplementation = s:InstanceSetImplementation[1]|^meta::pure::mapping::aggregationAware::AggregationAwareStore(name='AGGREGATION_AWARE', package=::)
+     resolveStoreFromSetImplementation = s:InstanceSetImplementation[1]|^meta::pure::mapping::aggregationAware::AggregationAwareStore(name='AGGREGATION_AWARE', package=::),
+     supportsNativeJoinAmongElements = true
    )
 }
 

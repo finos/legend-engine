@@ -75,10 +75,7 @@ function meta::pure::graphFetch::routing::clusterRoutedGraphFetchTree(r: RoutedG
    (
       s = $systemMapping,
       store = $singleStore,
-      tree = ^$r(subTrees = $subTreeClusters->map(x | $x->match([c:ClusteredGraphFetchTree[1] | let storeSupportNativeJoinsAmongElements = $c.store->match($extensions.cluster_storeSupportsNativeJoinAmongElements->concatenate([
-                                                                                                                                                              m:ModelStore[1] | false,
-                                                                                                                                                              s:Store[1]      | true
-                                                                                                                                                           ])->toOneMany());
+      tree = ^$r(subTrees = $subTreeClusters->map(x | $x->match([c:ClusteredGraphFetchTree[1] | let storeSupportNativeJoinsAmongElements = $extensions->meta::pure::extension::storeContractFromStore($c.store).supportsNativeJoinAmongElements;
                                                                                                 if(($storeSupportNativeJoinsAmongElements && $c.store->elementToPath() != $singleStore->elementToPath())
                                                                                                     || (!$storeSupportNativeJoinsAmongElements && $c.tree->cast(@RoutedPropertyGraphFetchTree).propertyMapping->isNotEmpty() && $c.tree->cast(@RoutedPropertyGraphFetchTree).propertyMapping->map(pm | $pm->instanceOf(meta::pure::mapping::xStore::XStorePropertyMapping))->toOneMany()->or()),
                                                                                                    | $c, 

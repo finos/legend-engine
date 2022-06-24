@@ -379,8 +379,20 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
                                                      let nc = $clusterResponse.cluster->evaluateAndDeactivate();
                                                      ^ClusterResponse(cluster=$nc->match([nc:ClusteredValueSpecification[1]|^$nc(val=^$r(value=$nc.val)), a:ValueSpecification[1]|$r]), letFunctions= $clusterResponse.letFunctions, executableSetOperations= $clusterResponse.executableSetOperations);,
                v:VariableExpression[1]|print(if($debug.debug,|$v->asString()->debug($debug.space+'Var: '),|''));^ClusterResponse(cluster=$v);,
-               c:ClusteredValueSpecification[1] | ^ClusterResponse(cluster = $c)
-      ]->concatenate($extensions.cluster_cluster->map(e|$e->eval($openVariables)))->toOneMany()
+               c:ClusteredValueSpecification[1] | ^ClusterResponse(cluster = $c),
+               t:TDSRoutedValueSpecification[1] | ^ClusterResponse(cluster = ^ClusteredValueSpecification(
+                                                                               genericType  = $t.genericType,
+                                                                               multiplicity = $t.multiplicity,
+                                                                               s = $extensions->meta::pure::extension::storeContractFromStore($t.store),
+                                                                               store = $t.store,
+                                                                               mapping = $t.mapping,
+                                                                               runtime = $t.runtime,
+                                                                               openVars = $openVariables,
+                                                                               val = $t,
+                                                                               exeCtx = $t.executionContext,
+                                                                               executable = true
+                                                                               ))
+      ]
    )->cast(@ClusterResponse);
 }
 
@@ -421,25 +433,13 @@ function meta::pure::router::clustering::getDistinctClusterVSByStore(params:Valu
    $params->meta::pure::router::clustering::getDistinctClusterVSByStore(false, $extensions);
 }
 
-function meta::pure::router::clustering::executionContextEquality(a:ExecutionContext[0..1], b:ExecutionContext[0..1], extensions:meta::pure::extension::Extension[*]):Boolean[1]
-{
-   if( $a->type() == $b->type(),
-      |
-         ($a.queryTimeOutInSeconds == $b.queryTimeOutInSeconds) && ($a.enableConstraints == $b.enableConstraints) &&
-         $a->match(
-            $extensions.cluster_executionContextEquality->map(e|$e->eval($b))->concatenate([
-               e:ExecutionContext[1] | true
-            ])->toOneMany()),   
-      |false);     
-}
-
 function meta::pure::router::clustering::getDistinctClusterVSByStore(params:ValueSpecification[*], recurse:Boolean[1], extensions:meta::pure::extension::Extension[*]):ClusteredValueSpecification[*]
 {
    let allClusters = if($recurse,
                            | $params->filter(p|$p->instanceOf(SimpleFunctionExpression))->fold({x, y | $x->cast(@SimpleFunctionExpression).parametersValues->getDistinctClusterVSByStore($recurse, $extensions)->concatenate($y->cast(@SimpleFunctionExpression).parametersValues->getDistinctClusterVSByStore($recurse, $extensions))},[])
                           ,|[]);
    
-   let p_unique = $allClusters->concatenate($params)->filter(p|$p->instanceOf(ClusteredValueSpecification))->cast(@ClusteredValueSpecification)-> removeDuplicates({x, y | $x.store->elementToPath() == $y.store->elementToPath() &&  meta::pure::runtime::runtimeEquality($x.runtime, $y.runtime, $extensions) && executionContextEquality($x.exeCtx, $y.exeCtx, $extensions)});
+   let p_unique = $allClusters->concatenate($params)->filter(p|$p->instanceOf(ClusteredValueSpecification))->cast(@ClusteredValueSpecification)-> removeDuplicates({x, y | $x.store->elementToPath() == $y.store->elementToPath() &&  meta::pure::runtime::runtimeEquality($x.runtime, $y.runtime, $extensions) && ($x.exeCtx == $y.exeCtx)});
    let n_unique = if ($p_unique->size() > 1,|$p_unique->filter(p|!$p.val->isOneFunction()),|$p_unique);
    let unique = if ($n_unique->size() > 1 && ($n_unique->filter(p|$p.store->instanceOf(EmbeddedStore))->size() > 0),
                         |$n_unique->filter(p|!$p.store->instanceOf(EmbeddedStore)),

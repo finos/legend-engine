@@ -60,9 +60,6 @@ function <<access.private>> meta::external::store::service::extension::serviceSt
       type = $type,
       availableStores = [meta::external::store::service::contract::serviceStoreStoreContract()],
       serializerExtension =  meta::external::store::service::extension::serviceStoreSerializerExtension_String_1__String_1_,
-      cluster_resolveInstanceSetImplementations = {r : Extension[*] | {rsi:RootServiceInstanceSetImplementation[1] | $rsi}},
-      cluster_resolveRootFromEmbedded = {r:RootServiceInstanceSetImplementation[1]|$r},
-      cluster_storeSupportsNativeJoinAmongElements = {s: ServiceStore[1] | false},
       executionPlan_generation_sourceSupportsBatching = {sets:SetImplementation[*], inScopeVars:Map<String, List<Any>>[1] |
                                                                                          {rsi:RootServiceInstanceSetImplementation[1] |
                                                                                               let paramMap = $sets->resolveParamMapForChainProcessing($inScopeVars, noDebug());

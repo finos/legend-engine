@@ -30,4 +30,5 @@ Class meta::pure::store::StoreContract
 
   supportsSetImplementation : Function<{InstanceSetImplementation[1]->Boolean[1]}>[1];
   resolveStoreFromSetImplementation : Function<{InstanceSetImplementation[1]->Store[1]}>[0..1];
+  supportsNativeJoinAmongElements : Boolean[1];
 }

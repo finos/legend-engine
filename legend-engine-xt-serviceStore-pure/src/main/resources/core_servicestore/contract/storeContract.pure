@@ -37,7 +37,8 @@ function meta::external::store::service::contract::serviceStoreStoreContract():S
                                                                               r : RootServiceInstanceSetImplementation[1] | $r.serviceStore(),
                                                                               e : EmbeddedServiceStoreSetImplementation[1] | ^meta::pure::router::store::embedded::EmbeddedStore(package=::)
                                                                             ]
-                                                                        )
+                                                                        ),
+     supportsNativeJoinAmongElements = false
    )
 }
 

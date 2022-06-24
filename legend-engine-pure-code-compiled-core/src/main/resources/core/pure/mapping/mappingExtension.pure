@@ -190,15 +190,16 @@ function meta::pure::router::clustering::resolveInstanceSetImplementations(o:Ope
    $sets->map(s | $s->match([
                               o:OperationSetImplementation[1] | $o->resolveInstanceSetImplementations($extensions),
                               e:EmbeddedSetImplementation[1] | $e->resolveRootFromEmbedded($extensions),
-                              p:PureInstanceSetImplementation[1] | $p
-                            ]->concatenate($extensions.cluster_resolveInstanceSetImplementations->map(e|$e->eval($extensions)))->toOneMany()));
+                              i:InstanceSetImplementation[1] | $i
+                            ]));
 }
 
 function <<access.private>> meta::pure::router::clustering::resolveRootFromEmbedded(o:EmbeddedSetImplementation[1], extensions:meta::pure::extension::Extension[*]):InstanceSetImplementation[*]
 {
    $o.owner->match([
-                     e:EmbeddedSetImplementation[1]|$e->resolveRootFromEmbedded($extensions)
-                  ]->concatenate($extensions.cluster_resolveRootFromEmbedded)->toOneMany());
+                     e:EmbeddedSetImplementation[1]|$e->resolveRootFromEmbedded($extensions),
+                     i:InstanceSetImplementation[1]|$i
+                  ]);
 }
 
 function <<access.private>> meta::pure::graphFetch::routing::getStoreFromSet(s: SetImplementation[1], mapping: Mapping[1], extensions:meta::pure::extension::Extension[*]):Store[1]
