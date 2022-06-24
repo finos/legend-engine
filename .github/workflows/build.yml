@@ -48,6 +48,8 @@ jobs:
           server-id: ossrh
           server-username: CI_DEPLOY_USERNAME
           server-password: CI_DEPLOY_PASSWORD
+      - name: Check Java version
+        run: java -version
       - name: Configure git
         run: |
           git config --global committer.email "infra@finos.org"
