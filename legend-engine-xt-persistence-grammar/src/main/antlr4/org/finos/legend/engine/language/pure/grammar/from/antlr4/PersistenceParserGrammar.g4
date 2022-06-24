@@ -148,6 +148,7 @@ notifyees:                                  NOTIFIER_NOTIFYEES COLON
                                                 BRACKET_OPEN
                                                     notifyee (COMMA notifyee)*
                                                 BRACKET_CLOSE
+                                            SEMI_COLON
 ;
 notifyee:                                   (emailNotifyee | pagerDutyNotifyee)
 ;

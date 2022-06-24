@@ -266,7 +266,7 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
                 "      {\n" +
                 "        url: 'https://x.com';\n" +
                 "      }\n" +
-                "    ]\n" +
+                "    ];\n" +
                 "  }\n" +
                 "}\n");
     }
@@ -355,7 +355,7 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
                 "      {\n" +
                 "        url: 'https://x.com';\n" +
                 "      }\n" +
-                "    ]\n" +
+                "    ];\n" +
                 "  }\n" +
                 "}\n");
     }

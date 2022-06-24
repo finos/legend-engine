@@ -379,7 +379,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      Email\n" +
                 "      {\n" +
                 "      }\n" +
-                "    ]\n" +
+                "    ];\n" +
                 "  }\n" +
                 "}\n", "PARSER error at [29:7-31:7]: Field 'address' is required");
 
@@ -416,7 +416,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "        address: 'x.y@z.com';\n" +
                 "        address: 'x.y@z.com';\n" +
                 "      }\n" +
-                "    ]\n" +
+                "    ];\n" +
                 "  }\n" +
                 "}\n", "PARSER error at [29:7-33:7]: Field 'address' should be specified only once");
     }
@@ -455,7 +455,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      PagerDuty\n" +
                 "      {\n" +
                 "      }\n" +
-                "    ]\n" +
+                "    ];\n" +
                 "  }\n" +
                 "}\n", "PARSER error at [29:7-31:7]: Field 'url' is required");
 
@@ -492,7 +492,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "        url: 'https://x.com';\n" +
                 "        url: 'https://x.com';\n" +
                 "      }\n" +
-                "    ]\n" +
+                "    ];\n" +
                 "  }\n" +
                 "}\n", "PARSER error at [29:7-33:7]: Field 'url' should be specified only once");
     }
@@ -2585,7 +2585,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      {\n" +
                 "        url: 'https://x.com';\n" +
                 "      }\n" +
-                "    ]\n" +
+                "    ];\n" +
                 "  }\n" +
                 "}\n");
     }

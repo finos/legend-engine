@@ -212,7 +212,7 @@ public class HelperPersistenceGrammarComposer
         return getTabString(indentLevel) + "notifyees:\n" +
                 getTabString(indentLevel) + "[\n" +
                 ListIterate.collect(notifyees, n -> n.acceptVisitor(visitor)).makeString(",\n") + "\n" +
-                getTabString(indentLevel) + "]\n";
+                getTabString(indentLevel) + "];\n";
     }
 
     // helper visitors for class hierarchies
