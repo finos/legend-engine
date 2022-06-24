@@ -15,7 +15,6 @@
 package org.finos.legend.engine.language.pure.dsl.persistence.grammar.to;
 
 import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarComposerCore;
@@ -26,6 +25,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connect
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistenceContext;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.ConnectionValue;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.PrimitiveTypeValue;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.ServiceParameter;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.EmailNotifyee;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.Notifier;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.Notifyee;
@@ -83,6 +85,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.SourceSpecifiesFromDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.ValidityDerivation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.ValidityDerivationVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.ServiceParameterValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.CronTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.ManualTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
@@ -103,12 +106,12 @@ public class HelperPersistenceGrammarComposer
 
     public static String renderPersistenceContext(PersistenceContext persistenceContext, int indentLevel, PureGrammarComposerContext context)
     {
-        return "PersistenceContext " + convertPath(persistenceContext.getPath() + "\n" +
+        return "PersistenceContext " + convertPath(persistenceContext.getPath()) + "\n" +
                 "{\n" +
                 renderPersistencePointer(persistenceContext.persistence, indentLevel) +
-                //TODO: ledav -- render service parameters
-                renderConnection(persistenceContext.sinkConnection, indentLevel, context) +
-                "}");
+                renderServiceParameters(persistenceContext.serviceParameters, indentLevel, context) +
+                (persistenceContext.sinkConnection == null ? "" : renderConnection(persistenceContext.sinkConnection, "sinkConnection", indentLevel, context)) +
+                "}";
     }
 
     private static String renderPersistencePointer(String persistencePath, int indentLevel)
@@ -116,18 +119,47 @@ public class HelperPersistenceGrammarComposer
         return getTabString(indentLevel) + "persistence: " + convertPath(persistencePath) + ";\n";
     }
 
-    private static String renderConnection(Connection connection, int indentLevel, PureGrammarComposerContext context)
+    private static String renderServiceParameters(List<ServiceParameter> serviceParameters, int indentLevel, PureGrammarComposerContext context)
+    {
+        return !serviceParameters.isEmpty()
+                ? getTabString(indentLevel) + "serviceParameters:\n" +
+                getTabString(indentLevel) + "[\n" +
+                ListIterate.collect(serviceParameters, sp -> renderServiceParameter(sp, indentLevel + 1, context)).makeString(",\n") +
+                getTabString(indentLevel) + "];\n"
+                : "";
+    }
+
+    private static String renderServiceParameter(ServiceParameter serviceParameter, int indentLevel, PureGrammarComposerContext context)
+    {
+        return getTabString(indentLevel) + serviceParameter.name + '=' + renderServiceParameterValue(serviceParameter.value, indentLevel, context);
+    }
+
+    private static String renderServiceParameterValue(ServiceParameterValue value, int indentLevel, PureGrammarComposerContext context)
+    {
+        if (value instanceof PrimitiveTypeValue)
+        {
+            return ((PrimitiveTypeValue) value).primitiveType.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build());
+        }
+        else if (value instanceof ConnectionValue)
+        {
+            return renderConnection(((ConnectionValue) value).connection, null, indentLevel, context);
+        }
+        throw new UnsupportedOperationException(
+                "Service parameter value '" + value + "' of class " + value.getClass() + " is not valid. Value must be a primitive type or a connection");
+    }
+
+    private static String renderConnection(Connection connection, String prefix, int indentLevel, PureGrammarComposerContext context)
     {
         DEPRECATED_PureGrammarComposerCore composerCore = DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build();
         if (connection instanceof ConnectionPointer)
         {
-            return getTabString(indentLevel) + "sinkConnection: " + PureGrammarComposerUtility.convertPath(connection.accept(composerCore)) + ";\n";
+            return (prefix == null ? "" : getTabString(indentLevel) + prefix + ": ") + PureGrammarComposerUtility.convertPath(connection.accept(composerCore)) + (prefix == null ? "" : ";\n");
         }
-        return getTabString(indentLevel) + "sinkConnection:\n" +
+        return (prefix == null ? "\n" : getTabString(indentLevel) + prefix + ":\n") +
                 getTabString(indentLevel) + "#{\n" +
                 getTabString(indentLevel + 1) + HelperConnectionGrammarComposer.getConnectionValueName(connection, composerCore.toContext()) + "\n" +
                 connection.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(composerCore).withIndentation(getTabSize(indentLevel + 1), true).build()) + "\n" +
-                getTabString(indentLevel) + "}#\n";
+                getTabString(indentLevel) + "}#" + (prefix == null ? "" : ";") + "\n";
     }
 
     public static String renderPersistence(Persistence persistence, int indentLevel, PureGrammarComposerContext context)
@@ -179,7 +211,7 @@ public class HelperPersistenceGrammarComposer
         NotifyeeComposer visitor = new NotifyeeComposer(indentLevel + 1);
         return getTabString(indentLevel) + "notifyees:\n" +
                 getTabString(indentLevel) + "[\n" +
-                Iterate.makeString(ListIterate.collect(notifyees, n -> n.acceptVisitor(visitor)), ",\n") + "\n" +
+                ListIterate.collect(notifyees, n -> n.acceptVisitor(visitor)).makeString(",\n") + "\n" +
                 getTabString(indentLevel) + "]\n";
     }
 

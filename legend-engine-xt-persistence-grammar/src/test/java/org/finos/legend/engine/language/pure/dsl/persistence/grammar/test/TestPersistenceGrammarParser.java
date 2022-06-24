@@ -125,7 +125,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      specification: LocalH2{};\n" +
                 "      auth: Test;\n" +
                 "    }\n" +
-                "  }#\n" +
+                "  }#;\n" +
                 "  sinkConnection: #{\n" +
                 "    RelationalDatabaseConnection {\n" +
                 "      store: test::TestDatabase;\n" +
@@ -133,7 +133,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "      specification: LocalH2{};\n" +
                 "      auth: Test;\n" +
                 "    }\n" +
-                "  }#\n" +
+                "  }#;\n" +
                 "}\n", "PARSER error at [3:1-23:1]: Field 'sinkConnection' should be specified only once");
     }
 
@@ -2475,12 +2475,15 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "PersistenceContext test::TestPersistenceContext \n" +
                 "{\n" +
                 "  persistence: test::TestPersistence;\n" +
-                "  serviceParameters: [\n" +
+                "  serviceParameters:\n" +
+                "  [\n" +
                 "    foo='hello',\n" +
                 "    bar=1,\n" +
                 "    con1=test::TestConnection,\n" +
-                "    con2=#{" +
-                "      RelationalDatabaseConnection {\n" +
+                "    con2=\n" +
+                "    #{" +
+                "      RelationalDatabaseConnection\n" +
+                "      {\n" +
                 "        store: test::TestDatabase;\n" +
                 "        type: H2;\n" +
                 "        specification: LocalH2{};\n" +
@@ -2489,13 +2492,14 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "    }#\n" +
                 "  ];\n" +
                 "  sinkConnection: #{\n" +
-                "    RelationalDatabaseConnection {\n" +
+                "    RelationalDatabaseConnection\n" +
+                "    {\n" +
                 "      store: test::TestDatabase;\n" +
                 "      type: H2;\n" +
                 "      specification: LocalH2{};\n" +
                 "      auth: Test;\n" +
                 "    }\n" +
-                "  }#\n" +
+                "  }#;\n" +
                 "}\n" +
                 "\n" +
                 "Persistence test::TestPersistence\n" +

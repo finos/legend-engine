@@ -28,7 +28,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connect
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistenceContext;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.ServiceParameter;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.ConnectionValue;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.PrimitiveTypeValue;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.ServiceParameter;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.EmailNotifyee;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.Notifier;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.Notifyee;
@@ -75,10 +77,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.SourceSpecifiesFromAndThruDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.SourceSpecifiesFromDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.ValidityDerivation;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.ServiceParameterValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.ManualTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.Collections;
@@ -128,6 +130,8 @@ public class PersistenceParseTreeWalker
     private PersistenceContext visitPersistenceContext(PersistenceParserGrammar.ContextContext ctx)
     {
         PersistenceContext context = new PersistenceContext();
+        context.name = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName().identifier());
+        context._package = ctx.qualifiedName().packagePath() == null ? "" : PureGrammarParserUtility.fromPath(ctx.qualifiedName().packagePath().identifier());
         context.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
         // persistence
@@ -136,7 +140,7 @@ public class PersistenceParseTreeWalker
 
         // service parameters
         PersistenceParserGrammar.ContextServiceParametersContext serviceParametersContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.contextServiceParameters(), "serviceParameters", context.sourceInformation);
-        context.serviceParameters = serviceParametersContext ==  null ? null : ListIterate.collect(serviceParametersContext.serviceParameter(), this::visitServiceParameter);
+        context.serviceParameters = serviceParametersContext ==  null ? Collections.emptyList() : ListIterate.collect(serviceParametersContext.serviceParameter(), this::visitServiceParameter);
 
         // sink connection
         PersistenceParserGrammar.ContextSinkConnectionContext sinkConnectionContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.contextSinkConnection(), "sinkConnection", context.sourceInformation);
@@ -163,7 +167,7 @@ public class PersistenceParseTreeWalker
         return serviceParameter;
     }
 
-    private Object visitServiceParameterValue(PersistenceParserGrammar.ServiceParameterContext ctx, SourceInformation sourceInformation)
+    private ServiceParameterValue visitServiceParameterValue(PersistenceParserGrammar.ServiceParameterContext ctx, SourceInformation sourceInformation)
     {
         if (ctx.primitiveValue() != null)
         {
@@ -171,23 +175,30 @@ public class PersistenceParseTreeWalker
         }
         else if (ctx.connectionPointer() != null)
         {
-            return visitConnectionPointer(ctx.connectionPointer());
+            ConnectionValue value = new ConnectionValue();
+            value.connection = visitConnectionPointer(ctx.connectionPointer());
+            return value;
         }
         else if (ctx.embeddedConnection() != null)
         {
-            return visitEmbeddedConnection(ctx.embeddedConnection());
+            ConnectionValue value = new ConnectionValue();
+            value.connection = visitEmbeddedConnection(ctx.embeddedConnection());
+            return value;
         }
         throw new EngineException("Unrecognized service parameter value", sourceInformation, EngineErrorType.PARSER);
     }
 
-    private ValueSpecification visitPrimitiveValue(PersistenceParserGrammar.PrimitiveValueContext ctx)
+    private ServiceParameterValue visitPrimitiveValue(PersistenceParserGrammar.PrimitiveValueContext ctx)
     {
         DomainParser parser = new DomainParser();
         int startLine = ctx.getStart().getLine();
         int lineOffset = walkerSourceInformation.getLineOffset() + startLine - 1;
         int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + ctx.getStart().getCharPositionInLine();
         ParseTreeWalkerSourceInformation serviceParamSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).build();
-        return parser.parsePrimitiveValue(ctx.getText(), serviceParamSourceInformation, null);
+
+        PrimitiveTypeValue primitiveTypeValue = new PrimitiveTypeValue();
+        primitiveTypeValue.primitiveType = parser.parsePrimitiveValue(ctx.getText(), serviceParamSourceInformation, null);
+        return primitiveTypeValue;
     }
 
     /**********

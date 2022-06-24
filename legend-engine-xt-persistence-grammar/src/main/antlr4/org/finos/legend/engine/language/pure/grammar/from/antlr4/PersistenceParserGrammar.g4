@@ -78,6 +78,7 @@ contextSinkConnection:                      CONTEXT_SINK_CONNECTION COLON
                                                     connectionPointer
                                                     | embeddedConnection
                                                 )
+                                            SEMI_COLON
 ;
 connectionPointer:                          qualifiedName
 ;

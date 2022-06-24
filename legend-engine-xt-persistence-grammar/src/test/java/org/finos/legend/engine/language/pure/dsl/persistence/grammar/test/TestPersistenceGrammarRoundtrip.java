@@ -20,7 +20,89 @@ import org.junit.Test;
 public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
 {
     @Test
-    public void permitOptionalFieldsToBeEmptyFlat()
+    public void persistenceContextPermitOptionalFieldsToBeEmpty()
+    {
+        test("###Persistence\n" +
+                "import test::*;\n" +
+                "PersistenceContext test::TestPersistenceContext\n" +
+                "{\n" +
+                "  persistence: test::TestPersistence;\n" +
+                "}\n");
+    }
+
+    @Test
+    public void persistenceContextSinkConnectionPointer()
+    {
+        test("###Persistence\n" +
+                "import test::*;\n" +
+                "PersistenceContext test::TestPersistenceContext\n" +
+                "{\n" +
+                "  persistence: test::TestPersistence;\n" +
+                "  serviceParameters:\n" +
+                "  [\n" +
+                "    foo='hello',\n" +
+                "    bar=1,\n" +
+                "    con1=test::TestConnection,\n" +
+                "    con2=\n" +
+                "    #{\n" +
+                "      RelationalDatabaseConnection\n" +
+                "      {\n" +
+                "        store: test::TestDatabase;\n" +
+                "        type: H2;\n" +
+                "        specification: LocalH2\n" +
+                "        {\n" +
+                "        };\n" +
+                "        auth: Test;\n" +
+                "      }\n" +
+                "    }#\n" +
+                "  ];\n" +
+                "  sinkConnection: test::TestConnection;\n" +
+                "}\n");
+    }
+
+    @Test
+    public void persistenceContextSinkConnectionEmbedded()
+    {
+        test("###Persistence\n" +
+                "import test::*;\n" +
+                "PersistenceContext test::TestPersistenceContext\n" +
+                "{\n" +
+                "  persistence: test::TestPersistence;\n" +
+                "  serviceParameters:\n" +
+                "  [\n" +
+                "    foo='hello',\n" +
+                "    bar=1,\n" +
+                "    con1=test::TestConnection,\n" +
+                "    con2=\n" +
+                "    #{\n" +
+                "      RelationalDatabaseConnection\n" +
+                "      {\n" +
+                "        store: test::TestDatabase;\n" +
+                "        type: H2;\n" +
+                "        specification: LocalH2\n" +
+                "        {\n" +
+                "        };\n" +
+                "        auth: Test;\n" +
+                "      }\n" +
+                "    }#\n" +
+                "  ];\n" +
+                "  sinkConnection:\n" +
+                "  #{\n" +
+                "    RelationalDatabaseConnection\n" +
+                "    {\n" +
+                "      store: test::TestDatabase;\n" +
+                "      type: H2;\n" +
+                "      specification: LocalH2\n" +
+                "      {\n" +
+                "      };\n" +
+                "      auth: Test;\n" +
+                "    }\n" +
+                "  }#;\n" +
+                "}\n");
+    }
+
+    @Test
+    public void persistencePermitOptionalFieldsToBeEmptyFlat()
     {
         test("###Persistence\n" +
                 "import test::*;\n" +
@@ -64,7 +146,7 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
     }
 
     @Test
-    public void permitOptionalFieldsToBeEmptyMultiFlat()
+    public void persistencePermitOptionalFieldsToBeEmptyMultiFlat()
     {
         test("###Persistence\n" +
                 "import test::*;\n" +

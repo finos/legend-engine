@@ -12,13 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service;
 
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 
-public class ServiceParameter
+public class ConnectionValue extends ServiceParameterValue
 {
-    public String name;
-    public Object value;
-    public SourceInformation sourceInformation;
+    public Connection connection;
 }

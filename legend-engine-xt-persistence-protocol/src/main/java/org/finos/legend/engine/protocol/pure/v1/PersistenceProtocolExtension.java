@@ -21,6 +21,7 @@ import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistenceContext;
 
 import java.util.List;
 import java.util.Map;
@@ -33,6 +34,7 @@ public class PersistenceProtocolExtension implements PureProtocolExtension
         return Lists.fixedSize.of(() -> Lists.fixedSize.of(
                 ProtocolSubTypeInfo.newBuilder(PackageableElement.class)
                         .withSubtype(Persistence.class, "persistence")
+                        .withSubtype(PersistenceContext.class, "persistenceContext")
                         .build()
         ));
     }
@@ -40,6 +42,9 @@ public class PersistenceProtocolExtension implements PureProtocolExtension
     @Override
     public Map<Class<? extends PackageableElement>, String> getExtraProtocolToClassifierPathMap()
     {
-        return Maps.mutable.with(Persistence.class, "meta::pure::persistence::metamodel::Persistence");
+        return Maps.mutable.with(
+                Persistence.class, "meta::pure::persistence::metamodel::Persistence",
+                PersistenceContext.class, "meta::pure::persistence::metamodel::PersistenceContext"
+        );
     }
 }

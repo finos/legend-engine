@@ -23,6 +23,7 @@ import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerConte
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistenceContext;
 
 import java.util.List;
 
@@ -43,6 +44,10 @@ public class PersistenceGrammarComposerExtension implements PureGrammarComposerE
                 {
                     return renderPersistence((Persistence) element, context);
                 }
+                else if (element instanceof PersistenceContext)
+                {
+                    return renderPersistenceContext((PersistenceContext) element, context);
+                }
                 return "/* Can't transform element '" + element.getPath() + "' in this section */";
             }).makeString("\n\n");
         });
@@ -61,5 +66,10 @@ public class PersistenceGrammarComposerExtension implements PureGrammarComposerE
     private static String renderPersistence(Persistence persistence, PureGrammarComposerContext context)
     {
         return HelperPersistenceGrammarComposer.renderPersistence(persistence, 1, context);
+    }
+
+    private static String renderPersistenceContext(PersistenceContext persistenceContext, PureGrammarComposerContext context)
+    {
+        return HelperPersistenceGrammarComposer.renderPersistenceContext(persistenceContext, 1, context);
     }
 }
