@@ -42,10 +42,10 @@ function meta::pure::extension::storeContractForSetImplementation(extensions: Ex
   
 function meta::pure::extension::storeContractFromStore(extensions: Extension[*], s: Store[1]):StoreContract[1]
 {
-  $s->match([
-        m : meta::pure::mapping::modelToModel::ModelStore[1] | meta::pure::mapping::modelToModel::contract::modelStoreContract()
-      ]->concatenate($extensions.graphFetch_getStoreContractFromStore)->toOneMany())
-  ->unique(|'for the store ' + $s->class().name->toOne() + '. For the extensions: [' + $extensions.type->joinStrings(',') + ']')
+  $extensions.availableStores
+    ->removeDuplicates(x|$x.id,{a,b|$a==$b})
+    ->filter(sc|$sc.supportsStore->eval($s))
+    ->unique(|'for the store ' + $s->class().name->toOne() + '. For the extensions: [' + $extensions.type->joinStrings(',') + ']');
 }
 
 function <<access.private>> meta::pure::extension::unique(storeContracts:StoreContract[*], message:Function<{->String[1]}>[1]):meta::pure::store::StoreContract[1]

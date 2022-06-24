@@ -201,23 +201,10 @@ function <<access.private>> meta::pure::router::clustering::resolveRootFromEmbed
                   ]);
 }
 
-function <<access.private>> meta::pure::graphFetch::routing::getStoreFromSet(s: SetImplementation[1], mapping: Mapping[1], extensions:meta::pure::extension::Extension[*]):Store[1]
-{
-   $s->match([
-      pure : meta::pure::mapping::modelToModel::PureInstanceSetImplementation[1]   | ^meta::pure::mapping::modelToModel::ModelStore(name='MODEL', package=::),
-      rsi  : meta::pure::mapping::EmbeddedSetImplementation[1] | ^meta::pure::router::store::embedded::EmbeddedStore(package=::),
-      o    : meta::pure::mapping::OperationSetImplementation[1] | let roots = $o->resolveInstanceSetImplementations($extensions);
-                                                                  $roots->match([
-                                                                     p : meta::pure::mapping::modelToModel::PureInstanceSetImplementation[*] | ^meta::pure::mapping::modelToModel::ModelStore(name='MODEL', package=::)
-                                                                  ]->concatenate($extensions.graphFetch_getStoreFromSet_Operation->map(e|$e->eval($mapping)))->toOneMany());
-   ]->concatenate($extensions.graphFetch_getStoreFromSet->map(e|$e->eval($mapping)))->toOneMany())
-}
-
-function meta::pure::router::analytics::getStoreFromSetImpl(set: SetImplementation[1], mapping:Mapping[1], extensions:meta::pure::extension::Extension[*]):meta::pure::store::Store[1]
+function meta::pure::router::routing::getStoreFromSet(set: SetImplementation[1], mapping: Mapping[1], extensions:meta::pure::extension::Extension[*]):Store[1]
 {
   $set->storeContractForSetImplementation($mapping, $extensions).second;
 }
-
 
 function meta::pure::router::routing::findMappingsFromProperty(p:AbstractProperty<Any>[1], mapping:Mapping[1], sourceMappings:SetImplementation[*], state:RoutingState[1], extensions:meta::pure::extension::Extension[*]):SetImplementation[*]
 {

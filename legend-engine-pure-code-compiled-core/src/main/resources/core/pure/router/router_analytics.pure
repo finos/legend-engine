@@ -133,7 +133,7 @@ function meta::pure::router::analytics::scanPropertyAccesses(vs:ValueSpecificati
 
 function meta::pure::router::analytics::getStore(setId: String[1], mapping:Mapping[1], extensions:meta::pure::extension::Extension[*]):String[1]
 {
-   $mapping.classMappingById($setId)->toOne()->getStoreFromSetImpl($mapping, $extensions)->elementToPath();
+   $mapping.classMappingById($setId)->toOne()->getStoreFromSet($mapping, $extensions)->elementToPath();
 }
 
 
