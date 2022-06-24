@@ -99,6 +99,17 @@ meta::pure::persistence::metamodel::trigger::CronTrigger extends Trigger
    year: String[1];
 }
 
+Class
+{doc.doc = 'A trigger that executes on a schedule specified by a pattern that can be encoded'}
+meta::pure::persistence::metamodel::trigger::BusinessDateTrigger extends Trigger
+{
+   pattern: String[1];
+   startDate: String[1];
+   maxDuration: Integer[1];
+   repeatCount: Integer[1];
+   repeatInterval: Integer[1];
+}
+
 /**********
  * persister
  **********/

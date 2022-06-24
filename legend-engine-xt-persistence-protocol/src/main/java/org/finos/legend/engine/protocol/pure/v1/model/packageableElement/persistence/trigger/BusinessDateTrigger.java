@@ -14,11 +14,19 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger;
 
-public interface TriggerVisitor<T>
+import java.util.Date;
+
+public class BusinessDateTrigger extends Trigger
 {
-    T visit(ManualTrigger val);
+    public String pattern;
+    public String startDate;
+    public Integer maxDuration;
+    public Integer repeatCount;
+    public Integer repeatInterval;
 
-    T visit(CronTrigger val);
-
-    T visit(BusinessDateTrigger val);
+    @Override
+    public <T> T accept(TriggerVisitor<T> visitor)
+    {
+        return visitor.visit(this);
+    }
 }

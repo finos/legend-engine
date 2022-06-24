@@ -82,6 +82,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.SourceSpecifiesFromDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.ValidityDerivation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.ValidityDerivationVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.BusinessDateTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.CronTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.ManualTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
@@ -175,6 +176,19 @@ public class HelperPersistenceGrammarComposer
         {
             //TODO: ledav -- implement cron trigger
             throw new UnsupportedOperationException("Cron trigger is not yet supported.");
+        }
+
+        @Override
+        public String visit(BusinessDateTrigger val)
+        {
+            return getTabString(indentLevel) + "trigger: BusinessDate\n" +
+                    getTabString(indentLevel) + "{\n" +
+                    getTabString(indentLevel + 1) + "pattern: '" + val.pattern + "';\n" +
+                    getTabString(indentLevel + 1) + "startDate: '" + val.startDate + "';\n" +
+                    getTabString(indentLevel + 1) + "maxDuration: '" + val.maxDuration + "';\n" +
+                    getTabString(indentLevel + 1) + "repeatCount: '" + val.repeatCount + "';\n" +
+                    getTabString(indentLevel + 1) + "repeatInterval: '" + val.repeatInterval + "';\n" +
+                    getTabString(indentLevel) + "}";
         }
     }
 

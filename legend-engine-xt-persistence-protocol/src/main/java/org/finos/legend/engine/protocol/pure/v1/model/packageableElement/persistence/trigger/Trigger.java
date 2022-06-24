@@ -21,7 +21,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
 @JsonSubTypes({
         @JsonSubTypes.Type(value = ManualTrigger.class, name = "manualTrigger"),
-        @JsonSubTypes.Type(value = CronTrigger.class, name = "cronTrigger")
+        @JsonSubTypes.Type(value = CronTrigger.class, name = "cronTrigger"),
+        @JsonSubTypes.Type(value = BusinessDateTrigger.class, name = "businessDateTrigger")
 })
 public abstract class Trigger
 {

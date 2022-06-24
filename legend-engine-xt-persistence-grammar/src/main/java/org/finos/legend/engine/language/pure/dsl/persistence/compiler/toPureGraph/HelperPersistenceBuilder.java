@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.dsl.persistence.compiler.toPureGraph;
 
+import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.impl.utility.Iterate;
@@ -81,6 +82,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.SourceSpecifiesFromDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.ValidityDerivation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.ValidityDerivationVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.BusinessDateTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.CronTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.ManualTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
@@ -105,6 +107,7 @@ import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_pers
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_notifier_Notifyee;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_targetshape_MultiFlatTargetPart;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_merge_MergeStrategy;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_trigger_BusinessDateTrigger_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_trigger_ManualTrigger_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_trigger_CronTrigger_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_BatchPersister_Impl;
@@ -319,6 +322,17 @@ public class HelperPersistenceBuilder
                     ._dayOfMonth(val.dayOfMonth)
                     ._month(val.month)
                     ._dayOfWeek(val.dayOfWeek);
+        }
+
+        @Override
+        public Root_meta_pure_persistence_metamodel_trigger_Trigger visit(BusinessDateTrigger val)
+        {
+            return new Root_meta_pure_persistence_metamodel_trigger_BusinessDateTrigger_Impl("")
+                    ._pattern(val.pattern)
+                    ._startDate(val.startDate)
+                    ._maxDuration(val.maxDuration)
+                    ._repeatCount(val.repeatCount)
+                    ._repeatInterval(val.repeatInterval);
         }
     }
 
