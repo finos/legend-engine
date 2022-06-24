@@ -31,7 +31,13 @@ function meta::external::store::service::contract::serviceStoreStoreContract():S
      supports = meta::external::store::service::contract::supports_FunctionExpression_1__Boolean_1_,
      planExecution = meta::external::store::service::contract::planExecution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__Extension_MANY__DebugContext_1__ExecutionNode_1_,
 
-     supportsSetImplementation = s:SetImplementation[1]|$s->instanceOf(RootServiceInstanceSetImplementation) || $s->instanceOf(EmbeddedServiceStoreSetImplementation)
+     supportsSetImplementation = s:SetImplementation[1]|$s->instanceOf(RootServiceInstanceSetImplementation) || $s->instanceOf(EmbeddedServiceStoreSetImplementation),
+     resolveStoreFromSetImplementation = s:InstanceSetImplementation[1]|$s->match(
+                                                                            [
+                                                                              r : RootServiceInstanceSetImplementation[1] | $r.serviceStore(),
+                                                                              e : EmbeddedServiceStoreSetImplementation[1] | ^meta::pure::router::store::embedded::EmbeddedStore(package=::)
+                                                                            ]
+                                                                        )
    )
 }
 

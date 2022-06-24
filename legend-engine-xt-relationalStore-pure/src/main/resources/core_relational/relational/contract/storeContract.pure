@@ -35,7 +35,8 @@ function meta::relational::contract::relationalStoreContract():StoreContract[1]
      planExecution = meta::relational::contract::planExecution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__Extension_MANY__DebugContext_1__ExecutionNode_1_,
      localGetterOverrideMapped = meta::relational::contract::getterOverrideMapped_Any_1__PropertyMapping_1__Any_MANY_,
 
-     supportsSetImplementation = s:SetImplementation[1]|$s->instanceOf(RelationalInstanceSetImplementation)
+     supportsSetImplementation = s:SetImplementation[1]|$s->instanceOf(RelationalInstanceSetImplementation),   
+     resolveStoreFromSetImplementation = s:InstanceSetImplementation[1]|$s->meta::relational::contract::getStore()
    )
 }
 
@@ -102,12 +103,18 @@ function meta::relational::contract::getterOverrideMapped(o:Any[1], propertyMapp
    $o->processProperty($propertyMapping.property);
 }
 
-function meta::relational::contract::relationalEmbeddedStoreContract():StoreContract[1]
+function meta::relational::contract::getStore(r:InstanceSetImplementation[1]):Store[1]
 {
-   ^StoreContract
-   (
-     id = 'relationalEmbeddedStore',
-     supports=meta::relational::contract::supports_FunctionExpression_1__Boolean_1_,
-     supportsSetImplementation = s:SetImplementation[1]|$s->instanceOf(EmbeddedRelationalInstanceSetImplementation)
-   )
+  $r->match(
+    [
+      r:RootRelationalInstanceSetImplementation[1]|
+          let mainTableAlias = $r.mainTableAlias;
+          if ($mainTableAlias.database->isEmpty(),
+            |$r.mainTable.schema.database,
+            |$mainTableAlias.database->toOne()
+          );,
+      e:EmbeddedRelationalInstanceSetImplementation[1]|
+        ^meta::pure::router::store::embedded::EmbeddedStore(package=::)
+    ]
+  )  
 }
