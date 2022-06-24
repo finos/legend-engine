@@ -70,23 +70,6 @@ function meta::relational::extension::relationalExtension(type:String[1]) : meta
                                                                                                       let databases = $rr->getResolvedStore($mapping)->removeDuplicates();
                                                                                assert($databases->size() == 1, | 'Found ' + $databases->size()->toString() + ' stores while trying to resolve Operation Mappings. 1 unique store is required for routing. Stores found were ' + $databases.name->joinStrings('[',',', ']'));
                                                                                $mapping.resolveStore($databases->at(0));},
-      cluster_cluster = {openVariables:Map<String, List<Any>>[1] |
-                                                            {t:TDSRoutedValueSpecification[1] | ^ClusterResponse(cluster = ^ClusteredValueSpecification(
-                                                                               genericType  = $t.genericType,
-                                                                               multiplicity = $t.multiplicity,
-                                                                               s = meta::relational::contract::relationalStoreContract(),
-                                                                               store = $t.store,
-                                                                               mapping = $t.mapping,
-                                                                               runtime = $t.runtime,
-                                                                               openVars = $openVariables,
-                                                                               val = $t,
-                                                                               exeCtx = $t.executionContext,
-                                                                               executable = true
-                                                                               ))
-                                                            }
-                        },
-      cluster_resolveInstanceSetImplementations = {r : Extension[*] | {r:meta::relational::mapping::RootRelationalInstanceSetImplementation[1] | $r}},
-      cluster_resolveRootFromEmbedded = {r:meta::relational::mapping::RootRelationalInstanceSetImplementation[1]|$r},
       graphFetch_getStoreFromSet = mapping:Mapping[1] | {rsi : meta::relational::mapping::RootRelationalInstanceSetImplementation[1] | $mapping.resolveStore($rsi->getResolvedStore($mapping)->toOne())},
       graphFetch_getStoreFromSet_Operation = mapping:Mapping[1] | {rr : meta::relational::mapping::RootRelationalInstanceSetImplementation[*] | let databases = $rr->getResolvedStore($mapping); 
                                                                                                                        assert($databases->size() == 1, | 'Found ' + $databases->size()->toString() + ' stores while trying to resolve Operation Mappings. 1 unique store is required for routing. Stores found were ' + $databases.name->joinStrings('[',',', ']'));

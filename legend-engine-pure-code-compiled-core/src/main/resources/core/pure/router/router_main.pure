@@ -50,20 +50,20 @@ Class meta::pure::router::Void extends ValueSpecification
 Class meta::pure::router::ExtendedRoutedValueSpecification extends RoutedValueSpecification
 {
    id:String[1];
-   sets:SetImplementation[*];
-   processedChainSets:SetImplementation[*];
    runtime:Runtime[1];
    mapping:Mapping[1];
    executionContext:ExecutionContext[1];
+   sets:SetImplementation[*];
+   processedChainSets:SetImplementation[*];
    propertyMapping:meta::pure::mapping::PropertyMapping[*];
 }
 
 Class meta::pure::router::TDSRoutedValueSpecification extends RoutedValueSpecification
 {
    id:String[1];
-   store:meta::pure::store::Store[1];
    runtime:Runtime[1];
    mapping:Mapping[1];
+   store:meta::pure::store::Store[1];
    executionContext:ExecutionContext[1];
 }
 

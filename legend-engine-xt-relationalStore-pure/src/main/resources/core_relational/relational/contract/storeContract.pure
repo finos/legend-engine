@@ -36,7 +36,8 @@ function meta::relational::contract::relationalStoreContract():StoreContract[1]
      localGetterOverrideMapped = meta::relational::contract::getterOverrideMapped_Any_1__PropertyMapping_1__Any_MANY_,
 
      supportsSetImplementation = s:SetImplementation[1]|$s->instanceOf(RelationalInstanceSetImplementation),   
-     resolveStoreFromSetImplementation = s:InstanceSetImplementation[1]|$s->meta::relational::contract::getStore()
+     resolveStoreFromSetImplementation = s:InstanceSetImplementation[1]|$s->meta::relational::contract::getStore(),
+     supportsNativeJoinAmongElements = true
    )
 }
 
