@@ -61,6 +61,83 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     }
 
     /**********
+     * persistence context
+     **********/
+
+    @Test
+    public void persistenceContextPersistence()
+    {
+        test("###Persistence\n" +
+                "\n" +
+                "PersistenceContext test::TestPersistenceContext \n" +
+                "{\n" +
+                "}\n", "PARSER error at [3:1-5:1]: Field 'persistence' is required");
+
+        test("###Persistence\n" +
+                "\n" +
+                "PersistenceContext test::TestPersistenceContext \n" +
+                "{\n" +
+                "  persistence: test::TestPersistence;\n" +
+                "  persistence: test::TestPersistence;\n" +
+                "}\n", "PARSER error at [3:1-7:1]: Field 'persistence' should be specified only once");
+    }
+
+    @Test
+    public void persistenceContextServiceParameters()
+    {
+        test("###Persistence\n" +
+                "\n" +
+                "PersistenceContext test::TestPersistenceContext \n" +
+                "{\n" +
+                "  persistence: test::TestPersistence;\n" +
+                "}\n");
+
+        test("###Persistence\n" +
+                "\n" +
+                "PersistenceContext test::TestPersistenceContext \n" +
+                "{\n" +
+                "  persistence: test::TestPersistence;\n" +
+                "  serviceParameters: [foo='hello',bar=1];\n" +
+                "  serviceParameters: [foo='hello',bar=1];\n" +
+                "}\n", "PARSER error at [3:1-8:1]: Field 'serviceParameters' should be specified only once");
+    }
+
+    @Test
+    public void persistenceContextSinkConnection()
+    {
+        test("###Persistence\n" +
+                "\n" +
+                "PersistenceContext test::TestPersistenceContext \n" +
+                "{\n" +
+                "  persistence: test::TestPersistence;\n" +
+                "}\n");
+
+        test("###Persistence\n" +
+                "\n" +
+                "PersistenceContext test::TestPersistenceContext \n" +
+                "{\n" +
+                "  persistence: test::TestPersistence;\n" +
+                "  serviceParameters: [foo='hello',bar=1];\n" +
+                "  sinkConnection: #{\n" +
+                "    RelationalDatabaseConnection {\n" +
+                "      store: test::TestDatabase;\n" +
+                "      type: H2;\n" +
+                "      specification: LocalH2{};\n" +
+                "      auth: Test;\n" +
+                "    }\n" +
+                "  }#\n" +
+                "  sinkConnection: #{\n" +
+                "    RelationalDatabaseConnection {\n" +
+                "      store: test::TestDatabase;\n" +
+                "      type: H2;\n" +
+                "      specification: LocalH2{};\n" +
+                "      auth: Test;\n" +
+                "    }\n" +
+                "  }#\n" +
+                "}\n", "PARSER error at [3:1-23:1]: Field 'sinkConnection' should be specified only once");
+    }
+
+    /**********
      * persistence
      **********/
 
@@ -87,6 +164,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "    }\n" +
                 "  }\n" +
                 "}\n", "PARSER error at [3:1-20:1]: Field 'doc' is required");
+
         test("###Persistence\n" +
                 "\n" +
                 "Persistence test::TestPersistence \n" +
@@ -134,6 +212,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "    }\n" +
                 "  }\n" +
                 "}\n", "PARSER error at [3:1-20:1]: Field 'service' is required");
+
         test("###Persistence\n" +
                 "\n" +
                 "Persistence test::TestPersistence \n" +
@@ -185,6 +264,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "    }\n" +
                 "  }\n" +
                 "}\n", "PARSER error at [3:1-20:1]: Field 'trigger' is required");
+
         test("###Persistence\n" +
                 "\n" +
                 "Persistence test::TestPersistence \n" +
@@ -431,6 +511,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "  {\n" +
                 "  }\n" +
                 "}\n", "PARSER error at [8:14-10:3]: Field 'sink' is required");
+
         test("###Persistence\n" +
                 "\n" +
                 "Persistence test::TestPersistence \n" +
@@ -469,6 +550,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "    }\n" +
                 "  }\n" +
                 "}\n", "PARSER error at [10:11-12:5]: Field 'database' is required");
+
         test("###Persistence\n" +
                 "\n" +
                 "Persistence test::TestPersistence \n" +
@@ -504,6 +586,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "    }\n" +
                 "  }\n" +
                 "}\n", "PARSER error at [10:11-12:5]: Field 'binding' is required");
+
         test("###Persistence\n" +
                 "\n" +
                 "Persistence test::TestPersistence \n" +
@@ -546,6 +629,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "    }\n" +
                 "  }\n" +
                 "}\n", "PARSER error at [8:14-20:3]: Field 'sink' is required");
+
         test("###Persistence\n" +
                 "\n" +
                 "Persistence test::TestPersistence \n" +
@@ -820,6 +904,32 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "    {\n" +
                 "      targetName: 'TestDataset1';\n" +
                 "      modelClass: test::ModelClass;\n" +
+                "    }\n" +
+                "    ingestMode: AppendOnly\n" +
+                "    {\n" +
+                "      auditing: None;\n" +
+                "      filterDuplicates: false;\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n");
+
+        test("###Persistence\n" +
+                "\n" +
+                "Persistence test::TestPersistence \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "      database: test::Database;\n" +
+                "    }\n" +
+                "    targetShape: Flat\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ModelClass;\n" +
                 "      deduplicationStrategy: None;\n" +
                 "      deduplicationStrategy: None;\n" +
                 "    }\n" +
@@ -835,6 +945,32 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     @Test
     public void flatPartitionFields()
     {
+        test("###Persistence\n" +
+                "\n" +
+                "Persistence test::TestPersistence \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "      database: test::Database;\n" +
+                "    }\n" +
+                "    targetShape: Flat\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "    }\n" +
+                "    ingestMode: AppendOnly\n" +
+                "    {\n" +
+                "      auditing: None;\n" +
+                "      filterDuplicates: false;\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n");
+
         test("###Persistence\n" +
                 "\n" +
                 "Persistence test::TestPersistence \n" +
@@ -902,6 +1038,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "    }\n" +
                 "  }\n" +
                 "}\n", "PARSER error at [14:18-24:5]: Field 'modelClass' is required");
+
         test("###Persistence\n" +
                 "\n" +
                 "Persistence test::TestPersistence \n" +
@@ -971,6 +1108,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "    }\n" +
                 "  }\n" +
                 "}\n", "PARSER error at [14:18-24:5]: Field 'transactionScope' is required");
+
         test("###Persistence\n" +
                 "\n" +
                 "Persistence test::TestPersistence \n" +
@@ -1029,6 +1167,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "    }\n" +
                 "  }\n" +
                 "}\n", "PARSER error at [14:18-18:5]: Field 'parts' is required");
+
         test("###Persistence\n" +
                 "\n" +
                 "Persistence test::TestPersistence \n" +
@@ -2332,6 +2471,32 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
         test("###Persistence\n" +
                 "\n" +
                 "import test::*;\n" +
+                "\n" +
+                "PersistenceContext test::TestPersistenceContext \n" +
+                "{\n" +
+                "  persistence: test::TestPersistence;\n" +
+                "  serviceParameters: [\n" +
+                "    foo='hello',\n" +
+                "    bar=1,\n" +
+                "    con1=test::TestConnection,\n" +
+                "    con2=#{" +
+                "      RelationalDatabaseConnection {\n" +
+                "        store: test::TestDatabase;\n" +
+                "        type: H2;\n" +
+                "        specification: LocalH2{};\n" +
+                "        auth: Test;\n" +
+                "      }\n" +
+                "    }#\n" +
+                "  ];\n" +
+                "  sinkConnection: #{\n" +
+                "    RelationalDatabaseConnection {\n" +
+                "      store: test::TestDatabase;\n" +
+                "      type: H2;\n" +
+                "      specification: LocalH2{};\n" +
+                "      auth: Test;\n" +
+                "    }\n" +
+                "  }#\n" +
+                "}\n" +
                 "\n" +
                 "Persistence test::TestPersistence\n" +
                 "{\n" +

@@ -49,11 +49,11 @@ public class ParserErrorListener extends BaseErrorListener
             List<String> expectedSymbols = dereferenceTokens(e.getExpectedTokens().toList());
             if (expectedSymbols.isEmpty())
             {
-                msg = "Unexpected token";
+                msg = "Unexpected token '" + e.getOffendingToken().getText() + "'";
             }
             else
             {
-                msg = "Unexpected token. Valid alternatives: " + expectedSymbols;
+                msg = "Unexpected token '" + e.getOffendingToken().getText() + "'. Valid alternatives: " + expectedSymbols;
             }
         }
         else if (e == null || e.getOffendingToken() == null)

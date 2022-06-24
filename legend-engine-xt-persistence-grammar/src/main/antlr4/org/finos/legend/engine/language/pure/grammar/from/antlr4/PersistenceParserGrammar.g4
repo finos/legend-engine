@@ -62,7 +62,7 @@ contextPersistence:                         CONTEXT_PERSISTENCE COLON qualifiedN
 ;
 contextServiceParameters:                   CONTEXT_SERVICE_PARAMETERS COLON
                                                 BRACKET_OPEN
-                                                    serviceParameter (COMMA serviceParameter)*
+                                                    (serviceParameter (COMMA serviceParameter)*)?
                                                 BRACKET_CLOSE
                                             SEMI_COLON
 ;
@@ -79,7 +79,7 @@ contextSinkConnection:                      CONTEXT_SINK_CONNECTION COLON
                                                     | embeddedConnection
                                                 )
 ;
-connectionPointer:                          qualifiedName SEMI_COLON
+connectionPointer:                          qualifiedName
 ;
 embeddedConnection:                         ISLAND_OPEN (embeddedConnectionContent)*
 ;
@@ -110,6 +110,9 @@ trigger:                                    PERSISTENCE_TRIGGER COLON
 ;
 service:                                    PERSISTENCE_SERVICE COLON qualifiedName SEMI_COLON
 ;
+
+// -------------------------------------- PERSISTER --------------------------------------
+
 persister:                                  PERSISTENCE_PERSISTER COLON
                                                 (
                                                     streamingPersister
@@ -132,6 +135,9 @@ batchPersister:                             PERSISTER_BATCH
                                                     )*
                                                 BRACE_CLOSE
 ;
+
+// -------------------------------------- NOTIFIER --------------------------------------
+
 notifier:                                   PERSISTENCE_NOTIFIER COLON
                                                 BRACE_OPEN
                                                     (notifyees)*
@@ -158,6 +164,9 @@ pagerDutyNotifyee:                          NOTIFYEE_PAGER_DUTY
 ;
 pagerDutyUrl:                               NOTIFYEE_PAGER_DUTY_URL COLON STRING SEMI_COLON
 ;
+
+// -------------------------------------- SINK --------------------------------------
+
 persisterSink:                              PERSISTER_SINK COLON
                                                 (
                                                     relationalSink
@@ -178,6 +187,9 @@ sinkDatabase:                               SINK_DATABASE COLON qualifiedName SE
 ;
 sinkBinding:                                SINK_BINDING COLON qualifiedName SEMI_COLON
 ;
+
+// -------------------------------------- TARGET SHAPE --------------------------------------
+
 targetShape:                                PERSISTER_TARGET_SHAPE COLON
                                                 (
                                                     multiTargetShape
@@ -267,6 +279,9 @@ duplicateCountDeduplicationStrategy:        DEDUPLICATION_DUPLICATE_COUNT
 ;
 deduplicationDuplicateCountName:            DEDUPLICATION_DUPLICATE_COUNT_NAME COLON STRING SEMI_COLON
 ;
+
+// -------------------------------------- INGEST MODE --------------------------------------
+
 ingestMode:                                 PERSISTER_INGEST_MODE COLON
                                                 (
                                                     nontemporalSnapshot
