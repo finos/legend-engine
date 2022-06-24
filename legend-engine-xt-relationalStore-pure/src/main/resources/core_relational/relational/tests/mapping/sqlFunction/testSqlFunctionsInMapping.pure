@@ -1106,7 +1106,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::date::test
     assertEquals('select cast( parseDateTime("root".stringDateFormat,\'yyyy-MM-dd\') as date) as "date" from dataTable as "root"',$s);
 }
 
-function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::sqlFunction::date::testBase64H2():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::sqlFunction::base64::testBase64H2():Boolean[1]
 {
     let result = execute(
       |SqlFunctionDemo.all()->project([s | $s.encodeBase64Result, s | $s.decodeBase64Result], ['res1', 'res2']),
@@ -1116,7 +1116,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::sqlFunc
     assertEquals('select legend_h2_extension_base64_encode("root".alphaNumericString) as "res1", legend_h2_extension_base64_decode(legend_h2_extension_base64_encode("root".alphaNumericString)) as "res2" from dataTable as "root"', $result->sqlRemoveFormatting());
 }
 
-function <<test.Test>> meta::relational::tests::mapping::sqlFunction::date::testBase64MemSQL():Boolean[1]
+function <<test.Test>> meta::relational::tests::mapping::sqlFunction::base64::testBase64MemSQL():Boolean[1]
 {
     let s = toSQLString(
       |SqlFunctionDemo.all()->project([s | $s.encodeBase64Result, s | $s.decodeBase64Result], ['res1', 'res2']),
