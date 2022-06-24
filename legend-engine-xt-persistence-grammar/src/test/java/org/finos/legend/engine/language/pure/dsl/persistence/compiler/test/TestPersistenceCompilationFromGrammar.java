@@ -137,7 +137,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [5:1-27:1]: Persistence refers to a service 'test::Service' that is not defined");
+                "}\n", "COMPILATION error at [5:1-27:1]: Service 'test::Service' is not defined");
     }
 
     @Test
