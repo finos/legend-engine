@@ -65,18 +65,7 @@ function <<access.private>> meta::external::store::service::extension::serviceSt
                                                                                               let paramMap = $sets->resolveParamMapForChainProcessing($inScopeVars, noDebug());
                                                                                               let xStorePropInScope = $inScopeVars->keyValues()->filter(kv | $kv.second.values->size() == 1 && $kv.second.values->toOne()->instanceOf(AbstractProperty)).second.values->cast(@AbstractProperty<Any>);
                                                                                               $xStorePropInScope->map(targetProp | $targetProp->resolveSourcePropertyFromTargetProperty($sets->cast(@meta::pure::mapping::modelToModel::PureInstanceSetImplementation)))->querySupportsBatching($paramMap, $rsi);}},
-      executionPlan_print_connectionToString =
-                                {extensions:meta::pure::extension::Extension[*]|
-                                       [
-                                           s:ServiceStoreConnection[1]| serviceStoreConnectionToString($s);
-                                       ]},
-      executionPlan_print_planNodeToString =
-                                {space : String[1], extensions:meta::pure::extension::Extension[*]|
-                                       [
-                                          s:RestServiceExecutionNode[1] | serviceStoreExecutionNodeToString($s, $space, $extensions);,
-                                          sp:ServiceParametersResolutionExecutionNode[1] | serviceParametersResolutionExecutionNodeToString($sp, $space, $extensions);,
-                                          l:LimitExecutionNode[1] | limitExecutionNodeToString($l, $space, $extensions);
-                                       ]},
+
       graphExtension_calculateSourceTree = {tree:RootGraphFetchTree<Any>[1] |
          {rsi: RootServiceInstanceSetImplementation[1] |
             $tree;
@@ -90,11 +79,6 @@ function <<access.private>> meta::external::store::service::extension::serviceSt
          sq: meta::pure::mapping::StoreQuery[1], ext: RoutedValueSpecification[0..1], clusteredTree: ClusteredGraphFetchTree[1], orderedPaths: String[*], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], enableConstraints: Boolean[1], checked: Boolean[1], extensions: Extension[*], debug: DebugContext[1] |
          {s : ServiceStore[1] | meta::external::store::service::executionPlan::generation::planRootGraphFetchExecutionServiceStore($sq, $ext, $clusteredTree, $orderedPaths, $mapping, $runtime, $exeCtx, $enableConstraints, $checked, $extensions, $debug)}
       },
-      graphFetch_getStoreFromSet = mapping:Mapping[1] | {rsi : RootServiceInstanceSetImplementation[1] | $mapping.resolveStore($rsi.serviceStore())},
-      graphFetch_getStoreFromSet_Operation = mapping:Mapping[1] | {rsi : RootServiceInstanceSetImplementation[*] | let serviceStores = $rsi.serviceStore()->removeDuplicates();
-                                                                                                                   assert($serviceStores->size() == 1, | 'Found ' + $serviceStores->size()->toString() + ' stores while trying to resolve Operation Mappings. 1 unique store is required for routing. Stores found were ' + $serviceStores.name->joinStrings('[',',', ']'));
-                                                                                                                   $mapping.resolveStore($serviceStores->at(0));},
-      graphFetch_getStoreContractFromStore = db : ServiceStore[1] | meta::external::store::service::contract::serviceStoreStoreContract(),
       java_graphFetch_inMemory_applyTypeFilter = {
          set:InstanceSetImplementation[1], src:Code[1], withoutFilter:Code[1..*], context:GenerationContext[1], debug:DebugContext[1] | [
             rsi: RootServiceInstanceSetImplementation[1] | $withoutFilter,

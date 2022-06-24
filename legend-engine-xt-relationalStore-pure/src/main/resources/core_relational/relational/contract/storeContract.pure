@@ -24,6 +24,7 @@ import meta::relational::runtime::*;
 import meta::relational::metamodel::*;
 import meta::relational::functions::pureToSqlQuery::*;
 import meta::pure::router::routing::*;
+import meta::pure::executionPlan::toString::*;
 
 function meta::relational::contract::relationalStoreContract():StoreContract[1]
 {
@@ -65,7 +66,27 @@ function meta::relational::contract::relationalStoreContract():StoreContract[1]
       ),
      supportsNativeJoinAmongElements = true,
 
-     supportsSetImplementation = s:SetImplementation[1]|$s->instanceOf(RelationalInstanceSetImplementation),   
+     printPlanNodeToString = {space : String[1], extensions:meta::pure::extension::Extension[*]|
+                                       [
+                                          cpt:CreateAndPopulateTempTableExecutionNode[1]|'CreateAndPopulateTempTable\n'+$space+'('+header($cpt, $space, $extensions)+'\n'+$space+'  inputVarNames = ' + $cpt.inputVarNames->joinStrings('[', ', ', ']') + '\n' + $space + '  tempTableName = ' + $cpt.tempTableName + '\n' +$space+'  tempTableColumns = '+$cpt.tempTableColumnMetaData->map(col|'('+$col.column.label+', '+if($col.column.dataType->isEmpty(),|'""',| $col.column.dataType->toOne()->meta::relational::metamodel::datatype::dataTypeToSqlText()) + if($col.identifierForGetter->isEmpty(), | '', | ', ' + $col.identifierForGetter->toOne() + ', ' + if($col.parametersForGetter->isEmpty(),|'[""]',| $col.parametersForGetter->toOne()->keyValues()->map(param| '(' + $param.first + ', ' + $param.second->toString() + ')')->joinStrings('[', ', ', ']') )) + ' )')->joinStrings('[',', ',']') +'\n' + $space + '  connection = '+$cpt.connection ->connectionToString($extensions) +'\n' + $cpt.implementation->printImplementation('implementation', $space+'  ', $extensions) + $space+')\n',
+                                          r:SQLExecutionNode[1]|'SQL\n'+$space+'('+header($r, $space, $extensions)+'\n'+$space+'  resultColumns = '+$r.resultColumns->map(rc|'('+$rc.label+', '+if($rc.dataType->isEmpty(),|'""',| $rc.dataType->toOne()->meta::relational::metamodel::datatype::dataTypeToSqlText())+')')->joinStrings('[',', ',']')+'\n'+$space+'  sql = '+$r.sqlQuery+'\n'+ $space + '  connection = '+$r.connection ->connectionToString($extensions) +'\n'+$r.implementation->printImplementation('implementation', $space+'  ', $extensions)+ $space+')\n',
+                                          r:RelationalInstantiationExecutionNode[1]|'Relational\n'+$space+'('+header($r, $space, $extensions)+'\n'+$space+'  resultColumns = '+$r.executionNodes->at(0)->cast(@meta::relational::mapping::SQLExecutionNode).resultColumns->map(rc|'('+$rc.label+', '+if($rc.dataType->isEmpty(),|'""',| $rc.dataType->toOne()->meta::relational::metamodel::datatype::dataTypeToSqlText())+')')->joinStrings('[',', ',']')+'\n'+$space+'  sql = '+$r.executionNodes->at(0)->cast(@meta::relational::mapping::SQLExecutionNode).sqlQuery+'\n'+ $space + '  connection = '+$r.executionNodes->at(0)->cast(@meta::relational::mapping::SQLExecutionNode).connection ->connectionToString($extensions) +'\n'+$r.implementation->printImplementation('implementation', $space+'  ', $extensions)+ $space+')\n',
+                                          rb:RelationalBlockExecutionNode[1]|'RelationalBlockExecutionNode\n'+ $space+ '(' + header($rb, $space, $extensions) + $rb->childrenToString($space+'  ', $extensions) +' \n' +$space+ ')\n';
+                                       ]},
+      printConnectionToString = {extensions:meta::pure::extension::Extension[*]|
+                                       [
+                                           testDatabase:TestDatabaseConnection[1]|databaseConnectionTypeToString($testDatabase),
+                                           db:DatabaseConnection[1]|  databaseConnectionTypeToString($db)
+                                       ]},
+      printTypeToString = {space : String[1], extensions:meta::pure::extension::Extension[*]|
+                                       [
+                                           tdsResultType:TDSResultType[1]|'TDS['+$tdsResultType.tdsColumns->map(c|'('+$c.name+', '+$c.type->toOne()->elementToPath()+ ', '+ if($c.sourceDataType->isEmpty(),|'""',| $c.sourceDataType->toOne()->cast(@meta::relational::metamodel::datatype::DataType)->meta::relational::metamodel::datatype::dataTypeToSqlText()) + if($c.documentation->isEmpty(),|', ""',|', "'+$c.documentation->toOne()+'"')+if($c.enumMappingId->isEmpty(),|'',|', '+$c.enumMappingId->toOne())+')')->joinStrings(', ')+']',
+                                           relationResultType : RelationResultType[1]|'Relation[name='+$relationResultType.relationName+', type='+$relationResultType.relationType->toString()+', schema='+$relationResultType.schemaName+', database='+$relationResultType.database+$relationResultType.columns->map(c | '('+$c.name+','+$c.type->meta::relational::metamodel::datatype::dataTypeToSqlText()+')')->joinStrings(', columns=[', ', ', ']')+']'
+                                      ]},
+
+
+     supportsSetImplementation = s:SetImplementation[1]|$s->instanceOf(RelationalInstanceSetImplementation),
+     supportsStore = s:Store[1]|$s->instanceOf(Database),
      resolveStoreFromSetImplementation = s:InstanceSetImplementation[1]|$s->meta::relational::contract::getStore(),
 
      executeStoreQuery = meta::relational::contract::execution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_1__Runtime_1__ExecutionContext_1__Extension_MANY__DebugContext_1__Result_1_,

@@ -26,6 +26,7 @@ function meta::pure::mapping::modelToModel::contract::modelStoreContract():Store
      localGetterOverrideNonMapped = meta::pure::mapping::modelToModel::contract::getterOverrideNonMapped_Any_1__Property_1__Any_MANY_,
 
      supportsSetImplementation = s:InstanceSetImplementation[1]|$s->instanceOf(PureInstanceSetImplementation),
+     supportsStore = s:Store[1]|$s->instanceOf(meta::pure::mapping::modelToModel::ModelStore),
      resolveStoreFromSetImplementation = s:InstanceSetImplementation[1]|^meta::pure::mapping::modelToModel::ModelStore(name='MODEL', package=::),
      supportsNativeJoinAmongElements = false
    )

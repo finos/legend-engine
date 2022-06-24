@@ -101,7 +101,7 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
               let replacedSets = $otherStorePairs->map(p |
                  let setId = $p.first;
                  let storeId = $p.second;
-                 $mapping.classMappingById($setId)->toOne()->createCrossSetImplementation($mapping, $mapping.classMappingById($targetStorePairs.first->at(0))->toOne()->meta::pure::router::analytics::getStoreFromSetImpl($mapping, $extensions), $setId + '_gen_replaced_' +  toString($otherStorePairs->indexOf($p)), $crossPropertyAccesses->filter(x | $x.sourceSetId == $setId)->removeDuplicates(), $crossPropertyAccesses->filter(x | $x.targetSetId == $setId)->removeDuplicates(), $allPropertyAccesses->filter(x | $x.sourceSetId == $setId));                       
+                 $mapping.classMappingById($setId)->toOne()->createCrossSetImplementation($mapping, $mapping.classMappingById($targetStorePairs.first->at(0))->toOne()->meta::pure::router::routing::getStoreFromSet($mapping, $extensions), $setId + '_gen_replaced_' +  toString($otherStorePairs->indexOf($p)), $crossPropertyAccesses->filter(x | $x.sourceSetId == $setId)->removeDuplicates(), $crossPropertyAccesses->filter(x | $x.targetSetId == $setId)->removeDuplicates(), $allPropertyAccesses->filter(x | $x.sourceSetId == $setId));                       
               );
                 
               let modifiedSets = $targetStorePairs->map(p |
