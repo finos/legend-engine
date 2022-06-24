@@ -71,7 +71,7 @@ jobs:
           DOCKER_USERNAME: finos
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
           MAVEN_OPTS: -Xmx4g
-        run: mvn javadoc:javadoc deploy -P sonar,docker-snapshot
+        run: mvn javadoc:javadoc deploy -P docker-snapshot
       - name: Upload Test Results
         if: always()
         uses: actions/upload-artifact@v3
