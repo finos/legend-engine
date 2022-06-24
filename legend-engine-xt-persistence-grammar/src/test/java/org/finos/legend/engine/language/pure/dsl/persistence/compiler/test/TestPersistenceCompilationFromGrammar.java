@@ -156,8 +156,8 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "###Service\n" +
                 "Service test::Service \n" +
                 "{\n" +
-                "  pattern : 'test';\n" +
-                "  documentation : 'test';\n" +
+                "  pattern: 'test';\n" +
+                "  documentation: 'test';\n" +
                 "  autoActivateUpdates: true;\n" +
                 "  execution: Single\n" +
                 "  {\n" +
@@ -851,7 +851,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      {\n" +
                 "        url: 'https://x.com';\n" +
                 "      }\n" +
-                "    ]\n" +
+                "    ];\n" +
                 "  }\n" +
                 "}", "COMPILATION error at [62:1-129:1]: Error in 'org::dxl::ZooPersistence': Property 'deleted' must exist in class 'org::dxl::Person'");
     }
@@ -1301,7 +1301,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                         "      {\n" +
                         "        url: 'https://x.com';\n" +
                         "      }\n" +
-                        "    ]\n" +
+                        "    ];\n" +
                         "  }\n" +
                         "}");
 
