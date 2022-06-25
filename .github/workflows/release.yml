@@ -18,7 +18,7 @@ env:
   CI_DEPLOY_USERNAME: ${{ secrets.CI_DEPLOY_USERNAME }}
   CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
   CI_GPG_PASSPHRASE: ${{ secrets.CI_GPG_PASSPHRASE }}
-  DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+  DOCKER_USERNAME: finos
   DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
   MAVEN_OPTS: -Xmx4g
 
@@ -67,4 +67,4 @@ jobs:
         run: mvn -B -DpreparationGoals=clean release:prepare -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ env.DEVELOPMENT_VERSION }} -P release
 
       - name: Perform release
-        run: mvn -B release:perform -P release, docker
+        run: mvn -B release:perform -P release,docker

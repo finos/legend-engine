@@ -24,10 +24,11 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPo
 import org.finos.legend.engine.protocol.pure.v1.model.test.AtomicTestId;
 import org.finos.legend.engine.testable.extension.TestRunner;
 import org.finos.legend.engine.testable.extension.TestableRunnerExtensionLoader;
-import org.finos.legend.engine.testable.model.DoTestsInput;
-import org.finos.legend.engine.testable.model.DoTestsResult;
-import org.finos.legend.engine.testable.model.DoTestsTestableInput;
+import org.finos.legend.engine.testable.model.RunTestsInput;
+import org.finos.legend.engine.testable.model.RunTestsResult;
+import org.finos.legend.engine.testable.model.RunTestsTestableInput;
 import org.finos.legend.pure.generated.Root_meta_pure_test_AtomicTest;
+import org.finos.legend.pure.generated.Root_meta_pure_test_Test;
 import org.finos.legend.pure.generated.Root_meta_pure_test_TestSuite;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.test.Test;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.test.Testable;
@@ -47,16 +48,21 @@ public class TestableRunner
         this.modelManager = modelManager;
     }
 
-    public DoTestsResult doTests(DoTestsInput input, MutableList<CommonProfile> profiles)
+    public RunTestsResult doTests(RunTestsInput input, MutableList<CommonProfile> profiles)
     {
         Pair<PureModelContextData, PureModel> modelAndData = modelManager.loadModelAndData(input.model, input.model instanceof PureModelContextPointer ? ((PureModelContextPointer) input.model).serializer.version : null, profiles, null);
         PureModel pureModel = modelAndData.getTwo();
         PureModelContextData data = modelAndData.getOne();
 
-        DoTestsResult doTestsResult = new DoTestsResult();
-        for (DoTestsTestableInput testableInput : input.testables)
+        RunTestsResult runTestsResult = new RunTestsResult();
+        for (RunTestsTestableInput testableInput : input.testables)
         {
-            Testable testable = (Testable) pureModel.getPackageableElement(testableInput.testable);
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement packageableElement = pureModel.getPackageableElement(testableInput.testable);
+            if (!(packageableElement instanceof Testable))
+            {
+                throw new UnsupportedOperationException("Element '" + testableInput.testable + "' is not a testable element");
+            }
+            Testable testable = (Testable) packageableElement;
             List<AtomicTestId> testIds = testableInput.unitTestIds;
             List<String> atomicTestIds = ListIterate.collect(testIds, id -> id.atomicTestId);
             Map<String, List<AtomicTestId>> testIdsBySuiteId = testIds.stream().collect(groupingBy(testId -> testId.testSuiteId));
@@ -64,9 +70,10 @@ public class TestableRunner
             TestRunner testRunner = TestableRunnerExtensionLoader.forTestable(testable);
             for (Test test : testable._tests())
             {
+                // We run all testIds if no `unitTestIds` are provided
                 if ((test instanceof Root_meta_pure_test_AtomicTest) && (testIds.isEmpty() || atomicTestIds.contains(test._id())))
                 {
-                    doTestsResult.results.add(testRunner.executeAtomicTest((Root_meta_pure_test_AtomicTest) test, pureModel, data));
+                    runTestsResult.results.add(testRunner.executeAtomicTest((Root_meta_pure_test_AtomicTest) test, pureModel, data));
                 }
                 if ((test instanceof Root_meta_pure_test_TestSuite) && (testIds.isEmpty() || testIdsBySuiteId.get(test._id()) != null))
                 {
@@ -86,7 +93,7 @@ public class TestableRunner
                     {
                         updatedTestIds = testIdsBySuiteId.get(test._id());
                     }
-                    doTestsResult.results.addAll(testRunner.executeTestSuite(testSuite, updatedTestIds, pureModel, data));
+                    runTestsResult.results.addAll(testRunner.executeTestSuite(testSuite, updatedTestIds, pureModel, data));
                 }
             }
         }

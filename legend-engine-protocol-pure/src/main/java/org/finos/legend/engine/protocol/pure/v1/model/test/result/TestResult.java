@@ -15,8 +15,10 @@
 package org.finos.legend.engine.protocol.pure.v1.model.test.result;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.test.AtomicTestId;
 
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
 public class TestResult
 {
     @JsonProperty(required = true)

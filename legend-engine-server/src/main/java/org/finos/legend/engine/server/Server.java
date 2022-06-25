@@ -31,6 +31,7 @@ import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
+import org.finos.legend.engine.analytics.mapping.model.coverage.api.ModelCoverageAnalytics;
 import org.finos.legend.engine.application.query.api.ApplicationQuery;
 import org.finos.legend.engine.application.query.configuration.ApplicationQueryConfiguration;
 import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProviderConfiguration;
@@ -65,6 +66,8 @@ import org.finos.legend.engine.plan.execution.stores.relational.plugin.Relationa
 import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStore;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
+import org.finos.legend.engine.api.analytics.DataSpaceAnalytics;
+import org.finos.legend.engine.api.analytics.DiagramAnalytics;
 import org.finos.legend.engine.query.graphQL.api.debug.GraphQLDebug;
 import org.finos.legend.engine.query.graphQL.api.execute.GraphQLExecute;
 import org.finos.legend.engine.query.graphQL.api.grammar.GraphQLGrammar;
@@ -85,6 +88,7 @@ import org.finos.legend.engine.shared.core.url.EngineUrlStreamHandlerFactory;
 import org.finos.legend.engine.shared.core.vault.Vault;
 import org.finos.legend.engine.shared.core.vault.VaultConfiguration;
 import org.finos.legend.engine.shared.core.vault.VaultFactory;
+import org.finos.legend.engine.testable.api.Testable;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.server.pac4j.LegendPac4jBundle;
 import org.finos.legend.server.shared.bundles.ChainFixingFilterHandler;
@@ -178,6 +182,9 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         environment.jersey().register(new TransformRelationalOperationElementGrammarToJson());
         environment.jersey().register(new TransformRelationalOperationElementJsonToGrammar());
 
+        // Model Coverage Analytics
+        environment.jersey().register(new ModelCoverageAnalytics(modelManager));
+
         // Relational
         environment.jersey().register(new SchemaExplorationApi(modelManager, relationalStoreExecutor));
 
@@ -217,6 +224,13 @@ public class Server<T extends ServerConfiguration> extends Application<T>
 
         // External Format
         environment.jersey().register(new ExternalFormats(modelManager));
+
+        // Analytics
+        environment.jersey().register(new DiagramAnalytics(modelManager));
+        environment.jersey().register(new DataSpaceAnalytics(modelManager));
+
+        // Testable
+        environment.jersey().register(new Testable(modelManager));
 
         enableCors(environment);
     }

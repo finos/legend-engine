@@ -1,0 +1,280 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Diagram
+Diagram meta::pure::metamodel::diagram::Diagram_Diagram(width=0.0, height=0.0)
+{
+    TypeView cview_8(
+        type=meta::pure::metamodel::diagram::Rectangle,
+        position=(1016.15243, 45.17080),
+        width=116.56152,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_4(
+        type=meta::pure::metamodel::diagram::PropertyHolderView,
+        position=(-26.49956, 155.19429),
+        width=176.48145,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_1(
+        type=meta::pure::metamodel::diagram::Diagram,
+        position=(491.71670, 131.49764),
+        width=245.77930,
+        height=86.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_7(
+        type=meta::pure::metamodel::diagram::PropertyView,
+        position=(133.52522, 329.64518),
+        width=96.47656,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_3(
+        type=meta::pure::metamodel::diagram::AssociationView,
+        position=(265.25871, 327.54943),
+        width=172.79861,
+        height=62.09000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_6(
+        type=meta::pure::metamodel::diagram::RelationshipView,
+        position=(83.75230, 4.66970),
+        width=178.09814,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_9(
+        type=meta::pure::metamodel::diagram::Point,
+        position=(843.94303, -107.26034),
+        width=89.68457,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_10(
+        type=meta::pure::metamodel::diagram::PositionedRectangle,
+        position=(843.53081, -8.04542),
+        width=138.68750,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_11(
+        type=meta::pure::metamodel::diagram::ClassView,
+        position=(837.51678, 124.59680),
+        width=193.39502,
+        height=100.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_5(
+        type=meta::pure::metamodel::diagram::GeneralizationView,
+        position=(234.63196, 154.76181),
+        width=129.81641,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    GeneralizationView gview_0(
+        source=cview_3,
+        target=cview_4,
+        points=[(266.85937,377.18954),(60.24163,375.30495),(61.74116,177.19429)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_1(
+        source=cview_4,
+        target=cview_6,
+        points=[(61.74116,177.19429),(64.85937,114.18954),(172.80137,40.66970)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_2(
+        source=cview_5,
+        target=cview_6,
+        points=[(299.54016,169.76181),(298.85937,110.18954),(172.80137,40.66970)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_3(
+        source=cview_7,
+        target=cview_4,
+        points=[(181.76350,344.64518),(87.85937,345.18954),(88.91057,192.02850)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_4(
+        source=cview_11,
+        target=cview_10,
+        points=[(934.21429,174.59680),(912.87456,6.95458)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_0(
+        property=meta::pure::metamodel::diagram::Diagram.associationViews,
+        source=cview_1,
+        target=cview_3
+,        points=[(503.35719,206.34083),(393.01236,207.40184),(351.65801,358.59443)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_1(
+        property=meta::pure::metamodel::diagram::Diagram.generalizationViews,
+        source=cview_1,
+        target=cview_5
+,        points=[(506.54022,170.26656),(299.54016,169.76181)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_2(
+        property=meta::pure::metamodel::diagram::Diagram.propertyViews,
+        source=cview_1,
+        target=cview_7
+,        points=[(505.47921,195.73075),(234.85937,198.18954),(181.76350,344.64518)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_3(
+        property=meta::pure::metamodel::diagram::RelationshipView.path,
+        source=cview_6,
+        target=cview_9
+,        points=[(172.80137,40.66970),(172.85937,-84.81046),(888.78531,-78.26034)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_4(
+        property=meta::pure::metamodel::diagram::PositionedRectangle.rectangle,
+        source=cview_10,
+        target=cview_8
+,        points=[(912.87456,6.95458),(1074.43319,74.17080)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_5(
+        property=meta::pure::metamodel::diagram::PositionedRectangle.position,
+        source=cview_10,
+        target=cview_9
+,        points=[(912.87456,6.95458),(888.78531,-78.26034)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_6(
+        property=meta::pure::metamodel::diagram::Diagram.classViews,
+        source=cview_1,
+        target=cview_11
+,        points=[(614.60635,174.49764),(934.21429,174.59680)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+}

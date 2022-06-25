@@ -1,0 +1,249 @@
+{
+  "_type": "data",
+  "elements": [
+    {
+      "_type": "Enumeration",
+      "name": "Family",
+      "package": "model::animal",
+      "values": [
+        {
+          "value": "MAMMAL"
+        },
+        {
+          "value": "REPTILE"
+        }
+      ]
+    },
+    {
+      "_type": "Enumeration",
+      "name": "BlankEnum",
+      "package": "model",
+      "values": []
+    },
+    {
+      "_type": "class",
+      "name": "Animal",
+      "package": "model::animal",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "family",
+          "type": "model::animal::Family"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 0
+          },
+          "name": "children",
+          "type": "model::animal::Animal"
+        }
+      ],
+      "stereotypes": [
+        {
+          "profile": "typemodifiers",
+          "value": "abstract"
+        }
+      ]
+    },
+    {
+      "_type": "class",
+      "name": "Animal2",
+      "package": "model::animal",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "name",
+          "type": "String"
+        }
+      ],
+      "qualifiedProperties": [
+        {
+          "body": [
+            {
+              "_type": "string",
+              "multiplicity": {
+                "lowerBound": 1,
+                "upperBound": 1
+              },
+              "sourceInformation": {
+                "endColumn": 15,
+                "endLine": 61,
+                "sourceId": "",
+                "startColumn": 14,
+                "startLine": 61
+              },
+              "values": [
+                ""
+              ]
+            }
+          ],
+          "name": "nameCAP",
+          "parameters": [],
+          "returnMultiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "returnType": "String"
+        }
+      ],
+      "stereotypes": [
+        {
+          "profile": "typemodifiers",
+          "value": "abstract"
+        }
+      ]
+    },
+    {
+      "_type": "class",
+      "name": "BlankClass",
+      "package": "model"
+    },
+    {
+      "_type": "class",
+      "name": "Mammal",
+      "package": "model::animal::mammal",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "noOfLegs",
+          "taggedValues": [
+            {
+              "tag": {
+                "profile": "doc",
+                "value": "doc"
+              },
+              "value": "(TBD)"
+            }
+          ],
+          "type": "String"
+        }
+      ],
+      "superTypes": [
+        "model::animal::Animal"
+      ],
+      "taggedValues": [
+        {
+          "tag": {
+            "profile": "doc",
+            "value": "doc"
+          },
+          "value": "a warm-blooded vertebrate animal of a class that is distinguished by the possession of hair or fur"
+        }
+      ]
+    },
+    {
+      "_type": "class",
+      "name": "Reptile",
+      "package": "model::animal::reptile",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "hasFin",
+          "type": "Boolean"
+        }
+      ],
+      "superTypes": [
+        "model::animal::Animal",
+        "model::animal::Animal2"
+      ]
+    },
+    {
+      "_type": "diagram",
+      "classViews": [
+        {
+          "class": "model::animal::mammal::Mammal",
+          "id": "641a0336-d4b5-418c-b656-2f52461264e2",
+          "position": {
+            "x": 427,
+            "y": 210
+          },
+          "rectangle": {
+            "height": 58,
+            "width": 237.798828125
+          }
+        },
+        {
+          "class": "model::animal::reptile::Reptile",
+          "id": "b92253d8-0389-4c7d-b5d2-3cdc3bb1ad98",
+          "position": {
+            "x": 787,
+            "y": 216
+          },
+          "rectangle": {
+            "height": 44,
+            "width": 120.84765625
+          }
+        },
+        {
+          "class": "model::animal::Animal",
+          "id": "61591f9b-5d3b-4afe-9da2-e3ede4c56fe6",
+          "position": {
+            "x": 674.423828125,
+            "y": 47
+          },
+          "rectangle": {
+            "height": 72,
+            "width": 119.62841796875
+          }
+        }
+      ],
+      "generalizationViews": [
+        {
+          "line": {
+            "points": [
+              {
+                "x": 545.8994140625,
+                "y": 239
+              },
+              {
+                "x": 728.608154296875,
+                "y": 76
+              }
+            ]
+          },
+          "sourceView": "641a0336-d4b5-418c-b656-2f52461264e2",
+          "targetView": "61591f9b-5d3b-4afe-9da2-e3ede4c56fe6"
+        },
+        {
+          "line": {
+            "points": [
+              {
+                "x": 847.423828125,
+                "y": 238
+              },
+              {
+                "x": 728.608154296875,
+                "y": 76
+              }
+            ]
+          },
+          "sourceView": "b92253d8-0389-4c7d-b5d2-3cdc3bb1ad98",
+          "targetView": "61591f9b-5d3b-4afe-9da2-e3ede4c56fe6"
+        }
+      ],
+      "name": "AnimalDiagram",
+      "package": "model::animal",
+      "propertyViews": []
+    },
+    {
+      "_type": "diagram",
+      "classViews": [],
+      "generalizationViews": [],
+      "name": "BlankDiagram",
+      "package": "model",
+      "propertyViews": []
+    }
+  ]
+}

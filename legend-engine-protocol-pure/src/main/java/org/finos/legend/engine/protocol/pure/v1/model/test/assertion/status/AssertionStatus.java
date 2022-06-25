@@ -15,7 +15,9 @@
 package org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
 public abstract class AssertionStatus
 {
     @JsonProperty(required = true)

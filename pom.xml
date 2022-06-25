@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>3.6.3-SNAPSHOT</version>
+    <version>3.7.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -88,8 +88,22 @@
         <module>legend-engine-xt-morphir</module>
         <module>legend-engine-xt-morphir-pure</module>
 
+        <module>legend-engine-xt-text-grammar</module>
+        <module>legend-engine-xt-text-compiler</module>
+        <module>legend-engine-xt-text-protocol</module>
+        <module>legend-engine-xt-text-pure</module>
 
+        <module>legend-engine-xt-diagram-grammar</module>
+        <module>legend-engine-xt-diagram-compiler</module>
+        <module>legend-engine-xt-diagram-protocol</module>
+        <module>legend-engine-xt-diagram-pure</module>
+        <module>legend-engine-xt-diagram-api</module>
 
+        <module>legend-engine-xt-data-space-grammar</module>
+        <module>legend-engine-xt-data-space-compiler</module>
+        <module>legend-engine-xt-data-space-protocol</module>
+        <module>legend-engine-xt-data-space-pure</module>
+        <module>legend-engine-xt-data-space-api</module>
 
         <module>legend-engine-pure-code-compiled-core</module>
         <module>legend-engine-pure-code-compiled-core-external-shared</module>
@@ -113,9 +127,6 @@
         <module>legend-engine-language-pure-compiler-api</module>
         <module>legend-engine-language-pure-grammar</module>
         <module>legend-engine-language-pure-grammar-api</module>
-        <module>legend-engine-language-pure-dsl-diagram</module>
-        <module>legend-engine-language-pure-dsl-text</module>
-        <module>legend-engine-language-pure-dsl-data-space</module>
         <module>legend-engine-language-pure-dsl-generation</module>
         <module>legend-engine-language-pure-dsl-service</module>
         <module>legend-engine-language-pure-dsl-service-generation</module>
@@ -139,6 +150,8 @@
         <module>legend-engine-extensions-collection-execution</module>
         <module>legend-engine-extensions-collection-generation</module>
         <module>legend-engine-testable</module>
+        <module>legend-engine-xt-analytics-mapping-api</module>
+        <module>legend-engine-xt-analytics-mapping-pure</module>
     </modules>
 
     <properties>
@@ -822,6 +835,79 @@
 
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-text-compiler</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-text-grammar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-text-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-text-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-diagram-compiler</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-diagram-grammar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-diagram-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-diagram-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-diagram-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-data-space-compiler</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-data-space-grammar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-data-space-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-data-space-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-data-space-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-query-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -937,21 +1023,6 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-server</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-language-pure-dsl-diagram</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-language-pure-dsl-text</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-language-pure-dsl-data-space</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

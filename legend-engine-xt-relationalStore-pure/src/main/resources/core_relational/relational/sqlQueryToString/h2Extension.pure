@@ -57,6 +57,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::g
     dynaFnToSql('datePart',               $allStates,            ^ToSql(format='cast(truncate(%s) as date)')),
     dynaFnToSql('dayOfMonth',             $allStates,            ^ToSql(format='DAY_OF_MONTH(%s)')),
     dynaFnToSql('dayOfWeekNumber',        $allStates,            ^ToSql(format='DAY_OF_WEEK(%s)')),
+    dynaFnToSql('decodeBase64',           $allStates,            ^ToSql(format='legend_h2_extension_base64_decode(%s)')),
+    dynaFnToSql('encodeBase64',           $allStates,            ^ToSql(format='legend_h2_extension_base64_encode(%s)')),
     dynaFnToSql('firstDayOfMonth',        $allStates,            ^ToSql(format='dateadd(DAY, -(dayofmonth(%s) - 1), %s)', transform={p:String[1] | $p->repeat(2)})),
     dynaFnToSql('firstDayOfQuarter',      $allStates,            ^ToSql(format='dateadd(MONTH, 3 * quarter(%s) - 3, dateadd(DAY, -(dayofyear(%s) - 1), %s))', transform={p:String[1] | $p->repeat(3)})),
     dynaFnToSql('firstDayOfThisMonth',    $allStates,            ^ToSql(format='dateadd(DAY, -(dayofmonth(current_date()) - 1), current_date())')),

@@ -113,8 +113,10 @@ associationProjection:                          PROJECTS qualifiedName LESS_THAN
 
 profile:                                        PROFILE qualifiedName
                                                     BRACE_OPEN
-                                                        stereotypeDefinitions?
-                                                        tagDefinitions?
+                                                        (
+                                                            stereotypeDefinitions
+                                                            | tagDefinitions
+                                                        )*
                                                     BRACE_CLOSE
 ;
 stereotypeDefinitions:                          (STEREOTYPES COLON BRACKET_OPEN (identifier (COMMA identifier)*)? BRACKET_CLOSE SEMI_COLON)

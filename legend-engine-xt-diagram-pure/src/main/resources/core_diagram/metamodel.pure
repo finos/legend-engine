@@ -1,0 +1,72 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::metamodel::diagram::*;
+
+Class meta::pure::metamodel::diagram::Diagram extends PackageableElement
+{
+  classViews: ClassView[*];
+  associationViews: AssociationView[*];
+  generalizationViews: GeneralizationView[*];
+  propertyViews: PropertyView[*];
+}
+
+Class meta::pure::metamodel::diagram::AssociationView extends PropertyHolderView {
+  association: Association[1];
+}
+
+Class meta::pure::metamodel::diagram::PropertyView extends PropertyHolderView {
+}
+
+Class meta::pure::metamodel::diagram::GeneralizationView extends RelationshipView {
+}
+
+Class meta::pure::metamodel::diagram::PropertyHolderView extends RelationshipView {
+  property: AbstractProperty<Any>[1];
+}
+
+Class meta::pure::metamodel::diagram::RelationshipView {
+  from: RelationshipViewEnd[1];
+  to: RelationshipViewEnd[1];
+  path: Point[*];
+}
+
+Class meta::pure::metamodel::diagram::RelationshipViewEnd {
+  classView: ClassView[1];
+}
+
+Class meta::pure::metamodel::diagram::ClassView extends PositionedRectangle {
+  class: Class<Any>[1];
+  id: String[1];
+  hideProperties: Boolean[0..1];
+  hideTaggedValues: Boolean[0..1];
+  hideStereotypes: Boolean[0..1];
+}
+
+// Geometry
+
+Class meta::pure::metamodel::diagram::Point {
+  x: Number[1];
+  y: Number[1];
+}
+
+Class meta::pure::metamodel::diagram::Rectangle {
+  width: Number[1];
+  height: Number[1];
+}
+
+Class meta::pure::metamodel::diagram::PositionedRectangle {
+  position: Point[1];
+  rectangle: Rectangle[1];
+}

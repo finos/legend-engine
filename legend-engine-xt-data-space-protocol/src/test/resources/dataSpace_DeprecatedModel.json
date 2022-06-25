@@ -1,0 +1,44 @@
+{
+  "_type": "data",
+  "version": "v1_0_0",
+  "elements": [
+    {
+      "_type": "dataSpace",
+      "name": "TestDataSpace",
+      "package": "test::model",
+      "artifactId": "test-artifact",
+      "groupId": "org.finos.legend.test",
+      "versionId": "1.0.9",
+      "executionContexts": [
+        {
+          "name": "INT",
+          "description": "some description 1",
+          "mapping": {
+            "type": "MAPPING",
+            "path": "test::model::TestMapping"
+          },
+          "defaultRuntime": {
+            "type": "RUNTIME",
+            "path": "test::model::TestRuntime"
+          }
+        }
+      ],
+      "defaultExecutionContext": "INT",
+      "description": "some description 2",
+      "featuredDiagrams": [
+        {
+          "type": "DIAGRAM",
+          "path": "test::model::TestDiagram1"
+        },
+        {
+          "type": "DIAGRAM",
+          "path": "test::model::TestDiagram2"
+        }
+      ],
+      "supportInfo": {
+        "_type": "email",
+        "address": "testEmail@test.org"
+      }
+    }
+  ]
+}
