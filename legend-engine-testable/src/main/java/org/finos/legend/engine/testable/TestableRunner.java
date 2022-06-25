@@ -98,6 +98,6 @@ public class TestableRunner
             }
         }
 
-        return doTestsResult;
+        return runTestsResult;
     }
 }
