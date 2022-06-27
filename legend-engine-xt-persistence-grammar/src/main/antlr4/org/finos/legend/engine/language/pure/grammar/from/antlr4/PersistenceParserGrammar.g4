@@ -12,7 +12,7 @@ options
 identifier:                                 VALID_STRING | STRING
                                             | ALL | LET | ALL_VERSIONS | ALL_VERSIONS_IN_RANGE      // from M3Parser
                                             | TRUE | FALSE | IMPORT | DERIVATION | NONE | DATE_TIME
-                                            | CONTEXT | CONTEXT_PERSISTENCE | CONTEXT_SERVICE_PARAMETERS | CONTEXT_SINK_CONNECTION
+                                            | CONTEXT | CONTEXT_PERSISTENCE | CONTEXT_PLATFORM | CONTEXT_SERVICE_PARAMETERS | CONTEXT_SINK_CONNECTION
                                             | PERSISTENCE | PERSISTENCE_DOC | PERSISTENCE_TRIGGER | PERSISTENCE_SERVICE | PERSISTENCE_PERSISTER | PERSISTENCE_NOTIFIER
                                             | TRIGGER_MANUAL | TRIGGER_CRON
                                             | PERSISTER_STREAMING | PERSISTER_BATCH | PERSISTER_SINK | PERSISTER_TARGET_SHAPE | PERSISTER_INGEST_MODE
@@ -53,12 +53,23 @@ context:                                    CONTEXT qualifiedName
                                                 BRACE_OPEN
                                                     (
                                                         contextPersistence
+                                                        | contextPlatform
                                                         | contextServiceParameters
                                                         | contextSinkConnection
                                                     )*
                                                 BRACE_CLOSE
 ;
 contextPersistence:                         CONTEXT_PERSISTENCE COLON qualifiedName SEMI_COLON
+;
+contextPlatform:                            CONTEXT_PLATFORM COLON specification SEMI_COLON
+;
+specification:                              specificationType (specificationValueBody)?
+;
+specificationType:                           VALID_STRING
+;
+specificationValueBody:                     BRACE_OPEN (specificationValue)*
+;
+specificationValue:                         SPECIFICATION_BRACE_OPEN | SPECIFICATION_CONTENT | SPECIFICATION_BRACE_CLOSE
 ;
 contextServiceParameters:                   CONTEXT_SERVICE_PARAMETERS COLON
                                                 BRACKET_OPEN

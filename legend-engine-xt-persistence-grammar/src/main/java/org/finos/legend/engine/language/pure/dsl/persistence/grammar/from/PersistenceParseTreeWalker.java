@@ -16,6 +16,7 @@ package org.finos.legend.engine.language.pure.dsl.persistence.grammar.from;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.language.pure.dsl.persistence.grammar.from.context.PersistencePlatformSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.PersistenceParserGrammar;
@@ -28,6 +29,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connect
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistenceContext;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistencePlatform;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistencePlatformDefault;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.ConnectionValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.PrimitiveTypeValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.ServiceParameter;
@@ -81,6 +84,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.ManualTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.Collections;
@@ -138,6 +142,10 @@ public class PersistenceParseTreeWalker
         PersistenceParserGrammar.ContextPersistenceContext persistenceContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.contextPersistence(), "persistence", context.sourceInformation);
         context.persistence = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : persistenceContext.qualifiedName().packagePath().identifier(), persistenceContext.qualifiedName().identifier());
 
+        // persistence platform
+        PersistenceParserGrammar.ContextPlatformContext platformContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.contextPlatform(), "platform", context.sourceInformation);
+        context.platform = platformContext == null ? new PersistencePlatformDefault() : visitPersistencePlatform(platformContext);
+
         // service parameters
         PersistenceParserGrammar.ContextServiceParametersContext serviceParametersContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.contextServiceParameters(), "serviceParameters", context.sourceInformation);
         context.serviceParameters = serviceParametersContext ==  null ? Collections.emptyList() : ListIterate.collect(serviceParametersContext.serviceParameter(), this::visitServiceParameter);
@@ -147,6 +155,38 @@ public class PersistenceParseTreeWalker
         context.sinkConnection = sinkConnectionContext == null ? null : visitConnection(sinkConnectionContext, walkerSourceInformation.getSourceInformation(sinkConnectionContext));
 
         return context;
+    }
+
+    /**********
+     * persistence platform
+     **********/
+
+    private PersistencePlatform visitPersistencePlatform(PersistenceParserGrammar.ContextPlatformContext ctx)
+    {
+        if (ctx == null)
+        {
+            return new PersistencePlatformDefault();
+        }
+
+        PersistenceParserGrammar.SpecificationContext specification = ctx.specification();
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        PersistencePlatformSourceCode code = new PersistencePlatformSourceCode(
+                ctx.specification().getText(),
+                specification.specificationType().getText(),
+                sourceInformation,
+                ParseTreeWalkerSourceInformation.offset(walkerSourceInformation, ctx.getStart())
+        );
+
+        List<IPersistenceParserExtension> extensions = IPersistenceParserExtension.getExtensions();
+        PersistencePlatform platform = IPersistenceParserExtension.process(code, ListIterate.flatCollect(extensions, IPersistenceParserExtension::getExtraPersistencePlatformParsers));
+
+        if (platform == null)
+        {
+            throw new EngineException("Unsupported syntax", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+        }
+
+        return platform;
     }
 
     /**********

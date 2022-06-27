@@ -12,12 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence;
 
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistencePlatform;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistencePlatformVisitor;
-
-public class InMemoryPersistencePlatform extends PersistencePlatform
+public class PersistencePlatformDefault extends PersistencePlatform
 {
     @Override
     public <T> T accept(PersistencePlatformVisitor<T> visitor)

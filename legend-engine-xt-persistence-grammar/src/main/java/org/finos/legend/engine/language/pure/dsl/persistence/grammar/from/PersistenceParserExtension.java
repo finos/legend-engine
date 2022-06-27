@@ -18,6 +18,7 @@ import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.eclipse.collections.impl.factory.Lists;
+import org.finos.legend.engine.language.pure.dsl.persistence.grammar.from.context.PersistencePlatformSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.ParserErrorListener;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserContext;
 import org.finos.legend.engine.language.pure.grammar.from.SectionSourceCode;
@@ -25,15 +26,15 @@ import org.finos.legend.engine.language.pure.grammar.from.SourceCodeParserInfo;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.PersistenceLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.PersistenceParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.connection.ConnectionParser;
-import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParser;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistencePlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
 
 import java.util.function.Consumer;
 
-public class PersistenceParserExtension implements PureGrammarParserExtension
+public class PersistenceParserExtension implements IPersistenceParserExtension
 {
     public static final String NAME = "Persistence";
 

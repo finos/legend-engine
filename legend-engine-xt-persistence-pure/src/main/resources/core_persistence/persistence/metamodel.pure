@@ -73,7 +73,7 @@ meta::pure::persistence::metamodel::PersistenceContext extends PackageableElemen
    {doc.doc = 'The persistence parameterized by this context.'}
    persistence: Persistence[1];
 
-   {doc.doc = 'The runtime that executes the persistence.'}
+   {doc.doc = 'Configuration specific to the runtime that executes persistence.'}
    platform: PersistencePlatform[1];
 
    {doc.doc = 'Values to substitute for named service inputs.'}
@@ -84,7 +84,6 @@ meta::pure::persistence::metamodel::PersistenceContext extends PackageableElemen
 }
 
 Class
-<<typemodifiers.abstract>>
 {doc.doc = 'Specification of the runtime that executes the persistence.'}
 meta::pure::persistence::metamodel::PersistencePlatform
 {

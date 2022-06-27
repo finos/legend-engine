@@ -12,6 +12,14 @@ DERIVATION:                                 'derivation';
 NONE:                                       'None';
 DATE_TIME:                                  'DateTime';
 
+// EXTENSION
+BRACE_OPEN:                                 '{' -> pushMode(SPECIFICATION_ISLAND_MODE);
+
+mode SPECIFICATION_ISLAND_MODE;
+SPECIFICATION_BRACE_OPEN: '{' -> pushMode (SPECIFICATION_ISLAND_MODE);
+SPECIFICATION_BRACE_CLOSE: '}' -> popMode;
+SPECIFICATION_CONTENT: (~[{}])+;
+
 //**********
 // PERSISTENCE
 //**********
@@ -19,6 +27,7 @@ DATE_TIME:                                  'DateTime';
 // CONTEXT
 CONTEXT:                                    'PersistenceContext';
 CONTEXT_PERSISTENCE:                        'persistence';
+CONTEXT_PLATFORM:                           'platform';
 CONTEXT_SERVICE_PARAMETERS:                 'serviceParameters';
 CONTEXT_SINK_CONNECTION:                    'sinkConnection';
 

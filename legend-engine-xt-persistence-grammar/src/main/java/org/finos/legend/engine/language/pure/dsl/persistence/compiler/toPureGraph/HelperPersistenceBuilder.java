@@ -95,8 +95,6 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_Persistence;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_ServiceParameter;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_ServiceParameter_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_notifier_EmailNotifyee_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_notifier_Notifier;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_notifier_Notifier_Impl;
@@ -144,6 +142,8 @@ import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_pers
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_validitymilestoning_derivation_SourceSpecifiesValidFromAndThruDate_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_validitymilestoning_derivation_SourceSpecifiesValidFromDate_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_validitymilestoning_derivation_ValidityDerivation;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_service_ServiceParameter;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_service_ServiceParameter_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_trigger_CronTrigger_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_trigger_ManualTrigger_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_trigger_Trigger;
@@ -185,9 +185,9 @@ public class HelperPersistenceBuilder
         throw new EngineException(String.format("Persistence '%s' is not defined", persistence), persistenceContext.sourceInformation, EngineErrorType.COMPILATION);
     }
 
-    public static Root_meta_pure_persistence_metamodel_ServiceParameter buildServiceParameter(ServiceParameter serviceParameter, CompileContext context)
+    public static Root_meta_pure_persistence_metamodel_service_ServiceParameter buildServiceParameter(ServiceParameter serviceParameter, CompileContext context)
     {
-        Root_meta_pure_persistence_metamodel_ServiceParameter pureServiceParameter = new Root_meta_pure_persistence_metamodel_ServiceParameter_Impl("");
+        Root_meta_pure_persistence_metamodel_service_ServiceParameter pureServiceParameter = new Root_meta_pure_persistence_metamodel_service_ServiceParameter_Impl("");
         pureServiceParameter._name(serviceParameter.name);
 
         if (serviceParameter.value instanceof PrimitiveTypeValue)

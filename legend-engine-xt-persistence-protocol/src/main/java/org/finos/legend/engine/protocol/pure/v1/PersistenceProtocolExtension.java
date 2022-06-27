@@ -23,7 +23,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.Package
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistenceContext;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistencePlatform;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.InMemoryPersistencePlatform;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistencePlatformDefault;
 
 import java.util.List;
 import java.util.Map;
@@ -42,7 +42,7 @@ public class PersistenceProtocolExtension implements PureProtocolExtension
 
                 // Persistence platform
                 ProtocolSubTypeInfo.newBuilder(PersistencePlatform.class)
-                        .withSubtype(InMemoryPersistencePlatform.class, "inMemory")
+                        .withSubtype(PersistencePlatformDefault.class, "default")
                         .build()
         ));
     }

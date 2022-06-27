@@ -21,7 +21,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_RelationalDatabaseConnection;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_Persistence;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_PersistenceContext;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_ServiceParameter;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_service_ServiceParameter;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection;
 import org.junit.Test;
@@ -393,22 +393,22 @@ public class TestPersistenceContextCompilationFromGrammar extends TestCompilatio
         assertEquals("test", persistence._package()._name());
         assertEquals("TestPersistence", persistence._name());
 
-        List<? extends Root_meta_pure_persistence_metamodel_ServiceParameter> serviceParameters = context._serviceParameters().toList();
+        List<? extends Root_meta_pure_persistence_metamodel_service_ServiceParameter> serviceParameters = context._serviceParameters().toList();
         assertEquals(4, serviceParameters.size());
 
-        Root_meta_pure_persistence_metamodel_ServiceParameter serviceParameter1 = serviceParameters.get(0);
+        Root_meta_pure_persistence_metamodel_service_ServiceParameter serviceParameter1 = serviceParameters.get(0);
         assertEquals("foo", serviceParameter1._name());
         List<?> values1 = serviceParameter1._value().toList();
         assertEquals(1, values1.size());
         assertEquals("hello", values1.get(0));
 
-        Root_meta_pure_persistence_metamodel_ServiceParameter serviceParameter2 = serviceParameters.get(1);
+        Root_meta_pure_persistence_metamodel_service_ServiceParameter serviceParameter2 = serviceParameters.get(1);
         assertEquals("bar", serviceParameter2._name());
         List<?> values2 = serviceParameter2._value().toList();
         assertEquals(1, values2.size());
         assertEquals(1L, values2.get(0));
 
-        Root_meta_pure_persistence_metamodel_ServiceParameter serviceParameter3 = serviceParameters.get(2);
+        Root_meta_pure_persistence_metamodel_service_ServiceParameter serviceParameter3 = serviceParameters.get(2);
         assertEquals("con1", serviceParameter3._name());
         List<?> values3 = serviceParameter3._value().toList();
         assertEquals(1, values3.size());
@@ -417,7 +417,7 @@ public class TestPersistenceContextCompilationFromGrammar extends TestCompilatio
         Root_meta_pure_alloy_connections_RelationalDatabaseConnection con1 = (Root_meta_pure_alloy_connections_RelationalDatabaseConnection) o3;
         assertEquals("Snowflake", con1._type()._name());
 
-        Root_meta_pure_persistence_metamodel_ServiceParameter serviceParameter4 = serviceParameters.get(3);
+        Root_meta_pure_persistence_metamodel_service_ServiceParameter serviceParameter4 = serviceParameters.get(3);
         assertEquals("con2", serviceParameter4._name());
         List<?> values4 = serviceParameter4._value().toList();
         assertEquals(1, values4.size());
