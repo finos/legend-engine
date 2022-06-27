@@ -1803,6 +1803,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "        },\n" +
                 "        test2:\n" +
                 "        {\n" +
+                "          serializationFormat: CSV;\n" +
                 "          parameters:\n" +
                 "          [\n" +
                 "            param = 'dummy2'" +

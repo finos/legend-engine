@@ -1,0 +1,59 @@
+###Service
+Service service::SimpleRelationalPassWithSpecialEmbeddedData
+{
+  pattern: '/d2c48a9c-70fa-46e3-8173-c355e774004f';
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |model::Firm.all()->project([x|$x.employees.firstName, x|$x.employees.lastName, x|$x.legalName], ['Employees/First Name', 'Employees/Last Name', 'Legal Name']);
+    mapping: execution::RelationalMapping;
+    runtime: execution::Runtime;
+  }
+  testSuites:
+  [
+    testSuite1:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_1:
+          Relational
+          #{
+            default.PersonTable:
+              'id,firm_id,firstName,lastName\n' +
+              '1,1,John;\'",Doe\n' +
+              '2,1,Nicole,Smith\n' +
+              '3,2,Time,Smith\n';
+
+             default.FirmTable:
+              'id,legal_name\n' +
+               '1,Finos\n' +
+                '2,Apple';
+            }#
+        ]
+      ]
+      tests:
+      [
+        test1:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            shouldPass:
+              EqualToJson
+              #{
+                expected :
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Employees/First Name":"John;\'\\"","Employees/Last Name":"Doe","Legal Name":"Finos"},{"Employees/First Name":"Nicole","Employees/Last Name":"Smith","Legal Name":"Finos"},{"Employees/First Name":"Time","Employees/Last Name":"Smith","Legal Name":"Apple"}]\n';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

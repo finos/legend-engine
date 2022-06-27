@@ -15,16 +15,23 @@
 package org.finos.legend.engine.plan.execution.stores.relational.test;
 
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.protocol.pure.v1.extension.ConnectionFactoryExtension;
+import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TestDatabaseAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.data.RelationalCSVData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.mappingTest.RelationalInputData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.mappingTest.RelationalInputType;
 
+import java.io.Closeable;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 public class RelationalConnectionFactory implements ConnectionFactoryExtension
@@ -64,4 +71,25 @@ public class RelationalConnectionFactory implements ConnectionFactoryExtension
     {
         return ConnectionFactoryExtension.super.tryBuildFromConnection(connection, testData, element);
     }
+
+    @Override
+    public Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnection(Connection sourceConnection, EmbeddedData data)
+    {
+        if (data instanceof RelationalCSVData && sourceConnection instanceof RelationalDatabaseConnection)
+        {
+            RelationalDatabaseConnection connection = new RelationalDatabaseConnection();
+            connection.databaseType = DatabaseType.H2;
+            connection.type = DatabaseType.H2;
+            connection.element = sourceConnection.element;
+            connection.authenticationStrategy = new TestDatabaseAuthenticationStrategy();
+            LocalH2DatasourceSpecification localH2DatasourceSpecification = new LocalH2DatasourceSpecification();
+            // TODO generate sql with pure helper function
+            RelationalCSVData relationalData = (RelationalCSVData) data;
+            localH2DatasourceSpecification.testDataSetupCsv = new HelperRelationalCSVBuilder(relationalData).build();
+            connection.datasourceSpecification = localH2DatasourceSpecification;
+            return Optional.of(Tuples.pair(connection, Collections.emptyList()));
+        }
+        return Optional.empty();
+    }
+
 }

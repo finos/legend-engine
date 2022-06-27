@@ -12,14 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service;
+lexer grammar EqualToTDSAssertionLexerGrammar;
 
-import org.finos.legend.engine.protocol.pure.v1.model.test.AtomicTest;
+import M3LexerGrammar;
 
-import java.util.List;
+// -------------------------------------- KEYWORD --------------------------------------
 
-public class ServiceTest extends AtomicTest
-{
-    public String serializationFormat;
-    public List<ParameterValue> parameters;
-}
+EQUAL_TO_TDS:                                       'EqualToTDS';
+EXPECTED:                                           'expected';
