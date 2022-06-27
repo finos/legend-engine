@@ -306,12 +306,9 @@ public class HelperRelationalBuilder
         return getRelation(db, _schema, _table, SourceInformation.getUnknownSourceInformation());
     }
 
-    private static Relation getRelation(Database db, final String _schema, final String _table, SourceInformation sourceInformation)
+    public static Relation getRelation(Database db, final String _schema, final String _table, SourceInformation sourceInformation)
     {
-        if (!schemaExists(db, _schema))
-        {
-            throw new EngineException("Can't find schema '" + _schema + "' in database '" + db + "'", sourceInformation, EngineErrorType.COMPILATION);
-        }
+        validateSchemaExists(db, _schema, sourceInformation);
         Relation table = findRelation(db, _schema, _table, sourceInformation);
         if (table == null)
         {
@@ -363,6 +360,35 @@ public class HelperRelationalBuilder
                 throw new EngineException(message.toString(), sourceInformation, EngineErrorType.COMPILATION);
             }
         }
+    }
+
+    public static SetIterable<Table> getAllTables(Database database, SourceInformation sourceInformation)
+    {
+        return getAllTables(database, x -> true);
+    }
+
+    public static SetIterable<Table> getAllTablesInSchema(Database db, String _schema, SourceInformation sourceInformation)
+    {
+        validateSchemaExists(db, _schema, sourceInformation);
+        return getAllTables(db, Predicates.bind(SCHEMA_NAME_PREDICATE, _schema));
+    }
+
+    private static void validateSchemaExists(Database db, String _schema, SourceInformation sourceInformation)
+    {
+        if (!schemaExists(db, _schema))
+        {
+            throw new EngineException("Can't find schema '" + _schema + "' in database '" + db + "'", sourceInformation, EngineErrorType.COMPILATION);
+        }
+    }
+
+    private static SetIterable<Table> getAllTables(Database db, Predicate<Schema> schemaPredicate)
+    {
+        MutableSet<Table> tables = Sets.mutable.empty();
+        for (Database _db : getAllIncludedDBs(db))
+        {
+            _db._schemas().asLazy().select(schemaPredicate).forEach(x -> x._tables().forEach(tables::add));
+        }
+        return tables;
     }
 
     private static boolean schemaExists(Database database, String schemaName)

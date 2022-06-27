@@ -15,10 +15,13 @@
 package org.finos.legend.engine.language.pure.compiler.test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperRelationalBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.Warning;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.RootRelationalInstanceSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Column;
@@ -237,8 +240,50 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
     @Test
     public void testRelationalDatabase()
     {
-        test(DB_INC);
-        test(DB + DB_INC);
+        PureModel dbIncModel = test(DB_INC).getTwo();
+        PureModel dbModel = test(DB + DB_INC).getTwo();
+
+        Database dbInc = (Database) dbIncModel.getStore("model::relational::tests::dbInc");
+        Database db = (Database) dbModel.getStore("model::relational::tests::db");
+
+        String[] tablesDb = HelperRelationalBuilder.getAllTables(db, SourceInformation.getUnknownSourceInformation()).collect(x -> x._schema()._name() + '.' + x._name()).toSortedList().toArray(new String[0]);
+        String[] productSchemaTablesDb = HelperRelationalBuilder.getAllTablesInSchema(db, "productSchema", SourceInformation.getUnknownSourceInformation()).collect(x -> x._schema()._name() + '.' + x._name()).toSortedList().toArray(new String[0]);
+        String[] defaultTablesDbInc = HelperRelationalBuilder.getAllTablesInSchema(dbInc, "default", SourceInformation.getUnknownSourceInformation()).collect(x -> x._schema()._name() + '.' + x._name()).toSortedList().toArray(new String[0]);
+
+        Assert.assertArrayEquals(new String[]{
+                "default.accountTable",
+                "default.addressTable",
+                "default.differentPersonTable",
+                "default.firmTable",
+                "default.interactionTable",
+                "default.locationTable",
+                "default.orderFactTable",
+                "default.orderTable",
+                "default.otherFirmTable",
+                "default.otherNamesTable",
+                "default.personTable",
+                "default.placeOfInterestTable",
+                "default.salesPersonTable",
+                "default.tradeEventTable",
+                "default.tradeTable",
+                "productSchema.productTable",
+                "productSchema.synonymTable"
+        }, tablesDb);
+
+        Assert.assertArrayEquals(new String[]{
+                "default.addressTable",
+                "default.differentPersonTable",
+                "default.firmTable",
+                "default.locationTable",
+                "default.otherFirmTable",
+                "default.personTable",
+                "default.placeOfInterestTable"
+        }, defaultTablesDbInc);
+
+        Assert.assertArrayEquals(new String[]{
+                "productSchema.productTable",
+                "productSchema.synonymTable"
+        }, productSchemaTablesDb);
     }
 
     @Test
