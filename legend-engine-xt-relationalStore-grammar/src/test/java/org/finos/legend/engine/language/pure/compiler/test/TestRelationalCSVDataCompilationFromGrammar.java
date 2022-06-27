@@ -14,27 +14,17 @@
 
 package org.finos.legend.engine.language.pure.compiler.test;
 
+import static org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test;
+
 import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_ConnectionTestData;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_ServiceTest;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_ServiceTestSuite;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_TestData;
 import org.finos.legend.pure.generated.Root_meta_pure_data_DataElement;
-import org.finos.legend.pure.generated.Root_meta_pure_data_DataElementReference;
-import org.finos.legend.pure.generated.Root_meta_pure_data_EmbeddedData;
-import org.finos.legend.pure.generated.Root_meta_pure_test_AtomicTest;
-import org.finos.legend.pure.generated.Root_meta_pure_test_Test;
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_data_RelationalCSVData;
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_data_RelationalCSVTable;
-import org.finos.legend.pure.generated.Root_meta_pure_test_assertion_TestAssertion;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.junit.Assert;
 import org.junit.Test;
-
-import static org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test;
 
 public class TestRelationalCSVDataCompilationFromGrammar
 {
