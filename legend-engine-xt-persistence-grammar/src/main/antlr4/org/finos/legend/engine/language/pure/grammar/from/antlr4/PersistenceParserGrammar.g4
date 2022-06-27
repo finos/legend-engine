@@ -65,11 +65,11 @@ contextPlatform:                            CONTEXT_PLATFORM COLON specification
 ;
 specification:                              specificationType (specificationValueBody)?
 ;
-specificationType:                           VALID_STRING
+specificationType:                          VALID_STRING
 ;
-specificationValueBody:                     BRACE_OPEN (specificationValue)*
+specificationValueBody:                     ISLAND_OPEN (specificationValue)*
 ;
-specificationValue:                         SPECIFICATION_BRACE_OPEN | SPECIFICATION_CONTENT | SPECIFICATION_BRACE_CLOSE
+specificationValue:                         ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_BRACE_CLOSE
 ;
 contextServiceParameters:                   CONTEXT_SERVICE_PARAMETERS COLON
                                                 BRACKET_OPEN
