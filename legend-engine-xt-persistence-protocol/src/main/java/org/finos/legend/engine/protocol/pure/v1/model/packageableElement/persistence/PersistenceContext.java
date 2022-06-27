@@ -24,6 +24,7 @@ import java.util.List;
 public class PersistenceContext extends PackageableElement
 {
     public String persistence;
+    public PersistencePlatform platform;
     public List<ServiceParameter> serviceParameters;
     public Connection sinkConnection;
 

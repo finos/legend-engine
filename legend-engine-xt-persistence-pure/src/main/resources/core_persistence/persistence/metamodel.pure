@@ -30,6 +30,7 @@ import meta::pure::persistence::metamodel::persister::transactionmilestoning::de
 import meta::pure::persistence::metamodel::persister::validitymilestoning::*;
 import meta::pure::persistence::metamodel::persister::validitymilestoning::derivation::*;
 import meta::pure::persistence::metamodel::reader::*;
+import meta::pure::persistence::metamodel::service::*;
 import meta::pure::persistence::metamodel::target::*;
 import meta::pure::persistence::metamodel::trigger::*;
 
@@ -72,6 +73,9 @@ meta::pure::persistence::metamodel::PersistenceContext extends PackageableElemen
    {doc.doc = 'The persistence parameterized by this context.'}
    persistence: Persistence[1];
 
+   {doc.doc = 'The runtime that executes the persistence.'}
+   platform: PersistencePlatform[1];
+
    {doc.doc = 'Values to substitute for named service inputs.'}
    serviceParameters: ServiceParameter[*];
 
@@ -80,8 +84,15 @@ meta::pure::persistence::metamodel::PersistenceContext extends PackageableElemen
 }
 
 Class
+<<typemodifiers.abstract>>
+{doc.doc = 'Specification of the runtime that executes the persistence.'}
+meta::pure::persistence::metamodel::PersistencePlatform
+{
+}
+
+Class
 {doc.doc = 'Parameter values for the service.'}
-meta::pure::persistence::metamodel::ServiceParameter
+meta::pure::persistence::metamodel::service::ServiceParameter
 {
   {doc.doc = 'The name of this service parameter. This must match the name of an input to the function that underlies the service.'}
    name: String[1];

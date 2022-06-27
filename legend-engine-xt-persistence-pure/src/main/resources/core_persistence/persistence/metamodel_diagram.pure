@@ -628,10 +628,22 @@ Diagram meta::pure::persistence::Persistence_Diagram(width=0.0, height=0.0)
         lineWidth=1.0)
 
     TypeView cview_95(
-        type=meta::pure::persistence::metamodel::ServiceParameter,
-        position=(979.20053, 120.16277),
+        type=meta::pure::persistence::metamodel::service::ServiceParameter,
+        position=(183.20053, 120.66277),
         width=228.44727,
         height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_96(
+        type=meta::pure::persistence::metamodel::PersistencePlatform,
+        position=(925.20053, 127.66277),
+        width=222.45313,
+        height=58.00000,
         stereotypesVisible=true,
         attributesVisible=true,
         attributeStereotypesVisible=true,
@@ -1290,7 +1302,21 @@ Diagram meta::pure::persistence::Persistence_Diagram(width=0.0, height=0.0)
         property=meta::pure::persistence::metamodel::PersistenceContext.serviceParameters,
         source=cview_2,
         target=cview_95
-,        points=[(664.49097,156.00000),(1093.42416,156.16277)],
+,        points=[(664.49097,156.00000),(297.42416,156.66277)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_26(
+        property=meta::pure::persistence::metamodel::PersistenceContext.platform,
+        source=cview_2,
+        target=cview_96
+,        points=[(664.49097,156.00000),(1036.42709,156.66277)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
