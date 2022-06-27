@@ -31,7 +31,7 @@ import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
-import org.finos.legend.engine.analytics.mapping.model.coverage.api.ModelCoverageAnalytics;
+import org.finos.legend.engine.api.MappingAnalytics;
 import org.finos.legend.engine.application.query.api.ApplicationQuery;
 import org.finos.legend.engine.application.query.configuration.ApplicationQueryConfiguration;
 import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProviderConfiguration;
@@ -183,7 +183,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         environment.jersey().register(new TransformRelationalOperationElementJsonToGrammar());
 
         // Model Coverage Analytics
-        environment.jersey().register(new ModelCoverageAnalytics(modelManager));
+        environment.jersey().register(new MappingAnalytics(modelManager));
 
         // Relational
         environment.jersey().register(new SchemaExplorationApi(modelManager, relationalStoreExecutor));

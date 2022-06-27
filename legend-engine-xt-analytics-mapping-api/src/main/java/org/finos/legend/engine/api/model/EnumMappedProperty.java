@@ -12,21 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.analytics.mapping.model.coverage.api;
 
-import java.util.List;
+package org.finos.legend.engine.api.model;
 
-public class ModelCoverageAnalyticsResult
+public class EnumMappedProperty extends MappedProperty
 {
-    public List<MappedEntity> mappedEntities;
+    public String enumPath;
 
-    public ModelCoverageAnalyticsResult()
+    public EnumMappedProperty(String name, String enumName)
     {
-        // DO NOT DELETE: this resets the default constructor for Jackson
-    }
-
-    public ModelCoverageAnalyticsResult(List<MappedEntity> mappedEntities)
-    {
-        this.mappedEntities = mappedEntities;
+        super(name);
+        this.enumPath = enumName;
     }
 }

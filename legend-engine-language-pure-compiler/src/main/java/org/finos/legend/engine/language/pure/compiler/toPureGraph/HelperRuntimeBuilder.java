@@ -22,10 +22,12 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connect
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.LegacyRuntime;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.RuntimePointer;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
+import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_Runtime_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.modelToModel.PureInstanceSetImplementation;
@@ -184,5 +186,24 @@ public class HelperRuntimeBuilder
             return context.resolveRuntime(((RuntimePointer) runtime).runtime, ((RuntimePointer) runtime).sourceInformation);
         }
         throw new UnsupportedOperationException();
+    }
+
+    /**
+     * NOTE: this compatibility check is fairly simple and only do static analysis on the runtimes
+     * However, we could be more advanced and do some router analysis, etc.
+     */
+    public static List<Root_meta_pure_runtime_PackageableRuntime> getMappingCompatibleRuntimes(
+            Mapping mappingToCheck, List<PackageableRuntime> runtimes, PureModel pureModel)
+    {
+        return ListIterate
+                .select(runtimes, runtime -> ListIterate.collect(runtime.runtimeValue.mappings, mappingPtr ->
+                {
+                    Mapping mapping = pureModel.getMapping(mappingPtr.path, mappingPtr.sourceInformation);
+                    Set<Mapping> mappings = new HashSet<>();
+                    mappings.add(mapping);
+                    mappings.addAll(HelperMappingBuilder.getAllIncludedMappings(mapping).toSet());
+                    return mappings;
+                }).anySatisfy(mappings -> mappings.contains(mappingToCheck)))
+                .collect(runtime -> pureModel.getPackageableRuntime(runtime.getPath(), null)).distinct();
     }
 }

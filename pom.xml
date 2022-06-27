@@ -30,6 +30,12 @@
     <packaging>pom</packaging>
 
     <modules>
+        <!--
+            With our current CI, we must make sure test-report module do not run last,
+            otherwise, publishing could fail
+        -->
+        <module>legend-engine-test-reports</module>
+
         <module>legend-engine-xt-graphQL-grammar</module>
         <module>legend-engine-xt-graphQL-compiler</module>
         <module>legend-engine-xt-graphQL-protocol</module>
@@ -105,6 +111,9 @@
         <module>legend-engine-xt-data-space-pure</module>
         <module>legend-engine-xt-data-space-api</module>
 
+        <module>legend-engine-xt-analytics-mapping-api</module>
+        <module>legend-engine-xt-analytics-mapping-pure</module>
+
         <module>legend-engine-pure-code-compiled-core</module>
         <module>legend-engine-pure-code-compiled-core-external-shared</module>
 
@@ -146,12 +155,9 @@
         <module>legend-engine-services-model</module>
         <module>legend-engine-services-model-api</module>
         <module>legend-engine-server</module>
-        <module>legend-engine-test-reports</module>
         <module>legend-engine-extensions-collection-execution</module>
         <module>legend-engine-extensions-collection-generation</module>
         <module>legend-engine-testable</module>
-        <module>legend-engine-xt-analytics-mapping-api</module>
-        <module>legend-engine-xt-analytics-mapping-pure</module>
     </modules>
 
     <properties>
@@ -180,7 +186,7 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.release>8</maven.compiler.release>
-        <maven.enforcer.requireJavaVersion>[11.0.10,12)</maven.enforcer.requireJavaVersion>
+        <maven.enforcer.requireJavaVersion>[11.0.10,16)</maven.enforcer.requireJavaVersion>
 
         <!-- Databases -->
         <hikaricp.version>4.0.3</hikaricp.version>
@@ -832,7 +838,6 @@
                 <version>${project.version}</version>
             </dependency>
 
-
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-text-compiler</artifactId>
@@ -903,6 +908,17 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-data-space-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-analytics-mapping-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-analytics-mapping-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

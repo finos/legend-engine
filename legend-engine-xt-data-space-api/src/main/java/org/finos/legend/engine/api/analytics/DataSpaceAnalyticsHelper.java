@@ -15,17 +15,15 @@
 package org.finos.legend.engine.api.analytics;
 
 import org.eclipse.collections.api.RichIterable;
-import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.api.analytics.model.DataSpaceAnalysisInput;
 import org.finos.legend.engine.api.analytics.model.DataSpaceAnalysisResult;
 import org.finos.legend.engine.external.shared.format.imports.PureModelContextDataGenerator;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperRuntimeBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
-import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpace;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_diagram_analytics_modelCoverage_DiagramModelCoverageAnalysisResult;
 import org.finos.legend.pure.generated.core_diagram_analytics_analytics;
@@ -34,9 +32,6 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profi
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-
-import static org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperDataSpaceBuilder.getExecutionContextCompatibleRuntimes;
 
 public class DataSpaceAnalyticsHelper
 {
@@ -58,7 +53,10 @@ public class DataSpaceAnalyticsHelper
         dataSpace._executionContexts().each(executionContext ->
         {
             executionContexts.put(executionContext._name(), new DataSpaceAnalysisResult.DataSpaceExecutionContextAnalysisResult(
-                    ListIterate.collect(getExecutionContextCompatibleRuntimes(executionContext, ListIterate.selectInstancesOf(pureModelContextData.getElements(), PackageableRuntime.class), pureModel), runtime -> HelperModelBuilder.getElementFullPath(runtime, pureModel.getExecutionSupport()))));
+                    ListIterate.collect(HelperRuntimeBuilder.getMappingCompatibleRuntimes(
+                            executionContext._mapping(),
+                            ListIterate.selectInstancesOf(pureModelContextData.getElements(), PackageableRuntime.class),
+                            pureModel), runtime -> HelperModelBuilder.getElementFullPath(runtime, pureModel.getExecutionSupport()))));
         });
 
         return new DataSpaceAnalysisResult(diagramsModel, executionContexts);
