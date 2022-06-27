@@ -28,9 +28,9 @@ import org.finos.legend.engine.testable.model.RunTestsInput;
 import org.finos.legend.engine.testable.model.RunTestsResult;
 import org.finos.legend.engine.testable.model.RunTestsTestableInput;
 import org.finos.legend.pure.generated.Root_meta_pure_test_AtomicTest;
-import org.finos.legend.pure.generated.Root_meta_pure_test_Test;
 import org.finos.legend.pure.generated.Root_meta_pure_test_TestSuite;
-import org.finos.legend.pure.generated.Root_meta_pure_test_Testable;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.test.Test;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.test.Testable;
 import org.pac4j.core.profile.CommonProfile;
 
 import java.util.List;
@@ -57,17 +57,17 @@ public class TestableRunner
         for (RunTestsTestableInput testableInput : input.testables)
         {
             org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement packageableElement = pureModel.getPackageableElement(testableInput.testable);
-            if (!(packageableElement instanceof  Root_meta_pure_test_Testable))
+            if (!(packageableElement instanceof Testable))
             {
                 throw new UnsupportedOperationException("Element '" + testableInput.testable + "' is not a testable element");
             }
-            Root_meta_pure_test_Testable testable = (Root_meta_pure_test_Testable) packageableElement;
+            Testable testable = (Testable) packageableElement;
             List<AtomicTestId> testIds = testableInput.unitTestIds;
             List<String> atomicTestIds = ListIterate.collect(testIds, id -> id.atomicTestId);
             Map<String, List<AtomicTestId>> testIdsBySuiteId = testIds.stream().collect(groupingBy(testId -> testId.testSuiteId));
 
             TestRunner testRunner = TestableRunnerExtensionLoader.forTestable(testable);
-            for (Root_meta_pure_test_Test test : testable._tests())
+            for (Test test : testable._tests())
             {
                 // We run all testIds if no `unitTestIds` are provided
                 if ((test instanceof Root_meta_pure_test_AtomicTest) && (testIds.isEmpty() || atomicTestIds.contains(test._id())))

@@ -182,20 +182,6 @@ Diagram meta::pure::test::MetaModelDiagram(width=1013.44922, height=587.00000)
         width=137.39600,
         height=60.00000)
 
-    AssociationView aview_16(association=meta::pure::test::Testable_Tests,
-        stereotypesVisible=true,
-        nameVisible=false,
-        color=#000000,
-        lineWidth=-1.0,
-        lineStyle=SIMPLE,
-        points=[(526.89746,162.00000),(787.87573,162.00000)],
-        label='Testable_Tests',
-        source=Testable_$_0,
-        target=Test_$_6,
-        sourcePropertyPosition=(570.79492, 146.00000),
-        sourceMultiplicityPosition=(570.79492, 167.00000),
-        targetPropertyPosition=(711.65820, 146.00000),
-        targetMultiplicityPosition=(732.33008, 167.00000))
 
     PropertyView pview_17(property=meta::pure::test::TestSuite.tests,
         stereotypesVisible=true,

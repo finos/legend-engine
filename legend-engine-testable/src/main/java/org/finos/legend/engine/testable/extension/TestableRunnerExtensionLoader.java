@@ -15,7 +15,7 @@
 package org.finos.legend.engine.testable.extension;
 
 import org.eclipse.collections.impl.factory.Lists;
-import org.finos.legend.pure.generated.Root_meta_pure_test_Testable;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.test.Testable;
 
 import java.util.List;
 import java.util.Map;
@@ -26,12 +26,12 @@ import java.util.stream.Collectors;
 
 public class TestableRunnerExtensionLoader
 {
-    public static TestRunner forTestable(Root_meta_pure_test_Testable testable)
+    public static TestRunner forTestable(Testable testable)
     {
         return forTestable(testable, getCurrentThreadClassLoader());
     }
 
-    public static TestRunner forTestable(Root_meta_pure_test_Testable testable, ClassLoader classLoader)
+    public static TestRunner forTestable(Testable testable, ClassLoader classLoader)
     {
         return extensions(classLoader).stream()
                 .map(ext -> ext.getTestRunner(testable))
