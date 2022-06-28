@@ -31,9 +31,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistenceContext;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistencePlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistencePlatformDefault;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.ConnectionValue;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.PrimitiveTypeValue;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.ServiceParameter;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.EmailNotifyee;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.Notifier;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.Notifyee;
@@ -80,16 +77,19 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.SourceSpecifiesFromAndThruDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.SourceSpecifiesFromDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.ValidityDerivation;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.ConnectionValue;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.PrimitiveTypeValue;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.ServiceParameter;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.ServiceParameterValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.ManualTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class PersistenceParseTreeWalker
 {
@@ -98,12 +98,15 @@ public class PersistenceParseTreeWalker
     private final ImportAwareCodeSection section;
     private final ConnectionParser connectionParser;
 
-    public PersistenceParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, Consumer<PackageableElement> elementConsumer, ImportAwareCodeSection section, ConnectionParser connectionParser)
+    private final List<Function<PersistencePlatformSourceCode, PersistencePlatform>> processors;
+
+    public PersistenceParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, Consumer<PackageableElement> elementConsumer, ImportAwareCodeSection section, ConnectionParser connectionParser, List<Function<PersistencePlatformSourceCode, PersistencePlatform>> processors)
     {
         this.walkerSourceInformation = walkerSourceInformation;
         this.elementConsumer = elementConsumer;
         this.section = section;
         this.connectionParser = connectionParser;
+        this.processors = processors;
     }
 
     public void visit(PersistenceParserGrammar.DefinitionContext ctx)
@@ -163,30 +166,29 @@ public class PersistenceParseTreeWalker
 
     private PersistencePlatform visitPersistencePlatform(PersistenceParserGrammar.ContextPlatformContext ctx)
     {
-        if (ctx == null)
+        String platformType = PureGrammarParserUtility.fromIdentifier(ctx.platformType().identifier());
+        PersistenceParserGrammar.PlatformValueContext platformValueContext = ctx.platformValue();
+        return this.visitPersistencePlatformValue(platformType, platformValueContext);
+    }
+
+    public PersistencePlatform visitPersistencePlatformValue(String platformType, PersistenceParserGrammar.PlatformValueContext ctx)
+    {
+        StringBuilder platformValueText = new StringBuilder();
+        for (PersistenceParserGrammar.PlatformValueContentContext fragment : ctx.platformValueContent())
         {
-            return new PersistencePlatformDefault();
+            platformValueText.append(fragment.getText());
         }
+        String platformValueTextToParse = platformValueText.length() > 0 ? platformValueText.substring(0, platformValueText.length() - 2) : platformValueText.toString();
+        // prepare island grammar walker source information
+        int startLine = ctx.ISLAND_OPEN().getSymbol().getLine();
+        int lineOffset = walkerSourceInformation.getLineOffset() + startLine - 1;
+        // only add current walker source information column offset if this is the first line
+        int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + ctx.ISLAND_OPEN().getSymbol().getCharPositionInLine() + ctx.ISLAND_OPEN().getSymbol().getText().length();
+        ParseTreeWalkerSourceInformation platformValueWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
+        SourceInformation platformValueSourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
-        PersistenceParserGrammar.SpecificationContext specification = ctx.specification();
-        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-
-        PersistencePlatformSourceCode code = new PersistencePlatformSourceCode(
-                ctx.specification().getText(),
-                specification.specificationType().getText(),
-                sourceInformation,
-                ParseTreeWalkerSourceInformation.offset(walkerSourceInformation, ctx.getStart())
-        );
-
-        List<IPersistenceParserExtension> extensions = IPersistenceParserExtension.getExtensions();
-        PersistencePlatform platform = IPersistenceParserExtension.process(code, ListIterate.flatCollect(extensions, IPersistenceParserExtension::getExtraPersistencePlatformParsers));
-
-        if (platform == null)
-        {
-            throw new EngineException("Unsupported syntax", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
-        }
-
-        return platform;
+        PersistencePlatformSourceCode sourceCode = new PersistencePlatformSourceCode(platformValueTextToParse, platformType, platformValueSourceInformation, platformValueWalkerSourceInformation);
+        return IPersistenceParserExtension.process(sourceCode, processors);
     }
 
     /**********

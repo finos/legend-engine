@@ -18,6 +18,7 @@ import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.eclipse.collections.impl.factory.Lists;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.dsl.persistence.grammar.from.context.PersistencePlatformSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.ParserErrorListener;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserContext;
@@ -32,7 +33,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
 
+import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class PersistenceParserExtension implements IPersistenceParserExtension
 {
@@ -52,7 +55,11 @@ public class PersistenceParserExtension implements IPersistenceParserExtension
         section.sourceInformation = parserInfo.sourceInformation;
 
         ConnectionParser connectionParser = ConnectionParser.newInstance(context.getPureGrammarParserExtensions());
-        PersistenceParseTreeWalker walker = new PersistenceParseTreeWalker(parserInfo.walkerSourceInformation, elementConsumer, section, connectionParser);
+
+        List<IPersistenceParserExtension> extensions = IPersistenceParserExtension.getExtensions();
+        List<Function<PersistencePlatformSourceCode, PersistencePlatform>> processors = ListIterate.flatCollect(extensions, IPersistenceParserExtension::getExtraPersistencePlatformParsers);
+
+        PersistenceParseTreeWalker walker = new PersistenceParseTreeWalker(parserInfo.walkerSourceInformation, elementConsumer, section, connectionParser, processors);
         walker.visit((PersistenceParserGrammar.DefinitionContext) parserInfo.rootContext);
 
         return section;

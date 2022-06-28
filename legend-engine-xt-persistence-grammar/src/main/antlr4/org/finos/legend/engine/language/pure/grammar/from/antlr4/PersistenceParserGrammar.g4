@@ -61,15 +61,13 @@ context:                                    CONTEXT qualifiedName
 ;
 contextPersistence:                         CONTEXT_PERSISTENCE COLON qualifiedName SEMI_COLON
 ;
-contextPlatform:                            CONTEXT_PLATFORM COLON specification SEMI_COLON
+contextPlatform:                            CONTEXT_PLATFORM COLON platformType platformValue SEMI_COLON
 ;
-specification:                              specificationType (specificationValueBody)?
+platformType:                               identifier
 ;
-specificationType:                          VALID_STRING
+platformValue:                              ISLAND_OPEN (platformValueContent)*
 ;
-specificationValueBody:                     ISLAND_OPEN (specificationValue)*
-;
-specificationValue:                         ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_BRACE_CLOSE
+platformValueContent:                       ISLAND_START | ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_HASH | ISLAND_BRACE_CLOSE | ISLAND_END
 ;
 contextServiceParameters:                   CONTEXT_SERVICE_PARAMETERS COLON
                                                 BRACKET_OPEN
