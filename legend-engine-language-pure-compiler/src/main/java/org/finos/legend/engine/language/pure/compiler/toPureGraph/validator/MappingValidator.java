@@ -23,6 +23,7 @@ import org.eclipse.collections.impl.factory.Multimaps;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.SourceInformationHelper;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.Warning;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
@@ -272,9 +273,15 @@ public class MappingValidator
 
                                                             for (FunctionExpression fe: feList)
                                                             {
+                                                                String errorMessage = "The new function/operator(^) is unsupported in property mappings, violated in property '" + ppm._transform + "' of mapping '" + mappingPath + "'";
+
                                                                 if (fe._genericType()._rawType() == ((ValueSpecification) ex)._genericType()._rawType())
                                                                 {
-                                                                    throw new EngineException("The new function/operator(^) is unsupported in property mappings, violated in property '" + ppm._transform + "' of mapping '" + mappingPath + "'", mappings.get(mappingPath).sourceInformation, EngineErrorType.COMPILATION);
+                                                                    throw new EngineException(errorMessage, mappings.get(mappingPath).sourceInformation, EngineErrorType.COMPILATION);
+                                                                }
+                                                                else
+                                                                {
+                                                                    pureModel.addWarnings(Lists.mutable.with( new Warning(SourceInformationHelper.fromM3SourceInformation(pm.getSourceInformation()), errorMessage)));
                                                                 }
                                                             }
                                                         });
