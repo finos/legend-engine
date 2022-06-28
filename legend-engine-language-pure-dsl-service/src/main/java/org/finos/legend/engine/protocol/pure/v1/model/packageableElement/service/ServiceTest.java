@@ -20,5 +20,6 @@ import java.util.List;
 
 public class ServiceTest extends AtomicTest
 {
+    public String serializationFormat;
     public List<ParameterValue> parameters;
 }

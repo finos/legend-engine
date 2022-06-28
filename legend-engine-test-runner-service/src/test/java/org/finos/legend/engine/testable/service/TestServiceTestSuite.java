@@ -14,24 +14,30 @@
 
 package org.finos.legend.engine.testable.service;
 
+import net.javacrumbs.jsonunit.JsonMatchers;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.test.AtomicTestId;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertFail;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertPass;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertionStatus;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.EqualToJsonAssertFail;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestError;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestFailed;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestPassed;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.engine.shared.core.deployment.DeploymentStateAndVersions;
 import org.finos.legend.engine.testable.service.extension.ServiceTestableRunnerExtension;
 import org.finos.legend.engine.testable.service.result.MultiExecutionServiceTestResult;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
+import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.net.URL;
 import java.util.List;
 
 public class TestServiceTestSuite
@@ -1936,6 +1942,7 @@ public class TestServiceTestSuite
                 "      [\n" +
                 "        test1:\n" +
                 "        {\n" +
+                "          serializationFormat: PURE;\n" +
                 "          asserts:\n" +
                 "          [\n" +
                 "            assert1:\n" +
@@ -2127,6 +2134,7 @@ public class TestServiceTestSuite
                 "      [\n" +
                 "        test1:\n" +
                 "        {\n" +
+                "          serializationFormat: PURE;\n" +
                 "          asserts:\n" +
                 "          [\n" +
                 "            assert1:\n" +
@@ -2260,4 +2268,143 @@ public class TestServiceTestSuite
                 "  }\n" +
                 "}", ((EqualToJsonAssertFail) ((TestFailed) uatTestResultWithTestFailing).assertStatuses.get(0)).expected);
     }
+
+    private String getResourceAsString(String path)
+    {
+        try
+        {
+            URL infoURL = DeploymentStateAndVersions.class.getClassLoader().getResource(path);
+            if (infoURL != null)
+            {
+                java.util.Scanner scanner = new java.util.Scanner(infoURL.openStream()).useDelimiter("\\A");
+                return scanner.hasNext() ? scanner.next() : null;
+            }
+            return null;
+        }
+       catch (Exception e)
+       {
+           throw new RuntimeException(e);
+       }
+    }
+
+    private String getFullPureModelGrammar(String basePath, String model, String service)
+    {
+        return getResourceAsString(basePath + model) + "\n\n" + getResourceAsString(basePath + service);
+    }
+
+    @Test
+    public void testFailingRelationalServiceSuite()
+    {
+        // setup
+        ServiceTestableRunnerExtension serviceTestableRunnerExtension = new ServiceTestableRunnerExtension();
+        String pureModelString = getFullPureModelGrammar("testable/relational/", "legend-testable-relational-model.pure", "legend-testable-relational-service-simple-fail.pure");
+        PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(pureModelString);
+        PureModel pureModel = Compiler.compile(pureModelContextData, DeploymentMode.TEST, null);
+        Root_meta_legend_service_metamodel_Service serviceWithTestFailing = (Root_meta_legend_service_metamodel_Service) pureModel.getPackageableElement("service::SimpleRelationalPassFailing");
+        List<TestResult> relationalTestResult = serviceTestableRunnerExtension.executeAllTest(serviceWithTestFailing, pureModel, pureModelContextData);
+        // Assertions
+        Assert.assertEquals(relationalTestResult.size(), 1);
+        TestResult testResult = relationalTestResult.get(0);
+        Assert.assertEquals(testResult.testable, "service::SimpleRelationalPassFailing");
+        Assert.assertTrue(testResult instanceof  TestFailed);
+        TestFailed failedResult = (TestFailed) testResult;
+        AtomicTestId atomicTestId = failedResult.atomicTestId;
+        Assert.assertEquals(atomicTestId.atomicTestId, "test1");
+        Assert.assertEquals(atomicTestId.testSuiteId, "testSuite1");
+        List<AssertionStatus> statuses = failedResult.assertStatuses;
+        Assert.assertEquals(statuses.size(), 2);
+        // pass assertion
+        AssertionStatus status1 = statuses.stream().filter(t -> t.id.equals("shouldPass")).findFirst().get();
+        Assert.assertEquals(status1.id, "shouldPass");
+        Assert.assertTrue(status1 instanceof  AssertPass);
+        // fail assertion
+        AssertionStatus failStatus = statuses.stream().filter(t -> t.id.equals("shouldFail")).findFirst().get();
+        Assert.assertTrue(failStatus instanceof EqualToJsonAssertFail);
+        EqualToJsonAssertFail jsonAssertFail = (EqualToJsonAssertFail) failStatus;
+        Assert.assertEquals("Actual result does not match Expected result", jsonAssertFail.message);
+        String expected_Expected =
+                "[ {\n" +
+                        "  \"Employees/First Name\" : \"JohnDIFF\",\n" +
+                        "  \"Employees/Last Name\" : \"Doe\",\n" +
+                        "  \"Legal Name\" : \"Finos\"\n" +
+                        "}, {\n" +
+                        "  \"Employees/First Name\" : \"Nicole\",\n" +
+                        "  \"Employees/Last Name\" : \"Smith\",\n" +
+                        "  \"Legal Name\" : \"Finos\"\n" +
+                        "}, {\n" +
+                        "  \"Employees/First Name\" : \"Time\",\n" +
+                        "  \"Employees/Last Name\" : \"Smith\",\n" +
+                        "  \"Legal Name\" : \"Apple\"\n" +
+                        "} ]";
+        String expected_Actual = "[ {\n" +
+                "  \"Employees/First Name\" : \"John\",\n" +
+                "  \"Employees/Last Name\" : \"Doe\",\n" +
+                "  \"Legal Name\" : \"Finos\"\n" +
+                "}, {\n" +
+                "  \"Employees/First Name\" : \"Nicole\",\n" +
+                "  \"Employees/Last Name\" : \"Smith\",\n" +
+                "  \"Legal Name\" : \"Finos\"\n" +
+                "}, {\n" +
+                "  \"Employees/First Name\" : \"Time\",\n" +
+                "  \"Employees/Last Name\" : \"Smith\",\n" +
+                "  \"Legal Name\" : \"Apple\"\n" +
+                "} ]";
+
+        MatcherAssert.assertThat(expected_Expected, JsonMatchers.jsonEquals(jsonAssertFail.expected));
+        MatcherAssert.assertThat(expected_Actual, JsonMatchers.jsonEquals(jsonAssertFail.actual));
+    }
+
+
+    @Test
+    public void testPassingRelationalWithParams()
+    {
+        // setup
+        ServiceTestableRunnerExtension serviceTestableRunnerExtension = new ServiceTestableRunnerExtension();
+        String pureModelString = getFullPureModelGrammar("testable/relational/", "legend-testable-relational-model.pure", "legend-testable-relational-service-parameters.pure");
+        PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(pureModelString);
+        PureModel pureModel = Compiler.compile(pureModelContextData, DeploymentMode.TEST, null);
+        Root_meta_legend_service_metamodel_Service serviceWithTestFailing = (Root_meta_legend_service_metamodel_Service) pureModel.getPackageableElement("service::RelationalServiceWithParams");
+        List<TestResult> relationalTestResult = serviceTestableRunnerExtension.executeAllTest(serviceWithTestFailing, pureModel, pureModelContextData);
+        // Assertions
+        Assert.assertEquals(relationalTestResult.size(), 1);
+        TestResult testResult = relationalTestResult.get(0);
+        Assert.assertEquals(testResult.testable, "service::RelationalServiceWithParams");
+        Assert.assertTrue(testResult instanceof  TestPassed);
+        TestPassed passed = (TestPassed) testResult;
+        AtomicTestId atomicTestId = passed.atomicTestId;
+        Assert.assertEquals(atomicTestId.atomicTestId, "test1");
+        Assert.assertEquals(atomicTestId.testSuiteId, "testSuite1");
+    }
+
+    @Test
+    public void testPassingRelationalWithSpecialEmbeddedData()
+    {
+        // setup
+        ServiceTestableRunnerExtension serviceTestableRunnerExtension = new ServiceTestableRunnerExtension();
+        String pureModelString = getFullPureModelGrammar("testable/relational/", "legend-testable-relational-model.pure", "legend-testable-relational-service-embeddedData.pure");
+
+        PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(pureModelString);
+        PureModel pureModel = Compiler.compile(pureModelContextData, DeploymentMode.TEST, null);
+        Root_meta_legend_service_metamodel_Service serviceWithTestFailing = (Root_meta_legend_service_metamodel_Service) pureModel.getPackageableElement("service::SimpleRelationalPassWithSpecialEmbeddedData");
+        List<TestResult> relationalTestResult = serviceTestableRunnerExtension.executeAllTest(serviceWithTestFailing, pureModel, pureModelContextData);
+        // Assertions
+        Assert.assertEquals(relationalTestResult.size(), 1);
+        TestResult testResult = relationalTestResult.get(0);
+        Assert.assertEquals(testResult.testable, "service::SimpleRelationalPassWithSpecialEmbeddedData");
+        if (testResult instanceof  TestFailed)
+        {
+            AssertionStatus status = ((TestFailed) testResult).assertStatuses.get(0);
+            if (status instanceof  EqualToJsonAssertFail)
+            {
+                EqualToJsonAssertFail failAssert = (EqualToJsonAssertFail)status;
+                Assert.assertEquals(failAssert.expected, failAssert.actual);
+            }
+        }
+        Assert.assertTrue(testResult instanceof  TestPassed);
+        TestPassed passed = (TestPassed) testResult;
+        AtomicTestId atomicTestId = passed.atomicTestId;
+        Assert.assertEquals(atomicTestId.atomicTestId, "test1");
+        Assert.assertEquals(atomicTestId.testSuiteId, "testSuite1");
+    }
+
 }

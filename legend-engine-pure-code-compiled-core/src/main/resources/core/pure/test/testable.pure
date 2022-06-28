@@ -18,15 +18,6 @@ import meta::pure::test::*;
 import meta::pure::test::assertion::*;
 import meta::pure::test::result::*;
 
-Class meta::pure::test::Testable
-{ 
-}
-
-Class <<typemodifiers.abstract>> meta::pure::test::Test
-{
-    id          : String[1];
-}
-
 Class <<typemodifiers.abstract>> meta::pure::test::TestSuite extends Test
 {
     tests       : AtomicTest[1..*];
@@ -35,12 +26,6 @@ Class <<typemodifiers.abstract>> meta::pure::test::TestSuite extends Test
 Class <<typemodifiers.abstract>> meta::pure::test::AtomicTest extends Test
 {
     assertions  : TestAssertion[1..*];
-}
-
-Association meta::pure::test::Testable_Tests
-{
-    testable    : Testable[1];
-    tests       : Test[*];
 }
 
 Class meta::pure::test::result::AtomicTestId

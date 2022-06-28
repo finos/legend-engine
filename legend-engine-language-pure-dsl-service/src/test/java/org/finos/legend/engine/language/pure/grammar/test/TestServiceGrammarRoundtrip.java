@@ -971,6 +971,7 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "      [\n" +
                 "        test1:\n" +
                 "        {\n" +
+                "          serializationFormat: myFormat;\n" +
                 "          parameters:\n" +
                 "          [\n" +
                 "            param = 'value1'\n" +

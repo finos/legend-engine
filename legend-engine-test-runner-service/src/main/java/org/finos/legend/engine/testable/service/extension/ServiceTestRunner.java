@@ -12,8 +12,17 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
+
 package org.finos.legend.engine.testable.service.extension;
 
+import static org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder.getElementFullPath;
+
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.ServiceLoader;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
@@ -78,15 +87,6 @@ import org.finos.legend.pure.generated.Root_meta_pure_test_AtomicTest;
 import org.finos.legend.pure.generated.Root_meta_pure_test_TestSuite;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.Closeable;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.ServiceLoader;
-
-import static org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder.getElementFullPath;
 
 public class ServiceTestRunner implements TestRunner
 {
@@ -295,7 +295,12 @@ public class ServiceTestRunner implements TestRunner
             List<AssertionStatus> assertionStatusList = Lists.mutable.empty();
             for (TestAssertion assertion : serviceTest.assertions)
             {
-                assertionStatusList.add(assertion.accept(new ServiceTestAssertionEvaluator(result)));
+                AssertionStatus status = assertion.accept(new ServiceTestAssertionEvaluator(result, serviceTest.serializationFormat));
+                if (status == null)
+                {
+                    throw new RuntimeException("Can't evaluate the test assertion: '" + assertion.id + "'");
+                }
+                assertionStatusList.add(status);
                 if (!isResultReusable)
                 {
                     result = this.planExecutor.execute(executionPlan, parameters);

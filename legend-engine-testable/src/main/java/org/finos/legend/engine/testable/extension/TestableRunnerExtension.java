@@ -14,11 +14,11 @@
 
 package org.finos.legend.engine.testable.extension;
 
-import org.finos.legend.pure.generated.Root_meta_pure_test_Testable;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.test.Testable;
 
 public interface TestableRunnerExtension
 {
     String getSupportedClassifierPath();
 
-    TestRunner getTestRunner(Root_meta_pure_test_Testable testable);
+    TestRunner getTestRunner(Testable testable);
 }

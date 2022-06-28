@@ -93,6 +93,7 @@ Class meta::legend::service::metamodel::ServiceTestSuite extends meta::pure::tes
 
 Class meta::legend::service::metamodel::ServiceTest extends meta::pure::test::AtomicTest
 {
+  serializationFormat: String[0..1];
   parameters : ParameterValue[*];
 }
 
@@ -142,4 +143,145 @@ Class <<doc.deprecated>> meta::legend::service::metamodel::TestContainer
 {
    parametersValues : Any[*];
    assert:FunctionDefinition<{Result<Any|*>[1]->Boolean[1]}>[1];
+}
+
+###Diagram
+
+Diagram meta::legend::service::metamodel::ServiceDiagram(width=0.0, height=0.0)
+{
+    TypeView cview_7(
+        type=meta::pure::test::TestSuite,
+        position=(1153.40967, 448.00000),
+        width=97.38477,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_5(
+        type=meta::pure::test::Test,
+        position=(1007.43457, 269.00000),
+        width=97.38477,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_4(
+        type=meta::pure::test::AtomicTest,
+        position=(891.43457, 411.00000),
+        width=179.96191,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_8(
+        type=meta::pure::test::assertion::TestAssertion,
+        position=(629.10205, 411.00000),
+        width=99.13086,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_9(
+        type=meta::pure::test::assertion::EqualToJson,
+        position=(512.10205, 554.00000),
+        width=169.76758,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_3(
+        type=meta::legend::service::metamodel::ServiceTest,
+        position=(742.00000, 547.00000),
+        width=186.86914,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    GeneralizationView gview_0(
+        source=cview_3,
+        target=cview_4,
+        points=[(835.43457,576.00000),(981.41553,440.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_1(
+        source=cview_4,
+        target=cview_5,
+        points=[(981.41553,440.00000),(1056.12695,298.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_2(
+        source=cview_7,
+        target=cview_5,
+        points=[(1202.10205,470.00000),(1056.12695,298.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_3(
+        source=cview_9,
+        target=cview_8,
+        points=[(596.98584,576.00000),(678.66748,440.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_0(
+        property=meta::pure::test::TestSuite.tests,
+        source=cview_7,
+        target=cview_4
+,        points=[(1202.10205,470.00000),(981.41553,440.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_1(
+        property=meta::pure::test::AtomicTest.assertions,
+        source=cview_4,
+        target=cview_8
+,        points=[(981.41553,440.00000),(678.66748,440.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
 }

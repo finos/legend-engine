@@ -22,6 +22,7 @@ import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.grammar.from.DataSpaceParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.DiagramParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.TextParserExtension;
@@ -67,6 +68,12 @@ public class TestExtensions
     {
         assertHasExtensions(getExpectedGrammarParserExtensions(), PureGrammarParserExtension.class);
         assertHasExtensions(getExpectedGrammarComposerExtensions(), PureGrammarComposerExtension.class);
+    }
+
+    @Test
+    public void testExpectedCompilerExtensionsArePresent()
+    {
+        assertHasExtensions(getExpectedCompilerExtensions(), CompilerExtension.class);
     }
 
     @Test
@@ -242,6 +249,23 @@ public class TestExtensions
                 .with(org.finos.legend.engine.language.pure.dsl.service.grammar.to.ServiceGrammarComposerExtension.class)
                 .with(org.finos.legend.engine.language.pure.grammar.to.ServiceStoreGrammarComposerExtension.class)
                 .with(TextGrammarComposerExtension.class);
+    }
+
+    protected Iterable<? extends Class<? extends CompilerExtension>> getExpectedCompilerExtensions()
+    {
+        // DO NOT DELETE ITEMS FROM THIS LIST (except when replacing them with something equivalent)
+        return Lists.mutable.<Class<? extends CompilerExtension>>empty()
+                .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.DiagramCompilerExtension.class)
+                .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.DataSpaceCompilerExtension.class)
+                .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.TextCompilerExtension.class)
+                .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.CoreCompilerExtension.class)
+                .with(org.finos.legend.engine.language.pure.dsl.generation.compiler.toPureGraph.GenerationCompilerExtensionImpl.class)
+                .with(org.finos.legend.engine.language.pure.dsl.service.compiler.toPureGraph.ServiceCompilerExtensionImpl.class)
+                .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.ExternalFormatCompilerExtension.class)
+                .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.ExternalFormatConnectionCompilerExtension.class)
+                .with(org.finos.legend.engine.language.pure.dsl.persistence.compiler.toPureGraph.PersistenceCompilerExtension.class)
+                .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.RelationalCompilerExtension.class)
+                .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.ServiceStoreCompilerExtension.class);
     }
 
     protected Iterable<? extends Class<? extends PlanGeneratorExtension>> getExpectedPlanGeneratorExtensions()

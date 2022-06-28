@@ -1,0 +1,140 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Diagram
+
+Diagram meta::relational::metamodel::assertion::RelationalTestAssertionDiagram(width=0.0, height=0.0)
+{
+
+
+
+    TypeView cview_1(
+        type=meta::pure::test::assertion::TestAssertion,
+        position=(861.00000, 315.00000),
+        width=99.13086,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_5(
+        type=meta::pure::test::assertion::EqualTo,
+        position=(910.31543, 493.87500),
+        width=110.47607,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_6(
+        type=meta::pure::test::assertion::EqualToJson,
+        position=(1075.31543, 505.87500),
+        width=169.76758,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+
+    GeneralizationView gview_1(
+        source=cview_5,
+        target=cview_1,
+        points=[(965.55347,515.87500),(910.56543,344.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_2(
+        source=cview_6,
+        target=cview_1,
+        points=[(1160.19922,527.87500),(910.56543,344.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+
+}
+
+
+
+###Diagram
+Diagram meta::relational::metamodel::data::RelationalDataDiagram(width=0.0, height=0.0)
+{
+    TypeView cview_10(
+        type=meta::pure::data::EmbeddedData,
+        position=(1046.17578, 245.50000),
+        width=107.35156,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_12(
+        type=meta::pure::data::DataElementReference,
+        position=(1282.17578, 428.50000),
+        width=174.04834,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_11(
+        type=meta::pure::data::ModelStoreData,
+        position=(1061.17578, 413.50000),
+        width=114.75146,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    GeneralizationView gview_0(
+        source=cview_11,
+        target=cview_10,
+        points=[(1118.55151,435.50000),(1099.85156,267.50000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_1(
+        source=cview_12,
+        target=cview_10,
+        points=[(1369.19995,450.50000),(1099.85156,267.50000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+}
+
+
