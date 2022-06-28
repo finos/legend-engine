@@ -1,0 +1,8 @@
+import meta::relational::functions::sqlQueryToString::postgres::*;
+import meta::relational::functions::sqlQueryToString::*;
+import meta::relational::runtime::*;
+
+function <<db.ExtensionLoader>> meta::relational::functions::sqlQueryToString::spanner::dbExtensionLoaderForSpanner():DbExtensionLoader[1]
+{
+  ^DbExtensionLoader(dbType = DatabaseType.Spanner, loader = createDbExtensionForPostgres__DbExtension_1_);
+}
