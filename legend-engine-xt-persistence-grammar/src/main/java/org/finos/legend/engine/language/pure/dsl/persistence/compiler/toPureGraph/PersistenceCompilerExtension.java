@@ -30,7 +30,7 @@ import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_Pers
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_PersistenceContext_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_Persistence_Impl;
 
-public class PersistenceCompilerExtension implements CompilerExtension
+public class PersistenceCompilerExtension implements IPersistenceCompilerExtension
 {
     @Override
     public Iterable<? extends Processor<?>> getExtraProcessors()
@@ -58,6 +58,7 @@ public class PersistenceCompilerExtension implements CompilerExtension
                         {
                             Root_meta_pure_persistence_metamodel_PersistenceContext purePersistenceContext = (Root_meta_pure_persistence_metamodel_PersistenceContext) context.pureModel.getOrCreatePackage(persistenceContext._package)._children().detect(c -> persistenceContext.name.equals(c._name()));
                             purePersistenceContext._persistence(HelperPersistenceBuilder.buildPersistence(persistenceContext, context));
+                            purePersistenceContext._platform(HelperPersistenceBuilder.buildPersistencePlatform(persistenceContext.platform, context));
                             purePersistenceContext._serviceParameters(ListIterate.collect(persistenceContext.serviceParameters, sp -> HelperPersistenceBuilder.buildServiceParameter(sp, context)));
                             purePersistenceContext._sinkConnection(HelperPersistenceBuilder.buildConnection(persistenceContext.sinkConnection, context));
                         }

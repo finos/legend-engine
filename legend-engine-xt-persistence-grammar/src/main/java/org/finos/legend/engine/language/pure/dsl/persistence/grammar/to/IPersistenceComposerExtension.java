@@ -1,7 +1,6 @@
 package org.finos.legend.engine.language.pure.dsl.persistence.grammar.to;
 
 import org.eclipse.collections.api.block.function.Function3;
-import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
@@ -10,6 +9,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistencePlatform;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -36,6 +36,6 @@ public interface IPersistenceComposerExtension extends PureGrammarComposerExtens
 
     default List<Function3<PersistencePlatform, Integer, PureGrammarComposerContext, String>> getExtraPersistencePlatformComposers()
     {
-        return FastList.newList();
+        return Collections.emptyList();
     }
 }
