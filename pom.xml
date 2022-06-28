@@ -118,6 +118,8 @@
         <module>legend-engine-xt-analytics-mapping-api</module>
         <module>legend-engine-xt-analytics-mapping-pure</module>
 
+        <module>legend-engine-xt-elasticsearch-pure</module>
+
         <module>legend-engine-pure-code-compiled-core</module>
 
         <module>legend-engine-pure-ide-light</module>
@@ -479,13 +481,25 @@
                 <executions>
                     <execution>
                         <id>add-source</id>
-                        <phase>generate-sources</phase>
+                        <phase>initialize</phase>
                         <goals>
                             <goal>add-source</goal>
                         </goals>
                         <configuration>
                             <sources>
                                 <source>${project.basedir}/target/generated-sources/</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>add-test-source</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>add-test-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>${project.basedir}/target/generated-test-sources/</source>
                             </sources>
                         </configuration>
                     </execution>
@@ -854,6 +868,12 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-morphir-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-elasticsearch-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

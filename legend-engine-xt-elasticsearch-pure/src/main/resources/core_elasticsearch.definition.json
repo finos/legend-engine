@@ -1,0 +1,5 @@
+{
+    "name" : "core_elasticsearch",
+    "pattern" : "(meta::external::store::elasticsearch)(::.*)?",
+    "dependencies" : ["platform", "core"]
+}

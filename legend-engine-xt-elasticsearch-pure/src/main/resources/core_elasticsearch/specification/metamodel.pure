@@ -1,0 +1,300 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::json::*;
+
+import meta::external::store::elasticsearch::metamodel::spec::*;
+import meta::external::store::elasticsearch::metamodel::spec::endpoint::*;
+import meta::external::store::elasticsearch::metamodel::spec::property::*;
+import meta::external::store::elasticsearch::metamodel::spec::type::*;
+import meta::external::store::elasticsearch::metamodel::spec::variant::*;
+
+Class meta::external::store::elasticsearch::metamodel::spec::Deprecation
+{
+	description: String[1];
+	version: String[1];
+}
+
+Class meta::external::store::elasticsearch::metamodel::spec::Specification
+{
+	endpoints: Endpoint[*];
+	types: _Type[*];
+  _info: SpecHeader[1];
+}
+
+Class meta::external::store::elasticsearch::metamodel::spec::SpecHeader
+{
+	title: String[1];
+	license: SpecLicense[1];
+}
+
+Class meta::external::store::elasticsearch::metamodel::spec::SpecLicense
+{
+	name: String[1];
+  url: String[1];
+}
+
+Enum meta::external::store::elasticsearch::metamodel::spec::Stability
+{
+	beta,
+	experimental,
+	stable
+}
+
+Class meta::external::store::elasticsearch::metamodel::spec::endpoint::Endpoint
+{
+	description: String[1];
+	docId: String[0..1];
+	docUrl: String[0..1];
+	<<equality.Key>> name: String[1];
+	privileges: EndpointPrivileges[0..1];
+	request: Name[0..1];
+	requestBodyRequired: Boolean[1];
+	requestMediaType: String[*];
+	response: Name[0..1];
+	responseMediaType: String[*];
+	since: String[0..1];
+	stability: Stability[1];
+	urls: EndpointUrl[*];
+	visibility: String[1];
+}
+
+Class <<typemodifiers.abstract>> meta::external::store::elasticsearch::metamodel::spec::endpoint::EndpointBody
+{
+}
+
+Class meta::external::store::elasticsearch::metamodel::spec::endpoint::EndpointPrivileges
+{
+	cluster: String[*];
+	index: String[*];
+}
+
+Class meta::external::store::elasticsearch::metamodel::spec::endpoint::EndpointRequest extends _Type
+{
+	kind(){ 'request' }: String[1];
+	attachedBehaviors: AttachedBehavior[*];
+	body: EndpointBody[1];
+	path: _Property[*];
+	query: _Property[*];
+}
+
+Class meta::external::store::elasticsearch::metamodel::spec::endpoint::EndpointResponse extends _Type
+{
+	kind(){ 'response' }: String[1];
+	body: EndpointBody[1];
+}
+
+Class meta::external::store::elasticsearch::metamodel::spec::endpoint::EndpointUrl
+{
+	deprecation: Deprecation[0..1];
+	methods: String[*];
+	<<equality.Key>> path: String[1];
+}
+
+Class meta::external::store::elasticsearch::metamodel::spec::endpoint::NoBody extends EndpointBody
+{
+	kind(){ 'no_body' }: String[1];
+}
+
+Class meta::external::store::elasticsearch::metamodel::spec::endpoint::PropertiesBody extends EndpointBody
+{
+	kind(){ 'properties' }: String[1];
+	properties: _Property[*];
+}
+
+Class meta::external::store::elasticsearch::metamodel::spec::endpoint::SingleValueBody extends EndpointBody
+{
+	kind(){ 'value' }: String[1];
+	codegenName: String[0..1];
+	value: PropertyType[1];
+}
+
+Class meta::external::store::elasticsearch::metamodel::spec::property::ArrayOfType extends PropertyType
+{
+	kind(){ 'array_of' }: String[1];
+	value: PropertyType[1];
+}
+
+Class meta::external::store::elasticsearch::metamodel::spec::property::DictionaryOfType extends PropertyType
+{
+	kind(){ 'dictionary_of' }: String[1];
+	key: PropertyType[1];
+	singleKey: Boolean[1];
+	value: PropertyType[1];
+}
+
+Class meta::external::store::elasticsearch::metamodel::spec::property::InstanceOfType extends PropertyType
+{
+	kind(){ 'instance_of' }: String[1];
+	generics: PropertyType[*];
+	type: Name[1];
+}
+
+Class meta::external::store::elasticsearch::metamodel::spec::property::LiteralValueType extends PropertyType
+{
+	kind(){ 'literal_value' }: String[1];
+	value: Any[1];
+}
+
+Class <<typemodifiers.abstract>> meta::external::store::elasticsearch::metamodel::spec::property::PropertyType
+{
+}
+
+Class meta::external::store::elasticsearch::metamodel::spec::property::UnionOfType extends PropertyType
+{
+	kind(){ 'union_of' }: String[1];
+	items: PropertyType[*];
+}
+
+Class meta::external::store::elasticsearch::metamodel::spec::property::UserDefinedValueType extends PropertyType
+{
+	kind(){ 'user_defined_value' }: String[1];
+}
+
+Class meta::external::store::elasticsearch::metamodel::spec::property::_Property
+{
+	aliases: String[*];
+	codegenName: String[0..1];
+	containerProperty: Boolean[0..1];
+	deprecation: Deprecation[0..1];
+	description: String[0..1];
+	docId: String[0..1];
+	docUrl: String[0..1];
+	<<equality.Key>> name: String[1];
+	required: Boolean[1];
+	serverDefault: Any[0..1];
+	since: String[0..1];
+	stability: Stability[0..1];
+	type: PropertyType[1];
+}
+
+Enum meta::external::store::elasticsearch::metamodel::spec::type::AttachedBehavior
+{
+	AdditionalProperties,
+	AdditionalProperty,
+	CommonCatQueryParameters,
+	CommonQueryParameters,
+	OverloadOf
+}
+
+Class meta::external::store::elasticsearch::metamodel::spec::type::Behavior
+{
+	generics: PropertyType[*];
+	<<equality.Key>> type: Name[1];
+}
+
+Class meta::external::store::elasticsearch::metamodel::spec::type::_Enum extends _Type
+{
+	kind(){ 'enum' }: String[1];
+	esQuirk: String[0..1];
+	members: EnumMember[*];
+}
+
+Class meta::external::store::elasticsearch::metamodel::spec::type::EnumMember
+{
+	aliases: String[*];
+	codegenName: String[0..1];
+	description: String[0..1];
+	<<equality.Key>> name: String[1];
+	since: String[0..1];
+}
+
+Class meta::external::store::elasticsearch::metamodel::spec::type::Interface extends _Type
+{
+	kind(){ 'interface' }: String[1];
+	attachedBehaviors: AttachedBehavior[*];
+	behaviors: Behavior[*];
+	esQuirk: String[0..1];
+	properties: _Property[*];
+	shortcutProperty: String[0..1];
+	variantName: String[0..1];
+	variants: Variant[0..1];
+}
+
+Class meta::external::store::elasticsearch::metamodel::spec::type::Name
+{
+	<<equality.Key>> name: String[1];
+	<<equality.Key>> namespace: String[1];
+}
+
+Class meta::external::store::elasticsearch::metamodel::spec::type::TypeAlias extends _Type
+{
+	kind(){ 'type_alias' }: String[1];
+	codegenNames: String[*];
+	type: PropertyType[1];
+	variants: Variant[0..1];
+}
+
+Class <<typemodifiers.abstract>> meta::external::store::elasticsearch::metamodel::spec::type::_Type
+{
+	deprecation: Deprecation[0..1];
+	description: String[0..1];
+	docId: String[0..1];
+	docUrl: String[0..1];
+	generics: Name[*];
+	inherits: Behavior[0..1];
+	<<equality.Key>> name: Name[1];
+	specLocation: String[1];
+}
+
+Class meta::external::store::elasticsearch::metamodel::spec::variant::ContainerVariant extends Variant
+{
+	<<equality.Key>> kind(){ 'container' }: String[1];
+}
+
+Class meta::external::store::elasticsearch::metamodel::spec::variant::ExternalTagVariant extends Variant
+{
+	<<equality.Key>> kind(){ 'external_tag' }: String[1];
+}
+
+Class meta::external::store::elasticsearch::metamodel::spec::variant::InternalTagVariant extends Variant
+{
+	<<equality.Key>> kind(){ 'internal_tag' }: String[1];
+	defaultTag: String[0..1];
+	<<equality.Key>> tag: String[1];
+}
+
+Class <<typemodifiers.abstract>> meta::external::store::elasticsearch::metamodel::spec::variant::Variant
+{
+	nonExhaustive: Boolean[0..1];
+}
+
+function meta::external::store::elasticsearch::metamodel::spec::parseSpec(specAsJson: String[1]): Specification[1]
+{
+    let jsonDeserializationConfig = ^JSONDeserializationConfig(
+      failOnUnknownProperties = true,
+      typeKeyName = 'kind',
+      typeLookup = [
+          pair('no_body', NoBody->elementToPath()),
+					pair('container', ContainerVariant->elementToPath()),
+					pair('request', EndpointRequest->elementToPath()),
+					pair('user_defined_value', UserDefinedValueType->elementToPath()),
+					pair('dictionary_of', DictionaryOfType->elementToPath()),
+					pair('interface', Interface->elementToPath()),
+					pair('array_of', ArrayOfType->elementToPath()),
+					pair('enum', _Enum->elementToPath()),
+					pair('external_tag', ExternalTagVariant->elementToPath()),
+					pair('literal_value', LiteralValueType->elementToPath()),
+					pair('union_of', UnionOfType->elementToPath()),
+					pair('type_alias', TypeAlias->elementToPath()),
+					pair('response', EndpointResponse->elementToPath()),
+					pair('instance_of', InstanceOfType->elementToPath()),
+					pair('internal_tag', InternalTagVariant->elementToPath()),
+					pair('value', SingleValueBody->elementToPath()),
+					pair('properties', PropertiesBody->elementToPath())
+      ]
+    );
+
+    $specAsJson->fromJson(Specification, $jsonDeserializationConfig);
+}

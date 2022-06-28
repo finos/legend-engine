@@ -39,17 +39,19 @@ function meta::json::jsonEquivalent(element1:JSONElement[1], element2:JSONElemen
 
 function <<access.private>> meta::json::jsonArraysEquivalent(array1:JSONArray[1], array2:JSONArray[1]):Boolean[1]
 {
-    let values1 = $array1.values;
-    let values2 = $array2.values;
-    ($values1->size() == $values2->size()) && zip($values1, $values2)->forAll(pair | jsonEquivalent($pair.first, $pair.second));
+    let values1 = $array1->meta::json::sort()->cast(@JSONArray).values->sortBy(x|$x->toCompactJSONString());
+    let values2 = $array2->meta::json::sort()->cast(@JSONArray).values->sortBy(x|$x->toCompactJSONString());
+
+    assert($values1->size() == $values2->size(), |$array1->toPrettyJSONString() + ' != ' + $array2->toPrettyJSONString());
+    zip($values1, $values2)->forAll(pair | jsonEquivalent($pair.first, $pair.second));
 }
 
 function <<access.private>> meta::json::jsonObjectsEquivalent(obj1:JSONObject[1], obj2:JSONObject[1]):Boolean[1]
 {
     let keyValues1 = $obj1.keyValuePairs;
     let keyValues2 = $obj2.keyValuePairs;
-    ($keyValues1->size() == $keyValues2->size()) &&
-        zip($keyValues1->sortBy(kv | $kv.key.value), $keyValues2->sortBy(kv | $kv.key.value))->forAll(pair | jsonKeyValuesEquivalent($pair.first, $pair.second));
+    assert($keyValues1->size() == $keyValues2->size(), |$obj1->toPrettyJSONString() + ' != ' + $obj2->toPrettyJSONString());
+    zip($keyValues1->sortBy(kv | $kv.key.value), $keyValues2->sortBy(kv | $kv.key.value))->forAll(pair | jsonKeyValuesEquivalent($pair.first, $pair.second));
 }
 
 function <<access.private>> meta::json::jsonKeyValuesEquivalent(kv1:JSONKeyValue[1], kv2:JSONKeyValue[1]):Boolean[1]
