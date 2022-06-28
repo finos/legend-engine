@@ -36,7 +36,7 @@ public interface IPersistenceComposerExtension extends PureGrammarComposerExtens
 
     static String process(PersistencePlatform persistencePlatform, List<Function3<PersistencePlatform, Integer, PureGrammarComposerContext, String>> processors, int indentLevel, PureGrammarComposerContext context)
     {
-        return process(persistencePlatform, processors, indentLevel, context, "Persistence Platform", persistencePlatform.sourceInformation);
+        return process(persistencePlatform, processors, indentLevel, context, "persistence platform", persistencePlatform.sourceInformation);
     }
 
     static <T> String process(T item, List<Function3<T, Integer, PureGrammarComposerContext, String>> processors, int indentLevel, PureGrammarComposerContext context, String type, SourceInformation srcInfo)

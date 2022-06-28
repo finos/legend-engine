@@ -37,7 +37,7 @@ public interface IPersistenceParserExtension extends PureGrammarParserExtension
 
     static PersistencePlatform process(PersistencePlatformSourceCode code, List<Function<PersistencePlatformSourceCode, PersistencePlatform>> processors)
     {
-        return process(code, processors, "Persistence Platform");
+        return process(code, processors, "persistence platform");
     }
 
     static <T extends SpecificationSourceCode, U> U process(T code, List<Function<T, U>> processors, String type)

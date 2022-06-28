@@ -21,6 +21,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_RelationalDatabaseConnection;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_Persistence;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_PersistenceContext;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_context_PersistencePlatform;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_context_PersistencePlatform_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_service_ServiceParameter;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection;
@@ -61,18 +63,6 @@ public class TestPersistenceContextCompilationFromGrammar extends TestCompilatio
                 "PersistenceContext test::TestPersistenceContext\n" +
                 "{\n" +
                 "  persistence: test::TestPersistence;\n" +
-                "}\n", "COMPILATION error at [3:1-6:1]: Persistence 'test::TestPersistence' is not defined");
-    }
-
-    @Test
-    public void persistencePlatformUnknown()
-    {
-        test("###Persistence\n" +
-                "\n" +
-                "PersistenceContext test::TestPersistenceContext\n" +
-                "{\n" +
-                "  persistence: test::TestPersistence;\n" +
-                "  platform: Unknown;\n" +
                 "}\n", "COMPILATION error at [3:1-6:1]: Persistence 'test::TestPersistence' is not defined");
     }
 
@@ -404,6 +394,10 @@ public class TestPersistenceContextCompilationFromGrammar extends TestCompilatio
         assertNotNull(persistence);
         assertEquals("test", persistence._package()._name());
         assertEquals("TestPersistence", persistence._name());
+
+        Root_meta_pure_persistence_metamodel_context_PersistencePlatform platform = context._platform();
+        assertNotNull(platform);
+        assertTrue(platform instanceof Root_meta_pure_persistence_metamodel_context_PersistencePlatform_Impl);
 
         List<? extends Root_meta_pure_persistence_metamodel_service_ServiceParameter> serviceParameters = context._serviceParameters().toList();
         assertEquals(4, serviceParameters.size());

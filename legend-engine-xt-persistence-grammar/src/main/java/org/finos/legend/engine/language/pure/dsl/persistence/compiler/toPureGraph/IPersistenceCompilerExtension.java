@@ -39,7 +39,7 @@ public interface IPersistenceCompilerExtension extends CompilerExtension
 
     static Root_meta_pure_persistence_metamodel_context_PersistencePlatform process(PersistencePlatform persistencePlatform, List<Function2<PersistencePlatform, CompileContext, Root_meta_pure_persistence_metamodel_context_PersistencePlatform>> processors, CompileContext context)
     {
-        return process(persistencePlatform, processors, context, "Persistence Platform", persistencePlatform.sourceInformation);
+        return process(persistencePlatform, processors, context, "persistence platform", persistencePlatform.sourceInformation);
     }
 
     static <T, U> U process(T item, List<Function2<T, CompileContext, U>> processors, CompileContext context, String type, SourceInformation srcInfo)
