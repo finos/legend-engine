@@ -640,10 +640,10 @@ Diagram meta::pure::persistence::Persistence_Diagram(width=0.0, height=0.0)
         lineWidth=1.0)
 
     TypeView cview_96(
-        type=meta::pure::persistence::metamodel::PersistencePlatform,
-        position=(925.20053, 127.66277),
+        type=meta::pure::persistence::metamodel::context::PersistencePlatform,
+        position=(942.20053, 134.66277),
         width=222.45313,
-        height=58.00000,
+        height=44.00000,
         stereotypesVisible=true,
         attributesVisible=true,
         attributeStereotypesVisible=true,
@@ -1316,7 +1316,7 @@ Diagram meta::pure::persistence::Persistence_Diagram(width=0.0, height=0.0)
         property=meta::pure::persistence::metamodel::PersistenceContext.platform,
         source=cview_2,
         target=cview_96
-,        points=[(664.49097,156.00000),(1036.42709,156.66277)],
+,        points=[(664.49096,156.00000),(1053.42709,156.66277)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),

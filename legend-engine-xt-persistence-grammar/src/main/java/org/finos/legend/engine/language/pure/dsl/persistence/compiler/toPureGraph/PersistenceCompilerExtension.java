@@ -23,17 +23,17 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connect
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistenceContext;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistencePlatform;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistencePlatformDefault;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.DefaultPersistencePlatform;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.PersistencePlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Database;
 import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.Binding;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_Persistence;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_PersistenceContext;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_PersistenceContext_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_PersistencePlatform;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_PersistencePlatform_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_Persistence_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_context_PersistencePlatform;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_context_PersistencePlatform_Impl;
 
 import java.util.Collections;
 import java.util.List;
@@ -74,11 +74,11 @@ public class PersistenceCompilerExtension implements IPersistenceCompilerExtensi
     }
 
     @Override
-    public List<Function2<PersistencePlatform, CompileContext, Root_meta_pure_persistence_metamodel_PersistencePlatform>> getExtraPersistencePlatformProcessors()
+    public List<Function2<PersistencePlatform, CompileContext, Root_meta_pure_persistence_metamodel_context_PersistencePlatform>> getExtraPersistencePlatformProcessors()
     {
         return Collections.singletonList((persistencePlatform, compileContext) ->
-                persistencePlatform instanceof PersistencePlatformDefault
-                        ?  new Root_meta_pure_persistence_metamodel_PersistencePlatform_Impl("")
+                persistencePlatform instanceof DefaultPersistencePlatform
+                        ?  new Root_meta_pure_persistence_metamodel_context_PersistencePlatform_Impl("")
                         : null);
     }
 }

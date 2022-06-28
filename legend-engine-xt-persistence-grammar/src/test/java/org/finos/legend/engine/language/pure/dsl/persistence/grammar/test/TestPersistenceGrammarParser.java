@@ -103,6 +103,13 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "PersistenceContext test::TestPersistenceContext \n" +
                 "{\n" +
                 "  persistence: test::TestPersistence;\n" +
+                "  platform: Unknown;\n" +
+                "}\n", "PARSER error at [6:3-20]: Unsupported persistence platform type 'Unknown'");
+        test("###Persistence\n" +
+                "\n" +
+                "PersistenceContext test::TestPersistenceContext \n" +
+                "{\n" +
+                "  persistence: test::TestPersistence;\n" +
                 "  platform: Default;\n" +
                 "  platform: Default;\n" +
                 "}\n", "PARSER error at [3:1-8:1]: Field 'platform' should be specified only once");

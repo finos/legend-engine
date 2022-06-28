@@ -31,6 +31,25 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
     }
 
     @Test
+    public void persistenceContextPlatformDefault()
+    {
+        testFormat(
+                "###Persistence\n" +
+                        "import test::*;\n" +
+                        "PersistenceContext test::TestPersistenceContext\n" +
+                        "{\n" +
+                        "  persistence: test::TestPersistence;\n" +
+                        "}\n",
+                "###Persistence\n" +
+                        "import test::*;\n" +
+                        "PersistenceContext test::TestPersistenceContext\n" +
+                        "{\n" +
+                        "  persistence: test::TestPersistence;\n" +
+                        "  platform: Default;\n" +
+                        "}\n");
+    }
+
+    @Test
     public void persistenceContextSinkConnectionPointer()
     {
         test("###Persistence\n" +

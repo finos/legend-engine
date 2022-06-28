@@ -12,9 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context;
 
-public interface PersistencePlatformVisitor<T>
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
+public abstract class PersistencePlatform
 {
-    T visit(PersistencePlatform persistencePlatform);
+    public SourceInformation sourceInformation;
+
+    public abstract <T> T accept(PersistencePlatformVisitor<T> visitor);
 }

@@ -26,8 +26,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistenceContext;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistencePlatform;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistencePlatformDefault;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.PersistencePlatform;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.DefaultPersistencePlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.ConnectionValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.PrimitiveTypeValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.ServiceParameter;
@@ -68,7 +68,7 @@ public class PersistenceContextParseTreeWalker
 
         // persistence platform
         PersistenceParserGrammar.ContextPlatformContext platformContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.contextPlatform(), "platform", context.sourceInformation);
-        context.platform = platformContext == null ? new PersistencePlatformDefault() : visitPersistencePlatform(platformContext);
+        context.platform = platformContext == null ? new DefaultPersistencePlatform() : visitPersistencePlatform(platformContext);
 
         // service parameters
         PersistenceParserGrammar.ContextServiceParametersContext serviceParametersContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.contextServiceParameters(), "serviceParameters", context.sourceInformation);

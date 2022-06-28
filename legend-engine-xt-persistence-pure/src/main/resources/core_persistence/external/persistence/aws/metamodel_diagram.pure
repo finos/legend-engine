@@ -63,30 +63,6 @@ Diagram meta::external::persistence::aws::Persistence_Diagram(width=0.0, height=
         color=#FFFFCC,
         lineWidth=1.0)
 
-    TypeView cview_16(
-        type=meta::pure::persistence::metamodel::PersistencePlatform,
-        position=(1113.34963, 259.02531),
-        width=222.45313,
-        height=58.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
-    TypeView cview_17(
-        type=meta::external::persistence::aws::metamodel::AwsGluePersistencePlatform,
-        position=(1110.41174, 365.15287),
-        width=229.33789,
-        height=58.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
     TypeView cview_18(
         type=meta::pure::runtime::Connection,
         position=(457.87482, 263.77329),
@@ -111,10 +87,34 @@ Diagram meta::external::persistence::aws::Persistence_Diagram(width=0.0, height=
         color=#FFFFCC,
         lineWidth=1.0)
 
+    TypeView cview_16(
+        type=meta::pure::persistence::metamodel::context::PersistencePlatform,
+        position=(1115.34963, 258.02531),
+        width=222.45313,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_17(
+        type=meta::external::persistence::aws::metamodel::AwsGluePersistencePlatform,
+        position=(1113.41174, 365.15287),
+        width=229.33789,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
     GeneralizationView gview_0(
         source=cview_17,
         target=cview_16,
-        points=[(1225.08068,394.15287),(1224.57619,288.02531)],
+        points=[(1228.08068,394.15287),(1226.57619,287.02531)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -175,7 +175,7 @@ Diagram meta::external::persistence::aws::Persistence_Diagram(width=0.0, height=
         property=meta::pure::persistence::metamodel::PersistenceContext.platform,
         source=cview_2,
         target=cview_16
-,        points=[(857.16799,286.54658),(1224.57619,288.02531)],
+,        points=[(857.16799,286.54658),(1226.57619,287.02531)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),

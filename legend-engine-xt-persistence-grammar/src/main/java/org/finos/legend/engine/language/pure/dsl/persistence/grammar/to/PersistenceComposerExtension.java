@@ -23,8 +23,8 @@ import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerConte
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistenceContext;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistencePlatform;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistencePlatformDefault;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.PersistencePlatform;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.DefaultPersistencePlatform;
 
 import java.util.Collections;
 import java.util.List;
@@ -69,7 +69,7 @@ public class PersistenceComposerExtension implements IPersistenceComposerExtensi
     public List<Function3<PersistencePlatform, Integer, PureGrammarComposerContext, String>> getExtraPersistencePlatformComposers()
     {
         return Collections.singletonList((persistencePlatform, indentLevel, context) ->
-            persistencePlatform instanceof PersistencePlatformDefault
+            persistencePlatform instanceof DefaultPersistencePlatform
                     ? ""
                     : null);
     }

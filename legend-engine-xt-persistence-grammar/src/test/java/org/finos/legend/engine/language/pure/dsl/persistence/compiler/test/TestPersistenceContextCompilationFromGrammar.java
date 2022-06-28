@@ -65,6 +65,18 @@ public class TestPersistenceContextCompilationFromGrammar extends TestCompilatio
     }
 
     @Test
+    public void persistencePlatformUnknown()
+    {
+        test("###Persistence\n" +
+                "\n" +
+                "PersistenceContext test::TestPersistenceContext\n" +
+                "{\n" +
+                "  persistence: test::TestPersistence;\n" +
+                "  platform: Unknown;\n" +
+                "}\n", "COMPILATION error at [3:1-6:1]: Persistence 'test::TestPersistence' is not defined");
+    }
+
+    @Test
     public void serviceParameterConnectionUndefined()
     {
         test("Class test::Person\n" +

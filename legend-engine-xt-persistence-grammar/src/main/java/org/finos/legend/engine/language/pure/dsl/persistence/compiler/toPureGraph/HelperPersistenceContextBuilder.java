@@ -23,13 +23,13 @@ import org.finos.legend.engine.language.pure.dsl.persistence.grammar.to.Primitiv
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistenceContext;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistencePlatform;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.PersistencePlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.ConnectionValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.PrimitiveTypeValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.ServiceParameter;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_Persistence;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_PersistencePlatform;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_context_PersistencePlatform;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_service_ServiceParameter;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_service_ServiceParameter_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
@@ -54,7 +54,7 @@ public class HelperPersistenceContextBuilder
         throw new EngineException(String.format("Persistence '%s' is not defined", persistence), persistenceContext.sourceInformation, EngineErrorType.COMPILATION);
     }
 
-    public static Root_meta_pure_persistence_metamodel_PersistencePlatform buildPersistencePlatform(PersistencePlatform persistencePlatform, CompileContext context)
+    public static Root_meta_pure_persistence_metamodel_context_PersistencePlatform buildPersistencePlatform(PersistencePlatform persistencePlatform, CompileContext context)
     {
         return IPersistenceCompilerExtension.process(persistencePlatform, ListIterate.flatCollect(IPersistenceCompilerExtension.getExtensions(), IPersistenceCompilerExtension::getExtraPersistencePlatformProcessors), context);
     }

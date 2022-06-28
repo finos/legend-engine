@@ -17,6 +17,7 @@ import meta::external::shared::format::binding::*;
 import meta::legend::service::metamodel::*;
 
 import meta::pure::persistence::metamodel::*;
+import meta::pure::persistence::metamodel::context::*;
 import meta::pure::persistence::metamodel::notifier::*;
 import meta::pure::persistence::metamodel::persister::*;
 import meta::pure::persistence::metamodel::persister::audit::*;
@@ -85,7 +86,7 @@ meta::pure::persistence::metamodel::PersistenceContext extends PackageableElemen
 
 Class
 {doc.doc = 'Specification of the runtime that executes the persistence.'}
-meta::pure::persistence::metamodel::PersistencePlatform
+meta::pure::persistence::metamodel::context::PersistencePlatform
 {
 }
 

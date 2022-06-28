@@ -30,8 +30,8 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.PersistencePars
 import org.finos.legend.engine.language.pure.grammar.from.connection.ConnectionParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParser;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistencePlatform;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistencePlatformDefault;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.PersistencePlatform;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.DefaultPersistencePlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
 
@@ -55,7 +55,7 @@ public class PersistenceParserExtension implements IPersistenceParserExtension
     {
         return Collections.singletonList(code ->
                 "Default".equals(code.getType())
-                        ? new PersistencePlatformDefault()
+                        ? new DefaultPersistencePlatform()
                         : null
         );
     }

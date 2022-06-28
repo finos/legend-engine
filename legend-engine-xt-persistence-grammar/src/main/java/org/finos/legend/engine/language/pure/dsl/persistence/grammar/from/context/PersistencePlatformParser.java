@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.language.pure.dsl.persistence.grammar.from.context;
 
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistencePlatform;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.PersistencePlatform;
 
 import java.util.function.Function;
 

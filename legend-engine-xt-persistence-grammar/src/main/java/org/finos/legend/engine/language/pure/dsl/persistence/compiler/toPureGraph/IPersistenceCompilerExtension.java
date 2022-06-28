@@ -21,9 +21,9 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistencePlatform;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.PersistencePlatform;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_PersistencePlatform;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_context_PersistencePlatform;
 
 import java.util.Collections;
 import java.util.List;
@@ -37,7 +37,7 @@ public interface IPersistenceCompilerExtension extends CompilerExtension
         return Lists.mutable.withAll(ServiceLoader.load(IPersistenceCompilerExtension.class));
     }
 
-    static Root_meta_pure_persistence_metamodel_PersistencePlatform process(PersistencePlatform persistencePlatform, List<Function2<PersistencePlatform, CompileContext, Root_meta_pure_persistence_metamodel_PersistencePlatform>> processors, CompileContext context)
+    static Root_meta_pure_persistence_metamodel_context_PersistencePlatform process(PersistencePlatform persistencePlatform, List<Function2<PersistencePlatform, CompileContext, Root_meta_pure_persistence_metamodel_context_PersistencePlatform>> processors, CompileContext context)
     {
         return process(persistencePlatform, processors, context, "Persistence Platform", persistencePlatform.sourceInformation);
     }
@@ -51,7 +51,7 @@ public interface IPersistenceCompilerExtension extends CompilerExtension
                 .orElseThrow(() -> new EngineException("Unsupported " + type + " type '" + item.getClass() + "'", srcInfo, EngineErrorType.COMPILATION));
     }
 
-    default List<Function2<PersistencePlatform, CompileContext, Root_meta_pure_persistence_metamodel_PersistencePlatform>> getExtraPersistencePlatformProcessors()
+    default List<Function2<PersistencePlatform, CompileContext, Root_meta_pure_persistence_metamodel_context_PersistencePlatform>> getExtraPersistencePlatformProcessors()
     {
         return Collections.emptyList();
     }
