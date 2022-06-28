@@ -83,6 +83,32 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     }
 
     @Test
+    public void persistenceContextPersistencePlatform()
+    {
+        test("###Persistence\n" +
+                "\n" +
+                "PersistenceContext test::TestPersistenceContext \n" +
+                "{\n" +
+                "  persistence: test::TestPersistence;\n" +
+                "}\n");
+        test("###Persistence\n" +
+                "\n" +
+                "PersistenceContext test::TestPersistenceContext \n" +
+                "{\n" +
+                "  persistence: test::TestPersistence;\n" +
+                "  platform: Default;\n" +
+                "}\n");
+        test("###Persistence\n" +
+                "\n" +
+                "PersistenceContext test::TestPersistenceContext \n" +
+                "{\n" +
+                "  persistence: test::TestPersistence;\n" +
+                "  platform: Default;\n" +
+                "  platform: Default;\n" +
+                "}\n", "PARSER error at [3:1-8:1]: Field 'platform' should be specified only once");
+    }
+
+    @Test
     public void persistenceContextServiceParameters()
     {
         test("###Persistence\n" +

@@ -87,28 +87,10 @@ public class PersistenceContextParseTreeWalker
 
     private PersistencePlatform visitPersistencePlatform(PersistenceParserGrammar.ContextPlatformContext ctx)
     {
-        String platformType = PureGrammarParserUtility.fromIdentifier(ctx.platformType().identifier());
-        PersistenceParserGrammar.PlatformValueContext platformValueContext = ctx.platformValue();
-        return this.visitPersistencePlatformValue(platformType, platformValueContext);
-    }
+        PersistenceParserGrammar.PlatformSpecificationContext specificationContext = ctx.platformSpecification();
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
-    public PersistencePlatform visitPersistencePlatformValue(String platformType, PersistenceParserGrammar.PlatformValueContext ctx)
-    {
-        StringBuilder platformValueText = new StringBuilder();
-        for (PersistenceParserGrammar.PlatformValueContentContext fragment : ctx.platformValueContent())
-        {
-            platformValueText.append(fragment.getText());
-        }
-        String platformValueTextToParse = platformValueText.length() > 0 ? platformValueText.substring(0, platformValueText.length() - 2) : platformValueText.toString();
-        // prepare island grammar walker source information
-        int startLine = ctx.ISLAND_OPEN().getSymbol().getLine();
-        int lineOffset = walkerSourceInformation.getLineOffset() + startLine - 1;
-        // only add current walker source information column offset if this is the first line
-        int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + ctx.ISLAND_OPEN().getSymbol().getCharPositionInLine() + ctx.ISLAND_OPEN().getSymbol().getText().length();
-        ParseTreeWalkerSourceInformation platformValueWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
-        SourceInformation platformValueSourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-
-        PersistencePlatformSourceCode sourceCode = new PersistencePlatformSourceCode(platformValueTextToParse, platformType, platformValueSourceInformation, platformValueWalkerSourceInformation);
+        PersistencePlatformSourceCode sourceCode = new PersistencePlatformSourceCode(ctx.platformSpecification().getText(), specificationContext.platformType().getText(), sourceInformation, ParseTreeWalkerSourceInformation.offset(walkerSourceInformation, ctx.getStart()));
         return IPersistenceParserExtension.process(sourceCode, processors);
     }
 

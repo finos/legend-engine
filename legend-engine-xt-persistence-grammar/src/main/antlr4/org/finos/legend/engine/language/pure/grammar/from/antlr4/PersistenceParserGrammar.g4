@@ -61,7 +61,9 @@ context:                                    CONTEXT qualifiedName
 ;
 contextPersistence:                         CONTEXT_PERSISTENCE COLON qualifiedName SEMI_COLON
 ;
-contextPlatform:                            CONTEXT_PLATFORM COLON platformType platformValue SEMI_COLON
+contextPlatform:                            CONTEXT_PLATFORM COLON platformSpecification SEMI_COLON
+;
+platformSpecification:                      platformType (platformValue)?
 ;
 platformType:                               identifier
 ;
