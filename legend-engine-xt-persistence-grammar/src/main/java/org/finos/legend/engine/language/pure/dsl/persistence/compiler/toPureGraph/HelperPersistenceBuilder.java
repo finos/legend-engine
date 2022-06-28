@@ -19,16 +19,9 @@ import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.ConnectionFirstPassBuilder;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.ConnectionSecondPassBuilder;
-import org.finos.legend.engine.language.pure.dsl.persistence.grammar.to.PrimitiveValueSpecificationToObjectVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistenceContext;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistencePlatform;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistencePlatformDefault;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.EmailNotifyee;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.Notifier;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.NotifyeeVisitor;
@@ -85,9 +78,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.SourceSpecifiesFromDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.ValidityDerivation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.ValidityDerivationVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.ConnectionValue;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.PrimitiveTypeValue;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.ServiceParameter;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.CronTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.ManualTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
@@ -96,9 +86,6 @@ import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_Persistence;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_PersistencePlatform;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_PersistencePlatform_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_notifier_EmailNotifyee_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_notifier_Notifier;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_notifier_Notifier_Impl;
@@ -146,8 +133,6 @@ import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_pers
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_validitymilestoning_derivation_SourceSpecifiesValidFromAndThruDate_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_validitymilestoning_derivation_SourceSpecifiesValidFromDate_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_validitymilestoning_derivation_ValidityDerivation;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_service_ServiceParameter;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_service_ServiceParameter_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_trigger_CronTrigger_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_trigger_ManualTrigger_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_trigger_Trigger;
@@ -173,61 +158,6 @@ public class HelperPersistenceBuilder
 
     private HelperPersistenceBuilder()
     {
-    }
-
-    public static Root_meta_pure_persistence_metamodel_Persistence buildPersistence(PersistenceContext persistenceContext, CompileContext context)
-    {
-        String persistence = persistenceContext.persistence;
-        String persistencePath = persistence.substring(0, persistence.lastIndexOf("::"));
-        String persistenceName = persistence.substring(persistence.lastIndexOf("::") + 2);
-
-        PackageableElement packageableElement = context.pureModel.getOrCreatePackage(persistencePath)._children().detect(c -> persistenceName.equals(c._name()));
-        if (packageableElement instanceof Root_meta_pure_persistence_metamodel_Persistence)
-        {
-            return (Root_meta_pure_persistence_metamodel_Persistence) packageableElement;
-        }
-        throw new EngineException(String.format("Persistence '%s' is not defined", persistence), persistenceContext.sourceInformation, EngineErrorType.COMPILATION);
-    }
-
-    public static Root_meta_pure_persistence_metamodel_PersistencePlatform buildPersistencePlatform(PersistencePlatform persistencePlatform, CompileContext context)
-    {
-        if (persistencePlatform instanceof PersistencePlatformDefault)
-        {
-            return new Root_meta_pure_persistence_metamodel_PersistencePlatform_Impl("");
-        }
-        return IPersistenceCompilerExtension.process(persistencePlatform, ListIterate.flatCollect(IPersistenceCompilerExtension.getExtensions(), IPersistenceCompilerExtension::getExtraPersistencePlatformProcessors), context);
-    }
-
-    public static Root_meta_pure_persistence_metamodel_service_ServiceParameter buildServiceParameter(ServiceParameter serviceParameter, CompileContext context)
-    {
-        Root_meta_pure_persistence_metamodel_service_ServiceParameter pureServiceParameter = new Root_meta_pure_persistence_metamodel_service_ServiceParameter_Impl("");
-        pureServiceParameter._name(serviceParameter.name);
-
-        if (serviceParameter.value instanceof PrimitiveTypeValue)
-        {
-            Object value = ((PrimitiveTypeValue) serviceParameter.value).primitiveType.accept(new PrimitiveValueSpecificationToObjectVisitor());
-            pureServiceParameter._value(Lists.fixedSize.of(value));
-            return pureServiceParameter;
-        }
-        else if (serviceParameter.value instanceof ConnectionValue)
-        {
-            org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection value = buildConnection(((ConnectionValue) serviceParameter.value).connection, context);
-            pureServiceParameter._value(Lists.fixedSize.of(value));
-            return pureServiceParameter;
-        }
-        throw new EngineException(String.format("Unable to build service parameter of type '%s'.", serviceParameter.value.getClass()));
-    }
-
-    public static org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection buildConnection(Connection connection, CompileContext context)
-    {
-        if (connection == null)
-        {
-            return null;
-        }
-
-        org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection pureConnection = connection.accept(new ConnectionFirstPassBuilder(context));
-        connection.accept(new ConnectionSecondPassBuilder(context, pureConnection));
-        return pureConnection;
     }
 
     public static Root_meta_pure_persistence_metamodel_trigger_Trigger buildTrigger(Trigger trigger)

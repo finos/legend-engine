@@ -16,7 +16,6 @@ package org.finos.legend.engine.language.pure.dsl.persistence.compiler.toPureGra
 
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
@@ -57,10 +56,10 @@ public class PersistenceCompilerExtension implements IPersistenceCompilerExtensi
                         (persistenceContext, context) ->
                         {
                             Root_meta_pure_persistence_metamodel_PersistenceContext purePersistenceContext = (Root_meta_pure_persistence_metamodel_PersistenceContext) context.pureModel.getOrCreatePackage(persistenceContext._package)._children().detect(c -> persistenceContext.name.equals(c._name()));
-                            purePersistenceContext._persistence(HelperPersistenceBuilder.buildPersistence(persistenceContext, context));
-                            purePersistenceContext._platform(HelperPersistenceBuilder.buildPersistencePlatform(persistenceContext.platform, context));
-                            purePersistenceContext._serviceParameters(ListIterate.collect(persistenceContext.serviceParameters, sp -> HelperPersistenceBuilder.buildServiceParameter(sp, context)));
-                            purePersistenceContext._sinkConnection(HelperPersistenceBuilder.buildConnection(persistenceContext.sinkConnection, context));
+                            purePersistenceContext._persistence(HelperPersistenceContextBuilder.buildPersistence(persistenceContext, context));
+                            purePersistenceContext._platform(HelperPersistenceContextBuilder.buildPersistencePlatform(persistenceContext.platform, context));
+                            purePersistenceContext._serviceParameters(ListIterate.collect(persistenceContext.serviceParameters, sp -> HelperPersistenceContextBuilder.buildServiceParameter(sp, context)));
+                            purePersistenceContext._sinkConnection(HelperPersistenceContextBuilder.buildConnection(persistenceContext.sinkConnection, context));
                         }
                 ));
     }

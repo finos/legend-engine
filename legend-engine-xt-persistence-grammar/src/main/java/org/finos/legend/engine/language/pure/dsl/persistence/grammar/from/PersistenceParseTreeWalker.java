@@ -16,21 +16,14 @@ package org.finos.legend.engine.language.pure.dsl.persistence.grammar.from;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
-import org.finos.legend.engine.language.pure.dsl.persistence.grammar.from.context.PersistencePlatformSourceCode;
+import org.finos.legend.engine.language.pure.dsl.persistence.grammar.from.context.PersistenceContextParseTreeWalker;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.PersistenceParserGrammar;
-import org.finos.legend.engine.language.pure.grammar.from.connection.ConnectionParser;
-import org.finos.legend.engine.language.pure.grammar.from.domain.DomainParser;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistenceContext;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistencePlatform;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistencePlatformDefault;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.EmailNotifyee;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.Notifier;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.Notifyee;
@@ -77,10 +70,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.SourceSpecifiesFromAndThruDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.SourceSpecifiesFromDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.ValidityDerivation;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.ConnectionValue;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.PrimitiveTypeValue;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.ServiceParameter;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.ServiceParameterValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.ManualTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
@@ -89,24 +78,21 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 public class PersistenceParseTreeWalker
 {
     private final ParseTreeWalkerSourceInformation walkerSourceInformation;
     private final Consumer<PackageableElement> elementConsumer;
     private final ImportAwareCodeSection section;
-    private final ConnectionParser connectionParser;
 
-    private final List<Function<PersistencePlatformSourceCode, PersistencePlatform>> processors;
+    private final PersistenceContextParseTreeWalker persistenceContextWalker;
 
-    public PersistenceParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, Consumer<PackageableElement> elementConsumer, ImportAwareCodeSection section, ConnectionParser connectionParser, List<Function<PersistencePlatformSourceCode, PersistencePlatform>> processors)
+    public PersistenceParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, Consumer<PackageableElement> elementConsumer, ImportAwareCodeSection section, PersistenceContextParseTreeWalker persistenceContextWalker)
     {
         this.walkerSourceInformation = walkerSourceInformation;
         this.elementConsumer = elementConsumer;
         this.section = section;
-        this.connectionParser = connectionParser;
-        this.processors = processors;
+        this.persistenceContextWalker = persistenceContextWalker;
     }
 
     public void visit(PersistenceParserGrammar.DefinitionContext ctx)
@@ -125,165 +111,9 @@ public class PersistenceParseTreeWalker
         }
         else if (ctx.context() != null)
         {
-            return visitPersistenceContext(ctx.context());
+            return this.persistenceContextWalker.visitPersistenceContext(ctx.context());
         }
         throw new EngineException("Unrecognized element", sourceInformation, EngineErrorType.PARSER);
-    }
-
-    /**********
-     * persistence context
-     **********/
-
-    private PersistenceContext visitPersistenceContext(PersistenceParserGrammar.ContextContext ctx)
-    {
-        PersistenceContext context = new PersistenceContext();
-        context.name = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName().identifier());
-        context._package = ctx.qualifiedName().packagePath() == null ? "" : PureGrammarParserUtility.fromPath(ctx.qualifiedName().packagePath().identifier());
-        context.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-
-        // persistence
-        PersistenceParserGrammar.ContextPersistenceContext persistenceContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.contextPersistence(), "persistence", context.sourceInformation);
-        context.persistence = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : persistenceContext.qualifiedName().packagePath().identifier(), persistenceContext.qualifiedName().identifier());
-
-        // persistence platform
-        PersistenceParserGrammar.ContextPlatformContext platformContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.contextPlatform(), "platform", context.sourceInformation);
-        context.platform = platformContext == null ? new PersistencePlatformDefault() : visitPersistencePlatform(platformContext);
-
-        // service parameters
-        PersistenceParserGrammar.ContextServiceParametersContext serviceParametersContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.contextServiceParameters(), "serviceParameters", context.sourceInformation);
-        context.serviceParameters = serviceParametersContext ==  null ? Collections.emptyList() : ListIterate.collect(serviceParametersContext.serviceParameter(), this::visitServiceParameter);
-
-        // sink connection
-        PersistenceParserGrammar.ContextSinkConnectionContext sinkConnectionContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.contextSinkConnection(), "sinkConnection", context.sourceInformation);
-        context.sinkConnection = sinkConnectionContext == null ? null : visitConnection(sinkConnectionContext, walkerSourceInformation.getSourceInformation(sinkConnectionContext));
-
-        return context;
-    }
-
-    /**********
-     * persistence platform
-     **********/
-
-    private PersistencePlatform visitPersistencePlatform(PersistenceParserGrammar.ContextPlatformContext ctx)
-    {
-        String platformType = PureGrammarParserUtility.fromIdentifier(ctx.platformType().identifier());
-        PersistenceParserGrammar.PlatformValueContext platformValueContext = ctx.platformValue();
-        return this.visitPersistencePlatformValue(platformType, platformValueContext);
-    }
-
-    public PersistencePlatform visitPersistencePlatformValue(String platformType, PersistenceParserGrammar.PlatformValueContext ctx)
-    {
-        StringBuilder platformValueText = new StringBuilder();
-        for (PersistenceParserGrammar.PlatformValueContentContext fragment : ctx.platformValueContent())
-        {
-            platformValueText.append(fragment.getText());
-        }
-        String platformValueTextToParse = platformValueText.length() > 0 ? platformValueText.substring(0, platformValueText.length() - 2) : platformValueText.toString();
-        // prepare island grammar walker source information
-        int startLine = ctx.ISLAND_OPEN().getSymbol().getLine();
-        int lineOffset = walkerSourceInformation.getLineOffset() + startLine - 1;
-        // only add current walker source information column offset if this is the first line
-        int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + ctx.ISLAND_OPEN().getSymbol().getCharPositionInLine() + ctx.ISLAND_OPEN().getSymbol().getText().length();
-        ParseTreeWalkerSourceInformation platformValueWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
-        SourceInformation platformValueSourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-
-        PersistencePlatformSourceCode sourceCode = new PersistencePlatformSourceCode(platformValueTextToParse, platformType, platformValueSourceInformation, platformValueWalkerSourceInformation);
-        return IPersistenceParserExtension.process(sourceCode, processors);
-    }
-
-    /**********
-     * service parameter
-     **********/
-
-    private ServiceParameter visitServiceParameter(PersistenceParserGrammar.ServiceParameterContext ctx)
-    {
-        ServiceParameter serviceParameter = new ServiceParameter();
-        serviceParameter.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-
-        // name
-        serviceParameter.name = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
-
-        // value
-        serviceParameter.value = visitServiceParameterValue(ctx, serviceParameter.sourceInformation);
-
-        return serviceParameter;
-    }
-
-    private ServiceParameterValue visitServiceParameterValue(PersistenceParserGrammar.ServiceParameterContext ctx, SourceInformation sourceInformation)
-    {
-        if (ctx.primitiveValue() != null)
-        {
-            return visitPrimitiveValue(ctx.primitiveValue());
-        }
-        else if (ctx.connectionPointer() != null)
-        {
-            ConnectionValue value = new ConnectionValue();
-            value.connection = visitConnectionPointer(ctx.connectionPointer());
-            return value;
-        }
-        else if (ctx.embeddedConnection() != null)
-        {
-            ConnectionValue value = new ConnectionValue();
-            value.connection = visitEmbeddedConnection(ctx.embeddedConnection());
-            return value;
-        }
-        throw new EngineException("Unrecognized service parameter value", sourceInformation, EngineErrorType.PARSER);
-    }
-
-    private ServiceParameterValue visitPrimitiveValue(PersistenceParserGrammar.PrimitiveValueContext ctx)
-    {
-        DomainParser parser = new DomainParser();
-        int startLine = ctx.getStart().getLine();
-        int lineOffset = walkerSourceInformation.getLineOffset() + startLine - 1;
-        int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + ctx.getStart().getCharPositionInLine();
-        ParseTreeWalkerSourceInformation serviceParamSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).build();
-
-        PrimitiveTypeValue primitiveTypeValue = new PrimitiveTypeValue();
-        primitiveTypeValue.primitiveType = parser.parsePrimitiveValue(ctx.getText(), serviceParamSourceInformation, null);
-        return primitiveTypeValue;
-    }
-
-    /**********
-     * connection
-     **********/
-
-    private Connection visitConnection(PersistenceParserGrammar.ContextSinkConnectionContext ctx, SourceInformation sourceInformation)
-    {
-        if (ctx.connectionPointer() != null)
-        {
-            return visitConnectionPointer(ctx.connectionPointer());
-        }
-        else if (ctx.embeddedConnection() != null)
-        {
-            return visitEmbeddedConnection(ctx.embeddedConnection());
-        }
-        throw new EngineException("Unrecognized connection", sourceInformation, EngineErrorType.PARSER);
-    }
-
-    private ConnectionPointer visitConnectionPointer(PersistenceParserGrammar.ConnectionPointerContext ctx)
-    {
-        ConnectionPointer connectionPointer = new ConnectionPointer();
-        connectionPointer.connection = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
-        connectionPointer.sourceInformation = walkerSourceInformation.getSourceInformation(ctx.qualifiedName());
-        return connectionPointer;
-    }
-
-    private Connection visitEmbeddedConnection(PersistenceParserGrammar.EmbeddedConnectionContext ctx)
-    {
-        StringBuilder embeddedConnectionText = new StringBuilder();
-        for (PersistenceParserGrammar.EmbeddedConnectionContentContext fragment : ctx.embeddedConnectionContent())
-        {
-            embeddedConnectionText.append(fragment.getText());
-        }
-        String embeddedConnectionParsingText = embeddedConnectionText.length() > 0 ? embeddedConnectionText.substring(0, embeddedConnectionText.length() - 2) : embeddedConnectionText.toString();
-        // prepare island grammar walker source information
-        int startLine = ctx.ISLAND_OPEN().getSymbol().getLine();
-        int lineOffset = walkerSourceInformation.getLineOffset() + startLine - 1;
-        // only add current walker source information column offset if this is the first line
-        int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + ctx.ISLAND_OPEN().getSymbol().getCharPositionInLine() + ctx.ISLAND_OPEN().getSymbol().getText().length();
-        ParseTreeWalkerSourceInformation embeddedConnectionWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
-        SourceInformation embeddedConnectionSourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-        return this.connectionParser.parseEmbeddedRuntimeConnections(embeddedConnectionParsingText, embeddedConnectionWalkerSourceInformation, embeddedConnectionSourceInformation);
     }
 
     /**********

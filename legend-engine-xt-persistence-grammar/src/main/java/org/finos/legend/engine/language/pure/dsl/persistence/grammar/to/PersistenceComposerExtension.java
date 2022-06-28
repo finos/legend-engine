@@ -69,6 +69,6 @@ public class PersistenceComposerExtension implements IPersistenceComposerExtensi
 
     private static String renderPersistenceContext(PersistenceContext persistenceContext, PureGrammarComposerContext context)
     {
-        return HelperPersistenceComposer.renderPersistenceContext(persistenceContext, 1, context);
+        return HelperPersistenceContextComposer.renderPersistenceContext(persistenceContext, 1, context);
     }
 }

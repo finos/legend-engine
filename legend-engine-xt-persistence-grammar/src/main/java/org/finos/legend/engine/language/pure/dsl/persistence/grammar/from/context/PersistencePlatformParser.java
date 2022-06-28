@@ -12,9 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.language.pure.dsl.persistence.grammar.from;
+package org.finos.legend.engine.language.pure.dsl.persistence.grammar.from.context;
 
-import org.finos.legend.engine.language.pure.dsl.persistence.grammar.from.context.PersistencePlatformSourceCode;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistencePlatform;
 
 import java.util.function.Function;
