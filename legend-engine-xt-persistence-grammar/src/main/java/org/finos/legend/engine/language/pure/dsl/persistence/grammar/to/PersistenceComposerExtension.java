@@ -20,14 +20,13 @@ import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.dsl.persistence.grammar.from.PersistenceParserExtension;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
-import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistenceContext;
 
 import java.util.List;
 
-public class PersistenceGrammarComposerExtension implements PureGrammarComposerExtension
+public class PersistenceComposerExtension implements IPersistenceComposerExtension
 {
     @Override
     public List<Function3<List<PackageableElement>, PureGrammarComposerContext, String, String>> getExtraSectionComposers()
@@ -59,17 +58,17 @@ public class PersistenceGrammarComposerExtension implements PureGrammarComposerE
         return Lists.fixedSize.of((elements, context, composedSections) ->
         {
             List<Persistence> composableElements = ListIterate.selectInstancesOf(elements, Persistence.class);
-            return composableElements.isEmpty() ? null : new PureFreeSectionGrammarComposerResult(LazyIterate.collect(composableElements, el -> PersistenceGrammarComposerExtension.renderPersistence(el, context)).makeString("###" + PersistenceParserExtension.NAME + "\n", "\n\n", ""), composableElements);
+            return composableElements.isEmpty() ? null : new PureFreeSectionGrammarComposerResult(LazyIterate.collect(composableElements, el -> PersistenceComposerExtension.renderPersistence(el, context)).makeString("###" + PersistenceParserExtension.NAME + "\n", "\n\n", ""), composableElements);
         });
     }
 
     private static String renderPersistence(Persistence persistence, PureGrammarComposerContext context)
     {
-        return HelperPersistenceGrammarComposer.renderPersistence(persistence, 1, context);
+        return HelperPersistenceComposer.renderPersistence(persistence, 1, context);
     }
 
     private static String renderPersistenceContext(PersistenceContext persistenceContext, PureGrammarComposerContext context)
     {
-        return HelperPersistenceGrammarComposer.renderPersistenceContext(persistenceContext, 1, context);
+        return HelperPersistenceComposer.renderPersistenceContext(persistenceContext, 1, context);
     }
 }

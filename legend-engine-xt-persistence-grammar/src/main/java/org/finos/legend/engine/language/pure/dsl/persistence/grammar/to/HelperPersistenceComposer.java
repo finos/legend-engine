@@ -25,6 +25,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connect
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistenceContext;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistencePlatform;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistencePlatformDefault;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.ConnectionValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.PrimitiveTypeValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.ServiceParameter;
@@ -98,9 +100,9 @@ import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarCompos
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabSize;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
 
-public class HelperPersistenceGrammarComposer
+public class HelperPersistenceComposer
 {
-    private HelperPersistenceGrammarComposer()
+    private HelperPersistenceComposer()
     {
     }
 
@@ -109,6 +111,7 @@ public class HelperPersistenceGrammarComposer
         return "PersistenceContext " + convertPath(persistenceContext.getPath()) + "\n" +
                 "{\n" +
                 renderPersistencePointer(persistenceContext.persistence, indentLevel) +
+                renderPersistencePlatform(persistenceContext.platform, indentLevel, context) +
                 renderServiceParameters(persistenceContext.serviceParameters, indentLevel, context) +
                 (persistenceContext.sinkConnection == null ? "" : renderConnection(persistenceContext.sinkConnection, "sinkConnection", indentLevel, context)) +
                 "}";
@@ -117,6 +120,17 @@ public class HelperPersistenceGrammarComposer
     private static String renderPersistencePointer(String persistencePath, int indentLevel)
     {
         return getTabString(indentLevel) + "persistence: " + convertPath(persistencePath) + ";\n";
+    }
+
+    private static String renderPersistencePlatform(PersistencePlatform persistencePlatform, int indentLevel, PureGrammarComposerContext context)
+    {
+        if (persistencePlatform instanceof PersistencePlatformDefault)
+        {
+            return "";
+        }
+
+        List<IPersistenceComposerExtension> extensions = IPersistenceComposerExtension.getExtensions(context);
+        return getTabString(indentLevel) + "platform: " + IPersistenceComposerExtension.process(persistencePlatform, ListIterate.flatCollect(extensions, IPersistenceComposerExtension::getExtraPersistencePlatformComposers), indentLevel, context);
     }
 
     private static String renderServiceParameters(List<ServiceParameter> serviceParameters, int indentLevel, PureGrammarComposerContext context)
