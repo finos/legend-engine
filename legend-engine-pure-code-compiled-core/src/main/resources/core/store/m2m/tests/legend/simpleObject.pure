@@ -452,7 +452,7 @@ meta::pure::mapping::modelToModel::test::alloy::simple::unmappedOptionalProperti
                                 url='data:application/json,{"s":"Hello"}'
                              )
       ),
-      []
+      meta::pure::extension::defaultExtensions()
    );
 
    let expected = '{"s1":"Hello", "s2":[], "i":null, "f":null, "d":[], "sd":[], "dt":[], "b":null, "c":null, "nm":null}';

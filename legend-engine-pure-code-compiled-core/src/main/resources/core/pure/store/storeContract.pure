@@ -27,14 +27,7 @@ Class meta::pure::store::StoreContract extends meta::pure::router::extension::Ro
   planExecution : Function<{StoreQuery[1], RoutedValueSpecification[0..1], Mapping[0..1], Runtime[0..1], ExecutionContext[1], Extension[*], DebugContext[1]->meta::pure::executionPlan::ExecutionNode[1]}>[0..1];
   // ------------------------------------------------------------------------------------ ExecutionPlan 
 
-  // Execution Node - Print ---------------------------------------------------------------------------
-  print_planNodeToString : Function<{ExecutionNode[1], String[1] -> String[1]}>[0..1];
-  print_connectionToString: Function<{Connection[1], String[1] -> String[1]}>[0..1];
-  print_typeToString : Function<{ResultType[1], String[1] -> String[1]}>[0..1];
-  // --------------------------------------------------------------------------- Execution Node - Print
-
-
-  // Core ---------------------------------------------------------------------------------------------
+   // Core ---------------------------------------------------------------------------------------------
   supportsSetImplementation : Function<{InstanceSetImplementation[1]->Boolean[1]}>[1];
   supportsStore : Function<{Store[1]->Boolean[1]}>[1];
   resolveStoreFromSetImplementation : Function<{InstanceSetImplementation[1]->Store[1]}>[0..1];

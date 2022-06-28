@@ -4,7 +4,9 @@ import meta::pure::extension::*;
 
 Class meta::pure::executionPlan::extension::ExecutionPlanExtension
 {
+   // Execution Node - Print ---------------------------------------------------------------------------
   printPlanNodeToString : Function<{String[1], Extension[*] -> Function<{Nil[1] -> String[1]}>[*]}>[0..1];
   printConnectionToString: Function<{Extension[*] -> Function<{Nil[1] -> String[1]}>[*]}>[0..1];
   printTypeToString : Function<{String[1], Extension[*] -> Function<{Nil[1] -> String[1]}>[*]}>[0..1];
+  // --------------------------------------------------------------------------- Execution Node - Print
 }

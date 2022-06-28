@@ -77,7 +77,10 @@ Class meta::pure::mapping::modelToModel::ModelChainConnection extends Connection
 }
 
 
+Class meta::pure::mapping::M2MEmbeddedSetImplementation extends EmbeddedSetImplementation
+{
 
+}
 
 
 Class meta::pure::mapping::modelToModel::ModelToModelExecutionNode extends ExecutionNode

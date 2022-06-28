@@ -68,8 +68,7 @@ Class meta::pure::extension::Extension
   executionPlan_execution_allNodes : Function<{meta::pure::extension::Extension[*] -> Function<{Nil[1] ->  ExecutionNode[*]}>[*]}>[0..1];
   executionPlan_execution_buildVariableTemplateString : Function<{String[1], Any[1], meta::pure::metamodel::type::Type[1] -> Function<{Nil[1] ->  String[1]}>[*]}>[0..1];
 
-  executionPlan_generation_executionPlan : Function<{ExecutionNode[1],meta::pure::extension::Extension[*]->String[*]}>[0..1];
-  executionPlan_generation_updateConnection : Function<{Nil[1] -> Connection[1]}>[*];
+  executionPlan_generation_preprocessClusterConnection : Function<{Nil[1] -> Connection[1]}>[*];
   executionPlan_generation_isConnectionForClass : Function<{meta::pure::metamodel::type::Class<Any>[1] -> Function<{Nil[1]->Boolean[1]}>[*]}>[0..1];
   executionPlan_generation_nodeFromConnection : Function<{RootGraphFetchTree<Any>[0..1], Boolean[1], Boolean[1] -> Function<{Nil[1]->ExecutionNode[1]}>[*]}>[0..1];
   executionPlan_generation_executionOptionParameters : Function<{Nil[1] -> PlanVarPlaceHolder[*]}>[*];

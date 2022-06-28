@@ -49,13 +49,16 @@ function meta::pure::mapping::xStore::crossGetterOverride(o:Any[1], property:Pro
                   |$sourceSys.localGetterOverrideNonMapped->toOne()->eval($o, $property);
                );,
              | $propertyMappings->map(
-                                       p|let target = $dataPayload.static.mapping.classMappingById($p.targetSetImplementationId)->cast(@InstanceSetImplementation);
-                                         let targetSys = $dataPayload.static.extensions->meta::pure::extension::storeContractForSetImplementation($target->toOne());
-                                         if ($sourceSys.supports == $targetSys.supports,
-                                             |$targetSys.localGetterOverrideMapped->toOne()->eval($o, $p),
-                                             |performXStoreQuery($o, $p, $dataPayload.static.extensions)
-                                         );
-                                  );
+                                       p|let target = $dataPayload.static.mapping.classMappingById($p.targetSetImplementationId)->toOne();
+                                         if ($target->instanceOf(InstanceSetImplementation),
+                                            | let targetSys = $dataPayload.static.extensions->meta::pure::extension::storeContractForSetImplementation($target->cast(@InstanceSetImplementation));
+                                              if ($sourceSys.id == $targetSys.id,
+                                                |$targetSys.localGetterOverrideMapped->toOne()->eval($o, $p),
+                                                |performXStoreQuery($o, $p, $dataPayload.static.extensions)
+                                              );,
+                                            |performXStoreQuery($o, $p, $dataPayload.static.extensions)
+                                          );
+                                   );
          );
    );
 }

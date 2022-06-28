@@ -163,7 +163,7 @@ function meta::relational::extension::relationalExtension(type:String[1]) : meta
                                              let varMultiplicity  = if($parameterVal->instanceOf(List), |ZeroMany, |PureOne);
                                              convertPlaceHolderToSQLString(^meta::relational::functions::pureToSqlQuery::metamodel::VarPlaceHolder(name = $name, type=$type, multiplicity=$varMultiplicity), $dbConfig.dbExtension.literalProcessor, $d.timeZone);
                               },
-      executionPlan_generation_updateConnection =
+      executionPlan_generation_preprocessClusterConnection =
                      [
                         t:meta::relational::runtime::TestDatabaseConnection[1] |
                               ^$t(testDataSetupSqls = if ($t.testDataSetupCsv->isEmpty() || !$t.element->instanceOf(meta::relational::metamodel::Database),
