@@ -59,13 +59,10 @@ public class HelperPersistenceContextComposer
 
     private static String renderPersistencePlatform(PersistencePlatform persistencePlatform, int indentLevel, PureGrammarComposerContext context)
     {
-        if (persistencePlatform instanceof PersistencePlatformDefault)
-        {
-            return "";
-        }
-
         List<IPersistenceComposerExtension> extensions = IPersistenceComposerExtension.getExtensions(context);
-        return getTabString(indentLevel) + "platform: " + IPersistenceComposerExtension.process(persistencePlatform, ListIterate.flatCollect(extensions, IPersistenceComposerExtension::getExtraPersistencePlatformComposers), indentLevel, context);
+        String persistencePlatformText = IPersistenceComposerExtension.process(persistencePlatform, ListIterate.flatCollect(extensions, IPersistenceComposerExtension::getExtraPersistencePlatformComposers), indentLevel, context);
+
+        return persistencePlatformText.isEmpty() ? "" : getTabString(indentLevel) + "platform: " + persistencePlatformText;
     }
 
     private static String renderServiceParameters(List<ServiceParameter> serviceParameters, int indentLevel, PureGrammarComposerContext context)

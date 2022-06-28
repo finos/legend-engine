@@ -76,13 +76,9 @@ public class PersistenceCompilerExtension implements IPersistenceCompilerExtensi
     @Override
     public List<Function2<PersistencePlatform, CompileContext, Root_meta_pure_persistence_metamodel_PersistencePlatform>> getExtraPersistencePlatformProcessors()
     {
-        return Collections.singletonList(((persistencePlatform, compileContext) ->
-        {
-            if (persistencePlatform instanceof PersistencePlatformDefault)
-            {
-                return new Root_meta_pure_persistence_metamodel_PersistencePlatform_Impl("");
-            }
-            return null;
-        }));
+        return Collections.singletonList((persistencePlatform, compileContext) ->
+                persistencePlatform instanceof PersistencePlatformDefault
+                        ?  new Root_meta_pure_persistence_metamodel_PersistencePlatform_Impl("")
+                        : null);
     }
 }

@@ -23,7 +23,10 @@ import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerConte
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistenceContext;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistencePlatform;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistencePlatformDefault;
 
+import java.util.Collections;
 import java.util.List;
 
 public class PersistenceComposerExtension implements IPersistenceComposerExtension
@@ -60,6 +63,15 @@ public class PersistenceComposerExtension implements IPersistenceComposerExtensi
             List<Persistence> composableElements = ListIterate.selectInstancesOf(elements, Persistence.class);
             return composableElements.isEmpty() ? null : new PureFreeSectionGrammarComposerResult(LazyIterate.collect(composableElements, el -> PersistenceComposerExtension.renderPersistence(el, context)).makeString("###" + PersistenceParserExtension.NAME + "\n", "\n\n", ""), composableElements);
         });
+    }
+
+    @Override
+    public List<Function3<PersistencePlatform, Integer, PureGrammarComposerContext, String>> getExtraPersistencePlatformComposers()
+    {
+        return Collections.singletonList((persistencePlatform, indentLevel, context) ->
+            persistencePlatform instanceof PersistencePlatformDefault
+                    ? ""
+                    : null);
     }
 
     private static String renderPersistence(Persistence persistence, PureGrammarComposerContext context)
