@@ -440,10 +440,11 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForPrope
    let inlinedGraphTree          = $inlinedPropertyTree->propertyTreeToGraphFetchTree($owner);
    let inlinedPropertyGraphTrees = $inlinedGraphTree.subTrees->cast(@PropertyGraphFetchTree);
 
-   let withSubTypes        = $inlinedPropertyGraphTrees->concatenate($inlinedPropertyGraphTrees->map(pgft | let appendAtPath = $propertyPaths.current->filter(path| $path.values->size() > 1);
+   let withSubTypes        = $inlinedPropertyGraphTrees->concatenate($inlinedPropertyGraphTrees->map(pgft | let appendAtPath = $propertyPaths.current->filter(path| $path.values->size() > 1)->cast(@List<PropertyPathNode>);
                                                                                                             if($appendAtPath->isEmpty(),
                                                                                                                | $setClasses->map(sc | if($sc->getAllTypeGeneralisationsExcluded()->contains($pgft.property.genericType.rawType->toOne()), | ^$pgft(subType=$sc->cast(@Class<Any>)), | [])),
-                                                                                                               | $pgft->getSubTreeNodesAtPath(list($appendAtPath->toOne().values->tail()), $setClasses->cast(@Class<Any>), $extensions)
+                                                                                                               | let val = list($appendAtPath->map(x|$x.values)->cast(@PropertyPathNode)->tail());
+                                                                                                                 $pgft->getSubTreeNodesAtPath($val, $setClasses->cast(@Class<Any>), $extensions);
                                                                                                             );
                                                                                                      ));
 

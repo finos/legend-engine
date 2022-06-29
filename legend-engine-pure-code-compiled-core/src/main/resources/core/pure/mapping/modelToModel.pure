@@ -33,6 +33,7 @@ import meta::json::*;
 
 Class meta::pure::mapping::modelToModel::ModelStore extends meta::pure::store::Store
 {
+  toString(){'ModelStore'}:String[1];
 }
 
 // TODO Is there a better way of breaking ModelConnection into Instances/Json
