@@ -72,8 +72,8 @@ public class MappingAnalytics
     @Consumes({MediaType.APPLICATION_JSON, InflateInterceptor.APPLICATION_ZLIB})
     @Produces(MediaType.APPLICATION_JSON)
     public Response doModelCoverageAnalytics(MappingModelCoverageAnalysisInput input,
-                                             @QueryParam("returnMappedEntityInfo") @DefaultValue("true") boolean returnMappedEntityInfo,
-                                             @QueryParam("returnMappedPropertyInfo") @DefaultValue("true") boolean returnMappedPropertyInfo,
+                                             @QueryParam("returnMappedEntityInfo") @DefaultValue("false") boolean returnMappedEntityInfo,
+                                             @QueryParam("returnMappedPropertyInfo") @DefaultValue("false") boolean returnMappedPropertyInfo,
                                              @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
