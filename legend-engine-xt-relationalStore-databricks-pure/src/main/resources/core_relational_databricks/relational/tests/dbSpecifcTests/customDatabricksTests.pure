@@ -1,0 +1,442 @@
+// Copyright 2021 Databricks
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database meta::relational::tests::dbSpecificTests::databricks::custom::db::delta
+(
+  Schema test_schema
+  (
+    Table test_table
+    (
+      id INTEGER PRIMARY KEY,
+      firstName VARCHAR(200),
+      lastName VARCHAR(200),
+      age INTEGER,
+      createdAt DATE,
+      activeDate DATE,
+      activeDateStr VARCHAR(200)
+    )
+  )
+)
+
+###Pure
+Class meta::relational::tests::dbSpecificTests::databricks::custom::domain::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+  age: Integer[1];
+  createdAt: Date[1];
+  activeDate: Date[1];
+  activeDateStr: String[1];
+}
+
+
+###Mapping
+Mapping meta::relational::tests::dbSpecificTests::databricks::custom::mapping::simpleRelationalMappingPersonForDelta
+(
+  *meta::relational::tests::dbSpecificTests::databricks::custom::domain::Person: Relational
+  {
+    ~mainTable [meta::relational::tests::dbSpecificTests::databricks::custom::db::delta]test_schema.test_table
+    firstName: [meta::relational::tests::dbSpecificTests::databricks::custom::db::delta]test_schema.test_table.firstName,
+    lastName: [meta::relational::tests::dbSpecificTests::databricks::custom::db::delta]test_schema.test_table.lastName,
+    age: [meta::relational::tests::dbSpecificTests::databricks::custom::db::delta]test_schema.test_table.age,
+    createdAt: [meta::relational::tests::dbSpecificTests::databricks::custom::db::delta]test_schema.test_table.createdAt,
+    activeDate: [meta::relational::tests::dbSpecificTests::databricks::custom::db::delta]test_schema.test_table.activeDate,
+    activeDateStr: [meta::relational::tests::dbSpecificTests::databricks::custom::db::delta]test_schema.test_table.activeDateStr
+  }
+)
+
+
+###Pure
+import meta::relational::runtime::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::mapping::*;
+import meta::relational::functions::asserts::*;
+import meta::relational::runtime::*;
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::*;
+import meta::relational::functions::sqlstring::*;
+import meta::relational::tests::mapping::sqlFunction::model::domain::*;
+import meta::relational::tests::mapping::sqlFunction::model::mapping::*;
+import meta::pure::runtime::*;
+import meta::pure::profiles::*;
+
+function <<test.BeforePackage>> meta::relational::tests::dbSpecificTests::databricks::custom::setUp():Boolean[1]
+{
+    true;
+}
+
+function meta::relational::tests::dbSpecificTests::databricks::custom::testRuntimeForDB():Runtime[1]
+{
+   meta::relational::tests::testRuntime(meta::relational::tests::dbSpecificTests::databricks::custom::db::delta);
+}
+
+function <<test.Test>> meta::relational::tests::dbSpecificTests::databricks::custom::tableAndColumnNamesAreQuoted():Boolean[1]
+{
+   let result = toSQLString(
+    |meta::relational::tests::dbSpecificTests::databricks::custom::domain::Person.all(),
+    meta::relational::tests::dbSpecificTests::databricks::custom::mapping::simpleRelationalMappingPersonForDelta,
+    DatabaseType.Databricks,
+    meta::relational::extension::relationalExtensions());
+   assertEquals('select `root`.id as `pk_0`, `root`.firstName as `firstName`, `root`.lastName as `lastName`, `root`.age as `age`, `root`.createdAt as `createdAt`, `root`.activeDate as `activeDate`, `root`.activeDateStr as `activeDateStr` from test_schema.test_table as `root`', $result);
+}
+
+function <<test.Test>> meta::relational::tests::dbSpecificTests::databricks::custom::windowFunction():Boolean[1]
+{
+   let func = {|meta::relational::tests::dbSpecificTests::databricks::custom::domain::Person.all()
+      ->project([
+         col(p |$p.lastName,'lastName')
+         ,col(window(p |$p.firstName ),sortAsc(p |$p.lastName), func(p |$p.age->toOne(), y| $y->average()),'ageAverageWindow')
+      ])};
+
+   let result = toSQLString(
+     $func,
+     meta::relational::tests::dbSpecificTests::databricks::custom::mapping::simpleRelationalMappingPersonForDelta,
+     DatabaseType.Databricks,
+     meta::relational::extension::relationalExtensions());
+   assertEquals('select `root`.lastName as `lastName`, avg(1.0 * `root`.age) OVER (Partition By `root`.firstName Order By `root`.lastName ASC) as `ageAverageWindow` from test_schema.test_table as `root`', $result);
+}
+
+function <<test.Test>> meta::relational::tests::dbSpecificTests::databricks::custom::getDateTime():Boolean[1]
+{
+   let dt = %2015-01-01T00:00:00.000;
+   let result = toSQLString(
+    |Trade.all()->project(t | $t.settlementDateTime, 'settlementDateTime')->filter(r | $r.getDateTime('settlementDateTime') < $dt),
+    meta::relational::tests::simpleRelationalMapping, 
+    DatabaseType.Databricks, 
+    meta::relational::extension::relationalExtensions());
+   assertEquals('select `root`.settlementDateTime as `settlementDateTime` from tradeTable as `root` where `root`.settlementDateTime < to_timestamp(\'2015-01-01 00:00:00.000\')', $result);
+}
+
+function <<test.Test>> meta::relational::tests::dbSpecificTests::databricks::custom::getDate():Boolean[1]
+{
+   let dt = %2015-01-01T00:00:00.000;
+   let result = toSQLString(
+    |Trade.all()->project(t | $t.date, 'date')->filter(r | $r.getDate('date') < $dt),
+    meta::relational::tests::simpleRelationalMapping, 
+     DatabaseType.Databricks,
+     meta::relational::extension::relationalExtensions());
+   assertEquals('select `root`.tradeDate as `date` from tradeTable as `root` where `root`.tradeDate < to_timestamp(\'2015-01-01 00:00:00.000\')', $result);
+}
+
+function <<test.Test>> meta::relational::tests::dbSpecificTests::databricks::custom::joinStrings():Boolean[1]
+{
+   let result = toSQLString(
+     |Person.all()->groupBy([p|$p.firstName], agg( x|$x.lastName, y|$y->joinStrings('*')),['firstName', 'lastNames']),
+      meta::relational::tests::simpleRelationalMapping,
+      DatabaseType.Databricks,
+      meta::relational::extension::relationalExtensions());
+   assertSameSQL('select `root`.FIRSTNAME as `firstName`, array_join(array(`root`.LASTNAME), \'*\') as `lastNames` from personTable as `root` group by `firstName`', $result);
+}
+
+function <<test.Test>> meta::relational::tests::dbSpecificTests::databricks::custom::atan2():Boolean[1]
+{
+   let result = toSQLString(
+    |SqlFunctionDemo.all()->project([s | $s.floatATan2Result], ['atan2']),
+      meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
+      DatabaseType.Databricks,
+      meta::relational::extension::relationalExtensions());
+   assertSameSQL('select atan2(`root`.float1,`root`.int1) as `atan2` from dataTable as `root`', $result);
+}
+
+function <<test.Test>> meta::relational::tests::dbSpecificTests::databricks::custom::concat():Boolean[1]
+{
+   let result = toSQLString(
+     |Person.all()->project([p|$p.name] ,['name']),
+      meta::relational::tests::simpleRelationalMapping,
+      DatabaseType.Databricks,
+      meta::relational::extension::relationalExtensions());
+   assertSameSQL('select concat(`root`.FIRSTNAME, \' \', `root`.LASTNAME) as `name` from personTable as `root`', $result);
+}
+
+function <<test.Test>> meta::relational::tests::dbSpecificTests::databricks::custom::hour():Boolean[1]
+{
+    let result = toSQLString(
+        |SqlFunctionDemo.all()->project([s | $s.hour], ['hour']),
+        meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
+        DatabaseType.Databricks,
+        meta::relational::extension::relationalExtensions());
+    assertEquals('select hour(`root`.dateTime) as `hour` from dataTable as `root`', $result);
+}
+
+
+function <<test.Test>> meta::relational::tests::dbSpecificTests::databricks::custom::adjust():Boolean[1]
+{
+   let result = toSQLString(
+    |meta::relational::tests::dbSpecificTests::databricks::custom::domain::Person.all()->project([x|$x.createdAt->adjust(1, DurationUnit.DAYS)], ['Created At']),
+    meta::relational::tests::dbSpecificTests::databricks::custom::mapping::simpleRelationalMappingPersonForDelta,
+    DatabaseType.Databricks,
+    meta::relational::extension::relationalExtensions());
+   assertEquals('select `root`.createdAt + INTERVAL 1 DAY as `Created At` from test_schema.test_table as `root`', $result);
+}
+
+function <<test.Test>> meta::relational::tests::dbSpecificTests::databricks::custom::dateDiffDays():Boolean[1]
+{
+   let result = toSQLString(
+    |meta::relational::tests::dbSpecificTests::databricks::custom::domain::Person.all()->project([x|$x.createdAt->dateDiff($x.activeDate, DurationUnit.DAYS)], ['deltaDays']),
+    meta::relational::tests::dbSpecificTests::databricks::custom::mapping::simpleRelationalMappingPersonForDelta,
+    DatabaseType.Databricks,
+    meta::relational::extension::relationalExtensions());
+   assertEquals('select datediff(`root`.activeDate, `root`.createdAt) as `deltaDays` from test_schema.test_table as `root`', $result);
+}
+
+function <<test.Test>> meta::relational::tests::dbSpecificTests::databricks::custom::dateDiffMonths():Boolean[1]
+{
+   let result = toSQLString(
+    |meta::relational::tests::dbSpecificTests::databricks::custom::domain::Person.all()->project([x|$x.createdAt->dateDiff($x.activeDate, DurationUnit.MONTHS)], ['deltaDays']),
+    meta::relational::tests::dbSpecificTests::databricks::custom::mapping::simpleRelationalMappingPersonForDelta,
+    DatabaseType.Databricks,
+    meta::relational::extension::relationalExtensions());
+   assertEquals('select cast(round(months_between(`root`.activeDate, `root`.createdAt)) AS INT) as `deltaDays` from test_schema.test_table as `root`', $result);
+}
+
+function <<test.Test>> meta::relational::tests::dbSpecificTests::databricks::custom::dateDiffYears():Boolean[1]
+{
+   let result = toSQLString(
+    |meta::relational::tests::dbSpecificTests::databricks::custom::domain::Person.all()->project([x|$x.createdAt->dateDiff($x.activeDate, DurationUnit.YEARS)], ['deltaDays']),
+    meta::relational::tests::dbSpecificTests::databricks::custom::mapping::simpleRelationalMappingPersonForDelta,
+    DatabaseType.Databricks,
+    meta::relational::extension::relationalExtensions());
+   assertEquals('select year(`root`.activeDate) - year(`root`.createdAt) as `deltaDays` from test_schema.test_table as `root`', $result);
+}
+
+function <<test.Test>> meta::relational::tests::dbSpecificTests::databricks::custom::avg():Boolean[1]
+{
+   let result = toSQLString(
+    |meta::relational::tests::dbSpecificTests::databricks::custom::domain::Person.all()->groupBy([x|$x.firstName], [agg(x|$x.age, x|$x->average())], ['First Name', 'Avg Age']),
+    meta::relational::tests::dbSpecificTests::databricks::custom::mapping::simpleRelationalMappingPersonForDelta,
+    DatabaseType.Databricks,
+    meta::relational::extension::relationalExtensions());
+   assertEquals('select `root`.firstName as `First Name`, avg(1.0 * `root`.age) as `Avg Age` from test_schema.test_table as `root` group by `First Name`', $result);
+}
+
+function <<test.Test>> meta::relational::tests::dbSpecificTests::databricks::custom::firstDayOfMonth():Boolean[1]
+{
+   let result = toSQLString(
+    |meta::relational::tests::dbSpecificTests::databricks::custom::domain::Person.all()->project([x|$x.createdAt->firstDayOfMonth()], ['month']),
+    meta::relational::tests::dbSpecificTests::databricks::custom::mapping::simpleRelationalMappingPersonForDelta,
+    DatabaseType.Databricks,
+    meta::relational::extension::relationalExtensions());
+   assertEquals('select trunc(`root`.createdAt, \'MONTH\') as `month` from test_schema.test_table as `root`', $result);
+}
+
+function <<test.Test>> meta::relational::tests::dbSpecificTests::databricks::custom::firstDayOfQuarter():Boolean[1]
+{
+   let result = toSQLString(
+    |meta::relational::tests::dbSpecificTests::databricks::custom::domain::Person.all()->project([x|$x.createdAt->firstDayOfQuarter()], ['quarter']),
+    meta::relational::tests::dbSpecificTests::databricks::custom::mapping::simpleRelationalMappingPersonForDelta,
+    DatabaseType.Databricks,
+    meta::relational::extension::relationalExtensions());
+   assertEquals('select trunc(`root`.createdAt, \'QUARTER\') as `quarter` from test_schema.test_table as `root`', $result);
+}
+
+function <<test.Test>> meta::relational::tests::dbSpecificTests::databricks::custom::firstDayOfWeek():Boolean[1]
+{
+   let result = toSQLString(
+    |meta::relational::tests::dbSpecificTests::databricks::custom::domain::Person.all()->project([x|$x.createdAt->firstDayOfWeek()], ['week']),
+    meta::relational::tests::dbSpecificTests::databricks::custom::mapping::simpleRelationalMappingPersonForDelta,
+    DatabaseType.Databricks,
+    meta::relational::extension::relationalExtensions());
+   assertEquals('select trunc(`root`.createdAt, \'WEEK\') as `week` from test_schema.test_table as `root`', $result);
+}
+
+function <<test.Test>> meta::relational::tests::dbSpecificTests::databricks::custom::previousDayOfWeek():Boolean[1]
+{
+   let result = toSQLString(
+    |meta::relational::tests::dbSpecificTests::databricks::custom::domain::Person.all()->project([x|$x.createdAt->previousDayOfWeek(DayOfWeek.Monday)], ['monday']),
+    meta::relational::tests::dbSpecificTests::databricks::custom::mapping::simpleRelationalMappingPersonForDelta,
+    DatabaseType.Databricks,
+    meta::relational::extension::relationalExtensions());
+   assertEquals('select date_sub(`root`.createdAt, case when dayofweek(`root`.createdAt) = 2 then 7 else dayofweek(`root`.createdAt) - 2 end) as `monday` from test_schema.test_table as `root`', $result);
+}
+
+function <<test.Test>> meta::relational::tests::dbSpecificTests::databricks::custom::dayOfMonth():Boolean[1]
+{
+   let result = toSQLString(
+    |meta::relational::tests::dbSpecificTests::databricks::custom::domain::Person.all()->project([x|$x.createdAt->dayOfMonth()], ['dayOfMonth']),
+    meta::relational::tests::dbSpecificTests::databricks::custom::mapping::simpleRelationalMappingPersonForDelta,
+    DatabaseType.Databricks,
+    meta::relational::extension::relationalExtensions());
+   assertEquals('select dayofmonth(`root`.createdAt) as `dayOfMonth` from test_schema.test_table as `root`', $result);
+}
+
+function <<test.Test>> meta::relational::tests::dbSpecificTests::databricks::custom::dayOfWeekNumber():Boolean[1]
+{
+   let result = toSQLString(
+    |meta::relational::tests::dbSpecificTests::databricks::custom::domain::Person.all()->project([x|$x.createdAt->dayOfWeekNumber()], ['dayOfWeekNumber']),
+    meta::relational::tests::dbSpecificTests::databricks::custom::mapping::simpleRelationalMappingPersonForDelta,
+    DatabaseType.Databricks,
+    meta::relational::extension::relationalExtensions());
+   assertEquals('select dayofweek(`root`.createdAt) as `dayOfWeekNumber` from test_schema.test_table as `root`', $result);
+}
+
+function <<test.Test>> meta::relational::tests::dbSpecificTests::databricks::custom::monthNumber():Boolean[1]
+{
+   let result = toSQLString(
+    |meta::relational::tests::dbSpecificTests::databricks::custom::domain::Person.all()->project([x|$x.createdAt->monthNumber()], ['monthNumber']),
+    meta::relational::tests::dbSpecificTests::databricks::custom::mapping::simpleRelationalMappingPersonForDelta,
+    DatabaseType.Databricks,
+    meta::relational::extension::relationalExtensions());
+   assertEquals('select month(`root`.createdAt) as `monthNumber` from test_schema.test_table as `root`', $result);
+}
+
+function <<test.Test>> meta::relational::tests::dbSpecificTests::databricks::custom::mostRecentDayOfWeek():Boolean[1]
+{
+   let result = toSQLString(
+    |meta::relational::tests::dbSpecificTests::databricks::custom::domain::Person.all()->project([x|$x.createdAt->mostRecentDayOfWeek(DayOfWeek.Monday)], ['monday']),
+    meta::relational::tests::dbSpecificTests::databricks::custom::mapping::simpleRelationalMappingPersonForDelta,
+    DatabaseType.Databricks,
+    meta::relational::extension::relationalExtensions());
+   assertEquals('select date_sub(`root`.createdAt, case when dayofweek(`root`.createdAt) = 2 then 0 else dayofweek(`root`.createdAt) - 2 end) as `monday` from test_schema.test_table as `root`', $result);
+}
+
+function <<test.Test>> meta::relational::tests::dbSpecificTests::databricks::custom::weekOfYear():Boolean[1]
+{
+   let result = toSQLString(
+    |meta::relational::tests::dbSpecificTests::databricks::custom::domain::Person.all()->project([x|$x.createdAt->weekOfYear()], ['week']),
+    meta::relational::tests::dbSpecificTests::databricks::custom::mapping::simpleRelationalMappingPersonForDelta,
+    DatabaseType.Databricks,
+    meta::relational::extension::relationalExtensions());
+   assertEquals('select weekofyear(`root`.createdAt) as `week` from test_schema.test_table as `root`', $result);
+}
+
+function <<test.Test>> meta::relational::tests::dbSpecificTests::databricks::custom::cast():Boolean[1]
+{
+    let result = toSQLString(
+        |SqlFunctionDemo.all()->project([s | $s.string3Integer], ['string3Integer']),
+        meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
+        DatabaseType.Databricks,
+        meta::relational::extension::relationalExtensions());
+    assertEquals('select cast(`root`.string3 as int) as `string3Integer` from dataTable as `root`', $result);
+}
+
+function <<test.Test>> meta::relational::tests::dbSpecificTests::databricks::custom::today():Boolean[1]
+{
+    let result = toSQLString(
+        |Trade.all()->filter(d | $d.date == today())->project(x | $x.date, 'date'),
+        meta::relational::tests::simpleRelationalMapping,
+        DatabaseType.Databricks,
+        meta::relational::extension::relationalExtensions());
+    assertEquals('select `root`.tradeDate as `date` from tradeTable as `root` where `root`.tradeDate = current_date', $result);
+}
+
+function <<test.Test>> meta::relational::tests::dbSpecificTests::databricks::custom::stddev_samp():Boolean[1]
+{
+    let result = toSQLString(
+        |SqlFunctionDemo.all()->project([s | $s.float1StdDevSample], 'stdDevSample'),
+        meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
+        DatabaseType.Databricks,
+        meta::relational::extension::relationalExtensions());
+    assertEquals('select stddev_samp(`root`.int1) as `stdDevSample` from dataTable as `root`', $result);
+}
+
+function <<test.Test>> meta::relational::tests::dbSpecificTests::databricks::custom::stddev_pop():Boolean[1]
+{
+    let result = toSQLString(
+        |SqlFunctionDemo.all()->project([s | $s.float1StdDevPopulation], 'float1StdDevPopulation'),
+        meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
+        DatabaseType.Databricks,
+        meta::relational::extension::relationalExtensions());
+    assertEquals('select stddev_pop(`root`.int1) as `float1StdDevPopulation` from dataTable as `root`', $result);
+}
+
+function <<test.Test>> meta::relational::tests::dbSpecificTests::databricks::custom::substring():Boolean[1]
+{
+    let result = toSQLString(
+        |Person.all()->filter(p|$p.firstName->substring(1, 5) == 'John'),
+        meta::relational::tests::simpleRelationalMapping,
+        DatabaseType.Databricks,
+        meta::relational::extension::relationalExtensions());
+    assertEquals('select `root`.ID as `pk_0`, `root`.FIRSTNAME as `firstName`, `root`.AGE as `age`, `root`.LASTNAME as `lastName` from personTable as `root` where substring(`root`.FIRSTNAME, 1, 5) = \'John\'', $result);
+}
+
+function <<test.Test>> meta::relational::tests::dbSpecificTests::databricks::custom::second():Boolean[1]
+{
+    let result = toSQLString(
+        |Trade.all()->project([ t | $t.settlementDateTime->cast(@Date)->toOne()->second()], ['second']),
+        meta::relational::tests::simpleRelationalMapping,
+        DatabaseType.Databricks,
+        meta::relational::extension::relationalExtensions());
+    assertEquals('select second(`root`.settlementDateTime) as `second` from tradeTable as `root`', $result);
+}
+
+function <<test.Test>> meta::relational::tests::dbSpecificTests::databricks::custom::rtrim():Boolean[1]
+{
+    let result = toSQLString(
+        |SqlFunctionDemo.all()->project([s | $s.rtrimResult], ['rtrim']),
+        meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
+        DatabaseType.Databricks,
+        meta::relational::extension::relationalExtensions());
+    assertEquals('select rtrim(`root`.string2) as `rtrim` from dataTable as `root`', $result);
+}
+
+function <<test.Test>> meta::relational::tests::dbSpecificTests::databricks::custom::round():Boolean[1]
+{
+    let result = toSQLString(
+        |SqlFunctionDemo.all()->project([s | $s.float1Round], ['round']),
+        meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
+        DatabaseType.Databricks,
+        meta::relational::extension::relationalExtensions());
+    assertEquals('select round(`root`.float1, 0) as `round` from dataTable as `root`', $result);
+}
+
+function <<test.Test>> meta::relational::tests::dbSpecificTests::databricks::custom::right():Boolean[1]
+{
+    let result = toSQLString(
+        |SqlFunctionDemo.all()->project([s | $s.string1Right], ['right']),
+        meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
+        DatabaseType.Databricks,
+        meta::relational::extension::relationalExtensions());
+    assertEquals('select right(`root`.string1,2) as `right` from dataTable as `root`', $result);
+}
+
+function <<test.Test>> meta::relational::tests::dbSpecificTests::databricks::custom::rem():Boolean[1]
+{
+    let result = toSQLString(
+        |Trade.all()->project([t| rem($t.quantity, $t.id)], ['rem']),
+        meta::relational::tests::simpleRelationalMapping,
+        DatabaseType.Databricks,
+        meta::relational::extension::relationalExtensions());
+    assertEquals('select mod(`root`.quantity,`root`.ID) as `rem` from tradeTable as `root`', $result);
+}
+
+function <<test.Test>> meta::relational::tests::dbSpecificTests::databricks::custom::position():Boolean[1]
+{
+    let result = toSQLString(
+        |meta::relational::tests::mapping::propertyfunc::model::domain::Person.all()->project(p|$p.firstName, 'firstName'),
+        meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMapping,
+        DatabaseType.Databricks,
+        meta::relational::extension::relationalExtensions());
+    assertEquals('select substring(`root`.FULLNAME, 0, position(\',\', `root`.FULLNAME)-1) as `firstName` from personTable as `root`', $result);
+}
+
+function <<test.Test>> meta::relational::tests::dbSpecificTests::databricks::custom::mod():Boolean[1]
+{
+    let result = toSQLString(
+        |SqlFunctionDemo.all()->project([s | $s.floatModResult ], ['mod']),
+        meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
+        DatabaseType.Databricks,
+        meta::relational::extension::relationalExtensions());
+    assertEquals('select mod(`root`.int1,2) as `mod` from dataTable as `root`', $result);
+}
+
+function <<test.Test>> meta::relational::tests::dbSpecificTests::databricks::custom::minute():Boolean[1]
+{
+    let result = toSQLString(
+        |Trade.all()->project([t | $t.settlementDateTime->cast(@Date)->toOne()->minute()],['settlementDateTimeMinute']),
+        meta::relational::tests::simpleRelationalMapping,
+        DatabaseType.Databricks,
+        meta::relational::extension::relationalExtensions());
+    assertEquals('select minute(`root`.settlementDateTime) as `settlementDateTimeMinute` from tradeTable as `root`', $result);
+}

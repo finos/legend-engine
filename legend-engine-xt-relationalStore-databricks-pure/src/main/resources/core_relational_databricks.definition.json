@@ -1,0 +1,5 @@
+{
+  "name" : "core_relational_databricks",
+  "pattern" : "(meta::relational::functions::sqlQueryToString::databricks|meta::relational::tests::dbSpecificTests::databricks)(::.*)?",
+  "dependencies" : ["platform", "core", "core_external_shared", "core_relational"]
+}
