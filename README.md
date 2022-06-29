@@ -1,5 +1,5 @@
 [![FINOS - Incubating](https://cdn.jsdelivr.net/gh/finos/contrib-toolbox@master/images/badge-incubating.svg)](https://finosfoundation.atlassian.net/wiki/display/FINOS/Incubating)
-[![Maven Central](https://img.shields.io/maven-central/v/org.finos.legend.engine/legend-engine-server.svg?maxAge=2592000)](http://search.maven.org/#search%7Cga%7C1%7Ca%3A%22legend-engine)
+[![Maven Central](https://img.shields.io/maven-central/v/org.finos.legend.engine/legend-engine-server.svg)](http://search.maven.org/#search%7Cga%7C1%7Ca%3A%22legend-engine)
 ![Build CI](https://github.com/finos/legend-engine/workflows/Build%20CI/badge.svg)
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=legend-engine&metric=security_rating&token=cbbc6d136c4f5671324244170afb9f0a6c22a7fb)](https://sonarcloud.io/dashboard?id=legend-engine)
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=legend-engine&metric=bugs&token=cbbc6d136c4f5671324244170afb9f0a6c22a7fb)](https://sonarcloud.io/dashboard?id=legend-engine)
