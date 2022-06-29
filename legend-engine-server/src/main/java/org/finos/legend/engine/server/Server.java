@@ -182,9 +182,6 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         environment.jersey().register(new TransformRelationalOperationElementGrammarToJson());
         environment.jersey().register(new TransformRelationalOperationElementJsonToGrammar());
 
-        // Model Coverage Analytics
-        environment.jersey().register(new MappingAnalytics(modelManager));
-
         // Relational
         environment.jersey().register(new SchemaExplorationApi(modelManager, relationalStoreExecutor));
 
@@ -226,6 +223,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         environment.jersey().register(new ExternalFormats(modelManager));
 
         // Analytics
+        environment.jersey().register(new MappingAnalytics(modelManager));
         environment.jersey().register(new DiagramAnalytics(modelManager));
         environment.jersey().register(new DataSpaceAnalytics(modelManager));
 
