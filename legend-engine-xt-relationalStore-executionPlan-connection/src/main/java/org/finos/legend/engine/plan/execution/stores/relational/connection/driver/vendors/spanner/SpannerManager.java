@@ -39,7 +39,7 @@ public class SpannerManager extends DatabaseManager
     {
 
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("jdbc:cloudspanner://");
+        stringBuilder.append("jdbc:cloudspanner:");
 
         String proxyHost = extraUserDataSourceProperties.getProperty(SpannerDataSourceSpecification.SPANNER_PROXY_HOST);
         String proxyPort = extraUserDataSourceProperties.getProperty(SpannerDataSourceSpecification.SPANNER_PROXY_PORT);
@@ -47,7 +47,7 @@ public class SpannerManager extends DatabaseManager
         // constructing "proxyHost:proxyPort;" url routine
         if (!Strings.isNullOrEmpty(proxyHost))
         {
-            stringBuilder.append(proxyHost);
+            stringBuilder.append("//").append(proxyHost);
             if (!Strings.isNullOrEmpty(proxyPort))
             {
                 stringBuilder.append(":").append(proxyPort);
@@ -60,7 +60,7 @@ public class SpannerManager extends DatabaseManager
         Optional.ofNullable(extraUserDataSourceProperties.getProperty(SpannerDataSourceSpecification.SPANNER_INSTANCE_ID))
                 .ifPresent(instanceId -> stringBuilder.append("instances/").append(instanceId).append("/"));
         Optional.ofNullable(extraUserDataSourceProperties.getProperty(SpannerDataSourceSpecification.SPANNER_DATABASE_ID))
-                .ifPresent(database -> stringBuilder.append("databases/").append(database).append(";"));
+                .ifPresent(database -> stringBuilder.append("databases/").append(database).append("?"));
 
         if (authenticationStrategy == null || authenticationStrategy instanceof TestDatabaseAuthenticationStrategy)
         {

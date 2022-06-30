@@ -30,8 +30,7 @@ public class SpannerDataSourceSpecificationKey implements DataSourceSpecificatio
     @Override
     public String shortId()
     {
-        return String.format("Spanner_projectId:%s_instanceId:%s_proxyHost:%s_proxyPort:%s",
-                projectId, instanceId, proxyHost, proxyPort);
+        return this.toString();
     }
 
 }

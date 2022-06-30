@@ -27,8 +27,8 @@ public class SpannerDataSourceSpecification extends DataSourceSpecification
     public static String SPANNER_PROJECT_ID = "spanner_projectId";
     public static String SPANNER_INSTANCE_ID = "spanner_instanceId";
     public static String SPANNER_DATABASE_ID = "spanner_databaseId";
-    public static String SPANNER_PROXY_HOST = "spanner_proxyPort";
-    public static String SPANNER_PROXY_PORT = "spanner_proxyHost";
+    public static String SPANNER_PROXY_HOST = "spanner_proxyHost";
+    public static String SPANNER_PROXY_PORT = "spanner_proxyPort";
 
     public SpannerDataSourceSpecification(
             SpannerDataSourceSpecificationKey key,
