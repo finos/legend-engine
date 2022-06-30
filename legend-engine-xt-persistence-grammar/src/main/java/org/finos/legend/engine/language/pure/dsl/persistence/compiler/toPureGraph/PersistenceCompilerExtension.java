@@ -78,7 +78,7 @@ public class PersistenceCompilerExtension implements IPersistenceCompilerExtensi
     {
         return Collections.singletonList((persistencePlatform, compileContext) ->
                 persistencePlatform instanceof DefaultPersistencePlatform
-                        ?  new Root_meta_pure_persistence_metamodel_context_PersistencePlatform_Impl("")
+                        ? new Root_meta_pure_persistence_metamodel_context_PersistencePlatform_Impl("")
                         : null);
     }
 }
