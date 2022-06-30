@@ -17,17 +17,10 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpace;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 
-import java.util.HashSet;
-import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 public class HelperDataSpaceBuilder
 {
@@ -46,18 +39,6 @@ public class HelperDataSpaceBuilder
     public static Root_meta_pure_metamodel_dataSpace_DataSpace resolveDataSpace(String fullPath, SourceInformation sourceInformation, CompileContext context)
     {
         return context.resolve(fullPath, sourceInformation, path -> getDataSpace(path, sourceInformation, context));
-    }
-
-
-    public static List<Root_meta_pure_runtime_PackageableRuntime> getExecutionContextCompatibleRuntimes(
-            Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext executionContext, List<PackageableRuntime> runtimes, PureModel pureModel)
-    {
-        Set<Mapping> mappings = new HashSet<>();
-        mappings.add(executionContext._mapping());
-        mappings.addAll(HelperMappingBuilder.getAllIncludedMappings(executionContext._mapping()).toSet());
-        return ListIterate
-                .select(runtimes, runtime -> ListIterate.collect(runtime.runtimeValue.mappings, mappingPtr -> pureModel.getMapping(mappingPtr.path, mappingPtr.sourceInformation)).anySatisfy(mappings::contains))
-                .collect(runtime -> pureModel.getPackageableRuntime(runtime.getPath(), null)).distinct();
     }
 }
 
