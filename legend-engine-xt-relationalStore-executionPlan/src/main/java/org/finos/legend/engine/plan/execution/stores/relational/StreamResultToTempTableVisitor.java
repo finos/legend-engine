@@ -17,6 +17,15 @@ package org.finos.legend.engine.plan.execution.stores.relational;
 import com.google.common.collect.Iterators;
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
+import java.io.ByteArrayOutputStream;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Iterator;
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.finos.legend.engine.plan.execution.result.ResultNormalizer;
 import org.finos.legend.engine.plan.execution.result.StreamingResult;
 import org.finos.legend.engine.plan.execution.result.builder.tds.TDSBuilder;
@@ -45,16 +54,6 @@ import org.finos.legend.engine.plan.execution.stores.relational.serialization.St
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.slf4j.Logger;
-
-import java.io.ByteArrayOutputStream;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Iterator;
-import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class StreamResultToTempTableVisitor implements RelationalDatabaseCommandsVisitor<Boolean>
 {
@@ -164,7 +163,6 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
                 {
                     throw new RuntimeException("Result not supported yet: " + result.getClass().getName());
                 }
-
             }
             catch (Exception e)
             {
@@ -207,7 +205,8 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
     }
 
     @Override
-    public Boolean visit(SpannerCommands spannerCommands) {
+    public Boolean visit(SpannerCommands spannerCommands)
+    {
         throw new UnsupportedOperationException("not yet implemented");
     }
 

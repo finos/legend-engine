@@ -59,7 +59,8 @@ public class DataSourceSpecificationKeyGenerator implements DatasourceSpecificat
                     embeddedH2DatasourceSpecification.databaseName,
                     new File(embeddedH2DatasourceSpecification.directory),
                     embeddedH2DatasourceSpecification.autoServerMode);
-        } else if (datasourceSpecification instanceof LocalH2DatasourceSpecification)
+        }
+        else if (datasourceSpecification instanceof LocalH2DatasourceSpecification)
         {
             LocalH2DatasourceSpecification localH2DatasourceSpecification = (LocalH2DatasourceSpecification) datasourceSpecification;
             if (localH2DatasourceSpecification.testDataSetupSqls != null && !localH2DatasourceSpecification.testDataSetupSqls.isEmpty())
@@ -67,14 +68,16 @@ public class DataSourceSpecificationKeyGenerator implements DatasourceSpecificat
                 return new LocalH2DataSourceSpecificationKey(localH2DatasourceSpecification.testDataSetupSqls);
             }
             return new StaticDataSourceSpecificationKey(LOCAL_HOST, testDbPort, TEST_DB);
-        } else if (datasourceSpecification instanceof StaticDatasourceSpecification)
+        }
+        else if (datasourceSpecification instanceof StaticDatasourceSpecification)
         {
             StaticDatasourceSpecification staticDatasourceSpecification = (StaticDatasourceSpecification) datasourceSpecification;
             return new StaticDataSourceSpecificationKey(
                     staticDatasourceSpecification.host,
                     staticDatasourceSpecification.port,
                     staticDatasourceSpecification.databaseName);
-        } else if (datasourceSpecification instanceof DatabricksDatasourceSpecification)
+        }
+        else if (datasourceSpecification instanceof DatabricksDatasourceSpecification)
         {
             DatabricksDatasourceSpecification databricksSpecification = (DatabricksDatasourceSpecification) datasourceSpecification;
             return new DatabricksDataSourceSpecificationKey(
@@ -82,7 +85,8 @@ public class DataSourceSpecificationKeyGenerator implements DatasourceSpecificat
                     databricksSpecification.port,
                     databricksSpecification.protocol,
                     databricksSpecification.httpPath);
-        } else if (datasourceSpecification instanceof SnowflakeDatasourceSpecification)
+        }
+        else if (datasourceSpecification instanceof SnowflakeDatasourceSpecification)
         {
             SnowflakeDatasourceSpecification snowflakeDatasourceSpecification = (SnowflakeDatasourceSpecification) datasourceSpecification;
             return new SnowflakeDataSourceSpecificationKey(
@@ -98,7 +102,8 @@ public class DataSourceSpecificationKeyGenerator implements DatasourceSpecificat
                     snowflakeDatasourceSpecification.accountType,
                     snowflakeDatasourceSpecification.organization,
                     snowflakeDatasourceSpecification.role);
-        } else if (datasourceSpecification instanceof BigQueryDatasourceSpecification)
+        }
+        else if (datasourceSpecification instanceof BigQueryDatasourceSpecification)
         {
             BigQueryDatasourceSpecification bigQueryDatasourceSpecification = (BigQueryDatasourceSpecification) datasourceSpecification;
             return new BigQueryDataSourceSpecificationKey(
@@ -106,7 +111,8 @@ public class DataSourceSpecificationKeyGenerator implements DatasourceSpecificat
                     bigQueryDatasourceSpecification.defaultDataset,
                     bigQueryDatasourceSpecification.proxyHost,
                     bigQueryDatasourceSpecification.proxyPort);
-        } else if (datasourceSpecification instanceof RedshiftDatasourceSpecification)
+        }
+        else if (datasourceSpecification instanceof RedshiftDatasourceSpecification)
         {
             RedshiftDatasourceSpecification redshiftDataSourceSpecification = (RedshiftDatasourceSpecification) datasourceSpecification;
             return new RedshiftDataSourceSpecificationKey(
@@ -117,7 +123,8 @@ public class DataSourceSpecificationKeyGenerator implements DatasourceSpecificat
                     redshiftDataSourceSpecification.region,
                     redshiftDataSourceSpecification.endpointURL
             );
-        } else if (datasourceSpecification instanceof SpannerDatasourceSpecification)
+        }
+        else if (datasourceSpecification instanceof SpannerDatasourceSpecification)
         {
             SpannerDatasourceSpecification spannerSpec = (SpannerDatasourceSpecification) datasourceSpecification;
             return new SpannerDataSourceSpecificationKey(
