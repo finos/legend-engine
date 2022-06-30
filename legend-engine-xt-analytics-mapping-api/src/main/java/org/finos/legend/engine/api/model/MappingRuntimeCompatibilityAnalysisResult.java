@@ -12,19 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.analytics.mapping.model.coverage.api;
+package org.finos.legend.engine.api.model;
 
 import java.util.List;
 
-public class MappedEntity
+public class MappingRuntimeCompatibilityAnalysisResult
 {
-    public String path;
-    public List<MappedProperty> properties;
-    public MappedEntityInfo info;
+    public List<String> runtimes;
 
-    public MappedEntity(String path, List<MappedProperty> properties)
+    public MappingRuntimeCompatibilityAnalysisResult(List<String> runtimes)
     {
-        this.path = path;
-        this.properties = properties;
+        this.runtimes = runtimes;
     }
 }

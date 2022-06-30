@@ -12,28 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.analytics.mapping.model.coverage.api;
+package org.finos.legend.engine.api.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 
-public class ModelCoverageAnalyticsInput
+public class MappingRuntimeCompatibilityAnalysisInput
 {
     public String clientVersion;
-    @JsonProperty
     public String mapping;
-    @JsonProperty
     public PureModelContext model;
 
     @JsonCreator
-    public ModelCoverageAnalyticsInput(@JsonProperty("clientVersion") String clientVersion, @JsonProperty("mapping") String mapping, @JsonProperty("model") PureModelContext model)
+    public MappingRuntimeCompatibilityAnalysisInput(@JsonProperty("clientVersion") String clientVersion, @JsonProperty("mapping") String mapping, @JsonProperty("model") PureModelContext model)
     {
         this.clientVersion = clientVersion;
         this.mapping = mapping;
         this.model = model;
     }
 }
-
-

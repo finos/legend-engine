@@ -12,30 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.analytics.mapping.model.coverage.api;
+package org.finos.legend.engine.api.model;
 
 import java.util.List;
 
-public class MappedEntityInfo
+public class MappingModelCoverageAnalysisResult
 {
-    public boolean isRootEntity;
-    public List<String> subClasses;
+    public List<MappedEntity> mappedEntities;
 
-    public MappedEntityInfo(boolean isRootEntity, List<String> subClasses)
+    public MappingModelCoverageAnalysisResult()
     {
-        this.isRootEntity = isRootEntity;
-        this.subClasses = subClasses;
+        // DO NOT DELETE: this resets the default constructor for Jackson
     }
 
-    public MappedEntityInfo(boolean isRootEntity)
+    public MappingModelCoverageAnalysisResult(List<MappedEntity> mappedEntities)
     {
-        this.isRootEntity = isRootEntity;
-        this.subClasses = null;
-    }
-
-    public MappedEntityInfo(List<String> subClasses)
-    {
-        this.isRootEntity = false;
-        this.subClasses = subClasses;
+        this.mappedEntities = mappedEntities;
     }
 }
