@@ -26,6 +26,7 @@ import org.finos.legend.engine.plan.execution.extension.ExecutionExtensionLoader
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.ExecutionActivity;
 import org.finos.legend.engine.plan.execution.result.Result;
+import org.finos.legend.engine.plan.execution.result.graphFetch.AdaptiveGraphBatchStats;
 import org.finos.legend.engine.plan.execution.result.graphFetch.GraphObjectsBatch;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutionState;
 import org.finos.legend.engine.plan.execution.stores.StoreType;
@@ -50,7 +51,10 @@ public class ExecutionState
     public boolean realizeAllocationResults;
 
     private final long graphFetchBatchMemoryLimit;
+    private final long graphFetchSoftLimitPercentage;
+    private final boolean useAdaptiveBatching;
     public GraphObjectsBatch graphObjectsBatch;
+    public AdaptiveGraphBatchStats adaptiveGraphBatchStats;
     public List<GraphFetchCache> graphFetchCaches;
 
     private EngineJavaCompiler javaCompiler;
@@ -78,7 +82,10 @@ public class ExecutionState
         this.isJavaCompilationAllowed = state.isJavaCompilationAllowed;
         this.javaCompiler = state.javaCompiler;
         this.graphFetchBatchMemoryLimit = state.graphFetchBatchMemoryLimit;
+        this.graphFetchSoftLimitPercentage = state.graphFetchSoftLimitPercentage;
+        this.useAdaptiveBatching = state.useAdaptiveBatching;
         this.graphObjectsBatch = state.graphObjectsBatch;
+        this.adaptiveGraphBatchStats = state.adaptiveGraphBatchStats;
         this.graphFetchCaches = state.graphFetchCaches;
         state.states.forEach((storeType, storeExecutionState) -> this.states.put(storeType, storeExecutionState.copy()));
         List<ExecutionExtension> extensions = ExecutionExtensionLoader.extensions();
@@ -86,7 +93,7 @@ public class ExecutionState
         this.extraSequenceNodeExecutors = ListIterate.flatCollect(extensions, ExecutionExtension::getExtraSequenceNodeExecutors);
     }
 
-    public ExecutionState(Map<String, Result> res, List<? extends String> templateFunctions, Iterable<? extends StoreExecutionState> extraStates, boolean isJavaCompilationAllowed, long graphFetchBatchMemoryLimit)
+    public ExecutionState(Map<String, Result> res, List<? extends String> templateFunctions, Iterable<? extends StoreExecutionState> extraStates, boolean isJavaCompilationAllowed, long graphFetchBatchMemoryLimit, long graphFetchSoftLimitPercentage, boolean useAdaptiveBatching)
     {
         this.inAllocation = false;
         this.inLake = false;
@@ -95,6 +102,8 @@ public class ExecutionState
         this.realizeAllocationResults = false;
         this.isJavaCompilationAllowed = isJavaCompilationAllowed;
         this.graphFetchBatchMemoryLimit = graphFetchBatchMemoryLimit;
+        this.graphFetchSoftLimitPercentage = graphFetchSoftLimitPercentage;
+        this.useAdaptiveBatching = useAdaptiveBatching;
         extraStates.forEach(storeExecutionState -> this.states.put(storeExecutionState.getStoreState().getStoreType(), storeExecutionState));
         List<ExecutionExtension> extensions = ExecutionExtensionLoader.extensions();
         this.extraNodeExecutors = ListIterate.flatCollect(extensions, ExecutionExtension::getExtraNodeExecutors);
@@ -103,7 +112,7 @@ public class ExecutionState
 
     public ExecutionState(Map<String, Result> res, List<? extends String> templateFunctions, Iterable<? extends StoreExecutionState> extraStates, boolean isJavaCompilationAllowed)
     {
-        this(res, templateFunctions, extraStates, isJavaCompilationAllowed, PlanExecutor.DEFAULT_GRAPH_FETCH_BATCH_MEMORY_LIMIT);
+        this(res, templateFunctions, extraStates, isJavaCompilationAllowed, PlanExecutor.DEFAULT_GRAPH_FETCH_BATCH_MEMORY_LIMIT, PlanExecutor.DEFAULT_GRAPH_FETCH_SOFT_MEMORY_LIMIT_PERCENTAGE, PlanExecutor.DEFAULT_USE_ADAPTIVE_BATCHING);
     }
 
     public ExecutionState(Map<String, Result> res, List<? extends String> templateFunctions, Iterable<? extends StoreExecutionState> extraStates)
@@ -176,6 +185,16 @@ public class ExecutionState
     public long getGraphFetchBatchMemoryLimit()
     {
         return this.graphFetchBatchMemoryLimit;
+    }
+
+    public long getGraphFetchSoftLimitPercentage()
+    {
+        return this.graphFetchSoftLimitPercentage;
+    }
+
+    public boolean getUseAdaptiveBatching()
+    {
+        return this.useAdaptiveBatching;
     }
 
     public ExecutionState setGraphObjectsBatch(GraphObjectsBatch graphObjectsBatch)

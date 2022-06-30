@@ -71,5 +71,10 @@
     "temporarytestdb": {
       "port": 9092
     }
+  },
+  "graphFetchConfiguration": {
+    "graphFetchBatchMemoryLimit": 52428800,
+    "graphFetchSoftMemoryLimitPercentage": 50,
+    "useAdaptiveBatching": true
   }
 }

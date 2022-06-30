@@ -19,6 +19,7 @@ import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.MetaDataServerConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.config.RelationalExecutionConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
+import org.finos.legend.engine.plan.execution.stores.relational.config.GraphFetchConfiguration;
 import org.finos.legend.engine.server.core.configuration.DeploymentConfiguration;
 import org.finos.legend.engine.server.core.configuration.OpenTracingConfiguration;
 import org.finos.legend.engine.shared.core.vault.VaultConfiguration;
@@ -38,6 +39,7 @@ public class ServerConfiguration extends Configuration
     public List<VaultConfiguration> vaults;
 
     public RelationalExecutionConfiguration relationalexecution;
+    public GraphFetchConfiguration graphFetchConfiguration;
 
     /*
         This configuration has been deprecated in favor of the 'temporarytestdb' in RelationalExecutionConfiguration

@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.result.graphFetch;
 
+import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.result.graphFetch.GraphObjectsBatch;
 import org.finos.legend.engine.plan.execution.stores.relational.result.SQLExecutionResult;
 import org.finos.legend.engine.shared.core.collectionsExtensions.DoubleStrategyHashMap;
@@ -30,7 +31,12 @@ public class RelationalGraphObjectsBatch extends GraphObjectsBatch
 
     public RelationalGraphObjectsBatch(long batchIndex)
     {
-        super(batchIndex);
+        this(batchIndex, PlanExecutor.DEFAULT_GRAPH_FETCH_BATCH_MEMORY_LIMIT);
+    }
+
+    public RelationalGraphObjectsBatch(long batchIndex, long graphFetchMemoryLimit)
+    {
+        super(batchIndex, graphFetchMemoryLimit);
         this.nodeObjectsHashMap = new HashMap<>();
         this.nodePrimaryKeyGetters = new HashMap<>();
     }

@@ -118,6 +118,8 @@ import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.collectionsExtensions.DoubleStrategyHashMap;
 import org.pac4j.core.profile.CommonProfile;
 
+import org.finos.legend.engine.plan.execution.result.graphFetch.AdaptiveGraphBatchStats;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.Connection;
@@ -1177,13 +1179,70 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
         }
     }
 
+
+    public long getAdaptiveBatchSize()
+    {
+        if (this.executionState.adaptiveGraphBatchStats == null)
+        {
+            this.executionState.adaptiveGraphBatchStats = new AdaptiveGraphBatchStats(0, 1);
+            return this.executionState.adaptiveGraphBatchStats.previousBatchSize;
+        }
+
+        long softLimit = this.executionState.getGraphFetchSoftLimitPercentage() * this.executionState.getGraphFetchBatchMemoryLimit() / 100;
+        long previousBatchMemoryUtilization = this.executionState.adaptiveGraphBatchStats.batchObjectMemoryUtilization;
+        long avgMemoryUtilizationInBytesPerObject = previousBatchMemoryUtilization / this.executionState.adaptiveGraphBatchStats.previousBatchSize;
+
+        long changeInBatchSize = softLimit / (avgMemoryUtilizationInBytesPerObject + 1) - this.executionState.adaptiveGraphBatchStats.previousBatchSize;
+
+        long newBatchSize;
+        if (changeInBatchSize > 0)
+        {
+            double reductionFactor = (softLimit - previousBatchMemoryUtilization) / (1.0 * softLimit);
+            long increment = (long) Math.pow(2, this.executionState.adaptiveGraphBatchStats.incrementRate);
+            if ((long) (changeInBatchSize * reductionFactor) < increment)
+            {
+                changeInBatchSize = (long) (changeInBatchSize * reductionFactor);
+                this.executionState.adaptiveGraphBatchStats.incrementRate = 0;
+            }
+            else
+            {
+                changeInBatchSize = increment;
+                this.executionState.adaptiveGraphBatchStats.incrementRate += 1;
+            }
+            this.executionState.adaptiveGraphBatchStats.decrementRate = 0;
+            newBatchSize = this.executionState.adaptiveGraphBatchStats.previousBatchSize + changeInBatchSize;
+        }
+        else
+        {
+            long reductionFactor =  (long) Math.pow(2, this.executionState.adaptiveGraphBatchStats.decrementRate + 1);
+            long previousBatchSize = this.executionState.adaptiveGraphBatchStats.previousBatchSize;
+
+            if (previousBatchSize + changeInBatchSize > previousBatchSize / reductionFactor)
+            {
+                newBatchSize = previousBatchSize + changeInBatchSize;
+                this.executionState.adaptiveGraphBatchStats.decrementRate = 0;
+            }
+            else
+            {
+                newBatchSize = previousBatchSize / reductionFactor;
+                this.executionState.adaptiveGraphBatchStats.decrementRate += 1;
+            }
+            this.executionState.adaptiveGraphBatchStats.incrementRate = 0;
+        }
+
+
+        newBatchSize = newBatchSize <= 0 ? 1 : newBatchSize;
+        this.executionState.adaptiveGraphBatchStats.previousBatchSize = newBatchSize;
+
+        return newBatchSize;
+    }
+
     private Result executeRelationalRootQueryTempTableGraphFetchExecutionNode(RelationalRootQueryTempTableGraphFetchExecutionNode node)
     {
-        int batchSize = node.batchSize == null ? 1000 : node.batchSize;
         boolean isLeaf = node.children == null || node.children.isEmpty();
         Result rootResult = null;
 
-        Span graphFetchSpan = GlobalTracer.get().buildSpan("graph fetch").withTag("rootStoreType", "relational").withTag("batchSizeConfig", batchSize).start();
+        Span graphFetchSpan = GlobalTracer.get().buildSpan("graph fetch").withTag("rootStoreType", "relational").start();
         GlobalTracer.get().activateSpan(graphFetchSpan);
         try
         {
@@ -1212,6 +1271,15 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                 @Override
                 public boolean tryAdvance(Consumer<? super GraphObjectsBatch> action)
                 {
+                    long batchSize;
+                    if (executionState.getUseAdaptiveBatching())
+                    {
+                        batchSize = node.batchSize == null ? getAdaptiveBatchSize() : node.batchSize;
+                    }
+                    else
+                    {
+                        batchSize = node.batchSize == null ? 1000 : node.batchSize;
+                    }
 
                     /* Ensure all children run in the same connection */
                     RelationalStoreExecutionState relationalStoreExecutionState = (RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational);
@@ -1221,9 +1289,9 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                     relationalStoreExecutionState.setRetainConnection(true);
 
                     long currentBatch = batchIndex.incrementAndGet();
-                    try (Scope ignored = GlobalTracer.get().buildSpan("graph fetch batch").withTag("storeType", "relational").withTag("batchIndex", currentBatch).withTag("class", ((RootGraphFetchTree) node.graphFetchTree)._class).asChildOf(graphFetchSpan).startActive(true))
+                    try (Scope ignored = GlobalTracer.get().buildSpan("graph fetch batch").withTag("storeType", "relational").withTag("batchIndex", currentBatch).withTag("batchSizeConfig", batchSize).withTag("class", ((RootGraphFetchTree) node.graphFetchTree)._class).asChildOf(graphFetchSpan).startActive(true))
                     {
-                        RelationalGraphObjectsBatch relationalGraphObjectsBatch = new RelationalGraphObjectsBatch(currentBatch);
+                        RelationalGraphObjectsBatch relationalGraphObjectsBatch = new RelationalGraphObjectsBatch(currentBatch, executionState.getGraphFetchBatchMemoryLimit());
 
                         List<Object> resultObjects = new ArrayList<>();
                         List<Pair<IGraphInstance<? extends IReferencedObject>, ExecutionCache<GraphFetchCacheKey, Object>>> instancesToDeepFetchAndCache = new ArrayList<>();

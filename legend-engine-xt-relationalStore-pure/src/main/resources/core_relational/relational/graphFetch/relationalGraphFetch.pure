@@ -103,7 +103,7 @@ function meta::relational::graphFetch::executionPlan::planRootGraphFetchExecutio
    let store        = $sq.store->cast(@Database);
    let dbConnection = $runtime->connectionByElement($store)->toOne()->cast(@DatabaseConnection)->map(x | ^$x(element = $store));
    let oneRuntime   = ^Runtime(connections = [$dbConnection]);
-   let batchSize    = if($fe.func == graphFetch_T_MANY__RootGraphFetchTree_1__Integer_1__T_MANY_, | $fe->instanceValueAtParameter(2)->cast(@Integer), | 1000);
+   let batchSize    = if($fe.func == graphFetch_T_MANY__RootGraphFetchTree_1__Integer_1__T_MANY_, | $fe->instanceValueAtParameter(2)->cast(@Integer), | []);
 
    let simplePrimitiveProperties = $rootTree.subTrees->cast(@PropertyGraphFetchTree).property
                                       ->filter(x | $x->instanceOf(Property))->cast(@Property<Nil,Any|*>)

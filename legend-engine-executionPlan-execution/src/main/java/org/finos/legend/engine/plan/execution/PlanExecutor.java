@@ -58,6 +58,8 @@ import java.util.stream.Collectors;
 public class PlanExecutor
 {
     public static final long DEFAULT_GRAPH_FETCH_BATCH_MEMORY_LIMIT = 52_428_800L; /* 50MB - 50 * 1024 * 1024 */
+    public static final long DEFAULT_GRAPH_FETCH_SOFT_MEMORY_LIMIT_PERCENTAGE = 50;
+    public static final boolean DEFAULT_USE_ADAPTIVE_BATCHING = true;
     public static final String USER_ID = "userId";
 
     private static final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
@@ -67,14 +69,18 @@ public class PlanExecutor
     private final ImmutableList<StoreExecutor> extraExecutors;
     private final PlanExecutorInfo planExecutorInfo;
     private long graphFetchBatchMemoryLimit;
+    private long graphFetchSoftMemoryLimitPercentage;
+    private boolean useAdaptiveBatching;
 
-    private PlanExecutor(boolean isJavaCompilationAllowed, ImmutableList<StoreExecutor> extraExecutors, long graphFetchBatchMemoryLimit)
+    private PlanExecutor(boolean isJavaCompilationAllowed, ImmutableList<StoreExecutor> extraExecutors, long graphFetchBatchMemoryLimit, long graphFetchSoftMemoryLimitPercentage, boolean useAdaptiveBatching)
     {
         EngineUrlStreamHandlerFactory.initialize();
         this.isJavaCompilationAllowed = isJavaCompilationAllowed;
         this.extraExecutors = extraExecutors;
         this.planExecutorInfo = PlanExecutorInfo.fromStoreExecutors(this.extraExecutors);
         this.graphFetchBatchMemoryLimit = graphFetchBatchMemoryLimit;
+        this.graphFetchSoftMemoryLimitPercentage = graphFetchSoftMemoryLimitPercentage;
+        this.useAdaptiveBatching = useAdaptiveBatching;
     }
 
     public PlanExecutorInfo getPlanExecutorInfo()
@@ -224,6 +230,16 @@ public class PlanExecutor
         this.graphFetchBatchMemoryLimit = graphFetchBatchMemoryLimit;
     }
 
+    public void setGraphFetchSoftMemoryLimitPercentage(long graphFetchSoftMemoryLimitPercentage)
+    {
+        this.graphFetchSoftMemoryLimitPercentage = graphFetchSoftMemoryLimitPercentage;
+    }
+
+    public void setUseAdaptiveBatching(boolean useAdaptiveBatching)
+    {
+        this.useAdaptiveBatching = useAdaptiveBatching;
+    }
+
     private EngineJavaCompiler possiblyCompilePlan(SingleExecutionPlan plan, ExecutionState state, MutableList<CommonProfile> profiles)
     {
         if (state.isJavaCompilationForbidden())
@@ -256,7 +272,7 @@ public class PlanExecutor
 
     private ExecutionState buildDefaultExecutionState(SingleExecutionPlan executionPlan, Map<String, Result> vars, PlanExecutionContext planExecutionContext)
     {
-        ExecutionState executionState = new ExecutionState(vars, executionPlan.templateFunctions, this.extraExecutors.collect(StoreExecutor::buildStoreExecutionState), this.isJavaCompilationAllowed, this.graphFetchBatchMemoryLimit);
+        ExecutionState executionState = new ExecutionState(vars, executionPlan.templateFunctions, this.extraExecutors.collect(StoreExecutor::buildStoreExecutionState), this.isJavaCompilationAllowed, this.graphFetchBatchMemoryLimit, this.graphFetchSoftMemoryLimitPercentage, this.useAdaptiveBatching);
 
         if (planExecutionContext != null)
         {
@@ -300,7 +316,17 @@ public class PlanExecutor
 
     public static PlanExecutor newPlanExecutor(boolean isJavaCompilationAllowed, Iterable<? extends StoreExecutor> storeExecutors, long graphFetchBatchMemoryLimit)
     {
-        return new PlanExecutor(isJavaCompilationAllowed, Lists.immutable.withAll(storeExecutors), graphFetchBatchMemoryLimit);
+        return new PlanExecutor(isJavaCompilationAllowed, Lists.immutable.withAll(storeExecutors), graphFetchBatchMemoryLimit, DEFAULT_GRAPH_FETCH_SOFT_MEMORY_LIMIT_PERCENTAGE, DEFAULT_USE_ADAPTIVE_BATCHING);
+    }
+
+    public static PlanExecutor newPlanExecutor(boolean isJavaCompilationAllowed, Iterable<? extends StoreExecutor> storeExecutors, boolean useAdaptiveBatching)
+    {
+        return new PlanExecutor(isJavaCompilationAllowed, Lists.immutable.withAll(storeExecutors), DEFAULT_GRAPH_FETCH_BATCH_MEMORY_LIMIT, DEFAULT_GRAPH_FETCH_SOFT_MEMORY_LIMIT_PERCENTAGE, useAdaptiveBatching);
+    }
+
+    public static PlanExecutor newPlanExecutor(boolean isJavaCompilationAllowed, Iterable<? extends StoreExecutor> storeExecutors, long graphFetchBatchMemoryLimit, long graphFetchSoftMemoryLimitPercentage)
+    {
+        return new PlanExecutor(isJavaCompilationAllowed, Lists.immutable.withAll(storeExecutors), graphFetchBatchMemoryLimit, graphFetchSoftMemoryLimitPercentage, DEFAULT_USE_ADAPTIVE_BATCHING);
     }
 
     public static PlanExecutor newPlanExecutor(boolean isJavaCompilationAllowed, Iterable<? extends StoreExecutor> storeExecutors)
@@ -315,7 +341,7 @@ public class PlanExecutor
 
     public static PlanExecutor newPlanExecutor(boolean isJavaCompilationAllowed, StoreExecutor... storeExecutors)
     {
-        return new PlanExecutor(isJavaCompilationAllowed, Lists.immutable.with(storeExecutors), DEFAULT_GRAPH_FETCH_BATCH_MEMORY_LIMIT);
+        return new PlanExecutor(isJavaCompilationAllowed, Lists.immutable.with(storeExecutors), DEFAULT_GRAPH_FETCH_BATCH_MEMORY_LIMIT, DEFAULT_GRAPH_FETCH_SOFT_MEMORY_LIMIT_PERCENTAGE, DEFAULT_USE_ADAPTIVE_BATCHING);
     }
 
     public static PlanExecutor newPlanExecutor(StoreExecutor... storeExecutors)
@@ -325,7 +351,7 @@ public class PlanExecutor
 
     public static PlanExecutor newPlanExecutor(boolean isJavaCompilationAllowed, StoreExecutor storeExecutor)
     {
-        return new PlanExecutor(isJavaCompilationAllowed, Lists.immutable.with(storeExecutor), DEFAULT_GRAPH_FETCH_BATCH_MEMORY_LIMIT);
+        return new PlanExecutor(isJavaCompilationAllowed, Lists.immutable.with(storeExecutor), DEFAULT_GRAPH_FETCH_BATCH_MEMORY_LIMIT, DEFAULT_GRAPH_FETCH_SOFT_MEMORY_LIMIT_PERCENTAGE, DEFAULT_USE_ADAPTIVE_BATCHING);
     }
 
     public static PlanExecutor newPlanExecutor(StoreExecutor storeExecutor)

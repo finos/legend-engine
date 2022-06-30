@@ -154,7 +154,14 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         ChainFixingFilterHandler.apply(environment.getApplicationContext(), serverConfiguration.filterPriorities);
 
         relationalStoreExecutor = (RelationalStoreExecutor) Relational.build(serverConfiguration.relationalexecution);
-        PlanExecutor planExecutor = PlanExecutor.newPlanExecutor(relationalStoreExecutor, ServiceStore.build(), InMemory.build());
+
+        PlanExecutor planExecutor = PlanExecutor.newPlanExecutor(relationalStoreExecutor, ServiceStore.build(), InMemory.build());;
+        if (serverConfiguration.graphFetchConfiguration != null)
+        {
+            planExecutor.setGraphFetchBatchMemoryLimit(serverConfiguration.graphFetchConfiguration.graphFetchBatchMemoryLimit);
+            planExecutor.setGraphFetchSoftMemoryLimitPercentage(serverConfiguration.graphFetchConfiguration.graphFetchSoftMemoryLimitPercentage);
+            planExecutor.setUseAdaptiveBatching(serverConfiguration.graphFetchConfiguration.useAdaptiveBatching);
+        }
 
         // Session Management
         SessionTracker sessionTracker = new SessionTracker();
