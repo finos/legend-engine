@@ -23,6 +23,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.RedshiftDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SpannerDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_BigQueryDatasourceSpecification;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_BigQueryDatasourceSpecification_Impl;
@@ -35,6 +36,8 @@ import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_sp
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_LocalH2DatasourceSpecification_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_SnowflakeDatasourceSpecification;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_SnowflakeDatasourceSpecification_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_SpannerDatasourceSpecification;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_SpannerDatasourceSpecification_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_StaticDatasourceSpecification;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_StaticDatasourceSpecification_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_legend_connections_legend_specification_RedshiftDatasourceSpecification;
@@ -60,8 +63,7 @@ public class DatasourceSpecificationBuilder implements DatasourceSpecificationVi
             local._testDataSetupCsv(localH2DatasourceSpecification.testDataSetupCsv);
             local._testDataSetupSqls(localH2DatasourceSpecification.testDataSetupSqls == null ? FastList.newList() : FastList.newList(localH2DatasourceSpecification.testDataSetupSqls));
             return local;
-        }
-        else if (datasourceSpecification instanceof EmbeddedH2DatasourceSpecification)
+        } else if (datasourceSpecification instanceof EmbeddedH2DatasourceSpecification)
         {
             EmbeddedH2DatasourceSpecification embeddedH2DatasourceSpecification = (EmbeddedH2DatasourceSpecification) datasourceSpecification;
             Root_meta_pure_alloy_connections_alloy_specification_EmbeddedH2DatasourceSpecification embedded = new Root_meta_pure_alloy_connections_alloy_specification_EmbeddedH2DatasourceSpecification_Impl("");
@@ -69,8 +71,7 @@ public class DatasourceSpecificationBuilder implements DatasourceSpecificationVi
             embedded._databaseName(embeddedH2DatasourceSpecification.databaseName);
             embedded._directory(embeddedH2DatasourceSpecification.directory);
             return embedded;
-        }
-        else if (datasourceSpecification instanceof StaticDatasourceSpecification)
+        } else if (datasourceSpecification instanceof StaticDatasourceSpecification)
         {
             StaticDatasourceSpecification staticDatasourceSpecification = (StaticDatasourceSpecification) datasourceSpecification;
             Root_meta_pure_alloy_connections_alloy_specification_StaticDatasourceSpecification _static = new Root_meta_pure_alloy_connections_alloy_specification_StaticDatasourceSpecification_Impl("");
@@ -78,8 +79,7 @@ public class DatasourceSpecificationBuilder implements DatasourceSpecificationVi
             _static._port(staticDatasourceSpecification.port);
             _static._databaseName(staticDatasourceSpecification.databaseName);
             return _static;
-        }
-        else if (datasourceSpecification instanceof DatabricksDatasourceSpecification)
+        } else if (datasourceSpecification instanceof DatabricksDatasourceSpecification)
         {
             DatabricksDatasourceSpecification staticDatasourceSpecification = (DatabricksDatasourceSpecification) datasourceSpecification;
             Root_meta_pure_alloy_connections_alloy_specification_DatabricksDatasourceSpecification _static = new Root_meta_pure_alloy_connections_alloy_specification_DatabricksDatasourceSpecification_Impl("");
@@ -88,8 +88,7 @@ public class DatasourceSpecificationBuilder implements DatasourceSpecificationVi
             _static._protocol(staticDatasourceSpecification.protocol);
             _static._httpPath(staticDatasourceSpecification.httpPath);
             return _static;
-        }
-        else if (datasourceSpecification instanceof SnowflakeDatasourceSpecification)
+        } else if (datasourceSpecification instanceof SnowflakeDatasourceSpecification)
         {
             SnowflakeDatasourceSpecification snowflakeDatasourceSpecification = (SnowflakeDatasourceSpecification) datasourceSpecification;
             Root_meta_pure_alloy_connections_alloy_specification_SnowflakeDatasourceSpecification _snowflake = new Root_meta_pure_alloy_connections_alloy_specification_SnowflakeDatasourceSpecification_Impl("");
@@ -110,8 +109,7 @@ public class DatasourceSpecificationBuilder implements DatasourceSpecificationVi
 
 
             return _snowflake;
-        }
-        else if (datasourceSpecification instanceof BigQueryDatasourceSpecification)
+        } else if (datasourceSpecification instanceof BigQueryDatasourceSpecification)
         {
             BigQueryDatasourceSpecification bigQueryDatasourceSpecification = (BigQueryDatasourceSpecification) datasourceSpecification;
             Root_meta_pure_alloy_connections_alloy_specification_BigQueryDatasourceSpecification _bigquery = new Root_meta_pure_alloy_connections_alloy_specification_BigQueryDatasourceSpecification_Impl("");
@@ -120,8 +118,7 @@ public class DatasourceSpecificationBuilder implements DatasourceSpecificationVi
             _bigquery._proxyHost(bigQueryDatasourceSpecification.proxyHost);
             _bigquery._proxyPort(bigQueryDatasourceSpecification.proxyPort);
             return _bigquery;
-        }
-        else if (datasourceSpecification instanceof RedshiftDatasourceSpecification)
+        } else if (datasourceSpecification instanceof RedshiftDatasourceSpecification)
         {
             RedshiftDatasourceSpecification redshiftDatasourceSpecification = (RedshiftDatasourceSpecification) datasourceSpecification;
             Root_meta_pure_legend_connections_legend_specification_RedshiftDatasourceSpecification redshiftSpec = new Root_meta_pure_legend_connections_legend_specification_RedshiftDatasourceSpecification_Impl("");
@@ -132,6 +129,17 @@ public class DatasourceSpecificationBuilder implements DatasourceSpecificationVi
             redshiftSpec._port(redshiftDatasourceSpecification.port);
             redshiftSpec._region(redshiftDatasourceSpecification.region);
             return redshiftSpec;
+        } else if (datasourceSpecification instanceof SpannerDatasourceSpecification)
+        {
+            SpannerDatasourceSpecification spannerDatasourceSpecification = (SpannerDatasourceSpecification) datasourceSpecification;
+            Root_meta_pure_alloy_connections_alloy_specification_SpannerDatasourceSpecification spannerSpec =
+                    new Root_meta_pure_alloy_connections_alloy_specification_SpannerDatasourceSpecification_Impl("");
+            spannerSpec._projectId(spannerDatasourceSpecification.projectId);
+            spannerSpec._instanceId(spannerDatasourceSpecification.instanceId);
+            spannerSpec._proxyHost(spannerDatasourceSpecification.proxyHost);
+            spannerSpec._proxyPort(spannerDatasourceSpecification.proxyPort);
+            spannerSpec._databaseId(spannerDatasourceSpecification.databaseId);
+            return spannerSpec;
         }
         return null;
     }

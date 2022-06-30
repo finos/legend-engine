@@ -22,6 +22,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.drive
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Manager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.redshift.RedshiftManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.snowflake.SnowflakeManager;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.spanner.SpannerManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.BigQueryDataSourceSpecification;
@@ -29,11 +30,13 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.sp
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.LocalH2DataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.RedshiftDataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.SnowflakeDataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.SpannerDataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.StaticDataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.BigQueryDataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.DatabricksDataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.RedshiftDataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.SnowflakeDataSourceSpecificationKey;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.SpannerDataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.StaticDataSourceSpecificationKey;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.BigQueryDatasourceSpecification;
@@ -44,6 +47,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.RedshiftDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SpannerDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
 
 public class DataSourceSpecificationTransformer implements DatasourceSpecificationVisitor<DataSourceSpecification>
@@ -66,8 +70,7 @@ public class DataSourceSpecificationTransformer implements DatasourceSpecificati
         if (datasourceSpecification instanceof EmbeddedH2DatasourceSpecification)
         {
             throw new UnsupportedOperationException("Embedded H2 currently not supported");
-        }
-        else if (datasourceSpecification instanceof LocalH2DatasourceSpecification)
+        } else if (datasourceSpecification instanceof LocalH2DatasourceSpecification)
         {
             LocalH2DatasourceSpecification localH2DatasourceSpecification = (LocalH2DatasourceSpecification) datasourceSpecification;
             if (localH2DatasourceSpecification.testDataSetupSqls != null && !localH2DatasourceSpecification.testDataSetupSqls.isEmpty())
@@ -77,8 +80,7 @@ public class DataSourceSpecificationTransformer implements DatasourceSpecificati
                         new H2Manager(),
                         new TestDatabaseAuthenticationStrategy()
                 );
-            }
-            else
+            } else
             {
                 return new StaticDataSourceSpecification(
                         (StaticDataSourceSpecificationKey) key,
@@ -86,47 +88,49 @@ public class DataSourceSpecificationTransformer implements DatasourceSpecificati
                         this.authenticationStrategy
                 );
             }
-        }
-        else if (datasourceSpecification instanceof StaticDatasourceSpecification)
+        } else if (datasourceSpecification instanceof StaticDatasourceSpecification)
         {
             return new StaticDataSourceSpecification(
                     (StaticDataSourceSpecificationKey) key,
                     DatabaseManager.fromString(connection.type.name()),
                     authenticationStrategy
             );
-        }
-        else if (datasourceSpecification instanceof DatabricksDatasourceSpecification)
+        } else if (datasourceSpecification instanceof DatabricksDatasourceSpecification)
         {
             return new DatabricksDataSourceSpecification(
                     (DatabricksDataSourceSpecificationKey) key,
                     new DatabricksManager(),
                     authenticationStrategy
             );
-        }
-        else if (datasourceSpecification instanceof SnowflakeDatasourceSpecification)
+        } else if (datasourceSpecification instanceof SnowflakeDatasourceSpecification)
         {
             return new SnowflakeDataSourceSpecification(
                     (SnowflakeDataSourceSpecificationKey) key,
                     new SnowflakeManager(),
                     authenticationStrategy);
-        }
-        else if (datasourceSpecification instanceof BigQueryDatasourceSpecification)
+        } else if (datasourceSpecification instanceof BigQueryDatasourceSpecification)
         {
             return new BigQueryDataSourceSpecification(
                     (BigQueryDataSourceSpecificationKey) key,
                     new BigQueryManager(),
                     authenticationStrategy
             );
-        }
-        else if (datasourceSpecification instanceof RedshiftDatasourceSpecification)
+        } else if (datasourceSpecification instanceof RedshiftDatasourceSpecification)
         {
             return new RedshiftDataSourceSpecification(
                     (RedshiftDataSourceSpecificationKey) key,
                     new RedshiftManager(),
                     authenticationStrategy
             );
+        } else if (datasourceSpecification instanceof SpannerDatasourceSpecification)
+        {
+            return new SpannerDataSourceSpecification(
+                    (SpannerDataSourceSpecificationKey) key,
+                    new SpannerManager(),
+                    authenticationStrategy
+            );
         }
 
-        return null;
+        throw new UnsupportedOperationException(datasourceSpecification.getClass().getSimpleName() + " specification is not supported yet");
     }
 }

@@ -182,12 +182,7 @@ public abstract class DataSourceSpecification
         return this.connectionStateManager.poolNameFor(identity, getConnectionKey());
     }
 
-    private DataSource buildDataSource(Identity identity)
-    {
-        return this.buildDataSource(null, -1, null, identity);
-    }
-
-    private HikariDataSource buildDataSource(String host, int port, String databaseName, Identity identity)
+    private HikariDataSource buildDataSource(Identity identity)
     {
         try (Scope scope = GlobalTracer.get().buildSpan("Create Pool").startActive(true))
         {
@@ -205,7 +200,7 @@ public abstract class DataSourceSpecification
             jdbcConfig.setPoolName(poolName);
             jdbcConfig.setMaximumPoolSize(maxPoolSize);
             jdbcConfig.setMinimumIdle(minPoolSize);
-            jdbcConfig.setJdbcUrl(getJdbcUrl(host, port, databaseName, properties));
+            jdbcConfig.setJdbcUrl(getJdbcUrl(null, -1, null, properties));
             jdbcConfig.setConnectionTimeout(authenticationStrategy.getConnectionTimeout());
             jdbcConfig.addDataSourceProperty("cachePrepStmts", false);
             jdbcConfig.addDataSourceProperty("prepStmtCacheSize", 0);

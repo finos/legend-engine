@@ -76,8 +76,17 @@ Class meta::pure::alloy::connections::alloy::specification::BigQueryDatasourceSp
     proxyPort: String[0..1];
 }
 
+Class meta::pure::alloy::connections::alloy::specification::SpannerDatasourceSpecification extends meta::pure::alloy::connections::alloy::specification::DatasourceSpecification
+{
+    projectId:String[1];
+    instanceId:String[1];
+    databaseId:String[1];
+    proxyHost: String[0..1];
+    proxyPort: String[0..1];
+}
+
 Class {doc.doc ='Specification for the AWS redshift database'} meta::pure::legend::connections::legend::specification::RedshiftDatasourceSpecification extends meta::pure::alloy::connections::alloy::specification::DatasourceSpecification
-{   
+{
   {doc.doc ='clusterID'} clusterID:String[1];
   {doc.doc ='The aws region'} region:String[1];
   {doc.doc ='the full host url'}  host:String[1];
@@ -86,4 +95,3 @@ Class {doc.doc ='Specification for the AWS redshift database'} meta::pure::legen
   {doc.doc ='Optional URL used for redshift service execution'}  endpointURL:String[0..1];
 }
 
-         

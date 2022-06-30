@@ -20,6 +20,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.drive
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.postgres.PostgresCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.redshift.RedshiftCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.snowflake.SnowflakeCommands;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.spanner.SpannerCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.sqlserver.SqlServerCommands;
 
 public interface RelationalDatabaseCommandsVisitor<T>
@@ -37,4 +38,6 @@ public interface RelationalDatabaseCommandsVisitor<T>
     T visit(RedshiftCommands redshiftCommands);
 
     T visit(PostgresCommands postgresCommands);
+
+    T visit(SpannerCommands spannerCommands);
 }
