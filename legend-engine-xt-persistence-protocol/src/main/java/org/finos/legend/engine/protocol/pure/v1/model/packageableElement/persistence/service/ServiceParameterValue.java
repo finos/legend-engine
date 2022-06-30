@@ -19,8 +19,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = PrimitiveTypeValue.class, name = "primitiveType"),
-        @JsonSubTypes.Type(value = ConnectionValue.class, name = "connection")
+        @JsonSubTypes.Type(value = PrimitiveTypeValue.class, name = "primitiveTypeValue"),
+        @JsonSubTypes.Type(value = ConnectionValue.class, name = "connectionValue")
 })
 public abstract class ServiceParameterValue
 {
