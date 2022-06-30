@@ -1,0 +1,104 @@
+{
+  "_type": "data",
+  "elements": [
+    {
+      "_type": "mapping",
+      "classMappings": [],
+      "enumerationMappings": [],
+      "includedMappings": [],
+      "name": "M0",
+      "package": "mapping",
+      "tests": []
+    },
+    {
+      "_type": "mapping",
+      "classMappings": [],
+      "enumerationMappings": [],
+      "includedMappings": [
+        {
+          "includedMapping": "mapping::M0"
+        }
+      ],
+      "name": "M1",
+      "package": "mapping",
+      "tests": []
+    },
+    {
+      "_type": "mapping",
+      "classMappings": [],
+      "enumerationMappings": [],
+      "includedMappings": [],
+      "name": "M2",
+      "package": "mapping",
+      "tests": []
+    },
+    {
+      "_type": "runtime",
+      "name": "R0",
+      "package": "runtime",
+      "runtimeValue": {
+        "_type": "engineRuntime",
+        "connections": [],
+        "mappings": [
+          {
+            "path": "mapping::M0",
+            "type": "MAPPING"
+          }
+        ]
+      }
+    },
+    {
+      "_type": "runtime",
+      "name": "R1",
+      "package": "runtime",
+      "runtimeValue": {
+        "_type": "engineRuntime",
+        "connections": [],
+        "mappings": [
+          {
+            "path": "mapping::M1",
+            "type": "MAPPING"
+          }
+        ]
+      }
+    },
+    {
+      "_type": "runtime",
+      "name": "R2",
+      "package": "runtime",
+      "runtimeValue": {
+        "_type": "engineRuntime",
+        "connections": [],
+        "mappings": [
+          {
+            "path": "mapping::M2",
+            "type": "MAPPING"
+          }
+        ]
+      }
+    },
+    {
+      "_type": "runtime",
+      "name": "R3",
+      "package": "runtime",
+      "runtimeValue": {
+        "_type": "engineRuntime",
+        "connections": [],
+        "mappings": [
+          {
+            "path": "mapping::M0",
+            "type": "MAPPING"
+          },
+          {
+            "path": "mapping::M1",
+            "type": "MAPPING"
+          },
+          {
+            "path": "mapping::M2",
+            "type": "MAPPING"
+          }
+        ]
+      }
+    }
+  ]
+}

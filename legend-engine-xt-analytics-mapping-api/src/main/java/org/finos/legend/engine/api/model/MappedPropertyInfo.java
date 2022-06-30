@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.analytics.mapping.model.coverage.api;
+package org.finos.legend.engine.api.model;
 
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 

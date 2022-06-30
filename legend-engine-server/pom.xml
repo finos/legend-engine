@@ -327,7 +327,6 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-analytics-mapping-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <!-- ENGINE -->
 
