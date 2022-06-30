@@ -1713,6 +1713,11 @@
                         <groupId>org.javassist</groupId>
                         <artifactId>javassist</artifactId>
                     </exclusion>
+                    <!-- newer versions in com.google.cloud:google-cloud-spanner-jdbc -->
+                    <exclusion>
+                        <groupId>javax.annotation</groupId>
+                        <artifactId>javax.annotation-api</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
