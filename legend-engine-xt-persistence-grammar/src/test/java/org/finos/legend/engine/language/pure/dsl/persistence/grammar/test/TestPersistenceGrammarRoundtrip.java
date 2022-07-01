@@ -50,6 +50,22 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
     }
 
     @Test
+    public void persistenceContextSingleServiceParameter()
+    {
+        test("###Persistence\n" +
+                "import test::*;\n" +
+                "PersistenceContext test::TestPersistenceContext\n" +
+                "{\n" +
+                "  persistence: test::TestPersistence;\n" +
+                "  serviceParameters:\n" +
+                "  [\n" +
+                "    foo='hello'\n" +
+                "  ];\n" +
+                "  sinkConnection: test::TestConnection;\n" +
+                "}\n");
+    }
+
+    @Test
     public void persistenceContextSinkConnectionPointer()
     {
         test("###Persistence\n" +

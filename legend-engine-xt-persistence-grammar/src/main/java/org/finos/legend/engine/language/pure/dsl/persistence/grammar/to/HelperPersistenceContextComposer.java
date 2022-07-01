@@ -70,7 +70,7 @@ public class HelperPersistenceContextComposer
                 ? ""
                 : getTabString(indentLevel) + "serviceParameters:\n" +
                 getTabString(indentLevel) + "[\n" +
-                ListIterate.collect(serviceParameters, sp -> renderServiceParameter(sp, indentLevel + 1, context)).makeString(",\n") +
+                ListIterate.collect(serviceParameters, sp -> renderServiceParameter(sp, indentLevel + 1, context)).makeString("", ",\n", "\n") +
                 getTabString(indentLevel) + "];\n";
     }
 
