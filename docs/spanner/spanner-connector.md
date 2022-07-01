@@ -4,7 +4,7 @@
 __Dialect__
 
 Spanner supports two dialects : [Google Standard SQL and PostgreSQL](https://cloud.google.com/spanner/docs/postgresql-interface#choose).
-<br>This connector so far uses PostgreSQL compatability 
+<br>This connector so far uses PostgreSQL compatibility 
 <br>
 
 __Object naming conventions__
