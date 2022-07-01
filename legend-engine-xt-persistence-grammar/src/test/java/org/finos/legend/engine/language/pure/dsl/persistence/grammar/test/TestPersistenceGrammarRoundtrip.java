@@ -134,6 +134,42 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
                 "    }\n" +
                 "  }#;\n" +
                 "}\n");
+        test("###Persistence\n" +
+                "import test::*;\n" +
+                "PersistenceContext test::TestPersistenceContext\n" +
+                "{\n" +
+                "  persistence: test::TestPersistence;\n" +
+                "  serviceParameters:\n" +
+                "  [\n" +
+                "    con2=\n" +
+                "    #{\n" +
+                "      RelationalDatabaseConnection\n" +
+                "      {\n" +
+                "        store: test::TestDatabase;\n" +
+                "        type: H2;\n" +
+                "        specification: LocalH2\n" +
+                "        {\n" +
+                "        };\n" +
+                "        auth: Test;\n" +
+                "      }\n" +
+                "    }#,\n" +
+                "    foo='hello',\n" +
+                "    bar=1,\n" +
+                "    con1=test::TestConnection\n" +
+                "  ];\n" +
+                "  sinkConnection:\n" +
+                "  #{\n" +
+                "    RelationalDatabaseConnection\n" +
+                "    {\n" +
+                "      store: test::TestDatabase;\n" +
+                "      type: H2;\n" +
+                "      specification: LocalH2\n" +
+                "      {\n" +
+                "      };\n" +
+                "      auth: Test;\n" +
+                "    }\n" +
+                "  }#;\n" +
+                "}\n");
     }
 
     @Test

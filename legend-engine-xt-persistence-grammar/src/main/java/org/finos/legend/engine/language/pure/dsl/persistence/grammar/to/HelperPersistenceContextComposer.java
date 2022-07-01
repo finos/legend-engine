@@ -104,6 +104,6 @@ public class HelperPersistenceContextComposer
                 getTabString(indentLevel) + "#{\n" +
                 getTabString(indentLevel + 1) + HelperConnectionGrammarComposer.getConnectionValueName(connection, composerCore.toContext()) + "\n" +
                 connection.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(composerCore).withIndentation(getTabSize(indentLevel + 1), true).build()) + "\n" +
-                getTabString(indentLevel) + "}#" + (prefix == null ? "" : ";") + "\n";
+                getTabString(indentLevel) + "}#" + (prefix == null ? "" : ";\n");
     }
 }
