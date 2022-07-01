@@ -126,7 +126,7 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
                 "      assert: '{}';\n" +
                 "    )\n" +
                 "  ]\n" +
-                ")\n", "PARSER error at [14:74]: Unexpected token");
+                ")\n", "PARSER error at [14:74]: Unexpected token '}'");
     }
 
     @Test
@@ -344,7 +344,7 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
                 "    firstName: $src.fullName->substring(0, $src.fullName->indexOf(' '))\n" +
                 "    firstName: $src.fullName->substring(0, $src.fullName->indexOf(' '))\n" +
                 "  }\n" +
-                ")\n", "PARSER error at [9:5-13]: Unexpected token");
+                ")\n", "PARSER error at [9:5-13]: Unexpected token 'firstName'");
     }
 
     @Test
@@ -361,7 +361,7 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
                 "    firstName: $src.fullName->substring(0, $src.fullName->indexOf(' '))\n" +
                 "    firstName: $src.fullName->substring(0, $src.fullName->indexOf(' '))\n" +
                 "  }\n" +
-                ")\n", "PARSER error at [9:5-13]: Unexpected token");
+                ")\n", "PARSER error at [9:5-13]: Unexpected token 'firstName'");
     }
 
     @Test
@@ -387,7 +387,7 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
                 "    ~src anything::goes\n" +
                 "    + firstName : [1] : $src.fullName->substring(0, $src.fullName->indexOf(' '))\n" +
                 "  }\n" +
-                ")\n", "PARSER error at [7:19]: Unexpected token");
+                ")\n", "PARSER error at [7:19]: Unexpected token '['");
 
         test("###Mapping\n" +
                 "Mapping mapping::test\n" +
@@ -397,7 +397,7 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
                 "    ~src anything::goes\n" +
                 "    + firstName : String : $src.fullName->substring(0, $src.fullName->indexOf(' '))\n" +
                 "  }\n" +
-                ")\n", "PARSER error at [7:26]: Unexpected token");
+                ")\n", "PARSER error at [7:26]: Unexpected token ':'");
 
         test("###Mapping\n" +
                 "Mapping mapping::test\n" +
@@ -417,7 +417,7 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
                 "    ~src anything::goes\n" +
                 "    + firstName : : $src.fullName->substring(0, $src.fullName->indexOf(' '))\n" +
                 "  }\n" +
-                ")\n", "PARSER error at [7:19]: Unexpected token");
+                ")\n", "PARSER error at [7:19]: Unexpected token ':'");
 
         test("###Mapping\n" +
                 "Mapping mapping::test\n" +
@@ -489,7 +489,7 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
                 "    p1[x, y]: true\n" +
                 "    p2[y, x]: false\n" +
                 "  }\n" +
-                ")", "PARSER error at [7:5-6]: Unexpected token");
+                ")", "PARSER error at [7:5-6]: Unexpected token 'p2'");
 
         test("###Mapping\n" +
                 "Mapping mapping::test\n" +
@@ -498,7 +498,7 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
                 "  {\n" +
                 "    p1[x]: true\n" +
                 "  }\n" +
-                ")", "PARSER error at [6:9]: Unexpected token");
+                ")", "PARSER error at [6:9]: Unexpected token ']'");
 
         test("###Mapping\n" +
                 "Mapping mapping::test\n" +
@@ -507,7 +507,7 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
                 "  {\n" +
                 "    p1[x, ]: true\n" +
                 "  }\n" +
-                ")", "PARSER error at [6:11]: Unexpected token");
+                ")", "PARSER error at [6:11]: Unexpected token ']'");
 
         test("###Mapping\n" +
                 "Mapping mapping::test\n" +
