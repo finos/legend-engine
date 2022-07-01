@@ -66,12 +66,12 @@ public class HelperPersistenceContextComposer
 
     private static String renderServiceParameters(List<ServiceParameter> serviceParameters, int indentLevel, PureGrammarComposerContext context)
     {
-        return !serviceParameters.isEmpty()
-                ? getTabString(indentLevel) + "serviceParameters:\n" +
+        return (serviceParameters == null || serviceParameters.isEmpty())
+                ? ""
+                : getTabString(indentLevel) + "serviceParameters:\n" +
                 getTabString(indentLevel) + "[\n" +
                 ListIterate.collect(serviceParameters, sp -> renderServiceParameter(sp, indentLevel + 1, context)).makeString(",\n") +
-                getTabString(indentLevel) + "];\n"
-                : "";
+                getTabString(indentLevel) + "];\n";
     }
 
     private static String renderServiceParameter(ServiceParameter serviceParameter, int indentLevel, PureGrammarComposerContext context)

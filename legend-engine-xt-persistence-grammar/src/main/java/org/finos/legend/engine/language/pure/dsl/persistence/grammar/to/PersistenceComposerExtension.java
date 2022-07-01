@@ -15,16 +15,16 @@
 package org.finos.legend.engine.language.pure.dsl.persistence.grammar.to;
 
 import org.eclipse.collections.api.block.function.Function3;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
-import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.dsl.persistence.grammar.from.PersistenceParserExtension;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistenceContext;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.PersistencePlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.DefaultPersistencePlatform;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.PersistencePlatform;
 
 import java.util.Collections;
 import java.util.List;
@@ -60,8 +60,26 @@ public class PersistenceComposerExtension implements IPersistenceComposerExtensi
     {
         return Lists.fixedSize.of((elements, context, composedSections) ->
         {
-            List<Persistence> composableElements = ListIterate.selectInstancesOf(elements, Persistence.class);
-            return composableElements.isEmpty() ? null : new PureFreeSectionGrammarComposerResult(LazyIterate.collect(composableElements, el -> PersistenceComposerExtension.renderPersistence(el, context)).makeString("###" + PersistenceParserExtension.NAME + "\n", "\n\n", ""), composableElements);
+            MutableList<PackageableElement> composableElements = Lists.mutable.empty();
+            composableElements.addAll(ListIterate.selectInstancesOf(elements, PersistenceContext.class));
+            composableElements.addAll(ListIterate.selectInstancesOf(elements, Persistence.class));
+
+            return composableElements.isEmpty()
+                    ? null
+                    : new PureFreeSectionGrammarComposerResult(composableElements
+                        .collect(element ->
+                        {
+                            if (element instanceof Persistence)
+                            {
+                                return PersistenceComposerExtension.renderPersistence((Persistence) element, context);
+                            }
+                            else if (element instanceof PersistenceContext)
+                            {
+                                return PersistenceComposerExtension.renderPersistenceContext((PersistenceContext) element, context);
+                            }
+                            throw new UnsupportedOperationException("Unsupported type " + element.getClass().getName());
+                        })
+                        .makeString("###" + PersistenceParserExtension.NAME + "\n", "\n\n", ""), composableElements);
         });
     }
 
