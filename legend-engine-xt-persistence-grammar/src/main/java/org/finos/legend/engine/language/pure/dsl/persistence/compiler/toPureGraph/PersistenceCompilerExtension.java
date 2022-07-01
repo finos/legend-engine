@@ -48,20 +48,31 @@ public class PersistenceCompilerExtension implements IPersistenceCompilerExtensi
                         Persistence.class,
                         Lists.fixedSize.of(Service.class, Mapping.class, Binding.class, PackageableConnection.class, Database.class),
                         (persistence, context) -> new Root_meta_pure_persistence_metamodel_Persistence_Impl("")
-                                ._documentation(persistence.documentation)
-                                ._trigger(HelperPersistenceBuilder.buildTrigger(persistence.trigger)),
+                                ._documentation(persistence.documentation),
+                        (persistence, context) ->
+                        {
+                            Root_meta_pure_persistence_metamodel_Persistence purePersistence = (Root_meta_pure_persistence_metamodel_Persistence) context.pureModel.getOrCreatePackage(persistence._package)._children().detect(c -> persistence.name.equals(c._name()));
+                            purePersistence._trigger(HelperPersistenceBuilder.buildTrigger(persistence.trigger));
+                            purePersistence._persister(HelperPersistenceBuilder.buildPersister(persistence.persister, context));
+                            purePersistence._notifier(HelperPersistenceBuilder.buildNotifier(persistence.notifier, context));
+                        },
                         (persistence, context) ->
                         {
                             Root_meta_pure_persistence_metamodel_Persistence purePersistence = (Root_meta_pure_persistence_metamodel_Persistence) context.pureModel.getOrCreatePackage(persistence._package)._children().detect(c -> persistence.name.equals(c._name()));
                             purePersistence._service(HelperPersistenceBuilder.buildService(persistence, context));
-                            purePersistence._persister(HelperPersistenceBuilder.buildPersister(persistence.persister, context));
-                            purePersistence._notifier(HelperPersistenceBuilder.buildNotifier(persistence.notifier, context));
                         }
+
                 ),
                 Processor.newProcessor(
                         PersistenceContext.class,
                         Lists.fixedSize.of(Persistence.class, PackageableConnection.class),
                         (persistenceContext, context) -> new Root_meta_pure_persistence_metamodel_PersistenceContext_Impl(""),
+                        (persistenceContext, context) ->
+                        {
+                        },
+                        (persistenceContext, context) ->
+                        {
+                        },
                         (persistenceContext, context) ->
                         {
                             Root_meta_pure_persistence_metamodel_PersistenceContext purePersistenceContext = (Root_meta_pure_persistence_metamodel_PersistenceContext) context.pureModel.getOrCreatePackage(persistenceContext._package)._children().detect(c -> persistenceContext.name.equals(c._name()));
