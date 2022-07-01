@@ -1,5 +1,5 @@
 {
     "name" : "core_ide_metadata",
     "pattern" : "(meta::alloy|meta::protocols)(::.*)?",
-    "dependencies" : ["platform", "core", "core_external_shared", "core_relational", "core_servicestore"]
+    "dependencies" : ["platform", "core", "core_relational", "core_servicestore"]
 }

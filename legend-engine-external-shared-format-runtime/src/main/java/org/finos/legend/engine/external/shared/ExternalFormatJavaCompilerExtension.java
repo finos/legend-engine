@@ -53,7 +53,7 @@ public class ExternalFormatJavaCompilerExtension implements ExecutionPlanJavaCom
     }
 
     /**
-     * Use to generate content of core_external_shared/executionPlan/engine.pure (see GeneratePureConfig)
+     * Use to generate content of core/pure/binding/executionPlan/engine.pure (see GeneratePureConfig)
      */
     public static void main(String[] args)
     {
