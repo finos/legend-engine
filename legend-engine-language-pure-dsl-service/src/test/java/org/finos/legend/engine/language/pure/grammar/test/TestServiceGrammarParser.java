@@ -1121,7 +1121,7 @@ public class TestServiceGrammarParser extends TestGrammarParser.TestGrammarParse
                         "    }\n" +
                         "  ]\n" +
                         "}\n",
-                "PARSER error at [43:17-22]: Unexpected token"
+                "PARSER error at [43:17-22]: Unexpected token 'actual'"
         );
     }
 }
