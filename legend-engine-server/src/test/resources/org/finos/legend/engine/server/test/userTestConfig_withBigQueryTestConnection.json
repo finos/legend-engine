@@ -1,0 +1,111 @@
+{
+  "deployment": {
+    "mode": "TEST_IGNORE_FUNCTION_MATCH"
+  },
+  "logging": {
+    "level": "error",
+    "appenders": [
+      {
+        "type": "console",
+        "logFormat": "%msg\r\n"
+      }
+    ]
+  },
+  "pac4j": {
+    "bypassPaths": [
+      "/api/server/v1/info"
+    ],
+    "clients": [
+      {
+        "org.pac4j.core.client.direct.AnonymousClient": {
+        }
+      }
+    ],
+    "mongoSession": {
+      "enabled": false
+    }
+  },
+  "opentracing": {
+    "elastic": "",
+    "zipkin": "",
+    "uri": "",
+    "authenticator": {
+      "principal": "",
+      "keytab": ""
+    }
+  },
+  "swagger": {
+    "title": "Legend Engine",
+    "resourcePackage": "org.finos.legend",
+    "uriPrefix": "/api"
+  },
+  "server": {
+    "type": "simple",
+    "applicationContextPath": "/",
+    "adminContextPath": "/admin",
+    "connector": {
+      "maxRequestHeaderSize": "32KiB",
+      "type": "http",
+      "port": 6060
+    },
+    "requestLog": {
+      "appenders": [
+      ]
+    }
+  },
+  "metadataserver": {
+    "pure": {
+      "host": "127.0.0.1",
+      "port": 8080
+    },
+    "alloy": {
+      "host": "127.0.0.1",
+      "port": 8075
+    }
+  },
+  "temporarytestdb": {
+    "port": 9099
+  },
+  "relationalexecution": {
+    "tempPath": "/tmp/",
+    "temporarytestdb": {
+      "port": 9099
+    },
+    "flowProviderClass": "org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProvider",
+    "flowProviderConfiguration": {
+      "_type": "legendDefault",
+      "awsConfig": {
+        "region": "us-east-1",
+        "accountId": "564704738649",
+        "role": "integration-wif-role1",
+        "awsAccessKeyIdVaultReference": "AWS_ACCESS_KEY_ID",
+        "awsSecretAccessKeyVaultReference": "AWS_SECRET_ACCESS_KEY"
+      },
+      "gcpWorkloadConfig": {
+        "projectNumber": "412074507462",
+        "poolId": "integration-wif-pool1",
+        "providerId": "integration-wif-pool1-provider"
+      }
+    }
+  },
+  "testConnectionsToEnable" : ["BigQuery"],
+  "staticTestConnections" : {
+    "BigQuery" : {
+      "_type": "RelationalDatabaseConnection",
+      "datasourceSpecification": {
+        "_type": "bigQuery",
+        "projectId": "legend-integration-testing",
+        "defaultDataset": "integration_dataset1"
+      },
+      "authenticationStrategy": {
+        "_type": "gcpWorkloadIdentityFederation",
+        "serviceAccountEmail": "integration-bq-sa1@legend-integration-testing.iam.gserviceaccount.com"
+      },
+      "type": "BigQuery",
+      "element" : "",
+      "databaseType": "BigQuery",
+      "postProcessors": [],
+      "postProcessorWithParameter": []
+    }
+  }
+}
