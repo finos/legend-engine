@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.stream.Stream;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Sets;
@@ -48,13 +49,13 @@ public class SpecToCodeGenerator
 {
     public static void main(String... args) throws JsonProcessingException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException
     {
-        String esVersion = "7.17";
+        String[] esVersions = args.length != 0 ? args : new String[]{"7.17", "8.3"};
         CompiledExecutionSupport classLoaderExecutionSupport = SpecToCodeGenerator.getClassLoaderExecutionSupport();
         // String pureElementsJson = core_elasticsearch_specification_specToPureGenerator.Root_meta_external_store_elasticsearch_metamodel_spec_toPure_generatePureProtocolJson_String_1__String_1_(esVersion, classLoaderExecutionSupport);
 
         String pureElementsJson = (String) Class.forName("org.finos.legend.pure.generated.core_elasticsearch_specification_specToPureGenerator")
                 .getMethod("Root_meta_external_store_elasticsearch_metamodel_spec_toPure_generatePureProtocolJson_String_1__String_1_", String.class, ExecutionSupport.class)
-                .invoke(null, esVersion, classLoaderExecutionSupport);
+                .invoke(null, esVersions[0], classLoaderExecutionSupport);
 
         ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
 

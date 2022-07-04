@@ -179,10 +179,31 @@ function meta::pure::metamodel::serialization::grammar::printClass(cl:Class<Any>
     '{\n' +
         $cl.properties                          -> map(p:Property<Nil,Any|*>[1]    |'  '  + $p -> printProperty()) -> printStatements() +
         $cl.propertiesFromAssociations          -> map(p:Property<Nil,Any|*>[1]    |'  ~' + $p -> printProperty()) -> printStatements() +
-        $cl.qualifiedProperties                 -> map(p:QualifiedProperty<Any>[1] |'  '  + printStereotypes($p)  +  printTaggedValues($p) + $p -> printFunctionSignature()) -> printStatements() +
-        $cl.qualifiedPropertiesFromAssociations -> map(p:QualifiedProperty<Any>[1] |'  ~' + printStereotypes($p)  +  printTaggedValues($p) + $p -> printFunctionSignature()) -> printStatements() +
+        $cl.qualifiedProperties                 -> map(p:QualifiedProperty<Any>[1] |'  '  + $p -> printQualifiedProperty()) -> printStatements() +
+        $cl.qualifiedPropertiesFromAssociations -> map(p:QualifiedProperty<Any>[1] |'  ~' + $p -> printQualifiedProperty()) -> printStatements() +
     '}';
 }
+
+function meta::pure::metamodel::serialization::grammar::printQualifiedProperty(p:QualifiedProperty<Any>[1]):String[1]
+{
+    let annotations = printStereotypes($p)  +  printTaggedValues($p);
+    
+    let funcType = $p->genericType().typeArguments->at(0).rawType->toOne()->cast(@FunctionType);
+    let parameters = $funcType.parameters->evaluateAndDeactivate()->filter(fp | $fp.name != 'this');
+    let returnType = $funcType.returnType;
+    let typeParams =  $funcType.typeParameters->evaluateAndDeactivate();
+
+    let signature = $p.functionName->toOne() + if($typeParams->isEmpty(), |'', |$typeParams->map(t:TypeParameter[1]|$t.name)->joinStrings('<', ', ','>')) + $parameters->map(v | $v.name + ': ' + printGenericType($v.genericType) + '[' + printMultiplicity($v.multiplicity) + ']')->joinStrings('(', ', ', ')');
+    
+    let body = '{\n'+
+               $p->printFunctionDefinitionExpressions('  ')->joinStrings('    ', ';\n  ', ';\n')+
+               +'  }';
+
+    let ret = ': ' + printGenericType($returnType) + '[' + printMultiplicity($funcType.returnMultiplicity) + ']';
+
+    $annotations + $signature + $body + $ret; 
+}
+
 
 function meta::pure::metamodel::serialization::grammar::printClassTypeParameters(cl:Class<Any>[1]):String[1]
 {

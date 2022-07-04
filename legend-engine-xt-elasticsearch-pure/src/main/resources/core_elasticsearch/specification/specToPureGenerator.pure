@@ -1,0 +1,423 @@
+import meta::external::store::elasticsearch::metamodel::spec::*;
+import meta::external::store::elasticsearch::metamodel::spec::toPure::*;
+import meta::external::store::elasticsearch::metamodel::spec::endpoint::*;
+import meta::external::store::elasticsearch::metamodel::spec::property::*;
+import meta::external::store::elasticsearch::metamodel::spec::type::*;
+import meta::external::store::elasticsearch::metamodel::spec::variant::*;
+
+import meta::external::store::elasticsearch::metamodel::api::specutils::*;
+
+import meta::pure::metamodel::serialization::grammar::*;
+
+Class meta::external::store::elasticsearch::metamodel::spec::toPure::GenerationState
+[
+  uniqueClasses: $this.nameToClasses->map(x | $x.first)->distinct()->size() == $this.nameToClasses->size(),
+  notAny: $this.nameToClasses->map(x | $x.second.rawType)->filter(x | $x == Any)->isEmpty()
+]
+{
+  version: String[1];
+  spec: Model[1];
+  debug: Boolean[1];
+  generated: Type[*];
+  nameToClasses: Pair<TypeName, GenericType>[*];
+
+  log(msg: Function<{->String[1]}>[1]){
+    if($this.debug, |println('(gen: ' + $this.nameToClasses->size()->toString() + ') | ' + $msg->eval()), |[]);
+    $this.generated->size();
+  }:Any[*];
+
+  pureType(name: TypeName[1]){
+    let pair = $this.nameToClasses->filter(x | $x.first == $name);
+    assert($pair->isNotEmpty(), |'No type registered for %s.%s'->format([$name.namespace, $name.name]));
+    $pair.second->toOne();
+  }:GenericType[1];
+
+  type(name: TypeName[1]){
+    $this.spec.types->filter(x | $x.name == $name);
+  }:TypeDefinition[*];
+}
+
+function meta::external::store::elasticsearch::metamodel::spec::getSpec(esVersion: String[1]): Model[1]
+{
+    let url = ^meta::pure::functions::io::http::URL(
+      host='raw.githubusercontent.com',
+      port=80,
+      path='/elastic/elasticsearch-specification/%s/output/schema/schema.json'->format($esVersion)
+    );
+
+    let rawSpec = meta::pure::functions::io::http::executeHTTPRaw(
+      $url,
+      meta::pure::functions::io::http::HTTPMethod.GET,
+      [], 
+      []
+    );
+
+    assert($rawSpec.statusCode == 200, |'Failed to get ES spec');
+    $rawSpec.entity->parseSpec();
+    // readFile('core_elasticsearch/specification/specSample/spec-7.17.json')->toOne()->parseSpec();
+}
+
+function meta::external::store::elasticsearch::metamodel::spec::toPure::generatePureClassCode(esVersion: String[1], debug: Boolean[1]): String[*]
+{
+    let pureCode = $esVersion->getSpec()->specToPureClasses('v' + $esVersion->split('.')->at(0), $debug)->map(c | $c->printType());
+}
+
+function meta::external::store::elasticsearch::metamodel::spec::toPure::getBuiltInTypes(): Pair<TypeName, GenericType>[*]
+{
+  [
+    pair(^TypeName(namespace = '_builtins', name = 'null'), ^GenericType(rawType = Nil)),
+    pair(^TypeName(namespace = '_builtins', name = 'boolean'), ^GenericType(rawType = Boolean)),
+    pair(^TypeName(namespace = '_builtins', name = 'string'), ^GenericType(rawType = String)),
+    pair(^TypeName(namespace = '_builtins', name = 'number'), ^GenericType(rawType = Number)),
+    pair(^TypeName(namespace = '_types', name = 'integer'), ^GenericType(rawType = Integer)),
+    pair(^TypeName(namespace = '_types', name = 'long'), ^GenericType(rawType = Integer)),
+    pair(^TypeName(namespace = '_types', name = 'double'), ^GenericType(rawType = Float)),
+    pair(^TypeName(namespace = '_types', name = 'float'), ^GenericType(rawType = Float)),
+    pair(^TypeName(namespace = '_spec_utils', name = 'Void'), ^GenericType(rawType = Nil)),
+    // below are the attached behaviors
+    pair(^TypeName(namespace = '_spec_utils', name = 'AdditionalProperty'), ^GenericType(rawType = AdditionalProperty)),
+    pair(^TypeName(namespace = '_spec_utils', name = 'AdditionalProperties'), ^GenericType(rawType = AdditionalProperties)),
+    pair(^TypeName(namespace = '_spec_utils', name = 'CommonQueryParameters'), ^GenericType(rawType = CommonQueryParameters)),
+    pair(^TypeName(namespace = '_spec_utils', name = 'CommonCatQueryParameters'), ^GenericType(rawType = CommonCatQueryParameters)),
+    pair(^TypeName(namespace = '_spec_utils', name = 'OverloadOf'), ^GenericType(rawType = OverloadOf))
+  ];
+}
+
+function meta::external::store::elasticsearch::metamodel::spec::toPure::specToPureClasses(spec: Model[1], version: String[1], debug: Boolean[1]): Type[*]
+{
+  let state = ^GenerationState(version = $version, spec = $spec, nameToClasses = getBuiltInTypes(),debug = $debug);
+
+  let apisToGenerate = [
+    'msearch',
+    'search'
+  ];
+
+  let apis = $spec.endpoints->filter(x|$x.name->in($apisToGenerate));
+  let topLevelTypes = $apis.response->concatenate($apis.request);
+  let typeDefinitions = $spec.types->filter(x|$x.name->in($topLevelTypes));
+  assertEquals($topLevelTypes->size(), $typeDefinitions->size());
+  $typeDefinitions->typesToPure($state);
+  $state.log(|'Finished!');
+  $state.generated;
+}
+
+function  meta::external::store::elasticsearch::metamodel::spec::toPure::typesToPure(types: TypeDefinition[*], state: GenerationState[1]): GenericType[*]
+{
+  $types->map(type| $type.name->typeToPure($state));
+}
+
+function  meta::external::store::elasticsearch::metamodel::spec::toPure::typeToPure(name: TypeName[1], state: GenerationState[1]): GenericType[1]
+{
+  if($state.nameToClasses->exists(x | $x.first == $name), 
+  |$state.pureType($name), 
+  {|
+    let type = $state.type($name);
+    
+    let genericType = if($type->isEmpty(),
+      {|
+        $state.log(|'Registering generic name: %s.%s'->format([$name.namespace, $name.name]));
+        $state->registerType($name, ^GenericType(typeParameter = ^TypeParameter(name = $name.name)));
+      },
+      {|
+        $type->match([
+          request: Request[1] | $request->requestTypeToPure($state),
+          response: Response[1] | $response->responseTypeToPure($state),
+          interface: Interface[1] | $interface->interfaceTypeToPure($state),
+          alias: TypeAlias[1] | $alias->aliasTypeToPure($state),
+          enum: _Enum[1] | $enum->enumTypeToPure($state)
+        ]);
+      }
+    );
+    $state.log(|'Generating ended for type: %s.%s'->format([$name.namespace, $name.name]));
+    $genericType;
+  });
+}
+
+function  meta::external::store::elasticsearch::metamodel::spec::toPure::createClass(type: TypeDefinition[1], generics: TypeName[*], inherits: Inherits[*], state: GenerationState[1]): Class<Any>[1]
+{
+  let aClass = $type.name->toPureName($state)->newClass();
+  let class = ^$aClass(generalizations = []);
+
+  $generics->forAll({g| 
+    assert($state.type($g)->isEmpty(), |'Generics should not have a type defined');
+    $class->mutateAdd('typeParameters', ^TypeParameter(name = $g.name));
+    true;
+  });
+  
+  $class->addDocumentation($type.description, $type.docUrl, $type.docUrl, $type.deprecation);
+
+  $inherits->forAll({superType |
+    let superClassRaw = $superType.type->typeToPure($state);
+    let superClass = ^$superClassRaw(typeArguments = $superType.generics->map(p |$p->propertyTypeToPureType($state)));
+    let generalization = ^Generalization(general = $superClass, specific = $class);
+    $class->mutateAdd('generalizations', $generalization);
+    true;
+  });
+
+  $class;
+}
+
+function meta::external::store::elasticsearch::metamodel::spec::toPure::addDocumentation(type: AnnotatedElement[1], description: String[0..1], docUrl: String[0..1], specLocation: String[0..1], deprecation: Deprecation[0..1]): Any[*]
+{
+  $type->mutateAdd('taggedValues', $description->map(x | ^TaggedValue(tag = doc->tag('doc'), value = $x->cleanDocumentation())));
+  $type->mutateAdd('taggedValues', $docUrl->map(x | ^TaggedValue(tag = doc->tag('doc'), value = 'More: %s'->format($x))));
+  $type->mutateAdd('taggedValues', $specLocation->map(x | ^TaggedValue(tag = doc->tag('doc'), value = 'Spec Location: %s'->format($x))));
+  $type->mutateAdd('taggedValues', $deprecation->map(x | ^TaggedValue(tag = doc->tag('doc'), value = 'Deprecated (since %s): %s'->format([$x.version, $x.description->cleanDocumentation()]))));
+  $type->mutateAdd('stereotypes', $deprecation->map(x | ^Stereotype(profile = doc, value = 'deprecated')));
+}
+
+function meta::external::store::elasticsearch::metamodel::spec::toPure::cleanDocumentation(doc: String[1]): String[1]
+{
+  $doc->replace('\n', ' ')->replace('\'', '\\\'')->replace('\r', '');
+}
+
+function  meta::external::store::elasticsearch::metamodel::spec::toPure::addProperty(property: _Property[1], class: Class<Any>[1], state: GenerationState[1]): Boolean[1]
+{
+  $state.log(|'Processing property started: %s.%s (kind: %s)'->format([$class.name->toOne(), $property.name, $property.type->type()->elementToPath()]));
+
+  let name = $property.codegenName->concatenate($property.name)->at(0);
+  let owner = $class.classifierGenericType->toOne().typeArguments->at(0);
+
+  let toAnnotate = $property.type->match([
+    {literal: LiteralValue[1] | 
+      let pureProperty = $literal.value->toOne()->match([
+        {stringVal: String[1] |
+          ^QualifiedProperty<{->String[1]}>(
+            expressionSequence = ^InstanceValue(
+                                    genericType = ^GenericType(rawType = String),
+                                    multiplicity = PureOne,
+                                    values = $stringVal
+                                  ),
+            functionName = $name,
+            genericType = ^GenericType(rawType = String),
+            multiplicity = PureOne,
+            name = $name,
+            owner = $class
+          );
+        }
+      ]);
+
+      $class->mutateAdd('qualifiedProperties', $pureProperty);
+      $pureProperty;
+    },
+    {any: Any[1] |
+      let pureType = $property.type->propertyTypeToPureType($state);
+      let multiplicity = $property.type->propertyTypeMultiplicity($property.required);
+      let pureProperty = newProperty($name, $owner, $pureType, $multiplicity);
+      $class->mutateAdd('properties', $pureProperty);
+      $pureProperty;
+    }
+  ]);
+
+  $toAnnotate->addDocumentation($property.description, $property.docUrl, $property.docUrl, $property.deprecation);
+  $toAnnotate->mutateAdd('taggedValues', $property.since->map(x | ^TaggedValue(tag = doc->tag('doc'), value = 'Since: ' + $x)));
+  $toAnnotate->mutateAdd('taggedValues', $property.stability->map(x | ^TaggedValue(tag = doc->tag('doc'), value = 'Stability: ' + $x.name)));
+
+  $state.log(|'Processing property finished: %s.%s (kind: %s)'->format([$class.name->toOne(), $property.name, $property.type->type()->elementToPath()]));
+  true;
+}
+
+function  meta::external::store::elasticsearch::metamodel::spec::toPure::propertyTypeMultiplicity(type: ValueOf[1], required: Boolean[1]): Multiplicity[1]
+{
+  $type->match([
+    arrayT: ArrayOf[1] | if($required, |OneMany, |ZeroMany),
+    mapT: DictionaryOf[1] | if($required, |PureOne, |ZeroOne),
+    instanceT: InstanceOf[1] | $instanceT->instanceOfTypeMultiplicity($required),
+    unionT: UnionOf[1] | $unionT->unionOfTypeMultiplicity($required),
+    userDefT: UserDefinedValue[1] | if($required, |PureOne, |ZeroOne)
+  ]);
+}
+
+function  meta::external::store::elasticsearch::metamodel::spec::toPure::instanceOfTypeMultiplicity(type: InstanceOf[1], required: Boolean[1]): Multiplicity[1]
+{
+  $type.type->match([
+    alias: TypeAlias[1] | $alias.type->propertyTypeMultiplicity($required),
+    any: Any[1] | if($required, |PureOne, |ZeroOne)
+  ]);
+}
+
+function  meta::external::store::elasticsearch::metamodel::spec::toPure::unionOfTypeMultiplicity(type: UnionOf[1], required: Boolean[1]): Multiplicity[1]
+{
+  let multiplicities = $type.items->map(x | $x->propertyTypeMultiplicity($required))->distinct();
+  if ($multiplicities->size() == 2, |$multiplicities->filter(x | $x->isToMany())->toOne(), |$multiplicities->toOne());
+}
+
+function  meta::external::store::elasticsearch::metamodel::spec::toPure::propertyTypeToPureType(type: ValueOf[1], state: GenerationState[1]): GenericType[1]
+{
+  $type->match([
+    arrayT: ArrayOf[1] | $arrayT.value->propertyTypeToPureType($state),
+    {mapT: DictionaryOf[1] | 
+      let keyType = $mapT.key->propertyTypeToPureType($state);
+      let valueType = $mapT.value->propertyTypeToPureType($state);
+      let multiplicity = if($mapT.singleKey, |PureOne, |ZeroMany);
+      ^GenericType(rawType = Dictionary, typeArguments = [ $keyType, $valueType ], multiplicityArguments = $multiplicity);
+    },
+    instanceT: InstanceOf[1] | $instanceT->instanceOfTypeToPureType($state),
+    unionT: UnionOf[1] | $unionT->unionOfTypeToPureType($state),
+    userDefT: UserDefinedValue[1] | ^GenericType(rawType = Any)
+  ]);
+}
+
+function  meta::external::store::elasticsearch::metamodel::spec::toPure::unionOfTypeToPureType(type: UnionOf[1], state: GenerationState[1]): GenericType[1]
+{
+  let types = $type.items->map(x | $x->propertyTypeToPureType($state));
+  let distinct = $types->distinct()->filter(x | $x.rawType != Nil);
+  if($distinct->size() == 1,
+    {|
+      $distinct->at(0);
+    },
+    {|
+      // todo handle multiple types, maybe constraints?  Java picks one of the types
+      ^GenericType(rawType = Any);
+    }
+  );
+}
+
+function  meta::external::store::elasticsearch::metamodel::spec::toPure::instanceOfTypeToPureType(type: InstanceOf[1], state: GenerationState[1]): GenericType[1]
+{
+  let genericType = $type.type->typeToPure($state);
+  if ($type.generics->isEmpty(),
+    | $genericType,
+    | ^$genericType(typeArguments = $type.generics->map(x | $x->propertyTypeToPureType($state)))
+  );
+}
+
+function  meta::external::store::elasticsearch::metamodel::spec::toPure::enumTypeToPure(type: _Enum[1], state: GenerationState[1]): GenericType[1]
+{
+  $state.log(|'Generating started for enum: %s.%s'->format([$type.name.namespace, $type.name.name]));
+  assert($type.esQuirk->isEmpty(), |'Not supported: ' + $type.esQuirk->toOne());
+  let enumValues = $type.members->map(em | $em.codegenName->concatenate($em.name)->at(0));
+  let enum = $type.name->toPureName($state)->newEnumeration($enumValues);
+  $state->addTypeForGeneration($type, ^GenericType(rawType = $enum));
+}
+
+function  meta::external::store::elasticsearch::metamodel::spec::toPure::aliasTypeToPure(type: TypeAlias[1], state: GenerationState[1]): GenericType[1]
+{
+  $state.log(|'Generating started for alias: %s.%s'->format([$type.name.namespace, $type.name.name]));
+  
+  $type.variants->match([
+    {externalTag: ExternalTag[1] |
+      let codegenNames = $type.type
+              ->cast(@UnionOf).items
+              ->cast(@InstanceOf).type
+              ->map(x | $state.type($x))
+              ->cast(@Interface).variantName;
+      $type->tagggedUnionAliasTypeToPure($codegenNames, $type.type->cast(@UnionOf).items, $state);
+    },
+    {internalTag: InternalTag[1] |
+      let codegenNames = $type.type
+              ->cast(@UnionOf).items
+              ->cast(@InstanceOf).type
+              ->map(x | $state.type($x))
+              ->cast(@Interface)
+              ->map(x | $x.properties->filter(p | $p.name == $internalTag.tag)->toOne().type->cast(@LiteralValue).value->toString());
+      $type->tagggedUnionAliasTypeToPure($codegenNames, $type.type->cast(@UnionOf).items, $state);
+    },
+    {none: Any[0] |
+      if($type.codegenNames->isEmpty(),
+        {|
+          let aliasType = $type.type->propertyTypeToPureType($state);
+          $state->registerType($type.name, $aliasType);
+        },
+        {|
+          $type->tagggedUnionAliasTypeToPure($type.codegenNames, $type.type->cast(@UnionOf).items, $state);
+        }
+      );
+    } 
+  ]);
+}
+
+function  meta::external::store::elasticsearch::metamodel::spec::toPure::tagggedUnionAliasTypeToPure(type: TypeAlias[1], codegenNames: String[*], unions: ValueOf[*], state: GenerationState[1]): GenericType[1]
+{
+  assert($codegenNames->size() == $unions->size(), |'Expects union to have 1-1 to codenames');
+
+  let name = $type.name;
+
+  let aliasClass = $type->createClass($type.generics, [], $state);
+  let aliasGenericType = ^GenericType(rawType = $aliasClass);
+  $state->addTypeForGeneration($type, $aliasGenericType);
+
+  let taggedGeneralization = ^Generalization(general = ^GenericType(rawType=TaggedUnion), specific = $aliasClass);
+  $aliasClass->mutateAdd('generalizations', $taggedGeneralization);
+
+  zip($codegenNames, $unions)
+    ->map(pair | ^_Property(name = $pair.first, type = $pair.second, required = false))
+    ->forAll(property| $property->addProperty($aliasClass, $state));
+
+  $aliasGenericType;
+}
+
+function  meta::external::store::elasticsearch::metamodel::spec::toPure::interfaceTypeToPure(type: Interface[1], state: GenerationState[1]): GenericType[1]
+{
+  $state.log(|'Generating started for interface: %s.%s'->format([$type.name.namespace, $type.name.name]));
+
+  let class = $type->createClass($type.generics, $type.inherits->concatenate($type.implements)->concatenate($type.behaviors), $state);
+  let genType = $state->addTypeForGeneration($type, ^GenericType(rawType = $class));
+  
+  $class->mutateAdd('taggedValues', $type.esQuirk->map(q | ^TaggedValue(tag = doc->tag('doc'), value = 'ES quirk:' + $q->cleanDocumentation())));
+  $type.properties->forAll(prop | $prop->addProperty($class, $state));
+  
+  $genType;
+}
+
+function  meta::external::store::elasticsearch::metamodel::spec::toPure::requestTypeToPure(type: Request[1], state: GenerationState[1]): GenericType[1]
+{
+  $state.log(|'Generating started for request: %s.%s'->format([$type.name.namespace, $type.name.name]));
+
+  let class = $type->createClass($type.generics, $type.inherits->concatenate($type.implements)->concatenate($type.behaviors), $state);
+  let genType = $state->addTypeForGeneration($type->toOne(), ^GenericType(rawType = $class));
+
+  let bodyProps = $type.body->match([
+    propsBody: PropertiesBody[1] | $propsBody.properties,
+    singleValue: ValueBody[1] | ^_Property(name = 'body', codegenName = $singleValue.codegenName, type = $singleValue.value, required = true)
+  ]);
+
+  $bodyProps->concatenate($type.path)->concatenate($type.query)->distinct()->forAll(prop| $prop->addProperty($class, $state));
+  $genType;
+}
+
+function  meta::external::store::elasticsearch::metamodel::spec::toPure::responseTypeToPure(type: Response[1], state: GenerationState[1]): GenericType[1]
+{
+  $state.log(|'Generating started for response: %s.%s'->format([$type.name.namespace, $type.name.name]));
+
+  let class = $type->createClass($type.generics, $type.inherits->concatenate($type.behaviors), $state);
+  let genType = $state->addTypeForGeneration($type->toOne(), ^GenericType(rawType = $class));
+
+  let bodyProps = $type.body->match([
+    singleValue: ValueBody[1] | ^_Property(name = 'body', codegenName = $singleValue.codegenName, type = $singleValue.value, required = true)
+  ]);
+
+  assert($type.exceptions->isEmpty(), |'not supported');
+
+  $bodyProps->forAll(prop| $prop->addProperty($class, $state));
+  $genType;
+}
+
+function  meta::external::store::elasticsearch::metamodel::spec::toPure::addTypeForGeneration(state: GenerationState[1], type: TypeDefinition[1], class: GenericType[1]): GenericType[1]
+{
+  $state->registerForGeneration($class.rawType->toOne());
+  $state->registerType($type.name, $class);
+  $class;
+}
+
+function  meta::external::store::elasticsearch::metamodel::spec::toPure::registerForGeneration(state: GenerationState[1], class: Type[1]): Type[1]
+{
+  $state->mutateAdd('generated', $class);
+  $class;
+}
+
+function  meta::external::store::elasticsearch::metamodel::spec::toPure::registerType(state: GenerationState[1], name: TypeName[1], class: GenericType[1]): GenericType[1]
+{
+  $state->mutateAdd('nameToClasses', pair($name, $class));
+  $class;
+}
+
+function  meta::external::store::elasticsearch::metamodel::spec::toPure::toPureName(type: TypeName[1], state: GenerationState[1]): String[1]
+{
+  let namespace = $type.namespace->replace('_', '')->replace('.', '::');
+  'meta::external::store::elasticsearch::metamodel::api::%s::%s::%s'->format([$state.version, $namespace, $type.name]);
+}
+
+
+// generate functions to create request payloads
+// generate function to expose version / spec used
