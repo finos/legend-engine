@@ -82,7 +82,7 @@ Class meta::pure::alloy::connections::alloy::specification::SpannerDatasourceSpe
     instanceId:String[1];
     databaseId:String[1];
     proxyHost: String[0..1];
-    proxyPort: String[0..1];
+    proxyPort: Integer[0..1];
 }
 
 Class {doc.doc ='Specification for the AWS redshift database'} meta::pure::legend::connections::legend::specification::RedshiftDatasourceSpecification extends meta::pure::alloy::connections::alloy::specification::DatasourceSpecification

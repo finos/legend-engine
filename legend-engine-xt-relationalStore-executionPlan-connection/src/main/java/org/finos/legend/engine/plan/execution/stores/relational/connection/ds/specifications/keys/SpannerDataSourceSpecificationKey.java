@@ -25,7 +25,7 @@ public class SpannerDataSourceSpecificationKey implements DataSourceSpecificatio
     String instanceId;
     String databaseId;
     String proxyHost;
-    String proxyPort;
+    Integer proxyPort;
 
     @Override
     public String shortId()

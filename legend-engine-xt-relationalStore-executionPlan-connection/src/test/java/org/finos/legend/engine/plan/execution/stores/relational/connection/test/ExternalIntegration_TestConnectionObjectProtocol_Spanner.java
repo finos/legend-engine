@@ -43,7 +43,7 @@ public class ExternalIntegration_TestConnectionObjectProtocol_Spanner extends Db
                         "test-instance",
                         "test-db",
                         "localhost",
-                        "9010"),
+                        9010),
                 new SpannerManager(),
                 new TestDatabaseAuthenticationStrategy());
         try (Connection connection = ds.getConnectionUsingSubject(getSubject()))

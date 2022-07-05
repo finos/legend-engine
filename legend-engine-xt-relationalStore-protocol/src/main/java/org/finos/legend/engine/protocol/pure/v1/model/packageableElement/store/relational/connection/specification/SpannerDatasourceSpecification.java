@@ -21,7 +21,7 @@ public class SpannerDatasourceSpecification extends DatasourceSpecification
     public String instanceId;
     public String databaseId;
     public String proxyHost;
-    public String proxyPort;
+    public Integer proxyPort;
 
     @Override
     public <T> T accept(DatasourceSpecificationVisitor<T> datasourceSpecificationVisitor)
