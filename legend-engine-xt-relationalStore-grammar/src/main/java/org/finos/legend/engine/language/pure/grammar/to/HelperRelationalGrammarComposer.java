@@ -37,6 +37,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.RedshiftDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SpannerDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.EmbeddedRelationalPropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.FilterMapping;
@@ -661,6 +662,19 @@ public class HelperRelationalGrammarComposer
                     context.getIndentationString() + getTabString(baseIndentation + 1) + "defaultDataset: " + convertString(spec.defaultDataset, true) + ";\n" +
                     (spec.proxyHost != null ? context.getIndentationString() + getTabString(baseIndentation + 1) + "proxyHost: " + convertString(spec.proxyHost, true) + ";\n" : "") +
                     (spec.proxyPort != null ? context.getIndentationString() + getTabString(baseIndentation + 1) + "proxyPort: " + convertString(spec.proxyPort, true) + ";\n" : "") +
+                    context.getIndentationString() + getTabString(baseIndentation) + "}";
+        }
+        else if (_spec instanceof SpannerDatasourceSpecification)
+        {
+            SpannerDatasourceSpecification spec = (SpannerDatasourceSpecification) _spec;
+            int baseIndentation = 1;
+            return "Spanner\n" +
+                    context.getIndentationString() + getTabString(baseIndentation) + "{\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "projectId: " + convertString(spec.projectId, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "instanceId: " + convertString(spec.instanceId, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "databaseId: " + convertString(spec.databaseId, true) + ";\n" +
+                    (spec.proxyHost != null ? context.getIndentationString() + getTabString(baseIndentation + 1) + "host: " + convertString(spec.proxyHost, true) + ";\n" : "") +
+                    (spec.proxyPort != null ? context.getIndentationString() + getTabString(baseIndentation + 1) + "port: " + spec.proxyPort + ";\n" : "") +
                     context.getIndentationString() + getTabString(baseIndentation) + "}";
         }
         else if (_spec instanceof RedshiftDatasourceSpecification)

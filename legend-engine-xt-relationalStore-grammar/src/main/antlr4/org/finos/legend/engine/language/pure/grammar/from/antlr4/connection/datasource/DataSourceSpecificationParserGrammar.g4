@@ -124,6 +124,23 @@ bigQueryDatasourceSpecification:            BIGQUERY_DSP
                                                     )*
                                                 BRACE_CLOSE
 ;
+spannerDatasourceSpecification:
+    SPANNER_DATA_SOURCE_SPECIFICATION
+    BRACE_OPEN
+        (
+            dbHost
+            | dbPort
+            | projectId
+            | instanceId
+            | databaseId
+        )*
+    BRACE_CLOSE
+;
+
+databaseId: DATABASE COLON STRING SEMI_COLON
+;
+instanceId: INSTANCE COLON STRING SEMI_COLON
+;
 projectId:                                    PROJECT COLON STRING SEMI_COLON
 ;
 defaultDataset:                                    DATASET COLON STRING SEMI_COLON

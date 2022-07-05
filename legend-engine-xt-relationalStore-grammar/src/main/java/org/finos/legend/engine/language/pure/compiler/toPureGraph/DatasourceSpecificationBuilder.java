@@ -144,7 +144,7 @@ public class DatasourceSpecificationBuilder implements DatasourceSpecificationVi
             spannerSpec._projectId(spannerDatasourceSpecification.projectId);
             spannerSpec._instanceId(spannerDatasourceSpecification.instanceId);
             spannerSpec._proxyHost(spannerDatasourceSpecification.proxyHost);
-            spannerSpec._proxyPort(spannerDatasourceSpecification.proxyPort);
+            spannerSpec._proxyPort(spannerDatasourceSpecification.proxyPort.longValue());
             spannerSpec._databaseId(spannerDatasourceSpecification.databaseId);
             return spannerSpec;
         }

@@ -64,6 +64,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.RedshiftDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SpannerDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.data.RelationalCSVData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.EmbeddedRelationalPropertyMapping;
@@ -166,6 +167,7 @@ public class RelationalProtocolExtension implements PureProtocolExtension
                         .withSubtype(BigQueryDatasourceSpecification.class, "bigQuery")
                         .withSubtype(DatabricksDatasourceSpecification.class, "databricks")
                         .withSubtype(RedshiftDatasourceSpecification.class, "redshift")
+                        .withSubtype(SpannerDatasourceSpecification.class, "spanner")
                         .build(),
 
                 // AuthenticationStrategy

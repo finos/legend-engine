@@ -15,6 +15,7 @@
 package org.finos.legend.engine.language.pure.grammar.test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposer;
@@ -73,7 +74,9 @@ public class TestGrammarRoundtrip
                 throw new RuntimeException(e);
             }
             PureGrammarComposer grammarTransformer = PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().build());
-            Assert.assertEquals(message, code, grammarTransformer.renderPureModelContextData(modelData));
+            Assert.assertEquals(message,
+                    StringUtils.deleteWhitespace(code),
+                    StringUtils.deleteWhitespace(grammarTransformer.renderPureModelContextData(modelData)));
         }
 
         public static void testFormatWithoutSectionIndex(String code, String unformattedCode)

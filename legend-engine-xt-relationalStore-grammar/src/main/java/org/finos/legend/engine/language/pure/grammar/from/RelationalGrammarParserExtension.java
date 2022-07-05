@@ -165,7 +165,8 @@ public class RelationalGrammarParserExtension implements IRelationalGrammarParse
                     return parseDataSourceSpecification(code, p -> walker.visitBigQueryDatasourceSpecification(code, p.bigQueryDatasourceSpecification()));
                 case "Redshift":
                     return parseDataSourceSpecification(code, p -> walker.visitRedshiftDatasourceSpecification(code, p.redshiftDatasourceSpecification()));
-
+                case "Spanner":
+                    return parseDataSourceSpecification(code, p -> walker.visitSpannerDatasourceSpecification(code, p.spannerDatasourceSpecification()));
                 default:
                     return null;
             }

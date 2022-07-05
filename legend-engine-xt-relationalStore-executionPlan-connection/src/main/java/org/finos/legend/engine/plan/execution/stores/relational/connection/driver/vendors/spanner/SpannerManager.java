@@ -37,7 +37,6 @@ public class SpannerManager extends DatabaseManager
     public String buildURL(String host, int port, String databaseName, Properties extraUserDataSourceProperties,
                            AuthenticationStrategy authenticationStrategy)
     {
-
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("jdbc:cloudspanner:");
 
