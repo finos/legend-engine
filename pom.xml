@@ -51,6 +51,8 @@
         <module>legend-engine-xt-persistence-protocol</module>
         <module>legend-engine-xt-persistence-pure</module>
 
+        <module>legend-engine-xt-persistence-cloud-pure</module>
+
         <module>legend-engine-xt-serviceStore-executionPlan</module>
         <module>legend-engine-xt-serviceStore-protocol</module>
         <module>legend-engine-xt-serviceStore-grammar</module>
