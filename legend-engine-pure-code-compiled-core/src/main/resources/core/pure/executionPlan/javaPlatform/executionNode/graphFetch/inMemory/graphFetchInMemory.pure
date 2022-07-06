@@ -358,7 +358,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
 
     $allProjects->mergeProjects();
 }
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::inMemory::addFilterForSubtype(input:Code[1],propertyType: Code[1],targetSRCType:meta::external::language::java::metamodel::Type[1], targetSet:InstanceSetImplementation[1],context: GenerationContext[1],extensions: RouterExtension[*]):Code[1]
+function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::inMemory::addFilterForSubtype(input:Code[1],propertyType: Code[1],targetSRCType:meta::external::language::java::metamodel::Type[1], targetSet:InstanceSetImplementation[1],context: GenerationContext[1],extensions: Extension[*]):Code[1]
 { 
   //if source is a mappingclass skip the filter
   let sourceClass = $targetSet->sourceClass($extensions);
