@@ -28,8 +28,8 @@ public class HelperPersistenceCloudComposer
     public static String renderAwsGluePersistencePlatform(AwsGluePersistencePlatform persistencePlatform, int indentLevel, PureGrammarComposerContext context)
     {
         return "AwsGlue\n" +
-                getTabString(indentLevel) + "{\n" +
+                getTabString(indentLevel) + "#{\n" +
                 getTabString(indentLevel + 1) + "dataProcessingUnits: " + persistencePlatform.dataProcessingUnits + ";\n" +
-                getTabString(indentLevel) + "}";
+                getTabString(indentLevel) + "}#";
     }
 }

@@ -34,7 +34,7 @@ public class TestPersistenceCloudGrammarParser extends TestGrammarParser.TestGra
     {
         return "###Persistence\n" +
                 "\n" +
-                "PersistenceContext test::TestPersistenceContext \n" +
+                "PersistenceContext test::TestPersistenceContext\n" +
                 "{\n" +
                 "  persistence: test::TestPersistence;\n" +
                 "  platform: AwsGlue\n" +
@@ -42,7 +42,6 @@ public class TestPersistenceCloudGrammarParser extends TestGrammarParser.TestGra
                 "    dataProcessingUnits: 10;\n" +
                 "  }#;\n" +
                 "}\n";
-
     }
 
     /**********
@@ -54,14 +53,14 @@ public class TestPersistenceCloudGrammarParser extends TestGrammarParser.TestGra
     {
         test("###Persistence\n" +
                 "\n" +
-                "PersistenceContext test::TestPersistenceContext \n" +
+                "PersistenceContext test::TestPersistenceContext\n" +
                 "{\n" +
                 "  persistence: test::TestPersistence;\n" +
                 "  platform: AwsGlue;\n" +
                 "}\n", "PARSER error at [6:3-20]: Persistence platform 'AwsGlue' must have a non-empty body");
         test("###Persistence\n" +
                 "\n" +
-                "PersistenceContext test::TestPersistenceContext \n" +
+                "PersistenceContext test::TestPersistenceContext\n" +
                 "{\n" +
                 "  persistence: test::TestPersistence;\n" +
                 "  platform: AwsGlue\n" +
@@ -70,7 +69,7 @@ public class TestPersistenceCloudGrammarParser extends TestGrammarParser.TestGra
                 "}\n", "PARSER error at [2:1-5]: Field 'dataProcessingUnits' is required");
         test("###Persistence\n" +
                 "\n" +
-                "PersistenceContext test::TestPersistenceContext \n" +
+                "PersistenceContext test::TestPersistenceContext\n" +
                 "{\n" +
                 "  persistence: test::TestPersistence;\n" +
                 "  platform: AwsGlue\n" +
@@ -80,7 +79,7 @@ public class TestPersistenceCloudGrammarParser extends TestGrammarParser.TestGra
                 "}\n");
         test("###Persistence\n" +
                 "\n" +
-                "PersistenceContext test::TestPersistenceContext \n" +
+                "PersistenceContext test::TestPersistenceContext\n" +
                 "{\n" +
                 "  persistence: test::TestPersistence;\n" +
                 "  platform: AwsGlue\n" +
