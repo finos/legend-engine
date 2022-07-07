@@ -33,13 +33,13 @@ public class PersistenceCloudParseTreeWalker
      * persistence platform
      **********/
 
-    public PersistencePlatform visitPersistencePlatform(PersistenceCloudParserGrammar.PlatformAwsGlueContext ctx)
+    public PersistencePlatform visitPersistencePlatform(PersistenceCloudParserGrammar.DefinitionContext ctx)
     {
         AwsGluePersistencePlatform platform = new AwsGluePersistencePlatform();
         platform.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
-        // dpu count
-        PersistenceCloudParserGrammar.AwsGlueDpuCountContext dpuCountContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.awsGlueDpuCount(), "dpuCount", platform.sourceInformation);
+        // data processing units
+        PersistenceCloudParserGrammar.AwsGlueDpuCountContext dpuCountContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.awsGlueDpuCount(), "dataProcessingUnits", platform.sourceInformation);
         platform.dataProcessingUnits = Integer.parseInt(dpuCountContext.INTEGER().getText());
 
         return platform;

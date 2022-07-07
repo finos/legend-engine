@@ -8,5 +8,4 @@ import M3LexerGrammar;
 // PLATFORM
 //**********
 
-PLATFORM_TYPE_AWS_GLUE:                     'AwsGlue';
-AWS_GLUE_DPU_COUNT:                         'dpuCount';
+AWS_GLUE_DPU_COUNT:                         'dataProcessingUnits';

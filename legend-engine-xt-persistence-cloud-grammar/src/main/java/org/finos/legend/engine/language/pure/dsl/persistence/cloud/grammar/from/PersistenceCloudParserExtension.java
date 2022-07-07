@@ -22,7 +22,9 @@ import org.finos.legend.engine.language.pure.dsl.persistence.grammar.from.contex
 import org.finos.legend.engine.language.pure.grammar.from.ParserErrorListener;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.PersistenceCloudLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.PersistenceCloudParserGrammar;
+import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.PersistencePlatform;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.Collections;
 import java.util.List;
@@ -30,27 +32,31 @@ import java.util.function.Function;
 
 public class PersistenceCloudParserExtension implements IPersistenceParserExtension
 {
+    private static final String PERSISTENCE_PLATFORM_AWS_GLUE = "AwsGlue";
+
     @Override
     public List<Function<PersistencePlatformSourceCode, PersistencePlatform>> getExtraPersistencePlatformParsers()
     {
-        //TODO: ledav -- call tree walker
         return Collections.singletonList(code ->
         {
             PersistenceCloudParseTreeWalker walker = new PersistenceCloudParseTreeWalker(code.getWalkerSourceInformation());
-            switch (code.getType())
+            if (PERSISTENCE_PLATFORM_AWS_GLUE.equals(code.getType()))
             {
-                case "AwsGlue":
-                    return parsePersistencePlatform(code, p -> walker.visitPersistencePlatform(p.platformAwsGlue()));
-                default:
-                    return null;
+                return parsePersistencePlatform(code, p -> walker.visitPersistencePlatform(p.definition()));
             }
+            return null;
         });
     }
 
     private PersistencePlatform parsePersistencePlatform(PersistencePlatformSourceCode code, Function<PersistenceCloudParserGrammar, PersistencePlatform> function)
     {
+        if (code.getCode().isEmpty())
+        {
+            throw new EngineException("Persistence platform '" + PERSISTENCE_PLATFORM_AWS_GLUE + "' must have a non-empty body", code.getSourceInformation(), EngineErrorType.PARSER);
+        }
+
         CharStream input = CharStreams.fromString(code.getCode());
-        ParserErrorListener errorListener = new ParserErrorListener(code.getWalkerSourceInformation());
+        ParserErrorListener errorListener = new PersistenceCloudParserErrorListener(code.getWalkerSourceInformation());
         PersistenceCloudLexerGrammar lexer = new PersistenceCloudLexerGrammar(input);
         PersistenceCloudParserGrammar parser = new PersistenceCloudParserGrammar(new CommonTokenStream(lexer));
 
