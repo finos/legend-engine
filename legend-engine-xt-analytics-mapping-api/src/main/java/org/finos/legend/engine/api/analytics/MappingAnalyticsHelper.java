@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.api;
+package org.finos.legend.engine.api.analytics;
 
-import org.finos.legend.engine.api.model.EntityMappedProperty;
-import org.finos.legend.engine.api.model.EnumMappedProperty;
-import org.finos.legend.engine.api.model.MappedEntity;
-import org.finos.legend.engine.api.model.MappedEntityInfo;
-import org.finos.legend.engine.api.model.MappedProperty;
-import org.finos.legend.engine.api.model.MappedPropertyInfo;
-import org.finos.legend.engine.api.model.MappedPropertyType;
+import org.finos.legend.engine.api.analytics.model.EntityMappedProperty;
+import org.finos.legend.engine.api.analytics.model.EnumMappedProperty;
+import org.finos.legend.engine.api.analytics.model.MappedEntity;
+import org.finos.legend.engine.api.analytics.model.MappedEntityInfo;
+import org.finos.legend.engine.api.analytics.model.MappedProperty;
+import org.finos.legend.engine.api.analytics.model.MappedPropertyInfo;
+import org.finos.legend.engine.api.analytics.model.MappedPropertyType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.pure.generated.Root_meta_analytics_mapping_modelCoverage_EntityMappedProperty;
 import org.finos.legend.pure.generated.Root_meta_analytics_mapping_modelCoverage_EnumMappedProperty;

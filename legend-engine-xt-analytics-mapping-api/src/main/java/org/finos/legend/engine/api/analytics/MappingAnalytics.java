@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.api;
+package org.finos.legend.engine.api.analytics;
 
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
@@ -22,10 +22,10 @@ import io.swagger.annotations.ApiParam;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.ListIterate;
-import org.finos.legend.engine.api.model.MappingModelCoverageAnalysisInput;
-import org.finos.legend.engine.api.model.MappingModelCoverageAnalysisResult;
-import org.finos.legend.engine.api.model.MappingRuntimeCompatibilityAnalysisInput;
-import org.finos.legend.engine.api.model.MappingRuntimeCompatibilityAnalysisResult;
+import org.finos.legend.engine.api.analytics.model.MappingModelCoverageAnalysisInput;
+import org.finos.legend.engine.api.analytics.model.MappingModelCoverageAnalysisResult;
+import org.finos.legend.engine.api.analytics.model.MappingRuntimeCompatibilityAnalysisInput;
+import org.finos.legend.engine.api.analytics.model.MappingRuntimeCompatibilityAnalysisResult;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperRuntimeBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
@@ -53,7 +53,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import static org.finos.legend.engine.api.MappingAnalyticsHelper.buildMappedEntity;
+import static org.finos.legend.engine.api.analytics.MappingAnalyticsHelper.buildMappedEntity;
 
 @Api(tags = "Analytics - Model")
 @Path("pure/v1/analytics/mapping")
