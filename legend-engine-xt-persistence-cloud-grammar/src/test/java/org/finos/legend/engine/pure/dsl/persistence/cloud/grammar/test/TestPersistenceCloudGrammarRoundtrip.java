@@ -6,7 +6,7 @@ import org.junit.Test;
 public class TestPersistenceCloudGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
 {
     @Test
-    public void dataProcessingUnits()
+    public void persistencePlatformDataProcessingUnits()
     {
         test("###Persistence\n" +
                 "PersistenceContext test::TestPersistenceContext\n" +
