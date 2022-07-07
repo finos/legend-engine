@@ -26,6 +26,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.plugin.Relationa
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreState;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
 import org.finos.legend.engine.plan.execution.stores.relational.serialization.JSONTDSSerializer;
+import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToCSVSerializerWithoutISODateTransformations;
 import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToCSVSerializer;
 import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToJsonDefaultSerializer;
 import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToPureTDSSerializer;
@@ -296,6 +297,14 @@ public class TestRelationalExecutor extends AlloyTestServer
                 "2014-12-04 08:22:23.123\r\n" +
                 "2013-12-04 10:22:23.0\r\n" +
                 "2013-04-04 08:22:23.123\r\n", result_csv.flush(new RelationalResultToCSVSerializer(result_csv)));
+
+        RelationalResult result_csvLegacy = (RelationalResult) plan.rootExecutionNode.accept(new ExecutionNodeExecutor(null, new ExecutionState(Maps.mutable.empty(), Lists.mutable.withAll(plan.templateFunctions), Lists.mutable.with(new RelationalStoreExecutionState(new RelationalStoreState(serverPort))))));
+        Assert.assertEquals("2014-12-04 15:22:23.123456789\r\n" +
+                "2014-12-04 23:22:23.123456789\r\n" +
+                "2014-12-04 08:22:23.0\r\n" +
+                "2014-12-04 08:22:23.123\r\n" +
+                "2013-12-04 10:22:23.0\r\n" +
+                "2013-04-04 08:22:23.123\r\n", result_csvLegacy.flush(new RelationalResultToCSVSerializerWithoutISODateTransformations(result_csvLegacy)));
     }
 
     @Test
@@ -315,5 +324,21 @@ public class TestRelationalExecutor extends AlloyTestServer
 
         RelationalResult result_jsonTds = (RelationalResult) plan.rootExecutionNode.accept(new ExecutionNodeExecutor(null, new ExecutionState(Maps.mutable.empty(), Lists.mutable.withAll(plan.templateFunctions), Lists.mutable.with(new RelationalStoreExecutionState(new RelationalStoreState(serverPort))))));
         Assert.assertEquals("{\"columns\":[{\"name\":\"testDateTime\",\"type\":\"DateTime\",\"relationalType\":\"TIMESTAMP\"}],\"rows\":[[\"2014-12-04T22:22:23.123456789+0000\"],[\"2014-12-05T06:22:23.123456789+0000\"],[\"2014-12-04T15:22:23.000000000+0000\"],[\"2014-12-04T15:22:23.123000000+0000\"],[\"2013-12-04T17:22:23.000000000+0000\"],[\"2013-04-04T15:22:23.123000000+0000\"]]}", result_jsonTds.flush(new JSONTDSSerializer(result_jsonTds, false, false)));
+
+        RelationalResult result_csv = (RelationalResult) plan.rootExecutionNode.accept(new ExecutionNodeExecutor(null, new ExecutionState(Maps.mutable.empty(), Lists.mutable.withAll(plan.templateFunctions), Lists.mutable.with(new RelationalStoreExecutionState(new RelationalStoreState(serverPort))))));
+        Assert.assertEquals("2014-12-04 22:22:23.123456789\r\n" +
+                "2014-12-05 06:22:23.123456789\r\n" +
+                "2014-12-04 15:22:23.0\r\n" +
+                "2014-12-04 15:22:23.123\r\n" +
+                "2013-12-04 17:22:23.0\r\n" +
+                "2013-04-04 15:22:23.123\r\n", result_csv.flush(new RelationalResultToCSVSerializer(result_csv)));
+
+        RelationalResult result_csvLegacy = (RelationalResult) plan.rootExecutionNode.accept(new ExecutionNodeExecutor(null, new ExecutionState(Maps.mutable.empty(), Lists.mutable.withAll(plan.templateFunctions), Lists.mutable.with(new RelationalStoreExecutionState(new RelationalStoreState(serverPort))))));
+        Assert.assertEquals("2014-12-04 22:22:23.123456789\r\n" +
+                "2014-12-05 06:22:23.123456789\r\n" +
+                "2014-12-04 15:22:23.0\r\n" +
+                "2014-12-04 15:22:23.123\r\n" +
+                "2013-12-04 17:22:23.0\r\n" +
+                "2013-04-04 15:22:23.123\r\n", result_csvLegacy.flush(new RelationalResultToCSVSerializerWithoutISODateTransformations(result_csvLegacy)));
     }
 }

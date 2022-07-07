@@ -1,16 +1,16 @@
-// Copyright 2021 Goldman Sachs
+//  Copyright 2022 Goldman Sachs
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
 //
-//      http://www.apache.org/licenses/LICENSE-2.0
+//       http://www.apache.org/licenses/LICENSE-2.0
 //
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
 
 package org.finos.legend.engine.plan.execution.stores.relational.serialization;
 
@@ -34,22 +34,27 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class RelationalResultToCSVSerializer extends CsvSerializer
+/**
+ * This is added to help users to migrate to standard format and will be removed in upcoming releases.
+ * TODO: Remove this.
+ */
+@Deprecated
+public class RelationalResultToCSVSerializerWithoutISODateTransformations extends CsvSerializer
 {
     private final RelationalResult relationalResult;
     private final CSVFormat csvFormat;
 
-    public RelationalResultToCSVSerializer(RelationalResult relationalResult)
+    public RelationalResultToCSVSerializerWithoutISODateTransformations(RelationalResult relationalResult)
     {
         this(relationalResult, false);
     }
 
-    public RelationalResultToCSVSerializer(RelationalResult relationalResult, boolean withHeader)
+    public RelationalResultToCSVSerializerWithoutISODateTransformations(RelationalResult relationalResult, boolean withHeader)
     {
         this(relationalResult, (withHeader ? CSVFormat.DEFAULT.withHeader(relationalResult.getColumnListForSerializer().toArray(new String[0])) : CSVFormat.DEFAULT));
     }
 
-    public RelationalResultToCSVSerializer(RelationalResult relationalResult, CSVFormat csvFormat)
+    public RelationalResultToCSVSerializerWithoutISODateTransformations(RelationalResult relationalResult, CSVFormat csvFormat)
     {
         this.relationalResult = relationalResult;
         this.csvFormat = csvFormat;
