@@ -57,7 +57,7 @@ public class TestPersistenceCloudGrammarParser extends TestGrammarParser.TestGra
                 "{\n" +
                 "  persistence: test::TestPersistence;\n" +
                 "  platform: AwsGlue;\n" +
-                "}\n", "PARSER error at [6:3-20]: Persistence platform 'AwsGlue' must have a non-empty body");
+                "}\n", "PARSER error at [6:13-19]: Persistence platform 'AwsGlue' must have a non-empty body");
         test("###Persistence\n" +
                 "\n" +
                 "PersistenceContext test::TestPersistenceContext\n" +
@@ -66,7 +66,7 @@ public class TestPersistenceCloudGrammarParser extends TestGrammarParser.TestGra
                 "  platform: AwsGlue\n" +
                 "  #{\n" +
                 "  }#;\n" +
-                "}\n", "PARSER error at [2:1-5]: Field 'dataProcessingUnits' is required");
+                "}\n", "PARSER error at [8:1-5]: Field 'dataProcessingUnits' is required");
         test("###Persistence\n" +
                 "\n" +
                 "PersistenceContext test::TestPersistenceContext\n" +
@@ -87,6 +87,6 @@ public class TestPersistenceCloudGrammarParser extends TestGrammarParser.TestGra
                 "    dataProcessingUnits: 10;\n" +
                 "    dataProcessingUnits: 10;\n" +
                 "  }#;\n" +
-                "}\n", "PARSER error at [2:5-4:5]: Field 'dataProcessingUnits' should be specified only once");
+                "}\n", "PARSER error at [8:5-10:5]: Field 'dataProcessingUnits' should be specified only once");
     }
 }
