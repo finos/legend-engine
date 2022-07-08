@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
+import java.util.Optional;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.BigQueryDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatabricksDatasourceSpecification;
@@ -144,7 +145,7 @@ public class DatasourceSpecificationBuilder implements DatasourceSpecificationVi
             spannerSpec._projectId(spannerDatasourceSpecification.projectId);
             spannerSpec._instanceId(spannerDatasourceSpecification.instanceId);
             spannerSpec._proxyHost(spannerDatasourceSpecification.proxyHost);
-            spannerSpec._proxyPort(spannerDatasourceSpecification.proxyPort.longValue());
+            spannerSpec._proxyPort(Optional.ofNullable(spannerDatasourceSpecification.proxyPort).map(Integer::longValue).orElse(null));
             spannerSpec._databaseId(spannerDatasourceSpecification.databaseId);
             return spannerSpec;
         }
