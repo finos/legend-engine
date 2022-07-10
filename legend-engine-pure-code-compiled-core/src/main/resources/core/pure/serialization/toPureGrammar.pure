@@ -36,7 +36,7 @@ function meta::pure::metamodel::serialization::grammar::printFunctionDefinition(
                                          $functionParameters+($expressions->joinStrings(';\n'+$multipleLineIndent))+'}';,
       other:FunctionDefinition<Any>[1] | $other->printFunctionSignature()+'\n'+
                                          $space+'{\n'+
-                                         $expressions->joinStrings($space+'  ', ';\n'+$space, ';\n')+
+                                         $expressions->joinStrings($space+'  ', ';\n'+$space+'  ', ';\n')+
                                          $space+'}';
    ]);
 }
@@ -62,7 +62,7 @@ function <<access.private>> meta::pure::metamodel::serialization::grammar::remov
                                                  |  ^$fe(parametersValues=$fe.parametersValues->at(0)->meta::pure::metamodel::serialization::grammar::removeAutomap()->concatenate( $fe.parametersValues->tail()))
                                                 );
 
-                                           ,| ^$fe(parametersValues=$fe.parametersValues->at(0)->meta::pure::metamodel::serialization::grammar::removeAutomap()->concatenate( $fe.parametersValues->tail()))
+                                           ,| ^$fe(parametersValues=$fe.parametersValues->head()->map(x | $x->meta::pure::metamodel::serialization::grammar::removeAutomap())->concatenate( $fe.parametersValues->tail()))
                                       ),
                v:ValueSpecification[1] |  $v]);
 }
@@ -113,16 +113,21 @@ function meta::pure::metamodel::serialization::grammar::special():Map<String, St
 function meta::pure::metamodel::serialization::grammar::printFunctionExpression(functionExpression:FunctionExpression[1], space:String[1]):String[1]
 {
    let name = $functionExpression.func.functionName->toOne();
+   let fullyQualifiedName = if($functionExpression.func.package->isEmpty(), |'', |$functionExpression.func.package->toOne()->elementToPath() + '::') + $name;
     if($functionExpression.parametersValues->isEmpty(),
         |$name->toOne()+'()',
         |let m = special();
          if ($m->get($name)->isEmpty(),
-             | let firstParam = $functionExpression.parametersValues->head()->toOne(); 
-               if((($firstParam->instanceOf(SimpleFunctionExpression)   && $firstParam->cast(@SimpleFunctionExpression).functionName->isNotEmpty()  && ($m->get($firstParam->cast(@SimpleFunctionExpression).functionName->toOne())->isNotEmpty()))
-                    || $firstParam->instanceOf(FunctionExpression))   && $firstParam->cast(@FunctionExpression).func.functionName->isNotEmpty()  && ($m->get($firstParam->cast(@FunctionExpression).func.functionName->toOne())->isNotEmpty())  ,
-                   | $functionExpression.func.functionName->toOne() + $functionExpression.parametersValues->map(vs | printValueSpecification($vs, $space))->joinStrings('(', ', ', ')');,
-                   | $functionExpression.parametersValues->head()->toOne()->printValueSpecification($space) + '->' + $functionExpression.func.functionName->toOne() + $functionExpression.parametersValues->tail()->map(vs | printValueSpecification($vs, $space))->joinStrings('(', ', ', ')');
-                   );,
+             |if($name == 'letFunction',
+              | 'let ' + $functionExpression.parametersValues->at(0)->cast(@InstanceValue).values->toOne()->toString() + ' = ' + $functionExpression.parametersValues->last()->toOne()->printValueSpecification($space);,
+              |if($name == 'extractEnumValue',
+                | $functionExpression.parametersValues->head()->toOne()->printValueSpecification($space) + '.' + $functionExpression.parametersValues->tail()->cast(@InstanceValue).values->toOne()->toString(),
+                | let firstParam = $functionExpression.parametersValues->head()->toOne(); 
+                if((($firstParam->instanceOf(SimpleFunctionExpression)   && $firstParam->cast(@SimpleFunctionExpression).functionName->isNotEmpty()  && ($m->get($firstParam->cast(@SimpleFunctionExpression).functionName->toOne())->isNotEmpty() || $firstParam->cast(@SimpleFunctionExpression).functionName == 'pair'))
+                      || $firstParam->instanceOf(FunctionExpression))   && $firstParam->cast(@FunctionExpression).func.functionName->isNotEmpty()  && ($m->get($firstParam->cast(@FunctionExpression).func.functionName->toOne())->isNotEmpty() || $firstParam->cast(@FunctionExpression).functionName == 'pair')  ,
+                    | $fullyQualifiedName + $functionExpression.parametersValues->map(vs | printValueSpecification($vs, $space))->joinStrings('(', ', ', ')');,
+                    | $functionExpression.parametersValues->head()->toOne()->printValueSpecification($space) + '->' + $fullyQualifiedName + $functionExpression.parametersValues->tail()->map(vs | printValueSpecification($vs, $space))->joinStrings('(', ', ', ')');
+                    );)),
              |let vals = if ($name->in(['plus', 'minus', 'times']),
                   |$functionExpression.parametersValues->cast(@InstanceValue).values,
                   |$functionExpression.parametersValues
@@ -248,7 +253,9 @@ function meta::pure::metamodel::serialization::grammar::printGenericType(generic
                                |$genericType.typeArguments->map(g|$g->printGenericType())->joinStrings('<', ',', '>')),
                            |if($genericType.multiplicityArguments->isNotEmpty(),
                                |$genericType.multiplicityArguments->map(m | $m->printMultiplicity())->joinStrings('<|', ',', '>'),
-                               |'')))
+                               |'')) +
+                          if($genericType.typeParameter->isNotEmpty(), |$genericType.typeParameter->map(x | $x.name)->joinStrings('<', ',', '>'), |'')
+                          )
 }
 
 function meta::pure::metamodel::serialization::grammar::printFunctionType(functionType:FunctionType[1]):String[1]
@@ -265,7 +272,9 @@ function meta::pure::metamodel::serialization::grammar::printFunctionSignature(f
     let returnType = $funcType.returnType;
     let typeParams =  $funcType.typeParameters->evaluateAndDeactivate();
 
-    if($func.functionName->isEmpty(), | 'LAMBDA', | $func.functionName->toOne()) + if($typeParams->isEmpty(), |'', |$typeParams->map(t:TypeParameter[1]|$t.name)->joinStrings('<', ', ','>')) + $parameters->map(v | $v.name + ': ' + printGenericType($v.genericType) + '[' + printMultiplicity($v.multiplicity) + ']')->joinStrings('(', ', ', ')') + ': ' + printGenericType($returnType) + '[' + printMultiplicity($funcType.returnMultiplicity) + ']';
+    let pkg = if($func.package->isEmpty(), |'', |'function ' + $func.package->toOne()->elementToPath() + '::');
+
+    $pkg + if($func.functionName->isEmpty(), | 'LAMBDA', | $func.functionName->toOne()) + if($typeParams->isEmpty(), |'', |$typeParams->map(t:TypeParameter[1]|$t.name)->joinStrings('<', ', ','>')) + $parameters->map(v | $v.name + ': ' + printGenericType($v.genericType) + '[' + printMultiplicity($v.multiplicity) + ']')->joinStrings('(', ', ', ')') + ': ' + printGenericType($returnType) + '[' + printMultiplicity($funcType.returnMultiplicity) + ']';
 }
 
 function meta::pure::metamodel::serialization::grammar::printMultiplicity(multiplicity:Multiplicity[1]):String[1]

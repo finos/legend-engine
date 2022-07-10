@@ -1,0 +1,182 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::json::*;
+import meta::pure::functions::io::http::*;
+
+import meta::external::store::elasticsearch::metamodel::api::*;
+import meta::external::store::elasticsearch::metamodel::api::specutils::*;
+
+Class 
+<<typemodifiers.abstract>> 
+{ doc.doc = 'Class that will serialize as a scalar value' }
+meta::external::store::elasticsearch::metamodel::api::specutils::TagVariant<T>
+{
+  value: T[1];
+}
+
+Class 
+<<typemodifiers.abstract>> 
+{ doc.doc = 'Marker class that will serialize as a scalar value from a single property on the implementation' }
+meta::external::store::elasticsearch::metamodel::api::specutils::TaggedUnion
+[
+  onlyOneFieldDefinedForTagUnion: $this->type()->cast(TaggedUnion).properties
+            ->filter(p | $p->eval($this)->isNotEmpty())->size() <= 1
+]
+{
+
+}
+
+Class 
+<<typemodifiers.abstract>> 
+{ doc.doc = 'Marker class for container variant' }
+meta::external::store::elasticsearch::metamodel::api::specutils::Container
+[
+  onlyOneFieldDefinedForContainer: $this->type()->cast(TaggedUnion).properties
+            ->filter(p | 
+              !$p->hasStereotype('containerProperty', ESProfile)
+                && $p->eval($this)->isNotEmpty()
+            )->size() <= 1
+]
+{
+  
+}
+
+Profile meta::external::store::elasticsearch::metamodel::api::specutils::ESProfile
+{
+  stereotypes: [containerProperty];
+}
+
+Class 
+<<typemodifiers.abstract>> 
+meta::external::store::elasticsearch::metamodel::api::specutils::RequestBase extends meta::external::store::elasticsearch::metamodel::api::specutils::CommonQueryParameters
+{
+}
+
+Class 
+<<typemodifiers.abstract>> 
+{ doc.doc='In some places in the specification an object consists of the union of a set of known properties and a set of runtime injected properties. Meaning that object should theoretically extend Dictionary but expose a set of known keys and possibly. The object might already be part of an object graph and have a parent class. This puts it into a bind that needs a client specific solution. We therefore document the requirement to behave like a dictionary for unknown properties with this interface.'} 
+meta::external::store::elasticsearch::metamodel::api::specutils::AdditionalProperties<TKey,TValue>
+{
+  __additionalProperties: Map<TKey, TValue>[0..1];
+}
+
+Class 
+<<typemodifiers.abstract>> 
+{ doc.doc='In some places in the specification an object consists of a static set of properties and a single additional property with an arbitrary name but a statically defined type. This is typically used for configurations associated to a single field. Meaning that object should theoretically extend SingleKeyDictionary but expose a set of known keys. And possibly the object might already be part of an object graph and have a parent class. This puts it into a bind that needs a client specific solution. We therefore document the requirement to accept a single unknown property with this interface.'} 
+meta::external::store::elasticsearch::metamodel::api::specutils::AdditionalProperty<TKey,TValue>
+{
+  __additionalProperty: Pair<TKey, TValue>[0..1];
+}
+
+Class
+<<typemodifiers.abstract>> 
+{ doc.doc='Implements a set of common query parameters all API\'s support. Since these can break the request structure these are listed explicitly as a behavior. Its up to individual clients to define support although `error_trace` and `pretty` are recommended as a minimum.'} 
+meta::external::store::elasticsearch::metamodel::api::specutils::CommonQueryParameters
+{
+  {meta::pure::profiles::doc.doc='When set to `true` Elasticsearch will include the full stack trace of errors when they occur.'} error_trace : Boolean[0..1];
+  {meta::pure::profiles::doc.doc='Comma-separated list of filters in dot notation which reduce the response returned by Elasticsearch.'} filter_path : String[*];
+  {meta::pure::profiles::doc.doc='When set to `true` will return statistics in a format suitable for humans. For example `"exists_time": "1h"` for humans and `"eixsts_time_in_millis": 3600000` for computers. When disabled the human readable values will be omitted. This makes sense for responses being consumed only by machines.'} human : Boolean[0..1];
+  {meta::pure::profiles::doc.doc='If set to `true` the returned JSON will be "pretty-formatted". Only use this option for debugging only.'} pretty : Boolean[0..1];
+}
+
+Class 
+<<typemodifiers.abstract>> 
+meta::external::store::elasticsearch::metamodel::api::specutils::CommonCatQueryParameters
+[
+  toBeImplemented: false
+]
+{
+  // todo
+}
+
+Class 
+<<typemodifiers.abstract>> 
+meta::external::store::elasticsearch::metamodel::api::specutils::OverloadOf
+[
+  toBeImplemented: false
+]
+{
+  // todo
+}
+
+Class 
+<<typemodifiers.abstract>> 
+meta::external::store::elasticsearch::metamodel::api::specutils::ElasticSearchRequest<RequestType, ResponseType|reqM, resM>
+{
+  request: RequestType[reqM];
+  paths(){
+    fail('to be overriden');
+    '';
+  }: String[1..*];
+  methods(){
+    fail('to be overriden');
+    '';
+  }: String[1..*];
+  pathProperties(){
+    fail('to be overriden');
+    [];
+  }: String[*];
+  queryProperties(){
+    fail('to be overriden');
+    [];
+  }: String[*];
+  bodyProperty(){
+    fail('to be overriden');
+    [];
+  }: String[0..1];
+  requestMediaType(){
+    fail('to be overriden');
+    [];
+  }: String[*];
+  responseMediaType(){
+    fail('to be overriden');
+    [];
+  }: String[*];
+}
+
+function meta::external::store::elasticsearch::metamodel::api::specutils::abc(): Any[*]
+{  
+    let extraSers = [
+      {e:Enum[1], state:JSONState[1]  |
+        let name = $e->id()->replace('esQuirk_', '');
+        let value = if($name == 'true' || $name == 'false', | $name->parseBoolean(), |$name);
+        $value->recurse($e, $state);
+      },
+      {tagVariant: TagVariant<Any>[1], state: JSONState[1] | 
+        $tagVariant.value->recurse($tagVariant, $state);
+      },
+      {taggedUnion: TaggedUnion[1], state: JSONState[1] | 
+        let tag = $taggedUnion->anyToJSON($state, [], $state.config)->cast(@JSONObject);
+        assert($tag.keyValuePairs->size() == 1, |'tagged union with more than one field defined!');
+        $tag.keyValuePairs->at(0).value;
+      },
+      {additionalProperties: AdditionalProperties<Any, Any>[1], state: JSONState[1] | 
+        let obj = $additionalProperties->anyToJSON($state, [], $state.config)->cast(@JSONObject);
+        let additional = $obj->getValue('__additionalProperties')->toOne()->cast(@JSONObject);
+        let others = $obj.keyValuePairs->filter(x | $x.key != '__additionalProperties');
+        newJSONObject($others->concatenate($additional.keyValuePairs));
+      },
+      {additionalProperty: AdditionalProperty<Any, Any>[1], state: JSONState[1] | 
+        let obj = $additionalProperty->anyToJSON($state, [], $state.config)->cast(@JSONObject);
+        let additional = $obj->getValue('__additionalProperty')->toOne()->cast(@JSONObject);
+        let additionalKeyValue = ^JSONKeyValue(
+            key = $additional->getValue('first')->cast(@JSONString)->toOne(),
+            value = $additional->getValue('second')->toOne()
+        );
+        let others = $obj.keyValuePairs->filter(x | $x.key != '__additionalProperty');
+        newJSONObject($others->concatenate($additionalKeyValue));
+      }
+    ];
+}

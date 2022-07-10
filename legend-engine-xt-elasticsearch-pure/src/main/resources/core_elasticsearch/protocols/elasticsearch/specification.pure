@@ -1,0 +1,533 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::json::*;
+
+import meta::external::store::elasticsearch::metamodel::spec::*;
+
+/* #######################################
+                 README
+                 
+  This metamodel of the ES specification is a translation from the metamodel define on typescript here
+
+  https://github.com/elastic/elasticsearch-specification/blob/main/compiler/src/model/metamodel.ts
+
+  The metamodel might evol, hence when importing a new version, this might need to be updated, and the code generation
+
+  #######################################
+*/
+
+/**
+ * The name of a type, composed of a simple name and a namespace. Hierarchical namespace elements are separated by
+ * a dot, e.g 'cat.cat_aliases'.
+ *
+ * Builtin namespaces:
+ * - "generic" for type names that are generic parameter values from the enclosing type.
+ * - "internal" for primitive and builtin types (e.g. Id, IndexName, etc)
+ *    Builtin types:
+ *    - boolean,
+ *    - string,
+ *    - number: a 64bits floating point number. Additional types will be added for integers.
+ *    - null: the null value. Since JS distinguishes undefined and null, some APIs make use of this value.
+ *    - object: used to represent "any". We may forbid it at some point. UserDefinedValue should be used for user data.
+ */
+Class meta::external::store::elasticsearch::metamodel::spec::TypeName
+{
+  <<equality.Key>> namespace: String[1];
+  <<equality.Key>> name: String[1];
+}
+
+// ------------------------------------------------------------------------------------------------
+// Value types
+
+// Note: "required" is part of Property. This means we can have optional properties but we can't have null entries in
+// containers (array and dictionary), which doesn't seem to be needed.
+//
+// The 'kind' property is used to tag and disambiguate union type members, and allow type-safe pattern matching in TS:
+// see https://blog.logrocket.com/pattern-matching-and-type-safety-in-typescript-1da1231a2e34/
+// and https://medium.com/@fillopeter/pattern-matching-with-typescript-done-right-94049ddd671c
+
+/**
+ * Type of a value. Used both for property types and nested type definitions.
+ */
+Class 
+<<typemodifiers.abstract>>
+meta::external::store::elasticsearch::metamodel::spec::ValueOf
+{
+  
+}
+
+/**
+ * A single value
+ */
+Class meta::external::store::elasticsearch::metamodel::spec::InstanceOf extends ValueOf
+{
+  kind(){ 'instance_of' }: String[1];
+  type: TypeName[1];
+  /** generic parameters: either concrete types or open parameters from the enclosing type */
+  generics: ValueOf[*];
+}
+
+/**
+ * An array
+ */
+Class meta::external::store::elasticsearch::metamodel::spec::ArrayOf extends ValueOf
+{
+  kind(){ 'array_of' }: String[1];
+  value: ValueOf[1];
+}
+
+/**
+ * One of several possible types which don't necessarily have a common superclass
+ */
+Class meta::external::store::elasticsearch::metamodel::spec::UnionOf extends ValueOf
+{
+  kind(){ 'union_of' }: String[1];
+  items: ValueOf[*];
+}
+
+/**
+ * A dictionary (or map).  The key is a string or a number (or a union thereof), possibly through an alias.
+ *
+ * If `singleKey` is true, then this dictionary can only have a single key. This is a common pattern in ES APIs,
+ * used to associate a value to a field name or some other identifier.
+ */
+Class meta::external::store::elasticsearch::metamodel::spec::DictionaryOf extends ValueOf
+{
+  kind(){ 'dictionary_of' }: String[1];
+  key: ValueOf[1];
+  value: ValueOf[1];
+  singleKey: Boolean[1];
+}
+
+/**
+ * A user defined value. To be used when bubbling a generic parameter up to the top-level class is
+ * inconvenient or impossible (e.g. for lists of user-defined values of possibly different types).
+ *
+ * Clients will allow providing a serializer/deserializer when reading/writing properties of this type,
+ * and should also accept raw json.
+ *
+ * Think twice before using this as it defeats the purpose of a strongly typed API, and deserialization
+ * will also require to buffer raw JSON data which may have performance implications.
+ */
+Class meta::external::store::elasticsearch::metamodel::spec::UserDefinedValue extends ValueOf
+{
+  kind(){ 'user_defined_value' }: String[1];
+}
+
+/**
+ * A literal value. This is used for tagged unions, where each type member of a union has a 'type'
+ * attribute that defines its kind. This metamodel heavily uses this approach with its 'kind' attributes.
+ *
+ * It may later be used to set a property to a constant value, which is why it accepts not only strings but also
+ * other primitive types.
+ */
+Class meta::external::store::elasticsearch::metamodel::spec::LiteralValue extends ValueOf
+{
+  kind(){ 'literal_value' }: String[1];
+  value: Any[1]; // string | number | boolean
+}
+
+/**
+ * An interface or request interface property.
+ */
+Class meta::external::store::elasticsearch::metamodel::spec::_Property
+{
+  <<equality.Key>> name: String[1];
+  type: ValueOf[1];
+  required: Boolean[1];
+  description: String[0..1];
+  docUrl: String[0..1];
+  docId: String[0..1];
+  since: String[0..1];
+  serverDefault: Any[*]; // boolean | string | number | string[] | number[]
+  deprecation: Deprecation[0..1];
+  stability: Stability[0..1];
+  /**
+   * If specified takes precedence over `name` when generating code. `name` is always the value
+   * to be sent over the wire
+   */
+  codegenName: String[0..1];
+  /** An optional set of aliases for `name` */
+  aliases: String[*];
+  /** If the enclosing class is a variants container, is this a property of the container and not a variant? */
+  containerProperty: Boolean[0..1];
+  /** If this property has a quirk that needs special attention, give a short explanation about it */
+  esQuirk: String[0..1];
+}
+
+// ------------------------------------------------------------------------------------------------
+// Type definitions
+Class 
+<<typemodifiers.abstract>>
+meta::external::store::elasticsearch::metamodel::spec::TypeDefinition
+{
+// ------------------------------------------------------------------------------------------------
+
+/**
+ * Common attributes for all type definitions
+ */
+  <<equality.Key>> name: TypeName[1];
+  description: String[0..1];
+  /** Link to public documentation */
+  docUrl: String[0..1];
+  docId: String[0..1];
+  deprecation: Deprecation[0..1];
+  /** If this endpoint has a quirk that needs special attention, give a short explanation about it */
+  esQuirk: String[0..1];
+  // kind: String[0..1];
+  /** Variant name for externally tagged variants */
+  variantName: String[0..1];
+  /**
+   * Additional identifiers for use by code generators. Usage depends on the actual type:
+   * - on unions (modeled as alias(union_of)), these are identifiers for the union members
+   * - for additional properties, this is the name of the dict that holds these properties
+   * - for additional property, this is the name of the key and value fields that hold the
+   *   additional property
+   */
+  codegenNames: String[*];
+  /**
+   * Location of an item. The path is relative to the "specification" directory, e.g "_types/common.ts#L1-L2"
+   */
+  specLocation: String[1];
+}
+
+Class 
+<<typemodifiers.abstract>>
+meta::external::store::elasticsearch::metamodel::spec::Variants
+{
+  /**
+   * Is this variant type open to extensions? Default to false. Used for variants that can
+   * be extended with plugins. If true, target clients should allow for additional variants
+   * with a variant tag outside the ones defined in the spec and arbitrary data as the value.
+   */
+  nonExhaustive: Boolean[0..1];
+}
+
+Class meta::external::store::elasticsearch::metamodel::spec::ExternalTag extends Variants
+{
+  kind(){ 'external_tag' }: String[1];
+}
+
+Class meta::external::store::elasticsearch::metamodel::spec::InternalTag extends Variants
+{
+  kind(){ 'internal_tag' }: String[1];
+  /* Name of the property that holds the variant tag */
+  tag: String[1];
+  /* Default value for the variant tag if it's missing */
+  defaultTag: String[0..1];
+}
+
+Class meta::external::store::elasticsearch::metamodel::spec::ContainerVariant extends Variants
+{
+  kind(){ 'container' }: String[1];
+}
+
+/**
+ * Inherits clause (aka extends or implements) for an interface or request
+ */
+Class meta::external::store::elasticsearch::metamodel::spec::Inherits {
+  <<equality.Key>> type: TypeName[1];
+  generics: ValueOf[*];
+}
+
+/**
+ * An interface type
+ */
+Class meta::external::store::elasticsearch::metamodel::spec::Interface extends TypeDefinition
+{
+  kind(){ 'interface' }: String[1];
+  /**
+   * Open generic parameters. The name is that of the parameter, the namespace is an arbitrary value that allows
+   * this fully qualified type name to be used when this open generic parameter is used in property's type.
+   */
+  generics: TypeName[*];
+  inherits: Inherits[0..1];
+  implements: Inherits[*];
+
+  /**
+   * Behaviors directly implemented by this interface
+   */
+  behaviors: Inherits[*];
+
+  /**
+   * Behaviors attached to this interface, coming from the interface itself (see `behaviors`)
+   * or from inherits and implements ancestors
+   */
+  attachedBehaviors: AttachedBehavior[*];
+  properties: _Property[*];
+  /**
+   * The property that can be used as a shortcut for the entire data structure in the JSON.
+   */
+  shortcutProperty: String[0..1];
+
+  /** Identify containers */
+  variants: ContainerVariant[0..1];
+}
+
+Enum meta::external::store::elasticsearch::metamodel::spec::AttachedBehavior
+{
+	AdditionalProperties,
+	AdditionalProperty,
+	CommonCatQueryParameters,
+	CommonQueryParameters,
+	OverloadOf
+}
+
+/**
+ * A request type
+ */
+Class meta::external::store::elasticsearch::metamodel::spec::Request extends TypeDefinition
+{
+  // Note: does not extend Interface as properties are split across path, query and body
+  kind(){ 'request' }: String[1];
+  generics: TypeName[*];
+  /** The parent defines additional body properties that are added to the body, that has to be a PropertyBody */
+  inherits: Inherits[0..1];
+  implements: Inherits[*];
+  /** URL path properties */
+  path: _Property[*];
+  /** Query string properties */
+  query: _Property[*];
+  // FIXME: we need an annotation that lists query params replaced by a body property so that we can skip them.
+  // Examples on _search: sort -> sort, _source -> (_source, _source_include, _source_exclude)
+  // Or can we say that implicitly a body property replaces all path params starting with its name?
+  // Is there a priority rule between path and body parameters?
+  //
+  // We can also pull path parameter descriptions on body properties they replace
+
+  /**
+   * Body type. Most often a list of properties (that can extend those of the inherited class, see above), except for a
+   * few specific cases that use other types such as bulk (array) or create (generic parameter). Or NoBody for requests
+   * that don't have a body.
+   */
+  body: Body[1];
+  behaviors: Inherits[*];
+  attachedBehaviors: AttachedBehavior[*];
+}
+
+/**
+ * A response type
+ */
+Class meta::external::store::elasticsearch::metamodel::spec::Response extends TypeDefinition
+{
+  kind(){ 'response' }: String[1];
+  generics: TypeName[*];
+  body: Body[1];
+  inherits: Inherits[0..1];
+  behaviors: Inherits[*];
+  attachedBehaviors: AttachedBehavior[*];
+  exceptions: ResponseException[*];
+}
+
+Class meta::external::store::elasticsearch::metamodel::spec::ResponseException 
+{
+  description: String[0..1];
+  body: Body[1];
+  statusCodes: Number[*];
+}
+
+Class 
+<<typemodifiers.abstract>>
+meta::external::store::elasticsearch::metamodel::spec::Body
+{
+
+}
+
+Class meta::external::store::elasticsearch::metamodel::spec::ValueBody extends Body
+{
+  kind(){ 'value' }: String[1];
+  value: ValueOf[1];
+  codegenName: String[0..1];
+}
+
+Class meta::external::store::elasticsearch::metamodel::spec::PropertiesBody extends Body
+{
+  kind(){ 'properties' }: String[1];
+  properties: _Property[*];
+}
+
+Class meta::external::store::elasticsearch::metamodel::spec::NoBody extends Body
+{
+  kind(){ 'no_body' }: String[1];
+}
+
+/**
+ * An enumeration member.
+ *
+ * When enumeration members can become ambiguous when translated to an identifier, the `name` property will be a good
+ * identifier name, and `stringValue` will be the string value to use on the wire.
+ * See DateMathTimeUnit for an example of this, which have members for "m" (minute) and "M" (month).
+ */
+Class meta::external::store::elasticsearch::metamodel::spec::EnumMember
+{
+  /** The identifier to use for this enum */
+  <<equality.Key>> name: String[1];
+  /** An optional set of aliases for `name` */
+  aliases: String[*];
+  /**
+   * If specified takes precedence over `name` when generating code. `name` is always the value
+   * to be sent over the wire
+   */
+  codegenName: String[0..1];
+  description: String[0..1];
+  deprecation: Deprecation[0..1];
+  since: String[0..1];
+}
+
+/**
+ * An enumeration
+ */
+Class meta::external::store::elasticsearch::metamodel::spec::_Enum extends TypeDefinition
+{
+  kind(){ 'enum' }: String[1];
+  /**
+   * If the enum is open, it means that other than the specified values it can accept an arbitrary value.
+   * If this property is not present, it means that the enum is not open (in other words, is closed).
+   */
+  isOpen: Boolean[0..1];
+  members: EnumMember[1..*];
+}
+
+/**
+ * An alias for an existing type.
+ */
+Class meta::external::store::elasticsearch::metamodel::spec::TypeAlias extends TypeDefinition
+{
+  kind(){ 'type_alias' }: String[1];
+  type: ValueOf[1];
+  /** generic parameters: either concrete types or open parameters from the enclosing type */
+  generics: TypeName[*];
+  /** Only applicable to `union_of` aliases: identify typed_key unions (external) and variant inventories (internal) */
+  variants: Variants[0..1];
+}
+
+// ------------------------------------------------------------------------------------------------
+
+Enum meta::external::store::elasticsearch::metamodel::spec::Stability
+{
+  stable,
+  beta,
+  experimental
+}
+
+Enum meta::external::store::elasticsearch::metamodel::spec::Visibility
+{
+  public,
+  feature_flag,
+  private
+}
+
+Class meta::external::store::elasticsearch::metamodel::spec::Deprecation
+{
+  version: String[1];
+  description: String[1];
+}
+
+Class meta::external::store::elasticsearch::metamodel::spec::Endpoint 
+{
+  <<equality.Key>> name: String[1];
+  description: String[1];
+  docUrl: String[0..1];
+  docId: String[0..1];
+  deprecation: Deprecation[0..1];
+
+  /**
+   * If the request value is `null` it means that there is not yet a
+   * request type definition for this endpoint.
+   */
+  request: TypeName[0..1];
+  requestBodyRequired: Boolean[1]; // Not sure this is useful
+
+  /**
+   * If the response value is `null` it means that there is not yet a
+   * response type definition for this endpoint.
+   */
+  response: TypeName[0..1];
+
+  urls: UrlTemplate[1..*];
+
+  /**
+   * The version when this endpoint reached its current stability level.
+   * Missing data means "forever", i.e. before any of the target client versions produced from this spec.
+   */
+  since: String[0..1];
+  stability: Stability[0..1];
+  visibility: Visibility[0..1];
+  featureFlag: String[0..1];
+  requestMediaType: String[*];
+  responseMediaType: String[*];
+  privileges: EndpointPrivileges[0..1];
+}
+
+Class meta::external::store::elasticsearch::metamodel::spec::EndpointPrivileges
+{
+  index: String[*];
+  cluster: String[*];
+}
+
+Class meta::external::store::elasticsearch::metamodel::spec::UrlTemplate 
+{
+  path: String[0..1];
+  methods: String[1..*];
+  deprecation: Deprecation[0..1];
+}
+
+Class meta::external::store::elasticsearch::metamodel::spec::Model 
+{
+  _info: ModelInfo[0..1];
+  types: TypeDefinition[*];
+  endpoints: Endpoint[*];
+}
+
+Class meta::external::store::elasticsearch::metamodel::spec::ModelInfo
+{
+	title: String[1];
+	license: ModelLicense[1];
+}
+
+Class meta::external::store::elasticsearch::metamodel::spec::ModelLicense
+{
+	name: String[1];
+  url: String[1];
+}
+
+function meta::external::store::elasticsearch::metamodel::spec::parseSpec(specAsJson: String[1]): Model[1]
+{
+    let jsonDeserializationConfig = ^JSONDeserializationConfig(
+      failOnUnknownProperties = true,
+      typeKeyName = 'kind',
+      typeLookup = [
+          pair('no_body', NoBody->elementToPath()),
+					pair('container', ContainerVariant->elementToPath()),
+					pair('request', Request->elementToPath()),
+					pair('user_defined_value', UserDefinedValue->elementToPath()),
+					pair('dictionary_of', DictionaryOf->elementToPath()),
+					pair('interface', Interface->elementToPath()),
+					pair('array_of', ArrayOf->elementToPath()),
+					pair('enum', _Enum->elementToPath()),
+					pair('external_tag', ExternalTag->elementToPath()),
+					pair('literal_value', LiteralValue->elementToPath()),
+					pair('union_of', UnionOf->elementToPath()),
+					pair('type_alias', TypeAlias->elementToPath()),
+					pair('response', Response->elementToPath()),
+					pair('instance_of', InstanceOf->elementToPath()),
+					pair('internal_tag', InternalTag->elementToPath()),
+					pair('value', ValueBody->elementToPath()),
+					pair('properties', PropertiesBody->elementToPath())
+      ]
+    );
+
+    $specAsJson->fromJson(Model, $jsonDeserializationConfig);
+}
