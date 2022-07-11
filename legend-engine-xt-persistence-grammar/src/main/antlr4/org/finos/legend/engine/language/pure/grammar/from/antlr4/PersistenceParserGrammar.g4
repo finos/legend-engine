@@ -67,9 +67,9 @@ platformSpecification:                      platformType (platformValue)?
 ;
 platformType:                               identifier
 ;
-platformValue:                              ISLAND_OPEN (platformValueContent)*
+platformValue:                              ISLAND_OPEN (platformValueContent)* ISLAND_END
 ;
-platformValueContent:                       ISLAND_START | ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_HASH | ISLAND_BRACE_CLOSE | ISLAND_END
+platformValueContent:                       ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_BRACE_CLOSE
 ;
 contextServiceParameters:                   CONTEXT_SERVICE_PARAMETERS COLON
                                                 BRACKET_OPEN
@@ -515,3 +515,4 @@ mergeStrategyDeleteValues:                  MERGE_STRATEGY_DELETE_INDICATOR_VALU
                                                 BRACKET_CLOSE
                                             SEMI_COLON
 ;
+

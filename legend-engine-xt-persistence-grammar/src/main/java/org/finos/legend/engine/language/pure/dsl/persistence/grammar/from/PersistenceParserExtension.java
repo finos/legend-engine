@@ -54,9 +54,15 @@ public class PersistenceParserExtension implements IPersistenceParserExtension
     public List<Function<PersistencePlatformSourceCode, PersistencePlatform>> getExtraPersistencePlatformParsers()
     {
         return Collections.singletonList(code ->
-                "Default".equals(code.getType())
-                        ? new DefaultPersistencePlatform()
-                        : null
+                {
+                    if ("Default".equals(code.getType()))
+                    {
+                        DefaultPersistencePlatform platform = new DefaultPersistencePlatform();
+                        platform.sourceInformation = code.getSourceInformation();
+                        return platform;
+                    }
+                    return null;
+                }
         );
     }
 
@@ -92,3 +98,4 @@ public class PersistenceParserExtension implements IPersistenceParserExtension
         return new SourceCodeParserInfo(sectionSourceCode.code, input, sectionSourceCode.sourceInformation, sectionSourceCode.walkerSourceInformation, lexer, parser, parser.definition());
     }
 }
+

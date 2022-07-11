@@ -68,7 +68,7 @@ public class PersistenceContextParseTreeWalker
 
         // persistence platform
         PersistenceParserGrammar.ContextPlatformContext platformContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.contextPlatform(), "platform", context.sourceInformation);
-        context.platform = platformContext == null ? new DefaultPersistencePlatform() : visitPersistencePlatform(platformContext);
+        context.platform = platformContext == null ? new DefaultPersistencePlatform() : visitPersistencePlatform(platformContext.platformSpecification());
 
         // service parameters
         PersistenceParserGrammar.ContextServiceParametersContext serviceParametersContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.contextServiceParameters(), "serviceParameters", context.sourceInformation);
@@ -85,13 +85,36 @@ public class PersistenceContextParseTreeWalker
      * persistence platform
      **********/
 
-    private PersistencePlatform visitPersistencePlatform(PersistenceParserGrammar.ContextPlatformContext ctx)
+    private PersistencePlatform visitPersistencePlatform(PersistenceParserGrammar.PlatformSpecificationContext ctx)
     {
-        PersistenceParserGrammar.PlatformSpecificationContext specificationContext = ctx.platformSpecification();
-        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        StringBuilder text = new StringBuilder();
+        PersistenceParserGrammar.PlatformValueContext platformValueContext = ctx.platformValue();
+        if (platformValueContext != null)
+        {
+            for (PersistenceParserGrammar.PlatformValueContentContext fragment : platformValueContext.platformValueContent())
+            {
+                text.append(fragment.getText());
+            }
+            String textToParse = text.length() > 0 ? text.substring(0, text.length() - 2) : text.toString();
 
-        PersistencePlatformSourceCode sourceCode = new PersistencePlatformSourceCode(ctx.platformSpecification().getText(), specificationContext.platformType().getText(), sourceInformation, ParseTreeWalkerSourceInformation.offset(walkerSourceInformation, ctx.getStart()));
-        return IPersistenceParserExtension.process(sourceCode, processors);
+            // prepare island grammar walker source information
+            int startLine = platformValueContext.ISLAND_OPEN().getSymbol().getLine();
+            int lineOffset = walkerSourceInformation.getLineOffset() + startLine - 1;
+            // only add current walker source information column offset if this is the first line
+            int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + platformValueContext.ISLAND_OPEN().getSymbol().getCharPositionInLine() + platformValueContext.ISLAND_OPEN().getSymbol().getText().length();
+            ParseTreeWalkerSourceInformation platformValueWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
+            SourceInformation platformValueSourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+            PersistencePlatformSourceCode sourceCode = new PersistencePlatformSourceCode(textToParse, ctx.platformType().getText(), platformValueSourceInformation, platformValueWalkerSourceInformation);
+            return IPersistenceParserExtension.process(sourceCode, processors);
+        }
+        else
+        {
+            SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+            PersistencePlatformSourceCode sourceCode = new PersistencePlatformSourceCode(text.toString(), ctx.platformType().getText(), sourceInformation, walkerSourceInformation);
+            return IPersistenceParserExtension.process(sourceCode, processors);
+        }
     }
 
     /**********
@@ -189,3 +212,4 @@ public class PersistenceContextParseTreeWalker
         return this.connectionParser.parseEmbeddedRuntimeConnections(embeddedConnectionParsingText, embeddedConnectionWalkerSourceInformation, embeddedConnectionSourceInformation);
     }
 }
+

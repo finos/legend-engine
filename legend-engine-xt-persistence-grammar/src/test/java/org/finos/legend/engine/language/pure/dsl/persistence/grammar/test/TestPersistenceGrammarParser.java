@@ -104,7 +104,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "{\n" +
                 "  persistence: test::TestPersistence;\n" +
                 "  platform: Unknown;\n" +
-                "}\n", "PARSER error at [6:3-20]: Unsupported persistence platform type 'Unknown'");
+                "}\n", "PARSER error at [6:13-19]: Unsupported persistence platform type 'Unknown'");
         test("###Persistence\n" +
                 "\n" +
                 "PersistenceContext test::TestPersistenceContext \n" +
