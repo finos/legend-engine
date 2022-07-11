@@ -44,8 +44,8 @@ import org.finos.legend.engine.plan.execution.result.transformer.TransformerInpu
 import org.finos.legend.engine.plan.execution.stores.relational.activity.RelationalExecutionActivity;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.result.builder.relation.RelationBuilder;
-import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToCSVSerializerWithoutISODateTransformations;
 import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToCSVSerializer;
+import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToCSVSerializerWithoutISODateTransformations;
 import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToJsonDefaultSerializer;
 import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToPureTDSSerializer;
 import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToPureTDSToObjectSerializer;
@@ -297,7 +297,7 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
             for (int columnIndex = 1; columnIndex <= this.columnCount; columnIndex++)
             {
                 setImpl.transformers.add(SetImplTransformers.TEMPORARY_DATATYPE_TRANSFORMER);
-                setImplWithoutDateTransformations.transformers.add(o -> o);
+                setImplWithoutDateTransformations.transformers.add(SetImplTransformers.TEMPORARY_DATATYPE_TRANSFORMER_WITHOUT_ISO_FORMAT);
             }
             setTransformers.add(setImpl);
             setTransformersWithoutDateTransformations.add(setImplWithoutDateTransformations);
@@ -312,7 +312,7 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
             for (int i = 1; i <= this.columnCount; i++)
             {
                 setImpl.transformers.add(SetImplTransformers.TEMPORARY_DATATYPE_TRANSFORMER);
-                setImplWithoutDateTransformations.transformers.add(o -> o);
+                setImplWithoutDateTransformations.transformers.add(SetImplTransformers.TEMPORARY_DATATYPE_TRANSFORMER_WITHOUT_ISO_FORMAT);
             }
             setTransformers.add(setImpl);
             setTransformersWithoutDateTransformations.add(setImplWithoutDateTransformations);

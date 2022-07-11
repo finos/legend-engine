@@ -48,6 +48,16 @@ public class SetImplTransformers
         return o;
     };
 
+    @Deprecated
+    public static final Function<Object, Object> TEMPORARY_DATATYPE_TRANSFORMER_WITHOUT_ISO_FORMAT = (Function<Object, Object>) o ->
+    {
+        if (o instanceof Timestamp)
+        {
+            return formatTimestamp((Timestamp) o);
+        }
+        return o;
+    };
+
     public MutableList<Function<Object, Object>> transformers;
 
     public SetImplTransformers()
@@ -139,19 +149,19 @@ public class SetImplTransformers
         }
     }
 
-    private static final DateTimeFormatter formatter1 =  DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S").withZone(ZoneId.of("UTC"));
-    private static final DateTimeFormatter formatter2 =  DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SS").withZone(ZoneId.of("UTC"));
-    private static final DateTimeFormatter formatter3 =  DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS").withZone(ZoneId.of("UTC"));
-    private static final DateTimeFormatter formatter4 =  DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSS").withZone(ZoneId.of("UTC"));
-    private static final DateTimeFormatter formatter5 =  DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSS").withZone(ZoneId.of("UTC"));
-    private static final DateTimeFormatter formatter6 =  DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS").withZone(ZoneId.of("UTC"));
-    private static final DateTimeFormatter formatter7 =  DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSSS").withZone(ZoneId.of("UTC"));
-    private static final DateTimeFormatter formatter8 =  DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSSSS").withZone(ZoneId.of("UTC"));
-    private static final DateTimeFormatter formatter9 =  DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSSSSS").withZone(ZoneId.of("UTC"));
+    private static final DateTimeFormatter formatter1 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S").withZone(ZoneId.of("UTC"));
+    private static final DateTimeFormatter formatter2 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SS").withZone(ZoneId.of("UTC"));
+    private static final DateTimeFormatter formatter3 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS").withZone(ZoneId.of("UTC"));
+    private static final DateTimeFormatter formatter4 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSS").withZone(ZoneId.of("UTC"));
+    private static final DateTimeFormatter formatter5 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSS").withZone(ZoneId.of("UTC"));
+    private static final DateTimeFormatter formatter6 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS").withZone(ZoneId.of("UTC"));
+    private static final DateTimeFormatter formatter7 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSSS").withZone(ZoneId.of("UTC"));
+    private static final DateTimeFormatter formatter8 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSSSS").withZone(ZoneId.of("UTC"));
+    private static final DateTimeFormatter formatter9 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSSSSS").withZone(ZoneId.of("UTC"));
 
 
     @Deprecated
-    private String formatTimestamp(Timestamp timestamp)
+    private static String formatTimestamp(Timestamp timestamp)
     {
         /**
          * logic to find trailingZeros copied over from java.sql.Timestamp toString() function
@@ -178,16 +188,26 @@ public class SetImplTransformers
 
         switch (decimals)
         {
-            case 1 : return formatter1.format(timestamp.toInstant());
-            case 2 : return formatter2.format(timestamp.toInstant());
-            case 3 : return formatter3.format(timestamp.toInstant());
-            case 4 : return formatter4.format(timestamp.toInstant());
-            case 5 : return formatter5.format(timestamp.toInstant());
-            case 6 : return formatter6.format(timestamp.toInstant());
-            case 7 : return formatter7.format(timestamp.toInstant());
-            case 8 : return formatter8.format(timestamp.toInstant());
-            case 9 : return formatter9.format(timestamp.toInstant());
-            default: return formatter9.format(timestamp.toInstant());
+            case 1:
+                return formatter1.format(timestamp.toInstant());
+            case 2:
+                return formatter2.format(timestamp.toInstant());
+            case 3:
+                return formatter3.format(timestamp.toInstant());
+            case 4:
+                return formatter4.format(timestamp.toInstant());
+            case 5:
+                return formatter5.format(timestamp.toInstant());
+            case 6:
+                return formatter6.format(timestamp.toInstant());
+            case 7:
+                return formatter7.format(timestamp.toInstant());
+            case 8:
+                return formatter8.format(timestamp.toInstant());
+            case 9:
+                return formatter9.format(timestamp.toInstant());
+            default:
+                return formatter9.format(timestamp.toInstant());
         }
     }
 }
