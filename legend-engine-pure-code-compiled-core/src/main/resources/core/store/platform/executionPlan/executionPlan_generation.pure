@@ -102,7 +102,7 @@ function <<access.private>> meta::pure::store::platform::executionPlan::generati
       c:ClusteredValueSpecification[*]|$c,
       i:InstanceValue[1]|[],
       v:VariableExpression[1]|[],
-      fvs:FunctionRoutedValueSpecification[1]|[]
+      fvs:FunctionRoutedValueSpecification[1]|$fvs.value->meta::pure::store::platform::executionPlan::generation::recursivelyFetchClusteredValueSpecification()
    ]);
 }
 
