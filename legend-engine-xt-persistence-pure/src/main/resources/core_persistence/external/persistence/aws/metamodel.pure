@@ -15,6 +15,7 @@
 import meta::external::persistence::aws::metamodel::*;
 
 import meta::pure::persistence::metamodel::*;
+import meta::pure::persistence::metamodel::context::*;
 import meta::pure::persistence::metamodel::trigger::*;
 
 import meta::pure::runtime::*;
@@ -24,9 +25,10 @@ import meta::pure::runtime::*;
  **********/
 
 Class
-{doc.doc = 'Details for executing a persistence specification via an AWS service'}
-meta::external::persistence::aws::metamodel::AwsPersistenceContext extends PersistenceContext
+{doc.doc = 'Specification related to AWS Glue persistence platform.'}
+meta::external::persistence::aws::metamodel::AwsGluePersistencePlatform extends PersistencePlatform
 {
+   dataProcessingUnits: Integer[1];
 }
 
 /**********

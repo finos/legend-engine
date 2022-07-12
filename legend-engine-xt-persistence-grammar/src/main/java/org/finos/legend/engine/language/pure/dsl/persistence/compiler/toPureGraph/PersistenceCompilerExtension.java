@@ -14,37 +14,71 @@
 
 package org.finos.legend.engine.language.pure.dsl.persistence.compiler.toPureGraph;
 
+import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.factory.Lists;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
+import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistenceContext;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.DefaultPersistencePlatform;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.PersistencePlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Database;
 import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.Binding;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_Persistence;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_PersistenceContext;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_PersistenceContext_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_Persistence_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_context_PersistencePlatform;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_context_PersistencePlatform_Impl;
 
 import java.util.Collections;
+import java.util.List;
 
-public class PersistenceCompilerExtension implements CompilerExtension
+public class PersistenceCompilerExtension implements IPersistenceCompilerExtension
 {
     @Override
     public Iterable<? extends Processor<?>> getExtraProcessors()
     {
-        return Collections.singletonList(Processor.newProcessor(
-                Persistence.class,
-                Lists.fixedSize.with(Service.class, Mapping.class, Binding.class, PackageableConnection.class),
-                (persistence, context) -> new Root_meta_pure_persistence_metamodel_Persistence_Impl("")
-                        ._documentation(persistence.documentation)
-                        ._trigger(HelperPersistenceBuilder.buildTrigger(persistence.trigger)),
-                (persistence, context) ->
-                {
-                    Root_meta_pure_persistence_metamodel_Persistence purePersistence = (Root_meta_pure_persistence_metamodel_Persistence) context.pureModel.getOrCreatePackage(persistence._package)._children().detect(c -> persistence.name.equals(c._name()));
-                    purePersistence._service(HelperPersistenceBuilder.buildService(persistence, context));
-                    purePersistence._persister(HelperPersistenceBuilder.buildPersister(persistence.persister, context));
-                    purePersistence._notifier(HelperPersistenceBuilder.buildNotifier(persistence.notifier, context));
-                }
-        ));
+        return Lists.fixedSize.of(
+                Processor.newProcessor(
+                        Persistence.class,
+                        Lists.fixedSize.of(Service.class, Mapping.class, Binding.class, PackageableConnection.class, Database.class),
+                        (persistence, context) -> new Root_meta_pure_persistence_metamodel_Persistence_Impl("")
+                                ._documentation(persistence.documentation),
+                        (persistence, context) ->
+                        {
+                            Root_meta_pure_persistence_metamodel_Persistence purePersistence = (Root_meta_pure_persistence_metamodel_Persistence) context.pureModel.getOrCreatePackage(persistence._package)._children().detect(c -> persistence.name.equals(c._name()));
+                            purePersistence._trigger(HelperPersistenceBuilder.buildTrigger(persistence.trigger));
+                            purePersistence._service(HelperPersistenceBuilder.buildService(persistence, context));
+                            purePersistence._persister(HelperPersistenceBuilder.buildPersister(persistence.persister, context));
+                            purePersistence._notifier(HelperPersistenceBuilder.buildNotifier(persistence.notifier, context));
+                        }
+                ),
+                Processor.newProcessor(
+                        PersistenceContext.class,
+                        Lists.fixedSize.of(Persistence.class, PackageableConnection.class),
+                        (persistenceContext, context) -> new Root_meta_pure_persistence_metamodel_PersistenceContext_Impl(""),
+                        (persistenceContext, context) ->
+                        {
+                            Root_meta_pure_persistence_metamodel_PersistenceContext purePersistenceContext = (Root_meta_pure_persistence_metamodel_PersistenceContext) context.pureModel.getOrCreatePackage(persistenceContext._package)._children().detect(c -> persistenceContext.name.equals(c._name()));
+                            purePersistenceContext._persistence(HelperPersistenceContextBuilder.buildPersistence(persistenceContext, context));
+                            purePersistenceContext._platform(HelperPersistenceContextBuilder.buildPersistencePlatform(persistenceContext.platform, context));
+                            purePersistenceContext._serviceParameters(ListIterate.collect(persistenceContext.serviceParameters, sp -> HelperPersistenceContextBuilder.buildServiceParameter(sp, context)));
+                            purePersistenceContext._sinkConnection(HelperPersistenceContextBuilder.buildConnection(persistenceContext.sinkConnection, context));
+                        }
+                ));
+    }
+
+    @Override
+    public List<Function2<PersistencePlatform, CompileContext, Root_meta_pure_persistence_metamodel_context_PersistencePlatform>> getExtraPersistencePlatformProcessors()
+    {
+        return Collections.singletonList((persistencePlatform, compileContext) ->
+                persistencePlatform instanceof DefaultPersistencePlatform
+                        ? new Root_meta_pure_persistence_metamodel_context_PersistencePlatform_Impl("")
+                        : null);
     }
 }

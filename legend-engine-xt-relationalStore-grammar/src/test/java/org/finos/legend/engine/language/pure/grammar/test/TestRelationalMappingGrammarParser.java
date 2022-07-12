@@ -117,7 +117,7 @@ public class TestRelationalMappingGrammarParser extends TestGrammarParser.TestGr
                 "   {\n" +
                 "      prop: 1\n" +
                 "   }\n" +
-                ")", "PARSER error at [4:29]: Unexpected token");
+                ")", "PARSER error at [4:29]: Unexpected token ':'");
 
         test("###Mapping\n" +
                 "Mapping test::mapping\n" +
@@ -126,7 +126,7 @@ public class TestRelationalMappingGrammarParser extends TestGrammarParser.TestGr
                 "   {\n" +
                 "      prop: 1\n" +
                 "   }\n" +
-                ")", "PARSER error at [4:30]: Unexpected token");
+                ")", "PARSER error at [4:30]: Unexpected token ']'");
 
         test("###Mapping\n" +
                 "Mapping test::mapping\n" +

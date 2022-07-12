@@ -20,7 +20,160 @@ import org.junit.Test;
 public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
 {
     @Test
-    public void permitOptionalFieldsToBeEmptyFlat()
+    public void persistenceContextPermitOptionalFieldsToBeEmpty()
+    {
+        test("###Persistence\n" +
+                "import test::*;\n" +
+                "PersistenceContext test::TestPersistenceContext\n" +
+                "{\n" +
+                "  persistence: test::TestPersistence;\n" +
+                "}\n");
+    }
+
+    @Test
+    public void persistenceContextPlatformDefault()
+    {
+        testFormat(
+                "###Persistence\n" +
+                        "import test::*;\n" +
+                        "PersistenceContext test::TestPersistenceContext\n" +
+                        "{\n" +
+                        "  persistence: test::TestPersistence;\n" +
+                        "}\n",
+                "###Persistence\n" +
+                        "import test::*;\n" +
+                        "PersistenceContext test::TestPersistenceContext\n" +
+                        "{\n" +
+                        "  persistence: test::TestPersistence;\n" +
+                        "  platform: Default;\n" +
+                        "}\n");
+    }
+
+    @Test
+    public void persistenceContextSingleServiceParameter()
+    {
+        test("###Persistence\n" +
+                "import test::*;\n" +
+                "PersistenceContext test::TestPersistenceContext\n" +
+                "{\n" +
+                "  persistence: test::TestPersistence;\n" +
+                "  serviceParameters:\n" +
+                "  [\n" +
+                "    foo='hello'\n" +
+                "  ];\n" +
+                "  sinkConnection: test::TestConnection;\n" +
+                "}\n");
+    }
+
+    @Test
+    public void persistenceContextSinkConnectionPointer()
+    {
+        test("###Persistence\n" +
+                "import test::*;\n" +
+                "PersistenceContext test::TestPersistenceContext\n" +
+                "{\n" +
+                "  persistence: test::TestPersistence;\n" +
+                "  serviceParameters:\n" +
+                "  [\n" +
+                "    foo='hello',\n" +
+                "    bar=1,\n" +
+                "    con1=test::TestConnection,\n" +
+                "    con2=\n" +
+                "    #{\n" +
+                "      RelationalDatabaseConnection\n" +
+                "      {\n" +
+                "        store: test::TestDatabase;\n" +
+                "        type: H2;\n" +
+                "        specification: LocalH2\n" +
+                "        {\n" +
+                "        };\n" +
+                "        auth: Test;\n" +
+                "      }\n" +
+                "    }#\n" +
+                "  ];\n" +
+                "  sinkConnection: test::TestConnection;\n" +
+                "}\n");
+    }
+
+    @Test
+    public void persistenceContextSinkConnectionEmbedded()
+    {
+        test("###Persistence\n" +
+                "import test::*;\n" +
+                "PersistenceContext test::TestPersistenceContext\n" +
+                "{\n" +
+                "  persistence: test::TestPersistence;\n" +
+                "  serviceParameters:\n" +
+                "  [\n" +
+                "    foo='hello',\n" +
+                "    bar=1,\n" +
+                "    con1=test::TestConnection,\n" +
+                "    con2=\n" +
+                "    #{\n" +
+                "      RelationalDatabaseConnection\n" +
+                "      {\n" +
+                "        store: test::TestDatabase;\n" +
+                "        type: H2;\n" +
+                "        specification: LocalH2\n" +
+                "        {\n" +
+                "        };\n" +
+                "        auth: Test;\n" +
+                "      }\n" +
+                "    }#\n" +
+                "  ];\n" +
+                "  sinkConnection:\n" +
+                "  #{\n" +
+                "    RelationalDatabaseConnection\n" +
+                "    {\n" +
+                "      store: test::TestDatabase;\n" +
+                "      type: H2;\n" +
+                "      specification: LocalH2\n" +
+                "      {\n" +
+                "      };\n" +
+                "      auth: Test;\n" +
+                "    }\n" +
+                "  }#;\n" +
+                "}\n");
+        test("###Persistence\n" +
+                "import test::*;\n" +
+                "PersistenceContext test::TestPersistenceContext\n" +
+                "{\n" +
+                "  persistence: test::TestPersistence;\n" +
+                "  serviceParameters:\n" +
+                "  [\n" +
+                "    con2=\n" +
+                "    #{\n" +
+                "      RelationalDatabaseConnection\n" +
+                "      {\n" +
+                "        store: test::TestDatabase;\n" +
+                "        type: H2;\n" +
+                "        specification: LocalH2\n" +
+                "        {\n" +
+                "        };\n" +
+                "        auth: Test;\n" +
+                "      }\n" +
+                "    }#,\n" +
+                "    foo='hello',\n" +
+                "    bar=1,\n" +
+                "    con1=test::TestConnection\n" +
+                "  ];\n" +
+                "  sinkConnection:\n" +
+                "  #{\n" +
+                "    RelationalDatabaseConnection\n" +
+                "    {\n" +
+                "      store: test::TestDatabase;\n" +
+                "      type: H2;\n" +
+                "      specification: LocalH2\n" +
+                "      {\n" +
+                "      };\n" +
+                "      auth: Test;\n" +
+                "    }\n" +
+                "  }#;\n" +
+                "}\n");
+    }
+
+    @Test
+    public void persistencePermitOptionalFieldsToBeEmptyFlat()
     {
         test("###Persistence\n" +
                 "import test::*;\n" +
@@ -33,6 +186,7 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    ingestMode: BitemporalSnapshot\n" +
                 "    {\n" +
@@ -63,7 +217,7 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
     }
 
     @Test
-    public void permitOptionalFieldsToBeEmptyMultiFlat()
+    public void persistencePermitOptionalFieldsToBeEmptyMultiFlat()
     {
         test("###Persistence\n" +
                 "import test::*;\n" +
@@ -76,6 +230,7 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    ingestMode: BitemporalDelta\n" +
                 "    {\n" +
@@ -134,14 +289,7 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      connection:\n" +
-                "      #{\n" +
-                "        JsonModelConnection\n" +
-                "        {\n" +
-                "          class: org::dxl::Animal;\n" +
-                "          url: 'my_url2';\n" +
-                "        }\n" +
-                "      }#\n" +
+                "      database: test::Database;\n" +
                 "    }\n" +
                 "    ingestMode: BitemporalSnapshot\n" +
                 "    {\n" +
@@ -189,7 +337,7 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
                 "      {\n" +
                 "        url: 'https://x.com';\n" +
                 "      }\n" +
-                "    ]\n" +
+                "    ];\n" +
                 "  }\n" +
                 "}\n");
     }
@@ -209,14 +357,6 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
                 "    sink: ObjectStorage\n" +
                 "    {\n" +
                 "      binding: test::Binding;\n" +
-                "      connection:\n" +
-                "      #{\n" +
-                "        JsonModelConnection\n" +
-                "        {\n" +
-                "          class: org::dxl::Animal;\n" +
-                "          url: 'my_url2';\n" +
-                "        }\n" +
-                "      }#\n" +
                 "    }\n" +
                 "    ingestMode: BitemporalDelta\n" +
                 "    {\n" +
@@ -286,7 +426,7 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
                 "      {\n" +
                 "        url: 'https://x.com';\n" +
                 "      }\n" +
-                "    ]\n" +
+                "    ];\n" +
                 "  }\n" +
                 "}\n");
     }
