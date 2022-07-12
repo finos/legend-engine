@@ -121,6 +121,15 @@ Class meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::a
     proxyPort: String[0..1];
 }
 
+Class meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::SpannerDatasourceSpecification extends meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::DatasourceSpecification
+{
+    projectId:String[1];
+    instanceId:String[1];
+    databaseId:String[1];
+    proxyHost: String[0..1];
+    proxyPort: Integer[0..1];
+}
+
 Class meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::TestDatabaseConnection extends meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::DatabaseConnection
 {
    testDataSetupCsv : String[0..1];
