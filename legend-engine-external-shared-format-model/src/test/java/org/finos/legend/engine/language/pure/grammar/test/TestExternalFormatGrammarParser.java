@@ -62,7 +62,7 @@ public class TestExternalFormatGrammarParser extends TestGrammarParser.TestGramm
                         "  format: NOTHING;\n" +
                         "  schemas: [];\n" +
                         "}\n",
-                "PARSER error at [5:13]: Unexpected token"
+                "PARSER error at [5:13]: Unexpected token ']'"
         );
     }
 }

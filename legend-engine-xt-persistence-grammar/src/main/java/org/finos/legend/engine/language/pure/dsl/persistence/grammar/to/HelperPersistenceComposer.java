@@ -15,15 +15,9 @@
 package org.finos.legend.engine.language.pure.dsl.persistence.grammar.to;
 
 import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
-import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarComposerCore;
-import org.finos.legend.engine.language.pure.grammar.to.HelperConnectionGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
-import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.EmailNotifyee;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.Notifier;
@@ -94,9 +88,9 @@ import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarCompos
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabSize;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
 
-public class HelperPersistenceGrammarComposer
+public class HelperPersistenceComposer
 {
-    private HelperPersistenceGrammarComposer()
+    private HelperPersistenceComposer()
     {
     }
 
@@ -149,8 +143,8 @@ public class HelperPersistenceGrammarComposer
         NotifyeeComposer visitor = new NotifyeeComposer(indentLevel + 1);
         return getTabString(indentLevel) + "notifyees:\n" +
                 getTabString(indentLevel) + "[\n" +
-                Iterate.makeString(ListIterate.collect(notifyees, n -> n.acceptVisitor(visitor)), ",\n") + "\n" +
-                getTabString(indentLevel) + "]\n";
+                ListIterate.collect(notifyees, n -> n.acceptVisitor(visitor)).makeString(",\n") + "\n" +
+                getTabString(indentLevel) + "];\n";
     }
 
     // helper visitors for class hierarchies
@@ -269,7 +263,7 @@ public class HelperPersistenceGrammarComposer
         {
             return getTabString(indentLevel) + "sink: Relational\n" +
                     getTabString(indentLevel) + "{\n" +
-                    (val.connection == null ? "" : renderConnection(val.connection, indentLevel + 1, context)) +
+                    renderDatabasePointer(val.database, indentLevel + 1) +
                     getTabString(indentLevel) + "}\n";
         }
 
@@ -278,28 +272,18 @@ public class HelperPersistenceGrammarComposer
         {
             return getTabString(indentLevel) + "sink: ObjectStorage\n" +
                     getTabString(indentLevel) + "{\n" +
-                    renderBinding(val.binding, indentLevel + 1) +
-                    renderConnection(val.connection, indentLevel + 1, context) +
+                    renderBindingPointer(val.binding, indentLevel + 1) +
                     getTabString(indentLevel) + "}\n";
         }
 
-        private static String renderBinding(String binding, int indentLevel)
+        private static String renderDatabasePointer(String databasePath, int indentLevel)
         {
-            return getTabString(indentLevel) + "binding: " + binding + ";\n";
+            return getTabString(indentLevel) + "database: " + databasePath + ";\n";
         }
 
-        private static String renderConnection(Connection connection, int indentLevel, PureGrammarComposerContext context)
+        private static String renderBindingPointer(String bindingPointer, int indentLevel)
         {
-            DEPRECATED_PureGrammarComposerCore composerCore = DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build();
-            if (connection instanceof ConnectionPointer)
-            {
-                return getTabString(indentLevel) + "connection: " + PureGrammarComposerUtility.convertPath(connection.accept(composerCore)) + ";\n";
-            }
-            return getTabString(indentLevel) + "connection:\n" +
-                    getTabString(indentLevel) + "#{\n" +
-                    getTabString(indentLevel + 1) + HelperConnectionGrammarComposer.getConnectionValueName(connection, composerCore.toContext()) + "\n" +
-                    connection.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(composerCore).withIndentation(getTabSize(indentLevel + 1), true).build()) + "\n" +
-                    getTabString(indentLevel) + "}#\n";
+            return getTabString(indentLevel) + "binding: " + bindingPointer + ";\n";
         }
     }
 

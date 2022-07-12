@@ -12,15 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.sink;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service;
 
-public class ObjectStorageSink extends Sink
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+
+public class ServiceParameter
 {
-    public String binding;
-
-    @Override
-    public <T> T accept(SinkVisitor<T> visitor)
-    {
-        return visitor.visit(this);
-    }
+    public String name;
+    public ServiceParameterValue value;
+    public SourceInformation sourceInformation;
 }

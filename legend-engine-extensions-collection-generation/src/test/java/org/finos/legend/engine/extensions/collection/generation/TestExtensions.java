@@ -244,7 +244,7 @@ public class TestExtensions
                 .with(DiagramGrammarComposerExtension.class)
                 .with(org.finos.legend.engine.language.pure.grammar.to.ExternalFormatGrammarComposerExtension.class)
                 .with(org.finos.legend.engine.language.pure.dsl.generation.grammar.to.GenerationGrammarComposerExtension.class)
-                .with(org.finos.legend.engine.language.pure.dsl.persistence.grammar.to.PersistenceGrammarComposerExtension.class)
+                .with(org.finos.legend.engine.language.pure.dsl.persistence.grammar.to.PersistenceComposerExtension.class)
                 .with(org.finos.legend.engine.language.pure.grammar.to.RelationalGrammarComposerExtension.class)
                 .with(org.finos.legend.engine.language.pure.dsl.service.grammar.to.ServiceGrammarComposerExtension.class)
                 .with(org.finos.legend.engine.language.pure.grammar.to.ServiceStoreGrammarComposerExtension.class)

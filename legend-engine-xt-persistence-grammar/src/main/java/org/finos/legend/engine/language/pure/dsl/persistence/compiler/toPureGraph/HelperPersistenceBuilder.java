@@ -19,11 +19,8 @@ import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.ConnectionFirstPassBuilder;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.ConnectionSecondPassBuilder;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.EmailNotifyee;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.Notifier;
@@ -89,62 +86,63 @@ import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_trigger_Trigger;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_Persister;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_notifier_EmailNotifyee_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_notifier_Notifier;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_notifier_Notifier_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_sink_Sink;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_targetshape_TargetShape;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_deduplication_DeduplicationStrategy;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_ingestmode_IngestMode;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_audit_Auditing;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_TransactionMilestoning;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_derivation_TransactionDerivation;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_validitymilestoning_ValidityMilestoning;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_validitymilestoning_derivation_ValidityDerivation;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_notifier_Notifyee;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_targetshape_MultiFlatTargetPart;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_merge_MergeStrategy;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_trigger_ManualTrigger_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_trigger_CronTrigger_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_BatchPersister_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_StreamingPersister_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_notifier_EmailNotifyee_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_notifier_PagerDutyNotifyee_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_sink_RelationalSink_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_sink_ObjectStorageSink_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_targetshape_FlatTarget_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_targetshape_MultiFlatTarget_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_targetshape_MultiFlatTargetPart_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_deduplication_NoDeduplicationStrategy_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_deduplication_AnyVersionDeduplicationStrategy_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_deduplication_MaxVersionDeduplicationStrategy_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_deduplication_DuplicateCountDeduplicationStrategy_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_ingestmode_snapshot_NontemporalSnapshot_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_ingestmode_snapshot_UnitemporalSnapshot_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_ingestmode_snapshot_BitemporalSnapshot_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_NontemporalDelta_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_UnitemporalDelta_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_BitemporalDelta_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_ingestmode_appendonly_AppendOnly_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_merge_DeleteIndicatorMergeStrategy_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_merge_NoDeletesMergeStrategy_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_BatchPersister_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_Persister;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_StreamingPersister_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_audit_Auditing;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_audit_DateTimeAuditing_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_audit_NoAuditing_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_deduplication_AnyVersionDeduplicationStrategy_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_deduplication_DeduplicationStrategy;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_deduplication_DuplicateCountDeduplicationStrategy_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_deduplication_MaxVersionDeduplicationStrategy_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_deduplication_NoDeduplicationStrategy_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_ingestmode_IngestMode;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_ingestmode_appendonly_AppendOnly_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_BitemporalDelta_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_NontemporalDelta_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_UnitemporalDelta_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_merge_DeleteIndicatorMergeStrategy_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_merge_MergeStrategy;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_merge_NoDeletesMergeStrategy_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_ingestmode_snapshot_BitemporalSnapshot_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_ingestmode_snapshot_NontemporalSnapshot_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_ingestmode_snapshot_UnitemporalSnapshot_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_sink_ObjectStorageSink_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_sink_RelationalSink_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_sink_Sink;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_targetshape_FlatTarget_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_targetshape_MultiFlatTargetPart;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_targetshape_MultiFlatTargetPart_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_targetshape_MultiFlatTarget_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_targetshape_TargetShape;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_BatchIdAndDateTimeTransactionMilestoning_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_BatchIdTransactionMilestoning_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_DateTimeTransactionMilestoning_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_TransactionMilestoning;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_derivation_SourceSpecifiesTransactionInAndOutDate_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_derivation_SourceSpecifiesTransactionInDate_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_derivation_TransactionDerivation;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_validitymilestoning_DateTimeValidityMilestoning_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_validitymilestoning_ValidityMilestoning;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_validitymilestoning_derivation_SourceSpecifiesValidFromAndThruDate_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_validitymilestoning_derivation_SourceSpecifiesValidFromDate_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_validitymilestoning_derivation_ValidityDerivation;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_trigger_CronTrigger_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_trigger_ManualTrigger_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_trigger_Trigger;
 import org.finos.legend.pure.m3.coreinstance.Package;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.AbstractProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
+import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database;
 
 import java.util.ArrayDeque;
 import java.util.Collection;
@@ -179,7 +177,7 @@ public class HelperPersistenceBuilder
             return (Root_meta_legend_service_metamodel_Service) packageableElement;
         }
 
-        throw new EngineException(String.format("Persistence refers to a service '%s' that is not defined", service), persistence.sourceInformation, EngineErrorType.COMPILATION);
+        throw new EngineException(String.format("Service '%s' is not defined", service), persistence.sourceInformation, EngineErrorType.COMPILATION);
     }
 
     public static Root_meta_pure_persistence_metamodel_persister_Persister buildPersister(Persister persister, CompileContext context)
@@ -196,6 +194,25 @@ public class HelperPersistenceBuilder
     public static Root_meta_pure_persistence_metamodel_persister_sink_Sink buildSink(Sink sink, CompileContext context)
     {
         return sink.accept(new SinkBuilder(context));
+    }
+
+    public static Database buildDatabase(String database, SourceInformation sourceInformation, CompileContext context)
+    {
+        if (database == null)
+        {
+            return null;
+        }
+
+        String databasePath = database.substring(0, database.lastIndexOf("::"));
+        String databaseName = database.substring(database.lastIndexOf("::") + 2);
+
+        PackageableElement packageableElement = context.pureModel.getOrCreatePackage(databasePath)._children().detect(c -> databaseName.equals(c._name()));
+        if (packageableElement instanceof Database)
+        {
+            return (Database) packageableElement;
+        }
+
+        throw new EngineException(String.format("Database '%s' is not defined", database), sourceInformation, EngineErrorType.COMPILATION);
     }
 
     public static Root_meta_external_shared_format_binding_Binding buildBinding(String binding, SourceInformation sourceInformation, CompileContext context)
@@ -215,22 +232,6 @@ public class HelperPersistenceBuilder
         }
 
         throw new EngineException(String.format("Binding '%s' is not defined", binding), sourceInformation, EngineErrorType.COMPILATION);
-    }
-
-    public static org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection buildConnection(Connection connection, boolean connectionRequired, SourceInformation sourceInformation, CompileContext context)
-    {
-        if (connection == null)
-        {
-            if (connectionRequired)
-            {
-                throw new EngineException("Connection is required", sourceInformation, EngineErrorType.COMPILATION);
-            }
-            return null;
-        }
-
-        org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection pureConnection = connection.accept(new ConnectionFirstPassBuilder(context));
-        connection.accept(new ConnectionSecondPassBuilder(context, pureConnection));
-        return pureConnection;
     }
 
     public static Root_meta_pure_persistence_metamodel_persister_targetshape_TargetShape buildTargetShape(TargetShape targetShape, Map<String, Class<?>> modelClassByProperty, CompileContext context)
@@ -388,15 +389,14 @@ public class HelperPersistenceBuilder
         public Root_meta_pure_persistence_metamodel_persister_sink_Sink visit(RelationalSink val)
         {
             return new Root_meta_pure_persistence_metamodel_persister_sink_RelationalSink_Impl("")
-                    ._connection(buildConnection(val.connection, false, val.sourceInformation, context));
+                    ._database(buildDatabase(val.database, val.sourceInformation, context));
         }
 
         @Override
         public Root_meta_pure_persistence_metamodel_persister_sink_Sink visit(ObjectStorageSink val)
         {
             return new Root_meta_pure_persistence_metamodel_persister_sink_ObjectStorageSink_Impl("")
-                    ._binding(buildBinding(val.binding, val.sourceInformation, context))
-                    ._connection(buildConnection(val.connection, true, val.sourceInformation, context));
+                    ._binding(buildBinding(val.binding, val.sourceInformation, context));
         }
     }
 
