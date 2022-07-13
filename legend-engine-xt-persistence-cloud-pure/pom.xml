@@ -65,11 +65,6 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-code-compiled-core-external-shared</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-xt-persistence-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
@@ -108,11 +103,6 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-code-compiled-core-external-shared</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-xt-persistence-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
@@ -128,7 +118,6 @@
                             <!-- The dependency plugin analyzer raises these as false positives -->
                             <ignoredUnusedDeclaredDependencies>
                                 <dependency>org.finos.legend.engine:legend-engine-pure-code-compiled-core</dependency>
-                                <dependency>org.finos.legend.engine:legend-engine-pure-code-compiled-core-external-shared</dependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
