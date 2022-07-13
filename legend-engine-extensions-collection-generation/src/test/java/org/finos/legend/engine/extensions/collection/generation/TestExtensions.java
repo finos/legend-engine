@@ -299,7 +299,6 @@ public class TestExtensions
                 .with("core_external_format_json")
                 .with("core_external_format_protobuf")
                 .with("core_external_format_xml")
-                .with("core_external_shared")
                 .with("core_persistence")
                 .with("core_relational")
                 .with("core_servicestore")
