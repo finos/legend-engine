@@ -12,16 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+package org.finos.legend.engine.api.analytics.model;
 
-package org.finos.legend.engine.api.model;
-
-public class EnumMappedProperty extends MappedProperty
+public class EntityMappedProperty extends MappedProperty
 {
-    public String enumPath;
+    public String entityPath;
+    public String subType;
 
-    public EnumMappedProperty(String name, String enumName)
+    public EntityMappedProperty(String name, String entityPath, String subType)
     {
         super(name);
-        this.enumPath = enumName;
+        this.entityPath = entityPath;
+        this.subType = subType;
     }
 }

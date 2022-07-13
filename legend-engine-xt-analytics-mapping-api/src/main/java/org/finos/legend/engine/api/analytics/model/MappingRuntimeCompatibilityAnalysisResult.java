@@ -12,21 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.api.model;
+package org.finos.legend.engine.api.analytics.model;
 
 import java.util.List;
 
-public class MappingModelCoverageAnalysisResult
+public class MappingRuntimeCompatibilityAnalysisResult
 {
-    public List<MappedEntity> mappedEntities;
+    public List<String> runtimes;
 
-    public MappingModelCoverageAnalysisResult()
+    public MappingRuntimeCompatibilityAnalysisResult(List<String> runtimes)
     {
-        // DO NOT DELETE: this resets the default constructor for Jackson
-    }
-
-    public MappingModelCoverageAnalysisResult(List<MappedEntity> mappedEntities)
-    {
-        this.mappedEntities = mappedEntities;
+        this.runtimes = runtimes;
     }
 }

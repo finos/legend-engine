@@ -188,8 +188,8 @@ public class QueryStoreManager
     }
 
     public List<Query> getQueries(
-        QuerySearchSpecification searchSpecification,
-        String currentUser
+            QuerySearchSpecification searchSpecification,
+            String currentUser
     )
     {
         List<Bson> filters = new ArrayList<>();
@@ -205,26 +205,35 @@ public class QueryStoreManager
         if (searchSpecification.projectCoordinates != null && !searchSpecification.projectCoordinates.isEmpty())
         {
             filters.add(Filters.or(
-                ListIterate.collect(searchSpecification.projectCoordinates, projectCoordinate ->
-                    Filters.and(Filters.eq("groupId", projectCoordinate.groupId), Filters.eq("artifactId", projectCoordinate.artifactId)))));
+                    ListIterate.collect(searchSpecification.projectCoordinates, projectCoordinate ->
+                            projectCoordinate.version != null
+                                    ? Filters.and(
+                                    Filters.eq("groupId", projectCoordinate.groupId),
+                                    Filters.eq("artifactId", projectCoordinate.artifactId),
+                                    Filters.eq("versionId", projectCoordinate.version)
+                            ) : Filters.and(
+                                    Filters.eq("groupId", projectCoordinate.groupId),
+                                    Filters.eq("artifactId", projectCoordinate.artifactId)
+                            )
+                    )));
         }
         if (searchSpecification.taggedValues != null && !searchSpecification.taggedValues.isEmpty())
         {
             filters.add(Filters.or(
-                ListIterate.collect(searchSpecification.taggedValues, taggedValue ->
-                    Filters.and(Filters.eq("taggedValues.tag.profile", taggedValue.tag.profile), Filters.eq("taggedValues.tag.value", taggedValue.tag.value), Filters.eq("taggedValues.value", taggedValue.value)))));
+                    ListIterate.collect(searchSpecification.taggedValues, taggedValue ->
+                            Filters.and(Filters.eq("taggedValues.tag.profile", taggedValue.tag.profile), Filters.eq("taggedValues.tag.value", taggedValue.tag.value), Filters.eq("taggedValues.value", taggedValue.value)))));
         }
         if (searchSpecification.stereotypes != null && !searchSpecification.stereotypes.isEmpty())
         {
             filters.add(Filters.or(
-                ListIterate.collect(searchSpecification.stereotypes, stereotype ->
-                    Filters.and(Filters.eq("stereotypes.profile", stereotype.profile), Filters.eq("stereotypes.value", stereotype.value)))));
+                    ListIterate.collect(searchSpecification.stereotypes, stereotype ->
+                            Filters.and(Filters.eq("stereotypes.profile", stereotype.profile), Filters.eq("stereotypes.value", stereotype.value)))));
         }
         return LazyIterate.collect(this.getQueryCollection()
-            .find(filters.isEmpty() ? EMPTY_FILTER : Filters.and(filters))
-            // NOTE: return a light version of the query to save bandwidth
-            .projection(Projections.include("id", "name", "versionId", "groupId", "artifactId", "owner"))
-            .limit(Math.min(MAX_NUMBER_OF_QUERIES, searchSpecification.limit == null ? Integer.MAX_VALUE : searchSpecification.limit)), QueryStoreManager::documentToQuery).toList();
+                .find(filters.isEmpty() ? EMPTY_FILTER : Filters.and(filters))
+                // NOTE: return a light version of the query to save bandwidth
+                .projection(Projections.include("id", "name", "versionId", "groupId", "artifactId", "owner"))
+                .limit(Math.min(MAX_NUMBER_OF_QUERIES, searchSpecification.limit == null ? Integer.MAX_VALUE : searchSpecification.limit)), QueryStoreManager::documentToQuery).toList();
     }
 
     public Query getQuery(String queryId)
@@ -331,7 +340,7 @@ public class QueryStoreManager
             filters.add(Filters.lte("timestamp", until));
         }
         return LazyIterate.collect(this.getQueryEventCollection()
-            .find(filters.isEmpty() ? EMPTY_FILTER : Filters.and(filters))
-            .limit(Math.min(MAX_NUMBER_OF_EVENTS, limit == null ? Integer.MAX_VALUE : limit)), QueryStoreManager::documentToQueryEvent).toList();
+                .find(filters.isEmpty() ? EMPTY_FILTER : Filters.and(filters))
+                .limit(Math.min(MAX_NUMBER_OF_EVENTS, limit == null ? Integer.MAX_VALUE : limit)), QueryStoreManager::documentToQueryEvent).toList();
     }
 }
