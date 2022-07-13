@@ -1,0 +1,235 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::metamodel::join::*;
+import meta::relational::tests::model::simple::*;
+import meta::relational::mapping::*;
+import meta::relational::runtime::*;
+import meta::relational::tests::*;
+
+function <<test.Test>> meta::relational::tests::tds::tdsRestrictDistinct::testRestrictDistinct_JoinCutDown_ProjectFunctions():Boolean[1]
+{
+   let res1 = execute(
+      |Person.all()
+         ->project([p|$p.firstName, p|$p.firm.legalName], ['firstName', 'firmName'])
+         ->restrictDistinct(['firstName']),
+      simpleRelationalMapping, 
+      testRuntime(), meta::relational::extension::relationalExtensions());
+   
+   assertSize($res1.values.columns, 1);
+   assertEquals('Anthony,David,Fabrice,John,Oliver,Peter', $res1.values.rows.values->sort()->makeString(','));
+   assertEquals('select distinct "root".FIRSTNAME as "firstName" from personTable as "root"', $res1->sqlRemoveFormatting());
+
+   let res2 = execute(
+      |Person.all()
+         ->project([p|$p.firstName, p|$p.firm.legalName], ['firstName', 'firmName'])
+         ->restrict(['firstName'])
+         ->distinct(),
+      simpleRelationalMapping, 
+      testRuntime(), meta::relational::extension::relationalExtensions());
+
+   assertSize($res2.values.columns, 1);
+   assertEquals('Anthony,David,Fabrice,John,Oliver,Peter', $res2.values.rows.values->sort()->makeString(','));
+   assertEquals('select distinct "root".FIRSTNAME as "firstName" from personTable as "root"', $res2->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsRestrictDistinct::testRestrictDistinct_JoinCutDown_ColumnSpecs():Boolean[1]
+{
+   let res1 = execute(
+      |Person.all()
+         ->project([col(p|$p.firstName, 'firstName'), col(p|$p.firm.legalName, 'firmName')])
+         ->restrictDistinct(['firstName']),
+      simpleRelationalMapping, 
+      testRuntime(), meta::relational::extension::relationalExtensions());
+   
+   assertSize($res1.values.columns, 1);
+   assertEquals('Anthony,David,Fabrice,John,Oliver,Peter', $res1.values.rows.values->sort()->makeString(','));
+   assertEquals('select distinct "root".FIRSTNAME as "firstName" from personTable as "root"', $res1->sqlRemoveFormatting());
+
+   let res2 = execute(
+      |Person.all()
+         ->project([col(p|$p.firstName, 'firstName'), col(p|$p.firm.legalName, 'firmName')])
+         ->restrict(['firstName'])
+         ->distinct(),
+      simpleRelationalMapping, 
+      testRuntime(), meta::relational::extension::relationalExtensions()); 
+
+   assertSize($res2.values.columns, 1);
+   assertEquals('Anthony,David,Fabrice,John,Oliver,Peter', $res2.values.rows.values->sort()->makeString(','));
+   assertEquals('select distinct "root".FIRSTNAME as "firstName" from personTable as "root"', $res2->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsRestrictDistinct::testRestrictDistinct_NoOptimization_NotAfterProject():Boolean[1]
+{
+   let res1 = execute(
+      |Person.all()
+         ->project([col(p|$p.firstName, 'firstName'), col(p|$p.firm.legalName, 'firmName')])
+         ->take(1000)
+         ->restrictDistinct(['firstName']),
+      simpleRelationalMapping, 
+      testRuntime(), meta::relational::extension::relationalExtensions());
+   
+   assertSize($res1.values.columns, 1);
+   assertEquals('Anthony,David,Fabrice,John,Oliver,Peter', $res1.values.rows.values->sort()->makeString(','));
+   assertEquals('select distinct "firstName" as "firstName" from (select top 1000 "root".FIRSTNAME as "firstName", "firmtable_0".LEGALNAME as "firmName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID)) as "subselect"', $res1->sqlRemoveFormatting());
+
+   let res2 = execute(
+      |Person.all()
+         ->project([p|$p.firstName, p|$p.firm.legalName], ['firstName', 'firmName'])
+         ->sort(asc('firstName'))
+         ->restrict(['firstName'])
+         ->distinct(),
+      simpleRelationalMapping, 
+      testRuntime(), meta::relational::extension::relationalExtensions());
+
+   assertSize($res2.values.columns, 1);
+   assertEquals('Anthony,David,Fabrice,John,Oliver,Peter', $res2.values.rows.values->sort()->makeString(','));
+   assertEquals('select distinct "root".FIRSTNAME as "firstName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) order by "firstName"', $res2->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsRestrictDistinct::testRestrictDistinct_NoOptimization_NotRestrictFollowedByDistinct():Boolean[1]
+{
+   let res1 = execute(
+      |Person.all()
+         ->project([p|$p.firstName, p|$p.firm.legalName], ['firstName', 'firmName'])
+         ->restrict(['firstName'])
+         ->sort(asc('firstName'))
+         ->distinct(),
+      simpleRelationalMapping, 
+      testRuntime(), meta::relational::extension::relationalExtensions());
+   
+   assertSize($res1.values.columns, 1);
+   assertEquals('Anthony,David,Fabrice,John,Oliver,Peter', $res1.values.rows.values->sort()->makeString(','));
+   assertEquals('select distinct "root".FIRSTNAME as "firstName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) order by "firstName"', $res1->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsRestrictDistinct::testRestrictDistinct_JoinCutDown_PostTdsOperations():Boolean[1]
+{
+   let res1 = execute(
+      |Person.all()
+         ->project([p|$p.firstName, p|$p.firm.legalName], ['firstName', 'firmName'])
+         ->restrictDistinct(['firstName'])
+         ->take(1000)
+         ->sort(asc('firstName'))
+         ->groupBy([], [agg('cnt', x|$x, y|$y->count())]),
+      simpleRelationalMapping, 
+      testRuntime(), meta::relational::extension::relationalExtensions());
+   
+   assertSize($res1.values.columns, 1);
+   assertEquals('6', $res1.values.rows.values->sort()->makeString(','));
+   assertEquals('select count(*) as "cnt" from (select "firstName" as "firstName" from (select top 1000 distinct "root".FIRSTNAME as "firstName" from personTable as "root") as "subselect" order by "firstName") as "persontable_0"', $res1->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsRestrictDistinct::testRestrictDistinct_NoJoinCutDown():Boolean[1]
+{
+   let res1 = execute(
+      |Person.all()
+         ->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.firm.legalName, 'firmName')])
+         ->restrictDistinct(['firmName', 'lastName']),
+      simpleRelationalMapping, 
+      testRuntime(), meta::relational::extension::relationalExtensions());
+   
+   assertSize($res1.values.columns, 2);
+   assertEquals('Firm A|Roberts,Firm B|Hill,Firm C|Harris,Firm X|Allen,Firm X|Hill,Firm X|Johnson,Firm X|Smith', $res1.values.rows->map(x|$x.values->makeString('|'))->sort()->makeString(','));
+   assertEquals('select distinct "firmtable_0".LEGALNAME as "firmName", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID)', $res1->sqlRemoveFormatting());
+
+   let res2 = execute(
+      |Person.all()
+         ->project([p|$p.firstName, p|$p.lastName, p|$p.firm.legalName], ['firstName', 'lastName', 'firmName'])
+         ->restrict(['firmName', 'lastName'])
+         ->distinct(),
+      simpleRelationalMapping, 
+      testRuntime(), meta::relational::extension::relationalExtensions());
+
+   assertSize($res2.values.columns, 2);
+   assertEquals('Firm A|Roberts,Firm B|Hill,Firm C|Harris,Firm X|Allen,Firm X|Hill,Firm X|Johnson,Firm X|Smith', $res2.values.rows->map(x|$x.values->makeString('|'))->sort()->makeString(','));
+   assertEquals('select distinct "firmtable_0".LEGALNAME as "firmName", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID)', $res2->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsRestrictDistinct::testRestrictDistinct_ColumnOrdering():Boolean[1]
+{
+   let res1 = execute(
+      |Person.all()
+         ->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.firm.legalName, 'firmName')])
+         ->restrictDistinct(['lastName', 'firstName']),
+      simpleRelationalMapping, 
+      testRuntime(), meta::relational::extension::relationalExtensions());
+   
+   assertSize($res1.values.columns, 2);
+   assertEquals('Allen|Anthony,Harris|David,Hill|John,Hill|Oliver,Johnson|John,Roberts|Fabrice,Smith|Peter', $res1.values.rows->map(x|$x.values->makeString('|'))->sort()->makeString(','));
+   assertEquals('select distinct "root".LASTNAME as "lastName", "root".FIRSTNAME as "firstName" from personTable as "root"', $res1->sqlRemoveFormatting());
+
+   let res2 = execute(
+      |Person.all()
+         ->project([p|$p.firstName, p|$p.lastName, p|$p.firm.legalName], ['firstName', 'lastName', 'firmName'])
+         ->restrict(['lastName', 'firstName'])
+         ->distinct(),
+      simpleRelationalMapping, 
+      testRuntime(), meta::relational::extension::relationalExtensions());
+
+   assertSize($res2.values.columns, 2);
+   assertEquals('Allen|Anthony,Harris|David,Hill|John,Hill|Oliver,Johnson|John,Roberts|Fabrice,Smith|Peter', $res2.values.rows->map(x|$x.values->makeString('|'))->sort()->makeString(','));
+   assertEquals('select distinct "root".LASTNAME as "lastName", "root".FIRSTNAME as "firstName" from personTable as "root"', $res2->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsRestrictDistinct::testRestrictDistinct_NoOptimization_WindowColumns():Boolean[1]
+{
+   let res1 = meta::relational::functions::sqlstring::toSQLString(
+      |Person.all()
+         ->project([
+           col(p|$p.firstName, 'firstName'),
+           col(p|$p.lastName, 'lastName'),
+           col(p|$p.firm.legalName, 'firmName'),
+           col(window(p|$p.firstName), func(p|$p.age->toOne(), y|$y->max()), 'maxAge'),
+           col(window(p|$p.firstName), func(p|$p.age->toOne(), y|$y->sum()), 'sumAge'),
+           col(window(p|$p.firstName), func(p|$p.age->toOne(), y|$y->average()), 'avgAge')
+         ])
+         ->restrictDistinct(['lastName', 'firstName', 'sumAge', 'maxAge']),
+      simpleRelationalMapping, 
+      DatabaseType.H2, meta::relational::extension::relationalExtensions());
+   
+   assertEquals('select distinct "root".LASTNAME as "lastName", "root".FIRSTNAME as "firstName", sum("root".AGE) OVER (Partition By "root".FIRSTNAME ) as "sumAge", max("root".AGE) OVER (Partition By "root".FIRSTNAME ) as "maxAge" from personTable as "root" left outer join firmTable as "firmTable_d#6_d#3_m3" on ("firmTable_d#6_d#3_m3".ID = "root".FIRMID)', $res1);
+
+   let res2 = meta::relational::functions::sqlstring::toSQLString(
+      |Person.all()
+         ->project([
+           col(p|$p.firstName, 'firstName'),
+           col(p|$p.lastName, 'lastName'),
+           col(p|$p.firm.legalName, 'firmName'),
+           col(window(p|$p.firstName), func(p|$p.age->toOne(), y|$y->max()), 'maxAge'),
+           col(window(p|$p.firstName), func(p|$p.age->toOne(), y|$y->sum()), 'sumAge'),
+           col(window(p|$p.firm.legalName->toOne()), func(p|$p.age->toOne(), y|$y->average()), 'avgAge')
+         ])
+         ->restrictDistinct(['lastName', 'firstName', 'sumAge', 'maxAge']),
+      simpleRelationalMapping, 
+      DatabaseType.H2, meta::relational::extension::relationalExtensions());
+   
+   assertEquals('select distinct "root".LASTNAME as "lastName", "root".FIRSTNAME as "firstName", sum("root".AGE) OVER (Partition By "root".FIRSTNAME ) as "sumAge", max("root".AGE) OVER (Partition By "root".FIRSTNAME ) as "maxAge" from personTable as "root" left outer join firmTable as "firmTable_d#6_d#3_m3" on ("firmTable_d#6_d#3_m3".ID = "root".FIRMID)', $res2);
+
+   let res3 = meta::relational::functions::sqlstring::toSQLString(
+      |Person.all()
+         ->project([
+           col(p|$p.firstName, 'firstName'),
+           col(p|$p.lastName, 'lastName'),
+           col(p|$p.firm.legalName, 'firmName'),
+           col(window(p|$p.firstName), func(p|$p.age->toOne(), y|$y->max()), 'maxAge'),
+           col(window(p|$p.firm.legalName->toOne()), func(p|$p.age->toOne(), y|$y->sum()), 'sumAge'),
+           col(window(p|$p.firm.legalName->toOne()), func(p|$p.age->toOne(), y|$y->average()), 'avgAge')
+         ])
+         ->restrictDistinct(['lastName', 'firstName', 'sumAge', 'maxAge']),
+      simpleRelationalMapping, 
+      DatabaseType.H2, meta::relational::extension::relationalExtensions());
+
+   assertEquals('select distinct "root".LASTNAME as "lastName", "root".FIRSTNAME as "firstName", sum("root".AGE) OVER (Partition By "firmTable_d#6_d#3_m3".LEGALNAME ) as "sumAge", max("root".AGE) OVER (Partition By "root".FIRSTNAME ) as "maxAge" from personTable as "root" left outer join firmTable as "firmTable_d#6_d#3_m3" on ("firmTable_d#6_d#3_m3".ID = "root".FIRMID)', $res3);
+}
