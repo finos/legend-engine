@@ -117,11 +117,8 @@
 
         <module>legend-engine-pure-code-compiled-core</module>
 
-        <!-- TODO - mta - enable these modules -->
-        <!--
         <module>legend-engine-pure-ide-light</module>
         <module>legend-engine-pure-ide-light-metadata-pure</module>
-        -->
 
         <module>legend-engine-executionPlan-generation</module>
         <module>legend-engine-executionPlan-dependencies</module>
