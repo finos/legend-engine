@@ -80,10 +80,6 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-code-compiled-core</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-code-compiled-core-external-shared</artifactId>
-        </dependency>
         <!-- PURE -->
 
         <!-- ENGINE -->

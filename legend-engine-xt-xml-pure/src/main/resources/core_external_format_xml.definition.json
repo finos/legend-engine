@@ -1,5 +1,5 @@
 {
     "name" : "core_external_format_xml",
     "pattern" : "(meta::external::format::xml|meta::protocols::pure)(::.*)?",
-    "dependencies" : ["platform", "core", "core_external_shared"]
+    "dependencies" : ["platform", "core"]
 }
