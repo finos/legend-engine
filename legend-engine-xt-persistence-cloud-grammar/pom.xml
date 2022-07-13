@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright 2022 Goldman Sachs
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>org.finos.legend.engine</groupId>
+        <artifactId>legend-engine</artifactId>
+        <version>3.8.2-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>legend-engine-xt-persistence-cloud-grammar</artifactId>
+    <packaging>jar</packaging>
+    <name>Legend Engine - XT - Persistence Cloud - Grammar</name>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-antlr-core-grammar</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.finos.legend.engine</groupId>
+                                    <artifactId>legend-engine-language-pure-grammar</artifactId>
+                                    <type>jar</type>
+                                    <overWrite>false</overWrite>
+                                    <outputDirectory>${project.build.directory}</outputDirectory>
+                                    <includes>antlr/*.g4</includes>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.antlr</groupId>
+                <artifactId>antlr4-maven-plugin</artifactId>
+                <version>${antlr.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>antlr4</goal>
+                        </goals>
+                        <configuration>
+                            <visitor>true</visitor>
+                            <listener>true</listener>
+                            <treatWarningsAsErrors>true</treatWarningsAsErrors> <!-- DO NOT CHANGE THIS -->
+                            <libDirectory>target/antlr</libDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>dependency-analyze</id>
+                        <configuration>
+                            <!-- The dependency plugin analyzer raises these as false positives -->
+                            <ignoredUnusedDeclaredDependencies>
+                                <dependency>org.finos.legend.pure:legend-pure-m3-core</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-protocol</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-protocol-pure</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-code-compiled-core</dependency>
+                            </ignoredUnusedDeclaredDependencies>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <!-- PURE -->
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m3-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-persistence-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-persistence-cloud-pure</artifactId>
+        </dependency>
+        <!-- PURE -->
+
+        <!-- ENGINE -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-protocol</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-protocol-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-persistence-protocol</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-persistence-cloud-protocol</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-code-compiled-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-language-pure-grammar</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-shared-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-persistence-grammar</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-language-pure-compiler</artifactId>
+        </dependency>
+        <!-- ENGINE -->
+
+        <!-- ANTLR -->
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr4-runtime</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <!-- ANTLR -->
+
+        <!-- ECLIPSE COLLECTIONS -->
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections</artifactId>
+        </dependency>
+        <!-- ECLIPSE COLLECTIONS -->
+
+        <!-- TEST -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-language-pure-grammar</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-language-pure-compiler</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-grammar</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- TEST -->
+    </dependencies>
+</project>
