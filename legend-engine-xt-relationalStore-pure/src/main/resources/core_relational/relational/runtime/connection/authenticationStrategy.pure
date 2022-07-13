@@ -16,10 +16,24 @@ Class <<typemodifiers.abstract>> meta::pure::alloy::connections::alloy::authenti
 {
 }
 
+Class  <<typemodifiers.abstract>> meta::pure::alloy::connections::alloy::authentication::KerberosAuthenticationStrategy extends meta::pure::alloy::connections::alloy::authentication::AuthenticationStrategy
+{
+
+}
+
 Class meta::pure::alloy::connections::alloy::authentication::DelegatedKerberosAuthenticationStrategy extends meta::pure::alloy::connections::alloy::authentication::AuthenticationStrategy
 {
    serverPrincipal: String[0..1];
 }
+
+Class
+{doc.doc = 'Authentication using a middle tier user/password'}
+meta::pure::alloy::connections::alloy::authentication::MiddleTierUserNamePasswordAuthenticationStrategy extends meta::pure::alloy::connections::alloy::authentication::AuthenticationStrategy
+{
+    {doc.doc = 'Username/pasword vault reference'}
+    vaultReference: String[1];
+}
+
 
 Class meta::pure::alloy::connections::alloy::authentication::UserNamePasswordAuthenticationStrategy extends meta::pure::alloy::connections::alloy::authentication::AuthenticationStrategy
 {
