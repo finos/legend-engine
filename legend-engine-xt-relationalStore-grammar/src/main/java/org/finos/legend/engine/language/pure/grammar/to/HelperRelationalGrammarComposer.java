@@ -112,99 +112,112 @@ public class HelperRelationalGrammarComposer
 
     private static String renderDynaFunc(DynaFunc dynaFunc, RelationalGrammarComposerContext context)
     {
-        switch (dynaFunc.funcName)
+        if (context.getUseDynaFunctionName() && (!dynaFunc.funcName.equals("group")))  //we split this because mapping grammar expects dynafunction names while store grammar can handle notations
         {
-            case "group":
+            return defaultDynaFunctionRender(dynaFunc, context);
+        }
+        else
+        {
+            switch (dynaFunc.funcName)
             {
-                if (dynaFunc.parameters.size() != 1)
+                case "group":
                 {
-                    return "/* Unable to transform operation: exactly 1 parameter is expected for '(group)' operation */";
+                    if (dynaFunc.parameters.size() != 1)
+                    {
+                        return "/* Unable to transform operation: exactly 1 parameter is expected for '(group)' operation */";
+                    }
+                    return "(" + renderRelationalOperationElement(dynaFunc.parameters.get(0), context) + ")";
                 }
-                return "(" + renderRelationalOperationElement(dynaFunc.parameters.get(0), context) + ")";
-            }
-            case "or":
-            case "and":
-            {
-                return LazyIterate.collect(dynaFunc.parameters, param -> renderRelationalOperationElement(param, context)).makeString(" " + PureGrammarComposerUtility.convertIdentifier(dynaFunc.funcName) + " ");
-            }
-            case "isNull":
-            {
-                if (dynaFunc.parameters.size() != 1)
+                case "or":
+                case "and":
                 {
-                    return "/* Unable to transform operation: exactly 1 parameter is expected for 'is null' operation */";
+                    return LazyIterate.collect(dynaFunc.parameters, param -> renderRelationalOperationElement(param, context)).makeString(" " + PureGrammarComposerUtility.convertIdentifier(dynaFunc.funcName) + " ");
                 }
-                return renderRelationalOperationElement(dynaFunc.parameters.get(0), context) + " is null";
-            }
-            case "isNotNull":
-            {
-                if (dynaFunc.parameters.size() != 1)
+                case "isNull":
                 {
-                    return "/* Unable to transform operation: exactly 1 parameter is expected for 'is not null' operation */";
+                    if (dynaFunc.parameters.size() != 1)
+                    {
+                        return "/* Unable to transform operation: exactly 1 parameter is expected for 'is null' operation */";
+                    }
+                    return renderRelationalOperationElement(dynaFunc.parameters.get(0), context) + " is null";
                 }
-                return renderRelationalOperationElement(dynaFunc.parameters.get(0), context) + " is not null";
-            }
-            case "equal":
-            {
-                if (dynaFunc.parameters.size() != 2)
+                case "isNotNull":
                 {
-                    return "/* Unable to transform operation: exactly 2 parameters are expected for '=' operation */";
+                    if (dynaFunc.parameters.size() != 1)
+                    {
+                        return "/* Unable to transform operation: exactly 1 parameter is expected for 'is not null' operation */";
+                    }
+                    return renderRelationalOperationElement(dynaFunc.parameters.get(0), context) + " is not null";
                 }
-                return renderRelationalOperationElement(dynaFunc.parameters.get(0), context) + " = " + renderRelationalOperationElement(dynaFunc.parameters.get(1), context);
-            }
-            case "greaterThan":
-            {
-                if (dynaFunc.parameters.size() != 2)
+                case "equal":
                 {
-                    return "/* Unable to transform operation: exactly 2 parameters are expected for '>' operation */";
+                    if (dynaFunc.parameters.size() != 2)
+                    {
+                        return "/* Unable to transform operation: exactly 2 parameters are expected for '=' operation */";
+                    }
+                    return renderRelationalOperationElement(dynaFunc.parameters.get(0), context) + " = " + renderRelationalOperationElement(dynaFunc.parameters.get(1), context);
                 }
-                return renderRelationalOperationElement(dynaFunc.parameters.get(0), context) + " > " + renderRelationalOperationElement(dynaFunc.parameters.get(1), context);
-            }
-            case "lessThan":
-            {
-                if (dynaFunc.parameters.size() != 2)
+                case "greaterThan":
                 {
-                    return "/* Unable to transform operation: exactly 2 parameters are expected for '<' operation */";
+                    if (dynaFunc.parameters.size() != 2)
+                    {
+                        return "/* Unable to transform operation: exactly 2 parameters are expected for '>' operation */";
+                    }
+                    return renderRelationalOperationElement(dynaFunc.parameters.get(0), context) + " > " + renderRelationalOperationElement(dynaFunc.parameters.get(1), context);
                 }
-                return renderRelationalOperationElement(dynaFunc.parameters.get(0), context) + " < " + renderRelationalOperationElement(dynaFunc.parameters.get(1), context);
-            }
-            case "greaterThanEqual":
-            {
-                if (dynaFunc.parameters.size() != 2)
+                case "lessThan":
                 {
-                    return "/* Unable to transform operation: exactly 2 parameters are expected for '>=' operation */";
+                    if (dynaFunc.parameters.size() != 2)
+                    {
+                        return "/* Unable to transform operation: exactly 2 parameters are expected for '<' operation */";
+                    }
+                    return renderRelationalOperationElement(dynaFunc.parameters.get(0), context) + " < " + renderRelationalOperationElement(dynaFunc.parameters.get(1), context);
                 }
-                return renderRelationalOperationElement(dynaFunc.parameters.get(0), context) + " >= " + renderRelationalOperationElement(dynaFunc.parameters.get(1), context);
-            }
-            case "lessThanEqual":
-            {
-                if (dynaFunc.parameters.size() != 2)
+                case "greaterThanEqual":
                 {
-                    return "/* Unable to transform operation: exactly 2 parameters are expected for '<=' operation */";
+                    if (dynaFunc.parameters.size() != 2)
+                    {
+                        return "/* Unable to transform operation: exactly 2 parameters are expected for '>=' operation */";
+                    }
+                    return renderRelationalOperationElement(dynaFunc.parameters.get(0), context) + " >= " + renderRelationalOperationElement(dynaFunc.parameters.get(1), context);
                 }
-                return renderRelationalOperationElement(dynaFunc.parameters.get(0), context) + " <= " + renderRelationalOperationElement(dynaFunc.parameters.get(1), context);
-            }
-            case "notEqual":
-            {
-                if (dynaFunc.parameters.size() != 2)
+                case "lessThanEqual":
                 {
-                    return "/* Unable to transform operation: exactly 2 parameters are expected for '!=' operation */";
+                    if (dynaFunc.parameters.size() != 2)
+                    {
+                        return "/* Unable to transform operation: exactly 2 parameters are expected for '<=' operation */";
+                    }
+                    return renderRelationalOperationElement(dynaFunc.parameters.get(0), context) + " <= " + renderRelationalOperationElement(dynaFunc.parameters.get(1), context);
                 }
-                return renderRelationalOperationElement(dynaFunc.parameters.get(0), context) + " != " + renderRelationalOperationElement(dynaFunc.parameters.get(1), context);
-            }
-            case "notEqualAnsi":
-            {
-                if (dynaFunc.parameters.size() != 2)
+                case "notEqual":
                 {
-                    return "/* Unable to transform operation: exactly 2 parameters are expected for '<>' operation */";
+                    if (dynaFunc.parameters.size() != 2)
+                    {
+                        return "/* Unable to transform operation: exactly 2 parameters are expected for '!=' operation */";
+                    }
+                    return renderRelationalOperationElement(dynaFunc.parameters.get(0), context) + " != " + renderRelationalOperationElement(dynaFunc.parameters.get(1), context);
                 }
-                return renderRelationalOperationElement(dynaFunc.parameters.get(0), context) + " <> " + renderRelationalOperationElement(dynaFunc.parameters.get(1), context);
-            }
-            default:
-            {
-                return PureGrammarComposerUtility.convertIdentifier(dynaFunc.funcName) + "(" + LazyIterate.collect(dynaFunc.parameters, param -> renderRelationalOperationElement(param, context)).makeString(", ") + ")";
+                case "notEqualAnsi":
+                {
+                    if (dynaFunc.parameters.size() != 2)
+                    {
+                        return "/* Unable to transform operation: exactly 2 parameters are expected for '<>' operation */";
+                    }
+                    return renderRelationalOperationElement(dynaFunc.parameters.get(0), context) + " <> " + renderRelationalOperationElement(dynaFunc.parameters.get(1), context);
+                }
+                default:
+                {
+                    return defaultDynaFunctionRender(dynaFunc, context);
+                }
             }
         }
     }
+
+    private static String defaultDynaFunctionRender(DynaFunc dynaFunc, RelationalGrammarComposerContext context)
+    {
+        return PureGrammarComposerUtility.convertIdentifier(dynaFunc.funcName) + "(" + LazyIterate.collect(dynaFunc.parameters, param -> renderRelationalOperationElement(param, context)).makeString(", ") + ")";
+    }
+
 
     private static boolean isSelfJoin(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.TableAliasColumn tableAliasColumn)
     {
