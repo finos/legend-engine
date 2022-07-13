@@ -1,0 +1,29 @@
+{
+  "authorizer" : "RelationalMiddleTierPlanExecutionAuthorizer",
+  "authorized" : true,
+  "summary" : "Overall authorization was successful. Authorizations granted=1, Authorizations denied=0",
+  "authorizationInput" : {
+    "contextParams" : {
+      "servicePath" : "/api/foobar",
+      "serviceUniqueId" : "v1:1234",
+      "usageContext" : "SERVICE_EXECUTION"
+    }
+  },
+  "authorizations" : [ {
+    "status" : "ALLOW",
+    "summary" : "Use of credential allowed by policy",
+    "subject" : "alice",
+    "action" : "use",
+    "resource" : {
+      "credential" : "reference1"
+    },
+    "policyParams" : {
+      "policy" : "policy1",
+      "resource" : "id@v1_1234@_api_foobar"
+    },
+    "details" : [ {
+      "bar" : "bar1",
+      "foo" : "foo1"
+    } ]
+  } ]
+}
