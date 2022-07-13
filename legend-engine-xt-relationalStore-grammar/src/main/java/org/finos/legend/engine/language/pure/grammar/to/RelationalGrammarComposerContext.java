@@ -26,11 +26,14 @@ public final class RelationalGrammarComposerContext
 {
     private final String indentationString;
     private final String currentDatabase;
+    private final Boolean useDynaFunctionName;
 
     private RelationalGrammarComposerContext(RelationalGrammarComposerContext.Builder builder)
     {
         this.indentationString = builder.indentationString;
         this.currentDatabase = builder.currentDatabase;
+        this.useDynaFunctionName = builder.useDynaFunctionName;
+
     }
 
     public PureGrammarComposerContext toPureGrammarComposerContext()
@@ -48,10 +51,16 @@ public final class RelationalGrammarComposerContext
         return currentDatabase;
     }
 
+    public Boolean getUseDynaFunctionName()
+    {
+        return useDynaFunctionName;
+    }
+
     public static final class Builder
     {
         private String indentationString = "";
         private String currentDatabase;
+        private Boolean useDynaFunctionName = true;
 
         private Builder()
         {
@@ -70,6 +79,8 @@ public final class RelationalGrammarComposerContext
             RelationalGrammarComposerContext.Builder builder = new RelationalGrammarComposerContext.Builder();
             builder.indentationString = context.getIndentationString();
             builder.currentDatabase = context.getCurrentDatabase();
+            builder.useDynaFunctionName = context.getUseDynaFunctionName();
+
             return builder;
         }
 
@@ -92,6 +103,12 @@ public final class RelationalGrammarComposerContext
         public RelationalGrammarComposerContext.Builder withIndentation(int count)
         {
             this.indentationString += StringUtils.repeat(" ", count);
+            return this;
+        }
+
+        public RelationalGrammarComposerContext.Builder withNoDynaFunctionNames()
+        {
+            this.useDynaFunctionName = false;
             return this;
         }
     }
