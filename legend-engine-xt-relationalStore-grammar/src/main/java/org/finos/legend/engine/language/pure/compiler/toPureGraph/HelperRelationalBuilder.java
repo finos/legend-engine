@@ -1071,9 +1071,7 @@ public class HelperRelationalBuilder
 
     public static Relation getRelation(TablePtr tableptr, CompileContext context)
     {
-        String tb = tableptr.database + "." + tableptr.schema + "." + tableptr.table;
-        String[] values = tb.split("\\.");
-        return getRelation(resolveDatabase(values[0], tableptr.sourceInformation, context), values[1], values[2]);
+        return getRelation(resolveDatabase(tableptr.database, tableptr.sourceInformation, context), tableptr.schema, tableptr.table);
     }
 
     private static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class getPropertyOwnerForRelationalPropertyMapping(CompileContext context, RelationalPropertyMapping propertyMapping, PropertyMappingsImplementation immediateParent)
