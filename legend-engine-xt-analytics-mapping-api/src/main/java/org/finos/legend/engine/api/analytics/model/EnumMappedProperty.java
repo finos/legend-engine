@@ -12,16 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.api.model;
 
-import java.util.List;
+package org.finos.legend.engine.api.analytics.model;
 
-public class MappingRuntimeCompatibilityAnalysisResult
+public class EnumMappedProperty extends MappedProperty
 {
-    public List<String> runtimes;
+    public String enumPath;
 
-    public MappingRuntimeCompatibilityAnalysisResult(List<String> runtimes)
+    public EnumMappedProperty(String name, String enumName)
     {
-        this.runtimes = runtimes;
+        super(name);
+        this.enumPath = enumName;
     }
 }

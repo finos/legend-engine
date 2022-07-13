@@ -12,17 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.api.model;
+package org.finos.legend.engine.api.analytics.model;
 
-public enum MappedPropertyType
+import java.util.List;
+
+public class MappedEntity
 {
-    String,
-    Integer,
-    Boolean,
-    Float,
-    Date,
-    DateTime,
-    Enumeration,
-    Entity,
-    Number
+    public String path;
+    public List<MappedProperty> properties;
+    public MappedEntityInfo info;
+
+    public MappedEntity(String path, List<MappedProperty> properties)
+    {
+        this.path = path;
+        this.properties = properties;
+    }
 }

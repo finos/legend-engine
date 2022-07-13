@@ -15,8 +15,8 @@
 package org.finos.legend.engine.api.analytics.test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.finos.legend.engine.api.MappingAnalytics;
-import org.finos.legend.engine.api.model.MappingRuntimeCompatibilityAnalysisInput;
+import org.finos.legend.engine.api.analytics.MappingAnalytics;
+import org.finos.legend.engine.api.analytics.model.MappingRuntimeCompatibilityAnalysisInput;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
