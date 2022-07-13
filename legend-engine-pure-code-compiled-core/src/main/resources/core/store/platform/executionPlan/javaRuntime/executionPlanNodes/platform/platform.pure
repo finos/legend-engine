@@ -143,9 +143,11 @@ function <<access.private>> meta::pure::executionPlan::engine::java::generateImp
    let newContext      = ^$context(conventions = ^$oldConventions(newFunctionProhibitedList = []));
 
    let nodeContext     = iExecutionNodeContextParam($newContext.conventions);
-   let requiredVariableInputs = $p.requiredVariableInputs->map(s | j_variable(pureTypeToJavaType($newContext.conventions, $s.type, $s.multiplicity), $s.name)->j_declare($nodeContext->j_invoke('getResult', [j_string($s.name), pureTypeToJavaType($newContext.conventions, $s.type, $s.multiplicity)->j_field('class', javaClassType())], javaObject())));
+   let requiredVariableInputs = $p.requiredVariableInputs->removeDuplicates()
+                              ->map(s | let javaType = pureTypeToJavaType($newContext.conventions, $s.type, $s.multiplicity);
+                                        let typeArg  = if($javaType->isJavaList(), |$nodeContext->j_invoke('listType', $javaType->elementType()->toBoxed()->j_classField()), |$javaType->toBoxed()->j_classField());
+                                        j_variable($javaType, $s.name)->j_declare($nodeContext->j_invoke('getResult', [j_string($s.name), $typeArg], javaObject())););
    let expressionCode  = $p.expression->generateJava($newContext.conventions, $debug)->j_return();
-
    let body            = $requiredVariableInputs->concatenate($expressionCode)->j_block();
    let execClass       = $body->buildExecuteClass($nodeContext, $path, $newContext.conventions);
    generatedCode(mergeProjects(newProject()->addClass($execClass)->concatenate($body->dependencies()->resolveAndGetProjects())->toOneMany()), $execClass);
