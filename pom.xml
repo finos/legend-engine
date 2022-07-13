@@ -51,6 +51,10 @@
         <module>legend-engine-xt-persistence-protocol</module>
         <module>legend-engine-xt-persistence-pure</module>
 
+        <module>legend-engine-xt-persistence-cloud-grammar</module>
+        <module>legend-engine-xt-persistence-cloud-protocol</module>
+        <module>legend-engine-xt-persistence-cloud-pure</module>
+
         <module>legend-engine-xt-serviceStore-executionPlan</module>
         <module>legend-engine-xt-serviceStore-protocol</module>
         <module>legend-engine-xt-serviceStore-grammar</module>
@@ -707,6 +711,22 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-persistence-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-persistence-cloud-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-persistence-cloud-grammar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-persistence-cloud-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

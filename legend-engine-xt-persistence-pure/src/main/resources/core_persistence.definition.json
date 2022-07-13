@@ -1,5 +1,5 @@
 {
     "name" : "core_persistence",
-    "pattern" : "(meta::pure::persistence|meta::external::persistence)(::.*)?",
+    "pattern" : "(meta::pure::persistence)(::.*)?",
     "dependencies" : ["platform", "core", "core_relational"]
 }

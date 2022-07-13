@@ -35,12 +35,12 @@ meta::external::persistence::aws::metamodel::AwsGluePersistencePlatform extends 
  * connection
  **********/
 
- Class meta::external::persistence::aws::metamodel::connection::AwsS3Connection extends Connection
- {
+Class meta::external::persistence::aws::metamodel::connection::AwsS3Connection extends Connection
+{
    partition: AwsPartition[1];
    region: String[1];
    bucket: String[1];
- }
+}
 
 Enum
 {doc.doc = 'A grouping of regions as defined in AWS: https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingBucket.html'}
