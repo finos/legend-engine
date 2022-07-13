@@ -163,6 +163,11 @@ Class meta::pure::mapping::modelToModel::test::shared::src::_S_PersonB extends _
    bName    : String[1];
 }
 
+Class meta::pure::mapping::modelToModel::test::shared::src::_S_PersonC extends _S_PersonB
+{
+   cName    : String[1];
+}
+
 Class meta::pure::mapping::modelToModel::test::shared::src::_S_Firm
 {
   name : String[1];
