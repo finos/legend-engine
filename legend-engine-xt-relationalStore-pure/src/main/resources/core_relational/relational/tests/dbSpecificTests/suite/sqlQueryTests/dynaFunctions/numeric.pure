@@ -92,7 +92,8 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
 {
   let dynaFunc = ^DynaFunction(name='exp', parameters=[^Literal(value=1.1)]);
   let expected = ^Literal(value= 3.0041660239464334);
-  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+  let equalityComparator = floatEqualityComparatorGenerator([0.001]);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $equalityComparator, $config);
 }
 
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::exp::testDecimal1(config:DbTestConfig[1]):Boolean[1]
