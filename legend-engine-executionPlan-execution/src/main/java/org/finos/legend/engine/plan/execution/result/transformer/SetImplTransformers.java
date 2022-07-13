@@ -14,9 +14,11 @@
 
 package org.finos.legend.engine.plan.execution.result.transformer;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
+import org.eclipse.collections.impl.list.Interval;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.plan.dependencies.domain.date.PureDate;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.DateFunctions;
@@ -25,8 +27,10 @@ import org.finos.legend.pure.m4.coreinstance.primitive.date.StrictDate;
 import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class SetImplTransformers
 {
@@ -149,16 +153,7 @@ public class SetImplTransformers
         }
     }
 
-    private static final DateTimeFormatter formatter1 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S").withZone(ZoneId.of("UTC"));
-    private static final DateTimeFormatter formatter2 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SS").withZone(ZoneId.of("UTC"));
-    private static final DateTimeFormatter formatter3 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS").withZone(ZoneId.of("UTC"));
-    private static final DateTimeFormatter formatter4 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSS").withZone(ZoneId.of("UTC"));
-    private static final DateTimeFormatter formatter5 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSS").withZone(ZoneId.of("UTC"));
-    private static final DateTimeFormatter formatter6 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS").withZone(ZoneId.of("UTC"));
-    private static final DateTimeFormatter formatter7 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSSS").withZone(ZoneId.of("UTC"));
-    private static final DateTimeFormatter formatter8 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSSSS").withZone(ZoneId.of("UTC"));
-    private static final DateTimeFormatter formatter9 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSSSSS").withZone(ZoneId.of("UTC"));
-
+    private static final List<DateTimeFormatter> formatters = Interval.fromTo(1, 9).stream().map(i -> DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss." + StringUtils.repeat('S', i)).withZone(ZoneId.of("UTC"))).collect(Collectors.toCollection(ArrayList::new));
 
     @Deprecated
     private static String formatTimestamp(Timestamp timestamp)
@@ -183,31 +178,8 @@ public class SetImplTransformers
             }
         }
 
-        String res;
         int decimals = 9 - trailingZeros;
 
-        switch (decimals)
-        {
-            case 1:
-                return formatter1.format(timestamp.toInstant());
-            case 2:
-                return formatter2.format(timestamp.toInstant());
-            case 3:
-                return formatter3.format(timestamp.toInstant());
-            case 4:
-                return formatter4.format(timestamp.toInstant());
-            case 5:
-                return formatter5.format(timestamp.toInstant());
-            case 6:
-                return formatter6.format(timestamp.toInstant());
-            case 7:
-                return formatter7.format(timestamp.toInstant());
-            case 8:
-                return formatter8.format(timestamp.toInstant());
-            case 9:
-                return formatter9.format(timestamp.toInstant());
-            default:
-                return formatter9.format(timestamp.toInstant());
-        }
+        return formatters.get(decimals - 1).format(timestamp.toInstant());
     }
 }
