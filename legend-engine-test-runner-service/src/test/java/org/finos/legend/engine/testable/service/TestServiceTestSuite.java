@@ -223,6 +223,7 @@ public class TestServiceTestSuite
                         "      [\n" +
                         "        test1:\n" +
                         "        {\n" +
+                        "          serializationFormat: PURE;\n" +
                         "          asserts:\n" +
                         "          [\n" +
                         "            assert1:\n" +
@@ -253,6 +254,76 @@ public class TestServiceTestSuite
         Assert.assertEquals("testServiceStoreTestSuites::TestService", ((TestPassed) serviceStoreTestResults.get(0)).testable);
         Assert.assertEquals("testSuite1", ((TestPassed) serviceStoreTestResults.get(0)).atomicTestId.testSuiteId);
         Assert.assertEquals("test1", ((TestPassed) serviceStoreTestResults.get(0)).atomicTestId.atomicTestId);
+
+
+        // Service Store Service With Reference Data and default serializationFormat
+        String serviceStoreServiceWithDefaultSerializationFormat =
+                "###Service\n" +
+                        "Service testServiceStoreTestSuites::TestService\n" +
+                        "{\n" +
+                        "  pattern: '/testServiceStoreTestSuites/testService';\n" +
+                        "  owners:\n" +
+                        "  [\n" +
+                        "    'dummy1',\n" +
+                        "    'dummy2'\n" +
+                        "  ];\n" +
+                        "  autoActivateUpdates: true;\n" +
+                        "  documentation: 'Service to test Service testSuite';\n" +
+                        "  execution: Single\n" +
+                        "  {\n" +
+                        "    query: |testServiceStoreTestSuites::Employee.all()->graphFetch(#{testServiceStoreTestSuites::Employee{kerberos,employeeID,title,firstName,lastName,countryCode}}#)->serialize(#{testServiceStoreTestSuites::Employee{kerberos,employeeID,title,firstName,lastName,countryCode}}#);\n" +
+                        "    mapping: testServiceStoreTestSuites::ServiceStoreMapping;\n" +
+                        "    runtime: testServiceStoreTestSuites::ServiceStoreRuntime;\n" +
+                        "  }\n" +
+                        "  testSuites:\n" +
+                        "  [\n" +
+                        "    testSuite1:\n" +
+                        "    {\n" +
+                        "      data:\n" +
+                        "      [\n" +
+                        "        connections:\n" +
+                        "        [\n" +
+                        "          connection_1:\n" +
+                        "            Reference \n" +
+                        "            #{ \n" +
+                        "              testServiceStoreTestSuites::TestData \n" +
+                        "            }#\n" +
+                        "        ]\n" +
+                        "      ]\n" +
+                        "      tests:\n" +
+                        "      [\n" +
+                        "        test1:\n" +
+                        "        {\n" +
+                        "          asserts:\n" +
+                        "          [\n" +
+                        "            assert1:\n" +
+                        "              EqualToJson\n" +
+                        "              #{\n" +
+                        "                expected : \n" +
+                        "                  ExternalFormat\n" +
+                        "                  #{\n" +
+                        "                    contentType: 'application/json';\n" +
+                        "                    data: '{\"builder\" : { \"_type\" : \"json\" }, \"values\" : { \"kerberos\": \"dummy kerberos\", \"employeeID\": \"dummy id\", \"title\": \"dummy title\", \"firstName\": \"dummy firstName\", \"lastName\": \"dummy lastname\", \"countryCode\": \"dummy countryCode\" }}';\n" +
+                        "                  }#;\n" +
+                        "              }#\n" +
+                        "          ]\n" +
+                        "        }\n" +
+                        "      ]\n" +
+                        "    }\n" +
+                        "  ]\n" +
+                        "}\n\n\n";
+
+        PureModelContextData modelDataWithDefaultSerializationFormat = PureGrammarParser.newInstance().parseModel(serviceStoreServiceWithDefaultSerializationFormat + grammar);
+        PureModel pureModelWithDefaultSerializationFormat = Compiler.compile(modelDataWithDefaultSerializationFormat, DeploymentMode.TEST, null);
+
+        Root_meta_legend_service_metamodel_Service serviceWithDefaultSerializationFormat = (Root_meta_legend_service_metamodel_Service) pureModelWithDefaultSerializationFormat.getPackageableElement("testServiceStoreTestSuites::TestService");
+        List<TestResult> serviceStoreTestResultsWithDefaultSerializationFormat = serviceTestableRunnerExtension.executeAllTest(serviceWithDefaultSerializationFormat, pureModelWithDefaultSerializationFormat, modelDataWithDefaultSerializationFormat);
+
+        Assert.assertEquals(1, serviceStoreTestResultsWithDefaultSerializationFormat.size());
+        Assert.assertTrue(serviceStoreTestResultsWithDefaultSerializationFormat.get(0) instanceof TestPassed);
+        Assert.assertEquals("testServiceStoreTestSuites::TestService", ((TestPassed) serviceStoreTestResultsWithDefaultSerializationFormat.get(0)).testable);
+        Assert.assertEquals("testSuite1", ((TestPassed) serviceStoreTestResultsWithDefaultSerializationFormat.get(0)).atomicTestId.testSuiteId);
+        Assert.assertEquals("test1", ((TestPassed) serviceStoreTestResultsWithDefaultSerializationFormat.get(0)).atomicTestId.atomicTestId);
 
 
         // Service Store Service With Embedded Data
@@ -310,6 +381,7 @@ public class TestServiceTestSuite
                         "      [\n" +
                         "        test1:\n" +
                         "        {\n" +
+                        "          serializationFormat: PURE;\n" +
                         "          asserts:\n" +
                         "          [\n" +
                         "            assert1:\n" +
@@ -379,6 +451,7 @@ public class TestServiceTestSuite
                         "      [\n" +
                         "        test1:\n" +
                         "        {\n" +
+                        "          serializationFormat: PURE;\n" +
                         "          asserts:\n" +
                         "          [\n" +
                         "            assert1:\n" +
@@ -468,6 +541,7 @@ public class TestServiceTestSuite
                         "      [\n" +
                         "        test1:\n" +
                         "        {\n" +
+                        "          serializationFormat: PURE;\n" +
                         "          asserts:\n" +
                         "          [\n" +
                         "            assert1:\n" +
@@ -542,6 +616,7 @@ public class TestServiceTestSuite
                         "      [\n" +
                         "        test1:\n" +
                         "        {\n" +
+                        "          serializationFormat: PURE;\n" +
                         "          asserts:\n" +
                         "          [\n" +
                         "            assert1:\n" +
@@ -637,6 +712,7 @@ public class TestServiceTestSuite
                         "      [\n" +
                         "        test1:\n" +
                         "        {\n" +
+                        "          serializationFormat: PURE;\n" +
                         "          asserts:\n" +
                         "          [\n" +
                         "            assert1:\n" +
@@ -648,6 +724,7 @@ public class TestServiceTestSuite
                         "        },\n" +
                         "        test2:\n" +
                         "        {\n" +
+                        "          serializationFormat: PURE;\n" +
                         "          asserts:\n" +
                         "          [\n" +
                         "            assert1:\n" +
@@ -721,6 +798,7 @@ public class TestServiceTestSuite
                         "      [\n" +
                         "        test1:\n" +
                         "        {\n" +
+                        "          serializationFormat: PURE;\n" +
                         "          asserts:\n" +
                         "          [\n" +
                         "            assert1:\n" +
@@ -732,6 +810,7 @@ public class TestServiceTestSuite
                         "        },\n" +
                         "        test2:\n" +
                         "        {\n" +
+                        "          serializationFormat: PURE;\n" +
                         "          asserts:\n" +
                         "          [\n" +
                         "            assert1:\n" +
@@ -810,6 +889,7 @@ public class TestServiceTestSuite
                         "      [\n" +
                         "        test1:\n" +
                         "        {\n" +
+                        "          serializationFormat: PURE;\n" +
                         "          asserts:\n" +
                         "          [\n" +
                         "            assert1:\n" +
@@ -838,6 +918,7 @@ public class TestServiceTestSuite
                         "      [\n" +
                         "        test1:\n" +
                         "        {\n" +
+                        "          serializationFormat: PURE;\n" +
                         "          asserts:\n" +
                         "          [\n" +
                         "            assert1:\n" +
@@ -952,6 +1033,7 @@ public class TestServiceTestSuite
                         "      [\n" +
                         "        test1:\n" +
                         "        {\n" +
+                        "          serializationFormat: PURE;\n" +
                         "          parameters:\n" +
                         "          [\n" +
                         "            stringParam = 'dummy',\n" +
@@ -1058,6 +1140,7 @@ public class TestServiceTestSuite
                         "      [\n" +
                         "        test1:\n" +
                         "        {\n" +
+                        "          serializationFormat: PURE;\n" +
                         "          parameters:\n" +
                         "          [\n" +
                         "            stringParam = 'dummy',\n" +
@@ -1151,6 +1234,7 @@ public class TestServiceTestSuite
                 "      [\n" +
                 "        test1:\n" +
                 "        {\n" +
+                "          serializationFormat: PURE;\n" +
                 "          asserts:\n" +
                 "          [\n" +
                 "            assert1:\n" +
@@ -1340,6 +1424,7 @@ public class TestServiceTestSuite
                 "      [\n" +
                 "        test1:\n" +
                 "        {\n" +
+                "          serializationFormat: PURE;\n" +
                 "          asserts:\n" +
                 "          [\n" +
                 "            assert1:\n" +
@@ -1495,6 +1580,7 @@ public class TestServiceTestSuite
                 "      [\n" +
                 "        test1:\n" +
                 "        {\n" +
+                "          serializationFormat: PURE;\n" +
                 "          asserts:\n" +
                 "          [\n" +
                 "            assert1:\n" +
@@ -2039,6 +2125,7 @@ public class TestServiceTestSuite
                 "      [\n" +
                 "        test1:\n" +
                 "        {\n" +
+                "          serializationFormat: PURE;\n" +
                 "          asserts:\n" +
                 "          [\n" +
                 "            assert1:\n" +
@@ -2269,29 +2356,6 @@ public class TestServiceTestSuite
                 "}", ((EqualToJsonAssertFail) ((TestFailed) uatTestResultWithTestFailing).assertStatuses.get(0)).expected);
     }
 
-    private String getResourceAsString(String path)
-    {
-        try
-        {
-            URL infoURL = DeploymentStateAndVersions.class.getClassLoader().getResource(path);
-            if (infoURL != null)
-            {
-                java.util.Scanner scanner = new java.util.Scanner(infoURL.openStream()).useDelimiter("\\A");
-                return scanner.hasNext() ? scanner.next() : null;
-            }
-            return null;
-        }
-       catch (Exception e)
-       {
-           throw new RuntimeException(e);
-       }
-    }
-
-    private String getFullPureModelGrammar(String basePath, String model, String service)
-    {
-        return getResourceAsString(basePath + model) + "\n\n" + getResourceAsString(basePath + service);
-    }
-
     @Test
     public void testFailingRelationalServiceSuite()
     {
@@ -2306,7 +2370,7 @@ public class TestServiceTestSuite
         Assert.assertEquals(relationalTestResult.size(), 1);
         TestResult testResult = relationalTestResult.get(0);
         Assert.assertEquals(testResult.testable, "service::SimpleRelationalPassFailing");
-        Assert.assertTrue(testResult instanceof  TestFailed);
+        Assert.assertTrue(testResult instanceof TestFailed);
         TestFailed failedResult = (TestFailed) testResult;
         AtomicTestId atomicTestId = failedResult.atomicTestId;
         Assert.assertEquals(atomicTestId.atomicTestId, "test1");
@@ -2316,7 +2380,7 @@ public class TestServiceTestSuite
         // pass assertion
         AssertionStatus status1 = statuses.stream().filter(t -> t.id.equals("shouldPass")).findFirst().get();
         Assert.assertEquals(status1.id, "shouldPass");
-        Assert.assertTrue(status1 instanceof  AssertPass);
+        Assert.assertTrue(status1 instanceof AssertPass);
         // fail assertion
         AssertionStatus failStatus = statuses.stream().filter(t -> t.id.equals("shouldFail")).findFirst().get();
         Assert.assertTrue(failStatus instanceof EqualToJsonAssertFail);
@@ -2369,7 +2433,7 @@ public class TestServiceTestSuite
         Assert.assertEquals(relationalTestResult.size(), 1);
         TestResult testResult = relationalTestResult.get(0);
         Assert.assertEquals(testResult.testable, "service::RelationalServiceWithParams");
-        Assert.assertTrue(testResult instanceof  TestPassed);
+        Assert.assertTrue(testResult instanceof TestPassed);
         TestPassed passed = (TestPassed) testResult;
         AtomicTestId atomicTestId = passed.atomicTestId;
         Assert.assertEquals(atomicTestId.atomicTestId, "test1");
@@ -2391,20 +2455,42 @@ public class TestServiceTestSuite
         Assert.assertEquals(relationalTestResult.size(), 1);
         TestResult testResult = relationalTestResult.get(0);
         Assert.assertEquals(testResult.testable, "service::SimpleRelationalPassWithSpecialEmbeddedData");
-        if (testResult instanceof  TestFailed)
+        if (testResult instanceof TestFailed)
         {
             AssertionStatus status = ((TestFailed) testResult).assertStatuses.get(0);
-            if (status instanceof  EqualToJsonAssertFail)
+            if (status instanceof EqualToJsonAssertFail)
             {
-                EqualToJsonAssertFail failAssert = (EqualToJsonAssertFail)status;
+                EqualToJsonAssertFail failAssert = (EqualToJsonAssertFail) status;
                 Assert.assertEquals(failAssert.expected, failAssert.actual);
             }
         }
-        Assert.assertTrue(testResult instanceof  TestPassed);
+        Assert.assertTrue(testResult instanceof TestPassed);
         TestPassed passed = (TestPassed) testResult;
         AtomicTestId atomicTestId = passed.atomicTestId;
         Assert.assertEquals(atomicTestId.atomicTestId, "test1");
         Assert.assertEquals(atomicTestId.testSuiteId, "testSuite1");
     }
 
+    private String getResourceAsString(String path)
+    {
+        try
+        {
+            URL infoURL = DeploymentStateAndVersions.class.getClassLoader().getResource(path);
+            if (infoURL != null)
+            {
+                java.util.Scanner scanner = new java.util.Scanner(infoURL.openStream()).useDelimiter("\\A");
+                return scanner.hasNext() ? scanner.next() : null;
+            }
+            return null;
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private String getFullPureModelGrammar(String basePath, String model, String service)
+    {
+        return getResourceAsString(basePath + model) + "\n\n" + getResourceAsString(basePath + service);
+    }
 }

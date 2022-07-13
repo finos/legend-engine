@@ -17,16 +17,16 @@ package org.finos.legend.engine.testable.service.assertion;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import java.io.IOException;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertPass;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertionStatus;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.EqualToJsonAssertFail;
 import org.finos.legend.engine.test.runner.shared.JsonNodeComparator;
 
+import java.io.IOException;
+
 public class ServiceTestAssertionHelper
 {
-
     protected static AssertionStatus compareAssertionJSON(TestAssertion parentAssertion, String _expected, String _actual) throws IOException
     {
         ObjectMapper objectMapper = new ObjectMapper();
@@ -49,5 +49,4 @@ public class ServiceTestAssertionHelper
         assertionStatus.id = parentAssertion.id;
         return assertionStatus;
     }
-
 }
