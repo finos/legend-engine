@@ -47,7 +47,7 @@ public class BlockConnectionContext
         {
             requiredBlockConnection = setBlockConnection(executionState.getRelationalExecutor().getConnectionManager(),
                     databaseConnection,
-                    new BlockConnection(executionState.getRelationalExecutor().getConnectionManager().getDatabaseConnection(profiles, databaseConnection, executionState.getRuntimeContext())));
+                    new BlockConnection(executionState.getRelationalExecutor().getConnectionManager().getDatabaseConnection(profiles, databaseConnection)));
         }
         if (!requiredBlockConnection.blockConnectionState.isConnectionAvailable())
         {

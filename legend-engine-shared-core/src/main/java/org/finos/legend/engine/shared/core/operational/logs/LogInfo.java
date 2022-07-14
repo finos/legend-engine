@@ -62,12 +62,6 @@ public class LogInfo
         this.message = message;
     }
 
-    public LogInfo(LoggingEventType eventType, String message)
-    {
-        this(null, eventType);
-        this.message = message;
-    }
-
     public LogInfo(Iterable<? extends CommonProfile> userProfiles, LoggingEventType eventType, Object info)
     {
         this(userProfiles, eventType);
