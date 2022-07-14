@@ -47,23 +47,11 @@ public class ResultManager
 
     public static Response manageResult(MutableList<CommonProfile> pm, Result result, SerializationFormat format, LoggingEventType loggingEventType)
     {
-        return manageResultWithCustomErrorCodeImpl(pm, result, false, format, loggingEventType);
-    }
-
-    public static Response manageResultWithCustomErrorCode(MutableList<CommonProfile> pm, Result result, SerializationFormat format, LoggingEventType loggingEventType)
-    {
-        return manageResultWithCustomErrorCodeImpl(pm, result, true, format, loggingEventType);
-    }
-
-    private static Response manageResultWithCustomErrorCodeImpl(MutableList<CommonProfile> pm, Result result, boolean propagateErrorCode, SerializationFormat format, LoggingEventType loggingEventType)
-    {
         if (result instanceof ErrorResult)
         {
-            ErrorResult errorResult = (ErrorResult) result;
-            String message = errorResult.getMessage();
+            String message = ((ErrorResult) result).getMessage();
             LOGGER.info(new LogInfo(pm, loggingEventType, message).toString());
-            int errorMessageCode = !propagateErrorCode ? 20 : errorResult.getCode();
-            return Response.status(500).type(MediaType.APPLICATION_JSON_TYPE).entity(new ErrorMessage(errorMessageCode, "{\"message\":\"" + new String(jsonStringEncoder.quoteAsString(message)) + "\"}")).build();
+            return Response.status(500).type(MediaType.APPLICATION_JSON_TYPE).entity(new ErrorMessage(20, "{\"message\":\"" + new String(jsonStringEncoder.quoteAsString(message)) + "\"}")).build();
         }
         else if (result instanceof StreamingResult)
         {
