@@ -32,9 +32,6 @@ public class ExternalIntegration_TestConnectionObjectProtocol_Spanner extends Db
     }
 
     @Test
-    /*
-      Prior running this test spanner emulator should be set up and some entities should be created.
-     */
     public void testSpannerEmulatorPublicConnection_subject() throws Exception
     {
         SpannerDataSourceSpecification ds = new SpannerDataSourceSpecification(
@@ -42,8 +39,8 @@ public class ExternalIntegration_TestConnectionObjectProtocol_Spanner extends Db
                         "spanner-emulator-test",
                         "test-instance",
                         "test-db",
-                        "localhost",
-                        9010),
+                        null,
+                        null),
                 new SpannerManager(),
                 new TestDatabaseAuthenticationStrategy());
         try (Connection connection = ds.getConnectionUsingSubject(getSubject()))

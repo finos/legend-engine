@@ -21,70 +21,72 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPApplicationDefaultCredentialsAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPWorkloadIdentityFederationAuthenticationStrategy;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.BigQueryDatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SpannerDatasourceSpecification;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 import org.pac4j.core.profile.CommonProfile;
 
-public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_BigQuery extends ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_GoogleCloud
+public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Spanner extends ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_GoogleCloud
 {
 
-    public static final String TEST_QUERY = "select * from `legend-integration-testing.integration_dataset1.table1`";
+    public static final String TEST_QUERY = "select 1";
 
     @Override
     public @NotNull DatabaseType getDatabaseType()
     {
-        return DatabaseType.BigQuery;
+        return DatabaseType.Spanner;
     }
 
     @Test
-    public void testBigQueryGCPADCConnection_subject() throws Exception
+    public void testSpannerGCPADCConnection_subject() throws Exception
     {
-        RelationalDatabaseConnection systemUnderTest = this.bigQueryWithGCPADCSpec();
+        RelationalDatabaseConnection systemUnderTest = this.SpannerWithGCPADCSpec();
         Connection connection = this.connectionManagerSelector.getDatabaseConnection((Subject) null, systemUnderTest);
         testConnection(connection, TEST_QUERY);
     }
 
     @Test
-    public void testBigQueryGCPWIFConnection_subject() throws Exception
+    public void testSpannerGCPWIFConnection_subject() throws Exception
     {
-        RelationalDatabaseConnection systemUnderTest = this.bigQueryWithGCPWIFSpec();
+        RelationalDatabaseConnection systemUnderTest = this.SpannerWithGCPWIFSpec();
         Connection connection = this.connectionManagerSelector.getDatabaseConnection((Subject) null, systemUnderTest);
         testConnection(connection, TEST_QUERY);
     }
 
     @Test
-    public void testBigQueryGCPADCConnection_profile() throws Exception
+    public void testSpannerGCPADCConnection_profile() throws Exception
     {
-        RelationalDatabaseConnection systemUnderTest = this.bigQueryWithGCPADCSpec();
+        RelationalDatabaseConnection systemUnderTest = this.SpannerWithGCPADCSpec();
         Connection connection = this.connectionManagerSelector.getDatabaseConnection((MutableList<CommonProfile>) null, systemUnderTest);
         testConnection(connection, TEST_QUERY);
     }
 
     @Test
-    public void testBigQueryGCPWIFConnection_profile() throws Exception
+    public void testSpannerGCPWIFConnection_profile() throws Exception
     {
-        RelationalDatabaseConnection systemUnderTest = this.bigQueryWithGCPWIFSpec();
+        RelationalDatabaseConnection systemUnderTest = this.SpannerWithGCPWIFSpec();
         Connection connection = this.connectionManagerSelector.getDatabaseConnection((MutableList<CommonProfile>) null, systemUnderTest);
         testConnection(connection, TEST_QUERY);
     }
 
-    private RelationalDatabaseConnection bigQueryWithGCPADCSpec()
+    private RelationalDatabaseConnection SpannerWithGCPADCSpec()
     {
-        BigQueryDatasourceSpecification bigQueryDatasourceSpecification = new BigQueryDatasourceSpecification();
-        bigQueryDatasourceSpecification.projectId = "legend-integration-testing";
-        bigQueryDatasourceSpecification.defaultDataset = "integration_dataset1";
+        SpannerDatasourceSpecification datasourceSpecification = new SpannerDatasourceSpecification();
+        datasourceSpecification.projectId = "legend-integration-testing";
+        datasourceSpecification.instanceId = "test-instance";
+        datasourceSpecification.databaseId = "test-db";
         GCPApplicationDefaultCredentialsAuthenticationStrategy authSpec = new GCPApplicationDefaultCredentialsAuthenticationStrategy();
-        return new RelationalDatabaseConnection(bigQueryDatasourceSpecification, authSpec, DatabaseType.BigQuery);
+        return new RelationalDatabaseConnection(datasourceSpecification, authSpec, getDatabaseType());
     }
 
-    private RelationalDatabaseConnection bigQueryWithGCPWIFSpec()
+    private RelationalDatabaseConnection SpannerWithGCPWIFSpec()
     {
-        BigQueryDatasourceSpecification bigQueryDatasourceSpecification = new BigQueryDatasourceSpecification();
-        bigQueryDatasourceSpecification.projectId = "legend-integration-testing";
-        bigQueryDatasourceSpecification.defaultDataset = "integration_dataset1";
+        SpannerDatasourceSpecification datasourceSpecification = new SpannerDatasourceSpecification();
+        datasourceSpecification.projectId = "legend-integration-testing";
+        datasourceSpecification.instanceId = "test-instance";
+        datasourceSpecification.databaseId = "test-db";
         GCPWorkloadIdentityFederationAuthenticationStrategy authSpec = new GCPWorkloadIdentityFederationAuthenticationStrategy();
         authSpec.serviceAccountEmail = "integration-bq-sa1@legend-integration-testing.iam.gserviceaccount.com";
-        return new RelationalDatabaseConnection(bigQueryDatasourceSpecification, authSpec, DatabaseType.BigQuery);
+        return new RelationalDatabaseConnection(datasourceSpecification, authSpec, getDatabaseType());
     }
 }
