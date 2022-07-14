@@ -41,7 +41,7 @@ public class SpannerDataSourceSpecification extends DataSourceSpecification
         this.extraDatasourceProperties.put(SPANNER_INSTANCE_ID, key.getInstanceId());
         this.extraDatasourceProperties.put(SPANNER_DATABASE_ID, key.getDatabaseId());
         putIfNotEmpty(this.extraDatasourceProperties, SPANNER_PROXY_HOST, key.getProxyHost());
-        putIfNotEmpty(this.extraDatasourceProperties, SPANNER_PROXY_PORT, key.getProxyPort().toString());
+        putIfNotEmpty(this.extraDatasourceProperties, SPANNER_PROXY_PORT, key.getProxyPort());
     }
 
     public SpannerDataSourceSpecification(
@@ -54,7 +54,7 @@ public class SpannerDataSourceSpecification extends DataSourceSpecification
 
     private void putIfNotEmpty(Properties connectionProperties, String propName, Object propValue)
     {
-        Optional.ofNullable(propValue).ifPresent(x -> connectionProperties.put(propName, propValue));
+        Optional.ofNullable(propValue).ifPresent(x -> connectionProperties.put(propName, propValue.toString()));
     }
 
 }
