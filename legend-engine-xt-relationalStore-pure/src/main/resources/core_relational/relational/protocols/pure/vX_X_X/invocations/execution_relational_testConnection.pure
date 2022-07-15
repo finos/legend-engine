@@ -56,7 +56,6 @@ function meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection:
                                             retainTypeField=true,
                                             typeLookup = [
                                                             pair('delegatedKerberos', 'DelegatedKerberosAuthenticationStrategy'),
-                                                            pair('middleTierUserNamePassword', 'MiddleTierUserNamePasswordAuthenticationStrategy'),
                                                             pair('userNamePassword', 'UserNamePasswordAuthenticationStrategy'),
                                                             pair('h2Default', 'DefaultH2AuthenticationStrategy'),
                                                             pair('test', 'TestDatabaseAuthenticationStrategy'),
@@ -109,11 +108,6 @@ function meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection:
           ^meta::pure::alloy::connections::alloy::authentication::DelegatedKerberosAuthenticationStrategy(
               // _type = 'delegatedKerberos',
               serverPrincipal = $d.serverPrincipal
-          ),
-      mup:meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::authentication::MiddleTierUserNamePasswordAuthenticationStrategy[1] |
-          ^meta::pure::alloy::connections::alloy::authentication::MiddleTierUserNamePasswordAuthenticationStrategy(
-              // _type = 'middleTierUsernamePassword',
-              vaultReference = $mup.vaultReference
           ),
       u:meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::authentication::UserNamePasswordAuthenticationStrategy[1] |
           ^meta::pure::alloy::connections::alloy::authentication::UserNamePasswordAuthenticationStrategy(
