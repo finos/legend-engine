@@ -84,11 +84,13 @@
         <module>legend-engine-xt-relationalStore-executionPlan-connection-api</module>
         <module>legend-engine-xt-relationalStore-executionPlan-connection-tests-api</module>
         <module>legend-engine-xt-relationalStore-pure</module>
-        <module>legend-engine-xt-relationalStore-sqlserver-pure</module>
         <module>legend-engine-xt-relationalStore-postgres-execution-tests</module>
         <module>legend-engine-xt-relationalStore-api</module>
         <module>legend-engine-xt-relationalStore-grammar</module>
         <module>legend-engine-xt-relationalStore-protocol</module>
+
+        <module>legend-engine-xt-relationalStore-sqlserver-execution</module>
+        <module>legend-engine-xt-relationalStore-sqlserver-pure</module>
 
         <module>legend-engine-xt-avro</module>
         <module>legend-engine-xt-avro-pure</module>
@@ -129,6 +131,7 @@
         <module>legend-engine-executionPlan-execution</module>
         <module>legend-engine-executionPlan-execution-api</module>
         <module>legend-engine-xt-relationalStore-executionPlan-connection-authentication</module>
+        <module>legend-engine-xt-relationalStore-executionPlan-connection-authentication-default</module>
         <module>legend-engine-executionPlan-execution-store-inMemory</module>
         <module>legend-engine-external-shared</module>
         <module>legend-engine-external-shared-format-model</module>
@@ -683,6 +686,11 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-sqlserver-execution</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-sqlserver-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -979,6 +987,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-executionPlan-connection-authentication</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-executionPlan-connection-authentication-default</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

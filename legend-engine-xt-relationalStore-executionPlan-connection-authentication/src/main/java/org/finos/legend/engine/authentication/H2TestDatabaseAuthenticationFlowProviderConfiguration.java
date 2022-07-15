@@ -12,9 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands;
+package org.finos.legend.engine.authentication;
 
-public interface RelationalDatabaseCommandsVisitor<T>
+import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProviderConfiguration;
+
+public class H2TestDatabaseAuthenticationFlowProviderConfiguration extends DatabaseAuthenticationFlowProviderConfiguration
 {
-    T visit(RelationalDatabaseCommands databaseCommands);
 }

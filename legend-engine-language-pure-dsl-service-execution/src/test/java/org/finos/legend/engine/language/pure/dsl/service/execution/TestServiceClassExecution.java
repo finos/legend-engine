@@ -14,8 +14,8 @@
 
 package org.finos.legend.engine.language.pure.dsl.service.execution;
 
-import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProvider;
-import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProviderConfiguration;
+import org.finos.legend.engine.authentication.H2TestDatabaseAuthenticationFlowProvider;
+import org.finos.legend.engine.authentication.H2TestDatabaseAuthenticationFlowProviderConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.config.RelationalExecutionConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
@@ -36,7 +36,7 @@ public class TestServiceClassExecution
 
         RelationalExecutionConfiguration relationalExecutionConfiguration = RelationalExecutionConfiguration.newInstance()
                 .withTemporaryTestDbConfiguration(new TemporaryTestDbConfiguration(9090))
-                .withDatabaseAuthenticationFlowProvider(LegendDefaultDatabaseAuthenticationFlowProvider.class, new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration())
+                .withDatabaseAuthenticationFlowProvider(H2TestDatabaseAuthenticationFlowProvider.class, new H2TestDatabaseAuthenticationFlowProviderConfiguration())
                 .build();
 
         SimpleRelationalService service = new SimpleRelationalService(relationalExecutionConfiguration);

@@ -18,8 +18,8 @@ import com.google.common.cache.CacheBuilder;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.factory.Sets;
-import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProvider;
-import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProviderConfiguration;
+import org.finos.legend.engine.authentication.H2TestDatabaseAuthenticationFlowProvider;
+import org.finos.legend.engine.authentication.H2TestDatabaseAuthenticationFlowProviderConfiguration;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
@@ -254,7 +254,7 @@ public class TestServiceRunner
     public void testSimpleRelationalServiceExecution()
     {
         RelationalExecutionConfiguration relationalExecutionConfiguration = RelationalExecutionConfiguration.newInstance()
-                .withDatabaseAuthenticationFlowProvider(LegendDefaultDatabaseAuthenticationFlowProvider.class, new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration())
+                .withDatabaseAuthenticationFlowProvider(H2TestDatabaseAuthenticationFlowProvider.class, new H2TestDatabaseAuthenticationFlowProviderConfiguration())
                 .build();
 
         SimpleRelationalServiceRunner simpleRelationalServiceRunner = (SimpleRelationalServiceRunner) ServiceRunnerBuilder.newInstance()
@@ -282,7 +282,7 @@ public class TestServiceRunner
     public void testSimpleRelationalServiceExecutionWithTDSResult()
     {
         RelationalExecutionConfiguration relationalExecutionConfiguration = RelationalExecutionConfiguration.newInstance()
-                .withDatabaseAuthenticationFlowProvider(LegendDefaultDatabaseAuthenticationFlowProvider.class, new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration())
+                .withDatabaseAuthenticationFlowProvider(H2TestDatabaseAuthenticationFlowProvider.class, new H2TestDatabaseAuthenticationFlowProviderConfiguration())
                 .build();
 
         SimpleRelationalServiceRunnerTDS simpleRelationalServiceRunner = (SimpleRelationalServiceRunnerTDS) ServiceRunnerBuilder.newInstance()

@@ -12,9 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands;
+package org.finos.legend.engine.plan.execution.stores.relational;
 
-public interface RelationalDatabaseCommandsVisitor<T>
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionExtension;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
+
+public interface RelationalConnectionExtension extends ConnectionExtension
 {
-    T visit(RelationalDatabaseCommands databaseCommands);
+    Boolean visit(StreamResultToTempTableVisitor visitor, RelationalDatabaseCommands databaseCommands);
 }
