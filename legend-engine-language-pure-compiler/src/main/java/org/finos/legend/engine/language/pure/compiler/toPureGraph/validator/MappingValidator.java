@@ -16,6 +16,7 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph.validator;
 
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.multimap.list.MutableListMultimap;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Lists;
@@ -37,18 +38,14 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.InstanceSetImplem
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementationAccessor;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMapping;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.FunctionExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.generated.core_pure_corefunctions_metaExtension;
 
-import java.util.HashSet;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
-import java.util.List;
 
 public class MappingValidator
 {
@@ -250,6 +247,7 @@ public class MappingValidator
 
     private void validatePropertyMappings(PureModel pureModel, Map<String, Mapping> mappings, Map<String, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping> pureMappings)
     {
+        MutableList<? extends Function<?>> newFunction = Lists.mutable.of(pureModel.getFunction("meta::pure::functions::lang::new_Class_1__String_1__KeyExpression_MANY__T_1_",true));
         pureMappings.forEach((mappingPath, mapping) ->
         {
                 mapping._classMappings().forEach(cm ->
@@ -268,7 +266,7 @@ public class MappingValidator
                                                         {
                                                             RichIterable<? extends FunctionExpression> feList = core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_findExpressionsForFunctionInValueSpecification_ValueSpecification_1__Function_MANY__FunctionExpression_MANY_(
                                                                             (ValueSpecification)ex,
-                                                                            Lists.mutable.of(pureModel.getFunction("meta::pure::functions::lang::new_Class_1__String_1__KeyExpression_MANY__T_1_",true)),
+                                                                            newFunction,
                                                                             pureModel.getExecutionSupport());
 
                                                             for (FunctionExpression fe: feList)

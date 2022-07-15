@@ -352,14 +352,14 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
         test(models +
                 "Class test::D\n" +
                 "[\n" +
-                "   testConstraint:$this.id->test::constraintFunction()\n" +
+                "   testConstraint:test::constraintFunction()\n" +
                 "]\n" +
                 "{\n" +
-                "   id: String[0..*];\n" +
+                "   b: test::B[1];\n" +
                 "}\n" +
-                "function test::constraintFunction(newId: String[0..*]): Boolean[1]\n" +
+                "function test::constraintFunction(): Boolean[1]\n" +
                 "{\n" +
-                "   ^test::B(primeId=$newId);\n" +
+                "   ^test::B();\n" +
                 "   assertEquals(true, true);\n" +
                 "}\n" +
                 "###Mapping\n" +
@@ -368,8 +368,32 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "   test::D : Pure\n" +
                 "             {\n" +
                 "                ~src test::D\n" +
-                "                id : $src.id\n" +
+                "                b : $src.b\n" +
                 "             }\n" +
+
+                "   test::B : Pure\n" +
+                "             {\n" +
+                "                ~src test::B\n" +
+                "                primeId : $src.primeId\n" +
+                "             }\n" +
+                "   \n" +
+                ")"
+        );
+
+        test(models +
+                "function test::F1(id: String[*]): String[*]\n" +
+                "{\n" +
+                "   toString(^test::B(primeId=$id));\n" +
+                "}\n" +
+                "###Mapping\n" +
+                "Mapping test::map\n" +
+                "(\n" +
+                "   test::B : Pure\n" +
+                "             {\n" +
+                "                ~src test::B\n" +
+                "                primeId : $src.primeId->test::F1()\n" +
+                "             }\n" +
+                "   \n" +
                 ")"
         );
 
