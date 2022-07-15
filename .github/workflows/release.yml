@@ -34,14 +34,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.FINOS_GITHUB_TOKEN }}
 
       - name: Configure git
         run: |
-          git config --global committer.email "infra@finos.org"
-          git config --global committer.name "FINOS Admin"
-          git config --global author.email "${GITHUB_ACTOR}@users.noreply.github.com"
-          git config --global author.name "${GITHUB_ACTOR}"
+          git config --global user.email "37706051+finos-admin@users.noreply.github.com"
+          git config --global user.name "FINOS Administrator"
 
       - name: Set up Maven Central
         uses: actions/setup-java@v2

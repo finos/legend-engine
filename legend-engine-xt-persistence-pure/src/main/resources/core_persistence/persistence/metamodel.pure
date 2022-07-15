@@ -17,6 +17,7 @@ import meta::external::shared::format::binding::*;
 import meta::legend::service::metamodel::*;
 
 import meta::pure::persistence::metamodel::*;
+import meta::pure::persistence::metamodel::context::*;
 import meta::pure::persistence::metamodel::notifier::*;
 import meta::pure::persistence::metamodel::persister::*;
 import meta::pure::persistence::metamodel::persister::audit::*;
@@ -30,10 +31,13 @@ import meta::pure::persistence::metamodel::persister::transactionmilestoning::de
 import meta::pure::persistence::metamodel::persister::validitymilestoning::*;
 import meta::pure::persistence::metamodel::persister::validitymilestoning::derivation::*;
 import meta::pure::persistence::metamodel::reader::*;
+import meta::pure::persistence::metamodel::service::*;
 import meta::pure::persistence::metamodel::target::*;
 import meta::pure::persistence::metamodel::trigger::*;
 
 import meta::pure::runtime::*;
+
+import meta::relational::metamodel::*;
 
 /**********
  * persistence
@@ -64,11 +68,37 @@ meta::pure::persistence::metamodel::Persistence extends PackageableElement
  **********/
 
 Class
-<<typemodifiers.abstract>>
 {doc.doc = 'The execution context for a persistence specification.'}
 meta::pure::persistence::metamodel::PersistenceContext extends PackageableElement
 {
+   {doc.doc = 'The persistence parameterized by this context.'}
    persistence: Persistence[1];
+
+   {doc.doc = 'Configuration specific to the runtime that executes persistence.'}
+   platform: PersistencePlatform[1];
+
+   {doc.doc = 'Values to substitute for named service inputs.'}
+   serviceParameters: ServiceParameter[*];
+
+   {doc.doc = 'The connection with which to connect to the persistence sink.'}
+   sinkConnection: Connection[0..1];
+}
+
+Class
+{doc.doc = 'Specification of the runtime that executes the persistence.'}
+meta::pure::persistence::metamodel::context::PersistencePlatform
+{
+}
+
+Class
+{doc.doc = 'Parameter values for the service.'}
+meta::pure::persistence::metamodel::service::ServiceParameter
+{
+  {doc.doc = 'The name of this service parameter. This must match the name of an input to the function that underlies the service.'}
+   name: String[1];
+
+   {doc.doc = 'The value of this service parameter. It may be any primitive type or a connection that provides input to an M2M service.'}
+   value: Any[*];
 }
 
 /**********
@@ -162,24 +192,22 @@ meta::pure::persistence::metamodel::notifier::PagerDutyNotifyee extends Notifyee
  **********/
 
 Class
-<<typemodifiers.abstract>>
-{doc.doc = 'Runtime properties for the sink to which datsets will be persisted.'}
+{doc.doc = 'Definition of the sink to which datsets will be persisted.'}
 meta::pure::persistence::metamodel::persister::sink::Sink
 {
 }
 
 Class
-{doc.doc = 'Runtime properties for relational sinks.'}
+{doc.doc = 'Specification for relational sinks.'}
 meta::pure::persistence::metamodel::persister::sink::RelationalSink extends Sink
 {
-   connection: Connection[0..1];
+   database: Database[1];
 }
 
 Class
-{doc.doc = 'Runtime properties for object storage sinks.'}
+{doc.doc = 'Specification for object storage sinks.'}
 meta::pure::persistence::metamodel::persister::sink::ObjectStorageSink extends Sink
 {
-   connection: Connection[1];
    binding: Binding[1];
 }
 

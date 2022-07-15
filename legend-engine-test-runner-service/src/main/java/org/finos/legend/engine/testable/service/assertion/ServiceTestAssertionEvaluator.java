@@ -14,8 +14,6 @@
 
 package org.finos.legend.engine.testable.service.assertion;
 
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.StreamingResult;
@@ -31,49 +29,28 @@ import org.finos.legend.engine.testable.service.helper.PrimitiveValueSpecificati
 
 public class ServiceTestAssertionEvaluator implements TestAssertionEvaluator
 {
-    private final String serializationFormat;
+    private final SerializationFormat serializationFormat;
     private final Result result;
-
-    public ServiceTestAssertionEvaluator(Result result, String serializationFormat)
-    {
-        this.result = result;
-        this.serializationFormat = serializationFormat;
-
-    }
 
     public ServiceTestAssertionEvaluator(Result result)
     {
-        this(result, null);
+        this(result, SerializationFormat.defaultFormat);
     }
 
-
-    private SerializationFormat getSerializationFormat()
+    public ServiceTestAssertionEvaluator(Result result, SerializationFormat serializationFormat)
     {
-        if (this.serializationFormat == null)
-        {
-            return SerializationFormat.defaultFormat;
-        }
-        try
-        {
-            return SerializationFormat.valueOf(this.serializationFormat);
-        }
-        catch (IllegalArgumentException exception)
-        {
-            throw new    UnsupportedOperationException("Unsupported serialization format '" + this.serializationFormat
-                + "'." + "Supported formats are:" + Stream.of(SerializationFormat.values()).map(SerializationFormat::name).collect(Collectors.joining(",")));
-        }
+        this.result = result;
+        this.serializationFormat = serializationFormat;
     }
-
 
     @Override
     public AssertionStatus visit(TestAssertion testAssertion)
     {
-        SerializationFormat serializationFormat = this.getSerializationFormat();
         if (testAssertion instanceof EqualTo)
         {
             if (!(result instanceof ConstantResult))
             {
-                throw new UnsupportedOperationException("Result type - " + result.getClass().getSimpleName() + " not supported with EqualToJson Assert !!");
+                throw new UnsupportedOperationException("Result type - " + result.getClass().getSimpleName() + " not supported with EqualTo Assert !!");
             }
 
             Object expected = ((EqualTo) testAssertion).expected.accept(new PrimitiveValueSpecificationToObjectVisitor());
@@ -104,7 +81,7 @@ public class ServiceTestAssertionEvaluator implements TestAssertionEvaluator
             }
             else if (result instanceof StreamingResult)
             {
-                actualJson = ((StreamingResult) result).flush(((StreamingResult) result).getSerializer(serializationFormat));
+                actualJson = ((StreamingResult) result).flush(((StreamingResult) result).getSerializer(this.serializationFormat));
             }
             else
             {

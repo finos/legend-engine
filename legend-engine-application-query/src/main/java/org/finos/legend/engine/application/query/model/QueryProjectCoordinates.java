@@ -18,4 +18,5 @@ public class QueryProjectCoordinates
 {
     public String groupId;
     public String artifactId;
+    public String version;
 }

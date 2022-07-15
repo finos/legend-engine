@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>3.8.2-SNAPSHOT</version>
+    <version>3.9.3-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -50,6 +50,10 @@
         <module>legend-engine-xt-persistence-grammar</module>
         <module>legend-engine-xt-persistence-protocol</module>
         <module>legend-engine-xt-persistence-pure</module>
+
+        <module>legend-engine-xt-persistence-cloud-grammar</module>
+        <module>legend-engine-xt-persistence-cloud-protocol</module>
+        <module>legend-engine-xt-persistence-cloud-pure</module>
 
         <module>legend-engine-xt-serviceStore-executionPlan</module>
         <module>legend-engine-xt-serviceStore-protocol</module>
@@ -115,7 +119,6 @@
         <module>legend-engine-xt-analytics-mapping-pure</module>
 
         <module>legend-engine-pure-code-compiled-core</module>
-        <module>legend-engine-pure-code-compiled-core-external-shared</module>
 
         <module>legend-engine-pure-ide-light</module>
         <module>legend-engine-pure-ide-light-metadata-pure</module>
@@ -162,7 +165,7 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>3.1.0</legend.pure.version>
+        <legend.pure.version>3.2.0</legend.pure.version>
         <legend.shared.version>0.22.0</legend.shared.version>
 
         <!-- SONAR -->
@@ -713,6 +716,22 @@
 
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-persistence-cloud-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-persistence-cloud-grammar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-persistence-cloud-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-flatdata-protocol</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -1144,12 +1163,6 @@
                 <artifactId>legend-engine-pure-code-compiled-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-pure-code-compiled-core-external-shared</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
             <!-- ENGINE -->
 
             <!-- PURE -->

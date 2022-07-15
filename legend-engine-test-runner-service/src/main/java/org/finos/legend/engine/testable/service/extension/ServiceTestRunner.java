@@ -15,14 +15,6 @@
 
 package org.finos.legend.engine.testable.service.extension;
 
-import static org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder.getElementFullPath;
-
-import java.io.Closeable;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.ServiceLoader;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
@@ -87,6 +79,17 @@ import org.finos.legend.pure.generated.Root_meta_pure_test_AtomicTest;
 import org.finos.legend.pure.generated.Root_meta_pure_test_TestSuite;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.ServiceLoader;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder.getElementFullPath;
 
 public class ServiceTestRunner implements TestRunner
 {
@@ -271,6 +274,8 @@ public class ServiceTestRunner implements TestRunner
         AtomicTestId atomicTestId = new AtomicTestId();
         atomicTestId.atomicTestId = serviceTest.id;
 
+        SerializationFormat testSerializationFormat = getSerializationFormatForTest(serviceTest);
+
         try
         {
             Map<String, Object> parameters = Maps.mutable.empty();
@@ -287,7 +292,7 @@ public class ServiceTestRunner implements TestRunner
             boolean isResultReusable = executionPlan.rootExecutionNode.isResultPrimitiveType();
             if (isResultReusable && result instanceof StreamingResult)
             {
-                result = new ConstantResult(((StreamingResult) result).flush(((StreamingResult) result).getSerializer(SerializationFormat.RAW)));
+                result = new ConstantResult(((StreamingResult) result).flush(((StreamingResult) result).getSerializer(testSerializationFormat)));
             }
 
             org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult testResult;
@@ -295,7 +300,7 @@ public class ServiceTestRunner implements TestRunner
             List<AssertionStatus> assertionStatusList = Lists.mutable.empty();
             for (TestAssertion assertion : serviceTest.assertions)
             {
-                AssertionStatus status = assertion.accept(new ServiceTestAssertionEvaluator(result, serviceTest.serializationFormat));
+                AssertionStatus status = assertion.accept(new ServiceTestAssertionEvaluator(result, testSerializationFormat));
                 if (status == null)
                 {
                     throw new RuntimeException("Can't evaluate the test assertion: '" + assertion.id + "'");
@@ -332,6 +337,26 @@ public class ServiceTestRunner implements TestRunner
             testError.error = e.toString();
 
             return testError;
+        }
+    }
+
+    private static SerializationFormat getSerializationFormatForTest(ServiceTest serviceTest)
+    {
+        if (serviceTest.serializationFormat == null)
+        {
+            return SerializationFormat.defaultFormat;
+        }
+        else
+        {
+            try
+            {
+                return SerializationFormat.valueOf(serviceTest.serializationFormat);
+            }
+            catch (IllegalArgumentException exception)
+            {
+                throw new UnsupportedOperationException("Unsupported serialization format '" + serviceTest.serializationFormat
+                        + "'." + "Supported formats are:" + Stream.of(SerializationFormat.values()).map(SerializationFormat::name).collect(Collectors.joining(",")));
+            }
         }
     }
 

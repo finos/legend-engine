@@ -40,11 +40,14 @@ function meta::pure::store::platform::executionPlan::generation::processValueSpe
 function <<access.private>> meta::pure::store::platform::executionPlan::generation::defaultFunctionProcessor(fe:FunctionExpression[1], runtime:Runtime[0..1], inScopeVars : Map<String, List<Any>>[1], advancedRouting: Boolean[0..1], exeCtx:ExecutionContext[1], extensions : Extension[*], debug:DebugContext[1]):ExecutionNode[1]
 {
    let children = $fe.parametersValues->evaluateAndDeactivate()->map(v|$v->meta::pure::store::platform::executionPlan::generation::recursivelyFetchClusteredValueSpecification())->map(v|$v->meta::pure::store::platform::executionPlan::generation::processValueSpecification($runtime, $inScopeVars, $advancedRouting, $exeCtx, $extensions, $debug));
-   
+   let funcParams = $fe->findVariableExpressionsInValueSpecification();
+   let varInputs = $funcParams->filter(x| $inScopeVars->get($x.name->toOne())->isNotEmpty())->map(v | ^meta::pure::executionPlan::VariableInput(name = $v.name->toOne(), type = $v.genericType->cast(@GenericType).rawType->toOne(), multiplicity = $v.multiplicity->toOne()));
+
    ^PureExpressionPlatformExecutionNode
    (
       expression = $fe,
       resultType = ^ResultType(type=$fe.genericType.rawType->toOne()),
+      requiredVariableInputs = $varInputs,
       executionNodes = $children,
       fromCluster = meta::pure::store::platform::executionPlan::generation::generatePlatformClusterForFunction($fe, $inScopeVars)
    );
@@ -97,7 +100,9 @@ function <<access.private>> meta::pure::store::platform::executionPlan::generati
    $vs->match([
       f:SimpleFunctionExpression[1]|$f.parametersValues->evaluateAndDeactivate()->map(v|$v->meta::pure::store::platform::executionPlan::generation::recursivelyFetchClusteredValueSpecification()),
       c:ClusteredValueSpecification[*]|$c,
-      i:InstanceValue[1]|[]
+      i:InstanceValue[1]|[],
+      v:VariableExpression[1]|[],
+      fvs:FunctionRoutedValueSpecification[1]|$fvs.value->meta::pure::store::platform::executionPlan::generation::recursivelyFetchClusteredValueSpecification()
    ]);
 }
 

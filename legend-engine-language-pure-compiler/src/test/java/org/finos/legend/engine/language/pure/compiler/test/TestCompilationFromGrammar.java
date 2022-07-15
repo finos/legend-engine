@@ -92,7 +92,7 @@ public class TestCompilationFromGrammar
                 "function example::testMatch(test:MyTest[1]): MyTest[1]\n" +
                 "{\n" +
                 "  $test->match([ a:MyTest[1]|$a ]);\n" +
-                "}", "PARSER error at [6:1-7]: Unexpected token");
+                "}", "PARSER error at [6:1-7]: Unexpected token 'importd'");
     }
 
     @Test

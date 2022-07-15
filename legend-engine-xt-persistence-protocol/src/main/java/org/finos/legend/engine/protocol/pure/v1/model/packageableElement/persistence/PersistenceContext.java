@@ -16,10 +16,18 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persis
 
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.PersistencePlatform;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.ServiceParameter;
 
-public abstract class PersistenceContext extends PackageableElement
+import java.util.List;
+
+public class PersistenceContext extends PackageableElement
 {
     public String persistence;
+    public PersistencePlatform platform;
+    public List<ServiceParameter> serviceParameters;
+    public Connection sinkConnection;
 
     @Override
     public <T> T accept(PackageableElementVisitor<T> visitor)

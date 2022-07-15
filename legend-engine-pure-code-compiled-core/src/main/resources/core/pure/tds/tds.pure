@@ -567,6 +567,13 @@ function
    $newTds;
 }
 
+function 
+   {doc.doc = 'Restrict / reduce columns in provided TDS and return TDS with distinct rows'}
+   meta::pure::tds::restrictDistinct(tds : TabularDataSet[1], columnNames : String[*]):TabularDataSet[1]
+{
+   $tds->restrict($columnNames)->distinct()
+}
+
 
 function 
    {doc.doc = 'Aggregate the data within the provided TDS using the specified groupings and aggregation functions'}

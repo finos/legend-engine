@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import meta::pure::metamodel::path::*;
+import meta::pure::router::clustering::*;
 function meta::pure::functions::meta::forgivingPathToElement(path:String[1]):PackageableElement[0..1]
 {
     if($path == '::',
@@ -383,7 +384,9 @@ function meta::pure::functions::meta::findVariableExpressionsInValueSpecificatio
                                                          t : Type[1] | [];,
                                                          a:Any[1] | [];]););,
                ve:VariableExpression[1] | $ve,
-               r:meta::pure::router::RoutedValueSpecification[1]| $r.value->findVariableExpressionsInValueSpecification();
+               r:meta::pure::router::RoutedValueSpecification[1]| $r.value->findVariableExpressionsInValueSpecification(),
+               c: ClusteredValueSpecification[1] | $c.val->findVariableExpressionsInValueSpecification(),
+               e: ExtendedRoutedValueSpecification[1] | $e.value->findVariableExpressionsInValueSpecification()
              ]
           );
 }

@@ -493,14 +493,14 @@ public class TestRelationalGrammarRoundtrip extends TestGrammarRoundtrip.TestGra
                 "  CM1: Relational\n" +
                 "  {\n" +
                 "    name: [TEST_SCOPE]TEST.another.stateProvNameTXT,\n" +
-                "    subdivisionCategory: if(substring([TEST_SCOPE]TEST.another.stateProv, 1, 2) = 'US', 'STATE', sqlNull()),\n" +
+                "    subdivisionCategory: if(equal(substring([TEST_SCOPE]TEST.another.stateProv, 1, 2), 'US'), 'STATE', sqlNull()),\n" +
                 "    code: [TEST_SCOPE]TEST.something.nodeCODE,\n" +
                 "    scheme: [TEST_SCOPE]@join_1,\n" +
                 "    parent: [TEST_SCOPE]@join_2,\n" +
-                "    hierarchyLevel: case([TEST_SCOPE]TEST.something.test_val = 20, 1, [TEST_SCOPE]TEST.something.test_val = 30, 2, [TEST_SCOPE]TEST.something.test_val = 40, 3, [TEST_SCOPE]TEST.something.test_val = 55, 4, [TEST_SCOPE]TEST.something.test_val = 60, 5, sqlNull()),\n" +
-                "    prop1: divide(if([TEST_DB2]@join_1 > (OUTER) [TEST_DB2]@join_2 | toString([TEST_DB2]SOMETHING.something.toValue) = '0903', 0.0, [TEST_DB2]@join_3 > (INNER) [TEST_DB2]@join_4 | parseFloat([TEST_DB2]schema1.table2.col3)), if(isEmpty([TEST_SCOPE]TEST.something.factor), 1.0, divide(1, [TEST_SCOPE]TEST.something.factor))),\n" +
+                "    hierarchyLevel: case(equal([TEST_SCOPE]TEST.something.test_val, 20), 1, equal([TEST_SCOPE]TEST.something.test_val, 30), 2, equal([TEST_SCOPE]TEST.something.test_val, 40), 3, equal([TEST_SCOPE]TEST.something.test_val, 55), 4, equal([TEST_SCOPE]TEST.something.test_val, 60), 5, sqlNull()),\n" +
+                "    prop1: divide(if(equal([TEST_DB2]@join_1 > (OUTER) [TEST_DB2]@join_2 | toString([TEST_DB2]SOMETHING.something.toValue), '0903'), 0.0, [TEST_DB2]@join_3 > (INNER) [TEST_DB2]@join_4 | parseFloat([TEST_DB2]schema1.table2.col3)), if(isEmpty([TEST_SCOPE]TEST.something.factor), 1.0, divide(1, [TEST_SCOPE]TEST.something.factor))),\n" +
                 "    part[part_TEST]: [TEST_SCOPE]@join_1 > [TEST_SCOPE]@join_2,\n" +
-                "    prop1: divide(if([TEST_DB2]@join_1 > (OUTER) [TEST_DB2]@join_2 | toString([TEST_DB2]SOMETHING.something.toValue) = '0903', 0.0, [TEST_DB2]@join_3 > (INNER) [TEST_DB2]@join_4 | parseFloat([TEST_DB2]schema1.table2.col3)), if(isEmpty(table.factor), 1.0, divide(1, table.factor)))\n" +
+                "    prop1: divide(if(equal([TEST_DB2]@join_1 > (OUTER) [TEST_DB2]@join_2 | toString([TEST_DB2]SOMETHING.something.toValue), '0903'), 0.0, [TEST_DB2]@join_3 > (INNER) [TEST_DB2]@join_4 | parseFloat([TEST_DB2]schema1.table2.col3)), if(isEmpty(table.factor), 1.0, divide(1, table.factor)))\n" +
                 "  }\n" +
                 ")\n", unformatted);
     }
@@ -680,14 +680,28 @@ public class TestRelationalGrammarRoundtrip extends TestGrammarRoundtrip.TestGra
                         "(\n" +
                         "  CM1: Relational\n" +
                         "  {\n" +
-                        "    name: [TEST_SCOPE]TEST.another.stateProvNameTXT,\n" +
-                        "    subdivisionCategory: if(substring([TEST_SCOPE]TEST.another.stateProv, 1, 2) = 'US', 'STATE', sqlNull()),\n" +
+                        "    subdivisionCategory: if(equal(substring([TEST_SCOPE]TEST.another.stateProv, 1, 2), 'US'), 'STATE', sqlNull()),\n" +
                         "    code: [TEST_SCOPE]TEST.something.nodeCODE,\n" +
                         "    scheme: [TEST_SCOPE]@join_1,\n" +
                         "    parent: [TEST_SCOPE]@join_2,\n" +
-                        "    hierarchyLevel: case([TEST_SCOPE]TEST.something.test_val = 20, 1, [TEST_SCOPE]TEST.something.test_val = 30, 2, [TEST_SCOPE]TEST.something.test_val = 40, 3, [TEST_SCOPE]TEST.something.test_val = 55, 4, [TEST_SCOPE]TEST.something.test_val = 60, 5, sqlNull()),\n" +
-                        "    prop1: divide(if([TEST_DB2]@join_1 > (OUTER) [TEST_DB2]@join_2 | toString([TEST_DB2]SOMETHING.something.toValue) = [TEST_DB2]@join_1 > (OUTER) [TEST_DB2]@join_2 | toString([TEST_DB2]SOMETHING.something.toValue), 0.0, [TEST_DB2]@join_3 > (INNER) [TEST_DB2]@join_4 | parseFloat([TEST_DB2]schema1.table2.col3)), if(isEmpty([TEST_SCOPE]TEST.something.factor), 1.0, divide(1, [TEST_SCOPE]TEST.something.factor))),\n" +
+                        "    hierarchyLevel: case(equal([TEST_SCOPE]TEST.something.test_val, 20), 1, equal([TEST_SCOPE]TEST.something.test_val, 30), 2, equal([TEST_SCOPE]TEST.something.test_val, 40), 3, equal([TEST_SCOPE]TEST.something.test_val, 55), 4, equal([TEST_SCOPE]TEST.something.test_val, 60), 5, sqlNull()),\n" +
+                        "    prop1: divide(if(equal([TEST_DB2]@join_1 > (OUTER) [TEST_DB2]@join_2 | toString([TEST_DB2]SOMETHING.something.toValue), [TEST_DB2]@join_1 > (OUTER) [TEST_DB2]@join_2 | toString([TEST_DB2]SOMETHING.something.toValue)), 0.0, [TEST_DB2]@join_3 > (INNER) [TEST_DB2]@join_4 | parseFloat([TEST_DB2]schema1.table2.col3)), if(isEmpty([TEST_SCOPE]TEST.something.factor), 1.0, divide(1, [TEST_SCOPE]TEST.something.factor))),\n" +
                         "    part[part_TEST]: [TEST_SCOPE]@join_1 > [TEST_SCOPE]@join_2\n" +
+                        "  }\n" +
+                        ")\n"
+        );
+    }
+
+    @Test
+    public void testEnumDynaFunctionWithJoin()
+    {
+        test(
+                "###Mapping\n" +
+                        "Mapping milestoning::map\n" +
+                        "(\n" +
+                        "  *my::class: Relational\n" +
+                        "  {\n" +
+                        "    cusipRegion: EnumerationMapping RegionMapping: case(or(equal([test::db]@joinName | [test::db]Table.region, 'Y'), equal([test::db]@joinName | [test::db]Table.region, 'N')), [test::db]@joinName | [milestoning::db]Table.region, 'UNKNOWN')\n" +
                         "  }\n" +
                         ")\n"
         );
