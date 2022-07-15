@@ -30,7 +30,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.BigQueryDatasourceSpecification;
 import org.finos.legend.engine.shared.core.vault.EnvironmentVaultImplementation;
 import org.finos.legend.engine.shared.core.vault.Vault;
-import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 import org.junit.BeforeClass;
 
@@ -115,7 +114,6 @@ public abstract class ExternalIntegration_TestConnectionAcquisitionWithFlowProvi
         assertTrue(getDatabaseType() + " GCP adc flow does not exist ", flow.isPresent());
     }
 
-    @NotNull
     public abstract DatabaseType getDatabaseType();
 
     private void assertGCPWIFFlowIsAvailable(LegendDefaultDatabaseAuthenticationFlowProvider flowProvider)

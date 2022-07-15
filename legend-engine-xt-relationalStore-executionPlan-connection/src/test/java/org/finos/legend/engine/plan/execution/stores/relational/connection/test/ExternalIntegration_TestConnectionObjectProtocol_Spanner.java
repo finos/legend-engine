@@ -16,6 +16,7 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.test
 
 import java.sql.Connection;
 import javax.security.auth.Subject;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.GCPApplicationDefaultCredentialsAuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.TestDatabaseAuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.spanner.SpannerManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.SpannerDataSourceSpecification;
@@ -42,7 +43,7 @@ public class ExternalIntegration_TestConnectionObjectProtocol_Spanner extends Db
                         null,
                         null),
                 new SpannerManager(),
-                new TestDatabaseAuthenticationStrategy());
+                new GCPApplicationDefaultCredentialsAuthenticationStrategy());
         try (Connection connection = ds.getConnectionUsingSubject(getSubject()))
         {
             testConnection(connection, "select 1");

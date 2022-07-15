@@ -22,7 +22,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPApplicationDefaultCredentialsAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPWorkloadIdentityFederationAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SpannerDatasourceSpecification;
-import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 import org.pac4j.core.profile.CommonProfile;
 
@@ -32,7 +31,7 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Spann
     public static final String TEST_QUERY = "select 1";
 
     @Override
-    public @NotNull DatabaseType getDatabaseType()
+    public DatabaseType getDatabaseType()
     {
         return DatabaseType.Spanner;
     }
