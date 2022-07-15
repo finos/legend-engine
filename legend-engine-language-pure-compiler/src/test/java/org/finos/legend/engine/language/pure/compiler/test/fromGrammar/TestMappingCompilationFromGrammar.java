@@ -224,7 +224,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "                primeId : $src.primeId\n" +
                 "             }\n" +
                 "   \n" +
-                ")","COMPILATION error at [14:1-29:1]: The new function/operator(^) is unsupported in property mappings, violated in property 'test_A.b' of mapping 'test::map'"
+                ")","COMPILATION error at [14:1-29:1]: The new function/operator(^) on target class is unsupported in property mappings, violated in property 'test_A.b' of mapping 'test::map'"
                 );
 
         test(models +
@@ -248,7 +248,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "                primeId : $src.primeId\n" +
                 "             }\n" +
                 "   \n" +
-                ")","COMPILATION error at [18:1-33:1]: The new function/operator(^) is unsupported in property mappings, violated in property 'test_A.b' of mapping 'test::map'"
+                ")","COMPILATION error at [18:1-33:1]: The new function/operator(^) on target class is unsupported in property mappings, violated in property 'test_A.b' of mapping 'test::map'"
         );
 
         test(models +
@@ -293,7 +293,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "                primeId : $src.primeId\n" +
                 "             }\n" +
                 "   \n" +
-                ")","COMPILATION error at [20:1-35:1]: The new function/operator(^) is unsupported in property mappings, violated in property 'test_A.b' of mapping 'test::map'"
+                ")","COMPILATION error at [20:1-35:1]: The new function/operator(^) on target class is unsupported in property mappings, violated in property 'test_A.b' of mapping 'test::map'"
         );
 
         test(models +
@@ -321,7 +321,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "                primeId : $src.primeId\n" +
                 "             }\n" +
                 "   \n" +
-                ")","COMPILATION error at [22:1-37:1]: The new function/operator(^) is unsupported in property mappings, violated in property 'test_A.b' of mapping 'test::map'"
+                ")","COMPILATION error at [22:1-37:1]: The new function/operator(^) on target class is unsupported in property mappings, violated in property 'test_A.b' of mapping 'test::map'"
         );
 
         test(models +
@@ -346,7 +346,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "                primeId : $src.primeId\n" +
                 "             }\n" +
                 "   \n" +
-                ")","COMPILATION error at [19:1-34:1]: The new function/operator(^) is unsupported in property mappings, violated in property 'test_A.b' of mapping 'test::map'"
+                ")","COMPILATION error at [19:1-34:1]: The new function/operator(^) on target class is unsupported in property mappings, violated in property 'test_A.b' of mapping 'test::map'"
         );
 
         test(models +
