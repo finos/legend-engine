@@ -15,6 +15,7 @@
 package org.finos.legend.engine.api.analytics;
 
 import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.api.analytics.model.DataSpaceAnalysisInput;
 import org.finos.legend.engine.api.analytics.model.DataSpaceAnalysisResult;
@@ -23,42 +24,75 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBui
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperRuntimeBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpace;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_diagram_analytics_modelCoverage_DiagramModelCoverageAnalysisResult;
 import org.finos.legend.pure.generated.core_diagram_analytics_analytics;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class DataSpaceAnalyticsHelper
 {
-    public static DataSpaceAnalysisResult analyzeDataSpace(Root_meta_pure_metamodel_dataSpace_DataSpace dataSpace, PureModelContextData pureModelContextData, PureModel pureModel, DataSpaceAnalysisInput input)
+    public static DataSpaceAnalysisResult analyzeDataSpace(Root_meta_pure_metamodel_dataSpace_DataSpace dataSpace, PureModel pureModel, DataSpace dataSpaceProtocol, PureModelContextData pureModelContextData, DataSpaceAnalysisInput input)
     {
-        // diagrams
-        // NOTE: right now, we only build and do analysis for featured diagrams
-        Root_meta_pure_metamodel_diagram_analytics_modelCoverage_DiagramModelCoverageAnalysisResult result = core_diagram_analytics_analytics.Root_meta_pure_metamodel_diagram_analytics_modelCoverage_getDiagramModelCoverage_Diagram_MANY__DiagramModelCoverageAnalysisResult_1_(dataSpace._featuredDiagrams(), pureModel.getExecutionSupport());
-        PureModelContextData classes = PureModelContextDataGenerator.generatePureModelContextDataFromClasses(result._classes(), input.clientVersion, pureModel.getExecutionSupport());
-        PureModelContextData enums = PureModelContextDataGenerator.generatePureModelContextDataFromEnumerations(result._enumerations(), input.clientVersion, pureModel.getExecutionSupport());
-        PureModelContextData _profiles = PureModelContextDataGenerator.generatePureModelContextDataFromProfile((RichIterable<Profile>) result._profiles(), input.clientVersion, pureModel.getExecutionSupport());
-        PureModelContextData.Builder builder = PureModelContextData.newBuilder();
-        List<String> featuredDiagramPaths = dataSpace._featuredDiagrams().collect(diagram -> HelperModelBuilder.getElementFullPath(diagram, pureModel.getExecutionSupport())).toList();
-        pureModelContextData.getElements().stream().filter(el -> featuredDiagramPaths.contains(el.getPath())).forEach(builder::addElement);
-        PureModelContextData diagramsModel = builder.build().combine(classes).combine(enums).combine(_profiles);
+        DataSpaceAnalysisResult result = new DataSpaceAnalysisResult();
+        result.name = dataSpaceProtocol.name;
+        result._package = dataSpaceProtocol._package;
+        result.path = dataSpaceProtocol.getPath();
+        result.description = dataSpaceProtocol.description;
 
-        // execution contexts
-        Map<String, DataSpaceAnalysisResult.DataSpaceExecutionContextAnalysisResult> executionContexts = new HashMap<>();
-        dataSpace._executionContexts().each(executionContext ->
+        result.taggedValues = ListIterate.collect(dataSpace._taggedValues().toList(), taggedValue ->
         {
-            executionContexts.put(executionContext._name(), new DataSpaceAnalysisResult.DataSpaceExecutionContextAnalysisResult(
-                    ListIterate.collect(HelperRuntimeBuilder.getMappingCompatibleRuntimes(
-                            executionContext._mapping(),
-                            ListIterate.selectInstancesOf(pureModelContextData.getElements(), PackageableRuntime.class),
-                            pureModel), runtime -> HelperModelBuilder.getElementFullPath(runtime, pureModel.getExecutionSupport()))));
+            DataSpaceAnalysisResult.DataSpaceTaggedValueInfo info = new DataSpaceAnalysisResult.DataSpaceTaggedValueInfo();
+            info.profile = HelperModelBuilder.getElementFullPath(taggedValue._tag()._profile(), pureModel.getExecutionSupport());
+            info.tag = taggedValue._tag()._value();
+            info.value = taggedValue._value();
+            return info;
         });
 
-        return new DataSpaceAnalysisResult(diagramsModel, executionContexts);
+        result.stereotypes = ListIterate.collect(dataSpace._stereotypes().toList(), stereotype ->
+        {
+            DataSpaceAnalysisResult.DataSpaceStereotypeInfo info = new DataSpaceAnalysisResult.DataSpaceStereotypeInfo();
+            info.profile = HelperModelBuilder.getElementFullPath(stereotype._profile(), pureModel.getExecutionSupport());
+            info.value = stereotype._value();
+            return info;
+        });
+
+        // execution contexts
+        result.executionContexts = dataSpace._executionContexts().toList().collect(executionContext ->
+        {
+            DataSpaceAnalysisResult.DataSpaceExecutionContextAnalysisResult executionContextAnalysisResult = new DataSpaceAnalysisResult.DataSpaceExecutionContextAnalysisResult();
+            executionContextAnalysisResult.name = executionContext._name();
+            executionContextAnalysisResult.description = executionContext._description();
+            executionContextAnalysisResult.mapping = HelperModelBuilder.getElementFullPath(executionContext._mapping(), pureModel.getExecutionSupport());
+            executionContextAnalysisResult.defaultRuntime = HelperModelBuilder.getElementFullPath(executionContext._defaultRuntime(), pureModel.getExecutionSupport());
+            executionContextAnalysisResult.compatibleRuntimes = ListIterate.collect(HelperRuntimeBuilder.getMappingCompatibleRuntimes(
+                    executionContext._mapping(),
+                    ListIterate.selectInstancesOf(pureModelContextData.getElements(), PackageableRuntime.class),
+                    pureModel), runtime -> HelperModelBuilder.getElementFullPath(runtime, pureModel.getExecutionSupport()));
+            return executionContextAnalysisResult;
+        });
+        result.defaultExecutionContext = dataSpace._defaultExecutionContext()._name();
+
+        // model
+        // NOTE: right now, we only build and do analysis for featured diagrams
+        Root_meta_pure_metamodel_diagram_analytics_modelCoverage_DiagramModelCoverageAnalysisResult diagramAnalysisResult = core_diagram_analytics_analytics.Root_meta_pure_metamodel_diagram_analytics_modelCoverage_getDiagramModelCoverage_Diagram_MANY__DiagramModelCoverageAnalysisResult_1_(dataSpace._featuredDiagrams(), pureModel.getExecutionSupport());
+        PureModelContextData classes = PureModelContextDataGenerator.generatePureModelContextDataFromClasses(diagramAnalysisResult._classes(), input.clientVersion, pureModel.getExecutionSupport());
+        PureModelContextData enums = PureModelContextDataGenerator.generatePureModelContextDataFromEnumerations(diagramAnalysisResult._enumerations(), input.clientVersion, pureModel.getExecutionSupport());
+        PureModelContextData _profiles = PureModelContextDataGenerator.generatePureModelContextDataFromProfile((RichIterable<Profile>) diagramAnalysisResult._profiles(), input.clientVersion, pureModel.getExecutionSupport());
+        PureModelContextData.Builder builder = PureModelContextData.newBuilder();
+        List<String> featuredDiagramPaths = dataSpace._featuredDiagrams() != null ? dataSpace._featuredDiagrams().collect(diagram -> HelperModelBuilder.getElementFullPath(diagram, pureModel.getExecutionSupport())).toList() : Lists.mutable.empty();
+        pureModelContextData.getElements().stream().filter(el -> featuredDiagramPaths.contains(el.getPath())).forEach(builder::addElement);
+        result.model = builder.build().combine(classes).combine(enums).combine(_profiles);
+
+        // diagrams
+        result.featuredDiagrams = dataSpace._featuredDiagrams() != null ? dataSpace._featuredDiagrams().toList().collect(diagram -> HelperModelBuilder.getElementFullPath(diagram, pureModel.getExecutionSupport())) : Lists.mutable.empty();
+
+        // support
+        result.supportInfo = dataSpaceProtocol.supportInfo;
+
+        return result;
     }
 }

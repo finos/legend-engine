@@ -14,29 +14,50 @@
 
 package org.finos.legend.engine.api.analytics.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceSupportInfo;
 
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 public class DataSpaceAnalysisResult
 {
-    public PureModelContextData diagramsModel;
-    public Map<String, DataSpaceExecutionContextAnalysisResult> executionContexts;
+    public String name;
+    @JsonProperty(value = "package")
+    public String _package;
+    public String path;
+    public List<DataSpaceTaggedValueInfo> taggedValues = Collections.emptyList();
+    public List<DataSpaceStereotypeInfo> stereotypes = Collections.emptyList();
+    public String description;
+    public DataSpaceSupportInfo supportInfo;
 
-    public DataSpaceAnalysisResult(PureModelContextData diagramsModel, Map<String, DataSpaceExecutionContextAnalysisResult> executionContexts)
+    public PureModelContextData model;
+
+    public List<DataSpaceExecutionContextAnalysisResult> executionContexts = Collections.emptyList();
+    public String defaultExecutionContext;
+
+    public List<String> featuredDiagrams = Collections.emptyList();
+
+    public static class DataSpaceTaggedValueInfo
     {
-        this.diagramsModel = diagramsModel;
-        this.executionContexts = executionContexts;
+        public String profile;
+        public String tag;
+        public String value;
+    }
+
+    public static class DataSpaceStereotypeInfo
+    {
+        public String profile;
+        public String value;
     }
 
     public static class DataSpaceExecutionContextAnalysisResult
     {
-        public List<String> runtimes;
-
-        public DataSpaceExecutionContextAnalysisResult(List<String> runtimes)
-        {
-            this.runtimes = runtimes;
-        }
+        public String name;
+        public String description;
+        public String mapping;
+        public List<String> compatibleRuntimes;
+        public String defaultRuntime;
     }
 }

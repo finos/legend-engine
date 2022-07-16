@@ -14,22 +14,28 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.map.MutableMap;
-import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceSupportEmail;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.diagram.Diagram;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
+import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpace;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceSupportEmail_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceSupportInfo;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpace_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_extension_TaggedValue_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 
 import java.util.Collections;
 
@@ -42,6 +48,7 @@ public class DataSpaceCompilerExtension implements CompilerExtension
     {
         return Collections.singletonList(Processor.newProcessor(
                 DataSpace.class,
+                Lists.fixedSize.with(PackageableRuntime.class, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping.class, Diagram.class),
                 (dataSpace, context) ->
                 {
                     Root_meta_pure_metamodel_dataSpace_DataSpace metamodel = new Root_meta_pure_metamodel_dataSpace_DataSpace_Impl("")._name(dataSpace.name);
@@ -59,16 +66,27 @@ public class DataSpaceCompilerExtension implements CompilerExtension
                     {
                         throw new EngineException("Data space must have at least one execution context", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
                     }
-                    metamodel._executionContexts(ListIterate.collect(dataSpace.executionContexts, item -> new Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext_Impl("")
-                            ._name(item.name)
-                            ._description(item.description)
-                            ._mapping(context.resolveMapping(item.mapping.path, item.mapping.sourceInformation))
-                            ._defaultRuntime(context.resolvePackageableRuntime(item.defaultRuntime.path, item.defaultRuntime.sourceInformation))
-                    ));
-                    if ((dataSpace.defaultExecutionContext != null) && Iterate.noneSatisfy(dataSpace.executionContexts, c -> dataSpace.defaultExecutionContext.equals(c.name)))
+                    metamodel._executionContexts(ListIterate.collect(dataSpace.executionContexts, executionContext ->
                     {
-                        throw new EngineException("Default execution context does not match any existing execution contexts", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
+                        Mapping mapping = context.resolveMapping(executionContext.mapping.path, executionContext.mapping.sourceInformation);
+                        Root_meta_pure_runtime_PackageableRuntime runtime = context.resolvePackageableRuntime(executionContext.defaultRuntime.path, executionContext.defaultRuntime.sourceInformation);
+                        if (!HelperRuntimeBuilder.isRuntimeCompatibleWithMapping(runtime, mapping))
+                        {
+                            throw new EngineException("Execution context '" + executionContext.name + "' default runtime is not compatible with mapping", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
+                        }
+                        return new Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext_Impl("")
+                                ._name(executionContext.name)
+                                ._description(executionContext.description)
+                                ._mapping(mapping)
+                                ._defaultRuntime(runtime);
+                    }));
+                    Assert.assertTrue(dataSpace.defaultExecutionContext != null, () -> "Default execution context is missing", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
+                    Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext defaultExecutionContext = metamodel._executionContexts().toList().select(c -> dataSpace.defaultExecutionContext.equals(c._name())).getFirst();
+                    if (defaultExecutionContext == null)
+                    {
+                        throw new EngineException("Default execution context '" + dataSpace.defaultExecutionContext + "' does not match any existing execution contexts", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
                     }
+                    metamodel._defaultExecutionContext(defaultExecutionContext);
 
                     metamodel._description(dataSpace.description);
                     metamodel._featuredDiagrams(dataSpace.featuredDiagrams != null ? ListIterate.collect(dataSpace.featuredDiagrams, item -> HelperDiagramBuilder.resolveDiagram(item.path, item.sourceInformation, context)) : null);

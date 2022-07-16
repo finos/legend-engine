@@ -304,6 +304,7 @@
             "path": "model::dummyRuntime",
             "type": "RUNTIME"
           },
+          "description": "An important execution context",
           "mapping": { "path": "model::dummyMapping", "type": "MAPPING" },
           "name": "dummyContext"
         },

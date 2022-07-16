@@ -17,9 +17,15 @@ import meta::pure::store::*;
 import meta::pure::mapping::*;
 import meta::pure::mapping::modelToModel::*;
 
+// TODO?: should we properly specify this and make this extends Runtime?
+Class meta::pure::runtime::EngineRuntime
+{
+  mappings: Mapping[*];
+}
+
 Class meta::pure::runtime::PackageableRuntime extends PackageableElement
 {
-   
+   runtimeValue: meta::pure::runtime::EngineRuntime[1];
 }
 
 Class meta::pure::runtime::PackageableConnection extends PackageableElement
