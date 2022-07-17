@@ -1,0 +1,196 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::store::elasticsearch::metamodel::*;
+
+Class meta::external::store::elasticsearch::metamodel::ElasticSearchStore extends ElasticSearchIndexContainer, meta::pure::store::Store
+[
+  clustersOwned: $this.clusters->forAll(i | $i.store == $this),
+  clusterUniqueName: $this.clusters.name->distinct()->size() == $this.clusters->size()
+]
+{
+  clusters: ElasticSearchCluster[*];
+
+  index(name: String[1]){
+    $this.indices->concatenate($this.clusters.indices)->filter(i | $i.fullyQualifiedName() == $name)->head();
+  }:ElasticSearchStoreIndex[0..1];
+}
+
+Class meta::external::store::elasticsearch::metamodel::ElasticSearchCluster extends ElasticSearchIndexContainer
+{
+  name: String[1];
+  store: ElasticSearchStore[1];
+}
+
+Class <<typemodifiers.abstract>> meta::external::store::elasticsearch::metamodel::ElasticSearchIndexContainer
+[
+  indicesOwned: $this.indices->forAll(i | $i.owner == $this),
+  indexUniqueName: $this.indices->map(i | $i.fullyQualifiedName())->distinct()->size() ==  $this.indices->size()
+]
+{
+   indices: ElasticSearchStoreIndex[*];
+}
+
+Class meta::external::store::elasticsearch::metamodel::ElasticSearchStoreIndex extends ElasticSearchPropertyContainer
+{
+   name: String[1];
+   owner: ElasticSearchIndexContainer[1];
+   fullyQualifiedName(){
+     $this.owner->match([
+       cluster: ElasticSearchCluster[1] | $cluster.name + ':' + $this.name,
+       store: ElasticSearchStore[1] | $this.name
+     ])
+   }:String[1];
+   store(){
+     $this.owner->match([
+       cluster: ElasticSearchCluster[1] | $cluster.store,
+       store: ElasticSearchStore[1] | $store
+     ])
+   }: ElasticSearchStore[1];
+}
+
+Class <<typemodifiers.abstract>> meta::external::store::elasticsearch::metamodel::ElasticSearchPropertyContainer
+[
+  propertiesOwned: $this.properties->forAll(i | $i.owner == $this)
+]
+{
+  properties: ElasticSearchDocumentProperty[*];
+}
+
+Class meta::external::store::elasticsearch::metamodel::ElasticSearchDocument extends ElasticSearchPropertyContainer
+[
+  parentOwnsProperty: $this.parent.type->instanceOf(ElasticSearchObjectPropertyType) &&
+        $this.parent.type->cast(@ElasticSearchObjectPropertyType).object == $this
+]
+{
+  parent: ElasticSearchDocumentProperty[1];
+}
+
+Class meta::external::store::elasticsearch::metamodel::ElasticSearchDocumentProperty
+{
+  name: String[1];
+  type: ElasticSearchPropertyType[1];
+  owner: ElasticSearchPropertyContainer[1];
+  fullyQualifiedName(){
+     $this.owner->match([
+       document: ElasticSearchDocument[1] | $document.parent.fullyQualifiedName() + '.' + $this.name,
+       store: ElasticSearchStoreIndex[1] | $this.name
+     ])
+   }:String[1];
+}
+
+Class <<typemodifiers.abstract>> meta::external::store::elasticsearch::metamodel::ElasticSearchPropertyType
+{
+   {doc.doc='https://www.elastic.co/guide/en/elasticsearch/reference/current/array.html'} toMany: Boolean[0..1];
+}
+
+Class <<typemodifiers.abstract>> meta::external::store::elasticsearch::metamodel::ElasticSearchScalarPropertyType extends ElasticSearchPropertyType
+{
+
+}
+
+Class <<typemodifiers.abstract>> meta::external::store::elasticsearch::metamodel::ElasticSearchPureIntegerPropertyType extends ElasticSearchScalarPropertyType
+{
+
+}
+
+Class <<typemodifiers.abstract>> meta::external::store::elasticsearch::metamodel::ElasticSearchPureFloatPropertyType extends ElasticSearchScalarPropertyType
+{
+
+}
+
+Class 
+{doc.doc='https://www.elastic.co/guide/en/elasticsearch/reference/current/object.html',
+doc.doc='https://www.elastic.co/guide/en/elasticsearch/reference/current/nested.html'}
+meta::external::store::elasticsearch::metamodel::ElasticSearchObjectPropertyType extends ElasticSearchPropertyType
+{
+  object: ElasticSearchDocument[1];
+}
+
+Class
+{doc.doc='https://www.elastic.co/guide/en/elasticsearch/reference/current/boolean.html'}
+meta::external::store::elasticsearch::metamodel::ElasticSearchBooleanPropertyType extends ElasticSearchScalarPropertyType
+{
+
+}
+
+Class 
+{doc.doc='https://www.elastic.co/guide/en/elasticsearch/reference/current/number.html'}
+meta::external::store::elasticsearch::metamodel::ElasticSearchLongPropertyType extends ElasticSearchPureIntegerPropertyType
+{
+
+}
+
+Class 
+{doc.doc='https://www.elastic.co/guide/en/elasticsearch/reference/current/number.html'}
+meta::external::store::elasticsearch::metamodel::ElasticSearchIntegerPropertyType extends ElasticSearchPureIntegerPropertyType
+{
+  
+}
+
+Class 
+{doc.doc='https://www.elastic.co/guide/en/elasticsearch/reference/current/number.html'}
+meta::external::store::elasticsearch::metamodel::ElasticSearchShortPropertyType extends ElasticSearchPureIntegerPropertyType
+{
+  
+}
+
+Class 
+{doc.doc='https://www.elastic.co/guide/en/elasticsearch/reference/current/number.html'}
+meta::external::store::elasticsearch::metamodel::ElasticSearcBytePropertyType extends ElasticSearchPureIntegerPropertyType
+{
+  
+}
+
+Class 
+{doc.doc='https://www.elastic.co/guide/en/elasticsearch/reference/current/number.html'}
+meta::external::store::elasticsearch::metamodel::ElasticSearchDoublePropertyType extends ElasticSearchPureFloatPropertyType
+{
+  
+}
+
+Class 
+{doc.doc='https://www.elastic.co/guide/en/elasticsearch/reference/current/number.html'}
+meta::external::store::elasticsearch::metamodel::ElasticSearcFloatPropertyType extends ElasticSearchPureFloatPropertyType
+{
+  
+}
+
+Class 
+{doc.doc='https://www.elastic.co/guide/en/elasticsearch/reference/current/date.html'}
+meta::external::store::elasticsearch::metamodel::ElasticSearcDatePropertyType extends ElasticSearchScalarPropertyType
+{
+  
+}
+
+Class <<typemodifiers.abstract>> meta::external::store::elasticsearch::metamodel::ElasticSearcStringPropertyType extends ElasticSearchScalarPropertyType
+{
+  
+}
+
+Class
+{doc.doc='https://www.elastic.co/guide/en/elasticsearch/reference/current/keyword.html#keyword-field-type'}
+meta::external::store::elasticsearch::metamodel::ElasticSearchKeywordPropertyType extends ElasticSearcStringPropertyType
+{
+  
+}
+
+Class
+{doc.doc='https://www.elastic.co/guide/en/elasticsearch/reference/current/text.html#text-field-type'}
+meta::external::store::elasticsearch::metamodel::ElasticSearchTextPropertyType extends ElasticSearcStringPropertyType
+{
+  
+}
+
+// todo add date support

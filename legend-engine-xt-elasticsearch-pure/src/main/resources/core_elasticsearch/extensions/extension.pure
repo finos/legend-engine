@@ -1,0 +1,49 @@
+import meta::pure::router::routing::*;
+import meta::pure::router::clustering::*;
+import meta::pure::extension::*;
+import meta::pure::runtime::*;
+import meta::pure::mapping::*;
+import meta::pure::functions::meta::*;
+
+import meta::external::store::elasticsearch::metamodel::*;
+
+
+function meta::external::store::elasticsearch::extension::elasticSearchExtension(type:String[1]) : meta::pure::extension::Extension[1]
+{
+   ^Extension
+   (
+      type = $type,
+      routing_routeFunctionExpressionFunctionDefinition = pair(
+            fe:FunctionExpression[1] | $fe->evaluateAndDeactivate().genericType.rawType == meta::external::store::elasticsearch::tds::IndexTDS,
+            {fe:FunctionExpression[1], state:RoutingState[1], runtime : Runtime[1], mapping: Mapping[1], executionContext:ExecutionContext[1] |
+                    let store = $fe->instanceValuesAtParameter(0, [], [])->toOne()->match([
+                      path: String[1] | $path->pathToElement()->cast(@ElasticSearchStore),
+                      es: ElasticSearchStore[1] | $es
+                    ]);
+                    ^$state(value = ^TDSRoutedValueSpecification(genericType = $fe.genericType,
+                                                                 multiplicity = $fe.multiplicity,
+                                                                 id = 'Index TDS',
+                                                                 store = $store,
+                                                                 runtime = $runtime,
+                                                                 mapping = $mapping,
+                                                                 executionContext = $executionContext,
+                                                                 value = $fe
+                                                               ));}
+            ),
+      cluster_cluster = {openVariables:Map<String, List<Any>>[1] |
+            {t:TDSRoutedValueSpecification[1] | ^ClusterResponse(cluster = ^ClusteredValueSpecification(
+                                genericType  = $t.genericType,
+                                multiplicity = $t.multiplicity,
+                                s = meta::external::store::elasticsearch::contract::elasticSearchStoreContract(),
+                                store = $t.store,
+                                mapping = $t.mapping,
+                                runtime = $t.runtime,
+                                openVars = $openVariables,
+                                val = $t,
+                                exeCtx = $t.executionContext,
+                                executable = true
+                                ))
+            }
+      }
+   )
+}

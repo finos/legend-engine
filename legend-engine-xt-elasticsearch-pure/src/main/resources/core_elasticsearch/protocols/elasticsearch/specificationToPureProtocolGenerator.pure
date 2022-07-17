@@ -110,10 +110,13 @@ meta::external::store::elasticsearch::metamodel::spec::toPure::specToPure(spec: 
   let state = ^GenerationState(version = $version, spec = $spec, nameToClasses = getBuiltInTypes(),debug = $debug);
 
   let apisToGenerate = [
+    'info',
     'msearch',
     'search',
     'count',
-    'indices.get_mapping'
+    'indices.get_mapping',
+    'close_point_in_time',
+    'open_point_in_time'
   ];
 
   let apis = $spec.endpoints->filter(x|$x.name->in($apisToGenerate));

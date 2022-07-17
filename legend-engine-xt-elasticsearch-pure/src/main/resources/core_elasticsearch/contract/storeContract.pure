@@ -1,0 +1,97 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::router::systemMapping::tests::*;
+import meta::pure::store::*;
+import meta::pure::runtime::*;
+import meta::pure::mapping::*;
+import meta::pure::extension::*;
+import meta::pure::executionPlan::*;
+
+// todo v7 vs v8
+function meta::external::store::elasticsearch::contract::elasticSearchStoreContract(): StoreContract[1]
+{
+   ^StoreContract
+   (
+     id = 'elasticSearchStore',
+    //  supports = meta::relational::contract::supports_FunctionExpression_1__Boolean_1_,
+    //  supportsStreamFunction = meta::relational::contract::supportsStream_FunctionExpression_1__Boolean_1_,
+    planExecution = meta::external::store::elasticsearch::contract::planExecution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__Extension_MANY__DebugContext_1__ExecutionNode_1_,
+
+     supportsSetImplementation = s:SetImplementation[1]|false;//$s->instanceOf(RelationalInstanceSetImplementation)
+   )
+}
+
+// Functions supported by relational execution
+function meta::external::store::elasticsearch::contract::supports(f:FunctionExpression[1]):Boolean[1]
+{
+  false;
+      // !meta::relational::functions::pureToSqlQuery::findSupportedFunction(
+      //                   $f,
+      //                   meta::relational::functions::pureToSqlQuery::getSupportedFunctions(),
+      //                   meta::relational::functions::pureToSqlQuery::getContextBasedSupportedFunctions()
+      //               )->isEmpty()
+      // //These are here because the router does not go deep enough, should remove
+      // || [
+      //       meta::pure::functions::math::sum_Float_MANY__Float_1_,
+      //       meta::pure::functions::math::sum_Integer_MANY__Integer_1_,
+      //       meta::pure::functions::math::sum_Number_MANY__Number_1_
+      //    ]->contains($f.func);
+}
+
+function meta::external::store::elasticsearch::contract::supportsStream(f:FunctionExpression[1]):Boolean[1]
+{
+  false;
+  // [
+  //     meta::pure::functions::collection::in_Any_1__Any_MANY__Boolean_1_,
+  //     meta::pure::functions::collection::in_Any_$0_1$__Any_MANY__Boolean_1_
+  // ]->contains($f.func);
+}
+
+// // Execution Plan
+function meta::external::store::elasticsearch::contract::planExecution(sq:meta::pure::mapping::StoreQuery[1], ext:RoutedValueSpecification[0..1], m:Mapping[0..1], runtime:Runtime[0..1], exeCtx:ExecutionContext[1], extensions:Extension[*], debug:DebugContext[1]):ExecutionNode[1]
+{
+  //  let store = $sq.store->cast(@Database);
+  //  let fe = $sq.fe->evaluateAndDeactivate();
+  //  if($fe.func->in([meta::pure::graphFetch::execution::graphFetchFunctions()]),
+  //     |
+  //       // Graph Fetch Flow
+  //       $sq->meta::pure::graphFetch::executionPlan::planGraphFetchExecution($ext, $m->toOne(), $runtime->toOne(), $exeCtx, $extensions, $debug);,
+
+  //     |
+  //       // Normal Flow
+  //      let connections = $runtime.connections->filter(c | $c->instanceOf(DatabaseConnection));
+  //      let storeRuntime = if($connections->size() <= 1,
+  //                            | $runtime->toOne(),
+  //                            | let oldRuntime = $runtime->toOne();
+  //                              let dbConn = $oldRuntime->connectionByElement($store)->cast(@DatabaseConnection);
+  //                              ^$oldRuntime(connections = $dbConn);
+  //                         );
+
+  //     let queryExeCtx = if($exeCtx->instanceOf(RelationalExecutionContext),|$exeCtx,|[])->cast(@RelationalExecutionContext);
+  //     let originalQuery = $sq.fe->toSQLQuery($m->toOne(), $sq.inScopeVars, $queryExeCtx, $debug, $extensions);
+  //     $originalQuery->postProcessSQLQuery($store, $ext, $m->toOne(), $storeRuntime, $exeCtx, $extensions)
+  //                   ->generateExecutionNodeForPostProcessedResult($sq, $store, $ext, $m->toOne(), $storeRuntime, $exeCtx, $debug, $extensions);
+  //  );
+  ^meta::external::store::elasticsearch::executionPlan::nodes::ElasticSearchQueryExecutionNode(
+    resultType = ^meta::pure::executionPlan::ResultType(type = Any)
+  );
+}
+
+// Lazy Execution of property
+// function meta::relational::contract::getterOverrideMapped(o:Any[1], propertyMapping:PropertyMapping[1]):Any[*]
+// {
+//    $o->processProperty($propertyMapping.property);
+// }
+

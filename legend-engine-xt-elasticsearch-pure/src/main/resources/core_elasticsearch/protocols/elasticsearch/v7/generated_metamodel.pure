@@ -1361,7 +1361,7 @@ Class meta::external::store::elasticsearch::metamodel::api::v7::types::querydsl:
 
 Class meta::external::store::elasticsearch::metamodel::api::v7::types::querydsl::WildcardQuery extends meta::external::store::elasticsearch::metamodel::api::v7::types::querydsl::QueryBase
 {
-  {meta::pure::profiles::doc.doc='Allows case insensitive matching of the pattern with the indexed field values when set to true. Default is false which means the case sensitivity of matching depends on the underlying field’s mapping.',meta::pure::profiles::doc.doc='Since: 7.10.0'} case_insensitive : Boolean[0..1];
+  {meta::pure::profiles::doc.doc='Allows case insensitive matching of the pattern with the indexed field values when set to true. Default is false which means the case sensitivity of matching depends on the underlying fieldï¿½â‚¬ï¿½s mapping.',meta::pure::profiles::doc.doc='Since: 7.10.0'} case_insensitive : Boolean[0..1];
   {meta::pure::profiles::doc.doc='Method used to rewrite the query'} rewrite : String[0..1];
   {meta::pure::profiles::doc.doc='Wildcard pattern for terms you wish to find in the provided field. Required, when wildcard is not set.'} value : String[0..1];
   {meta::pure::profiles::doc.doc='Wildcard pattern for terms you wish to find in the provided field. Required, when value is not set.'} wildcard : String[0..1];

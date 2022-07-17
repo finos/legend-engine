@@ -146,7 +146,7 @@ meta::external::store::elasticsearch::metamodel::api::specutils::ElasticSearchRe
   }: String[*];
 }
 
-function meta::external::store::elasticsearch::metamodel::api::specutils::abc(): Any[*]
+function meta::external::store::elasticsearch::metamodel::api::specutils::jsonSerializers(): Function<{Nil[1],JSONState[1]->JSONElement[1]}>[*]
 {  
     let extraSers = [
       {e:Enum[1], state:JSONState[1]  |

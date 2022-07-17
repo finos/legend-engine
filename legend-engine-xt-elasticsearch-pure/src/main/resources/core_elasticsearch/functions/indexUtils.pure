@@ -1,0 +1,11 @@
+
+import meta::external::store::elasticsearch::metamodel::*;
+import meta::external::store::elasticsearch::utils::*;
+
+function meta::external::store::elasticsearch::utils::collectScalarProperties(propContainer: ElasticSearchPropertyContainer[1]): ElasticSearchDocumentProperty[*]
+{
+  $propContainer.properties->map(p | $p.type->match([
+    scalar: ElasticSearchScalarPropertyType[1] | $p,
+    obj: ElasticSearchObjectPropertyType[1] | $obj.object->collectScalarProperties()
+  ]));
+}
