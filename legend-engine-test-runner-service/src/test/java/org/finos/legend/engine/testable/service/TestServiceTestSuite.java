@@ -31,7 +31,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.deployment.DeploymentStateAndVersions;
 import org.finos.legend.engine.testable.service.extension.ServiceTestableRunnerExtension;
-import org.finos.legend.engine.testable.service.result.MultiExecutionServiceTestResult;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.MultiExecutionServiceTestResult;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
 import org.hamcrest.MatcherAssert;
 import org.junit.Assert;

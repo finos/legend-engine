@@ -12,7 +12,7 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-package org.finos.legend.engine.testable.service.result;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service;
 
 import org.eclipse.collections.api.factory.Maps;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;

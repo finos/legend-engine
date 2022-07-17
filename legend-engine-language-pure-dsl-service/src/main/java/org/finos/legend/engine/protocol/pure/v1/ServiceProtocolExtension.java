@@ -21,6 +21,7 @@ import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Execution;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.MultiExecutionServiceTestResult;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.MultiExecutionTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureMultiExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureSingleExecution;
@@ -34,6 +35,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.TestSuite;
 
 import java.util.List;
 import java.util.Map;
+import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 
 public class ServiceProtocolExtension implements PureProtocolExtension
 {
@@ -61,7 +63,10 @@ public class ServiceProtocolExtension implements PureProtocolExtension
                         .build(),
                 ProtocolSubTypeInfo.newBuilder(Test.class)
                         .withSubtype(ServiceTest.class, "serviceTest")
-                        .build()
+                        .build(),
+            ProtocolSubTypeInfo.newBuilder(TestResult.class)
+                .withSubtype(MultiExecutionServiceTestResult.class, "multiExecutionTestResult")
+                .build()
         ));
     }
 
