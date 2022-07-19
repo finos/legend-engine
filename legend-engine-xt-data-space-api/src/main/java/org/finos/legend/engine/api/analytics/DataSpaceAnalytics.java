@@ -46,7 +46,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import static org.finos.legend.engine.api.analytics.DataSpaceAnalyticsHelper.analyzeDataSpace;
 import static org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperDataSpaceBuilder.getDataSpace;
 
 @Api(tags = "Analytics - Model")
@@ -63,11 +62,11 @@ public class DataSpaceAnalytics
     }
 
     @POST
-    @Path("modelCoverage")
-    @ApiOperation(value = "Analyze the data space to identify models covered by the data space and extra analytics on a data space")
+    @Path("render")
+    @ApiOperation(value = "Analyze the data space to collect information needed to render the data space")
     @Consumes({MediaType.APPLICATION_JSON, InflateInterceptor.APPLICATION_ZLIB})
     @Produces(MediaType.APPLICATION_JSON)
-    public Response analyzeDataSpaceModelCoverage(DataSpaceAnalysisInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response analyzeDataSpace(DataSpaceAnalysisInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         PureModelContextData pureModelContextData = this.modelManager.loadData(input.model, input.clientVersion, profiles);
@@ -80,7 +79,7 @@ public class DataSpaceAnalytics
         {
             try
             {
-                return ManageConstantResult.manageResult(profiles, analyzeDataSpace(dataSpace, pureModel, (DataSpace) dataSpaceProtocol, pureModelContextData, input), objectMapper);
+                return ManageConstantResult.manageResult(profiles, DataSpaceAnalyticsHelper.analyzeDataSpace(dataSpace, pureModel, (DataSpace) dataSpaceProtocol, pureModelContextData, input), objectMapper);
             }
             catch (Exception e)
             {
