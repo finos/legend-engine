@@ -364,6 +364,11 @@ public class ConnectionStateManager implements Closeable
                 DataSourceWithStatistics dataSourceWithStatistics = this.connectionPools.get(poolName);
                 if (!dataSourceWithStatistics.getIdentityState().isValid())
                 {
+                    //at this point, the data source for the current pool in this.connectionPools has an invalid identity state
+                    //recreation of pool will create a new Hikari data source
+                    //since, Hikari is configured to fail fast, a new test connection will be created which invokes the DriverWrapper#connect method
+                    //for that method to successfully create the new test connection, we need to update the data source for the current pool in this.connectionPools
+                    this.connectionPools.put(poolName, dsSupplier.get());
                     DataSourceWithStatistics newDataSourceWithStatistics = new DataSourceWithStatistics(poolName, dataSourceBuilder.get(), identityState, dataSourceSpecification);
                     this.connectionPools.put(poolName, newDataSourceWithStatistics);
                     LOGGER.info("DataSource re-created for [{}] for datasource [{}], name {}", principal, connectionKey.shortId(), poolName);
