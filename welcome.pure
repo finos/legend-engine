@@ -1,0 +1,110 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Press F9 to execute the 'go' function...
+// Press F10 to run the full test suite
+
+import meta::json::*;
+import meta::pure::metamodel::serialization::grammar::*;
+import meta::pure::functions::io::http::*;
+import meta::external::store::elasticsearch::metamodel::spec::property::*;
+import meta::external::store::elasticsearch::metamodel::spec::*;
+import meta::external::store::elasticsearch::metamodel::spec::endpoint::*;
+import meta::external::store::elasticsearch::metamodel::spec::toPure::*;
+import meta::external::store::elasticsearch::metamodel::spec::type::*;
+
+import meta::pure::metamodel::serialization::grammar::*;
+import meta::external::store::elasticsearch::metamodel::api::specutils::*;
+
+import meta::external::store::elasticsearch::metamodel::api::v7::endpoint::*;
+import meta::external::store::elasticsearch::metamodel::api::v7::types::*;
+import meta::external::store::elasticsearch::metamodel::api::v7::types::querydsl::*;
+
+function go():Any[*]
+{
+    // let esVersion = '7.17';
+    let esVersion = '8.3';
+
+    let pureCode = $esVersion->generatePureCode(false);
+    println($pureCode->joinStrings('\n\n'));
+
+    // pair(1, 1)->
+
+    // let spec = $esVersion->getSpec();
+    // let r1 = $spec.types->filter(x | $x.name == ^TypeName(namespace = '_types.mapping', name = 'Property'));
+    // let names = $r1->cast(@TypeAlias).type->cast(@UnionOf).items->cast(@InstanceOf).type;
+    // let r = $spec.types->filter(x | $x.name->in($names) && $x->instanceOf(TypeAlias));
+    // let specAsJson = $r->toJsonNative( ^JSONSerializationConfig(typeKeyName='__TYPE', includeType=false, fullyQualifiedTypePath=false, serializeQualifiedProperties=true, serializePackageableElementName=false, removePropertiesWithEmptyValues=true))->parseJSON()->toPrettyJSONString();
+    // println($specAsJson);
+
+    // let searchReq = ^meta::external::store::elasticsearch::metamodel::api::v7::indices::getmapping::Request(
+    //   // include_type_name = true,
+    //   index = 'companydatabase'
+    // );
+    // let req = indices_get_mapping($searchReq);
+
+    // let countReq = ^meta::external::store::elasticsearch::metamodel::api::v7::global::count::Request(
+    //   // pretty = true,
+    //   index = 'companydatabase',
+    //   query = ^QueryContainer(
+    //     term = pair('Gender', ^TermQuery(value = ^FieldValue(string = 'Female'), case_insensitive = true))->newMap()
+    //   )
+    // );
+
+    // let req = count($countReq);
+
+    // let url = ^meta::pure::functions::io::http::URL(
+    //   host='localhost',
+    //   port=9200,
+    //   path=$req.path
+    // );
+
+    // $req.path->println();
+
+    // let config = config(false, false, true, true);
+
+    // let extraSers = [
+    //   {taggedUnion: TaggedUnion[1], state: JSONState[1] |
+    //     let tag = $taggedUnion->anyToJSON($state, [], $state.config)->cast(@JSONObject);
+    //     assert($tag.keyValuePairs->size() == 1, |'tagged union with more than one field defined!');
+    //     $tag.keyValuePairs->at(0).value;
+    //   }
+    // ]; // extraSerializers:Function<{Nil[1],JSONState[1] ->JSONElement[1]}>
+
+    // let json = if($req.requestBody->isEmpty(), |[], |$req.requestBody->toJSON($extraSers, [], $config));
+
+    // $json->println();
+
+    // let rawSpec = meta::pure::functions::io::http::executeHTTPRaw(
+    //   $url,
+    //   $req.method,
+    //   [],
+    //   $json
+    // );
+
+    // $rawSpec.entity->println();
+
+    // let typeRef = ^GenericType(
+    //   rawType = TypeReference,
+    //   typeArguments = [
+    //     ^GenericType(
+    //       rawType = $searchReq.responseType->toOne(),
+    //       typeArguments = $searchReq.generics->map(x | ^GenericType(rawType = $x))
+    //     )
+    //   ]
+    // );
+
+    // $rawSpec.entity->parseJSON()->fromJSON(dynamicNew($typeRef, [])->cast(@TypeReference<Any>))->println();
+    // print('ok',1);
+}
