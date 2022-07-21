@@ -190,5 +190,361 @@ public class TestCompilationFromGrammar
                 ")");
     }
 
+    @Test
+    public void testFunctionTestSimplePrimitiveValueParametersWithName()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "function trial2::hello(name: String[1]): String[1]\n" +
+                        "<\n" +
+                        "test1: {[name = 'Sharvani'], 'Hello, Sharvani'}\n" +
+                        ">\n" +
+                        "{\n" +
+                        "   let result = 'Hello, ' + $name;\n" +
+                        "   $result;\n" +
+                        "}\n", null);
+    }
+
+    @Test
+    public void testFunctionTestSimplePrimitiveValueParametersWithoutName()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "function trial2::hello(name: String[1]): String[1]\n" +
+                        "<\n" +
+                        "test1: {['Sharvani'], 'Hello, Sharvani'}\n" +
+                        ">\n" +
+                        "{\n" +
+                        "   let result = 'Hello, ' + $name;\n" +
+                        "   $result;\n" +
+                        "}\n", null);
+    }
+
+    @Test
+    public void testFunctionTestBasicComplexValueAssert()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "Class my::Firm\n" +
+                        "{\n" +
+                        "  firmName: String[1];\n" +
+                        "}\n\n" +
+                        "function trial2::world(name: String[1]): my::Firm[1]\n" +
+                        "<\n" +
+                        "   test1: { [name = 'GS'], #{{\"firmName\":\"GS\"}}# }\n" +
+                        ">\n" +
+                        "{\n" +
+                        "   ^my::Firm(firmName=$name)\n" +
+                        "}\n"
+        );
+    }
+
+    @Test
+    public void testFunctionTestBasicComplexValueAssertMultipleLine()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "Class my::Firm\n" +
+                        "{\n" +
+                        "  firmName: String[1];\n" +
+                        "}\n\n" +
+                        "function trial2::world(name: String[1]): my::Firm[1]\n" +
+                        "<\n" +
+                        "   test1: {[name = 'GS'], #{\n" +
+                        "{\n" +
+                        "\"firmName\":\n \"GS\"" +
+                        "\n}\n" +
+                        "}#}\n" +
+                        ">\n" +
+                        "{\n" +
+                        "   ^my::Firm(firmName=$name)\n" +
+                        "}\n"
+        );
+    }
+
+    @Test
+    public void testFunctionTestBasicComplexValueParameterAndAssert()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "Class my::Firm\n" +
+                        "{\n" +
+                        "  firmName: String[1];\n" +
+                        "}\n\n" +
+                        "function trial2::world(firm: my::Firm[1]): my::Firm[1]\n" +
+                        "<\n" +
+                        "   test1: {[#{{ \"firmName\": \"\"} }# ], #{ {\"firmName\": \"GS\"}}#}\n" +
+                        ">\n" +
+                        "{\n" +
+                        "   ^my::Firm(firmName=$firm)\n" +
+                        "}\n"
+        );
+    }
+
+    @Test
+    public void testFunctionTestBasicComplexValueParameterAndAssertInvalidJSON()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "Class my::Firm\n" +
+                        "{\n" +
+                        "  firmName: String[1];\n" +
+                        "}\n\n" +
+                        "function trial2::world(firm: my::Firm[1]): my::Firm[1]\n" +
+                        "<\n" +
+                        "   test1: {[ #{ \"firmName\": \"\"} }# ], #{ {\"firmName\": \"GS\"} }#}\n" +
+                        ">\n" +
+                        "{\n" +
+                        "   ^my::Firm(firmName=$firm)\n" +
+                        "}\n", "COMPILATION error at [9:4-63]: Invalid JSON format for parameter: 'firm'"
+        );
+    }
+
+    @Test
+    public void testFunctionTestParameterInvalidOrder()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "function trial2::hello(name: String[1], place: String[1]):String[1]\n" +
+                        "<\n" +
+                        "    test1: {[place='Alice', name='Wonderland'], 'Alice in Wonderland'}\n" +
+                        ">\n" +
+                        "{\n" +
+                        "    let result = $name + ' in ' + $place;\n" +
+                        "    $result;\n" +
+                        "}\n", "COMPILATION error at [4:5-70]: Function test parameter name does not match the input parameter name defined in the function"
+        );
+    }
+
+    @Test
+    public void testFunctionTestParameterInvalidType()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "function trial2::hello(name: String[1], place: String[1]):String[1]\n" +
+                        "<\n" +
+                        "    test1: {[name='Alice', place=9.9], 'Alice in Wonderland'}\n" +
+                        ">\n" +
+                        "{\n" +
+                        "    let result = $name + ' in ' + $place;\n" +
+                        "    $result;\n" +
+                        "}\n", "COMPILATION error at [4:5-61]: Parameter value type does not match with parameter type for parameter: 'place'"
+        );
+    }
+
+    @Test
+    public void testFunctionTestParameterOptional()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "function trial2::hello(name: String[1], place: String[0..1]):String[1]\n" +
+                        "<\n" +
+                        "    test1: {[name='Alice', place=[]], 'Alice in Wonderland'}\n" +
+                        ">\n" +
+                        "{\n" +
+                        "    let result = $name + ' in ';\n" +
+                        "    $result;\n" +
+                        "}\n"
+        );
+    }
+
+    @Test
+    public void testFunctionTestOptionalParameterOptionalAssertString()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "function trial2::hello(name: String[0..1], place: String[0..1]):String[0..1]\n" +
+                        "<\n" +
+                        "    test1: {[name=[], place=[]], []}\n" +
+                        ">\n" +
+                        "{\n" +
+                        "    $name;\n" +
+                        "}\n"
+        );
+    }
+
+    @Test
+    public void testFunctionTestOptionalReturnOptionalInputInteger()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "function trial::optionalParameter(var1: Integer[0..1]): Integer[0..1]\n" +
+                        " <\n" +
+                        " test1: {[ [] ], []}\n" +
+                        ">\n" +
+                        "{\n" +
+                        "  if ($var1->isEmpty(), \n" +
+                        "  | [],\n" +
+                        "  | $var1->max()\n" +
+                        "  )\n" +
+                        "}"
+        );
+    }
+
+    @Test
+    public void testFunctionTestParameterInvalidNumberOfArguments()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "function trial2::hello(name: String[1], place: String[1]):String[1]\n" +
+                        "<\n" +
+                        "    test1: {[name='Alice', place='Wonderland', extraParam = '!!'], 'Alice in Wonderland'}\n" +
+                        ">\n" +
+                        "{\n" +
+                        "    let result = $name + ' in ' + $place;\n" +
+                        "    $result;\n" +
+                        "}\n", "COMPILATION error at [4:5-89]: Number of parameters passed in the function test do not match the number of input parameters defined in the function."
+        );
+    }
+
+    @Test
+    public void testFunctionTestParameterInvalidComplexParameterMissingJSONValue()
+    {
+            TestCompilationFromGrammarTestSuite.test(
+                    "###Pure\n" +
+                            "Class my::Firm\n" +
+                            "{\n" +
+                            "  firmName: String[1];\n" +
+                            "}\n\n" +
+                            "function trial2::world(firm: my::Firm[1]): my::Firm[1]\n" +
+                            "<\n" +
+                            "   test1: {[ #{ {\"firmName\":  } }# ], #{ {\"firmName\": \"GS\"} }#}\n" +
+                            ">\n" +
+                            "{\n" +
+                            "   ^my::Firm(firmName=$firm)\n" +
+                            "}\n","COMPILATION error at [9:4-63]: Invalid JSON format for parameter: 'firm'"
+            );
+    }
+
+    @Test
+    public void testFunctionTestDuplicateTestId()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "function trial2::hello(name: String[1], place: String[1]):String[1]\n" +
+                        "<\n" +
+                        "    test1: {[name='Alice', place='Wonderland'], 'Alice in Wonderland'},\n" +
+                        "    test1: {[name='Alice', place='Wonderland'], 'Alice in Wonderland'}\n" +
+                        ">\n" +
+                        "{\n" +
+                        "    let result = $name + ' in ' + $place;\n" +
+                        "    $result;\n" +
+                        "}\n", "COMPILATION error at [2:1-10:1]: Function Test Ids should be unique"
+        );
+    }
+
+    @Test
+    public void testFunctionTestZeroReturnMultiplicity()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "function trial2::hello(name: String[1], place: String[1]):String[0]\n" +
+                        "<\n" +
+                        "    test1: {[name='Alice', place='Wonderland'], 'Alice in Wonderland'}\n" +
+                        ">\n" +
+                        "{\n" +
+                        "    let result = $name + ' in ' + $place;\n" +
+                        "    $result;\n" +
+                        "}\n", "COMPILATION error at [2:1-9:1]: Return multiplicity should not be Nil for a function with function test"
+        );
+    }
+
+    @Test
+    public void testFunctionTestAssertMismatchingType()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "function trial2::hello(name: String[1], place: String[1]):Integer[3]\n" +
+                        "<\n" +
+                        "    test1: {[name='Alice', place='Wonderland'], 'String'}\n" +
+                        ">\n" +
+                        "{\n" +
+                        "    let result = [1,2,3];\n" +
+                        "    $result;\n" +
+                        "}\n", "COMPILATION error at [4:5-57]: Function Test assert value type does not match with return type for function"
+        );
+    }
+
+    @Test
+    public void testFunctionTestAssertMismatchingMultiplicity()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "function trial2::hello(name: String[1], place: String[1]):Integer[3]\n" +
+                        "<\n" +
+                        "    test1: {[name='Alice', place='Wonderland'], [1,2]}\n" +
+                        ">\n" +
+                        "{\n" +
+                        "    let result = [1,2,3];\n" +
+                        "    $result;\n" +
+                        "}\n", "COMPILATION error at [4:5-54]: Function Test assert value type does not match with return type for function"
+        );
+    }
+
+    @Test
+    public void testFunctionTestAssertOptionalZeroReturn()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "function trial2::hello(name: String[1], place: String[1]):Integer[0..1]\n" +
+                        "<\n" +
+                        "    test1: {[name='Alice', place='Wonderland'], []}\n" +
+                        ">\n" +
+                        "{\n" +
+                        "    let result = [];\n" +
+                        "    $result;\n" +
+                        "}\n"
+        );
+    }
+
+    @Test
+    public void testFunctionTestOptionalReturnListInput()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "function trial::ListParameter(var1: Integer[*]): Integer[0..1]\n" +
+                        " <\n" +
+                        " test1: {[ [] ], []}\n" +
+                        ">\n" +
+                        "{\n" +
+                        "  if ($var1->isEmpty(), \n" +
+                        "  | [],\n" +
+                        "  | $var1->max()\n" +
+                        "  )\n" +
+                        "}"
+        );
+    }
+
+    @Test
+    public void testFunctionTestListReturnListInput()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "function trial::ListParameter(var1: Integer[*]): Integer[*]\n" +
+                        "<\n" +
+                        "test1: {[ [1,2] ], [1,2]}\n" +
+                        ">\n" +
+                        "{\n" +
+                        "  if ($var1->isEmpty(), \n" +
+                        "  | [],\n" +
+                        "  | $var1\n" +
+                        "  )\n" +
+                        "}"
+        );
+    }
+
+    @Test
+    public void testFunctionTestEmptyListReturnEmptyListInput()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "function trial::ListParameter(var1: Integer[*]): Integer[*]\n" +
+                        " <\n" +
+                        " test1: {[ [] ], []}\n" +
+                        ">\n" +
+                        "{\n" +
+                        "  if ($var1->isEmpty(), \n" +
+                        "  | [],\n" +
+                        "  | $var1\n" +
+                        "  )\n" +
+                        "}"
+        );
+    }
 
 }

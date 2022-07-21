@@ -16,6 +16,7 @@ package org.finos.legend.engine.language.pure.grammar.from.domain;
 
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.atn.PredictionMode;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -36,23 +37,31 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.navigation.Navi
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.navigation.NavigationParserGrammar;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ExternalFormatData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Association;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Profile;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Constraint;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.DefaultValue;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.EnumValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Enumeration;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.EnumValue;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.QualifiedProperty;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Property;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TagPtr;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Association;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Measure;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Profile;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Property;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.QualifiedProperty;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.StereotypePtr;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TagPtr;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.DefaultValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TaggedValue;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.StereotypePtr;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Unit;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.functionTest.FunctionTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.functionTest.FunctionTestParameter;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.functionTest.FunctionTestParameterComplexValue;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.functionTest.FunctionTestParameterPrimitiveValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualTo;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToJson;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
@@ -67,8 +76,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Hac
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.HackedUnit;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.KeyExpression;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDecimal;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -186,6 +197,186 @@ public class DomainParseTreeWalker
             stereotypePtr.sourceInformation = this.walkerSourceInformation.getSourceInformation(stereotypeContext);
             return stereotypePtr;
         });
+    }
+
+    // ----------------------------------------------- FUNCTION TESTS -----------------------------------------------
+    private List<FunctionTest> visitFunctionTests(DomainParserGrammar.FunctionTestsContext ctx, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function func)
+    {
+        List<FunctionTest> functionTests = new ArrayList<FunctionTest>();
+        if (ctx != null)
+        {
+            if (ctx.functionTest() != null && !ctx.functionTest().isEmpty())
+            {
+                for (DomainParserGrammar.FunctionTestContext functionTestContext : ctx.functionTest())
+                {
+                    functionTests.add(visitFunctionTest(functionTestContext, func));
+                }
+            }
+            else
+            {
+                //Error is thrown when there are only <> brackets and no content
+                throw new EngineException("Atleast 1 function test needs to be present.", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+            }
+        }
+        return functionTests;
+    }
+
+    private FunctionTest visitFunctionTest(DomainParserGrammar.FunctionTestContext ctx, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function func)
+    {
+        FunctionTest functionTest = new FunctionTest();
+        functionTest.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+        if (ctx.identifier() == null)
+        {
+            throw new EngineException("Expected field 'Function Test Id'", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+        }
+        functionTest.id = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
+
+        //parameters
+        functionTest.parameters = new ArrayList<FunctionTestParameter>();
+        if (ctx.functionTestParameters() == null)
+        {
+            throw new EngineException("Expected field 'Function Test Parameter'", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+        }
+        List<DomainParserGrammar.FunctionTestParameterContext> testParametersContext  = ctx.functionTestParameters().functionTestParameter();
+
+        if (testParametersContext.size() != 0)
+        {
+            if (ctx.functionTestParameters().identifier() != null && !ctx.functionTestParameters().identifier().isEmpty())
+            {
+                for (int i = 0; i < testParametersContext.size(); i++)
+                {
+                    try
+                    {
+                        functionTest.parameters.add(visitFunctionTestParameter(testParametersContext.get(i), PureGrammarParserUtility.fromIdentifier(ctx.functionTestParameters().identifier(i))));
+                    }
+                    catch (NullPointerException ne)
+                    {
+                        throw new EngineException("Expected Identifier", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+                    }
+                    catch (Exception e)
+                    {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+            else
+            {
+                functionTest.parameters = ListIterate.collect(testParametersContext, functionTestParameterContext -> visitFunctionTestParameter(functionTestParameterContext, null));
+            }
+        }
+        // asserts
+        DomainParserGrammar.FunctionTestAssertContext testAssertContext =  ctx.functionTestAssert();
+        functionTest.assertions = Lists.mutable.empty();
+        functionTest.assertions.add(visitFunctionTestAssert(testAssertContext, func));
+        functionTest.assertions.get(0).id = functionTest.id + "_assertion";
+
+        return functionTest;
+    }
+
+    private FunctionTestParameter visitFunctionTestParameter(DomainParserGrammar.FunctionTestParameterContext ctx, String functionTestParameterName)
+    {
+        if (ctx.primitiveValue() != null)
+        {
+            return visitFunctionTestParameterPrimitiveValue(ctx.primitiveValue(), functionTestParameterName);
+        }
+        else if (ctx.functionTestParameterComplexValue() != null)
+        {
+            return visitFunctionTestParameterComplexValue(ctx.functionTestParameterComplexValue(), functionTestParameterName);
+        }
+        else
+        {
+            throw new EngineException("Unsupported syntax", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+        }
+    }
+
+    private FunctionTestParameterPrimitiveValue visitFunctionTestParameterPrimitiveValue(DomainParserGrammar.PrimitiveValueContext ctx, String functionTestParameterName)
+    {
+        FunctionTestParameterPrimitiveValue functionValueParameter = new FunctionTestParameterPrimitiveValue();
+        if (functionTestParameterName != null)
+        {
+            functionValueParameter.name = functionTestParameterName;
+        }
+        DomainParser parser = new DomainParser();
+        int startLine = ctx.getStart().getLine();
+        int lineOffset = walkerSourceInformation.getLineOffset() + startLine - 1;
+        int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + ctx.getStart().getCharPositionInLine();
+        ParseTreeWalkerSourceInformation functionTestParamSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).build();
+        String parameter = ctx.getText();
+        functionValueParameter.value = parser.parsePrimitiveValue(parameter, functionTestParamSourceInformation, null);
+
+        return functionValueParameter;
+    }
+
+    private FunctionTestParameterComplexValue visitFunctionTestParameterComplexValue(DomainParserGrammar.FunctionTestParameterComplexValueContext ctx, String functionTestParameterName)
+    {
+        FunctionTestParameterComplexValue functionTestParameterComplexValue = new FunctionTestParameterComplexValue();
+        if (functionTestParameterName != null)
+        {
+            functionTestParameterComplexValue.name = functionTestParameterName;
+        }
+        if (ctx.functionTestParameterComplexValueContent() != null)
+        {
+            TerminalNode islandOpen = (TerminalNode) ctx.children.get(0);
+            functionTestParameterComplexValue.externalFormatData = visitFunctionTestExternalFormatData(islandOpen, ctx);
+        }
+        return functionTestParameterComplexValue;
+    }
+
+    private ExternalFormatData visitFunctionTestExternalFormatData(TerminalNode islandOpen, ParserRuleContext ctx)
+    {
+        StringBuilder builder = new StringBuilder();
+        ctx.children.subList(1,  ctx.children.size()).forEach(cc -> builder.append(cc.getText()));
+        builder.setLength(Math.max(0, builder.length() - 2));
+        String text = builder.toString();
+        ExternalFormatData ext = new ExternalFormatData();
+        ext.data = text;
+        ext.contentType = "application/json";
+        int startLine = islandOpen.getSymbol().getLine();
+        int lineOffset = walkerSourceInformation.getLineOffset() + startLine - 1;
+        int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + islandOpen.getSymbol().getCharPositionInLine() + islandOpen.getSymbol().getText().length();
+        ParseTreeWalkerSourceInformation updatedSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation).withLineOffset(lineOffset).withColumnOffset(columnOffset).build();
+        ext.sourceInformation = updatedSourceInformation.getSourceInformation(ctx);
+        return ext;
+    }
+
+    private TestAssertion visitFunctionTestAssert(DomainParserGrammar.FunctionTestAssertContext ctx, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function func)
+    {
+        if (ctx.primitiveValue() != null)
+        {
+            return visitFunctionTestAssertPrimitiveValue(ctx.primitiveValue(), func.returnType);
+        }
+        else if (ctx.functionTestParameterComplexValue() != null)
+        {
+            return visitFunctionTestAssertComplexValue(ctx.functionTestParameterComplexValue(), func.returnType);
+        }
+        else
+        {
+            throw new EngineException("Unsupported syntax", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+        }
+    }
+
+    private EqualTo visitFunctionTestAssertPrimitiveValue(DomainParserGrammar.PrimitiveValueContext ctx, String functionTestAssertParameterType)
+    {
+        EqualTo functionTestAssertParameter = new EqualTo();
+        DomainParser parser = new DomainParser();
+        int startLine = ctx.getStart().getLine();
+        int lineOffset = walkerSourceInformation.getLineOffset() + startLine - 1;
+        int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + ctx.getStart().getCharPositionInLine();
+        ParseTreeWalkerSourceInformation functionTestAssertParamSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).build();
+        String parameter = ctx.getText();
+        functionTestAssertParameter.expected = parser.parsePrimitiveValue(parameter, functionTestAssertParamSourceInformation, null);
+        return functionTestAssertParameter;
+    }
+
+    private EqualToJson visitFunctionTestAssertComplexValue(DomainParserGrammar.FunctionTestParameterComplexValueContext ctx, String functionTestAssertParameterType)
+    {
+        EqualToJson functionTestAssertParameter = new EqualToJson();
+        TerminalNode islandOpen = (TerminalNode) ctx.children.get(0);
+        if (ctx.functionTestParameterComplexValueContent() != null)
+        {
+            functionTestAssertParameter.expected = visitFunctionTestExternalFormatData(islandOpen, ctx);
+        }
+        return functionTestAssertParameter;
     }
 
     // ----------------------------------------------- DEFAULT VALUE -----------------------------------------------
@@ -394,6 +585,7 @@ public class DomainParseTreeWalker
         func.returnType = ctx.functionTypeSignature().type().getText();
         func.returnMultiplicity = this.buildMultiplicity(ctx.functionTypeSignature().multiplicity().multiplicityArgument());
         func.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+        func.tests = visitFunctionTests(ctx.functionTests(), func);
         return func;
     }
 
@@ -621,6 +813,12 @@ public class DomainParseTreeWalker
             instance.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
             result = instance;
         }
+        else if (ctx.DECIMAL() != null && ctx.MINUS() != null)
+        {
+            CDecimal instance = getInstanceDecimal(ctx.MINUS().getText() + ctx.DECIMAL().getText());
+            instance.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+            result = instance;
+        }
         else if (ctx.INTEGER() != null && ctx.PLUS() != null)
         {
             CInteger instance = getInstanceInteger(ctx.PLUS().getText() + ctx.INTEGER().getText());
@@ -633,9 +831,15 @@ public class DomainParseTreeWalker
             instance.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
             result = instance;
         }
+        else if (ctx.DECIMAL() != null && ctx.PLUS() != null)
+        {
+            CDecimal instance = getInstanceDecimal(ctx.PLUS().getText() + ctx.DECIMAL().getText());
+            instance.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+            result = instance;
+        }
         else
         {
-            throw new RuntimeException("TODO");
+            throw new RuntimeException("Unhandled instance literal");
         }
         return result;
     }
@@ -862,6 +1066,16 @@ public class DomainParseTreeWalker
         return instance;
     }
 
+    private CDecimal getInstanceDecimal(String decimalString)
+    {
+        List<BigDecimal> values = new ArrayList<>();
+        values.add(new BigDecimal(decimalString.substring(0, decimalString.length() - 1)));
+        CDecimal instance = new CDecimal();
+        instance.multiplicity = getMultiplicityOneOne();
+        instance.values = values;
+        return instance;
+    }
+
     private boolean isLowerPrecedenceBoolean(String boolop1, String boolop2)
     {
         return boolop1.equals("or") && boolop2.equals("and");
@@ -1018,15 +1232,12 @@ public class DomainParseTreeWalker
                 instance.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
                 result = instance;
             }
-//            else if (ctx.DECIMAL() != null)
-//            {
-//                List<Double> values = new ArrayList<>();
-//                values.add(Double.parseDouble(ctx.getText()));
-//                CFloat instance = new CFloat();
-//                instance.multiplicity = this.getPureOne();
-//                instance.values = values;
-//                result = instance;
-//            }
+            else if (ctx.DECIMAL() != null)
+            {
+                CDecimal instance = getInstanceDecimal(ctx.getText());
+                instance.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+                result = instance;
+            }
             else if (ctx.DATE() != null)
             {
                 result = new DateParseTreeWalker(ctx.DATE(), this.walkerSourceInformation).visitDefinition();
@@ -1047,7 +1258,7 @@ public class DomainParseTreeWalker
             }
             else
             {
-                throw new RuntimeException("TODO");
+                throw new RuntimeException("Unhandled instance literal token");
             }
         }
         catch (Exception e)

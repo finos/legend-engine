@@ -232,7 +232,8 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
                         ._typeArguments(Lists.fixedSize.of(PureModel.buildFunctionType(ListIterate.collect(function.parameters, p -> (VariableExpression) p.accept(new ValueSpecificationBuilder(this.context, Lists.mutable.empty(), ctx))), this.context.resolveGenericType(function.returnType, function.sourceInformation), this.context.pureModel.getMultiplicity(function.returnMultiplicity)))))
                 ._stereotypes(ListIterate.collect(function.stereotypes, s -> this.context.resolveStereotype(s.profile, s.value, s.profileSourceInformation, s.sourceInformation)))
                 ._taggedValues(ListIterate.collect(function.taggedValues, t -> new Root_meta_pure_metamodel_extension_TaggedValue_Impl("")._tag(this.context.resolveTag(t.tag.profile, t.tag.value, t.tag.profileSourceInformation, t.sourceInformation))._value(t.value)))
-                ._package(pack);
+                ._package(pack)
+                ._tests(HelperModelBuilder.processFunctionTests(function, this.context, ctx));
         HelperModelBuilder.processFunctionConstraints(function, this.context, res, ctx);
         pack._childrenAdd(res);
 

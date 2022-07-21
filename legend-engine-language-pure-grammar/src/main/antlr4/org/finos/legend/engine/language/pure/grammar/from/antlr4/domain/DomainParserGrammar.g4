@@ -165,7 +165,7 @@ nativeFunction:                                 NATIVE FUNCTION qualifiedName ty
 functionTypeSignature:                          PAREN_OPEN (functionVariableExpression (COMMA functionVariableExpression)*)? PAREN_CLOSE COLON type multiplicity
 ;
 functionDefinition:                             FUNCTION stereotypes? taggedValues? qualifiedName typeAndMultiplicityParameters? functionTypeSignature
-                                                constraints?
+                                                constraints? functionTests?
                                                     BRACE_OPEN
                                                         codeBlock
                                                     BRACE_CLOSE
@@ -231,4 +231,22 @@ derivedProperty:                                GREATER_THAN propertyRef BRACKET
 propertyRef:                                    identifier (PAREN_OPEN (treePathPropertyParameterType (COMMA treePathPropertyParameterType)*)? PAREN_CLOSE)*
 ;
 treePathPropertyParameterType:                  type multiplicity
+;
+
+
+// -------------------------------------- FUNCTION TEST --------------------------------------
+
+functionTests:                                  LESS_THAN (functionTest (COMMA functionTest)*)? GREATER_THAN
+;
+functionTest:                                   identifier COLON BRACE_OPEN functionTestParameters COMMA functionTestAssert BRACE_CLOSE
+;
+functionTestParameters:                         BRACKET_OPEN ((identifier EQUAL)? functionTestParameter (COMMA (identifier EQUAL)? functionTestParameter)*)? BRACKET_CLOSE
+;
+functionTestParameter:                          primitiveValue | functionTestParameterComplexValue
+;
+functionTestAssert:                             primitiveValue | functionTestParameterComplexValue
+;
+functionTestParameterComplexValue:              ISLAND_OPEN (functionTestParameterComplexValueContent)*
+;
+functionTestParameterComplexValueContent:       ISLAND_START | ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_HASH | ISLAND_BRACE_CLOSE | ISLAND_END
 ;

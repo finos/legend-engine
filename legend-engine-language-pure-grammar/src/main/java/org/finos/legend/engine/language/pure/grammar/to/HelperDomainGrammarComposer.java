@@ -15,6 +15,7 @@
 package org.finos.legend.engine.language.pure.grammar.to;
 
 import org.eclipse.collections.impl.utility.LazyIterate;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Constraint;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Property;
@@ -22,6 +23,13 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.StereotypePtr;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TaggedValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Unit;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.functionTest.FunctionTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.functionTest.FunctionTestParameter;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.functionTest.FunctionTestParameterComplexValue;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.functionTest.FunctionTestParameterPrimitiveValue;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualTo;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToJson;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 
@@ -29,8 +37,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.appendTabString;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.appendTabString;
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
 
 public class HelperDomainGrammarComposer
 {
@@ -127,4 +136,117 @@ public class HelperDomainGrammarComposer
             return builder.toString();
         }
     }
+
+//---------------------------------------------------------- Function Tests ----------------------------------------------------------
+    public static String renderFunctionTests(List<FunctionTest> functionTests, PureGrammarComposerContext context)
+    {
+        if (!functionTests.isEmpty())
+        {
+            int baseIndentation = 0;
+            StringBuilder builder = new StringBuilder().append("<\n");
+
+            builder.append(String.join(",\n", ListIterate.collect(functionTests, test -> renderFunctionTest((FunctionTest) test, baseIndentation + 1, context)))).append("\n");
+
+            builder.append(">\n");
+            return builder.toString();
+        }
+        else
+        {
+            return "";
+        }
+    }
+
+    public static String renderFunctionTest(FunctionTest functionTest, int baseIndentation, PureGrammarComposerContext context)
+    {
+        StringBuilder builder = new StringBuilder();
+        builder.append(getTabString(baseIndentation)).append(" ").append(functionTest.id).append(": ");
+        builder.append(getTabString(0)).append("{");
+        // Parameters
+        if (functionTest.parameters != null && !functionTest.parameters.isEmpty())
+        {
+            builder.append(getTabString(0)).append("[");
+
+            if (functionTest.parameters.get(0).name != null)
+            {
+                builder.append(String.join(", ", ListIterate.collect(functionTest.parameters, param -> renderFunctionTestParameterWithName(param, 0, context)))).append("");
+            }
+            else
+            {
+                builder.append(String.join(", ", ListIterate.collect(functionTest.parameters, param -> renderFunctionTestParameterWithoutName(param, 0, context)))).append("");
+            }
+            builder.append(getTabString(0)).append("]");
+        }
+        else
+        {
+            builder.append(getTabString(0)).append("[]");
+        }
+        builder.append(", ");
+        // Assert
+        if (functionTest.assertions != null && !functionTest.assertions.isEmpty())
+        {
+            TestAssertion testAssertion = functionTest.assertions.get(0);
+            if (testAssertion instanceof EqualTo)
+            {
+                EqualTo functionTestAssertion = (EqualTo) testAssertion;
+                builder.append(functionTestAssertion.expected.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build()));
+            }
+            else if (testAssertion instanceof EqualToJson)
+            {
+                EqualToJson functionTestAssertion = (EqualToJson) testAssertion;
+                builder.append("#{");
+                builder.append(functionTestAssertion.expected.data);
+                builder.append("}#");
+            }
+        }
+        builder.append(getTabString(0)).append("}");
+
+        return builder.toString();
+    }
+
+    public static String renderFunctionTestParameterWithName(FunctionTestParameter parameter, int baseIndentation, PureGrammarComposerContext context)
+    {
+        StringBuilder str = new StringBuilder();
+
+        if (parameter instanceof FunctionTestParameterPrimitiveValue)
+        {
+            FunctionTestParameterPrimitiveValue functionValueParameter = (FunctionTestParameterPrimitiveValue) parameter;
+            str.append(getTabString(baseIndentation)).append(functionValueParameter.name);
+            str.append(" = ");
+            str.append(functionValueParameter.value.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build()));
+        }
+        else if (parameter instanceof FunctionTestParameterComplexValue)
+        {
+            FunctionTestParameterComplexValue functionTestParameterComplexValue = (FunctionTestParameterComplexValue) parameter;
+            str.append(getTabString(baseIndentation)).append(functionTestParameterComplexValue.name);
+            str.append(" = ");
+            str.append("#{");
+            str.append(functionTestParameterComplexValue.externalFormatData.data);
+            str.append("}#");
+        }
+
+        return str.toString();
+    }
+
+    public static String renderFunctionTestParameterWithoutName(FunctionTestParameter parameter, int baseIndentation, PureGrammarComposerContext context)
+    {
+        StringBuilder str = new StringBuilder();
+
+        if (parameter instanceof FunctionTestParameterPrimitiveValue)
+        {
+            FunctionTestParameterPrimitiveValue functionValueParameter = (FunctionTestParameterPrimitiveValue) parameter;
+            str.append(functionValueParameter.value.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build()));
+        }
+        else if (parameter instanceof FunctionTestParameterComplexValue)
+        {
+            FunctionTestParameterComplexValue functionTestParameterComplexValue = (FunctionTestParameterComplexValue) parameter;
+            str.append("#{");
+            str.append(functionTestParameterComplexValue.externalFormatData.data);
+            str.append("}#");
+        }
+
+        return str.toString();
+    }
+
+
+
 }

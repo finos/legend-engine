@@ -146,6 +146,7 @@
         <module>legend-engine-test-runner-shared</module>
         <module>legend-engine-test-runner-mapping</module>
         <module>legend-engine-test-runner-service</module>
+        <module>legend-engine-test-runner-function</module>
         <module>legend-engine-configuration</module>
         <module>legend-engine-protocol</module>
         <module>legend-engine-protocol-generation</module>
@@ -1078,6 +1079,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-test-runner-service</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-test-runner-function</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

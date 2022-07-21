@@ -37,10 +37,12 @@ import org.finos.legend.pure.generated.core_external_format_json_toJSON;
 import org.finos.legend.pure.generated.core_pure_executionPlan_executionPlan_generation;
 import org.finos.legend.pure.generated.core_pure_tools_tools_extension;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.ExecutionContext;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Runtime;
 import org.finos.legend.pure.m3.execution.Console;
+import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.CompiledSupport;
 import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
 
@@ -48,6 +50,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 
 public class PlanGenerator
 {
@@ -98,6 +101,17 @@ public class PlanGenerator
 
     private static Pair<Root_meta_pure_executionPlan_ExecutionPlan, String> generateExecutionPlanAsPure(LambdaFunction<?> l, Mapping mapping, Runtime pureRuntime, ExecutionContext context, PureModel pureModel, PlanPlatform platform, String planId, boolean debug, RichIterable<? extends Root_meta_pure_extension_Extension> extensions)
     {
+        return generateExecutionPlanStringForFunctionDefinition(l, mapping, pureRuntime, context, pureModel, platform, planId, debug, extensions);
+    }
+
+    public static SingleExecutionPlan generateExecutionPlan(ConcreteFunctionDefinition<?> cfd, Mapping mapping, Runtime pureRuntime, ExecutionContext context, PureModel pureModel, PlanPlatform platform, String planId, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, String clientVersion, Iterable<? extends CommonProfile> profiles, Iterable<? extends PlanTransformer> planTransformers)
+    {
+        org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionPlan pureExecutionPlan =  generateExecutionPlanStringForFunctionDefinition(cfd, mapping, pureRuntime, context, pureModel, platform, planId, false, extensions).getOne();
+        return PlanGenerator.transformExecutionPlan(pureExecutionPlan, pureModel, clientVersion, profiles, extensions, planTransformers);
+    }
+
+    private static Pair<Root_meta_pure_executionPlan_ExecutionPlan, String> generateExecutionPlanStringForFunctionDefinition(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition<? extends java.lang.Object> _f, Mapping mapping, Runtime pureRuntime, ExecutionContext context, PureModel pureModel, PlanPlatform platform, String planId, boolean debug, RichIterable<? extends Root_meta_pure_extension_Extension> extensions)
+    {
         try (Scope scope = GlobalTracer.get().buildSpan("Generate Plan").startActive(true))
         {
             Root_meta_pure_executionPlan_ExecutionPlan plan;
@@ -106,8 +120,8 @@ public class PlanGenerator
             if (mapping == null)
             {
                 plan = context == null ?
-                        core_pure_executionPlan_executionPlan_generation.Root_meta_pure_executionPlan_executionPlan_FunctionDefinition_1__Extension_MANY__ExecutionPlan_1_(l, extensions, pureModel.getExecutionSupport())
-                        : core_pure_executionPlan_executionPlan_generation.Root_meta_pure_executionPlan_executionPlan_FunctionDefinition_1__ExecutionContext_1__Extension_MANY__ExecutionPlan_1_(l, context, extensions, pureModel.getExecutionSupport());
+                        core_pure_executionPlan_executionPlan_generation.Root_meta_pure_executionPlan_executionPlan_FunctionDefinition_1__Extension_MANY__ExecutionPlan_1_(_f, extensions, pureModel.getExecutionSupport())
+                        : core_pure_executionPlan_executionPlan_generation.Root_meta_pure_executionPlan_executionPlan_FunctionDefinition_1__ExecutionContext_1__Extension_MANY__ExecutionPlan_1_(_f, context, extensions, pureModel.getExecutionSupport());
             }
             else
             {
@@ -120,8 +134,8 @@ public class PlanGenerator
                         console.enable();
                         console.setPrintStream(ps);
                         plan = context == null ?
-                                core_pure_executionPlan_executionPlan_generation.Root_meta_pure_executionPlan_executionPlan_FunctionDefinition_1__Mapping_1__Runtime_1__Extension_MANY__DebugContext_1__ExecutionPlan_1_(l, mapping, pureRuntime, extensions, core_pure_tools_tools_extension.Root_meta_pure_tools_debug__DebugContext_1_(pureModel.getExecutionSupport()), pureModel.getExecutionSupport())
-                                : core_pure_executionPlan_executionPlan_generation.Root_meta_pure_executionPlan_executionPlan_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_1__Extension_MANY__DebugContext_1__ExecutionPlan_1_(l, mapping, pureRuntime, context, extensions, core_pure_tools_tools_extension.Root_meta_pure_tools_debug__DebugContext_1_(pureModel.getExecutionSupport()), pureModel.getExecutionSupport());
+                                core_pure_executionPlan_executionPlan_generation.Root_meta_pure_executionPlan_executionPlan_FunctionDefinition_1__Mapping_1__Runtime_1__Extension_MANY__DebugContext_1__ExecutionPlan_1_(_f, mapping, pureRuntime, extensions, core_pure_tools_tools_extension.Root_meta_pure_tools_debug__DebugContext_1_(pureModel.getExecutionSupport()), pureModel.getExecutionSupport())
+                                : core_pure_executionPlan_executionPlan_generation.Root_meta_pure_executionPlan_executionPlan_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_1__Extension_MANY__DebugContext_1__ExecutionPlan_1_(_f, mapping, pureRuntime, context, extensions, core_pure_tools_tools_extension.Root_meta_pure_tools_debug__DebugContext_1_(pureModel.getExecutionSupport()), pureModel.getExecutionSupport());
                         debugInfo = bs.toString(StandardCharsets.UTF_8.name());
                         console.disable();
                     }
@@ -133,8 +147,8 @@ public class PlanGenerator
                 else
                 {
                     plan = context == null ?
-                            core_pure_executionPlan_executionPlan_generation.Root_meta_pure_executionPlan_executionPlan_FunctionDefinition_1__Mapping_1__Runtime_1__Extension_MANY__ExecutionPlan_1_(l, mapping, pureRuntime, extensions, pureModel.getExecutionSupport())
-                            : core_pure_executionPlan_executionPlan_generation.Root_meta_pure_executionPlan_executionPlan_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_1__Extension_MANY__ExecutionPlan_1_(l, mapping, pureRuntime, context, extensions, pureModel.getExecutionSupport());
+                            core_pure_executionPlan_executionPlan_generation.Root_meta_pure_executionPlan_executionPlan_FunctionDefinition_1__Mapping_1__Runtime_1__Extension_MANY__ExecutionPlan_1_(_f, mapping, pureRuntime, extensions, pureModel.getExecutionSupport())
+                            : core_pure_executionPlan_executionPlan_generation.Root_meta_pure_executionPlan_executionPlan_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_1__Extension_MANY__ExecutionPlan_1_(_f, mapping, pureRuntime, context, extensions, pureModel.getExecutionSupport());
                 }
             }
             if (platform != null)

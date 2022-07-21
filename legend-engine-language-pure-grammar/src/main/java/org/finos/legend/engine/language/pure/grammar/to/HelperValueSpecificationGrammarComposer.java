@@ -202,7 +202,7 @@ public class HelperValueSpecificationGrammarComposer
 
     public static String renderDecimal(BigDecimal b, DEPRECATED_PureGrammarComposerCore transformer)
     {
-        return transformer.isRenderingHTML() ? "<span class='pureGrammar-decimal'>" + b + "</span>" : String.valueOf(b);
+        return transformer.isRenderingHTML() ? "<span class='pureGrammar-decimal'>" + b + "d </span>" : String.valueOf(b) + "d";
     }
 
     public static String renderString(String s, DEPRECATED_PureGrammarComposerCore transformer)

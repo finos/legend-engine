@@ -14,16 +14,29 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.procedure.Procedure;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.EmbeddedDataFirstPassBuilder;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.inference.TypeAndMultiplicity;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.assertion.TestAssertionFirstPassBuilder;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Property;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.functionTest.FunctionTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.functionTest.FunctionTestParameter;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.functionTest.FunctionTestParameterComplexValue;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.functionTest.FunctionTestParameterPrimitiveValue;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualTo;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToJson;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
@@ -40,6 +53,11 @@ import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecificati
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_ExpressionSequenceValueSpecificationContext_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl;
 import org.finos.legend.pure.generated.platform_pure_corefunctions_meta;
+import org.finos.legend.pure.generated.Root_meta_legend_function_metamodel_FunctionTest_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_test_assertion_TestAssertion;
+import org.finos.legend.pure.generated.Root_meta_pure_test_assertion_EqualTo_Impl;
+import org.finos.legend.pure.generated.Root_meta_legend_function_metamodel_ParameterValue;
+import org.finos.legend.pure.generated.Root_meta_legend_function_metamodel_ParameterValue_Impl;
 import org.finos.legend.pure.m3.compiler.postprocessing.processor.milestoning.MilestoningFunctions;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PropertyOwner;
@@ -49,9 +67,11 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.proper
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecificationContext;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.test.Test;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.m4.coreinstance.SourceInformation;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
@@ -60,6 +80,8 @@ import org.slf4j.Logger;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class HelperModelBuilder
 {
@@ -456,4 +478,212 @@ public class HelperModelBuilder
         // TODO: we might want to fix a bugs here where if we pass in element without ID/package + name, we might get `cannot cast a collection of multiplicity [0] to [1]` or so
         return platform_pure_corefunctions_meta.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_(element, executionSupport);
     }
+
+    //----------------------------------- Function Test ---------------------------------------------------------------------
+    public static RichIterable<? extends Test> processFunctionTests(Function function, CompileContext context, ProcessingContext ctx)
+    {
+        List<FunctionTest> functionTests = function.tests;
+        MutableList<Root_meta_legend_function_metamodel_FunctionTest_Impl> pureFunctionTests = Lists.mutable.empty();
+        if (!functionTests.isEmpty())
+        {
+            if (function.returnType == null || function.returnMultiplicity.getUpperBoundInt() == 0)
+            {
+                throw new EngineException("Return multiplicity should not be Nil for a function with function test", function.sourceInformation, EngineErrorType.COMPILATION);
+            }
+            pureFunctionTests = ListIterate.collect(functionTests, test -> processFunctionTest(test, function, context, ctx));
+            Set<String> set = functionTests.stream().map(functionTest -> functionTest.id).collect(Collectors.toSet());
+            if (set.size() != functionTests.size())
+            {
+                throw new EngineException("Function Test Ids should be unique", function.sourceInformation, EngineErrorType.COMPILATION);
+            }
+        }
+        return pureFunctionTests;
+    }
+
+        public static Root_meta_legend_function_metamodel_FunctionTest_Impl processFunctionTest(FunctionTest functionTest, Function function, CompileContext context, ProcessingContext processingContext)
+        {
+            Root_meta_legend_function_metamodel_FunctionTest_Impl pureFunctionTest = new Root_meta_legend_function_metamodel_FunctionTest_Impl("");
+
+            //Test identifier
+            pureFunctionTest._id(functionTest.id);
+
+            //Parameter value
+            if (functionTest.parameters != null && !functionTest.parameters.isEmpty())
+            {
+                if (functionTest.parameters.size() != function.parameters.size())
+                {
+                    throw new EngineException("Number of parameters passed in the function test do not match the number of input parameters defined in the function.", functionTest.sourceInformation, EngineErrorType.COMPILATION);
+                }
+
+                // Populating the Function Test parameter names if null
+                for (int i = 0; i < functionTest.parameters.size(); i++)
+                {
+                    if (functionTest.parameters.get(i).name == null)
+                    {
+                        functionTest.parameters.get(i).name = function.parameters.get(i).name;
+                    }
+                    else if (!(functionTest.parameters.get(i).name.equals(function.parameters.get(i).name)))
+                    {
+                        throw new EngineException("Function test parameter name does not match the input parameter name defined in the function", functionTest.sourceInformation, EngineErrorType.COMPILATION);
+                    }
+                }
+
+                List<org.finos.legend.pure.generated.Root_meta_legend_function_metamodel_ParameterValue> pureFunctionTestParameters = Lists.mutable.empty();
+                for (int i = 0; i < functionTest.parameters.size(); i++)
+                {
+                    pureFunctionTestParameters.add(processFunctionTestParameterValue(functionTest.parameters.get(i), context, processFunctionParameter(function.parameters.get(i), context, processingContext), functionTest.sourceInformation));
+                }
+                pureFunctionTest._parameters(Lists.mutable.withAll(pureFunctionTestParameters));
+            }
+
+            //Test assertion
+            pureFunctionTest._assertions(Lists.mutable.of(processFunctionTestAssertion(functionTest, context, processingContext, functionTest.sourceInformation, function)));
+
+            return pureFunctionTest;
+        }
+
+        public static Root_meta_pure_test_assertion_TestAssertion processFunctionTestAssertion(FunctionTest functionTest, CompileContext context, ProcessingContext processingContext, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation, Function function)
+        {
+            if (functionTest.assertions == null || functionTest.assertions.isEmpty())
+            {
+                throw new EngineException("Function Test should have 1 assertion. No test assertion provided.", functionTest.sourceInformation, EngineErrorType.COMPILATION);
+            }
+            else if (functionTest.assertions.get(0) instanceof  EqualTo)
+            {
+                Root_meta_pure_test_assertion_EqualTo_Impl equalToAssert = (Root_meta_pure_test_assertion_EqualTo_Impl) functionTest.assertions.get(0).accept(new TestAssertionFirstPassBuilder(context, processingContext));
+                validateFunctionTestAssertPrimitiveValue(Optional.of(equalToAssert), function, sourceInformation, context);
+                return equalToAssert;
+            }
+            else if (functionTest.assertions.get(0) instanceof EqualToJson)
+            {
+                if (!validateJSONString(((EqualToJson) functionTest.assertions.get(0)).expected.data))
+                {
+                    throw new EngineException("Invalid JSON format for assert ", functionTest.sourceInformation, EngineErrorType.COMPILATION);
+                }
+                return functionTest.assertions.get(0).accept(new TestAssertionFirstPassBuilder(context, processingContext));
+            }
+            else
+            {
+                throw new RuntimeException("Unsupported Function Test Assert");
+            }
+        }
+
+        public static VariableExpression processFunctionParameter(Variable param, CompileContext context, ProcessingContext processingContext)
+        {
+            return (VariableExpression) param.accept(new ValueSpecificationBuilder(context, org.eclipse.collections.api.factory.Lists.mutable.empty(), processingContext));
+        }
+
+        public static Root_meta_legend_function_metamodel_ParameterValue processFunctionTestParameterValue(FunctionTestParameter functionTestParameter, CompileContext context, VariableExpression pureFunctionParameter, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation)
+        {
+            if (functionTestParameter instanceof FunctionTestParameterPrimitiveValue)
+            {
+                return processFunctionTestParameterPrimitiveValue((FunctionTestParameterPrimitiveValue) functionTestParameter, context, pureFunctionParameter, sourceInformation);
+            }
+            else if (functionTestParameter instanceof FunctionTestParameterComplexValue)
+            {
+                return processFunctionTestParameterComplexValue((FunctionTestParameterComplexValue) functionTestParameter, context, pureFunctionParameter, sourceInformation);
+            }
+            else
+            {
+                throw new RuntimeException("Unsupported Function Test Parameter");
+            }
+        }
+
+        public static Root_meta_legend_function_metamodel_ParameterValue processFunctionTestParameterPrimitiveValue(FunctionTestParameterPrimitiveValue parameterValue, CompileContext context, VariableExpression pureFunctionParameter, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation)
+        {
+            Root_meta_legend_function_metamodel_ParameterValue_Impl pureParameterValue = new Root_meta_legend_function_metamodel_ParameterValue_Impl("");
+
+            pureParameterValue._name(parameterValue.name);
+            pureParameterValue._value(Lists.immutable.with(parameterValue.value.accept(new ValueSpecificationBuilder(context, Lists.mutable.empty(), new ProcessingContext("")))));
+            validateFunctionTestParameterPrimitiveValue(Optional.of(pureParameterValue), pureFunctionParameter, sourceInformation);
+            return pureParameterValue;
+        }
+
+    public static Root_meta_legend_function_metamodel_ParameterValue processFunctionTestParameterComplexValue(FunctionTestParameterComplexValue parameterValue, CompileContext context, VariableExpression pureFunctionParameter, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation)
+    {
+        Root_meta_legend_function_metamodel_ParameterValue_Impl pureParameterValue = new Root_meta_legend_function_metamodel_ParameterValue_Impl("");
+
+        pureParameterValue._name(parameterValue.name);
+        if (!validateJSONString(parameterValue.externalFormatData.data))
+        {
+            throw new EngineException("Invalid JSON format for parameter: '" + pureFunctionParameter._name() + "'", sourceInformation, EngineErrorType.COMPILATION);
+        }
+        pureParameterValue._value(Lists.immutable.with(parameterValue.externalFormatData.accept(new EmbeddedDataFirstPassBuilder(context, new ProcessingContext("")))));
+
+        return pureParameterValue;
+    }
+
+    public static void validateFunctionTestParameterPrimitiveValue(Optional<Root_meta_legend_function_metamodel_ParameterValue_Impl> parameterValue, VariableExpression param, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation)
+    {
+        if (parameterValue.isPresent())
+        {
+            InstanceValue paramValue = (InstanceValue) parameterValue.get()._value().getOnly();
+
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity paramMultiplicity = param._multiplicity();
+            String paramType = param._genericType()._rawType()._name();
+
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity paramValueMultiplicity = paramValue._multiplicity();
+            String paramValueType = paramValue._genericType()._rawType()._name();
+
+            if (!("Nil".equals(paramValueType) || paramType.equals(paramValueType)) || !org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.subsumes(paramMultiplicity, paramValueMultiplicity))
+            {
+                throw new EngineException("Parameter value type does not match with parameter type for parameter: '" + param._name() + "'", sourceInformation, EngineErrorType.COMPILATION);
+            }
+        }
+        else
+        {
+            if (param._multiplicity()._lowerBound() != null && param._multiplicity()._lowerBound()._value() != null && param._multiplicity()._lowerBound()._value() != 0)
+            {
+                throw new EngineException("Parameter value required for parameter: '" + param._name() + "'", sourceInformation, EngineErrorType.COMPILATION);
+            }
+        }
+    }
+
+    public static void validateFunctionTestAssertPrimitiveValue(Optional<Root_meta_pure_test_assertion_EqualTo_Impl> pureAssertion, Function function, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation, CompileContext context)
+    {
+        TypeAndMultiplicity typeAndMultiplicity = new TypeAndMultiplicity(context.resolveGenericType(function.returnType, function.sourceInformation), context.pureModel.getMultiplicity(function.returnMultiplicity));
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity returnMultiplicity = typeAndMultiplicity.multiplicity;
+        String returnType = typeAndMultiplicity.genericType._rawType()._name();
+
+        if (pureAssertion.isPresent())
+        {
+            InstanceValue assertionValue = (InstanceValue) pureAssertion.get()._expected();
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity assertionValueMultiplicity = assertionValue._multiplicity();
+            String assertionValueType = assertionValue._genericType()._rawType()._name();
+
+            if (!("Nil".equals(assertionValueType) || returnType.equals(assertionValueType)) || !org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.subsumes(returnMultiplicity, assertionValueMultiplicity))
+            {
+                throw new EngineException("Function Test assert value type does not match with return type for function", sourceInformation, EngineErrorType.COMPILATION);
+            }
+        }
+        else
+        {
+            if (returnMultiplicity._lowerBound() != null && returnMultiplicity._lowerBound()._value() != null && returnMultiplicity._lowerBound()._value() != 0)
+            {
+                throw new EngineException("Parameter value required for function test assert of type '" + returnType + "'", sourceInformation, EngineErrorType.COMPILATION);
+            }
+        }
+    }
+
+    public static boolean validateJSONString(String json)
+    {
+        ObjectMapper mapper = new ObjectMapper();
+        try
+        {
+            mapper.enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS);
+            mapper.enable(DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY);
+            mapper.readTree(json);
+        }
+        catch (JsonProcessingException jpe)
+        {
+            jpe.printStackTrace();
+            return false;
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+        return true;
+    }
+
 }

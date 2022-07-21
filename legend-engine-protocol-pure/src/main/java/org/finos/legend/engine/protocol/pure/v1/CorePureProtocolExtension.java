@@ -33,6 +33,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Measure;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Profile;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Unit;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.functionTest.FunctionTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.functionTest.FunctionTestParameter;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.functionTest.FunctionTestParameterComplexValue;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.functionTest.FunctionTestParameterPrimitiveValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.LegacyRuntime;
@@ -40,6 +44,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.RuntimePointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
+import org.finos.legend.engine.protocol.pure.v1.model.test.Test;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualTo;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToJson;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
@@ -57,6 +62,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 
 public class CorePureProtocolExtension implements PureProtocolExtension
 {
+    public static final String FUNCTION_CLASSIFIER_PATH = "meta::pure::metamodel::function::ConcreteFunctionDefinition";
+
     @Override
     public List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()
     {
@@ -100,6 +107,15 @@ public class CorePureProtocolExtension implements PureProtocolExtension
                         .withSubtype(AssertPass.class, "assertPass")
                         .withSubtype(AssertFail.class, "assertFail")
                         .withSubtype(EqualToJsonAssertFail.class, "equalToJsonAssertFail")
+                    .build(),
+            // Test
+            ProtocolSubTypeInfo.newBuilder(Test.class)
+                .withSubtype(FunctionTest.class, "functionTest")
+                .build(),
+                // FunctionTestParameter
+                ProtocolSubTypeInfo.newBuilder(FunctionTestParameter.class)
+                    .withSubtype(FunctionTestParameterPrimitiveValue.class, "functionTestParameterPrimitiveValue")
+                    .withSubtype(FunctionTestParameterComplexValue.class, "functionTestParameterComplexValue")
                     .build()
         ));
     }
