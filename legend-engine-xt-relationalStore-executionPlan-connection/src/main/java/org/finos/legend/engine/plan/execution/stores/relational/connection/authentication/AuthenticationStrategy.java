@@ -31,6 +31,7 @@ import javax.sql.DataSource;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
+import java.util.Optional;
 import java.util.Properties;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -79,13 +80,6 @@ public abstract class AuthenticationStrategy
         Connection connection;
         try
         {
-            if (LOGGER.isDebugEnabled())
-            {
-                KerberosTicket kerberosTicket = subject.getPrivateCredentials(KerberosTicket.class).iterator().next();
-                boolean expired = kerberosTicket == null || !kerberosTicket.isCurrent();
-                boolean started = kerberosTicket.getStartTime() == null || kerberosTicket.getStartTime().getTime() <= System.currentTimeMillis();
-                LOGGER.debug("getConnectionUsingKerberos {}: started {} , ends {} expired {} ", subject.getPrincipals().iterator().next().getName(), started, kerberosTicket.getEndTime(), expired);
-            }
             connection = Subject.doAs(subject, (PrivilegedExceptionAction<Connection>) ds::getConnection);
         }
         catch (PrivilegedActionException e)
