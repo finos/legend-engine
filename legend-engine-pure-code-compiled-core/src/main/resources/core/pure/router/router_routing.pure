@@ -812,7 +812,7 @@ function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(
    assert($res->size() <= 1, |'Only one match is authorized');
    
    if (!$res->isEmpty(),
-       | $res.second->toOne()->eval($fe, $state, $runtime, $mapping, $executionContext),
+       | $res.second->toOne()->eval($fe, $state, $runtime, $mapping, $executionContext, $vars, $inScopeVars),
        | let fromMappingUpdates = if($fe.func->in([meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_, meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__ExecutionContext_1__TabularDataSet_1_, meta::pure::mapping::from_T_m__Mapping_1__Runtime_1__T_m_]),
                                     | let resolvedParameters = $fe.parametersValues->tail()->map(p|$p->evaluateAndDeactivate()->match([v:VariableExpression[1]|let iv = meta::pure::functions::meta::resolve($v, $vars, $inScopeVars)->cast(@InstanceValue).values,
                                                                                                                                        f:FunctionExpression[1]|let r = $f->reprocessRuntimeWithVariablePlaceHolder($inScopeVars).value->cast(@ValueSpecification);

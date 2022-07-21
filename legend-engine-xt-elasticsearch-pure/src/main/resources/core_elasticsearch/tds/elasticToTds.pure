@@ -22,11 +22,6 @@ Class meta::external::store::elasticsearch::tds::IndexTDS extends TabularDataSet
   index: ElasticSearchStoreIndex[1];
 }
 
-function meta::external::store::elasticsearch::tds::indexToTDS(store: String[1], indexName: String[1]): IndexTDS[1]
-{
-  $store->pathToElement()->cast(@ElasticSearchStore)->indexToTDS($indexName);
-}
-
 function meta::external::store::elasticsearch::tds::indexToTDS(store: ElasticSearchStore[1], indexName: String[1]): IndexTDS[1]
 {
   let index = $store.index($indexName);

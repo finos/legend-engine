@@ -46,24 +46,8 @@ public class PureIDELight extends PureIDEServer
 
             return Lists.mutable
                     .<RepositoryCodeStorage>with(new ClassLoaderCodeStorage(CodeRepository.newPlatformCodeRepository()))
-                    .with(this.buildCore("legend-engine-xt-persistence-pure", "persistence"))
-                    .with(this.buildCore("legend-engine-xt-relationalStore-pure", "relational"))
-                    .with(this.buildCore("legend-engine-xt-relationalStore-sqlserver-pure", "relational_sqlserver"))
-                    .with(this.buildCore("legend-engine-xt-serviceStore-pure", "servicestore"))
-                    .with(this.buildCore("legend-engine-xt-text-pure", "text"))
-                    .with(this.buildCore("legend-engine-xt-data-space-pure", "data-space"))
-                    .with(this.buildCore("legend-engine-xt-diagram-pure", "diagram"))
-                    .with(this.buildCore("legend-engine-xt-flatdata-pure", "external-format-flatdata"))
-                    .with(this.buildCore("legend-engine-xt-json-pure", "external-format-json"))
-                    .with(this.buildCore("legend-engine-xt-xml-pure", "external-format-xml"))
-                    .with(this.buildCore("legend-engine-xt-graphQL-pure", "external-query-graphql"))
-                    .with(this.buildCore("legend-engine-xt-protobuf-pure", "external-format-protobuf"))
-                    .with(this.buildCore("legend-engine-xt-avro-pure", "external-format-avro"))
-                    .with(this.buildCore("legend-engine-xt-rosetta-pure", "external-format-rosetta"))
-                    .with(this.buildCore("legend-engine-xt-morphir-pure", "external-language-morphir"))
-                    .with(this.buildCore("legend-engine-pure-ide-light-metadata-pure", "ide_metadata"))
                     .with(this.buildCore("legend-engine-pure-code-compiled-core", ""))
-                    .with(this.buildCore("legend-engine-xt-analytics-mapping-pure", "analytics-mapping"))
+                    .with(this.buildCore("legend-engine-xt-elasticsearch-pure", "elasticsearch"))
                     .with(new MutableFSCodeStorage(new PureIDECodeRepository(), Paths.get(ideFilesLocation)));
         }
         catch (IOException e)
