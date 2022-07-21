@@ -1,0 +1,179 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+
+import meta::analytics::function::flow::*;
+import meta::analytics::function::graph::*;
+import meta::json::*;
+import meta::pure::lineage::*;
+import meta::relational::metamodel::*;
+import meta::relational::metamodel::relation::*;
+
+
+Class meta::analytics::function::graph::Node
+{
+   data : NodeData[1];
+}
+
+Class meta::analytics::function::graph::NodeData
+{
+   id : String[1];
+   text : String[1];
+   type : String[1];
+   displayType : String[0..1];
+   parent : Node[0..1];
+}
+
+Class meta::analytics::function::graph::Edge
+{
+   data : EdgeData[1];
+}
+
+Class meta::analytics::function::graph::EdgeData
+{
+   id : String[1];
+   text : String[1];
+   type : String[1];
+   source : Node[1];
+   target : Node[1];
+}
+
+Class meta::analytics::function::graph::Graph
+{
+   nodes : Node[*];
+   edges : Edge[*];
+}
+
+function meta::analytics::function::graph::toJSON(graph : Graph[1]):JSONElement[1]
+{
+   $graph->meta::json::toJSONElement([
+                                        {node:NodeData[1],state:JSONState[1]|newJSONObject([
+                                                                                      newJSONKeyValue('id', $node.id->recurse($node, $state)),
+                                                                                      newJSONKeyValue('text', $node.text->recurse($node, $state)),
+                                                                                      newJSONKeyValue('type', $node.type->recurse($node, $state)),
+                                                                                      newJSONKeyValue('displayType', $node.type->recurse($node, $state))
+                                                                                     ]->concatenate(if($node.parent->isEmpty(),|[],|newJSONKeyValue('parent', $node.parent->toOne().data.id->recurse($node, $state))))
+                                                                       )
+                                        },
+                                        {edge:EdgeData[1],state:JSONState[1]|let t = 'Lineage_'+$edge.type;
+                                                                             newJSONObject([
+                                                                                      newJSONKeyValue('source', $edge.source.data.id->recurse($edge, $state)),
+                                                                                      newJSONKeyValue('target', $edge.target.data.id->recurse($edge, $state)),
+                                                                                      newJSONKeyValue('type', $t->recurse($edge, $state))
+                                                                                      ]);
+                                        }
+                                     ]
+                       );
+}
+
+function meta::analytics::function::graph::toGraph(flow:Flow[1]):Graph[1]
+{
+   toGraph($flow, []);
+}
+
+function meta::analytics::function::graph::toGraph(flow:Flow[1], base:Flow[0..1]):Graph[1]
+{
+   let groupNodes = $flow.groups->map(g|$g->toNode([],$base));
+   let groupNodesIndex = $groupNodes->groupBy(g|$g.data.id);
+   let index = $flow.groups->map(g|$g.nodes->map(n|pair($n->toId(), $groupNodesIndex->get($g->toId())->toOne().values->at(0))))->newMap();
+
+   let nodes = $flow.groups->concatenate($flow.functions)->concatenate($flow.systems)->concatenate($flow.tables)->concatenate($flow.databases)->concatenate($flow.properties)->concatenate($flow.classes)->concatenate($flow.packages)->map(o|$o->toNode($index,$base));
+   let nodesById = $nodes->groupBy(t|$t.data.id);
+
+   ^Graph
+   (
+      nodes = $nodes,
+      edges = $flow.links->map(l|^Edge(
+                                    data=^EdgeData(
+                                                id='x',
+                                                text='txt',
+                                                type=if($l.lineageMaturity->isEmpty(),|'',|$l.lineageMaturity->toOne()->id()),
+                                                source=$nodesById->get($l.source->toId())->toOne().values->at(0),
+                                                target=$nodesById->get($l.target->toId())->toOne().values->at(0)
+                                         )
+                                 )
+                           )
+   );
+}
+
+function <<access.private>> meta::analytics::function::graph::toNode(a:Any[1], parents:Map<String,Node>[0..1]):Node[1]
+{
+   toNode($a, $parents, []);
+}
+
+
+function <<access.private>> meta::analytics::function::graph::toNode(a:Any[1], parents:Map<String,Node>[0..1],baseFlow:Flow[0..1]):Node[1]
+{
+   let parent = if ($parents->isEmpty(),|[],|$parents->toOne()->get($a->toId()));
+   ^Node(data=^NodeData(id=$a->toId(), text=$a->toName(), parent=$parent, type=$a->toType(), displayType=if($baseFlow->isEmpty(),|[],|$a->toDisplayType($baseFlow->toOne()))));
+}
+
+function <<access.private>> meta::analytics::function::graph::toId(a:Any[1]):String[1]
+{
+   $a->match(
+      [
+         p:Property<Nil,Any|*>[1]|'p_'+$p.owner->elementToPath()+'_'+$p.name->toOne(),
+         p:PropertyNode[1]|'p_'+$p.property.owner->elementToPath()+'_'+$p.property.name->toOne(),
+         p:Package[1]|'pack_'+$p->elementToPath(),
+         p:PackageNode[1]|'pack_'+$p.package->elementToPath(),
+         a:LambdaFunction<Any>[1]|'Lambda',
+         a:Function<Any>[1]|$a->elementToPath(),
+         a:FunctionNode[1]|$a.func->toId(),
+         c:Class<Any>[1]|$c->elementToPath(),
+         c:ClassNode[1]|$c.class->elementToPath(),
+         a:System[1]|'app_'+$a.appId->toString(),
+         a:SystemNode[1]|'app_'+$a.appId->toString(),
+         a:Group[1]|'grp_'+$a.groupId->toString(),
+         a:GroupNode[1]|'grp_'+$a.groupId->toString(),
+         a:Database[1]|'db_'+$a.name->toOne(),
+         a:DatabaseNode[1]|$a.db->toId(),
+         a:NamedRelation[1]|let schema = $a->schema(); 'tb_'+$schema.database.name->toOne()+$schema.name+$a.name;,
+         a:NamedRelationNode[1]|$a.relation->toId()
+      ]
+   )
+}
+
+function <<access.private>> meta::analytics::function::graph::toType(a:Any[1]):String[1]
+{
+   $a->match(
+      [
+         d:Database[1]|if($d->elementToPath()->startsWith('model::producers'),|'E',|'')+'Database',
+         p:Package[1]|if($p->elementToPath()->startsWith('model::domain'),|'E',|'')+'Package',
+         a:Any[1]|$a->genericType().rawType.name->toOne();
+      ]
+   )
+
+}
+
+function <<access.private>> meta::analytics::function::graph::toDisplayType(a:Any[1],flow:Flow[1]):String[0..1]
+{
+   let baseNodes = $flow.groups->concatenate($flow.functions)->concatenate($flow.systems)->concatenate($flow.tables)->concatenate($flow.databases)->concatenate($flow.properties)->concatenate($flow.classes)->concatenate($flow.packages);
+   if($baseNodes->map(n|$n->toId())->contains($a->toId()),|'',|'Inferred');
+}
+
+function <<access.private>> meta::analytics::function::graph::toName(a:Any[1]):String[1]
+{
+   $a->match(
+      [
+         p:Property<Nil,Any|*>[1]|$p.name->toOne(),
+         p:Package[1]|$p.name->toOne(),
+         a:Function<Any>[1]|'',
+         c:Class<Any>[1]|$c.name->toOne(),
+         a:System[1]|$a.name,
+         a:Group[1]|$a.name,
+         a:Database[1]|$a.name->toOne(),
+         a:NamedRelation[1]|$a.name;
+      ]
+   )
+}

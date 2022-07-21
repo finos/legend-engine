@@ -118,6 +118,9 @@
         <module>legend-engine-xt-analytics-mapping-api</module>
         <module>legend-engine-xt-analytics-mapping-pure</module>
 
+        <module>legend-engine-xt-analytics-function-api</module>
+        <module>legend-engine-xt-analytics-function-pure</module>
+
         <module>legend-engine-pure-code-compiled-core</module>
 
         <module>legend-engine-pure-ide-light</module>
@@ -938,6 +941,17 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-analytics-mapping-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-analytics-function-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-analytics-function-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

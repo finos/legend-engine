@@ -1,0 +1,5 @@
+{
+  "name" : "core_analytics_function",
+  "pattern" : "(meta::analytics::function)(::.*)?",
+  "dependencies" : ["platform", "core", "core_relational"]
+}

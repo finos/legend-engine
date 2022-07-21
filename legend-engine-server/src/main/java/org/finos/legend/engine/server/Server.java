@@ -31,6 +31,7 @@ import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
+import org.finos.legend.engine.api.analytics.FunctionAnalytics;
 import org.finos.legend.engine.api.analytics.MappingAnalytics;
 import org.finos.legend.engine.application.query.api.ApplicationQuery;
 import org.finos.legend.engine.application.query.configuration.ApplicationQueryConfiguration;
@@ -226,6 +227,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         environment.jersey().register(new MappingAnalytics(modelManager));
         environment.jersey().register(new DiagramAnalytics(modelManager));
         environment.jersey().register(new DataSpaceAnalytics(modelManager));
+        environment.jersey().register(new FunctionAnalytics(modelManager));
 
         // Testable
         environment.jersey().register(new Testable(modelManager));

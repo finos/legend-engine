@@ -334,6 +334,10 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-analytics-mapping-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-analytics-function-api</artifactId>
+        </dependency>
         <!-- ENGINE -->
 
         <!-- Shared Drop Wizard Bundles -->
