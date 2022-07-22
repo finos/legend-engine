@@ -266,6 +266,34 @@ meta::external::store::elasticsearch::metamodel::spec::toPure::createClass(type:
     let superClass = ^$superClassRaw(typeArguments = $superType.generics->map(p |$p->propertyTypeToPureType($state)));
     let generalization = ^Generalization(general = $superClass, specific = $class);
     $class->mutateAdd('generalizations', $generalization);
+
+    // pure java compiled failing given does not read generics from extends so overriding properties
+    if($superClass.rawType == AdditionalProperties,
+      {|
+        let pureProperty = newProperty(
+            '__additionalProperties',
+            ^GenericType(rawType = $class),
+            ^GenericType(rawType = Map, typeArguments = $superClass.typeArguments), 
+            ZeroOne
+        );
+        $class->mutateAdd('properties', $pureProperty);
+      },
+      |[]
+    );
+
+    if($superClass.rawType == AdditionalProperty,
+      {|
+        let pureProperty = newProperty(
+            '__additionalProperty',
+            ^GenericType(rawType = $class),
+            ^GenericType(rawType = Pair, typeArguments = $superClass.typeArguments), 
+            ZeroOne
+        );
+        $class->mutateAdd('properties', $pureProperty);
+      },
+      |[]
+    );
+
     true;
   });
 
@@ -575,7 +603,7 @@ meta::external::store::elasticsearch::metamodel::spec::toPure::responseTypeToPur
 {
   $state.log(|'Generating started for response: %s.%s'->format([$type.name.namespace, $type.name.name]));
 
-  assert($type.exceptions->isEmpty(), |'not supported');
+  // assert($type.exceptions->isEmpty(), |'not supported for %s.%s'->format([$type.name.namespace, $type.name.name]) );
 
   let bodyProps = $type.body->match([
     {noBody: NoBody[1] |

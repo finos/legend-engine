@@ -10,6 +10,7 @@ import meta::pure::router::clustering::*;
 
 import meta::external::store::elasticsearch::extension::*;
 import meta::external::store::elasticsearch::metamodel::*;
+import meta::external::store::elasticsearch::executionPlan::nodes::*;
 
 function meta::external::store::elasticsearch::extension::elasticSearchExtension() : meta::pure::extension::Extension[1]
 {
@@ -64,7 +65,7 @@ function meta::external::store::elasticsearch::extension::storeContractV7(): Sto
      // ** ExecutionPlanExtension **
 
       // Execution Node - Print
-      printPlanNodeToString = [],
+      printPlanNodeToString = {space: String[1], extension: Extension[1] | printPlanNodeToString($space, $extension)},
       printConnectionToString = [],
       printTypeToString = [],
       // Execution Node - Print
@@ -75,12 +76,19 @@ function meta::external::store::elasticsearch::extension::storeContractV7(): Sto
    )
 }
 
+function meta::external::store::elasticsearch::extension::printPlanNodeToString(space: String[1], extension: Extension[*]): Function<{Nil[1] -> String[1]}>[*]
+{
+  [
+    {esNode: ElasticSearchQueryExecutionNode[1]| 'ESNode\n'}
+  ]
+}
+
 function meta::external::store::elasticsearch::extension::routeFunctionExpressionsPairs(): Pair<Function<{FunctionExpression[1]->Boolean[1]}>, Function<{FunctionExpression[1], RoutingState[1], Runtime[1], Mapping[1], ExecutionContext[1], Map<VariableExpression, ValueSpecification>[1], Map<String, List<Any>>[1]->RoutingState[1]}>>[1]
 {
    pair(
     fe:FunctionExpression[1] | $fe.func == meta::external::store::elasticsearch::tds::indexToTDS_ElasticSearchStore_1__String_1__IndexTDS_1_,
     {fe:FunctionExpression[1], state:RoutingState[1], runtime : Runtime[1], mapping: Mapping[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1] |
-            let store = $fe->instanceValuesAtParameter(0, $vars, $inScopeVars)->toOne()->cast(@ElasticSearchStore);
+            let store = $fe.parametersValues->at(0)->reactivate($inScopeVars)->toOne()->cast(@ElasticSearchStore);
             ^$state(value = ^TDSRoutedValueSpecification(genericType = $fe.genericType,
                                                           multiplicity = $fe.multiplicity,
                                                           id = 'Index TDS',
@@ -95,7 +103,15 @@ function meta::external::store::elasticsearch::extension::routeFunctionExpressio
 
 function meta::external::store::elasticsearch::extension::supports(f:FunctionExpression[1]):Boolean[1]
 {
-  false;
+  let supported = [
+    meta::pure::tds::filter_TabularDataSet_1__Function_1__TabularDataSet_1_,
+    meta::pure::tds::groupBy_TabularDataSet_1__String_MANY__AggregateValue_MANY__TabularDataSet_1_,
+    meta::pure::tds::concatenate_TabularDataSet_1__TabularDataSet_1__TabularDataSet_1_,
+    meta::pure::tds::project_TabularDataSet_1__ColumnSpecification_MANY__TabularDataSet_1_,
+    meta::pure::tds::renameColumns_TabularDataSet_1__Pair_MANY__TabularDataSet_1_
+  ];
+  
+  $f.func->in($supported);
 }
 
 function meta::external::store::elasticsearch::extension::supportsStream(f:FunctionExpression[1]):Boolean[1]
@@ -105,7 +121,37 @@ function meta::external::store::elasticsearch::extension::supportsStream(f:Funct
 
 function meta::external::store::elasticsearch::extension::planExecution(sq:meta::pure::mapping::StoreQuery[1], ext:RoutedValueSpecification[0..1], m:Mapping[0..1], runtime:Runtime[0..1], exeCtx:ExecutionContext[1], extensions:Extension[*], debug:DebugContext[1]):ExecutionNode[1]
 {
-  ^meta::external::store::elasticsearch::executionPlan::nodes::ElasticSearchQueryExecutionNode(
+  $sq.fe->meta::pure::metamodel::serialization::grammar::printFunctionExpression('')->println();
+
+  let search = ^meta::external::store::elasticsearch::metamodel::api::v7::endpoint::Search<Any>();
+
+  // $search->processValueSpecification($sq.fe, $sq.inScopeVars, $extensions);
+  ^ElasticSearchQueryExecutionNode(
     resultType = ^meta::pure::executionPlan::ResultType(type = Any)
   );
 }
+
+
+// function meta::external::store::elasticsearch::extension::processValueSpecification(search: meta::external::store::elasticsearch::metamodel::api::v7::endpoint::Search<Any>[1], vs:ValueSpecification[1], vars:Map<VariableExpression, ValueSpecification>[1], extensions:Extension[*]): meta::external::store::elasticsearch::metamodel::api::v7::endpoint::Search<Any>[1]
+// {
+  // $search;
+  //  let res = $vs->evaluateAndDeactivate()->match(
+  //            [
+  //                r:ExtendedRoutedValueSpecification[1] | $r.value->processValueSpecificationReturnPropertyMapping($currentPropertyMapping, $operation, $vars, ^$state(propertyMappingFromRouter = $r.propertyMapping), $joinType, $nodeId, $aggFromMap, $context, $extensions),
+  //                r:FunctionRoutedValueSpecification[1] | $r.value->processValueSpecificationReturnPropertyMapping($currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions),
+  //                f:FunctionExpression[1] | processFunctionExpression($f, $currentPropertyMapping, $operation, $vars, ^$state(functionExpressionStack+=$f), $joinType, buildNodeId($nodeId,'_d'), $aggFromMap, $context, $extensions),
+  //                i:InstanceValue[1] | let elements = processInstanceValue($i, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
+  //                                     $elements->map(e | ^OperationWithParentPropertyMapping(element=$e));,
+  //                v:VariableExpression[1] | processVariableExpression($v,$currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions),
+  //                c:ClusteredValueSpecification[1]|if($c.store->instanceOf(EmbeddedStore),
+  //                                                          |$c.val->processValueSpecificationReturnPropertyMapping($currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions),
+  //                                                          |fail('This query is attempting to join across stores which is not currently supported. If you are reusing other mapping definitions this may indicate that you have not re-aliased the store names when defining includes. \n'+
+  //                                                                 'For example, the mapping may have\n include mapping::example::ExampleMapping\ninstead of\n include mapping::example::ExampleMapping[OtherStore->MyStore]\n' +
+  //                                                                 'Cluster details:\n' + $c->asString());^OperationWithParentPropertyMapping(element=$operation);
+  //                                                 );,
+  //                n:NoSetRoutedValueSpecification[1]|$n.value->processValueSpecificationReturnPropertyMapping($currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions),
+  //                t:TDSRoutedValueSpecification[1] |  $t.value->processValueSpecificationReturnPropertyMapping($currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)
+  //            ]);
+  //   $res.element->map(e|$e->match([c:ClassInstanceHolder[1]|true, s:SelectWithCursor[1]|$s->validate($vs, $extensions)]));
+  //   $res;
+// }

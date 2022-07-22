@@ -69,7 +69,7 @@ Class
 { doc.doc='In some places in the specification an object consists of the union of a set of known properties and a set of runtime injected properties. Meaning that object should theoretically extend Dictionary but expose a set of known keys and possibly. The object might already be part of an object graph and have a parent class. This puts it into a bind that needs a client specific solution. We therefore document the requirement to behave like a dictionary for unknown properties with this interface.'} 
 meta::external::store::elasticsearch::metamodel::api::specutils::AdditionalProperties<TKey,TValue>
 {
-  __additionalProperties: Map<TKey, TValue>[0..1];
+  // __additionalProperties: Map<TKey, TValue>[0..1];
 }
 
 Class 
@@ -77,7 +77,7 @@ Class
 { doc.doc='In some places in the specification an object consists of a static set of properties and a single additional property with an arbitrary name but a statically defined type. This is typically used for configurations associated to a single field. Meaning that object should theoretically extend SingleKeyDictionary but expose a set of known keys. And possibly the object might already be part of an object graph and have a parent class. This puts it into a bind that needs a client specific solution. We therefore document the requirement to accept a single unknown property with this interface.'} 
 meta::external::store::elasticsearch::metamodel::api::specutils::AdditionalProperty<TKey,TValue>
 {
-  __additionalProperty: Pair<TKey, TValue>[0..1];
+  // __additionalProperty: Pair<TKey, TValue>[0..1];
 }
 
 Class

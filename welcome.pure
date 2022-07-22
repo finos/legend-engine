@@ -31,80 +31,62 @@ import meta::external::store::elasticsearch::metamodel::api::v7::endpoint::*;
 import meta::external::store::elasticsearch::metamodel::api::v7::types::*;
 import meta::external::store::elasticsearch::metamodel::api::v7::types::querydsl::*;
 
+import meta::external::store::elasticsearch::metamodel::*;
+import meta::external::store::elasticsearch::tds::*;
+import meta::pure::executionPlan::*;
+import meta::external::store::elasticsearch::extension::*;
+import meta::pure::runtime::*;
+import meta::pure::executionPlan::toString::*;
+
+
 function go():Any[*]
 {
-    // let esVersion = '7.17';
-    let esVersion = '8.3';
+    let plan = executionPlan(
+      |indexToTDS(store(), 'testIndex')
+        ->meta::pure::tds::filter(x | $x.getString('stringProp') == 'Hello')
+        ->project(^ColumnSpecification<TDSRow>(name = 'stringProp')), 
+      EmptyMapping, 
+      ^Runtime(), 
+      elasticSearchExtension()
+    );
+
+    $plan->planToString(elasticSearchExtension())->println();
+
+   [];   
+}
+
+function generate(): Any[*]
+{
+    let esVersion = '7.17';
+    // let esVersion = '8.3';
 
     let pureCode = $esVersion->generatePureCode(false);
     println($pureCode->joinStrings('\n\n'));
-
-    // pair(1, 1)->
-
-    // let spec = $esVersion->getSpec();
-    // let r1 = $spec.types->filter(x | $x.name == ^TypeName(namespace = '_types.mapping', name = 'Property'));
-    // let names = $r1->cast(@TypeAlias).type->cast(@UnionOf).items->cast(@InstanceOf).type;
-    // let r = $spec.types->filter(x | $x.name->in($names) && $x->instanceOf(TypeAlias));
-    // let specAsJson = $r->toJsonNative( ^JSONSerializationConfig(typeKeyName='__TYPE', includeType=false, fullyQualifiedTypePath=false, serializeQualifiedProperties=true, serializePackageableElementName=false, removePropertiesWithEmptyValues=true))->parseJSON()->toPrettyJSONString();
-    // println($specAsJson);
-
-    // let searchReq = ^meta::external::store::elasticsearch::metamodel::api::v7::indices::getmapping::Request(
-    //   // include_type_name = true,
-    //   index = 'companydatabase'
-    // );
-    // let req = indices_get_mapping($searchReq);
-
-    // let countReq = ^meta::external::store::elasticsearch::metamodel::api::v7::global::count::Request(
-    //   // pretty = true,
-    //   index = 'companydatabase',
-    //   query = ^QueryContainer(
-    //     term = pair('Gender', ^TermQuery(value = ^FieldValue(string = 'Female'), case_insensitive = true))->newMap()
-    //   )
-    // );
-
-    // let req = count($countReq);
-
-    // let url = ^meta::pure::functions::io::http::URL(
-    //   host='localhost',
-    //   port=9200,
-    //   path=$req.path
-    // );
-
-    // $req.path->println();
-
-    // let config = config(false, false, true, true);
-
-    // let extraSers = [
-    //   {taggedUnion: TaggedUnion[1], state: JSONState[1] |
-    //     let tag = $taggedUnion->anyToJSON($state, [], $state.config)->cast(@JSONObject);
-    //     assert($tag.keyValuePairs->size() == 1, |'tagged union with more than one field defined!');
-    //     $tag.keyValuePairs->at(0).value;
-    //   }
-    // ]; // extraSerializers:Function<{Nil[1],JSONState[1] ->JSONElement[1]}>
-
-    // let json = if($req.requestBody->isEmpty(), |[], |$req.requestBody->toJSON($extraSers, [], $config));
-
-    // $json->println();
-
-    // let rawSpec = meta::pure::functions::io::http::executeHTTPRaw(
-    //   $url,
-    //   $req.method,
-    //   [],
-    //   $json
-    // );
-
-    // $rawSpec.entity->println();
-
-    // let typeRef = ^GenericType(
-    //   rawType = TypeReference,
-    //   typeArguments = [
-    //     ^GenericType(
-    //       rawType = $searchReq.responseType->toOne(),
-    //       typeArguments = $searchReq.generics->map(x | ^GenericType(rawType = $x))
-    //     )
-    //   ]
-    // );
-
-    // $rawSpec.entity->parseJSON()->fromJSON(dynamicNew($typeRef, [])->cast(@TypeReference<Any>))->println();
-    // print('ok',1);
 }
+
+function store(): ElasticSearchStore[1]
+{
+    let store = ^ElasticSearchStore(
+      name = 'TestStore',
+      package = 'test::es::store'->pathToPackage(true)
+    );
+
+    let index = ^ElasticSearchStoreIndex(
+        owner = $store,
+        name = 'testIndex'
+    );
+
+    let properties = [
+      ^ElasticSearchDocumentProperty(
+        name = 'stringProp',
+        owner = $index,
+        type = ^ElasticSearchKeywordPropertyType()
+      )
+    ];
+
+    $index->mutateAdd('properties', $properties);
+    $store->mutateAdd('indices', $index);
+}
+
+###Mapping
+Mapping EmptyMapping()

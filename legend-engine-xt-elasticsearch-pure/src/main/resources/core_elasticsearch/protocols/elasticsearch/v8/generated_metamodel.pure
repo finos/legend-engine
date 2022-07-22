@@ -22,6 +22,22 @@
         Go to README for more details.
   ####################################### */
 
+Class {meta::pure::profiles::doc.doc='Close a point in time'} meta::external::store::elasticsearch::metamodel::api::v8::global::closepointintime::Request extends meta::external::store::elasticsearch::metamodel::api::specutils::RequestBase
+{
+  body : meta::external::store::elasticsearch::metamodel::api::v8::global::closepointintime::RequestBody[1];
+}
+
+Class meta::external::store::elasticsearch::metamodel::api::v8::global::closepointintime::RequestBody
+{
+  id : String[1];
+}
+
+Class meta::external::store::elasticsearch::metamodel::api::v8::global::closepointintime::Response
+{
+  succeeded : Boolean[1];
+  num_freed : Integer[1];
+}
+
 Class {meta::pure::profiles::doc.doc='Returns number of documents matching a query.'} meta::external::store::elasticsearch::metamodel::api::v8::global::count::Request extends meta::external::store::elasticsearch::metamodel::api::specutils::RequestBase
 {
   body : meta::external::store::elasticsearch::metamodel::api::v8::global::count::RequestBody[1];
@@ -290,14 +306,17 @@ Class meta::external::store::elasticsearch::metamodel::api::v8::types::querydsl:
 
 Class meta::external::store::elasticsearch::metamodel::api::v8::types::querydsl::DateDecayFunction extends meta::external::store::elasticsearch::metamodel::api::v8::types::querydsl::DecayFunctionBase,meta::external::store::elasticsearch::metamodel::api::specutils::AdditionalProperty<String,meta::external::store::elasticsearch::metamodel::api::v8::types::querydsl::DecayPlacement<String,meta::external::store::elasticsearch::metamodel::api::v8::types::Time>>
 {
+  __additionalProperty : meta::pure::functions::collection::Pair<String,meta::external::store::elasticsearch::metamodel::api::v8::types::querydsl::DecayPlacement<String,meta::external::store::elasticsearch::metamodel::api::v8::types::Time>>[0..1];
 }
 
 Class meta::external::store::elasticsearch::metamodel::api::v8::types::querydsl::NumericDecayFunction extends meta::external::store::elasticsearch::metamodel::api::v8::types::querydsl::DecayFunctionBase,meta::external::store::elasticsearch::metamodel::api::specutils::AdditionalProperty<String,meta::external::store::elasticsearch::metamodel::api::v8::types::querydsl::DecayPlacement<Float,Float>>
 {
+  __additionalProperty : meta::pure::functions::collection::Pair<String,meta::external::store::elasticsearch::metamodel::api::v8::types::querydsl::DecayPlacement<Float,Float>>[0..1];
 }
 
 Class meta::external::store::elasticsearch::metamodel::api::v8::types::querydsl::GeoDecayFunction extends meta::external::store::elasticsearch::metamodel::api::v8::types::querydsl::DecayFunctionBase,meta::external::store::elasticsearch::metamodel::api::specutils::AdditionalProperty<String,meta::external::store::elasticsearch::metamodel::api::v8::types::querydsl::DecayPlacement<meta::external::store::elasticsearch::metamodel::api::v8::types::GeoLocation,String>>
 {
+  __additionalProperty : meta::pure::functions::collection::Pair<String,meta::external::store::elasticsearch::metamodel::api::v8::types::querydsl::DecayPlacement<meta::external::store::elasticsearch::metamodel::api::v8::types::GeoLocation,String>>[0..1];
 }
 
 Class meta::external::store::elasticsearch::metamodel::api::v8::types::querydsl::FieldValueFactorScoreFunction
@@ -419,6 +438,7 @@ Class meta::external::store::elasticsearch::metamodel::api::v8::types::WktGeoBou
 
 Class meta::external::store::elasticsearch::metamodel::api::v8::types::querydsl::GeoBoundingBoxQuery extends meta::external::store::elasticsearch::metamodel::api::v8::types::querydsl::QueryBase,meta::external::store::elasticsearch::metamodel::api::specutils::AdditionalProperty<String,meta::external::store::elasticsearch::metamodel::api::v8::types::GeoBounds>
 {
+  __additionalProperty : meta::pure::functions::collection::Pair<String,meta::external::store::elasticsearch::metamodel::api::v8::types::GeoBounds>[0..1];
   <<meta::pure::profiles::doc.deprecated>> {meta::pure::profiles::doc.doc='Deprecated (since 7.14.0): '} type : meta::external::store::elasticsearch::metamodel::api::v8::types::querydsl::GeoExecution[0..1];
   validation_method : meta::external::store::elasticsearch::metamodel::api::v8::types::querydsl::GeoValidationMethod[0..1];
   ignore_unmapped : Boolean[0..1];
@@ -439,6 +459,7 @@ Enum meta::external::store::elasticsearch::metamodel::api::v8::types::querydsl::
 
 Class meta::external::store::elasticsearch::metamodel::api::v8::types::querydsl::GeoDistanceQuery extends meta::external::store::elasticsearch::metamodel::api::v8::types::querydsl::QueryBase,meta::external::store::elasticsearch::metamodel::api::specutils::AdditionalProperty<String,meta::external::store::elasticsearch::metamodel::api::v8::types::GeoLocation>
 {
+  __additionalProperty : meta::pure::functions::collection::Pair<String,meta::external::store::elasticsearch::metamodel::api::v8::types::GeoLocation>[0..1];
   distance : String[0..1];
   distance_type : meta::external::store::elasticsearch::metamodel::api::v8::types::GeoDistanceType[0..1];
   validation_method : meta::external::store::elasticsearch::metamodel::api::v8::types::querydsl::GeoValidationMethod[0..1];
@@ -457,6 +478,7 @@ Class meta::external::store::elasticsearch::metamodel::api::v8::types::querydsl:
 
 Class <<meta::pure::profiles::doc.deprecated>> {meta::pure::profiles::doc.doc='Deprecated (since 7.12.0): Use geo-shape instead.'} meta::external::store::elasticsearch::metamodel::api::v8::types::querydsl::GeoPolygonQuery extends meta::external::store::elasticsearch::metamodel::api::v8::types::querydsl::QueryBase,meta::external::store::elasticsearch::metamodel::api::specutils::AdditionalProperty<String,meta::external::store::elasticsearch::metamodel::api::v8::types::querydsl::GeoPolygonPoints>
 {
+  __additionalProperty : meta::pure::functions::collection::Pair<String,meta::external::store::elasticsearch::metamodel::api::v8::types::querydsl::GeoPolygonPoints>[0..1];
   validation_method : meta::external::store::elasticsearch::metamodel::api::v8::types::querydsl::GeoValidationMethod[0..1];
   ignore_unmapped : Boolean[0..1];
 }
@@ -486,6 +508,7 @@ Enum meta::external::store::elasticsearch::metamodel::api::v8::types::GeoShapeRe
 
 Class meta::external::store::elasticsearch::metamodel::api::v8::types::querydsl::GeoShapeQuery extends meta::external::store::elasticsearch::metamodel::api::v8::types::querydsl::QueryBase,meta::external::store::elasticsearch::metamodel::api::specutils::AdditionalProperty<String,meta::external::store::elasticsearch::metamodel::api::v8::types::querydsl::GeoShapeFieldQuery>
 {
+  __additionalProperty : meta::pure::functions::collection::Pair<String,meta::external::store::elasticsearch::metamodel::api::v8::types::querydsl::GeoShapeFieldQuery>[0..1];
   ignore_unmapped : Boolean[0..1];
 }
 
@@ -710,6 +733,7 @@ Enum meta::external::store::elasticsearch::metamodel::api::v8::types::FieldSortN
 
 Class {meta::pure::profiles::doc.doc='More: https://www.elastic.co/guide/en/elasticsearch/reference/{branch}/sort-search-results.html',meta::pure::profiles::doc.doc='Spec Location: https://www.elastic.co/guide/en/elasticsearch/reference/{branch}/sort-search-results.html'} meta::external::store::elasticsearch::metamodel::api::v8::types::SortOptions extends meta::external::store::elasticsearch::metamodel::api::specutils::AdditionalProperty<String,meta::external::store::elasticsearch::metamodel::api::v8::types::FieldSort>,meta::external::store::elasticsearch::metamodel::api::specutils::Container
 {
+  __additionalProperty : meta::pure::functions::collection::Pair<String,meta::external::store::elasticsearch::metamodel::api::v8::types::FieldSort>[0..1];
   _score : meta::external::store::elasticsearch::metamodel::api::v8::types::ScoreSort[0..1];
   _doc : meta::external::store::elasticsearch::metamodel::api::v8::types::ScoreSort[0..1];
   _geo_distance : meta::external::store::elasticsearch::metamodel::api::v8::types::GeoDistanceSort[0..1];
@@ -723,6 +747,7 @@ Class meta::external::store::elasticsearch::metamodel::api::v8::types::ScoreSort
 
 Class meta::external::store::elasticsearch::metamodel::api::v8::types::GeoDistanceSort extends meta::external::store::elasticsearch::metamodel::api::specutils::AdditionalProperty<String,meta::external::store::elasticsearch::metamodel::api::v8::types::GeoLocation>
 {
+  __additionalProperty : meta::pure::functions::collection::Pair<String,meta::external::store::elasticsearch::metamodel::api::v8::types::GeoLocation>[0..1];
   mode : meta::external::store::elasticsearch::metamodel::api::v8::types::SortMode[0..1];
   distance_type : meta::external::store::elasticsearch::metamodel::api::v8::types::GeoDistanceType[0..1];
   ignore_unmapped : Boolean[0..1];
@@ -1203,6 +1228,7 @@ Class meta::external::store::elasticsearch::metamodel::api::v8::types::querydsl:
 
 Class meta::external::store::elasticsearch::metamodel::api::v8::types::querydsl::ShapeQuery extends meta::external::store::elasticsearch::metamodel::api::v8::types::querydsl::QueryBase,meta::external::store::elasticsearch::metamodel::api::specutils::AdditionalProperty<String,meta::external::store::elasticsearch::metamodel::api::v8::types::querydsl::ShapeFieldQuery>
 {
+  __additionalProperty : meta::pure::functions::collection::Pair<String,meta::external::store::elasticsearch::metamodel::api::v8::types::querydsl::ShapeFieldQuery>[0..1];
   ignore_unmapped : Boolean[0..1];
 }
 
@@ -1345,6 +1371,7 @@ Class meta::external::store::elasticsearch::metamodel::api::v8::types::querydsl:
 
 Class meta::external::store::elasticsearch::metamodel::api::v8::types::querydsl::TermsQuery extends meta::external::store::elasticsearch::metamodel::api::v8::types::querydsl::QueryBase,meta::external::store::elasticsearch::metamodel::api::specutils::AdditionalProperty<String,meta::external::store::elasticsearch::metamodel::api::v8::types::querydsl::TermsQueryField>
 {
+  __additionalProperty : meta::pure::functions::collection::Pair<String,meta::external::store::elasticsearch::metamodel::api::v8::types::querydsl::TermsQueryField>[0..1];
 }
 
 Class meta::external::store::elasticsearch::metamodel::api::v8::types::querydsl::TermsSetQuery extends meta::external::store::elasticsearch::metamodel::api::v8::types::querydsl::QueryBase
@@ -1407,12 +1434,39 @@ Class meta::external::store::elasticsearch::metamodel::api::v8::types::ShardFail
 
 Class {meta::pure::profiles::doc.doc='Cause and details about a request failure. This class defines the properties common to all error types. Additional details are also provided, that depend on the error type.'} meta::external::store::elasticsearch::metamodel::api::v8::types::ErrorCause extends meta::external::store::elasticsearch::metamodel::api::specutils::AdditionalProperties<String,meta::pure::metamodel::type::Any>
 {
+  __additionalProperties : meta::pure::functions::collection::Map<String,meta::pure::metamodel::type::Any>[0..1];
   {meta::pure::profiles::doc.doc='The type of error'} type : String[1];
   {meta::pure::profiles::doc.doc='A human-readable explanation of the error, in english'} reason : String[1];
   {meta::pure::profiles::doc.doc='The server stack trace. Present only if the `error_trace=true` parameter was sent with the request.'} stack_trace : String[0..1];
   caused_by : meta::external::store::elasticsearch::metamodel::api::v8::types::ErrorCause[0..1];
   root_cause : meta::external::store::elasticsearch::metamodel::api::v8::types::ErrorCause[*];
   suppressed : meta::external::store::elasticsearch::metamodel::api::v8::types::ErrorCause[*];
+}
+
+Class {meta::pure::profiles::doc.doc='Returns basic information about the cluster.'} meta::external::store::elasticsearch::metamodel::api::v8::global::info::Request extends meta::external::store::elasticsearch::metamodel::api::specutils::RequestBase
+{
+}
+
+Class meta::external::store::elasticsearch::metamodel::api::v8::global::info::Response
+{
+  cluster_name : String[1];
+  cluster_uuid : String[1];
+  name : String[1];
+  tagline : String[1];
+  version : meta::external::store::elasticsearch::metamodel::api::v8::types::ElasticsearchVersionInfo[1];
+}
+
+Class meta::external::store::elasticsearch::metamodel::api::v8::types::ElasticsearchVersionInfo
+{
+  build_date : String[1];
+  build_flavor : String[1];
+  build_hash : String[1];
+  build_snapshot : Boolean[1];
+  build_type : String[1];
+  lucene_version : String[1];
+  minimum_index_compatibility_version : String[1];
+  minimum_wire_compatibility_version : String[1];
+  number : String[1];
 }
 
 Class {meta::pure::profiles::doc.doc='Allows to execute several search operations in one request.'} meta::external::store::elasticsearch::metamodel::api::v8::global::msearch::Request extends meta::external::store::elasticsearch::metamodel::api::specutils::RequestBase
@@ -2733,6 +2787,7 @@ Enum meta::external::store::elasticsearch::metamodel::api::v8::global::search::t
 
 Class meta::external::store::elasticsearch::metamodel::api::v8::global::search::types::Suggester extends meta::external::store::elasticsearch::metamodel::api::specutils::AdditionalProperties<String,meta::external::store::elasticsearch::metamodel::api::v8::global::search::types::FieldSuggester>
 {
+  __additionalProperties : meta::pure::functions::collection::Map<String,meta::external::store::elasticsearch::metamodel::api::v8::global::search::types::FieldSuggester>[0..1];
   {meta::pure::profiles::doc.doc='Global suggest text, to avoid repetition when the same text is used in several suggesters'} text : String[0..1];
 }
 
@@ -3010,6 +3065,7 @@ Class meta::external::store::elasticsearch::metamodel::api::v8::types::aggregati
 
 Class {meta::pure::profiles::doc.doc='Base type for multi-bucket aggregation results that can hold sub-aggregations results.'} meta::external::store::elasticsearch::metamodel::api::v8::types::aggregations::MultiBucketBase extends meta::external::store::elasticsearch::metamodel::api::specutils::AdditionalProperties<String,meta::external::store::elasticsearch::metamodel::api::v8::types::aggregations::Aggregate>
 {
+  __additionalProperties : meta::pure::functions::collection::Map<String,meta::external::store::elasticsearch::metamodel::api::v8::types::aggregations::Aggregate>[0..1];
   doc_count : Integer[1];
 }
 
@@ -3132,6 +3188,7 @@ Class meta::external::store::elasticsearch::metamodel::api::v8::types::aggregati
 
 Class {meta::pure::profiles::doc.doc='Base type for single-bucket aggregation results that can hold sub-aggregations results.'} meta::external::store::elasticsearch::metamodel::api::v8::types::aggregations::SingleBucketAggregateBase extends meta::external::store::elasticsearch::metamodel::api::v8::types::aggregations::AggregateBase,meta::external::store::elasticsearch::metamodel::api::specutils::AdditionalProperties<String,meta::external::store::elasticsearch::metamodel::api::v8::types::aggregations::Aggregate>
 {
+  __additionalProperties : meta::pure::functions::collection::Map<String,meta::external::store::elasticsearch::metamodel::api::v8::types::aggregations::Aggregate>[0..1];
   doc_count : Integer[1];
 }
 
@@ -3287,6 +3344,7 @@ Class meta::external::store::elasticsearch::metamodel::api::v8::types::aggregati
 
 Class meta::external::store::elasticsearch::metamodel::api::v8::types::aggregations::InferenceAggregate extends meta::external::store::elasticsearch::metamodel::api::v8::types::aggregations::AggregateBase,meta::external::store::elasticsearch::metamodel::api::specutils::AdditionalProperties<String,meta::pure::metamodel::type::Any>
 {
+  __additionalProperties : meta::pure::functions::collection::Map<String,meta::pure::metamodel::type::Any>[0..1];
   value : meta::external::store::elasticsearch::metamodel::api::v8::types::FieldValue[0..1];
   feature_importance : meta::external::store::elasticsearch::metamodel::api::v8::types::aggregations::InferenceFeatureImportance[*];
   top_classes : meta::external::store::elasticsearch::metamodel::api::v8::types::aggregations::InferenceTopClassEntry[*];
@@ -3572,7 +3630,7 @@ Class meta::external::store::elasticsearch::metamodel::api::v8::global::search::
 
 Class meta::external::store::elasticsearch::metamodel::api::v8::global::search::types::CompletionSuggest<TDocument> extends meta::external::store::elasticsearch::metamodel::api::v8::global::search::types::SuggestBase
 {
-  options : meta::external::store::elasticsearch::metamodel::api::v8::global::search::types::CompletionSuggestOption<TDocument>[1..*];
+  options : meta::pure::metamodel::type::Any[1..*];
 }
 
 Class meta::external::store::elasticsearch::metamodel::api::v8::global::search::types::CompletionSuggestOption<TDocument>
@@ -3591,7 +3649,7 @@ Class meta::external::store::elasticsearch::metamodel::api::v8::global::search::
 
 Class meta::external::store::elasticsearch::metamodel::api::v8::global::search::types::PhraseSuggest extends meta::external::store::elasticsearch::metamodel::api::v8::global::search::types::SuggestBase
 {
-  options : meta::external::store::elasticsearch::metamodel::api::v8::global::search::types::PhraseSuggestOption[1];
+  options : meta::external::store::elasticsearch::metamodel::api::v8::global::search::types::PhraseSuggestOption[1..*];
 }
 
 Class meta::external::store::elasticsearch::metamodel::api::v8::global::search::types::PhraseSuggestOption
@@ -3603,7 +3661,7 @@ Class meta::external::store::elasticsearch::metamodel::api::v8::global::search::
 
 Class meta::external::store::elasticsearch::metamodel::api::v8::global::search::types::TermSuggest extends meta::external::store::elasticsearch::metamodel::api::v8::global::search::types::SuggestBase
 {
-  options : meta::external::store::elasticsearch::metamodel::api::v8::global::search::types::TermSuggestOption[1];
+  options : meta::external::store::elasticsearch::metamodel::api::v8::global::search::types::TermSuggestOption[1..*];
 }
 
 Class meta::external::store::elasticsearch::metamodel::api::v8::global::search::types::TermSuggestOption
@@ -3622,6 +3680,18 @@ Class {meta::pure::profiles::doc.doc='The response returned by Elasticsearch whe
 {
   error : meta::external::store::elasticsearch::metamodel::api::v8::types::ErrorCause[1];
   status : Integer[1];
+}
+
+Class {meta::pure::profiles::doc.doc='A search request by default executes against the most recent visible data of the target indices, which is called point in time. Elasticsearch pit (point in time) is a lightweight view into the state of the data as it existed when initiated. In some cases, it’s preferred to perform multiple search requests using the same point in time. For example, if refreshes happen between `search_after` requests, then the results of those requests might not be consistent as changes happening between searches are only visible to the more recent point in time.'} meta::external::store::elasticsearch::metamodel::api::v8::global::openpointintime::Request extends meta::external::store::elasticsearch::metamodel::api::specutils::RequestBase
+{
+  {meta::pure::profiles::doc.doc='A comma-separated list of index names to open point in time; use `_all` or empty string to perform the operation on all indices'} index : String[1];
+  {meta::pure::profiles::doc.doc='Specific the time to live for the point in time'} keep_alive : meta::external::store::elasticsearch::metamodel::api::v8::types::Time[1];
+  {meta::pure::profiles::doc.doc='Whether specified concrete indices should be ignored when unavailable (missing or closed)'} ignore_unavailable : Boolean[0..1];
+}
+
+Class meta::external::store::elasticsearch::metamodel::api::v8::global::openpointintime::Response
+{
+  id : String[1];
 }
 
 Class {meta::pure::profiles::doc.doc='Returns results matching a query.'} meta::external::store::elasticsearch::metamodel::api::v8::global::search::Request extends meta::external::store::elasticsearch::metamodel::api::specutils::RequestBase
@@ -4423,6 +4493,31 @@ Class meta::external::store::elasticsearch::metamodel::api::v8::types::mapping::
   enabled : Boolean[1];
 }
 
+Class meta::external::store::elasticsearch::metamodel::api::v8::endpoint::ClosePointInTime extends meta::external::store::elasticsearch::metamodel::api::specutils::ElasticSearchRequest<meta::external::store::elasticsearch::metamodel::api::v8::global::closepointintime::Request,meta::external::store::elasticsearch::metamodel::api::v8::global::closepointintime::Response|0..1,1>
+{
+  paths(){
+    '/_pit';
+  }: String[1..*];
+  methods(){
+    'DELETE';
+  }: String[1..*];
+  pathProperties(){
+    [];
+  }: String[*];
+  queryProperties(){
+    [];
+  }: String[*];
+  bodyProperty(){
+    'body';
+  }: String[0..1];
+  requestMediaType(){
+    'application/json';
+  }: String[*];
+  responseMediaType(){
+    'application/json';
+  }: String[*];
+}
+
 Class meta::external::store::elasticsearch::metamodel::api::v8::endpoint::Count extends meta::external::store::elasticsearch::metamodel::api::specutils::ElasticSearchRequest<meta::external::store::elasticsearch::metamodel::api::v8::global::count::Request,meta::external::store::elasticsearch::metamodel::api::v8::global::count::Response|0..1,1>
 {
   paths(){
@@ -4473,6 +4568,31 @@ Class meta::external::store::elasticsearch::metamodel::api::v8::endpoint::Indice
   }: String[*];
 }
 
+Class meta::external::store::elasticsearch::metamodel::api::v8::endpoint::Info extends meta::external::store::elasticsearch::metamodel::api::specutils::ElasticSearchRequest<meta::external::store::elasticsearch::metamodel::api::v8::global::info::Request,meta::external::store::elasticsearch::metamodel::api::v8::global::info::Response|0..1,1>
+{
+  paths(){
+    '/';
+  }: String[1..*];
+  methods(){
+    'GET';
+  }: String[1..*];
+  pathProperties(){
+    [];
+  }: String[*];
+  queryProperties(){
+    [];
+  }: String[*];
+  bodyProperty(){
+    [];
+  }: String[0..1];
+  requestMediaType(){
+    [];
+  }: String[*];
+  responseMediaType(){
+    'application/json';
+  }: String[*];
+}
+
 Class meta::external::store::elasticsearch::metamodel::api::v8::endpoint::Msearch<TDocument> extends meta::external::store::elasticsearch::metamodel::api::specutils::ElasticSearchRequest<meta::external::store::elasticsearch::metamodel::api::v8::global::msearch::Request,meta::external::store::elasticsearch::metamodel::api::v8::global::msearch::MultiSearchResult<TDocument>|1,1>
 {
   paths(){
@@ -4492,6 +4612,31 @@ Class meta::external::store::elasticsearch::metamodel::api::v8::endpoint::Msearc
   }: String[0..1];
   requestMediaType(){
     'application/x-ndjson';
+  }: String[*];
+  responseMediaType(){
+    'application/json';
+  }: String[*];
+}
+
+Class meta::external::store::elasticsearch::metamodel::api::v8::endpoint::OpenPointInTime extends meta::external::store::elasticsearch::metamodel::api::specutils::ElasticSearchRequest<meta::external::store::elasticsearch::metamodel::api::v8::global::openpointintime::Request,meta::external::store::elasticsearch::metamodel::api::v8::global::openpointintime::Response|0..1,1>
+{
+  paths(){
+    '/{index}/_pit';
+  }: String[1..*];
+  methods(){
+    'POST';
+  }: String[1..*];
+  pathProperties(){
+    'index';
+  }: String[*];
+  queryProperties(){
+    ['keep_alive', 'ignore_unavailable'];
+  }: String[*];
+  bodyProperty(){
+    [];
+  }: String[0..1];
+  requestMediaType(){
+    [];
   }: String[*];
   responseMediaType(){
     'application/json';
