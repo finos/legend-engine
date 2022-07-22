@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>3.9.3-SNAPSHOT</version>
+    <version>3.9.4-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -165,7 +165,7 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>3.2.0</legend.pure.version>
+        <legend.pure.version>3.2.1</legend.pure.version>
         <legend.shared.version>0.22.0</legend.shared.version>
 
         <!-- SONAR -->
