@@ -268,10 +268,15 @@ function <<access.private>> meta::relational::functions::database::calculateDbDi
 function meta::relational::functions::database::testDatabaseDefinitionForRuntime(database:Database[1], runtime:Runtime[1]):Any[*]
 {
 
-   $database.schemas->map(s | $s.tables->map(t | let sql = meta::relational::functions::sqlQueryToString::createSelectOneRowSql($t, $s, DatabaseType.SybaseIQ);
+   $database.schemas->map(s | $s.tables->map(t | let sql = createSelectOneRowSql($t, $s, DatabaseType.SybaseIQ);
                                                  executeInDb($sql, $runtime.connections->at(0)->cast(@DatabaseConnection));
                                              )
                       );
+}
+
+function meta::relational::functions::database::createSelectOneRowSql(table:Table[1], schema:Schema[1], dbType:DatabaseType[1]):String[1]
+{
+   'select top 1 ' + $table.columns->cast(@Column).name->map(s | $s->processColumnName(createDbConfig($dbType, [])))->makeString(',') + ' from ' + $schema.name + '.' + $table.name;
 }
 
 function
