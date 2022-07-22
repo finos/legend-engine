@@ -41,6 +41,7 @@ public class DataSpaceAnalyticsHelper
         result.name = dataSpaceProtocol.name;
         result._package = dataSpaceProtocol._package;
         result.path = dataSpaceProtocol.getPath();
+        result.title = dataSpaceProtocol.title;
         result.description = dataSpaceProtocol.description;
 
         result.taggedValues = ListIterate.collect(dataSpace._taggedValues().toList(), taggedValue ->

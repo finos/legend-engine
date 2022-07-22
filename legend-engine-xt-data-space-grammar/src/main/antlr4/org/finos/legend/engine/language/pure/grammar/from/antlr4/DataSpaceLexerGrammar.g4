@@ -17,6 +17,7 @@ DATA_SPACE_EXECUTION_CONTEXT_NAME:      'name';
 DATA_SPACE_MAPPING:                     'mapping';
 DATA_SPACE_DEFAULT_RUNTIME:             'defaultRuntime';
 
+DATA_SPACE_TITLE:                       'title';
 DATA_SPACE_DESCRIPTION:                 'description';
 
 DATA_SPACE_FEATURED_DIAGRAMS:           'featuredDiagrams';

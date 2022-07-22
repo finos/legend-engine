@@ -88,6 +88,7 @@ public class DataSpaceCompilerExtension implements CompilerExtension
                     }
                     metamodel._defaultExecutionContext(defaultExecutionContext);
 
+                    metamodel._title(dataSpace.title);
                     metamodel._description(dataSpace.description);
                     metamodel._featuredDiagrams(dataSpace.featuredDiagrams != null ? ListIterate.collect(dataSpace.featuredDiagrams, item -> HelperDiagramBuilder.resolveDiagram(item.path, item.sourceInformation, context)) : null);
 

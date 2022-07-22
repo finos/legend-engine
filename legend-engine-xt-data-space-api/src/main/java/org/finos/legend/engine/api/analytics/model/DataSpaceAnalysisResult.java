@@ -29,6 +29,7 @@ public class DataSpaceAnalysisResult
     public String path;
     public List<DataSpaceTaggedValueInfo> taggedValues = Collections.emptyList();
     public List<DataSpaceStereotypeInfo> stereotypes = Collections.emptyList();
+    public String title;
     public String description;
     public DataSpaceSupportInfo supportInfo;
 
