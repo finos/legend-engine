@@ -250,7 +250,7 @@ function meta::pure::router::routing::findMappingsFromProperty(p:AbstractPropert
        if ($classMapping->isEmpty(),
           |let mappings = $state.classMappingsForClass($p->functionReturnType().rawType->toOne()->cast(@Class<Any>));
            if ($mappings->isEmpty(),
-               |^EmbeddedSetImplementation(id='embdedded_todo', root=true, class=$p->functionReturnType().rawType->toOne()->cast(@Class<Any>), parent = $mapping, property=$p->cast(@Property<Nil,Any|*>), targetSetImplementationId='todo', sourceSetImplementationId='todo'),
+               |^M2MEmbeddedSetImplementation(id='embdedded_todo', root=true, class=$p->functionReturnType().rawType->toOne()->cast(@Class<Any>), parent = $mapping, property=$p->cast(@Property<Nil,Any|*>), targetSetImplementationId='todo', sourceSetImplementationId='todo'),
                |$mappings
            );,
           |$classMapping

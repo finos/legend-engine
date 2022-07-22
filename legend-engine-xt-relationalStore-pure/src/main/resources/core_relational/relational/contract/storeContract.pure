@@ -25,6 +25,7 @@ import meta::relational::metamodel::*;
 import meta::relational::functions::pureToSqlQuery::*;
 import meta::pure::router::routing::*;
 import meta::pure::executionPlan::toString::*;
+import meta::pure::router::clustering::*;
 
 function meta::relational::contract::relationalStoreContract():StoreContract[1]
 {
@@ -85,7 +86,8 @@ function meta::relational::contract::relationalStoreContract():StoreContract[1]
                                       ]},
 
 
-     supportsSetImplementation = s:SetImplementation[1]|$s->instanceOf(RelationalInstanceSetImplementation),
+     supportsSetImplementation = s:SetImplementation[1]|$s->instanceOf(RelationalInstanceSetImplementation) ||
+                                                        ($s->instanceOf(CrossSetImplementation) && $s->cast(@CrossSetImplementation).targetStore->instanceOf(Database)),
      supportsStore = s:Store[1]|$s->instanceOf(Database),
      resolveStoreFromSetImplementation = s:InstanceSetImplementation[1]|$s->meta::relational::contract::getStore(),
 
@@ -172,7 +174,8 @@ function meta::relational::contract::getStore(r:InstanceSetImplementation[1]):St
             |$mainTableAlias.database->toOne()
           );,
       e:EmbeddedRelationalInstanceSetImplementation[1]|
-        ^meta::pure::router::store::embedded::EmbeddedStore(package=::)
+        ^meta::pure::router::store::embedded::EmbeddedStore(package=::),
+      s:CrossSetImplementation[1]|$s.targetStore
     ]
   )  
 }
