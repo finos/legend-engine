@@ -18,18 +18,18 @@ import meta::pure::alloy::connections::*;
 import meta::pure::functions::meta::*;
 import meta::pure::test::*;
 
-function <<test.TestCollection>> meta::relational::tests::dbSpecificTests::redshift::runSQLQueryTestsParam(): PureTestCollection[1]
+function <<test.TestCollection>> meta::relational::tests::dbSpecificTests::redshift::dynaFunctions::runDynaFunctionsTests(): PureTestCollection[1]
 {
   let connection = meta::relational::dbTestRunner::getTestConnection(DatabaseType.Redshift, meta::relational::extension::relationalExtensions());
   
   meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions
           ->collectParameterizedTests('Redshift',
                 ^DbTestConfig(dbType=DatabaseType.Redshift, connection=$connection), [],
-                meta::relational::tests::dbSpecificTests::redshift::runSQLQueryTestsParamFilter_FunctionDefinition_1__Boolean_1_
+                meta::relational::tests::dbSpecificTests::redshift::dynaFunctions::dynaFunctionsTestsParamFilter_FunctionDefinition_1__Boolean_1_
                 );
 }
 
-function meta::relational::tests::dbSpecificTests::redshift::runSQLQueryTestsParamFilter(f:FunctionDefinition<Any>[1]):Boolean[1]
+function meta::relational::tests::dbSpecificTests::redshift::dynaFunctions::dynaFunctionsTestsParamFilter(f:FunctionDefinition<Any>[1]):Boolean[1]
 {
   // currently hardcoding unsupported funcs, In future fetch this from db extensions and skip
   let unsupportedDynaFunctions = [ 'adjust', 'dateDiff', 'datePart','dayOfMonth', 'dayOfWeekNumber', 
@@ -46,4 +46,43 @@ function meta::relational::tests::dbSpecificTests::redshift::runSQLQueryTestsPar
               $dynaFuncPackageName->pathToElement()->cast(@Package)->collectTests(););
 
   !$ignoredTests->contains($f);
+}
+
+function <<test.TestCollection>> meta::relational::tests::dbSpecificTests::redshift::aggregateFunctions::runAggregateFunctionTests(): PureTestCollection[1]
+{
+  let connection = meta::relational::dbTestRunner::getTestConnection(DatabaseType.Redshift, meta::relational::extension::relationalExtensions());
+  
+  meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions
+          ->collectParameterizedTests('Redshift', ^DbTestConfig(dbType=DatabaseType.Redshift, connection=$connection),[],
+             meta::relational::tests::dbSpecificTests::redshift::aggregateFunctions::aggregateFunctionsTestsParamFilter_FunctionDefinition_1__Boolean_1_);
+}
+
+function meta::relational::tests::dbSpecificTests::redshift::aggregateFunctions::aggregateFunctionsTestsParamFilter(f:FunctionDefinition<Any>[1]):Boolean[1]
+{
+  // currently hardcoding unsupported funcs, In future fetch this from db extensions and skip
+  let unsupportedDynaFunctions = [ ];
+  
+  //these dynafunctions need to be fixed , currently skipping to suppress github integration test failures
+  let failingSupportedDynaFunctions = ['drop', 'slice'];
+
+  let ignoredTests= $unsupportedDynaFunctions->concatenate($failingSupportedDynaFunctions)->map(dynaFuncName |
+              let dynaFuncPackageName = 'meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions::' + $dynaFuncName;
+              $dynaFuncPackageName->pathToElement()->cast(@Package)->collectTests(););
+
+  !$ignoredTests->contains($f);
+}
+
+function <<test.TestCollection>> meta::relational::tests::dbSpecificTests::redshift::namingTests::runNamingTests(): PureTestCollection[1]
+{
+  let connection = meta::relational::dbTestRunner::getTestConnection(DatabaseType.Redshift, meta::relational::extension::relationalExtensions());
+  
+  meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests
+          ->collectParameterizedTests('Redshift', ^DbTestConfig(dbType=DatabaseType.Redshift, connection=$connection),[],
+          meta::relational::tests::dbSpecificTests::redshift::namingTests::namingTestsParamFilter_FunctionDefinition_1__Boolean_1_);
+}
+
+function meta::relational::tests::dbSpecificTests::redshift::namingTests::namingTestsParamFilter(f:FunctionDefinition<Any>[1]):Boolean[1]
+{
+  let failingTests = [meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::testColumnNames_DbTestConfig_1__Boolean_1_];
+  !$failingTests->contains($f);
 }

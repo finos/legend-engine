@@ -1,0 +1,151 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::metamodel::*;
+import meta::relational::dbTestRunner::*;
+import meta::pure::test::*;
+import meta::relational::runtime::*;
+import meta::pure::alloy::connections::*;
+import  meta::relational::metamodel::relation::*;
+
+function <<paramTest.BeforePackage>> meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions::setup(config:DbTestConfig[1]):Boolean[1]
+{
+  let records ='default\n'+
+                'personTable\n'+
+                'id, firstName, lastName, age, addressId, firmId, managerId\n'+
+                '1,Peter,Smith,23,1,1,2\n'+
+                '2, \'John\', \'Johnson\',22, 2,1,4\n'+
+                '3, \'John\', \'Hill\',12, 3,1,2\n'+
+                '4, \'Anthony\', \'Allen\',22, 4,1,null\n'+
+                '5, \'Fabrice\', \'Roberts\',34, 5,2,null\n'+
+                '6, \'Oliver\', \'Hill\',32, 6,3,null\n'+
+                '7, \'David\', \'Harris\',35, 7,4,null\n';
+
+  let setupSqls = meta::alloy::service::execution::setUpDataSQLs($records, meta::relational::tests::dbInc);
+ 
+  $setupSqls->executeInRelationalDb($config.connection->cast(@RelationalDatabaseConnection)->toOne(),
+                                      meta::relational::extension::relationalExtensions());
+  println('setup done');
+  true;
+}
+
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions::count::testOnAllRows(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name= 'count' , parameters=[]);
+
+  let table= meta::relational::tests::dbInc->cast(@Database).schema('default').table('personTable')->toOne();
+  let sqlQuery = ^SelectSQLQuery(columns=[$dynaFunc],
+                                 data= ^meta::relational::metamodel::join::RootJoinTreeNode(
+                                     alias=^TableAlias(name= 'myTable' , relationalElement=$table)));
+  
+  let expected = ^Literal(value=7);
+  runSqlQueryTest($sqlQuery, $expected,[], $config);
+}
+
+// size and count are functionally same
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions::size::testSize(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name= 'size' , parameters=[]);
+
+  let table= meta::relational::tests::dbInc->cast(@Database).schema('default').table('personTable')->toOne();
+  let sqlQuery = ^SelectSQLQuery(columns=[$dynaFunc],
+                                 data= ^meta::relational::metamodel::join::RootJoinTreeNode(
+                                     alias=^TableAlias(name= 'myTable' , relationalElement=$table)));
+  
+  let expected = ^Literal(value=7);
+  runSqlQueryTest($sqlQuery, $expected,[], $config);
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions::average::testAverage(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name= 'average' , parameters=[^ColumnName(name='AGE')]);
+
+  let table= meta::relational::tests::dbInc->cast(@Database).schema('default').table('personTable')->toOne();
+  let sqlQuery = ^SelectSQLQuery(columns=[$dynaFunc],
+                                 data= ^meta::relational::metamodel::join::RootJoinTreeNode(
+                                     alias=^TableAlias(name= 'myTable' , relationalElement=$table)));
+  
+  let expected = ^Literal(value=25.714);
+  let equalityComparator =  floatEqualityComparatorGenerator([0.099]);
+  runSqlQueryTest($sqlQuery, $expected,$equalityComparator, $config);
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions::sum::testSum(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name= 'sum' , parameters=[^ColumnName(name='AGE')]);
+
+  let table= meta::relational::tests::dbInc->cast(@Database).schema('default').table('personTable')->toOne();
+  let sqlQuery = ^SelectSQLQuery(columns=[$dynaFunc],
+                                 data= ^meta::relational::metamodel::join::RootJoinTreeNode(
+                                     alias=^TableAlias(name= 'myTable' , relationalElement=$table)));
+  
+  let expected = ^Literal(value=180);
+  runSqlQueryTest($sqlQuery, $expected,[], $config);
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions::max::testMax(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name= 'max' , parameters=[^ColumnName(name='AGE')]);
+
+  let table= meta::relational::tests::dbInc->cast(@Database).schema('default').table('personTable')->toOne();
+  let sqlQuery = ^SelectSQLQuery(columns=[$dynaFunc],
+                                 data= ^meta::relational::metamodel::join::RootJoinTreeNode(
+                                     alias=^TableAlias(name= 'myTable' , relationalElement=$table)));
+  
+  let expected = ^Literal(value=35);
+  runSqlQueryTest($sqlQuery, $expected,[], $config);
+}
+
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions::min::testMin(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name= 'min' , parameters=[^ColumnName(name='AGE')]);
+
+  let table= meta::relational::tests::dbInc->cast(@Database).schema('default').table('personTable')->toOne();
+  let sqlQuery = ^SelectSQLQuery(columns=[$dynaFunc],
+                                 data= ^meta::relational::metamodel::join::RootJoinTreeNode(
+                                     alias=^TableAlias(name= 'myTable' , relationalElement=$table)));
+  
+  let expected = ^Literal(value=12);
+  runSqlQueryTest($sqlQuery, $expected,[], $config);
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions::stdDevSample::testStdDevSample(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name= 'stdDevSample' , parameters=[^ColumnName(name='AGE')]);
+
+  let table= meta::relational::tests::dbInc->cast(@Database).schema('default').table('personTable')->toOne();
+  let sqlQuery = ^SelectSQLQuery(columns=[$dynaFunc],
+                                 data= ^meta::relational::metamodel::join::RootJoinTreeNode(
+                                     alias=^TableAlias(name= 'myTable' , relationalElement=$table)));
+  
+  let expected = ^Literal(value=8.34);
+  let equalityComparator =  floatEqualityComparatorGenerator([0.01]);
+  runSqlQueryTest($sqlQuery, $expected,$equalityComparator, $config);
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions::stdDevPopulation::testStdDevPopulation(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name= 'stdDevPopulation' , parameters=[^ColumnName(name='AGE')]);
+
+  let table= meta::relational::tests::dbInc->cast(@Database).schema('default').table('personTable')->toOne();
+  let sqlQuery = ^SelectSQLQuery(columns=[$dynaFunc],
+                                 data= ^meta::relational::metamodel::join::RootJoinTreeNode(
+                                     alias=^TableAlias(name= 'myTable' , relationalElement=$table)));
+  
+  let expected = ^Literal(value=7.72);
+  let equalityComparator =  floatEqualityComparatorGenerator([0.01]);
+  runSqlQueryTest($sqlQuery, $expected,$equalityComparator, $config);
+}

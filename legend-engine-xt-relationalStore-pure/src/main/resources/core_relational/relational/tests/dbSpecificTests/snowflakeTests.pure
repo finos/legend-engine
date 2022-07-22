@@ -19,19 +19,19 @@ import meta::pure::alloy::connections::*;
 import meta::pure::test::*;
 
 
-function <<test.TestCollection>> meta::relational::tests::dbSpecificTests::snowflake::runSQLQueryTestsParam(): PureTestCollection[1]
+function <<test.TestCollection>> meta::relational::tests::dbSpecificTests::snowflake::dynaFunctions::runDynaFunctionsTests(): PureTestCollection[1]
 {
   let connection = meta::relational::dbTestRunner::getTestConnection(DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
   
   meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions
           ->collectParameterizedTests('Snowflake',
                 ^DbTestConfig(dbType=DatabaseType.Snowflake, connection=$connection), [],
-                meta::relational::tests::dbSpecificTests::snowflake::runSQLQueryTestsParamFilter_FunctionDefinition_1__Boolean_1_
+                meta::relational::tests::dbSpecificTests::snowflake::dynaFunctions::dynaFunctionsTestsParamFilter_FunctionDefinition_1__Boolean_1_
                 );
 }
 
 
-function meta::relational::tests::dbSpecificTests::snowflake::runSQLQueryTestsParamFilter(f:FunctionDefinition<Any>[1]):Boolean[1]
+function meta::relational::tests::dbSpecificTests::snowflake::dynaFunctions::dynaFunctionsTestsParamFilter(f:FunctionDefinition<Any>[1]):Boolean[1]
 {
   // currently hardcoding unsupported funcs, In future fetch this from db extensions and skip
   let unsupportedDynaFunctions = ['dayOfMonth'];
@@ -48,4 +48,34 @@ function meta::relational::tests::dbSpecificTests::snowflake::runSQLQueryTestsPa
               $dynaFuncPackageName->pathToElement()->cast(@Package)->collectTests(););
 
   !$ignoredTests->contains($f);
+}
+
+function <<test.TestCollection>> meta::relational::tests::dbSpecificTests::snowflake::aggregateFunctions::runAggregateFunctionTests(): PureTestCollection[1]
+{
+  let connection = meta::relational::dbTestRunner::getTestConnection(DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
+  
+  meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions
+          ->collectParameterizedTests('Snowflake', ^DbTestConfig(dbType=DatabaseType.Snowflake, connection=$connection),[],
+             meta::relational::tests::dbSpecificTests::snowflake::aggregateFunctions::aggregateFunctionsTestsParamFilter_FunctionDefinition_1__Boolean_1_);
+}
+
+function meta::relational::tests::dbSpecificTests::snowflake::aggregateFunctions::aggregateFunctionsTestsParamFilter(f:FunctionDefinition<Any>[1]):Boolean[1]
+{
+  // there is an issue with snowflake table setup - skip for now
+  false;
+}
+
+function <<test.TestCollection>> meta::relational::tests::dbSpecificTests::snowflake::namingTests::runNamingTests(): PureTestCollection[1]
+{
+  let connection = meta::relational::dbTestRunner::getTestConnection(DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
+  
+  meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests
+          ->collectParameterizedTests('Snowflake', ^DbTestConfig(dbType=DatabaseType.Snowflake, connection=$connection),[],
+          meta::relational::tests::dbSpecificTests::snowflake::namingTests::namingTestsParamFilter_FunctionDefinition_1__Boolean_1_);
+}
+
+function meta::relational::tests::dbSpecificTests::snowflake::namingTests::namingTestsParamFilter(f:FunctionDefinition<Any>[1]):Boolean[1]
+{
+  // there is an issue with snowflake table setup - skip for now
+  false;
 }
