@@ -96,7 +96,7 @@ public class TestMiddleTierUserNamePasswordFlow
         }
         catch (Exception e)
         {
-            assertEquals("Credential acquisition context does not contain a parameter named 'legend.resourceContext'. Supplied context values={usageContext=SERVICE_EXECUTION}", e.getMessage());
+            assertEquals("Credential acquisition context does not contain a parameter named 'legend.resourceContext'. Supplied context values={legend.usageContext=SERVICE_EXECUTION}", e.getMessage());
         }
     }
 
