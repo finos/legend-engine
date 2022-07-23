@@ -77,8 +77,8 @@ public class TestRelationalMiddleTierPlanExecutionAuthorizer
         SingleExecutionPlan planWithMiddleTierAuth = this.loadPlanFromFile("/plans/planWithSingleMiddleTierAuthNode.json");
 
         PlanExecutionAuthorizerInput authorizationInput = PlanExecutionAuthorizerInput.with(SERVICE_EXECUTION)
-                .withResourceContext("servicePath", "/api/foobar")
-                .withResourceContext("serviceUniqueId", "v1:1234")
+                .withResourceContext("legend.servicePath", "/api/foobar")
+                .withResourceContext("legend.serviceUniqueId", "v1:1234")
                 .build();
 
         PlanExecutionAuthorizerOutput authorizationResult = planExecutionAuthorizer.evaluate(alice, planWithMiddleTierAuth, authorizationInput);
@@ -95,8 +95,8 @@ public class TestRelationalMiddleTierPlanExecutionAuthorizer
         SingleExecutionPlan planWithMiddleTierAuth = this.loadPlanFromFile("/plans/planWithSingleMiddleTierAuthNode.json");
 
         PlanExecutionAuthorizerInput authorizationInput = PlanExecutionAuthorizerInput.with(SERVICE_EXECUTION)
-                .withResourceContext("servicePath", "/api/foobar")
-                .withResourceContext("serviceUniqueId", "v1:1234")
+                .withResourceContext("legend.servicePath", "/api/foobar")
+                .withResourceContext("legend.serviceUniqueId", "v1:1234")
                 .build();
 
         PlanExecutionAuthorizerOutput authorizationResult = planExecutionAuthorizer.evaluate(alice, planWithMiddleTierAuth, authorizationInput);

@@ -4,7 +4,7 @@
   "summary" : "Overall authorization was NOT successful. Authorizations granted=0, Authorizations denied=2",
   "authorizationInput" : {
     "contextParams" : {
-      "usageContext" : "INTERACTIVE_EXECUTION"
+      "legend.usageContext" : "INTERACTIVE_EXECUTION"
     }
   },
   "authorizations" : [ {

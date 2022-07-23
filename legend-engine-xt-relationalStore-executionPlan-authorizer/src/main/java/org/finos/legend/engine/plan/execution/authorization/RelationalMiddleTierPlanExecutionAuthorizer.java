@@ -117,8 +117,8 @@ public class RelationalMiddleTierPlanExecutionAuthorizer implements PlanExecutio
         MutableList<MiddleTierUserNamePasswordAuthenticationStrategy> middleTierAuthNodes =
                 nodesWithMiddleTierConnections.collect(relationalDatabaseConnection -> (MiddleTierUserNamePasswordAuthenticationStrategy) relationalDatabaseConnection.authenticationStrategy);
 
-        String servicePath = resourceContexts.get("servicePath");
-        String serviceUniqueId = resourceContexts.get("serviceUniqueId");
+        String servicePath = resourceContexts.get("legend.servicePath");
+        String serviceUniqueId = resourceContexts.get("legend.serviceUniqueId");
         String normalizedResourceContext = normalizeServiceResourceContext(servicePath, serviceUniqueId);
 
         for (MiddleTierUserNamePasswordAuthenticationStrategy middleTierAuthNode : middleTierAuthNodes)

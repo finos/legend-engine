@@ -69,7 +69,7 @@ public class TestMiddleTierUserNamePasswordFlow
         try
         {
             RuntimeContext context = RuntimeContext.newWith(Maps.immutable.with(
-                    "resourceContext",
+                    "legend.resourceContext",
                     "resource1")
             );
             flow.makeCredential(null, null, authenticationStrategy, context);
@@ -77,7 +77,7 @@ public class TestMiddleTierUserNamePasswordFlow
         }
         catch (Exception e)
         {
-            assertEquals("Credential acquisition context does not contain a parameter named 'usageContext'. Supplied context values={resourceContext=resource1}", e.getMessage());
+            assertEquals("Credential acquisition context does not contain a parameter named 'usageContext'. Supplied context values={legend.resourceContext=resource1}", e.getMessage());
         }
     }
 
@@ -88,7 +88,7 @@ public class TestMiddleTierUserNamePasswordFlow
         try
         {
             RuntimeContext context = RuntimeContext.newWith(Maps.immutable.with(
-                    "usageContext",
+                    "legend.usageContext",
                     "SERVICE_EXECUTION")
             );
             flow.makeCredential(null, null, authenticationStrategy, context);
@@ -96,7 +96,7 @@ public class TestMiddleTierUserNamePasswordFlow
         }
         catch (Exception e)
         {
-            assertEquals("Credential acquisition context does not contain a parameter named 'resourceContext'. Supplied context values={usageContext=SERVICE_EXECUTION}", e.getMessage());
+            assertEquals("Credential acquisition context does not contain a parameter named 'legend.resourceContext'. Supplied context values={usageContext=SERVICE_EXECUTION}", e.getMessage());
         }
     }
 
@@ -107,9 +107,9 @@ public class TestMiddleTierUserNamePasswordFlow
         try
         {
             RuntimeContext context = RuntimeContext.newWith(Maps.immutable.with(
-                    "resourceContext",
+                    "legend.resourceContext",
                     "resource1",
-                    "usageContext",
+                    "legend.usageContext",
                     "SERVICE_EXECUTION")
             );
             flow.makeCredential(null, null, authenticationStrategy, context);
@@ -117,7 +117,7 @@ public class TestMiddleTierUserNamePasswordFlow
         }
         catch (Exception e)
         {
-            assertEquals("Credential acquisition context does not contain a parameter named 'macContext'. Supplied context values={resourceContext=resource1, usageContext=SERVICE_EXECUTION}", e.getMessage());
+            assertEquals("Credential acquisition context does not contain a parameter named 'macContext'. Supplied context values={legend.resourceContext=resource1, legend.usageContext=SERVICE_EXECUTION}", e.getMessage());
         }
     }
 
@@ -129,9 +129,9 @@ public class TestMiddleTierUserNamePasswordFlow
         MiddleTierUserNamePasswordAuthenticationStrategy authenticationStrategy = new MiddleTierUserNamePasswordAuthenticationStrategy("reference1");
 
         RuntimeContext context = RuntimeContext.newWith(Maps.immutable
-                .with("resourceContext", "resource1",
-                        "usageContext", "SERVICE_EXECUTION",
-                        "macContext", new PlanExecutionAuthorizerMACUtils().generateMAC("Plan execution authorization completed", "macKeyReference")
+                .with("legend.resourceContext", "resource1",
+                        "legend.usageContext", "SERVICE_EXECUTION",
+                        "legend.macContext", new PlanExecutionAuthorizerMACUtils().generateMAC("Plan execution authorization completed", "macKeyReference")
                 )
         );
         MiddleTierUserPasswordCredential credential = (MiddleTierUserPasswordCredential) flow.makeCredential(new Identity("alice"), null, authenticationStrategy, context);

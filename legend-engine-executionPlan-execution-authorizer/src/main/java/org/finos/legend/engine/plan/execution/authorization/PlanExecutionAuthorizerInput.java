@@ -26,9 +26,9 @@ import java.io.IOException;
 @JsonPropertyOrder({"contextParams"})
 public class PlanExecutionAuthorizerInput
 {
-    public static String USAGE_CONTEXT_PARAM = "usageContext";
-    public static String RESOURCE_CONTEXT_PARAM = "resourceContext";
-    public static String MAC_CONTEXT_PARAM = "macContext";
+    public static String USAGE_CONTEXT_PARAM = "legend.usageContext";
+    public static String RESOURCE_CONTEXT_PARAM = "legend.resourceContext";
+    public static String MAC_CONTEXT_PARAM = "legend.macContext";
 
     public enum ExecutionMode
     {

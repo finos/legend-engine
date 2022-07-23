@@ -4,9 +4,9 @@
   "summary" : "Overall authorization was NOT successful. Authorizations granted=0, Authorizations denied=1",
   "authorizationInput" : {
     "contextParams" : {
-      "servicePath" : "/api/foobar",
-      "serviceUniqueId" : "v1:1234",
-      "usageContext" : "SERVICE_EXECUTION"
+      "legend.servicePath" : "/api/foobar",
+      "legend.serviceUniqueId" : "v1:1234",
+      "legend.usageContext" : "SERVICE_EXECUTION"
     }
   },
   "authorizations" : [ {

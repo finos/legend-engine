@@ -81,7 +81,7 @@ public class TestExecutionWithMiddleTierConnections extends AbstractMiddleTierEx
 
         assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
 
-        String expectedOutput = "{\"authorizer\":\"RelationalMiddleTierPlanExecutionAuthorizer\",\"authorized\":false,\"summary\":\"Overall authorization was NOT successful. Authorizations granted=0, Authorizations denied=1\",\"authorizationInput\":{\"contextParams\":{\"usageContext\":\"INTERACTIVE_EXECUTION\"}},\"authorizations\":[{\"status\":\"DENY\",\"summary\":\"Use of credential denied by policy\",\"subject\":\"_UNKNOWN_\",\"action\":\"use\",\"resource\":{\"credential\":\"reference1\"},\"policyParams\":{\"policy\":\"unused\",\"resource\":\"DB@test@localhost@64514\"},\"details\":[]}]}";
+        String expectedOutput = "{\"authorizer\":\"RelationalMiddleTierPlanExecutionAuthorizer\",\"authorized\":false,\"summary\":\"Overall authorization was NOT successful. Authorizations granted=0, Authorizations denied=1\",\"authorizationInput\":{\"contextParams\":{\"legend.usageContext\":\"INTERACTIVE_EXECUTION\"}},\"authorizations\":[{\"status\":\"DENY\",\"summary\":\"Use of credential denied by policy\",\"subject\":\"_UNKNOWN_\",\"action\":\"use\",\"resource\":{\"credential\":\"reference1\"},\"policyParams\":{\"policy\":\"unused\",\"resource\":\"DB@test@localhost@64514\"},\"details\":[]}]}";
         assertTrue(this.readResponseError(response).contains("\"Overall authorization was NOT successful. Authorizations granted=0, Authorizations denied=1\""));
     }
 
