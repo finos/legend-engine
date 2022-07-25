@@ -1,5 +1,0 @@
-{
-    "name" : "core_external_shared",
-    "pattern" : "(meta::external::shared::format|meta::protocols::pure)(::.*)?",
-    "dependencies" : ["platform", "core"]
-}

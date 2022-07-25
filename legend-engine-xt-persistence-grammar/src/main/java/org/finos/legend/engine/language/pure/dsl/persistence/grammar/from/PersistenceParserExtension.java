@@ -18,6 +18,9 @@ import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.eclipse.collections.impl.factory.Lists;
+import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.language.pure.dsl.persistence.grammar.from.context.PersistenceContextParseTreeWalker;
+import org.finos.legend.engine.language.pure.dsl.persistence.grammar.from.context.PersistencePlatformSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.ParserErrorListener;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserContext;
 import org.finos.legend.engine.language.pure.grammar.from.SectionSourceCode;
@@ -25,15 +28,19 @@ import org.finos.legend.engine.language.pure.grammar.from.SourceCodeParserInfo;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.PersistenceLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.PersistenceParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.connection.ConnectionParser;
-import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParser;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.PersistencePlatform;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.DefaultPersistencePlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
-public class PersistenceParserExtension implements PureGrammarParserExtension
+public class PersistenceParserExtension implements IPersistenceParserExtension
 {
     public static final String NAME = "Persistence";
 
@@ -41,6 +48,22 @@ public class PersistenceParserExtension implements PureGrammarParserExtension
     public Iterable<? extends SectionParser> getExtraSectionParsers()
     {
         return Lists.fixedSize.of(SectionParser.newParser(NAME, PersistenceParserExtension::parseSection));
+    }
+
+    @Override
+    public List<Function<PersistencePlatformSourceCode, PersistencePlatform>> getExtraPersistencePlatformParsers()
+    {
+        return Collections.singletonList(code ->
+                {
+                    if ("Default".equals(code.getType()))
+                    {
+                        DefaultPersistencePlatform platform = new DefaultPersistencePlatform();
+                        platform.sourceInformation = code.getSourceInformation();
+                        return platform;
+                    }
+                    return null;
+                }
+        );
     }
 
     private static Section parseSection(SectionSourceCode sectionSourceCode, Consumer<PackageableElement> elementConsumer, PureGrammarParserContext context)
@@ -51,8 +74,13 @@ public class PersistenceParserExtension implements PureGrammarParserExtension
         section.sourceInformation = parserInfo.sourceInformation;
 
         ConnectionParser connectionParser = ConnectionParser.newInstance(context.getPureGrammarParserExtensions());
-        PersistenceParseTreeWalker walker = new PersistenceParseTreeWalker(parserInfo.walkerSourceInformation, elementConsumer, section, connectionParser);
-        walker.visit((PersistenceParserGrammar.DefinitionContext) parserInfo.rootContext);
+
+        List<IPersistenceParserExtension> extensions = IPersistenceParserExtension.getExtensions();
+        List<Function<PersistencePlatformSourceCode, PersistencePlatform>> processors = ListIterate.flatCollect(extensions, IPersistenceParserExtension::getExtraPersistencePlatformParsers);
+
+        PersistenceContextParseTreeWalker persistenceContextWalker = new PersistenceContextParseTreeWalker(parserInfo.walkerSourceInformation, connectionParser, processors);
+        PersistenceParseTreeWalker persistenceWalker = new PersistenceParseTreeWalker(parserInfo.walkerSourceInformation, elementConsumer, section, persistenceContextWalker);
+        persistenceWalker.visit((PersistenceParserGrammar.DefinitionContext) parserInfo.rootContext);
 
         return section;
     }
@@ -70,3 +98,4 @@ public class PersistenceParserExtension implements PureGrammarParserExtension
         return new SourceCodeParserInfo(sectionSourceCode.code, input, sectionSourceCode.sourceInformation, sectionSourceCode.walkerSourceInformation, lexer, parser, parser.definition());
     }
 }
+

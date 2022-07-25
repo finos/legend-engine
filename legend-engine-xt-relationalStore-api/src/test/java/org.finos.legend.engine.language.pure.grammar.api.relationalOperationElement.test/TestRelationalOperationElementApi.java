@@ -42,7 +42,7 @@ public class TestRelationalOperationElementApi extends TestGrammar<RelationalOpe
     @Test
     public void testSimpleError()
     {
-        testError("add(1,", "Unexpected token", new SourceInformation("", 1, 7, 1, 11));
+        testError("add(1,", "Unexpected token '<EOF>'", new SourceInformation("", 1, 7, 1, 11));
     }
 
     @Test
@@ -58,7 +58,7 @@ public class TestRelationalOperationElementApi extends TestGrammar<RelationalOpe
         testBatchError(createBatchInput(Tuples.pair("1", "add(1"),
                         Tuples.pair("2", "'4'")),
                 createExpectedBatchResult(Tuples.pair("1",
-                                "{\"message\":\"Unexpected token\",\"sourceInformation\":{\"endColumn\":10,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":6,\"startLine\":1}}"),
+                                "{\"message\":\"Unexpected token '<EOF>'\",\"sourceInformation\":{\"endColumn\":10,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":6,\"startLine\":1}}"),
                         Tuples.pair("2", "'4'"))
         );
     }

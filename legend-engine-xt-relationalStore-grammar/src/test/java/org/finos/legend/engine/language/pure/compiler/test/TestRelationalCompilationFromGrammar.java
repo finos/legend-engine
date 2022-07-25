@@ -1369,4 +1369,49 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
         Assert.assertEquals(1, warnings.size());
         Assert.assertEquals("{\"sourceInformation\":{\"sourceId\":\"simple::simpleRelationalMappingInc\",\"startLine\":30,\"startColumn\":12,\"endLine\":30,\"endColumn\":43},\"message\":\"Error 'x' can't be found in the mapping simple::simpleRelationalMappingInc\"}", new ObjectMapper().writeValueAsString(warnings.get(0)));
     }
+
+    @Test
+    public void testRelationalMappingForTableNameInQuotesWithDots() throws Exception
+    {
+        PureModel model = test(
+                "###Pure\n" +
+                    "Class simple::Item\n" +
+                    "{\n" +
+                    "   id: Integer[0..1];\n" +
+                    "}\n" +
+                    "###Relational\n" +
+                    "Database simple::DB\n" +
+                    "(\n" +
+                    "   Table \"tableNameInQuotes.With.Dots\"\n" +
+                    "   (\n" +
+                    "       ID INTEGER PRIMARY KEY\n" +
+                    "   )\n" +
+                    ")\n" +
+                    "###Mapping\n" +
+                    "Mapping simple::ItemMapping\n" +
+                    "(\n" +
+                        "simple::Item: Relational\n" +
+                        "  {\n" +
+                        "    ~primaryKey\n" +
+                        "    (\n" +
+                        "       [simple::DB]\"tableNameInQuotes.With.Dots\".ID\n" +
+                        "    )\n" +
+                        "    ~mainTable [simple::DB]\"tableNameInQuotes.With.Dots\"\n" +
+                        "    id: [simple::DB]\"tableNameInQuotes.With.Dots\".ID\n" +
+                        "  }\n" +
+                    ")"
+        ).getTwo();
+        org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping mmMapping = model.getMapping("simple::ItemMapping");
+        RootRelationalInstanceSetImplementation rootRelationalInstanceSetImplementation = ((RootRelationalInstanceSetImplementation) mmMapping._classMappings().getFirst());
+        RelationalOperationElement primaryKey = rootRelationalInstanceSetImplementation._primaryKey().getFirst();
+        // mainTable
+        Table table = (Table) rootRelationalInstanceSetImplementation._mainTableAlias()._relationalElement();
+        Assert.assertEquals(table._name(), "\"tableNameInQuotes.With.Dots\"");
+        // primaryKey
+        Column col = ((TableAliasColumn) primaryKey)._column();
+        Assert.assertEquals(col._name(), "ID");
+        Assert.assertEquals(((Table) col._owner())._name(), "\"tableNameInQuotes.With.Dots\"");
+        // classMappingId
+        Assert.assertEquals(rootRelationalInstanceSetImplementation._id(), "simple_Item");
+    }
 }

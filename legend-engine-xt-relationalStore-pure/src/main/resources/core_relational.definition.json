@@ -1,5 +1,5 @@
 {
     "name" : "core_relational",
     "pattern" : "(meta::relational|meta::pure::mapping|meta::protocols::pure|meta::relational::tests::csv|meta::alloy::service::execution|meta::pure::tds|meta::pure::executionPlan|meta::pure::legend::connections|meta::pure::alloy::connections|meta::pure::milestoning|meta::pure::router|meta::alloy::objectReference|meta::pure::lineage|meta::pure::graphFetch)(::.*)?",
-    "dependencies" : ["platform", "core", "core_external_shared"]
+    "dependencies" : ["platform", "core"]
 }

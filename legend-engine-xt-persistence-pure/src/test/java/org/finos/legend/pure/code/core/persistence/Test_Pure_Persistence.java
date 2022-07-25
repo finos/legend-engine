@@ -26,7 +26,6 @@ public class Test_Pure_Persistence
         CompiledExecutionSupport executionSupport = PureTestBuilderHelper.getClassLoaderExecutionSupport();
         TestSuite suite = new TestSuite();
         suite.addTest(PureTestBuilderHelper.buildSuite(TestCollection.collectTests("meta::pure::persistence", executionSupport.getProcessorSupport(), ci -> PureTestBuilderHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
-        suite.addTest(PureTestBuilderHelper.buildSuite(TestCollection.collectTests("meta::external::persistence", executionSupport.getProcessorSupport(), ci -> PureTestBuilderHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
         return suite;
     }
 }

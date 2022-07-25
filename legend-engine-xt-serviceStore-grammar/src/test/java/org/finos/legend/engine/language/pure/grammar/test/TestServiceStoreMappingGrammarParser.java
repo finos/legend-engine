@@ -142,7 +142,7 @@ public class TestServiceStoreMappingGrammarParser extends TestGrammarParser.Test
                 "       )\n" +
                 "    )\n" +
                 "  }\n" +
-                ")\n", "PARSER error at [10:12-19]: Unexpected token");
+                ")\n", "PARSER error at [10:12-19]: Unexpected token 'paramers'");
 
         //Incorrect request body reference
         test("###Mapping\n" +
@@ -158,7 +158,7 @@ public class TestServiceStoreMappingGrammarParser extends TestGrammarParser.Test
                 "       )\n" +
                 "    )\n" +
                 "  }\n" +
-                ")\n", "PARSER error at [10:12-22]: Unexpected token");
+                ")\n", "PARSER error at [10:12-22]: Unexpected token 'requestBody'");
     }
 
     @Test

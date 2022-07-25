@@ -4309,6 +4309,70 @@ function meta::relational::functions::pureToSqlQuery::addQuotesIfNecessary(s:Str
 
 function meta::relational::functions::pureToSqlQuery::processTdsRestrict(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
+   if (shouldOptimizeRestrictDistinct($expression, $vars, $state, $context, $extensions),
+       | processTdsRestrictOptimized($expression, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions),
+       | processTdsRestrictNormal($expression, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)
+   )
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::shouldOptimizeRestrictDistinct(f:FunctionExpression[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], context:DebugContext[1], extensions:Extension[*]):Boolean[1]
+{
+   let index = $state.functionExpressionStack->indexOf($f);
+   let restrictFollowedByDistinct = ($index >= 1) && ($state.functionExpressionStack->at($index - 1)->evaluateAndDeactivate().func == distinct_TabularDataSet_1__TabularDataSet_1_);
+
+   let nestedQuery = $f.parametersValues->at(0)->byPassRouterInfo()->evaluateAndDeactivate();
+   let projectFollowedByRestrictBasicCols =
+      $nestedQuery->instanceOf(FunctionExpression) &&
+      (
+         $nestedQuery->cast(@FunctionExpression).func->equal(project_K_MANY__Function_MANY__String_MANY__TabularDataSet_1_) || // Project with functions
+         (
+            $nestedQuery->cast(@FunctionExpression).func->equal(project_T_MANY__ColumnSpecification_MANY__TabularDataSet_1_) &&
+            $nestedQuery->cast(@FunctionExpression)->instanceValuesAtParameter(1, $vars, $state.inScopeVars)->forAll(c | $c->instanceOf(BasicColumnSpecification))
+         )  // Project with column specifications and all basic cols (no window cols)
+      );
+
+   let optimizationDecision = $restrictFollowedByDistinct && $projectFollowedByRestrictBasicCols;
+   print(if(!$context.debug, |'',|$context.space+'Restrict optimization decision:'+$optimizationDecision->toString()+' / Restrict followed by distinct:'+$restrictFollowedByDistinct->toString()+', Project followed by restrict (basic cols):'+$projectFollowedByRestrictBasicCols->toString()+'\n'));
+   $optimizationDecision;
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::processTdsRestrictOptimized(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+   // Called in the context : $collection->project(...)->restrict(...)->distinct(...)
+   // Potentially cut down joins which can be generated for columns not in restrict set
+
+   let nestedQuery = $expression.parametersValues->at(0)->byPassRouterInfo()->evaluateAndDeactivate()->cast(@FunctionExpression);
+   let restrictSet = $expression->instanceValuesAtParameter(1, $vars, $state.inScopeVars)->cast(@String);
+
+   if ($nestedQuery.func == project_K_MANY__Function_MANY__String_MANY__TabularDataSet_1_,
+       
+       | // Project with functions 
+         let functions = $nestedQuery->instanceValuesAtParameter(1, $vars, $state.inScopeVars)->cast(@meta::pure::metamodel::function::Function<Any>);
+         let columnNames = $nestedQuery->instanceValuesAtParameter(2, $vars, $state.inScopeVars)->cast(@String);
+         $restrictSet->map(c | assert($columnNames->contains($c), | 'Project column list ' + $columnNames->map(x | '\'' + $x + '\'')->joinStrings('[', ', ', ']') + ' does not contain restrict column \'' + $c + '\''));
+         
+         let filteredFunctionAndNamePairs = $functions->zip($columnNames)->filter(p | $p.second->in($restrictSet));
+         let columnNameToFunctionAndNamePairMap = $filteredFunctionAndNamePairs->map(p | pair($p.second, $p))->newMap();
+         let orderedFunctionAndNamePairs = $restrictSet->map(c | $columnNameToFunctionAndNamePairMap->get($c));
+
+         processProject($orderedFunctionAndNamePairs.second, $orderedFunctionAndNamePairs.first, [], $nestedQuery, $operation, $vars, $state, $nodeId, $aggFromMap, $context, [], $extensions);,
+
+       | // Project with column specifications
+         // All columns are basic columns (no window columns as per check in the shouldOptimize function)
+         let columns = $nestedQuery->instanceValuesAtParameter(1, $vars, $state.inScopeVars)->cast(@BasicColumnSpecification<Any>);
+         $restrictSet->map(c | assert($columns.name->contains($c), | 'Project column list ' + $columns.name->map(x | '\'' + $x + '\'')->joinStrings('[', ', ', ']') + ' does not contain restrict column \'' + $c + '\''));
+
+         let filteredColumns = $columns->filter(c | $c.name->in($restrictSet));
+         let columnNameToColMap = $filteredColumns->map(c | pair($c.name, $c))->newMap();
+         let orderedColumns = $restrictSet->map(c | $columnNameToColMap->get($c));
+         
+         processProject($orderedColumns.name, $orderedColumns.func, $orderedColumns->map(c|if($c.documentation->isEmpty(),|'', |$c.documentation)), $nestedQuery, $operation, $vars, $state, $nodeId, $aggFromMap, $context, [], $extensions);
+
+   );
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::processTdsRestrictNormal(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
    let nestedQuery = processValueSpecification($expression.parametersValues->at(0), [], $operation, $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
 
    let projectColNames = $expression->instanceValuesAtParameter(1, $vars, $state.inScopeVars)->cast(@String);

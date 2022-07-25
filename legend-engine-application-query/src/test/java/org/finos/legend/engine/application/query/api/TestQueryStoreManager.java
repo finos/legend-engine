@@ -136,6 +136,12 @@ public class TestQueryStoreManager
             return this;
         }
 
+        TestQueryBuilder withVersionId(String versionId)
+        {
+            this.versionId = versionId;
+            return this;
+        }
+
         TestQueryBuilder withTaggedValues(List<TaggedValue> taggedValues)
         {
             this.taggedValues = taggedValues;
@@ -167,11 +173,12 @@ public class TestQueryStoreManager
         }
     }
 
-    private static QueryProjectCoordinates createTestQueryProjectCoordinate(String groupId, String artifactId)
+    private static QueryProjectCoordinates createTestQueryProjectCoordinate(String groupId, String artifactId, String version)
     {
         QueryProjectCoordinates coordinate = new QueryProjectCoordinates();
         coordinate.groupId = groupId;
         coordinate.artifactId = artifactId;
+        coordinate.version = version;
         return coordinate;
     }
 
@@ -341,23 +348,29 @@ public class TestQueryStoreManager
         Query testQuery1 = TestQueryBuilder.create("1", "query1", currentUser).withGroupId("test").withArtifactId("test").build();
         Query testQuery2 = TestQueryBuilder.create("2", "query2", currentUser).withGroupId("test").withArtifactId("test").build();
         Query testQuery3 = TestQueryBuilder.create("3", "query3", currentUser).withGroupId("something").withArtifactId("something").build();
+        Query testQuery4 = TestQueryBuilder.create("4", "query4", currentUser).withGroupId("something.another").withArtifactId("something-another").withVersionId("1.0.0").build();
         queryStoreManager.createQuery(testQuery1, currentUser);
         queryStoreManager.createQuery(testQuery2, currentUser);
         queryStoreManager.createQuery(testQuery3, currentUser);
+        queryStoreManager.createQuery(testQuery4, currentUser);
 
         // When no projects specified, return all queries
-        Assert.assertEquals(3, queryStoreManager.getQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).size());
+        Assert.assertEquals(4, queryStoreManager.getQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).size());
 
-        QueryProjectCoordinates coordinate1 = createTestQueryProjectCoordinate("notfound", "notfound");
+        QueryProjectCoordinates coordinate1 = createTestQueryProjectCoordinate("notfound", "notfound", null);
         Assert.assertEquals(0, queryStoreManager.getQueries(new TestQuerySearchSpecificationBuilder().withProjectCoordinates(Lists.fixedSize.of(coordinate1)).build(), currentUser).size());
 
-        QueryProjectCoordinates coordinate2 = createTestQueryProjectCoordinate("test", "test");
+        QueryProjectCoordinates coordinate2 = createTestQueryProjectCoordinate("test", "test", null);
         Assert.assertEquals(2, queryStoreManager.getQueries(new TestQuerySearchSpecificationBuilder().withProjectCoordinates(Lists.fixedSize.of(coordinate2)).build(), currentUser).size());
         Assert.assertEquals(2, queryStoreManager.getQueries(new TestQuerySearchSpecificationBuilder().withProjectCoordinates(Lists.fixedSize.of(coordinate1, coordinate2)).build(), currentUser).size());
 
-        QueryProjectCoordinates coordinate3 = createTestQueryProjectCoordinate("something", "something");
+        QueryProjectCoordinates coordinate3 = createTestQueryProjectCoordinate("something", "something", null);
         Assert.assertEquals(1, queryStoreManager.getQueries(new TestQuerySearchSpecificationBuilder().withProjectCoordinates(Lists.fixedSize.of(coordinate3)).build(), currentUser).size());
         Assert.assertEquals(3, queryStoreManager.getQueries(new TestQuerySearchSpecificationBuilder().withProjectCoordinates(Lists.fixedSize.of(coordinate1, coordinate2, coordinate3)).build(), currentUser).size());
+
+        QueryProjectCoordinates coordinate4 = createTestQueryProjectCoordinate("something.another", "something-another", "1.0.0");
+        Assert.assertEquals(1, queryStoreManager.getQueries(new TestQuerySearchSpecificationBuilder().withProjectCoordinates(Lists.fixedSize.of(coordinate4)).build(), currentUser).size());
+        Assert.assertEquals(4, queryStoreManager.getQueries(new TestQuerySearchSpecificationBuilder().withProjectCoordinates(Lists.fixedSize.of(coordinate1, coordinate2, coordinate3, coordinate4)).build(), currentUser).size());
     }
 
     @Test

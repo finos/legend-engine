@@ -461,3 +461,30 @@ function meta::pure::executionPlan::toString::databaseConnectionTypeToString(con
 {
    'type = "' + $connection.type ->toString() + '"'
 }
+
+function  meta::relational::functions::sqlQueryToString::processLiteralDefaultForPlanService(a:Any[1], dbType:DatabaseType[1], dbTimeZone : String[0..1], quoteIdentifiers:Boolean[0..1]): String[1]
+{
+   let dbConfig = createDbConfig($dbType, $dbTimeZone, $quoteIdentifiers);
+   let type = if($a->instanceOf(List),
+                 |
+                 if($a->cast(@List<Any>).values->isNotEmpty(),
+                    |$a->cast(@List<Any>).values->type(),
+                    |let typeArgumentType = $a.classifierGenericType.typeArguments.rawType; if($typeArgumentType->isEmpty(),|String,|$typeArgumentType->toOne());),
+                 |$a->type());
+   let processor = $dbConfig.literalProcessor($type);
+   if(!$a->type()==String,
+      | if($a->type()==List,
+           | $a->cast(@List<Any>)->processLiteralListForPlanService($type, $dbConfig, $dbType, $dbTimeZone)->joinStrings(','),
+           | $processor.formatValue($a, $dbTimeZone)),
+      |$processor.formatValue($a, $dbTimeZone)->replace('\'\'', '\''));
+}
+
+function meta::relational::functions::sqlQueryToString::processLiteralListForPlanService(a:List<Any>[*], type:Type[1], dbConfig : DbConfig[1], dbType:DatabaseType[1], dbTimeZone : String[0..1]): String[1]
+{
+
+   $a.values->map(v|$v->match([
+                     s:String[1]| $dbConfig.literalProcessor($type).formatValue($s, $dbTimeZone)->replace('\'\'', '\''),
+                     a:Any[1]| $dbConfig.literalProcessor($type).formatValue($a, $dbTimeZone)
+                  ]))
+   ->joinStrings(',');
+}
