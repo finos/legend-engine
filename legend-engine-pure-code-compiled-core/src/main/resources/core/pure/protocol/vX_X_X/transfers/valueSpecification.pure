@@ -448,7 +448,8 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
                         removePropertiesWithNullValues = $a.removePropertiesWithNullValues,
                         removePropertiesWithEmptySets = $a.removePropertiesWithEmptySets,
                         fullyQualifiedTypePath = $a.fullyQualifiedTypePath,
-                        includeObjectReference = $a.includeObjectReference
+                        includeObjectReference = $a.includeObjectReference,
+                        alwaysWrapResultWithBrackets = $a.alwaysWrapResultWithBrackets
                      ),
                   g:GraphFetchTree[1]|
                      $g->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree($inScope, $open, $extensions),

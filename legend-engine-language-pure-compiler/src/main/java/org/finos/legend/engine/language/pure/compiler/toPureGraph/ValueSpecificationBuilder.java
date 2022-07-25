@@ -347,6 +347,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
         config._removePropertiesWithEmptySets(serializationConfig.removePropertiesWithEmptySets);
         config._fullyQualifiedTypePath(serializationConfig.fullyQualifiedTypePath);
         config._includeObjectReference(serializationConfig.includeObjectReference);
+        config._alwaysWrapResultWithBrackets(serializationConfig.alwaysWrapResultWithBrackets);
         return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
                 ._genericType(this.context.pureModel.getGenericType("meta::pure::graphFetch::execution::AlloySerializationConfig"))
                 ._multiplicity(this.context.pureModel.getMultiplicity("one"))

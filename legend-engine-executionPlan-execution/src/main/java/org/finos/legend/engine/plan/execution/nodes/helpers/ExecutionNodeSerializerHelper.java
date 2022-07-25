@@ -91,15 +91,25 @@ public class ExecutionNodeSerializerHelper
                 if (iter.hasNext())
                 {
                     T first = iter.next();
-                    if (iter.hasNext())
+                    if (this.config != null && this.config.alwaysWrapResultWithBrackets)
                     {
                         generator.writeStartArray();
-                    }
-                    serializer.serialize(first);
-                    if (iter.hasNext())
-                    {
+                        serializer.serialize(first);
                         iter.forEachRemaining(serializer::serialize);
                         generator.writeEndArray();
+                    }
+                    else
+                    {
+                        if (iter.hasNext())
+                        {
+                            generator.writeStartArray();
+                        }
+                        serializer.serialize(first);
+                        if (iter.hasNext())
+                        {
+                            iter.forEachRemaining(serializer::serialize);
+                            generator.writeEndArray();
+                        }
                     }
                 }
                 else

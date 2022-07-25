@@ -31,6 +31,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSp
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Class;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.SerializationConfig;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.BaseExecutionContext;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.PropertyGraphFetchTree;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.RootGraphFetchTree;
@@ -62,6 +63,7 @@ public class TestM2MGrammarCompileAndExecute
 {
     private static final String GRAPH_FETCH = "graphFetch_T_MANY__RootGraphFetchTree_1__T_MANY_";
     private static final String SERIALIZE = "serialize_T_MANY__RootGraphFetchTree_1__String_1_";
+    private static final String SERIALIZEWITHCONFIG = "serialize_T_MANY__RootGraphFetchTree_1__AlloySerializationConfig_1__String_1_";
     private static final String GET_ALL = "getAll_Class_1__T_MANY_";
 
     @BeforeClass
@@ -242,6 +244,34 @@ public class TestM2MGrammarCompileAndExecute
         assertEquals("{\"builder\":{\"_type\":\"json\"},\"values\":{\"name\":\"Doe\"}}", json);
     }
 
+    @Test
+    public void testHandlesDerivedWithSerializationConfig() throws IOException
+    {
+        String derivedPure;
+        try (BufferedReader buffer = new BufferedReader(new InputStreamReader(TestM2MGrammarCompileAndExecute.class.getResourceAsStream("derived.pure"))))
+        {
+            derivedPure = buffer.lines().collect(Collectors.joining("\n"));
+        }
+
+        PureModelContextData contextData = PureGrammarParser.newInstance().parseModel(derivedPure);
+
+        RootGraphFetchTree fetchTree = rootGFT("test::FirstEmployee", propertyGFT("name"));
+        SerializationConfig config = new SerializationConfig();
+        config.alwaysWrapResultWithBrackets = true;
+        Lambda lambdaWithConfig = lambda(apply(SERIALIZEWITHCONFIG, apply(GRAPH_FETCH, apply(GET_ALL, clazz("test::FirstEmployee")), fetchTree), fetchTree, config));
+
+        ExecuteInput input = new ExecuteInput();
+        input.clientVersion = "vX_X_X";
+        input.model = contextData;
+        input.mapping = "test::m1";
+        input.function = lambdaWithConfig;
+        input.runtime = runtimeValue(jsonModelConnection("test::Firm", "{\"name\": \"firm1\", \"employees\": [{\"firstName\": \"Jane\", \"lastName\": \"Doe\"}]}"));
+        input.context = context();
+
+        String json = responseAsString(runTestWithCustomSerializationFormat(input, SerializationFormat.PURE));
+        assertEquals("[{\"name\":\"Doe\"}]", json);
+    }
+
     private Response runTest(ExecuteInput input)
     {
         ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
@@ -249,6 +279,17 @@ public class TestM2MGrammarCompileAndExecute
         HttpServletRequest request = (HttpServletRequest) Proxy.newProxyInstance(getClass().getClassLoader(), new java.lang.Class<?>[] {HttpServletRequest.class}, new ReflectiveInvocationHandler(new Request()));
         //Should use: core_pure_extensions_extension.Root_meta_pure_extension_defaultExtensions__Extension_MANY_(modelManager.)
         Response result = new Execute(modelManager, executor, (PureModel pureModel) -> Lists.mutable.empty(), LegendPlanTransformers.transformers).execute(request, input, SerializationFormat.defaultFormat, null, null);
+        Assert.assertEquals(200, result.getStatus());
+        return result;
+    }
+
+    private Response runTestWithCustomSerializationFormat(ExecuteInput input, SerializationFormat format)
+    {
+        ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
+        PlanExecutor executor = PlanExecutor.newPlanExecutor(InMemory.build());
+        HttpServletRequest request = (HttpServletRequest) Proxy.newProxyInstance(getClass().getClassLoader(), new java.lang.Class<?>[] {HttpServletRequest.class}, new ReflectiveInvocationHandler(new Request()));
+        //Should use: core_pure_extensions_extension.Root_meta_pure_extension_defaultExtensions__Extension_MANY_(modelManager.)
+        Response result = new Execute(modelManager, executor, (PureModel pureModel) -> Lists.mutable.empty(), LegendPlanTransformers.transformers).execute(request, input, format, null, null);
         Assert.assertEquals(200, result.getStatus());
         return result;
     }

@@ -26,6 +26,7 @@ public class SerializationConfig extends ValueSpecification
     public boolean removePropertiesWithEmptySets;
     public boolean fullyQualifiedTypePath;
     public boolean includeObjectReference;
+    public boolean alwaysWrapResultWithBrackets = false;
 
     @Override
     public <T> T accept(ValueSpecificationVisitor<T> visitor)

@@ -506,6 +506,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::AlloySe
     removePropertiesWithEmptySets: Boolean[0..1];
     fullyQualifiedTypePath: Boolean[0..1];
     includeObjectReference: Boolean[0..1];
+    alwaysWrapResultWithBrackets: Boolean[0..1];
 }
 
 Enum meta::protocols::pure::vX_X_X::metamodel::objectReference::AlloyObjectReferenceType

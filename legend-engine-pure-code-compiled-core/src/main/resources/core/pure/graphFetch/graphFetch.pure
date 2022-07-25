@@ -72,6 +72,7 @@ Class meta::pure::graphFetch::execution::AlloySerializationConfig
     removePropertiesWithEmptySets: Boolean[0..1];
     fullyQualifiedTypePath: Boolean[0..1];
     includeObjectReference: Boolean[0..1];
+    alwaysWrapResultWithBrackets: Boolean[0..1];
 }
 
 function meta::pure::graphFetch::execution::defaultAlloyConfig(): meta::pure::graphFetch::execution::AlloySerializationConfig[1]
@@ -83,7 +84,8 @@ function meta::pure::graphFetch::execution::defaultAlloyConfig(): meta::pure::gr
       removePropertiesWithNullValues = true,
       removePropertiesWithEmptySets = false,
       fullyQualifiedTypePath = true,
-      includeObjectReference = false
+      includeObjectReference = false,
+      alwaysWrapResultWithBrackets = false
    );
 }
 
@@ -105,6 +107,20 @@ function meta::pure::graphFetch::execution::alloyConfig(includeType:Boolean[1], 
    );
 }
 
+function meta::pure::graphFetch::execution::alloyConfig(includeType:Boolean[1], includeEnumType:Boolean[1], removePropertiesWithNullValues:Boolean[1],  removePropertiesWithEmptySets:Boolean[1], includeObjectReference:Boolean[1], alwaysWrapResultWithBrackets:Boolean[1]): meta::pure::graphFetch::execution::AlloySerializationConfig[1]
+{
+   ^meta::pure::graphFetch::execution::AlloySerializationConfig(
+      typeKeyName = '@type',
+      includeType = $includeType,
+      includeEnumType = $includeEnumType,
+      removePropertiesWithNullValues = $removePropertiesWithNullValues,
+      removePropertiesWithEmptySets = $removePropertiesWithEmptySets,
+      fullyQualifiedTypePath = true,
+      includeObjectReference = $includeObjectReference,
+      alwaysWrapResultWithBrackets = $alwaysWrapResultWithBrackets
+   );
+}
+
 function meta::pure::graphFetch::execution::alloyConfig(includeType:Boolean[1], includeEnumType:Boolean[1], removePropertiesWithNullValues:Boolean[1],  removePropertiesWithEmptySets:Boolean[1], typeString:String[1], fullyQualifiedTypePath:Boolean[1]): meta::pure::graphFetch::execution::AlloySerializationConfig[1]
 {
   meta::pure::graphFetch::execution::alloyConfig($includeType, $includeEnumType, $removePropertiesWithNullValues, $removePropertiesWithEmptySets, $typeString, $fullyQualifiedTypePath, false);
@@ -120,6 +136,20 @@ function meta::pure::graphFetch::execution::alloyConfig(includeType:Boolean[1], 
       removePropertiesWithEmptySets = $removePropertiesWithEmptySets,
       fullyQualifiedTypePath = $fullyQualifiedTypePath,
       includeObjectReference = $includeObjectReference
+   );
+}
+
+function meta::pure::graphFetch::execution::alloyConfig(includeType:Boolean[1], includeEnumType:Boolean[1], removePropertiesWithNullValues:Boolean[1],  removePropertiesWithEmptySets:Boolean[1], typeString:String[1], fullyQualifiedTypePath:Boolean[1], includeObjectReference:Boolean[1], alwaysWrapResultWithBrackets:Boolean[1]): meta::pure::graphFetch::execution::AlloySerializationConfig[1]
+{
+   ^meta::pure::graphFetch::execution::AlloySerializationConfig(
+      typeKeyName = $typeString,
+      includeType = $includeType,
+      includeEnumType = $includeEnumType,
+      removePropertiesWithNullValues = $removePropertiesWithNullValues,
+      removePropertiesWithEmptySets = $removePropertiesWithEmptySets,
+      fullyQualifiedTypePath = $fullyQualifiedTypePath,
+      includeObjectReference = $includeObjectReference,
+      alwaysWrapResultWithBrackets = $alwaysWrapResultWithBrackets
    );
 }
 
