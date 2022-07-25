@@ -72,6 +72,6 @@ public class TestDomainCompilationFromProtocol extends TestCompilationFromProtoc
     @Test
     public void testFunctionLoadingWithPackageOffset()
     {
-        testProtocolLoadingModelWithPackageOffset("functionExample.json", "", "update::");
+        testProtocolLoadingModelWithPackageOffset("functionExample.json", null, "update::");
     }
 }
