@@ -33,9 +33,9 @@ BIGQUERY_DSP:                               'BigQuery';
 PROJECT:                                    'projectId';
 DATASET:                                    'defaultDataset';
 
-SPANNER_DATA_SOURCE_SPECIFICATION: 'Spanner';
-INSTANCE: 'instanceId';
-DATABASE: 'databaseId';
+SPANNER_DATA_SOURCE_SPECIFICATION:          'Spanner';
+INSTANCE:                                   'instanceId';
+DATABASE:                                   'databaseId';
 
 DATABRICKS:                                 'Databricks';
 PROTOCOL:                                   'protocol';
