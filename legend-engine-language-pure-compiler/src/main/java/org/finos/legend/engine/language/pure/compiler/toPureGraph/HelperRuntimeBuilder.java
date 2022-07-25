@@ -195,15 +195,18 @@ public class HelperRuntimeBuilder
     public static List<Root_meta_pure_runtime_PackageableRuntime> getMappingCompatibleRuntimes(
             Mapping mappingToCheck, List<PackageableRuntime> runtimes, PureModel pureModel)
     {
-        return ListIterate
-                .select(runtimes, runtime -> ListIterate.collect(runtime.runtimeValue.mappings, mappingPtr ->
-                {
-                    Mapping mapping = pureModel.getMapping(mappingPtr.path, mappingPtr.sourceInformation);
-                    Set<Mapping> mappings = new HashSet<>();
-                    mappings.add(mapping);
-                    mappings.addAll(HelperMappingBuilder.getAllIncludedMappings(mapping).toSet());
-                    return mappings;
-                }).anySatisfy(mappings -> mappings.contains(mappingToCheck)))
-                .collect(runtime -> pureModel.getPackageableRuntime(runtime.getPath(), null)).distinct();
+        return ListIterate.collect(runtimes, runtime -> pureModel.getPackageableRuntime(runtime.getPath(), null)).distinct()
+                .select(runtime -> isRuntimeCompatibleWithMapping(runtime, mappingToCheck));
+    }
+
+    public static boolean isRuntimeCompatibleWithMapping(Root_meta_pure_runtime_PackageableRuntime runtime, Mapping mappingToCheck)
+    {
+        return ListIterate.collect(runtime._runtimeValue()._mappings().toList(), mapping ->
+        {
+            Set<Mapping> mappings = new HashSet<>();
+            mappings.add(mapping);
+            mappings.addAll(HelperMappingBuilder.getAllIncludedMappings(mapping).toSet());
+            return mappings;
+        }).anySatisfy(mappings -> mappings.contains(mappingToCheck));
     }
 }
