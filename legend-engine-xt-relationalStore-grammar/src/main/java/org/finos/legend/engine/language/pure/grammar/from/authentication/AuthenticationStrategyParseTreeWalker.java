@@ -22,6 +22,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.DelegatedKerberosAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPApplicationDefaultCredentialsAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPWorkloadIdentityFederationAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.MiddleTierUserNamePasswordAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.SnowflakePublicAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TestDatabaseAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.UserNamePasswordAuthenticationStrategy;
@@ -49,6 +50,18 @@ public class AuthenticationStrategyParseTreeWalker
         {
             AuthenticationStrategyParserGrammar.ServerPrincipalConfigContext accessCtx = PureGrammarParserUtility.validateAndExtractOptionalField(authCtx.delegatedKerberosAuthConfig().serverPrincipalConfig(), "serverPrincipal", authStrategy.sourceInformation);
             authStrategy.serverPrincipal = PureGrammarParserUtility.fromGrammarString(accessCtx.STRING().getText(), true);
+        }
+        authStrategy.sourceInformation = code.getSourceInformation();
+        return authStrategy;
+    }
+
+    public MiddleTierUserNamePasswordAuthenticationStrategy visitMiddleTierUserNamePasswordAuthenticationStrategy(AuthenticationStrategySourceCode code, AuthenticationStrategyParserGrammar.MiddleTierUserNamePasswordAuthContext authCtx)
+    {
+        MiddleTierUserNamePasswordAuthenticationStrategy authStrategy = new MiddleTierUserNamePasswordAuthenticationStrategy();
+        if (authCtx.middleTierUserNamePasswordAuthConfig() != null)
+        {
+            AuthenticationStrategyParserGrammar.VaultReferenceConfigContext vaultReferenceConfigContext = PureGrammarParserUtility.validateAndExtractRequiredField(authCtx.middleTierUserNamePasswordAuthConfig().vaultReferenceConfig(), "vaultReference", authStrategy.sourceInformation);
+            authStrategy.vaultReference =  PureGrammarParserUtility.fromGrammarString(vaultReferenceConfigContext.STRING().getText(), true);
         }
         authStrategy.sourceInformation = code.getSourceInformation();
         return authStrategy;

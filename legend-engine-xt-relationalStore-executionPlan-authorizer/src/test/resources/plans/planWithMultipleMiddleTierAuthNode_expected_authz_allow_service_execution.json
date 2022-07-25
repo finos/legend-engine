@@ -1,0 +1,43 @@
+{
+  "authorizer" : "RelationalMiddleTierPlanExecutionAuthorizer",
+  "authorized" : true,
+  "summary" : "Overall authorization was successful. Authorizations granted=2, Authorizations denied=0",
+  "authorizationInput" : {
+    "contextParams" : {
+      "legend.usageContext" : "INTERACTIVE_EXECUTION"
+    }
+  },
+  "authorizations" : [ {
+    "status" : "ALLOW",
+    "summary" : "Use of credential allowed by policy",
+    "subject" : "alice",
+    "action" : "use",
+    "resource" : {
+      "credential" : "reference1"
+    },
+    "policyParams" : {
+      "policy" : "policy1",
+      "resource" : "DB@name1@host1.com@1234"
+    },
+    "details" : [ {
+      "bar" : "bar1",
+      "foo" : "foo1"
+    } ]
+  }, {
+    "status" : "ALLOW",
+    "summary" : "Use of credential allowed by policy",
+    "subject" : "alice",
+    "action" : "use",
+    "resource" : {
+      "credential" : "reference1"
+    },
+    "policyParams" : {
+      "policy" : "policy1",
+      "resource" : "DB@name2@host2.com@1235"
+    },
+    "details" : [ {
+      "bar" : "bar1",
+      "foo" : "foo1"
+    } ]
+  } ]
+}
