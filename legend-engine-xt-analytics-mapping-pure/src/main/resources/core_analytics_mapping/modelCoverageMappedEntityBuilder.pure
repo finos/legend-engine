@@ -223,12 +223,11 @@ function meta::analytics::mapping::modelCoverage::buildEntity(
    isRootEntity:Boolean[1]): MappedEntity[1]
 {
    let classInfo = $class->getClassInfo($classMap);
-
    let supportedPropertyMappings = $propertyMappings
       ->filter(pm |
          !$pm.localMappingProperty->isTrue()
          && !$pm.property->meta::pure::milestoning::isRangeMilestoningProperty()
-         && (($pm.property->isPrimitiveValueProperty() && !$pm.property.genericType.rawType == Decimal)
+         && ($pm.property->isPrimitiveValueProperty()
             || $pm->match([rpm:InstanceSetImplementation[1] | true, a: PropertyMapping[1] | false])
             || $pm.targetSetImplementationId->in($rootClassMappings.id))
       );
@@ -263,7 +262,7 @@ function meta::analytics::mapping::modelCoverage::buildEntity(
    );
 
    let autoMappedProperties = if($setImplementation->instanceOf(PureInstanceSetImplementation),
-                                 |buildAutoMappedProperty($class, $setImplementation->cast(@PureInstanceSetImplementation).srcClass->cast(@Class<Any>)->toOne(), $properties),
+                                 |buildAutoMappedProperty($class, if($setImplementation->cast(@PureInstanceSetImplementation).srcClass->isEmpty(),|[],|$setImplementation->cast(@PureInstanceSetImplementation).srcClass->cast(@Class<Any>)->toOne()), $properties),
                                  |[]);
 
      buildEntity(
@@ -275,7 +274,7 @@ function meta::analytics::mapping::modelCoverage::buildEntity(
 }
 
 function meta::analytics::mapping::modelCoverage::buildAutoMappedProperty(
-   class:Class<Any>[1], srcClass: Class<Any>[1], mappedProperties: MappedProperty[*]): MappedProperty[*]
+   class:Class<Any>[1], srcClass: Class<Any>[0..1], mappedProperties: MappedProperty[*]): MappedProperty[*]
 {
   let autoMappedProperties = $class.properties->filter(p|!$p.name->in($mappedProperties.name))
                                               ->filter(p|$srcClass.properties->exists(sp|$sp.name == $p.name && $sp.genericType.rawType == $p.genericType.rawType && $sp.multiplicity == $p.multiplicity));
