@@ -672,9 +672,22 @@ public class PersistenceParseTreeWalker
 
         // filter duplicates
         PersistenceParserGrammar.FilterDuplicatesContext filterDuplicatesContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.filterDuplicates(), "filterDuplicates", appendOnly.sourceInformation);
-        appendOnly.filterDuplicates = Boolean.parseBoolean(filterDuplicatesContext.FILTER_DUPLICATES().getText());
+        appendOnly.filterDuplicates = visitFilterDuplicates(filterDuplicatesContext);
 
         return appendOnly;
+    }
+
+    private boolean visitFilterDuplicates(PersistenceParserGrammar.FilterDuplicatesContext filterDuplicatesContext)
+    {
+        if (filterDuplicatesContext.TRUE() != null)
+        {
+            return true;
+        }
+        else if (filterDuplicatesContext.FALSE() != null)
+        {
+            return false;
+        }
+        throw new EngineException("Unrecognized value for filter duplicates", walkerSourceInformation.getSourceInformation(filterDuplicatesContext), EngineErrorType.PARSER);
     }
 
     // merge strategy
