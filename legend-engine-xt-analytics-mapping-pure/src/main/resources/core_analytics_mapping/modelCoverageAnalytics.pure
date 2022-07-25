@@ -28,7 +28,10 @@ Enum meta::analytics::mapping::modelCoverage::MappedPropertyType
     DateTime,
     Enumeration,
     Entity,
-    Number
+    Number,
+    Decimal,
+    Binary,
+    Unknown
 }
 
 Class meta::analytics::mapping::modelCoverage::MappedEntityInfo 
