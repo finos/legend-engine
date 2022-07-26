@@ -84,13 +84,14 @@
         <module>legend-engine-xt-relationalStore-executionPlan-connection-api</module>
         <module>legend-engine-xt-relationalStore-executionPlan-connection-tests-api</module>
         <module>legend-engine-xt-relationalStore-pure</module>
-        <module>legend-engine-xt-relationalStore-postgres-execution-tests</module>
         <module>legend-engine-xt-relationalStore-api</module>
         <module>legend-engine-xt-relationalStore-grammar</module>
         <module>legend-engine-xt-relationalStore-protocol</module>
 
         <module>legend-engine-xt-relationalStore-sqlserver-execution</module>
         <module>legend-engine-xt-relationalStore-sqlserver-pure</module>
+
+        <module>legend-engine-xt-relationalStore-postgres-execution-tests</module>
 
         <module>legend-engine-xt-avro</module>
         <module>legend-engine-xt-avro-pure</module>

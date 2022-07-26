@@ -69,15 +69,15 @@ public class TestMiddleTierUserNamePasswordFlow
         try
         {
             RuntimeContext context = RuntimeContext.newWith(Maps.immutable.with(
-                    "resourceContext",
+                    "legend.resourceContext",
                     "resource1")
             );
             flow.makeCredential(null, null, authenticationStrategy, context);
-            fail("failed to throw");
+            Assert.fail("failed to throw");
         }
         catch (Exception e)
         {
-            assertEquals("Credential acquisition context does not contain a parameter named 'usageContext'. Supplied context values={resourceContext=resource1}", e.getMessage());
+            Assert.assertEquals("Credential acquisition context does not contain a parameter named 'legend.usageContext'. Supplied context values={legend.resourceContext=resource1}", e.getMessage());
         }
     }
 
@@ -88,15 +88,15 @@ public class TestMiddleTierUserNamePasswordFlow
         try
         {
             RuntimeContext context = RuntimeContext.newWith(Maps.immutable.with(
-                    "usageContext",
+                    "legend.usageContext",
                     "SERVICE_EXECUTION")
             );
             flow.makeCredential(null, null, authenticationStrategy, context);
-            fail("failed to throw");
+            Assert.fail("failed to throw");
         }
         catch (Exception e)
         {
-            assertEquals("Credential acquisition context does not contain a parameter named 'resourceContext'. Supplied context values={usageContext=SERVICE_EXECUTION}", e.getMessage());
+            Assert.assertEquals("Credential acquisition context does not contain a parameter named 'legend.resourceContext'. Supplied context values={legend.usageContext=SERVICE_EXECUTION}", e.getMessage());
         }
     }
 
@@ -107,17 +107,17 @@ public class TestMiddleTierUserNamePasswordFlow
         try
         {
             RuntimeContext context = RuntimeContext.newWith(Maps.immutable.with(
-                    "resourceContext",
+                    "legend.resourceContext",
                     "resource1",
-                    "usageContext",
+                    "legend.usageContext",
                     "SERVICE_EXECUTION")
             );
             flow.makeCredential(null, null, authenticationStrategy, context);
-            fail("failed to throw");
+            Assert.fail("failed to throw");
         }
         catch (Exception e)
         {
-            assertEquals("Credential acquisition context does not contain a parameter named 'macContext'. Supplied context values={resourceContext=resource1, usageContext=SERVICE_EXECUTION}", e.getMessage());
+            Assert.assertEquals("Credential acquisition context does not contain a parameter named 'legend.macContext'. Supplied context values={legend.resourceContext=resource1, legend.usageContext=SERVICE_EXECUTION}", e.getMessage());
         }
     }
 
@@ -129,16 +129,16 @@ public class TestMiddleTierUserNamePasswordFlow
         MiddleTierUserNamePasswordAuthenticationStrategy authenticationStrategy = new MiddleTierUserNamePasswordAuthenticationStrategy("reference1");
 
         RuntimeContext context = RuntimeContext.newWith(Maps.immutable
-                .with("resourceContext", "resource1",
-                        "usageContext", "SERVICE_EXECUTION",
-                        "macContext", new PlanExecutionAuthorizerMACUtils().generateMAC("Plan execution authorization completed", "macKeyReference")
+                .with("legend.resourceContext", "resource1",
+                        "legend.usageContext", "SERVICE_EXECUTION",
+                        "legend.macContext", new PlanExecutionAuthorizerMACUtils().generateMAC("Plan execution authorization completed", "macKeyReference")
                 )
         );
         MiddleTierUserPasswordCredential credential = (MiddleTierUserPasswordCredential) flow.makeCredential(new Identity("alice"), null, authenticationStrategy, context);
 
-        assertEquals("user", credential.getUser());
-        assertEquals("password", credential.getPassword());
-        assertEquals("policy1", credential.getUsagePolicyContext());
+        Assert.assertEquals("user", credential.getUser());
+        Assert.assertEquals("password", credential.getPassword());
+        Assert.assertEquals("policy1", credential.getUsagePolicyContext());
     }
 
     private String toJSON(MiddleTierUserPasswordCredential credential) throws JsonProcessingException
