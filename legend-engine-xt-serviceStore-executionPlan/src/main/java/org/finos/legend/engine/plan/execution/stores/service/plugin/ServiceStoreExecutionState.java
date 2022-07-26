@@ -25,10 +25,17 @@ import org.pac4j.core.profile.CommonProfile;
 public class ServiceStoreExecutionState implements StoreExecutionState
 {
     private final ServiceStoreState state;
+    private RuntimeContext runtimeContext;
+
+    public ServiceStoreExecutionState(ServiceStoreState state, RuntimeContext runtimeContext)
+    {
+        this.state = state;
+        this.runtimeContext = runtimeContext;
+    }
 
     public ServiceStoreExecutionState(ServiceStoreState state)
     {
-        this.state = state;
+        this(state, RuntimeContext.empty());
     }
 
     @Override
@@ -46,6 +53,18 @@ public class ServiceStoreExecutionState implements StoreExecutionState
     @Override
     public StoreExecutionState copy()
     {
-        return new ServiceStoreExecutionState(this.state);
+        return new ServiceStoreExecutionState(this.state, this.runtimeContext);
+    }
+
+    @Override
+    public RuntimeContext getRuntimeContext()
+    {
+        return this.runtimeContext;
+    }
+
+    @Override
+    public void setRuntimeContext(RuntimeContext runtimeContext)
+    {
+        this.runtimeContext = runtimeContext;
     }
 }

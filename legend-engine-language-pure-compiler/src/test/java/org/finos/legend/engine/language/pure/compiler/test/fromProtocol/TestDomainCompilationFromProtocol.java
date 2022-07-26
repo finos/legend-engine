@@ -68,4 +68,10 @@ public class TestDomainCompilationFromProtocol extends TestCompilationFromProtoc
     {
         testWithProtocolPath("functionWithDateTimeContainingPercent.json");
     }
+
+    @Test
+    public void testFunctionLoadingWithPackageOffset()
+    {
+        testProtocolLoadingModelWithPackageOffset("functionExample.json", null, "update::");
+    }
 }

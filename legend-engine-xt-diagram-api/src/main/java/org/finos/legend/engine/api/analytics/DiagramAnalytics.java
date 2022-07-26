@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.api.analytics;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
 import io.swagger.annotations.Api;
@@ -27,6 +28,7 @@ import org.finos.legend.engine.external.shared.format.imports.PureModelContextDa
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
@@ -56,6 +58,8 @@ import static org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperD
 @Path("pure/v1/analytics/diagram")
 public class DiagramAnalytics
 {
+    private static final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
+
     private final ModelManager modelManager;
 
     public DiagramAnalytics(ModelManager modelManager)
@@ -90,7 +94,7 @@ public class DiagramAnalytics
                 {
                     builder.addElement(Objects.requireNonNull(pureModelContextData.getElements().stream().filter(el -> input.diagram.equals(el.getPath())).findFirst().get()));
                 }
-                return ManageConstantResult.manageResult(profiles, builder.build().combine(classes).combine(enums).combine(_profiles));
+                return ManageConstantResult.manageResult(profiles, builder.build().combine(classes).combine(enums).combine(_profiles), objectMapper);
             }
             catch (Exception e)
             {

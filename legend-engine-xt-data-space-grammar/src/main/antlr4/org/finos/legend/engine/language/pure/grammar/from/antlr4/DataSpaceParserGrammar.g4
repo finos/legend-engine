@@ -17,6 +17,7 @@ identifier:                 VALID_STRING | STRING
                             | DATA_SPACE_EXECUTION_CONTEXT_NAME
                             | DATA_SPACE_MAPPING
                             | DATA_SPACE_DEFAULT_RUNTIME
+                            | DATA_SPACE_TITLE
                             | DATA_SPACE_DESCRIPTION
                             | DATA_SPACE_FEATURED_DIAGRAMS
                             | DATA_SPACE_SUPPORT_INFO
@@ -39,6 +40,7 @@ dataSpaceElement:           DATA_SPACE stereotypes? taggedValues? qualifiedName
                                     (
                                         executionContexts
                                         | defaultExecutionContext
+                                        | title
                                         | description
                                         | featuredDiagrams
                                         | supportInfo
@@ -80,6 +82,8 @@ defaultRuntime:             DATA_SPACE_DEFAULT_RUNTIME COLON qualifiedName SEMI_
 defaultExecutionContext:    DATA_SPACE_DEFAULT_EXECUTION_CONTEXT COLON STRING SEMI_COLON
 ;
 
+title:                      DATA_SPACE_TITLE COLON STRING SEMI_COLON
+;
 description:                DATA_SPACE_DESCRIPTION COLON STRING SEMI_COLON
 ;
 
