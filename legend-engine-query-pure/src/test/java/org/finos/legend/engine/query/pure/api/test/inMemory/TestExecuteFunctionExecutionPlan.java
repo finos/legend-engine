@@ -37,7 +37,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 
@@ -112,5 +111,21 @@ public class TestExecuteFunctionExecutionPlan
         Assert.assertEquals(2, ((ArrayList)((ConstantResult) result).getValue()).size());
         Assert.assertEquals(12L, ((ArrayList)((ConstantResult) result).getValue()).get(0));
         Assert.assertEquals(22L, ((ArrayList)((ConstantResult) result).getValue()).get(1));
+    }
+
+    @Test
+    public void testExecutingFunctionWithIfClause()
+    {
+        String functionGrammar = "###Pure\n" +
+                "function meta::pure::executionPlan::tests::function::listTransformation(var1: String[*]):Integer[*]\n" +
+                "{\n" +
+                "if($var1->isEmpty(),|[],|\n" +
+                "$var1->map(x|$x->parseInteger()))\n" +
+                "}\n";
+        Map<String, ?> params = org.eclipse.collections.api.factory.Maps.mutable.of("var1", Lists.mutable.of("1","2"));
+        Result result = getResultFromFunctionGrammar(functionGrammar, params,"meta::pure::executionPlan::tests::function::listTransformation_String_MANY__Integer_MANY_");
+        Assert.assertEquals(2, ((ArrayList)((ConstantResult) result).getValue()).size());
+        Assert.assertEquals(1L, ((ArrayList)((ConstantResult) result).getValue()).get(0));
+        Assert.assertEquals(2L, ((ArrayList)((ConstantResult) result).getValue()).get(1));
     }
 }
