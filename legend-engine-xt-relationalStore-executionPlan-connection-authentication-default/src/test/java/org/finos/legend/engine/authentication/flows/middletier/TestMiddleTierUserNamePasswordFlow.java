@@ -73,11 +73,11 @@ public class TestMiddleTierUserNamePasswordFlow
                     "resource1")
             );
             flow.makeCredential(null, null, authenticationStrategy, context);
-            Assert.fail("failed to throw");
+            fail("failed to throw");
         }
         catch (Exception e)
         {
-            Assert.assertEquals("Credential acquisition context does not contain a parameter named 'legend.usageContext'. Supplied context values={legend.resourceContext=resource1}", e.getMessage());
+            assertEquals("Credential acquisition context does not contain a parameter named 'legend.usageContext'. Supplied context values={legend.resourceContext=resource1}", e.getMessage());
         }
     }
 
@@ -92,11 +92,11 @@ public class TestMiddleTierUserNamePasswordFlow
                     "SERVICE_EXECUTION")
             );
             flow.makeCredential(null, null, authenticationStrategy, context);
-            Assert.fail("failed to throw");
+            fail("failed to throw");
         }
         catch (Exception e)
         {
-            Assert.assertEquals("Credential acquisition context does not contain a parameter named 'legend.resourceContext'. Supplied context values={legend.usageContext=SERVICE_EXECUTION}", e.getMessage());
+            assertEquals("Credential acquisition context does not contain a parameter named 'legend.resourceContext'. Supplied context values={legend.usageContext=SERVICE_EXECUTION}", e.getMessage());
         }
     }
 
@@ -113,11 +113,11 @@ public class TestMiddleTierUserNamePasswordFlow
                     "SERVICE_EXECUTION")
             );
             flow.makeCredential(null, null, authenticationStrategy, context);
-            Assert.fail("failed to throw");
+            fail("failed to throw");
         }
         catch (Exception e)
         {
-            Assert.assertEquals("Credential acquisition context does not contain a parameter named 'legend.macContext'. Supplied context values={legend.resourceContext=resource1, legend.usageContext=SERVICE_EXECUTION}", e.getMessage());
+            assertEquals("Credential acquisition context does not contain a parameter named 'legend.macContext'. Supplied context values={legend.resourceContext=resource1, legend.usageContext=SERVICE_EXECUTION}", e.getMessage());
         }
     }
 
@@ -136,9 +136,9 @@ public class TestMiddleTierUserNamePasswordFlow
         );
         MiddleTierUserPasswordCredential credential = (MiddleTierUserPasswordCredential) flow.makeCredential(new Identity("alice"), null, authenticationStrategy, context);
 
-        Assert.assertEquals("user", credential.getUser());
-        Assert.assertEquals("password", credential.getPassword());
-        Assert.assertEquals("policy1", credential.getUsagePolicyContext());
+        assertEquals("user", credential.getUser());
+        assertEquals("password", credential.getPassword());
+        assertEquals("policy1", credential.getUsagePolicyContext());
     }
 
     private String toJSON(MiddleTierUserPasswordCredential credential) throws JsonProcessingException
