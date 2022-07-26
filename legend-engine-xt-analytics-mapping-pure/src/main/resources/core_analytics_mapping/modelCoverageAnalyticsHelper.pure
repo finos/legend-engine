@@ -153,15 +153,16 @@ function meta::analytics::mapping::modelCoverage::mapToSupportedType(type: Type[
       pair(String, MappedPropertyType.String),
       pair(Enum, MappedPropertyType.Enumeration),
       pair(Float, MappedPropertyType.Float),
-      pair(Integer, MappedPropertyType.Integer)
+      pair(Integer, MappedPropertyType.Integer),
+      pair(Decimal, MappedPropertyType.Decimal),
+      pair(Binary, MappedPropertyType.Binary)
    ]->findValues($type)->first();
 }
 
 function meta::analytics::mapping::modelCoverage::mapType(type: Type[1]):MappedPropertyType[1]
 {
-   let result = $type->mapToSupportedType();
-   assert($result->size() == 1, | 'Could not map: ' + $type->elementToPath());
-   $result->toOne();
+  let result = $type->mapToSupportedType();
+  if($result->size() == 1,|$result->toOne(),|MappedPropertyType.Unknown);
 }
 
 function meta::analytics::mapping::modelCoverage::reRoot(classMappings:SetImplementation[*], m:Mapping[1]):SetImplementation[*]

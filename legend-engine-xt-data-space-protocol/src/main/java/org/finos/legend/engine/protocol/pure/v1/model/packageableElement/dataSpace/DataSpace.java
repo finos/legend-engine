@@ -35,6 +35,7 @@ public class DataSpace extends PackageableElement
     public List<DataSpaceExecutionContext> executionContexts;
     public String defaultExecutionContext;
 
+    public String title;
     public String description;
     public List<PackageableElementPointer> featuredDiagrams;
     public DataSpaceSupportInfo supportInfo;

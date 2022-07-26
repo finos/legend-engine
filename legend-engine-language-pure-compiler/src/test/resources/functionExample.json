@@ -1,0 +1,118 @@
+{
+  "_type": "data",
+  "elements": [
+    {
+      "_type": "function",
+      "body": [
+        {
+          "_type": "strictDate",
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "sourceInformation": {
+            "endColumn": 11,
+            "endLine": 4,
+            "sourceId": "",
+            "startColumn": 1,
+            "startLine": 4
+          },
+          "values": [
+            "2021-01-01"
+          ]
+        }
+      ],
+      "name": "func1",
+      "package": "model::domain::test",
+      "parameters": [],
+      "postConstraints": [],
+      "preConstraints": [],
+      "returnMultiplicity": {
+        "lowerBound": 1,
+        "upperBound": 1
+      },
+      "returnType": "Date",
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 5,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 2
+      },
+      "stereotypes": [],
+      "taggedValues": []
+    },
+    {
+      "_type": "function",
+      "body": [
+        {
+          "_type": "func",
+          "function": "model::domain::test::func1",
+          "parameters": [],
+          "sourceInformation": {
+            "endColumn": 26,
+            "endLine": 8,
+            "sourceId": "",
+            "startColumn": 1,
+            "startLine": 8
+          }
+        }
+      ],
+      "name": "func2",
+      "package": "model::domain::test",
+      "parameters": [],
+      "postConstraints": [],
+      "preConstraints": [],
+      "returnMultiplicity": {
+        "lowerBound": 1,
+        "upperBound": 1
+      },
+      "returnType": "Date",
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 9,
+        "sourceId": "",
+        "startColumn": 2,
+        "startLine": 6
+      },
+      "stereotypes": [],
+      "taggedValues": []
+    },
+    {
+      "_type": "sectionIndex",
+      "name": "SectionIndex",
+      "package": "__internal__",
+      "sections": [
+        {
+          "_type": "importAware",
+          "elements": [],
+          "imports": [],
+          "parserName": "Pure",
+          "sourceInformation": {
+            "endColumn": 8,
+            "endLine": 1,
+            "sourceId": "",
+            "startColumn": 1,
+            "startLine": 1
+          }
+        },
+        {
+          "_type": "importAware",
+          "elements": [
+            "model::domain::test::func1",
+            "model::domain::test::func2"
+          ],
+          "imports": [],
+          "parserName": "Pure",
+          "sourceInformation": {
+            "endColumn": 1,
+            "endLine": 12,
+            "sourceId": "",
+            "startColumn": 8,
+            "startLine": 2
+          }
+        }
+      ]
+    }
+  ]
+}

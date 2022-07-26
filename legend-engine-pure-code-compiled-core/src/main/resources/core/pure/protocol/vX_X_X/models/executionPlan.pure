@@ -32,6 +32,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::ExecutionNode
    resultType : ResultType[1];
    resultSizeRange : meta::protocols::pure::vX_X_X::metamodel::domain::Multiplicity[0..1];
    requiredVariableInputs : meta::protocols::pure::vX_X_X::metamodel::executionPlan::VariableInput[*];
+   isChildrenExecutionParallelizable: Boolean[0..1];
    executionNodes : ExecutionNode[*];
    implementation : meta::protocols::pure::vX_X_X::metamodel::executionPlan::PlatformImplementation[0..1];
 }
@@ -51,6 +52,14 @@ Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::AllocationExecuti
 Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::PureExpressionPlatformExecutionNode extends ExecutionNode
 {
    pure : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ValueSpecification[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::PlatformUnionExecutionNode extends ExecutionNode
+{
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::PlatformMergeExecutionNode extends ExecutionNode
+{
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::FreeMarkerConditionalExecutionNode extends ExecutionNode
