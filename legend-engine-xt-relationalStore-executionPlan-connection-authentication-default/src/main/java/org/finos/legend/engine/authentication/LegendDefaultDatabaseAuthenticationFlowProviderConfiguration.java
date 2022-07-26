@@ -20,6 +20,7 @@ public final class LegendDefaultDatabaseAuthenticationFlowProviderConfiguration 
 {
     private AWSConfig awsConfig;
     private GCPWorkloadConfig gcpWorkloadConfig;
+    private String middleTierMACKeyVaultRefernce;
 
     public LegendDefaultDatabaseAuthenticationFlowProviderConfiguration()
     {
@@ -155,5 +156,15 @@ public final class LegendDefaultDatabaseAuthenticationFlowProviderConfiguration 
         {
             // jackson
         }
+    }
+
+    public String getMiddleTierMACKeyVaultRefernce()
+    {
+        return middleTierMACKeyVaultRefernce;
+    }
+
+    public void setMiddleTierMACKeyVaultRefernce(String middleTierMACKeyVaultRefernce)
+    {
+        this.middleTierMACKeyVaultRefernce = middleTierMACKeyVaultRefernce;
     }
 }

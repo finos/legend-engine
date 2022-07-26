@@ -446,7 +446,7 @@ function meta::relational::graphFetch::executionPlan::generateNonPrimitiveProper
                {|
                   processPropertyMapping($propTree.propertyMapping, $parentTree->typeFromGraphFetchTree()->cast(@Class<Any>), $base, ^$pureToSqlState(inGetterFlow = true), JoinType.LEFT_OUTER, '_gftp', ^List<ColumnGroup>(), $debug, $extensions)->cast(@SelectWithCursor)
                }
-   );
+   )->manageIsolation([], '_gftmp', false, ^$pureToSqlState(shouldIsolate=true), $debug, $extensions);
 
    let targetSetImplementation    = $propTree.sets->cast(@RelationalInstanceSetImplementation)->toOne();
    let targetMainSetImplementation = $targetSetImplementation->match([

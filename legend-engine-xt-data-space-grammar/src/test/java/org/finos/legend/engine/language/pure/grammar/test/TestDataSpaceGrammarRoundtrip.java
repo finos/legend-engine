@@ -34,6 +34,7 @@ public class TestDataSpaceGrammarRoundtrip extends TestGrammarRoundtrip.TestGram
                 "    }\n" +
                 "  ];\n" +
                 "  defaultExecutionContext: 'Context 1';\n" +
+                "  title: 'some title';\n" +
                 "  description: 'some description';\n" +
                 "  featuredDiagrams:\n" +
                 "  [\n" +

@@ -16,6 +16,7 @@ package org.finos.legend.engine.authentication;
 
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.impl.factory.Lists;
+import org.finos.legend.engine.authentication.demoflows.middletier.PostgresStaticWithMiddletierUserNamePasswordAuthenticationFlow;
 import org.finos.legend.engine.authentication.flows.BigQueryWithGCPApplicationDefaultCredentialsFlow;
 import org.finos.legend.engine.authentication.flows.BigQueryWithGCPWorkloadIdentityFederationFlow;
 import org.finos.legend.engine.authentication.flows.DatabricksWithApiTokenFlow;
@@ -48,7 +49,8 @@ public final class LegendDefaultDatabaseAuthenticationFlowProvider extends Abstr
                 new SnowflakeWithKeyPairFlow(),
                 new SqlServerStaticWithUserPasswordFlow(),
                 new PostgresStaticWithUserPasswordFlow(),
-                new RedshiftWithUserPasswordFlow()
+                new RedshiftWithUserPasswordFlow(),
+                new PostgresStaticWithMiddletierUserNamePasswordAuthenticationFlow(this.databaseAuthenticationFlowProviderConfiguration.getMiddleTierMACKeyVaultRefernce())
         );
     }
 

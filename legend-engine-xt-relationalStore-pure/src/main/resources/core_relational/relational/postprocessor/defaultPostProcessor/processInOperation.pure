@@ -15,6 +15,7 @@
 import meta::relational::runtime::*;
 import meta::relational::translation::*;
 import meta::relational::functions::sqlQueryToString::*;
+import meta::relational::functions::sqlQueryToString::default::*;
 import meta::pure::executionPlan::*;
 import meta::pure::mapping::*;
 import meta::relational::metamodel::relation::*;
