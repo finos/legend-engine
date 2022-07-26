@@ -246,7 +246,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
 {
   let dynaFunc = ^DynaFunction(name='today', parameters=[]);
   let expected = ^Literal(value=today()->convertToDateTime());                              
-  let equalityComparator = timestampEqualityComparatorGenerator([0] ,DurationUnit.DAYS);             
+  let equalityComparator = timestampEqualityComparatorGenerator([1] ,DurationUnit.DAYS);                    // to accommodate timezone differences between platform and db engine 
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $equalityComparator, $config);
 }
 
