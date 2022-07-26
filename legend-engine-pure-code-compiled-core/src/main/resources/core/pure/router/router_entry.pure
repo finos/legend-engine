@@ -28,7 +28,8 @@ function meta::pure::router::execute<T|y>(f:FunctionDefinition<{->T[y]}>[1], m:M
 
 function meta::pure::router::execute<T|y>(f:FunctionDefinition<{->T[y]}>[1], m:Mapping[1], runtime:Runtime[1], exeCtx:ExecutionContext[1], extensions:meta::pure::extension::Extension[*]):Result<T|y>[1]
 {
-   traceSpan(|(meta::legend::test::mayExecuteLegendTest(
+   traceSpan(
+     |meta::legend::test::mayExecuteLegendTest(
        {clientVersion, serverVersion, serializationKind, host, port |
            if($serializationKind == 'json',
             | let fStr = 'meta::protocols::pure::'+$clientVersion+'::invocation::execution::execute::alloyExecute_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__String_1__Integer_1__String_1__String_1__Extension_MANY__Result_1_';
@@ -40,7 +41,11 @@ function meta::pure::router::execute<T|y>(f:FunctionDefinition<{->T[y]}>[1], m:M
            )
        },
        |^RoutingQuery<T|y>(fn=$f)->execute($m, $runtime, $exeCtx, $extensions, noDebug());
-   )), 'query execution',|traceSpan({|[pair('query-execution-info',  $extensions.entry_execute->toOne()->eval($f,$m,$runtime))]->newMap()}, 'build query tags'), false);
+      ),
+      'query execution',
+      |traceSpan({|[pair('query-execution-info',  $extensions.routerExtensions().traceQueryInfoBuilder->map(x|$x->eval($f,$m,$runtime))->joinStrings(','))]->newMap()}, 'build query tags'),
+      false
+    );
 }
 
 function meta::pure::router::execute<T|m>(f:FunctionDefinition<{->T[m]}>[1], m:Mapping[1], runtime:Runtime[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):Result<T|m>[1]

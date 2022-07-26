@@ -62,7 +62,7 @@ function meta::pure::graphFetch::routing::propertyMappingInfo(prop: PropertyGrap
 
 function meta::pure::graphFetch::routing::clusterRoutedGraphFetchTree(r: RoutedGraphFetchTree[1], parentStore: Store[0..1], mapping:Mapping[1], runtime: Runtime[0..1], openVariables:Map<String, List<Any>>[1], exeCtx:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):GraphFetchTree[1]
 {
-   let currentTreeStores = $r.sets->map(x | $x->getStoreFromSet($mapping, $extensions));
+   let currentTreeStores = $r.sets->map(x | $x->meta::pure::router::routing::getStoreFromSet($mapping, $extensions));
    let currentTreeStoresWithouDuplicates = $currentTreeStores->filter(x | !$x->instanceOf(meta::pure::router::store::embedded::EmbeddedStore))->removeDuplicatesBy(x | $x->elementToPath());
    assert($currentTreeStoresWithouDuplicates->size() <= 1,  'Found multiple stores at a single node of the tree. Not supported yet!');
    let singleStore = if($currentTreeStoresWithouDuplicates->isEmpty(), | $parentStore->toOne(), | $currentTreeStoresWithouDuplicates->toOne());
@@ -75,10 +75,7 @@ function meta::pure::graphFetch::routing::clusterRoutedGraphFetchTree(r: RoutedG
    (
       s = $systemMapping,
       store = $singleStore,
-      tree = ^$r(subTrees = $subTreeClusters->map(x | $x->match([c:ClusteredGraphFetchTree[1] | let storeSupportNativeJoinsAmongElements = $c.store->match($extensions.cluster_storeSupportsNativeJoinAmongElements->concatenate([
-                                                                                                                                                              m:ModelStore[1] | false,
-                                                                                                                                                              s:Store[1]      | true
-                                                                                                                                                           ])->toOneMany());
+      tree = ^$r(subTrees = $subTreeClusters->map(x | $x->match([c:ClusteredGraphFetchTree[1] | let storeSupportNativeJoinsAmongElements = $extensions->meta::pure::extension::storeContractFromStore($c.store).supportsNativeJoinAmongElements;
                                                                                                 if(($storeSupportNativeJoinsAmongElements && $c.store->elementToPath() != $singleStore->elementToPath())
                                                                                                     || (!$storeSupportNativeJoinsAmongElements && $c.tree->cast(@RoutedPropertyGraphFetchTree).propertyMapping->isNotEmpty() && $c.tree->cast(@RoutedPropertyGraphFetchTree).propertyMapping->map(pm | $pm->instanceOf(meta::pure::mapping::xStore::XStorePropertyMapping))->toOneMany()->or()),
                                                                                                    | $c, 

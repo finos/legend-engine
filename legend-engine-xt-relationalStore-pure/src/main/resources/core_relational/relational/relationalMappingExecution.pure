@@ -510,7 +510,7 @@ Enum meta::relational::mapping::BuildMethod
 
 Class meta::relational::mapping::KeyInformation extends MappingInstanceData
 {
-   pk : Any[*];
+   <<equality.Key>> pk : Any[*];
    sourceConnection : Connection[1];
    buildMethod : BuildMethod[1];
 }

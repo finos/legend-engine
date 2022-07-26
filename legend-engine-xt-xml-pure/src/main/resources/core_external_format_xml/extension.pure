@@ -21,6 +21,7 @@ function meta::external::format::xml::xmlFormatExtension(): meta::external::shar
    ^ExternalFormatExtension(
       contentType             = 'application/xml',
       externalFormat          = 'XSD',
+
       generateSerializeNode   = generateSerializeNode_Boolean_1__Binding_1__ExecutionNode_MANY__ExecutionNode_1_,
       generateDeserializeNode = generateDeserializeNode_Connection_1__ExecutionNode_1__RootGraphFetchTree_$0_1$__ExecutionNode_1_,
       printPlanNodeToString   = printPlanNodeToString_String_1__Extension_MANY__Function_MANY_,

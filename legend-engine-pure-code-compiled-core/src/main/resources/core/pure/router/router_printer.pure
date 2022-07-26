@@ -13,15 +13,15 @@
 // limitations under the License.
 
 import meta::pure::metamodel::serialization::grammar::*;
+import meta::pure::metamodel::path::*;
 import meta::pure::graphFetch::routing::*;
 import meta::pure::graphFetch::*;
 import meta::pure::mapping::*;
 import meta::pure::runtime::*;
-import meta::pure::metamodel::path::*;
 import meta::pure::router::printer::*;
 import meta::pure::router::clustering::*;
-import meta::pure::store::platform::metamodel::*;
 import meta::pure::router::store::embedded::*;
+import meta::pure::store::platform::metamodel::*;
 
 Class meta::pure::router::printer::Pref
 {
