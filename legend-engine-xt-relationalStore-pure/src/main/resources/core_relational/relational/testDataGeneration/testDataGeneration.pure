@@ -782,7 +782,7 @@ function meta::relational::testDataGeneration::executionPlan::planTestDataGenera
    let newVars = $func->generateParametersNameValuePair($parameters);
    let relationTree = if($func->functionReturnType().rawType->toOne()->_subTypeOf(TabularDataSet), | scanRelations($func, $mapping, $runtime, $newVars, $extensions),| scanRelations($func, $mapping, $extensions));
    let dbConnection = $runtime.connections->filter(c|$c->instanceOf(DatabaseConnection))->toOne();
-   let updatedDbConnection = meta::pure::executionPlan::updateConnection($dbConnection, $extensions)->cast(@DatabaseConnection);
+   let updatedDbConnection = meta::pure::executionPlan::preprocessClusterConnection($dbConnection, $extensions)->cast(@DatabaseConnection);
 
    let relationColumnMap = $relationTree->generateRelationColumnMap(^Map<NamedRelation, List<Column>>());
 

@@ -23,19 +23,80 @@ import meta::pure::executionPlan::*;
 import meta::relational::runtime::*;
 import meta::relational::metamodel::*;
 import meta::relational::functions::pureToSqlQuery::*;
+import meta::pure::router::routing::*;
+import meta::pure::executionPlan::toString::*;
+import meta::pure::router::clustering::*;
 
 function meta::relational::contract::relationalStoreContract():StoreContract[1]
 {
    ^StoreContract
    (
      id = 'relationalStore',
-     executeStoreQuery = meta::relational::contract::execution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_1__Runtime_1__ExecutionContext_1__Extension_MANY__DebugContext_1__Result_1_,
+
+     planExecution = meta::relational::contract::planExecution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__Extension_MANY__DebugContext_1__ExecutionNode_1_,
+    
      supports = meta::relational::contract::supports_FunctionExpression_1__Boolean_1_,
      supportsStreamFunction = meta::relational::contract::supportsStream_FunctionExpression_1__Boolean_1_,
-     planExecution = meta::relational::contract::planExecution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__Extension_MANY__DebugContext_1__ExecutionNode_1_,
-     localGetterOverrideMapped = meta::relational::contract::getterOverrideMapped_Any_1__PropertyMapping_1__Any_MANY_,
+     shouldStopRouting = [
+                            meta::pure::tds::project_TableTDS_1__ColumnSpecification_MANY__TabularDataSet_1_,
+                            meta::pure::tds::tableToTDS_Table_1__TableTDS_1_,
+                            meta::pure::tds::viewToTDS_View_1__TableTDS_1_,
+                            meta::pure::tds::join_TabularDataSet_1__TabularDataSet_1__JoinType_1__Function_1__TabularDataSet_1_,
+                            meta::pure::tds::join_TabularDataSet_1__TabularDataSet_1__JoinType_1__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_,
+                            meta::relational::functions::database::tableReference_Database_1__String_1__String_1__Table_1_,
+                            meta::relational::functions::columnProjectionsFromRoot_Any_MANY__NamedRelation_1__String_MANY__Boolean_$0_1$__Integer_$0_1$__RelationData_1_
+                         ],
+     routeFunctionExpressions = pair(
+            fe:FunctionExpression[1] | $fe->evaluateAndDeactivate().genericType.rawType == meta::relational::mapping::TableTDS,
+            {fe:FunctionExpression[1], state:RoutingState[1], runtime : Runtime[1], mapping: Mapping[1], executionContext:ExecutionContext[1] |
+                    let name = $fe.parametersValues->at(0)->cast(@FunctionExpression).functionName;
+                    assert($fe.parametersValues->at(0)->cast(@FunctionExpression).func->in([meta::relational::functions::database::tableReference_Database_1__String_1__String_1__Table_1_, meta::relational::functions::database::viewReference_Database_1__String_1__String_1__View_1_]), 'Must use meta::pure::tds::tableReference / viewReference function to specify table / view ');
+                    let store = $fe.parametersValues->at(0)->cast(@FunctionExpression).parametersValues->at(0)->cast(@InstanceValue).values->cast(@meta::pure::store::Store)->toOne();
+                    ^$state(value = ^TDSRoutedValueSpecification(
+                                        genericType = $fe.genericType,
+                                        multiplicity = $fe.multiplicity,
+                                        id = 'Table TDS',
+                                        store = $store,
+                                        runtime = $runtime,
+                                        mapping = $mapping,
+                                        executionContext = $executionContext,
+                                        value = $fe
+                                    )
+                    );
+            }
+      ),
+     supportsNativeJoinAmongElements = true,
 
-     supportsSetImplementation = s:SetImplementation[1]|$s->instanceOf(RelationalInstanceSetImplementation)
+     printPlanNodeToString = {space : String[1], extensions:meta::pure::extension::Extension[*]|
+                                       [
+                                          cpt:CreateAndPopulateTempTableExecutionNode[1]|'CreateAndPopulateTempTable\n'+$space+'('+header($cpt, $space, $extensions)+'\n'+$space+'  inputVarNames = ' + $cpt.inputVarNames->joinStrings('[', ', ', ']') + '\n' + $space + '  tempTableName = ' + $cpt.tempTableName + '\n' +$space+'  tempTableColumns = '+$cpt.tempTableColumnMetaData->map(col|'('+$col.column.label+', '+if($col.column.dataType->isEmpty(),|'""',| $col.column.dataType->toOne()->meta::relational::metamodel::datatype::dataTypeToSqlText()) + if($col.identifierForGetter->isEmpty(), | '', | ', ' + $col.identifierForGetter->toOne() + ', ' + if($col.parametersForGetter->isEmpty(),|'[""]',| $col.parametersForGetter->toOne()->keyValues()->map(param| '(' + $param.first + ', ' + $param.second->toString() + ')')->joinStrings('[', ', ', ']') )) + ' )')->joinStrings('[',', ',']') +'\n' + $space + '  connection = '+$cpt.connection ->connectionToString($extensions) +'\n' + $cpt.implementation->printImplementation('implementation', $space+'  ', $extensions) + $space+')\n',
+                                          r:SQLExecutionNode[1]|'SQL\n'+$space+'('+header($r, $space, $extensions)+'\n'+$space+'  resultColumns = '+$r.resultColumns->map(rc|'('+$rc.label+', '+if($rc.dataType->isEmpty(),|'""',| $rc.dataType->toOne()->meta::relational::metamodel::datatype::dataTypeToSqlText())+')')->joinStrings('[',', ',']')+'\n'+$space+'  sql = '+$r.sqlQuery+'\n'+ $space + '  connection = '+$r.connection ->connectionToString($extensions) +'\n'+$r.implementation->printImplementation('implementation', $space+'  ', $extensions)+ $space+')\n',
+                                          r:RelationalInstantiationExecutionNode[1]|'Relational\n'+$space+'('+header($r, $space, $extensions)+'\n'+$space+'  resultColumns = '+$r.executionNodes->at(0)->cast(@meta::relational::mapping::SQLExecutionNode).resultColumns->map(rc|'('+$rc.label+', '+if($rc.dataType->isEmpty(),|'""',| $rc.dataType->toOne()->meta::relational::metamodel::datatype::dataTypeToSqlText())+')')->joinStrings('[',', ',']')+'\n'+$space+'  sql = '+$r.executionNodes->at(0)->cast(@meta::relational::mapping::SQLExecutionNode).sqlQuery+'\n'+ $space + '  connection = '+$r.executionNodes->at(0)->cast(@meta::relational::mapping::SQLExecutionNode).connection ->connectionToString($extensions) +'\n'+$r.implementation->printImplementation('implementation', $space+'  ', $extensions)+ $space+')\n',
+                                          rb:RelationalBlockExecutionNode[1]|'RelationalBlockExecutionNode\n'+ $space+ '(' + header($rb, $space, $extensions) + $rb->childrenToString($space+'  ', $extensions) +' \n' +$space+ ')\n';
+                                       ]},
+      printConnectionToString = {extensions:meta::pure::extension::Extension[*]|
+                                       [
+                                           testDatabase:TestDatabaseConnection[1]|databaseConnectionTypeToString($testDatabase),
+                                           db:DatabaseConnection[1]|  databaseConnectionTypeToString($db)
+                                       ]},
+      printTypeToString = {space : String[1], extensions:meta::pure::extension::Extension[*]|
+                                       [
+                                           tdsResultType:TDSResultType[1]|'TDS['+$tdsResultType.tdsColumns->map(c|'('+$c.name+', '+$c.type->toOne()->elementToPath()+ ', '+ if($c.sourceDataType->isEmpty(),|'""',| $c.sourceDataType->toOne()->cast(@meta::relational::metamodel::datatype::DataType)->meta::relational::metamodel::datatype::dataTypeToSqlText()) + if($c.documentation->isEmpty(),|', ""',|', "'+$c.documentation->toOne()+'"')+if($c.enumMappingId->isEmpty(),|'',|', '+$c.enumMappingId->toOne())+')')->joinStrings(', ')+']',
+                                           relationResultType : RelationResultType[1]|'Relation[name='+$relationResultType.relationName+', type='+$relationResultType.relationType->toString()+', schema='+$relationResultType.schemaName+', database='+$relationResultType.database+$relationResultType.columns->map(c | '('+$c.name+','+$c.type->meta::relational::metamodel::datatype::dataTypeToSqlText()+')')->joinStrings(', columns=[', ', ', ']')+']'
+                                      ]},
+
+
+     supportsSetImplementation = s:SetImplementation[1]|$s->instanceOf(RelationalInstanceSetImplementation) ||
+                                                        ($s->instanceOf(CrossSetImplementation) && $s->cast(@CrossSetImplementation).targetStore->instanceOf(Database)),
+     supportsStore = s:Store[1]|$s->instanceOf(Database),
+     resolveStoreFromSetImplementation = s:InstanceSetImplementation[1]|$s->meta::relational::contract::getStore(),
+
+     executeStoreQuery = meta::relational::contract::execution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_1__Runtime_1__ExecutionContext_1__Extension_MANY__DebugContext_1__Result_1_,
+     localGetterOverrideMapped = meta::relational::contract::getterOverrideMapped_Any_1__PropertyMapping_1__Any_MANY_,
+     instance_equals = {a:Any[1], b:Any[1] |
+                          $a->getHiddenPayload()->cast(@meta::relational::mapping::KeyInformation).pk == $b->getHiddenPayload()->toOne()->cast(@meta::relational::mapping::KeyInformation).pk;
+                       }
+
    )
 }
 
@@ -102,12 +163,19 @@ function meta::relational::contract::getterOverrideMapped(o:Any[1], propertyMapp
    $o->processProperty($propertyMapping.property);
 }
 
-function meta::relational::contract::relationalEmbeddedStoreContract():StoreContract[1]
+function meta::relational::contract::getStore(r:InstanceSetImplementation[1]):Store[1]
 {
-   ^StoreContract
-   (
-     id = 'relationalEmbeddedStore',
-     supports=meta::relational::contract::supports_FunctionExpression_1__Boolean_1_,
-     supportsSetImplementation = s:SetImplementation[1]|$s->instanceOf(EmbeddedRelationalInstanceSetImplementation)
-   )
+  $r->match(
+    [
+      r:RootRelationalInstanceSetImplementation[1]|
+          let mainTableAlias = $r.mainTableAlias;
+          if ($mainTableAlias.database->isEmpty(),
+            |$r.mainTable.schema.database,
+            |$mainTableAlias.database->toOne()
+          );,
+      e:EmbeddedRelationalInstanceSetImplementation[1]|
+        ^meta::pure::router::store::embedded::EmbeddedStore(package=::),
+      s:CrossSetImplementation[1]|$s.targetStore
+    ]
+  )  
 }

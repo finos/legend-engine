@@ -16,7 +16,7 @@ import meta::pure::mapping::*;
 
 Class meta::relational::mapping::TableTDS extends TabularDataSetImplementation
 {
-  table:meta::relational::metamodel::relation::NamedRelation[1];
+  table : meta::relational::metamodel::relation::NamedRelation[1];
 }
 
 function meta::pure::tds::tableToTDS(table:meta::relational::metamodel::relation::Table[1]):meta::relational::mapping::TableTDS[1]
@@ -39,6 +39,13 @@ function meta::pure::tds::viewToTDS(view:meta::relational::metamodel::relation::
             );
 }
 
+function
+   {doc.doc = 'Project the specified calculated columns from the provided TDS.  This is similar to extend, but rather than adding the columns it replaces all of the existing ones '}
+   meta::pure::tds::project(tds:meta::relational::mapping::TableTDS[1], columnFunctions:ColumnSpecification<TDSRow>[*]):TabularDataSet[1]
+{
+   $tds->project($columnFunctions);
+}
+
 function <<access.private>> meta::pure::tds::tableColumnToTdsColumn(column:meta::relational::metamodel::Column[1], index:Integer[1]):TDSColumn[1]
 {
 
@@ -47,11 +54,4 @@ function <<access.private>> meta::pure::tds::tableColumnToTdsColumn(column:meta:
       offset=$index,
       type = $column.type->toOne()->meta::relational::metamodel::datatype::dataTypeToCompatiblePureType()->cast(@meta::pure::metamodel::type::DataType)
    );
-}
-
-function
-   {doc.doc = 'Project the specified calculated columns from the provided TDS.  This is similar to extend, but rather than adding the columns it replaces all of the existing ones '}
-   meta::pure::tds::project(tds:meta::relational::mapping::TableTDS[1], columnFunctions:ColumnSpecification<TDSRow>[*]):TabularDataSet[1]
-{
-   $tds->project($columnFunctions);
 }

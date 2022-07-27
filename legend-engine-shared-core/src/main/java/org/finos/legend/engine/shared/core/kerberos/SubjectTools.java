@@ -38,11 +38,6 @@ public class SubjectTools
             return "_UNKNOWN_";
         }
         String principal = subject.getPrincipals().iterator().next().getName();
-        return getUsername(principal);
-    }
-
-    public static String getUsername(String principal)
-    {
         return principal.substring(0, principal.indexOf("@"));
     }
 

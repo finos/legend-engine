@@ -19,7 +19,6 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.authentication.credential.CredentialSupplier;
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProvider;
-import org.finos.legend.engine.plan.execution.stores.StoreExecutionState;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.OAuthProfile;
@@ -61,26 +60,16 @@ public class ConnectionManagerSelector
 
     public Connection getDatabaseConnection(MutableList<CommonProfile> profiles, DatabaseConnection databaseConnection)
     {
-        return this.getDatabaseConnection(profiles, databaseConnection, StoreExecutionState.emptyRuntimeContext());
-    }
-
-    public Connection getDatabaseConnection(MutableList<CommonProfile> profiles, DatabaseConnection databaseConnection, StoreExecutionState.RuntimeContext runtimeContext)
-    {
         DataSourceSpecification datasource = getDataSourceSpecification(databaseConnection);
         Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
-        return this.getDatabaseConnectionImpl(identity, databaseConnection, datasource, runtimeContext);
+        return this.getDatabaseConnectionImpl(identity, databaseConnection, datasource);
     }
 
     public Connection getDatabaseConnection(Subject subject, DatabaseConnection databaseConnection)
     {
-        return this.getDatabaseConnection(subject, databaseConnection, StoreExecutionState.emptyRuntimeContext());
-    }
-
-    public Connection getDatabaseConnection(Subject subject, DatabaseConnection databaseConnection, StoreExecutionState.RuntimeContext runtimeContext)
-    {
         DataSourceSpecification datasource = getDataSourceSpecification(databaseConnection);
         Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(subject);
-        return this.getDatabaseConnectionImpl(identity, databaseConnection, datasource, runtimeContext);
+        return this.getDatabaseConnectionImpl(identity, databaseConnection, datasource);
     }
 
     private DataSourceSpecification getDataSourceSpecification(DatabaseConnection databaseConnection)
@@ -95,21 +84,16 @@ public class ConnectionManagerSelector
 
     public Connection getDatabaseConnection(Identity identity, DatabaseConnection databaseConnection)
     {
-        return this.getDatabaseConnection(identity, databaseConnection, StoreExecutionState.emptyRuntimeContext());
-    }
-
-    public Connection getDatabaseConnection(Identity identity, DatabaseConnection databaseConnection, StoreExecutionState.RuntimeContext runtimeContext)
-    {
         DataSourceSpecification datasource = getDataSourceSpecification(databaseConnection);
-        return this.getDatabaseConnectionImpl(identity, databaseConnection, datasource, runtimeContext);
+        return this.getDatabaseConnectionImpl(identity, databaseConnection, datasource);
     }
 
-    public Connection getDatabaseConnectionImpl(Identity identity, DatabaseConnection databaseConnection, DataSourceSpecification datasource, StoreExecutionState.RuntimeContext runtimeContext)
+    public Connection getDatabaseConnectionImpl(Identity identity, DatabaseConnection databaseConnection, DataSourceSpecification datasource)
     {
         if (databaseConnection instanceof RelationalDatabaseConnection)
         {
             RelationalDatabaseConnection relationalDatabaseConnection = (RelationalDatabaseConnection) databaseConnection;
-            Optional<CredentialSupplier> databaseCredentialHolder = RelationalConnectionManager.getCredential(flowProviderHolder, relationalDatabaseConnection, identity, runtimeContext);
+            Optional<CredentialSupplier> databaseCredentialHolder = RelationalConnectionManager.getCredential(flowProviderHolder, relationalDatabaseConnection, identity);
             return datasource.getConnectionUsingIdentity(identity, databaseCredentialHolder);
         }
         /*
