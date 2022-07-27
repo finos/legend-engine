@@ -1,0 +1,5 @@
+{
+  "name" : "core_relational_spanner",
+  "pattern" : "(meta::relational::functions::sqlQueryToString::spanner|meta::relational::tests::dbSpecificTests::spanner)(::.*)?",
+  "dependencies" : ["platform", "core", "core_relational"]
+}

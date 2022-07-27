@@ -162,6 +162,8 @@
         <module>legend-engine-extensions-collection-execution</module>
         <module>legend-engine-extensions-collection-generation</module>
         <module>legend-engine-testable</module>
+        <module>legend-engine-xt-relationalStore-spanner-execution</module>
+        <module>legend-engine-xt-relationalStore-spanner-pure</module>
     </modules>
 
     <properties>
