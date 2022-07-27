@@ -14,18 +14,17 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys;
 
-import lombok.Value;
+import java.util.Objects;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationKey;
 
-@Value
 public class SpannerDataSourceSpecificationKey implements DataSourceSpecificationKey
 {
 
-    String projectId;
-    String instanceId;
-    String databaseId;
-    String proxyHost;
-    Integer proxyPort;
+    private final String projectId;
+    private final String instanceId;
+    private final String databaseId;
+    private final String proxyHost;
+    private final Integer proxyPort;
 
     @Override
     public String shortId()
@@ -33,4 +32,71 @@ public class SpannerDataSourceSpecificationKey implements DataSourceSpecificatio
         return this.toString();
     }
 
+    public SpannerDataSourceSpecificationKey(String projectId, String instanceId, String databaseId, String proxyHost, Integer proxyPort)
+    {
+        this.projectId = projectId;
+        this.instanceId = instanceId;
+        this.databaseId = databaseId;
+        this.proxyHost = proxyHost;
+        this.proxyPort = proxyPort;
+    }
+
+    public String getProjectId()
+    {
+        return projectId;
+    }
+
+    public String getInstanceId()
+    {
+        return instanceId;
+    }
+
+    public String getDatabaseId()
+    {
+        return databaseId;
+    }
+
+    public String getProxyHost()
+    {
+        return proxyHost;
+    }
+
+    public Integer getProxyPort()
+    {
+        return proxyPort;
+    }
+
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+        {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass())
+        {
+            return false;
+        }
+        SpannerDataSourceSpecificationKey that = (SpannerDataSourceSpecificationKey) o;
+        return Objects.equals(projectId, that.projectId) && Objects.equals(instanceId, that.instanceId) && Objects.equals(databaseId, that.databaseId) && Objects.equals(proxyHost, that.proxyHost) && Objects.equals(proxyPort, that.proxyPort);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(projectId, instanceId, databaseId, proxyHost, proxyPort);
+    }
+
+    @Override
+    public String toString()
+    {
+        return "SpannerDataSourceSpecificationKey{" +
+                "projectId='" + projectId + '\'' +
+                ", instanceId='" + instanceId + '\'' +
+                ", databaseId='" + databaseId + '\'' +
+                ", proxyHost='" + proxyHost + '\'' +
+                ", proxyPort=" + proxyPort +
+                '}';
+    }
 }
