@@ -36,15 +36,9 @@ import org.finos.legend.engine.plan.execution.result.serialization.TemporaryFile
 import org.finos.legend.engine.plan.execution.stores.relational.config.RelationalExecutionConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.Column;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.IngestionMethod;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommandsVisitor;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.bigquery.BigQueryCommands;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.databricks.DatabricksCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Commands;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.postgres.PostgresCommands;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.redshift.RedshiftCommands;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.snowflake.SnowflakeCommands;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.spanner.SpannerCommands;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.sqlserver.SqlServerCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RealizedRelationalResult;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
 import org.finos.legend.engine.plan.execution.stores.relational.result.TempTableStreamingResult;
@@ -77,32 +71,23 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
     }
 
     @Override
-    public Boolean visit(SnowflakeCommands snowflakeCommands)
+    public Boolean visit(RelationalDatabaseCommands relationalDatabaseCommands)
     {
         if (ingestionMethod == null)
         {
-            ingestionMethod = snowflakeCommands.getDefaultIngestionMethod();
+            ingestionMethod = relationalDatabaseCommands.getDefaultIngestionMethod();
         }
+
+        if (relationalDatabaseCommands instanceof H2Commands)
+        {
+            return visit((H2Commands) relationalDatabaseCommands);
+        }
+
         throw new UnsupportedOperationException("not yet implemented");
     }
 
-    @Override
-    public Boolean visit(DatabricksCommands databricksCommands)
+    private Boolean visit(H2Commands h2Commands)
     {
-        if (ingestionMethod == null)
-        {
-            ingestionMethod = databricksCommands.getDefaultIngestionMethod();
-        }
-        throw new UnsupportedOperationException("not yet implemented");
-    }
-
-    @Override
-    public Boolean visit(H2Commands h2Commands)
-    {
-        if (ingestionMethod == null)
-        {
-            ingestionMethod = h2Commands.getDefaultIngestionMethod();
-        }
         if (ingestionMethod == IngestionMethod.CLIENT_FILE)
         {
             try (TemporaryFile tempFile = new TemporaryFile(config.tempPath))
@@ -174,40 +159,6 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
             streamResultToNewTarget(((RelationalResult) result).resultSet, connection, tableName, 100);
         }
         return true;
-    }
-
-    @Override
-    public Boolean visit(SqlServerCommands sqlServerCommands)
-    {
-        throw new UnsupportedOperationException("not yet implemented");
-    }
-
-    @Override
-    public Boolean visit(BigQueryCommands bigQueryCommands)
-    {
-        throw new UnsupportedOperationException("not yet implemented");
-    }
-
-    @Override
-    public Boolean visit(RedshiftCommands redshiftCommands)
-    {
-        throw new UnsupportedOperationException("not yet implemented");
-    }
-
-    @Override
-    public Boolean visit(PostgresCommands postgresCommands)
-    {
-        if (ingestionMethod == null)
-        {
-            ingestionMethod = postgresCommands.getDefaultIngestionMethod();
-        }
-        throw new UnsupportedOperationException("not yet implemented");
-    }
-
-    @Override
-    public Boolean visit(SpannerCommands spannerCommands)
-    {
-        throw new UnsupportedOperationException("not yet implemented");
     }
 
     private boolean checkedExecute(Statement statement, String sql)

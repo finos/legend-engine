@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.spanner;
+package org.finos.legend.engine.plan.execution.stores.relational.connection.spanner.driver;
 
 import com.google.common.base.Strings;
 import java.util.Optional;
@@ -23,7 +23,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.authe
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.TestDatabaseAuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.SpannerDataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.spanner.ds.specifications.SpannerDataSourceSpecification;
 
 public class SpannerManager extends DatabaseManager
 {
@@ -73,7 +73,7 @@ public class SpannerManager extends DatabaseManager
     @Override
     public String getDriver()
     {
-        return "org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.spanner.SpannerDriver";
+        return "org.finos.legend.engine.plan.execution.stores.relational.connection.spanner.driver.SpannerDriver";
     }
 
     @Override

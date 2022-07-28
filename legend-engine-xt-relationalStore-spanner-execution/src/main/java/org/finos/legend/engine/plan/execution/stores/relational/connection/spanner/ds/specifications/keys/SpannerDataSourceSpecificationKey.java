@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys;
+package org.finos.legend.engine.plan.execution.stores.relational.connection.spanner.ds.specifications.keys;
 
 import java.util.Objects;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationKey;
