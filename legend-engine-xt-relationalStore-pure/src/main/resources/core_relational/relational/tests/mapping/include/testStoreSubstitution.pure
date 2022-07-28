@@ -22,3 +22,5 @@ function <<test.Test>> meta::relational::tests::mapping::include::testStoreSubst
    assertIs(db, simpleRelationalMapping.resolveStore(dbInc));
    assertIs(db, simpleRelationalMapping.resolveStore(db));
 }
+
+

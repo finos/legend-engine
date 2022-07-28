@@ -60,71 +60,12 @@ function <<access.private>> meta::external::store::service::extension::serviceSt
       type = $type,
       availableStores = [meta::external::store::service::contract::serviceStoreStoreContract()],
       serializerExtension =  meta::external::store::service::extension::serviceStoreSerializerExtension_String_1__String_1_,
-      cluster_cluster_ExtendedRoutedValueSpecification = {r:ExtendedRoutedValueSpecification[1], openVariables:Map<String, List<Any>>[1], mapping:Mapping[1] |
-                                                                                [
-                                                                                   {rsi: RootServiceInstanceSetImplementation[1]|
-                                                                                     ^ClusteredValueSpecification(
-                                                                                        genericType  = $r.genericType,
-                                                                                        multiplicity = $r.multiplicity,
-                                                                                        s = meta::external::store::service::contract::serviceStoreStoreContract(),
-                                                                                        store = $r.mapping.resolveStore($rsi.serviceStore()),
-                                                                                        mapping = $r.mapping,
-                                                                                        runtime = $r.runtime,
-                                                                                        openVars = $openVariables,
-                                                                                        val = $r,
-                                                                                        exeCtx = $r.executionContext,
-                                                                                        executable = false
-                                                                                     );},
-                                                                                   {esi: EmbeddedServiceStoreSetImplementation[1]|
-                                                                                     ^ClusteredValueSpecification(
-                                                                                        genericType  = $r.genericType,
-                                                                                        multiplicity = $r.multiplicity,
-                                                                                        s = meta::external::store::service::contract::serviceStoreStoreContract(),
-                                                                                        store = $r.mapping.resolveStore($esi.owner->cast(@RootServiceInstanceSetImplementation)->toOne().serviceStore()),
-                                                                                        mapping = $r.mapping,
-                                                                                        runtime = $r.runtime,
-                                                                                        openVars = $openVariables,
-                                                                                        val = $r,
-                                                                                        exeCtx = $r.executionContext,
-                                                                                        executable = false
-                                                                                     );}
-                                                                                 ]},
-      cluster_cluster_ExtendedRoutedValueSpecification_Operation = {r:ExtendedRoutedValueSpecification[1], openVariables:Map<String, List<Any>>[1], mapping:Mapping[1] |
-                                                                                    {rsi:RootServiceInstanceSetImplementation[*]|
-                                                                                       let serviceStores = $rsi.serviceStore()->removeDuplicates();
-                                                                                       assert($serviceStores->size() == 1, | 'Found ' + $serviceStores->size()->toString() + ' stores while trying to resolve Operation Mappings. 1 unique store is required for routing. Stores found were ' + $serviceStores.name->joinStrings('[',',', ']'));
-                                                                                       ^ClusteredValueSpecification(
-                                                                                          genericType  = $r.genericType,
-                                                                                          multiplicity = $r.multiplicity,
-                                                                                          s = meta::external::store::service::contract::serviceStoreStoreContract(),
-                                                                                          store = $r.mapping.resolveStore($serviceStores->toOne()),
-                                                                                          mapping = $r.mapping,
-                                                                                          runtime = $r.runtime,
-                                                                                          openVars = $openVariables,
-                                                                                          val = $r,
-                                                                                          exeCtx = $r.executionContext,
-                                                                                          executable = false
-                                                                                       );}},
-      cluster_resolveInstanceSetImplementations = {r : Extension[*] | {rsi:RootServiceInstanceSetImplementation[1] | $rsi}},
-      cluster_resolveRootFromEmbedded = {r:RootServiceInstanceSetImplementation[1]|$r},
-      cluster_storeSupportsNativeJoinAmongElements = {s: ServiceStore[1] | false},
       executionPlan_generation_sourceSupportsBatching = {sets:SetImplementation[*], inScopeVars:Map<String, List<Any>>[1] |
                                                                                          {rsi:RootServiceInstanceSetImplementation[1] |
                                                                                               let paramMap = $sets->resolveParamMapForChainProcessing($inScopeVars, noDebug());
                                                                                               let xStorePropInScope = $inScopeVars->keyValues()->filter(kv | $kv.second.values->size() == 1 && $kv.second.values->toOne()->instanceOf(AbstractProperty)).second.values->cast(@AbstractProperty<Any>);
                                                                                               $xStorePropInScope->map(targetProp | $targetProp->resolveSourcePropertyFromTargetProperty($sets->cast(@meta::pure::mapping::modelToModel::PureInstanceSetImplementation)))->querySupportsBatching($paramMap, $rsi);}},
-      executionPlan_print_connectionToString =
-                                {extensions:meta::pure::extension::Extension[*]|
-                                       [
-                                           s:ServiceStoreConnection[1]| serviceStoreConnectionToString($s);
-                                       ]},
-      executionPlan_print_planNodeToString =
-                                {space : String[1], extensions:meta::pure::extension::Extension[*]|
-                                       [
-                                          s:RestServiceExecutionNode[1] | serviceStoreExecutionNodeToString($s, $space, $extensions);,
-                                          sp:ServiceParametersResolutionExecutionNode[1] | serviceParametersResolutionExecutionNodeToString($sp, $space, $extensions);,
-                                          l:LimitExecutionNode[1] | limitExecutionNodeToString($l, $space, $extensions);
-                                       ]},
+
       graphExtension_calculateSourceTree = {tree:RootGraphFetchTree<Any>[1] |
          {rsi: RootServiceInstanceSetImplementation[1] |
             $tree;
@@ -138,11 +79,6 @@ function <<access.private>> meta::external::store::service::extension::serviceSt
          sq: meta::pure::mapping::StoreQuery[1], ext: RoutedValueSpecification[0..1], clusteredTree: ClusteredGraphFetchTree[1], orderedPaths: String[*], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], enableConstraints: Boolean[1], checked: Boolean[1], extensions: Extension[*], debug: DebugContext[1] |
          {s : ServiceStore[1] | meta::external::store::service::executionPlan::generation::planRootGraphFetchExecutionServiceStore($sq, $ext, $clusteredTree, $orderedPaths, $mapping, $runtime, $exeCtx, $enableConstraints, $checked, $extensions, $debug)}
       },
-      graphFetch_getStoreFromSet = mapping:Mapping[1] | {rsi : RootServiceInstanceSetImplementation[1] | $mapping.resolveStore($rsi.serviceStore())},
-      graphFetch_getStoreFromSet_Operation = mapping:Mapping[1] | {rsi : RootServiceInstanceSetImplementation[*] | let serviceStores = $rsi.serviceStore()->removeDuplicates();
-                                                                                                                   assert($serviceStores->size() == 1, | 'Found ' + $serviceStores->size()->toString() + ' stores while trying to resolve Operation Mappings. 1 unique store is required for routing. Stores found were ' + $serviceStores.name->joinStrings('[',',', ']'));
-                                                                                                                   $mapping.resolveStore($serviceStores->at(0));},
-      graphFetch_getStoreContractFromStore = db : ServiceStore[1] | meta::external::store::service::contract::serviceStoreStoreContract(),
       java_graphFetch_inMemory_applyTypeFilter = {
          set:InstanceSetImplementation[1], src:Code[1], withoutFilter:Code[1..*], context:GenerationContext[1], debug:DebugContext[1] | [
             rsi: RootServiceInstanceSetImplementation[1] | $withoutFilter,
@@ -213,7 +149,6 @@ function <<access.private>> meta::external::store::service::extension::serviceSt
                [
                   l:LimitExecutionNode[1] | $l->prepareForLimitExecutionNode($path, $contextFromOtherNodes, $debug)
                ]
-            },
-      systemMapping_systemForSetImplementation = r:RootServiceInstanceSetImplementation[1]|meta::external::store::service::contract::serviceStoreStoreContract()
+            }
    )
 }

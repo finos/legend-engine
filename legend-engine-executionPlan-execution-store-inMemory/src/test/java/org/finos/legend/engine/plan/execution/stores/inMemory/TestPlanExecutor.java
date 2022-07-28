@@ -15,35 +15,23 @@
 package org.finos.legend.engine.plan.execution.stores.inMemory;
 
 import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.ImmutableList;
-import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
-import org.finos.legend.engine.plan.execution.nodes.ExecutionNodeExecutor;
-import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.json.JsonStreamToJsonDefaultSerializer;
 import org.finos.legend.engine.plan.execution.result.json.JsonStreamingResult;
-import org.finos.legend.engine.plan.execution.stores.StoreExecutionState;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutor;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutorConfiguration;
-import org.finos.legend.engine.plan.execution.stores.StoreType;
 import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.InMemory;
 import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.InMemoryStoreExecutor;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.FakeRelationalStoreExecutorBuilder;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.FakeServiceStoreExecutorBuilder;
 import org.junit.Test;
-import org.pac4j.core.profile.CommonProfile;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.URL;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.function.BiFunction;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -142,64 +130,5 @@ public class TestPlanExecutor
 
         StoreExecutor inmemoryExecutor = extraExecutors.detect(storeExecutor -> storeExecutor instanceof InMemoryStoreExecutor);
         assertNotNull("failed to locate inmemory executor", inmemoryExecutor);
-    }
-
-    @Test
-    public void testRuntimeContextInjection() throws Exception
-    {
-        URL resource = TestPlanExecutor.class.getResource("/plans/plan1.json");
-        String json = new String(Files.readAllBytes(Paths.get(resource.toURI())), Charset.defaultCharset());
-        PlanExecutor planExecutor = PlanExecutor.newPlanExecutorWithConfigurations(new FakeRelationalStoreExecutorBuilder.Configuration(), new FakeServiceStoreExecutorBuilder.Configuration());
-
-        RecordingExecutionNodeExecutorSupplier nodeExecutorRecorder = new RecordingExecutionNodeExecutorSupplier();
-        planExecutor.setExecutionNodeExecutorBuilder(nodeExecutorRecorder);
-
-        PlanExecutor.ExecuteArgs request1ExecuteArgs = PlanExecutor.withArgs()
-                .withPlanAsString(json)
-                .withStoreRuntimeContexts(Maps.immutable
-                        .of(
-                                StoreType.Relational, StoreExecutionState.newRuntimeContext(Maps.immutable.of("rkey1", "rvalue1")),
-                                StoreType.Service, StoreExecutionState.newRuntimeContext(Maps.immutable.of("skey1", "svalue1"))
-                        )
-                        .castToMap())
-                .build();
-
-        planExecutor.execute(request1ExecuteArgs);
-
-        StoreExecutionState.RuntimeContext request1InjectedRelationalContext = nodeExecutorRecorder.executionState.getStoreExecutionState(StoreType.Relational).getRuntimeContext();
-        assertEquals(1, request1InjectedRelationalContext.getContextParams().size());
-        assertEquals("rvalue1", request1InjectedRelationalContext.getContextParams().get("rkey1"));
-
-        PlanExecutor.ExecuteArgs request2ExecuteArgs = PlanExecutor.withArgs()
-                .withPlanAsString(json)
-                .withStoreRuntimeContexts(Maps.immutable
-                        .of(
-                                StoreType.Relational, StoreExecutionState.newRuntimeContext(Maps.immutable.of("rkey2", "rvalue2")),
-                                StoreType.Service, StoreExecutionState.newRuntimeContext(Maps.immutable.of("skey2", "svalue2"))
-                        )
-                        .castToMap())
-                .build();
-
-        planExecutor.execute(request2ExecuteArgs);
-
-        StoreExecutionState.RuntimeContext request2InjectedRelationalContext = nodeExecutorRecorder.executionState.getStoreExecutionState(StoreType.Relational).getRuntimeContext();
-        assertEquals(1, request2InjectedRelationalContext.getContextParams().size());
-        assertEquals("rvalue2", request2InjectedRelationalContext.getContextParams().get("rkey2"));
-    }
-
-    static class RecordingExecutionNodeExecutorSupplier implements BiFunction<MutableList<CommonProfile>, ExecutionState, ExecutionNodeExecutor>
-    {
-        private ExecutionState executionState;
-
-        public ExecutionNodeExecutor apply(MutableList<CommonProfile> profiles, ExecutionState executionState)
-        {
-            this.executionState = executionState;
-            return new ExecutionNodeExecutor(profiles, executionState);
-        }
-
-        public ExecutionState getExecutionState()
-        {
-            return executionState;
-        }
     }
 }

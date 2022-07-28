@@ -37,17 +37,6 @@ delegatedKerberosAuthConfig:            BRACE_OPEN
 ;
 serverPrincipalConfig:                  SERVER_PRINCIPAL COLON STRING SEMI_COLON
 ;
-middleTierUserNamePasswordAuth:         MIDDLETIER_USERNAME_PASSWORD_AUTH middleTierUserNamePasswordAuthConfig?
-;
-middleTierUserNamePasswordAuthConfig:       BRACE_OPEN
-                                            (
-                                                vaultReferenceConfig
-                                            )*
-                                            BRACE_CLOSE
-;
-
-vaultReferenceConfig:                  MIDDLETIER_USERNAME_PASSWORD_VAULT_REFERENCE COLON STRING SEMI_COLON
-;
 userNamePasswordAuth:                   USERNAME_PASSWORD_AUTH
                                             BRACE_OPEN
                                                 (

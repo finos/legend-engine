@@ -141,7 +141,7 @@ function meta::pure::executionPlan::executionPlan(clusters:ClusteredValueSpecifi
       rootExecutionNode = $updatedNode,
       authDependent = false || $updatedNode->allNodes($extensions).authDependent->contains(true),
       kerberos =  $updatedNode->allNodes($extensions).kerberos->first(),
-      processingTemplateFunctions = $extensions.executionPlan_generation_executionPlan->map(e|$e->eval($updatedNode, $extensions))->concatenate($updatedNode->allNodes($extensions).supportFunctions)->removeDuplicates()
+      processingTemplateFunctions = $updatedNode->allNodes($extensions).supportFunctions->removeDuplicates()
    );
 }
 
@@ -248,7 +248,7 @@ function meta::pure::executionPlan::plan(cluster:ClusteredValueSpecification[1],
             //This is required tp populate the setup sql for test connections where csv data has been supplied. It is done here to ensure that the plan generation is always
             //the only place where sql is generated for this case.
             let rt = $cluster.runtime->match([
-               r:Runtime[1] | ^$r(connections = $r.connections->map(c | updateConnection($c, $extensions))),
+               r:Runtime[1] | ^$r(connections = $r.connections->map(c | preprocessClusterConnection($c, $extensions))),
                r:Runtime[0..1] | $r
             ]);
 
@@ -268,9 +268,9 @@ function meta::pure::executionPlan::nodeFromConnection(c:Connection[1], tree:Roo
    $c->match($extensions.executionPlan_generation_nodeFromConnection->map(x| $x->eval($tree, $enableConstraints, $checked))->concatenate($dflt)->toOneMany())->toOne();
 }
 
-function meta::pure::executionPlan::updateConnection(c:Connection[1], extensions:meta::pure::extension::Extension[*]):Connection[1]
+function meta::pure::executionPlan::preprocessClusterConnection(c:Connection[1], extensions:meta::pure::extension::Extension[*]):Connection[1]
 {
-   $c->match($extensions.executionPlan_generation_updateConnection->concatenate([
+   $c->match($extensions.executionPlan_generation_preprocessClusterConnection->concatenate([
                c:Connection[1] | $c
             ])->toOneMany());
 }
