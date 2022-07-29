@@ -25,8 +25,8 @@ import org.finos.legend.engine.language.pure.grammar.from.connection.ConnectionV
 import org.finos.legend.engine.language.pure.grammar.from.extension.ConnectionValueParser;
 import org.finos.legend.engine.language.pure.grammar.from.externalSource.ExternalSourceSpecificationParseTreeWalker;
 import org.finos.legend.engine.language.pure.grammar.from.externalSource.ExternalSourceSpecificationSourceCode;
-import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.ExternalFormatConnection;
-import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.ExternalSource;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.ExternalFormatConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.ExternalSource;
 
 import java.util.Collections;
 import java.util.List;

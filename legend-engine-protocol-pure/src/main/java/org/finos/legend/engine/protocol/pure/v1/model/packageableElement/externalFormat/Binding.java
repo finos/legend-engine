@@ -12,18 +12,22 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.external.shared;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat;
 
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNodeVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ModelUnit;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store;
 
-public class UrlStreamExecutionNode extends ExecutionNode
+public class Binding extends Store
 {
-    public String url;
+    public String schemaSet;
+    public String schemaId;
+    public String contentType;
+    public ModelUnit modelUnit;
 
     @Override
-    public <T> T accept(ExecutionNodeVisitor<T> executionNodeVisitor)
+    public <T> T accept(PackageableElementVisitor<T> visitor)
     {
-        return executionNodeVisitor.visit(this);
+        return visitor.visit(this);
     }
 }

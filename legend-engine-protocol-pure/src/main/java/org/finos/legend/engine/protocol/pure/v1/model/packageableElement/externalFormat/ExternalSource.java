@@ -12,16 +12,13 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.external.format.json;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat;
 
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNodeVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.ExternalFormatSerializeExecutionNode;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
-public class JsonSerializeExecutionNode extends ExternalFormatSerializeExecutionNode
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
+public abstract class ExternalSource
 {
-    @Override
-    public <T> T accept(ExecutionNodeVisitor<T> executionNodeVisitor)
-    {
-        return executionNodeVisitor.visit(this);
-    }
+    public SourceInformation sourceInformation;
 }

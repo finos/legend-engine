@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.external.format.json;
 
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.external.shared.PathReference;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.PathReference;
 
 public class JsonPathReference extends PathReference
 {
