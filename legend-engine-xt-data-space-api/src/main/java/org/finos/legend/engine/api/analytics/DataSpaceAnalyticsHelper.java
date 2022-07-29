@@ -81,6 +81,7 @@ public class DataSpaceAnalyticsHelper
         // NOTE: right now, we only build and do analysis for featured diagrams
         Root_meta_pure_metamodel_diagram_analytics_modelCoverage_DiagramModelCoverageAnalysisResult diagramAnalysisResult = core_diagram_analytics_analytics.Root_meta_pure_metamodel_diagram_analytics_modelCoverage_getDiagramModelCoverage_Diagram_MANY__DiagramModelCoverageAnalysisResult_1_(dataSpace._featuredDiagrams(), pureModel.getExecutionSupport());
         PureModelContextData classes = PureModelContextDataGenerator.generatePureModelContextDataFromClasses(diagramAnalysisResult._classes(), input.clientVersion, pureModel.getExecutionSupport());
+        // TODO: we could consider if we need to prune the class further here, for example, pruning the function off derived properties
         PureModelContextData enums = PureModelContextDataGenerator.generatePureModelContextDataFromEnumerations(diagramAnalysisResult._enumerations(), input.clientVersion, pureModel.getExecutionSupport());
         PureModelContextData _profiles = PureModelContextDataGenerator.generatePureModelContextDataFromProfile((RichIterable<Profile>) diagramAnalysisResult._profiles(), input.clientVersion, pureModel.getExecutionSupport());
         PureModelContextData.Builder builder = PureModelContextData.newBuilder();

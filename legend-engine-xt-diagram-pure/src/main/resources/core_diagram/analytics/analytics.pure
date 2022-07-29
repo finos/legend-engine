@@ -32,21 +32,38 @@ function meta::pure::metamodel::diagram::analytics::modelCoverage::getDiagramMod
     ->cast(@Profile)->removeDuplicates();
   let allProperties = $classes->filter(t|$t->instanceOf(Class))->map(t|$t->cast(@Class<Any>).properties->cast(@Property<Nil,Any|*>));
   let allQualifiedProperties = $classes->filter(t|$t->instanceOf(Class))->map(t|$t->cast(@Class<Any>).qualifiedProperties->cast(@QualifiedProperty<Any>));
+  let propertyClasses = $allProperties->map(p|$p.genericType.rawType)->concatenate($allQualifiedProperties->map(p|$p.genericType.rawType))->filter(t|$t->instanceOf(Class))->cast(@Class<Any>)->removeDuplicates()
+    ->filter(c|!$classes->contains($c));
   // TODO?: prune enumeration values
   let enumerations = $allProperties->map(p|$p.genericType.rawType)->concatenate($allQualifiedProperties->map(p|$p.genericType.rawType))->filter(t|$t->instanceOf(Enumeration))->cast(@Enumeration<Any>)->removeDuplicates();
   let prunedClasses = $classes->map(c|^Class<Any>(
     name = $c.name,
     package = $c.package,
-    properties = $c.properties,
+    // prune properties
+    properties = $c.properties->map(p|^Property<Nil,Any|*>(
+      name = $p.name,
+      genericType = $p.genericType,
+      multiplicity = $p.multiplicity,
+      // taggedValues = $p.taggedValues,
+      // stereotypes = $p.stereotypes,
+      aggregation = $p.aggregation,
+      owner = $p.owner
+    )),
+    // NOTE: since qualified properties transformation does certain validation logic
+    // we couldn't arbitrarily simplify like how we do properties
     qualifiedProperties = $c.qualifiedProperties,
     taggedValues = $c.taggedValues,
     stereotypes = $c.stereotypes,
     generalizations = $c.generalizations->filter(g|$generalizationViews->exists(gV|$gV.from.classView.class == $c && $gV.to.classView.class == $g.general.rawType))
   ));
+  let prunedPropertyClasses = $propertyClasses->map(c|^Class<Any>(
+    name = $c.name,
+    package = $c.package
+  ));
 
   ^DiagramModelCoverageAnalysisResult
   (
-    classes = $prunedClasses,
+    classes = $prunedClasses->concatenate($prunedPropertyClasses),
     profiles = $profiles,
     enumerations = $enumerations
   );
