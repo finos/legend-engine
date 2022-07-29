@@ -414,9 +414,9 @@ function meta::relational::tests::groupBy::datePeriods::createTablesAndFillDb():
 
    meta::relational::functions::toDDL::dropAndCreateTableInDb(myDB, 'INCOME_FUNCTION', $connection);
 
-   executeInDb('insert into INCOME_FUNCTION (code, name) values (1001, \'Income Function 1\');', $connection);
-   executeInDb('insert into INCOME_FUNCTION (code, name) values (1002, \'Income Function 2\');', $connection);
-   executeInDb('insert into INCOME_FUNCTION (code, name) values (1003, \'Income Function 3\');', $connection);
+   executeInDb('insert into INCOME_FUNCTION (code, name, year) values (1001, \'Income Function 1\', 2015);', $connection);
+   executeInDb('insert into INCOME_FUNCTION (code, name, year) values (1002, \'Income Function 2\', 2005);', $connection);
+   executeInDb('insert into INCOME_FUNCTION (code, name, year) values (1003, \'Income Function 3\', 2010);', $connection);
 
 
    meta::relational::functions::toDDL::dropAndCreateTableInDb(myDB, 'ORG_CHART_ENTITY', $connection);
@@ -437,20 +437,20 @@ function meta::relational::tests::groupBy::datePeriods::createTablesAndFillDb():
 
    meta::relational::functions::toDDL::dropAndCreateTableInDb(myDB, 'calendar', $connection);
 
-   executeInDb('insert into calendar ("calendar name", "date", "fiscal week start", "fiscal week end", "fiscal day", "fiscal week", "fiscal year start", "fiscal year end", "fiscal day of week")' + 
-               ' values (\'NYC\', \'2015-01-05\', \'2015-01-05\', \'2015-01-09\', 1, 1,\'2015-01-01\', \'2015-12-31\', 1);', $connection);
-   executeInDb('insert into calendar ("calendar name", "date", "fiscal week start", "fiscal week end", "fiscal day", "fiscal week", "fiscal year start", "fiscal year end", "fiscal day of week")' + 
-               ' values (\'NYC\', \'2015-01-06\', \'2015-01-05\', \'2015-01-09\', 2, 1,\'2015-01-01\', \'2015-12-31\', 1);', $connection);
-   executeInDb('insert into calendar ("calendar name", "date", "fiscal week start", "fiscal week end", "fiscal day", "fiscal week", "fiscal year start", "fiscal year end", "fiscal day of week")' + 
-               ' values (\'NYC\', \'2015-02-01\', \'2015-02-02\', \'2015-02-06\', 21, 6,\'2015-01-01\', \'2015-12-31\', 1);', $connection);
-   executeInDb('insert into calendar ("calendar name", "date", "fiscal week start", "fiscal week end", "fiscal day", "fiscal week", "fiscal year start", "fiscal year end", "fiscal day of week")' + 
-               ' values (\'NYC\', \'2015-02-07\', \'2015-02-09\', \'2015-02-13\', 26, 7,\'2015-01-01\', \'2015-12-31\', 2);', $connection);
-   executeInDb('insert into calendar ("calendar name", "date", "fiscal week start", "fiscal week end", "fiscal day", "fiscal week", "fiscal year start", "fiscal year end", "fiscal day of week")' + 
-               ' values (\'NYC\', \'2015-02-08\', \'2015-02-09\', \'2015-02-13\', 26, 7,\'2015-01-01\', \'2015-12-31\', 2);', $connection);
-   executeInDb('insert into calendar ("calendar name", "date", "fiscal week start", "fiscal week end", "fiscal day", "fiscal week", "fiscal year start", "fiscal year end", "fiscal day of week")' + 
-               ' values (\'NYC\', \'2015-02-24\', \'2015-02-23\', \'2015-02-27\', 36, 9,\'2015-01-01\', \'2015-12-31\', 3);', $connection);               
-   executeInDb('insert into calendar ("calendar name", "date", "fiscal week start", "fiscal week end", "fiscal day", "fiscal week", "fiscal year start", "fiscal year end", "fiscal day of week")' + 
-               ' values (\'NYC\', \'2015-02-25\', \'2015-02-23\', \'2015-02-27\', 37, 9,\'2015-01-01\', \'2015-12-31\', 3);', $connection);            
+   executeInDb('insert into calendar ("calendar name", "date", "fiscal week start", "fiscal week end", "fiscal day", "fiscal week", "fiscal year", "fiscal year start", "fiscal year end", "fiscal day of week")' + 
+               ' values (\'NYC\', \'2015-01-05\', \'2015-01-05\', \'2015-01-09\', 1, 1, 2015, \'2015-01-01\', \'2015-12-31\', 1);', $connection);
+   executeInDb('insert into calendar ("calendar name", "date", "fiscal week start", "fiscal week end", "fiscal day", "fiscal week", "fiscal year", "fiscal year start", "fiscal year end", "fiscal day of week")' + 
+               ' values (\'NYC\', \'2015-01-06\', \'2015-01-05\', \'2015-01-09\', 2, 1, 2015, \'2015-01-01\', \'2015-12-31\', 1);', $connection);
+   executeInDb('insert into calendar ("calendar name", "date", "fiscal week start", "fiscal week end", "fiscal day", "fiscal week", "fiscal year", "fiscal year start", "fiscal year end", "fiscal day of week")' + 
+               ' values (\'NYC\', \'2015-02-01\', \'2015-02-02\', \'2015-02-06\', 21, 6, 2015, \'2015-01-01\', \'2015-12-31\', 1);', $connection);
+   executeInDb('insert into calendar ("calendar name", "date", "fiscal week start", "fiscal week end", "fiscal day", "fiscal week", "fiscal year", "fiscal year start", "fiscal year end", "fiscal day of week")' + 
+               ' values (\'NYC\', \'2015-02-07\', \'2015-02-09\', \'2015-02-13\', 26, 7, 2015, \'2015-01-01\', \'2015-12-31\', 2);', $connection);
+   executeInDb('insert into calendar ("calendar name", "date", "fiscal week start", "fiscal week end", "fiscal day", "fiscal week", "fiscal year", "fiscal year start", "fiscal year end", "fiscal day of week")' + 
+               ' values (\'NYC\', \'2015-02-08\', \'2015-02-09\', \'2015-02-13\', 26, 7, 2015, \'2015-01-01\', \'2015-12-31\', 2);', $connection);
+   executeInDb('insert into calendar ("calendar name", "date", "fiscal week start", "fiscal week end", "fiscal day", "fiscal week", "fiscal year", "fiscal year start", "fiscal year end", "fiscal day of week")' + 
+               ' values (\'NYC\', \'2015-02-24\', \'2015-02-23\', \'2015-02-27\', 36, 9, 2015, \'2015-01-01\', \'2015-12-31\', 3);', $connection);               
+   executeInDb('insert into calendar ("calendar name", "date", "fiscal week start", "fiscal week end", "fiscal day", "fiscal week", "fiscal year", "fiscal year start", "fiscal year end", "fiscal day of week")' + 
+               ' values (\'NYC\', \'2015-02-25\', \'2015-02-23\', \'2015-02-27\', 37, 9, 2015, \'2015-01-01\', \'2015-12-31\', 3);', $connection);            
    
 
    true;
@@ -469,6 +469,7 @@ Class meta::relational::tests::groupBy::datePeriods::domain::IncomeFunction
 {
    code:Integer[1];
    name:String[1];
+   incomeYear: Integer[1];
 }
 
 Class meta::relational::tests::groupBy::datePeriods::domain::Division
@@ -504,6 +505,7 @@ Class meta::relational::tests::groupBy::datePeriods::domain::FiscalCalendarDate
    
    yearStart: Date[1];
    yearEnd: Date[1];
+   fiscalYear: FiscalYear[1];
    
    isYtdAsFloat(reportEndDate: FiscalCalendarDate[1])
    {
@@ -541,6 +543,11 @@ Class meta::relational::tests::groupBy::datePeriods::domain::FiscalCalendarDate
    
 }
 
+Class meta::relational::tests::groupBy::datePeriods::domain::FiscalYear
+{
+  value: Integer[1];
+}
+
 ###Relational
 
 Database meta::relational::tests::groupBy::datePeriods::store::myDB
@@ -555,7 +562,7 @@ Database meta::relational::tests::groupBy::datePeriods::store::myDB
                   "fiscal day name"  VARCHAR(16), "fiscal month name"  VARCHAR(16), "fiscal year display"  VARCHAR(8), "fiscal quarter display"  VARCHAR(2), "fiscal month display"  VARCHAR(8), "fiscal week display"  VARCHAR(2), "fiscal day display"  VARCHAR(3), 
                   "is holiday"  VARCHAR(1), "name of day"  VARCHAR(9), "calendar name"  VARCHAR(15) PRIMARY KEY, "region"  VARCHAR(15))
                   
-    Table INCOME_FUNCTION(code INTEGER PRIMARY KEY, name VARCHAR(30))
+    Table INCOME_FUNCTION(code INTEGER PRIMARY KEY, name VARCHAR(30), year INTEGER)
     
     Table SALES_GCS(key INTEGER PRIMARY KEY, if_code INTEGER, division_id INTEGER, credits DOUBLE, tradeDate DATE)
     
@@ -588,7 +595,11 @@ Mapping meta::relational::tests::groupBy::datePeriods::mapping::myMapping
           week: "fiscal week",
           dayOfWeekNumber: "fiscal day of week",
           yearEnd: "fiscal year end",
-          yearStart: "fiscal year start"
+          yearStart: "fiscal year start",
+          fiscalYear
+          (
+            value: "fiscal year"
+          )
           
        )
     }
@@ -598,7 +609,8 @@ Mapping meta::relational::tests::groupBy::datePeriods::mapping::myMapping
        scope([myDB]INCOME_FUNCTION)
        (
           code: code,
-          name: name
+          name: name,
+          incomeYear: year
        ),
        salesCredits: [myDB]@SALES_GC_TO_IF
     }

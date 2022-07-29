@@ -421,7 +421,7 @@ function meta::relational::functions::sqlQueryToString::convertPlaceHolderToSQLS
 function meta::relational::functions::sqlQueryToString::processPlaceHolder(v:VarPlaceHolder[1], type:Type[1], prefix:String[1], suffix:String[1], dbTimeZone:String[0..1]): String[1]
 {
    let noPropertyPath              = $v.propertyPath->isEmpty();
-   let placeHolderWithPath         = $v.name+if($noPropertyPath,|'',|'[\"')+$v.propertyPath->map(p|$p.name)->joinStrings('.')+if($noPropertyPath,|'',|'\"]');
+   let placeHolderWithPath         = $v.name+if($noPropertyPath,|'',|'.')+$v.propertyPath->map(p|$p.name)->joinStrings('.');
    let resolvedPlaceHolder         = if($type == String,
                                            | $placeHolderWithPath->convertStringToSQLString(),
                                            | $placeHolderWithPath);

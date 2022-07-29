@@ -251,6 +251,18 @@ public class TestServiceRunner
     }
 
     @Test
+    public void testSimpleServiceWithMultiplePureExpressionsHavingPropertyWithPath()
+    {
+        SimpleServiceWithMultiplePureExpressions simpleServiceWithMultiplePureExpressions = new SimpleServiceWithMultiplePureExpressions();
+        ServiceRunnerInput serviceRunnerInput = ServiceRunnerInput
+                .newInstance()
+                .withSerializationFormat(SerializationFormat.PURE);
+
+        String result = simpleServiceWithMultiplePureExpressions.run(serviceRunnerInput);
+        Assert.assertEquals("{\"firstName\":\"Peter\",\"lastName\":\"Smith\"}",result);
+    }
+
+    @Test
     public void testSimpleRelationalServiceExecution()
     {
         RelationalExecutionConfiguration relationalExecutionConfiguration = RelationalExecutionConfiguration.newInstance()
@@ -508,6 +520,22 @@ public class TestServiceRunner
         SimpleRelationalServiceWithUserRunner()
         {
             super("test::Service", buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/simpleRelationalService.pure", "test::fetchWithUserId"), true);
+        }
+
+        @Override
+        public void run(ServiceRunnerInput serviceRunnerInput, OutputStream outputStream)
+        {
+            newExecutionBuilder()
+                    .withServiceRunnerInput(serviceRunnerInput)
+                    .executeToStream(outputStream);
+        }
+    }
+
+    private static class SimpleServiceWithMultiplePureExpressions extends AbstractServicePlanExecutor
+    {
+        SimpleServiceWithMultiplePureExpressions()
+        {
+            super("test::Service", buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/simpleRelationalService.pure", "test::testMultiExpressionQueryWithPropertyPath"), true);
         }
 
         @Override
