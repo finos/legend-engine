@@ -1,0 +1,243 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::executionPlan::engine::java::*;
+import meta::java::metamodel::*;
+import meta::external::language::java::metamodel::*;
+import meta::external::language::java::metamodel::project::*;
+import meta::external::language::java::transform::*;
+import meta::pure::mapping::*;
+import meta::pure::graphFetch::routing::*;
+import meta::pure::graphFetch::*;
+import meta::pure::tds::schema::*;
+import meta::pure::executionPlan::*;
+import meta::pure::router::routing::*;
+import meta::pure::store::*;
+import meta::pure::runtime::*;
+import meta::pure::extension::*;
+import meta::pure::router::clustering::*;
+import meta::pure::store::*;
+import meta::pure::graphFetch::executionPlan::*;
+
+
+// Store Extension --------------------------------------------------------------------------
+function meta::pure::extension::storeContractForSetImplementation(extensions: Extension[*], s:InstanceSetImplementation[1]):StoreContract[1]
+{
+  $extensions.availableStores
+    ->removeDuplicates(x|$x.id,{a,b|$a==$b})
+    ->filter(sc|$sc.supportsSetImplementation->eval($s))
+    ->unique(|'for the setImplementation ' + $s->class().name->toOne() + '. For the extensions: [' + $extensions.type->joinStrings(',') + ']');
+}
+
+function meta::pure::extension::_storeContractForSetImplementation(extensions: Extension[*], setImpl:SetImplementation[1]):StoreContract[1]
+{
+  $setImpl->match([
+        i: InstanceSetImplementation[1]|
+            $extensions->meta::pure::extension::storeContractForSetImplementation($i->toOne()),
+        o: meta::pure::mapping::OperationSetImplementation[1]|
+            let roots = $o->resolveInstanceSetImplementations($extensions);
+            $roots->map(r|$extensions->meta::pure::extension::storeContractForSetImplementation($r))->removeDuplicates(x|$x.id, {a,b|$a==$b})->toOne();
+    ]
+  );
+}
+  
+function meta::pure::extension::storeContractFromStore(extensions: Extension[*], s: Store[1]):StoreContract[1]
+{
+  $extensions.availableStores
+    ->removeDuplicates(x|$x.id,{a,b|$a==$b})
+    ->filter(sc|$sc.supportsStore->eval($s))
+    ->unique(|'for the store ' + $s->class().name->toOne() + '. For the extensions: [' + $extensions.type->joinStrings(',') + ']');
+}
+
+function <<access.private>> meta::pure::extension::unique(storeContracts:StoreContract[*], message:Function<{->String[1]}>[1]):meta::pure::store::StoreContract[1]
+{
+  let list = $storeContracts->removeDuplicates(x|$x.id,{a,b|$a==$b});
+  assert($list->isNotEmpty(), |'The system can\'t find the appropriate StoreContract '+$message->eval());
+  assert($list->size() == 1, |'The system found too many StoreContracts ['+$list.id->joinStrings(',')+'] '+$message->eval());
+  $list->toOne();  
+}
+// -------------------------------------------------------------------------- Store Extension
+
+
+
+
+
+
+
+
+function meta::pure::extension::defaultExtensions():Extension[*]
+{
+  ^Extension
+  (
+    type = 'defaultExtensions',    
+    availableStores = [
+                          meta::pure::store::platform::contract::platformStoreContract(),
+                          meta::pure::mapping::modelToModel::contract::modelStoreContract(),
+                          meta::pure::mapping::aggregationAware::contract::aggregationAwareStoreContract()
+                      ]                          
+  )
+}
+
+
+###Diagram
+Diagram meta::pure::extension::Diagram(width=0.0, height=0.0)
+{
+    TypeView cview_2(
+        type=meta::pure::extension::FeatureExtension,
+        position=(1682.00000, 779.00000),
+        width=120.69336,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_7(
+        type=meta::pure::router::extension::RouterExtension,
+        position=(1579.00000, 667.00000),
+        width=216.80762,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_8(
+        type=meta::pure::executionPlan::extension::ExecutionPlanExtension,
+        position=(1769.00000, 564.00000),
+        width=229.99902,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_6(
+        type=meta::pure::store::StoreContract,
+        position=(1690.76657, 297.82421),
+        width=293.21680,
+        height=212.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_5(
+        type=meta::pure::executionPlan::extension::ExecutionPlanExtension,
+        position=(1834.19455, 163.05950),
+        width=229.99902,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_4(
+        type=meta::pure::router::extension::RouterExtension,
+        position=(1596.86309, 133.79265),
+        width=216.80762,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_1(
+        type=meta::pure::extension::Extension,
+        position=(770.00000, 174.00000),
+        width=646.98926,
+        height=744.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    GeneralizationView gview_0(
+        source=cview_6,
+        target=cview_4,
+        points=[(1837.37497,403.82421),(1705.26690,169.79265)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_1(
+        source=cview_6,
+        target=cview_5,
+        points=[(1837.37497,403.82421),(1949.19406,199.05950)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_2(
+        source=cview_2,
+        target=cview_7,
+        points=[(1742.34668,801.00000),(1687.40381,703.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_3(
+        source=cview_2,
+        target=cview_8,
+        points=[(1742.34668,801.00000),(1849.00000,714.00000),(1883.99951,600.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_0(
+        property=meta::pure::extension::Extension.availableFeatures,
+        source=cview_1,
+        target=cview_2
+,        points=[(1366.00000,802.00000),(1742.34668,801.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_1(
+        property=meta::pure::extension::Extension.availableStores,
+        source=cview_1,
+        target=cview_6
+,        points=[(1364.61840,409.39914),(1691.76657,407.82421)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+}

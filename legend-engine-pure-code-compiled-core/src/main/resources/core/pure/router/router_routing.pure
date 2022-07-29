@@ -12,20 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::controlevent::autoactionrule::*;
-import meta::pure::store::*;
-import meta::pure::graphFetch::routing::*;
-import meta::pure::graphFetch::*;
-import meta::pure::dataQuality::*;
-import meta::pure::functions::math::olap::*;
 import meta::pure::metamodel::path::*;
 import meta::pure::metamodel::serialization::grammar::*;
+import meta::pure::store::*;
+import meta::pure::mapping::*;
+import meta::pure::mapping::aggregationAware::*;
 import meta::pure::runtime::*;
 import meta::pure::router::printer::*;
 import meta::pure::router::routing::*;
 import meta::pure::router::operations::*;
-import meta::pure::mapping::*;
-import meta::pure::mapping::aggregationAware::*;
+import meta::pure::graphFetch::routing::*;
+import meta::pure::graphFetch::*;
+
+// To Remove ------------------------------------------
+import meta::pure::functions::math::olap::*;
+// import meta::controlevent::autoactionrule::*;
+import meta::pure::dataQuality::*;
+// ------------------------------------------ To Remove
 
 
 Class meta::pure::graphFetch::routing::RoutedGraphFetchTree extends GraphFetchTree
@@ -611,8 +614,9 @@ function meta::pure::router::routing::shouldStop(f:Function<Any>[1], extensions:
       meta::pure::graphFetch::execution::serialize_Checked_MANY__RootGraphFetchTree_1__AlloySerializationConfig_1__String_1_,
       meta::pure::functions::math::percentile_Number_MANY__Float_1__Number_$0_1$_,
       meta::pure::functions::math::percentile_Number_MANY__Float_1__Boolean_1__Boolean_1__Number_$0_1$_,
-      meta::pure::functions::collection::isDistinct_T_MANY__Boolean_1_ 
-    ]->concatenate($extensions.routing_extraShouldStop)->contains($f);
+      meta::pure::functions::collection::isDistinct_T_MANY__Boolean_1_,
+      meta::json::toJSON_T_MANY__LambdaFunction_MANY__String_1_
+    ]->concatenate($extensions.routerExtensions().shouldStopRouting)->contains($f);
 }
 
 
@@ -804,7 +808,7 @@ function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(
 {
    print(if($debug.debug,|$debug.space+if($f->instanceOf(NativeFunction),|'NativeFunction',|'FunctionDefinition')+' : '+$f->asString()+'\n',|''));
    
-   let res = $extensions.routing_routeFunctionExpressionFunctionDefinition->filter(e|$e.first->eval($fe));
+   let res = $extensions.routerExtensions().routeFunctionExpressions->filter(e|$e.first->eval($fe));
    assert($res->size() <= 1, |'Only one match is authorized');
    
    if (!$res->isEmpty(),

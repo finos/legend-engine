@@ -4,13 +4,18 @@ import meta::pure::extension::*;
 import meta::pure::mapping::modelToModel::*;
 import meta::pure::store::*;
 import meta::pure::runtime::*;
+import meta::pure::executionPlan::*;
 
-Class meta::pure::store::StoreContract
+Class meta::pure::store::StoreContract extends meta::pure::router::extension::RouterExtension, meta::pure::executionPlan::extension::ExecutionPlanExtension
 {
   id : String[1];
 
+  // Routing ------------------------------------------------------------------------------------------
   supports : Function<{FunctionExpression[1]->Boolean[1]}>[0..1];
+  supportsNativeJoinAmongElements : Boolean[1];
+  // ------------------------------------------------------------------------------------------ Routing
 
+  // ExecutionPlan ------------------------------------------------------------------------------------
   supportsStreamFunction : Function<{FunctionExpression[1]->Boolean[1]}>[0..1];
   supportsStream(){
       if($this.supportsStreamFunction->isNotEmpty(),
@@ -19,14 +24,19 @@ Class meta::pure::store::StoreContract
       );
     } : Function<{FunctionExpression[1]->Boolean[1]}>[1];
 
-  executeStoreQuery : Function<{StoreQuery[1], RoutedValueSpecification[0..1], Mapping[1], Runtime[1], ExecutionContext[1], Extension[*], DebugContext[1] -> Result<Any|*>[1]}>[0..1];
-
   planExecution : Function<{StoreQuery[1], RoutedValueSpecification[0..1], Mapping[0..1], Runtime[0..1], ExecutionContext[1], Extension[*], DebugContext[1]->meta::pure::executionPlan::ExecutionNode[1]}>[0..1];
+  // ------------------------------------------------------------------------------------ ExecutionPlan 
 
-  localGetterOverrideMapped : Function<{Any[1], PropertyMapping[1] -> Any[*]}>[0..1];
+   // Core ---------------------------------------------------------------------------------------------
+  supportsSetImplementation : Function<{InstanceSetImplementation[1]->Boolean[1]}>[1];
+  supportsStore : Function<{Store[1]->Boolean[1]}>[1];
+  resolveStoreFromSetImplementation : Function<{InstanceSetImplementation[1]->Store[1]}>[0..1];
+  // --------------------------------------------------------------------------------------------- Core 
 
-  localGetterOverrideNonMapped : Function<{Any[1], Property<Nil,Any|*>[1] -> Any[*]}>[0..1];
-
-
-  supportsSetImplementation : Function<{SetImplementation[1]->Boolean[1]}>[1];
+  // Execution -- Deprecated as Pure should not execute anymore and generate plans for Engine to execute
+  <<doc.deprecated>> executeStoreQuery : Function<{StoreQuery[1], RoutedValueSpecification[0..1], Mapping[1], Runtime[1], ExecutionContext[1], Extension[*], DebugContext[1] -> Result<Any|*>[1]}>[0..1];
+  <<doc.deprecated>> localGetterOverrideMapped : Function<{Any[1], PropertyMapping[1] -> Any[*]}>[0..1];
+  <<doc.deprecated>> localGetterOverrideNonMapped : Function<{Any[1], Property<Nil,Any|*>[1] -> Any[*]}>[0..1];
+  <<doc.deprecated>> instance_equals : Function<{Any[1], Any[1] -> Boolean[1]}>[0..1];
+  // ----------------------------------------------------------------------------------------- Execution
 }

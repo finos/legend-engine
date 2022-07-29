@@ -15,9 +15,9 @@
 import meta::pure::store::*;
 import meta::pure::extension::*;
 import meta::pure::metamodel::serialization::grammar::*;
+import meta::pure::metamodel::path::*;
 import meta::pure::mapping::*;
 import meta::pure::runtime::*;
-import meta::pure::metamodel::path::*;
 import meta::pure::router::printer::*;
 import meta::pure::router::clustering::*;
 import meta::pure::router::execution::*;

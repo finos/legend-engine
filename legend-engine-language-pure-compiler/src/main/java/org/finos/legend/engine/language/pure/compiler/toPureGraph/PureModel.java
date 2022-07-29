@@ -1144,6 +1144,19 @@ public class PureModel implements IPureModel
         return this.immutables.contains(s);
     }
 
+    protected String buildNameForAppliedFunction(String functionName)
+    {
+        if (pureModelProcessParameter.packagePrefix != null
+                && !isImmutable(functionName)
+                && !functionName.startsWith("meta::")
+                && !functionName.startsWith(pureModelProcessParameter.packagePrefix)
+                && functionName.contains("::"))
+        {
+            return pureModelProcessParameter.packagePrefix + functionName;
+        }
+        return functionName;
+    }
+
     private String packagePrefix(String packageName)
     {
         if (pureModelProcessParameter.packagePrefix != null
