@@ -13,9 +13,24 @@
 // limitations under the License.
 
 import meta::protocols::pure::vX_X_X::metamodel::executionPlan::*;
+import meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::*;
 import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::external::shared::format::*;
 import meta::pure::mapping::*;
 import meta::pure::extension::*;
+
+Class meta::protocols::pure::vX_X_X::metamodel::external::shared::format::executionPlan::ExternalFormatExternalizeExecutionNode extends ExecutionNode
+{
+   contentType : String[1];
+   checked     : Boolean[1];
+   binding     : String[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::external::shared::format::executionPlan::ExternalFormatInternalizeExecutionNode extends ExecutionNode
+{
+   contentType : String[1];
+   binding     : String[1];
+   tree        : RootGraphFetchTree[0..1];
+}
 
 Class meta::protocols::pure::vX_X_X::metamodel::external::shared::format::executionPlan::ExternalFormatSerializeExecutionNode extends ExecutionNode
 {
