@@ -25,16 +25,23 @@ public class CredentialSupplier
     private final DatabaseAuthenticationFlow databaseAuthenticationFlow;
     private final DatasourceSpecification datasourceSpecification;
     private final AuthenticationStrategy authenticationStrategy;
+    private DatabaseAuthenticationFlow.RuntimeContext runtimeContext;
 
-    public CredentialSupplier(DatabaseAuthenticationFlow databaseAuthenticationFlow, DatasourceSpecification datasourceSpecification, AuthenticationStrategy authenticationStrategy)
+    public CredentialSupplier(DatabaseAuthenticationFlow databaseAuthenticationFlow, DatasourceSpecification datasourceSpecification, AuthenticationStrategy authenticationStrategy, DatabaseAuthenticationFlow.RuntimeContext runtimeContext)
     {
         this.databaseAuthenticationFlow = databaseAuthenticationFlow;
         this.datasourceSpecification = datasourceSpecification;
         this.authenticationStrategy = authenticationStrategy;
+        this.runtimeContext = runtimeContext;
+    }
+
+    public CredentialSupplier(DatabaseAuthenticationFlow databaseAuthenticationFlow, DatasourceSpecification datasourceSpecification, AuthenticationStrategy authenticationStrategy)
+    {
+        this(databaseAuthenticationFlow, datasourceSpecification, authenticationStrategy, DatabaseAuthenticationFlow.RuntimeContext.empty());
     }
 
     public Credential getCredential(Identity identity) throws Exception
     {
-        return this.databaseAuthenticationFlow.makeCredential(identity, this.datasourceSpecification, this.authenticationStrategy);
+        return this.databaseAuthenticationFlow.makeCredential(identity, this.datasourceSpecification, this.authenticationStrategy, this.runtimeContext);
     }
 }
