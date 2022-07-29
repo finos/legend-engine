@@ -65,7 +65,11 @@ public class TestConnectionBuilder implements ConnectionVisitor<Pair<Connection,
                 .select(Optional::isPresent)
                 .collect(Optional::get)
                 .getFirstOptional()
-                .orElseThrow(() -> new UnsupportedOperationException("Unsupported embedded data type '" + embeddedData.getClass().getSimpleName() + "\" with connection type '" + connection.getClass().getSimpleName() + '"'));
+                .orElseThrow(() -> new UnsupportedOperationException(
+                    this.embeddedData != null ?
+                    "Unsupported embedded data type '" + (embeddedData.getClass().getSimpleName()) + "\" with connection type '" + connection.getClass().getSimpleName() + '"' :
+                        "Empty embedded data is not supported for connection type '" + connection.getClass().getSimpleName() + "'"
+                ));
     }
 
     @Override
