@@ -82,9 +82,9 @@ public class TestGrammarParser
             }
         }
 
-        protected static void test(String val)
+        protected static PureModelContextData test(String val)
         {
-            PureGrammarParser.newInstance().parseModel(val);
+            return PureGrammarParser.newInstance().parseModel(val);
         }
 
         protected static void test(String val, String expectedErrorMsg)
