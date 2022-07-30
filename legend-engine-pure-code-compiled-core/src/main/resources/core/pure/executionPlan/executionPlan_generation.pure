@@ -129,8 +129,10 @@ function meta::pure::executionPlan::executionPlan(clusters:ClusteredValueSpecifi
    );
 
    let executionOptionParameters = $context->match([
-                                             p: meta::pure::executionPlan::ExecutionOptionContext[1] | $p->meta::pure::executionPlan::stubExecutionOptionParameters($extensions),
-                                             c: ExecutionContext[1] | [] ]);
+                                                p: meta::pure::executionPlan::ExecutionOptionContext[1] | $p->meta::pure::executionPlan::stubExecutionOptionParameters($extensions),
+                                                c: ExecutionContext[1] | []
+                                             ]);
+
    let updatedNode = addFunctionParametersValidationNode($node, $f, $functionParameters->concatenate($executionOptionParameters)->checkConflictingParameters(), $routedFunction);
 
    ^ExecutionPlan
@@ -248,7 +250,7 @@ function meta::pure::executionPlan::plan(cluster:ClusteredValueSpecification[1],
             //This is required tp populate the setup sql for test connections where csv data has been supplied. It is done here to ensure that the plan generation is always
             //the only place where sql is generated for this case.
             let rt = $cluster.runtime->match([
-               r:Runtime[1] | ^$r(connections = $r.connections->map(c | preprocessClusterConnection($c, $extensions))),
+               r:Runtime[1] | ^$r(connections = $r.connections->map(c | if ($cluster.s.reprocessConnection->isEmpty(),|$c,|$cluster.s.reprocessConnection->toOne()->eval($c)))),
                r:Runtime[0..1] | $r
             ]);
 
@@ -265,14 +267,15 @@ function meta::pure::executionPlan::nodeFromConnection(c:Connection[1], tree:Roo
 
 function meta::pure::executionPlan::nodeFromConnection(c:Connection[1], tree:RootGraphFetchTree<Any>[0..1], enableConstraints:Boolean[1], checked:Boolean[1], extensions:meta::pure::extension::Extension[*], dflt:Function<{Nil[1]->ExecutionNode[1]}>[*]):ExecutionNode[1]
 {
-   $c->match($extensions.executionPlan_generation_nodeFromConnection->map(x| $x->eval($tree, $enableConstraints, $checked))->concatenate($dflt)->toOneMany())->toOne();
-}
-
-function meta::pure::executionPlan::preprocessClusterConnection(c:Connection[1], extensions:meta::pure::extension::Extension[*]):Connection[1]
-{
-   $c->match($extensions.executionPlan_generation_preprocessClusterConnection->concatenate([
-               c:Connection[1] | $c
-            ])->toOneMany());
+   $c->match([
+               {x:meta::external::shared::format::executionPlan::ExternalFormatConnection[1] | 
+                  let binding         = $x.element->cast(@meta::external::shared::format::binding::Binding);
+                  let formatExtension = $extensions.availableExternalFormats->meta::external::shared::format::getExtensionForContentType($binding.contentType);
+                  let sourceNode      = meta::external::shared::format::executionPlan::getSourceNodeFromExternalSource($x.externalSource);
+                  let deserializeNode = $formatExtension.generateDeserializeNode->eval($x, $sourceNode, $tree);
+                  meta::external::shared::format::executionPlan::generateDataQualityNode($deserializeNode, $enableConstraints, $checked);
+               }
+            ]->concatenate($dflt)->toOneMany())->toOne();
 }
 
 function meta::pure::executionPlan::isExecutionOptionPresent(execCtx: ExecutionOptionContext[1], execOption: Class<Any>[1]):Boolean[1]
@@ -284,7 +287,9 @@ function meta::pure::executionPlan::isExecutionOptionPresent(execCtx: ExecutionO
 
 function meta::pure::executionPlan::stubExecutionOptionParameters(execOptionCtx: ExecutionOptionContext[1], extensions: meta::pure::extension::Extension[*]):PlanVarPlaceHolder[*]
 {
-   let planVarPlaceHolders = $execOptionCtx.executionOptions->map(x| $x->match($extensions.executionPlan_generation_executionOptionParameters->toOneMany()));
+   let planVarPlaceHolders = $extensions.executionPlanExtensions()->map(
+      sc|$sc.extractVariablesFromExecutionOption->map(f|$execOptionCtx.executionOptions->map(x|$f->eval($x)));
+   );
    $planVarPlaceHolders->checkConflictingParameters();
 }
 

@@ -66,6 +66,35 @@ function meta::relational::contract::relationalStoreContract():StoreContract[1]
             }
       ),
      supportsNativeJoinAmongElements = true,
+     reprocessConnection = {connection:Connection[1] |
+                              $connection->match(
+                                  [
+                                    t:meta::relational::runtime::TestDatabaseConnection[1] |
+                                          ^$t(testDataSetupSqls = if ($t.testDataSetupCsv->isEmpty() || !$t.element->instanceOf(meta::relational::metamodel::Database),
+                                                            | [];,
+                                                            | if ($t.testDataSetupSqls->isEmpty(),
+                                                                  | $t.testDataSetupCsv->toOne()->meta::alloy::service::execution::setUpDataSQLs($t.element->cast(@meta::relational::metamodel::Database)),
+                                                                  | $t.testDataSetupSqls))),
+                                    r:meta::pure::alloy::connections::RelationalDatabaseConnection[1] |
+                                          ^$r(
+                                            datasourceSpecification = $r.datasourceSpecification->match([
+                                                l:meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification[1] |
+                                                  ^$l
+                                                  (
+                                                        testDataSetupSqls =
+                                                            $l.testDataSetupSqls->concatenate(
+                                                                if ($l.testDataSetupCsv->isEmpty() || !$r.element->instanceOf(meta::relational::metamodel::Database),
+                                                                    | [];,
+                                                                    | $l.testDataSetupCsv->toOne()->meta::alloy::service::execution::setUpDataSQLs($r.element->cast(@meta::relational::metamodel::Database))
+                                                                )
+                                                            )
+                                                  ),
+                                                d:meta::pure::alloy::connections::alloy::specification::DatasourceSpecification[1] | $d
+                                            ])
+                                          ),
+                                    c:Connection[1] | $c
+                                ]);
+                           },
 
      printPlanNodeToString = {space : String[1], extensions:meta::pure::extension::Extension[*]|
                                        [

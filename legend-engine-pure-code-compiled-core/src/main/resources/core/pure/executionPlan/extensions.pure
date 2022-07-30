@@ -1,6 +1,7 @@
 import meta::pure::executionPlan::*;
 import meta::pure::runtime::*;
 import meta::pure::extension::*;
+import meta::pure::mapping::*;
 
 Class meta::pure::executionPlan::extension::ExecutionPlanExtension
 {
@@ -9,4 +10,9 @@ Class meta::pure::executionPlan::extension::ExecutionPlanExtension
   printConnectionToString: Function<{Extension[*] -> Function<{Nil[1] -> String[1]}>[*]}>[0..1];
   printTypeToString : Function<{String[1], Extension[*] -> Function<{Nil[1] -> String[1]}>[*]}>[0..1];
   // --------------------------------------------------------------------------- Execution Node - Print
+
+  reprocessConnection : Function<{Connection[1]->Connection[1]}>[0..1];
+  planExecution : Function<{StoreQuery[1], RoutedValueSpecification[0..1], Mapping[0..1], Runtime[0..1], ExecutionContext[1], Extension[*], DebugContext[1]->meta::pure::executionPlan::ExecutionNode[1]}>[0..1];
+  extractVariablesFromExecutionOption : Function<{ExecutionOption[1]->PlanVarPlaceHolder[*]}>[0..1];
+  crossStoreSourceSupportsBatching : Function<{InstanceSetImplementation[1], AbstractProperty<Any>[*], Map<String, String>[1] -> Boolean[1]}>[0..1];
 }

@@ -60,12 +60,6 @@ function <<access.private>> meta::external::store::service::extension::serviceSt
       type = $type,
       availableStores = [meta::external::store::service::contract::serviceStoreStoreContract()],
       serializerExtension =  meta::external::store::service::extension::serviceStoreSerializerExtension_String_1__String_1_,
-      executionPlan_generation_sourceSupportsBatching = {sets:SetImplementation[*], inScopeVars:Map<String, List<Any>>[1] |
-                                                                                         {rsi:RootServiceInstanceSetImplementation[1] |
-                                                                                              let paramMap = $sets->resolveParamMapForChainProcessing($inScopeVars, noDebug());
-                                                                                              let xStorePropInScope = $inScopeVars->keyValues()->filter(kv | $kv.second.values->size() == 1 && $kv.second.values->toOne()->instanceOf(AbstractProperty)).second.values->cast(@AbstractProperty<Any>);
-                                                                                              $xStorePropInScope->map(targetProp | $targetProp->resolveSourcePropertyFromTargetProperty($sets->cast(@meta::pure::mapping::modelToModel::PureInstanceSetImplementation)))->querySupportsBatching($paramMap, $rsi);}},
-
       graphExtension_calculateSourceTree = {tree:RootGraphFetchTree<Any>[1] |
          {rsi: RootServiceInstanceSetImplementation[1] |
             $tree;
@@ -133,11 +127,6 @@ function <<access.private>> meta::external::store::service::extension::serviceSt
          spm : ServiceStorePropertyMapping[1] |  [],
          epm : EmbeddedServiceStoreSetImplementation[1] | []
       ],
-      mapping_sourceClass =
-            [
-              s: RootServiceInstanceSetImplementation[1]  | $s.class,
-              e: EmbeddedServiceStoreSetImplementation[1] | $e.class
-            ],
       plan_javaRuntime_main_generatePlatformCode1 =
             {path:String[1], context:GenerationContext[1], extensions:Extension[*], debug:DebugContext[1] |
                [

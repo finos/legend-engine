@@ -52,7 +52,19 @@ function meta::external::store::service::contract::serviceStoreStoreContract():S
                                           s:RestServiceExecutionNode[1] | meta::external::store::service::executionPlan::toString::serviceStoreExecutionNodeToString($s, $space, $extensions);,
                                           sp:ServiceParametersResolutionExecutionNode[1] | meta::external::store::service::executionPlan::toString::serviceParametersResolutionExecutionNodeToString($sp, $space, $extensions);,
                                           l:LimitExecutionNode[1] | meta::external::store::service::executionPlan::toString::limitExecutionNodeToString($l, $space, $extensions);
-                                       ]}
+                                       ]},
+    extractSourceClassFromSetImplementation =
+            [
+              s: RootServiceInstanceSetImplementation[1]  | $s.class,
+              e: EmbeddedServiceStoreSetImplementation[1] | $e.class
+            ],
+    crossStoreSourceSupportsBatching = {
+        set:InstanceSetImplementation[1], xProperties:AbstractProperty<Any>[*], params : Map<String, String>[1] |
+          if ($set->instanceOf(RootServiceInstanceSetImplementation),
+            | $xProperties->meta::external::store::service::executionPlan::generation::querySupportsBatching($params, $set->cast(@RootServiceInstanceSetImplementation)),
+            | false
+          )
+    }
    )
 }
 

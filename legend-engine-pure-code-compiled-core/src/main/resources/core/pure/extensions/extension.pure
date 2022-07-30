@@ -28,6 +28,7 @@ import meta::pure::mapping::*;
 import meta::pure::runtime::*;
 import meta::pure::store::*;
 import meta::pure::extension::*;
+import meta::external::shared::format::*;
 
 Class meta::pure::extension::Extension
 {
@@ -41,6 +42,11 @@ Class meta::pure::extension::Extension
   availableFeatures : FeatureExtension[*];
   // ------------------------------------------------------------------------ Feature Extension 
   
+  // External Format Extension ----------------------------------------------------------------
+  availableExternalFormats : ExternalFormatExtension[*];
+  // ---------------------------------------------------------------- External Format Extension
+  
+
   routerExtensions() 
   {
     $this.availableStores->concatenate($this.availableFeatures)->cast(@meta::pure::router::extension::RouterExtension)
@@ -51,70 +57,56 @@ Class meta::pure::extension::Extension
     $this.availableStores->concatenate($this.availableFeatures)->cast(@meta::pure::executionPlan::extension::ExecutionPlanExtension)
   } : meta::pure::executionPlan::extension::ExecutionPlanExtension[*];
 
-
-
   
-
-  runtime_connectionEquality : Function<{Connection[1] -> Function<{Nil[1]->Boolean[1]}>[*]}>[0..1];
-
-
-  graphExtension_calculateSourceTree : Function<{RootGraphFetchTree<Any>[1] -> Function<{Nil[1]->RootGraphFetchTree<Any>[1]}>[1]}>[0..1];
-
+  // BuildPlan
   graphFetch_executionPlan_planGraphFetchExecution : Function<{StoreQuery[1], RoutedValueSpecification[0..1], ClusteredGraphFetchTree[1], String[*], Mapping[1], Runtime[1], ExecutionContext[1], Boolean[1], Boolean[1], Extension[*], DebugContext[1] -> Function<{Nil[1] -> LocalGraphFetchExecutionNode[1]}>[*]}>[0..1];
   graphFetch_executionPlan_addCrossStoreChildren : Function<{ClusteredGraphFetchTree[1], String[*], String[1], Map<String, List<Any>>[1], Mapping[1], Runtime[1], ExecutionContext[1], Boolean[1], Boolean[1], Extension[*], DebugContext[1] -> Function<{Nil[1]->LocalGraphFetchExecutionNode[1]}>[*]}>[0..1];
   graphFetch_executionPlan_localGraphFetchExecutionNodeToString : Function<{String[1], Extension[*] -> Function<{Nil[1] -> String[1]}>[*]}>[0..1];
-
-  executionPlan_execution_processNode : Function<{Mapping[1], Runtime[1], Pair<VariableExpression, Any>[*], meta::pure::extension::Extension[*] -> Function<{Nil[1] -> Result<Any|*>[1]}>[*]}>[0..1];
-  executionPlan_execution_allNodes : Function<{meta::pure::extension::Extension[*] -> Function<{Nil[1] ->  ExecutionNode[*]}>[*]}>[0..1];
-  executionPlan_execution_buildVariableTemplateString : Function<{String[1], Any[1], meta::pure::metamodel::type::Type[1] -> Function<{Nil[1] ->  String[1]}>[*]}>[0..1];
-
-  executionPlan_generation_preprocessClusterConnection : Function<{Nil[1] -> Connection[1]}>[*];
-  executionPlan_generation_isConnectionForClass : Function<{meta::pure::metamodel::type::Class<Any>[1] -> Function<{Nil[1]->Boolean[1]}>[*]}>[0..1];
-  executionPlan_generation_nodeFromConnection : Function<{RootGraphFetchTree<Any>[0..1], Boolean[1], Boolean[1] -> Function<{Nil[1]->ExecutionNode[1]}>[*]}>[0..1];
-  executionPlan_generation_executionOptionParameters : Function<{Nil[1] -> PlanVarPlaceHolder[*]}>[*];
-  executionPlan_generation_sourceSupportsBatching : Function<{SetImplementation[*], Map<String, List<Any>>[1]-> Function<{Nil[1]->Boolean[1]}>[*]}>[0..1];
+  graphExtension_calculateSourceTree : Function<{RootGraphFetchTree<Any>[1] -> Function<{Nil[1]->RootGraphFetchTree<Any>[1]}>[1]}>[0..1];
 
 
-
-
+  // Bind plan to platform
   java_conventions_defaultProhibitedFunctions : Function<Any>[*];
   java_mappingAdaptor : Function<{Nil[1]->String[1]}>[*];
-
   java_graphFetch_graphFetchCommon_generateCodeForLocalGraphFetchNode : Function<{String[1], GenerationContext[1], Extension[*], DebugContext[1] -> Function<{Nil[1]->Project[1]}>[*]}>[0..1];
   java_graphFetch_graphFetchCommon_updateImplementationClassWithStoreSpecificFieldsAndMethods : Function<{meta::external::language::java::metamodel::Class[1], GenerationContext[1], Extension[*], DebugContext[1] -> Function<{Nil[1]->Project[1]}>[*]}>[0..1];
-
   java_graphFetch_inMemory_applyTypeFilter : Function<{InstanceSetImplementation[1], Code[1], Code[1..*], GenerationContext[1], DebugContext[1]->Function<{Nil[1]->Code[*]}>[*]}>[0..1];
   java_graphFetch_inMemory_generatePropertyMapping1 : Function<{Nil[1]->FunctionDefinition<Any>[1]}>[*];
   java_graphFetch_inMemory_generatePropertyMapping2 : Function<{Nil[1]->ValueTransformer<Any>[1]}>[*];
-
   java_parseObjectReference_getParseObjectReferenceImplClass : Function<{String[1], Any[*], String[1], GenerationContext[1], DebugContext[1]->meta::external::language::java::metamodel::Class[0..1]}>[0..1];
-
   plan_javaRuntime_main_prepare1 : Function<{String[1], GenerationContext[1], Extension[*], DebugContext[1] -> Function<{Nil[1]->GenerationContext[1]}>[*]}>[0..1];
   plan_javaRuntime_main_prepare2 : Function<{String[1], GenerationContext[1], Extension[*], DebugContext[1] -> Function<{Nil[1]->GenerationContext[1]}>[*]}>[0..1];
   plan_javaRuntime_main_generatePlatformCode1 : Function<{String[1], GenerationContext[1], Extension[*], DebugContext[1] -> Function<{Nil[1]->GeneratedCode[1]}>[*]}>[0..1];
   plan_javaRuntime_main_generatePlatformCode2 : Function<{String[1], Mapping[1], GenerationContext[1], Extension[*], Project[0..1], DebugContext[1] -> Function<{Nil[1]->GeneratedNode[1]}>[*]}>[0..1];
+  plan_javaRuntime_mappingAdaptor_addMapOneMethod : Function<{Code[1], Code[1], Conventions[1], DebugContext[1] -> Function<{Nil[1]->Code[1]}>[*]}>[0..1];
+  plan_javaRuntime_common_generateInterfaceForClass : meta::pure::metamodel::type::Class<Any>[*];
+  plan_javaRuntime_mappingAdaptor_generatePropertyMapping1 : Function<{Conventions[1], DebugContext[1] -> Function<{Nil[1]->Code[1]}>[*]}>[0..1];
+  plan_javaRuntime_mappingAdaptor_generatePropertyMapping2 : Function<{Nil[1]->ValueTransformer<Any>[1]}>[*];
+  plan_javaRuntime_enginePlatformDependencies_conventions : Function<{Conventions[1]->Conventions[1]}>[0..1];
    <<doc.deprecated>> plan_javaRuntime_graphFetchStream_getConnectionTree : Function<{Nil[1] -> RootGraphFetchTree<Any>[0..1]}>[*];
    <<doc.deprecated>> plan_javaRuntime_graphFetchStream_sourceTypeFromConnection : Function<{Nil[1] -> meta::pure::metamodel::type::Class<Any>[1]}>[*];
    <<doc.deprecated>> plan_javaRuntime_graphFetchStream_streamReaderMethodCodes : Function<{Conventions[1],Code[1]->Function<{Nil[1] -> Code[1]}>[*]}>[0..1];
 
-  plan_javaRuntime_mappingAdaptor_addMapOneMethod : Function<{Code[1], Code[1], Conventions[1], DebugContext[1] -> Function<{Nil[1]->Code[1]}>[*]}>[0..1];
 
-  plan_javaRuntime_common_generateInterfaceForClass : meta::pure::metamodel::type::Class<Any>[*];
+  // ExecutePlan
+  executionPlan_execution_processNode : Function<{Mapping[1], Runtime[1], Pair<VariableExpression, Any>[*], meta::pure::extension::Extension[*] -> Function<{Nil[1] -> Result<Any|*>[1]}>[*]}>[0..1];
+  executionPlan_execution_allNodes : Function<{meta::pure::extension::Extension[*] -> Function<{Nil[1] ->  ExecutionNode[*]}>[*]}>[0..1];
+  executionPlan_execution_buildVariableTemplateString : Function<{String[1], Any[1], meta::pure::metamodel::type::Type[1] -> Function<{Nil[1] ->  String[1]}>[*]}>[0..1];
 
-  plan_javaRuntime_mappingAdaptor_generatePropertyMapping1 : Function<{Conventions[1], DebugContext[1] -> Function<{Nil[1]->Code[1]}>[*]}>[0..1];
-  plan_javaRuntime_mappingAdaptor_generatePropertyMapping2 : Function<{Nil[1]->ValueTransformer<Any>[1]}>[*];
 
-  plan_javaRuntime_enginePlatformDependencies_conventions : Function<{Conventions[1]->Conventions[1]}>[0..1];
+
+
+
+
   
-  mapping_sourceClass : Function<{Nil[1] -> meta::pure::metamodel::type::Class<Any>[1]}>[*];
-  mapping_extractRelationalPropertyMappingFromEmbedded : Function<{AbstractProperty<Any>[1], SetImplementation[*], Mapping[1] -> String[*]}>[0..1];
+
+
+
+ 
 
   tdsSchema_resolveSchemaImpl : Function<{FunctionExpression[1], Map<String, List<Any>>[1], Extension[*] -> Pair<Function<Any>, Function<{->SchemaState[1]}>>[*]}>[0..1];
-
   testExtension_testedBy : Function<{ReferenceUsage[1], Extension[*] -> Function<{TestedByResult[1]->TestedByResult[1]}>[*]}>[0..1];
-
-  logActivities : Function<{meta::pure::mapping::Activity[*] -> Nil[0]}>[0..1];
-
+  logActivities : Function<{meta::pure::mapping::Activity[*] -> Nil[0]}>[0..1]; // Refactor: Implementation has dependency on RelationalActivity
   validTestPackages : String[*];
 
 
