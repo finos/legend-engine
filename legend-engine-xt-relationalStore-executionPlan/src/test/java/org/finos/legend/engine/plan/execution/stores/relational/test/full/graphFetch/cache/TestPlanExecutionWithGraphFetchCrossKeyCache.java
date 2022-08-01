@@ -18,6 +18,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import org.apache.commons.io.input.ClassLoaderObjectInputStream;
 import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
@@ -61,6 +62,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static org.finos.legend.pure.generated.core_relational_relational_extensions_extension.Root_meta_relational_extension_relationalExtensions__Extension_MANY_;
 
@@ -507,6 +509,58 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache extends AlloyTestServe
             Assert.assertEquals(expectedRes, executePlan(plan, new PlanExecutionContext(firmCache2)));
             assertCacheStats(firmCache2.getExecutionCache(), 3, 5, 5, 0);
         }
+    }
+
+    @Test
+    public void testCacheKeyIdentifiers() throws JavaCompileException
+    {
+        String fetchFunction = "###Pure\n" +
+                "function test::fetch(): String[1]\n" +
+                "{\n" +
+                "  test::Person.all()\n" +
+                "    ->graphFetch(#{\n" +
+                "      test::Person {\n" +
+                "        fullName,\n" +
+                "        firm {\n" +
+                "          name\n" +
+                "        },\n" +
+                "        address {\n" +
+                "          name\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }#, 1)\n" +
+                "    ->serialize(#{\n" +
+                "      test::Person {\n" +
+                "        fullName,\n" +
+                "        firm {\n" +
+                "          name\n" +
+                "        },\n" +
+                "        address {\n" +
+                "          name\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }#)\n" +
+                "}";
+
+        SingleExecutionPlan plan = buildPlanForFetchFunction(fetchFunction);
+
+        Cache<GraphFetchCacheKey, List<Object>> firmGuavaCache = CacheBuilder.newBuilder().recordStats().expireAfterWrite(10, TimeUnit.MINUTES).build();
+        GraphFetchCacheByTargetCrossKeys firmCache = ExecutionCacheBuilder.buildGraphFetchCacheByTargetCrossKeysFromGuavaCache(
+                firmGuavaCache,
+                GraphFetchCrossAssociationKeys.graphFetchCrossAssociationKeysForPlan(plan).stream().filter(x -> x.getName().equals("<default, root.firm>")).findFirst().orElse(null)
+        );
+
+        Cache<GraphFetchCacheKey, List<Object>> addressGuavaCache = CacheBuilder.newBuilder().recordStats().expireAfterWrite(10, TimeUnit.MINUTES).build();
+        GraphFetchCacheByTargetCrossKeys addressCache = ExecutionCacheBuilder.buildGraphFetchCacheByTargetCrossKeysFromGuavaCache(
+                addressGuavaCache,
+                Objects.requireNonNull(GraphFetchCrossAssociationKeys.graphFetchCrossAssociationKeysForPlan(plan).stream().filter(x -> x.getName().equals("<default, root.address>")).findFirst().orElse(null))
+        );
+
+        PlanExecutionContext context = new PlanExecutionContext(plan, firmCache, addressCache);
+        executePlan(plan, context);
+
+        Assert.assertEquals(Sets.mutable.with("RelationalCrossObjectGraphFetchCacheKey{F2}", "RelationalCrossObjectGraphFetchCacheKey{NULL}", "RelationalCrossObjectGraphFetchCacheKey{F1}"), firmGuavaCache.asMap().keySet().stream().map(GraphFetchCacheKey::getStringIdentifier).collect(Collectors.toSet()));
+        Assert.assertEquals(Sets.mutable.with("RelationalCrossObjectGraphFetchCacheKey{A3}", "RelationalCrossObjectGraphFetchCacheKey{A2}", "RelationalCrossObjectGraphFetchCacheKey{A1}", "RelationalCrossObjectGraphFetchCacheKey{NULL}"), addressGuavaCache.asMap().keySet().stream().map(GraphFetchCacheKey::getStringIdentifier).collect(Collectors.toSet()));
     }
 
     private GraphFetchCacheByTargetCrossKeys getFirmEmptyCache(SingleExecutionPlan plan)
