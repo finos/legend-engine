@@ -64,6 +64,7 @@ public class PersistenceParserExtension implements IPersistenceParserExtension
                         case TRIGGER_MANUAL:
                             return new ManualTrigger();
                         case TRIGGER_CRON:
+                            //TODO: ledav -- implement cron parser
                             return null;
                     }
                     return null;
