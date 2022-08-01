@@ -26,6 +26,8 @@ import meta::relational::functions::pureToSqlQuery::*;
 import meta::pure::router::routing::*;
 import meta::pure::executionPlan::toString::*;
 import meta::pure::router::clustering::*;
+import meta::pure::graphFetch::executionPlan::*;
+import meta::pure::graphFetch::routing::*;
 
 function meta::relational::contract::relationalStoreContract():StoreContract[1]
 {
@@ -34,6 +36,7 @@ function meta::relational::contract::relationalStoreContract():StoreContract[1]
      id = 'relationalStore',
 
      planExecution = meta::relational::contract::planExecution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__Extension_MANY__DebugContext_1__ExecutionNode_1_,
+     planGraphFetchExecution = meta::relational::contract::planGraphFetchExecution_ClusteredGraphFetchTree_1__String_MANY__Boolean_1__Boolean_1__StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_1__Runtime_1__ExecutionContext_1__Extension_MANY__DebugContext_1__LocalGraphFetchExecutionNode_1_,
     
      supports = meta::relational::contract::supports_FunctionExpression_1__Boolean_1_,
      supportsStreamFunction = meta::relational::contract::supportsStream_FunctionExpression_1__Boolean_1_,
@@ -184,6 +187,11 @@ function meta::relational::contract::planExecution(sq:meta::pure::mapping::Store
       $originalQuery->postProcessSQLQuery($store, $ext, $m->toOne(), $storeRuntime, $exeCtx, $extensions)
                     ->generateExecutionNodeForPostProcessedResult($sq, $store, $ext, $m->toOne(), $storeRuntime, $exeCtx, $debug, $extensions);
    );
+}
+
+function meta::relational::contract::planGraphFetchExecution(tree:ClusteredGraphFetchTree[1], orderedPaths:String[*], enableConstraints:Boolean[1], checked:Boolean[1], sq:meta::pure::mapping::StoreQuery[1], ext:RoutedValueSpecification[0..1], m:Mapping[1], runtime:Runtime[1], exeCtx:ExecutionContext[1], extensions:Extension[*], debug:DebugContext[1]):LocalGraphFetchExecutionNode[1]
+{
+  meta::relational::graphFetch::executionPlan::planRootGraphFetchExecutionRelational($sq, $ext, $tree, $orderedPaths, $m, $runtime, $exeCtx, $enableConstraints, $checked, $extensions, $debug)
 }
 
 // Lazy Execution of property

@@ -69,10 +69,6 @@ function <<access.private>> meta::external::store::service::extension::serviceSt
          clusteredTree: ClusteredGraphFetchTree[1], orderedPaths: String[*], parentPath: String[1], inScopeVars: Map<String, List<Any>>[1], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], enableConstraints: Boolean[1], checked: Boolean[1], extensions: Extension[*], debug: DebugContext[1] |
          {s : ServiceStore[1] | meta::external::store::service::executionPlan::generation::planCrossStoreGraphFetchExecutionServiceStore($clusteredTree, $orderedPaths, $parentPath, $inScopeVars, $mapping, $runtime, $exeCtx, $enableConstraints, $checked, $extensions, $debug)}
       },
-      graphFetch_executionPlan_planGraphFetchExecution = {
-         sq: meta::pure::mapping::StoreQuery[1], ext: RoutedValueSpecification[0..1], clusteredTree: ClusteredGraphFetchTree[1], orderedPaths: String[*], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], enableConstraints: Boolean[1], checked: Boolean[1], extensions: Extension[*], debug: DebugContext[1] |
-         {s : ServiceStore[1] | meta::external::store::service::executionPlan::generation::planRootGraphFetchExecutionServiceStore($sq, $ext, $clusteredTree, $orderedPaths, $mapping, $runtime, $exeCtx, $enableConstraints, $checked, $extensions, $debug)}
-      },
       java_graphFetch_inMemory_applyTypeFilter = {
          set:InstanceSetImplementation[1], src:Code[1], withoutFilter:Code[1..*], context:GenerationContext[1], debug:DebugContext[1] | [
             rsi: RootServiceInstanceSetImplementation[1] | $withoutFilter,

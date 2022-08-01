@@ -24,6 +24,9 @@ import meta::external::store::service::functions::pureToServiceStoreQuery::*;
 import meta::external::store::service::metamodel::mapping::*;
 import meta::external::store::service::metamodel::runtime::*;
 import meta::external::store::service::executionPlan::nodes::*;
+import meta::pure::graphFetch::executionPlan::*;
+import meta::pure::graphFetch::routing::*;
+
 
 function meta::external::store::service::contract::serviceStoreStoreContract():StoreContract[1]
 {
@@ -32,6 +35,7 @@ function meta::external::store::service::contract::serviceStoreStoreContract():S
      id = 'serviceStore',
      supports = meta::external::store::service::contract::supports_FunctionExpression_1__Boolean_1_,
      planExecution = meta::external::store::service::contract::planExecution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__Extension_MANY__DebugContext_1__ExecutionNode_1_,
+     planGraphFetchExecution = meta::external::store::service::contract::planGraphFetchExecution_ClusteredGraphFetchTree_1__String_MANY__Boolean_1__Boolean_1__StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_1__Runtime_1__ExecutionContext_1__Extension_MANY__DebugContext_1__LocalGraphFetchExecutionNode_1_,
 
      supportsSetImplementation = s:SetImplementation[1]|$s->instanceOf(RootServiceInstanceSetImplementation) || $s->instanceOf(EmbeddedServiceStoreSetImplementation),
      supportsStore = s:Store[1]|$s->instanceOf(meta::external::store::service::metamodel::ServiceStore),
@@ -74,6 +78,11 @@ function meta::external::store::service::contract::planExecution(sq:StoreQuery[1
    let fe = $sq.fe->evaluateAndDeactivate()->cast(@FunctionExpression);
    assert($fe.func->in(graphFetchFunctions()), 'Service Store supports graphFetch queries only');
    planGraphFetchExecution($sq, $ext, $mapping->toOne(), $runtime->toOne(), $exeCtx, $extensions, $debug);
+}
+
+function meta::external::store::service::contract::planGraphFetchExecution(tree:ClusteredGraphFetchTree[1], orderedPaths:String[*], enableConstraints:Boolean[1], checked:Boolean[1], sq:meta::pure::mapping::StoreQuery[1], ext:RoutedValueSpecification[0..1], m:Mapping[1], runtime:Runtime[1], exeCtx:ExecutionContext[1], extensions:Extension[*], debug:DebugContext[1]):LocalGraphFetchExecutionNode[1]
+{
+  meta::external::store::service::executionPlan::generation::planRootGraphFetchExecutionServiceStore($sq, $ext, $tree, $orderedPaths, $m, $runtime, $exeCtx, $enableConstraints, $checked, $extensions, $debug)
 }
 
 // Functions supported by serviceStore execution

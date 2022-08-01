@@ -88,12 +88,8 @@ function meta::pure::graphFetch::executionPlan::planGraphFetchExecution(sq: Stor
    let enableConstraints        = $exeCtx.enableConstraints->isEmpty() || $exeCtx.enableConstraints->toOne();
    let checked                  = $fe.genericType.rawType == Checked;
 
-   let localRoot = $rootTree.store->match([
-      model : ModelStore[1] | planRootGraphFetchExecutionInMemory($sq, $ext, $rootTreeOneCluster, $orderedPaths, $mapping, $runtime, $exeCtx, $enableConstraints, $checked, $extensions, $debug)
-   ]->concatenate(
-      $extensions.graphFetch_executionPlan_planGraphFetchExecution->map(f|$f->evaluate([list($sq), list($ext), list($rootTreeOneCluster), list($orderedPaths), list($mapping), list($runtime), list($exeCtx), list($enableConstraints), list($checked), list($extensions), list($debug)])->cast(@Function<{Nil[1]->LocalGraphFetchExecutionNode[1]}>))
-   )->toOneMany());
-
+  
+   let localRoot = $rootTree.s.planGraphFetchExecution->toOne()->evaluate([list($rootTreeOneCluster), list($orderedPaths), list($enableConstraints), list($checked), list($sq), list($ext), list($mapping), list($runtime), list($exeCtx), list($extensions), list($debug)])->cast(@LocalGraphFetchExecutionNode)->toOne();
 
    let rootGlobalNode = ^GlobalGraphFetchExecutionNode
                         (

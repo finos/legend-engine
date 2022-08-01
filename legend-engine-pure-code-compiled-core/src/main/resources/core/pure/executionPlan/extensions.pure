@@ -2,6 +2,8 @@ import meta::pure::executionPlan::*;
 import meta::pure::runtime::*;
 import meta::pure::extension::*;
 import meta::pure::mapping::*;
+import meta::pure::graphFetch::routing::*;
+import meta::pure::graphFetch::executionPlan::*;
 
 Class meta::pure::executionPlan::extension::ExecutionPlanExtension
 {
@@ -11,8 +13,10 @@ Class meta::pure::executionPlan::extension::ExecutionPlanExtension
   printTypeToString : Function<{String[1], Extension[*] -> Function<{Nil[1] -> String[1]}>[*]}>[0..1];
   // --------------------------------------------------------------------------- Execution Node - Print
 
-  reprocessConnection : Function<{Connection[1]->Connection[1]}>[0..1];
   planExecution : Function<{StoreQuery[1], RoutedValueSpecification[0..1], Mapping[0..1], Runtime[0..1], ExecutionContext[1], Extension[*], DebugContext[1]->meta::pure::executionPlan::ExecutionNode[1]}>[0..1];
+  planGraphFetchExecution : Function<{ClusteredGraphFetchTree[1], String[*], Boolean[1], Boolean[1], StoreQuery[1], RoutedValueSpecification[0..1], Mapping[1], Runtime[1], ExecutionContext[1], Extension[*], DebugContext[1] -> LocalGraphFetchExecutionNode[1]}>[0..1];
+
+  reprocessConnection : Function<{Connection[1]->Connection[1]}>[0..1];
   extractVariablesFromExecutionOption : Function<{ExecutionOption[1]->PlanVarPlaceHolder[*]}>[0..1];
   crossStoreSourceSupportsBatching : Function<{InstanceSetImplementation[1], AbstractProperty<Any>[*], Map<String, String>[1] -> Boolean[1]}>[0..1];
 }
