@@ -30,8 +30,10 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.PersistencePars
 import org.finos.legend.engine.language.pure.grammar.from.connection.ConnectionParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParser;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.PersistencePlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.DefaultPersistencePlatform;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.PersistencePlatform;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.ManualTrigger;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
 
@@ -43,11 +45,30 @@ import java.util.function.Function;
 public class PersistenceParserExtension implements IPersistenceParserExtension
 {
     public static final String NAME = "Persistence";
+    public static final String TRIGGER_MANUAL = "Manual";
+    public static final String TRIGGER_CRON = "Cron";
 
     @Override
     public Iterable<? extends SectionParser> getExtraSectionParsers()
     {
         return Lists.fixedSize.of(SectionParser.newParser(NAME, PersistenceParserExtension::parseSection));
+    }
+
+    @Override
+    public List<Function<TriggerSourceCode, Trigger>> getExtraTriggerParsers()
+    {
+        return Collections.singletonList(code ->
+                {
+                    switch (code.getType())
+                    {
+                        case TRIGGER_MANUAL:
+                            return new ManualTrigger();
+                        case TRIGGER_CRON:
+                            return null;
+                    }
+                    return null;
+                }
+        );
     }
 
     @Override
@@ -76,10 +97,11 @@ public class PersistenceParserExtension implements IPersistenceParserExtension
         ConnectionParser connectionParser = ConnectionParser.newInstance(context.getPureGrammarParserExtensions());
 
         List<IPersistenceParserExtension> extensions = IPersistenceParserExtension.getExtensions();
-        List<Function<PersistencePlatformSourceCode, PersistencePlatform>> processors = ListIterate.flatCollect(extensions, IPersistenceParserExtension::getExtraPersistencePlatformParsers);
+        List<Function<PersistencePlatformSourceCode, PersistencePlatform>> platformProcessors = ListIterate.flatCollect(extensions, IPersistenceParserExtension::getExtraPersistencePlatformParsers);
+        List<Function<TriggerSourceCode, Trigger>> triggerProcessors = ListIterate.flatCollect(extensions, IPersistenceParserExtension::getExtraTriggerParsers);
 
-        PersistenceContextParseTreeWalker persistenceContextWalker = new PersistenceContextParseTreeWalker(parserInfo.walkerSourceInformation, connectionParser, processors);
-        PersistenceParseTreeWalker persistenceWalker = new PersistenceParseTreeWalker(parserInfo.walkerSourceInformation, elementConsumer, section, persistenceContextWalker);
+        PersistenceContextParseTreeWalker persistenceContextWalker = new PersistenceContextParseTreeWalker(parserInfo.walkerSourceInformation, connectionParser, platformProcessors);
+        PersistenceParseTreeWalker persistenceWalker = new PersistenceParseTreeWalker(parserInfo.walkerSourceInformation, elementConsumer, section, triggerProcessors, persistenceContextWalker);
         persistenceWalker.visit((PersistenceParserGrammar.DefinitionContext) parserInfo.rootContext);
 
         return section;
@@ -98,4 +120,3 @@ public class PersistenceParserExtension implements IPersistenceParserExtension
         return new SourceCodeParserInfo(sectionSourceCode.code, input, sectionSourceCode.sourceInformation, sectionSourceCode.walkerSourceInformation, lexer, parser, parser.definition());
     }
 }
-

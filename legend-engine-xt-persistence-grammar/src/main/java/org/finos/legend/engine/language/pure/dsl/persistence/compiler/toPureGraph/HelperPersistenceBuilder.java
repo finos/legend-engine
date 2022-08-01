@@ -198,11 +198,6 @@ public class HelperPersistenceBuilder
 
     public static Database buildDatabase(String database, SourceInformation sourceInformation, CompileContext context)
     {
-        if (database == null)
-        {
-            return null;
-        }
-
         String databasePath = database.substring(0, database.lastIndexOf("::"));
         String databaseName = database.substring(database.lastIndexOf("::") + 2);
 
@@ -217,11 +212,6 @@ public class HelperPersistenceBuilder
 
     public static Root_meta_external_shared_format_binding_Binding buildBinding(String binding, SourceInformation sourceInformation, CompileContext context)
     {
-        if (binding == null)
-        {
-            return null;
-        }
-
         String bindingPath = binding.substring(0, binding.lastIndexOf("::"));
         String bindingName = binding.substring(binding.lastIndexOf("::") + 2);
 
