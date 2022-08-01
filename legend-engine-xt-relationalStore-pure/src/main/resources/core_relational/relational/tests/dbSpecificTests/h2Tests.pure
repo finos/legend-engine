@@ -14,22 +14,22 @@
 
 import meta::relational::runtime::*;
 import meta::relational::dbTestRunner::*;
-import meta::relational::tests::dbSpecificTests::H2::dynaFunctions::*;
+import meta::relational::tests::dbSpecificTests::H2::*;
 import meta::pure::alloy::connections::*;
 import meta::pure::test::*;
 
-function <<test.TestCollection>> meta::relational::tests::dbSpecificTests::H2::dynaFunctions::runDynaFunctionsTests(): PureTestCollection[1]
+function <<test.TestCollection>> meta::relational::tests::dbSpecificTests::H2::runTests(): PureTestCollection[1]
 {
   let connection = meta::relational::dbTestRunner::getTestConnection(DatabaseType.H2, meta::relational::extension::relationalExtensions());
   
-  meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions
+  meta::relational::tests::dbSpecificTests
           ->collectParameterizedTests('H2',
                 ^DbTestConfig(dbType=DatabaseType.H2, connection=$connection), 
-                paramCustomizationsForDynaFunctionTests_FunctionDefinition_1__DbTestConfig_1__DbTestConfig_1_,
-                []);
+                paramCustomizations_FunctionDefinition_1__DbTestConfig_1__DbTestConfig_1_,
+                testsFilter_FunctionDefinition_1__Boolean_1_);
 }
 
-function meta::relational::tests::dbSpecificTests::H2::dynaFunctions::paramCustomizationsForDynaFunctionTests(f:FunctionDefinition<Any>[1], dbTestConfig:DbTestConfig[1]): DbTestConfig[1]
+function meta::relational::tests::dbSpecificTests::H2::paramCustomizations(f:FunctionDefinition<Any>[1], dbTestConfig:DbTestConfig[1]): DbTestConfig[1]
 {
   //optionally assert db specific sql for a bunch of tests
    let expectedSqls= [
@@ -39,16 +39,8 @@ function meta::relational::tests::dbSpecificTests::H2::dynaFunctions::paramCusto
   ^$dbTestConfig(expectedSql= $expectedSqls->get($f));
 }
 
-function <<test.TestCollection>> meta::relational::tests::dbSpecificTests::H2::aggregateFunctions::runAggregateFunctionTests(): PureTestCollection[1]
-{
-  let connection = meta::relational::dbTestRunner::getTestConnection(DatabaseType.H2, meta::relational::extension::relationalExtensions());
-  
-  meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions
-          ->collectParameterizedTests('H2', ^DbTestConfig(dbType=DatabaseType.H2, connection=$connection),[],
-             meta::relational::tests::dbSpecificTests::H2::aggregateFunctions::aggregateFunctionsTestsParamFilter_FunctionDefinition_1__Boolean_1_);
-}
 
-function meta::relational::tests::dbSpecificTests::H2::aggregateFunctions::aggregateFunctionsTestsParamFilter(f:FunctionDefinition<Any>[1]):Boolean[1]
+function meta::relational::tests::dbSpecificTests::H2::testsFilter(f:FunctionDefinition<Any>[1]):Boolean[1]
 {
   // currently hardcoding unsupported funcs, In future fetch this from db extensions and skip
   let unsupportedDynaFunctions = [ ];
@@ -56,24 +48,11 @@ function meta::relational::tests::dbSpecificTests::H2::aggregateFunctions::aggre
   //these dynafunctions need to be fixed , currently skipping to suppress github integration test failures
   let failingSupportedDynaFunctions = [];
 
-  let ignoredTests= $unsupportedDynaFunctions->concatenate($failingSupportedDynaFunctions)->map(dynaFuncName |
+  let ignoredAggregateFunctionsTests= $unsupportedDynaFunctions->concatenate($failingSupportedDynaFunctions)->map(dynaFuncName |
               let dynaFuncPackageName = 'meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions::' + $dynaFuncName;
               $dynaFuncPackageName->pathToElement()->cast(@Package)->collectTests(););
+ 
+  let ignoredNamingTests = [];
 
-  !$ignoredTests->contains($f);
-}
-
-function <<test.TestCollection>> meta::relational::tests::dbSpecificTests::H2::namingTests::runNamingTests(): PureTestCollection[1]
-{
-  let connection = meta::relational::dbTestRunner::getTestConnection(DatabaseType.H2, meta::relational::extension::relationalExtensions());
-  
-  meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests
-          ->collectParameterizedTests('H2', ^DbTestConfig(dbType=DatabaseType.H2, connection=$connection),[],
-          meta::relational::tests::dbSpecificTests::H2::namingTests::namingTestsParamFilter_FunctionDefinition_1__Boolean_1_);
-}
-
-function meta::relational::tests::dbSpecificTests::H2::namingTests::namingTestsParamFilter(f:FunctionDefinition<Any>[1]):Boolean[1]
-{
-  let failingTests = [];
-  !$failingTests->contains($f);
+  !$ignoredAggregateFunctionsTests->concatenate($ignoredNamingTests)->contains($f);
 }

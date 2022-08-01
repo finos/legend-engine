@@ -19,19 +19,19 @@ import meta::pure::alloy::connections::*;
 import meta::pure::test::*;
 
 
-function <<test.TestCollection>> meta::relational::tests::dbSpecificTests::databricks::runDynaFunctionsTests(): PureTestCollection[1]
+function <<test.TestCollection>> meta::relational::tests::dbSpecificTests::databricks::runTests(): PureTestCollection[1]
 {
   let connection = meta::relational::dbTestRunner::getTestConnection(DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
   
-  meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions
+  meta::relational::tests::dbSpecificTests
           ->collectParameterizedTests('Databricks',
                 ^DbTestConfig(dbType=DatabaseType.Databricks, connection=$connection), [],
-                meta::relational::tests::dbSpecificTests::databricks::dynaFunctionsTestsParamFilter_FunctionDefinition_1__Boolean_1_
+                meta::relational::tests::dbSpecificTests::databricks::testsFilter_FunctionDefinition_1__Boolean_1_
                 );
 }
 
 
-function meta::relational::tests::dbSpecificTests::databricks::dynaFunctionsTestsParamFilter(f:FunctionDefinition<Any>[1]):Boolean[1]
+function meta::relational::tests::dbSpecificTests::databricks::testsFilter(f:FunctionDefinition<Any>[1]):Boolean[1]
 {
   // currently hardcoding unsupported funcs, In future fetch this from db extensions and skip
   let unsupportedDynaFunctions = ['sqlTrue'];
