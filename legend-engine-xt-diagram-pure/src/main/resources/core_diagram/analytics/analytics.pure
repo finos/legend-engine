@@ -17,54 +17,102 @@ import meta::pure::metamodel::diagram::analytics::modelCoverage::*;
 Class <<access.private>> meta::pure::metamodel::diagram::analytics::modelCoverage::DiagramModelCoverageAnalysisResult
 {
   classes: Class<Any>[*];
-  enumerations: Enumeration<Any>[*];
+  enumerations: Enumeration<Enum>[*];
+  associations: Association[*];
   profiles: Profile[*];
 }
 
-function meta::pure::metamodel::diagram::analytics::modelCoverage::getDiagramModelCoverage(diagrams:meta::pure::metamodel::diagram::Diagram[*]):DiagramModelCoverageAnalysisResult[1]
+function meta::pure::metamodel::diagram::analytics::modelCoverage::getDiagramModelCoverage(diagrams: meta::pure::metamodel::diagram::Diagram[*]):DiagramModelCoverageAnalysisResult[1]
 {
   let classViews = $diagrams->map(d|$d.classViews)->fold({a, b| $a->concatenate($b)}, []);
   let generalizationViews = $diagrams->map(d|$d.generalizationViews)->fold({a, b| $a->concatenate($b)}, []);
   let classes = $classViews.class->filter(t|$t->instanceOf(Class))->cast(@Class<Any>)->removeDuplicates();
-  // NOTE: we don't support showing tagged values and stereotypes for properties at the moment
-  // TODO?: prune profile to only used tags and stereotypes
-  let profiles = $classes->map(class|$class.taggedValues->map(tv|$tv.tag.profile)->concatenate($class.stereotypes->map(st|$st.profile)))
-    ->cast(@Profile)->removeDuplicates();
-  let allProperties = $classes->filter(t|$t->instanceOf(Class))->map(t|$t->cast(@Class<Any>).properties->cast(@Property<Nil,Any|*>));
-  let allQualifiedProperties = $classes->filter(t|$t->instanceOf(Class))->map(t|$t->cast(@Class<Any>).qualifiedProperties->cast(@QualifiedProperty<Any>));
-  let propertyClasses = $allProperties->map(p|$p.genericType.rawType)->concatenate($allQualifiedProperties->map(p|$p.genericType.rawType))->filter(t|$t->instanceOf(Class))->cast(@Class<Any>)->removeDuplicates()
-    ->filter(c|!$classes->contains($c));
-  // TODO?: prune enumeration values
-  let enumerations = $allProperties->map(p|$p.genericType.rawType)->concatenate($allQualifiedProperties->map(p|$p.genericType.rawType))->filter(t|$t->instanceOf(Enumeration))->cast(@Enumeration<Any>)->removeDuplicates();
-  let prunedClasses = $classes->map(c|^Class<Any>(
-    name = $c.name,
-    package = $c.package,
-    // prune properties
-    properties = $c.properties->map(p|^Property<Nil,Any|*>(
-      name = $p.name,
-      genericType = $p.genericType,
-      multiplicity = $p.multiplicity,
-      // taggedValues = $p.taggedValues,
-      // stereotypes = $p.stereotypes,
-      aggregation = $p.aggregation,
-      owner = $p.owner
+
+  // associations
+  let allPropertiesFromAssociations = $classes.propertiesFromAssociations;
+  let allQualifiedPropertiesFromAssociations = $classes.qualifiedPropertiesFromAssociations;
+  let associations = $allPropertiesFromAssociations.owner->filter(t|$t->instanceOf(Association))->cast(@Association)->removeDuplicates();
+  let associationClasses = $associations.properties->map(p|$p.genericType.rawType)
+    ->filter(t|$t->instanceOf(Class))->cast(@Class<Any>)->removeDuplicates()->filter(c|!$classes->contains($c));
+  
+  // properties
+  let allProperties = $classes.properties;
+  let allQualifiedProperties = $classes.qualifiedProperties;
+  let foundClasses = $classes->concatenate($associationClasses);
+  let propertyTypes = $allProperties->map(p|$p.genericType.rawType)->concatenate($allQualifiedProperties->map(p|$p.genericType.rawType));
+  let propertyClasses = $propertyTypes->filter(t|$t->instanceOf(Class))->cast(@Class<Any>)->removeDuplicates()->filter(c|!$foundClasses->contains($c));
+
+  // enumerations
+  let enumerations = $propertyTypes->filter(t|$t->instanceOf(Enumeration))->cast(@Enumeration<Enum>)->removeDuplicates();
+  
+  // NOTE: following, we prune the tagged values and stereotypes from the enumerations, associations, and classes
+  // so we don't have to return them, if in the future, we need to return these (as this analytics require to do so)
+  // we should reconsider these optimization
+  let prunedEnumerations = $enumerations->map(e|^$e(
+    stereotypes = [],
+    taggedValues = [],
+    values = meta::pure::functions::meta::enumValues($e)->map(v|^$v(
+      stereotypes = [],
+      taggedValues = []
+    ))->toOneMany() // this is a hack to work around a problem with validation on size of enumeration values
+  ));
+
+  let prunedClasses = $classes->map(c|^$c(
+    properties = $c.properties->map(p|^$p(
+      stereotypes = [],
+      taggedValues = []
     )),
-    // NOTE: since qualified properties transformation does certain validation logic
-    // we couldn't arbitrarily simplify like how we do properties
-    qualifiedProperties = $c.qualifiedProperties,
-    taggedValues = $c.taggedValues,
-    stereotypes = $c.stereotypes,
+    qualifiedProperties = $c.qualifiedProperties->map(p|^$p(
+      stereotypes = [],
+      taggedValues = []
+    )),
+    // skip supertype/generalization relationship that is not shown in the diagrams
     generalizations = $c.generalizations->filter(g|$generalizationViews->exists(gV|$gV.from.classView.class == $c && $gV.to.classView.class == $g.general.rawType))
   ));
+
+  // NOTE: for classes found from association and properties only, we just need to stub them
   let prunedPropertyClasses = $propertyClasses->map(c|^Class<Any>(
     name = $c.name,
     package = $c.package
   ));
+  let prunedAssociationClasses = $associationClasses->map(c|^Class<Any>(
+    name = $c.name,
+    package = $c.package
+  ));
+
+  // NOTE: prune here so we don't have to do analytics to find the used profiles
+  let prunedAssociations = $associations->map(a|^$a(
+    stereotypes = [],
+    taggedValues = [],
+    properties = $a.properties->map(p|^$p(
+      stereotypes = [],
+      taggedValues = []
+    )),
+    qualifiedProperties = $a.qualifiedProperties->map(p|^$p(
+      stereotypes = [],
+      taggedValues = []
+    ))
+  ));
+
+  // profile
+  // NOTE: we don't support showing tagged values and stereotypes for properties at the moment
+  let profiles = $classes->map(class|$class.taggedValues->map(tv|$tv.tag.profile)
+    ->concatenate($class.stereotypes->map(st|$st.profile))
+    ->cast(@Profile)->removeDuplicates());
+  
+  // TODO?: prune profile - e.g. we can prune profile to limit to used tags and stereotypes only
+  let prunedProfiles = $profiles->map(p|^Profile(
+    name = $p.name,
+    package = $p.package,
+    p_tags = $p.p_tags,
+    p_stereotypes = $p.p_stereotypes
+  ));
 
   ^DiagramModelCoverageAnalysisResult
   (
-    classes = $prunedClasses->concatenate($prunedPropertyClasses),
-    profiles = $profiles,
-    enumerations = $enumerations
+    classes = $prunedClasses->concatenate($prunedPropertyClasses)->concatenate($prunedAssociationClasses),
+    profiles = $prunedProfiles,
+    enumerations = $prunedEnumerations,
+    associations = $prunedAssociations
   );
 }

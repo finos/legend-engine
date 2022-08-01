@@ -23,11 +23,13 @@ import io.swagger.annotations.ApiParam;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.api.analytics.model.DiagramModelCoverageAnalysisInput;
 import org.finos.legend.engine.external.shared.format.imports.PureModelContextDataGenerator;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Enumeration;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
@@ -89,12 +91,13 @@ public class DiagramAnalytics
                 PureModelContextData classes = PureModelContextDataGenerator.generatePureModelContextDataFromClasses(result._classes(), input.clientVersion, pureModel.getExecutionSupport());
                 PureModelContextData enums = PureModelContextDataGenerator.generatePureModelContextDataFromEnumerations(result._enumerations(), input.clientVersion, pureModel.getExecutionSupport());
                 PureModelContextData _profiles = PureModelContextDataGenerator.generatePureModelContextDataFromProfile((RichIterable<Profile>) result._profiles(), input.clientVersion, pureModel.getExecutionSupport());
+                PureModelContextData associations = PureModelContextDataGenerator.generatePureModelContextDataFromAssociations(result._associations(), input.clientVersion, pureModel.getExecutionSupport());
                 PureModelContextData.Builder builder = PureModelContextData.newBuilder();
                 if (includeDiagram)
                 {
                     builder.addElement(Objects.requireNonNull(pureModelContextData.getElements().stream().filter(el -> input.diagram.equals(el.getPath())).findFirst().get()));
                 }
-                return ManageConstantResult.manageResult(profiles, builder.build().combine(classes).combine(enums).combine(_profiles), objectMapper);
+                return ManageConstantResult.manageResult(profiles, builder.build().combine(classes).combine(enums).combine(_profiles).combine(associations), objectMapper);
             }
             catch (Exception e)
             {

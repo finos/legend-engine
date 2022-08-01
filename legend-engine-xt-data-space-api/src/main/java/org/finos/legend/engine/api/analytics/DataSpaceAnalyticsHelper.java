@@ -25,6 +25,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperRuntimeB
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Enumeration;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpace;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_diagram_analytics_modelCoverage_DiagramModelCoverageAnalysisResult;
@@ -81,13 +82,13 @@ public class DataSpaceAnalyticsHelper
         // NOTE: right now, we only build and do analysis for featured diagrams
         Root_meta_pure_metamodel_diagram_analytics_modelCoverage_DiagramModelCoverageAnalysisResult diagramAnalysisResult = core_diagram_analytics_analytics.Root_meta_pure_metamodel_diagram_analytics_modelCoverage_getDiagramModelCoverage_Diagram_MANY__DiagramModelCoverageAnalysisResult_1_(dataSpace._featuredDiagrams(), pureModel.getExecutionSupport());
         PureModelContextData classes = PureModelContextDataGenerator.generatePureModelContextDataFromClasses(diagramAnalysisResult._classes(), input.clientVersion, pureModel.getExecutionSupport());
-        // TODO: we could consider if we need to prune the class further here, for example, pruning the function off derived properties
         PureModelContextData enums = PureModelContextDataGenerator.generatePureModelContextDataFromEnumerations(diagramAnalysisResult._enumerations(), input.clientVersion, pureModel.getExecutionSupport());
         PureModelContextData _profiles = PureModelContextDataGenerator.generatePureModelContextDataFromProfile((RichIterable<Profile>) diagramAnalysisResult._profiles(), input.clientVersion, pureModel.getExecutionSupport());
+        PureModelContextData associations = PureModelContextDataGenerator.generatePureModelContextDataFromAssociations(diagramAnalysisResult._associations(), input.clientVersion, pureModel.getExecutionSupport());
         PureModelContextData.Builder builder = PureModelContextData.newBuilder();
         List<String> featuredDiagramPaths = dataSpace._featuredDiagrams() != null ? dataSpace._featuredDiagrams().collect(diagram -> HelperModelBuilder.getElementFullPath(diagram, pureModel.getExecutionSupport())).toList() : Lists.mutable.empty();
         pureModelContextData.getElements().stream().filter(el -> featuredDiagramPaths.contains(el.getPath())).forEach(builder::addElement);
-        result.model = builder.build().combine(classes).combine(enums).combine(_profiles);
+        result.model = builder.build().combine(classes).combine(enums).combine(_profiles).combine(associations);
 
         // diagrams
         result.featuredDiagrams = dataSpace._featuredDiagrams() != null ? dataSpace._featuredDiagrams().toList().collect(diagram -> HelperModelBuilder.getElementFullPath(diagram, pureModel.getExecutionSupport())) : Lists.mutable.empty();
