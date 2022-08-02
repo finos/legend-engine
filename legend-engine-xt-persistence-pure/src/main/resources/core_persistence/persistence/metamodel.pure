@@ -192,7 +192,7 @@ meta::pure::persistence::metamodel::notifier::PagerDutyNotifyee extends Notifyee
  **********/
 
 Class
-{doc.doc = 'Definition of the sink to which datsets will be persisted.'}
+{doc.doc = 'Definition of the sink to which datasets will be persisted.'}
 meta::pure::persistence::metamodel::persister::sink::Sink
 {
 }

@@ -12,9 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger;
+package org.finos.legend.engine.language.pure.dsl.persistence.grammar.from;
 
-public interface TriggerVisitor<T>
+import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+
+public class TriggerSourceCode extends SpecificationSourceCode
 {
-    T visit(Trigger val);
+    public TriggerSourceCode(String code, String type, SourceInformation sourceInformation, ParseTreeWalkerSourceInformation walkerSourceInformation)
+    {
+        super(code, type, sourceInformation, walkerSourceInformation);
+    }
 }

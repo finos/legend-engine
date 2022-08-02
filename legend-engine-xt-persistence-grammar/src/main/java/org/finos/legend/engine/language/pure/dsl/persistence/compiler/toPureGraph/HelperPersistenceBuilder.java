@@ -78,10 +78,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.SourceSpecifiesFromDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.ValidityDerivation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.ValidityDerivationVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.CronTrigger;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.ManualTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.TriggerVisitor;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
@@ -133,8 +130,6 @@ import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_pers
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_validitymilestoning_derivation_SourceSpecifiesValidFromAndThruDate_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_validitymilestoning_derivation_SourceSpecifiesValidFromDate_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_validitymilestoning_derivation_ValidityDerivation;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_trigger_CronTrigger_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_trigger_ManualTrigger_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_trigger_Trigger;
 import org.finos.legend.pure.m3.coreinstance.Package;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
@@ -153,16 +148,15 @@ public class HelperPersistenceBuilder
 {
     private static final String PERSISTENCE_PACKAGE_PREFIX = "meta::pure::persistence::metamodel";
 
-    private static final TriggerBuilder TRIGGER_BUILDER = new TriggerBuilder();
     private static final AuditingBuilder AUDITING_BUILDER = new AuditingBuilder();
 
     private HelperPersistenceBuilder()
     {
     }
 
-    public static Root_meta_pure_persistence_metamodel_trigger_Trigger buildTrigger(Trigger trigger)
+    public static Root_meta_pure_persistence_metamodel_trigger_Trigger buildTrigger(Trigger trigger, CompileContext context)
     {
-        return trigger.accept(TRIGGER_BUILDER);
+        return IPersistenceCompilerExtension.process(trigger, ListIterate.flatCollect(IPersistenceCompilerExtension.getExtensions(), IPersistenceCompilerExtension::getExtraTriggerProcessors), context);
     }
 
     public static Root_meta_legend_service_metamodel_Service buildService(Persistence persistence, CompileContext context)
@@ -198,11 +192,6 @@ public class HelperPersistenceBuilder
 
     public static Database buildDatabase(String database, SourceInformation sourceInformation, CompileContext context)
     {
-        if (database == null)
-        {
-            return null;
-        }
-
         String databasePath = database.substring(0, database.lastIndexOf("::"));
         String databaseName = database.substring(database.lastIndexOf("::") + 2);
 
@@ -217,11 +206,6 @@ public class HelperPersistenceBuilder
 
     public static Root_meta_external_shared_format_binding_Binding buildBinding(String binding, SourceInformation sourceInformation, CompileContext context)
     {
-        if (binding == null)
-        {
-            return null;
-        }
-
         String bindingPath = binding.substring(0, binding.lastIndexOf("::"));
         String bindingName = binding.substring(binding.lastIndexOf("::") + 2);
 
@@ -302,26 +286,6 @@ public class HelperPersistenceBuilder
     }
 
     // helper visitors for class hierarchies
-
-    private static class TriggerBuilder implements TriggerVisitor<Root_meta_pure_persistence_metamodel_trigger_Trigger>
-    {
-        @Override
-        public Root_meta_pure_persistence_metamodel_trigger_Trigger visit(ManualTrigger val)
-        {
-            return new Root_meta_pure_persistence_metamodel_trigger_ManualTrigger_Impl("");
-        }
-
-        @Override
-        public Root_meta_pure_persistence_metamodel_trigger_Trigger visit(CronTrigger val)
-        {
-            return new Root_meta_pure_persistence_metamodel_trigger_CronTrigger_Impl("")
-                    ._minutes(val.minutes)
-                    ._hours(val.hours)
-                    ._dayOfMonth(val.dayOfMonth)
-                    ._month(val.month)
-                    ._dayOfWeek(val.dayOfWeek);
-        }
-    }
 
     private static class PersisterBuilder implements PersisterVisitor<Root_meta_pure_persistence_metamodel_persister_Persister>
     {
