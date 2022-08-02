@@ -12,9 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.api.analytics.model;
+package org.finos.legend.engine.analytics.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.finos.legend.engine.protocol.analytics.model.MappingModelCoverageAnalysisResult;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceSupportInfo;
 
@@ -60,5 +61,6 @@ public class DataSpaceAnalysisResult
         public String mapping;
         public List<String> compatibleRuntimes;
         public String defaultRuntime;
+        public MappingModelCoverageAnalysisResult mappingModelCoverageAnalysisResult;
     }
 }
