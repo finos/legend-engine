@@ -26,8 +26,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistenceContext;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.PersistencePlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.DefaultPersistencePlatform;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.PersistencePlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.ConnectionValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.PrimitiveTypeValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.ServiceParameter;
@@ -42,13 +42,13 @@ public class PersistenceContextParseTreeWalker
 {
     private final ParseTreeWalkerSourceInformation walkerSourceInformation;
     private final ConnectionParser connectionParser;
-    private final List<Function<PersistencePlatformSourceCode, PersistencePlatform>> processors;
+    private final List<Function<PersistencePlatformSourceCode, PersistencePlatform>> platformProcessors;
 
-    public PersistenceContextParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, ConnectionParser connectionParser, List<Function<PersistencePlatformSourceCode, PersistencePlatform>> processors)
+    public PersistenceContextParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, ConnectionParser connectionParser, List<Function<PersistencePlatformSourceCode, PersistencePlatform>> platformProcessors)
     {
         this.walkerSourceInformation = walkerSourceInformation;
         this.connectionParser = connectionParser;
-        this.processors = processors;
+        this.platformProcessors = platformProcessors;
     }
 
     /**********
@@ -106,14 +106,14 @@ public class PersistenceContextParseTreeWalker
             SourceInformation platformValueSourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
             PersistencePlatformSourceCode sourceCode = new PersistencePlatformSourceCode(textToParse, ctx.platformType().getText(), platformValueSourceInformation, platformValueWalkerSourceInformation);
-            return IPersistenceParserExtension.process(sourceCode, processors);
+            return IPersistenceParserExtension.process(sourceCode, platformProcessors);
         }
         else
         {
             SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
             PersistencePlatformSourceCode sourceCode = new PersistencePlatformSourceCode(text.toString(), ctx.platformType().getText(), sourceInformation, walkerSourceInformation);
-            return IPersistenceParserExtension.process(sourceCode, processors);
+            return IPersistenceParserExtension.process(sourceCode, platformProcessors);
         }
     }
 

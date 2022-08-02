@@ -1,0 +1,129 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+
+import meta::json::*;
+import meta::pure::metamodel::serialization::json::*;
+import meta::analytics::mapping::modelCoverage::*;
+import meta::analytics::mapping::modelCoverage::serialization::json::*;
+
+// NOTE: this is a quick way to serialize the mapping model coverage result
+// when this feature becomes more stable, we can move this to the protocol (i.e. VX_X_X) zone
+function meta::analytics::mapping::modelCoverage::serialization::json::getSerializedMappingModelCoverageAnalysisResult(result: MappingModelCoverageAnalysisResult[1]): String[1]
+{
+  toJSON
+  (
+    $result,
+    [
+      {d:MappingModelCoverageAnalysisResult[1],j:JSONState[1]|$d->analysisResultToJson()}
+    ],
+    1000
+  );
+}
+
+function <<access.private>> meta::analytics::mapping::modelCoverage::serialization::json::analysisResultToJson(result: MappingModelCoverageAnalysisResult[1]): JSONElement[1]
+{
+  newJSONObject
+  ([
+    newJSONKeyValue('mappedEntities', ^JSONArray(values=$result.mappedEntities->map(v | $v->mappedEntityToJSON())))
+  ])
+}
+
+function <<access.private>> meta::analytics::mapping::modelCoverage::serialization::json::mappedEntityToJSON(entity: MappedEntity[1]): JSONElement[1]
+{
+  newJSONObject
+  ([
+    newJSONKeyValue('info', if($entity.info->isEmpty(), 
+          | ^JSONNull(), 
+          | $entity.info->toOne()->mappedEntityInfoToJSON()
+    )),
+    newJSONKeyValue('path', ^JSONString(value=$entity.path)),
+    newJSONKeyValue('properties', ^JSONArray(values=$entity.properties->map(v | $v->mappedPropertyToJSON())))
+  ])
+}
+
+function <<access.private>> meta::analytics::mapping::modelCoverage::serialization::json::mappedEntityInfoToJSON(info: MappedEntityInfo[1]): JSONElement[1]
+{
+  newJSONObject
+  ([
+    newJSONKeyValue('isRootEntity', if($info.isRootEntity->isEmpty(), 
+          | ^JSONNull(), 
+          | ^JSONBoolean(value=$info.isRootEntity->toOne())
+    )),
+    newJSONKeyValue('subClasses', ^JSONArray(values=$info.subClasses->map(v | ^JSONString(value=$v))))
+  ])
+}
+
+function <<access.private>> meta::analytics::mapping::modelCoverage::serialization::json::multiplicityToJSON(multiplicity: Multiplicity[1]): JSONElement[1]
+{
+  newJSONObject
+  ([
+    newJSONKeyValue('lowerBound', ^JSONNumber(value=$multiplicity.lowerBound.value->toOne())),
+    newJSONKeyValue('upperBound', if($multiplicity->hasUpperBound(), 
+          | ^JSONNumber(value=$multiplicity.upperBound->toOne().value->toOne()), 
+          | ^JSONNull()
+    ))
+  ])
+}
+
+function <<access.private>> meta::analytics::mapping::modelCoverage::serialization::json::mappedPropertyInfoToJSON(info: MappedPropertyInfo[1]): JSONElement[1]
+{
+  newJSONObject
+  ([
+    newJSONKeyValue('multiplicity', $info.multiplicity->meta::analytics::mapping::modelCoverage::serialization::json::multiplicityToJSON()),
+    newJSONKeyValue('propertyType', ^JSONString(value=$info.type->toString()))
+  ])
+}
+
+function <<access.private>> meta::analytics::mapping::modelCoverage::serialization::json::mappedPropertyToJSON(property: MappedProperty[1]): JSONElement[1]
+{
+  $property->match([
+    p: EnumMappedProperty[1] | $p->enumMappedPropertyToJSON(),
+    p: EntityMappedProperty[1] | $p->entityMappedPropertyToJSON(),
+    p: MappedProperty[1] | newJSONObject($p->abstractMappedPropertyToJSON())
+  ]);
+}
+
+function <<access.private>> meta::analytics::mapping::modelCoverage::serialization::json::abstractMappedPropertyToJSON(property: MappedProperty[1]):JSONKeyValue[*]
+{
+  [
+    newJSONKeyValue('mappedPropertyInfo', if($property.info->isEmpty(), 
+          | ^JSONNull(), 
+          | $property.info->toOne()->mappedPropertyInfoToJSON()
+    )),
+    newJSONKeyValue('name', ^JSONString(value=$property.name))
+  ]
+}
+
+function <<access.private>> meta::analytics::mapping::modelCoverage::serialization::json::enumMappedPropertyToJSON(property: EnumMappedProperty[1]): JSONElement[1]
+{
+  newJSONObject
+  ([
+    newJSONKeyValue('_type', ^JSONString(value='enum')),
+    newJSONKeyValue('enumPath', ^JSONString(value=$property.enumPath))
+  ]->concatenate(abstractMappedPropertyToJSON($property)))
+}
+
+function <<access.private>> meta::analytics::mapping::modelCoverage::serialization::json::entityMappedPropertyToJSON(property: EntityMappedProperty[1]): JSONElement[1]
+{
+  newJSONObject
+  ([
+    newJSONKeyValue('_type', ^JSONString(value='entity')),
+    newJSONKeyValue('entityPath', ^JSONString(value=$property.entityPath)),
+    newJSONKeyValue('subType', if($property.subType->isEmpty(), 
+          | ^JSONNull(), 
+          | ^JSONString(value=$property.subType->toOne())
+    ))
+  ]->concatenate(abstractMappedPropertyToJSON($property)))
+}

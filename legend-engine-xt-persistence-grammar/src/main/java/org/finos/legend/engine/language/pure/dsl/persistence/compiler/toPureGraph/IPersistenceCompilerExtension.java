@@ -22,8 +22,10 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Comp
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.PersistencePlatform;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_context_PersistencePlatform;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_trigger_Trigger;
 
 import java.util.Collections;
 import java.util.List;
@@ -42,6 +44,11 @@ public interface IPersistenceCompilerExtension extends CompilerExtension
         return process(persistencePlatform, processors, context, "persistence platform", persistencePlatform.sourceInformation);
     }
 
+    static Root_meta_pure_persistence_metamodel_trigger_Trigger process(Trigger trigger, List<Function2<Trigger, CompileContext, Root_meta_pure_persistence_metamodel_trigger_Trigger>> processors, CompileContext context)
+    {
+        return process(trigger, processors, context, "trigger", trigger.sourceInformation);
+    }
+
     static <T, U> U process(T item, List<Function2<T, CompileContext, U>> processors, CompileContext context, String type, SourceInformation srcInfo)
     {
         return ListIterate
@@ -52,6 +59,11 @@ public interface IPersistenceCompilerExtension extends CompilerExtension
     }
 
     default List<Function2<PersistencePlatform, CompileContext, Root_meta_pure_persistence_metamodel_context_PersistencePlatform>> getExtraPersistencePlatformProcessors()
+    {
+        return Collections.emptyList();
+    }
+
+    default List<Function2<Trigger, CompileContext, Root_meta_pure_persistence_metamodel_trigger_Trigger>> getExtraTriggerProcessors()
     {
         return Collections.emptyList();
     }

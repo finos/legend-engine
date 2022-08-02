@@ -84,6 +84,7 @@
         <module>legend-engine-xt-relationalStore-executionPlan-connection-api</module>
         <module>legend-engine-xt-relationalStore-executionPlan-connection-tests-api</module>
         <module>legend-engine-xt-relationalStore-pure</module>
+        <module>legend-engine-xt-relationalStore-postgres-execution-tests</module>
         <module>legend-engine-xt-relationalStore-api</module>
         <module>legend-engine-xt-relationalStore-grammar</module>
         <module>legend-engine-xt-relationalStore-protocol</module>
@@ -118,6 +119,7 @@
         <module>legend-engine-xt-data-space-api</module>
 
         <module>legend-engine-xt-analytics-mapping-api</module>
+        <module>legend-engine-xt-analytics-mapping-protocol</module>
         <module>legend-engine-xt-analytics-mapping-pure</module>
 
         <module>legend-engine-pure-code-compiled-core</module>
@@ -152,7 +154,6 @@
         <module>legend-engine-configuration</module>
         <module>legend-engine-protocol</module>
         <module>legend-engine-protocol-generation</module>
-        <module>legend-engine-protocol-external-shared-format</module>
         <module>legend-engine-protocol-pure</module>
         <module>legend-engine-application-query</module>
         <module>legend-engine-query-pure</module>
@@ -297,7 +298,8 @@
                     </executions>
                     <configuration>
                         <generateGitPropertiesFile>true</generateGitPropertiesFile>
-                        <generateGitPropertiesFilename>src/main/resources/legendExecutionVersion.json</generateGitPropertiesFilename>
+                        <generateGitPropertiesFilename>src/main/resources/legendExecutionVersion.json
+                        </generateGitPropertiesFilename>
                         <format>json</format>
                         <includeOnlyProperties>
                             <includeOnlyProperty>^git.build.(time|version)$</includeOnlyProperty>
@@ -522,7 +524,7 @@
                                 <requireJavaVersion>
                                     <version>${maven.enforcer.requireJavaVersion}</version>
                                 </requireJavaVersion>
-                                <dependencyConvergence />
+                                <dependencyConvergence/>
                                 <bannedDependencies>
                                     <excludes>
                                         <exclude>log4j</exclude>
@@ -682,6 +684,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-sqlserver-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-postgres-execution-tests</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -945,6 +952,11 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-analytics-mapping-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-analytics-mapping-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -1044,11 +1056,6 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-protocol-pure</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-protocol-external-shared-format</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -1979,7 +1986,7 @@
             </dependency>
             <dependency>
                 <groupId>com.amazon.redshift</groupId>
-                 <artifactId>redshift-jdbc42</artifactId>
+                <artifactId>redshift-jdbc42</artifactId>
                 <scope>runtime</scope>
                 <version>${redshiftJDBC.version}</version>
             </dependency>

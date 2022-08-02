@@ -27,6 +27,7 @@ import org.finos.legend.engine.plan.execution.nodes.helpers.platform.JavaHelper;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.Result;
+import org.finos.legend.engine.plan.execution.stores.StoreExecutionState;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutor;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutorBuilder;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutorConfiguration;
@@ -53,6 +54,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.ServiceLoader;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 public class PlanExecutor
@@ -67,6 +69,7 @@ public class PlanExecutor
     private final ImmutableList<StoreExecutor> extraExecutors;
     private final PlanExecutorInfo planExecutorInfo;
     private long graphFetchBatchMemoryLimit;
+    private BiFunction<MutableList<CommonProfile>, ExecutionState, ExecutionNodeExecutor> executionNodeExecutorBuilder;
 
     private PlanExecutor(boolean isJavaCompilationAllowed, ImmutableList<StoreExecutor> extraExecutors, long graphFetchBatchMemoryLimit)
     {
@@ -87,71 +90,90 @@ public class PlanExecutor
         return extraExecutors;
     }
 
+    public ImmutableList<StoreExecutor> getExecutorsOfType(StoreType type)
+    {
+        return this.extraExecutors.select(e -> e.getStoreState().getStoreType() == type);
+    }
+
+    @Deprecated
     public Result execute(String executionPlan)
     {
         return execute(executionPlan, (InputStream) null);
     }
 
+    @Deprecated
     public Result execute(String executionPlan, String input)
     {
         return execute(executionPlan, input, Collections.emptyMap());
     }
 
+    @Deprecated
     public Result execute(String executionPlan, Map<String, ?> params)
     {
         return execute(executionPlan, (InputStream) null, params);
     }
 
+    @Deprecated
     public Result execute(String executionPlan, String input, Map<String, ?> params)
     {
         return execute(executionPlan, (input == null) ? null : new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8)), params);
     }
 
+    @Deprecated
     public Result execute(String executionPlan, InputStream input)
     {
         return execute(executionPlan, input, Collections.emptyMap());
     }
 
+    @Deprecated
     public Result execute(String executionPlan, InputStream inputStream, Map<String, ?> params)
     {
         return execute(readExecutionPlan(executionPlan), inputStream, params);
     }
 
+    @Deprecated
     public Result execute(ExecutionPlan executionPlan)
     {
         return execute(executionPlan, (InputStream) null);
     }
 
+    @Deprecated
     public Result execute(ExecutionPlan executionPlan, String input)
     {
         return execute(executionPlan, input, Collections.emptyMap());
     }
 
+    @Deprecated
     public Result execute(ExecutionPlan executionPlan, Map<String, ?> params)
     {
         return execute(executionPlan, (InputStream) null, params);
     }
 
+    @Deprecated
     public Result execute(ExecutionPlan executionPlan, InputStream inputStream)
     {
         return execute(executionPlan, inputStream, Collections.emptyMap());
     }
 
+    @Deprecated
     public Result execute(ExecutionPlan executionPlan, String input, Map<String, ?> params)
     {
         return execute(executionPlan, (input == null) ? null : new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8)), params);
     }
 
+    @Deprecated
     public Result execute(ExecutionPlan executionPlan, InputStream inputStream, Map<String, ?> params)
     {
         return execute(executionPlan, params, (inputStream == null) ? null : new InputStreamProvider(inputStream));
     }
 
+    @Deprecated
     public Result execute(ExecutionPlan executionPlan, Map<String, ?> params, StreamProvider inputStreamProvider)
     {
         return execute(executionPlan, params, inputStreamProvider, null);
     }
 
+    @Deprecated
     public Result execute(ExecutionPlan executionPlan, Map<String, ?> params, String user, MutableList<CommonProfile> profiles, PlanExecutionContext planExecutionContext)
     {
         Map<String, Result> vars = Maps.mutable.ofInitialCapacity(params.size());
@@ -159,12 +181,13 @@ public class PlanExecutor
         return execute(executionPlan.getSingleExecutionPlan(params), vars, user, profiles, planExecutionContext);
     }
 
-    // TODO: Build a user friendly API
+    @Deprecated
     public Result execute(ExecutionPlan executionPlan, Map<String, ?> params, StreamProvider inputStreamProvider, PlanExecutionContext planExecutionContext)
     {
         return execute(executionPlan, params, inputStreamProvider, null, planExecutionContext);
     }
 
+    @Deprecated
     public Result execute(ExecutionPlan executionPlan, Map<String, ?> params, StreamProvider inputStreamProvider, MutableList<CommonProfile> profiles, PlanExecutionContext planExecutionContext)
     {
         SingleExecutionPlan singleExecutionPlan = executionPlan.getSingleExecutionPlan(params);
@@ -216,6 +239,54 @@ public class PlanExecutor
 
             // execute
             return singleExecutionPlan.rootExecutionNode.accept(new ExecutionNodeExecutor(profiles, state));
+        }
+    }
+
+    public Result executeWithArgs(ExecuteArgs executeArgs)
+    {
+        SingleExecutionPlan singleExecutionPlan = executeArgs.executionPlan.getSingleExecutionPlan(executeArgs.params);
+        try
+        {
+            StreamProvider inputStreamProvider = executeArgs.inputStreamProvider;
+            if (inputStreamProvider != null)
+            {
+                StreamProviderHolder.streamProviderThreadLocal.set(inputStreamProvider);
+            }
+
+            final ExecutionState state = (executeArgs.executionState != null) ?
+                    executeArgs.executionState :
+                    buildDefaultExecutionState(singleExecutionPlan, executeArgs.vars, executeArgs.planExecutionContext);
+
+            executeArgs.storeRuntimeContexts.forEach(((storeType, runtimeContext) ->
+            {
+                state.getStoreExecutionState(storeType).setRuntimeContext(runtimeContext);
+            }));
+
+            EngineJavaCompiler engineJavaCompiler = possiblyCompilePlan(singleExecutionPlan, state, executeArgs.profiles);
+            try (JavaHelper.ThreadContextClassLoaderScope scope = (engineJavaCompiler == null) ? null : JavaHelper.withCurrentThreadContextClassLoader(engineJavaCompiler.getClassLoader()))
+            {
+                // set up the state
+                if (singleExecutionPlan.authDependent)
+                {
+                    state.setAuthUser((singleExecutionPlan.kerberos == null) ? executeArgs.user : singleExecutionPlan.kerberos);
+                }
+                if (state.authId == null)
+                {
+                    state.setAuthUser(IdentityFactoryProvider.getInstance().makeIdentity(executeArgs.profiles).getName(), false);
+                }
+                if (singleExecutionPlan.authDependent && (state.getResult(USER_ID) == null))
+                {
+                    state.addResult(USER_ID, new ConstantResult(state.authId));
+                }
+                singleExecutionPlan.getExecutionStateParams(org.eclipse.collections.api.factory.Maps.mutable.empty()).forEach(state::addParameterValue);
+                // execute
+                ExecutionNodeExecutor executionNodeExecutor = this.buildExecutionNodeExecutor(executeArgs.profiles, state);
+                return singleExecutionPlan.rootExecutionNode.accept(executionNodeExecutor);
+            }
+        }
+        finally
+        {
+            StreamProviderHolder.streamProviderThreadLocal.remove();
         }
     }
 
@@ -401,5 +472,186 @@ public class PlanExecutor
         StoreExecutorConfiguration configuration = configurations.size() == 1 ? configurations.get(0) : null;
         StoreExecutor storeExecutor = configuration == null ? builder.build() : builder.build(configuration);
         return Optional.of(storeExecutor);
+    }
+
+    public static ExecuteArgsBuilder withArgs()
+    {
+        return new ExecuteArgsBuilder();
+    }
+
+    public static class ExecuteArgs
+    {
+        private ExecutionPlan executionPlan;
+        private ExecutionState executionState;
+        private StreamProvider inputStreamProvider;
+        private PlanExecutionContext planExecutionContext;
+        private Map<StoreType, StoreExecutionState.RuntimeContext> storeRuntimeContexts = Maps.mutable.empty();
+        private Map<String, Result> vars = Maps.mutable.empty();
+        private Map<String, Object> params = Maps.mutable.empty();
+        private MutableList<CommonProfile> profiles = Lists.mutable.empty();
+        private String user;
+
+        private ExecuteArgs(ExecuteArgsBuilder builder)
+        {
+            this.executionPlan = builder.executionPlan;
+            this.executionState = builder.executionState;
+            this.inputStreamProvider = builder.inputStreamProvider;
+            this.planExecutionContext = builder.planExecutionContext;
+            this.storeRuntimeContexts.putAll(builder.storeRuntimeContexts);
+            this.executionState = builder.executionState;
+            this.vars.putAll(builder.vars);
+            this.params.putAll(builder.params);
+            this.profiles.addAll(builder.profiles);
+            this.user = builder.user;
+        }
+
+        public static ExecuteArgsBuilder newArgs()
+        {
+            return new ExecuteArgsBuilder();
+        }
+    }
+
+    public static class ExecuteArgsBuilder
+    {
+        private ExecutionPlan executionPlan;
+        private ExecutionState executionState;
+        private StreamProvider inputStreamProvider;
+        private PlanExecutionContext planExecutionContext;
+        private Map<StoreType, StoreExecutionState.RuntimeContext> storeRuntimeContexts = Maps.mutable.empty();
+        private Map<String, Result> vars = Maps.mutable.empty();
+        private Map<String, Object> params = Maps.mutable.empty();
+        private MutableList<CommonProfile> profiles = Lists.mutable.empty();
+        private String user;
+
+        private ExecuteArgsBuilder()
+        {
+
+        }
+
+        public ExecuteArgsBuilder withPlan(ExecutionPlan executionPlan)
+        {
+            this.executionPlan = executionPlan;
+            return this;
+        }
+
+        public ExecuteArgsBuilder withPlanAsString(String executionPlanString)
+        {
+            this.executionPlan = PlanExecutor.readExecutionPlan(executionPlanString);
+            return this;
+        }
+
+        public ExecuteArgsBuilder withState(ExecutionState state)
+        {
+            this.executionState = state;
+            return this;
+        }
+
+        public ExecuteArgsBuilder withParams(Map<String, ?> params)
+        {
+            this.params.clear();
+            this.vars.clear();
+
+            if (params != null)
+            {
+                this.params.putAll(params);
+                params.forEach((key, value) -> this.vars.put(key, new ConstantResult(value)));
+            }
+
+            return this;
+        }
+
+        public ExecuteArgsBuilder withParamsAsResults(Map<String, Result> vars)
+        {
+            this.params.clear();
+            this.vars.clear();
+
+            if (vars != null)
+            {
+                vars.forEach((key, value) -> this.params.put(key, value));
+                this.vars.putAll(vars);
+            }
+
+            return this;
+        }
+
+        public ExecuteArgsBuilder withInputAsString(String input)
+        {
+            this.inputStreamProvider = new InputStreamProvider(new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8)));
+            return this;
+        }
+
+        public ExecuteArgsBuilder withInputAsStream(InputStream inputStream)
+        {
+            this.inputStreamProvider = new InputStreamProvider(inputStream);
+            return this;
+        }
+
+        public ExecuteArgsBuilder withInputAsStreamProvider(StreamProvider inputStreamProvider)
+        {
+            this.inputStreamProvider = inputStreamProvider;
+            return this;
+        }
+
+        public ExecuteArgsBuilder withProfiles(MutableList<CommonProfile> profiles)
+        {
+            this.profiles.clear();
+            if (profiles != null)
+            {
+                this.profiles.addAll(profiles);
+            }
+            return this;
+        }
+
+        public ExecuteArgsBuilder withUser(String user)
+        {
+            this.user = user;
+            return this;
+        }
+
+        public ExecuteArgsBuilder withPlanExecutionContext(PlanExecutionContext planExecutionContext)
+        {
+            this.planExecutionContext = planExecutionContext;
+            return this;
+        }
+
+        public ExecuteArgsBuilder withStoreRuntimeContexts(Map<StoreType, StoreExecutionState.RuntimeContext> storeRuntimeContexts)
+        {
+            this.storeRuntimeContexts = storeRuntimeContexts;
+            return this;
+        }
+
+        public ExecuteArgsBuilder withStoreRuntimeContext(StoreType storeType, StoreExecutionState.RuntimeContext storeRuntimeContext)
+        {
+            this.storeRuntimeContexts.put(storeType, storeRuntimeContext);
+            return this;
+        }
+
+        public ExecutionState getExecutionState()
+        {
+            return executionState;
+        }
+
+        public ExecuteArgs build()
+        {
+            ExecuteArgs executeArgs = new ExecuteArgs(this);
+            return executeArgs;
+        }
+    }
+
+    public void setExecutionNodeExecutorBuilder(BiFunction<MutableList<CommonProfile>, ExecutionState, ExecutionNodeExecutor> supplier)
+    {
+        this.executionNodeExecutorBuilder = supplier;
+    }
+
+    private ExecutionNodeExecutor buildExecutionNodeExecutor(MutableList<CommonProfile> profiles, ExecutionState executionState)
+    {
+        if (this.executionNodeExecutorBuilder == null)
+        {
+            return new ExecutionNodeExecutor(profiles, executionState);
+        }
+        else
+        {
+            return executionNodeExecutorBuilder.apply(profiles, executionState);
+        }
     }
 }
