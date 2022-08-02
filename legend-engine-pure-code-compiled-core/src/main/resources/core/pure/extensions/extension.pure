@@ -59,7 +59,6 @@ Class meta::pure::extension::Extension
 
   
   // BuildPlan
-  graphFetch_executionPlan_addCrossStoreChildren : Function<{ClusteredGraphFetchTree[1], String[*], String[1], Map<String, List<Any>>[1], Mapping[1], Runtime[1], ExecutionContext[1], Boolean[1], Boolean[1], Extension[*], DebugContext[1] -> Function<{Nil[1]->LocalGraphFetchExecutionNode[1]}>[*]}>[0..1];
   graphFetch_executionPlan_localGraphFetchExecutionNodeToString : Function<{String[1], Extension[*] -> Function<{Nil[1] -> String[1]}>[*]}>[0..1];
   graphExtension_calculateSourceTree : Function<{RootGraphFetchTree<Any>[1] -> Function<{Nil[1]->RootGraphFetchTree<Any>[1]}>[1]}>[0..1];
 

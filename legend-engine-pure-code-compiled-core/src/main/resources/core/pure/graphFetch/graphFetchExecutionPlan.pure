@@ -161,11 +161,14 @@ function <<access.private>> meta::pure::graphFetch::executionPlan::addCrossStore
                                         |$currentTree->toOne()->getPathTo($ch.first)->toOne(),
                                         |$parentPath->toOne()+'.'+$currentTree->getPathTo($ch.first)->toOne()
                                      );
-           let crossLocalNode      = $ch.first.store->match([
-                                                                model : ModelStore[1] | planCrossStoreGraphFetchExecutionInMemory($childTreeOneCluster, $orderedPaths, $newParentPath, $inScopeVars, $m, $runtime, $exeCtx, $enableConstraints, $checked, $extensions, $debug);
-                                                            ]->concatenate(
-                                                                $extensions.graphFetch_executionPlan_addCrossStoreChildren->map(f|$f->evaluate([list($childTreeOneCluster), list($orderedPaths), list($newParentPath), list($inScopeVars), list($m), list($runtime), list($exeCtx), list($enableConstraints), list($checked), list($extensions), list($debug)])->cast(@Function<{Nil[1]->LocalGraphFetchExecutionNode[1]}>))
-                                                            )->toOneMany())->toOne()->cast(@LocalGraphFetchExecutionNode);
+           let crossLocalNode      = $ch.first.s.planCrossGraphFetchExecution->toOne()->evaluate([list($childTreeOneCluster), list($orderedPaths), list($newParentPath), list($enableConstraints), list($checked), list($inScopeVars), list($m), list($runtime), list($exeCtx), list($extensions), list($debug)])->toOne()->cast(@LocalGraphFetchExecutionNode);
+           
+          //  tore->match([
+          //                                                       model : ModelStore[1] | planCrossStoreGraphFetchExecutionInMemory($childTreeOneCluster, $orderedPaths, $newParentPath, $inScopeVars, $m, $runtime, $exeCtx, $enableConstraints, $checked, $extensions, $debug);
+          //                                                   ]->concatenate(
+          //                                                       $extensions.graphFetch_executionPlan_addCrossStoreChildren->map(f|$f->evaluate([list($childTreeOneCluster), list($orderedPaths), list($newParentPath), list($inScopeVars), list($m), list($runtime), list($exeCtx), list($enableConstraints), list($checked), list($extensions), list($debug)])->cast(@Function<{Nil[1]->LocalGraphFetchExecutionNode[1]}>))
+          //                                                   )->toOneMany())->toOne()->cast(@LocalGraphFetchExecutionNode);
+                                                            
            let propertyMapping     = $routedTree.propertyMapping->toOne()->cast(@meta::pure::mapping::xStore::XStorePropertyMapping);
            let newCrossNode        = ^GlobalGraphFetchExecutionNode
                                      (

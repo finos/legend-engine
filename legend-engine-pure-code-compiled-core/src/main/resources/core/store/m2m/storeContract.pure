@@ -22,8 +22,10 @@ function meta::pure::mapping::modelToModel::contract::modelStoreContract():Store
      id = 'modelStore',
      executeStoreQuery = meta::pure::mapping::modelToModel::contract::execution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_1__Runtime_1__ExecutionContext_1__Extension_MANY__DebugContext_1__Result_1_,
      supports = meta::pure::mapping::modelToModel::contract::supports_FunctionExpression_1__Boolean_1_,
+     
      planExecution = meta::pure::mapping::modelToModel::contract::planExecution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__Extension_MANY__DebugContext_1__ExecutionNode_1_,
      planGraphFetchExecution = meta::pure::mapping::modelToModel::contract::planGraphFetchExecution_ClusteredGraphFetchTree_1__String_MANY__Boolean_1__Boolean_1__StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_1__Runtime_1__ExecutionContext_1__Extension_MANY__DebugContext_1__LocalGraphFetchExecutionNode_1_,
+     planCrossGraphFetchExecution = meta::pure::mapping::modelToModel::contract::planCrossGraphFetchExecution_ClusteredGraphFetchTree_1__String_MANY__String_1__Boolean_1__Boolean_1__Map_1__Mapping_1__Runtime_1__ExecutionContext_1__Extension_MANY__DebugContext_1__LocalGraphFetchExecutionNode_1_,
 
      localGetterOverrideMapped = meta::pure::mapping::modelToModel::contract::getterOverrideMapped_Any_1__PropertyMapping_1__Any_MANY_,
      localGetterOverrideNonMapped = meta::pure::mapping::modelToModel::contract::getterOverrideNonMapped_Any_1__Property_1__Any_MANY_,
@@ -66,7 +68,10 @@ function meta::pure::mapping::modelToModel::contract::planGraphFetchExecution(tr
   meta::pure::mapping::modelToModel::graphFetch::executionPlan::planRootGraphFetchExecutionInMemory($sq, $ext, $tree, $orderedPaths, $m, $runtime, $exeCtx, $enableConstraints, $checked, $extensions, $debug)
 }
 
-
+function meta::pure::mapping::modelToModel::contract::planCrossGraphFetchExecution(tree:ClusteredGraphFetchTree[1], orderedPaths:String[*], newParentPath:String[1], enableConstraints:Boolean[1], checked:Boolean[1], inScopeVars: Map<String, List<Any>>[1], m:Mapping[1], runtime:Runtime[1], exeCtx:ExecutionContext[1], extensions:Extension[*], debug:DebugContext[1]):LocalGraphFetchExecutionNode[1]
+{
+  meta::pure::mapping::modelToModel::graphFetch::executionPlan::planCrossStoreGraphFetchExecutionInMemory($tree, $orderedPaths, $newParentPath, $inScopeVars, $m, $runtime, $exeCtx, $enableConstraints, $checked, $extensions, $debug);
+}
 
 function meta::pure::mapping::modelToModel::contract::getterOverrideMapped(o:Any[1], propertyMapping:PropertyMapping[1]):Any[*]
 {

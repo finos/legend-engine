@@ -67,12 +67,7 @@ function meta::relational::extension::relationalExtension(type:String[1]) : meta
       availableStores = meta::pure::extension::defaultExtensions().availableStores->concatenate(meta::relational::contract::relationalStoreContract()),                         
 
       serializerExtension =  meta::relational::extension::relationalSerializerExtension_String_1__String_1_,
-
-      graphFetch_executionPlan_addCrossStoreChildren = {
-         clusteredTree: ClusteredGraphFetchTree[1], orderedPaths: String[*], parentPath: String[1], inScopeVars: Map<String, List<Any>>[1], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], enableConstraints: Boolean[1], checked: Boolean[1], extensions: Extension[*], debug: DebugContext[1] |
-         {db : meta::relational::metamodel::Database[1] | meta::relational::graphFetch::executionPlan::planCrossRootGraphFetchExecutionRelational($clusteredTree, $orderedPaths, $parentPath, $inScopeVars, $mapping, $runtime, $exeCtx, $extensions, $debug)}
-      },
-      
+     
       graphFetch_executionPlan_localGraphFetchExecutionNodeToString = {space: String[1], extensions:meta::pure::extension::Extension[*] | {r: meta::relational::graphFetch::executionPlan::RelationalGraphFetchExecutionNode[1] | $r->relationalGraphFetchExecutionNodeToString($space, $extensions)}},
       
       executionPlan_execution_processNode = 
