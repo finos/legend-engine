@@ -47,7 +47,7 @@ function meta::pure::executionPlan::engine::java::tests::doTestWhenSubType() : B
 }
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
-{  meta::pure::executionPlan::profiles::serverVersion.start='vX_X_X' }
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_24_0' }
 meta::pure::executionPlan::engine::java::tests::testSubType() : Boolean[1]
 {
    javaPureTests(engineConventions([]), [
