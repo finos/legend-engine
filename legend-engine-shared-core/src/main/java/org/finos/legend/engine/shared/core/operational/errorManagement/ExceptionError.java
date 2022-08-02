@@ -20,6 +20,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
+import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 
 public class ExceptionError
 {
@@ -32,6 +33,7 @@ public class ExceptionError
 
     private Object payload;
     private SourceInformation sourceInformation;
+    private EngineErrorType errorType;
 
     ExceptionError(int code, String message)
     {
@@ -48,15 +50,25 @@ public class ExceptionError
         t.printStackTrace(writer);
         this.code = code;
         int index = ExceptionUtils.indexOfThrowable(t, EngineException.class);
-        this.message = index == -1 ? ExceptionUtils.getRootCauseMessage(t) : ExceptionUtils.getThrowables(t)[index].getMessage();
+        Throwable[] throwables = ExceptionUtils.getThrowables(t);
+        this.message = index == -1 ? ExceptionUtils.getRootCauseMessage(t) : throwables[index].getMessage();
         this.trace = out.toString();
-        if (t instanceof EngineException && ((EngineException) t).getSourceInformation() != SourceInformation.getUnknownSourceInformation())
+        if (t instanceof EngineException)
         {
-            this.sourceInformation = ((EngineException) t).getSourceInformation();
+            this.errorType = ((EngineException) t).getErrorType();
+            if (((EngineException) t).getSourceInformation() != SourceInformation.getUnknownSourceInformation())
+            {
+                this.sourceInformation = ((EngineException) t).getSourceInformation();
+            }
         }
-        if (index != -1 && ExceptionUtils.getThrowables(t)[index] instanceof EngineException && ((EngineException) ExceptionUtils.getThrowables(t)[index]).getSourceInformation() != SourceInformation.getUnknownSourceInformation())
+        if (index != -1 && throwables[index] instanceof EngineException)
         {
-            this.sourceInformation = ((EngineException) ExceptionUtils.getThrowables(t)[index]).getSourceInformation();
+            EngineException engineException = (EngineException) throwables[index];
+            this.errorType = engineException.getErrorType();
+            if (engineException.getSourceInformation() != SourceInformation.getUnknownSourceInformation())
+            {
+                this.sourceInformation = engineException.getSourceInformation();
+            }
         }
     }
 
@@ -80,4 +92,8 @@ public class ExceptionError
         return this.sourceInformation;
     }
 
+    public EngineErrorType getErrorType()
+    {
+        return errorType;
+    }
 }
