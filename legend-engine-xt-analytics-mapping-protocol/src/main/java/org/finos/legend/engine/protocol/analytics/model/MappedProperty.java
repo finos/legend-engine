@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.api.analytics.model;
+package org.finos.legend.engine.protocol.analytics.model;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type", defaultImpl = MappedProperty.class)
 @JsonSubTypes({
         @JsonSubTypes.Type(value = EntityMappedProperty.class, name = "entity"),
         @JsonSubTypes.Type(value = EnumMappedProperty.class, name = "enum"),
@@ -26,10 +26,4 @@ public class MappedProperty
 {
     public String name;
     public MappedPropertyInfo mappedPropertyInfo;
-
-    public MappedProperty(String name)
-    {
-        this.name = name;
-        this.mappedPropertyInfo = null;
-    }
 }

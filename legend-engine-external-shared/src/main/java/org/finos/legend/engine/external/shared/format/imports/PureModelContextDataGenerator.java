@@ -20,6 +20,7 @@ import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Association;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Enumeration;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
@@ -40,6 +41,7 @@ public class PureModelContextDataGenerator
     private static final MutableMap<String, Method> functionPlanTransforms = Maps.mutable.empty();
     private static final MutableMap<String, Method> classAppliedFunctionTransforms = Maps.mutable.empty();
     private static final MutableMap<String, Method> profileTransforms = Maps.mutable.empty();
+    private static final MutableMap<String, Method> associationTransforms = Maps.mutable.empty();
 
     public static java.lang.Class<?> loadTransClass(String pureVersion) throws ClassNotFoundException
     {
@@ -243,6 +245,40 @@ public class PureModelContextDataGenerator
             catch (Exception e)
             {
                 throw new RuntimeException(e);
+            }
+        });
+        return builder.build();
+    }
+
+    public static PureModelContextData generatePureModelContextDataFromAssociations(RichIterable<? extends PackageableElement> pureAssociations, String pureVersion, CompiledExecutionSupport compiledExecutionSupport) throws RuntimeException
+    {
+        Method transformMethod = associationTransforms.getIfAbsentPut(pureVersion, () ->
+        {
+            try
+            {
+                if ("vX_X_X".equals(pureVersion) || PureClientVersions.versionAGreaterThanOrEqualsVersionB(pureVersion, "v1_18_0"))
+                {
+                    return java.lang.Class.forName("org.finos.legend.pure.generated.core_pure_protocol_" + pureVersion + "_transfers_metamodel").getMethod("Root_meta_protocols_pure_" + pureVersion + "_transformation_fromPureGraph_domain_transformAssociation_Association_1__Extension_MANY__Association_1_", org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association.class, RichIterable.class, ExecutionSupport.class);
+                }
+                else
+                {
+                    return loadTransClass(pureVersion).getMethod("Root_meta_protocols_pure_" + pureVersion + "_transformation_fromPureGraph_domain_transformAssociation_Association_1__Extension_MANY__Association_1_", org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association.class, ExecutionSupport.class);
+                }
+            }
+            catch (Exception e)
+            {
+                throw new RuntimeException(e);
+            }
+        });
+        PureModelContextData.Builder builder = PureModelContextData.newBuilder();
+        pureAssociations.toList().forEach(association ->
+        {
+            try
+            {
+                builder.addElement(objectMapper.readValue(org.finos.legend.pure.generated.core_pure_protocol_protocol.Root_meta_alloy_metadataServer_alloyToJSON_Any_1__String_1_("vX_X_X".equals(pureVersion) ? transformMethod.invoke(null, association, core_pure_extensions_functions.Root_meta_pure_extension_defaultExtensions__Extension_MANY_(compiledExecutionSupport), compiledExecutionSupport) : transformMethod.invoke(null, association, compiledExecutionSupport), compiledExecutionSupport), Association.class));
+            }
+            catch (Exception ignored)
+            {
             }
         });
         return builder.build();

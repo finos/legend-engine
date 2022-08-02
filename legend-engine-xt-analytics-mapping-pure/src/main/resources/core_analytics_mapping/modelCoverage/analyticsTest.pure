@@ -15,29 +15,29 @@
 import meta::analytics::mapping::modelCoverage::*;
 import meta::pure::mapping::*;
 
-function meta::analytics::mapping::modelCoverage::test::generateModelCoverageAnalytics(mapping: Mapping[1]): MappedEntity[*]
+function meta::analytics::mapping::modelCoverage::test::generateModelCoverageAnalytics(mapping: Mapping[1]): MappingModelCoverageAnalysisResult[1]
 {
-  meta::analytics::mapping::modelCoverage::doModelCoverageAnalytics($mapping);
+  meta::analytics::mapping::modelCoverage::analyze($mapping, false, false);
 }
 
 // Relational
 function <<meta::pure::profiles::test.Test>> meta::analytics::mapping::modelCoverage::test::testSimpleRelationalMappingCoverage():Boolean[1]
 {
-  let modelCoverageAnalytics = meta::analytics::mapping::modelCoverage::test::generateModelCoverageAnalytics(meta::analytics::mapping::modelCoverage::test::sampleRelationalMapping);
-  let mappedEntityForFirm = $modelCoverageAnalytics->filter(mp|$mp.path == 'meta::analytics::mapping::modelCoverage::test::Firm');
+  let result = meta::analytics::mapping::modelCoverage::test::generateModelCoverageAnalytics(meta::analytics::mapping::modelCoverage::test::sampleRelationalMapping);
+  let mappedEntityForFirm = $result.mappedEntities->filter(mp|$mp.path == 'meta::analytics::mapping::modelCoverage::test::Firm');
   assert($mappedEntityForFirm.properties->size() == 4);
   assertContains($mappedEntityForFirm.properties.name, 'id');
   // qualified property
   assertContains($mappedEntityForFirm.properties.name, 'employeeSize');
   // embedded relational mapping
   assertContains($mappedEntityForFirm.properties.name, 'employees');
-  assertContains($modelCoverageAnalytics.path, $mappedEntityForFirm.properties->filter(p|$p.name == 'employees')->toOne()->cast(@EntityMappedProperty).entityPath);
+  assertContains($result.mappedEntities.path, $mappedEntityForFirm.properties->filter(p|$p.name == 'employees')->toOne()->cast(@EntityMappedProperty).entityPath);
 }
 
 function <<meta::pure::profiles::test.Test>> meta::analytics::mapping::modelCoverage::test::testSimpleRelationalInheritanceMappingCoverage():Boolean[1]
 {
-  let modelCoverageAnalytics = meta::analytics::mapping::modelCoverage::test::generateModelCoverageAnalytics(meta::analytics::mapping::modelCoverage::test::sampleRelationalMapping);
-  let mappedEntityForLegalEntity = $modelCoverageAnalytics->filter(mp|$mp.path == 'meta::analytics::mapping::modelCoverage::test::LegalEntity');
+  let result = meta::analytics::mapping::modelCoverage::test::generateModelCoverageAnalytics(meta::analytics::mapping::modelCoverage::test::sampleRelationalMapping);
+  let mappedEntityForLegalEntity = $result.mappedEntities->filter(mp|$mp.path == 'meta::analytics::mapping::modelCoverage::test::LegalEntity');
   assert($mappedEntityForLegalEntity.properties->size() == 4);
   assertContains($mappedEntityForLegalEntity.properties->filter(p|$p->instanceOf(EntityMappedProperty))->cast(@EntityMappedProperty).entityPath, '@meta::analytics::mapping::modelCoverage::test::Firm');
   assertContains($mappedEntityForLegalEntity.properties->filter(p|$p->instanceOf(EntityMappedProperty))->cast(@EntityMappedProperty).entityPath, 'meta_analytics_mapping_modelCoverage_test_Firm_employees');
@@ -45,8 +45,8 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::mapping::modelCove
 
 function <<meta::pure::profiles::test.Test>> meta::analytics::mapping::modelCoverage::test::testSimpleRelationalUnionMappingCoverage():Boolean[1]
 {
-  let modelCoverageAnalytics = meta::analytics::mapping::modelCoverage::test::generateModelCoverageAnalytics(meta::analytics::mapping::modelCoverage::test::sampleRelationalMapping);
-  let mappedEntityForStreet = $modelCoverageAnalytics->filter(mp|$mp.path == 'meta::analytics::mapping::modelCoverage::test::Street');
+  let result = meta::analytics::mapping::modelCoverage::test::generateModelCoverageAnalytics(meta::analytics::mapping::modelCoverage::test::sampleRelationalMapping);
+  let mappedEntityForStreet = $result.mappedEntities->filter(mp|$mp.path == 'meta::analytics::mapping::modelCoverage::test::Street');
   assert($mappedEntityForStreet.properties->size() == 1);
   assertContains($mappedEntityForStreet.properties.name, 'zipcode');
 }
@@ -54,24 +54,24 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::mapping::modelCove
 // M2M
 function <<meta::pure::profiles::test.Test>> meta::analytics::mapping::modelCoverage::test::testSimpleM2MMappingCoverage():Boolean[1]
 {
-  let modelCoverageAnalytics = meta::analytics::mapping::modelCoverage::test::generateModelCoverageAnalytics(meta::analytics::mapping::modelCoverage::test::sampleModelToModelMapping);
-  let mappedEntityForTargetFirm = $modelCoverageAnalytics->filter(mp|$mp.path == 'meta::analytics::mapping::modelCoverage::test::_Firm');
+  let result = meta::analytics::mapping::modelCoverage::test::generateModelCoverageAnalytics(meta::analytics::mapping::modelCoverage::test::sampleModelToModelMapping);
+  let mappedEntityForTargetFirm = $result.mappedEntities->filter(mp|$mp.path == 'meta::analytics::mapping::modelCoverage::test::_Firm');
   assert($mappedEntityForTargetFirm.properties->size() == 2);
   assertContains($mappedEntityForTargetFirm.properties.name, 'employees');
 }
 
 function <<meta::pure::profiles::test.Test>> meta::analytics::mapping::modelCoverage::test::testSimpleUnionM2MMappingCoverage():Boolean[1]
 {
-  let modelCoverageAnalytics = meta::analytics::mapping::modelCoverage::test::generateModelCoverageAnalytics(meta::analytics::mapping::modelCoverage::test::sampleModelToModelMapping);
-  let mappedEntityForTargetStreet = $modelCoverageAnalytics->filter(mp|$mp.path == 'meta::analytics::mapping::modelCoverage::test::_Street');
+  let result = meta::analytics::mapping::modelCoverage::test::generateModelCoverageAnalytics(meta::analytics::mapping::modelCoverage::test::sampleModelToModelMapping);
+  let mappedEntityForTargetStreet = $result.mappedEntities->filter(mp|$mp.path == 'meta::analytics::mapping::modelCoverage::test::_Street');
   assert($mappedEntityForTargetStreet.properties->size() == 1);
   assertContains($mappedEntityForTargetStreet.properties.name, 'streetName');
 }
 
 function <<meta::pure::profiles::test.Test>> meta::analytics::mapping::modelCoverage::test::testAutoMappedMappingCoverage():Boolean[1]
 {
-  let modelCoverageAnalytics = meta::analytics::mapping::modelCoverage::test::generateModelCoverageAnalytics(meta::analytics::mapping::modelCoverage::test::sampleModelToModelMapping);
-  let mappedEntityForTargetLegalEntity = $modelCoverageAnalytics->filter(mp|$mp.path == 'meta::analytics::mapping::modelCoverage::test::_LegalEntity');
+  let result = meta::analytics::mapping::modelCoverage::test::generateModelCoverageAnalytics(meta::analytics::mapping::modelCoverage::test::sampleModelToModelMapping);
+  let mappedEntityForTargetLegalEntity = $result.mappedEntities->filter(mp|$mp.path == 'meta::analytics::mapping::modelCoverage::test::_LegalEntity');
   assert($mappedEntityForTargetLegalEntity.properties->size() == 1); 
   // auto-mapped property
   assertContains($mappedEntityForTargetLegalEntity.properties.name, 'legalName');

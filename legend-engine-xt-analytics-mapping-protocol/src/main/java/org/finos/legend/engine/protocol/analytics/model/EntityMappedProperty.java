@@ -12,17 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.api.analytics.model;
+package org.finos.legend.engine.protocol.analytics.model;
 
-public enum MappedPropertyType
+public class EntityMappedProperty extends MappedProperty
 {
-    String,
-    Integer,
-    Boolean,
-    Float,
-    Date,
-    DateTime,
-    Enumeration,
-    Entity,
-    Number
+    public String entityPath;
+    public String subType;
 }

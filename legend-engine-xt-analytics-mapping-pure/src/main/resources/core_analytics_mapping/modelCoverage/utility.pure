@@ -14,7 +14,6 @@
 
 import meta::analytics::mapping::modelCoverage::utility::*;
 
-
 function meta::analytics::mapping::modelCoverage::utility::isMilestoned(type:Type[1]):Boolean[1]
 {
    $type->isBiTemporal() || $type->meta::analytics::mapping::modelCoverage::utility::isProcessingTemporal() || $type->meta::analytics::mapping::modelCoverage::utility::isBusinessTemporal();

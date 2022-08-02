@@ -172,6 +172,7 @@ function meta::analytics::mapping::modelCoverage::reRoot(classMappings:SetImplem
    let adjustedRootClassMappings = $rootClassMappings
       ->groupBy(cm | $cm.class)
       ->keyValues()
+      ->sort({x,y|$x.first->elementToPath()->compare($y.first->elementToPath())})
       ->map(kv |
          $kv.second.values->map(v |
             let root = if ($kv.second.values->size() > 1,

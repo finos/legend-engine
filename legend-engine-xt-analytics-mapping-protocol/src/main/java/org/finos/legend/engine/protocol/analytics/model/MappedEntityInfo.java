@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.api.analytics.model;
+package org.finos.legend.engine.protocol.analytics.model;
 
 import java.util.List;
 
@@ -20,22 +20,4 @@ public class MappedEntityInfo
 {
     public boolean isRootEntity;
     public List<String> subClasses;
-
-    public MappedEntityInfo(boolean isRootEntity, List<String> subClasses)
-    {
-        this.isRootEntity = isRootEntity;
-        this.subClasses = subClasses;
-    }
-
-    public MappedEntityInfo(boolean isRootEntity)
-    {
-        this.isRootEntity = isRootEntity;
-        this.subClasses = null;
-    }
-
-    public MappedEntityInfo(List<String> subClasses)
-    {
-        this.isRootEntity = false;
-        this.subClasses = subClasses;
-    }
 }
