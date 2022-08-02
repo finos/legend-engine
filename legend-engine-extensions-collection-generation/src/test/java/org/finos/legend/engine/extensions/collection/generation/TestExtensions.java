@@ -294,6 +294,7 @@ public class TestExtensions
         // DO NOT DELETE ITEMS FROM THIS LIST (except when replacing them with something equivalent)
         return Lists.mutable.<String>empty()
                 .with("core")
+                .with("core_analytics_mapping")
                 .with("core_data_space")
                 .with("core_diagram")
                 .with("core_external_format_avro")
