@@ -202,7 +202,6 @@ public class TestExtensions
                 .with(org.finos.legend.engine.protocol.pure.v1.ServiceProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.ServiceStoreProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.TextProtocolExtension.class)
-                .with(org.finos.legend.engine.external.shared.ExternalFormatProtocolExtension.class)
                 .with(org.finos.legend.engine.external.format.flatdata.FlatDataProtocolExtension.class)
                 .with(org.finos.legend.engine.external.format.json.JsonProtocolExtension.class)
                 .with(org.finos.legend.engine.external.format.xml.XmlProtocolExtension.class);

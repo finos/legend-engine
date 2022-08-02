@@ -12,13 +12,15 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.external.format.json;
+package org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat;
 
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNodeVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.ExternalFormatSerializeExecutionNode;
 
-public class JsonSerializeExecutionNode extends ExternalFormatSerializeExecutionNode
+public class UrlStreamExecutionNode extends ExecutionNode
 {
+    public String url;
+
     @Override
     public <T> T accept(ExecutionNodeVisitor<T> executionNodeVisitor)
     {

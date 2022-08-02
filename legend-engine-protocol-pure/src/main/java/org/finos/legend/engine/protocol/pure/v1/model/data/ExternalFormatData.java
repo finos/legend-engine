@@ -16,7 +16,6 @@ package org.finos.legend.engine.protocol.pure.v1.model.data;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-//TODO: This should be moved to legend-engine-protocol-external-shared-format module
 public class ExternalFormatData extends EmbeddedData
 {
     @JsonProperty(required = true)

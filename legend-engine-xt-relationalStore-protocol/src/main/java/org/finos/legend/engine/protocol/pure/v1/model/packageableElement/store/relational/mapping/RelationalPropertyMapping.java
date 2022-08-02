@@ -14,10 +14,10 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping;
 
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.BindingTransformer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMappingVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.RelationalOperationElement;
-import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.BindingTransformer;
 
 public class RelationalPropertyMapping extends PropertyMapping
 {
