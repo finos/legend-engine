@@ -260,21 +260,12 @@ function meta::pure::graphFetch::executionPlan::globalGraphFetchExecutionNodeToS
    'GlobalGraphFetch\n' + 
       $space + '(' + header($g, $space, $extensions) + '\n'+
       $space + '  store = ' + $g.store->elementToPath() + '\n'+
-      $space + '  localGraphFetchExecutionNode = \n' + $space + '     ' + $g.localGraphFetchExecutionNode->localGraphFetchExecutionNodeToString($space + '     ', $extensions) +
+      $space + '  localGraphFetchExecutionNode = \n' + $g.localGraphFetchExecutionNode->meta::pure::executionPlan::toString::planNodeToString($space+ '     ', $extensions) +
       $space + '  children = ' + $g.children->map(x | globalGraphFetchExecutionNodeToString($x, $space + '     ', $extensions))->joinStrings('[\n'+ $space + '     ', '\n' + $space + '     ', '\n' + $space + '  ]\n') + 
       if($g.parentIndex->isEmpty(), | '', | $space + '  parentIndex = ' + $g.parentIndex->toOne()->toString() + '\n') +
       if($g.xStorePropertyMapping->isEmpty(), | '', | $space + '  xStorePropertyMapping = ' + $g.xStorePropertyMapping.property.name->toOne() + '[' + $g.xStorePropertyMapping.sourceSetImplementationId->toOne() + ' -> ' + $g.xStorePropertyMapping.targetSetImplementationId->toOne() + ']' + '\n') +
       $g.implementation->printImplementation('implementation', $space+'  ', $extensions)+
       $space + ')\n';
-}
-
-function meta::pure::graphFetch::executionPlan::localGraphFetchExecutionNodeToString(g: LocalGraphFetchExecutionNode[1], space: String[1], extensions:meta::pure::extension::Extension[*]):String[1]
-{  
-   $g->match([
-      i : InMemoryGraphFetchExecutionNode[1] | $i->inMemoryGraphFetchExecutionNodeToString($space, $extensions)
-   ]->concatenate(
-      $extensions.graphFetch_executionPlan_localGraphFetchExecutionNodeToString->map(f | $f->evaluate([list($space), list($extensions)])->cast(@Function<{Nil[1]->String[1]}>))
-   )->toOneMany());
 }
 
 function meta::pure::graphFetch::executionPlan::resultTypeFromGraphFetchTree(g: GraphFetchTree[1]):PartialClassResultType[1]
