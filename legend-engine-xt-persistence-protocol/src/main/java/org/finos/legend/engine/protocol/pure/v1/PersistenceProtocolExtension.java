@@ -22,8 +22,11 @@ import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistenceContext;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.PersistencePlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.DefaultPersistencePlatform;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.PersistencePlatform;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.CronTrigger;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.ManualTrigger;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
 
 import java.util.List;
 import java.util.Map;
@@ -43,6 +46,12 @@ public class PersistenceProtocolExtension implements PureProtocolExtension
                 // Persistence platform
                 ProtocolSubTypeInfo.newBuilder(PersistencePlatform.class)
                         .withSubtype(DefaultPersistencePlatform.class, "default")
+                        .build(),
+
+                // Trigger
+                ProtocolSubTypeInfo.newBuilder(Trigger.class)
+                        .withSubtype(ManualTrigger.class, "manualTrigger")
+                        .withSubtype(CronTrigger.class, "cronTrigger")
                         .build()
         ));
     }

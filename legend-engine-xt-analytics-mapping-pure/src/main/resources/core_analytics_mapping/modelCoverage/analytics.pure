@@ -1,0 +1,153 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::analytics::mapping::modelCoverage::*;
+import meta::pure::mapping::*;
+import meta::pure::router::routing::*;
+import meta::analytics::mapping::modelCoverage::utility::*;
+import meta::pure::mapping::modelToModel::*;
+
+
+Class meta::analytics::mapping::modelCoverage::MappingModelCoverageAnalysisResult
+{
+   mappedEntities : MappedEntity[*];
+}
+
+Enum meta::analytics::mapping::modelCoverage::MappedPropertyType
+{
+    String,
+    Integer,
+    Boolean,
+    Float,
+    Date,
+    DateTime,
+    Enumeration,
+    Entity,
+    Number,
+    Decimal,
+    Binary,
+    Unknown
+}
+
+Class meta::analytics::mapping::modelCoverage::MappedEntityInfo 
+{
+   isRootEntity : Boolean[0..1];
+   subClasses : String[*];
+}
+
+Class meta::analytics::mapping::modelCoverage::MappedEntity
+{
+   path : String[1];
+   properties : MappedProperty[*];
+   info: MappedEntityInfo[0..1];
+}
+
+Class meta::analytics::mapping::modelCoverage::MappedPropertyInfo 
+{
+  type : MappedPropertyType[1];
+  multiplicity: Multiplicity[1];
+}
+
+Class meta::analytics::mapping::modelCoverage::MappedProperty
+{
+   name : String[1];
+   info: meta::analytics::mapping::modelCoverage::MappedPropertyInfo[0..1];
+}
+
+Class meta::analytics::mapping::modelCoverage::EnumMappedProperty extends MappedProperty
+{
+   enumPath : String[1];
+}
+
+Class meta::analytics::mapping::modelCoverage::EntityMappedProperty extends MappedProperty
+{
+   entityPath : String[1];
+   subType: String[0..1];
+}
+
+Class <<access.private>> meta::analytics::mapping::modelCoverage::AssociatedMappedProperty extends EntityMappedProperty
+{
+   association : String[1];
+}
+
+Class <<access.private>> meta::analytics::mapping::modelCoverage::InheritanceMappedProperty extends EntityMappedProperty {}
+
+Class <<access.private>> meta::analytics::mapping::modelCoverage::MultiInheritanceMappedProperty extends EntityMappedProperty
+{
+   subClasses: String[*];
+   inheritanceEntityPath : String[1];
+}
+
+Class <<access.private>> meta::analytics::mapping::modelCoverage::MultiInheritanceEntityMappedProperty extends MultiInheritanceMappedProperty{}
+
+Class <<access.private>> meta::analytics::mapping::modelCoverage::MultiInheritanceAssociatedMappedProperty extends AssociatedMappedProperty, MultiInheritanceMappedProperty{}
+
+function meta::analytics::mapping::modelCoverage::analyze(
+  mapping: Mapping[1],
+  returnMappedEntityInfo: Boolean[1],
+  returnMappedPropertyInfo: Boolean[1]
+): MappingModelCoverageAnalysisResult[1]
+{
+  let config = ^AnalysisConfiguration(
+    returnMappedEntityInfo = $returnMappedEntityInfo,
+    returnMappedPropertyInfo = $returnMappedPropertyInfo
+  );
+  let classMappings = $mapping.classMappings()->reRoot($mapping);
+  let rootClassMappings = $classMappings->filter(x | !$x->instanceOf(EmbeddedSetImplementation));
+  let operations = $classMappings->filter(c | $c->instanceOf(OperationSetImplementation))->cast(@OperationSetImplementation);
+  let inheritanceMap = newMap($operations->map(i | pair($i, list($i->resolveOperation($mapping)->sortBy(x | $x.id)))));
+  let allProperties = $classMappings->getAllPropertyInfo($rootClassMappings);
+  let allClasses = $classMappings->getAllClassInfo();
+  let allMappings = $mapping->concatenate($mapping->getIncludes())->removeDuplicates();
+  let mappingToClassMappings = newMap($allMappings->map(map |
+      let mapClassMappingsIds = $map.classMappings().id;
+      pair($map, list($classMappings->filter(cm | $cm.id->in($mapClassMappingsIds))));
+  ));
+  let entities = $classMappings->map(cm |
+      $cm->match([
+         o:OperationSetImplementation[1] |
+            let subTypeMappings = $o->resolveOperation($mapping)->concatenate($operations->filter(op | $op.class->superTypes()->contains($o.class)));
+            buildInheritanceEntities($o, $o, [], $subTypeMappings, '', $rootClassMappings, $allClasses, $allProperties, $inheritanceMap, $mappingToClassMappings, $o.root, true, $config);,
+         a:meta::pure::mapping::aggregationAware::AggregationAwareSetImplementation[1] |
+            buildEntity(
+               $a.mainSetImplementation.class, buildEntityName($a.mainSetImplementation), $a.mainSetImplementation, $a.mainSetImplementation.allPropertyMappings(), $rootClassMappings, $allClasses,
+               $allProperties, $inheritanceMap, $mappingToClassMappings, $a.root, $config
+            ),
+         i:InstanceSetImplementation[1] |
+            buildEntity(
+               $i.class, buildEntityName($i), $i, $i->getPropertyMappings($classMappings), $rootClassMappings, $allClasses,
+               $allProperties, $inheritanceMap, $mappingToClassMappings, $i.root, $config
+            );,
+         an:Any[1] | []
+      ])
+  )->removeDuplicatesBy(x | $x.path);
+  let inheritanceEntities = $entities.properties
+      ->filter(c | $c->instanceOf(MultiInheritanceMappedProperty))
+      ->cast(@MultiInheritanceMappedProperty)
+      ->map(i |
+         let op = $operations->filter(o | $o.class->elementToPath() == $i.inheritanceEntityPath)->last()->toOne();
+         let subTypes = $op->resolveOperation($mapping)->filter(o | $o.class->elementToPath()->in($i.subClasses));
+         let superTypes = $operations->filter(o | $o.class->superTypes()->contains($op.class));
+         let namePrefix = $i.entityPath->split('@')->at(0);
+         let uniqueTypes = $subTypes->concatenate($superTypes)->removeDuplicatesBy(t | $t.class);
+         buildInheritanceEntities($op, $op, [], $uniqueTypes, $namePrefix, $rootClassMappings, $allClasses, $allProperties, $inheritanceMap, $mappingToClassMappings, false, false, $config);
+      )->removeDuplicatesBy(x | $x.path);
+
+  ^MappingModelCoverageAnalysisResult(
+    mappedEntities = $entities->concatenate($inheritanceEntities)
+  );
+}
+
+
+

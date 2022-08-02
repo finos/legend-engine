@@ -14,7 +14,9 @@
 
 package org.finos.legend.engine.plan.execution.stores;
 
+import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.map.ImmutableMap;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNodeVisitor;
@@ -27,4 +29,51 @@ public interface StoreExecutionState
     ExecutionNodeVisitor<Result> getVisitor(MutableList<CommonProfile> profiles, ExecutionState executionState);
 
     StoreExecutionState copy();
+
+    RuntimeContext getRuntimeContext();
+
+    void setRuntimeContext(RuntimeContext runtimeContext);
+
+    static RuntimeContext newRuntimeContext(ImmutableMap<String, String> contextParams)
+    {
+        return new RuntimeContext(contextParams);
+    }
+
+    static RuntimeContext emptyRuntimeContext()
+    {
+        return new RuntimeContext();
+    }
+
+    /*
+        A RuntimeContext is used to inject key/value pairs that can be used by the store executors.
+        This is intended for key/value pairs that cannot be conveyed via the execution plan.
+     */
+    class RuntimeContext
+    {
+        private ImmutableMap<String, String> contextParams = Maps.immutable.empty();
+
+        public static RuntimeContext newWith(ImmutableMap<String, String> contextParams)
+        {
+            return new RuntimeContext(contextParams);
+        }
+
+        public static RuntimeContext empty()
+        {
+            return new RuntimeContext();
+        }
+
+        private RuntimeContext(ImmutableMap<String, String> contextParams)
+        {
+            this.contextParams = contextParams;
+        }
+
+        private RuntimeContext()
+        {
+        }
+
+        public ImmutableMap<String, String> getContextParams()
+        {
+            return contextParams;
+        }
+    }
 }

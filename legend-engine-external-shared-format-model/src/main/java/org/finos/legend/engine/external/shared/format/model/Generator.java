@@ -16,7 +16,7 @@ package org.finos.legend.engine.external.shared.format.model;
 
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ModelUnit;
-import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.Binding;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.Binding;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
 import org.finos.legend.pure.generated.platform_pure_corefunctions_meta;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;

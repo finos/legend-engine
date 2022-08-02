@@ -29,8 +29,8 @@ import org.finos.legend.engine.plan.execution.result.InputStreamResult;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResult;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.external.shared.DataQualityExecutionNode;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.external.shared.UrlStreamExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.DataQualityExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.UrlStreamExecutionNode;
 import org.finos.legend.engine.shared.core.url.UrlFactory;
 import org.pac4j.core.profile.CommonProfile;
 

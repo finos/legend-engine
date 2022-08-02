@@ -71,6 +71,32 @@ class RelationalGraphFetchUtils
         }
 
         @Override
+        public String getStringIdentifier()
+        {
+            try
+            {
+                StringBuilder s = new StringBuilder("RelationalObjectGraphFetchCacheKey{");
+                int i = 0;
+                for (Method getter : this.keyGetters)
+                {
+                    Object val = getter.invoke(this.relationalObject);
+                    s.append(val == null ? "NULL" : val.toString());
+                    i++;
+                    if (i != this.keyGetters.size())
+                    {
+                        s.append("|");
+                    }
+                }
+                s.append("}");
+                return s.toString();
+            }
+            catch (Exception e)
+            {
+                throw new RuntimeException(e);
+            }
+        }
+
+        @Override
         protected int hash()
         {
             return hashWithKeys(this.relationalObject, this.keyGetters);
@@ -101,6 +127,32 @@ class RelationalGraphFetchUtils
         {
             this.sqlExecutionResult = sqlExecutionResult;
             this.pkIndices = pkIndices;
+        }
+
+        @Override
+        public String getStringIdentifier()
+        {
+            try
+            {
+                StringBuilder s = new StringBuilder("RelationalSQLResultGraphFetchCacheKey{");
+                int i = 0;
+                for (int index : this.pkIndices)
+                {
+                    Object val = this.sqlExecutionResult.getTransformedValue(index);
+                    s.append(val == null ? "NULL" : val.toString());
+                    i++;
+                    if (i != this.pkIndices.size())
+                    {
+                        s.append("|");
+                    }
+                }
+                s.append("}");
+                return s.toString();
+            }
+            catch (Exception e)
+            {
+                throw new RuntimeException(e);
+            }
         }
 
         @Override
@@ -146,6 +198,12 @@ class RelationalGraphFetchUtils
         {
             this.relationalObject = relationalObject;
             this.keyGetters = keyGetters;
+        }
+
+        @Override
+        public String getStringIdentifier()
+        {
+            return this.getValues().stream().map(v -> v == null ? "NULL" : v.toString()).collect(Collectors.joining("|", "RelationalCrossObjectGraphFetchCacheKey{", "}"));
         }
 
         @Override

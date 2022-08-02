@@ -76,16 +76,12 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.SourceSpecifiesFromDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.ValidityDerivation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.ValidityDerivationVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.CronTrigger;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.ManualTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.TriggerVisitor;
 
 import java.util.List;
 
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertPath;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabSize;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
 
 public class HelperPersistenceComposer
@@ -99,7 +95,7 @@ public class HelperPersistenceComposer
         return "Persistence " + convertPath(persistence.getPath()) + "\n" +
                 "{\n" +
                 renderDocumentation(persistence.documentation, indentLevel) +
-                renderTrigger(persistence.trigger, indentLevel) +
+                renderTrigger(persistence.trigger, indentLevel, context) +
                 renderService(persistence.service, indentLevel) +
                 renderPersister(persistence.persister, indentLevel, context) +
                 renderNotifier(persistence.notifier, indentLevel) +
@@ -111,9 +107,12 @@ public class HelperPersistenceComposer
         return getTabString(indentLevel) + "doc: " + convertString(documentation, true) + ";\n";
     }
 
-    private static String renderTrigger(Trigger trigger, int indentLevel)
+    private static String renderTrigger(Trigger trigger, int indentLevel, PureGrammarComposerContext context)
     {
-        return trigger.accept(new TriggerComposer(indentLevel));
+        List<IPersistenceComposerExtension> extensions = IPersistenceComposerExtension.getExtensions(context);
+        String triggerText = IPersistenceComposerExtension.process(trigger, ListIterate.flatCollect(extensions, IPersistenceComposerExtension::getExtraTriggerComposers), indentLevel, context);
+
+        return getTabString(indentLevel) + "trigger: " + triggerText + ";\n";
     }
 
     private static String renderService(String service, int indentLevel)
@@ -148,29 +147,6 @@ public class HelperPersistenceComposer
     }
 
     // helper visitors for class hierarchies
-
-    private static class TriggerComposer implements TriggerVisitor<String>
-    {
-        private final int indentLevel;
-
-        private TriggerComposer(int indentLevel)
-        {
-            this.indentLevel = indentLevel;
-        }
-
-        @Override
-        public String visit(ManualTrigger val)
-        {
-            return getTabString(indentLevel) + "trigger: Manual;\n";
-        }
-
-        @Override
-        public String visit(CronTrigger val)
-        {
-            //TODO: ledav -- implement cron trigger
-            throw new UnsupportedOperationException("Cron trigger is not yet supported.");
-        }
-    }
 
     private static class NotifyeeComposer implements NotifyeeVisitor<String>
     {

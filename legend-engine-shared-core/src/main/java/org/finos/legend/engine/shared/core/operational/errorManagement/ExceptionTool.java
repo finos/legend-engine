@@ -41,6 +41,11 @@ public class ExceptionTool
         return manage(eventType, pm, new ExceptionError(-1, message), Response.Status.INTERNAL_SERVER_ERROR);
     }
 
+    public static Response exceptionManager(String message, int errorCode, LoggingEventType eventType, Iterable<? extends CommonProfile> pm)
+    {
+        return manage(eventType, pm, new ExceptionError(errorCode, message), Response.Status.INTERNAL_SERVER_ERROR);
+    }
+
     public static Response exceptionManager(Exception exception, LoggingEventType eventType, Response.Status status, Iterable<? extends CommonProfile> pm)
     {
         return manage(eventType, pm, new ExceptionError(-1, exception), status);
