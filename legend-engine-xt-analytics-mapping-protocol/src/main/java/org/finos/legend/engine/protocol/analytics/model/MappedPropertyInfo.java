@@ -12,16 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+package org.finos.legend.engine.protocol.analytics.model;
 
-package org.finos.legend.engine.api.analytics.model;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 
-public class EnumMappedProperty extends MappedProperty
+public class MappedPropertyInfo
 {
-    public String enumPath;
-
-    public EnumMappedProperty(String name, String enumName)
-    {
-        super(name);
-        this.enumPath = enumName;
-    }
+    public Multiplicity multiplicity;
+    public MappedPropertyType propertyType;
 }

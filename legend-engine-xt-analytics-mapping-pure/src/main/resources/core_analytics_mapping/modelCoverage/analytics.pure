@@ -18,6 +18,12 @@ import meta::pure::router::routing::*;
 import meta::analytics::mapping::modelCoverage::utility::*;
 import meta::pure::mapping::modelToModel::*;
 
+
+Class meta::analytics::mapping::modelCoverage::MappingModelCoverageAnalysisResult
+{
+   mappedEntities : MappedEntity[*];
+}
+
 Enum meta::analytics::mapping::modelCoverage::MappedPropertyType
 {
     String,
@@ -49,8 +55,8 @@ Class meta::analytics::mapping::modelCoverage::MappedEntity
 
 Class meta::analytics::mapping::modelCoverage::MappedPropertyInfo 
 {
-  type : MappedPropertyType[*];
-  multiplicity: Multiplicity[*];
+  type : MappedPropertyType[1];
+  multiplicity: Multiplicity[1];
 }
 
 Class meta::analytics::mapping::modelCoverage::MappedProperty
@@ -87,8 +93,16 @@ Class <<access.private>> meta::analytics::mapping::modelCoverage::MultiInheritan
 
 Class <<access.private>> meta::analytics::mapping::modelCoverage::MultiInheritanceAssociatedMappedProperty extends AssociatedMappedProperty, MultiInheritanceMappedProperty{}
 
-function meta::analytics::mapping::modelCoverage::doModelCoverageAnalytics(mapping: Mapping[1]): MappedEntity[*]
+function meta::analytics::mapping::modelCoverage::analyze(
+  mapping: Mapping[1],
+  returnMappedEntityInfo: Boolean[1],
+  returnMappedPropertyInfo: Boolean[1]
+): MappingModelCoverageAnalysisResult[1]
 {
+  let config = ^AnalysisConfiguration(
+    returnMappedEntityInfo = $returnMappedEntityInfo,
+    returnMappedPropertyInfo = $returnMappedPropertyInfo
+  );
   let classMappings = $mapping.classMappings()->reRoot($mapping);
   let rootClassMappings = $classMappings->filter(x | !$x->instanceOf(EmbeddedSetImplementation));
   let operations = $classMappings->filter(c | $c->instanceOf(OperationSetImplementation))->cast(@OperationSetImplementation);
@@ -104,16 +118,16 @@ function meta::analytics::mapping::modelCoverage::doModelCoverageAnalytics(mappi
       $cm->match([
          o:OperationSetImplementation[1] |
             let subTypeMappings = $o->resolveOperation($mapping)->concatenate($operations->filter(op | $op.class->superTypes()->contains($o.class)));
-            buildInheritanceEntities($o, $o, [], $subTypeMappings, '', $rootClassMappings, $allClasses, $allProperties, $inheritanceMap, $mappingToClassMappings, $o.root, true);,
+            buildInheritanceEntities($o, $o, [], $subTypeMappings, '', $rootClassMappings, $allClasses, $allProperties, $inheritanceMap, $mappingToClassMappings, $o.root, true, $config);,
          a:meta::pure::mapping::aggregationAware::AggregationAwareSetImplementation[1] |
             buildEntity(
                $a.mainSetImplementation.class, buildEntityName($a.mainSetImplementation), $a.mainSetImplementation, $a.mainSetImplementation.allPropertyMappings(), $rootClassMappings, $allClasses,
-               $allProperties, $inheritanceMap, $mappingToClassMappings, $a.root
+               $allProperties, $inheritanceMap, $mappingToClassMappings, $a.root, $config
             ),
          i:InstanceSetImplementation[1] |
             buildEntity(
                $i.class, buildEntityName($i), $i, $i->getPropertyMappings($classMappings), $rootClassMappings, $allClasses,
-               $allProperties, $inheritanceMap, $mappingToClassMappings, $i.root
+               $allProperties, $inheritanceMap, $mappingToClassMappings, $i.root, $config
             );,
          an:Any[1] | []
       ])
@@ -127,9 +141,12 @@ function meta::analytics::mapping::modelCoverage::doModelCoverageAnalytics(mappi
          let superTypes = $operations->filter(o | $o.class->superTypes()->contains($op.class));
          let namePrefix = $i.entityPath->split('@')->at(0);
          let uniqueTypes = $subTypes->concatenate($superTypes)->removeDuplicatesBy(t | $t.class);
-         buildInheritanceEntities($op, $op, [], $uniqueTypes, $namePrefix, $rootClassMappings, $allClasses, $allProperties, $inheritanceMap, $mappingToClassMappings, false, false);
+         buildInheritanceEntities($op, $op, [], $uniqueTypes, $namePrefix, $rootClassMappings, $allClasses, $allProperties, $inheritanceMap, $mappingToClassMappings, false, false, $config);
       )->removeDuplicatesBy(x | $x.path);
-  $entities->concatenate($inheritanceEntities);
+
+  ^MappingModelCoverageAnalysisResult(
+    mappedEntities = $entities->concatenate($inheritanceEntities)
+  );
 }
 
 

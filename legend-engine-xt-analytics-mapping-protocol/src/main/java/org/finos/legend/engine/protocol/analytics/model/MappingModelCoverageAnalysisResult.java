@@ -12,19 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.api.analytics.model;
+package org.finos.legend.engine.protocol.analytics.model;
 
 import java.util.List;
 
-public class MappedEntity
+public class MappingModelCoverageAnalysisResult
 {
-    public String path;
-    public List<MappedProperty> properties;
-    public MappedEntityInfo info;
-
-    public MappedEntity(String path, List<MappedProperty> properties)
-    {
-        this.path = path;
-        this.properties = properties;
-    }
+    public List<MappedEntity> mappedEntities;
 }
