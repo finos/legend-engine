@@ -15,7 +15,7 @@ Class meta::pure::store::StoreContract extends meta::pure::router::extension::Ro
   supportsNativeJoinAmongElements : Boolean[1];
   // ------------------------------------------------------------------------------------------ Routing
 
-  // ExecutionPlan ------------------------------------------------------------------------------------
+  // ExecutionPlan Generation -------------------------------------------------------------------------
   supportsStreamFunction : Function<{FunctionExpression[1]->Boolean[1]}>[0..1];
   supportsStream(){
       if($this.supportsStreamFunction->isNotEmpty(),
@@ -23,11 +23,13 @@ Class meta::pure::store::StoreContract extends meta::pure::router::extension::Ro
         |{f:FunctionExpression[1]|false}
       );
     } : Function<{FunctionExpression[1]->Boolean[1]}>[1];
-
-  planExecution : Function<{StoreQuery[1], RoutedValueSpecification[0..1], Mapping[0..1], Runtime[0..1], ExecutionContext[1], Extension[*], DebugContext[1]->meta::pure::executionPlan::ExecutionNode[1]}>[0..1];
   // ------------------------------------------------------------------------------------ ExecutionPlan 
 
-   // Core ---------------------------------------------------------------------------------------------
+  // Platform Binding ---------------------------------------------------------------------------------
+  extractSourceClassFromSetImplementation : Function<{Nil[1] -> meta::pure::metamodel::type::Class<Any>[1]}>[*];
+  // --------------------------------------------------------------------------------- Platform Binding 
+
+  // Core ---------------------------------------------------------------------------------------------
   supportsSetImplementation : Function<{InstanceSetImplementation[1]->Boolean[1]}>[1];
   supportsStore : Function<{Store[1]->Boolean[1]}>[1];
   resolveStoreFromSetImplementation : Function<{InstanceSetImplementation[1]->Store[1]}>[0..1];

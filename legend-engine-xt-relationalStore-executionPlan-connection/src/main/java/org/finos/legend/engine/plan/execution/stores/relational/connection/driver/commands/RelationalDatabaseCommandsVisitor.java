@@ -16,5 +16,5 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.driv
 
 public interface RelationalDatabaseCommandsVisitor<T>
 {
-    T visit(RelationalDatabaseCommands relationalDatabaseCommands);
+    T visit(RelationalDatabaseCommands databaseCommands);
 }

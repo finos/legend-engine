@@ -53,12 +53,12 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
 {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
 
-    protected RelationalExecutionConfiguration config;
-    protected Connection connection;
-    protected StreamingResult result;
-    protected String tableName;
-    protected String databaseTimeZone;
-    protected IngestionMethod ingestionMethod;
+    public RelationalExecutionConfiguration config;
+    public Connection connection;
+    public StreamingResult result;
+    public String tableName;
+    public String databaseTimeZone;
+    public IngestionMethod ingestionMethod;
 
     public StreamResultToTempTableVisitor(RelationalExecutionConfiguration config, Connection connection, StreamingResult result, String tableName, String databaseTimeZone)
     {

@@ -30,7 +30,6 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.drive
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.postgres.PostgresManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.redshift.RedshiftManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.snowflake.SnowflakeManager;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.sqlserver.SqlServerManager;
 import org.finos.legend.engine.shared.core.identity.Identity;
 
 public abstract class DatabaseManager
@@ -50,7 +49,6 @@ public abstract class DatabaseManager
                     LOGGER.info("DatabaseManager starting initialization");
                     long start = System.currentTimeMillis();
                     register(new H2Manager());
-                    register(new SqlServerManager());
                     register(new SnowflakeManager());
                     register(new BigQueryManager());
                     register(new DatabricksManager());

@@ -1169,8 +1169,14 @@ Class meta::pure::executionPlan::tests::OtherDummyExecutionOption extends Execut
 
 function <<test.Test>> meta::pure::executionPlan::tests::testPlanForExecutionOption():Boolean[1]
 {
-   let dummyExtension = ^Extension(type = 'dummy', serializerExtension =  meta::relational::extension::relationalSerializerExtension_String_1__String_1_,
-                                         executionPlan_generation_executionOptionParameters = [ d: DummyExecutionOption[1] | $d.paramsRequired ]);
+   let dummyExtension = ^Extension(
+                            type = 'dummy',
+                            serializerExtension =  meta::relational::extension::relationalSerializerExtension_String_1__String_1_,
+                            availableFeatures = ^meta::pure::extension::FeatureExtension(
+                                                  id='dummy',
+                                                  extractVariablesFromExecutionOption={s:ExecutionOption[1]|$s->match([ d: DummyExecutionOption[1] | $d.paramsRequired, a:Any[*] | [] ]);}
+                                              )
+                         );
    let executionOptionContext = ^ExecutionOptionContext(executionOptions = [^DummyExecutionOption()]);
    let extensions = meta::relational::extension::relationalExtensions()->add($dummyExtension);
    let result = executionPlan({|let name = 'ok';
