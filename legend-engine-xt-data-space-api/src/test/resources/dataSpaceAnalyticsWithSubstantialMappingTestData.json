@@ -1,0 +1,791 @@
+{
+  "_type": "data",
+  "elements": [
+    {
+      "_type": "Enumeration",
+      "name": "Family",
+      "package": "model::animal",
+      "values": [
+        {
+          "value": "UO"
+        },
+        {
+          "value": "OP"
+        }
+      ]
+    },
+    {
+      "_type": "class",
+      "name": "Mammal",
+      "package": "model::animal::mammal",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "noOfLegs",
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "_type": "class",
+      "name": "Reptile",
+      "package": "model::animal::reptile",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "hasFin",
+          "type": "Boolean"
+        }
+      ],
+      "superTypes": [
+        "model::animal::Animal2",
+        "model::animal::Animal"
+      ],
+      "taggedValues": [
+        {
+          "tag": {
+            "profile": "doc",
+            "value": "doc"
+          },
+          "value": ""
+        }
+      ]
+    },
+    {
+      "_type": "class",
+      "name": "Animal",
+      "package": "model::animal",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "family",
+          "type": "model::animal::Family"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "noOfLegs",
+          "type": "Number"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 0
+          },
+          "name": "children",
+          "type": "model::animal::GenericAnimal2"
+        }
+      ],
+      "qualifiedProperties": [
+        {
+          "body": [
+            {
+              "_type": "func",
+              "function": "greaterThan",
+              "parameters": [
+                {
+                  "_type": "property",
+                  "parameters": [
+                    {
+                      "_type": "var",
+                      "name": "this",
+                      "sourceInformation": {
+                        "endColumn": 20,
+                        "endLine": 153,
+                        "sourceId": "",
+                        "startColumn": 16,
+                        "startLine": 153
+                      }
+                    }
+                  ],
+                  "property": "noOfLegs",
+                  "sourceInformation": {
+                    "endColumn": 29,
+                    "endLine": 153,
+                    "sourceId": "",
+                    "startColumn": 22,
+                    "startLine": 153
+                  }
+                },
+                {
+                  "_type": "integer",
+                  "multiplicity": {
+                    "lowerBound": 1,
+                    "upperBound": 1
+                  },
+                  "sourceInformation": {
+                    "endColumn": 33,
+                    "endLine": 153,
+                    "sourceId": "",
+                    "startColumn": 33,
+                    "startLine": 153
+                  },
+                  "values": [
+                    4
+                  ]
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 33,
+                "endLine": 153,
+                "sourceId": "",
+                "startColumn": 31,
+                "startLine": 153
+              }
+            }
+          ],
+          "name": "something",
+          "parameters": [],
+          "returnMultiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "returnType": "Boolean"
+        },
+        {
+          "body": [
+            {
+              "_type": "collection",
+              "multiplicity": {
+                "lowerBound": 0,
+                "upperBound": 0
+              },
+              "sourceInformation": {
+                "endColumn": 18,
+                "endLine": 154,
+                "sourceId": "",
+                "startColumn": 17,
+                "startLine": 154
+              },
+              "values": []
+            }
+          ],
+          "name": "something2",
+          "parameters": [],
+          "returnMultiplicity": {
+            "lowerBound": 0,
+            "upperBound": 1
+          },
+          "returnType": "model::animal::GenericAnimal"
+        }
+      ]
+    },
+    {
+      "_type": "class",
+      "name": "GenericAnimal",
+      "package": "model::animal"
+    },
+    {
+      "_type": "class",
+      "name": "Animal2",
+      "package": "model::animal",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "name",
+          "type": "String"
+        }
+      ],
+      "qualifiedProperties": [
+        {
+          "body": [
+            {
+              "_type": "string",
+              "multiplicity": {
+                "lowerBound": 1,
+                "upperBound": 1
+              },
+              "sourceInformation": {
+                "endColumn": 13,
+                "endLine": 164,
+                "sourceId": "",
+                "startColumn": 12,
+                "startLine": 164
+              },
+              "values": [
+                ""
+              ]
+            }
+          ],
+          "name": "name2",
+          "parameters": [],
+          "returnMultiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "returnType": "String"
+        }
+      ]
+    },
+    {
+      "_type": "class",
+      "name": "GenericAnimal2",
+      "package": "model::animal"
+    },
+    {
+      "_type": "mapping",
+      "classMappings": [
+        {
+          "_type": "pureInstance",
+          "class": "model::animal::Animal",
+          "propertyMappings": [
+            {
+              "_type": "purePropertyMapping",
+              "explodeProperty": false,
+              "property": {
+                "class": "model::animal::Animal",
+                "property": "noOfLegs"
+              },
+              "source": "",
+              "transform": {
+                "_type": "lambda",
+                "body": [
+                  {
+                    "_type": "integer",
+                    "multiplicity": {
+                      "lowerBound": 1,
+                      "upperBound": 1
+                    },
+                    "values": [
+                      4
+                    ]
+                  }
+                ],
+                "parameters": []
+              }
+            }
+          ],
+          "root": true
+        },
+        {
+          "_type": "pureInstance",
+          "class": "model::animal::Animal2",
+          "propertyMappings": [
+            {
+              "_type": "purePropertyMapping",
+              "explodeProperty": false,
+              "property": {
+                "class": "model::animal::Animal2",
+                "property": "name"
+              },
+              "source": "",
+              "transform": {
+                "_type": "lambda",
+                "body": [
+                  {
+                    "_type": "string",
+                    "multiplicity": {
+                      "lowerBound": 1,
+                      "upperBound": 1
+                    },
+                    "values": [
+                      "asdasdasdasd"
+                    ]
+                  }
+                ],
+                "parameters": []
+              }
+            }
+          ],
+          "root": true
+        },
+        {
+          "_type": "pureInstance",
+          "class": "model::animal::GenericAnimal",
+          "propertyMappings": [],
+          "root": true
+        },
+        {
+          "_type": "pureInstance",
+          "class": "model::animal::GenericAnimal2",
+          "propertyMappings": [],
+          "root": true
+        }
+      ],
+      "enumerationMappings": [
+        {
+          "enumValueMappings": [
+            {
+              "enumValue": "UO",
+              "sourceValues": [
+                {
+                  "_type": "stringSourceValue",
+                  "value": "uo"
+                }
+              ]
+            }
+          ],
+          "enumeration": "model::animal::Family"
+        }
+      ],
+      "includedMappings": [],
+      "name": "dummyMapping",
+      "package": "model",
+      "tests": []
+    },
+    {
+      "_type": "mapping",
+      "classMappings": [
+        {
+          "_type": "pureInstance",
+          "class": "model::animal::mammal::Mammal",
+          "propertyMappings": [
+            {
+              "_type": "purePropertyMapping",
+              "explodeProperty": false,
+              "property": {
+                "class": "model::animal::mammal::Mammal",
+                "property": "noOfLegs"
+              },
+              "source": "",
+              "transform": {
+                "_type": "lambda",
+                "body": [
+                  {
+                    "_type": "string",
+                    "multiplicity": {
+                      "lowerBound": 1,
+                      "upperBound": 1
+                    },
+                    "values": [
+                      "41231"
+                    ]
+                  }
+                ],
+                "parameters": []
+              }
+            }
+          ],
+          "root": true
+        },
+        {
+          "_type": "pureInstance",
+          "class": "model::animal::reptile::Reptile",
+          "propertyMappings": [
+            {
+              "_type": "purePropertyMapping",
+              "enumMappingId": "model_animal_Family",
+              "explodeProperty": false,
+              "property": {
+                "class": "model::animal::reptile::Reptile",
+                "property": "family"
+              },
+              "source": "",
+              "transform": {
+                "_type": "lambda",
+                "body": [
+                  {
+                    "_type": "property",
+                    "parameters": [
+                      {
+                        "_type": "var",
+                        "name": "src"
+                      }
+                    ],
+                    "property": "name"
+                  }
+                ],
+                "parameters": []
+              }
+            }
+          ],
+          "root": true,
+          "srcClass": "model::animal::reptile::Reptile"
+        }
+      ],
+      "enumerationMappings": [
+        {
+          "enumValueMappings": [
+            {
+              "enumValue": "UO",
+              "sourceValues": [
+                {
+                  "_type": "stringSourceValue",
+                  "value": "op"
+                }
+              ]
+            }
+          ],
+          "enumeration": "model::animal::Family"
+        }
+      ],
+      "includedMappings": [],
+      "name": "dummyMapping2",
+      "package": "model",
+      "tests": []
+    },
+    {
+      "_type": "runtime",
+      "name": "dummyRuntime2",
+      "package": "model",
+      "runtimeValue": {
+        "_type": "engineRuntime",
+        "connections": [
+          {
+            "store": {
+              "path": "ModelStore",
+              "type": "STORE"
+            },
+            "storeConnections": [
+              {
+                "connection": {
+                  "_type": "JsonModelConnection",
+                  "class": "model::animal::mammal::Mammal",
+                  "url": "my_url"
+                },
+                "id": "id1"
+              }
+            ]
+          }
+        ],
+        "mappings": [
+          {
+            "path": "model::dummyMapping2",
+            "type": "MAPPING"
+          }
+        ]
+      }
+    },
+    {
+      "_type": "runtime",
+      "name": "dummyRuntime",
+      "package": "model",
+      "runtimeValue": {
+        "_type": "engineRuntime",
+        "connections": [
+          {
+            "store": {
+              "path": "ModelStore",
+              "type": "STORE"
+            },
+            "storeConnections": [
+              {
+                "connection": {
+                  "_type": "JsonModelConnection",
+                  "class": "model::animal::mammal::Mammal",
+                  "url": "my_url"
+                },
+                "id": "id1"
+              }
+            ]
+          }
+        ],
+        "mappings": [
+          {
+            "path": "model::dummyMapping",
+            "type": "MAPPING"
+          },
+          {
+            "path": "model::dummyMapping2",
+            "type": "MAPPING"
+          }
+        ]
+      }
+    },
+    {
+      "_type": "diagram",
+      "classViews": [
+        {
+          "class": "model::animal::reptile::Reptile",
+          "id": "4cec85f9-9b66-450a-bdcb-c855aa0314e1",
+          "position": {
+            "x": 568,
+            "y": 404
+          },
+          "rectangle": {
+            "height": 58,
+            "width": 120.84765625
+          }
+        },
+        {
+          "class": "model::animal::Animal",
+          "id": "902bf14e-e7ff-40e7-92e4-8780f91bfa29",
+          "position": {
+            "x": 809,
+            "y": 187
+          },
+          "rectangle": {
+            "height": 44,
+            "width": 108.64453125
+          }
+        }
+      ],
+      "generalizationViews": [
+        {
+          "line": {
+            "points": [
+              {
+                "x": 628.423828125,
+                "y": 433
+              },
+              {
+                "x": 863.322265625,
+                "y": 209
+              }
+            ]
+          },
+          "sourceView": "4cec85f9-9b66-450a-bdcb-c855aa0314e1",
+          "targetView": "902bf14e-e7ff-40e7-92e4-8780f91bfa29"
+        }
+      ],
+      "name": "GeneralDiagram",
+      "package": "model",
+      "propertyViews": []
+    },
+    {
+      "_type": "diagram",
+      "classViews": [
+        {
+          "class": "model::animal::mammal::Mammal",
+          "id": "641a0336-d4b5-418c-b656-2f52461264e2",
+          "position": {
+            "x": 427,
+            "y": 210
+          },
+          "rectangle": {
+            "height": 44,
+            "width": 125.1123046875
+          }
+        },
+        {
+          "class": "model::animal::reptile::Reptile",
+          "id": "b92253d8-0389-4c7d-b5d2-3cdc3bb1ad98",
+          "position": {
+            "x": 787,
+            "y": 216
+          },
+          "rectangle": {
+            "height": 58,
+            "width": 120.84765625
+          }
+        },
+        {
+          "class": "model::animal::Animal",
+          "id": "7a992cfc-c888-4091-aa00-ab430915aced",
+          "position": {
+            "x": 515.423828125,
+            "y": -7.5
+          },
+          "rectangle": {
+            "height": 100,
+            "width": 199.716796875
+          }
+        }
+      ],
+      "generalizationViews": [
+        {
+          "line": {
+            "points": [
+              {
+                "x": 847.423828125,
+                "y": 245
+              },
+              {
+                "x": 615.2822265625,
+                "y": 42.5
+              }
+            ]
+          },
+          "sourceView": "b92253d8-0389-4c7d-b5d2-3cdc3bb1ad98",
+          "targetView": "7a992cfc-c888-4091-aa00-ab430915aced"
+        }
+      ],
+      "name": "AnimalDiagram",
+      "package": "model::animal",
+      "propertyViews": []
+    },
+    {
+      "_type": "dataSpace",
+      "defaultExecutionContext": "dummyContext",
+      "description": "A simple data space with not much info and no diagram",
+      "executionContexts": [
+        {
+          "defaultRuntime": {
+            "path": "model::dummyRuntime",
+            "type": "RUNTIME"
+          },
+          "mapping": {
+            "path": "model::dummyMapping",
+            "type": "MAPPING"
+          },
+          "name": "dummyContext"
+        }
+      ],
+      "name": "NoDiagram",
+      "package": "model"
+    },
+    {
+      "_type": "dataSpace",
+      "defaultExecutionContext": "dummyContext",
+      "executionContexts": [
+        {
+          "defaultRuntime": {
+            "path": "model::dummyRuntime",
+            "type": "RUNTIME"
+          },
+          "mapping": {
+            "path": "model::dummyMapping",
+            "type": "MAPPING"
+          },
+          "name": "dummyContext"
+        }
+      ],
+      "name": "Mammal1",
+      "package": "model::animal::mammal",
+      "taggedValues": [
+        {
+          "tag": {
+            "profile": "meta::pure::profiles::enterprise",
+            "value": "taxonomyNodes"
+          },
+          "value": "abcdxyz003,abcdxyz002"
+        }
+      ]
+    },
+    {
+      "_type": "dataSpace",
+      "defaultExecutionContext": "dummyContext",
+      "executionContexts": [
+        {
+          "defaultRuntime": {
+            "path": "model::dummyRuntime",
+            "type": "RUNTIME"
+          },
+          "mapping": {
+            "path": "model::dummyMapping",
+            "type": "MAPPING"
+          },
+          "name": "dummyContext"
+        }
+      ],
+      "name": "Reptile1",
+      "package": "model::animal::reptile",
+      "supportInfo": {
+        "_type": "email",
+        "address": "someEmail@test.org"
+      },
+      "taggedValues": [
+        {
+          "tag": {
+            "profile": "meta::pure::profiles::enterprise",
+            "value": "taxonomyNodes"
+          },
+          "value": "abcdxyz006"
+        },
+        {
+          "tag": {
+            "profile": "doc",
+            "value": "doc"
+          },
+          "value": "Lorem ipsum"
+        },
+        {
+          "tag": {
+            "profile": "doc",
+            "value": "doc"
+          },
+          "value": "Lorem ipsum2"
+        }
+      ]
+    },
+    {
+      "_type": "dataSpace",
+      "defaultExecutionContext": "dummyContext",
+      "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+      "executionContexts": [
+        {
+          "defaultRuntime": {
+            "path": "model::dummyRuntime",
+            "type": "RUNTIME"
+          },
+          "description": "An important execution context",
+          "mapping": {
+            "path": "model::dummyMapping",
+            "type": "MAPPING"
+          },
+          "name": "dummyContext"
+        },
+        {
+          "defaultRuntime": {
+            "path": "model::dummyRuntime",
+            "type": "RUNTIME"
+          },
+          "mapping": {
+            "path": "model::dummyMapping2",
+            "type": "MAPPING"
+          },
+          "name": "dummyContext2"
+        },
+        {
+          "defaultRuntime": {
+            "path": "model::dummyRuntime2",
+            "type": "RUNTIME"
+          },
+          "mapping": {
+            "path": "model::dummyMapping2",
+            "type": "MAPPING"
+          },
+          "name": "dummyContext3"
+        }
+      ],
+      "featuredDiagrams": [
+        {
+          "path": "model::animal::AnimalDiagram",
+          "type": "DIAGRAM"
+        },
+        {
+          "path": "model::GeneralDiagram",
+          "type": "DIAGRAM"
+        }
+      ],
+      "name": "AnimalDS",
+      "package": "model::animal",
+      "stereotypes": [
+        {
+          "profile": "doc",
+          "value": "deprecated"
+        }
+      ],
+      "supportInfo": {
+        "_type": "email",
+        "address": "someEmail@test.org"
+      },
+      "taggedValues": [
+        {
+          "tag": {
+            "profile": "meta::pure::profiles::enterprise",
+            "value": "taxonomyNodes"
+          },
+          "value": "abcdxyz005"
+        },
+        {
+          "tag": {
+            "profile": "doc",
+            "value": "doc"
+          },
+          "value": "Lorem ipsum"
+        },
+        {
+          "tag": {
+            "profile": "doc",
+            "value": "doc"
+          },
+          "value": "Lorem ipsum2"
+        }
+      ]
+    }
+  ]
+}

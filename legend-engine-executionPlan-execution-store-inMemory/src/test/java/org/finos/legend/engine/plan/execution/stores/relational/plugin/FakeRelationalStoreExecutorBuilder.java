@@ -63,10 +63,25 @@ public class FakeRelationalStoreExecutorBuilder implements StoreExecutorBuilder
         {
             return new StoreExecutionState()
             {
+                private RuntimeContext runtimeContext;
+
                 @Override
                 public StoreState getStoreState()
                 {
-                    return null;
+                    return new StoreState()
+                    {
+                        @Override
+                        public StoreType getStoreType()
+                        {
+                            return StoreType.Relational;
+                        }
+
+                        @Override
+                        public Object getStoreExecutionInfo()
+                        {
+                            return null;
+                        }
+                    };
                 }
 
                 @Override
@@ -79,6 +94,18 @@ public class FakeRelationalStoreExecutorBuilder implements StoreExecutorBuilder
                 public StoreExecutionState copy()
                 {
                     return null;
+                }
+
+                @Override
+                public RuntimeContext getRuntimeContext()
+                {
+                    return this.runtimeContext;
+                }
+
+                @Override
+                public void setRuntimeContext(RuntimeContext runtimeContext)
+                {
+                    this.runtimeContext = runtimeContext;
                 }
             };
         }

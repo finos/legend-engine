@@ -20,6 +20,7 @@ import org.finos.legend.engine.language.pure.dsl.persistence.grammar.from.contex
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.PersistencePlatform;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.Collections;
@@ -40,6 +41,11 @@ public interface IPersistenceParserExtension extends PureGrammarParserExtension
         return process(code, processors, "persistence platform");
     }
 
+    static Trigger process(TriggerSourceCode code, List<Function<TriggerSourceCode, Trigger>> processors)
+    {
+        return process(code, processors, "trigger");
+    }
+
     static <T extends SpecificationSourceCode, U> U process(T code, List<Function<T, U>> processors, String type)
     {
         return ListIterate
@@ -50,6 +56,11 @@ public interface IPersistenceParserExtension extends PureGrammarParserExtension
     }
 
     default List<Function<PersistencePlatformSourceCode, PersistencePlatform>> getExtraPersistencePlatformParsers()
+    {
+        return Collections.emptyList();
+    }
+
+    default List<Function<TriggerSourceCode, Trigger>> getExtraTriggerParsers()
     {
         return Collections.emptyList();
     }

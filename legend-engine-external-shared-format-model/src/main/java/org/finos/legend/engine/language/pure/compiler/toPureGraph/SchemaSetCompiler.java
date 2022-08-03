@@ -23,8 +23,8 @@ import org.finos.legend.engine.external.shared.format.model.ExternalSchemaCompil
 import org.finos.legend.engine.external.shared.format.model.compile.ExternalFormatSchemaException;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
-import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.ExternalFormatSchema;
-import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.ExternalFormatSchemaSet;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.ExternalFormatSchema;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.ExternalFormatSchemaSet;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_Schema;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_SchemaDetail;

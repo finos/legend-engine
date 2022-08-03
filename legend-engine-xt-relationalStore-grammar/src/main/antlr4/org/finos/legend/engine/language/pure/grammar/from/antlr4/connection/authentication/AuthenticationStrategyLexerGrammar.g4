@@ -6,6 +6,8 @@ H2_DEFAULT_AUTH:                            'DefaultH2';
 TEST_DB_AUTH:                               'Test';
 DELEGATED_KERBEROS_AUTH:                    'DelegatedKerberos';
 SERVER_PRINCIPAL:                           'serverPrincipal';
+MIDDLETIER_USERNAME_PASSWORD_AUTH:          'MiddleTierUserNamePassword';
+MIDDLETIER_USERNAME_PASSWORD_VAULT_REFERENCE:  'vaultReference';
 USERNAME_PASSWORD_AUTH:                     'UserNamePassword';
 USERNAME_PASSWORD_AUTH_BASE_VAULT_REF:      'baseVaultReference';
 USERNAME_PASSWORD_AUTH_USERNAME_VAULT_REF:  'userNameVaultReference';
