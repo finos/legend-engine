@@ -132,8 +132,8 @@ Diagram meta::pure::extension::Diagram(width=0.0, height=0.0)
     TypeView cview_6(
         type=meta::pure::store::StoreContract,
         position=(1690.76657, 297.82421),
-        width=293.21680,
-        height=212.00000,
+        width=315.22754,
+        height=254.00000,
         stereotypesVisible=true,
         attributesVisible=true,
         attributeStereotypesVisible=true,
@@ -180,7 +180,7 @@ Diagram meta::pure::extension::Diagram(width=0.0, height=0.0)
     GeneralizationView gview_0(
         source=cview_6,
         target=cview_4,
-        points=[(1837.37497,403.82421),(1705.26690,169.79265)],
+        points=[(1848.38034,424.82421),(1705.26690,169.79265)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -189,7 +189,7 @@ Diagram meta::pure::extension::Diagram(width=0.0, height=0.0)
     GeneralizationView gview_1(
         source=cview_6,
         target=cview_5,
-        points=[(1837.37497,403.82421),(1949.19406,199.05950)],
+        points=[(1848.38034,424.82421),(1949.19406,199.05950)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -231,7 +231,7 @@ Diagram meta::pure::extension::Diagram(width=0.0, height=0.0)
         property=meta::pure::extension::Extension.availableStores,
         source=cview_1,
         target=cview_6
-,        points=[(1364.61840,409.39914),(1691.76657,407.82421)],
+,        points=[(1364.61840,409.39914),(1702.77194,428.82421)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
