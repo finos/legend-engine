@@ -27,6 +27,7 @@ import org.finos.legend.engine.plan.execution.result.serialization.TemporaryFile
 import org.finos.legend.engine.plan.execution.stores.relational.config.RelationalExecutionConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.Column;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.IngestionMethod;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommandsVisitor;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.bigquery.BigQueryCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.databricks.DatabricksCommands;
@@ -34,7 +35,6 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.drive
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.postgres.PostgresCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.redshift.RedshiftCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.snowflake.SnowflakeCommands;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.sqlserver.SqlServerCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RealizedRelationalResult;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
 import org.finos.legend.engine.plan.execution.stores.relational.result.TempTableStreamingResult;
@@ -52,6 +52,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ServiceLoader;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -59,12 +60,12 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
 {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
 
-    protected RelationalExecutionConfiguration config;
-    protected Connection connection;
-    protected StreamingResult result;
-    protected String tableName;
-    protected String databaseTimeZone;
-    protected IngestionMethod ingestionMethod;
+    public RelationalExecutionConfiguration config;
+    public Connection connection;
+    public StreamingResult result;
+    public String tableName;
+    public String databaseTimeZone;
+    public IngestionMethod ingestionMethod;
 
     public StreamResultToTempTableVisitor(RelationalExecutionConfiguration config, Connection connection, StreamingResult result, String tableName, String databaseTimeZone)
     {
@@ -77,7 +78,44 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
     }
 
     @Override
-    public Boolean visit(SnowflakeCommands snowflakeCommands)
+    public Boolean visit(RelationalDatabaseCommands databaseCommands)
+    {
+        if (databaseCommands instanceof SnowflakeCommands)
+        {
+            return visitSnowflake((SnowflakeCommands) databaseCommands);
+        }
+        if (databaseCommands instanceof DatabricksCommands)
+        {
+            return visitDatabricks((DatabricksCommands) databaseCommands);
+        }
+        if (databaseCommands instanceof H2Commands)
+        {
+            return visitH2((H2Commands) databaseCommands);
+        }
+        if (databaseCommands instanceof BigQueryCommands)
+        {
+            return visitBigQuery((BigQueryCommands) databaseCommands);
+        }
+        if (databaseCommands instanceof RedshiftCommands)
+        {
+            return visitRedshift((RedshiftCommands) databaseCommands);
+        }
+        if (databaseCommands instanceof PostgresCommands)
+        {
+            return visitPostgres((PostgresCommands) databaseCommands);
+        }
+        for (RelationalConnectionExtension extension: ServiceLoader.load(RelationalConnectionExtension.class))
+        {
+            Boolean result = extension.visit(this, databaseCommands);
+            if (result != null)
+            {
+                return result;
+            }
+        }
+        throw new UnsupportedOperationException("not yet implemented");
+    }
+
+    private Boolean visitSnowflake(SnowflakeCommands snowflakeCommands)
     {
         if (ingestionMethod == null)
         {
@@ -86,8 +124,7 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
         throw new UnsupportedOperationException("not yet implemented");
     }
 
-    @Override
-    public Boolean visit(DatabricksCommands databricksCommands)
+    private Boolean visitDatabricks(DatabricksCommands databricksCommands)
     {
         if (ingestionMethod == null)
         {
@@ -96,8 +133,7 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
         throw new UnsupportedOperationException("not yet implemented");
     }
 
-    @Override
-    public Boolean visit(H2Commands h2Commands)
+    private Boolean visitH2(H2Commands h2Commands)
     {
         if (ingestionMethod == null)
         {
@@ -177,26 +213,17 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
         return true;
     }
 
-    @Override
-    public Boolean visit(SqlServerCommands sqlServerCommands)
+    private Boolean visitBigQuery(BigQueryCommands bigQueryCommands)
     {
         throw new UnsupportedOperationException("not yet implemented");
     }
 
-    @Override
-    public Boolean visit(BigQueryCommands bigQueryCommands)
+    private Boolean visitRedshift(RedshiftCommands redshiftCommands)
     {
         throw new UnsupportedOperationException("not yet implemented");
     }
 
-    @Override
-    public Boolean visit(RedshiftCommands redshiftCommands)
-    {
-        throw new UnsupportedOperationException("not yet implemented");
-    }
-
-    @Override
-    public Boolean visit(PostgresCommands postgresCommands)
+    private Boolean visitPostgres(PostgresCommands postgresCommands)
     {
         if (ingestionMethod == null)
         {
