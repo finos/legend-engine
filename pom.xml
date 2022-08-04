@@ -229,7 +229,7 @@
         <httpcore.version>4.4.13</httpcore.version>
         <janino.version>3.1.0</janino.version>
         <github.classgraph.version>4.8.25</github.classgraph.version>
-        <pac4j.version>3.7.0</pac4j.version>
+        <pac4j.version>4.5.5</pac4j.version>
         <pac4j.jaxrs.version>3.0.0</pac4j.jaxrs.version>
         <pac4j.jersey.version>3.0.0</pac4j.jersey.version>
         <antlr.version>4.8-1</antlr.version>
