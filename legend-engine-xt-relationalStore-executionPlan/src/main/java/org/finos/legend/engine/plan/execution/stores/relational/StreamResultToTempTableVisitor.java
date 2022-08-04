@@ -17,15 +17,6 @@ package org.finos.legend.engine.plan.execution.stores.relational;
 import com.google.common.collect.Iterators;
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
-import java.io.ByteArrayOutputStream;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Iterator;
-import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import org.finos.legend.engine.plan.execution.result.ResultNormalizer;
 import org.finos.legend.engine.plan.execution.result.StreamingResult;
 import org.finos.legend.engine.plan.execution.result.builder.tds.TDSBuilder;
@@ -38,7 +29,12 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.drive
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.IngestionMethod;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommandsVisitor;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.bigquery.BigQueryCommands;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.databricks.DatabricksCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Commands;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.postgres.PostgresCommands;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.redshift.RedshiftCommands;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.snowflake.SnowflakeCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RealizedRelationalResult;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
 import org.finos.legend.engine.plan.execution.stores.relational.result.TempTableStreamingResult;
@@ -48,6 +44,17 @@ import org.finos.legend.engine.plan.execution.stores.relational.serialization.St
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.slf4j.Logger;
+
+import java.io.ByteArrayOutputStream;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ServiceLoader;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class StreamResultToTempTableVisitor implements RelationalDatabaseCommandsVisitor<Boolean>
 {
@@ -71,23 +78,67 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
     }
 
     @Override
-    public Boolean visit(RelationalDatabaseCommands relationalDatabaseCommands)
+    public Boolean visit(RelationalDatabaseCommands databaseCommands)
     {
-        if (ingestionMethod == null)
+        if (databaseCommands instanceof SnowflakeCommands)
         {
-            ingestionMethod = relationalDatabaseCommands.getDefaultIngestionMethod();
+            return visitSnowflake((SnowflakeCommands) databaseCommands);
         }
-
-        if (relationalDatabaseCommands instanceof H2Commands)
+        if (databaseCommands instanceof DatabricksCommands)
         {
-            return visit((H2Commands) relationalDatabaseCommands);
+            return visitDatabricks((DatabricksCommands) databaseCommands);
         }
-
+        if (databaseCommands instanceof H2Commands)
+        {
+            return visitH2((H2Commands) databaseCommands);
+        }
+        if (databaseCommands instanceof BigQueryCommands)
+        {
+            return visitBigQuery((BigQueryCommands) databaseCommands);
+        }
+        if (databaseCommands instanceof RedshiftCommands)
+        {
+            return visitRedshift((RedshiftCommands) databaseCommands);
+        }
+        if (databaseCommands instanceof PostgresCommands)
+        {
+            return visitPostgres((PostgresCommands) databaseCommands);
+        }
+        for (RelationalConnectionExtension extension: ServiceLoader.load(RelationalConnectionExtension.class))
+        {
+            Boolean result = extension.visit(this, databaseCommands);
+            if (result != null)
+            {
+                return result;
+            }
+        }
         throw new UnsupportedOperationException("not yet implemented");
     }
 
-    private Boolean visit(H2Commands h2Commands)
+    private Boolean visitSnowflake(SnowflakeCommands snowflakeCommands)
     {
+        if (ingestionMethod == null)
+        {
+            ingestionMethod = snowflakeCommands.getDefaultIngestionMethod();
+        }
+        throw new UnsupportedOperationException("not yet implemented");
+    }
+
+    private Boolean visitDatabricks(DatabricksCommands databricksCommands)
+    {
+        if (ingestionMethod == null)
+        {
+            ingestionMethod = databricksCommands.getDefaultIngestionMethod();
+        }
+        throw new UnsupportedOperationException("not yet implemented");
+    }
+
+    private Boolean visitH2(H2Commands h2Commands)
+    {
+        if (ingestionMethod == null)
+        {
+            ingestionMethod = h2Commands.getDefaultIngestionMethod();
+        }
         if (ingestionMethod == IngestionMethod.CLIENT_FILE)
         {
             try (TemporaryFile tempFile = new TemporaryFile(config.tempPath))
@@ -148,6 +199,7 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
                 {
                     throw new RuntimeException("Result not supported yet: " + result.getClass().getName());
                 }
+
             }
             catch (Exception e)
             {
@@ -159,6 +211,25 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
             streamResultToNewTarget(((RelationalResult) result).resultSet, connection, tableName, 100);
         }
         return true;
+    }
+
+    private Boolean visitBigQuery(BigQueryCommands bigQueryCommands)
+    {
+        throw new UnsupportedOperationException("not yet implemented");
+    }
+
+    private Boolean visitRedshift(RedshiftCommands redshiftCommands)
+    {
+        throw new UnsupportedOperationException("not yet implemented");
+    }
+
+    private Boolean visitPostgres(PostgresCommands postgresCommands)
+    {
+        if (ingestionMethod == null)
+        {
+            ingestionMethod = postgresCommands.getDefaultIngestionMethod();
+        }
+        throw new UnsupportedOperationException("not yet implemented");
     }
 
     private boolean checkedExecute(Statement statement, String sql)

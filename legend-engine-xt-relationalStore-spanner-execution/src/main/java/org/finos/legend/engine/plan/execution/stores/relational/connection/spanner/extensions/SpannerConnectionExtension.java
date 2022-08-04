@@ -12,19 +12,32 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-package org.finos.legend.engine.plan.execution.stores.relational.connection.spanner;
+package org.finos.legend.engine.plan.execution.stores.relational.connection.spanner.extensions;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionExtension;
+import org.finos.legend.engine.plan.execution.stores.relational.RelationalConnectionExtension;
+import org.finos.legend.engine.plan.execution.stores.relational.StreamResultToTempTableVisitor;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.spanner.driver.SpannerCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.spanner.driver.SpannerManager;
 
-public class SpannerConnectionExtension implements ConnectionExtension
+public class SpannerConnectionExtension implements RelationalConnectionExtension
 {
     @Override
     public MutableList<DatabaseManager> getAdditionalDatabaseManager()
     {
         return Lists.mutable.of(new SpannerManager());
+    }
+
+    @Override
+    public Boolean visit(StreamResultToTempTableVisitor visitor, RelationalDatabaseCommands databaseCommands)
+    {
+        if (databaseCommands instanceof SpannerCommands)
+        {
+            throw new UnsupportedOperationException("not yet implemented");
+        }
+        return null;
     }
 }

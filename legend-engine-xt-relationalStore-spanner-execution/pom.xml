@@ -26,112 +26,22 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>legend-engine-xt-relationalStore-spanner-execution</artifactId>
+    <packaging>jar</packaging>
     <name>Legend Engine - XT - Relational Store - Spanner - Execution</name>
-
-    <build>
-        <plugins>
-            <!-- Block running the _server tests (They should only execute in TeamCity). Run only H2 tests-->
-            <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.apache.maven.surefire</groupId>
-                        <artifactId>surefire-junit47</artifactId>
-                        <version>2.22.0</version>
-                    </dependency>
-                </dependencies>
-                <configuration>
-                    <useSystemClassLoader>false</useSystemClassLoader>
-                    <excludes>
-                        <exclude>**/ExternalIntegration*.java</exclude>
-                    </excludes>
-                    <argLine>${argLine} -Xmx2g -Xms1g -XX:MaxPermSize=1024m -XX:SoftRefLRUPolicyMSPerMB=1</argLine>
-                </configuration>
-            </plugin>
-            <!-- Block running the _server tests (They should only execute in TeamCity). Run only H2 tests-->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>test-jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-enforcer-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>enforce</id>
-                        <configuration>
-                            <rules>
-                                <dependencyConvergence/>
-                                <bannedDependencies>
-                                    <searchTransitive>true</searchTransitive>
-                                    <excludes>
-                                        <exclude>log4j</exclude>
-                                        <exclude>org.slf4j</exclude>
-                                        <exclude>commons-logging</exclude>
-                                        <exclude>javax.mail</exclude>
-                                        <exclude>org.finos.legend.pure:*</exclude>
-                                    </excludes>
-                                    <includes>
-                                        <!--only the specific included logging jars are allowed -->
-                                        <include>org.slf4j:jul-to-slf4j:${slf4j.version}</include>
-                                        <include>org.slf4j:slf4j-api:${slf4j.version}</include>
-                                        <include>org.slf4j:jcl-over-slf4j:${slf4j.version}</include>
-                                        <include>org.slf4j:slf4j-ext:${slf4j.version}</include>
-                                    </includes>
-                                </bannedDependencies>
-                            </rules>
-                            <fail>true</fail>
-                        </configuration>
-                        <goals>
-                            <goal>enforce</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
-
-    <profiles>
-        <profile>
-            <id>run_tests_in_teamcity</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <dependencies>
-                            <!-- This stops Surefire from running the test suite's suite() method twice. -->
-                            <dependency>
-                                <groupId>org.apache.maven.surefire</groupId>
-                                <artifactId>surefire-junit47</artifactId>
-                                <version>2.22.0</version>
-                            </dependency>
-                        </dependencies>
-                        <configuration>
-                            <useSystemClassLoader>false</useSystemClassLoader>
-                            <includes>
-                                <include>**/Test*.java</include>
-                            </includes>
-                            <argLine>${argLine} -Xmx2g -Xms1g -XX:MaxPermSize=1024m -XX:SoftRefLRUPolicyMSPerMB=1
-                            </argLine>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 
     <dependencies>
         <!-- ENGINE -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-executionPlan</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-executionPlan-connection</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-protocol</artifactId>
         </dependency>
         <!-- ENGINE -->
 

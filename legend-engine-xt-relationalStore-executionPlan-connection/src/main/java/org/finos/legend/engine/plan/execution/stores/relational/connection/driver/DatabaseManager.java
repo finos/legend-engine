@@ -14,9 +14,6 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.driver;
 
-import java.util.Properties;
-import java.util.ServiceLoader;
-import java.util.concurrent.atomic.AtomicBoolean;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
@@ -27,10 +24,14 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.drive
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.bigquery.BigQueryManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.databricks.DatabricksManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Manager;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.postgres.PostgresManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.redshift.RedshiftManager;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.postgres.PostgresManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.snowflake.SnowflakeManager;
 import org.finos.legend.engine.shared.core.identity.Identity;
+
+import java.util.Properties;
+import java.util.ServiceLoader;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class DatabaseManager
 {

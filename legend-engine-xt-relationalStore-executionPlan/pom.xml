@@ -99,10 +99,6 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-executionPlan-connection-authentication</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-spanner-execution</artifactId>
-        </dependency>
         <!-- ENGINE -->
 
         <!-- ALLOY -->

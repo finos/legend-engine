@@ -216,11 +216,6 @@
             <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
         </dependency>
-        <dependency>
-            <groupId>com.google.cloud</groupId>
-            <artifactId>google-cloud-spanner-jdbc</artifactId>
-            <scope>runtime</scope>
-        </dependency>
 
         <!-- DRIVERS -->
 
