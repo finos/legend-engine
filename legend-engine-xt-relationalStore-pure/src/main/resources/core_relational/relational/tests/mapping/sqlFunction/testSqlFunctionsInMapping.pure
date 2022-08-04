@@ -46,6 +46,18 @@ function <<test.BeforePackage>> meta::relational::tests::mapping::sqlFunction::s
     true;
 }
 
+function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseDate::testToSQLStringParseDateH2():Boolean[1]
+{
+  let result = execute(|SqlFunctionDemo.all()->project([s | $s.string2Date], ['date']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
+  assertEquals([%2016-06-23T00:00:00.000000000+0000, %2016-06-23T00:00:00.000000000+0000], $result.values->at(0).rows.values);
+  assertEquals('select parsedatetime("root".string2date,\'yyyy-MM-dd\') as "date" from dataTable as "root"',$result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseDate::testToSQLStringParseDatePresto():Boolean[1]
+{
+  let prestoSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2Date], ['date']), testMapping, meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
+  assertEquals('select date_parse("root".string2date,\'yyyy-MM-dd\') as "date" from dataTable as "root"',$prestoSql->sqlRemoveFormatting());
+}
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::concat::testProject():Boolean[1]
 {
@@ -203,7 +215,6 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::trim::test
    assertEquals('select trim("root".string2) as "trim" from dataTable as "root"',$sSnowflake);
    assertEquals('select trim("root".string2) as "trim" from dataTable as "root"',$sPresto);
 }
-
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::trim::testTriminSybaseASE():Boolean[1]
 {
