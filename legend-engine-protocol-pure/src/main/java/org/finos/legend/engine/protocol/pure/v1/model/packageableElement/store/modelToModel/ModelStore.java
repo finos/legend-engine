@@ -12,12 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel;
 
-import org.finos.legend.engine.protocol.pure.v1.model.test.AtomicTest;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store;
 
-public class MappingTest extends AtomicTest
+public class ModelStore extends Store
 {
-    public Lambda query;
+    @Override
+    public <T> T accept(PackageableElementVisitor<T> visitor)
+    {
+        return visitor.visit(this);
+    }
 }

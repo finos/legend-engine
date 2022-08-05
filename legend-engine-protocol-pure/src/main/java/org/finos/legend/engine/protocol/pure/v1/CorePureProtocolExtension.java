@@ -43,12 +43,16 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externa
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.ExternalSource;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.UrlStreamExternalSource;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTestSuite;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.LegacyRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.RuntimePointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
+import org.finos.legend.engine.protocol.pure.v1.model.test.Test;
+import org.finos.legend.engine.protocol.pure.v1.model.test.TestSuite;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualTo;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToJson;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
@@ -66,6 +70,8 @@ import java.util.Map;
 
 public class CorePureProtocolExtension implements PureProtocolExtension
 {
+    public static final String MAPPING_CLASSIFIER_PATH = "meta::pure::mapping::Mapping";
+
     @Override
     public List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()
     {
@@ -125,6 +131,12 @@ public class CorePureProtocolExtension implements PureProtocolExtension
                 ProtocolSubTypeInfo.newBuilder(ExecutionNode.class)
                         .withSubtype(DataQualityExecutionNode.class, "dataQuality")
                         .withSubtype(UrlStreamExecutionNode.class, "urlStream")
+                        .build(),
+                ProtocolSubTypeInfo.newBuilder(TestSuite.class)
+                        .withSubtype(MappingTestSuite.class, "mappingTestSuite")
+                        .build(),
+                ProtocolSubTypeInfo.newBuilder(Test.class)
+                        .withSubtype(MappingTest.class, "mappingTest")
                         .build()
         ));
     }
@@ -136,7 +148,7 @@ public class CorePureProtocolExtension implements PureProtocolExtension
                 .withKeyValue(Association.class, "meta::pure::metamodel::relationship::Association")
                 .withKeyValue(Class.class, "meta::pure::metamodel::type::Class")
                 .withKeyValue(Enumeration.class, "meta::pure::metamodel::type::Enumeration")
-                .withKeyValue(Mapping.class, "meta::pure::mapping::Mapping")
+                .withKeyValue(Mapping.class, MAPPING_CLASSIFIER_PATH)
                 .withKeyValue(Function.class, "meta::pure::metamodel::function::ConcreteFunctionDefinition")
                 .withKeyValue(Measure.class, "meta::pure::metamodel::type::Measure")
                 .withKeyValue(PackageableConnection.class, "meta::pure::runtime::PackageableConnection")
