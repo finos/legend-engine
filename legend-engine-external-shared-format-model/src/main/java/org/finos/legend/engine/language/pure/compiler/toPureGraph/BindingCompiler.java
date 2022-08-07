@@ -38,11 +38,11 @@ import java.util.Map;
 
 public class BindingCompiler
 {
-    private final Map<String, ExternalFormatExtension> externalFormatExtensions;
+    private final Map<String, ExternalFormatExtension<?>> externalFormatExtensions;
     private final MutableMap<String, Root_meta_external_shared_format_binding_Binding> bindingIndex = Maps.mutable.empty();
     private final MutableMap<String, ExternalFormatSchemaSet> srcSchemaIndex = Maps.mutable.empty();
 
-    public BindingCompiler(Map<String, ExternalFormatExtension> externalFormatExtensions)
+    public BindingCompiler(Map<String, ExternalFormatExtension<?>> externalFormatExtensions)
     {
         this.externalFormatExtensions = externalFormatExtensions;
     }
@@ -66,7 +66,7 @@ public class BindingCompiler
 
         String path = context.pureModel.buildPackageString(srcSchemaOp._package, srcSchemaOp.name);
         this.bindingIndex.put(path, binding);
-        context.pureModel.storesIndex.put(path, binding);
+        context.pureModel.storesIndex.put(path, binding); // TODO: TO BE REMOVED
         return binding;
     }
 
@@ -108,7 +108,7 @@ public class BindingCompiler
             throw new EngineException("ID '" + compiled._schemaId() + "' does not exist in SchemaSet '" + srcBinding.schemaSet + "'", srcBinding.sourceInformation, EngineErrorType.COMPILATION);
         }
 
-        ExternalFormatExtension schemaExtension = getExtension(compiled, srcBinding);
+        ExternalFormatExtension<?> schemaExtension = getExtension(compiled, srcBinding);
         if (compiled._schemaSet() != null && !schemaExtension.getFormat().equals(compiled._schemaSet()._format()))
         {
             throw new EngineException("Content type and SchemaSet format do not match", srcBinding.sourceInformation, EngineErrorType.COMPILATION);
@@ -121,7 +121,7 @@ public class BindingCompiler
         String path = context.pureModel.buildPackageString(srcBinding._package, srcBinding.name);
         Root_meta_external_shared_format_binding_Binding compiled = bindingIndex.get(path);
 
-        ExternalFormatExtension schemaExtension = getExtension(compiled, srcBinding);
+        ExternalFormatExtension<?> schemaExtension = getExtension(compiled, srcBinding);
         Root_meta_external_shared_format_binding_validation_BindingDetail bindingDetail = schemaExtension.bindDetails(compiled, context);
         if (bindingDetail instanceof Root_meta_external_shared_format_binding_validation_FailedBindingDetail)
         {
@@ -130,7 +130,7 @@ public class BindingCompiler
         }
     }
 
-    private ExternalFormatExtension getExtension(Root_meta_external_shared_format_binding_Binding binding, Binding srcBinding)
+    private ExternalFormatExtension<?> getExtension(Root_meta_external_shared_format_binding_Binding binding, Binding srcBinding)
     {
         return externalFormatExtensions.values().stream()
                 .filter(ext -> ext.getContentTypes().contains(binding._contentType()))

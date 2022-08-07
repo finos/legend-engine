@@ -12,7 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::shared::format::*;
 import meta::external::shared::format::utils::*;
+
+function meta::external::shared::format::utils::getExternalFormatContractForContentType(externalFormatContracts:ExternalFormatContract<Any>[*], contentType:String[1]): ExternalFormatContract<Any>[1]
+{
+   let formatContract = $externalFormatContracts->filter(ext| $ext.contentTypes->contains($contentType));
+   assert($formatContract->size() == 1, | 'Expected to find 1 external format contract for ' + $contentType + ', found ' + $formatContract->size()->toString());
+   $formatContract->toOne();
+}
 
 function meta::external::shared::format::utils::log(debug:DebugContext[1], message:Function<{->String[1]}>[1]): Any[*]
 {
@@ -78,14 +86,14 @@ function <<access.private>> meta::external::shared::format::utils::handleNonAlph
 
 // Tests
 
-function <<test.Test>> meta::external::shared::format::tests::utils::testPurifyClassName(): Boolean[1]
+function <<test.Test>> meta::external::shared::format::utils::tests::testPurifyClassName(): Boolean[1]
 {
    assertEquals('Name', purifyClassName('name'));
    assertEquals('Name', purifyClassName('Name'));
    assertEquals('TwoWords', purifyClassName('two WORDS'));
 }
 
-function <<test.Test>> meta::external::shared::format::tests::utils::testPurifyPropertyName(): Boolean[1]
+function <<test.Test>> meta::external::shared::format::utils::tests::testPurifyPropertyName(): Boolean[1]
 {
    assertEquals('name', purifyPropertyName('name'));
    assertEquals('name', purifyPropertyName('Name'));

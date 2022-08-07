@@ -12,12 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::shared::format::*;
 import meta::external::shared::format::binding::*;
 import meta::external::shared::format::executionPlan::*;
 import meta::external::shared::format::metamodel::*;
+
 import meta::pure::executionPlan::*;
+
+import meta::pure::graphFetch::*;
+
 import meta::pure::mapping::modelToModel::*;
+
 import meta::pure::runtime::*;
+
+// ------------------------------------------------------------------------------------------------------------------------
+// Execution Nodes to be used with binding
+// ------------------------------------------------------------------------------------------------------------------------
 
 Class meta::external::shared::format::executionPlan::DataQualityExecutionNode extends ExecutionNode
 {
@@ -25,34 +35,28 @@ Class meta::external::shared::format::executionPlan::DataQualityExecutionNode ex
    checked           : Boolean[1];   
 }
 
-Class meta::external::shared::format::executionPlan::ExternalFormatSerializeExecutionNode extends ExecutionNode
-{
-   checked : Boolean[1];      
-   binding : Binding[1];
-}
-
-Class meta::external::shared::format::executionPlan::ExternalFormatDeserializeExecutionNode extends ExecutionNode
-{
-   pathOffset : PathReference[0..1];
-}
-
 Class meta::external::shared::format::executionPlan::UrlStreamExecutionNode extends ExecutionNode
 {
    url : String[1];
 }
 
-Class meta::external::shared::format::executionPlan::ExternalFormatConnection extends Connection
-[
-   $this.element->instanceOf(Binding)
-]
+Class meta::external::shared::format::executionPlan::ExternalFormatExternalizeExecutionNode extends ExecutionNode
 {
-   externalSource : ExternalSource[1];
-   pathOffset : PathReference[0..1];
+   checked : Boolean[1];      
+   binding : Binding[1];
 }
 
-Class <<typemodifiers.abstract>> meta::external::shared::format::executionPlan::PathReference
+Class meta::external::shared::format::executionPlan::ExternalFormatInternalizeExecutionNode extends ExecutionNode
 {
+   binding : Binding[1];
+   tree    : RootGraphFetchTree<Any>[0..1]; 
+   
+   config  : ExternalFormatInternalizeConfig[0..1];
 }
+
+// ------------------------------------------------------------------------------------------------------------------------
+// External Source
+// ------------------------------------------------------------------------------------------------------------------------
 
 Class <<typemodifiers.abstract>> meta::external::shared::format::executionPlan::ExternalSource
 {
@@ -66,4 +70,16 @@ Class meta::external::shared::format::executionPlan::UrlStreamExternalSource ext
 Class meta::external::shared::format::executionPlan::ExecutionNodeExternalSource extends ExternalSource
 {
    node : ExecutionNode[1];
+}
+
+// ------------------------------------------------------------------------------------------------------------------------
+// Connections - Deprecated to be replaced by internalize
+// ------------------------------------------------------------------------------------------------------------------------
+
+Class meta::external::shared::format::executionPlan::ExternalFormatConnection extends Connection
+[
+   $this.element->instanceOf(Binding)
+]
+{
+   externalSource : ExternalSource[1];
 }

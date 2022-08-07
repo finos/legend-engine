@@ -21,10 +21,10 @@ import java.util.ServiceLoader;
 
 public class ExternalFormatExtensionLoader
 {
-    public static Map<String, ExternalFormatExtension> extensions()
+    public static Map<String, ExternalFormatExtension<?>> extensions()
     {
-        Map<String, ExternalFormatExtension> result = Maps.mutable.empty();
-        for (ExternalFormatExtension extension : ServiceLoader.load(ExternalFormatExtension.class))
+        Map<String, ExternalFormatExtension<?>> result = Maps.mutable.empty();
+        for (ExternalFormatExtension<?> extension : ServiceLoader.load(ExternalFormatExtension.class))
         {
             if (result.put(extension.getFormat(), extension) != null)
             {

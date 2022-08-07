@@ -17,8 +17,8 @@ package org.finos.legend.engine.external.format.flatdata.read.test;
 import org.finos.legend.engine.external.format.flatdata.FlatDataContext;
 import org.finos.legend.engine.external.format.flatdata.read.fixtures.WritePerson;
 import org.finos.legend.engine.external.format.flatdata.write.FlatDataWriter;
-import org.finos.legend.engine.external.format.test.fixture.app.meta.external.shared.format.executionPlan.testing.model.firm.Person;
-import org.finos.legend.engine.external.format.test.fixture.plan.node.meta_external_shared_format_executionPlan_testing_model_firm_Person_Impl;
+import org.finos.legend.engine.external.format.test.fixture.app.meta.external.shared.format.executionPlan.tests.model.firm.Person;
+import org.finos.legend.engine.external.format.test.fixture.plan.node.meta_external_shared_format_executionPlan_tests_model_firm_Person_Impl;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -35,14 +35,14 @@ public class TestFlatDataSerialize
     @Test
     public void testSerializePeopleCsv()
     {
-        meta_external_shared_format_executionPlan_testing_model_firm_Person_Impl jason = new meta_external_shared_format_executionPlan_testing_model_firm_Person_Impl();
+        meta_external_shared_format_executionPlan_tests_model_firm_Person_Impl jason = new meta_external_shared_format_executionPlan_tests_model_firm_Person_Impl();
         jason._firstNameAdd("Jason");
         jason._lastNameAdd("Schlichting");
         jason._dateOfBirthAdd(LocalDate.of(1968, 3, 5));
         jason._isAliveAdd(true);
         jason._heightInMetersAdd(1.82);
 
-        meta_external_shared_format_executionPlan_testing_model_firm_Person_Impl nancy = new meta_external_shared_format_executionPlan_testing_model_firm_Person_Impl();
+        meta_external_shared_format_executionPlan_tests_model_firm_Person_Impl nancy = new meta_external_shared_format_executionPlan_tests_model_firm_Person_Impl();
         nancy._firstNameAdd("Nancy");
         nancy._lastNameAdd("Fraher");
         nancy._dateOfBirthAdd(LocalDate.of(1970, 12, 13));

@@ -43,6 +43,7 @@ import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+@Deprecated
 public class JsonExecutionExtension implements ExecutionExtension
 {
     @Override

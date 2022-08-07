@@ -15,7 +15,7 @@
 package org.finos.legend.engine.external.format.json.compile;
 
 import org.eclipse.collections.api.factory.Lists;
-import org.finos.legend.engine.external.shared.format.model.ExternalSchemaCompileContext;
+import org.finos.legend.engine.external.shared.format.model.compile.ExternalSchemaCompileContext;
 import org.finos.legend.pure.generated.Root_meta_json_schema_fromSchema_SchemaInput;
 import org.finos.legend.pure.generated.Root_meta_json_schema_fromSchema_SchemaInput_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_format_json_metamodel_JsonSchema;

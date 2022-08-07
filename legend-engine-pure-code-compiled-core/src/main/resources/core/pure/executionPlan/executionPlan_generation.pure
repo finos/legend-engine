@@ -268,11 +268,24 @@ function meta::pure::executionPlan::nodeFromConnection(c:Connection[1], tree:Roo
 function meta::pure::executionPlan::nodeFromConnection(c:Connection[1], tree:RootGraphFetchTree<Any>[0..1], enableConstraints:Boolean[1], checked:Boolean[1], extensions:meta::pure::extension::Extension[*], dflt:Function<{Nil[1]->ExecutionNode[1]}>[*]):ExecutionNode[1]
 {
    $c->match([
-               {x:meta::external::shared::format::executionPlan::ExternalFormatConnection[1] | 
-                  let binding         = $x.element->cast(@meta::external::shared::format::binding::Binding);
-                  let formatExtension = $extensions.availableExternalFormats->meta::external::shared::format::getExtensionForContentType($binding.contentType);
-                  let sourceNode      = meta::external::shared::format::executionPlan::getSourceNodeFromExternalSource($x.externalSource);
-                  let deserializeNode = $formatExtension.generateDeserializeNode->eval($x, $sourceNode, $tree);
+               {connection:meta::external::shared::format::executionPlan::ExternalFormatConnection[1] |
+                  let binding         = $connection.element->cast(@meta::external::shared::format::binding::Binding);
+                  let sourceNode      = meta::external::shared::format::executionPlan::getSourceNodeFromExternalSource($connection.externalSource);
+                  let returnedClass   = $tree.class->toOne();
+
+                  assert($tree->isNotEmpty(), 'Deserialization without Graph Fetch Tree not yet supported');
+                  let deserializeNode = ^meta::external::shared::format::executionPlan::ExternalFormatInternalizeExecutionNode
+                                        (
+                                            resultType      = ^PartialClassResultType(
+                                                                type=$returnedClass,
+                                                                propertiesWithParameters = $tree.subTrees->cast(@PropertyGraphFetchTree)->map(x | $x->map(x | ^PropertyWithParameters(property = $x.property, parameters = $x.parameters)))
+                                                              ),
+                                            resultSizeRange = ZeroMany,
+                                            tree            = $tree,
+                                            binding         = $connection->cast(@meta::external::shared::format::executionPlan::ExternalFormatConnection).element->cast(@meta::external::shared::format::binding::Binding),
+                                            executionNodes  = $sourceNode
+                                        );
+
                   meta::external::shared::format::executionPlan::generateDataQualityNode($deserializeNode, $enableConstraints, $checked);
                }
             ]->concatenate($dflt)->toOneMany())->toOne();

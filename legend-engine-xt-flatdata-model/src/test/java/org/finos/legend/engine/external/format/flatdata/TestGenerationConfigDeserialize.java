@@ -16,15 +16,13 @@ package org.finos.legend.engine.external.format.flatdata;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.finos.legend.engine.external.format.flatdata.fromModel.ModelToFlatDataConfiguration;
-import org.finos.legend.engine.external.format.flatdata.toModel.FlatDataToModelConfiguration;
+import org.finos.legend.engine.external.format.flatdata.transformation.fromModel.ModelToFlatDataConfiguration;
+import org.finos.legend.engine.external.format.flatdata.transformation.toModel.FlatDataToModelConfiguration;
 import org.finos.legend.engine.external.shared.format.model.api.GenerateModelInput;
 import org.finos.legend.engine.external.shared.format.model.api.GenerateSchemaInput;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.util.Arrays;
 
 public class TestGenerationConfigDeserialize
 {
@@ -33,27 +31,23 @@ public class TestGenerationConfigDeserialize
     @Test
     public void canDeserializeToModelConfig() throws JsonProcessingException
     {
-       String json = "{\n" +
-               "  \"clientVersion\": \"vX_X_X\",\n" +
-               "  \"model\": {},\n" +
-               "  \"config\": {\n" +
-               "    \"format\": \"FlatData\",\n" +
-               "    \"sourceSchemaSet\": \"test::SchemaSet\",\n" +
-               "    \"sourceSchemaId\": \"anId\",\n" +
-               "    \"targetBinding\": \"test::target::GeneratedBinding\",\n" +
-               "    \"targetPackage\": \"test::target\",\n" +
-               "    \"purifyNames\": true,\n" +
-               "    \"schemaClassName\":  \"test::target::SchemaClass\"\n" +
-               "  }\n" +
-               "}";
+        String json = "{\n" +
+                "  \"clientVersion\": \"vX_X_X\",\n" +
+                "  \"model\": {},\n" +
+                "  \"config\": {\n" +
+                "    \"format\": \"FlatData\",\n" +
+                "    \"sourceSchemaId\": \"anId\",\n" +
+                "    \"targetPackage\": \"test::target\",\n" +
+                "    \"purifyNames\": true,\n" +
+                "    \"schemaClassName\":  \"test::target::SchemaClass\"\n" +
+                "  }\n" +
+                "}";
 
         GenerateModelInput input = objectMapper.readValue(json, GenerateModelInput.class);
         Assert.assertTrue(input.config instanceof FlatDataToModelConfiguration);
         FlatDataToModelConfiguration config = (FlatDataToModelConfiguration) input.config;
         Assert.assertEquals("FlatData", config.format);
-        Assert.assertEquals("test::SchemaSet", config.sourceSchemaSet);
         Assert.assertEquals("anId", config.sourceSchemaId);
-        Assert.assertEquals("test::target::GeneratedBinding", config.targetBinding);
         Assert.assertEquals("test::target", config.targetPackage);
         Assert.assertEquals(true, config.purifyNames);
         Assert.assertEquals("test::target::SchemaClass", config.schemaClassName);
@@ -67,9 +61,7 @@ public class TestGenerationConfigDeserialize
                 "  \"model\": {},\n" +
                 "  \"config\": {\n" +
                 "    \"format\": \"FlatData\",\n" +
-                "    \"targetBinding\": \"test::target::GeneratedBinding\",\n" +
-                "    \"targetSchemaSet\": \"test::target::GeneratedSchemaSet\",\n" +
-                "    \"sourceModel\": [\"test::A\", \"test::B\"]\n" +
+                "    \"targetSchemaSet\": \"test::target::GeneratedSchemaSet\"\n" +
                 "  }\n" +
                 "}";
 
@@ -77,8 +69,6 @@ public class TestGenerationConfigDeserialize
         Assert.assertTrue(input.config instanceof ModelToFlatDataConfiguration);
         ModelToFlatDataConfiguration config = (ModelToFlatDataConfiguration) input.config;
         Assert.assertEquals("FlatData", config.format);
-        Assert.assertEquals(Arrays.asList("test::A", "test::B"), config.sourceModel);
-        Assert.assertEquals("test::target::GeneratedBinding", config.targetBinding);
         Assert.assertEquals("test::target::GeneratedSchemaSet", config.targetSchemaSet);
     }
 }

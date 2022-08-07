@@ -7,7 +7,7 @@ import meta::protocols::generation::java::*;
 import meta::protocols::generation::java::translation::*;
 import meta::pure::executionPlan::engine::java::*;
 
-function meta::protocols::generation::java::translation::generateTranslation(purePackage:String[1], javaPackage:String[1]):Project[1]
+function meta::protocols::generation::java::translation::generateTranslation(purePackage:String[1], javaPackage:String[1], elementsToBeExcluded:String[*]):Project[1]
 {
   let pack = $purePackage->pathToElement()->cast(@Package);
   let basePackageStr = $pack->elementToPath('.');
@@ -17,12 +17,12 @@ function meta::protocols::generation::java::translation::generateTranslation(pur
 
   let translatorClass = javaClass(['public'], $package, 'Translator');
   newProject()->addClass(
-    $translatorClass->addMethods(generateTranslationMethods($pack, $translatorClass, $taxonomies, $conventions)->sortBy({a|$a.returnType->cast(@meta::external::language::java::metamodel::Class).simpleName}))
+    $translatorClass->addMethods(generateTranslationMethods($pack, $translatorClass, $taxonomies, $conventions, $elementsToBeExcluded)->sortBy({a|$a.returnType->cast(@meta::external::language::java::metamodel::Class).simpleName}))
   );
 }
 
 
-function meta::protocols::generation::java::generateProtocolClasses(purePackage:String[1], javaPackage:String[1]):Project[1]
+function meta::protocols::generation::java::generateProtocolClasses(purePackage:String[1], javaPackage:String[1], elementsToBeExcluded:String[*]):Project[1]
 {
   let pack = $purePackage->pathToElement()->cast(@Package);
   let basePackageStr = $pack->elementToPath('.');
@@ -37,7 +37,7 @@ function meta::protocols::generation::java::generateProtocolClasses(purePackage:
                          taxonomies = $taxonomies,
                          visitorByTaxonomy=$visitorByTaxonomy);
 
-  let javaClasses = $pack.children->map(c|generateProtocolClasses($c, $context));
+  let javaClasses = $pack.children->filter(c|!$c->elementToPath()->in($elementsToBeExcluded))->map(c|generateProtocolClasses($c, $context));
 
   newProject()
      ->addClasses($javaClasses)
@@ -68,12 +68,13 @@ function <<access.private>> meta::protocols::generation::java::translation::gene
                                       elem:PackageableElement[1],
                                       translatorClass:meta::external::language::java::metamodel::Class[1],
                                       taxonomies: Taxonomy[*],
-                                      conventions: Conventions[1]
+                                      conventions: Conventions[1],
+                                      elementsToBeExcluded:String[*]
                             ):Method[*]
 {
   $elem->match(
     [
-      p: Package[1] | $p.children->map(c|generateTranslationMethods($c, $translatorClass, $taxonomies,$conventions)),
+      p: Package[1] | $p.children->filter(c | !$c->elementToPath()->in($elementsToBeExcluded))->map(c|generateTranslationMethods($c, $translatorClass, $taxonomies,$conventions, $elementsToBeExcluded)),
       c: meta::pure::metamodel::type::Class<Any>[1] | meta::protocols::generation::java::translation::generateTranslationForClass($c, $translatorClass, $taxonomies, $conventions),
       e: meta::pure::metamodel::type::Enumeration<Any>[1] | meta::protocols::generation::java::translation::generateTranslationForEnumeration($e, $translatorClass, $taxonomies, $conventions),
       s: Any[1] | []

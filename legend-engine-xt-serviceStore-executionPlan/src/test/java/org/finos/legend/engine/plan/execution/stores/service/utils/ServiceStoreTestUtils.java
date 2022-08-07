@@ -36,8 +36,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecut
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
-import org.finos.legend.pure.generated.core_external_format_flatdata_extension;
-import org.finos.legend.pure.generated.core_external_format_json_extension;
+import org.finos.legend.pure.generated.core_external_format_flatdata_externalFormatContract;
+import org.finos.legend.pure.generated.core_external_format_json_externalFormatContract;
 import org.finos.legend.pure.generated.core_pure_binding_extension;
 import org.finos.legend.server.pac4j.kerberos.KerberosProfile;
 import org.finos.legend.server.pac4j.kerberos.LocalCredentials;
@@ -83,7 +83,9 @@ public class ServiceStoreTestUtils
 
         List<Root_meta_pure_extension_Extension> extensions = Lists.mutable.empty();
         extensions.addAll(Lists.mutable.with(org.finos.legend.pure.generated.core_servicestore_extensions_extension.Root_meta_external_store_service_extension_serviceStoreExtensions__Extension_1_(pureModel.getExecutionSupport())));
-        extensions.addAll(core_pure_binding_extension.Root_meta_external_shared_format_routerExtensions_String_1__ExternalFormatExtension_MANY__Extension_MANY_("externalFormat", Lists.mutable.with(core_external_format_flatdata_extension.Root_meta_external_format_flatdata_flatDataFormatExtension__ExternalFormatExtension_1_(pureModel.getExecutionSupport()), core_external_format_json_extension.Root_meta_external_format_json_jsonFormatExtension__ExternalFormatExtension_1_(pureModel.getExecutionSupport())), pureModel.getExecutionSupport()).toList());
+        extensions.add(core_pure_binding_extension.Root_meta_external_shared_format_externalFormatExtension__Extension_1_(pureModel.getExecutionSupport()));
+        extensions.add(core_external_format_flatdata_externalFormatContract.Root_meta_external_format_flatdata_extension_flatDataFormatExtension__Extension_1_(pureModel.getExecutionSupport()));
+        extensions.add(core_external_format_json_externalFormatContract.Root_meta_external_format_json_extension_jsonSchemaFormatExtension__Extension_1_(pureModel.getExecutionSupport()));
 
         Function queryFunctionExpressions = contextData.getElementsOfType(Function.class).get(0);
 

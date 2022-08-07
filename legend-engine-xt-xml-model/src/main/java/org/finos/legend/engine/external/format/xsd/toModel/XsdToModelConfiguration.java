@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.external.format.xsd.toModel;
 
-import org.finos.legend.engine.external.shared.format.model.toModel.SchemaToModelConfiguration;
+import org.finos.legend.engine.external.shared.format.model.transformation.toModel.SchemaToModelConfiguration;
 
 public class XsdToModelConfiguration extends SchemaToModelConfiguration
 {

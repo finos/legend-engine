@@ -1,0 +1,62 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::protocols::pure::v1_24_0::metamodel::executionPlan::*;
+import meta::protocols::pure::v1_24_0::transformation::fromPureGraph::external::shared::format::*;
+import meta::pure::mapping::*;
+import meta::pure::extension::*;
+
+function meta::protocols::pure::v1_24_0::transformation::fromPureGraph::external::shared::format::transformDataQualityNode(node:meta::external::shared::format::executionPlan::DataQualityExecutionNode[1], mapping:meta::pure::mapping::Mapping[1], extensions:Extension[*]): ExecutionNode[1]
+{
+   ^meta::protocols::pure::v1_24_0::metamodel::external::shared::format::executionPlan::DataQualityExecutionNode(
+      _type             = 'dataQuality',
+      resultType        = $node.resultType->meta::protocols::pure::v1_24_0::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
+      resultSizeRange   = $node.resultSizeRange->map(s| $s->meta::protocols::pure::v1_24_0::transformation::fromPureGraph::domain::transformMultiplicity()),
+      enableConstraints = $node.enableConstraints,
+      checked           = $node.checked
+   );
+}
+
+function meta::protocols::pure::v1_24_0::transformation::fromPureGraph::external::shared::format::transformUrlStreamNode(node:meta::external::shared::format::executionPlan::UrlStreamExecutionNode[1], mapping:meta::pure::mapping::Mapping[1], extensions:Extension[*]): ExecutionNode[1]
+{
+   ^meta::protocols::pure::v1_24_0::metamodel::external::shared::format::executionPlan::UrlStreamExecutionNode(
+      _type      = 'urlStream',
+      resultType = $node.resultType->meta::protocols::pure::v1_24_0::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
+      url        = $node.url
+   );
+}
+
+function meta::protocols::pure::v1_24_0::transformation::fromPureGraph::external::shared::format::transformExternalFormatExternalizeExecutionNode(node:meta::external::shared::format::executionPlan::ExternalFormatExternalizeExecutionNode[1], mapping:meta::pure::mapping::Mapping[1], extensions:Extension[*]): ExecutionNode[1]
+{
+   ^meta::protocols::pure::v1_24_0::metamodel::external::shared::format::executionPlan::ExternalFormatExternalizeExecutionNode(
+      _type             = 'externalFormatExternalize',
+      resultType        = $node.resultType->meta::protocols::pure::v1_24_0::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
+      resultSizeRange   = $node.resultSizeRange->map(s| $s->meta::protocols::pure::v1_24_0::transformation::fromPureGraph::domain::transformMultiplicity()),
+      checked           = $node.checked,
+      binding           = $node.binding->elementToPath(),
+      contentType       = $node.binding.contentType
+   );
+}
+
+function meta::protocols::pure::v1_24_0::transformation::fromPureGraph::external::shared::format::transformExternalFormatInternalizeExecutionNode(node:meta::external::shared::format::executionPlan::ExternalFormatInternalizeExecutionNode[1], mapping:meta::pure::mapping::Mapping[1], extensions:Extension[*]): ExecutionNode[1]
+{
+   ^meta::protocols::pure::v1_24_0::metamodel::external::shared::format::executionPlan::ExternalFormatInternalizeExecutionNode(
+      _type             = 'externalFormatInternalize',
+      resultType        = $node.resultType->meta::protocols::pure::v1_24_0::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
+      resultSizeRange   = $node.resultSizeRange->map(s| $s->meta::protocols::pure::v1_24_0::transformation::fromPureGraph::domain::transformMultiplicity()),
+      tree              = $node.tree->map(t| $t->meta::protocols::pure::v1_24_0::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree([], ^Map<String,List<Any>>(), $extensions))->cast(@meta::protocols::pure::v1_24_0::metamodel::valueSpecification::raw::RootGraphFetchTree),
+      binding           = $node.binding->elementToPath(),
+      contentType       = $node.binding.contentType
+   );
+}
