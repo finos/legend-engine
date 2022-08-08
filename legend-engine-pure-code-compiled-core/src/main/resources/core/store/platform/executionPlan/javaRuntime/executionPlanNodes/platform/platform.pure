@@ -34,28 +34,8 @@ function <<access.private>> meta::pure::executionPlan::engine::java::prepareForP
 {
    if($p.expression->cast(@FunctionExpression)->isSerialize($extensions),
       | prepareForSerialize($p, $path, $context, $debug),
-      |
-   if($p.expression->cast(@FunctionExpression)->isUnionOnGraphFetch(true),
-      | prepareForUnionOnGraphFetch($p, $path, $context, $extensions, $debug) ,
-      |
-   if($p.expression->cast(@FunctionExpression)->isMergeOnGraphFetch(),
-      | prepareForMergeOnGraphFetch($p, $path, $context, $extensions, $debug),
       | prepareForExpression($p, $path, $context, $debug)
-   )));
-}
-
-function <<access.private>> meta::pure::executionPlan::engine::java::prepareForUnionOnGraphFetch(p:PureExpressionPlatformExecutionNode[1], path:String[1], context:GenerationContext[1], extensions : meta::pure::extension::Extension[*], debug:DebugContext[1]):GenerationContext[1]
-{
-   print(if($debug.debug,|$debug.space+'('+$path+') prepareForUnionOnGraphFetch\n', |''));
-   
-   let childNodeInfos = $context->childNodeInfosForPath($path);
-   ^$context(nodeInfos = $context.nodeInfos->concatenate(^NodeInfo(path = $path, returnType = $childNodeInfos->at(0).returnType, graphFetchTrees = $childNodeInfos.graphFetchTrees->removeDuplicatesBy(x | $x.class))));
-}
-
-function <<access.private>> meta::pure::executionPlan::engine::java::prepareForMergeOnGraphFetch(p:PureExpressionPlatformExecutionNode[1], path:String[1], context:GenerationContext[1], extensions : meta::pure::extension::Extension[*], debug:DebugContext[1]):GenerationContext[1]
-{
-   let childNodeInfos = $context->childNodeInfosForPath($path);
-   ^$context(nodeInfos = $context.nodeInfos->concatenate(^NodeInfo(path = $path, returnType = $childNodeInfos->at(0).returnType, graphFetchTrees = $childNodeInfos.graphFetchTrees->removeDuplicatesBy(x | $x.class))));
+   );
 }
 
 function <<access.private>> meta::pure::executionPlan::engine::java::prepareForExpression(p:PureExpressionPlatformExecutionNode[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]):GenerationContext[1]
@@ -89,14 +69,8 @@ function <<access.private>> meta::pure::executionPlan::engine::java::generateImp
       |
    if($p.expression->cast(@FunctionExpression)->isParseObjectReferences(),
       | generateImplementationForParseObjectReferences($p, $path, $context, $extensions, $debug),
-      |
-   if($p.expression->cast(@FunctionExpression)->isUnionOnGraphFetch(true),
-      | generateImplementationForUnionOnGraphFetch($p, $path, $context, $extensions, $debug);,
-      |
-   if($p.expression->cast(@FunctionExpression)->isMergeOnGraphFetch(),
-      | generateImplementationForMergeOnGraphFetch($p, $path, $context, $extensions, $debug);,
       | generateImplementionForExpression($p, $path, $context, $debug)
-   ))))));
+   ))));
 }
 
 function <<access.private>> meta::pure::executionPlan::engine::java::generateImplementionForNow(conventions:Conventions[1]):GeneratedCode[1]
@@ -119,22 +93,6 @@ function <<access.private>> meta::pure::executionPlan::engine::java::generateImp
                           executionMethodName    = 'currentUserId'
                        )
    );
-}
-
-function <<access.private>> meta::pure::executionPlan::engine::java::generateImplementationForUnionOnGraphFetch(p:PureExpressionPlatformExecutionNode[1], path:String[1], context:GenerationContext[1], extensions : meta::pure::extension::Extension[*], debug:DebugContext[1]):GeneratedCode[1]
-{
-   let conventions  = $context.conventions;
-   let interface    = $conventions->className(IPlatformPureExpressionExecutionNodeGraphFetchUnionSpecifics);
-   let executeClass = $conventions->planNodeClass('public', $path, 'Execute')->imports($interface)->implements($interface);
-   generatedCode(newProject()->addClasses($executeClass), $executeClass);
-}
-
-function <<access.private>> meta::pure::executionPlan::engine::java::generateImplementationForMergeOnGraphFetch(p:PureExpressionPlatformExecutionNode[1], path:String[1], context:GenerationContext[1], extensions : meta::pure::extension::Extension[*], debug:DebugContext[1]):GeneratedCode[1]
-{
-   let conventions  = $context.conventions;
-   let interface    = $conventions->className(IPlatformPureExpressionExecutionNodeGraphFetchMergeSpecifics);
-   let executeClass = $conventions->planNodeClass('public', $path, 'Execute')->imports($interface)->implements($interface);
-   generatedCode(newProject()->addClasses($executeClass), $executeClass);
 }
 
 function <<access.private>> meta::pure::executionPlan::engine::java::generateImplementionForExpression(p:PureExpressionPlatformExecutionNode[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]):GeneratedCode[1]

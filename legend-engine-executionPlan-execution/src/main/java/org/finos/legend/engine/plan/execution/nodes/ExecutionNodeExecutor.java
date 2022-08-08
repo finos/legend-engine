@@ -62,6 +62,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.Functi
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.GraphFetchM2MExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.JavaPlatformImplementation;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.MultiResultSequenceExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.PlatformMergeExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.PlatformUnionExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.PureExpressionPlatformExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SequenceExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.GlobalGraphFetchExecutionNode;
@@ -106,6 +108,32 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
     @Override
     public Result visit(ExecutionNode executionNode)
     {
+        if (executionNode instanceof PlatformUnionExecutionNode)
+        {
+            List<StreamingObjectResult<?>> streamingObjectResults = ListIterate.collect(executionNode.executionNodes, node -> (StreamingObjectResult<?>) node.accept(new ExecutionNodeExecutor(this.profiles, this.executionState)));
+
+            Result childResult = new Result("success")
+            {
+                @Override
+                public <T> T accept(ResultVisitor<T> resultVisitor)
+                {
+                    throw new RuntimeException("Not implemented");
+                }
+
+                @Override
+                public void close()
+                {
+                    streamingObjectResults.forEach(StreamingObjectResult::close);
+                }
+            };
+
+            return new StreamingObjectResult<>(streamingObjectResults.stream().flatMap(StreamingObjectResult::getObjectStream), streamingObjectResults.get(0).getResultBuilder(), childResult);
+        }
+        else if (executionNode instanceof PlatformMergeExecutionNode)
+        {
+            return executionNode.executionNodes.get(0).accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
+        }
+
         return this.executionState.extraNodeExecutors.stream().map(executor -> executor.value(executionNode, profiles, executionState)).filter(Objects::nonNull).findFirst().orElseThrow(() -> new UnsupportedOperationException("Unsupported execution node type '" + executionNode.getClass().getSimpleName() + "'"));
     }
 
