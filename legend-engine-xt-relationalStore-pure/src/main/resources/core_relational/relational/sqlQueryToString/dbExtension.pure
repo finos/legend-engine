@@ -715,3 +715,16 @@ Class meta::relational::functions::sqlQueryToString::ToSql
    transform:meta::pure::metamodel::function::Function<{String[*]->String[*]}>[0..1];
    parametersWithinWhenClause : Boolean[*];
 }
+
+
+function meta::relational::functions::sqlQueryToString::processSplitAt():LambdaFunction<{String[3]->String[1]}>[1]
+{
+    {p:String[3]
+                | let string = $p->at(0);
+                  let separator = $p->at(1);
+                  let position = $p ->at(2) -> meta::pure::functions::string::parseInteger();
+                  assert($position>0, 'SplitAt supports only index values greater than or equal to 1'); 
+                  assert($separator->length() > 2,'SplitAt does not support empty separators'); '';
+                  '('+$string+','+$separator+','+($p->at(2))+')';
+    }
+}

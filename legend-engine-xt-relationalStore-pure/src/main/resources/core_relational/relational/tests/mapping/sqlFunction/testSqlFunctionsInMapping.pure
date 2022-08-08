@@ -1125,6 +1125,50 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::base64::te
     assertEquals('select cast(to_base64(`root`.alphaNumericString) as char) as `res1`, cast(from_base64(cast(to_base64(`root`.alphaNumericString) as char)) as char) as `res2` from dataTable as `root`', $s);
 }
 
+function <<test.Test>> meta::relational::tests::mapping::sqlFunction::splitAt::testToSQLSplitAtWithoutH2():Boolean[1]
+{
+    let prestoSql = toSQLString(
+      |SqlFunctionDemo.all()->project([s | $s.splitResult], ['Part']), 
+      testMapping, 
+      meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
+    let postgresSql = toSQLString(
+      |SqlFunctionDemo.all()->project([s | $s.splitResult], ['Part']), 
+      testMapping, 
+      meta::relational::runtime::DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
+    let snowflakeSql = toSQLString(
+      |SqlFunctionDemo.all()->project([s | $s.splitResult], ['Part']), 
+      testMapping, 
+      meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
+    let databricksSql = toSQLString(
+      |SqlFunctionDemo.all()->project([s | $s.splitResult], ['Part']), 
+      testMapping, 
+      meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
+    let redShiftSql = toSQLString(
+      |SqlFunctionDemo.all()->project([s | $s.splitResult], ['Part']), 
+      testMapping, 
+      meta::relational::runtime::DatabaseType.Redshift, meta::relational::extension::relationalExtensions());
+    let sybaseIQSql = toSQLString(
+      |SqlFunctionDemo.all()->project([s | $s.splitResult], ['Part']), 
+      testMapping, 
+      meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
+      
+    assertEquals('select split_part("root".stringDateFormat,\'-\',2) as "Part" from dataTable as "root"', $prestoSql);
+    assertEquals('select split_part("root".stringDateFormat,Text\'-\',2) as "Part" from dataTable as "root"', $postgresSql);
+    assertEquals('select split_part("root".stringDateFormat,\'-\',2) as "Part" from dataTable as "root"', $snowflakeSql);
+    assertEquals('select split_part(`root`.stringDateFormat,\'-\',2) as `Part` from dataTable as `root`', $databricksSql);
+    assertEquals('select split_part("root".stringDateFormat,\'-\',2) as "Part" from dataTable as "root"', $redShiftSql);
+    assertEquals('select CASE WHEN locate("root".stringDateFormat, \'-\', locate("root".stringDateFormat, \'-\', 0)+1)!=locate("root".stringDateFormat, \'-\', 0) AND locate(right("root".stringDateFormat, LENGTH("root".stringDateFormat)-locate("root".stringDateFormat, \'-\')), \'-\')!=0 THEN substring(right("root".stringDateFormat, LENGTH("root".stringDateFormat)-locate("root".stringDateFormat, \'-\')), 0, locate(right("root".stringDateFormat, LENGTH("root".stringDateFormat)-locate("root".stringDateFormat, \'-\')), \'-\')-1) WHEN locate("root".stringDateFormat, \'-\', locate("root".stringDateFormat, \'-\', 0)+1)!=locate("root".stringDateFormat, \'-\', 0) AND locate(right("root".stringDateFormat, LENGTH("root".stringDateFormat)-locate("root".stringDateFormat, \'-\')), \'-\')=0 THEN right("root".stringDateFormat, LENGTH("root".stringDateFormat)-locate("root".stringDateFormat, \'-\')) WHEN locate("root".stringDateFormat, \'-\', 0)!=0 AND locate(right("root".stringDateFormat, LENGTH("root".stringDateFormat)-locate("root".stringDateFormat, \'-\')), \'-\')=0 THEN right("root".stringDateFormat, LENGTH("root".stringDateFormat)-locate("root".stringDateFormat, \'-\')) ELSE right(right("root".stringDateFormat, LENGTH("root".stringDateFormat)-locate("root".stringDateFormat, \'-\')),0) END as "Part" from dataTable as "root"', $sybaseIQSql);
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::sqlFunction::splitAt::testToSQLSplitAtWithH2():Boolean[1]
+{
+    let H2result = execute(
+      |SqlFunctionDemo.all()->project([s | $s.splitResult], ['Part']), 
+      testMapping, 
+      testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
+    assertEquals(['06', '02'], $H2result.values->at(0).rows.values);
+}
+
 Class meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionDemo
 {
    concatResult :String[1];
@@ -1157,6 +1201,7 @@ Class meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionD
    string2Integer : Integer[1];
    floatModResult : Integer[1];
    floatRemResult : Integer[1];
+   splitResult :String[1];
 
    string2Date: Date[1];
    string2DateTime: DateTime[1];
@@ -1285,6 +1330,7 @@ Mapping meta::relational::tests::mapping::sqlFunction::model::mapping::testMappi
           month : monthNumber(dateTime),
           week : weekOfYear(dateTime),
           date : datePart(dateTime),
+          splitResult: splitAt(stringDateFormat, '-', 2),
 
           encodeBase64Result : encodeBase64(alphaNumericString),
           decodeBase64Result : decodeBase64(encodeBase64(alphaNumericString))
