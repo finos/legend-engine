@@ -129,14 +129,14 @@ function meta::external::format::protobuf::binding::fromPure::tests::transform_t
   assertEquals('syntax = "proto3";\n' +
                 'package meta.external.format.protobuf.binding.fromPure.tests.account;\n' +
                 '\n' +
-                'import "google/protobuf/timestamp.proto";\n' +
+                'import "google/type/date.proto";\n' +
                 'import "meta_external_format_protobuf_binding_fromPure_tests_trade.proto";\n' +
                 '\n' +
                 'message Account {\n'+
                 '  string name = 1;\n'+
                 '  meta.external.format.protobuf.binding.fromPure.tests.trade.Trade t = 2;\n'+
                 '  meta.external.format.protobuf.binding.fromPure.tests.trade.MyEnum enum = 3;\n'+
-                '  google.protobuf.Timestamp a_date = 4;\n'+
+                '  google.type.Date a_date = 4;\n'+
                 '}', $resultForAccount.second);
 }
 

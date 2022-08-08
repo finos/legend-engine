@@ -250,7 +250,8 @@ function <<access.private>> meta::external::format::protobuf::binding::fromPure:
          pair(Boolean, ^meta::external::format::protobuf::metamodel::Bool()),
          pair(DateTime , ^meta::external::format::protobuf::metamodel::MessagePtr(package='google.protobuf', name='Timestamp')),
          pair(Date , ^meta::external::format::protobuf::metamodel::MessagePtr(package='google.protobuf', name='Timestamp')),
-         pair(StrictDate , ^meta::external::format::protobuf::metamodel::MessagePtr(package='google.protobuf', name='Timestamp')),
+         pair(StrictDate , ^meta::external::format::protobuf::metamodel::MessagePtr(package='google.type', name='Date')),
+         pair(StrictTime , ^meta::external::format::protobuf::metamodel::MessagePtr(package='google.type', name='TimeOfDay')),
          pair(Number , ^meta::external::format::protobuf::metamodel::Double()),
          pair(Any, ^meta::external::format::protobuf::metamodel::MessagePtr(package='google.protobuf', name='Any'))
       ]
