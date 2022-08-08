@@ -40,11 +40,15 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.FunctionExpression;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.generated.core_pure_corefunctions_metaExtension;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class MappingValidator
@@ -277,7 +281,7 @@ public class MappingValidator
                                                                 }
                                                                 else
                                                                 {
-                                                                    pureModel.addWarnings(Lists.mutable.with( new Warning(SourceInformationHelper.fromM3SourceInformation(pm.getSourceInformation()), "The new function/operator(^) should not be used in property mappings, violated in property '" + ppm._transform + "' of mapping '" + mappingPath + "'")));
+                                                                    pureModel.addWarnings(Lists.mutable.with(new Warning(SourceInformationHelper.fromM3SourceInformation(pm.getSourceInformation()), "The new function/operator(^) should not be used in property mappings, violated in property '" + ppm._transform + "' of mapping '" + mappingPath + "'")));
                                                                 }
                                                             }
                                                         });
