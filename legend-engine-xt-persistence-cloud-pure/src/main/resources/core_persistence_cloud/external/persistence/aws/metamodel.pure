@@ -17,6 +17,7 @@ import meta::external::persistence::aws::metamodel::*;
 import meta::pure::persistence::metamodel::*;
 import meta::pure::persistence::metamodel::context::*;
 import meta::pure::persistence::metamodel::trigger::*;
+import meta::pure::alloy::connections::alloy::authentication::*;
 
 import meta::pure::runtime::*;
 
@@ -40,6 +41,7 @@ Class meta::external::persistence::aws::metamodel::connection::AwsS3Connection e
    partition: AwsPartition[1];
    region: String[1];
    bucket: String[1];
+   key: String[1];
 }
 
 Enum
@@ -55,3 +57,12 @@ meta::external::persistence::aws::metamodel::AwsPartition
    {doc.doc = 'AWS GovCloud (US) regions'}
    AWS_US_GOV
 }
+
+Class meta::external::persistence::aws::metamodel::connection::AwsFinCloudConnection extends Connection
+{
+  datasetId: String[1];
+  authenticationStrategy: AuthenticationStrategy[1];
+  apiUrl: String[1];
+  queryInfo: String[0..1];
+}
+

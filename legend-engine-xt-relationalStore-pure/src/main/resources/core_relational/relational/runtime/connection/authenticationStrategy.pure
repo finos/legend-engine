@@ -72,17 +72,17 @@ Class meta::pure::alloy::connections::alloy::authentication::GCPWorkloadIdentity
     additionalGcpScopes: String[*];
 }
 
-Class 
+Class
 {doc.doc = 'Private key based authentication on AWS'}
-meta::external::persistence::aws::authentication::AwsPKAuthenticationStrategy extends meta::pure::alloy::connections::alloy::authentication::AuthenticationStrategy
+meta::pure::alloy::connections::alloy::authentication::AwsPKAuthenticationStrategy extends meta::pure::alloy::connections::alloy::authentication::AuthenticationStrategy
 {
     secretArn: String[1];
     user: String[1];
 }
 
-Class 
+Class
 {doc.doc = 'OAuth-based authentication on AWS'}
-meta::external::persistence::aws::authentication::AwsOAuthAuthenticationStrategy extends meta::pure::alloy::connections::alloy::authentication::AuthenticationStrategy
+meta::pure::alloy::connections::alloy::authentication::AwsOAuthAuthenticationStrategy extends meta::pure::alloy::connections::alloy::authentication::AuthenticationStrategy
 {
     secretArn: String[1];
     discoveryUrl: String[1];
