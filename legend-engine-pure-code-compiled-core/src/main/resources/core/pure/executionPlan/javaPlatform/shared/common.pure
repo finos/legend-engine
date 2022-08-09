@@ -229,8 +229,9 @@ function meta::pure::executionPlan::engine::java::generateInterfaceForClass(type
       },
       $withPropertyGetters
    );
-   
-   let dataRecordClass   = [JsonDataRecord, XmlDataRecord]->concatenate($conventions.extensions.plan_javaRuntime_common_generateInterfaceForClass);
+
+   let extensionClass = meta::pure::executionPlan::platformBinding::legendJava::LegendJavaExecutionPlanPlatformBindingExtension;
+   let dataRecordClass   = $conventions.extensions->meta::pure::extension::extractExecutionPlanPlatformBindingExtensions($extensionClass)->map(e | $e.dataRecordClasses);
    let iReferencedObject = $conventions->className(IReferencedObject);
    if($typeInfo.class->in($dataRecordClass),
       |$withQualifiedPropertyGetters,

@@ -20,7 +20,10 @@ import meta::pure::extension::*;
 
 function meta::pure::executionPlan::engine::java::engineConventions(extensions:meta::pure::extension::Extension[*]): Conventions[1]
 {
-   newConventions($extensions)
+   let extensionClass = meta::pure::executionPlan::platformBinding::legendJava::LegendJavaExecutionPlanPlatformBindingExtension;
+   let extraProhibitedFunctions = $extensions->extractExecutionPlanPlatformBindingExtensions($extensionClass)->map(e | $e.defaultProhibitedFunctions);
+
+   newConventions($extensions, $extraProhibitedFunctions)
       ->applyJavaEngineDependencies($extensions)
       ->registerBooleanLibrary()
       ->registerCollectionsLibrary()
@@ -32,5 +35,5 @@ function meta::pure::executionPlan::engine::java::engineConventions(extensions:m
       ->registerMultiplicityLibrary()
       ->registerStringLibrary()
       ->registerUnitLibrary()
-      ->registerRuntimeLibrary()
+      ->registerRuntimeLibrary();
 }

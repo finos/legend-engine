@@ -14,11 +14,33 @@
 
 package org.finos.legend.engine.plan.platform;
 
+import org.eclipse.collections.api.RichIterable;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionPlan;
+import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
+import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_platformBinding_ExecutionPlanPlatformBindingConfig;
+import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_platformBinding_legendJava_LegendJavaExecutionPlanPlatformBindingConfig_Impl;
+import org.finos.legend.pure.generated.core_pure_executionPlan_javaPlatform_legendJavaPlatformBindingContract;
+import org.finos.legend.pure.generated.core_pure_executionPlan_executionPlan_generation;
+
 class JavaPlatformBinder extends PlatformBinder
 {
     @Override
     protected PlanPlatform getPlatform()
     {
         return PlanPlatform.JAVA;
+    }
+
+    @Override
+    Root_meta_pure_executionPlan_ExecutionPlan bindPlanToPlatform(Root_meta_pure_executionPlan_ExecutionPlan plan, String planId, PureModel pureModel, RichIterable<? extends Root_meta_pure_extension_Extension> extensions)
+    {
+        String platformId = core_pure_executionPlan_javaPlatform_legendJavaPlatformBindingContract.Root_meta_pure_executionPlan_platformBinding_legendJava_legendJavaPlatformBindingId__String_1_(pureModel.getExecutionSupport());
+        return core_pure_executionPlan_executionPlan_generation.Root_meta_pure_executionPlan_generatePlatformCode_ExecutionPlan_1__String_1__ExecutionPlanPlatformBindingConfig_1__Extension_MANY__ExecutionPlan_1_(plan, platformId, getLegendJavaExecutionPlanPlatformBindingConfig(planId), extensions, pureModel.getExecutionSupport());
+    }
+
+    private Root_meta_pure_executionPlan_platformBinding_ExecutionPlanPlatformBindingConfig getLegendJavaExecutionPlanPlatformBindingConfig(String planId)
+    {
+        return new Root_meta_pure_executionPlan_platformBinding_legendJava_LegendJavaExecutionPlanPlatformBindingConfig_Impl("")
+                ._planId(planId);
     }
 }

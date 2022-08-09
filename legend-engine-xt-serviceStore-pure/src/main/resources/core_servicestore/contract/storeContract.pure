@@ -71,6 +71,7 @@ function meta::external::store::service::contract::serviceStoreStoreContract():S
           )
     }
    )
+   ->meta::pure::extension::withExtraExecutionPlanPlatformBindingExtension(meta::external::store::service::contract::serviceStoreLegendJavaExecutionPlanPlatformBindingExtension())
 }
 
 // Execution Plan
@@ -95,4 +96,97 @@ function meta::external::store::service::contract::planCrossGraphFetchExecution(
 function meta::external::store::service::contract::supports(f:FunctionExpression[1]):Boolean[1]
 {
    !findSupportedFunction($f, getSupportedFunctions())->isEmpty()
+}
+
+// Legend Java Platform Binding Extension
+###Pure
+import meta::external::language::java::metamodel::*;
+import meta::external::store::service::executionPlan::nodes::*;
+import meta::external::store::service::executionPlan::engine::java::*;
+import meta::external::store::service::metamodel::mapping::*;
+import meta::pure::executionPlan::engine::java::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
+import meta::pure::extension::*;
+import meta::pure::mapping::*;
+
+function <<access.private>> meta::external::store::service::contract::serviceStoreLegendJavaExecutionPlanPlatformBindingExtension(): LegendJavaExecutionPlanPlatformBindingExtension[1]
+{
+   ^LegendJavaExecutionPlanPlatformBindingExtension
+   (
+      id = legendJavaPlatformBindingId(),
+
+      // Graph fetch extensions ----------------------------------------------------------------------------------
+      prepareNode = {path:String[1], contextFromOtherNodes:GenerationContext[1], extensions:Extension[*], debug:DebugContext[1] |
+         [
+            l:LimitExecutionNode[1] | $l->prepareForLimitExecutionNode($path, $contextFromOtherNodes, $debug)
+         ]
+      },
+
+      generateCode = {path:String[1], context:GenerationContext[1], extensions:Extension[*], debug:DebugContext[1] |
+         [
+            s:ServiceParametersResolutionExecutionNode[1] | $s->generateImplementationForServiceParametersResolutionNode($path, $context, $debug)
+         ]
+      },
+      // ---------------------------------------------------------------------------------- Graph fetch extensions
+
+
+      // Transformer extensions ----------------------------------------------------------------------------------
+      extractTransformFunctionFromPropertyMapping = [
+         {spm : ServiceStorePropertyMapping[1] | let dummyLambda = {|'ok'};
+                                                 let gen = ^GenericType
+                                                            (
+                                                               rawType = LambdaFunction,
+                                                               typeArguments = ^GenericType
+                                                                                 (
+                                                                                    rawType = ^meta::pure::metamodel::type::FunctionType
+                                                                                             (
+                                                                                                parameters = [],
+                                                                                                returnType = $spm.property->functionReturnType(),
+                                                                                                returnMultiplicity= $spm.property->functionReturnMultiplicity()
+                                                                                             )
+                                                                                 )
+                                                            );
+                                                 let exp = ^SimpleFunctionExpression(func = $spm.property,
+                                                                                     genericType = $spm.property.genericType,
+                                                                                     importGroup = system.children->at(0)->cast(@Package).children->at(0)->cast(@ImportGroup),
+                                                                                     multiplicity = $spm.property.multiplicity,
+                                                                                     parametersValues = ^VariableExpression(genericType=^GenericType(rawType = $spm.property.owner->cast(@meta::pure::metamodel::type::Class<Any>)), multiplicity = PureOne, name = 'src'),
+                                                                                     propertyName = ^InstanceValue(genericType = ^GenericType(rawType = String), multiplicity = PureOne, values = $spm.property.name));
+                                                 ^$dummyLambda(classifierGenericType = $gen, expressionSequence = $exp);},
+         {epm : EmbeddedServiceStoreSetImplementation[1] | let dummyLambda = {|'ok'};
+                                                 let gen = ^GenericType
+                                                            (
+                                                               rawType = LambdaFunction,
+                                                               typeArguments = ^GenericType
+                                                                                 (
+                                                                                    rawType = ^meta::pure::metamodel::type::FunctionType
+                                                                                             (
+                                                                                                parameters = [],
+                                                                                                returnType = $epm.property->functionReturnType(),
+                                                                                                returnMultiplicity= $epm.property->functionReturnMultiplicity()
+                                                                                             )
+                                                                                 )
+                                                            );
+                                                 let exp = ^SimpleFunctionExpression(func = $epm.property,
+                                                                                     genericType = $epm.property.genericType,
+                                                                                     importGroup = system.children->at(0)->cast(@Package).children->at(0)->cast(@ImportGroup),
+                                                                                     multiplicity = $epm.property.multiplicity,
+                                                                                     parametersValues = ^VariableExpression(genericType=^GenericType(rawType = $epm.property.owner->cast(@meta::pure::metamodel::type::Class<Any>)), multiplicity = PureOne, name = 'src'),
+                                                                                     propertyName = ^InstanceValue(genericType = ^GenericType(rawType = String), multiplicity = PureOne, values = $epm.property.name));
+                                                 ^$dummyLambda(classifierGenericType = $gen, expressionSequence = $exp);}
+      ],
+
+      extractValueTransformerFromPropertyMapping = [
+         spm : ServiceStorePropertyMapping[1] |  [],
+         epm : EmbeddedServiceStoreSetImplementation[1] | []
+      ],
+      
+      applyTypeFilter = {set:InstanceSetImplementation[1], src:Code[1], withoutFilter:Code[1..*], context:GenerationContext[1], debug:DebugContext[1] |
+         [
+            rsi: RootServiceInstanceSetImplementation[1]  | $withoutFilter,
+            esi: EmbeddedServiceStoreSetImplementation[1] | $withoutFilter
+         ]
+      }
+      // ---------------------------------------------------------------------------------- Transformer extensions
+   )
 }

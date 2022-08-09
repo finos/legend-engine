@@ -20,4 +20,6 @@ Class meta::pure::executionPlan::extension::ExecutionPlanExtension
   reprocessConnection : Function<{Connection[1]->Connection[1]}>[0..1];
   extractVariablesFromExecutionOption : Function<{ExecutionOption[1]->PlanVarPlaceHolder[*]}>[0..1];
   crossStoreSourceSupportsBatching : Function<{InstanceSetImplementation[1], AbstractProperty<Any>[*], Map<String, String>[1] -> Boolean[1]}>[0..1];
+
+  executionPlanPlatformBindingExtensions : meta::pure::executionPlan::platformBinding::ExecutionPlanPlatformBindingExtension[*];
 }

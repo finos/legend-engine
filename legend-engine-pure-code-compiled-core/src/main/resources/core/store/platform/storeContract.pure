@@ -36,6 +36,7 @@ function meta::pure::store::platform::contract::platformStoreContract():StoreCon
      resolveStoreFromSetImplementation = s:InstanceSetImplementation[1]|^meta::pure::store::platform::metamodel::PlatformStore(name='PLATFORM', package=::),
      supportsNativeJoinAmongElements = false
    )
+   ->meta::pure::extension::withExtraExecutionPlanPlatformBindingExtension(meta::pure::store::platform::contract::platformLegendJavaExecutionPlanPlatformBindingExtension())
 }
 
 // Platform Store Execution
@@ -55,4 +56,67 @@ function meta::pure::store::platform::contract::planExecution(sq:meta::pure::map
 function meta::pure::store::platform::contract::supports(f:FunctionExpression[1]):Boolean[1]
 {
    true;
+}
+
+// Legend Java Platform Binding Extension
+###Pure
+import meta::external::language::java::factory::project::*;
+import meta::external::language::java::metamodel::project::*;
+import meta::pure::executionPlan::*;
+import meta::pure::executionPlan::engine::java::*;
+import meta::pure::executionPlan::engine::java::graphFetch::common::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
+import meta::pure::extension::*;
+import meta::pure::graphFetch::executionPlan::*;
+import meta::pure::mapping::*;
+
+
+function <<access.private>> meta::pure::store::platform::contract::platformLegendJavaExecutionPlanPlatformBindingExtension(): LegendJavaExecutionPlanPlatformBindingExtension[1]
+{
+   ^LegendJavaExecutionPlanPlatformBindingExtension
+   (
+      id = legendJavaPlatformBindingId(),
+
+      // Graph fetch extensions ----------------------------------------------------------------------------------
+      walkChildNodesForPrepare = {path:String[1], contextFromChildren:GenerationContext[1], extensions:Extension[*], debug:DebugContext[1] |
+         [
+            {f:FreeMarkerConditionalExecutionNode[1] |
+               let contextFromTrueBlock = $f.trueBlock->prepare($path+'.trueBlock', $contextFromChildren, $extensions, $debug);
+               if($f.falseBlock->isEmpty(), |$contextFromTrueBlock, |$f.falseBlock->toOne()->prepare($path+'.falseBlock', $contextFromTrueBlock, $extensions, $debug));
+            },
+            {g:GlobalGraphFetchExecutionNode[1] | 
+               let contextFromGlobalChildren = $g.children->size()->range()->fold({x, ctx | $g.children->at($x)->prepare($path+'.globalChild' + $x->toString(), $ctx, $extensions, $debug)}, $contextFromChildren);
+               $g.localGraphFetchExecutionNode->prepare($path+localGraphFetchNodePathPrefix(), $contextFromGlobalChildren, $extensions, $debug);
+            }
+         ]
+      },
+
+      prepareNode = {path:String[1], contextFromOtherNodes:GenerationContext[1], extensions:Extension[*], debug:DebugContext[1] |
+         [
+            g:GlobalGraphFetchExecutionNode[1]       | $g->prepareForGlobalGraphFetchNode($path, $contextFromOtherNodes, $debug),
+            p:PureExpressionPlatformExecutionNode[1] | $p->prepareForPlatformNode($path, $contextFromOtherNodes, $extensions, $debug)
+         ]
+      },
+
+      generateCode = {path:String[1], context:GenerationContext[1], extensions:Extension[*], debug:DebugContext[1] |
+         [
+            l:LocalGraphFetchExecutionNode[1]        | $l->generateCodeForLocalGraphFetchNode($path, $context, $extensions, $debug),
+            p:PureExpressionPlatformExecutionNode[1] | $p->generateImplementionForPlatformNode($path, $context, $extensions, $debug)
+         ]
+      },
+
+      walkAndGenerateChildNodes = {path: String[1], mapping:Mapping[1], context:GenerationContext[1], extensions:Extension[*], fullProject:Project[0..1], debug:DebugContext[1] |
+         [
+            g:GlobalGraphFetchExecutionNode[1] |
+               let transformedChildren = $g.children->size()->range()->map(x | $g.children->at($x)->generatePlatformCode($path+'.globalChild' + $x->toString(), $mapping, $context, $extensions, $debug));
+               let transformedLocal = $g.localGraphFetchExecutionNode->generatePlatformCode($path+localGraphFetchNodePathPrefix(), $mapping, $context, $extensions, $debug);
+               let transformedLocalNode = $transformedLocal.node->cast(@LocalGraphFetchExecutionNode);
+               ^GeneratedNode(node=^$g(children = $transformedChildren.node->cast(@GlobalGraphFetchExecutionNode), localGraphFetchExecutionNode = $transformedLocalNode), project = mergeProjectsNullable($fullProject->concatenate($transformedChildren.project)->concatenate($transformedLocal.project)));,
+            f:FreeMarkerConditionalExecutionNode[1] |
+               let transformedTrueBlock = $f.trueBlock->generatePlatformCode($path+'.trueBlock', $mapping, $context, $extensions, $debug);
+               let transformedFalseBlock = if($f.falseBlock->isEmpty(), |[], |$f.falseBlock->toOne()->generatePlatformCode($path+'.falseBlock', $mapping, $context, $extensions, $debug));
+               ^GeneratedNode(node=^$f(trueBlock = $transformedTrueBlock.node, falseBlock = $transformedFalseBlock.node), project = mergeProjectsNullable($fullProject->concatenate($transformedTrueBlock.project)->concatenate($transformedFalseBlock.project)));         ]
+      }
+      // ---------------------------------------------------------------------------------- Graph fetch extensions
+   )
 }

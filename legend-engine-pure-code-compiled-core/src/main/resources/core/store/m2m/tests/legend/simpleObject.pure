@@ -46,7 +46,7 @@ meta::pure::mapping::modelToModel::test::alloy::simple::simpleSerializeOfOneObje
                                 url='data:application/json,{"fullName":"Pierre Doe"}'
                              )
       ),
-      []
+      meta::pure::extension::defaultExtensions()
    );
 
    assert(jsonEquivalent('{"firstName":"Pierre","lastName":"Doe"}'->parseJSON(), $result.values->toOne()->parseJSON()));
@@ -71,7 +71,7 @@ meta::pure::mapping::modelToModel::test::alloy::simple::simpleSerializeOfOneObje
                                 url='data:application/json,[{"name":"GS","employees": [{"fullName" : "Robert T", "aName" : "A", "@type":"meta::pure::mapping::modelToModel::test::shared::src::_S_PersonA"}, {"fullName" : "John T", "aName" : "A", "@type":"meta::pure::mapping::modelToModel::test::shared::src::_S_PersonA"}, {"fullName" : "Den T", "aName" : "B", "@type":"meta::pure::mapping::modelToModel::test::shared::src::_S_PersonB"}, {"fullName" : "Den T", "@type":"meta::pure::mapping::modelToModel::test::shared::src::_S_Person"}]}]'
                              )
       ),
-      []
+      meta::pure::extension::defaultExtensions()
    );      
    
    assert(jsonEquivalent('{"legalName":"GS","employees":[{"firstName":"RobertA"},{"firstName":"JohnA"}]}'->parseJSON(), $result.values->toOne()->parseJSON()));
@@ -97,7 +97,7 @@ meta::pure::mapping::modelToModel::test::alloy::simple::simpleSerializeOfOneObje
                                 url='data:application/json,[{"name":"GS","employees": [{"fullName" : "Robert T", "aName" : "A", "@type":"meta::pure::mapping::modelToModel::test::shared::src::_S_PersonA"}, {"fullName" : "John T", "aName" : "A", "@type":"meta::pure::mapping::modelToModel::test::shared::src::_S_PersonA"}, {"fullName" : "Den T", "aName" : "B", "@type":"meta::pure::mapping::modelToModel::test::shared::src::_S_PersonB"}, {"fullName" : "Den T", "@type":"meta::pure::mapping::modelToModel::test::shared::src::_S_Person"}]}]'
                              )
       ),
-      []
+      meta::pure::extension::defaultExtensions()
    );      
    
    assert(jsonEquivalent('{"defects":[],"source":{"defects":[],"source":{"number":1,"record":"{\\"name\\":\\"GS\\",\\"employees\\":[{\\"fullName\\":\\"Robert T\\",\\"aName\\":\\"A\\",\\"@type\\":\\"meta::pure::mapping::modelToModel::test::shared::src::_S_PersonA\\"},{\\"fullName\\":\\"John T\\",\\"aName\\":\\"A\\",\\"@type\\":\\"meta::pure::mapping::modelToModel::test::shared::src::_S_PersonA\\"},{\\"fullName\\":\\"Den T\\",\\"aName\\":\\"B\\",\\"@type\\":\\"meta::pure::mapping::modelToModel::test::shared::src::_S_PersonB\\"},{\\"fullName\\":\\"Den T\\",\\"@type\\":\\"meta::pure::mapping::modelToModel::test::shared::src::_S_Person\\"}]}"},"value":{"name":"GS","employees":[{"aName":"A","fullName":"Robert T"},{"aName":"A","fullName":"John T"},{"fullName":"Den T"},{"fullName":"Den T"}]}},"value":{"legalName":"GS","employees":[{"firstName":"RobertA"},{"firstName":"JohnA"}]}}'->parseJSON(), $result.values->toOne()->parseJSON()));
@@ -122,7 +122,7 @@ meta::pure::mapping::modelToModel::test::alloy::simple::simpleSerializeOfOneObje
                                 url='data:application/json,[{"name":"GS","employees": [{"fullName" : "Robert T", "address":  {"name" : "n", "street" : "Digby"}, "aName" : "A", "vehicle": {"wheelCount" : 5}, "@type":"meta::pure::mapping::modelToModel::test::shared::src::_S_PersonA"}, {"fullName" : "John T", "address":  {"name" : "n", "street" : "HighBury"}, "aName" : "A", "vehicle": {"wheelCount" : 7}, "@type":"meta::pure::mapping::modelToModel::test::shared::src::_S_PersonA"}, {"fullName" : "Den T", "address":  {"name" : "n", "street" : "Cresent"}, "aName" : "B", "@type":"meta::pure::mapping::modelToModel::test::shared::src::_S_PersonB"}, {"fullName" : "Den T", "address":  {"name" : "n", "street" : "Test"}, "@type":"meta::pure::mapping::modelToModel::test::shared::src::_S_Person"}]}]'
                              )
       ),
-      []
+      meta::pure::extension::defaultExtensions()
    );      
    
    assert(jsonEquivalent('{"defects":[],"source":{"defects":[],"source":{"number":1,"record":"{\\"name\\":\\"GS\\",\\"employees\\":[{\\"fullName\\":\\"Robert T\\",\\"address\\":{\\"name\\":\\"n\\",\\"street\\":\\"Digby\\"},\\"aName\\":\\"A\\",\\"vehicle\\":{\\"wheelCount\\":5},\\"@type\\":\\"meta::pure::mapping::modelToModel::test::shared::src::_S_PersonA\\"},{\\"fullName\\":\\"John T\\",\\"address\\":{\\"name\\":\\"n\\",\\"street\\":\\"HighBury\\"},\\"aName\\":\\"A\\",\\"vehicle\\":{\\"wheelCount\\":7},\\"@type\\":\\"meta::pure::mapping::modelToModel::test::shared::src::_S_PersonA\\"},{\\"fullName\\":\\"Den T\\",\\"address\\":{\\"name\\":\\"n\\",\\"street\\":\\"Cresent\\"},\\"aName\\":\\"B\\",\\"@type\\":\\"meta::pure::mapping::modelToModel::test::shared::src::_S_PersonB\\"},{\\"fullName\\":\\"Den T\\",\\"address\\":{\\"name\\":\\"n\\",\\"street\\":\\"Test\\"},\\"@type\\":\\"meta::pure::mapping::modelToModel::test::shared::src::_S_Person\\"}]}"},"value":{"name":"GS","employees":[{"address":{"street":"Digby"},"aName":"A","fullName":"Robert T","vehicle":{"wheelCount":5}},{"address":{"street":"HighBury"},"aName":"A","fullName":"John T","vehicle":{"wheelCount":7}},{"address":{"street":"Cresent"},"fullName":"Den T"},{"address":{"street":"Test"},"fullName":"Den T"}]}},"value":{"legalName":"GS","employees":[{"firstName":"Robert","lastName":"T","description":"aName:A lives at Digby and has road vehicle with wheel count:5"},{"firstName":"John","lastName":"T","description":"aName:A lives at HighBury and has road vehicle with wheel count:7"}]}}'->parseJSON(), $result.values->toOne()->parseJSON()));
@@ -147,7 +147,7 @@ meta::pure::mapping::modelToModel::test::alloy::simple::simpleSerializeOfMultipl
                                 url='data:application/json,[{"fullName":"Pierre Doe"},{"fullName":"Dave Miles"}]'
                              )
       ),
-      []
+      meta::pure::extension::defaultExtensions()
    );
 
    assert(jsonEquivalent('[{"firstName":"Pierre","lastName":"Doe"},{"firstName":"Dave","lastName":"Miles"}]'->parseJSON(), $result.values->toOne()->parseJSON()));
@@ -172,7 +172,7 @@ meta::pure::mapping::modelToModel::test::alloy::simple::simpleSerializeOneObject
                                 url='data:application/json,{"firstName":"Pierre","lastName":"Doe"}'
                              )
       ),
-      []
+      meta::pure::extension::defaultExtensions()
    );
 
    assert(jsonEquivalent('{"fullName":"Pierre Doe"}'->parseJSON(), $result.values->toOne()->parseJSON()));
@@ -195,7 +195,7 @@ meta::pure::mapping::modelToModel::test::alloy::simple::simpleSerializeMissingPr
                                 url='data:application/json,{"lastName":"Doe"}'
                              )
       ),
-      []
+      meta::pure::extension::defaultExtensions()
    );
 
    assert(jsonEquivalent('{"fullName":"Somebody Doe"}'->parseJSON(), $result.values->toOne()->parseJSON()));
@@ -220,7 +220,7 @@ meta::pure::mapping::modelToModel::test::alloy::simple::supportForPrimitivesAndE
                                 url='data:application/json,{"i":2, "f": 2.5, "d": [0.1, 0.2], "sd": ["2018-03-12", "2019-05-30"], "dt": ["2018-03-12T13:20:21.000", "2019-05-30T04:29:01.234"], "b": [true, false, true], "c":"ROUGE", "s":["BLEU", "VERT"]}'
                              )
       ),
-      []
+      meta::pure::extension::defaultExtensions()
    );
 
    let expected = '{"i":4, "f": 0.4, "d": [0.2, 0.4],"sd": ["2018-03-13", "2019-05-31"], "dt": ["2018-03-12T15:20:21.000", "2019-05-30T06:29:01.234"], "b": [false, true, false], "c":"RED", "c2":"BLUE", "c3":["BLUE", "GREEN"]}';
@@ -247,7 +247,7 @@ meta::pure::mapping::modelToModel::test::alloy::simple::supportForPrimitivesAndE
                                 url='data:application/json,{"i":2, "f": 2.5, "d": [0.1, 0.2], "sd": ["2018-03-12", "2019-05-30"], "dt": ["2018-03-12T13:20:21.000", "2019-05-30T04:29:01.234"], "b": [true, false, true], "c":"ROUGE", "s":["BLEU", "VERT"]}'
                              )
       ),
-      []
+      meta::pure::extension::defaultExtensions()
    );
 
    let expected = '{"i":4, "f": 0.4, "d": [0.2, 0.4],"sd": ["2018-03-13", "2019-05-31"], "dt": ["2018-03-12T15:20:21.000", "2019-05-30T06:29:01.234"], "b": [false, true, false], "c":"RED", "c2":"BLUE", "c3":["BLUE", "GREEN"]}';
@@ -274,7 +274,7 @@ meta::pure::mapping::modelToModel::test::alloy::simple::supportForEmptyValues() 
                                 url='data:application/json,{"i":null, "f": 2.5, "d": [], "b": [false, true], "c":"ROUGE"}'
                              )
       ),
-      []
+      meta::pure::extension::defaultExtensions()
    );
 
    assert(jsonEquivalent('{"i":null, "f": 0.4, "d": []}'->parseJSON(), $result.values->toOne()->parseJSON()));
@@ -303,7 +303,7 @@ meta::pure::mapping::modelToModel::test::alloy::simple::simpleSerializeOfOneObje
                                 url='data:application/json,[{"address": [{"zipCode" : "10282", "coordinates" : "1", "street": "200 west", "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street"}]}]'
                              )
       ),
-      []
+      meta::pure::extension::defaultExtensions()
    );      
    
    assert(jsonEquivalent('{"targetAddress":"200 west"}'->parseJSON(), $result.values->toOne()->parseJSON()));
@@ -332,7 +332,7 @@ meta::pure::mapping::modelToModel::test::alloy::simple::simpleSerializeOfOneObje
                                 url='data:application/json,[{"address": [{"zipCode" : "10282", "coordinates" : "1", "road": "200 west", "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Road"}]}]'
                              )
       ),
-      []
+      meta::pure::extension::defaultExtensions()
    );      
    
    assert(jsonEquivalent('{"targetAddress":"200 west"}'->parseJSON(), $result.values->toOne()->parseJSON()));
@@ -354,7 +354,7 @@ meta::pure::mapping::modelToModel::test::alloy::simple::ignoresUnwantedValues() 
       |Person.all()->graphFetch($tree)->serialize($tree),
       simpleModelMapping,
       testJsonRuntime(_S_Person, '{"fullName":"Dave Miles", "likes": ["skiing", "books"], "height": 180, "address": {"line1": "1 The Street", "line2": "Sometown"}}'),
-      []
+      meta::pure::extension::defaultExtensions()
    );
 
    let json = $result.values->toOne();
@@ -377,7 +377,7 @@ meta::pure::mapping::modelToModel::test::alloy::simple::canMapToAnEnumerationNam
       |Name.all()->graphFetch($tree)->serialize($tree),
       enumNameMapping,
       testJsonRuntime(_SomeData, '{"f": 2.5, "b": [true, false, true], "c":"ROUGE"}'),
-      []
+      meta::pure::extension::defaultExtensions()
    );
 
    let json = $result.values->toOne();
@@ -400,7 +400,7 @@ meta::pure::mapping::modelToModel::test::alloy::simple::canUseExternalEnumInMapp
       |Name.all()->graphFetch($tree)->serialize($tree),
       externalEnumMapping,
       testJsonRuntime(_SomeData, '{"f": 2.5, "b": [true, false, true], "c":"ROUGE"}'),
-      []
+      meta::pure::extension::defaultExtensions()
    );
 
    let json = $result.values->toOne();
@@ -424,7 +424,7 @@ meta::pure::mapping::modelToModel::test::alloy::simple::canUseExternalEnumValues
       |Name.all()->graphFetch($tree)->serialize($tree),
       externalEnumValuesMapping,
       testJsonRuntime(_SomeData, '{"f": 2.5, "b": [true, false, true], "c":"VERT"}'),
-      []
+      meta::pure::extension::defaultExtensions()
    );
 
    let json = $result.values->toOne();
@@ -485,7 +485,7 @@ meta::pure::mapping::modelToModel::test::alloy::simple::testM2MQueryWithMappingU
                                 url='data:application/json,[{"streetCluster": [{"coordinates":"22.22.22.22","zipCode":"123456","street":"Oxford"}]}]'
                              )
       ),
-      []
+      meta::pure::extension::defaultExtensions()
    );
    let json = $result.values->toOne();
    let expected= '{"streetNames":["Oxford"],"zipCodes":["123456"]}';
@@ -508,7 +508,7 @@ meta::pure::mapping::modelToModel::test::alloy::simple::canUseExternalEnumValues
       |Name.all()->graphFetch($tree)->serialize($tree),
       externalEnumValuesMappingFilter,
       testJsonRuntime(_SomeData, '{"f": 2.5, "b": [true, false, true], "c":"VERT", "cs":"RED"}'),
-      []
+      meta::pure::extension::defaultExtensions()
    );
 
    let json = $result.values->toOne();
@@ -536,7 +536,7 @@ meta::pure::mapping::modelToModel::test::alloy::simple::simpleSerializeOfOneObje
                                 url='data:application/json,[{"name":"GS","employees": [{"fullName" : "Robert T", "aName" : "A", "@type":"_S_PersonA"}, {"fullName" : "John T", "aName" : "A", "@type":"_S_PersonA"}, {"fullName" : "Den T", "aName" : "B", "@type":"_S_PersonB"}, {"fullName" : "Den T", "@type":"_S_Person"}]}]'
                              )
       ),
-      []
+      meta::pure::extension::defaultExtensions()
    );
 
    assert(jsonEquivalent('{"legalName":"GS","employees":[{"firstName":"RobertA"},{"firstName":"JohnA"}]}'->parseJSON(), $result.values->toOne()->parseJSON()));
@@ -561,7 +561,7 @@ meta::pure::mapping::modelToModel::test::alloy::simple::simpleSerializeOfOneObje
                                 url='data:application/json,[{"name":"GS","employees": [{"fullName" : "Robert T", "aName" : "A", "@type":"_S_PersonA"}, {"fullName" : "John T", "aName" : "A", "@type":"_S_PersonA"}, {"fullName" : "Den T", "aName" : "B", "@type":"_S_PersonB"}, {"fullName" : "Den T", "@type":"_S_Person"}]}]'
                              )
       ),
-      []
+      meta::pure::extension::defaultExtensions()
    );
 
    assert(jsonEquivalent('{"defects":[],"source":{"defects":[],"source":{"number":1,"record":"{\\"name\\":\\"GS\\",\\"employees\\":[{\\"fullName\\":\\"Robert T\\",\\"aName\\":\\"A\\",\\"@type\\":\\"_S_PersonA\\"},{\\"fullName\\":\\"John T\\",\\"aName\\":\\"A\\",\\"@type\\":\\"_S_PersonA\\"},{\\"fullName\\":\\"Den T\\",\\"aName\\":\\"B\\",\\"@type\\":\\"_S_PersonB\\"},{\\"fullName\\":\\"Den T\\",\\"@type\\":\\"_S_Person\\"}]}"},"value":{"name":"GS","employees":[{"aName":"A","fullName":"Robert T"},{"aName":"A","fullName":"John T"},{"fullName":"Den T"},{"fullName":"Den T"}]}},"value":{"legalName":"GS","employees":[{"firstName":"RobertA"},{"firstName":"JohnA"}]}}'->parseJSON(), $result.values->toOne()->parseJSON()));
@@ -587,7 +587,7 @@ meta::pure::mapping::modelToModel::test::alloy::simple::simpleSerializeOfOneObje
                                 url='data:application/json,[{"friendA" : {"fullName" : "Robert T", "aName" : "A", "@type":"_S_PersonA"}, "friendB" : {"fullName" : "John T", "aName" : "A", "@type":"_S_PersonA"}}]'
                              )
       ),
-      []
+      meta::pure::extension::defaultExtensions()
    );
 
    assert(jsonEquivalent('{"defects":[{"path":[],"enforcementLevel":"Critical","ruleType":"NoInput","externalId":null,"id":null,"ruleDefinerPath":"meta::pure::mapping::modelToModel::test::alloy::simple::objects::dest::Friendship","message":"No Input Available"}],"source":{"defects":[{"path":[{"propertyName":"friendA","index":null}],"enforcementLevel":"Critical","ruleType":"InvalidInput","externalId":null,"id":null,"ruleDefinerPath":"meta::pure::mapping::modelToModel::test::shared::src::_S_Person","message":"multiple class matches [meta::pure::mapping::modelToModel::test::alloy::simple::objects::src::_S_PersonA, meta::pure::mapping::modelToModel::test::shared::src::_S_PersonA] for _S_PersonA"},{"path":[{"propertyName":"friendB","index":null}],"enforcementLevel":"Critical","ruleType":"InvalidInput","externalId":null,"id":null,"ruleDefinerPath":"meta::pure::mapping::modelToModel::test::shared::src::_S_Person","message":"multiple class matches [meta::pure::mapping::modelToModel::test::alloy::simple::objects::src::_S_PersonA, meta::pure::mapping::modelToModel::test::shared::src::_S_PersonA] for _S_PersonA"},{"path":[],"enforcementLevel":"Critical","ruleType":"ClassStructure","externalId":null,"id":null,"ruleDefinerPath":"meta::pure::mapping::modelToModel::test::alloy::simple::objects::src::_S_Friendship","message":"Invalid multiplicity for friendA: expected [1] found [0]"},{"path":[],"enforcementLevel":"Critical","ruleType":"ClassStructure","externalId":null,"id":null,"ruleDefinerPath":"meta::pure::mapping::modelToModel::test::alloy::simple::objects::src::_S_Friendship","message":"Invalid multiplicity for friendB: expected [1] found [0]"}],"source":{"number":1,"record":"{\\"friendA\\":{\\"fullName\\":\\"Robert T\\",\\"aName\\":\\"A\\",\\"@type\\":\\"_S_PersonA\\"},\\"friendB\\":{\\"fullName\\":\\"John T\\",\\"aName\\":\\"A\\",\\"@type\\":\\"_S_PersonA\\"}}"},"value":null},"value":null}'->parseJSON(), $result.values->toOne()->parseJSON()));
@@ -613,7 +613,7 @@ meta::pure::mapping::modelToModel::test::alloy::simple::simpleSerializeOfOneObje
                                 url='data:application/json,[{"friendA" : {"fullName" : "Robert T", "aName" : "A", "@type":"meta::pure::mapping::modelToModel::test::shared::src::_S_PersonA"}, "friendB" : {"fullName" : "John T", "aName" : "A", "@type":"meta::pure::mapping::modelToModel::test::alloy::simple::objects::src::_S_PersonA"}}]'
                              )
       ),
-      []
+      meta::pure::extension::defaultExtensions()
    );
 
    assert(jsonEquivalent('{"defects":[],"source":{"defects":[],"source":{"number":1,"record":"{\\"friendA\\":{\\"fullName\\":\\"Robert T\\",\\"aName\\":\\"A\\",\\"@type\\":\\"meta::pure::mapping::modelToModel::test::shared::src::_S_PersonA\\"},\\"friendB\\":{\\"fullName\\":\\"John T\\",\\"aName\\":\\"A\\",\\"@type\\":\\"meta::pure::mapping::modelToModel::test::alloy::simple::objects::src::_S_PersonA\\"}}"},"value":{"friendA":{"aName":"A","fullName":"Robert T"},"friendB":{"aName":"A","fullName":"John T"}}},"value":{"friendA":{"firstName":"RobertA"},"friendB":{"firstName":"JohnA"}}}'->parseJSON(), $result.values->toOne()->parseJSON()));
@@ -639,7 +639,7 @@ meta::pure::mapping::modelToModel::test::alloy::simple::simpleSerializeOfOneObje
                                 url='data:application/json,[{"friendA" : {"fullName" : "Robert T", "aName" : "A", "@type":"meta::pure::mapping::modelToModel::test::shared::src::_S_PersonA"}, "friendB" : {"fullName" : "John T", "aName" : "A", "@type":"meta::pure::mapping::modelToModel::test::alloy::simple::objects::src::_S_PersonA"}, "friendC" : {"friendC" : {"fullName" : "John T", "aName" : "A", "bName" : "B", "@type":"meta::pure::mapping::modelToModel::test::alloy::simple::objects::src::_S_PersonB"}}}]'
                              )
       ),
-      []
+      meta::pure::extension::defaultExtensions()
    );
 
    assert(jsonEquivalent('{"friendA":{"firstName":"RobertA"},"friendC":{"firstName":"JohnB"},"friendB":{"firstName":"JohnA"}}'->parseJSON(), $result.values->toOne()->parseJSON()));
@@ -662,7 +662,7 @@ meta::pure::mapping::modelToModel::test::alloy::simple::simpleM2MMappingUsingExp
                               url = 'data:application/json,{"s":"test string data"}'
                              )
          ),
-      []
+      meta::pure::extension::defaultExtensions()
    );
 
    assert(jsonEquivalent('{"defects":[],"source":{"defects":[],"source":{"number":1,"record":"{\\"s\\":\\"test string data\\"}"},"value":{"s":"test string data"}},"value":{"name":"ok"}}'->parseJSON(), $result.values->toOne()->parseJSON()));
@@ -685,7 +685,7 @@ meta::pure::mapping::modelToModel::test::alloy::simple::simpleM2MMappingUsingImp
                               url = 'data:application/json,{"s":"test string data"}'
                              )
          ),
-      []
+      meta::pure::extension::defaultExtensions()
    );
 
    assert(jsonEquivalent('{"defects":[],"source":{"defects":[],"source":{"number":1,"record":"{\\"s\\":\\"test string data\\"}"},"value":{"s":"test string data"}},"value":{"name":"ok"}}'->parseJSON(), $result.values->toOne()->parseJSON()));
@@ -708,7 +708,7 @@ meta::pure::mapping::modelToModel::test::alloy::simple::simpleM2MMappingEpochDat
                               url = 'data:application/json,{"epochDate":1624268257499000000}'
                              )
          ),
-      []
+      meta::pure::extension::defaultExtensions()
    );
 
   let expected = '{"defects":[],"source":{"defects":[],"source":{"number":1,"record":"{\\"epochDate\\":1624268257499000000}"},"value":{"epochDate":1624268257499000000}},"value":{"d":"2021-06-21T09:37:37.4990000"}}';

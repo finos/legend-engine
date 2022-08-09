@@ -989,7 +989,12 @@ function meta::external::language::java::transform::addFunctionCoder(library:Con
 // --- Factory methods for Conventions
 // ----------------------------------------------------------------------------------------------------------
 
-function meta::external::language::java::transform::newConventions(extensions : meta::pure::extension::Extension[*]): Conventions[1]
+function <<doc.deprecated>> meta::external::language::java::transform::newConventions(extensions : meta::pure::extension::Extension[*]): Conventions[1]
+{
+   meta::external::language::java::transform::newConventions($extensions, [])
+}
+
+function meta::external::language::java::transform::newConventions(extensions:meta::pure::extension::Extension[*], extraProhibitedFunction: Function<Any>[*]): Conventions[1]
 {
    let result = ^Conventions
    (
@@ -1004,7 +1009,7 @@ function meta::external::language::java::transform::newConventions(extensions : 
 
       classCoders                = newMap(@Pair<Any, Function<{meta::pure::metamodel::type::Type[1],Conventions[1],DebugContext[1]->meta::external::language::java::metamodel::Class[1]}>>),
       functionCoders             = newMap(@Pair<String, Function<{FunctionExpression[1],Conventions[1],DebugContext[1]->Code[1]}>>),
-      prohibitedFunctionStrategy = defaultProhibitedFunctions($extensions),
+      prohibitedFunctionStrategy = defaultProhibitedFunctions($extraProhibitedFunction),
       providedVariables          = ^Map<String,Code>(),
       extensions = $extensions
    )
@@ -1074,7 +1079,7 @@ function meta::external::language::java::transform::registerLibrary(conventions:
    ^$conventions(libraries=$stillValidLibraries->concatenate($library));
 }
 
-function meta::external::language::java::transform::defaultProhibitedFunctions(extensions : meta::pure::extension::Extension[*]): Function<{Conventions[1],Function<Any>[1]->Boolean[1]}>[1]
+function meta::external::language::java::transform::defaultProhibitedFunctions(extraProhibitedFunctions: Function<Any>[*]): Function<{Conventions[1],Function<Any>[1]->Boolean[1]}>[1]
 {
    let functionsBlacklist = [
       // Instances
@@ -1146,7 +1151,7 @@ function meta::external::language::java::transform::defaultProhibitedFunctions(e
       meta::json::toJsonBeta_Any_MANY__JSONSerializationConfig_1__String_1_
 
       
-   ]->concatenate($extensions.java_conventions_defaultProhibitedFunctions);
+   ]->concatenate($extraProhibitedFunctions);
 
    let manipulatesPackagesBlacklist = [
       'meta::pure::codestore',

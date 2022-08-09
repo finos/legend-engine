@@ -582,10 +582,14 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
             {|
                assert($propertyMapping->isNotEmpty(), | 'No mapping found for property - \'' + $property.name->toOne() + '\'');
 
-               let transformFunction = $propertyMapping->toOne()->match([ppm : PurePropertyMapping[1] | $ppm.transform]->concatenate($extensions.java_graphFetch_inMemory_generatePropertyMapping1)->toOneMany());
+               let extensionClass = meta::pure::executionPlan::platformBinding::legendJava::LegendJavaExecutionPlanPlatformBindingExtension;
+               let extensionTransformFunctionMatches = $extensions->meta::pure::extension::extractExecutionPlanPlatformBindingExtensions($extensionClass)->map(e | $e.extractTransformFunctionFromPropertyMapping);
+               let extensionValueTransformerMatches = $extensions->meta::pure::extension::extractExecutionPlanPlatformBindingExtensions($extensionClass)->map(e | $e.extractValueTransformerFromPropertyMapping);
+
+               let transformFunction = $propertyMapping->toOne()->match($extensionTransformFunctionMatches->toOneMany());
                let transformType     = $conventions->pureTypeToJavaType(if($transformFunction->functionReturnType().rawType == Nil, | $property->functionReturnType(), | $transformFunction->functionReturnType()), $property->functionReturnMultiplicity());
                let javaExpression    = $transformFunction.expressionSequence->at(0)->evaluateAndDeactivate()->generateJava($conventions, $debug->indent());
-               let valueTransformer  = $propertyMapping->toOne()->match([ppm : PurePropertyMapping[1] | $ppm.transformer]->concatenate($extensions.java_graphFetch_inMemory_generatePropertyMapping2)->toOneMany());
+               let valueTransformer  = $propertyMapping->toOne()->match($extensionValueTransformerMatches->toOneMany());
                let code              = if ($valueTransformer->isEmpty(), | $javaExpression, | $javaExpression->applyTransformer($valueTransformer->toOne(), $conventions, $debug->indent()));
                let returnType        = if ($valueTransformer->isEmpty(), | $transformType,  | if($transformType->isJavaList(), | $conventions->enumerationType($valueTransformer->toOne())->javaList(), | $conventions->enumerationType($valueTransformer->toOne())));
 
@@ -612,16 +616,12 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
 {
    print(if($debug.debug,|$debug.space+'filter generation\n', |''));
    
-   let pureSetFilterGeneration = {ps : PureInstanceSetImplementation[1] |
-      if ($ps.filter->isNotEmpty(),
-          | $ps.filter.expressionSequence->at(0)->evaluateAndDeactivate()->generateJava($context.conventions, $debug->indent())->j_if($withoutFilter, j_null()->j_return()),
-          | $withoutFilter
-      )
-   };
+   let extensionClass = meta::pure::executionPlan::platformBinding::legendJava::LegendJavaExecutionPlanPlatformBindingExtension;
+   let extensionFunctions = $extensions->extractExecutionPlanPlatformBindingExtensions($extensionClass)->map(e | $e.applyTypeFilter);
    
-   let otherSetsFilterGeneration = $extensions.java_graphFetch_inMemory_applyTypeFilter->map(f|$f->evaluate([list($set), list($src), list($withoutFilter), list($context), list($debug)])->cast(@Function<{Nil[1]->Code[1..*]}>));
+   let otherSetsFilterGeneration = $extensionFunctions->map(f|$f->evaluate([list($set), list($src), list($withoutFilter), list($context), list($debug)])->cast(@Function<{Nil[1]->Code[1..*]}>));
    
-   $set->match($pureSetFilterGeneration->concatenate($otherSetsFilterGeneration)->toOneMany());
+   $set->match($otherSetsFilterGeneration->toOneMany());
 }
 
 

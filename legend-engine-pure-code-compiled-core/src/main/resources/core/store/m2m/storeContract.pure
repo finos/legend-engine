@@ -35,6 +35,7 @@ function meta::pure::mapping::modelToModel::contract::modelStoreContract():Store
      resolveStoreFromSetImplementation = s:InstanceSetImplementation[1]|^meta::pure::mapping::modelToModel::ModelStore(name='MODEL', package=::),
      supportsNativeJoinAmongElements = false
    )
+   ->meta::pure::extension::withExtraExecutionPlanPlatformBindingExtension(meta::pure::mapping::modelToModel::contract::modelStoreLegendJavaExecutionPlanPlatformBindingExtension())
 }
 
 function meta::pure::mapping::modelToModel::contract::execution(sq:meta::pure::mapping::StoreQuery[1], ext:RoutedValueSpecification[0..1], m:Mapping[1], runtime:Runtime[1], exeCtx:ExecutionContext[1], extensions:Extension[*], debug:DebugContext[1]):Result<Any|*>[1]
@@ -81,4 +82,172 @@ function meta::pure::mapping::modelToModel::contract::getterOverrideMapped(o:Any
 function meta::pure::mapping::modelToModel::contract::getterOverrideNonMapped(o:Any[1], property:Property<Nil,Any|*>[1]):Any[*]
 {
    getter($o, $property, []);
+}
+
+// Legend Java Platform Binding Extension
+###Pure
+import meta::external::language::java::factory::*;
+import meta::external::language::java::factory::project::*;
+import meta::external::language::java::metamodel::*;
+import meta::external::language::java::metamodel::project::*;
+import meta::external::language::java::transform::*;
+import meta::pure::executionPlan::*;
+import meta::pure::executionPlan::engine::java::*;
+import meta::pure::executionPlan::engine::java::graphFetch::inMemory::*;
+import meta::pure::executionPlan::engine::java::graphFetch::json::*;
+import meta::pure::executionPlan::engine::java::graphFetch::stream::*;
+import meta::pure::executionPlan::engine::java::graphFetch::storeStreamReading::*;
+import meta::pure::executionPlan::engine::java::graphFetch::xml::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
+import meta::pure::extension::*;
+import meta::pure::mapping::*;
+import meta::pure::mapping::modelToModel::*;
+import meta::pure::mapping::modelToModel::graphFetch::executionPlan::*;
+
+function <<access.private>> meta::pure::mapping::modelToModel::contract::modelStoreLegendJavaExecutionPlanPlatformBindingExtension(): LegendJavaExecutionPlanPlatformBindingExtension[1]
+{
+   ^LegendJavaExecutionPlanPlatformBindingExtension
+   (
+      id = legendJavaPlatformBindingId(),
+
+      // Graph fetch extensions ----------------------------------------------------------------------------------
+      walkChildNodesForPrepare = {path:String[1], contextFromChildren:GenerationContext[1], extensions:Extension[*], debug:DebugContext[1] |
+         [
+            {g:InMemoryGraphFetchExecutionNode[1] | 
+               $g.children->size()->range()->fold({x, ctx | $g.children->at($x)->prepare($path+'.localChild' + $x->toString(), $ctx, $extensions, $debug)}, $contextFromChildren)
+            }
+         ]
+      },
+
+      prepareNode = {path:String[1], contextFromOtherNodes:GenerationContext[1], extensions:Extension[*], debug:DebugContext[1] |
+         [
+            g:InMemoryGraphFetchExecutionNode[1] | $g->prepareForInMemoryGraphFetch($path, $contextFromOtherNodes, $debug),
+            g:StoreStreamReadingExecutionNode[1] | $g->prepareForStoreStreamReading($path, $contextFromOtherNodes, $extensions, $debug)
+         ]
+      },
+
+      generateCode = {path:String[1], context:GenerationContext[1], extensions:Extension[*], debug:DebugContext[1] |
+         [
+            l:StoreStreamReadingExecutionNode[1] | $l->generateCodeForStoreStreamReadingExecutionNode($path, $context, $extensions, $debug)
+         ]
+      },
+
+      walkAndGenerateChildNodes = {path: String[1], mapping:Mapping[1], context:GenerationContext[1], extensions:Extension[*], fullProject:Project[0..1], debug:DebugContext[1] |
+         [
+            g:InMemoryGraphFetchExecutionNode[1] | 
+               let transformedChildren = $g.children->size()->range()->map(x | $g.children->at($x)->generatePlatformCode($path+'.localChild' + $x->toString(), $mapping, $context, $extensions, $debug));
+               ^GeneratedNode(node=^$g(children = $transformedChildren.node->cast(@InMemoryGraphFetchExecutionNode)), project = mergeProjectsNullable($fullProject->concatenate($transformedChildren.project)));
+         ]
+      },
+
+      generateCodeForLocalGraphFetchNode = {path:String[1], context:meta::pure::executionPlan::engine::java::GenerationContext[1], extensions:Extension[*], debug:DebugContext[1] |
+         [
+            {i : InMemoryGraphFetchExecutionNode[1] |
+               $i->generateInMemoryStoreGraphFetchProject($path, $context, $extensions, $debug)
+            }
+         ]
+      },
+
+      updateImplementationClassWithStoreSpecificFieldsAndMethods= {x:meta::external::language::java::metamodel::Class[1], context:GenerationContext[1], extensions:Extension[*], debug:DebugContext[1] |
+         [
+            {i : InMemoryGraphFetchExecutionNode[1] |
+               $x->enrichForInMemoryGraphExecution($i, $context, $extensions, $debug)
+            }
+         ]
+      },
+      // ---------------------------------------------------------------------------------- Graph fetch extensions
+
+      
+      // Transformer extensions ----------------------------------------------------------------------------------
+      extractTransformFunctionFromPropertyMapping = [
+         ppm : PurePropertyMapping[1] | $ppm.transform
+      ],
+
+      extractValueTransformerFromPropertyMapping = [
+         ppm : PurePropertyMapping[1] | $ppm.transformer
+      ],
+
+      applyTypeFilter = {set:InstanceSetImplementation[1], src:Code[1], withoutFilter:Code[1..*], context:GenerationContext[1], debug:DebugContext[1] |
+         [
+            {ps : PureInstanceSetImplementation[1] |
+               if ($ps.filter->isNotEmpty(),
+                   | $ps.filter.expressionSequence->at(0)->evaluateAndDeactivate()->generateJava($context.conventions, $debug->indent())->j_if($withoutFilter, j_null()->j_return()),
+                   | $withoutFilter
+               )
+            }
+         ]
+      },
+
+      addMapOneMethodForMappingAdaptor = {inOne:Code[1], newOne:Code[1], conventions:Conventions[1], debug:DebugContext[1] |
+         [
+            {pisi: PureInstanceSetImplementation[1] | 
+               if($pisi.filter->isEmpty(),
+                  | j_return($newOne),
+                  {|
+                     print(if($debug.debug,|$debug.space+'filter generation\n', |''));
+                     let filterExpr = $pisi.filter.expressionSequence->at(0)->evaluateAndDeactivate()->generateJava($conventions, $debug->indent());
+                     j_return(
+                        j_conditional($filterExpr,
+                           $newOne,
+                           j_null()
+                        )
+                     );
+                  }
+               );                  
+            }
+         ]
+      },
+
+      generatePropertyMappingCode = {conventions:Conventions[1], debug:DebugContext[1] |
+         ppm  : PurePropertyMapping[1] | $ppm.transform.expressionSequence->at(0)->evaluateAndDeactivate()->generateJava($conventions, $debug->indent())
+      },
+      // ---------------------------------------------------------------------------------- Transformer extensions
+
+
+      // Stream reading extensions (will be removed with strategic external format support) ----------------------      
+      getDataRecordTreeFromConnection = [ 
+         json : JsonModelConnection[1] | #{JsonDataRecord {number, record}}#,
+         xml  : XmlModelConnection[1]  | #{XmlDataRecord {number, record}}#
+      ],
+
+      getDataRecordTypeFromConnection = [
+         j : JsonModelConnection[1] | JsonDataRecord,
+         x : XmlModelConnection[1]  | XmlDataRecord
+      ],
+
+      streamReaderMethodCodesFromConnection = {path:String[1], pureClass:meta::pure::metamodel::type::Class<Any>[1], conventions:Conventions[1], storeStreamReadingContext:Code[1] |
+         [
+            {
+               json: JsonModelConnection[1] | 
+                  $conventions->jsonReaderClass($path, $pureClass)
+                     ->j_new($storeStreamReadingContext->j_invoke('createUrl', j_string($json.url))->j_invoke('openStream', []))
+                     ->j_return()
+                     ->j_ioExTryCatch()
+            },
+            {
+               xml: XmlModelConnection[1] | 
+                  $conventions->xmlReaderClass($path, $pureClass)
+                     ->j_new($storeStreamReadingContext->j_invoke('createUrl', j_string($xml.url))->j_invoke('openStream', []))
+                     ->j_return()
+                     ->j_ioExTryCatch()
+            },
+            {
+               model: ModelConnection[1] | 
+                  let varName = $model.instances->values()->at(0)->get(0)->cast(@RoutedVariablePlaceHolder).name;
+                  let typeArg = $storeStreamReadingContext->j_invoke('streamType', $conventions->className($pureClass)->j_field('class', javaClassType()), javaReflectType());
+                  $conventions->streamReaderClass($path)
+                     ->j_new($storeStreamReadingContext->j_invoke('getResult', [j_string($varName), $typeArg], javaStream($conventions->className($pureClass))))->j_return();
+            }
+         ]
+      },
+      // ---------------------- Stream reading extensions (will be removed with strategic external format support)
+
+
+      // Execution plan interfaces extensions --------------------------------------------------------------------
+      dataRecordClasses = [
+         JsonDataRecord,
+         XmlDataRecord
+      ]
+      // -------------------------------------------------------------------- Execution plan interfaces extensions
+   )
 }

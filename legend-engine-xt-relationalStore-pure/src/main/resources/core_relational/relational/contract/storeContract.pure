@@ -132,6 +132,7 @@ function meta::relational::contract::relationalStoreContract():StoreContract[1]
                        }
 
    )
+   ->meta::pure::extension::withExtraExecutionPlanPlatformBindingExtension(meta::relational::contract::relationalLegendJavaExecutionPlanPlatformBindingExtension())
 }
 
 // Execution flow
@@ -222,4 +223,107 @@ function meta::relational::contract::getStore(r:InstanceSetImplementation[1]):St
       s:CrossSetImplementation[1]|$s.targetStore
     ]
   )  
+}
+
+// Legend Java Platform Binding Extension
+###Pure
+import meta::external::language::java::factory::project::*;
+import meta::external::language::java::metamodel::*;
+import meta::external::language::java::metamodel::project::*;
+import meta::pure::executionPlan::*;
+import meta::pure::executionPlan::engine::java::*;
+import meta::pure::executionPlan::engine::java::graphFetch::relational::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
+import meta::pure::extension::*;
+import meta::pure::mapping::*;
+import meta::relational::graphFetch::executionPlan::*;
+import meta::relational::mapping::*;
+
+function <<access.private>> meta::relational::contract::relationalLegendJavaExecutionPlanPlatformBindingExtension(): LegendJavaExecutionPlanPlatformBindingExtension[1]
+{
+   ^LegendJavaExecutionPlanPlatformBindingExtension
+   (
+      id = legendJavaPlatformBindingId(),
+
+      // Convention extensions -----------------------------------------------------------------------------------
+      defaultProhibitedFunctions = [
+         meta::relational::functions::columnProjectionsFromRoot_Any_MANY__NamedRelation_1__String_MANY__Boolean_$0_1$__Integer_$0_1$__RelationData_1_,
+         meta::relational::metamodel::execute::createTempTable_String_1__Column_MANY__Function_1__Boolean_1__DatabaseConnection_1__Nil_0_,
+         meta::relational::metamodel::execute::createTempTable_String_1__Column_MANY__Function_1__DatabaseConnection_1__Nil_0_,
+         meta::relational::metamodel::execute::dropTempTable_String_1__DatabaseConnection_1__Nil_0_,
+         meta::relational::metamodel::execute::executeInDb_String_1__DatabaseConnection_1__Integer_1__Integer_1__ResultSet_1_,
+         meta::relational::metamodel::execute::fetchDbColumnsMetaData_DatabaseConnection_1__String_$0_1$__String_$0_1$__String_$0_1$__ResultSet_1_,
+         meta::relational::metamodel::execute::fetchDbImportedKeysMetaData_DatabaseConnection_1__String_$0_1$__String_1__ResultSet_1_,
+         meta::relational::metamodel::execute::fetchDbPrimaryKeysMetaData_DatabaseConnection_1__String_$0_1$__String_1__ResultSet_1_,
+         meta::relational::metamodel::execute::fetchDbSchemasMetaData_DatabaseConnection_1__String_$0_1$__ResultSet_1_,
+         meta::relational::metamodel::execute::fetchDbTablesMetaData_DatabaseConnection_1__String_$0_1$__String_$0_1$__ResultSet_1_,
+         meta::relational::metamodel::execute::loadCsvToDbTable_String_1__Table_1__DatabaseConnection_1__Integer_$0_1$__Nil_0_,
+         meta::relational::metamodel::execute::loadValuesToDbTable_List_1__Table_1__DatabaseConnection_1__Nil_0_,
+         meta::relational::metamodel::execute::loadValuesToDbTable_List_MANY__Table_1__DatabaseConnection_1__Nil_0_,
+         meta::pure::functions::io::logActivities_Activity_MANY__Nil_0_
+      ],
+      // ----------------------------------------------------------------------------------- Convention extensions
+
+      // Object reference extensions -----------------------------------------------------------------------------
+      getParseObjectReferenceImplClass = {storeType:String[1], args:Any[*], path:String[1], context:GenerationContext[1], debug:DebugContext[1] |
+         if ($storeType == meta::relational::postProcessor::getObjectReferenceStoreType(),
+             | let pkOrder = $args->cast(@String);
+               meta::pure::executionPlan::engine::java::getRelationalObjectReferenceParserHelperClass($pkOrder, $path, $context, $debug);,
+             | []
+         )
+      },
+      // ----------------------------------------------------------------------------- Object reference extensions
+
+      // Graph fetch extensions ----------------------------------------------------------------------------------
+      walkChildNodesForPrepare = {path:String[1], contextFromChildren:GenerationContext[1], extensions:Extension[*], debug:DebugContext[1] |
+         [
+            {g: RelationalGraphFetchExecutionNode[1] |
+               $g.children->size()->range()->fold({x, ctx | $g.children->at($x)->prepare($path+'.localChild' + $x->toString(), $ctx, $extensions, $debug)}, $contextFromChildren);
+            }
+         ]
+      },
+
+      prepareNode = {path:String[1], contextFromOtherNodes:GenerationContext[1], extensions:Extension[*], debug:DebugContext[1] |
+         [
+            g:RelationalClassInstantiationExecutionNode[1] | $g->prepareForClassResult($path, $contextFromOtherNodes, $debug),
+            g:RelationalGraphFetchExecutionNode[1]         | $g->prepareForRelationalGraphFetch($path, $contextFromOtherNodes, $debug)
+         ]
+      },
+
+      generateCode = {path:String[1], context:GenerationContext[1], extendsion:Extension[*], debug:DebugContext[1] |
+         [
+            c:CreateAndPopulateTempTableExecutionNode[1]   | $c->generateImplementationForCreateAndPopulateTempTableNode($path, $context, $debug),
+            e:RelationalClassInstantiationExecutionNode[1] | $e.resultType->match([
+                                                               pc : PartialClassResultType[1] | $e->generateImplementionForRelationalPartialClassResult($path, $pc.propertiesWithParameters.property, $context, $debug),
+                                                               c  : ClassResultType[1]        | $e->generateImplementionForRelationalClassResult($path, $context, $debug)
+                                                             ])
+
+         ]
+      },
+
+      walkAndGenerateChildNodes = {path: String[1], mapping:Mapping[1], context:GenerationContext[1], extensions:Extension[*], fullProject:Project[0..1], debug:DebugContext[1] |
+         [
+            g: RelationalGraphFetchExecutionNode[1] |
+               let transformedChildren = $g.children->size()->range()->map(x | $g.children->at($x)->generatePlatformCode($path+'.localChild' + $x->toString(), $mapping, $context, $extensions, $debug));
+               ^GeneratedNode(node=^$g(children = $transformedChildren.node->cast(@RelationalGraphFetchExecutionNode)), project = mergeProjectsNullable($fullProject->concatenate($transformedChildren.project)));
+         ]
+      },
+
+      generateCodeForLocalGraphFetchNode = {path:String[1], context:meta::pure::executionPlan::engine::java::GenerationContext[1], extensions:Extension[*], debug:DebugContext[1] |
+         [
+            {rel: RelationalGraphFetchExecutionNode[1] |
+               $rel->generateRelationalStoreGraphFetchProject($path, $context, $extensions, $debug)
+            }
+         ]
+      },
+
+      updateImplementationClassWithStoreSpecificFieldsAndMethods = {x:meta::external::language::java::metamodel::Class[1], context:GenerationContext[1], extensions:Extension[*], debug:DebugContext[1] |
+         [
+            {rel: RelationalGraphFetchExecutionNode[1] |
+               $x->enrichForRelationalGraphExecution($rel, $context, $extensions, $debug)
+            }
+         ]
+      }
+      // ---------------------------------------------------------------------------------- Graph fetch extensions
+   )
 }

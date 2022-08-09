@@ -29,6 +29,7 @@ import meta::pure::runtime::*;
 import meta::pure::store::*;
 import meta::pure::extension::*;
 import meta::external::shared::format::*;
+import meta::pure::executionPlan::platformBinding::*;
 
 Class meta::pure::extension::Extension
 {
@@ -46,6 +47,11 @@ Class meta::pure::extension::Extension
   availableExternalFormats : ExternalFormatExtension[*];
   // ---------------------------------------------------------------- External Format Extension 
 
+  // Execution Plan Platform Bindings ---------------------------------------------------------
+  availableExecutionPlanPlatformBindings : ExecutionPlanPlatformBindingContract[*];
+  executionPlanPlatformBindingExtensions : ExecutionPlanPlatformBindingExtension[*];
+  // --------------------------------------------------------- Execution Plan Platform Bindings
+
   routerExtensions() 
   {
     $this.availableStores->concatenate($this.availableFeatures)->cast(@meta::pure::router::extension::RouterExtension)
@@ -56,7 +62,12 @@ Class meta::pure::extension::Extension
     $this.availableStores->concatenate($this.availableFeatures)->cast(@meta::pure::executionPlan::extension::ExecutionPlanExtension)
   } : meta::pure::executionPlan::extension::ExecutionPlanExtension[*];
 
-  
+  executionPlanPlatformBindingExtensions() 
+  {
+    $this.availableStores->concatenate($this.availableFeatures)->cast(@meta::pure::executionPlan::extension::ExecutionPlanExtension).executionPlanPlatformBindingExtensions
+    ->concatenate($this.executionPlanPlatformBindingExtensions)
+  } : ExecutionPlanPlatformBindingExtension[*];
+
   // Bind plan to platform
   java_conventions_defaultProhibitedFunctions : Function<Any>[*];
   java_mappingAdaptor : Function<{Nil[1]->String[1]}>[*];

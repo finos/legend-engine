@@ -43,7 +43,6 @@ Class meta::pure::executionPlan::engine::java::GenerationContext
    conventions               : Conventions[1];
    nodeInfos                 : NodeInfo[*];
    baseProject               : Project[0..1];
-   graphFetchWithCachingFlow : Boolean[0..1];
 }
 
 Class meta::pure::executionPlan::engine::java::NodeInfo
@@ -137,14 +136,31 @@ Class meta::pure::executionPlan::engine::java::GeneratedNode
 // --- Plan generation
 // ----------------------------------------------------------------------------------------------------------
 
-function meta::pure::executionPlan::engine::java::generatePlatformCode(e:ExecutionPlan[1], config:PlatformCodeGenerationConfig[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ExecutionPlan[1]
+function <<doc.deprecated>> meta::pure::executionPlan::engine::java::generatePlatformCode(e:ExecutionPlan[1], config:PlatformCodeGenerationConfig[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ExecutionPlan[1]
+{
+   generatePlatformCode($e, $config.planId, $extensions, $debug)
+}
+
+function meta::pure::executionPlan::engine::java::generatePlatformCode(e:ExecutionPlan[1], config:meta::pure::executionPlan::platformBinding::ExecutionPlanPlatformBindingConfig[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ExecutionPlan[1]
+{
+   assert($config->instanceOf(meta::pure::executionPlan::platformBinding::legendJava::LegendJavaExecutionPlanPlatformBindingConfig),
+          | 'Unexpected config passed for Java binding. ' +
+            'Expected: ' + meta::pure::executionPlan::platformBinding::legendJava::LegendJavaExecutionPlanPlatformBindingConfig->elementToPath() + ', ' +
+            'Passed: ' + $config->type()->elementToPath());
+
+   let javaConfig = $config->cast(@meta::pure::executionPlan::platformBinding::legendJava::LegendJavaExecutionPlanPlatformBindingConfig);
+   let updatedExtsions = $extensions->meta::pure::extension::removeOtherExecutionPlanPlatformBindingExtensions(meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId());
+   generatePlatformCode($e, $javaConfig.planId, $extensions, $debug);
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::generatePlatformCode(e:ExecutionPlan[1], planId:String[0..1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ExecutionPlan[1]
 {
    let conventions     = engineConventions($extensions);
-   let pathAdjusted    = if($config.planId->isEmpty(), 
+   let pathAdjusted    = if($planId->isEmpty(), 
                             |$conventions, 
-                            |$conventions->setBasePackageName($conventions.basePackageName+'.'+$conventions->identifier('plan_'+$config.planId->toOne()))
+                            |$conventions->setBasePackageName($conventions.basePackageName+'.'+$conventions->identifier('plan_'+$planId->toOne()))
                          );
-   let initialContext  = ^GenerationContext(typeInfos=newTypeInfoSet(), conventions=$pathAdjusted, graphFetchWithCachingFlow=$config.graphFetchWithCachingFlow);
+   let initialContext  = ^GenerationContext(typeInfos=newTypeInfoSet(), conventions=$pathAdjusted);
    let preparedContext = $e.rootExecutionNode->prepare('root', $initialContext, $extensions, $debug)->meta::pure::executionPlan::engine::java::fillNewFunctionProhibitedList();
    
    // TODO Move Interface/Enum/Unit generation to here
@@ -184,24 +200,16 @@ function meta::pure::executionPlan::engine::java::prepare(node:ExecutionNode[1],
 {    
    let contextFromChildren = $node.executionNodes->prepareChildNodes(1, $path, $context, $extensions, $debug);
    
-   let contextFromOtherNodes = $node->match($extensions.plan_javaRuntime_main_prepare1->map(x|$x->eval($path, $contextFromChildren, $extensions, $debug))->concatenate([
-      f:FreeMarkerConditionalExecutionNode[1] |
-         let contextFromTrueBlock = $f.trueBlock->prepare($path+'.trueBlock', $contextFromChildren, $extensions, $debug);
-         if($f.falseBlock->isEmpty(), |$contextFromTrueBlock, |$f.falseBlock->toOne()->prepare($path+'.falseBlock', $contextFromTrueBlock, $extensions, $debug));,
-      g:GlobalGraphFetchExecutionNode[1] | 
-         let contextFromGlobalChildren = $g.children->size()->range()->fold({x, ctx | $g.children->at($x)->prepare($path+'.globalChild' + $x->toString(), $ctx, $extensions, $debug)}, $contextFromChildren);
-         $g.localGraphFetchExecutionNode->prepare($path+localGraphFetchNodePathPrefix(), $contextFromGlobalChildren, $extensions, $debug);,
-      g:InMemoryGraphFetchExecutionNode[1] | 
-         $g.children->size()->range()->fold({x, ctx | $g.children->at($x)->prepare($path+'.localChild' + $x->toString(), $ctx, $extensions, $debug)}, $contextFromChildren),
+   let extensionClass = meta::pure::executionPlan::platformBinding::legendJava::LegendJavaExecutionPlanPlatformBindingExtension;
+   let extensionNodeWalkMatches = $extensions->meta::pure::extension::extractExecutionPlanPlatformBindingExtensions($extensionClass)->map(e | $e.walkChildNodesForPrepare);
+   let extensionNodePrepareMatches = $extensions->meta::pure::extension::extractExecutionPlanPlatformBindingExtensions($extensionClass)->map(e | $e.prepareNode);
+
+   let contextFromOtherNodes = $node->match($extensionNodeWalkMatches->map(x|$x->eval($path, $contextFromChildren, $extensions, $debug))->concatenate([
       e:ExecutionNode[1] | $contextFromChildren
    ])->toOneMany());
 
-   $node->match($extensions.plan_javaRuntime_main_prepare2->map(x|$x->eval($path, $contextFromOtherNodes, $extensions, $debug))->concatenate([
-      g:GlobalGraphFetchExecutionNode[1]             | $g->prepareForGlobalGraphFetchNode($path, $contextFromOtherNodes, $debug),
-      g:InMemoryGraphFetchExecutionNode[1]           | $g->prepareForInMemoryGraphFetch($path, $contextFromOtherNodes, $debug),
-      g:StoreStreamReadingExecutionNode[1]           | $g->prepareForStoreStreamReading($path, $contextFromOtherNodes, $extensions, $debug),
-      p:PureExpressionPlatformExecutionNode[1]       | $p->prepareForPlatformNode($path, $contextFromOtherNodes, $extensions, $debug),      
-      e:ExecutionNode[1]                             |  $contextFromOtherNodes
+   $node->match($extensionNodePrepareMatches->map(x|$x->eval($path, $contextFromOtherNodes, $extensions, $debug))->concatenate([   
+      e:ExecutionNode[1] |  $contextFromOtherNodes
    ])->toOneMany());
 }
 
@@ -227,11 +235,12 @@ function <<access.private>> meta::pure::executionPlan::engine::java::prepareChil
 
 function meta::pure::executionPlan::engine::java::generatePlatformCode(node:ExecutionNode[1], path:String[1], mapping:Mapping[1], context:GenerationContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):GeneratedNode[1]
 {
-   let generated = $node->match($extensions.plan_javaRuntime_main_generatePlatformCode1->map(e|$e->eval($path, $context, $extensions, $debug))->concatenate([
-      l:LocalGraphFetchExecutionNode[1]              | $l->generateCodeForLocalGraphFetchNode($path, $context, $extensions, $debug),
-      l:StoreStreamReadingExecutionNode[1]           | $l->generateCodeForStoreStreamReadingExecutionNode($path, $context, $extensions, $debug),
-      p:PureExpressionPlatformExecutionNode[1]       | $p->generateImplementionForPlatformNode($path, $context, $extensions, $debug),
-      e:ExecutionNode[1]                             | ^GeneratedCode()
+   let extensionClass = meta::pure::executionPlan::platformBinding::legendJava::LegendJavaExecutionPlanPlatformBindingExtension;
+   let extensionNodeGenerateMatches = $extensions->meta::pure::extension::extractExecutionPlanPlatformBindingExtensions($extensionClass)->map(e | $e.generateCode);
+   let extensionNodeWalkMatches = $extensions->meta::pure::extension::extractExecutionPlanPlatformBindingExtensions($extensionClass)->map(e | $e.walkAndGenerateChildNodes);
+
+   let generated = $node->match($extensionNodeGenerateMatches->map(e|$e->eval($path, $context, $extensions, $debug))->concatenate([
+      e:ExecutionNode[1] | ^GeneratedCode()
    ])->toOneMany());
 
    let children    = $node.executionNodes->generateChildNodes(1, $path, $mapping, $context, $extensions, $debug);
@@ -241,19 +250,7 @@ function meta::pure::executionPlan::engine::java::generatePlatformCode(node:Exec
 
    let newNode = ^$node(executionNodes=$children.node, implementation=$generated.implementation);
 
-   $newNode->match($extensions.plan_javaRuntime_main_generatePlatformCode2->map(e|$e->eval($path, $mapping, $context, $extensions, $fullProject, $debug))->concatenate([
-      g:GlobalGraphFetchExecutionNode[1] |
-         let transformedChildren = $g.children->size()->range()->map(x | $g.children->at($x)->generatePlatformCode($path+'.globalChild' + $x->toString(), $mapping, $context, $extensions, $debug));
-         let transformedLocal = $g.localGraphFetchExecutionNode->generatePlatformCode($path+localGraphFetchNodePathPrefix(), $mapping, $context, $extensions, $debug);
-         let transformedLocalNode = $transformedLocal.node->cast(@LocalGraphFetchExecutionNode);
-         ^GeneratedNode(node=^$g(children = $transformedChildren.node->cast(@GlobalGraphFetchExecutionNode), localGraphFetchExecutionNode = $transformedLocalNode), project = mergeProjectsNullable($fullProject->concatenate($transformedChildren.project)->concatenate($transformedLocal.project)));,
-      g:InMemoryGraphFetchExecutionNode[1] | 
-         let transformedChildren = $g.children->size()->range()->map(x | $g.children->at($x)->generatePlatformCode($path+'.localChild' + $x->toString(), $mapping, $context, $extensions, $debug));
-         ^GeneratedNode(node=^$g(children = $transformedChildren.node->cast(@InMemoryGraphFetchExecutionNode)), project = mergeProjectsNullable($fullProject->concatenate($transformedChildren.project)));,
-      f:FreeMarkerConditionalExecutionNode[1] |
-         let transformedTrueBlock = $f.trueBlock->generatePlatformCode($path+'.trueBlock', $mapping, $context, $extensions, $debug);
-         let transformedFalseBlock = if($f.falseBlock->isEmpty(), |[], |$f.falseBlock->toOne()->generatePlatformCode($path+'.falseBlock', $mapping, $context, $extensions, $debug));
-         ^GeneratedNode(node=^$f(trueBlock = $transformedTrueBlock.node, falseBlock = $transformedFalseBlock.node), project = mergeProjectsNullable($fullProject->concatenate($transformedTrueBlock.project)->concatenate($transformedFalseBlock.project)));,
+   $newNode->match($extensionNodeWalkMatches->map(e|$e->eval($path, $mapping, $context, $extensions, $fullProject, $debug))->concatenate([
       e:ExecutionNode[1] | ^GeneratedNode(node=$newNode, project=$fullProject)
    ])->toOneMany());
 }

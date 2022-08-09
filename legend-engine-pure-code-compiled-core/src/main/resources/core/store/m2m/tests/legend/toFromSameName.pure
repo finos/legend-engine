@@ -34,7 +34,7 @@ meta::pure::mapping::modelToModel::test::alloy::simple::canMapBetweenClassesWith
       |meta::pure::mapping::modelToModel::test::alloy::simple::toFromSameName::dest::domain::Person.all()->graphFetch($tree)->serialize($tree),
       meta::pure::mapping::modelToModel::test::alloy::simple::toFromSameName::personMapping,
       testJsonRuntime(meta::pure::mapping::modelToModel::test::alloy::simple::toFromSameName::src::domain::Person, '{"firstName":"Dave", "lastName":"Miles"}'),
-      []
+      meta::pure::extension::defaultExtensions()
    );
    let json = $result.values->toOne();
 
@@ -56,7 +56,7 @@ meta::pure::mapping::modelToModel::test::alloy::simple::canMapBetweenClassesWith
       |meta::pure::mapping::modelToModel::test::alloy::simple::toFromSameName::dest::domain::Person.all()->graphFetchChecked($tree)->serialize($tree),
       meta::pure::mapping::modelToModel::test::alloy::simple::toFromSameName::personMapping,
       testJsonRuntime(meta::pure::mapping::modelToModel::test::alloy::simple::toFromSameName::src::domain::Person, '{"firstName":"Dave", "lastName":"Miles"}'),
-      []
+      meta::pure::extension::defaultExtensions()
    );
 
    let json = $result.values->toOne();

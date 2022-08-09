@@ -33,7 +33,7 @@ meta::pure::mapping::modelToModel::test::alloy::simple::canUseFunctionsInAMappin
       |FirstEmployee.all()->graphFetchChecked($tree)->serialize($tree),
       meta::pure::mapping::modelToModel::test::alloy::simple::function::m1,
       testJsonRuntime(Firm, '{"name": "firm1", "employees": [{"firstName": "Dave", "lastName": "Miles"}]}'),
-      []
+      meta::pure::extension::defaultExtensions()
    );
 
    let json = $result.values->toOne();

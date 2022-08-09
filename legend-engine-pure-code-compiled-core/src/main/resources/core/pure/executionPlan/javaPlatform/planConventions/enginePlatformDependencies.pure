@@ -522,5 +522,8 @@ function meta::pure::executionPlan::engine::applyJavaEngineDependencies(conventi
       ->addProvidedType(meta::pure::executionPlan::engine::IRelationalPrimitiveQueryGraphFetchExecutionNodeSpecifics, $jIRelationalPrimitiveQueryGraphFetchExecutionNodeSpecifics)
       ->addProvidedType(meta::pure::executionPlan::engine::IServiceParametersResolutionExecutionNodeSpecifics, $jIServiceParametersResolutionExecutionNodeSpecifics);
 
-   $extensions.plan_javaRuntime_enginePlatformDependencies_conventions->fold({e,b|$e->eval($b)}, $res);
+   let extensionClass = meta::pure::executionPlan::platformBinding::legendJava::LegendJavaExecutionPlanPlatformBindingExtension;
+   let extensionFunctions = $extensions->meta::pure::extension::extractExecutionPlanPlatformBindingExtensions($extensionClass)->map(e | $e.engineDependencyUpdates);
+   
+   $extensionFunctions->fold({e,b|$e->eval($b)}, $res);
 }

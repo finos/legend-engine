@@ -50,19 +50,9 @@ function meta::external::shared::format::routerExtensions(type:String[1], extern
                                           printPlanNodeToString($space, $extensions)
                                               ->concatenate($externalFormatExtensions.printPlanNodeToString->map(x|$x->eval($space, $extensions)));
                                         }
-                                   ),
-
-      plan_javaRuntime_enginePlatformDependencies_conventions = meta::external::shared::format::executionPlan::engine::extendJavaEngineDependencies_Conventions_1__Conventions_1_,
+                                   )
+                                   ->meta::pure::extension::withExtraExecutionPlanPlatformBindingExtension(meta::external::shared::format::bindingLegendJavaExecutionPlanPlatformBindingExtension($externalFormatExtensions)),
       serializerExtension      = meta::external::shared::format::serializerExtensionName_String_1__String_1_,
-      plan_javaRuntime_main_prepare2 = 
-         {path:String[1], context:GenerationContext[1], extensions:Extension[*], debug:DebugContext[1] |
-            planPrepareDataQuality($path, $context, $extensions, $debug)
-               ->concatenate($externalFormatExtensions.planJavaPrepare->map(x|$x->eval($path, $context, $extensions, $debug)));
-         },
-      plan_javaRuntime_main_generatePlatformCode1 = 
-         {path:String[1], context:GenerationContext[1], extensions:Extension[*], debug:DebugContext[1] |
-            $externalFormatExtensions.planJavaGenerate->map(x|$x->eval($path, $context, $extensions, $debug));
-         },
       moduleExtensions = [
          ^ExternalFormatModuleExtension(
             module                = 'externalFormat',
@@ -81,11 +71,12 @@ function meta::external::shared::format::routerExtensions(type:String[1], extern
                                routing_extraIsSerialize = isSerialize_FunctionExpression_1__Boolean_1_,
                                executionPlan_generation_nodeForFunctionExpression = executionPlan_generation_nodeForPlatformFunctionExpression($externalFormatExtensions)
                               )
-      ]
+      ],
+
+      availableExecutionPlanPlatformBindings = meta::pure::extension::defaultExtensions().availableExecutionPlanPlatformBindings
    );
 
    let perFormat = $externalFormatExtensions->map(formatExt| ^Extension(type                                                    = $type+':'+$formatExt.externalFormat,
-                                                                              plan_javaRuntime_enginePlatformDependencies_conventions = $formatExt.plan_javaRuntime_enginePlatformDependencies_conventions,
                                                                               serializerExtension                                     = $formatExt.serializerExtension
                                                                              ));
 
@@ -145,4 +136,40 @@ Class meta::external::shared::format::ExternalFormatExtension
    plan_javaRuntime_enginePlatformDependencies_conventions : Function<{Conventions[1]->Conventions[1]}>[0..1];
 
    serializerExtension     : Function<{String[1]->String[1]}>[1];
+}
+
+// Legend Java Platform Binding Extension
+###Pure
+import meta::external::shared::format::*;
+import meta::external::shared::format::executionPlan::*;
+import meta::pure::executionPlan::*;
+import meta::pure::executionPlan::engine::java::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
+import meta::pure::extension::*;
+
+
+function <<access.private>> meta::external::shared::format::bindingLegendJavaExecutionPlanPlatformBindingExtension(externalFormatExtensions:ExternalFormatExtension[*]): LegendJavaExecutionPlanPlatformBindingExtension[1]
+{
+   ^LegendJavaExecutionPlanPlatformBindingExtension
+   (
+      id = legendJavaPlatformBindingId(),
+
+      // Convention extensions -----------------------------------------------------------------------------------
+      engineDependencyUpdates = [
+         meta::external::shared::format::executionPlan::engine::extendJavaEngineDependencies_Conventions_1__Conventions_1_
+      ]->concatenate($externalFormatExtensions.plan_javaRuntime_enginePlatformDependencies_conventions),
+      // ----------------------------------------------------------------------------------- Convention extensions
+      
+
+      // Graph fetch extensions ----------------------------------------------------------------------------------
+      prepareNode = {path:String[1], context:GenerationContext[1], extensions:Extension[*], debug:DebugContext[1] |
+         planPrepareDataQuality($path, $context, $extensions, $debug)
+            ->concatenate($externalFormatExtensions.planJavaPrepare->map(x|$x->eval($path, $context, $extensions, $debug)));
+      },
+
+      generateCode = {path:String[1], context:GenerationContext[1], extensions:Extension[*], debug:DebugContext[1] |
+         $externalFormatExtensions.planJavaGenerate->map(x|$x->eval($path, $context, $extensions, $debug));
+      }
+      // ---------------------------------------------------------------------------------- Graph fetch extensions
+   )
 }

@@ -29,6 +29,7 @@ import meta::pure::extension::*;
 import meta::pure::router::clustering::*;
 import meta::pure::store::*;
 import meta::pure::graphFetch::executionPlan::*;
+import meta::pure::executionPlan::platformBinding::*;
 
 
 // Store Extension --------------------------------------------------------------------------
@@ -70,7 +71,73 @@ function <<access.private>> meta::pure::extension::unique(storeContracts:StoreCo
 // -------------------------------------------------------------------------- Store Extension
 
 
+// Execution Plan Plaform Bindings ----------------------------------------------------------
+function meta::pure::extension::getExecutionPlanPlatformBindingContract(extensions: Extension[*], id: String[1]):ExecutionPlanPlatformBindingContract[1]
+{
+   let filtered = $extensions.availableExecutionPlanPlatformBindings->filter(c| $c.id == $id)->removeDuplicates(x | $x.id, {a,b | $a == $b});
+   assert($filtered->size() == 1, | 'Didn\'t find execution plan platform binding for id: ' + $id);
+   $filtered->toOne();
+}
 
+function meta::pure::extension::extractExecutionPlanPlatformBindingExtensions<T>(extensions: Extension[*], type: meta::pure::metamodel::type::Class<T>[1]):T[*]
+{
+   let platformBindingExtensions = $extensions.executionPlanPlatformBindingExtensions();
+   assert($platformBindingExtensions->forAll(x | $x->instanceOf($type)),
+         | 'Expected only ' + $type->elementToPath() + ' type platform binding extensions. '+
+            'Found: ' + $platformBindingExtensions->map(x | $x->type()->elementToPath())->distinct()->sort()->joinStrings('[', ', ', ']'));
+   $platformBindingExtensions->cast(@T);
+}
+
+function meta::pure::extension::withExtraExecutionPlanPlatformBindingExtension(storeContract: StoreContract[1], ext: ExecutionPlanPlatformBindingExtension[1]):StoreContract[1]
+{
+   ^$storeContract
+   (
+      executionPlanPlatformBindingExtensions += $ext
+   )
+}
+
+function meta::pure::extension::withExtraExecutionPlanPlatformBindingExtension(featureExtension: FeatureExtension[1], ext: ExecutionPlanPlatformBindingExtension[1]):FeatureExtension[1]
+{
+   ^$featureExtension
+   (
+      executionPlanPlatformBindingExtensions += $ext
+   )
+}
+
+function meta::pure::extension::withExtraExecutionPlanPlatformBindingExtension(extension: Extension[1], ext: ExecutionPlanPlatformBindingExtension[1]):Extension[1]
+{
+   ^$extension
+   (
+      executionPlanPlatformBindingExtensions += $ext
+   )
+}
+
+function meta::pure::extension::removeOtherExecutionPlanPlatformBindingExtensions(extensions: Extension[*], toRetainPlatformId: String[1]):Extension[*]
+{
+   $extensions->map({ext |
+
+      ^$ext
+      (
+         availableStores = $ext.availableStores->map({c |
+            ^$c
+            (
+               executionPlanPlatformBindingExtensions = $c.executionPlanPlatformBindingExtensions->filter(x | $x.id == $toRetainPlatformId)
+            )
+         }),
+
+         availableFeatures = $ext.availableFeatures->map({c |
+            ^$c
+            (
+               executionPlanPlatformBindingExtensions = $c.executionPlanPlatformBindingExtensions->filter(x | $x.id == $toRetainPlatformId)
+            )
+         }),
+
+         executionPlanPlatformBindingExtensions = $ext.executionPlanPlatformBindingExtensions->filter(x | $x.id == $toRetainPlatformId)
+      )
+   
+   })
+}
+// ---------------------------------------------------------- Execution Plan Plaform Bindings
 
 
 
@@ -85,7 +152,10 @@ function meta::pure::extension::defaultExtensions():Extension[*]
                           meta::pure::store::platform::contract::platformStoreContract(),
                           meta::pure::mapping::modelToModel::contract::modelStoreContract(),
                           meta::pure::mapping::aggregationAware::contract::aggregationAwareStoreContract()
-                      ]                          
+                      ],
+    availableExecutionPlanPlatformBindings = [
+      meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingContract()
+    ]                         
   )
 }
 

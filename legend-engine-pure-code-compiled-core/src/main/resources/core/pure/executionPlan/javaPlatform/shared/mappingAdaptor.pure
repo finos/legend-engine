@@ -147,24 +147,12 @@ function <<access.private>> meta::pure::executionPlan::engine::java::addMapOneMe
    let newOne = $adaptorClass->j_new($inOne->concatenate($parent));
 
 
+   let extensionClass = meta::pure::executionPlan::platformBinding::legendJava::LegendJavaExecutionPlanPlatformBindingExtension;
+   let extensionFunctions = $extensions->meta::pure::extension::extractExecutionPlanPlatformBindingExtensions($extensionClass)->map(e | $e.addMapOneMethodForMappingAdaptor);
+   
    let methodBody = $setImplementation->match(
-                           $extensions.plan_javaRuntime_mappingAdaptor_addMapOneMethod->map(x|$x->eval($inOne, $newOne, $conventions, $debug))->concatenate(
+                           $extensionFunctions->map(x|$x->eval($inOne, $newOne, $conventions, $debug))->concatenate(
                               [
-                              {pisi: PureInstanceSetImplementation[1] | 
-                                 if($pisi.filter->isEmpty(),
-                                    | j_return($newOne),
-                                    {|
-                                       print(if($debug.debug,|$debug.space+'filter generation\n', |''));
-                                       let filterExpr = $pisi.filter.expressionSequence->at(0)->evaluateAndDeactivate()->generateJava($conventions, $debug->indent());
-                                       j_return(
-                                          j_conditional($filterExpr,
-                                             $newOne,
-                                             j_null()
-                                          )
-                                       );
-                                    }
-                                 );                  
-                              },
                               {a: Any[*] | 
                                  j_return($newOne);
                               }               
@@ -219,8 +207,11 @@ function <<access.private>> meta::pure::executionPlan::engine::java::addMapManyM
 
 function <<access.private>> meta::pure::executionPlan::engine::java::variableName(setImplementation:InstanceSetImplementation[1], extensions : meta::pure::extension::Extension[*]): String[1]
 {
+   let extensionClass = meta::pure::executionPlan::platformBinding::legendJava::LegendJavaExecutionPlanPlatformBindingExtension;
+   let extensionFunctions = $extensions->meta::pure::extension::extractExecutionPlanPlatformBindingExtensions($extensionClass)->map(e | $e.sourceVariableNameForSetImplementation);
+
    $setImplementation->toOne()->match(
-            $extensions.java_mappingAdaptor->concatenate([
+            $extensionFunctions->concatenate([
                   a:Any[*] | 'src'
                ])->toOneMany()
    );
@@ -455,12 +446,13 @@ function <<access.private>> meta::pure::executionPlan::engine::java::generatePro
    if($propertyMapping->isExplodePropertyMapping(),
       |$jThis->j_field($propertyMapping.property.name->toOne() +'List')->j_invoke('get', $jThis->j_field('index', javaInt())),
       {|
-         let expression = $propertyMapping->match($extensions.plan_javaRuntime_mappingAdaptor_generatePropertyMapping1->map(e|$e->eval($conventions, $debug))->concatenate([
-            ppm  : PurePropertyMapping[1]                       | $ppm.transform.expressionSequence->at(0)->evaluateAndDeactivate()->generateJava($conventions, $debug->indent())
-         ])->toOneMany());
+         let extensionClass = meta::pure::executionPlan::platformBinding::legendJava::LegendJavaExecutionPlanPlatformBindingExtension;
+         let extensionTransformCodeGenrateMatches = $extensions->meta::pure::extension::extractExecutionPlanPlatformBindingExtensions($extensionClass)->map(e | $e.generatePropertyMappingCode);
+         let extensionValueTransformerMatches = $extensions->meta::pure::extension::extractExecutionPlanPlatformBindingExtensions($extensionClass)->map(e | $e.extractValueTransformerFromPropertyMapping);
 
-         let transformer = $propertyMapping->map(pm| $pm->match($extensions.plan_javaRuntime_mappingAdaptor_generatePropertyMapping2->concatenate([
-                                                                     ppm : PurePropertyMapping[1]     | $ppm.transformer,
+         let expression = $propertyMapping->match($extensionTransformCodeGenrateMatches->map(e|$e->eval($conventions, $debug))->toOneMany());
+
+         let transformer = $propertyMapping->map(pm| $pm->match($extensionValueTransformerMatches->concatenate([
                                                                      fdpm: Any[1]                     | []
                                                                   ])->toOneMany()
                                                                )

@@ -53,7 +53,9 @@ function meta::pure::executionPlan::engine::java::generateImplementationForParse
    let objectRefParserIface  = getObjectReferenceParserHelperInterface($path, $context);
    let objectRefParserVar    = j_variable($objectRefParserIface, 'objectReferenceParserHelper');
    
-   let objectRefParserImpls  = $extensions.java_parseObjectReference_getParseObjectReferenceImplClass->map(f | $f->eval($storeType, $args, $path, $context, $debug));
+   let extensionClass = meta::pure::executionPlan::platformBinding::legendJava::LegendJavaExecutionPlanPlatformBindingExtension;
+   let extensionFunctions = $extensions->meta::pure::extension::extractExecutionPlanPlatformBindingExtensions($extensionClass)->map(e | $e.getParseObjectReferenceImplClass);
+   let objectRefParserImpls  = $extensionFunctions->map(f | $f->eval($storeType, $args, $path, $context, $debug));
    assert($objectRefParserImpls->size() == 1, | 'Expected 1 Implementation of ObjectReferenceParserHelper for storeType - ' + $storeType + ' Found - ' + $objectRefParserImpls->size()->toString());
    let objectRefParserImpl   = $objectRefParserImpls->toOne();
    
